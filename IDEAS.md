@@ -1,4 +1,4 @@
-=== Design Basics ===
+### Design Basics ###
 
 - nested namespaces: oryol::[module_name]
 - explicitely NOT a framework for asset tools, only a game runtime (even only a 3d runtime in the beginning)
@@ -15,7 +15,7 @@ the modules dependent on them)
 - custom RTTI system, but without static initialisers
 - usually one header file per module
 
-=== Memory Management ===
+### Memory Management ###
 
 - use object pools and placement new/delete for all oryol::core::base derived classes
 - separate classes into thread-local (must be created / destroyed in same thread) and global (can be destroyed in 
