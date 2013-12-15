@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta charset="utf-8"></meta>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
+        <title>Nebula3/emscripten</title>
+        <link rel="stylesheet" href="../css/style.css" type="text/css" media="all"></link>
+    </head>
+    <body>
+            
+        <div class="page">
+            <div class="header">
+                <a href="/index.html" id="home">flohofwoe.net</a>
+                <ul class="navbar">
+                    <li><a href="/index.html">Home</a></li>
+                    <li><a href="/demos.html">Demos</a></li>
+                    <li><a href="http://flohofwoe.blogspot.com/" target="_blank">Blog</a></li>
+                    <li><a href="/about.html">About</a></li>
+                </ul>
+            </div>
+        
+            <!-- emscripten canvas -->
+            <div class="emscripten_border">
+                <canvas class="emscripten" id="canvas" width="800" height="452" oncontextmenu="event.preventDefault()"></canvas>
+            </div>
+            
+            <!-- fullscreen button -->
+            <div class="emscripten">
+                <input type="button" value="Fullscreen" onclick="_glutFullScreen()"/>
+            </div>
+    
+            <!-- emscripten output console -->
+            <textarea class="emscripten" id="output" rows="40" cols="80"></textarea>
+    
+            <script type='text/javascript'>
+                // connect to canvas
+                var Module = {
+                    preRun: [],
+                    postRun: [],
+                    print: (function() {
+                            var element = document.getElementById('output');
+                            element.value = ''; // clear browser cache
+                            return function(text) {
+                                text = Array.prototype.slice.call(arguments).join(' ');
+                                // These replacements are necessary if you render to raw HTML
+                                //text = text.replace(/&/g, "&amp;");
+                                //text = text.replace(/</g, "&lt;");
+                                //text = text.replace(/>/g, "&gt;");
+                                //text = text.replace('\n', '<br>', 'g');
+                                element.value += text + "\n";
+                                element.scrollTop = 99999; // focus on bottom
+                            };
+                    })(),
+                    printErr: function(text) {
+                        text = Array.prototype.slice.call(arguments).join(' ');
+                        if (0) { // XXX disabled for safety typeof dump == 'function') {
+                            dump(text + '\n'); // fast, straight to the real console
+                        } else {
+                            console.log(text);
+                        }
+                    },
+                    canvas: document.getElementById('canvas'),
+                    setStatus: function(text) {
+                    
+                    },
+                    totalDependencies: 0,
+                    monitorRunDependencies: function(left) {
+                    
+                    }
+                };
+            </script>
+            {{{ SCRIPT }}}
+
+            <div class="footer">
+                <a href="/impressum.html">Impressum</a>
+            </div>            
+        </div>
+    </body>
+</html>
