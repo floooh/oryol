@@ -184,7 +184,7 @@ macro(oryol_end_app)
     
     # pNaCl: add finalizer build step
     if (ORYOL_PNACL)
-        oriol_pnacl_post_buildsteps(${CurAppName})
+        oryol_pnacl_post_buildsteps(${CurAppName})
     endif()
 
     # add dependencies for target

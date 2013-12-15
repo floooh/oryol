@@ -9,7 +9,7 @@ set(ORYOL_PLATFORM PNACL)
 set(ORYOL_PLATFORM_NAME "pnacl")
 set(ORYOL_PNACL 1)
 set(ORYOL_POSIX 1)
-set(ORYOL_PLATFORM_DEFINES " -DORYOL_PNACL=1 -DORYOL_POSIX=1)
+set(ORYOL_PLATFORM_DEFINES "-DORYOL_PNACL=1 -DORYOL_POSIX=1")
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_VERSION 1)
@@ -21,7 +21,7 @@ if (NOT NACL_SDK_ROOT)
     set(NACL_SDK_ROOT "$ENV{NACL_SDK_ROOT}")
 endif()
 
-if (${NACL_SDK_ROOT}" STREQUAL "")
+if ("${NACL_SDK_ROOT}" STREQUAL "")
         message(FATAL_ERROR "Could not locate the NaCl toolchain directory! Either set the NACL_SDK_ROOT environment variable, or pass -DNACL_SDK_ROOT=xxx to CMake to explicitly specify the location of the compiler!")
 endif()
 
