@@ -19,7 +19,7 @@ On OSX, Oryol is built with Xcode and supports both bundled applications as well
 
 On Linux, Oryol is built from the command line with make and GCC.
 
-1. make sure that GCC and make are in the path
+1. make sure that 'cmake', 'gcc', 'g++' and 'make' are in the path
 2. cd to oryol/build
 3. execute ./condif_linux_debug_make.sh
 4. cd to oryol/build/linux
