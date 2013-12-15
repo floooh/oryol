@@ -28,4 +28,11 @@ This will create an Xcode project file under oryol/build/osx with default compil
 
 ### Linux ###
 
+On Linux, Oryol is built from the command line with make and GCC.
 
+1. make sure that GCC and make are in the path
+2. cd to oryol/build
+3. execute ./build_linux_debug_make.sh
+4. cd to oryol/build/linux
+5. execute 'make hello', this should compile the hello world sample
+6. go to oryol/bin/linux, there should be a 'hello_debug' executable, running this should display 'Hello World!'
