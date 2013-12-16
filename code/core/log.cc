@@ -11,7 +11,7 @@ namespace core {
 
 using namespace std;
 
-std::atomic<log::level> log::cur_loglevel(log::level::dbg);
+log::level log::cur_loglevel = log::level::dbg;
 threading::rwlock log::lock;
 std::vector<std::shared_ptr<logger>> log::loggers;
 

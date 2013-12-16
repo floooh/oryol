@@ -5,7 +5,6 @@
 #include "core/types.h"
 #include "core/macros.h"
 #include "core/log.h"
-#include <memory>
 
 using namespace oryol;
 using namespace oryol::core;
@@ -14,8 +13,8 @@ using namespace std;
 class myclass {
     oryol_class(myclass);
 public:
-    myclass() { log::info("myclass Constructor called (test=%d)\n", test); };
-    ~myclass() { log::info("myclass Destructor called (test=%d)\n", test); };
+    myclass() {  };
+    ~myclass() {  };
     void set_test(int32 i) { test = i; };
     int32 get_test() const { return test; };
 private:

@@ -49,7 +49,7 @@ private:
     static void vprint(level l, const char* msg, va_list args);
 
     static threading::rwlock lock;
-    static std::atomic<level> cur_loglevel;
+    static level cur_loglevel;
     static std::vector<std::shared_ptr<logger>> loggers;
 };
 } // namespace core
