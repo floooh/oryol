@@ -16,8 +16,13 @@ set(ORYOL_PLATFORM_DEFINES "-DORYOL_MACOS=1 -DORYOL_OSX=1 -DORYOL_POSIX=1")
 # define configuration types
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
+# need to set some flags directly as Xcode attributes
+set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+set(CMAKE_XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS "NO")
+
 # compiler flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fno-exceptions -fno-rtti -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -ggdb")
 
@@ -25,7 +30,7 @@ set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -W
 set(CMAKE_C_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g")        	
 
-set(CMAKE_EXE_LINKER_FLAGS "-ObjC -dead_strip -lstdc++ -lpthread")
+set(CMAKE_EXE_LINKER_FLAGS "-ObjC -dead_strip -lpthread")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 

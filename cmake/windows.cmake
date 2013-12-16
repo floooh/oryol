@@ -35,7 +35,6 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib s
 # GENERIC compiler flags:
 # 	/WX treat warnings as errors
 # 	/GF eliminate duplicate strings
-# 	/GR- disable RTTI
 # 	/arch:SSE2 generate code for SSE2
 # 	/TP treat files as C++ source
 #	/TC treat files as C source
@@ -53,7 +52,7 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib s
 #	/MT use statically linked, thread-safe CRT libs
 # 	/GS- no Buffer Security Check
 #	
-set(CMAKE_CXX_FLAGS /WX /GF /Gm /GR- /arch:SSE2 /TP /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
+set(CMAKE_CXX_FLAGS /WX /GF /Gm /arch:SSE2 /TP /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
 set(CMAKE_CXX_FLAGS_DEBUG "/ZI /Od /Oy- /MTd /D_DEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "/Ox /MT /GS- /DNDEBUG")
 

@@ -54,7 +54,7 @@ set(CMAKE_RANLIB "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-ranlib" CACHE PATH "ranlib" F
 set(CMAKE_LINKER "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-clang++" CACHE PATH "linker" FORCE)
 
 # compiler flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -MMD -fno-exceptions -fno-rtti -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -MMD -fno-exceptions -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DNACL_SDK_DEBUG")
 

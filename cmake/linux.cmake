@@ -15,7 +15,7 @@ set(ORYOL_PLATFORM_DEFINES "-DORYOL_LINUX=1 -DORYOL_POSIX=1")
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 # C++ flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fno-exceptions -fno-rtti -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fno-exceptions -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -msse3 -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -ggdb")
 

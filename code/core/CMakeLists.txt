@@ -1,12 +1,7 @@
 #-------------------------------------------------------------------------------
-#	hello
-#	The most simple hello-world to test the build system.
+#   oryol core module
 #-------------------------------------------------------------------------------
-
-oryol_begin_app(hello cmdline)
-	oryol_sources(.)
-    oryol_deps(core)
-oryol_end_app()
-
-
-
+oryol_begin_module(core)
+oryol_sources(. threading)
+oryol_sources_posix(posix)
+oryol_end_module(core)

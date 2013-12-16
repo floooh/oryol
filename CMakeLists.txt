@@ -18,9 +18,11 @@ oryol_setup()
 # define the project name
 oryol_project(oryol)
 
-# FIXME: setup top-level header search paths
+# setup top-level header search paths
+include_directories(code)
 
 # add subdirectories
+oryol_add_subdirectory(code/core)
 oryol_add_subdirectory(code/test)
 
 

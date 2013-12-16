@@ -103,7 +103,7 @@ endmacro()
 macro(oryol_begin_module name)
 	message("Oryol Module: name=" ${name})
 	oryol_reset(${name})
-	set(CurModuleName name)
+	set(CurModuleName ${name})
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -114,12 +114,12 @@ macro(oryol_end_module)
 	
 	# setup dependency tracker variables for this module, executable
 	# targets use this to resolve their dependencies
-	set(${CurModuleName}_deps ${CurDependencies})
-	set(${CurModuleName}_libs ${CurLinkLibs})
-	set(${CurModuleName}_frameworks ${CurFrameworks})
+    set_property(GLOBAL PROPERTY ${CurModuleName}_deps ${CurDependencies})
+    set_property(GLOBAL PROPERTY ${CurModuleName}_libs ${CurLinkLibs})
+    set_property(GLOBAL PROPERTY ${CurModuleName}_frameworks ${CurFrameworks})
 
 	# add library target
-	add_library(${CurModuleName})
+	add_library(${CurModuleName} ${CurSources})
 	oryol_apply_target_group(${CurModuleName})
 
 endmacro()
@@ -148,9 +148,9 @@ macro(oryol_end_app)
 
 	# setup dependency tracker variables for this module, executable
 	# targets use this to resolve their dependencies
-	set(${CurModuleName}_deps ${CurDependencies})
-	set(${CurModuleName}_libs ${CurLinkLibs})
-	set(${CurModuleName}_frameworks ${CurFrameworks})	
+    set_property(GLOBAL PROPERTY ${CurAppName}_deps ${CurDependencies})
+    set_property(GLOBAL PROPERTY ${CurAppName}_libs ${CurLinkLibs})
+    set_property(GLOBAL PROPERTY ${CurAppName}_frameworks ${CurFrameworks})
 
     if (NOT CurSources)
         message(FATAL_ERROR "No sources in target: ${CurAppName} !!!")
@@ -232,7 +232,7 @@ macro(oryol_frameworks_osx frameworks)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_srcdirs(dirs ...)
+#	oryol_sources(dirs ...)
 #	Parse one or more directories for sources and add them to the current
 #	target.
 #
@@ -262,8 +262,19 @@ macro(oryol_sources dirs)
 endmacro()
 
 #-------------------------------------------------------------------------------
+#   oryol_sources_posix(dirs ...)
+#   Add POSIX specific sources.
+#
+macro(oryol_sources_posix dirs)
+    if (ORYOL_POSIX)
+        oryol_sources(${ARGV})
+    endif()
+endmacro()
+
+#-------------------------------------------------------------------------------
 #   oryol_add_subdirectory(dir)
 #
 macro(oryol_add_subdirectory dir)
     add_subdirectory(${dir})
 endmacro()
+
