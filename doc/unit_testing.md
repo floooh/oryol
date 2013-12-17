@@ -5,10 +5,10 @@
 Oryol integrates the UnitTest++ framework (http://unittest-cpp.sourceforge.net/). Unit testing
 is turned off by default and must be enabled through cmake:
 
-1. start cmake-gui and press Configure
-2. check the ORYOL_UNITTESTS checkbox 
-3. press Configure again and verify that ORYOL_EXCEPTIONS and ORYOL_UNITTESTS_RUN_AFTER_BUILD are also checked
-4. press Generate to generate the build files
+* start cmake-gui and press Configure
+* check the ORYOL_UNITTESTS checkbox 
+* press Configure again and verify that ORYOL_EXCEPTIONS and ORYOL_UNITTESTS_RUN_AFTER_BUILD are also checked
+* press Generate to generate the build files
 
 The generated build files now contains unit test projects (in an IDE these are grouped under "unittests"). The projects are configured to automatically run after building (unless the
 ORYOL_UNITTESTS_RUN_AFTER_BUILD option is turned off), thus you can simply edit and build
@@ -20,18 +20,21 @@ right source code line.
 
 Each Oryol module should come with a set of unit tests:
 
-1. in the module's source directory, create a subdirectory called 'unittests'
-2. add a new unit test in the module's CMakeLists.txt file:
+* in the module's source directory, create a subdirectory called 'unittests'
+* add a new unit test in the module's CMakeLists.txt file:
 
+```cmake
     oryol_begin_unittest([module_name])
         oryol_sources(unittests)
         oryol_deps([additional dependencies])
     oryol_end_unittest()
+```
 
 
-3. populate the 'unittests' directory with C++ files with the actual tests. Each C++ file can contain several tests, and there can be any number of files in the 'unittests' directory
-4. a minimal sucessful test looks like this:
+* populate the 'unittests' directory with C++ files with the actual tests. Each C++ file can contain several tests, and there can be any number of files in the 'unittests' directory
+* a minimal sucessful test looks like this:
 
+```cpp
     //------------------------------------------------------------------------------
     //  [name].cc
     //  A short description
@@ -42,5 +45,6 @@ Each Oryol module should come with a set of unit tests:
     TEST(my_test) {
         CHECK(true);
     }
+```
 
-4. configure and generate in cmake-gui again, the test has now been integrated into the build
+* configure and generate in cmake-gui again, the test has now been integrated into the build
