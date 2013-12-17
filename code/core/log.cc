@@ -28,6 +28,20 @@ void log::add_logger(const shared_ptr<logger>& l) {
 
 //------------------------------------------------------------------------------
 /**
+ */
+int32 log::get_numloggers() {
+    return loggers.size();
+}
+
+//------------------------------------------------------------------------------
+/**
+ */
+std::shared_ptr<logger> log::get_logger(int32 index) {
+    return loggers[index];
+}
+
+//------------------------------------------------------------------------------
+/**
 */
 void log::set_loglevel(level l) {
     cur_loglevel = l;

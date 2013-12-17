@@ -40,6 +40,8 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib s
 #	/TC treat files as C source
 # 	/fp:fast create fast (not precise) floating point code
 # 	/Gm: enable minimal rebuild
+#	/EHsc: slim exception model
+#	/EHa: fat exception model
 #
 # DEBUG compiler flags:
 #	/ZI create debugging information PDB file with support for Edit-and-Continue
@@ -52,7 +54,14 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib s
 #	/MT use statically linked, thread-safe CRT libs
 # 	/GS- no Buffer Security Check
 #	
-set(CMAKE_CXX_FLAGS /WX /GF /Gm /arch:SSE2 /TP /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
+if (ORYOL_EXCEPTIONS)
+    message("C++ exceptions are enabled")
+	set(ORYOL_VS_EXCEPTION_FLAGS "/EHa")
+else()
+    message("C++ exceptions are disabled")
+	set(ORYOL_VS_EXCEPTION_FLAGS "/EHsc")
+endif()
+set(CMAKE_CXX_FLAGS ${ORYOL_VS_EXCEPTION_FLAGS} /WX /GF /Gm /arch:SSE2 /TP /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
 set(CMAKE_CXX_FLAGS_DEBUG "/ZI /Od /Oy- /MTd /D_DEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "/Ox /MT /GS- /DNDEBUG")
 

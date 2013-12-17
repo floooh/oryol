@@ -4,11 +4,22 @@
 #-------------------------------------------------------------------------------
 
 include("${ORYOL_ROOT_DIR}/cmake/oryol_private.cmake")
+include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 
 #-------------------------------------------------------------------------------
 #	define top-level options for the whole project
 #-------------------------------------------------------------------------------
-option(ORYOL_UNITTESTS_ENABLED "Enable unit tests" OFF)
+option(ORYOL_UNITTESTS "Enable unit tests" OFF)
+option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after building" ON)
+option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
+
+# turn some dependent options on/off
+if (ORYOL_UNITTESTS)
+    enable_testing()
+    set(ORYOL_EXCEPTIONS ON CACHE BOOL "Enable C++ exceptions" FORCE)
+else()
+    set(ORYOL_EXCEPTIONS OFF CACHE BOOL "Enable C++ exceptions" FORCE)
+endif()
 
 #-------------------------------------------------------------------------------
 #	oryol_setup()
@@ -69,10 +80,10 @@ macro(oryol_setup)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_target_group(group)
+#	oryol_group(group)
 #	Define the IDE group name for the following targets. 
 #
-macro(oryol_target_group group)
+macro(oryol_group group)
 	set(ORYOL_TARGET_GROUP ${group})
 endmacro()
 
@@ -121,6 +132,28 @@ macro(oryol_end_module)
 	# add library target
 	add_library(${CurModuleName} ${CurSources})
 	oryol_apply_target_group(${CurModuleName})
+
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   oryol_begin_lib(name)
+#   Begin defining a static link library
+#
+macro(oryol_begin_lib name)
+    message("Library: name=" ${name})
+    oryol_reset(${name})
+    set(CurLibraryName ${name})
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   oryol_end_library(name)
+#   End defining a static link library.
+#
+macro(oryol_end_lib)
+    
+    # add library target
+    add_library(${CurLibraryName} ${CurSources})
+    oryol_apply_target_group(${CurLibraryName})
 
 endmacro()
 
@@ -239,7 +272,7 @@ endmacro()
 macro(oryol_sources dirs)
 	foreach (dir ${ARGV})
 		# gather files
-		file(GLOB src ${dir}/*.cc ${dir}.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
+		file(GLOB src ${dir}/*.cc ${dir}/*.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
 		if (ORYOL_NACL)
 			file(GLOB nacl ${dir}/*.nmf ${dir}/*.html)
 		else()
@@ -267,6 +300,16 @@ endmacro()
 #
 macro(oryol_sources_posix dirs)
     if (ORYOL_POSIX)
+        oryol_sources(${ARGV})
+    endif()
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   oryol_sources_windows(dirs ...)
+#   Add Windows specific sources.
+#
+macro(oryol_sources_windows dirs)
+    if (ORYOL_WINDOWS)
         oryol_sources(${ARGV})
     endif()
 endmacro()

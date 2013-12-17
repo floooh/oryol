@@ -28,6 +28,10 @@ public:
 
     /// add a logger object
     static void add_logger(const std::shared_ptr<logger>& p);
+    /// get number of loggers
+    static int32 get_numloggers();
+    /// get logger at index
+    static std::shared_ptr<logger> get_logger(int32 index);
     
     /// set current log level
     static void set_loglevel(level l);

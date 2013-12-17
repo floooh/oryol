@@ -20,10 +20,13 @@ oryol_project(oryol)
 
 # setup top-level header search paths
 include_directories(code)
+include_directories(code/ext)
 
 # add subdirectories
 oryol_add_subdirectory(code/core)
-oryol_add_subdirectory(code/test)
+oryol_add_subdirectory(code/hello)
+oryol_group(ext)
+oryol_add_subdirectory(code/ext)
 
 
 
