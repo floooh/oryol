@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
+#include <cstring>
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #endif

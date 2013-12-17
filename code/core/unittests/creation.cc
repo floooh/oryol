@@ -11,12 +11,12 @@
 using namespace std;
 using namespace oryol;
 
-// deine a custom class
+// define a custom class
 class test_class {
     oryol_class(test_class);
 public:
     test_class() : val(0) {
-        core::log::info("constrctor called!\n");
+        core::log::info("constructor called!\n");
     };
     virtual ~test_class() {
         core::log::info("destructor called!\n");
@@ -29,7 +29,7 @@ private:
 
 TEST(create_shared) {
     shared_ptr<test_class> ptr0 = test_class::create_shared();
-    CHECK(ptr0);
+    CHECK(bool(ptr0));
     CHECK(ptr0.use_count() == 1);
     CHECK(ptr0.unique());
     
@@ -41,12 +41,15 @@ TEST(create_shared) {
     CHECK(!ptr0.unique());
     
     ptr0.reset();
-    CHECK(!ptr0);
-    CHECK(ptr1);
+    CHECK(!bool(ptr0));
+    CHECK(bool(ptr1));
     CHECK(ptr1.use_count() == 1);
-    
 }
 
 TEST(create_unique) {
-    
+    unique_ptr<test_class> ptr0 = test_class::create_unique();
+    CHECK(bool(ptr0));
+    unique_ptr<test_class> ptr1(move(ptr0));
+    CHECK(bool(ptr1));
+    CHECK(!bool(ptr0));
 }
