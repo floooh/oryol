@@ -42,7 +42,7 @@ structures as keys and the precomputed hash values for hashing into the buckets.
 
 ##### What happens when creating or assigning from a raw string #####
 
-This is implemented in the private method _stringatom::setup_from_c_string()_:
+This is implemented in the private method stringatom::setup_from_c_string():
 
 * the hash value of the input string is computed
 * the unordered set in the thread-local string atom table is searched (inolves comparing the 
