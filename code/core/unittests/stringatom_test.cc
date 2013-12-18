@@ -5,6 +5,7 @@
 #include "pre.h"
 #include "UnitTest++/src/unittest++.h"
 #include "core/string/stringatom.h"
+#include "core/core.h"
 
 using namespace oryol;
 using namespace string;
@@ -43,6 +44,30 @@ TEST(stringatom_singlethreaded) {
     CHECK(!atom0.isvalid());
 }
 
-TEST(stringatom_multithreaded) {
-    // FIXME FIXME!!!
+#if ORYOL_HAS_THREADS
+// must use reference, the copy would fail since there is no thread-local
+// string-atom table yet
+void thread_func(const stringatom& a0) {
+    core::enter_thread();
+    
+    // transfer into a thread-local string atom
+    stringatom a1(a0);
+    stringatom a2(a0);
+    CHECK(a0 == a1);
+    CHECK(a1 == a2);
+    CHECK(a1.as_string() == "BLOB");
+    CHECK(a0.as_string() == "BLOB");
+    CHECK(a2.as_string() == "BLOB");
+    
+    core::leave_thread();
 }
+
+// test stringatom transfer into other thread
+TEST(stringatom_multithreaded) {
+    
+    stringatom atom0("BLOB");
+    std::thread t1(thread_func, std::ref(atom0));
+    t1.join();
+}
+
+#endif

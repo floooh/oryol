@@ -17,5 +17,6 @@
 #include <string>
 #if ORYOL_HAS_THREADS
 #include <atomic>
+#include <thread>
 #endif
 
