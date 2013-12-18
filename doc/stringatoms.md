@@ -31,8 +31,8 @@ The header data structure contains the following entries:
 * a pointer to the actual string data
 * the string data follows the actual header, terminted by a 0-byte
 
-These data structures (headers followed by actual string data) are stored in pre-allocated memory chunk managed by
-the stringatom_buffer class. One chunk is usually several kilobytes, when this runs full, a new chunk is allocated.
+These data structures (headers followed by actual string data) are stored in pre-allocated memory chunks managed by
+the stringatom_buffer class. One chunk is usually 16kBytes. When a chunk runs full, a new chunk is allocated.
 Chunks are never freed.
 
 The stringatom_buffer object is owned by a stringatom_table, which is a thread-local singleton.
