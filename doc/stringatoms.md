@@ -27,7 +27,7 @@ first stringatom containing that string.
 The header data structure contains the following entries:
 
 * a pointer to the (thread-local) stringatom table, this is used to check whether a string atom is from another thread
-* a hash value which is computed once per unique string and from then on cached
+* a hash value which is computed when a string atom is created from a raw string, but is cached from then on and used for optimizing comparisons
 * a pointer to the actual string data
 * the string data follows the actual header, terminted by a 0-byte
 
