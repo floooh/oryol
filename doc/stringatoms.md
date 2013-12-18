@@ -58,7 +58,7 @@ This is implemented in the stringatom equality operator:
 same string (and we're done)
 * otherwise, check if the 2 string atom table pointers in the header structure are identical, if yes, then
 the string atoms are not equal
-* otherwise the string atoms have been created in different threads and the strings may be identical even so their
+* otherwise the string atoms have been created in different threads and the strings may be identical even though their
 data pointers are different, in this case:
 * compare the hash values in the header structure, if they're different then the string are definitely not equal
 * if the hashes are are identical, then an actual string comparison must be performed
