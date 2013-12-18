@@ -1,6 +1,6 @@
 ### String Atoms ###
 
-String atoms provide read-only shared strings (each specific string only exists once). Construction from a "raw string"
+String atoms provide read-only shared strings (each specific string only exists once in memory - per thread). Construction from a "raw string"
 is relatively expensive (but not much more expensive then creating a std::string object), but copying and comparison is extremely fast, making string atoms ideal as keys in map 
 and set containers.
 
