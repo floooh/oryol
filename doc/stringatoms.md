@@ -14,7 +14,7 @@ Each thread has a thread-local string atom table which stores all string atoms w
 String atoms may traverse thread boundaries, copying a "foreign" string atom into a thread-local string atom is more
 expensive then copying a thread-local string atom to another thread-local atom. Likewise, comparing a "foreign"
 string atom with a local string atom may involve an expensive string comparison instead of a very fast pointer
-comparison.
+comparison (but only if their precomputed hashes are identical).
 
 #### Implementation Details ####
 
