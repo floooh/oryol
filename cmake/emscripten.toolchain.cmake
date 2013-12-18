@@ -92,12 +92,12 @@ set(CMAKE_SYSTEM_INCLUDE_PATH "${EMSCRIPTEN_ROOT_PATH}/system/include")
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -std=c++11 -stdlib=libstdc++ -fno-exceptions -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O2 -g -D_DEBUG_ -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O2 -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # c compiler flags
 set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wextra -Wno-multichar -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-O2 -g -D_DEBUG_ -D_DEBUG")
+set(CMAKE_C_FLAGS_DEBUG "-O2 -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # linker flags
 set(CMAKE_EXE_LINKER_FLAGS "--memory-init-file ${EMSCRIPTEN_USE_MEMORY_INIT_FILE} --shell-file ${CMAKE_SOURCE_DIR}/data/html/shell.html -s WARN_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=${EMSCRIPTEN_TOTAL_MEMORY} -s DISABLE_EXCEPTION_CATCHING=1")

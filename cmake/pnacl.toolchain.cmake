@@ -56,11 +56,11 @@ set(CMAKE_LINKER "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-clang++" CACHE PATH "linker" 
 # compiler flags
 set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -MMD -fno-exceptions -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DNACL_SDK_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DNACL_SDK_DEBUG -DORYOL_DEBUG=1")
 
 set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -MMD -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue  -Wno-deprecated-writable-strings")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g -DNACL_SDK_DEBUG")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g -DNACL_SDK_DEBUG -DORYOL_DEBUG=1")
 
 set(CMAKE_EXE_LINKER_FLAGS "")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")

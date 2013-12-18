@@ -10,8 +10,6 @@ using namespace std;
 using namespace oryol;
 
 //------------------------------------------------------------------------------
-/**
-*/
 TEST(memory) {
 
     // allocate memory
@@ -65,6 +63,16 @@ TEST(memory) {
     // free memory
     memory::free(p0);
     memory::free(p1);
+    
+    // test pointer alignment
+    void* ptr = (void*)0x1234567;
+    ptr = memory::align(ptr, 4);
+    CHECK((intptr(ptr) & 3) == 0);
+    CHECK((intptr(ptr) == 0x1234568));
+    
+    ptr = (void*) 0x1234567;
+    ptr = memory::align(ptr, ORYOL_MAX_PLATFORM_ALIGN);
+    CHECK((intptr(ptr) & (ORYOL_MAX_PLATFORM_ALIGN - 1)) == 0);
 }
 
 

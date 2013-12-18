@@ -16,8 +16,6 @@ threading::rwlock log::lock;
 std::vector<std::shared_ptr<logger>> log::loggers;
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::add_logger(const shared_ptr<logger>& l) {
     if (l) {
         lock.lock_write();
@@ -27,36 +25,26 @@ void log::add_logger(const shared_ptr<logger>& l) {
 }
 
 //------------------------------------------------------------------------------
-/**
- */
 int32 log::get_numloggers() {
     return loggers.size();
 }
 
 //------------------------------------------------------------------------------
-/**
- */
 std::shared_ptr<logger> log::get_logger(int32 index) {
     return loggers[index];
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::set_loglevel(level l) {
     cur_loglevel = l;
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 log::level log::get_loglevel() {
     return cur_loglevel;
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::dbg(const char* msg, ...) {
     if (cur_loglevel >= level::dbg) {
         va_list args;
@@ -67,8 +55,6 @@ void log::dbg(const char* msg, ...) {
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::info(const char* msg, ...) {
     if (cur_loglevel >= level::info) {
         va_list args;
@@ -79,8 +65,6 @@ void log::info(const char* msg, ...) {
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::warn(const char* msg, ...) {
     if (cur_loglevel >= level::warn) {
         va_list args;
@@ -91,8 +75,6 @@ void log::warn(const char* msg, ...) {
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::error(const char* msg, ...) {
     if (cur_loglevel >= level::error) {
         va_list args;
@@ -103,8 +85,6 @@ void log::error(const char* msg, ...) {
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::vprint(level lvl, const char* msg, va_list args) {
     lock.lock_read();
     if (loggers.empty()) {
@@ -119,17 +99,15 @@ void log::vprint(level lvl, const char* msg, va_list args) {
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void log::assert_msg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.lock_read();
     if (loggers.empty()) {
         ::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
-                 cond, msg ? "none" : msg, file, line, func);
+                 cond, msg ? msg : "none", file, line, func);
     }
     else
     {
-        for (auto l : loggers) {
+        for (const auto& l : loggers) {
             l->assert_msg(cond, msg, file, line, func);
         }
     }

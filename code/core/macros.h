@@ -6,6 +6,7 @@
     Essential macro definitions for oryol.
 */
 #include "core/types.h"
+#include "core/log.h"
 
 #if ORYOL_WINDOWS
 #define ORYOL_TRAP __debugbreak
@@ -43,3 +44,61 @@ template<typename... ARGS> static std::unique_ptr<TYPE> create_unique(ARGS&&... 
     return std::unique_ptr<TYPE>(new TYPE(std::forward<ARGS>(args)...));\
 };\
 private:
+
+// global singleton macros (visible in all threads)
+#define oryol_decl_global_singleton(TYPE) \
+private:\
+    static TYPE* singleton;\
+public:\
+    static TYPE* instance() {\
+        o_assert(nullptr != singleton);\
+        return singleton;\
+    };\
+    static bool has_instance() {\
+        return nullptr != singleton;\
+    };\
+    static void create_singleton() {\
+        o_assert(0 == singleton);\
+        singleton = new TYPE();\
+    };\
+    static void destroy_singleton() {\
+        o_assert(0 != singleton);\
+        delete singleton;\
+        singleton = 0;\
+    };\
+    void singleton_ensure_unique() {\
+        o_assert(0 == singleton);\
+    };\
+private:
+
+#define oryol_impl_global_singleton(TYPE) TYPE* TYPE::singleton = 0;
+
+// thread-local singleton macros
+#define oryol_decl_local_singleton(TYPE) \
+private:\
+    static __thread TYPE* singleton;\
+public:\
+    static TYPE* instance() {\
+        o_assert(nullptr != singleton);\
+        return singleton;\
+    };\
+    static bool has_instance() {\
+        return nullptr != singleton;\
+    };\
+    static void create_singleton() {\
+        o_assert(0 == singleton);\
+        singleton = new TYPE();\
+    };\
+    static void destroy_singleton() {\
+        o_assert(0 != singleton);\
+        delete singleton;\
+        singleton = 0;\
+    };\
+    void singleton_ensure_unique() {\
+        o_assert(0 == singleton);\
+    };\
+private:
+
+#define oryol_impl_local_singleton(TYPE) __thread TYPE* TYPE::singleton = 0;
+
+

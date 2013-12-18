@@ -3,35 +3,40 @@
 //------------------------------------------------------------------------------
 #include "pre.h"
 #include "core.h"
+#include "string/stringatom_table.h"
 
 namespace oryol {
+namespace core {
+    
+using namespace string;
     
 //------------------------------------------------------------------------------
-/**
-*/
-void core::setup() {
-    // FIXME
+void setup() {
+
+    // create the main-thread string atom table
+    stringatom_table::create_singleton();
 }
 
 //------------------------------------------------------------------------------
-/**
- */
-void core::discard() {
-    // FIXME
+void discard() {
+
+    // do NOT destroy the thread-local string atom table to
+    // ensure that string atom data pointers still point to valid data!!!
 }
 
 //------------------------------------------------------------------------------
-/**
- */
-void core::init_global_once() {
-    // FIXME
+void enter_thread() {
+
+    // create thread-local string atom table
+    stringatom_table::create_singleton();
 }
 
 //------------------------------------------------------------------------------
-/**
- */
-void core::init_thread_once() {
-    // FIXME
+void leave_thread() {
+
+    // do NOT destroy the thread-local string atom table to
+    // ensure that string atom data pointers still point to valid data
 }
 
+} // namespace core
 } // namespace oryol

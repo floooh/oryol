@@ -15,34 +15,47 @@
 namespace oryol {
 namespace memory {
     
-/// malloc wrapper
+//------------------------------------------------------------------------------
 inline void* alloc(std::size_t s) {
     return std::malloc(s);
 };
 
-/// realloc wrapper
+//------------------------------------------------------------------------------
 inline void* realloc(void* ptr, std::size_t s) {
     return std::realloc(ptr, s);
 };
 
-/// free wrapper
+//------------------------------------------------------------------------------
 inline void free(void* p) {
     std::free(p);
 };
 
-/// copy memory, memory areas must not overlap (NOTE different order of src and dest compared to memcpy!)
+//------------------------------------------------------------------------------
 inline void copy(void* from, void* to, std::size_t num_bytes) {
+    // copy memory, memory areas must not overlap
+    // (NOTE different order of src and dest compared to memcpy!)
     std::memcpy(to, from, num_bytes);
 };
 
-/// move memory, memory areas may overlap (NOTE different order of src and dest compared to memmove!)
+//------------------------------------------------------------------------------
 inline void move(void* from, void* to, std::size_t num_bytes) {
+    // move memory, memory areas may overlap
+    // (NOTE different order of src and dest compared to memmove!)
     std::memmove(to, from, num_bytes);
 };
 
-/// clear memory
+//------------------------------------------------------------------------------
 inline void clear(void* ptr, std::size_t num_bytes) {
     std::memset(ptr, 0, num_bytes);
+};
+
+//------------------------------------------------------------------------------
+inline void* align(void* ptr, int32 byte_size) {
+    // align a pointer to a byte size or a platform-specific maximum byte size
+    intptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
+    intptr ptri = (intptr)ptr;
+    ptri = (ptri + (align - 1)) & ~(align - 1);
+    return (void*) ptri;
 };
     
 } // namespace memory

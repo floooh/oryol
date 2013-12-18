@@ -31,11 +31,11 @@ endif()
 # compiler flags
 set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -ggdb")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1 -ggdb")
 
 set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue  -Wno-deprecated-writable-strings")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g")        	
+set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1 -g")        	
 
 set(CMAKE_EXE_LINKER_FLAGS "-ObjC -dead_strip -lpthread")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")

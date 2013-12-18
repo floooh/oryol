@@ -19,6 +19,9 @@ typedef std::int64_t int64;
 typedef std::uint64_t uint64;
 typedef float float32;
 typedef double float64;
+typedef std::intptr_t intptr;
+typedef std::uintptr_t uintptr;
+typedef unsigned char uchar;
 
 } // namespace oryol
 

@@ -9,22 +9,16 @@ namespace oryol {
 namespace core {
 
 //------------------------------------------------------------------------------
-/**
-*/
 logger::logger() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 logger::~logger() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-/**
-*/
 void logger::vprint(log::level /*l*/, const char* /*msg*/, va_list /*args*/) {
     // we can't do an o_error() here since it would recurse
 }
