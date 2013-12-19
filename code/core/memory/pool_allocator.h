@@ -3,9 +3,10 @@
 /**
     @class oryol::memory::pool_allocator
     
-    Thread-safe pool allocator with placement-new/delete.
-    
-    FIXME: growable not yet implemented (currently always growable)
+    Thread-safe pool allocator with placement-new/delete. Uses 32-bit
+    tags with a unique-count masked-in for its forward-linked list 
+    instead of pointers because of the ABA problem (which I was actually 
+    running into with many threads and high object reuse).
 */
 #include "core/types.h"
 #include "core/memory/memory.h"
@@ -13,10 +14,10 @@
 namespace oryol {
 namespace memory {
     
-template<class TYPE, int CHUNK_SIZE> class pool_allocator {
+template<class TYPE, int POOL_SIZE> class pool_allocator {
 public:
     /// constructor
-    pool_allocator(bool growable);
+    pool_allocator();
     /// destructor
     ~pool_allocator();
     
@@ -25,6 +26,8 @@ public:
     /// delete and free an object
     void destroy(TYPE* obj);
     
+    /// get pool size
+    int32 get_pool_size() const;
     /// test if a pointer is owned by this allocator (SLOW)
     bool is_owned(TYPE* obj) const;
     
@@ -32,129 +35,156 @@ private:
     enum class node_state : uint8 {
         init, free, used,
     };
+    
+    typedef uint32 node_tag;    // [16bit counter] | [16bit elm_index])
+    static const uint32 invalid_tag = 0xFFFFFFFF;
 
     struct node {
-        node* next;                             // pointer to next node
-        node_state state;                       // current state (for debugging)
-        uint8 padding[16 - (sizeof(node*) + sizeof(node_state))];      // pad to 16 bytes
+        node_tag next;          // tag of next node
+        node_tag my_tag;        // my own tag
+        node_state state;       // current state
+        uint8 padding[16 - (2*sizeof(node_tag) + sizeof(state))];      // pad to 16 bytes
     };
 
     /// pop a new node from the free-list, return 0 if empty
     node* pop();
     /// push a node onto the free-list
     void push(node*);
-    /// allocate a new chunk and populate free-list
-    void alloc_chunk();
-
-    bool growable;
-    int32 elm_size;             // offset to next element in sizeof(node)
-    std::atomic<node*> head;    // free-list head
-    std::vector<void*> chunks;  // allocated chunks new chunk is allocated when free list is empty)
-    mutable std::mutex chunk_mutex;     // must be taken when a new chunk is allocated
+    /// allocate pool and populate free-list
+    void alloc_pool();
+    /// get node address from a tag
+    node* address_from_tag(node_tag tag) const;
+    /// get tag from a node address
+    node_tag tag_from_address(node* n) const;
+    
+    int32 elm_size;                     // offset to next element in bytes
+    std::atomic<uint32> unique_count;
+    std::atomic<node_tag> head;         // free-list head
+    uint8* pool;
 };
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-pool_allocator<TYPE,CHUNK_SIZE>::pool_allocator(bool g) :
-    growable(g)
+template<class TYPE, int POOL_SIZE>
+pool_allocator<TYPE,POOL_SIZE>::pool_allocator()
 {
     static_assert(sizeof(node) == 16, "pool_allocator::node should be 16 bytes!");
+    static_assert(POOL_SIZE <= ((1<<16) - 1), "POOL_SIZE must be < (1<<16)-1!");
 
+    pool = 0;
     elm_size = memory::roundup(sizeof(node) + sizeof(TYPE), sizeof(node));
     o_assert((elm_size & (sizeof(node) - 1)) == 0);
-    elm_size /= sizeof(node);
     #if ORYOL_ALLOCATOR_DEBUG
-    o_assert(elm_size > 0);
+    o_assert(elm_size >= 2*sizeof(node));
     #endif
-    head = 0;
-    chunks.reserve(128);
+    unique_count = 0;
+    head = invalid_tag;
+    this->alloc_pool();
+    o_assert(0 != pool);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-pool_allocator<TYPE,CHUNK_SIZE>::~pool_allocator() {
-    // free memory chunks
-    for (void* p : chunks) {
-        memory::free(p);
-    }
-    chunks.clear();
+template<class TYPE, int POOL_SIZE>
+pool_allocator<TYPE,POOL_SIZE>::~pool_allocator() {
+    memory::free(pool);
+    pool = 0;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-void pool_allocator<TYPE,CHUNK_SIZE>::alloc_chunk() {
+template<class TYPE, int POOL_SIZE>
+typename pool_allocator<TYPE,POOL_SIZE>::node* pool_allocator<TYPE,POOL_SIZE>::address_from_tag(node_tag tag) const {
+    uint32 elm_index = tag & 0xFFFF;
+    o_assert(elm_index < POOL_SIZE);
+    uint8* ptr = pool + elm_index * elm_size;
+    return (node*) ptr;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int POOL_SIZE>
+typename pool_allocator<TYPE,POOL_SIZE>::node_tag pool_allocator<TYPE,POOL_SIZE>::tag_from_address(node* n) const {
+    o_assert(nullptr != n);
+    node_tag tag = n->my_tag;
+    o_assert(n == address_from_tag(tag));
+    return tag;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int POOL_SIZE>
+void pool_allocator<TYPE,POOL_SIZE>::alloc_pool() {
     
-    // allocate new chunk
-    const size_t chunk_byte_size = CHUNK_SIZE * elm_size * sizeof(node);
-    node* new_chunk = (node*) memory::alloc(chunk_byte_size);
-    memory::clear(new_chunk, chunk_byte_size);
+    o_assert(0 == pool);
     
-    // this requires some locking
-    {
-        std::lock_guard<std::mutex> lock(chunk_mutex);
-        chunks.push_back(new_chunk);
-    }
+    // allocate new pool
+    const size_t pool_byte_size = POOL_SIZE * elm_size;
+    pool = (uint8*) memory::alloc(pool_byte_size);
+    memory::clear(pool, pool_byte_size);
     
-    // push new nodes into free list
-    for (int32 i = (CHUNK_SIZE-1) * elm_size; i >= 0; i -= elm_size) {
-        new_chunk[i].state = node_state::init;
-        push(&(new_chunk[i]));
+    // populate the free stack
+    for (int32 elm_index = (POOL_SIZE - 1); elm_index >= 0; elm_index--) {
+        uint8* ptr = pool + elm_index * elm_size;
+        node* node_ptr = (node*) ptr;
+        node_ptr->next   = invalid_tag;
+        node_ptr->my_tag = elm_index;
+        node_ptr->state  = node_state::init;
+        push(node_ptr);
     }
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-void pool_allocator<TYPE,CHUNK_SIZE>::push(node* new_node) {
+template<class TYPE, int POOL_SIZE>
+void pool_allocator<TYPE,POOL_SIZE>::push(node* new_head) {
     
     // see http://www.boost.org/doc/libs/1_53_0/boost/lockfree/stack.hpp
+    o_assert((node_state::init == new_head->state) || (node_state::used == new_head->state));
+    
+    o_assert(invalid_tag == new_head->next);
     #if ORYOL_ALLOCATOR_DEBUG
-    o_assert(nullptr == new_node->next);
-    o_assert((node_state::init == new_node->state) || (node_state::used == new_node->state));
-    memory::fill((void*) (new_node + 1), sizeof(TYPE), 0xAA);
+    memory::fill((void*) (new_head + 1), sizeof(TYPE), 0xAA);
     #endif
-    new_node->state = node_state::free;
-    new_node->next = head.load(std::memory_order_relaxed);
+    
+    new_head->state  = node_state::free;
+    new_head->my_tag = (new_head->my_tag & 0x0000FFFF) | (++unique_count & 0xFFFF) << 16;
+    node_tag old_head_tag = head.load(std::memory_order_relaxed);
     for (;;) {
-        if (head.compare_exchange_weak(new_node->next, new_node)) {
+        new_head->next = old_head_tag;
+        if (head.compare_exchange_weak(old_head_tag, new_head->my_tag)) {
             break;
         }
     }
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-typename pool_allocator<TYPE,CHUNK_SIZE>::node* pool_allocator<TYPE,CHUNK_SIZE>::pop()
+template<class TYPE, int POOL_SIZE>
+typename pool_allocator<TYPE,POOL_SIZE>::node* pool_allocator<TYPE,POOL_SIZE>::pop()
 {
     // see http://www.boost.org/doc/libs/1_53_0/boost/lockfree/stack.hpp
-    node* old_head = head.load(std::memory_order_consume);
-    if (0 == old_head) {
-        return nullptr;
-    }
     for (;;) {
-        if (head.compare_exchange_weak(old_head, old_head->next)) {
+        node_tag old_head_tag = head.load(std::memory_order_consume);
+        if (invalid_tag == old_head_tag) {
+            return nullptr;
+        }
+        node_tag new_head_tag = address_from_tag(old_head_tag)->next;
+        if (head.compare_exchange_weak(old_head_tag, new_head_tag)) {
+            o_assert(invalid_tag != old_head_tag);
+            node* node_ptr = address_from_tag(old_head_tag);
+            o_assert(node_state::free == node_ptr->state);
             #if ORYOL_ALLOCATOR_DEBUG
-            o_assert(node_state::free == old_head->state);
-            memory::fill((void*) (old_head + 1), sizeof(TYPE), 0xBB);
+            memory::fill((void*) (node_ptr+ 1), sizeof(TYPE), 0xBB);
             #endif
-            old_head->next = nullptr;
-            old_head->state = node_state::used;
-            return old_head;
+            node_ptr->next = invalid_tag;
+            node_ptr->state = node_state::used;
+            return node_ptr;
         }
     }
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
+template<class TYPE, int POOL_SIZE>
 template<typename... ARGS>
-TYPE* pool_allocator<TYPE, CHUNK_SIZE>::create(ARGS&&... args) {
+TYPE* pool_allocator<TYPE, POOL_SIZE>::create(ARGS&&... args) {
     
-    // FIXME: this should take variadic constructor args
-
     // pop a new node from the free-stack
-    node* n;
-    while (0 == (n = pop())) {
-        alloc_chunk();
-    }
+    node* n = pop();
+    o_assert(nullptr != n);
     
     // construct with placement new
     void* obj_ptr = (void*) (n + 1);
@@ -164,24 +194,17 @@ TYPE* pool_allocator<TYPE, CHUNK_SIZE>::create(ARGS&&... args) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-bool pool_allocator<TYPE, CHUNK_SIZE>::is_owned(TYPE* obj) const {
-
-    std::lock_guard<std::mutex> lock(chunk_mutex);
-    for (void* p : chunks) {
-        node* start = (node*) p;
-        node* end = start + CHUNK_SIZE * elm_size;
-        if (((node*)obj >= start) && ((node*)obj < end)) {
-            return true;
-        }
-    }
-    // fallthrough: NOT OWNED!
-    return false;
+template<class TYPE, int POOL_SIZE>
+bool pool_allocator<TYPE, POOL_SIZE>::is_owned(TYPE* obj) const {
+    const uint8* start = pool;
+    const uint8* end = pool + POOL_SIZE * elm_size;
+    const uint8* ptr = (uint8*) ptr;
+    return ((ptr >= start) && (ptr < end));
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CHUNK_SIZE>
-void pool_allocator<TYPE, CHUNK_SIZE>::destroy(TYPE* obj) {
+template<class TYPE, int POOL_SIZE>
+void pool_allocator<TYPE, POOL_SIZE>::destroy(TYPE* obj) {
     
     #if ORYOL_ALLOCATOR_DEBUG
     // make sure this object has been allocated by us
@@ -191,9 +214,15 @@ void pool_allocator<TYPE, CHUNK_SIZE>::destroy(TYPE* obj) {
     // call destructor on obj
     obj->~TYPE();
     
-    // push the chunk element back on the free-stack
+    // push the pool element back on the free-stack
     node* n = ((node*)obj) - 1;
     push(n);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int POOL_SIZE>
+int pool_allocator<TYPE, POOL_SIZE>::get_pool_size() const {
+    return POOL_SIZE;
 }
 
 } // namespace memory

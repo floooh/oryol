@@ -18,7 +18,7 @@ using namespace memory;
 TEST(pool_allocator) {
 
     // an allocator with a pool size of one
-    pool_allocator<refcounted, 1> allocator_one(false);
+    pool_allocator<refcounted, 1> allocator_one;
     
     // allocating and releasing the same object twice should return the same pointer
     refcounted* obj = allocator_one.create();
@@ -29,14 +29,5 @@ TEST(pool_allocator) {
     refcounted* obj1 = allocator_one.create();
     CHECK(0 != obj1);
     CHECK(obj == obj1);
-    allocator_one.destroy(obj1);
-    
-    // force the allocator to grow
-    obj = allocator_one.create();
-    obj1 = allocator_one.create();
-    CHECK(0 != obj);
-    CHECK(0 != obj1);
-    CHECK(obj != obj1);
-    allocator_one.destroy(obj);
     allocator_one.destroy(obj1);
 }

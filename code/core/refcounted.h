@@ -12,7 +12,7 @@ namespace oryol {
 namespace core {
     
 class refcounted {
-    oryol_class_decl(refcounted, 1024);
+    oryol_class_decl(refcounted, 4096);
 public:
     /// destructor
     virtual ~refcounted();

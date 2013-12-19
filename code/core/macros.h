@@ -39,6 +39,9 @@
 private:\
     static oryol::memory::pool_allocator<TYPE, POOL_SIZE> allocator;\
 public:\
+    static int32 get_pool_size() {\
+        return allocator.get_pool_size();\
+    }\
     template<typename... ARGS> static TYPE* create(ARGS&&... args) {\
         return allocator.create(std::forward<ARGS>(args)...);\
     };\
@@ -48,7 +51,7 @@ public:\
 private:
 
 #define oryol_class_impl(TYPE, POOL_SIZE) \
-oryol::memory::pool_allocator<TYPE, POOL_SIZE> TYPE::allocator(true);
+oryol::memory::pool_allocator<TYPE, POOL_SIZE> TYPE::allocator;
 
 // global singleton macros (visible in all threads)
 #define oryol_decl_global_singleton(TYPE) \

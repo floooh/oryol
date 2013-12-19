@@ -50,7 +50,7 @@ TEST(stringatom_singlethreaded) {
 #if ORYOL_HAS_THREADS
 // must use reference, the copy would fail since there is no thread-local
 // string-atom table yet
-void thread_func(const stringatom& a0) {
+static void thread_func(const stringatom& a0) {
     core::enter_thread();
     
     // transfer into a thread-local string atom

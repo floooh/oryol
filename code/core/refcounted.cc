@@ -7,7 +7,7 @@
 namespace oryol {
 namespace core {
 
-oryol_class_impl(refcounted, 1024);
+oryol_class_impl(refcounted, 4096);
 
 //------------------------------------------------------------------------------
 refcounted::~refcounted() {
