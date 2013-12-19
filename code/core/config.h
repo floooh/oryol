@@ -8,7 +8,7 @@
 
 // does the platform have threading support?
 #if ORYOL_EMSCRIPTEN
-#define ORYOL_HAS_THREADS (1)
+#define ORYOL_HAS_THREADS (0)
 #else
 #define ORYOL_HAS_THREADS (1)
 #endif

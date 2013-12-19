@@ -35,15 +35,20 @@
 #endif
 
 // add oryol standard methods to a class
-#define oryol_class(TYPE) \
+#define oryol_class_decl(TYPE, POOL_SIZE) \
+private:\
+    static oryol::memory::pool_allocator<TYPE, POOL_SIZE> allocator;\
 public:\
-template<typename... ARGS> static std::shared_ptr<TYPE> create_shared(ARGS&&... args) {\
-    return std::make_shared<TYPE>(std::forward<ARGS>(args)...);\
-};\
-template<typename... ARGS> static std::unique_ptr<TYPE> create_unique(ARGS&&... args) {\
-    return std::unique_ptr<TYPE>(new TYPE(std::forward<ARGS>(args)...));\
-};\
+    template<typename... ARGS> static TYPE* create(ARGS&&... args) {\
+        return allocator.create(std::forward<ARGS>(args)...);\
+    };\
+    virtual void destroy() {\
+        allocator.destroy(this);\
+    };\
 private:
+
+#define oryol_class_impl(TYPE, POOL_SIZE) \
+oryol::memory::pool_allocator<TYPE, POOL_SIZE> TYPE::allocator(true);
 
 // global singleton macros (visible in all threads)
 #define oryol_decl_global_singleton(TYPE) \

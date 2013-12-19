@@ -9,12 +9,13 @@
 #include "core/types.h"
 #include "core/macros.h"
 #include "core/log.h"
+#include "core/refcounted.h"
 
 namespace oryol {
 namespace core {
 
-class logger {
-    oryol_class(logger);
+class logger : public refcounted {
+    oryol_class_decl(logger, 1);
 public:
     /// constructor
     logger();

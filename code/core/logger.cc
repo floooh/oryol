@@ -8,6 +8,8 @@
 namespace oryol {
 namespace core {
 
+oryol_class_impl(logger, 1);
+
 //------------------------------------------------------------------------------
 logger::logger() {
     // empty

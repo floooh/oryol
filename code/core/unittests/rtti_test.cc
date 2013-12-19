@@ -6,43 +6,52 @@
 #include "UnitTest++/src/unittest++.h"
 #include "core/macros.h"
 #include "core/log.h"
+#include "core/refcounted.h"
+#include "core/ptr.h"
 
 using namespace std;
 using namespace oryol;
+using namespace core;
 
-class A {
-    oryol_class(A);
+class A : public core::refcounted {
+    oryol_class_decl(A, 10);
 public:
     /// constructor
     A() { };
     /// destructor
     virtual ~A() { };
 };
+oryol_class_impl(A, 10);
 
 class AA : public A {
-    oryol_class(AA);
+    oryol_class_decl(AA, 10);
 public:
     /// constructor
     AA() { };
     /// destructor
     virtual ~AA() { };
 };
+oryol_class_impl(AA, 10);
 
 class AB : public A {
-    oryol_class(AB);
+    oryol_class_decl(AB, 10);
 public:
     /// constructor
     AB() { };
     /// destructor
     virtual ~AB() { };
 };
+oryol_class_impl(AB, 10);
 
 //------------------------------------------------------------------------------
 TEST(rtti) {
     
-    shared_ptr<A> a = A::create_shared();
-    shared_ptr<AA> aa = AA::create_shared();
-    shared_ptr<AB> ab = AB::create_shared();
+    ptr<A> a = A::create();
+    CHECK(a->get_refcount() == 1);
+    ptr<AA> aa = AA::create();
+    CHECK(a->get_refcount() == 1);
+    ptr<AB> ab = AB::create();
+    CHECK(a->get_refcount() == 1);
     
     const type_info& classTypeA = typeid(A);
     const type_info& objTypeA = typeid(*a);
@@ -64,21 +73,23 @@ TEST(rtti) {
     CHECK(type_index(classTypeAA) == type_index(objTypeAA));
     CHECK(type_index(classTypeA) != type_index(classTypeAA));
     
-    shared_ptr<A> a1 = aa;
+    ptr<A> a1 = aa;
     CHECK(bool(a1));
+    CHECK(a1->get_refcount() == 2);
     CHECK(a1 == aa);
-    shared_ptr<A> a2 = ab;
-    CHECK(bool(a2));
-    CHECK(a2 == ab);
-    shared_ptr<A> a3 = static_pointer_cast<A>(aa);
-    CHECK(bool(a3));
-    CHECK(a3 == aa);
-    shared_ptr<A> a4 = static_pointer_cast<A>(ab);
-    CHECK(bool(a4));
-    CHECK(a4 == ab);
     
-    shared_ptr<AA> a5 = dynamic_pointer_cast<AA>(ab);
-    CHECK(!bool(a5));
-    shared_ptr<AA> a6 = dynamic_pointer_cast<AA>(ab);
-    CHECK(!bool(a6));
+    ptr<A> a2 = ab;
+    CHECK(bool(a2));
+    CHECK(a2->get_refcount() == 2);
+    CHECK(a2 == ab);
+    
+    ptr<A> a3 = aa.get();
+    CHECK(bool(a3));
+    CHECK(a3->get_refcount() == 3);
+    CHECK(a3 == aa);
+    
+    ptr<A> a4 = ab.get_unsafe();
+    CHECK(bool(a4));
+    CHECK(a3->get_refcount() == 3);
+    CHECK(a4 == ab);
 }

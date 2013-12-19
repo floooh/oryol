@@ -15,8 +15,10 @@
 #include <typeinfo>
 #include <typeindex>
 #include <string>
+#include <type_traits>
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>
+#include <mutex>
 #endif
 

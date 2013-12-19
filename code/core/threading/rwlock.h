@@ -31,8 +31,6 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/**
-*/
 inline void rwlock::lock_write() {
 #if ORYOL_HAS_THREADS
     /// acquire the write-lock
@@ -47,8 +45,6 @@ inline void rwlock::lock_write() {
 }
 
 //------------------------------------------------------------------------------
-/**
- */
 inline void rwlock::unlock_write() {
 #if ORYOL_HAS_THREADS
     std::atomic_store_explicit(&write_lock, false, std::memory_order_release);
@@ -56,8 +52,6 @@ inline void rwlock::unlock_write() {
 }
 
 //------------------------------------------------------------------------------
-/**
- */
 inline void rwlock::lock_read() {
 #if ORYOL_HAS_THREADS
     /// spin until noone's writing anymore
@@ -70,8 +64,6 @@ inline void rwlock::lock_read() {
 }
 
 //------------------------------------------------------------------------------
-/**
- */
 inline void rwlock::unlock_read() {
 #if ORYOL_HAS_THREADS
     --read_count;

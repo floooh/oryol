@@ -50,13 +50,23 @@ inline void clear(void* ptr, std::size_t num_bytes) {
 };
 
 //------------------------------------------------------------------------------
-inline void* align(void* ptr, int32 byte_size) {
+inline void fill(void* ptr, std::size_t num_bytes, uint8 value) {
+    std::memset(ptr, value, num_bytes);
+}
+
+//------------------------------------------------------------------------------
+inline void* align(void* ptr, uint32 byte_size) {
     // align a pointer to a byte size or a platform-specific maximum byte size
-    intptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
-    intptr ptri = (intptr)ptr;
+    uintptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
+    uintptr ptri = (uintptr)ptr;
     ptri = (ptri + (align - 1)) & ~(align - 1);
     return (void*) ptri;
 };
+
+//------------------------------------------------------------------------------
+inline uint32 roundup(uint32 val, uint32 byte_size) {
+    return (val + (byte_size - 1)) & ~(byte_size - 1);
+}
     
 } // namespace memory
 } // namespace oryol

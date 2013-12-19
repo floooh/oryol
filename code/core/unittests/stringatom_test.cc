@@ -7,7 +7,10 @@
 #include "core/string/stringatom.h"
 #include "core/core.h"
 
+#include <array>
+
 using namespace oryol;
+using namespace core;
 using namespace string;
 using namespace std;
 
@@ -69,5 +72,32 @@ TEST(stringatom_multithreaded) {
     std::thread t1(thread_func, std::ref(atom0));
     t1.join();
 }
-
 #endif
+
+// test string atom creation performance
+TEST(stringatom_performance) {
+
+    const int num_unique_strings = 16;  // must be 2^N
+    std::array<const char*, num_unique_strings> unique_strings = {
+        { "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT",
+          "NINE", "TEN", "ELEVEL", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN"
+        }
+    };
+    const int mask = num_unique_strings - 1;
+    
+    for (int i = 0; i < 3; i++) {
+        chrono::time_point<chrono::system_clock> start, end;
+        start = chrono::system_clock::now();
+        
+        const int num_stringatoms = 1000000;
+        std::vector<stringatom> stringatoms;
+        stringatoms.reserve(num_stringatoms);
+        for (int i = 0; i < num_stringatoms; i++) {
+            stringatoms.emplace_back(unique_strings[i & mask]);
+        }
+        
+        end = chrono::system_clock::now();
+        chrono::duration<double> dur = end - start;
+        log::info("run %d: %dx stringatoms created: %f sec\n", i, num_stringatoms, dur.count());
+    }
+}

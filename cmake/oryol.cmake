@@ -12,6 +12,7 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 option(ORYOL_UNITTESTS "Enable unit tests" OFF)
 option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after building" ON)
 option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
+option(ORYOL_ALLOCATOR_DEBUG "Enable allocator debugging code (slow)" OFF)
 
 # turn some dependent options on/off
 if (ORYOL_UNITTESTS)
@@ -76,6 +77,13 @@ macro(oryol_setup)
     # setup the target group variable, used to group targets into folders in IDEs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set(TARGET_GROUP "")
+    
+    # various global defines
+    if (ORYOL_ALLOCATOR_DEBUG)
+        add_definitions(-DORYOL_ALLOCATOR_DEBUG=1)
+    else()
+        add_definitions(-DORYOL_ALLOCATOR_DEBUG=0)
+    endif()
 
 endmacro()
 
