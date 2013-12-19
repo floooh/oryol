@@ -17,9 +17,9 @@ class A : public core::refcounted {
     oryol_class_decl(A, 10);
 public:
     /// constructor
-    A() { };
+    A() { log::info("constructor A called for '%p'\n", this); };
     /// destructor
-    virtual ~A() { };
+    virtual ~A() { log::info("destructor ~A called for '%p'\n", this); };
 };
 oryol_class_impl(A, 10);
 
@@ -27,9 +27,9 @@ class AA : public A {
     oryol_class_decl(AA, 10);
 public:
     /// constructor
-    AA() { };
+    AA() { log::info("constructor AA called for '%p'\n", this); };
     /// destructor
-    virtual ~AA() { };
+    virtual ~AA() { log::info("destructor ~AA called for '%p'\n", this); };
 };
 oryol_class_impl(AA, 10);
 
@@ -37,9 +37,9 @@ class AB : public A {
     oryol_class_decl(AB, 10);
 public:
     /// constructor
-    AB() { };
+    AB() { log::info("constructor AB called for '%p'\n", this); };
     /// destructor
-    virtual ~AB() { };
+    virtual ~AB() { log::info("destructor ~AB called for '%p'\n", this); };
 };
 oryol_class_impl(AB, 10);
 
@@ -92,4 +92,14 @@ TEST(rtti) {
     CHECK(bool(a4));
     CHECK(a3->get_refcount() == 3);
     CHECK(a4 == ab);
+    
+    a.invalidate();
+    aa.invalidate();
+    ab.invalidate();
+    
+    a1.invalidate();
+    a2.invalidate();
+    a3.invalidate();
+    a4.invalidate();
+    
 }
