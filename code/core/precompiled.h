@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class core/precompiled.h
+    @class Core/precompiled.h
     
     Standard system includes for various platforms.
 */
-#include "core/config.h"
+#include "Core/Config.h"
 #if ORYOL_POSIX
-#include "core/posix/precompiled.h"
+#include "Core/posix/precompiled.h"
 #else
 #error "Invalid platform!"
 #endif

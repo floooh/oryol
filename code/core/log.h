@@ -1,60 +1,62 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file core/log.h
+    @class Oryol::Core::Log
 
     Basic logging functions.
 */
-#include "core/types.h"
-#include "core/threading/rwlock.h"
+#include "Core/Types.h"
+#include "Core/Threading/RWLock.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
-class logger;
+class Logger;
+template<class TYPE> class Ptr;
 
-class log {
+class Log {
 public:
-    enum struct level {
-        none,
-        error,
-        warn,
-        info,
-        dbg,
+    /// log levels
+    enum class Level {
+        None,
+        Error,
+        Warn,
+        Info,
+        Dbg,
 
-        num_levels,
-        invalid_level
+        NumLevels,
+        InvalidLevel
     };
 
     /// add a logger object
-    static void add_logger(const std::shared_ptr<logger>& p);
+    static void AddLogger(const Ptr<Logger>& p);
     /// get number of loggers
-    static int32 get_numloggers();
+    static int32 GetNumLoggers();
     /// get logger at index
-    static std::shared_ptr<logger> get_logger(int32 index);
+    static Ptr<Logger> GetLogger(int32 index);
     
     /// set current log level
-    static void set_loglevel(level l);
+    static void SetLogLevel(Level l);
     /// get current log level
-    static level get_loglevel();
+    static Level GetLogLevel();
     /// print a debug message
-    static void dbg(const char* msg, ...);
+    static void Dbg(const char* msg, ...);
     /// print an info message
-    static void info(const char* msg, ...);
+    static void Info(const char* msg, ...);
     /// print a warning
-    static void warn(const char* msg, ...);
+    static void Warn(const char* msg, ...);
     /// print an error (use o_error() macro to also abort the program)
-    static void error(const char* msg, ...);
+    static void Error(const char* msg, ...);
     /// print an assert message
-    static void assert_msg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
+    static void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
 
 private:
     /// generic vprint-style method
-    static void vprint(level l, const char* msg, va_list args);
+    static void vprint(Level l, const char* msg, va_list args);
 
-    static threading::rwlock lock;
-    static level cur_loglevel;
-    static std::vector<std::shared_ptr<logger>> loggers;
+    static Threading::RWLock lock;
+    static Level curLogLevel;
+    static std::vector<Ptr<Logger>> loggers;
 };
-} // namespace core
-} // namespace oryol
+} // namespace Core
+} // namespace Oryol

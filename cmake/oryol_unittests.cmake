@@ -10,7 +10,7 @@
 #
 macro(oryol_begin_unittest name)
     oryol_reset(${name})
-    set(CurAppName ${name}_test)
+    set(CurAppName ${name}Test)
     set(CurAppType "cmdline")
     message("Oryol Unit Test: name=" ${CurAppName})
 endmacro()
@@ -28,13 +28,13 @@ macro(oryol_end_unittest)
     set(main_path ${CMAKE_CURRENT_BINARY_DIR}/${CurAppName}_main.cc)
     file(WRITE ${main_path}
         "// machine generated, do not edit\n"
-        "#include \"pre.h\"\n"
-        "#include \"core/core.h\"\n"
+        "#include \"Pre.h\"\n"
+        "#include \"Core/Core.h\"\n"
         "#include \"UnitTest++/src/unittest++.h\"\n"
         "int main(void) {\n"
-        "    oryol::core::setup();\n"
+        "    Oryol::Core::Setup();\n"
         "    int res = UnitTest::RunAllTests();\n"
-        "    oryol::core::discard();\n"
+        "    Oryol::Core::Discard();\n"
         "    return res;\n"
         "}\n"
     )
@@ -42,7 +42,7 @@ macro(oryol_end_unittest)
     # generate a command line app
     list(APPEND CurSources ${main_path})
     oryol_end_app()
-    set_target_properties(${CurAppName} PROPERTIES FOLDER "unittests")
+    set_target_properties(${CurAppName} PROPERTIES FOLDER "UnitTests")
 
     # add as cmake unit test
     add_test(NAME ${CurAppName} COMMAND ${CurAppName})

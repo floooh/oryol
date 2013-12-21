@@ -1,27 +1,27 @@
 //------------------------------------------------------------------------------
-//  memory.cc
+//  MemoryTest.cc
 //  Test low-level memory functions.
 //------------------------------------------------------------------------------
-#include "pre.h"
+#include "Pre.h"
 #include "UnitTest++/src/unittest++.h"
-#include "core/memory/memory.h"
+#include "Core/Memory/Memory.h"
 
 using namespace std;
-using namespace oryol;
+using namespace Oryol;
 
 //------------------------------------------------------------------------------
-TEST(memory) {
+TEST(Memory) {
 
     // allocate memory
-    int32 byte_size = 64;
-    uint8* p0 = (uint8*) memory::alloc(byte_size);
+    int32 byteSize = 64;
+    uint8* p0 = (uint8*) Memory::Alloc(byteSize);
     CHECK(nullptr != p0);
     
     // clear memory
     int32 i;
-    memory::clear(p0, byte_size);
+    Memory::Clear(p0, byteSize);
     bool check = true;
-    for (i = 0; i < byte_size; i++) {
+    for (i = 0; i < byteSize; i++) {
         if (0 != p0[i]) {
             check = false;
         }
@@ -29,20 +29,20 @@ TEST(memory) {
     CHECK(check);
     
     // realloc to bigger size
-    byte_size = 128;
-    p0 = (uint8*) memory::realloc(p0, byte_size);
+    byteSize = 128;
+    p0 = (uint8*) Memory::ReAlloc(p0, byteSize);
     
     // fill with data
-    for (i = 0; i < byte_size; i++) {
+    for (i = 0; i < byteSize; i++) {
         p0[i] = i;
     }
     
     // test memory copy
-    uint8* p1 = (uint8*) memory::alloc(byte_size);
+    uint8* p1 = (uint8*) Memory::Alloc(byteSize);
     CHECK(nullptr != p1);
-    memory::copy(p0, p1, byte_size);
+    Memory::Copy(p0, p1, byteSize);
     check = true;
-    for (i = 0; i < byte_size; i++) {
+    for (i = 0; i < byteSize; i++) {
         if (p1[i] != i) {
             check = false;
         }
@@ -50,28 +50,28 @@ TEST(memory) {
     CHECK(check);
     
     // test memory move (with overlap)
-    memory::move(p1 + 1, p1, byte_size - 1);
+    Memory::Move(p1 + 1, p1, byteSize - 1);
     check = true;
-    for (i = 0; i < byte_size - 1; i++) {
+    for (i = 0; i < byteSize - 1; i++) {
         if (p1[i] != (i + 1)) {
             check = false;
         }
     }
     CHECK(check);
-    CHECK(p1[byte_size - 1] == byte_size - 1);
+    CHECK(p1[byteSize - 1] == byteSize - 1);
     
     // free memory
-    memory::free(p0);
-    memory::free(p1);
+    Memory::Free(p0);
+    Memory::Free(p1);
     
     // test pointer alignment
     void* ptr = (void*)0x1234567;
-    ptr = memory::align(ptr, 4);
+    ptr = Memory::Align(ptr, 4);
     CHECK((intptr(ptr) & 3) == 0);
     CHECK((intptr(ptr) == 0x1234568));
     
     ptr = (void*) 0x1234567;
-    ptr = memory::align(ptr, ORYOL_MAX_PLATFORM_ALIGN);
+    ptr = Memory::Align(ptr, ORYOL_MAX_PLATFORM_ALIGN);
     CHECK((intptr(ptr) & (ORYOL_MAX_PLATFORM_ALIGN - 1)) == 0);
 }
 

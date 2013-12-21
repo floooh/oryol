@@ -1,35 +1,35 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class string::stringatom
+    @class String::StringAtom
     
     A unique string, relatively slow on creation, but fast for comparison.
-    Stringatoms are stored in thread-local stringatomtables and comparison
+    Stringatoms are stored in thread-local stringAtomTables and comparison
     is fastest in the creator thread.
 */
-#include "core/types.h"
-#include "core/string/stringatom_table.h"
+#include "Core/Types.h"
+#include "Core/String/stringAtomTable.h"
 
-namespace oryol {
-namespace string {
+namespace Oryol {
+namespace String {
 
-class stringatom {
+class StringAtom {
 public:
     /// default constructor
-    stringatom();
+    StringAtom();
     /// construct from std::string (slow)
-    explicit stringatom(const std::string& str);
+    explicit StringAtom(const std::string& str);
     /// construct from raw string (slow)
-    explicit stringatom(const char* str);
+    explicit StringAtom(const char* str);
     /// construct from raw string (slow)
-    explicit stringatom(const uchar* str);
+    explicit StringAtom(const uchar* str);
     /// copy constructor (fast if rhs was created in same thread)
-    explicit stringatom(const stringatom& rhs);
+    explicit StringAtom(const StringAtom& rhs);
     /// destructor
-    ~stringatom();
+    ~StringAtom();
     
     /// assignment
-    void operator=(const stringatom& rhs);
+    void operator=(const StringAtom& rhs);
     /// assign raw string (slow)
     void operator=(const char* rhs);
     /// assign raw string (slow)
@@ -38,9 +38,9 @@ public:
     void operator=(const std::string& rhs);
     
     /// equality operator (FAST)
-    bool operator==(const stringatom& rhs) const;
+    bool operator==(const StringAtom& rhs) const;
     /// inequality operator (FAST)
-    bool operator!=(const stringatom& rhs) const;
+    bool operator!=(const StringAtom& rhs) const;
     /// equality operator with raw string (SLOW!)
     bool operator==(const char* rhs) const;
     /// inequality operator with raw string (SLOW!)
@@ -55,149 +55,163 @@ public:
     bool operator!=(const std::string& rhs) const;
     
     /// clear content (becomes invalid)
-    void clear();
+    void Clear();
     /// return true if valid (contains a non-empty string)
-    bool isvalid() const;
+    bool IsValid() const;
     /// get contained c-string
-    const char* as_cstr() const;
+    const char* AsCStr() const;
     /// get std::string (slow because string object must be constructed)
-    std::string as_string() const;
+    std::string AsString() const;
 
 private:
     /// copy content
-    void copy(const stringatom& rhs);
+    void copy(const StringAtom& rhs);
     /// setup from C string
-    void setup_from_c_string(const char* str);
+    void setupFromCString(const char* str);
     
-    const stringatom_buffer::header* data;
-    static const char* empty_string;
+    const stringAtomBuffer::Header* data;
+    static const char* emptyString;
 };
 
 //------------------------------------------------------------------------------
-inline void stringatom::clear() {
-    data = 0;
+inline void
+StringAtom::Clear() {
+    this->data = 0;
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::copy(const stringatom& rhs) {
+inline void
+StringAtom::copy(const StringAtom& rhs) {
     // check if rhs is from our thread, if yes the copy is quick,
     // if no we need to transfer it into this thread's string atom table
     if (rhs.data) {
-        if (rhs.data->table == stringatom_table::instance()) {
-            data = rhs.data;
+        if (rhs.data->table == stringAtomTable::Instance()) {
+            this->data = rhs.data;
         }
         else {
             // rhs is from another thread, need to transfer to this thread
-            setup_from_c_string(rhs.data->str);
+            this->setupFromCString(rhs.data->str);
         }
     }
     else {
         // fallthrough: rhs is invalid
-        data = 0;
+        this->data = 0;
     }
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::setup_from_c_string(const char* str) {
+inline void
+StringAtom::setupFromCString(const char* str) {
 
     if ((0 != str) && (str[0] != 0)) {
         // get my thread-local string atom table
-        stringatom_table* table = stringatom_table::instance();
+        stringAtomTable* table = stringAtomTable::Instance();
         
         // get hash of string
-        std::size_t hash = stringatom_table::hash_for_string(str);
+        std::size_t hash = stringAtomTable::HashForString(str);
         
         // check if string already exists in table
-        data = table->find(hash, str);
-        if (0 == data) {
+        this->data = table->Find(hash, str);
+        if (0 == this->data) {
             // string doesn't exist yet in table, add it
-            data = table->add(hash, str);
+            this->data = table->Add(hash, str);
         }
     }
     else {
         // source was a null-ptr or empty string
-        data = 0;
+        this->data = 0;
     }
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::stringatom()
+inline
+StringAtom::StringAtom()
     : data(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::stringatom(const char* rhs) {
-    setup_from_c_string(rhs);
+inline
+StringAtom::StringAtom(const char* rhs) {
+    this->setupFromCString(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::stringatom(const uchar* rhs) {
-    setup_from_c_string((const char*) rhs);
+inline
+StringAtom::StringAtom(const uchar* rhs) {
+    this->setupFromCString((const char*) rhs);
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::stringatom(const std::string& rhs) {
-    setup_from_c_string(rhs.c_str());
+inline
+StringAtom::StringAtom(const std::string& rhs) {
+    this->setupFromCString(rhs.c_str());
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::stringatom(const stringatom& rhs) {
-    copy(rhs);
+inline
+StringAtom::StringAtom(const StringAtom& rhs) {
+    this->copy(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline stringatom::~stringatom() {
-    clear();
+inline
+StringAtom::~StringAtom() {
+    this->Clear();
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::operator=(const stringatom& rhs) {
-    clear();
-    copy(rhs);
+inline void
+StringAtom::operator=(const StringAtom& rhs) {
+    this->Clear();
+    this->copy(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::operator=(const char* rhs) {
-    clear();
-    setup_from_c_string(rhs);
+inline void
+StringAtom::operator=(const char* rhs) {
+    this->Clear();
+    this->setupFromCString(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::operator=(const uchar* rhs) {
-    clear();
-    setup_from_c_string((const char*)rhs);
+inline void
+StringAtom::operator=(const uchar* rhs) {
+    this->Clear();
+    this->setupFromCString((const char*)rhs);
 }
 
 //------------------------------------------------------------------------------
-inline void stringatom::operator=(const std::string& rhs) {
-    clear();
-    setup_from_c_string((const char*) rhs.c_str());
+inline void
+StringAtom::operator=(const std::string& rhs) {
+    this->Clear();
+    this->setupFromCString((const char*) rhs.c_str());
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::operator==(const stringatom& rhs) const {
+inline bool
+StringAtom::operator==(const StringAtom& rhs) const {
 
     if (rhs.data == this->data) {
         // definitely identical
         return true;
     }
-    else if (rhs.data && data) {
+    else if (rhs.data && this->data) {
         // both string atoms have data, if they are not from the same thread
         // we need to do a string compare
-        if (rhs.data->table == data->table) {
+        if (rhs.data->table == this->data->table) {
             // from same thread, but data is not identical
             return false;
         }
         else {
             // different threads, quickly check hash
-            if (rhs.data->hash != data->hash) {
+            if (rhs.data->hash != this->data->hash) {
                 // different hashes, strings are different
                 return false;
             }
             else {
                 // same hash, need to do a string compare
-                return 0 == std::strcmp(rhs.data->str, data->str);
+                return 0 == std::strcmp(rhs.data->str, this->data->str);
             }
         }
     }
@@ -208,16 +222,18 @@ inline bool stringatom::operator==(const stringatom& rhs) const {
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::operator!=(const stringatom& rhs) const {
+inline bool
+StringAtom::operator!=(const StringAtom& rhs) const {
     return !operator==(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::operator==(const char* rhs) const {
-    if ((0 != data) && (0 != rhs)) {
-        return (0 == std::strcmp(data->str, rhs));
+inline bool
+StringAtom::operator==(const char* rhs) const {
+    if ((0 != this->data) && (0 != rhs)) {
+        return (0 == std::strcmp(this->data->str, rhs));
     }
-    else if ((0 == data) && (0 == rhs)) {
+    else if ((0 == this->data) && (0 == rhs)) {
         return true;
     }
     else {
@@ -226,39 +242,44 @@ inline bool stringatom::operator==(const char* rhs) const {
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::operator!=(const char* rhs) const {
+inline bool
+StringAtom::operator!=(const char* rhs) const {
     return !operator==(rhs);
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::operator==(const uchar* rhs) const {
+inline bool
+StringAtom::operator==(const uchar* rhs) const {
     return operator==((const char*) rhs);
 }
 
 //------------------------------------------------------------------------------
-inline bool stringatom::isvalid() const {
-    return (0 != data);
+inline bool
+StringAtom::IsValid() const {
+    return (0 != this->data);
 }
 
 //------------------------------------------------------------------------------
-inline const char* stringatom::as_cstr() const {
-    if (0 != data) {
-        return data->str;
+inline const char*
+StringAtom::AsCStr() const {
+    if (0 != this->data) {
+        return this->data->str;
     }
     else {
-        return empty_string;
+        return emptyString;
     }
 }
 
 //------------------------------------------------------------------------------
-inline std::string stringatom::as_string() const {
-    if (0 != data) {
-        return std::string(data->str);
+inline std::string
+StringAtom::AsString() const {
+    if (0 != this->data) {
+        return std::string(this->data->str);
     }
     else {
         return std::string();
     }
 }
     
-} // namespace string
-} // namespace oryol
+} // namespace String
+} // namespace Oryol

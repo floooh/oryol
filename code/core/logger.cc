@@ -1,36 +1,38 @@
 //------------------------------------------------------------------------------
-//  logger.cc
+//  Logger.cc
 //------------------------------------------------------------------------------
-#include "pre.h"
-#include "core/logger.h"
-#include "core/log.h"
+#include "Pre.h"
+#include "Core/Logger.h"
+#include "Core/Log.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
-oryol_class_impl(logger, 1);
+OryolClassImpl(Logger, 1);
 
 //------------------------------------------------------------------------------
-logger::logger() {
+Logger::Logger() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-logger::~logger() {
+Logger::~Logger() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-void logger::vprint(log::level /*l*/, const char* /*msg*/, va_list /*args*/) {
+void
+Logger::VPrint(Log::Level /*l*/, const char* /*msg*/, va_list /*args*/) {
     // we can't do an o_error() here since it would recurse
 }
 
 //------------------------------------------------------------------------------
 /**
  */
-void logger::assert_msg(const char* /*cond*/, const char* /*msg*/, const char* /*file*/, int32 /*line*/, const char* /*func*/) {
+void
+Logger::AssertMsg(const char* /*cond*/, const char* /*msg*/, const char* /*file*/, int32 /*line*/, const char* /*func*/) {
     // we can't do an o_error() here since it would recurse
 }
 
-} // namespace core
-} // namespace oryol
+} // namespace Core
+} // namespace Oryol

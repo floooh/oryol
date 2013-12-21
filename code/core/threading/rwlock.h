@@ -1,74 +1,79 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class oryol::threading::rwlock
+    @class Oryol::Threading::RWLock
     
     A single-writer / multiple-reader lock. C++11 doesn't provide this
     yet, so we roll our own.
 */
-#include "core/types.h"
-#include "core/macros.h"
+#include "Core/Types.h"
+#include "Core/Macros.h"
 
-namespace oryol {
-namespace threading {
+namespace Oryol {
+namespace Threading {
 
-class rwlock {
+class RWLock {
 public:
     /// lock for writing
-    void lock_write();
+    void LockWrite();
     /// unlock from writing
-    void unlock_write();
+    void UnlockWrite();
     /// lock for reading
-    void lock_read();
+    void LockRead();
     /// unlock from reading
-    void unlock_read();
+    void UnlockRead();
     
 private:
 #if ORYOL_HAS_THREADS
-    std::atomic<bool> write_lock{false};
-    std::atomic<int32> read_count{0};
+    std::atomic<bool> writeLock{false};
+    std::atomic<int32> readCount{0};
 #endif
 };
 
 //------------------------------------------------------------------------------
-inline void rwlock::lock_write() {
+inline void
+RWLock::LockWrite() {
 #if ORYOL_HAS_THREADS
     /// acquire the write-lock
-    while (std::atomic_exchange_explicit(&write_lock, true, std::memory_order_acquire)) {
+    while (std::atomic_exchange_explicit(&this->writeLock, true, std::memory_order_acquire)) {
         // spinning...
     }
     /// spin until no-one's reading anymore
-    while (read_count > 0) {
+    while (this->readCount > 0) {
         // spinning...
     }
 #endif
 }
 
 //------------------------------------------------------------------------------
-inline void rwlock::unlock_write() {
+inline void
+RWLock::UnlockWrite() {
 #if ORYOL_HAS_THREADS
-    std::atomic_store_explicit(&write_lock, false, std::memory_order_release);
+    std::atomic_store_explicit(&this->writeLock, false, std::memory_order_release);
 #endif
 }
 
 //------------------------------------------------------------------------------
-inline void rwlock::lock_read() {
+inline void
+RWLock::LockRead() {
 #if ORYOL_HAS_THREADS
     /// spin until noone's writing anymore
-    while (write_lock) {
+    while (this->writeLock) {
         // spinning...
     }
     /// increment the read-count
-    ++read_count;
+    ++this->readCount;
 #endif
 }
 
 //------------------------------------------------------------------------------
-inline void rwlock::unlock_read() {
+inline void
+RWLock::UnlockRead() {
 #if ORYOL_HAS_THREADS
-    --read_count;
+    --this->readCount;
 #endif
 }
 
-} // namespace threading
-} // namespace oryol
+} // namespace Threading
+} // namespace Oryol
+

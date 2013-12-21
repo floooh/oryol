@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
-//	hello.cc
+//	Hello.cc
 //------------------------------------------------------------------------------
-#include "pre.h"
-#include "core/log.h"
+#include "Pre.h"
+#include "Core/Log.h"
 
 int main(void) {
-    oryol::core::log::info("Hello World!\n");
+    Oryol::Core::Log::Info("Hello World!\n");
     return 0;
 }

@@ -1,11 +1,11 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file core/types.h
+    @file Core/Types.h
 
     Basic datatypes for Oryol.
 */
-namespace oryol
+namespace Oryol
 {
 
 // basic typedefs
@@ -23,5 +23,5 @@ typedef std::intptr_t intptr;
 typedef std::uintptr_t uintptr;
 typedef unsigned char uchar;
 
-} // namespace oryol
+} // namespace Oryol
 

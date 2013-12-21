@@ -1,18 +1,18 @@
 //------------------------------------------------------------------------------
-//  refcounted.cc
+//  RefCounted.cc
 //------------------------------------------------------------------------------
-#include "pre.h"
-#include "refcounted.h"
+#include "Pre.h"
+#include "RefCounted.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
-oryol_class_impl(refcounted, 4096);
+OryolClassImpl(RefCounted, 4096);
 
 //------------------------------------------------------------------------------
-refcounted::~refcounted() {
+RefCounted::~RefCounted() {
     // empty
 }
 
-} // namespace oryol
-} // namespace core
+} // namespace Oryol
+} // namespace Core

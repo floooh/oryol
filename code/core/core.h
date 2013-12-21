@@ -1,24 +1,23 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file core/core.h
+    @file Core/Core.h
 
     Define core functions for Oryol.
 */
-#include "core/types.h"
+#include "Core/Types.h"
 
-namespace oryol
-{
-namespace core {
+namespace Oryol {
+namespace Core {
 
 /// setup the core system
-void setup();
+void Setup();
 /// discard the core system
-void discard();
+void Discard();
 /// must be called at start of a thread
-void enter_thread();
+void EnterThread();
 /// must be called right before a thread is left
-void leave_thread();
+void LeaveThread();
 
-} // namespace core
-} // namespace oryol
+} // namespace Core
+} // namespace Oryol

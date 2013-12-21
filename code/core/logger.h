@@ -1,31 +1,31 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class oryol::core::logger
+    @class Oryol::Core::Logger
     
     Base class for loggers. Create logger objects and add them to
-    oryol::core::log.
+    Oryol::Core::Log.
 */
-#include "core/types.h"
-#include "core/macros.h"
-#include "core/log.h"
-#include "core/refcounted.h"
+#include "Core/Types.h"
+#include "Core/Macros.h"
+#include "Core/Log.h"
+#include "Core/RefCounted.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
-class logger : public refcounted {
-    oryol_class_decl(logger, 1);
+class Logger : public RefCounted {
+    OryolClassDecl(Logger, 1);
 public:
     /// constructor
-    logger();
+    Logger();
     /// destructor
-    virtual ~logger();
+    virtual ~Logger();
     /// generic vprint-style method
-    virtual void vprint(log::level l, const char* msg, va_list args);
+    virtual void VPrint(Log::Level l, const char* msg, va_list args);
     /// print an assert message
-    virtual void assert_msg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
+    virtual void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
 };
     
-} // namespace core
-} // namespace oryol
+} // namespace Core
+} // namespace Oryol

@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #   oryol core module
 #-------------------------------------------------------------------------------
-oryol_begin_module(core)
-oryol_sources(. threading string memory)
+oryol_begin_module(Core)
+oryol_sources(. Threading String Memory)
 oryol_sources_posix(posix)
 oryol_end_module()
 
-oryol_begin_unittest(core)
-oryol_sources(unittests)
-oryol_deps(core)
+oryol_begin_unittest(Core)
+oryol_sources(UnitTests)
+oryol_deps(Core)
 oryol_end_unittest()

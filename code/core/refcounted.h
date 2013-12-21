@@ -1,65 +1,71 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class core::refcounted
+    @class Core::RefCounted
     
+    Reference-counted base class for use together with the Ptr<> smart-
+    pointer class.
 */
-#include "core/types.h"
-#include "core/ptr.h"
-#include "core/memory/pool_allocator.h"
+#include "Core/Types.h"
+#include "Core/Ptr.h"
+#include "Core/Memory/poolAllocator.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
     
-class refcounted {
-    oryol_class_decl(refcounted, 4096);
+class RefCounted {
+    OryolClassDecl(RefCounted, 4096);
 public:
     /// destructor
-    virtual ~refcounted();
+    virtual ~RefCounted();
     
+    /// get reference count
+    int32 GetRefCount() const;
+
     /// add reference
-    void add_ref();
+    void addRef();
     /// release reference (calls destructor when ref_count reaches zero)
     void release();
-    /// get reference count
-    int32 get_refcount() const;
 
 private:
     #if ORYOL_HAS_THREADS
-    std::atomic<int32> ref_count{0};
+    std::atomic<int32> refCount{0};
     #else
-    int32 ref_count{0};
+    int32 refCount{0};
     #endif
 };
 
 //------------------------------------------------------------------------------
-inline void refcounted::add_ref() {
+inline void
+RefCounted::addRef() {
     #if ORYOL_HAS_THREADS
-    ref_count.fetch_add(1, std::memory_order_relaxed);
+    this->refCount.fetch_add(1, std::memory_order_relaxed);
     #else
-    ref_count++;
+    this->refCount++;
     #endif
 }
 
 //------------------------------------------------------------------------------
-inline void refcounted::release() {
+inline void
+RefCounted::release() {
     #if ORYOL_HAS_THREADS
-    if (1 == ref_count.fetch_sub(1, std::memory_order_relaxed)) {
+    if (1 == this->refCount.fetch_sub(1, std::memory_order_relaxed)) {
         // destroy() is virtual and provided by the oryol_class_decl macro
         this->destroy();
     }
     #else
-    if (1 == ref_count--) {
+    if (1 == this->refCount--) {
         delete(this);
     }
     #endif
 }
 
 //------------------------------------------------------------------------------
-inline int32 refcounted::get_refcount() const
+inline int32
+RefCounted::GetRefCount() const
 {
-    return ref_count;
+    return this->refCount;
 }
 
-} // namespace core
-} // namespace refcounted
+} // namespace Core
+} // namespace Oryol

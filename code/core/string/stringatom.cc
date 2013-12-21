@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------
-//  stringatom.cc
+//  StringAtom.cc
 //------------------------------------------------------------------------------
-#include "pre.h"
-#include "stringatom.h"
+#include "Pre.h"
+#include "StringAtom.h"
 
-namespace oryol {
-namespace string {
-const char* stringatom::empty_string = "";
+namespace Oryol {
+namespace String {
+const char* StringAtom::emptyString = "";
 }
 }

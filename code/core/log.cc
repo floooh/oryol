@@ -1,106 +1,117 @@
 //------------------------------------------------------------------------------
-//  log.cc
+//  Log.cc
 //------------------------------------------------------------------------------
-#include "pre.h"
-#include "core/log.h"
-#include "core/macros.h"
-#include "core/logger.h"
+#include "Pre.h"
+#include "Core/Log.h"
+#include "Core/Macros.h"
+#include "Core/Logger.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
 using namespace std;
 
-log::level log::cur_loglevel = log::level::dbg;
-threading::rwlock log::lock;
-std::vector<std::shared_ptr<logger>> log::loggers;
+Log::Level Log::curLogLevel = Log::Level::Dbg;
+Threading::RWLock Log::lock;
+std::vector<Ptr<Logger>> Log::loggers;
 
 //------------------------------------------------------------------------------
-void log::add_logger(const shared_ptr<logger>& l) {
+void
+Log::AddLogger(const Ptr<Logger>& l) {
     if (l) {
-        lock.lock_write();
+        lock.LockWrite();
         loggers.push_back(l);
-        lock.unlock_write();
+        lock.UnlockWrite();
     }
 }
 
 //------------------------------------------------------------------------------
-int32 log::get_numloggers() {
+int32
+Log::GetNumLoggers() {
     return loggers.size();
 }
 
 //------------------------------------------------------------------------------
-std::shared_ptr<logger> log::get_logger(int32 index) {
+Ptr<Logger>
+Log::GetLogger(int32 index) {
     return loggers[index];
 }
 
 //------------------------------------------------------------------------------
-void log::set_loglevel(level l) {
-    cur_loglevel = l;
+void
+Log::SetLogLevel(Level l) {
+    curLogLevel = l;
 }
 
 //------------------------------------------------------------------------------
-log::level log::get_loglevel() {
-    return cur_loglevel;
+Log::Level
+Log::GetLogLevel() {
+    return curLogLevel;
 }
 
 //------------------------------------------------------------------------------
-void log::dbg(const char* msg, ...) {
-    if (cur_loglevel >= level::dbg) {
+void
+Log::Dbg(const char* msg, ...) {
+    if (curLogLevel >= Level::Dbg) {
         va_list args;
         va_start(args, msg);
-        log::vprint(level::dbg, msg, args);
+        Log::vprint(Level::Dbg, msg, args);
         va_end(args);
     }
 }
 
 //------------------------------------------------------------------------------
-void log::info(const char* msg, ...) {
-    if (cur_loglevel >= level::info) {
+void
+Log::Info(const char* msg, ...) {
+    if (curLogLevel >= Level::Info) {
         va_list args;
         va_start(args, msg);
-        log::vprint(level::info, msg, args);
+        Log::vprint(Level::Info, msg, args);
         va_end(args);
     }
 }
 
 //------------------------------------------------------------------------------
-void log::warn(const char* msg, ...) {
-    if (cur_loglevel >= level::warn) {
+void
+Log::Warn(const char* msg, ...) {
+    if (curLogLevel >= Level::Warn) {
         va_list args;
         va_start(args, msg);
-        log::vprint(level::warn, msg, args);
+        Log::vprint(Level::Warn, msg, args);
         va_end(args);
     }
 }
 
 //------------------------------------------------------------------------------
-void log::error(const char* msg, ...) {
-    if (cur_loglevel >= level::error) {
+void
+Log::Error(const char* msg, ...) {
+    if (curLogLevel >= Level::Error) {
         va_list args;
         va_start(args, msg);
-        log::vprint(level::error, msg, args);
+        Log::vprint(Level::Error, msg, args);
         va_end(args);
     }
 }
 
 //------------------------------------------------------------------------------
-void log::vprint(level lvl, const char* msg, va_list args) {
-    lock.lock_read();
+void
+Log::vprint(Level lvl, const char* msg, va_list args) {
+    lock.LockRead();
     if (loggers.empty()) {
-        vprintf(msg, args);
+        ::vprintf(msg, args);
     }
     else {
         for (auto l : loggers) {
-            l->vprint(lvl, msg, args);
+            l->VPrint(lvl, msg, args);
         }
     }
-    lock.unlock_read();
+    lock.UnlockRead();
 }
 
 //------------------------------------------------------------------------------
-void log::assert_msg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
-    lock.lock_read();
+void
+Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
+    lock.LockRead();
     if (loggers.empty()) {
         ::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
                  cond, msg ? msg : "none", file, line, func);
@@ -108,11 +119,11 @@ void log::assert_msg(const char* cond, const char* msg, const char* file, int32 
     else
     {
         for (const auto& l : loggers) {
-            l->assert_msg(cond, msg, file, line, func);
+            l->AssertMsg(cond, msg, file, line, func);
         }
     }
-    lock.unlock_read();
+    lock.UnlockRead();
 } 
 
-} // namespace core
-} // namespace oryol
+} // namespace Core
+} // namespace Oryol

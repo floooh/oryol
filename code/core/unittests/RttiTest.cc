@@ -1,57 +1,57 @@
 //------------------------------------------------------------------------------
-//  rtti.cc
+//  RttiTest.cc
 //  Test standard C++ rtti stuff with oryol classes.
 //------------------------------------------------------------------------------
-#include "pre.h"
+#include "Pre.h"
 #include "UnitTest++/src/unittest++.h"
-#include "core/macros.h"
-#include "core/log.h"
-#include "core/refcounted.h"
-#include "core/ptr.h"
+#include "Core/Macros.h"
+#include "Core/Log.h"
+#include "Core/RefCounted.h"
+#include "Core/Ptr.h"
 
 using namespace std;
-using namespace oryol;
-using namespace core;
+using namespace Oryol;
+using namespace Core;
 
-class A : public core::refcounted {
-    oryol_class_decl(A, 10);
+class A : public Core::RefCounted {
+    OryolClassDecl(A, 10);
 public:
     /// constructor
-    A() { log::info("constructor A called for '%p'\n", this); };
+    A() { Log::Info("constructor A called for '%p'\n", this); };
     /// destructor
-    virtual ~A() { log::info("destructor ~A called for '%p'\n", this); };
+    virtual ~A() { Log::Info("destructor ~A called for '%p'\n", this); };
 };
-oryol_class_impl(A, 10);
+OryolClassImpl(A, 10);
 
 class AA : public A {
-    oryol_class_decl(AA, 10);
+    OryolClassDecl(AA, 10);
 public:
     /// constructor
-    AA() { log::info("constructor AA called for '%p'\n", this); };
+    AA() { Log::Info("constructor AA called for '%p'\n", this); };
     /// destructor
-    virtual ~AA() { log::info("destructor ~AA called for '%p'\n", this); };
+    virtual ~AA() { Log::Info("destructor ~AA called for '%p'\n", this); };
 };
-oryol_class_impl(AA, 10);
+OryolClassImpl(AA, 10);
 
 class AB : public A {
-    oryol_class_decl(AB, 10);
+    OryolClassDecl(AB, 10);
 public:
     /// constructor
-    AB() { log::info("constructor AB called for '%p'\n", this); };
+    AB() { Log::Info("constructor AB called for '%p'\n", this); };
     /// destructor
-    virtual ~AB() { log::info("destructor ~AB called for '%p'\n", this); };
+    virtual ~AB() { Log::Info("destructor ~AB called for '%p'\n", this); };
 };
-oryol_class_impl(AB, 10);
+OryolClassImpl(AB, 10);
 
 //------------------------------------------------------------------------------
-TEST(rtti) {
+TEST(Rtti) {
     
-    ptr<A> a = A::create();
-    CHECK(a->get_refcount() == 1);
-    ptr<AA> aa = AA::create();
-    CHECK(a->get_refcount() == 1);
-    ptr<AB> ab = AB::create();
-    CHECK(a->get_refcount() == 1);
+    Ptr<A> a = A::Create();
+    CHECK(a->GetRefCount() == 1);
+    Ptr<AA> aa = AA::Create();
+    CHECK(a->GetRefCount() == 1);
+    Ptr<AB> ab = AB::Create();
+    CHECK(a->GetRefCount() == 1);
     
     const type_info& classTypeA = typeid(A);
     const type_info& objTypeA = typeid(*a);
@@ -73,33 +73,33 @@ TEST(rtti) {
     CHECK(type_index(classTypeAA) == type_index(objTypeAA));
     CHECK(type_index(classTypeA) != type_index(classTypeAA));
     
-    ptr<A> a1 = aa;
+    Ptr<A> a1 = aa;
     CHECK(bool(a1));
-    CHECK(a1->get_refcount() == 2);
+    CHECK(a1->GetRefCount() == 2);
     CHECK(a1 == aa);
     
-    ptr<A> a2 = ab;
+    Ptr<A> a2 = ab;
     CHECK(bool(a2));
-    CHECK(a2->get_refcount() == 2);
+    CHECK(a2->GetRefCount() == 2);
     CHECK(a2 == ab);
     
-    ptr<A> a3 = aa.get();
+    Ptr<A> a3 = aa.Get();
     CHECK(bool(a3));
-    CHECK(a3->get_refcount() == 3);
+    CHECK(a3->GetRefCount() == 3);
     CHECK(a3 == aa);
     
-    ptr<A> a4 = ab.get_unsafe();
+    Ptr<A> a4 = ab.GetUnsafe();
     CHECK(bool(a4));
-    CHECK(a3->get_refcount() == 3);
+    CHECK(a3->GetRefCount() == 3);
     CHECK(a4 == ab);
     
-    a.invalidate();
-    aa.invalidate();
-    ab.invalidate();
+    a.Invalidate();
+    aa.Invalidate();
+    ab.Invalidate();
     
-    a1.invalidate();
-    a2.invalidate();
-    a3.invalidate();
-    a4.invalidate();
+    a1.Invalidate();
+    a2.Invalidate();
+    a3.Invalidate();
+    a4.Invalidate();
     
 }

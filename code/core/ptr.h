@@ -1,55 +1,55 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class core::ptr
+    @class Core::Ptr
     
 */
-#include "core/types.h"
-#include "core/macros.h"
+#include "Core/Types.h"
+#include "Core/Macros.h"
 
-namespace oryol {
-namespace core {
+namespace Oryol {
+namespace Core {
 
-template<class T> class ptr {
+template<class T> class Ptr {
 public:
     /// unsafe get, may return nullptr
-    T* get_unsafe() const noexcept {
+    T* GetUnsafe() const noexcept {
         return p;
     };
 
     /// default constructor
-    constexpr ptr() noexcept : p(nullptr) {
+    constexpr Ptr() noexcept : p(nullptr) {
         // empty
     };
     /// nullptr constructor
-    constexpr ptr(std::nullptr_t) noexcept : p(nullptr) {
+    constexpr Ptr(std::nullptr_t) noexcept : p(nullptr) {
         // empty
     };
     /// construct from compatible raw pointer
-    template<class U> ptr(U* rhs) noexcept {
+    template<class U> Ptr(U* rhs) noexcept {
         set(static_cast<T*>(rhs));
     };
-    /// copy-construct from ptr<TYPE>
-    ptr(const ptr<T>& rhs) noexcept {
+    /// copy-construct from Ptr<TYPE>
+    Ptr(const Ptr<T>& rhs) noexcept {
         set(rhs.p);
     };
-    /// copy-construct from ptr<OTHER>
-    template<class U> ptr(const ptr<U>& rhs) noexcept {
-        set(static_cast<T*>(rhs.get_unsafe()));
+    /// copy-construct from Ptr<OTHER>
+    template<class U> Ptr(const Ptr<U>& rhs) noexcept {
+        set(static_cast<T*>(rhs.GetUnsafe()));
     };
-    /// move constructor from ptr<TYPE>
-    ptr(ptr<T>&& rhs) noexcept {
+    /// move constructor from Ptr<TYPE>
+    Ptr(Ptr<T>&& rhs) noexcept {
         p = rhs.p;
         rhs.p = nullptr;
     };
     /// move constructor from compatible type
-    template<class U> ptr(ptr<U>&& rhs) noexcept {
-        p = static_cast<T*>(rhs.get_unsafe());
+    template<class U> Ptr(Ptr<U>&& rhs) noexcept {
+        p = static_cast<T*>(rhs.GetUnsafe());
         rhs.p = nullptr;
     };
     
     /// destructor
-    ~ptr() {
+    ~Ptr() {
         del();
     };
     
@@ -60,17 +60,17 @@ public:
             set(static_cast<T*>(rhs));
         }
     };
-    /// assign from compatible ptr<>
-    template<class U> void operator=(const ptr<U>& rhs) noexcept {
-        const T* rhs_p = static_cast<T*>(rhs.get_unsafe());
+    /// assign from compatible Ptr<>
+    template<class U> void operator=(const Ptr<U>& rhs) noexcept {
+        const T* rhs_p = static_cast<T*>(rhs.GetUnsafe());
         if (rhs_p != p) {
             del();
             set(static_cast<T*>(rhs_p));
         }
     };
-    /// move-assign from comptabile ptr<>
-    template<class U> void operator=(ptr<U>&& rhs) noexcept {
-        T* rhs_p = static_cast<T*>(rhs.get_unsafe());
+    /// move-assign from comptabile Ptr<>
+    template<class U> void operator=(Ptr<U>&& rhs) noexcept {
+        T* rhs_p = static_cast<T*>(rhs.GetUnsafe());
         if (rhs_p != p) {
             del();
             p = rhs_p;
@@ -83,28 +83,28 @@ public:
     };
     
     /// operator==
-    template<class U> bool operator==(const ptr<U>& rhs) const noexcept {
-        return p == rhs.get_unsafe();
+    template<class U> bool operator==(const Ptr<U>& rhs) const noexcept {
+        return p == rhs.GetUnsafe();
     };
     /// operator!=
-    template<class U> bool operator!=(const ptr<U>& rhs) const noexcept {
-        return p != rhs.get_unsafe();
+    template<class U> bool operator!=(const Ptr<U>& rhs) const noexcept {
+        return p != rhs.GetUnsafe();
     };
     /// operator<
-    template<class U> bool operator<(const ptr<U>& rhs) const noexcept {
-        return p < rhs.get_unsafe();
+    template<class U> bool operator<(const Ptr<U>& rhs) const noexcept {
+        return p < rhs.GetUnsafe();
     };
     /// operator>
-    template<class U> bool operator>(const ptr<U>& rhs) const noexcept {
-        return p > rhs.get_unsafe();
+    template<class U> bool operator>(const Ptr<U>& rhs) const noexcept {
+        return p > rhs.GetUnsafe();
     };
     /// operator<=
-    template<class U> bool operator<=(const ptr<U>& rhs) const noexcept {
-        return p <= rhs.get_unsafe();
+    template<class U> bool operator<=(const Ptr<U>& rhs) const noexcept {
+        return p <= rhs.GetUnsafe();
     };
     /// operator>=
-    template<class U> bool operator>=(const ptr<U>& rhs) const noexcept {
-        return p >= rhs.get_unsafe();
+    template<class U> bool operator>=(const Ptr<U>& rhs) const noexcept {
+        return p >= rhs.GetUnsafe();
     };
     /// test if invalid (contains nullptr)
     bool operator==(std::nullptr_t) const noexcept {
@@ -121,7 +121,7 @@ public:
     };
     /// cast to compatible type
     template<class U, class=typename std::enable_if<std::is_convertible<U*,T*>::value>::type> operator U() const noexcept {
-        return static_cast<ptr<U>>(*this);
+        return static_cast<Ptr<U>>(*this);
     };
     /// operator*
     T& operator*() const noexcept {
@@ -135,16 +135,16 @@ public:
     };
     
     /// return true if valid (equivalent with operator bool())
-    bool isvalid() const noexcept {
+    bool IsValid() const noexcept {
         return nullptr != p;
     };
     /// invalidate the ptr (equivalent with assigning nullptr)
-    void invalidate() noexcept {
+    void Invalidate() noexcept {
         del();
     };
 
     /// get (assert that returned pointer is not nullptr)
-    T* get() const noexcept {
+    T* Get() const noexcept {
         o_assert(nullptr != p);
         return p;
     };
@@ -161,7 +161,7 @@ private:
     void set(T* rhs) {
         p = rhs;
         if (nullptr != p) {
-            p->add_ref();
+            p->addRef();
         }
     };
 
