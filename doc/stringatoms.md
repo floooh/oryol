@@ -83,6 +83,7 @@ This is very fast since the actual storage of the string data and the stringAtom
 ### Code Samples ###
 
 ```cpp
+#include "Pre.h"
 #include "Core/Core.h"
 #include "Core/String/StringAtom.h"
 
