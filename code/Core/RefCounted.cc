@@ -7,7 +7,7 @@
 namespace Oryol {
 namespace Core {
 
-OryolClassImpl(RefCounted, 4096);
+OryolClassImpl(RefCounted);
 
 //------------------------------------------------------------------------------
 RefCounted::~RefCounted() {

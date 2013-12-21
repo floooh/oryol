@@ -14,34 +14,34 @@ using namespace Oryol;
 using namespace Core;
 
 class A : public Core::RefCounted {
-    OryolClassDecl(A, 10);
+    OryolClassDecl(A);
 public:
     /// constructor
     A() { Log::Info("constructor A called for '%p'\n", this); };
     /// destructor
     virtual ~A() { Log::Info("destructor ~A called for '%p'\n", this); };
 };
-OryolClassImpl(A, 10);
+OryolClassImpl(A);
 
 class AA : public A {
-    OryolClassDecl(AA, 10);
+    OryolClassDecl(AA);
 public:
     /// constructor
     AA() { Log::Info("constructor AA called for '%p'\n", this); };
     /// destructor
     virtual ~AA() { Log::Info("destructor ~AA called for '%p'\n", this); };
 };
-OryolClassImpl(AA, 10);
+OryolClassImpl(AA);
 
 class AB : public A {
-    OryolClassDecl(AB, 10);
+    OryolClassDecl(AB);
 public:
     /// constructor
     AB() { Log::Info("constructor AB called for '%p'\n", this); };
     /// destructor
     virtual ~AB() { Log::Info("destructor ~AB called for '%p'\n", this); };
 };
-OryolClassImpl(AB, 10);
+OryolClassImpl(AB);
 
 //------------------------------------------------------------------------------
 TEST(Rtti) {

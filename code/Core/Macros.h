@@ -34,24 +34,40 @@
     #endif
 #endif
 
-// add oryol standard methods to a class
-#define OryolClassDecl(TYPE, POOL_SIZE) \
+// declare an oryol class with pool allocator
+#define OryolClassPoolAllocDecl(TYPE, POOL_SIZE) \
 private:\
     static Oryol::Memory::poolAllocator<TYPE, POOL_SIZE> allocator;\
 protected:\
     virtual void destroy() {\
-        allocator.Destroy(this);\
+        TYPE::allocator.Destroy(this);\
     };\
 public:\
     static int32 GetPoolSize() {\
-        return allocator.GetPoolSize();\
+        return TYPE::allocator.GetPoolSize();\
     }\
     template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
-        return allocator.Create(std::forward<ARGS>(args)...);\
+        return TYPE::allocator.Create(std::forward<ARGS>(args)...);\
     };\
 
-#define OryolClassImpl(TYPE, POOL_SIZE) \
+#define OryolClassPoolAllocImpl(TYPE, POOL_SIZE) \
 Oryol::Memory::poolAllocator<TYPE, POOL_SIZE> TYPE::allocator;
+
+// declare an oryol class without pool allocator
+#define OryolClassDecl(TYPE) \
+protected:\
+virtual void destroy() {\
+    delete(this);\
+};\
+public:\
+static int32 GetPoolSize() {\
+    return 0;\
+}\
+template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
+    return new TYPE(std::forward<ARGS>(args)...);\
+};\
+
+#define OryolClassImpl(TYPE)
 
 // global singleton macros (visible in all threads)
 #define OryolGlobalSingletonDecl(TYPE) \

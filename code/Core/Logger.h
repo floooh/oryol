@@ -15,7 +15,7 @@ namespace Oryol {
 namespace Core {
 
 class Logger : public RefCounted {
-    OryolClassDecl(Logger, 1);
+    OryolClassDecl(Logger);
 public:
     /// constructor
     Logger();

@@ -8,7 +8,7 @@
 namespace Oryol {
 namespace Core {
 
-OryolClassImpl(Logger, 1);
+OryolClassImpl(Logger);
 
 //------------------------------------------------------------------------------
 Logger::Logger() {
