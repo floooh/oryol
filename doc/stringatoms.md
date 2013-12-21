@@ -18,41 +18,41 @@ comparison (but only if their precomputed hash values collide).
 
 #### Implementation Details ####
 
-Strings in stringatom objects are assumed to be UTF-8.
+Strings in string atom objects are assumed to be UTF-8.
 
-A stringatom object only contains a single pointer to a data structure stored at a fixed location. This 'header' data
+A string atom object only contains a single pointer to a data structure stored at a fixed location. This 'header' data
 structure is shared between all string atoms referencing the same string and is only created for the
-first stringatom containing that string.
+first string atom containing that string.
 
 The header data structure contains the following entries:
 
-* a pointer to the (thread-local) stringatom table, this is used to check whether a string atom is from another thread
+* a pointer to the (thread-local) string atom table, this is used to check whether a string atom is from another thread
 * a hash value which is computed when a string atom is created from a raw string, but is cached from then on and used for optimizing comparisons
 * a pointer to the actual string data
 * the string data follows the actual header, terminted by a 0-byte
 
 These data structures (headers followed by actual string data) are stored in pre-allocated memory chunks managed by
-the stringatom_buffer class. One chunk is usually 16kBytes. When a chunk runs full, a new chunk is allocated.
+the stringAtomBuffer class. One chunk is usually 16kBytes. When a chunk runs full, a new chunk is allocated.
 Chunks are never freed.
 
-The stringatom_buffer object is owned by a stringatom_table, which is a thread-local singleton.
+The stringAtomBuffer object is owned by a stringatom_table, which is a thread-local singleton.
 
-The stringatom_table has a unordered_set<> (basically a bucketed hash table) with pointers to the header data
+The stringAtomTable class has a unordered_set<> (basically a bucketed hash table) with pointers to the header data
 structures as keys and the precomputed hash values for hashing into the buckets.
 
 ##### What happens when creating or assigning from a raw string #####
 
-This is implemented in the private method stringatom::setup_from_c_string():
+This is implemented in the private method StringAtom::setupFromCString():
 
 * the hash value of the input string is computed
 * the unordered set in the thread-local string atom table is searched (inolves comparing the 
 hash values, and on hash-collisions actual string-comparisons)
 * if the string is already in the table we're done
-* otherwise a new entry in the stringatom_buffer is created, this involves copying the computed hash and string data
+* otherwise a new entry in the stringAtomBuffer is created, this involves copying the computed hash and string data
 
 #### What happens when comparing a string atom with another #####
 
-This is implemented in the stringatom equality operator:
+This is implemented in the StringAtom equality operator:
 
 * if the 2 data pointers are identical then the string atoms live in the same thread and point to the 
 same string (and we're done)
@@ -69,46 +69,46 @@ thread, which is in both cases (equality and inequality) very fast.
 #### What happens when a string atom is copied into another string atom ####
 
 This is very fast when the right-hand-side atom has been created in the local thread. The code
-for assignment is in stringatom::copy():
+for assignment is in StringAtom::copy():
 
-* if the stringatom_table pointer of the right-hand-side stringatom is identical with the thread-local
-stringatom_table, then only the header data pointer is copied and we're done
-* otherwise the right-hand-side stringatom is from another thread, and a relatively expensive assignment from the raw string data
+* if the stringAtomTable pointer of the right-hand-side StringAtom is identical with the thread-local
+stringAtomTable, then only the header data pointer is copied and we're done
+* otherwise the right-hand-side StringAtom is from another thread, and a relatively expensive assignment from the raw string data
 happens (see above)
 
-#### What happens when a stringatom object is deleted ####
+#### What happens when a StringAtom object is deleted ####
 
-This is very fast since the actual storage of the string data and the stringatom_table entry is never freed.
+This is very fast since the actual storage of the string data and the stringAtomTable entry is never freed.
 
 ### Code Samples ###
 
 ```cpp
-#include "core/core.h"
-#include "core/string/stringatom.h"
+#include "Core/Core.h"
+#include "Core/String/StringAtom.h"
 
-using namespace oryol;
-using namespace string;
+using namespace Oryol;
+using namespace String;
 
 void main() {
   // this creates the global string atom table in the main thread (among others)
-  core::setup();
+  Core::Setup();
   
   // create a few string atoms from raw strings
-  stringatom atom0("BLA");
-  stringatom atom1("BLA");
-  stringatom atom2("BLUB");
+  StringAtom atom0("BLA");
+  StringAtom atom1("BLA");
+  StringAtom atom2("BLUB");
   
   // atom0 and atom1 are identical, atom0 and atom2 are not
   o_assert(atom0 == atom1);
   o_assert(atom0 != atom2);
   
   // get a c string pointer from the atom
-  const char* cstr = atom0.as_cstr();
+  const char* cstr = atom0.AsCStr();
   
   // get a std string from the atom
-  std::string str = atom0.as_string();
+  std::string str = atom0.AsString();
   
   // cleanup behind us
-  core::discard();
+  Core::Discard();
 }
 ```
