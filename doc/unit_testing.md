@@ -20,12 +20,12 @@ right source code line.
 
 Each Oryol module should come with a set of unit tests:
 
-* in the module's source directory, create a subdirectory called 'unittests'
+* in the module's source directory, create a subdirectory called 'UnitTests'
 * add a new unit test in the module's CMakeLists.txt file:
 
 ```cmake
-    oryol_begin_unittest([module_name])
-        oryol_sources(unittests)
+    oryol_begin_unittest([ModuleName])
+        oryol_sources(UnitTests)
         oryol_deps([additional dependencies])
     oryol_end_unittest()
 ```
@@ -39,10 +39,10 @@ Each Oryol module should come with a set of unit tests:
     //  [name].cc
     //  A short description
     //------------------------------------------------------------------------------
-    #include "pre.h"
+    #include "Pre.h"
     #include "UnitTest++/src/unittest++.h"
 
-    TEST(my_test) {
+    TEST(MyTest) {
         CHECK(true);
     }
 ```
