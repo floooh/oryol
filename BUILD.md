@@ -22,7 +22,7 @@ On Linux, Oryol is built from the command line with make and GCC.
 At least gcc 4.8.1 is needed to compile oryol.
 
 The vagrant/linux subdirectory contains a vagrant configuration with
-the required build environment, simply type "vagrant up".
+the required build environment.
 
 1. make sure that 'cmake', 'gcc', 'g++' and 'make' are in the path
 2. cd to oryol/build
