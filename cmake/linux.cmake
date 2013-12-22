@@ -23,17 +23,17 @@ else()
 endif()
 
 # C++ flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} ${ORYOL_LINUX_EXCEPTION_FLAGS} -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} ${ORYOL_LINUX_EXCEPTION_FLAGS} -std=c++11 -pthread -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -msse3 -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1 -ggdb")
 
 # C flags
-set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")        
+set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -fno-strict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers")        
 set(CMAKE_C_FLAGS_RELEASE "-O3 -ftree-vectorize -msse3 -ffast-math -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1 -ggdb")
 
 # exe linker flags
-set(CMAKE_EXE_LINKER_FLAGS "-dead_strip -lpthread -luuid -lrt")
+set(CMAKE_EXE_LINKER_FLAGS "-pthread -dead_strip -lpthread -lrt")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 

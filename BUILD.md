@@ -19,12 +19,20 @@ On OSX, Oryol is built with Xcode and supports both bundled applications as well
 
 On Linux, Oryol is built from the command line with make and GCC.
 
+At least gcc 4.8.1 is needed to compile oryol.
+
+The vagrant/linux subdirectory contains a vagrant configuration with
+the required build environment, simply type "vagrant up".
+
 1. make sure that 'cmake', 'gcc', 'g++' and 'make' are in the path
 2. cd to oryol/build
-3. execute ./condif_linux_debug_make.sh
+3. execute ./config_linux_debug.sh
 4. cd to oryol/build/linux
 5. execute 'make hello', this should compile the hello world sample
 6. go to oryol/bin/linux, there should be a 'hello_debug' executable, running this should display 'Hello World!'
+
+To compile the unit tests, run **config_linux_unittests.sh**, and then **make**, this will build everything and then run the unit tests automatically.
+
 
 ### emscripten ###
 
