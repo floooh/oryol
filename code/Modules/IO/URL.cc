@@ -83,5 +83,43 @@ URL::Split() const {
     return parts;
 }
     
+//------------------------------------------------------------------------------
+URL
+URL::Build(const URLParts& parts) {
+    o_assert(parts.Valid);
+    std::string str = parts.Scheme;
+    str.append("://");
+    if (!parts.User.empty()) {
+        str.append(parts.User);
+        if (!parts.Password.empty()) {
+            str.push_back(':');
+            str.append(parts.Password);
+        }
+        str.push_back('@');
+    }
+    str.append(parts.Host);
+    if (!parts.Port.empty()) {
+        str.push_back(':');
+        str.append(parts.Port);
+    }
+    str.push_back('/');
+    str.append(parts.Path);
+    if (!parts.Query.empty()) {
+        str.push_back('?');
+        for (const auto& kvp : parts.Query) {
+            str.append(kvp.first);
+            str.push_back('=');
+            str.append(kvp.second);
+            str.push_back('&');
+        }
+        str.pop_back();
+    }
+    if (!parts.Fragment.empty()) {
+        str.push_back('#');
+        str.append(parts.Fragment);
+    }
+    return URL(str);
+}
+
 } // namespace IO
 } // namespace Oryol

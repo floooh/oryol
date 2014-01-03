@@ -61,4 +61,15 @@ TEST(URLTest) {
     CHECK(parts.Query["key0"] == "val0");
     CHECK(parts.Query["key1"] == "val1");
     CHECK(parts.Fragment == "frag");
+    
+    // test setting address and port
+    parts.SetAddress("www.radonlabs.de:8000");
+    CHECK(parts.Host == "www.radonlabs.de");
+    CHECK(parts.Port == "8000");
+    CHECK(parts.GetAddress() == "www.radonlabs.de:8000");
+    
+    // test building URL from parts
+    URL url4 = URL::Build(parts);
+    std::string url4String = url4.Get().AsString();
+    CHECK(url4String == "http://user:pwd@www.radonlabs.de:8000/bla.txt?key0=val0&key1=val1#frag");
 }

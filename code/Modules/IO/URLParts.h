@@ -3,14 +3,14 @@
 /**
     @class IO::URLParts
     
-    Holds the split parts that make up an URL. Use the URLUtil methods
-    to split an URL into parts, and build URLs from parts.
-    
+    Holds the split parts that make up an URL.
+ 
     An URL consists of the following parts:
     
     scheme://user:pwd@host:port/path?queryKey=queryValue&...#fragment
 */
 #include "Core/Types.h"
+#include "Core/String/StringUtil.h"
 #include <map>
 
 namespace Oryol {
@@ -58,15 +58,9 @@ Valid(false)
 //------------------------------------------------------------------------------
 inline void
 URLParts::SetAddress(const std::string& addr) {
-    std::string::size_type pos = addr.find(':');
-    if (std::string::npos != pos) {
-        this->Host = addr.substr(0, pos);
-        this->Port = addr.substr(pos + 1, std::string::npos);
-    }
-    else {
-        // does not contains the [:port] part
-        this->Host = addr;
-    }
+    auto split = String::StringUtil::Bisect(addr, ":");
+    this->Host = split.first;
+    this->Port = split.second;
 }
 
 //------------------------------------------------------------------------------
