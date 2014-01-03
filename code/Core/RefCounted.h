@@ -50,14 +50,12 @@ inline void
 RefCounted::release() {
     #if ORYOL_HAS_THREADS
     if (1 == this->refCount.fetch_sub(1, std::memory_order_relaxed)) {
-        // destroy() is virtual and provided by the oryol_class_decl macro
-        this->destroy();
-    }
     #else
     if (1 == this->refCount--) {
-        delete(this);
-    }
     #endif
+        // destroy() is virtual and provided by the OryolClassDecl macro
+        this->destroy();
+    }
 }
 
 //------------------------------------------------------------------------------

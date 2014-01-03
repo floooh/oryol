@@ -4,10 +4,13 @@
 #include "Pre.h"
 #include "URL.h"
 #include "Core/String/StringUtil.h"
+#include "Core/Log.h"
+#include "IO/assignRegistry.h"
 
 namespace Oryol {
 namespace IO {
 
+using namespace Core;
 using namespace String;
     
 //------------------------------------------------------------------------------
@@ -17,8 +20,12 @@ URL::Split() const {
     URLParts parts;
     std::string str = this->content.AsString();
     if (!str.empty()) {
-        // FIXME FIXME FIXME: first resolve assigns
-//        std::string str = assignRegistry::Instance()->ResolveAssigns(this->content);
+        if (assignRegistry::HasInstance()) {
+            str = assignRegistry::Instance()->ResolveAssigns(str);
+        }
+        else {
+            Log::Warn("URL::Split(): no assignRegistry singleton!\n");
+        }
         
         // extract scheme
         auto schemeAndRest = StringUtil::Bisect(str, ":/");
