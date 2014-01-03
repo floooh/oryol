@@ -3,7 +3,7 @@
 //  Test URLs
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "IO/URL.h"
 
 using namespace Oryol;

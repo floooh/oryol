@@ -3,7 +3,7 @@
 //  Test assignRegistry singleton
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "IO/assignRegistry.h"
 #include "Core/Ptr.h"
 

@@ -33,7 +33,7 @@ macro(oryol_end_unittest)
             "// machine generated, do not edit\n"
             "#include \"Pre.h\"\n"
             "#include \"Core/Core.h\"\n"
-            "#include \"UnitTest++/src/unittest++.h\"\n"
+            "#include \"UnitTest++/src/UnitTest++.h\"\n"
             "int main(void) {\n"
             "    Oryol::Core::Setup();\n"
             "    int res = UnitTest::RunAllTests();\n"

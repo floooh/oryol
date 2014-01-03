@@ -3,7 +3,7 @@
 //  Test object creation.
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "Core/Log.h"
 #include "Core/Types.h"
 #include "Core/Macros.h"

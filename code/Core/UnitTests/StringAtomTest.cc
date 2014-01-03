@@ -3,7 +3,7 @@
 //  Test string atom system.
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Core.h"
 

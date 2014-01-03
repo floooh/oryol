@@ -3,7 +3,7 @@
 //  Test low-level memory functions.
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "Core/Memory/Memory.h"
 
 using namespace std;

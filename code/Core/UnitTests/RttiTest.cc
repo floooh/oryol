@@ -3,7 +3,7 @@
 //  Test standard C++ rtti stuff with oryol classes.
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UnitTest++/src/unittest++.h"
+#include "UnitTest++/src/UnitTest++.h"
 #include "Core/Macros.h"
 #include "Core/Log.h"
 #include "Core/RefCounted.h"

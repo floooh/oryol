@@ -8,5 +8,5 @@ oryol_end_module()
 
 oryol_begin_unittest(IO)
 oryol_sources(UnitTests)
-oryol_deps(Core IO)
+oryol_deps(IO Core)
 oryol_end_unittest()
