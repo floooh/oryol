@@ -1,23 +1,20 @@
 ### Design Basics ###
 
-- [x] nested namespaces: oryol::[module_name]
-- [x] explicitely NOT a framework for asset tools, only a game runtime (even only a 3d runtime in the beginning)
-- [x] use the C++11 stdc++ lib, but not boost
-- [x] all basic types are defined in the oryol namespace (oryol::int32, oryol::float32, ...)
-- [x] ~~define our own ptr<> type, or use shared_ptr<> ? at least a typedef because shared_ptr is unwieldy~~ we just use shared_ptr, unique_ptr and weak_ptr
-- [x] use cmake as meta-build-system
-- [x] use UnitTest++ and use unit-testing right from the beginning
-- [x] modules can depend on other modules, dependencies are defined both for compile time (in cmake files) and at runtime 
-(modules attach other modules)
-- [x] optionally supports platforms without threading (emscripten)
-- [ ] standardized oryol::app class, setup runtime environment by adding required modules to the app (and modules add 
-the modules dependent on them)
-- [x] ~~custom RTTI system, but without static initialisers~~ we'll just the the standard C++ rtti system, but sparingly
-- [ ] usually one header file per module
+- OK: nested namespaces: oryol::[module_name]
+- OK: explicitely NOT a framework for asset tools, only a game runtime (even only a 3d runtime in the beginning)
+- OK: use the C++11 stdc++ lib, but not boost (update: except for containers, write custom containers instead)
+- OK: all basic types are defined in the oryol namespace (oryol::int32, oryol::float32, ...)
+- OK: ~~define our own ptr<> type, or use shared_ptr<> (update: use our own smart pointer and refcounted base class)
+- OK: use cmake as meta-build-system
+- OK: use UnitTest++ and use unit-testing right from the beginning
+- OK: modules can depend on other modules, dependencies are defined both for compile time (in cmake files) and at runtime 
+(modules attach other modules) update: not sure about the automatic runtime resolution of dependencies yet...
+- TODO: optionally supports platforms without threading (emscripten)
+- NO: ~~custom RTTI system, but without static initialisers~~ we'll just the the standard C++ rtti system, but sparingly, update: the standard RTTI system is almost useless (only useful for dynamic_cast, which is only useful when working around design errors... not sure yet whether I want to have the overhead of a custom RTTI system again...)
+- UNDECIDED: usually one header file per module
 
 ### Memory Management ###
 
-- [ ] use object pools and placement new/delete for all oryol::core::base derived classes
-- [ ] ~~separate classes into thread-local (must be created / destroyed in same thread) and global (can be destroyed in 
-other thread then creation)...?~~ not sure if this is worth the trouble...
+- OK: use object pools and placement new/delete for all Oryol::Core::RefCounted derived classes
+- PROBABLY NOT ~~separate classes into thread-local (must be created / destroyed in same thread) and global (can be destroyed inother thread then creation)...?~~ not sure if this is worth the trouble... UPDATE: the custom poolAllocator is lockless and fast enough, so allocating an object in one thread and freeing it in another is not an issue
 
