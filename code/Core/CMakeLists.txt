@@ -2,7 +2,7 @@
 #   oryol core module
 #-------------------------------------------------------------------------------
 oryol_begin_module(Core)
-oryol_sources(. Threading String Memory)
+oryol_sources(. Threading String Memory Containers)
 oryol_sources_posix(posix)
 oryol_end_module()
 

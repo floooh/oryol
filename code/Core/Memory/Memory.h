@@ -17,13 +17,13 @@ namespace Memory {
     
 //------------------------------------------------------------------------------
 inline void*
-Alloc(std::size_t s) {
+Alloc(int32 s) {
     return std::malloc(s);
 };
 
 //------------------------------------------------------------------------------
 inline void*
-ReAlloc(void* ptr, std::size_t s) {
+ReAlloc(void* ptr, int32 s) {
     return std::realloc(ptr, s);
 };
 
@@ -35,7 +35,7 @@ Free(void* p) {
 
 //------------------------------------------------------------------------------
 inline void
-Copy(void* from, void* to, std::size_t num_bytes) {
+Copy(void* from, void* to, int32 num_bytes) {
     // copy memory, memory areas must not overlap
     // (NOTE different order of src and dest compared to memcpy!)
     std::memcpy(to, from, num_bytes);
@@ -43,7 +43,7 @@ Copy(void* from, void* to, std::size_t num_bytes) {
 
 //------------------------------------------------------------------------------
 inline void
-Move(void* from, void* to, std::size_t num_bytes) {
+Move(void* from, void* to, int32 num_bytes) {
     // move memory, memory areas may overlap
     // (NOTE different order of src and dest compared to memmove!)
     std::memmove(to, from, num_bytes);
@@ -51,29 +51,29 @@ Move(void* from, void* to, std::size_t num_bytes) {
 
 //------------------------------------------------------------------------------
 inline void
-Clear(void* ptr, std::size_t num_bytes) {
+Clear(void* ptr, int32 num_bytes) {
     std::memset(ptr, 0, num_bytes);
 };
 
 //------------------------------------------------------------------------------
 inline void
-Fill(void* ptr, std::size_t num_bytes, uint8 value) {
+Fill(void* ptr, int32 num_bytes, uint8 value) {
     std::memset(ptr, value, num_bytes);
 }
 
 //------------------------------------------------------------------------------
 inline void*
-Align(void* ptr, uint32 byte_size) {
+Align(void* ptr, int32 byte_size) {
     // align a pointer to a byte size or a platform-specific maximum byte size
-    uintptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
-    uintptr ptri = (uintptr)ptr;
+    intptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
+    intptr ptri = (intptr)ptr;
     ptri = (ptri + (align - 1)) & ~(align - 1);
     return (void*) ptri;
 };
 
 //------------------------------------------------------------------------------
-inline uint32
-RoundUp(uint32 val, uint32 byte_size) {
+inline int32
+RoundUp(int32 val, int32 byte_size) {
     return (val + (byte_size - 1)) & ~(byte_size - 1);
 }
     
