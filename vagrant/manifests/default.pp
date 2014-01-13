@@ -122,6 +122,25 @@ class oryol-build {
     package { "uuid-dev": }
 }
 
+# need gcc4.8 for C++11
+class gcc {
+    package { "gcc-4.8": }
+    package { "g++-4.8": }
+
+    exec { "/usr/sbin/update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50":
+        require => Package["gcc-4.8"],
+        user => "root"
+    }
+    exec { "/usr/sbin/update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50": 
+        require => Package["g++-4.8"],
+        user => "root"
+    }
+    exec { "/usr/sbin/update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-4.8 50":
+        require => Package["g++-4.8"],
+        user => "root"
+    }
+}
+
 # get clang-llvm 3.2 for emscripten
 class clang {
 
@@ -197,6 +216,7 @@ include ninja
 include cmake
 include oryol-build
 include clang
+include gcc
 include emscripten
 include nacl-sdk
 

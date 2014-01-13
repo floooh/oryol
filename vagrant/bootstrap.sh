@@ -12,6 +12,8 @@ if [ ! -f pkg/puppetlabs-release-precise.deb ]; then
     apt-get update
     apt-get install -y python-software-properties
     add-apt-repository -y ppa:chris-lea/node.js
+    apt-get update
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test
     apt-get autoremove
     apt-get clean
     apt-get update
