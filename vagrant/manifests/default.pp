@@ -23,7 +23,7 @@ $nacl_url = "http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${n
 # run all commands as vagrant user
 Exec {
     user => "${user}",
-    logoutput => on_failure,
+    logoutput => true,
     timeout => 0
 }
 
@@ -111,7 +111,8 @@ class cmake {
         alias => "install-cmake",
         require => Exec["build-cmake"],
         cwd => "${pkg}/${cmake_name}",
-        creates => "/usr/local/bin/cmake"
+        creates => "/usr/local/bin/cmake",
+        user => "root"
     }
 }
 
