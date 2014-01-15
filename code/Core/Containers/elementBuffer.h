@@ -20,12 +20,6 @@
     
     '----' - empty memory slot
     'XXXX' - valid element
-    
-    FIXME: currently a copy from another elementBuffer will
-    allocate the same capacity as the source buffer. Would it be
-    better to truncate to the actual size? This doesn't make sense
-    for a move operation though.
- 
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
@@ -54,6 +48,8 @@ public:
     int32 frontSpare() const;
     /// get number of free slots at back
     int32 backSpare() const;
+    /// get overal spare (frontSpare + backSpare)
+    int32 spare() const;
     /// get number of valid elements
     int32 size() const;
     /// get overall capacity
@@ -63,11 +59,17 @@ public:
     TYPE& operator[](int32 index);
     /// read-access element by index
     const TYPE& operator[](int32 index) const;
+    /// get front element (r/w)
+    TYPE& front();
+    /// get front element (r/o)
+    const TYPE& front() const;
+    /// get back element (r/w)
+    TYPE& back();
+    /// get back element (r/o)
+    const TYPE& back() const;
     
-    /// first-time allocation
-    void allocate(int32 capacity, int32 frontSpare);
-    /// re-allocation
-    void reallocate(int32 newCapacity, int32 frontSpare);
+    /// allocate, grow or shrink the elementBuffer
+    void alloc(int32 capacity, int32 frontSpare);
     /// destroy all
     void destroy();
     /// destroy element at pointer
@@ -108,7 +110,6 @@ public:
     /// erase element at index, swap in element from back or front, messes up ordering
     void eraseSwap(int32 index);
     
-protected:
     TYPE* bufStart;     // start of allocated buffer
     TYPE* bufEnd;       // end of allocated buffer
     TYPE* elmStart;     // start of valid elements
@@ -134,7 +135,7 @@ elementBuffer<TYPE>::elementBuffer(const elementBuffer& rhs) :
     elmStart(nullptr),
     elmEnd(nullptr)
 {
-    this->allocate(rhs.capacity(), rhs.frontSpare());
+    this->alloc(rhs.size(), 0);
     copy(rhs.elmStart, this->elmStart, rhs.size());
     this->elmEnd = this->elmStart + rhs.size();
 }
@@ -154,10 +155,16 @@ elementBuffer<TYPE>::elementBuffer(elementBuffer&& rhs) :
 }
 
 //------------------------------------------------------------------------------
+template<class TYPE>
+elementBuffer<TYPE>::~elementBuffer<TYPE>() {
+    this->destroy();
+}
+    
+//------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::operator=(const elementBuffer<TYPE>& rhs) {
     this->destroy();
-    this->allocate(rhs.capacity(), rhs.frontSpare());
+    this->alloc(rhs.size(), 0);
     copy(rhs.elmStart, this->elmStart, rhs.size());
     this->elmEnd = this->elmStart + rhs.size();
 }
@@ -176,12 +183,6 @@ elementBuffer<TYPE>::operator=(elementBuffer<TYPE>&& rhs) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE>
-elementBuffer<TYPE>::~elementBuffer<TYPE>() {
-    this->destroy();
-}
-
-//------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::frontSpare() const {
     return intptr(this->elmStart - this->bufStart);
@@ -193,6 +194,12 @@ elementBuffer<TYPE>::backSpare() const {
     return intptr(this->bufEnd - this->elmEnd);
 }
 
+//------------------------------------------------------------------------------
+template<class TYPE> int32
+elementBuffer<TYPE>::spare() const {
+    return this->capacity() - this->size();
+}
+    
 //------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::size() const {
@@ -220,40 +227,62 @@ elementBuffer<TYPE>::operator[](int32 index) const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
-elementBuffer<TYPE>::allocate(int32 capacity, int32 frontSpare) {
-    o_assert(nullptr == this->bufStart);
-    o_assert(frontSpare < capacity);
-    
-    const int32 bufSize = capacity * sizeof(TYPE);
-    this->bufStart = (TYPE*) Memory::Alloc(bufSize);
-    this->bufEnd   = this->bufStart + capacity;
-    this->elmStart = this->bufStart + frontSpare;
-    this->elmEnd   = this->elmStart;
+template<class TYPE> TYPE&
+elementBuffer<TYPE>::front() {
+    o_assert(nullptr != this->elmStart);
+    return *this->elmStart;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+elementBuffer<TYPE>::front() const {
+    o_assert(nullptr != this->elmStart);
+    return *this->elmStart;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+elementBuffer<TYPE>::back() {
+    o_assert(nullptr != this->elmEnd);
+    return *(this->elmEnd - 1);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+elementBuffer<TYPE>::back() const {
+    o_assert(nullptr != this->elmEnd);
+    return *(this->elmEnd - 1);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::reallocate(int32 newCapacity, int32 newFrontSpare) {
-    o_assert(nullptr != this->bufStart);
-    o_assert(newCapacity > this->capacity());
-    o_assert((newFrontSpare + this->size()) < newCapacity);
+elementBuffer<TYPE>::alloc(int32 newCapacity, int32 newFrontSpare) {
+    o_assert(this->capacity() != newCapacity);
+
     const int32 curSize = this->size();
-    
+    o_assert((newFrontSpare + curSize) <= newCapacity);
+
     // allocate new buffer
     const int32 newBufSize = newCapacity * sizeof(TYPE);
     TYPE* newBuffer = (TYPE*) Memory::Alloc(newBufSize);
-    
-    // move elements over to new buffer
     TYPE* newElmStart = newBuffer + newFrontSpare;
-    move(this->elmStart, newElmStart, curSize);
     
-    // free old buffer and replace pointers
-    Memory::Free(this->bufStart);
+    // need to move any elements?
+    if (curSize > 0) {
+        // move elements over to new buffer
+        move(this->elmStart, newElmStart, curSize);
+    }
+    
+    // need to free old buffer?
+    if (nullptr != this->bufStart) {
+        Memory::Free(this->bufStart);
+    }
+    
+    // replace pointers
     this->bufStart = newBuffer;
-    this->bufEnd   = this->bufStart + newCapacity;
+    this->bufEnd   = newBuffer + newCapacity;
     this->elmStart = newElmStart;
-    this->elmEnd   = this->elmStart + curSize;
+    this->elmEnd   = newElmStart + curSize;
 }
 
 //------------------------------------------------------------------------------

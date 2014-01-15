@@ -13,7 +13,7 @@ using namespace Core;
 TEST(elementBufferTest) {
 
     elementBuffer<int> intBuf;
-    intBuf.allocate(128, 64);
+    intBuf.alloc(128, 64);
     CHECK(intBuf.capacity() == 128);
     CHECK(intBuf.size() == 0);
     CHECK(intBuf.frontSpare() == 64);
@@ -42,7 +42,7 @@ TEST(elementBufferTest) {
     CHECK(intBuf[2] == 2);
     CHECK(intBuf[3] == 3);
     
-    intBuf.reallocate(256, 64);
+    intBuf.alloc(256, 64);
     CHECK(intBuf.capacity() == 256);
     CHECK(intBuf.size() == 4);
     CHECK(intBuf.frontSpare() == 64);
@@ -67,7 +67,7 @@ TEST(elementBufferTest) {
     
     // copy constructor
     elementBuffer<int> intBuf1(intBuf);
-    CHECK(intBuf1.capacity() == 256);
+    CHECK(intBuf1.capacity() == 6);
     CHECK(intBuf1.size() == 6);
     CHECK(intBuf1.frontSpare() == 63);
     CHECK(intBuf1.backSpare() == 187);
@@ -206,7 +206,7 @@ TEST(elementBufferTest) {
     
     // allocate a new buffer with 1 free slot at the front
     elementBuffer<int> intBuf3;
-    intBuf3.allocate(16, 1);
+    intBuf3.alloc(16, 1);
     intBuf3.pushBack(1);
     intBuf3.pushBack(2);
     intBuf3.pushBack(3);
@@ -225,7 +225,7 @@ TEST(elementBufferTest) {
     
     // and test the same the other way around
     elementBuffer<int> intBuf4;
-    intBuf4.allocate(16, 10);
+    intBuf4.alloc(16, 10);
     intBuf4.pushBack(10);
     intBuf4.pushBack(11);
     intBuf4.pushBack(12);
@@ -292,7 +292,7 @@ TEST(elementBufferTest) {
     
     // eraseSwap tests
     elementBuffer<int> intBuf5;
-    intBuf5.allocate(8, 0);
+    intBuf5.alloc(8, 0);
     for (int i = 0; i < 8; i++) {
         intBuf5.pushBack(i);
     }
@@ -343,4 +343,13 @@ TEST(elementBufferTest) {
     CHECK(intBuf5[2] == 4);
     CHECK(intBuf5[3] == 7);
     CHECK(intBuf5[4] == 6);
+    
+    // test if sorting works
+    std::sort(intBuf5.elmStart, intBuf5.elmEnd);
+    CHECK(intBuf5.size() == 5);
+    CHECK(intBuf5[0] == 1);
+    CHECK(intBuf5[1] == 2);
+    CHECK(intBuf5[2] == 4);
+    CHECK(intBuf5[3] == 6);
+    CHECK(intBuf5[4] == 7);
 }
