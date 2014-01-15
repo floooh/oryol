@@ -3,6 +3,9 @@
 /**
     @class Core::elementBuffer
     
+    DO NOT USE THIS CLASS DIRECTLY, INSTEAD USE THE "PUBLIC" CONTAINERS
+    (starting with a capital letter).
+ 
     Low-level dynamic memory buffer that is used as base for most
     higher-level Oryol container classes. Internally the buffer
     and range of valid elements is managed through 4 pointers:
@@ -71,7 +74,9 @@ public:
     static void destroyElement(TYPE* ptr);
     /// clear content
     void clear();
-
+    
+    /// test if to pointer is within [from, from+num]
+    static bool overlaps(const TYPE* from, const TYPE* to, int32 num);
     /// copy element range
     static void copy(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num);
     /// move element range
@@ -91,6 +96,17 @@ public:
     /// emplace element at front
     template<class... ARGS> void emplaceFront(ARGS&&... args);
     
+    /// prepare insertion by making room and returning pointer to insert to
+    TYPE* prepareInsert(int32 index);
+    /// copy-insert element at position, keep other elements in their previous order
+    void insert(int32 index, const TYPE& elm);
+    /// move-insert element at position, keep other elements in their previous order
+    void insert(int32 index, TYPE&& elm);
+
+    /// erase element at index, keeps array ordering
+    void erase(int32 index);
+    /// erase element at index, swap in element from back or front, messes up ordering
+    void eraseSwap(int32 index);
     
 protected:
     TYPE* bufStart;     // start of allocated buffer
@@ -192,12 +208,14 @@ elementBuffer<TYPE>::capacity() const {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::operator[](int32 index) {
+    o_assert((index >= 0) && (index < this->size()));
     return this->elmStart[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::operator[](int32 index) const {
+    o_assert((index >= 0) && (index < this->size()));
     return this->elmStart[index];
 }
 
@@ -277,8 +295,15 @@ elementBuffer<TYPE>::clear() {
 }
 
 //------------------------------------------------------------------------------
+template<class TYPE> bool
+elementBuffer<TYPE>::overlaps(const TYPE* from, const TYPE* to, int32 num) {
+    return (to >= from) && (to < (from + num));
+}
+
+//------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::copy(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num) {
+    o_assert(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         to[i] = from[i];
     }
@@ -287,9 +312,20 @@ elementBuffer<TYPE>::copy(const TYPE* __restrict__ from, TYPE* __restrict__ to, 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::move(TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num) {
-    o_assert((from != nullptr) && (to != nullptr) && (from != to));
-    for (int i = 0; i < num; i++) {
-        to[i] = std::move(from[i]);
+    o_assert((from != nullptr) && (to != nullptr));
+    if (from != to) {
+        if (overlaps(from, to, num)) {
+            // to is within [from, from+num], must do a backward move
+            for (int i = num - 1; i >= 0; i--) {
+                to[i] = std::move(from[i]);
+            }
+        }
+        else {
+            // do a normal forward move
+            for (int i = 0; i < num; i++) {
+                to[i] = std::move(from[i]);
+            }
+        }
     }
 }
 
@@ -333,6 +369,160 @@ template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceFront(ARGS&&... args) {
     o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(std::forward<ARGS>(args)...);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE*
+elementBuffer<TYPE>::prepareInsert(int32 index) {
+    const int32 size = this->size();
+    o_assert((index >= 0) && (index <= size) && (0 != this->elmStart));
+    
+    // must be room either at start or end!
+    o_assert((this->elmStart > this->bufStart) || (this->elmEnd < this->bufEnd));
+    
+    if (index == size) {
+        // special case insert at end of array
+        if (this->elmEnd < this->bufEnd) {
+            // still room to spare at end
+            return this->elmEnd++;
+        }
+        else if (this->elmStart > this->bufStart) {
+            // make room by moving towards front (this should always be faster then reallocating)
+            move(this->elmStart, this->elmStart - 1, size);
+            this->elmStart--;
+            return this->elmEnd - 1;
+        }
+        // can't happen
+    }
+    else if (0 == index) {
+        // special case insert at front
+        if (this->elmStart > this->bufStart) {
+            // still room at front, don't need to move
+            return --this->elmStart;
+        }
+        else if (this->elmEnd < this->bufEnd) {
+            // no room at front, must make room by moving towards end
+            move(this->elmStart, this->elmStart + 1, size);
+            this->elmEnd++;
+            return this->elmStart;
+        }
+        // can't happen
+    }
+    else {
+        // a "normal" insert, decide whether to move forward or backward
+        TYPE* ptr = this->elmStart + index;
+        if (index < (size>>1)) {
+            // prefer move toward front
+            if (this->elmStart > this->bufStart) {
+                // move towards front
+                move(this->elmStart, this->elmStart - 1, index);
+                this->elmStart--;
+                ptr--;
+            }
+            else {
+                // must move towards end
+                o_assert(this->elmEnd < this->bufEnd);
+                move(ptr, ptr + 1, size - index);
+                this->elmEnd++;
+            }
+        }
+        else {
+            // prefer move toward end
+            if (this->elmEnd < this->bufEnd) {
+                // move towards back
+                move(ptr, ptr + 1, size - index);
+                this->elmEnd++;
+            }
+            else {
+                // must move towards front
+                o_assert(this->elmStart > this->bufStart);
+                move(this->elmStart, this->elmStart - 1, index);
+                this->elmStart--;
+                ptr--;
+            }
+        }
+        return ptr;
+    }
+    o_error("Can't happen.\n");
+    return nullptr;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::insert(int32 index, const TYPE& elm) {
+    TYPE* ptr = this->prepareInsert(index);
+    *ptr = elm;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::insert(int32 index, TYPE&& elm) {
+    TYPE* ptr = this->prepareInsert(index);
+    *ptr = std::move(elm);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::erase(int32 index) {
+    const int32 size = this->size();
+    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    
+    // call destructor on element
+    TYPE* ptr = this->elmStart + index;
+    ptr->~TYPE();
+    
+    if (0 == index) {
+        // special case: first element
+        this->elmStart++;
+    }
+    else if (index == (size - 1)) {
+        // special case: last element
+        this->elmEnd--;
+    }
+    else {
+        // move the smaller amount of elements to fill the gap
+        if (index < (size>>1)) {
+            // move front elements
+            move(this->elmStart, this->elmStart + 1, index);
+            this->elmStart++;
+        }
+        else {
+            // move back elements
+            move(ptr + 1, ptr, size - index - 1);
+            this->elmEnd--;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::eraseSwap(int32 index) {
+    const int32 size = this->size();
+    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    
+    // call destructor on element
+    TYPE* ptr = this->elmStart + index;
+    ptr->~TYPE();
+    
+    if (0 == index) {
+        // special case: first element
+        this->elmStart++;
+    }
+    else if (index == (size - 1)) {
+        // special case: last element
+        this->elmEnd--;
+    }
+    else {
+        // either swap in the first or last element (keep frontSpare and backSpare balanced)
+        if (this->frontSpare() > this->backSpare()) {
+            // swap-in element from back
+            *ptr = std::move(*--this->elmEnd);
+        }
+        else {
+            // swap-in element from front
+            *ptr = std::move(*this->elmStart++);
+        }
+    }
 }
 
 } // namespace Core
