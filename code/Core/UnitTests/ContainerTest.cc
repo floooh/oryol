@@ -9,347 +9,513 @@
 using namespace Oryol;
 using namespace Core;
 
+class _test
+{
+public:
+    // this class requires that the underlying memory is filled with BB
+    // for the default, copy and move constructors!
+    _test() {
+        o_assert(ORYOL_MEMORY_DEBUG_INT == this->canary);
+        this->canary = 0xABBAABBA;
+        this->value  = 0;
+    };
+    _test(int val) {
+        this->canary = 0xABBAABBA;
+        this->value  = val;
+    };
+    _test(const _test& rhs) {
+        o_assert(ORYOL_MEMORY_DEBUG_INT == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        this->canary = 0xABBAABBA;
+        this->value  = rhs.value;
+    }
+    _test(_test&& rhs) {
+        // NOTE: rhs must still be in the constructed state after this!
+        o_assert(ORYOL_MEMORY_DEBUG_INT == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        this->canary = 0xABBAABBA;
+        this->value = rhs.value;
+        rhs.value  = 0;
+    }
+    ~_test() {
+        o_assert(0xABBAABBA == this->canary);
+        this->canary = ORYOL_MEMORY_DEBUG_INT;
+        this->value  = ORYOL_MEMORY_DEBUG_INT;
+    };
+    void operator=(int32 val) {
+        o_assert(0xABBAABBA == this->canary);
+        this->value = val;
+    };
+    void operator=(const _test& rhs) {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        this->value = rhs.value;
+    };
+    void operator=(_test&& rhs) {
+        // NOTE: rhs must still be in the constructed state after this!
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        this->value = rhs.value;
+        this->canary = 0xABBAABBA;
+    };
+    bool operator==(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value == rhs.value;
+    };
+    bool operator!=(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value != rhs.value;
+    };
+    bool operator<(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value < rhs.value;
+    };
+    bool operator>(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value > rhs.value;
+    };
+    bool operator<=(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value <= rhs.value;
+    };
+    bool operator>=(const _test& rhs) const {
+        o_assert(0xABBAABBA == this->canary);
+        o_assert(0xABBAABBA == rhs.canary);
+        return this->value >= rhs.value;
+    };
+    
+    uint32 canary;
+    int32 value;
+};
+
+//------------------------------------------------------------------------------
+bool
+TestMemory(const elementBuffer<_test>& buf) {
+    // test that front-spare is completely destructed
+    for (_test* ptr = buf.bufStart; ptr < buf.elmStart; ptr++) {
+        if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
+            return false;
+        }
+    }
+    // test that elements are all constructed
+    for (_test* ptr = buf.elmStart; ptr < buf.elmEnd; ptr++) {
+        if (ptr->canary != 0xABBAABBA) {
+            return false;
+        }
+    }
+    // test that back-spare is completely destructed
+    for (_test* ptr = buf.elmEnd; ptr < buf.bufEnd; ptr++) {
+        if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
+            return false;
+        }
+    }
+    return true;
+}
+
 //------------------------------------------------------------------------------
 TEST(elementBufferTest) {
 
-    elementBuffer<int> intBuf;
-    intBuf.alloc(128, 64);
-    CHECK(intBuf.capacity() == 128);
-    CHECK(intBuf.size() == 0);
-    CHECK(intBuf.frontSpare() == 64);
-    CHECK(intBuf.backSpare() == 64);
+    elementBuffer<_test> buf;
+    buf.alloc(128, 64);
+    CHECK(TestMemory(buf));
+    CHECK(buf.capacity() == 128);
+    CHECK(buf.size() == 0);
+    CHECK(buf.frontSpare() == 64);
+    CHECK(buf.backSpare() == 64);
     
-    const int one = 1;
-    const int two = 2;
+    const _test _0(0);
+    const _test _1(1);
+    const _test _2(2);
+    const _test _3(3);
+    const _test _4(4);
+    const _test _5(5);
+    const _test _6(6);
+    const _test _7(7);
+    const _test _8(8);
+    const _test _9(9);
+    const _test _10(10);
+    const _test _11(11);
+    const _test _12(12);
+    const _test _13(13);
+    const _test _14(14);
+    const _test _15(15);
+    const _test _16(16);
+    const _test _17(17);
     
     // this should invoke the copy-method
-    intBuf.pushBack(two);
-    intBuf.pushFront(one);
-    CHECK(intBuf.size() == 2);
-    CHECK(intBuf.frontSpare() == 63);
-    CHECK(intBuf.backSpare() == 63);
-    CHECK(intBuf[0] == 1);
-    CHECK(intBuf[1] == 2);
+    buf.pushBack(_2);
+    buf.pushFront(_1);
+    CHECK(TestMemory(buf));
+    CHECK(buf.size() == 2);
+    CHECK(buf.frontSpare() == 63);
+    CHECK(buf.backSpare() == 63);
+    CHECK(buf[0] == _1);
+    CHECK(buf[1] == _2);
 
     // this should invoke the move-method
-    intBuf.pushBack(3);
-    intBuf.pushFront(4);
-    CHECK(intBuf.size() == 4);
-    CHECK(intBuf.frontSpare() == 62);
-    CHECK(intBuf.backSpare() == 62);
-    CHECK(intBuf[0] == 4);
-    CHECK(intBuf[1] == 1);
-    CHECK(intBuf[2] == 2);
-    CHECK(intBuf[3] == 3);
+    buf.pushBack(_3);
+    buf.pushFront(_4);
+    CHECK(TestMemory(buf));
+    CHECK(buf.size() == 4);
+    CHECK(buf.frontSpare() == 62);
+    CHECK(buf.backSpare() == 62);
+    CHECK(buf[0] == _4);
+    CHECK(buf[1] == _1);
+    CHECK(buf[2] == _2);
+    CHECK(buf[3] == _3);
     
-    intBuf.alloc(256, 64);
-    CHECK(intBuf.capacity() == 256);
-    CHECK(intBuf.size() == 4);
-    CHECK(intBuf.frontSpare() == 64);
-    CHECK(intBuf.backSpare() == 188);
-    CHECK(intBuf[0] == 4);
-    CHECK(intBuf[1] == 1);
-    CHECK(intBuf[2] == 2);
-    CHECK(intBuf[3] == 3);
+    buf.alloc(256, 64);
+    CHECK(TestMemory(buf));
+    CHECK(buf.capacity() == 256);
+    CHECK(buf.size() == 4);
+    CHECK(buf.frontSpare() == 64);
+    CHECK(buf.backSpare() == 188);
+    CHECK(buf[0] == _4);
+    CHECK(buf[1] == _1);
+    CHECK(buf[2] == _2);
+    CHECK(buf[3] == _3);
     
-    intBuf.emplaceBack(5);
-    intBuf.emplaceFront(6);
-    CHECK(intBuf.capacity() == 256);
-    CHECK(intBuf.size() == 6);
-    CHECK(intBuf.frontSpare() == 63);
-    CHECK(intBuf.backSpare() == 187);
-    CHECK(intBuf[0] == 6);
-    CHECK(intBuf[1] == 4);
-    CHECK(intBuf[2] == 1);
-    CHECK(intBuf[3] == 2);
-    CHECK(intBuf[4] == 3);
-    CHECK(intBuf[5] == 5);
+    buf.emplaceBack(5);
+    buf.emplaceFront(6);
+    CHECK(TestMemory(buf));
+    CHECK(buf.capacity() == 256);
+    CHECK(buf.size() == 6);
+    CHECK(buf.frontSpare() == 63);
+    CHECK(buf.backSpare() == 187);
+    CHECK(buf[0] == _6);
+    CHECK(buf[1] == _4);
+    CHECK(buf[2] == _1);
+    CHECK(buf[3] == _2);
+    CHECK(buf[4] == _3);
+    CHECK(buf[5] == _5);
     
     // copy constructor
-    elementBuffer<int> intBuf1(intBuf);
-    CHECK(intBuf1.capacity() == 6);
-    CHECK(intBuf1.size() == 6);
-    CHECK(intBuf1.frontSpare() == 63);
-    CHECK(intBuf1.backSpare() == 187);
-    CHECK(intBuf1[0] == 6);
-    CHECK(intBuf1[1] == 4);
-    CHECK(intBuf1[2] == 1);
-    CHECK(intBuf1[3] == 2);
-    CHECK(intBuf1[4] == 3);
-    CHECK(intBuf1[5] == 5);
+    elementBuffer<_test> buf1(buf);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.capacity() == 6);
+    CHECK(buf1.size() == 6);
+    CHECK(buf1.frontSpare() == 0);
+    CHECK(buf1.backSpare() == 0);
+    CHECK(buf1[0] == _6);
+    CHECK(buf1[1] == _4);
+    CHECK(buf1[2] == _1);
+    CHECK(buf1[3] == _2);
+    CHECK(buf1[4] == _3);
+    CHECK(buf1[5] == _5);
     
     // move constructor
-    elementBuffer<int> intBuf2(std::move(intBuf1));
-    CHECK(intBuf1.capacity() == 0);
-    CHECK(intBuf1.size() == 0);
-    CHECK(intBuf2.capacity() == 256);
-    CHECK(intBuf2.size() == 6);
-    CHECK(intBuf2.frontSpare() == 63);
-    CHECK(intBuf2.backSpare() == 187);
-    CHECK(intBuf2[0] == 6);
-    CHECK(intBuf2[1] == 4);
-    CHECK(intBuf2[2] == 1);
-    CHECK(intBuf2[3] == 2);
-    CHECK(intBuf2[4] == 3);
-    CHECK(intBuf2[5] == 5);
+    elementBuffer<_test> buf2(std::move(buf1));
+    CHECK(TestMemory(buf1));
+    CHECK(TestMemory(buf2));
+    CHECK(buf1.capacity() == 0);
+    CHECK(buf1.size() == 0);
+    CHECK(buf2.capacity() == 6);
+    CHECK(buf2.size() == 6);
+    CHECK(buf2.frontSpare() == 0);
+    CHECK(buf2.backSpare() == 0);
+    CHECK(buf2[0] == _6);
+    CHECK(buf2[1] == _4);
+    CHECK(buf2[2] == _1);
+    CHECK(buf2[3] == _2);
+    CHECK(buf2[4] == _3);
+    CHECK(buf2[5] == _5);
+    
+    // assign empty array
+    buf2 = buf1;
+    CHECK(buf2.capacity() == 0);
+    CHECK(buf2.size() == 0);
+    CHECK(TestMemory(buf1));
+    CHECK(TestMemory(buf2));
     
     // copy assignment
-    intBuf2 = intBuf;
-    CHECK(intBuf2.size() == 6);
-    CHECK(intBuf2.frontSpare() == 63);
-    CHECK(intBuf2.backSpare() == 187);
-    CHECK(intBuf2[0] == 6);
-    CHECK(intBuf2[1] == 4);
-    CHECK(intBuf2[2] == 1);
-    CHECK(intBuf2[3] == 2);
-    CHECK(intBuf2[4] == 3);
-    CHECK(intBuf2[5] == 5);
+    buf2 = buf;
+    CHECK(TestMemory(buf));
+    CHECK(TestMemory(buf2));
+    CHECK(buf2.size() == 6);
+    CHECK(buf2.frontSpare() == 0);
+    CHECK(buf2.backSpare() == 0);
+    CHECK(buf2[0] == _6);
+    CHECK(buf2[1] == _4);
+    CHECK(buf2[2] == _1);
+    CHECK(buf2[3] == _2);
+    CHECK(buf2[4] == _3);
+    CHECK(buf2[5] == _5);
 
     // move assignment
-    intBuf1 = std::move(intBuf2);
-    CHECK(intBuf2.capacity() == 0);
-    CHECK(intBuf2.size() == 0);
-    CHECK(intBuf1.capacity() == 256);
-    CHECK(intBuf1.size() == 6);
-    CHECK(intBuf1.frontSpare() == 63);
-    CHECK(intBuf1.backSpare() == 187);
-    CHECK(intBuf1[0] == 6);
-    CHECK(intBuf1[1] == 4);
-    CHECK(intBuf1[2] == 1);
-    CHECK(intBuf1[3] == 2);
-    CHECK(intBuf1[4] == 3);
-    CHECK(intBuf1[5] == 5);
+    buf1 = std::move(buf2);
+    CHECK(TestMemory(buf2));
+    CHECK(TestMemory(buf1));
+    CHECK(buf2.capacity() == 0);
+    CHECK(buf2.size() == 0);
+    CHECK(buf1.capacity() == 6);
+    CHECK(buf1.size() == 6);
+    CHECK(buf1.frontSpare() == 0);
+    CHECK(buf1.backSpare() == 0);
+    CHECK(buf1[0] == _6);
+    CHECK(buf1[1] == _4);
+    CHECK(buf1[2] == _1);
+    CHECK(buf1[3] == _2);
+    CHECK(buf1[4] == _3);
+    CHECK(buf1[5] == _5);
     
     // erase element at front
-    intBuf1.erase(0);
-    CHECK(intBuf1.size() == 5);
-    CHECK(intBuf1[0] == 4);
-    CHECK(intBuf1[1] == 1);
-    CHECK(intBuf1[2] == 2);
-    CHECK(intBuf1[3] == 3);
-    CHECK(intBuf1[4] == 5);
+    buf1.erase(0);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 5);
+    CHECK(buf1[0] == _4);
+    CHECK(buf1[1] == _1);
+    CHECK(buf1[2] == _2);
+    CHECK(buf1[3] == _3);
+    CHECK(buf1[4] == _5);
     
     // erase element at back
-    intBuf1.erase(4);
-    CHECK(intBuf1.size() == 4);
-    CHECK(intBuf1[0] == 4);
-    CHECK(intBuf1[1] == 1);
-    CHECK(intBuf1[2] == 2);
-    CHECK(intBuf1[3] == 3);
+    buf1.erase(4);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 4);
+    CHECK(buf1[0] == _4);
+    CHECK(buf1[1] == _1);
+    CHECK(buf1[2] == _2);
+    CHECK(buf1[3] == _3);
     
     // erase element near front
-    intBuf1.erase(1);
-    CHECK(intBuf1.size() == 3);
-    CHECK(intBuf1[0] == 4);
-    CHECK(intBuf1[1] == 2);
-    CHECK(intBuf1[2] == 3);
+    buf1.erase(1);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 3);
+    CHECK(buf1[0] == _4);
+    CHECK(buf1[1] == _2);
+    CHECK(buf1[2] == _3);
     
     // erase element in the middle
-    intBuf1.erase(1);
-    CHECK(intBuf1.size() == 2);
-    CHECK(intBuf1[0] == 4);
-    CHECK(intBuf1[1] == 3);
+    buf1.erase(1);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 2);
+    CHECK(buf1[0] == _4);
+    CHECK(buf1[1] == _3);
     
     // and fully erase all
-    intBuf1.erase(0);
-    CHECK(intBuf1.size() == 1);
-    CHECK(intBuf1[0] == 3);
-    intBuf1.erase(0);
-    CHECK(intBuf1.size() == 0);
+    buf1.erase(0);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 1);
+    CHECK(buf1[0] == _3);
+    buf1.erase(0);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 0);
     
     // test insertion
+    buf1.alloc(16, 0);
     for (int i = 0; i < 8; i++) {
-        intBuf1.pushBack(i);
+        buf1.pushBack(i);
     }
-    CHECK(intBuf1.size() == 8);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 8);
     
     // insert at front
-    intBuf1.insert(0, 33);
-    CHECK(intBuf1.size() == 9);
-    CHECK(intBuf1[0] == 33);
-    CHECK(intBuf1[1] == 0);
-    CHECK(intBuf1[2] == 1);
-    CHECK(intBuf1[8] == 7);
+    _test _33(33);
+    buf1.insert(0, 33);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 9);
+    CHECK(buf1[0] == _33);
+    CHECK(buf1[1] == _0);
+    CHECK(buf1[2] == _1);
+    CHECK(buf1[8] == _7);
     
     // insert at end
-    intBuf1.insert(9, 34);
-    CHECK(intBuf1.size() == 10);
-    CHECK(intBuf1[0] == 33);
-    CHECK(intBuf1[1] == 0);
-    CHECK(intBuf1[9] == 34);
-    CHECK(intBuf1[8] == 7);
+    _test _34(34);
+    buf1.insert(9, 34);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 10);
+    CHECK(buf1[0] == _33);
+    CHECK(buf1[1] == _0);
+    CHECK(buf1[9] == _34);
+    CHECK(buf1[8] == _7);
     
     // insert near front
-    intBuf1.insert(2, 35);
-    CHECK(intBuf1.size() == 11);
-    CHECK(intBuf1[0] == 33);
-    CHECK(intBuf1[1] == 0);
-    CHECK(intBuf1[2] == 35);
-    CHECK(intBuf1[3] == 1);
-    CHECK(intBuf1[4] == 2);
-    CHECK(intBuf1[9] == 7);
-    CHECK(intBuf1[10] == 34);
+    _test _35(35);
+    buf1.insert(2, 35);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 11);
+    CHECK(buf1[0] == _33);
+    CHECK(buf1[1] == _0);
+    CHECK(buf1[2] == _35);
+    CHECK(buf1[3] == _1);
+    CHECK(buf1[4] == _2);
+    CHECK(buf1[9] == _7);
+    CHECK(buf1[10] == _34);
     
     // insert near end
-    intBuf1.insert(8, 36);
-    CHECK(intBuf1.size() == 12);
-    CHECK(intBuf1[0] == 33);
-    CHECK(intBuf1[1] == 0);
-    CHECK(intBuf1[2] == 35);
-    CHECK(intBuf1[3] == 1);
-    CHECK(intBuf1[4] == 2);
-    CHECK(intBuf1[7] == 5);
-    CHECK(intBuf1[8] == 36);
-    CHECK(intBuf1[9] == 6);
-    CHECK(intBuf1[10] == 7);
-    CHECK(intBuf1[11] == 34);
+    _test _36(36);
+    buf1.insert(8, 36);
+    CHECK(TestMemory(buf1));
+    CHECK(buf1.size() == 12);
+    CHECK(buf1[0] == _33);
+    CHECK(buf1[1] == _0);
+    CHECK(buf1[2] == _35);
+    CHECK(buf1[3] == _1);
+    CHECK(buf1[4] == _2);
+    CHECK(buf1[7] == _5);
+    CHECK(buf1[8] == _36);
+    CHECK(buf1[9] == _6);
+    CHECK(buf1[10] == _7);
+    CHECK(buf1[11] == _34);
     
     // allocate a new buffer with 1 free slot at the front
-    elementBuffer<int> intBuf3;
-    intBuf3.alloc(16, 1);
-    intBuf3.pushBack(1);
-    intBuf3.pushBack(2);
-    intBuf3.pushBack(3);
-    intBuf3.pushBack(4);
+    elementBuffer<_test> buf3;
+    buf3.alloc(16, 1);
+    buf3.pushBack(_1);
+    buf3.pushBack(_2);
+    buf3.pushBack(_3);
+    buf3.pushBack(_4);
     // first insert at front should use the empty slot
-    intBuf3.insert(0, 5);
+    buf3.insert(0, _5);
     // second insert at front should move content towards back
-    intBuf3.insert(0, 6);
-    CHECK(intBuf3.size() == 6);
-    CHECK(intBuf3[0] == 6);
-    CHECK(intBuf3[1] == 5);
-    CHECK(intBuf3[2] == 1);
-    CHECK(intBuf3[3] == 2);
-    CHECK(intBuf3[4] == 3);
-    CHECK(intBuf3[5] == 4);
+    buf3.insert(0, _6);
+    CHECK(TestMemory(buf3));
+    CHECK(buf3.size() == 6);
+    CHECK(buf3[0] == _6);
+    CHECK(buf3[1] == _5);
+    CHECK(buf3[2] == _1);
+    CHECK(buf3[3] == _2);
+    CHECK(buf3[4] == _3);
+    CHECK(buf3[5] == _4);
     
     // and test the same the other way around
-    elementBuffer<int> intBuf4;
-    intBuf4.alloc(16, 10);
-    intBuf4.pushBack(10);
-    intBuf4.pushBack(11);
-    intBuf4.pushBack(12);
-    intBuf4.pushBack(13);
-    intBuf4.pushBack(14);
-    intBuf4.pushBack(15);
+    elementBuffer<_test> buf4;
+    buf4.alloc(16, 10);
+    CHECK(TestMemory(buf4));
+    buf4.pushBack(_10);
+    buf4.pushBack(_11);
+    buf4.pushBack(_12);
+    buf4.pushBack(_13);
+    buf4.pushBack(_14);
+    buf4.pushBack(_15);
 
     // this insert should move the array towards the front
-    intBuf4.insert(6, 16);
-    CHECK(intBuf4.size() == 7);
-    CHECK(intBuf4[0] == 10);
-    CHECK(intBuf4[1] == 11);
-    CHECK(intBuf4[2] == 12);
-    CHECK(intBuf4[3] == 13);
-    CHECK(intBuf4[4] == 14);
-    CHECK(intBuf4[5] == 15);
-    CHECK(intBuf4[6] == 16);
+    buf4.insert(6, 16);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 7);
+    CHECK(buf4[0] == _10);
+    CHECK(buf4[1] == _11);
+    CHECK(buf4[2] == _12);
+    CHECK(buf4[3] == _13);
+    CHECK(buf4[4] == _14);
+    CHECK(buf4[5] == _15);
+    CHECK(buf4[6] == _16);
     
     // check normal erase
     // erase from front-area
-    intBuf4.erase(1);
-    CHECK(intBuf4.size() == 6);
-    CHECK(intBuf4[0] == 10);
-    CHECK(intBuf4[1] == 12);
-    CHECK(intBuf4[2] == 13);
-    CHECK(intBuf4[3] == 14);
-    CHECK(intBuf4[4] == 15);
-    CHECK(intBuf4[5] == 16);
+    buf4.erase(1);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 6);
+    CHECK(buf4[0] == _10);
+    CHECK(buf4[1] == _12);
+    CHECK(buf4[2] == _13);
+    CHECK(buf4[3] == _14);
+    CHECK(buf4[4] == _15);
+    CHECK(buf4[5] == _16);
     
     // erase from back area
-    intBuf4.erase(3);
-    CHECK(intBuf4.size() == 5);
-    CHECK(intBuf4[0] == 10);
-    CHECK(intBuf4[1] == 12);
-    CHECK(intBuf4[2] == 13);
-    CHECK(intBuf4[3] == 15);
-    CHECK(intBuf4[4] == 16);
+    buf4.erase(3);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 5);
+    CHECK(buf4[0] == _10);
+    CHECK(buf4[1] == _12);
+    CHECK(buf4[2] == _13);
+    CHECK(buf4[3] == _15);
+    CHECK(buf4[4] == _16);
 
     // erase from front
-    intBuf4.erase(0);
-    CHECK(intBuf4.size() == 4);
-    CHECK(intBuf4[0] == 12);
-    CHECK(intBuf4[1] == 13);
-    CHECK(intBuf4[2] == 15);
-    CHECK(intBuf4[3] == 16);
+    buf4.erase(0);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 4);
+    CHECK(buf4[0] == _12);
+    CHECK(buf4[1] == _13);
+    CHECK(buf4[2] == _15);
+    CHECK(buf4[3] == _16);
     
     // erase from back
-    intBuf4.erase(3);
-    CHECK(intBuf4.size() == 3);
-    CHECK(intBuf4[0] == 12);
-    CHECK(intBuf4[1] == 13);
-    CHECK(intBuf4[2] == 15);
+    buf4.erase(3);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 3);
+    CHECK(buf4[0] == _12);
+    CHECK(buf4[1] == _13);
+    CHECK(buf4[2] == _15);
     
     // and erase the rest
-    intBuf4.erase(1);
-    CHECK(intBuf4.size() == 2);
-    CHECK(intBuf4[0] == 12);
-    CHECK(intBuf4[1] == 15);
-    intBuf4.erase(1);
-    CHECK(intBuf4.size() == 1);
-    CHECK(intBuf4[0] == 12);
-    intBuf4.erase(0);
-    CHECK(intBuf4.size() == 0);
+    buf4.erase(1);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 2);
+    CHECK(buf4[0] == _12);
+    CHECK(buf4[1] == _15);
+    buf4.erase(1);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 1);
+    CHECK(buf4[0] == _12);
+    buf4.erase(0);
+    CHECK(TestMemory(buf4));
+    CHECK(buf4.size() == 0);
     
     // eraseSwap tests
-    elementBuffer<int> intBuf5;
-    intBuf5.alloc(8, 0);
+    elementBuffer<_test> buf5;
+    buf5.alloc(8, 0);
     for (int i = 0; i < 8; i++) {
-        intBuf5.pushBack(i);
+        buf5.pushBack(i);
     }
+    CHECK(TestMemory(buf5));
     
     // eraseSwap from front
-    intBuf5.eraseSwap(0);
-    CHECK(intBuf5.size() == 7);
-    CHECK(intBuf5[0] == 1);
-    CHECK(intBuf5[1] == 2);
-    CHECK(intBuf5[2] == 3);
-    CHECK(intBuf5[3] == 4);
-    CHECK(intBuf5[4] == 5);
-    CHECK(intBuf5[5] == 6);
-    CHECK(intBuf5[6] == 7);
+    buf5.eraseSwap(0);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 7);
+    CHECK(buf5[0] == _1);
+    CHECK(buf5[1] == _2);
+    CHECK(buf5[2] == _3);
+    CHECK(buf5[3] == _4);
+    CHECK(buf5[4] == _5);
+    CHECK(buf5[5] == _6);
+    CHECK(buf5[6] == _7);
     
     // eraseSwap from end
-    intBuf5.eraseSwap(6);
-    CHECK(intBuf5.size() == 6);
-    CHECK(intBuf5[0] == 1);
-    CHECK(intBuf5[1] == 2);
-    CHECK(intBuf5[2] == 3);
-    CHECK(intBuf5[3] == 4);
-    CHECK(intBuf5[4] == 5);
-    CHECK(intBuf5[5] == 6);
+    buf5.eraseSwap(6);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 6);
+    CHECK(buf5[0] == _1);
+    CHECK(buf5[1] == _2);
+    CHECK(buf5[2] == _3);
+    CHECK(buf5[3] == _4);
+    CHECK(buf5[4] == _5);
+    CHECK(buf5[5] == _6);
     
     // eraseSwap from near front
-    intBuf5.eraseSwap(2);
-    CHECK(intBuf5.size() == 5);
-    CHECK(intBuf5[0] == 2);
-    CHECK(intBuf5[1] == 1);
-    CHECK(intBuf5[2] == 4);
-    CHECK(intBuf5[3] == 5);
-    CHECK(intBuf5[4] == 6);
-    intBuf5.pushBack(7);
-    CHECK(intBuf5.size() == 6);
-    CHECK(intBuf5[0] == 2);
-    CHECK(intBuf5[1] == 1);
-    CHECK(intBuf5[2] == 4);
-    CHECK(intBuf5[3] == 5);
-    CHECK(intBuf5[4] == 6);
-    CHECK(intBuf5[5] == 7);
+    buf5.eraseSwap(2);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 5);
+    CHECK(buf5[0] == _2);
+    CHECK(buf5[1] == _1);
+    CHECK(buf5[2] == _4);
+    CHECK(buf5[3] == _5);
+    CHECK(buf5[4] == _6);
+    buf5.pushBack(7);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 6);
+    CHECK(buf5[0] == _2);
+    CHECK(buf5[1] == _1);
+    CHECK(buf5[2] == _4);
+    CHECK(buf5[3] == _5);
+    CHECK(buf5[4] == _6);
+    CHECK(buf5[5] == _7);
     
     // eraseSwap from near back
-    intBuf5.eraseSwap(3);
-    CHECK(intBuf5.size() == 5);
-    CHECK(intBuf5[0] == 2);
-    CHECK(intBuf5[1] == 1);
-    CHECK(intBuf5[2] == 4);
-    CHECK(intBuf5[3] == 7);
-    CHECK(intBuf5[4] == 6);
-    
-    // test if sorting works
-    std::sort(intBuf5.elmStart, intBuf5.elmEnd);
-    CHECK(intBuf5.size() == 5);
-    CHECK(intBuf5[0] == 1);
-    CHECK(intBuf5[1] == 2);
-    CHECK(intBuf5[2] == 4);
-    CHECK(intBuf5[3] == 6);
-    CHECK(intBuf5[4] == 7);
+    buf5.eraseSwap(3);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 5);
+    CHECK(buf5[0] == _2);
+    CHECK(buf5[1] == _1);
+    CHECK(buf5[2] == _4);
+    CHECK(buf5[3] == _7);
+    CHECK(buf5[4] == _6);
 }
