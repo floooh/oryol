@@ -23,5 +23,8 @@ typedef std::intptr_t intptr;
 typedef std::uintptr_t uintptr;
 typedef unsigned char uchar;
 
+// invalid index constant
+static const int32 InvalidIndex = -1;
+
 } // namespace Oryol
 
