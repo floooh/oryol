@@ -84,6 +84,11 @@ macro(oryol_setup)
     else()
         add_definitions(-DORYOL_ALLOCATOR_DEBUG=0)
     endif()
+    if (ORYOL_UNITTESTS)
+        add_definitions(-DORYOL_UNITTESTS=1)
+    else()
+        add_definitions(-DORYOL_UNITTESTS=0)
+    endif()
 
 endmacro()
 
