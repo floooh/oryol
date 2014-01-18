@@ -24,3 +24,7 @@
 #define ORYOL_MEMORY_DEBUG_BYTE (0xBB)
 #define ORYOL_MEMORY_DEBUG_SHORT (0xBBBB)
 #define ORYOL_MEMORY_DEBUG_INT (0xBBBBBBBB)
+
+// dynamic container min/max default grow
+#define ORYOL_CONTAINER_DEFAULT_MIN_GROW (16)
+#define ORYOL_CONTAINER_DEFAULT_MAX_GROW (1<<16)

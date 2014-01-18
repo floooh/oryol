@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
-//  ContainerTest.cc
-//  Test container classes
+//  elementBufferTest.cc
+//  Test low-level elementBuffer class.
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"

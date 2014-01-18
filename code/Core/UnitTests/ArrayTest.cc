@@ -1,0 +1,240 @@
+//------------------------------------------------------------------------------
+//  ArrayTest.cc
+//  Test Array class.
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "UnitTest++/src/UnitTest++.h"
+#include "Core/Containers/Array.h"
+
+using namespace Oryol;
+using namespace Core;
+
+TEST(ArrayTest) {
+    
+    // create empty array
+    Array<int> array0;
+    CHECK(array0.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(array0.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    CHECK(array0.Size() == 0);
+    CHECK(array0.Capacity() == 0);
+    CHECK(array0.Empty());
+    CHECK(array0.Spare() == 0);
+    
+    // copy-construct from empty array
+    Array<int> array1(array0);
+    CHECK(array1.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(array1.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    CHECK(array1.Size() == 0);
+    CHECK(array1.Capacity() == 0);
+    CHECK(array1.Empty());
+    CHECK(array1.Spare() == 0);
+    
+    // copy-assign empty array
+    Array<int> array2 = array0;
+    CHECK(array1.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(array1.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    CHECK(array1.Size() == 0);
+    CHECK(array1.Capacity() == 0);
+    CHECK(array1.Empty());
+    CHECK(array1.Spare() == 0);
+    
+    // add some elements
+    const int one = 1;
+    array0.AddBack(0);
+    array0.AddBack(one);
+    array0.AddBack(2);
+    CHECK(array0.Size() == 3);
+    CHECK(array0.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(!array0.Empty());
+    CHECK(array0.Spare() == (ORYOL_CONTAINER_DEFAULT_MIN_GROW - 3));
+    CHECK(array0[0] == 0);
+    CHECK(array0[1] == 1);
+    CHECK(array0[2] == 2);
+    CHECK(array0.Front() == 0);
+    CHECK(array0.Back() == 2);
+    
+    // copy-construct from non-empty array
+    Array<int> array3(array0);
+    CHECK(array3.Size() == 3);
+    CHECK(array3.Capacity() == 3);
+    CHECK(!array3.Empty());
+    CHECK(array3.Spare() == 0);
+    CHECK(array3[0] == 0);
+    CHECK(array3[1] == 1);
+    CHECK(array3[2] == 2);
+    CHECK(array3.Front() == 0);
+    CHECK(array3.Back() == 2);
+
+    // copy-assign from non-empty array
+    array2 = array0;
+    CHECK(array2.Size() == 3);
+    CHECK(array2.Capacity() == 3);
+    CHECK(!array2.Empty());
+    CHECK(array2.Spare() == 0);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 2);
+    CHECK(array2.Front() == 0);
+    CHECK(array2.Back() == 2);
+    
+    // move-assign
+    array2 = std::move(array0);
+    CHECK(array0.Size() == 0);
+    CHECK(array2.Size() == 3);
+    CHECK(array2.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(!array2.Empty());
+    CHECK(array2.Spare() == (ORYOL_CONTAINER_DEFAULT_MIN_GROW - 3));
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 2);
+    CHECK(array2.Front() == 0);
+    CHECK(array2.Back() == 2);
+    
+    // test emplace-back
+    array2.EmplaceBack(3);
+    CHECK(array2.Size() == 4);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 2);
+    CHECK(array2[3] == 3);
+    
+    // check element copy-assignment and move-assignment
+    array2[0] = 2;
+    CHECK(array2[0] == 2);
+    array2[0] = 0;
+    
+    // check Reserve
+    array2.Reserve(128);
+    CHECK(array2.Size() == 4);
+    CHECK(array2.Capacity() == 132);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 2);
+    CHECK(array2[3] == 3);
+    
+    // insert element
+    array2.Insert(0, 5);
+    CHECK(array2.Size() == 5);
+    CHECK(array2[0] == 5);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 1);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);
+    // append with insert (this is valid)
+    array2.Insert(5, 6);
+    CHECK(array2.Size() == 6);
+    CHECK(array2[0] == 5);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 1);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);
+    CHECK(array2[5] == 6);
+    array2.Insert(2, 7);
+    CHECK(array2.Size() == 7);
+    CHECK(array2[0] == 5);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 7);
+    CHECK(array2[3] == 1);
+    CHECK(array2[4] == 2);
+    CHECK(array2[5] == 3);
+    CHECK(array2[6] == 6);
+    array2.Insert(4, 8);
+    CHECK(array2.Size() == 8);
+    CHECK(array2[0] == 5);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 7);
+    CHECK(array2[3] == 1);
+    CHECK(array2[4] == 8);
+    CHECK(array2[5] == 2);
+    CHECK(array2[6] == 3);
+    CHECK(array2[7] == 6);
+    
+    // erase, keep order
+    array2.Erase(0);
+    CHECK(array2.Size() == 7);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 7);
+    CHECK(array2[2] == 1);
+    CHECK(array2[3] == 8);
+    CHECK(array2[4] == 2);
+    CHECK(array2[5] == 3);
+    CHECK(array2[6] == 6);
+    array2.Erase(6);
+    CHECK(array2.Size() == 6);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 7);
+    CHECK(array2[2] == 1);
+    CHECK(array2[3] == 8);
+    CHECK(array2[4] == 2);
+    CHECK(array2[5] == 3);
+    array2.Erase(1);
+    CHECK(array2.Size() == 5);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 8);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);
+    
+    // check erase swap
+    array2.Trim();
+    CHECK(array2.Size() == 5);
+    CHECK(array2.Capacity() == 5);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 8);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);    
+    array2.AddBack(4);
+    array2.AddBack(5);
+    CHECK(array2.Size() == 7);
+    CHECK(array2.Capacity() == (5 + ORYOL_CONTAINER_DEFAULT_MIN_GROW));
+    array2.Trim();
+    CHECK(array2.Size() == 7);
+    CHECK(array2.Capacity() == 7);
+    CHECK(array2[0] == 0);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 8);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);
+    CHECK(array2[5] == 4);
+    CHECK(array2[6] == 5);
+    array2.EraseSwap(2);
+    CHECK(array2.Size() == 6);
+    CHECK(array2[0] == 1);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 2);
+    CHECK(array2[3] == 3);
+    CHECK(array2[4] == 4);
+    CHECK(array2[5] == 5);
+    array2.EraseSwap(3);
+    CHECK(array2.Size() == 5);
+    CHECK(array2[0] == 1);
+    CHECK(array2[1] == 0);
+    CHECK(array2[2] == 2);
+    CHECK(array2[3] == 5);
+    CHECK(array2[4] == 4);
+    
+    array2.Clear();
+    CHECK(array2.Size() == 0);
+    CHECK(array2.Capacity() == 7);
+    CHECK(array2.Begin() == array2.End());
+    for (int i = 0; i < 16; i++) {
+        array2.AddBack(i);
+    }
+    for (int* p = array2.Begin(), i = 0; p != array2.End(); p++, i++) {
+        CHECK(*p == i);
+    }
+    array2.Clear();
+    for (int* p = array2.Begin(); p != array2.End(); p++) {
+        CHECK(false);
+    }
+    
+    // check for for(:) works
+    for (int i = 0; i < 16; i++) {
+        array2.AddBack(i);
+    }
+    for (int x : array2) {
+        CHECK(array2[x] == x);
+    }
+}
+
