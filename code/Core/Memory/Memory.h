@@ -16,14 +16,25 @@ namespace Oryol {
 namespace Memory {
     
 //------------------------------------------------------------------------------
+inline void
+Fill(void* ptr, int32 num_bytes, uint8 value) {
+    std::memset(ptr, value, num_bytes);
+}
+    
+//------------------------------------------------------------------------------
 inline void*
 Alloc(int32 s) {
-    return std::malloc(s);
+    void* ptr = std::malloc(s);
+    #if ORYOL_ALLOCATOR_DEBUG || ORYOL_UNITTESTS
+    Memory::Fill(ptr, s, ORYOL_MEMORY_DEBUG_BYTE);
+    #endif
+    return ptr;
 };
 
 //------------------------------------------------------------------------------
 inline void*
 ReAlloc(void* ptr, int32 s) {
+    // FIXME: HMM need to fix fill with debug pattern...
     return std::realloc(ptr, s);
 };
 
@@ -54,12 +65,6 @@ inline void
 Clear(void* ptr, int32 num_bytes) {
     std::memset(ptr, 0, num_bytes);
 };
-
-//------------------------------------------------------------------------------
-inline void
-Fill(void* ptr, int32 num_bytes, uint8 value) {
-    std::memset(ptr, value, num_bytes);
-}
 
 //------------------------------------------------------------------------------
 inline void*

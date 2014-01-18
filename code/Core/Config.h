@@ -19,3 +19,8 @@
 #else
 #define ORYOL_MAX_PLATFORM_ALIGN (16)
 #endif
+
+// memory debug fill pattern
+#define ORYOL_MEMORY_DEBUG_BYTE (0xBB)
+#define ORYOL_MEMORY_DEBUG_SHORT (0xBBBB)
+#define ORYOL_MEMORY_DEBUG_INT (0xBBBBBBBB)
