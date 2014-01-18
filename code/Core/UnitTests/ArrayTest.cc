@@ -217,15 +217,15 @@ TEST(ArrayTest) {
     array2.Clear();
     CHECK(array2.Size() == 0);
     CHECK(array2.Capacity() == 7);
-    CHECK(array2.Begin() == array2.End());
+    CHECK(array2.begin() == array2.end());
     for (int i = 0; i < 16; i++) {
         array2.AddBack(i);
     }
-    for (int* p = array2.Begin(), i = 0; p != array2.End(); p++, i++) {
+    for (int* p = array2.begin(), i = 0; p != array2.end(); p++, i++) {
         CHECK(*p == i);
     }
     array2.Clear();
-    for (int* p = array2.Begin(); p != array2.End(); p++) {
+    for (int* p = array2.begin(); p != array2.end(); p++) {
         CHECK(false);
     }
     
@@ -236,5 +236,37 @@ TEST(ArrayTest) {
     for (int x : array2) {
         CHECK(array2[x] == x);
     }
+
+    // test some algorithms stuff
+    array2.Clear();
+    array2.AddBack(1);
+    array2.AddBack(3);
+    array2.AddBack(5);
+    array2.AddBack(7);
+    array2.AddBack(9);
+    array2.AddBack(11);
+    bool allOdd = std::all_of(array2.begin(), array2.end(), [](int i){ return i%2 == 1; });
+    CHECK(allOdd);
+    bool anyEven = std::any_of(array2.begin(), array2.end(), [](int i){ return i%2 == 0; });
+    CHECK(!anyEven);
+    array2[2] = 2;
+    allOdd = std::all_of(array2.begin(), array2.end(), [](int i){ return i%2 == 1; });
+    CHECK(!allOdd);
+    anyEven = std::any_of(array2.begin(), array2.end(), [](int i){ return i%2 == 0; });
+    CHECK(anyEven);
+    std::reverse(array2.begin(), array2.end());
+    CHECK(array2[0] == 11);
+    CHECK(array2[1] == 9);
+    CHECK(array2[2] == 7);
+    CHECK(array2[3] == 2);
+    CHECK(array2[4] == 3);
+    CHECK(array2[5] == 1);
+    std::sort(array2.begin(), array2.end());
+    CHECK(array2[0] == 1);
+    CHECK(array2[1] == 2);
+    CHECK(array2[2] == 3);
+    CHECK(array2[3] == 7);
+    CHECK(array2[4] == 9);
+    CHECK(array2[5] == 11);
 }
 
