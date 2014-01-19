@@ -23,10 +23,10 @@ public:
     KeyValuePair(KEY&& k, VALUE&& v) : key(std::move(k)), value(std::move(v)) {
     };
     /// copy-constructor
-    KeyValuePair(const KeyValuePair& rhs) : key(rhs.key()), value(rhs.value()) {
+    KeyValuePair(const KeyValuePair& rhs) : key(rhs.key), value(rhs.value) {
     };
     /// move-constructor
-    KeyValuePair(KeyValuePair&& rhs) : key(std::move(rhs.key)), value(std::move(value)) {
+    KeyValuePair(KeyValuePair&& rhs) : key(std::move(rhs.key)), value(std::move(rhs.value)) {
     };
     
     /// copy-assignment
@@ -65,31 +65,6 @@ public:
         return this->key >= rhs.key;
     };
     
-    /// test equality
-    bool operator==(const KEY& rhs) const {
-        return this->key == rhs;
-    };
-    /// test inequality
-    bool operator!=(const KEY& rhs) const {
-        return this->key != rhs;
-    };
-    /// test less-then
-    bool operator<(const KEY& rhs) const {
-        return this->key < rhs;
-    };
-    /// test greater-then
-    bool operator>(const KEY& rhs) const {
-        return this->key > rhs;
-    };
-    /// test less-or-equal
-    bool operator<=(const KEY& rhs) const {
-        return this->key <= rhs;
-    };
-    /// test greater-or-equal
-    bool operator>=(const KEY& rhs) const {
-        return this->key >= rhs;
-    };
-    
     /// get key
     const KEY& Key() const {
         return this->key;
@@ -103,9 +78,68 @@ public:
         return this->value;
     };
 
-private:
     KEY key;
     VALUE value;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator==(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key == key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator!=(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key != key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator>(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key > key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator<(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key < key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator>=(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key >= key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator<=(const KeyValuePair<KEY, VALUE>& kvp, const KEY& key) {
+    return kvp.key >= key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator==(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key == kvp.key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator!=(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key != kvp.key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator>(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key > kvp.key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator<(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key < kvp.key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator>=(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key >= kvp.key;
+};
+
+//------------------------------------------------------------------------------
+template<class KEY, class VALUE> inline bool operator<=(const KEY& key, const KeyValuePair<KEY, VALUE>& kvp) {
+    return key <= kvp.key;
 };
 
 } // namespace Core
