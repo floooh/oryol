@@ -84,18 +84,18 @@ public:
     /// copy-assign element range UNTESTED
     static void copyAssign(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num);
     
-    /// push element at back (must have room)
+    /// push element at back (backSpare must be > 0!)
     void pushBack(const TYPE& elm);
-    /// move element to back
+    /// move element to back (backSpare must be > 0!)
     void pushBack(TYPE&& elm);
-    /// emplace element at back (must have room)
+    /// emplace element at back (backSpare must be > 0!)
     template<class... ARGS> void emplaceBack(ARGS&&... args);
 
-    /// push element at front (must have room)
+    /// push element at front (frontSpare must be > 0!)
     void pushFront(const TYPE& elm);
-    /// move element at front
+    /// move element at front (frontSpare must be > 0!)
     void pushFront(TYPE&& elm);
-    /// emplace element at front
+    /// emplace element at front (frontSpare must be > 0!)
     template<class... ARGS> void emplaceFront(ARGS&&... args);
     
     /// prepare insertion by making room and returning pointer to insert to
@@ -371,6 +371,8 @@ elementBuffer<TYPE>::copyAssign(const TYPE* __restrict__ from, TYPE* __restrict_
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::pushBack(const TYPE& elm) {
+    // NOTE: this will fail if there is no spare space at the back,
+    // use insert(size(), elm) which will move towards front if possible
     o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(elm);
 }
@@ -378,6 +380,8 @@ elementBuffer<TYPE>::pushBack(const TYPE& elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::pushBack(TYPE&& elm) {
+    // NOTE: this will fail if there is no spare space at the back,
+    // use insert(size(), elm) which will move towards front if possible
     o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(std::move(elm));
 }
@@ -385,6 +389,8 @@ elementBuffer<TYPE>::pushBack(TYPE&& elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceBack(ARGS&&... args) {
+    // NOTE: this will fail if there is no spare space at the back,
+    // use insert(size(), elm) which will move towards front if possible
     o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(std::forward<ARGS>(args)...);
 }
@@ -392,6 +398,8 @@ elementBuffer<TYPE>::emplaceBack(ARGS&&... args) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::pushFront(const TYPE& elm) {
+    // NOTE: this will fail if there is no spare space at the front,
+    // use insert(0, elm) which will move towards back if possible
     o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(elm);
 }
@@ -399,6 +407,8 @@ elementBuffer<TYPE>::pushFront(const TYPE& elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::pushFront(TYPE&& elm) {
+    // NOTE: this will fail if there is no spare space at the front,
+    // use insert(0, elm) which will move towards back if possible
     o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(std::move(elm));
 }
@@ -406,6 +416,8 @@ elementBuffer<TYPE>::pushFront(TYPE&& elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceFront(ARGS&&... args) {
+    // NOTE: this will fail if there is no spare space at the front,
+    // use insert(0, elm) which will move towards back if possible
     o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(std::forward<ARGS>(args)...);
 }
