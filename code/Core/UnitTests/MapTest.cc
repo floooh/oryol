@@ -1,0 +1,144 @@
+//------------------------------------------------------------------------------
+//  MapTest.cc
+//  Test Dictionary functionality
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "UnitTest++/src/UnitTest++.h"
+#include "Core/Containers/Map.h"
+
+using namespace Oryol;
+using namespace Core;
+
+TEST(MapTest) {
+
+    // test simple insertion of unique elements
+    Map<int32, int32> map;
+    CHECK(map.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(map.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    CHECK(map.Size() == 0);
+    CHECK(map.Empty());
+    CHECK(map.Capacity() == 0);
+    CHECK(!map.Contains(1));
+    map.Insert(0, 0);
+    map.Insert(3, 3);
+    map.Insert(8, 8);
+    map.Insert(6, 6);
+    map.Insert(4, 4);
+    map.Insert(1, 1);
+    map.Insert(2, 2);
+    map.Insert(7, 7);
+    map.Insert(5, 5);
+    CHECK(map.Size() == 9);
+    CHECK(map.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
+    CHECK(!map.Empty());
+    CHECK(map.Contains(4));
+    CHECK(!map.Contains(11));
+    for (int i = 0; i < 9; i++) {
+        CHECK(map[i] == i);
+    }
+    
+    // copy construct
+    Map<int32, int32> map1(map);
+    CHECK(map1.Size() == 9);
+    CHECK(map1.Capacity() == 9); // copy trims
+    CHECK(!map1.Empty());
+    CHECK(map1.Contains(4));
+    CHECK(!map1.Contains(11));
+    for (int i = 0; i < 9; i++) {
+        CHECK(map1[i] == i);
+    }
+    
+    // copy-assign
+    Map<int32, int32> map2;
+    map2 = map;
+    CHECK(map2.Size() == 9);
+    CHECK(map2.Capacity() == 9);    // copy trims
+    CHECK(!map2.Empty());
+    CHECK(map2.Contains(4));
+    CHECK(!map2.Contains(11));
+    for (int i = 0; i < 9; i++) {
+        CHECK(map2[i] == i);
+    }
+    
+    // trim and clear
+    map.Trim();
+    CHECK(map.Size() == 9);
+    CHECK(map.Capacity() == 9);
+    CHECK(!map.Empty());
+    CHECK(map.Contains(4));
+    CHECK(!map.Contains(11));
+    for (int i = 0; i < 9; i++) {
+        CHECK(map[i] == i);
+    }
+    map.Clear();
+    CHECK(map.Size() == 0);
+    CHECK(map.Capacity() == 9);
+    CHECK(map.Empty());
+    CHECK(!map.Contains(2));
+    
+    // move-assign
+    map = std::move(map2);
+    CHECK(map2.Size() == 0);
+    CHECK(map2.Capacity() == 0);
+    CHECK(map.Size() == 9);
+    CHECK(map.Capacity() == 9);    // copy trims
+    CHECK(!map.Empty());
+    CHECK(map.Contains(4));
+    CHECK(!map.Contains(11));
+    for (int i = 0; i < 9; i++) {
+        CHECK(map[i] == i);
+    }
+    
+    // index accessor functions
+    for (int i = 0; i < 9; i++) {
+        CHECK(map.KeyAtIndex(i) == i);
+        CHECK(map.ValueAtIndex(i) == i);
+    }
+    
+    // modify values
+    map[5] = 6;
+    CHECK(map[5] == 6);
+    map.ValueAtIndex(7) = 6;
+    CHECK(map[7] == 6);
+    
+    // check FindDuplicate
+    CHECK(InvalidIndex == map.FindDuplicate(0));
+    map.Insert(5, 10);
+    map.Insert(5, 11);
+    CHECK(5 == map.FindDuplicate(0));
+    // test erase (single and duplicates)
+    CHECK(map.Contains(5));
+    CHECK(map.Size() == 11);
+    map.Erase(5);   // this should remove all duplicates
+    CHECK(!map.Contains(5));
+    CHECK(map.Size() == 8);
+    CHECK(InvalidIndex == map.FindDuplicate(0));
+    
+    // erase at front and back
+    map.Erase(0);
+    CHECK(map.Size() == 7);
+    CHECK(!map.Contains(0));
+    map.Erase(8);
+    CHECK(map.Size() == 6);
+    CHECK(!map.Contains(8));
+    
+    // test bulk add
+    Map<int, int> map4;
+    map4.BeginBulk();
+    for (int i = 31; i >= 0; i--) {
+        KeyValuePair<int, int> kvp(i, i);
+        map4.InsertBulk(kvp);
+    }
+    map4.EndBulk();
+    for (int i = 0; i < 32; i++) {
+        CHECK(map4.KeyAtIndex(i) == i);
+        CHECK(map4.ValueAtIndex(i) == i);
+        CHECK(map4[i] == i);
+    }
+    
+    // FindIndex
+    CHECK(map4.FindIndex(0) == 0);
+    CHECK(map4.FindIndex(31) == 31);
+    CHECK(map4.FindIndex(16) == 16);
+    CHECK(map4.FindIndex(100) == InvalidIndex);
+}
