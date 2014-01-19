@@ -17,6 +17,7 @@
 #include <typeindex>
 #include <string>
 #include <type_traits>
+#include <algorithm>
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>
