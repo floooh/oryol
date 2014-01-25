@@ -345,9 +345,10 @@ elementBuffer<TYPE>::destroyElement(TYPE* elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::clear() {
-    o_assert(nullptr != this->elmStart);
-    for (TYPE* ptr = this->elmStart; ptr < this->elmEnd; ptr++) {
-        ptr->~TYPE();
+    if (0 != this->elmStart) {
+        for (TYPE* ptr = this->elmStart; ptr < this->elmEnd; ptr++) {
+            ptr->~TYPE();
+        }
     }
     this->elmEnd = this->elmStart;
 }
