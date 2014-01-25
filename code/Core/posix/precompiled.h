@@ -11,8 +11,8 @@
 #include <cstdio>
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <cstring>
+#include <cwchar>
 #include <typeinfo>
 #include <typeindex>
 #include <string>

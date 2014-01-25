@@ -13,6 +13,7 @@
 #include "Core/Containers/Array.h"
 
 #include <array>
+#include <vector>
 
 using namespace std;
 using namespace Oryol;

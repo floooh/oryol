@@ -6,6 +6,7 @@
     Various string utility functions.
 */
 #include "Core/Types.h"
+#include <vector>
 
 namespace Oryol {
 namespace Core {
