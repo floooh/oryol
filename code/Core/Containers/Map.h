@@ -55,7 +55,7 @@ public:
     };
     /// move constructor (same capacity and size)
     Map(Map&& rhs) {
-        this->move(rhs);
+        this->move(std::move(rhs));
     };
     /// destructor
     ~Map() {
