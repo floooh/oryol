@@ -58,6 +58,8 @@ public:
     /// greater-equal operator
     bool operator>=(const WideString& rhs) const;
     
+    /// assign from raw byte sequence, if numChars is 0 -> until first 0
+    void Assign(const wchar_t* ptr, int32 numChars);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const wchar_t* AsCStr() const;
     /// get as std::wstring (slow)
@@ -75,6 +77,8 @@ public:
     void Clear();
     /// get the refcount of this string
     int32 RefCount() const;
+    /// create an explicit copy of the string
+    WideString MakeCopy() const;
     
 private:
     /// shared string data header, this is followed by the actual string
@@ -97,6 +101,7 @@ private:
     void release();
     
     StringData* data;
+    const wchar_t* strPtr;
     static const wchar_t* emptyString;
 };
 
@@ -256,12 +261,14 @@ WideString::release() {
             this->destroy();
         }
         this->data = nullptr;
+        this->strPtr = nullptr;
     }
 }
     
 //------------------------------------------------------------------------------
 inline WideString::WideString() :
-data(0) {
+data(0),
+strPtr(0) {
     // empty
 }
     
@@ -289,6 +296,7 @@ WideString::WideString(const std::wstring& str) {
 inline
 WideString::WideString(const WideString& rhs) {
     this->data = rhs.data;
+    this->strPtr = rhs.strPtr;
     this->addRef();
 }
     
@@ -296,7 +304,9 @@ WideString::WideString(const WideString& rhs) {
 inline
 WideString::WideString(WideString&& rhs) {
     this->data = rhs.data;
+    this->strPtr = rhs.strPtr;
     rhs.data = 0;
+    rhs.strPtr = 0;
 }
     
 //------------------------------------------------------------------------------
@@ -317,9 +327,10 @@ WideString::operator=(const std::wstring& str) {
 //------------------------------------------------------------------------------
 inline void
 WideString::operator=(const WideString& rhs) {
-    if (rhs.data != this->data) {
+    if (this != &rhs) {
         this->release();
         this->data = rhs.data;
+        this->strPtr = rhs.strPtr;
         if (nullptr != this->data) {
             this->addRef();
         }
@@ -329,10 +340,12 @@ WideString::operator=(const WideString& rhs) {
 //------------------------------------------------------------------------------
 inline void
 WideString::operator=(WideString&& rhs) {
-    if (rhs.data != this->data) {
+    if (this != &rhs) {
         this->release();
         this->data = rhs.data;
+        this->strPtr = rhs.strPtr;
         rhs.data = 0;
+        rhs.strPtr = 0;
     }
 }
     
@@ -425,11 +438,11 @@ WideString::ByteLength() const {
 //------------------------------------------------------------------------------
 inline const wchar_t*
 WideString::AsCStr() const {
-    if (nullptr == this->data) {
+    if (nullptr == this->strPtr) {
         return emptyString;
     }
     else {
-        return (const wchar_t*) &(this->data[1]);
+        return this->strPtr;
     }
 }
     
@@ -466,6 +479,23 @@ WideString::RefCount() const {
     else {
         return this->data->refCount;
     }
+}
+
+//------------------------------------------------------------------------------
+inline WideString
+WideString::MakeCopy() const {
+    return WideString(this->AsCStr());
+}
+    
+//------------------------------------------------------------------------------
+inline void
+WideString::Assign(const wchar_t* ptr, int32 numChars) {
+    o_assert(nullptr != ptr);
+    this->release();
+    if (0 == numChars) {
+        numChars = std::wcslen(ptr);
+    }
+    this->create(ptr, numChars);
 }
 
 } // namespace Core

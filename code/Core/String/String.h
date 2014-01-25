@@ -36,6 +36,8 @@ public:
     String(const char* cstr);
     /// construct from raw byte sequence
     String(const char* ptr, int32 numCharBytes);
+    /// construct from substring of other string
+    String(const String& rhs, int32 index, int32 len);
     /// construct from std::string (allocates!)
     String(const std::string& str);
     /// construct from StringAtom (allocates!)
@@ -70,12 +72,22 @@ public:
     /// greater-equal operator
     bool operator>=(const String& rhs) const;
 
+    /// allocate room for numCharBytes, and return pointer
+    char* Alloc(int32 numCharBytes);
+    /// assign from raw byte sequence, if numCharBytes is 0 -> until first 0
+    void Assign(const char* ptr, int32 numCharBytes);
+    /// assign from other string, with start index and length
+    void Assign(const String& rhs, int32 index, int32 len);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const char* AsCStr() const;
     /// get as std::string (slow)
     std::string AsStdString() const;
     /// get as StringAtom (slow)
     StringAtom AsStringAtom() const;
+    /// get the last character in the string
+    char Back() const;
+    /// get the first character in the string
+    char Front() const;
     
     /// get string length in number of bytes
     int32 Length() const;
@@ -87,6 +99,8 @@ public:
     void Clear();
     /// get the refcount of this string
     int32 RefCount() const;
+    /// create an explicit copy of the string
+    String MakeCopy() const;
     
 private:
     /// shared string data header, this is followed by the actual string
@@ -101,6 +115,8 @@ private:
     
     /// create new string data block, numBytes does not include the terminating 0
     void create(const char* ptr, int32 len);
+    /// private alloc function for len
+    void alloc(int32 len);
     /// destroy shared string data block
     void destroy();
     /// increment refcount
@@ -109,6 +125,7 @@ private:
     void release();
     
     StringData* data;
+    const char* strPtr;     // direct pointer to string data, necessary to see something in the debugger
     static const char* emptyString;
 };
 
@@ -282,12 +299,14 @@ String::release() {
             this->destroy();
         }
         this->data = nullptr;
+        this->strPtr = 0;
     }
 }
 
 //------------------------------------------------------------------------------
 inline String::String() :
-data(nullptr) {
+data(nullptr),
+strPtr(nullptr) {
     // empty
 }
 
@@ -299,10 +318,34 @@ String::String(const char* str) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ Construct string from raw data (a pointer and the length of the string
+ in bytes, excluding the terminating 0). If numCharBytes is 0, ptr is 
+ expected to point to a null-terminated string, and this string will
+ be copied into the new string object.
+*/
 inline
 String::String(const char* ptr, int32 numCharBytes) {
-    o_assert((nullptr != ptr) && (0 < numCharBytes));
+    o_assert(nullptr != ptr);
+    if (0 == numCharBytes) {
+        numCharBytes = std::strlen(ptr);
+    }
     this->create(ptr, numCharBytes);
+}
+
+//------------------------------------------------------------------------------
+/**
+ Construct string from substring of other string. If len is 0, this
+ means "until end of string".
+*/
+inline
+String::String(const String& rhs, int32 index, int32 len) {
+    o_assert((index + len) <= rhs.Length());
+    const char* ptr = rhs.AsCStr() + index;
+    if (0 == len) {
+        len = std::strlen(ptr);
+    }
+    this->create(ptr, len);
 }
 
 //------------------------------------------------------------------------------
@@ -315,6 +358,7 @@ String::String(const std::string& str) {
 inline
 String::String(const String& rhs) {
     this->data = rhs.data;
+    this->strPtr = rhs.strPtr;
     this->addRef();
 }
 
@@ -322,7 +366,9 @@ String::String(const String& rhs) {
 inline
 String::String(String&& rhs) {
     this->data = rhs.data;
+    this->strPtr = rhs.strPtr;
     rhs.data = 0;
+    rhs.strPtr = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -343,9 +389,10 @@ String::operator=(const std::string& str) {
 //------------------------------------------------------------------------------
 inline void
 String::operator=(const String& rhs) {
-    if (rhs.data != this->data) {
+    if (this != &rhs) {
         this->release();
         this->data = rhs.data;
+        this->strPtr = rhs.strPtr;
         if (nullptr != this->data) {
             this->addRef();
         }
@@ -355,10 +402,12 @@ String::operator=(const String& rhs) {
 //------------------------------------------------------------------------------
 inline void
 String::operator=(String&& rhs) {
-    if (rhs.data != this->data) {
+    if (this != &rhs) {
         this->release();
         this->data = rhs.data;
+        this->strPtr = rhs.strPtr;
         rhs.data = 0;
+        rhs.strPtr = 0;
     }
 }
 
@@ -440,11 +489,11 @@ String::Length() const {
 //------------------------------------------------------------------------------
 inline const char*
 String::AsCStr() const {
-    if (nullptr == this->data) {
+    if (nullptr == this->strPtr) {
         return emptyString;
     }
     else {
-        return (const char*) &(this->data[1]);
+        return this->strPtr;
     }
 }
 
@@ -480,6 +529,61 @@ String::RefCount() const {
     }
     else {
         return this->data->refCount;
+    }
+}
+
+//------------------------------------------------------------------------------
+inline String
+String::MakeCopy() const {
+    return String(this->AsCStr());
+}
+
+//------------------------------------------------------------------------------
+inline void
+String::Assign(const char* ptr, int32 numCharBytes) {
+    o_assert(nullptr != ptr);
+    this->release();
+    if (0 == numCharBytes) {
+        numCharBytes = std::strlen(ptr);
+    }
+    this->create(ptr, numCharBytes);
+}
+
+//------------------------------------------------------------------------------
+/**
+ Assign string from substring of other string. If len is 0, this
+ means "until end of string".
+ */
+inline void
+String::Assign(const String& rhs, int32 index, int32 len) {
+    o_assert((index + len) <= rhs.Length());
+    this->release();
+    const char* ptr = rhs.AsCStr() + index;
+    if (0 == len) {
+        len = std::strlen(ptr);
+    }
+    this->create(ptr, len);
+}
+
+//------------------------------------------------------------------------------
+inline char
+String::Back() const {
+    if (this->strPtr) {
+        return this->strPtr[this->data->length - 1];
+    }
+    else {
+        return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+inline char
+String::Front() const {
+    if (this->strPtr) {
+        return this->strPtr[0];
+    }
+    else {
+        return 0;
     }
 }
 

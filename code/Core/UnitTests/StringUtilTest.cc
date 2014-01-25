@@ -12,58 +12,82 @@ using namespace Core;
 TEST(StringUtilTest) {
     
     // test tokenize
-    std::vector<std::string> tokens = StringUtil::Tokenize("One Two Three", " ");
-    CHECK(tokens.size() == 3);
+    Array<String> tokens;
+    int32 numTokens = StringUtil::Tokenize("One Two Three", " ", tokens);
+    CHECK(numTokens == tokens.Size());
+    CHECK(tokens.Size() == 3);
     CHECK(tokens[0] == "One");
     CHECK(tokens[1] == "Two");
     CHECK(tokens[2] == "Three");
     
-    tokens = StringUtil::Tokenize("  One   Two Three    ", " ");
-    CHECK(tokens.size() == 3);
+    StringUtil::Tokenize("  One   Two Three    ", " ", tokens);
+    CHECK(tokens.Size() == 3);
+    CHECK(numTokens == 3);
     CHECK(tokens[0] == "One");
     CHECK(tokens[1] == "Two");
     CHECK(tokens[2] == "Three");
     
-    tokens = StringUtil::Tokenize(", One, \t Two \r Three", ", \t\r");
-    CHECK(tokens.size() == 3);
+    StringUtil::Tokenize(", One, \t Two \r Three", ", \t\r", tokens);
+    CHECK(tokens.Size() == 3);
     CHECK(tokens[0] == "One");
     CHECK(tokens[1] == "Two");
     CHECK(tokens[2] == "Three");
     
-    tokens = StringUtil::Tokenize("One", " ");
-    CHECK(tokens.size() == 1);
+    StringUtil::Tokenize("One", " ", tokens);
+    CHECK(tokens.Size() == 1);
     CHECK(tokens[0] == "One");
     
-    tokens = StringUtil::Tokenize("  ,;  ", " ,;");
-    CHECK(tokens.size() == 0);
+    StringUtil::Tokenize("  ,;  ", " ,;", tokens);
+    CHECK(tokens.Size() == 0);
     
     // test bisecting
-    std::string str = "Left:Right";
-    std::pair<std::string, std::string> res = StringUtil::Bisect(str, ":");
-    CHECK(res.first == "Left");
-    CHECK(res.second == "Right");
+    String str = "Left:Right";
+    String left, right;
+    StringUtil::Bisect(str, ":", left, right);
+    CHECK(left == "Left");
+    CHECK(right == "Right");
     
     str = ":Right";
-    res = StringUtil::Bisect(str, ":");
-    CHECK(res.first.empty());
-    CHECK(res.second == "Right");
+    StringUtil::Bisect(str, ":", left, right);
+    CHECK(left.Empty());
+    CHECK(right == "Right");
     
     str = "Left:";
-    res = StringUtil::Bisect(str, ":");
-    CHECK(res.first == "Left");
-    CHECK(res.second.empty());
+    StringUtil::Bisect(str, ":", left, right);
+    CHECK(left == "Left");
+    CHECK(right.Empty());
+    
+    str = "Left";
+    StringUtil::Bisect(str, ":", left, right);
+    CHECK(left == "Left");
+    CHECK(right.Empty());
     
     str = ":";
-    res = StringUtil::Bisect(str, ":");
-    CHECK(res.first.empty());
-    CHECK(res.second.empty());
+    StringUtil::Bisect(str, ":", left, right);
+    CHECK(left.Empty());
+    CHECK(right.Empty());
     
     str = "bla://blub";
-    res = StringUtil::Bisect(str, ":/");
-    CHECK(res.first == "bla");
-    CHECK(res.second == "blub");
+    StringUtil::Bisect(str, ":/", left, right);
+    CHECK(left == "bla");
+    CHECK(right == "blub");
     
-    res = StringUtil::Bisect(std::string(), ":");
-    CHECK(res.first.empty());
-    CHECK(res.second.empty());
+    StringUtil::Bisect("", ":", left, right);
+    CHECK(left.Empty());
+    CHECK(right.Empty());
+    
+    // test concatenate
+    str = StringUtil::Concatenate('/', { "bla", "blub", "blob" } );
+    CHECK(str == "bla/blub/blob");
+    
+    // test append
+    str = StringUtil::Append({ "One", "Two", "Three"} );
+    CHECK(str == "OneTwoThree");
+    
+    // test truncate
+    str = StringUtil::Truncate(str, 32);
+    CHECK(str == "OneTwoThree");
+    str = StringUtil::Truncate(str, 3);
+    CHECK(str == "One");
+    
 }

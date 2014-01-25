@@ -5,6 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/StringAtom.h"
+#include "Core/String/String.h"
 #include "Core/Core.h"
 
 #include <array>
@@ -18,11 +19,11 @@ TEST(StringAtomSingleThreaded) {
     StringAtom atom0;
     CHECK(!atom0.IsValid());
     CHECK(atom0.AsCStr()[0] == 0);
-    CHECK(atom0.AsString() == std::string());
+    CHECK(atom0.AsString() == String());
     
     StringAtom atom1("BLA!");
     CHECK(atom1.IsValid());
-    StringAtom atom2(std::string("BLA!"));
+    StringAtom atom2(String("BLA!"));
     CHECK(atom2.IsValid());
     CHECK(atom1 == atom2);
     StringAtom atom3(atom2);

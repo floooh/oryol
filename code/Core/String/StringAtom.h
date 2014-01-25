@@ -13,12 +13,14 @@
 namespace Oryol {
 namespace Core {
 
+class String;
+
 class StringAtom {
 public:
     /// default constructor
     StringAtom();
-    /// construct from std::string (slow)
-    explicit StringAtom(const std::string& str);
+    /// construct from String
+    explicit StringAtom(const String& str);
     /// construct from raw string (slow)
     explicit StringAtom(const char* str);
     /// construct from raw string (slow)
@@ -36,8 +38,8 @@ public:
     void operator=(const char* rhs);
     /// assign raw string (slow)
     void operator=(const uchar* rhs);
-    /// assign from string object (slow)
-    void operator=(const std::string& rhs);
+    /// assign from String object (slow)
+    void operator=(const String& rhs);
     
     /// equality operator (FAST)
     bool operator==(const StringAtom& rhs) const;
@@ -51,10 +53,10 @@ public:
     bool operator==(const uchar* rhs) const;
     /// inequality operator with raw string (SLOW!)
     bool operator!=(const uchar* rhs) const;
-    /// equality operator with std::string (SLOW!)
-    bool operator==(const std::string& rhs) const;
-    /// inequality operator with std::string (SLOW!)
-    bool operator!=(const std::string& rhs) const;
+    /// equality operator with String (SLOW!)
+    bool operator==(const String& rhs) const;
+    /// inequality operator with String (SLOW!)
+    bool operator!=(const String& rhs) const;
     
     /// clear content (becomes invalid)
     void Clear();
@@ -62,8 +64,8 @@ public:
     bool IsValid() const;
     /// get contained c-string
     const char* AsCStr() const;
-    /// get std::string (slow because string object must be constructed)
-    std::string AsString() const;
+    /// get String (slow because string object must be constructed)
+    String AsString() const;
 
 private:
     /// copy content
@@ -146,12 +148,6 @@ StringAtom::StringAtom(const uchar* rhs) {
 
 //------------------------------------------------------------------------------
 inline
-StringAtom::StringAtom(const std::string& rhs) {
-    this->setupFromCString(rhs.c_str());
-}
-
-//------------------------------------------------------------------------------
-inline
 StringAtom::StringAtom(const StringAtom& rhs) {
     this->copy(rhs);
 }
@@ -190,13 +186,6 @@ inline void
 StringAtom::operator=(const uchar* rhs) {
     this->Clear();
     this->setupFromCString((const char*)rhs);
-}
-
-//------------------------------------------------------------------------------
-inline void
-StringAtom::operator=(const std::string& rhs) {
-    this->Clear();
-    this->setupFromCString((const char*) rhs.c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -281,16 +270,5 @@ StringAtom::AsCStr() const {
     }
 }
 
-//------------------------------------------------------------------------------
-inline std::string
-StringAtom::AsString() const {
-    if (0 != this->data) {
-        return std::string(this->data->str);
-    }
-    else {
-        return std::string();
-    }
-}
-    
 } // namespace Core
 } // namespace Oryol

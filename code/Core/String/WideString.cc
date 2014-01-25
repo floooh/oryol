@@ -29,13 +29,14 @@ WideString::create(const wchar_t* ptr, int32 numChars) {
         new(this->data) StringData();
         this->addRef();
         this->data->length = numChars;
-        wchar_t* strPtr = (wchar_t*) &(this->data[1]);
-        Memory::Copy(ptr, strPtr, numChars * sizeof(wchar_t));
-        strPtr[numChars] = 0;
+        this->strPtr = (const wchar_t*) &(this->data[1]);
+        Memory::Copy(ptr, (void*) this->strPtr, numChars * sizeof(wchar_t));
+        ((wchar_t*)strPtr)[numChars] = 0;
     }
     else {
         // empty string, don't bother to allocate storage for this
         this->data = nullptr;
+        this->strPtr = 0;
     }
 }
 

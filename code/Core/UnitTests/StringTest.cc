@@ -123,4 +123,34 @@ TEST(StringTest) {
     // getters
     CHECK(str3.AsStdString() == blub);
     CHECK(str4.AsStringAtom() == blob);
+    
+    // make an explicit copy
+    String copy = str3.MakeCopy();
+    CHECK(copy == str3);
+    CHECK(copy.RefCount() == 1);
+    CHECK(str3.RefCount() == 1);
+    
+    // test range-assignment
+    const char* hello = "Hello World!";
+    String subStr(hello, 5);
+    CHECK(subStr == "Hello");
+    subStr.Clear();
+    subStr.Assign(&(hello[6]), 0);
+    CHECK(subStr == "World!");
+    
+    String helloStr("Hello World!");
+    String subStr1(helloStr, 1, 4);
+    CHECK(subStr1 == "ello");
+    subStr1.Assign(helloStr, 6, 0);
+    CHECK(subStr1 == "World!");
+    
+    // Front/Back
+    CHECK(helloStr.Front() == 'H');
+    CHECK(helloStr.Back() == '!');
+    subStr = "X";
+    CHECK(subStr.Front() == 'X');
+    CHECK(subStr.Back() == 'X');
+    subStr.Clear();
+    CHECK(subStr.Front() == 0);
+    CHECK(subStr.Back() == 0);
 }

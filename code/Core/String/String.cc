@@ -38,25 +38,43 @@ String::destroy() {
     this->data->~StringData();
     Memory::Free(this->data);
     this->data = 0;
+    this->strPtr = 0;
 }
-    
+
+//------------------------------------------------------------------------------
+void
+String::alloc(int32 len) {
+    o_assert(len > 0);
+    this->data = (StringData*) Memory::Alloc(sizeof(StringData) + len + 1);
+    new(this->data) StringData();
+    this->addRef();
+    this->data->length = len;
+    this->strPtr = (const char*) &(this->data[1]);
+}
+
 //------------------------------------------------------------------------------
 void
 String::create(const char* ptr, int32 len) {
     o_assert(0 != ptr);
     if ((ptr[0] != 0) && (len > 0)) {
-        this->data = (StringData*) Memory::Alloc(sizeof(StringData) + len + 1);
-        new(this->data) StringData();
-        this->addRef();
-        this->data->length = len;
-        char* strPtr = (char*) &(this->data[1]);
-        Memory::Copy(ptr, strPtr, len);
-        strPtr[len] = 0;
+        this->alloc(len);
+        Memory::Copy(ptr, (void*)this->strPtr, len);
+        ((char*)this->strPtr)[len] = 0;
     }
     else {
         // empty string, don't bother to allocate storage for this
         this->data = nullptr;
+        this->strPtr = nullptr;
     }
+}
+
+//------------------------------------------------------------------------------
+char*
+String::Alloc(int32 numCharBytes) {
+    this->release();
+    this->alloc(numCharBytes);
+    Memory::Clear((void*)this->strPtr, numCharBytes + 1);
+    return (char*)this->strPtr;
 }
 
 //------------------------------------------------------------------------------
