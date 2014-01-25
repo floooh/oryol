@@ -46,7 +46,7 @@ Free(void* p) {
 
 //------------------------------------------------------------------------------
 inline void
-Copy(void* from, void* to, int32 num_bytes) {
+Copy(const void* from, void* to, int32 num_bytes) {
     // copy memory, memory areas must not overlap
     // (NOTE different order of src and dest compared to memcpy!)
     std::memcpy(to, from, num_bytes);
