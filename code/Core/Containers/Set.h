@@ -30,11 +30,15 @@ public:
 
     /// copy-assignment operator (truncates to actual size)
     void operator=(const Set& rhs) {
-        this->valueArray = rhs.valueArray;
+        if (&rhs != this) {
+            this->valueArray = rhs.valueArray;
+        }
     };
     /// move-assignment operator (same capacity and size)
     void operator=(Set&& rhs) {
-        this->valueArray = std::move(rhs.valueArray);
+        if (&rhs != this) {
+            this->valueArray = std::move(rhs.valueArray);
+        }
     };
     
     /// set allocation strategy

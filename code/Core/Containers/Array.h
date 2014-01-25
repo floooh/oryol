@@ -61,14 +61,18 @@ public:
     /// copy-assignment operator (truncates to actual size)
     void operator=(const Array& rhs) {
         // FIXME: this should be optimized when rhs.size() < this->capacity()!
-        this->destroy();
-        this->copy(rhs);
+        if (&rhs != this) {
+            this->destroy();
+            this->copy(rhs);
+        }
     };
     /// move-assignment operator (same capacity and size)
     void operator=(Array&& rhs) {
         // FIXME: this should be optimized when rhs.size() < this->capacity()!
-        this->destroy();
-        this->move(std::move(rhs));
+        if (&rhs != this) {
+            this->destroy();
+            this->move(std::move(rhs));
+        }
     };
     
     /// set allocation strategy

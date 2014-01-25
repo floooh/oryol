@@ -176,27 +176,31 @@ elementBuffer<TYPE>::~elementBuffer<TYPE>() {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::operator=(const elementBuffer<TYPE>& rhs) {
-    this->destroy();
-    const int32 newSize = rhs.size();
-    if (newSize > 0)
-    {
-        this->alloc(rhs.size(), 0);
-        copyConstruct(rhs.elmStart, this->elmStart, rhs.size());
-        this->elmEnd = this->elmStart + rhs.size();
+    if (&rhs != this) {
+        this->destroy();
+        const int32 newSize = rhs.size();
+        if (newSize > 0)
+        {
+            this->alloc(rhs.size(), 0);
+            copyConstruct(rhs.elmStart, this->elmStart, rhs.size());
+            this->elmEnd = this->elmStart + rhs.size();
+        }
     }
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::operator=(elementBuffer<TYPE>&& rhs) {
-    this->bufStart = rhs.bufStart;
-    this->bufEnd   = rhs.bufEnd;
-    this->elmStart = rhs.elmStart;
-    this->elmEnd   = rhs.elmEnd;
-    rhs.bufStart = 0;
-    rhs.bufEnd   = 0;
-    rhs.elmStart = 0;
-    rhs.elmEnd   = 0;
+    if (&rhs != this) {
+        this->bufStart = rhs.bufStart;
+        this->bufEnd   = rhs.bufEnd;
+        this->elmStart = rhs.elmStart;
+        this->elmEnd   = rhs.elmEnd;
+        rhs.bufStart = 0;
+        rhs.bufEnd   = 0;
+        rhs.elmStart = 0;
+        rhs.elmEnd   = 0;
+    }
 }
 
 //------------------------------------------------------------------------------

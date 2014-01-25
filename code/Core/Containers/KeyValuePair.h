@@ -31,13 +31,17 @@ public:
     
     /// copy-assignment
     void operator=(const KeyValuePair& rhs) {
-        this->key = rhs.key;
-        this->value = rhs.value;
+        if (&rhs != this) {
+            this->key = rhs.key;
+            this->value = rhs.value;
+        }
     };
     /// move-assignment
     void operator=(KeyValuePair&& rhs) {
-        this->key = std::move(rhs.key);
-        this->value = std::move(rhs.value);
+        if (&rhs != this) {
+            this->key = std::move(rhs.key);
+            this->value = std::move(rhs.value);
+        }
     };
     
     /// test equality

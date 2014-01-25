@@ -40,18 +40,22 @@ public:
     };
     /// copy-assignment operator
     void operator=(const HashSet& rhs) {
-        this->size = rhs.size;
-        for (int i = 0; i < NUMBUCKETS; i++) {
-            this->buckets[i] = rhs.buckets[i];
+        if (&rhs != this) {
+            this->size = rhs.size;
+            for (int i = 0; i < NUMBUCKETS; i++) {
+                this->buckets[i] = rhs.buckets[i];
+            }
         }
     };
     /// move-assignment operator (same capacity and size)
     void operator=(HashSet&& rhs) {
-        this->size = rhs.size;
-        for (int i = 0; i < NUMBUCKETS; i++) {
-            this->buckets[i] = std::move(rhs.buckets[i]);
+        if (&rhs != this) {
+            this->size = rhs.size;
+            for (int i = 0; i < NUMBUCKETS; i++) {
+                this->buckets[i] = std::move(rhs.buckets[i]);
+            }
+            rhs.size = 0;
         }
-        rhs.size = 0;
     };
     
     /// set allocation strategy

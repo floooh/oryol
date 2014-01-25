@@ -52,13 +52,17 @@ public:
     };
     /// copy-assignment operator (truncates to actual size)
     void operator=(const ArrayMap& rhs) {
-        this->indexMap = rhs.indexMap;
-        this->valueArray = rhs.valueArray;
+        if (&rhs != this) {
+            this->indexMap = rhs.indexMap;
+            this->valueArray = rhs.valueArray;
+        }
     };
     /// move-assignment operator (same capacity and size)
     void operator=(ArrayMap&& rhs) {
-        this->indexMap = std::move(rhs.indexMap);
-        this->valueArray = std::move(rhs.valueArray);
+        if (&rhs != this) {
+            this->indexMap = std::move(rhs.indexMap);
+            this->valueArray = std::move(rhs.valueArray);
+        }
     };
 
     /// set allocation strategy
