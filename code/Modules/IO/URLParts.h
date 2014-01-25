@@ -11,7 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Core/String/StringUtil.h"
-#include <map>
+#include "Core/Containers/Map.h"
 
 namespace Oryol {
 namespace IO {
@@ -25,26 +25,26 @@ public:
     /// valid flag
     bool Valid;
     /// the URL scheme (http, file, ftp, ...)
-    std::string Scheme;
+    Core::String Scheme;
     /// the optional user name
-    std::string User;
+    Core::String User;
     /// the optional password
-    std::string Password;
+    Core::String Password;
     /// the host address
-    std::string Host;
+    Core::String Host;
     /// the optional port number
-    std::string Port;
+    Core::String Port;
     /// the path component
-    std::string Path;
+    Core::String Path;
     /// the optional fragment
-    std::string Fragment;
+    Core::String Fragment;
     /// the query component
-    std::map<std::string,std::string> Query;
+    Core::Map<Core::String,Core::String> Query;
     
     /// set host and port (as 'host[:port]')
-    void SetAddress(const std::string& s);
+    void SetAddress(const Core::String& s);
     /// get host and port
-    std::string GetAddress() const;
+    Core::String GetAddress() const;
 };
 
 //------------------------------------------------------------------------------
@@ -57,21 +57,19 @@ Valid(false)
 
 //------------------------------------------------------------------------------
 inline void
-URLParts::SetAddress(const std::string& addr) {
-    auto split = String::StringUtil::Bisect(addr, ":");
-    this->Host = split.first;
-    this->Port = split.second;
+URLParts::SetAddress(const Core::String& addr) {
+    Core::StringUtil::Bisect(addr, ":", this->Host, this->Port);
 }
 
 //------------------------------------------------------------------------------
-inline std::string
+inline Core::String
 URLParts::GetAddress() const {
-    std::string addr = this->Host;
-    if (!this->Port.empty()) {
-        addr.append(1, ':');
-        addr.append(this->Port);
+    if (!this->Port.Empty()) {
+        return Core::StringUtil::Concatenate(':', {this->Host, this->Port});
     }
-    return addr;
+    else {
+        return this->Host;
+    }
 }
 
 } // namespace IO

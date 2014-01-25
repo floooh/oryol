@@ -7,6 +7,7 @@
 #include "IO/URL.h"
 
 using namespace Oryol;
+using namespace Core;
 using namespace IO;
 
 TEST(URLTest) {
@@ -21,13 +22,13 @@ TEST(URLTest) {
     URLParts parts = url0.Split();
     CHECK(parts.Valid);
     CHECK(parts.Scheme == "http");
-    CHECK(parts.User.empty());
-    CHECK(parts.Password.empty());
+    CHECK(parts.User.Empty());
+    CHECK(parts.Password.Empty());
     CHECK(parts.Host == "www.flohofwoe.net");
-    CHECK(parts.Port.empty());
+    CHECK(parts.Port.Empty());
     CHECK(parts.Path == "index.html");
-    CHECK(parts.Query.empty());
-    CHECK(parts.Fragment.empty());
+    CHECK(parts.Query.Empty());
+    CHECK(parts.Fragment.Empty());
     
     // test some invalid URL
     URL brokenUrl;
@@ -41,11 +42,11 @@ TEST(URLTest) {
     CHECK(parts.Valid);
     CHECK(parts.Scheme == "http");
     CHECK(parts.User == "user");
-    CHECK(parts.Password.empty());
+    CHECK(parts.Password.Empty());
     CHECK(parts.Host == "www.flohofwoe.net");
     CHECK(parts.Port == "8000");
     CHECK(parts.Path == "bla/blub/blob.txt");
-    CHECK(parts.Query.empty());
+    CHECK(parts.Query.Empty());
     CHECK(parts.Fragment == "frag");
     
     // a complex URL with user+password and a query
@@ -57,7 +58,7 @@ TEST(URLTest) {
     CHECK(parts.Password == "pwd");
     CHECK(parts.Host == "www.flohofwoe.net");
     CHECK(parts.Path == "bla.txt");
-    CHECK(parts.Query.size() == 2);
+    CHECK(parts.Query.Size() == 2);
     CHECK(parts.Query["key0"] == "val0");
     CHECK(parts.Query["key1"] == "val1");
     CHECK(parts.Fragment == "frag");
@@ -70,6 +71,6 @@ TEST(URLTest) {
     
     // test building URL from parts
     URL url4 = URL::Build(parts);
-    std::string url4String = url4.Get().AsString();
+    String url4String = url4.Get().AsString();
     CHECK(url4String == "http://user:pwd@www.radonlabs.de:8000/bla.txt?key0=val0&key1=val1#frag");
 }

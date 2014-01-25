@@ -7,8 +7,9 @@
     path aliases (google for AmigaOS assign).
 */
 #include "Core/RefCounted.h"
+#include "Core/Containers/Map.h"
+#include "Core/String/String.h"
 #include <mutex>
-#include <map>
 
 namespace Oryol {
 namespace IO {
@@ -22,20 +23,20 @@ public:
     virtual ~assignRegistry();
     
     /// add or replace an assign definition
-    void SetAssign(const std::string& assign, const std::string& path);
+    void SetAssign(const Core::String& assign, const Core::String& path);
     /// check if an assign exists
-    bool HasAssign(const std::string& assign) const;
+    bool HasAssign(const Core::String& assign) const;
     /// lookup an assign (return empty string if not exists)
-    std::string LookupAssign(const std::string& assign) const;
+    Core::String LookupAssign(const Core::String& assign) const;
     /// resolve assigns in the provided string
-    std::string ResolveAssigns(const std::string& str) const;
+    Core::String ResolveAssigns(const Core::String& str) const;
     
 private:
     /// setup the standard assigns
     void setStandardAssigns();
 
     mutable std::mutex mtx;
-    std::map<std::string, std::string> assigns;
+    Core::Map<Core::String, Core::String> assigns;
 };
     
 } // namespace IO

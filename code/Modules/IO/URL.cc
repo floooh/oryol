@@ -11,15 +11,14 @@ namespace Oryol {
 namespace IO {
 
 using namespace Core;
-using namespace String;
     
 //------------------------------------------------------------------------------
 URLParts
 URL::Split() const {
     
     URLParts parts;
-    std::string str = this->content.AsString();
-    if (!str.empty()) {
+    String str = this->content.AsString();
+    if (!str.Empty()) {
         if (assignRegistry::HasInstance()) {
             str = assignRegistry::Instance()->ResolveAssigns(str);
         }
@@ -28,60 +27,57 @@ URL::Split() const {
         }
         
         // extract scheme
-        auto schemeAndRest = StringUtil::Bisect(str, ":/");
-        if (schemeAndRest.second.empty()) {
+        String rightOfScheme;
+        StringUtil::Bisect(str, ":/", parts.Scheme, rightOfScheme);
+        if (parts.Scheme.Empty()) {
             // URL has no scheme, not a valid URL
             parts.Valid = false;
             return parts;
         }
-        parts.Scheme = schemeAndRest.first;
 
         // split into host and path part
-        str = schemeAndRest.second;
-        auto hostAndPath = StringUtil::Bisect(str, "/");
-        if (hostAndPath.first.empty()) {
+        String hostAll;
+        String pathAll;
+        StringUtil::Bisect(str, "/", hostAll, pathAll);
+        if (hostAll.Empty()) {
             // URL malformed, only consisted of scheme
             parts.Valid = false;
             return parts;
         }
         
         // split into user+pwd and host+port
-        auto userPwdAndHost = StringUtil::Bisect(hostAndPath.first, "@");
-        std::string host;
-        if (!userPwdAndHost.second.empty()) {
+        String hostUserPwd;
+        String hostAddrPort;
+        StringUtil::Bisect(hostAll, "@", hostUserPwd, hostAddrPort);
+        if (!hostAddrPort.Empty()) {
             // split userPwd into user and pwd
-            auto userAndPwd = StringUtil::Bisect(userPwdAndHost.first, ":");
-            parts.User = userAndPwd.first;
-            parts.Password = userAndPwd.second;
-            host = userPwdAndHost.second;
+            StringUtil::Bisect(hostUserPwd, ":", parts.User, parts.Password);
         }
         else {
-            host = userPwdAndHost.first;
+            hostAddrPort = hostUserPwd;
         }
         
         // split host part into host and port number
-        auto hostAndPort = StringUtil::Bisect(host, ":");
-        parts.Host = hostAndPort.first;
-        parts.Port = hostAndPort.second;
+        StringUtil::Bisect(hostAddrPort, ":", parts.Host, parts.Port);
         
-        if (!hostAndPath.second.empty()) {
+        if (!pathAll.Empty()) {
 
             // split right-part into pathAndQuery and fragment
-            auto pathQueryAndFragment = StringUtil::Bisect(hostAndPath.second, "#");
-            if (!pathQueryAndFragment.second.empty()) {
-                parts.Fragment = pathQueryAndFragment.second;
-            }
+            String pathAndQuery;
+            StringUtil::Bisect(pathAll, "#", pathAndQuery, parts.Fragment);
             
             // split path and query
-            auto pathAndQuery = StringUtil::Bisect(pathQueryAndFragment.first, "?");
-            parts.Path = pathAndQuery.first;
+            String query;
+            StringUtil::Bisect(pathAndQuery, "?", parts.Path, query);
             
             // extract query
-            if (!pathAndQuery.second.empty()) {
-                std::vector<std::string> tokens = StringUtil::Tokenize(pathAndQuery.second, "&;");
-                for (const auto& token : tokens) {
-                    auto keyValuePair = StringUtil::Bisect(token, "=");
-                    parts.Query.insert(keyValuePair);
+            if (!query.Empty()) {
+                Array<String> tokens;
+                StringUtil::Tokenize(query, "&;", tokens);
+                for (const String& token : tokens) {
+                    String key, value;
+                    StringUtil::Bisect(token, "=", key, value);
+                    parts.Query.Insert(key, value);
                 }
             }
         }
@@ -93,6 +89,9 @@ URL::Split() const {
 //------------------------------------------------------------------------------
 URL
 URL::Build(const URLParts& parts) {
+o_error("FIXME!");
+return URL();
+/*
     o_assert(parts.Valid);
     std::string str = parts.Scheme;
     str.append("://");
@@ -126,6 +125,7 @@ URL::Build(const URLParts& parts) {
         str.append(parts.Fragment);
     }
     return URL(str);
+*/
 }
 
 } // namespace IO

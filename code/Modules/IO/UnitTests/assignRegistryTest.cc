@@ -29,7 +29,7 @@ TEST(assignRegistryTest) {
     CHECK(reg->LookupAssign("blub") == "bla:blub");
     CHECK(reg->LookupAssign("blob") == "");
     
-    std::string res = reg->ResolveAssigns("blub:");
+    String res = reg->ResolveAssigns("blub:");
     CHECK(res == "c:/program files/bla/blub");
     reg->SetAssign("home", "http://www.flohofwoe.net");
     res = reg->ResolveAssigns("blub:");

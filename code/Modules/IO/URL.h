@@ -25,9 +25,9 @@ public:
     /// construct from raw string
     URL(const char* rhs);
     /// construct from StringAtom
-    URL(const String::StringAtom& rhs);
+    URL(const Core::StringAtom& rhs);
     /// construct from std::string
-    URL(const std::string& rhs);
+    URL(const Core::String& rhs);
     
     /// assignment from other URL
     void operator=(const URL& rhs);
@@ -36,9 +36,9 @@ public:
     /// assign from raw string
     void operator=(const char* rhs);
     /// assignment from StringAtom
-    void operator=(const String::StringAtom& rhs);
+    void operator=(const Core::StringAtom& rhs);
     /// assignment from std::string
-    void operator=(const std::string& rhs);
+    void operator=(const Core::String& rhs);
     
     /// equality
     bool operator==(const URL& rhs);
@@ -46,7 +46,7 @@ public:
     bool operator!=(const URL& rhs);
 
     /// get the URL string
-    const String::StringAtom& Get() const;
+    const Core::StringAtom& Get() const;
 
     /// split an URL into parts
     URLParts Split() const;
@@ -54,7 +54,7 @@ public:
     static URL Build(const URLParts& parts);
     
 private:
-    String::StringAtom content;
+    Core::StringAtom content;
 };
 
 //------------------------------------------------------------------------------
@@ -67,15 +67,13 @@ URL::URL() {
 inline
 URL::URL(const URL& rhs) :
 content(rhs.content) {
-
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
 URL::URL(URL&& rhs) {
-    this->content = rhs.content;
-    rhs.content.Clear();
+    this->content = std::move(rhs.content);
 }
 
 //------------------------------------------------------------------------------
@@ -87,14 +85,14 @@ content(rhs) {
 
 //------------------------------------------------------------------------------
 inline
-URL::URL(const String::StringAtom& rhs) :
+URL::URL(const Core::StringAtom& rhs) :
 content(rhs) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-URL::URL(const std::string& rhs) :
+URL::URL(const Core::String& rhs) :
 content(rhs) {
     // empty
 }
@@ -120,13 +118,13 @@ URL::operator=(const char* rhs) {
 
 //------------------------------------------------------------------------------
 inline void
-URL::operator=(const String::StringAtom& rhs) {
+URL::operator=(const Core::StringAtom& rhs) {
     this->content = rhs;
 }
 
 //------------------------------------------------------------------------------
 inline void
-URL::operator=(const std::string& rhs) {
+URL::operator=(const Core::String& rhs) {
     this->content = rhs;
 }
 
@@ -143,7 +141,7 @@ URL::operator!=(const URL& rhs) {
 }
 
 //------------------------------------------------------------------------------
-inline const String::StringAtom&
+inline const Core::StringAtom&
 URL::Get() const {
     return this->content;
 }

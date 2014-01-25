@@ -3,11 +3,14 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "assignRegistry.h"
+#include "Core/String/StringUtil.h"
 
 namespace Oryol {
 namespace IO {
 
 OryolGlobalSingletonImpl(assignRegistry);
+
+using namespace Core;
 
 //------------------------------------------------------------------------------
 assignRegistry::assignRegistry() {
@@ -22,72 +25,85 @@ assignRegistry::~assignRegistry() {
 
 //------------------------------------------------------------------------------
 void
-assignRegistry::SetAssign(const std::string& assign, const std::string& path) {
-    o_assert(!assign.empty());
-    o_assert(assign.length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
-    o_assert(!path.empty());
+assignRegistry::SetAssign(const String& assign, const String& path) {
+    o_assert(!assign.Empty());
+    o_assert(assign.Length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
+    o_assert(!path.Empty());
     std::lock_guard<std::mutex> lock(this->mtx);
-    this->assigns[assign] = path;
+    if (this->assigns.Contains(assign)) {
+        this->assigns[assign] = path;
+    }
+    else {
+        this->assigns.Insert(assign, path);
+    }
 }
 
 //------------------------------------------------------------------------------
 bool
-assignRegistry::HasAssign(const std::string& assign) const {
-    o_assert(!assign.empty());
+assignRegistry::HasAssign(const String& assign) const {
+    o_assert(!assign.Empty());
     std::lock_guard<std::mutex> lock(this->mtx);
-    return this->assigns.find(assign) != this->assigns.end();
+    return this->assigns.Contains(assign);
 }
 
 //------------------------------------------------------------------------------
-std::string
-assignRegistry::LookupAssign(const std::string& assign) const {
-    o_assert(!assign.empty());
+String
+assignRegistry::LookupAssign(const String& assign) const {
+    o_assert(!assign.Empty());
     std::lock_guard<std::mutex> lock(this->mtx);
-    auto iter = this->assigns.find(assign);
-    if (iter != this->assigns.end()) {
-        return iter->second;
+    if (this->assigns.Contains(assign)) {
+        return this->assigns[assign];
     }
     else {
-        return std::string();
+        return String();
     }
 }
 
 //------------------------------------------------------------------------------
-std::string
-assignRegistry::ResolveAssigns(const std::string& str) const {
+String
+assignRegistry::ResolveAssigns(const String& str) const {
+
+    // FIXME: this should be optimized:
+    //  - resolve assigns when adding to the registry, so that
+    //    an actual resolve doesn't need to loop
+    //  - reduce number of string operations...
+    
+    // FIXME: use string builder!
+
     std::lock_guard<std::mutex> lock(this->mtx);
     
-    std::string result = str;
-    std::string::size_type index;
-    while ((index = result.find_first_of(':', 0)) != std::string::npos) {
+    String result = str;
+    int32 index;
+    while ((index = StringUtil::FindFirstOf(result, 0, ":")) != InvalidIndex) {
         // ignore DOS drive letters
         if (index > 1) {
-            std::string assignString(result, 0, index);
+            String assignString(result, 0, index);
 
             // lookup the assign, ignore unknown assigns, may be URL schemes
-            auto iter = this->assigns.find(assignString);
-            if (iter != this->assigns.end()) {
+            if (this->assigns.Contains(assignString)) {
             
                 // get the string after the colon
-                std::string postAssignString;
-                auto postAssignIndex = index + 1;
-                if (postAssignIndex < result.size()) {
-                    postAssignString.assign(result, postAssignIndex, std::string::npos);
+                String postAssignString;
+                int32 postAssignIndex = index + 1;
+                if (postAssignIndex < result.Length()) {
+                    postAssignString.Assign(result, postAssignIndex, 0);
                 }
                 
                 // build the new string
-                result = iter->second;
-                if (result.back() != ':' && result.back() != '/') {
-                    result.push_back('/');
+                String resolved = this->assigns[assignString];
+                if (resolved.Back() != ':' && resolved.Back() != '/') {
+                    result = StringUtil::Append({ resolved, postAssignString, "/" });
                 }
-                result.append(postAssignString);
+                else {
+                    result = StringUtil::Append({ resolved, postAssignString });
+                }
             }
             else break;
         }
         else break;
     }
-    if (result.back() == '/') {
-        result.pop_back();
+    if (result.Back() == '/') {
+        result = StringUtil::Truncate(result, result.Length() - 1);
     }
     return result;
 }
