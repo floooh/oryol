@@ -23,8 +23,10 @@ public:
     explicit StringAtom(const char* str);
     /// construct from raw string (slow)
     explicit StringAtom(const uchar* str);
-    /// copy constructor (fast if rhs was created in same thread)
-    explicit StringAtom(const StringAtom& rhs);
+    /// copy-constructor (fast if rhs was created in same thread)
+    StringAtom(const StringAtom& rhs);
+    /// move-constructor
+    StringAtom(StringAtom&& rhs);
     /// destructor
     ~StringAtom();
     
@@ -156,6 +158,13 @@ StringAtom::StringAtom(const StringAtom& rhs) {
 
 //------------------------------------------------------------------------------
 inline
+StringAtom::StringAtom(StringAtom&& rhs) {
+    this->copy(rhs);
+    rhs.data = 0;
+}
+
+//------------------------------------------------------------------------------
+inline
 StringAtom::~StringAtom() {
     this->Clear();
 }
@@ -163,8 +172,10 @@ StringAtom::~StringAtom() {
 //------------------------------------------------------------------------------
 inline void
 StringAtom::operator=(const StringAtom& rhs) {
-    this->Clear();
-    this->copy(rhs);
+    if (&rhs != this) {
+        this->Clear();
+        this->copy(rhs);
+    }
 }
 
 //------------------------------------------------------------------------------
