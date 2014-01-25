@@ -1,18 +1,17 @@
 //------------------------------------------------------------------------------
-//  MapTest.cc
-//  Test Dictionary functionality
+//  ArrayMapTest.cc
+//  Test ArrayMap class.
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Core/Containers/Map.h"
+#include "Core/Containers/ArrayMap.h"
 
 using namespace Oryol;
 using namespace Core;
 
-TEST(MapTest) {
-
+TEST(ArrayMapTest) {
     // test simple insertion of unique elements
-    Map<int32, int32> map;
+    ArrayMap<int32, int32> map;
     CHECK(map.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(map.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     CHECK(map.Size() == 0);
@@ -37,8 +36,30 @@ TEST(MapTest) {
         CHECK(map[i] == i);
     }
     
+    // ValueAtIndex
+    CHECK(map.ValueAtIndex(0) == 0);
+    CHECK(map.ValueAtIndex(1) == 3);
+    CHECK(map.ValueAtIndex(2) == 8);
+    CHECK(map.ValueAtIndex(3) == 6);
+    CHECK(map.ValueAtIndex(4) == 4);
+    CHECK(map.ValueAtIndex(5) == 1);
+    CHECK(map.ValueAtIndex(6) == 2);
+    CHECK(map.ValueAtIndex(7) == 7);
+    CHECK(map.ValueAtIndex(8) == 5);
+    
+    // FindValueIndex
+    CHECK(map.FindValueIndex(0) == 0);
+    CHECK(map.FindValueIndex(3) == 1);
+    CHECK(map.FindValueIndex(8) == 2);
+    CHECK(map.FindValueIndex(6) == 3);
+    CHECK(map.FindValueIndex(4) == 4);
+    CHECK(map.FindValueIndex(1) == 5);
+    CHECK(map.FindValueIndex(2) == 6);
+    CHECK(map.FindValueIndex(7) == 7);
+    CHECK(map.FindValueIndex(5) == 8);
+    
     // copy construct
-    Map<int32, int32> map1(map);
+    ArrayMap<int32, int32> map1(map);
     CHECK(map1.Size() == 9);
     CHECK(map1.Capacity() == 9); // copy trims
     CHECK(!map1.Empty());
@@ -49,7 +70,7 @@ TEST(MapTest) {
     }
     
     // copy-assign
-    Map<int32, int32> map2;
+    ArrayMap<int32, int32> map2;
     map2 = map;
     CHECK(map2.Size() == 9);
     CHECK(map2.Capacity() == 9);    // copy trims
@@ -89,63 +110,49 @@ TEST(MapTest) {
         CHECK(map[i] == i);
     }
     
-    // index accessor functions
-    for (int i = 0; i < 9; i++) {
-        CHECK(map.KeyAtIndex(i) == i);
-        CHECK(map.ValueAtIndex(i) == i);
-    }
-    
     // modify values
     map[5] = 6;
     CHECK(map[5] == 6);
-    map.ValueAtIndex(7) = 6;
-    CHECK(map[7] == 6);
     
-    // check FindDuplicate
-    CHECK(InvalidIndex == map.FindDuplicate(0));
-    map.Insert(5, 10);
-    map.Insert(5, 11);
-    CHECK(5 == map.FindDuplicate(0));
-    // test erase (single and duplicates)
-    CHECK(map.Contains(5));
-    CHECK(map.Size() == 11);
-    map.Erase(5);   // this should remove all duplicates
-    CHECK(!map.Contains(5));
+    // erase
+    map.Erase(5);
     CHECK(map.Size() == 8);
-    CHECK(InvalidIndex == map.FindDuplicate(0));
+    CHECK(!map.Contains(5));
+    CHECK(map[0] == 0);
+    CHECK(map[1] == 1);
+    CHECK(map[2] == 2);
+    CHECK(map[3] == 3);
+    CHECK(map[4] == 4);
+    CHECK(map[6] == 6);
+    CHECK(map[7] == 7);
+    CHECK(map[8] == 8);
+    CHECK(map.ValueAtIndex(0) == 0);
+    CHECK(map.ValueAtIndex(1) == 3);
+    CHECK(map.ValueAtIndex(2) == 8);
+    CHECK(map.ValueAtIndex(3) == 6);
+    CHECK(map.ValueAtIndex(4) == 4);
+    CHECK(map.ValueAtIndex(5) == 1);
+    CHECK(map.ValueAtIndex(6) == 2);
+    CHECK(map.ValueAtIndex(7) == 7);
     
-    // erase at front and back
-    map.Erase(0);
+    // erase-swap
+    map.EraseSwap(1);
     CHECK(map.Size() == 7);
-    CHECK(!map.Contains(0));
-    map.Erase(8);
-    CHECK(map.Size() == 6);
-    CHECK(!map.Contains(8));
-    
-    // test bulk add
-    Map<int, int> map4;
-    map4.BeginBulk();
-    for (int i = 31; i >= 0; i--) {
-        KeyValuePair<int, int> kvp(i, i);
-        map4.InsertBulk(kvp);
-    }
-    map4.EndBulk();
-    for (int i = 0; i < 32; i++) {
-        CHECK(map4.KeyAtIndex(i) == i);
-        CHECK(map4.ValueAtIndex(i) == i);
-        CHECK(map4[i] == i);
-    }
-    
-    // FindIndex
-    CHECK(map4.FindIndex(0) == 0);
-    CHECK(map4.FindIndex(31) == 31);
-    CHECK(map4.FindIndex(16) == 16);
-    CHECK(map4.FindIndex(100) == InvalidIndex);
-    
-    // test InsertUnique
-    CHECK(map4.InsertUnique(32, 32));
-    CHECK(!map4.InsertUnique(32, 33));
-    CHECK(map4[32] == 32);
-    int32 index = map4.FindIndex(32);
-    CHECK(InvalidIndex == map4.FindDuplicate(index));
+    CHECK(!map.Contains(1));
+    CHECK(map[0] == 0);
+    CHECK(map[2] == 2);
+    CHECK(map[3] == 3);
+    CHECK(map[4] == 4);
+    CHECK(map[6] == 6);
+    CHECK(map[7] == 7);
+    CHECK(map[8] == 8);
+    CHECK(map.ValueAtIndex(0) == 0);
+    CHECK(map.ValueAtIndex(1) == 3);
+    CHECK(map.ValueAtIndex(2) == 8);
+    CHECK(map.ValueAtIndex(3) == 6);
+    CHECK(map.ValueAtIndex(4) == 4);
+    CHECK(map.ValueAtIndex(5) == 7);
+    CHECK(map.ValueAtIndex(6) == 2);
 }
+
+

@@ -6,7 +6,7 @@
 #include "StringUtil.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
 
 #if ORYOL_WINDOWS
 #define o_strtok strtok_s
@@ -77,5 +77,5 @@ StringUtil::Bisect(const std::string& src, const char* delims) {
     return std::pair<std::string,std::string>(left, right);
 }
 
-} // namespace String
+} // namespace Core
 } // namespace Oryol

@@ -165,6 +165,42 @@ public:
     void Insert(const KEY& key, const VALUE& value) {
         this->Insert(KeyValuePair<KEY, VALUE>(key, value));
     };
+    /// insert new element, return false if element with key already existed
+    bool InsertUnique(const KeyValuePair<KEY, VALUE>& kvp) {
+        o_assert(!this->inBulkMode);
+        if (this->buffer.spare() == 0) {
+            this->grow();
+        }
+        auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
+        if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+            return false;
+        }
+        else {
+            int32 index = ptr - this->buffer.elmStart;
+            this->buffer.insert(index, kvp);
+            return true;
+        }
+    };
+    /// insert new element with move-semantics, return false if element with key already existed
+    bool InsertUnique(KeyValuePair<KEY, VALUE>&& kvp) {
+        o_assert(!this->inBulkMode);
+        if (this->buffer.spare() == 0) {
+            this->grow();
+        }
+        auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
+        if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+            return false;
+        }
+        else {
+            int32 index = ptr - this->buffer.elmStart;
+            this->buffer.insert(index, std::move(kvp));
+            return true;
+        }
+    };
+    /// insert new element, and check that it is unique
+    bool InsertUnique(const KEY& key, const VALUE& value) {
+        return this->InsertUnique(KeyValuePair<KEY, VALUE>(key, value));
+    };
     /// erase all elements matching key, does nothing if key not contained
     void Erase(const KEY& key) {
         auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
@@ -251,7 +287,7 @@ public:
         }
     };
     /// erase element at index
-    void EraseIndex(int32 index) const {
+    void EraseIndex(int32 index) {
         this->buffer.erase(index);
     };
     /// get key at index

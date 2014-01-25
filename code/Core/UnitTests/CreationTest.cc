@@ -10,6 +10,7 @@
 #include "Core/RefCounted.h"
 #include "Core/Ptr.h"
 #include "Core/Core.h"
+#include "Core/Containers/Array.h"
 
 #include <array>
 
@@ -78,10 +79,10 @@ TEST(CreatePtrBenchmark) {
         const int32 numObjects = 1000000;
         const int32 numOuterLoop = numObjects / maxLiveObjects;
         for (int32 j = 0; j < numOuterLoop; j++) {
-            std::vector<Ptr<TestClass>> objs;
-            objs.reserve(maxLiveObjects);
+            Array<Ptr<TestClass>> objs;
+            objs.Reserve(maxLiveObjects);
             for (int32 k = 0; k < maxLiveObjects; k++) {
-                objs.emplace_back(TestClass::Create());
+                objs.EmplaceBack(TestClass::Create());
             }
         }
         end = chrono::system_clock::now();
@@ -117,11 +118,11 @@ void threadFunc() {
     Log::Info("create_multithreaded: thread '%d' entered!\n", this_thread::get_id());
     
     for (int i = 0; i < numOuter; i++) {
-        std::vector<Ptr<TestClass>> pointers;
-        pointers.reserve(numInner);
+        Array<Ptr<TestClass>> pointers;
+        pointers.Reserve(numInner);
         for (int j = 0 ; j < numInner; j++) {
-            pointers.push_back(TestClass::Create());
-            o_assert(1 == pointers.back()->GetRefCount());
+            pointers.EmplaceBack(TestClass::Create());
+            o_assert(1 == pointers.Back()->GetRefCount());
         }
     }
 

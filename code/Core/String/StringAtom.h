@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class String::StringAtom
+    @class Oryol::Core::StringAtom
     
     A unique string, relatively slow on creation, but fast for comparison.
     Stringatoms are stored in thread-local stringAtomTables and comparison
@@ -11,7 +11,7 @@
 #include "Core/String/stringAtomTable.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
 
 class StringAtom {
 public:
@@ -281,5 +281,5 @@ StringAtom::AsString() const {
     }
 }
     
-} // namespace String
+} // namespace Core
 } // namespace Oryol

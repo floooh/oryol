@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class String::StringUtil
+    @class Oryol::CoreStringUtil
     
     Various string utility functions.
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
     
 class StringUtil {
 public:
@@ -23,5 +23,5 @@ public:
     static std::string PercentDecode(const std::string& src);
 };
     
-} // namespace String
+} // namespace Core
 } // namespace Oryol

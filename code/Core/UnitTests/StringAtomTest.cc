@@ -11,7 +11,6 @@
 
 using namespace Oryol;
 using namespace Core;
-using namespace String;
 using namespace std;
 
 TEST(StringAtomSingleThreaded) {
@@ -91,10 +90,10 @@ TEST(StringAtomPerformance) {
         start = chrono::system_clock::now();
         
         const int32 numStringAtoms = 1000000;
-        std::vector<StringAtom> stringAtoms;
-        stringAtoms.reserve(numStringAtoms);
+        Array<StringAtom> stringAtoms;
+        stringAtoms.Reserve(numStringAtoms);
         for (int32 i = 0; i < numStringAtoms; i++) {
-            stringAtoms.emplace_back(uniqueStrings[i & mask]);
+            stringAtoms.EmplaceBack(uniqueStrings[i & mask]);
         }
         
         end = chrono::system_clock::now();

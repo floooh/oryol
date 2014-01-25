@@ -213,6 +213,17 @@ TEST(ArrayTest) {
     CHECK(array2[2] == 2);
     CHECK(array2[3] == 5);
     CHECK(array2[4] == 4);
+    array2.EraseSwapBack(1);
+    CHECK(array2.Size() == 4);
+    CHECK(array2[0] == 1);
+    CHECK(array2[1] == 4);
+    CHECK(array2[2] == 2);
+    CHECK(array2[3] == 5);
+    array2.EraseSwapFront(2);
+    CHECK(array2.Size() == 3);
+    CHECK(array2[0] == 4);
+    CHECK(array2[1] == 1);
+    CHECK(array2[2] == 5);
     
     array2.Clear();
     CHECK(array2.Size() == 0);

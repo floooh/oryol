@@ -189,6 +189,14 @@ public:
     void EraseSwap(int32 index) {
         this->buffer.eraseSwap(index);
     };
+    /// erase element at index, always swap-in from back (destroys element ordering)
+    void EraseSwapBack(int32 index) {
+        this->buffer.eraseSwapBack(index);
+    };
+    /// erase element at index, always swap-in from front (destroys element ordering)
+    void EraseSwapFront(int32 index) {
+        this->buffer.eraseSwapFront(index);
+    };
     
     /// C++ conform begin
     TYPE* begin() {

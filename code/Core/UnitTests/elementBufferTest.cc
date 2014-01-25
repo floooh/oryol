@@ -518,4 +518,27 @@ TEST(elementBufferTest) {
     CHECK(buf5[2] == _4);
     CHECK(buf5[3] == _7);
     CHECK(buf5[4] == _6);
+    
+    // test eraseSwapBack
+    buf5.eraseSwapBack(1);
+    CHECK(TestMemory(buf5));
+    CHECK(buf5.size() == 4);
+    CHECK(buf5[0] == _2);
+    CHECK(buf5[1] == _6);
+    CHECK(buf5[2] == _4);
+    CHECK(buf5[3] == _7);
+    buf5.eraseSwapBack(3);
+    CHECK(buf5.size() == 3);
+    CHECK(buf5[0] == _2);
+    CHECK(buf5[1] == _6);
+    CHECK(buf5[2] == _4);
+    
+    // test eraseSwapFront
+    buf5.eraseSwapFront(2);
+    CHECK(buf5.size() == 2);
+    CHECK(buf5[0] == _6);
+    CHECK(buf5[1] == _2);
+    buf5.eraseSwapFront(0);
+    CHECK(buf5.size() == 1);
+    CHECK(buf5[0] == _2);
 }

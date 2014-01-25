@@ -5,7 +5,7 @@
 #include "StringAtom.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
 const char* StringAtom::emptyString = "";
 }
 }

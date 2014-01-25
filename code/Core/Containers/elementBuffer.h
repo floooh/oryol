@@ -109,6 +109,10 @@ public:
     void erase(int32 index);
     /// erase element at index, swap in element from back or front, messes up ordering
     void eraseSwap(int32 index);
+    /// erase element at index, always swap-in element from the back
+    void eraseSwapBack(int32 index);
+    /// erase element at index, always swap-in element from the front
+    void eraseSwapFront(int32 index);
     
     /// move elements towards front for insertion, return pointer to free insertion slot
     TYPE* moveInsertFront(int32 index);
@@ -634,6 +638,44 @@ elementBuffer<TYPE>::eraseSwap(int32 index) {
             this->elmStart->~TYPE();
             this->elmStart++;
         }
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::eraseSwapBack(int32 index) {
+    const int32 size = this->size();
+    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    if (index == (size - 1)) {
+        // special case: last element
+        this->elmEnd--;
+        this->elmEnd->~TYPE();
+    }
+    else {
+        // swap-in element from back
+        TYPE* ptr = this->elmStart + index;
+        *ptr = std::move(*--this->elmEnd);
+        this->elmEnd->~TYPE();
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::eraseSwapFront(int32 index) {
+    const int32 size = this->size();
+    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    
+    if (0 == index) {
+        // special case: first element
+        this->elmStart->~TYPE();
+        this->elmStart++;
+    }
+    else {
+        // swap-in element from front
+        TYPE* ptr = this->elmStart + index;
+        *ptr = std::move(*this->elmStart);
+        this->elmStart->~TYPE();
+        this->elmStart++;
     }
 }
 

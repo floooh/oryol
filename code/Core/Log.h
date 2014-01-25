@@ -6,7 +6,6 @@
     Basic logging functions.
 */
 #include "Core/Types.h"
-#include "Core/Threading/RWLock.h"
 
 namespace Oryol {
 namespace Core {
@@ -53,10 +52,6 @@ public:
 private:
     /// generic vprint-style method
     static void vprint(Level l, const char* msg, va_list args);
-
-    static Threading::RWLock lock;
-    static Level curLogLevel;
-    static std::vector<Ptr<Logger>> loggers;
 };
 } // namespace Core
 } // namespace Oryol

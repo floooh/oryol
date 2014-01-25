@@ -5,54 +5,51 @@
 #include "stringAtomTable.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
 
 OryolLocalSingletonImpl(stringAtomTable);
 
 //------------------------------------------------------------------------------
-stringAtomTable::stringAtomTable() : table(bucketCount) {
+stringAtomTable::stringAtomTable() {
     
     SingletonEnsureUnique();
 }
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomTable::Find(std::size_t hash, const char* str) const {
+stringAtomTable::Find(int32 hash, const char* str) const {
     
     // need to create a temp object for searching in the set
     stringAtomBuffer::Header dummyHead(this, hash, str);
     Entry dummyEntry(&dummyHead);
-    
-    auto iter = this->table.find(dummyEntry);
-    if (iter == this->table.end()) {
-        // not found
+    auto ptr = this->table.Find(dummyEntry);
+    if (nullptr == ptr) {
         return nullptr;
     }
     else {
-        o_assert(nullptr != iter->header);
-        return iter->header;
+        o_assert(nullptr != ptr->header);
+        return ptr->header;
     }
 }
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomTable::Add(std::size_t hash, const char* str) {
+stringAtomTable::Add(int32 hash, const char* str) {
     
     #if ORYOL_DEBUG
     o_assert(nullptr == this->Find(hash, str));
     #endif
     
     // add new string to the string buffer
-    const stringAtomBuffer::Header* newHeader = buffer.AddString(this, hash, str);
+    const stringAtomBuffer::Header* newHeader = this->buffer.AddString(this, hash, str);
     o_assert(nullptr != newHeader);
     
     // add new entry to our lookup table
-    this->table.emplace(newHeader);
-
+    this->table.Insert(Entry(newHeader));
     return newHeader;
 }
 
-} // namespace String
+} // namespace Core
 } // namespace Oryol
 
 

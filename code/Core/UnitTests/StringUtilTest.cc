@@ -7,7 +7,7 @@
 #include "Core/String/StringUtil.h"
 
 using namespace Oryol;
-using namespace String;
+using namespace Core;
 
 TEST(StringUtilTest) {
     

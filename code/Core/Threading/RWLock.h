@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Threading::RWLock
+    @class Oryol::Core::RWLock
     
     A single-writer / multiple-reader lock. C++11 doesn't provide this
     yet, so we roll our own.
@@ -10,7 +10,7 @@
 #include "Core/Macros.h"
 
 namespace Oryol {
-namespace Threading {
+namespace Core {
 
 class RWLock {
 public:
@@ -74,6 +74,6 @@ RWLock::UnlockRead() {
 #endif
 }
 
-} // namespace Threading
+} // namespace Core
 } // namespace Oryol
 

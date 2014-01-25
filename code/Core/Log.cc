@@ -5,22 +5,24 @@
 #include "Core/Log.h"
 #include "Core/Macros.h"
 #include "Core/Logger.h"
+#include "Core/Threading/RWLock.h"
+#include "Core/Containers/Array.h"
 
 namespace Oryol {
 namespace Core {
 
 using namespace std;
 
-Log::Level Log::curLogLevel = Log::Level::Dbg;
-Threading::RWLock Log::lock;
-std::vector<Ptr<Logger>> Log::loggers;
+Log::Level curLogLevel = Log::Level::Dbg;
+RWLock lock;
+Array<Ptr<Logger>> loggers;
 
 //------------------------------------------------------------------------------
 void
 Log::AddLogger(const Ptr<Logger>& l) {
     if (l) {
         lock.LockWrite();
-        loggers.push_back(l);
+        loggers.AddBack(l);
         lock.UnlockWrite();
     }
 }
@@ -28,7 +30,7 @@ Log::AddLogger(const Ptr<Logger>& l) {
 //------------------------------------------------------------------------------
 int32
 Log::GetNumLoggers() {
-    return loggers.size();
+    return loggers.Size();
 }
 
 //------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ Log::Error(const char* msg, ...) {
 void
 Log::vprint(Level lvl, const char* msg, va_list args) {
     lock.LockRead();
-    if (loggers.empty()) {
+    if (loggers.Empty()) {
         ::vprintf(msg, args);
     }
     else {
@@ -112,7 +114,7 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
 void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.LockRead();
-    if (loggers.empty()) {
+    if (loggers.Empty()) {
         ::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
                  cond, msg ? msg : "none", file, line, func);
     }

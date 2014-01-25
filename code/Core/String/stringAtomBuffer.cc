@@ -7,7 +7,7 @@
 #include "Core/Macros.h"
 
 namespace Oryol {
-namespace String {
+namespace Core {
     
 //------------------------------------------------------------------------------
 stringAtomBuffer::~stringAtomBuffer() {
@@ -15,7 +15,7 @@ stringAtomBuffer::~stringAtomBuffer() {
     for (const int8* p : this->chunks) {
         Memory::Free((void*)p);
     }
-    this->chunks.clear();
+    this->chunks.Clear();
     this->curPointer = 0;
 }
     
@@ -23,15 +23,15 @@ stringAtomBuffer::~stringAtomBuffer() {
 void
 stringAtomBuffer::allocChunk() {
     int8* newChunk = (int8*) Memory::Alloc(this->chunkSize);
-    this->chunks.push_back(newChunk);
+    this->chunks.AddBack(newChunk);
     this->curPointer = newChunk;
 }
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomBuffer::AddString(stringAtomTable* table, std::size_t hash, const char* str) {
-    o_assert(table);
-    o_assert(str);
+stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str) {
+    o_assert(nullptr != table);
+    o_assert(nullptr != str);
     
     // no chunks allocated yet?
     if (0 == this->curPointer) {
@@ -43,7 +43,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, std::size_t hash, const char
     o_assert(requiredSize < this->chunkSize);
     
     // check if there's enough room in the current chunk
-    if ((this->curPointer + requiredSize) >= (this->chunks.back() + this->chunkSize)) {
+    if ((this->curPointer + requiredSize) >= (this->chunks.Back() + this->chunkSize)) {
         this->allocChunk();
     }
     
@@ -60,5 +60,5 @@ stringAtomBuffer::AddString(stringAtomTable* table, std::size_t hash, const char
     return head;
 }
 
-} // namespace String
+} // namespace Core
 } // namespace Oryol

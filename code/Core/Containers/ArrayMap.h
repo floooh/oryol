@@ -18,14 +18,14 @@
     access an element by its value index, use ValueAtIndex()!
     
     Be careful about erasing elements, this can be slow:
-    - EraseSwap() is best, this do a swap in the value array, and a move
-      in the key map
+    - EraseSwap() is best, this do a swap in the value array, but still
+      needs to iterate over the keymap to find and replace the swapped-in index
     - Erase() and EraseIndex() need to do a sweep over the key map to
       fix-up indices, and are thus O(N)!!!
 */
 #include "Core/Config.h"
 #include "Core/Containers/Array.h"
-#include "Core/Containers/Dictionary.h"
+#include "Core/Containers/Map.h"
 
 namespace Oryol {
 namespace Core {
@@ -38,7 +38,7 @@ public:
     /// construct with allocation strategy
     ArrayMap(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW) :
         indexMap(minGrow, maxGrow),
-        values(minGrow, maxGrow) {
+        valueArray(minGrow, maxGrow) {
     };
     /// copy constructor (truncates to actual size)
     ArrayMap(const ArrayMap& rhs) :
@@ -53,12 +53,12 @@ public:
     /// copy-assignment operator (truncates to actual size)
     void operator=(const ArrayMap& rhs) {
         this->indexMap = rhs.indexMap;
-        this->valueArray = rhs.valueMap;
+        this->valueArray = rhs.valueArray;
     };
     /// move-assignment operator (same capacity and size)
     void operator=(ArrayMap&& rhs) {
-        this->indexMap = std::move(this->indexMap);
-        this->valueArray = std::move(this->valueArray);
+        this->indexMap = std::move(rhs.indexMap);
+        this->valueArray = std::move(rhs.valueArray);
     };
 
     /// set allocation strategy
@@ -143,15 +143,35 @@ public:
     
     /// erase element by key, reasonably fast, but destroys value ordering
     void EraseSwap(const KEY& key) {
-        o_error("FIXME!");
+        const int32 mapIndex = this->indexMap.FindIndex(key);
+        const int32 valueIndex = this->indexMap.ValueAtIndex(mapIndex);
+        this->indexMap.EraseIndex(mapIndex);
+        this->valueArray.EraseSwapBack(valueIndex);
+        
+        // fix-up indices
+        const int32 swappedIndex = this->valueArray.Size();
+        if (valueIndex != swappedIndex) {
+            for (auto& elm : this->indexMap) {
+                if (swappedIndex == elm.value) {
+                    elm.value = valueIndex;
+                    break;
+                }
+            }
+        }
     };
     /// erase element by key, keep value order (involves moving values around)
     void Erase(const KEY& key) {
-        o_error("FIXME!");
-    };
-    /// erase element by value index, most expensive erase operation
-    void EraseIndex(int32 valueIndex) {
-        o_error("FIXME!");
+        const int32 mapIndex = this->indexMap.FindIndex(key);
+        const int32 valueIndex = this->indexMap.ValueAtIndex(mapIndex);
+        this->indexMap.EraseIndex(mapIndex);
+        this->valueArray.Erase(valueIndex);
+        
+        // fix up indices
+        for (auto& elm : this->indexMap) {
+            if (elm.value > valueIndex) {
+                elm.value--;
+            }
+        }
     };
     
     /// C++ conform begin, MAY RETURN nullptr!
@@ -172,7 +192,7 @@ public:
     };
     
 private:
-    Dictionary<KEY, int32> indexMap;        // maps keys to indices into value array
+    Map<KEY, int32> indexMap;        // maps keys to indices into value array
     Array<VALUE> valueArray;
 };
     

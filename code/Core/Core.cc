@@ -8,8 +8,6 @@
 namespace Oryol {
 namespace Core {
     
-using namespace String;
-    
 //------------------------------------------------------------------------------
 void Setup() {
 
