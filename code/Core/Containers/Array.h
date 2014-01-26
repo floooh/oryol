@@ -255,7 +255,7 @@ private:
             growBy = maxGrow;
         }
         o_assert(growBy > 0);
-        int newCapacity = curCapacity + growBy;
+        int32 newCapacity = curCapacity + growBy;
         this->adjustCapacity(newCapacity);
     };
     
