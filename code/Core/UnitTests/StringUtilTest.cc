@@ -76,18 +76,11 @@ TEST(StringUtilTest) {
     CHECK(left.Empty());
     CHECK(right.Empty());
     
-    // test concatenate
-    str = StringUtil::Concatenate('/', { "bla", "blub", "blob" } );
-    CHECK(str == "bla/blub/blob");
-    
-    // test append
-    str = StringUtil::Append({ "One", "Two", "Three"} );
-    CHECK(str == "OneTwoThree");
-    
-    // test truncate
-    str = StringUtil::Truncate(str, 32);
-    CHECK(str == "OneTwoThree");
-    str = StringUtil::Truncate(str, 3);
-    CHECK(str == "One");
-    
+    // FindFirstOf, FindFirstNotOf, FindSubString
+    str = "http://bla.blob.com:8000";
+    CHECK(StringUtil::FindFirstOf(str, 0, 0, ":") == 4);
+    CHECK(StringUtil::FindFirstNotOf(str, 0, 0, "htp:/") == 7);
+    CHECK(StringUtil::FindFirstOf(str, 0, 4, ":") == InvalidIndex);
+    CHECK(StringUtil::FindFirstOf(str, 7, 12, ".") == 10);
+    CHECK(StringUtil::FindSubString(str, 0, 0, "://") == 4);
 }

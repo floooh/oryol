@@ -74,17 +74,23 @@ StringUtil::Tokenize(const String& str, const char* delims, char fence, Array<St
 }
 
 //------------------------------------------------------------------------------
+/**
+ Find index of first occurance of any chacters in delim, between startIndex
+ (including) and endIndex (excluding). If endIndex is 0, search until end of string.
+ Returns InvalidIndex if not found.
+*/
 int32
-StringUtil::FindFirstOf(const String& str, int32 startIndex, const char* delims) {
+StringUtil::FindFirstOf(const String& str, int32 startIndex, int32 endIndex, const char* delims) {
     o_assert(0 != delims);
+    o_assert((endIndex == 0) || (endIndex >= startIndex));
     if (startIndex < str.Length()) {
         const char* ptr = str.AsCStr() + startIndex;
         int index = std::strcspn(ptr, delims);
-        if (index == str.Length()) {
+        if (((endIndex != 0) && (index >= endIndex)) || (index >= str.Length())) {
             return InvalidIndex;
         }
         else {
-            return index;
+            return startIndex + index;
         }
     }
     else {
@@ -93,17 +99,54 @@ StringUtil::FindFirstOf(const String& str, int32 startIndex, const char* delims)
 }
 
 //------------------------------------------------------------------------------
+/**
+ Find index of first occurange of any characters NOT in delim, between startIndex
+ (including) and endIndex (exluding). If endIndex is 0, search until end of string.
+ Returns InvalidIndex if not found.
+*/
 int32
-StringUtil::FindFirstNotOf(const String& str, int32 startIndex, const char* delims) {
+StringUtil::FindFirstNotOf(const String& str, int32 startIndex, int32 endIndex, const char* delims) {
     o_assert(0 != delims);
+    o_assert((endIndex == 0) || (endIndex >= startIndex));
     if (startIndex < str.Length()) {
         const char* ptr = str.AsCStr() + startIndex;
         int index = std::strspn(ptr, delims);
-        if (index == str.Length()) {
+        if (((endIndex != 0) && (index >= endIndex)) || (index >= str.Length())) {
             return InvalidIndex;
         }
         else {
-            return index;
+            return startIndex + index;
+        }
+    }
+    else {
+        return InvalidIndex;
+    }
+}
+
+//------------------------------------------------------------------------------
+/**
+ Find first occurance of subStr between startIndex (including) and endIndex
+ (excluding). If endIndex is 0, search until end of string. 
+ Returns InvalidIndex if not found.
+*/
+int32
+StringUtil::FindSubString(const String& str, int32 startIndex, int32 endIndex, const char* subStr) {
+    o_assert(0 != subStr);
+    o_assert((endIndex == 0) || (endIndex >= startIndex));
+    if (startIndex < str.Length()) {
+        const char* ptr = str.AsCStr() + startIndex;
+        const char* occur = std::strstr(ptr, subStr);
+        if (nullptr == occur) {
+            return InvalidIndex;
+        }
+        else {
+            int32 index = occur - ptr;
+            if ((endIndex != 0) && (index >= endIndex)) {
+                return InvalidIndex;
+            }
+            else {
+                return startIndex + index;
+            }
         }
     }
     else {
@@ -117,7 +160,7 @@ StringUtil::Bisect(const String& str, const char* delims, String& left, String& 
     o_assert(nullptr != delims);
     o_assert((&str != &left) && (&str != &right));
     
-    int32 leftSplitIndex = StringUtil::FindFirstOf(str, 0, delims);
+    int32 leftSplitIndex = StringUtil::FindFirstOf(str, 0, 0, delims);
     if (InvalidIndex == leftSplitIndex) {
         // no delimiters in source string
         left = str;
@@ -131,73 +174,13 @@ StringUtil::Bisect(const String& str, const char* delims, String& left, String& 
             left.Clear();
         }
         // skip delimiters
-        int32 rightSplitIndex = StringUtil::FindFirstNotOf(str, leftSplitIndex, delims);
+        int32 rightSplitIndex = StringUtil::FindFirstNotOf(str, leftSplitIndex, 0, delims);
         if (InvalidIndex != rightSplitIndex) {
-            right.Assign(str.AsCStr() + leftSplitIndex + rightSplitIndex, 0);
+            right.Assign(str.AsCStr() + rightSplitIndex, 0);
         }
         else {
             right.Clear();
         }
-    }
-}
-
-//------------------------------------------------------------------------------
-String
-StringUtil::Concatenate(char delim, std::initializer_list<String> list) {
-    // count overall needed length
-    int32 len = 0;
-    for (const String& str : list) {
-        len += str.Length() + 1;
-    }
-    len--;
-    
-    // reserve a string
-    String concat;
-    if (len > 0) {
-        char* ptr = concat.Alloc(len);
-        const char* end = ptr + len;
-        for (const String& str : list) {
-            const int32 strLen = str.Length();
-            Memory::Copy(str.AsCStr(), ptr, strLen);
-            ptr += strLen;
-            if (ptr < end) {
-                *ptr++ = delim;
-            }
-        }
-    }
-    return concat;
-}
-
-//------------------------------------------------------------------------------
-String
-StringUtil::Append(std::initializer_list<String> list) {
-    // count overall needed length
-    int32 len = 0;
-    for (const String& str : list) {
-        len += str.Length();
-    }
-    
-    // reserve a string
-    String merge;
-    if (len > 0) {
-        char* ptr = merge.Alloc(len);
-        for (const String& str : list) {
-            const int32 strLen = str.Length();
-            Memory::Copy(str.AsCStr(), ptr, strLen);
-            ptr += strLen;
-        }
-    }
-    return merge;
-}
-
-//------------------------------------------------------------------------------
-String
-StringUtil::Truncate(const String& str, int32 newLen) {
-    if (newLen < str.Length()) {
-        return String(str, 0, newLen);
-    }
-    else {
-        return String(str);
     }
 }
 

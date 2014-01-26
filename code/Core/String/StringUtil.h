@@ -22,15 +22,11 @@ public:
     /// split string into two at first occurence of delimiter char 
     static void Bisect(const String& str, const char* delims, String& outLeft, String& outRight);
     /// find byte-index of first occurence of delim chars, return InvalidIndex if not found
-    static int32 FindFirstOf(const String& str, int32 startIndex, const char* delims);
+    static int32 FindFirstOf(const String& str, int32 startIndex, int32 endIndex, const char* delims);
     /// find byte-index of first occurence not in delim chars, return InvalidIndex if not found
-    static int32 FindFirstNotOf(const String& str, int32 startIndex, const char* delims);
-    /// concatenate strings
-    static String Concatenate(char delim, std::initializer_list<String> list);
-    /// append strings
-    static String Append(std::initializer_list<String> list);
-    /// truncate a string
-    static String Truncate(const String& str, int32 newLen);
+    static int32 FindFirstNotOf(const String& str, int32 startIndex, int32 endIndex, const char* delims);
+    /// find substring index
+    static int32 FindSubString(const String& str, int32 startIndex, int32 endIndex, const char* subString);
 
     /// percent-encode a string
     static String PercentEncode(const String& str);
