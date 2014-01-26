@@ -139,10 +139,14 @@ TEST(StringTest) {
     CHECK(subStr == "World!");
     
     String helloStr("Hello World!");
-    String subStr1(helloStr, 1, 4);
+    String subStr1(helloStr, 1, 5);
     CHECK(subStr1 == "ello");
     subStr1.Assign(helloStr, 6, 0);
     CHECK(subStr1 == "World!");
+    String subStr2(helloStr, 1, 5);
+    CHECK(subStr2 == "ello");
+    String subStr3(helloStr, 6, 0);
+    CHECK(subStr3 == "World!");
     
     // Front/Back
     CHECK(helloStr.Front() == 'H');

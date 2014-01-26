@@ -36,8 +36,8 @@ public:
     String(const char* cstr);
     /// construct from raw byte sequence
     String(const char* ptr, int32 numCharBytes);
-    /// construct from substring of other string
-    String(const String& rhs, int32 index, int32 len);
+    /// construct from substring of other string, endIndex can be 0 (means until end-of-string)
+    String(const String& rhs, int32 startIndex, int32 endIndex);
     /// construct from std::string (allocates!)
     String(const std::string& str);
     /// construct from StringAtom (allocates!)
@@ -74,10 +74,10 @@ public:
 
     /// allocate room for numCharBytes, and return pointer
     char* Alloc(int32 numCharBytes);
-    /// assign from raw byte sequence, if numCharBytes is 0 -> until first 0
+    /// assign from raw byte sequence, if numCharBytes is 0 -> until end-of-string
     void Assign(const char* ptr, int32 numCharBytes);
-    /// assign from other string, with start index and length
-    void Assign(const String& rhs, int32 index, int32 len);
+    /// assign from other string, with start index and endIndex, if endIndex is 0 -> until end-of-string
+    void Assign(const String& rhs, int32 startIndex, int32 endIndex);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const char* AsCStr() const;
     /// get as std::string (slow)
@@ -334,20 +334,47 @@ String::String(const char* ptr, int32 numCharBytes) {
 }
 
 //------------------------------------------------------------------------------
+inline void
+String::Assign(const char* ptr, int32 numCharBytes) {
+    o_assert(nullptr != ptr);
+    this->release();
+    if (0 == numCharBytes) {
+        numCharBytes = std::strlen(ptr);
+    }
+    this->create(ptr, numCharBytes);
+}
+
+//------------------------------------------------------------------------------
 /**
  Construct string from substring of other string. If len is 0, this
  means "until end of string".
 */
 inline
-String::String(const String& rhs, int32 index, int32 len) {
-    o_assert((index + len) <= rhs.Length());
-    const char* ptr = rhs.AsCStr() + index;
-    if (0 == len) {
-        len = std::strlen(ptr);
+String::String(const String& rhs, int32 startIndex, int32 endIndex) {
+    if (0 == endIndex) {
+        endIndex = rhs.Length();
     }
-    this->create(ptr, len);
+    o_assert((startIndex >= 0) && (startIndex < endIndex));
+    o_assert(endIndex <= rhs.Length());
+    this->create(rhs.AsCStr() + startIndex, endIndex - startIndex);
 }
 
+//------------------------------------------------------------------------------
+/**
+ Assign string from substring of other string. If len is 0, this
+ means "until end of string".
+ */
+inline void
+String::Assign(const String& rhs, int32 startIndex, int32 endIndex) {
+    this->release();
+    if (0 == endIndex) {
+        endIndex = rhs.Length();
+    }
+    o_assert((startIndex >= 0) && (startIndex < endIndex));
+    o_assert(endIndex <= rhs.Length());
+    this->create(rhs.AsCStr() + startIndex, endIndex - startIndex);
+}
+    
 //------------------------------------------------------------------------------
 inline
 String::String(const std::string& str) {
@@ -536,33 +563,6 @@ String::RefCount() const {
 inline String
 String::MakeCopy() const {
     return String(this->AsCStr());
-}
-
-//------------------------------------------------------------------------------
-inline void
-String::Assign(const char* ptr, int32 numCharBytes) {
-    o_assert(nullptr != ptr);
-    this->release();
-    if (0 == numCharBytes) {
-        numCharBytes = std::strlen(ptr);
-    }
-    this->create(ptr, numCharBytes);
-}
-
-//------------------------------------------------------------------------------
-/**
- Assign string from substring of other string. If len is 0, this
- means "until end of string".
- */
-inline void
-String::Assign(const String& rhs, int32 index, int32 len) {
-    o_assert((index + len) <= rhs.Length());
-    this->release();
-    const char* ptr = rhs.AsCStr() + index;
-    if (0 == len) {
-        len = std::strlen(ptr);
-    }
-    this->create(ptr, len);
 }
 
 //------------------------------------------------------------------------------
