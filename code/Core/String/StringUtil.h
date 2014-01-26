@@ -15,23 +15,6 @@ namespace Core {
     
 class StringUtil {
 public:
-    /// tokenize string with a set of single characters as delimiters
-    static int32 Tokenize(const String& str, const char* delims, Array<String>& outTokens);
-    /// tokenize string, keep string within fence intact
-    static int32 Tokenize(const String& str, const char* delims, char fence, Array<String>& outTokens);
-    /// split string into two at first occurence of delimiter char 
-    static void Bisect(const String& str, const char* delims, String& outLeft, String& outRight);
-    /// find byte-index of first occurence of delim chars, return InvalidIndex if not found
-    static int32 FindFirstOf(const String& str, int32 startIndex, int32 endIndex, const char* delims);
-    /// find byte-index of first occurence not in delim chars, return InvalidIndex if not found
-    static int32 FindFirstNotOf(const String& str, int32 startIndex, int32 endIndex, const char* delims);
-    /// find substring index
-    static int32 FindSubString(const String& str, int32 startIndex, int32 endIndex, const char* subString);
-
-    /// percent-encode a string
-    static String PercentEncode(const String& str);
-    /// percent-decode a string
-    static String PercentDecode(const String& str);
     /// convert a simple type to string
     template<class TYPE> static String ToString(const TYPE& val);
     /// convert a string to simple type

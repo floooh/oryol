@@ -66,5 +66,95 @@ TEST(StringBuilderTest) {
     CHECK('a' == builder.PopBack());
     CHECK(builder.Length() == 2);
     CHECK(builder.GetString() == "Bl");
+    
+    // Substitute
+    builder.Clear();
+    // try to substitute on empty builder
+    CHECK(!builder.SubstituteFirst("Bla", "Blub"));
+    CHECK(builder.Length() == 0);
+    CHECK(builder.GetString().Empty());
+    builder.Append("OneTwoThreeFourFiveSixSevenEight");
+    // substitute non-existing string
+    CHECK(!builder.SubstituteFirst("Bla", "Blub"));
+    CHECK(builder.GetString() == "OneTwoThreeFourFiveSixSevenEight");
+    // substitute in middle of string with longer substitute
+    CHECK(builder.SubstituteFirst("Four", "Blubber"));
+    CHECK(builder.GetString() == "OneTwoThreeBlubberFiveSixSevenEight");
+    CHECK(builder.Length() == 35);
+    // substitute in middle with smaller substitute
+    CHECK(builder.SubstituteFirst("Blubber", "Four"));
+    CHECK(builder.GetString() == "OneTwoThreeFourFiveSixSevenEight");
+    CHECK(builder.Length() == 32);
+    // subsitute with same-length string
+    CHECK(builder.SubstituteFirst("Four", "Vier"));
+    CHECK(builder.GetString() == "OneTwoThreeVierFiveSixSevenEight");
+    CHECK(builder.Length() == 32);
+    // substitute with empty string
+    CHECK(builder.SubstituteFirst("Vier", ""));
+    CHECK(builder.GetString() == "OneTwoThreeFiveSixSevenEight");
+    CHECK(builder.Length() == 28);
+    // substitute at end of string
+    CHECK(builder.SubstituteFirst("Eight", "Acht"));
+    CHECK(builder.GetString() == "OneTwoThreeFiveSixSevenAcht");
+    CHECK(builder.Length() == 27);
+    CHECK(builder.SubstituteFirst("Acht", "Eight"));
+    CHECK(builder.GetString() == "OneTwoThreeFiveSixSevenEight");
+    CHECK(builder.Length() == 28);
+    CHECK(builder.SubstituteFirst("Eight", ""));
+    CHECK(builder.GetString() == "OneTwoThreeFiveSixSeven");
+    CHECK(builder.Length() == 23);
+    // substitute at front of string
+    CHECK(builder.SubstituteFirst("One", "Eins"));
+    CHECK(builder.Length() == 24);
+    CHECK(builder.GetString() == "EinsTwoThreeFiveSixSeven");
+    CHECK(builder.SubstituteFirst("Eins", "One"));
+    CHECK(builder.GetString() == "OneTwoThreeFiveSixSeven");
+    CHECK(builder.Length() == 23);
+    CHECK(builder.SubstituteFirst("One", ""));
+    CHECK(builder.GetString() == "TwoThreeFiveSixSeven");
+    CHECK(builder.Length() == 20);
+    
+    // test tokenize
+    Array<String> tokens;
+    builder.Set("One Two Three");
+    int32 numTokens = builder.Tokenize(" ", tokens);
+    CHECK(builder.Length() == 0);
+    CHECK(numTokens == tokens.Size());
+    CHECK(tokens.Size() == 3);
+    CHECK(tokens[0] == "One");
+    CHECK(tokens[1] == "Two");
+    CHECK(tokens[2] == "Three");
+    
+    builder.Set("  One   Two Three    ");
+    builder.Tokenize(" ", tokens);
+    CHECK(tokens.Size() == 3);
+    CHECK(numTokens == 3);
+    CHECK(tokens[0] == "One");
+    CHECK(tokens[1] == "Two");
+    CHECK(tokens[2] == "Three");
+    
+    builder.Set(", One, \t Two \r Three");
+    builder.Tokenize(", \t\r", tokens);
+    CHECK(tokens.Size() == 3);
+    CHECK(tokens[0] == "One");
+    CHECK(tokens[1] == "Two");
+    CHECK(tokens[2] == "Three");
+
+    builder.Set("One");
+    builder.Tokenize(" ", tokens);
+    CHECK(tokens.Size() == 1);
+    CHECK(tokens[0] == "One");
+    
+    builder.Set("  ,;  ");
+    builder.Tokenize(" ,;", tokens);
+    CHECK(tokens.Size() == 0);
+    
+    // FindFirstOf, FindFirstNotOf, FindSubString
+    builder.Set("http://bla.blob.com:8000");
+    CHECK(builder.FindFirstOf(0, 0, ":") == 4);
+    CHECK(builder.FindFirstNotOf(0, 0, "htp:/") == 7);
+    CHECK(builder.FindFirstOf(0, 4, ":") == InvalidIndex);
+    CHECK(builder.FindFirstOf(7, 12, ".") == 10);
+    CHECK(builder.FindSubString(0, 0, "://") == 4);
 }
 
