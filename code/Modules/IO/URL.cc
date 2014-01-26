@@ -16,6 +16,15 @@ using namespace Core;
 URLParts
 URL::Split() const {
     
+// FIXME: rewrite this completely!
+// don't create new strings all the time, instead parse and only
+// store start-indices and end-indices in the URL.
+// Ditch URLParts, and only create part-strings on demand
+
+o_error("FIXME!");
+return URLParts();
+
+/*
     URLParts parts;
     String str = this->content.AsString();
     if (!str.Empty()) {
@@ -84,6 +93,7 @@ URL::Split() const {
         parts.Valid = true;
     }
     return parts;
+*/
 }
     
 //------------------------------------------------------------------------------

@@ -3,6 +3,8 @@
 /**
     @class IO::URLParts
     
+    FIXME: ditch this method
+ 
     Holds the split parts that make up an URL.
  
     An URL consists of the following parts:
@@ -40,11 +42,6 @@ public:
     Core::String Fragment;
     /// the query component
     Core::Map<Core::String,Core::String> Query;
-    
-    /// set host and port (as 'host[:port]')
-    void SetAddress(const Core::String& s);
-    /// get host and port
-    Core::String GetAddress() const;
 };
 
 //------------------------------------------------------------------------------
@@ -53,23 +50,6 @@ URLParts::URLParts() :
 Valid(false)
 {
     // empty
-}
-
-//------------------------------------------------------------------------------
-inline void
-URLParts::SetAddress(const Core::String& addr) {
-    Core::StringUtil::Bisect(addr, ":", this->Host, this->Port);
-}
-
-//------------------------------------------------------------------------------
-inline Core::String
-URLParts::GetAddress() const {
-    if (!this->Port.Empty()) {
-        return Core::StringUtil::Concatenate(':', {this->Host, this->Port});
-    }
-    else {
-        return this->Host;
-    }
 }
 
 } // namespace IO

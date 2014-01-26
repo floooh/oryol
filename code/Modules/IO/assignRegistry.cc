@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "assignRegistry.h"
-#include "Core/String/StringUtil.h"
+#include "Core/String/StringBuilder.h"
 
 namespace Oryol {
 namespace IO {
@@ -26,9 +26,10 @@ assignRegistry::~assignRegistry() {
 //------------------------------------------------------------------------------
 void
 assignRegistry::SetAssign(const String& assign, const String& path) {
-    o_assert(!assign.Empty());
+    o_assert(assign.Back() == ':'); // assign must end with a ':'
     o_assert(assign.Length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
     o_assert(!path.Empty());
+    o_assert((path.Back() == '/') || (path.Back() == ':')); // path must end in a '/' (dir) or ':' (other assign)
     std::lock_guard<std::mutex> lock(this->mtx);
     if (this->assigns.Contains(assign)) {
         this->assigns[assign] = path;
@@ -50,6 +51,7 @@ assignRegistry::HasAssign(const String& assign) const {
 String
 assignRegistry::LookupAssign(const String& assign) const {
     o_assert(!assign.Empty());
+    o_assert(assign.Back() == ':');
     std::lock_guard<std::mutex> lock(this->mtx);
     if (this->assigns.Contains(assign)) {
         return this->assigns[assign];
@@ -63,49 +65,33 @@ assignRegistry::LookupAssign(const String& assign) const {
 String
 assignRegistry::ResolveAssigns(const String& str) const {
 
-    // FIXME: this should be optimized:
-    //  - resolve assigns when adding to the registry, so that
-    //    an actual resolve doesn't need to loop
-    //  - reduce number of string operations...
-    
-    // FIXME: use string builder!
-
     std::lock_guard<std::mutex> lock(this->mtx);
+
+    StringBuilder builder;
+    builder.Append(str);
     
+    // while there are assigns to replace...
     String result = str;
     int32 index;
-    while ((index = StringUtil::FindFirstOf(result, 0, ":")) != InvalidIndex) {
+    while ((index = builder.FindFirstOf(0, 0, ":")) != InvalidIndex) {
         // ignore DOS drive letters
         if (index > 1) {
-            String assignString(result, 0, index);
+            String assignString = builder.GetSubString(0, index + 1);
 
             // lookup the assign, ignore unknown assigns, may be URL schemes
             if (this->assigns.Contains(assignString)) {
-            
-                // get the string after the colon
-                String postAssignString;
-                int32 postAssignIndex = index + 1;
-                if (postAssignIndex < result.Length()) {
-                    postAssignString.Assign(result, postAssignIndex, 0);
-                }
                 
-                // build the new string
-                String resolved = this->assigns[assignString];
-                if (resolved.Back() != ':' && resolved.Back() != '/') {
-                    result = StringUtil::Append({ resolved, postAssignString, "/" });
-                }
-                else {
-                    result = StringUtil::Append({ resolved, postAssignString });
-                }
+                // replace assign string
+                builder.SubstituteFirst(assignString, this->assigns[assignString]);
             }
             else break;
         }
         else break;
     }
-    if (result.Back() == '/') {
-        result = StringUtil::Truncate(result, result.Length() - 1);
+    if (builder.Back() == '/') {
+        builder.PopBack();
     }
-    return result;
+    return builder.GetString();
 }
 
 //------------------------------------------------------------------------------
