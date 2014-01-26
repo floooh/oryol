@@ -68,10 +68,9 @@ assignRegistry::ResolveAssigns(const String& str) const {
     std::lock_guard<std::mutex> lock(this->mtx);
 
     StringBuilder builder;
-    builder.Append(str);
+    builder.Set(str);
     
     // while there are assigns to replace...
-    String result = str;
     int32 index;
     while ((index = builder.FindFirstOf(0, 0, ":")) != InvalidIndex) {
         // ignore DOS drive letters
