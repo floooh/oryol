@@ -6,7 +6,7 @@
 #include "Core/String/StringBuilder.h"
 
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 TEST(StringBuilderTest) {
     

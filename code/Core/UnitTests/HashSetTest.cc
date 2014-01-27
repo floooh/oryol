@@ -7,7 +7,7 @@
 #include "Core/Containers/HashSet.h"
 
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 struct IntHasher {
     uint32 operator()(int val) {

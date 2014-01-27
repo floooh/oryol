@@ -11,9 +11,9 @@
 
 using namespace std;
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
-class A : public Core::RefCounted {
+class A : public RefCounted {
     OryolClassDecl(A);
 public:
     /// constructor

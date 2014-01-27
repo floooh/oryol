@@ -7,7 +7,7 @@
 #include "Core/Containers/Set.h"
 
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 TEST(SetTest) {
     Set<int32> set;

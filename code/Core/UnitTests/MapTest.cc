@@ -7,7 +7,7 @@
 #include "Core/Containers/Map.h"
 
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 TEST(MapTest) {
 

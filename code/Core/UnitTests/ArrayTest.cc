@@ -6,8 +6,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Array.h"
 
-using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 TEST(ArrayTest) {
     

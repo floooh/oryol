@@ -9,7 +9,7 @@
 #include "Core/Macros.h"
 #include "Core/RefCounted.h"
 #include "Core/Ptr.h"
-#include "Core/Core.h"
+#include "Core/Module.h"
 #include "Core/Containers/Array.h"
 
 #include <array>
@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 // define a custom class
 class TestClass : public RefCounted {
@@ -114,7 +114,7 @@ const int numInner = TestClass::GetPoolSize() / 8;
 const int numOuter = 1000000 / numInner;
 
 void threadFunc() {
-    Core::EnterThread();
+    Oryol::Core::Module::EnterThread();
     
     Log::Info("create_multithreaded: thread '%d' entered!\n", this_thread::get_id());
     
@@ -129,7 +129,7 @@ void threadFunc() {
 
     Log::Info("CreateMultiThreaded: thread '%d' leaving!\n", this_thread::get_id());
     
-    Core::LeaveThread();
+    Oryol::Core::Module::LeaveThread();
 }
 
 TEST(CreateMultiThreaded) {

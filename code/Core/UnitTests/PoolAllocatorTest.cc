@@ -11,8 +11,7 @@
 #include "Core/Ptr.h"
 #include "Core/Memory/poolAllocator.h"
 
-using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 TEST(PoolAllocator) {
 

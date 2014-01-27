@@ -7,7 +7,7 @@
 #include "Core/Containers/elementBuffer.h"
 
 using namespace Oryol;
-using namespace Core;
+using namespace Oryol::Core;
 
 class _test
 {
