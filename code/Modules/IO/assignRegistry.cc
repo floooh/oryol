@@ -72,7 +72,7 @@ assignRegistry::ResolveAssigns(const String& str) const {
     
     // while there are assigns to replace...
     int32 index;
-    while ((index = builder.FindFirstOf(0, 0, ":")) != InvalidIndex) {
+    while ((index = builder.FindFirstOf(0, EndOfString, ":")) != EndOfString) {
         // ignore DOS drive letters
         if (index > 1) {
             String assignString = builder.GetSubString(0, index + 1);
@@ -86,9 +86,6 @@ assignRegistry::ResolveAssigns(const String& str) const {
             else break;
         }
         else break;
-    }
-    if (builder.Back() == '/') {
-        builder.PopBack();
     }
     return builder.GetString();
 }
