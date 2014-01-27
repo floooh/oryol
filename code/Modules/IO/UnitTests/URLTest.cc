@@ -12,69 +12,59 @@ using namespace IO;
 
 TEST(URLTest) {
     
-// FIXME: rewrite this completely!
-/*
+    // empty URL
+    URL url;
+    CHECK(url.Empty());
+    CHECK(!url.IsValid());
+    CHECK(url.Get() == "");
+    
     // a simple URL
     URL url0("http://www.flohofwoe.net/index.html");
     URL url1("http://www.flohofwoe.org/index.html");
     CHECK(url0.Get() == "http://www.flohofwoe.net/index.html");
     CHECK(url0 != url1);
-    
-    // split into parts
-    URLParts parts = url0.Split();
-    CHECK(parts.Valid);
-    CHECK(parts.Scheme == "http");
-    CHECK(parts.User.Empty());
-    CHECK(parts.Password.Empty());
-    CHECK(parts.Host == "www.flohofwoe.net");
-    CHECK(parts.Port.Empty());
-    CHECK(parts.Path == "index.html");
-    CHECK(parts.Query.Empty());
-    CHECK(parts.Fragment.Empty());
+
+    // check parts
+    CHECK(url0.IsValid());
+    CHECK(!url0.Empty());
+    CHECK(url0.Scheme() == "http");
+    CHECK(url0.User().Empty());
+    CHECK(url0.Password().Empty());
+    CHECK(url0.Host() == "www.flohofwoe.net");
+    CHECK(url0.Port().Empty());
+    CHECK(url0.Path() == "index.html");
+    CHECK(url0.Query().Empty());
+    CHECK(url0.Fragment().Empty());
     
     // test some invalid URL
     URL brokenUrl;
     brokenUrl = "www.bla.org";
-    parts = brokenUrl.Split();
-    CHECK(!parts.Valid);
+    CHECK(!brokenUrl.IsValid());
     
     // test with username, no password, port number, deep path and fragment
     URL url2("http://user@www.flohofwoe.net:8000/bla/blub/blob.txt#frag");
-    parts = url2.Split();
-    CHECK(parts.Valid);
-    CHECK(parts.Scheme == "http");
-    CHECK(parts.User == "user");
-    CHECK(parts.Password.Empty());
-    CHECK(parts.Host == "www.flohofwoe.net");
-    CHECK(parts.Port == "8000");
-    CHECK(parts.Path == "bla/blub/blob.txt");
-    CHECK(parts.Query.Empty());
-    CHECK(parts.Fragment == "frag");
+    CHECK(url2.IsValid());
+    CHECK(url2.Scheme() == "http");
+    CHECK(url2.User() == "user");
+    CHECK(url2.Password().Empty());
+    CHECK(url2.Host() == "www.flohofwoe.net");
+    CHECK(url2.Port() == "8000");
+    CHECK(url2.Path() == "bla/blub/blob.txt");
+    CHECK(url2.Query().Empty());
+    CHECK(url2.Fragment() == "frag");
     
     // a complex URL with user+password and a query
     URL url3("http://user:pwd@www.flohofwoe.net/bla.txt?key0=val0&key1=val1#frag");
-    parts = url3.Split();
-    CHECK(parts.Valid);
-    CHECK(parts.Scheme == "http");
-    CHECK(parts.User == "user");
-    CHECK(parts.Password == "pwd");
-    CHECK(parts.Host == "www.flohofwoe.net");
-    CHECK(parts.Path == "bla.txt");
-    CHECK(parts.Query.Size() == 2);
-    CHECK(parts.Query["key0"] == "val0");
-    CHECK(parts.Query["key1"] == "val1");
-    CHECK(parts.Fragment == "frag");
+    CHECK(url3.IsValid());
+    CHECK(url3.Scheme() == "http");
+    CHECK(url3.User() == "user");
+    CHECK(url3.Password() == "pwd");
+    CHECK(url3.Host() == "www.flohofwoe.net");
+    CHECK(url3.Path() == "bla.txt");
+    Map<String, String> query = url3.Query();
+    CHECK(query.Size() == 2);
+    CHECK(query["key0"] == "val0");
+    CHECK(query["key1"] == "val1");
+    CHECK(url3.Fragment() == "frag");
     
-    // test setting address and port
-    parts.SetAddress("www.radonlabs.de:8000");
-    CHECK(parts.Host == "www.radonlabs.de");
-    CHECK(parts.Port == "8000");
-    CHECK(parts.GetAddress() == "www.radonlabs.de:8000");
-    
-    // test building URL from parts
-    URL url4 = URL::Build(parts);
-    String url4String = url4.Get().AsString();
-    CHECK(url4String == "http://user:pwd@www.radonlabs.de:8000/bla.txt?key0=val0&key1=val1#frag");
-    
-*/
 }

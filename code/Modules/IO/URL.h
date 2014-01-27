@@ -8,7 +8,6 @@
 */
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"
-#include "IO/URLParts.h"
 
 namespace Oryol {
 namespace IO {
@@ -44,107 +43,64 @@ public:
     bool operator==(const URL& rhs);
     /// inequality
     bool operator!=(const URL& rhs);
-
+    
+    /// return true if this is a valid, non-empty URL
+    bool IsValid() const;
+    /// return true if the URL is empty
+    bool Empty() const;
     /// get the URL string
     const Core::StringAtom& Get() const;
-
-    /// split an URL into parts
-    URLParts Split() const;
-    /// build an URL from parts
-    static URL Build(const URLParts& parts);
+    
+    /// get the scheme string
+    Core::String Scheme() const;
+    /// get the user string
+    Core::String User() const;
+    /// get the password string
+    Core::String Password() const;
+    /// get the host string
+    Core::String Host() const;
+    /// get the port string
+    Core::String Port() const;
+    /// get the path string
+    Core::String Path() const;
+    /// get the fragment string
+    Core::String Fragment() const;
+    /// get the query component
+    Core::Map<Core::String, Core::String> Query() const;
     
 private:
-    Core::StringAtom content;
-};
-
-//------------------------------------------------------------------------------
-inline
-URL::URL() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline
-URL::URL(const URL& rhs) :
-content(rhs.content) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline
-URL::URL(URL&& rhs) {
-    this->content = std::move(rhs.content);
-}
-
-//------------------------------------------------------------------------------
-inline
-URL::URL(const char* rhs) :
-content(rhs) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline
-URL::URL(const Core::StringAtom& rhs) :
-content(rhs) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline
-URL::URL(const Core::String& rhs) :
-content(rhs) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline void
-URL::operator=(const URL& rhs) {
-    this->content = rhs.content;
-}
-
-//------------------------------------------------------------------------------
-inline void
-URL::operator=(URL&& rhs) {
-    this->content = rhs.content;
-    rhs.content.Clear();
-}
-
-//------------------------------------------------------------------------------
-inline void
-URL::operator=(const char* rhs) {
-    this->content = rhs;
-}
-
-//------------------------------------------------------------------------------
-inline void
-URL::operator=(const Core::StringAtom& rhs) {
-    this->content = rhs;
-}
-
-//------------------------------------------------------------------------------
-inline void
-URL::operator=(const Core::String& rhs) {
-    this->content = rhs;
-}
-
-//------------------------------------------------------------------------------
-inline bool
-URL::operator==(const URL& rhs) {
-    return this->content == rhs.content;
-}
-
-//------------------------------------------------------------------------------
-inline bool
-URL::operator!=(const URL& rhs) {
-    return this->content != rhs.content;
-}
-
-//------------------------------------------------------------------------------
-inline const Core::StringAtom&
-URL::Get() const {
-    return this->content;
-}
+    /// parse URL, populates string indices
+    bool parseIndices();
+    /// clear string indices
+    void clearIndices();
+    /// copy string indices
+    void copyIndices(const URL& rhs);
     
+    enum {
+        schemeStart = 0,
+        schemeEnd,
+        userStart,
+        userEnd,
+        pwdStart,
+        pwdEnd,
+        hostStart,
+        hostEnd,
+        portStart,
+        portEnd,
+        pathStart,
+        pathEnd,
+        fragStart,
+        fragEnd,
+        queryStart,
+        queryEnd,
+        
+        numIndices,
+    };
+    
+    Core::StringAtom content;
+    int16 indices[numIndices];
+    bool valid;
+};
+   
 } // namespace IO
 } // namespace Oryol
