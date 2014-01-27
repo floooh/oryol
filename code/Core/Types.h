@@ -4,8 +4,7 @@
     @file Core/Types.h
     @brief defines basic data types for Oryol
 */
-namespace Oryol
-{
+namespace Oryol {
 
 /// signed 8-bit integer
 typedef std::int8_t int8;

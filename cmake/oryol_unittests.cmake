@@ -32,12 +32,12 @@ macro(oryol_end_unittest)
         file(WRITE ${main_path}
             "// machine generated, do not edit\n"
             "#include \"Pre.h\"\n"
-            "#include \"Core/Core.h\"\n"
+            "#include \"Core/Module.h\"\n"
             "#include \"UnitTest++/src/UnitTest++.h\"\n"
             "int main(void) {\n"
-            "    Oryol::Core::Setup();\n"
+            "    Oryol::Core::Module::Setup();\n"
             "    int res = UnitTest::RunAllTests();\n"
-            "    Oryol::Core::Discard();\n"
+            "    Oryol::Core::Module::Discard();\n"
             "    return res;\n"
             "}\n"
         )

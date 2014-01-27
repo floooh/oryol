@@ -1,36 +1,38 @@
 //------------------------------------------------------------------------------
-//  Core.cc
+//  Module.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core.h"
+#include "Module.h"
 #include "String/stringAtomTable.h"
 
 namespace Oryol {
 namespace Core {
     
 //------------------------------------------------------------------------------
-void Setup() {
-
+void
+Module::Setup() {
     // create the main-thread string atom table
     stringAtomTable::CreateSingleton();
 }
 
 //------------------------------------------------------------------------------
-void Discard() {
+void
+Module::Discard() {
 
     // do NOT destroy the thread-local string atom table to
     // ensure that string atom data pointers still point to valid data!!!
 }
 
 //------------------------------------------------------------------------------
-void EnterThread() {
-
+void
+Module::EnterThread() {
     // create thread-local string atom table
     stringAtomTable::CreateSingleton();
 }
 
 //------------------------------------------------------------------------------
-void LeaveThread() {
+void
+Module::LeaveThread() {
 
     // do NOT destroy the thread-local string atom table to
     // ensure that string atom data pointers still point to valid data
