@@ -15,6 +15,7 @@
     @see URL
 */
 #include "IO/URL.h"
+#include "Core/String/StringBuilder.h"
 
 namespace Oryol {
 namespace IO {
@@ -27,7 +28,7 @@ public:
     URLBuilder(const URL& url);
 
     /// build URL from current parts
-    URL Build();
+    URL BuildURL();
     
     /// set complete URL
     void SetURL(const URL& url);
@@ -73,6 +74,8 @@ private:
     Core::String path;
     Core::String fragment;
     Core::Map<Core::String, Core::String> query;
+    Core::StringBuilder stringBuilder;
+    
 };
     
 //------------------------------------------------------------------------------
