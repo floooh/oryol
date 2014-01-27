@@ -6,8 +6,8 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Memory/Memory.h"
 
-using namespace std;
 using namespace Oryol;
+using namespace Core;
 
 //------------------------------------------------------------------------------
 TEST(Memory) {

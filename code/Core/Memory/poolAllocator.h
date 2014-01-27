@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Memory::poolAllocator
-    
+    private class, don't use!
+ 
     Thread-safe pool allocator with placement-new/delete. Uses 32-bit
     tags with a unique-count masked-in for its forward-linked list 
     instead of pointers because of the ABA problem (which I was actually 
@@ -12,7 +12,7 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Memory {
+namespace Core {
     
 template<class TYPE, int POOL_SIZE> class poolAllocator {
 public:
@@ -228,5 +228,5 @@ poolAllocator<TYPE, POOL_SIZE>::GetPoolSize() const {
     return POOL_SIZE;
 }
 
-} // namespace Memory
+} // namespace Core
 } // namespace Oryol

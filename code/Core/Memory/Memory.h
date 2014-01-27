@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Memory
+    @class Oryol::Core::Memory
+    @brief Low-level memory management functions
     
     Lowlevel memory allocation wrapper for Oryol. Standard memory alignment
     differs by platforms (e.g. platforms with SSE support return 16-byte
@@ -13,64 +14,81 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Memory {
+namespace Core {
     
-//------------------------------------------------------------------------------
-inline void
-Fill(void* ptr, int32 num_bytes, uint8 value) {
-    std::memset(ptr, value, num_bytes);
-}
-    
+class Memory {
+public:
+    /// allocate a raw chunk of memory
+    static void* Alloc(int32 numBytes);
+    /// re-allocate a raw chunk of memory
+    static void* ReAlloc(void* ptr, int32 numBytes);
+    /// free a raw chunk of memory
+    static void Free(void* ptr);
+    /// fill range of memory with a byte value
+    static void Fill(void* ptr, int32 numBytes, uint8 value);
+    /// copy a raw chunk of non-overlapping memory
+    static void Copy(const void* from, void* to, int32 numBytes);
+    /// move a raw chunk of potentially overlapping memory
+    static void Move(const void* from, void* to, int32 numBytes);
+    /// fill a chunk of memory with zeros
+    static void Clear(void* ptr, int32 numBytes);
+    /// align a pointer to size up to ORYOL_MAX_PLATFORM_ALIGN
+    static void* Align(void* ptr, int32 byteSize);
+    /// round-up a value to the next multiple of byteSize
+    static int32 RoundUp(int32 val, int32 byteSize);
+};
+
 //------------------------------------------------------------------------------
 inline void*
-Alloc(int32 s) {
-    void* ptr = std::malloc(s);
+Memory::Alloc(int32 numBytes) {
+    void* ptr = std::malloc(numBytes);
     #if ORYOL_ALLOCATOR_DEBUG || ORYOL_UNITTESTS
-    Memory::Fill(ptr, s, ORYOL_MEMORY_DEBUG_BYTE);
+    Memory::Fill(ptr, numBytes, ORYOL_MEMORY_DEBUG_BYTE);
     #endif
     return ptr;
 };
 
 //------------------------------------------------------------------------------
+inline void
+Memory::Fill(void* ptr, int32 numBytes, uint8 value) {
+    std::memset(ptr, value, numBytes);
+}
+
+//------------------------------------------------------------------------------
 inline void*
-ReAlloc(void* ptr, int32 s) {
+Memory::ReAlloc(void* ptr, int32 s) {
     // FIXME: HMM need to fix fill with debug pattern...
     return std::realloc(ptr, s);
 };
 
 //------------------------------------------------------------------------------
 inline void
-Free(void* p) {
+Memory::Free(void* p) {
     std::free(p);
 };
 
 //------------------------------------------------------------------------------
 inline void
-Copy(const void* from, void* to, int32 num_bytes) {
-    // copy memory, memory areas must not overlap
-    // (NOTE different order of src and dest compared to memcpy!)
-    std::memcpy(to, from, num_bytes);
+Memory::Copy(const void* from, void* to, int32 numBytes) {
+    std::memcpy(to, from, numBytes);
 };
 
 //------------------------------------------------------------------------------
 inline void
-Move(void* from, void* to, int32 num_bytes) {
-    // move memory, memory areas may overlap
-    // (NOTE different order of src and dest compared to memmove!)
-    std::memmove(to, from, num_bytes);
+Memory::Move(const void* from, void* to, int32 numBytes) {
+    std::memmove(to, from, numBytes);
 };
 
 //------------------------------------------------------------------------------
 inline void
-Clear(void* ptr, int32 num_bytes) {
-    std::memset(ptr, 0, num_bytes);
+Memory::Clear(void* ptr, int32 numBytes) {
+    std::memset(ptr, 0, numBytes);
 };
 
 //------------------------------------------------------------------------------
 inline void*
-Align(void* ptr, int32 byte_size) {
-    // align a pointer to a byte size or a platform-specific maximum byte size
-    intptr align = byte_size > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byte_size;
+Memory::Align(void* ptr, int32 byteSize) {
+    intptr align = byteSize > ORYOL_MAX_PLATFORM_ALIGN ? ORYOL_MAX_PLATFORM_ALIGN : byteSize;
     intptr ptri = (intptr)ptr;
     ptri = (ptri + (align - 1)) & ~(align - 1);
     return (void*) ptri;
@@ -78,9 +96,9 @@ Align(void* ptr, int32 byte_size) {
 
 //------------------------------------------------------------------------------
 inline int32
-RoundUp(int32 val, int32 byte_size) {
-    return (val + (byte_size - 1)) & ~(byte_size - 1);
+Memory::RoundUp(int32 val, int32 byteSize) {
+    return (val + (byteSize - 1)) & ~(byteSize - 1);
 }
     
-} // namespace memory
+} // namespace Core
 } // namespace oryol

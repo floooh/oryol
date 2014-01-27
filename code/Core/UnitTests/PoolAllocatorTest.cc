@@ -13,7 +13,6 @@
 
 using namespace Oryol;
 using namespace Core;
-using namespace Memory;
 
 TEST(PoolAllocator) {
 
