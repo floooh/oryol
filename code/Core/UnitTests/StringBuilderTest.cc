@@ -12,7 +12,7 @@ TEST(StringBuilderTest) {
     
     StringBuilder builder;
     CHECK(builder.GetString().Empty());
-    CHECK(builder.GetSubString(0, 0).Empty());
+    CHECK(builder.GetSubString(0, EndOfString).Empty());
     CHECK(builder.Capacity() == 0);
     CHECK(builder.Length() == 0);
     
@@ -21,17 +21,17 @@ TEST(StringBuilderTest) {
     CHECK(builder.Length() == 1);
     CHECK(builder.GetString() == "x");
     CHECK(builder.GetSubString(0, 1) == "x");
-    CHECK(builder.GetSubString(0, 0) == "x");
+    CHECK(builder.GetSubString(0, EndOfString) == "x");
     
     builder.Append("Bla");
     CHECK(builder.Length() == 4);
     CHECK(builder.GetString() == "xBla");
     CHECK(builder.GetSubString(0, 1) == "x");
-    CHECK(builder.GetSubString(1, 0) == "Bla");
-    CHECK(builder.GetSubString(1, 2) == "Bl");
+    CHECK(builder.GetSubString(1, EndOfString) == "Bla");
+    CHECK(builder.GetSubString(1, 3) == "Bl");
     
     const char* blubber = "BlubberZZZ";
-    builder.Append(blubber, 7);
+    builder.Append(blubber, 0, 7);
     CHECK(builder.Length() == 11);
     CHECK(builder.GetString() == "xBlaBlubber");
     
@@ -46,7 +46,7 @@ TEST(StringBuilderTest) {
     CHECK(builder.GetString() == "xBlaBlubberBlobBlab");
     
     const String yyy("yyyBlub");
-    builder.Append(yyy, 3, 0);
+    builder.Append(yyy, 3, EndOfString);
     CHECK(builder.Length() == 23);
     CHECK(builder.GetString() == "xBlaBlubberBlobBlabBlub");
     
@@ -114,6 +114,14 @@ TEST(StringBuilderTest) {
     CHECK(builder.GetString() == "TwoThreeFiveSixSeven");
     CHECK(builder.Length() == 20);
     
+    // SubstituteRange
+    builder.SubstituteRange(0, 3, "Zwei");
+    CHECK(builder.GetString() == "ZweiThreeFiveSixSeven");
+    builder.SubstituteRange(16, EndOfString, "Sieben");
+    CHECK(builder.GetString() == "ZweiThreeFiveSixSieben");
+    builder.SubstituteRange(4, 9, "Drei");
+    CHECK(builder.GetString() == "ZweiDreiFiveSixSieben");
+    
     // test tokenize
     Array<String> tokens;
     builder.Set("One Two Three");
@@ -151,10 +159,10 @@ TEST(StringBuilderTest) {
     
     // FindFirstOf, FindFirstNotOf, FindSubString
     builder.Set("http://bla.blob.com:8000");
-    CHECK(builder.FindFirstOf(0, 0, ":") == 4);
-    CHECK(builder.FindFirstNotOf(0, 0, "htp:/") == 7);
+    CHECK(builder.FindFirstOf(0, EndOfString, ":") == 4);
+    CHECK(builder.FindFirstNotOf(0, EndOfString, "htp:/") == 7);
     CHECK(builder.FindFirstOf(0, 4, ":") == InvalidIndex);
     CHECK(builder.FindFirstOf(7, 12, ".") == 10);
-    CHECK(builder.FindSubString(0, 0, "://") == 4);
+    CHECK(builder.FindSubString(0, EndOfString, "://") == 4);
 }
 

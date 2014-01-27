@@ -132,20 +132,20 @@ TEST(StringTest) {
     
     // test range-assignment
     const char* hello = "Hello World!";
-    String subStr(hello, 5);
+    String subStr(hello, 0, 5);
     CHECK(subStr == "Hello");
     subStr.Clear();
-    subStr.Assign(&(hello[6]), 0);
+    subStr.Assign(hello, 6, EndOfString);
     CHECK(subStr == "World!");
     
     String helloStr("Hello World!");
     String subStr1(helloStr, 1, 5);
     CHECK(subStr1 == "ello");
-    subStr1.Assign(helloStr, 6, 0);
+    subStr1.Assign(helloStr, 6, EndOfString);
     CHECK(subStr1 == "World!");
     String subStr2(helloStr, 1, 5);
     CHECK(subStr2 == "ello");
-    String subStr3(helloStr, 6, 0);
+    String subStr3(helloStr, 6, EndOfString);
     CHECK(subStr3 == "World!");
     
     // Front/Back

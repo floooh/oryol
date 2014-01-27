@@ -90,7 +90,7 @@ StringBuilder::Clear() {
 String
 StringBuilder::GetString() const {
     if ((this->buffer) && (this->size > 0)) {
-        return String(this->buffer, this->size);
+        return String(this->buffer, 0, this->size);
     }
     else {
         return String();
@@ -101,12 +101,12 @@ StringBuilder::GetString() const {
 String
 StringBuilder::GetSubString(int32 startIndex, int32 endIndex) const {
     if (this->buffer) {
-        if (0 == endIndex) {
+        if (EndOfString == endIndex) {
             endIndex = this->size;
         }
         o_assert((startIndex >= 0) && (startIndex < endIndex));
         o_assert(endIndex <= this->size);
-        return String(this->buffer + startIndex, endIndex);
+        return String(this->buffer, startIndex, endIndex);
     }
     else {
         return String();
@@ -123,11 +123,16 @@ StringBuilder::Append(char c) {
 
 //------------------------------------------------------------------------------
 void
-StringBuilder::Append(const char* ptr, int32 length) {
+StringBuilder::Append(const char* ptr, int32 startIndex, int32 endIndex) {
+    if (EndOfString == endIndex) {
+        endIndex = std::strlen(ptr);
+    }
+    o_assert(endIndex >= startIndex);
+    const int32 length = endIndex - startIndex;
     if (length > 0) {
         o_assert(ptr);
         this->ensureRoom(length);
-        std::strncpy(this->buffer + this->size, ptr, length);
+        std::strncpy(this->buffer + this->size, ptr + startIndex, length);
         this->size += length;
         this->buffer[this->size] = 0;
     }
@@ -135,16 +140,16 @@ StringBuilder::Append(const char* ptr, int32 length) {
 
 //------------------------------------------------------------------------------
 void
-StringBuilder::Set(const char* ptr, int32 length) {
+StringBuilder::Set(const char* ptr, int32 startIndex, int32 endIndex) {
     this->Clear();
-    this->Append(ptr, length);
+    this->Append(ptr, startIndex, endIndex);
 }
 
 //------------------------------------------------------------------------------
 void
 StringBuilder::Append(const char* ptr) {
     o_assert(ptr);
-    this->Append(ptr, std::strlen(ptr));
+    this->Append(ptr, 0, std::strlen(ptr));
 }
 
 //------------------------------------------------------------------------------
@@ -156,7 +161,7 @@ void StringBuilder::Set(const char* ptr) {
 //------------------------------------------------------------------------------
 void
 StringBuilder::Append(const String& str) {
-    this->Append(str.AsCStr(), str.Length());
+    this->Append(str.AsCStr(), 0, str.Length());
 }
 
 //------------------------------------------------------------------------------
@@ -170,12 +175,12 @@ StringBuilder::Set(const String& str) {
 void
 StringBuilder::Append(const String& str, int32 startIndex, int32 endIndex) {
     const int32 strLen = str.Length();
-    if (0 == endIndex) {
+    if (EndOfString == endIndex) {
         endIndex = strLen;
     }
     o_assert((startIndex >= 0) && (startIndex < endIndex));
     o_assert(endIndex <= strLen);
-    this->Append(str.AsCStr() + startIndex, endIndex - startIndex);
+    this->Append(str.AsCStr(), startIndex, endIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -228,6 +233,13 @@ StringBuilder::Truncate(int32 index) {
 
 //------------------------------------------------------------------------------
 char
+StringBuilder::At(int32 index) const {
+    o_assert((index >= 0) && (index < this->size));
+    return this->buffer[index];
+}
+
+//------------------------------------------------------------------------------
+char
 StringBuilder::Back() const {
     o_assert(this->size > 0);
     return this->buffer[this->size - 1];
@@ -243,6 +255,50 @@ StringBuilder::PopBack() {
 }
 
 //------------------------------------------------------------------------------
+void
+StringBuilder::substituteCommon(char* occur, int32 matchLen, int32 substLen, const char* subst) {
+    const int32 diff = substLen - matchLen;
+    if (diff > 0) {
+        this->ensureRoom(diff);
+    }
+    
+    // move tail in or out
+    const char* moveFrom = occur + matchLen;
+    char* moveTo = occur + substLen;
+    const int32 moveNumBytes = this->size - (moveFrom - this->buffer);
+    if ((moveFrom != moveTo) && (moveNumBytes > 0)) {
+        std::memmove(moveTo, moveFrom, moveNumBytes);
+    }
+    
+    // properly zero-terminate and fix size
+    moveTo[moveNumBytes] = 0;
+    this->size += diff;
+    
+    // copy substitute into hole
+    if (substLen > 0) {
+        std::strncpy(occur, subst, substLen);
+    }
+    
+}
+
+//------------------------------------------------------------------------------
+void
+StringBuilder::SubstituteRange(int32 startIndex, int32 endIndex, const char* subst) {
+    o_assert(this->buffer);
+    o_assert(subst);
+    o_assert(startIndex < this->size);
+    if (EndOfString == endIndex) {
+        endIndex = this->size;
+    }
+    o_assert(endIndex <= this->size);
+    const int32 matchLen = endIndex - startIndex;
+    const int32 substLen = std::strlen(subst);
+    char* occur = this->buffer + startIndex;
+    this->substituteCommon(occur, matchLen, substLen, subst);
+}
+
+
+//------------------------------------------------------------------------------
 bool
 StringBuilder::SubstituteFirst(const char* match, const char* subst) {
     o_assert(match && subst);
@@ -255,28 +311,7 @@ StringBuilder::SubstituteFirst(const char* match, const char* subst) {
             // we have a match, make sure we have enough room
             const int32 matchLen = std::strlen(match);
             const int32 substLen = std::strlen(subst);
-            const int32 diff = substLen - matchLen;
-            if (diff > 0) {
-                this->ensureRoom(diff);
-            }
-            
-            // move tail in or out
-            const char* moveFrom = occur + matchLen;
-            char* moveTo = occur + substLen;
-            const int32 moveNumBytes = this->size - (moveFrom - this->buffer);
-            if ((moveFrom != moveTo) && (moveNumBytes > 0)) {
-                std::memmove(moveTo, moveFrom, moveNumBytes);
-            }
-            
-            // properly zero-terminate and fix size
-            moveTo[moveNumBytes] = 0;
-            this->size += diff;
-            
-            // copy substitute into hole
-            if (substLen > 0) {
-                std::strncpy(occur, subst, substLen);
-            }
-            
+            this->substituteCommon(occur, matchLen, substLen, subst);
             return true;
         }
         else {
@@ -297,6 +332,34 @@ StringBuilder::SubstituteFirst(const String& match, const String& subst) {
 }
 
 //------------------------------------------------------------------------------
+int32
+StringBuilder::findFirstOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
+    const char* ptr = str + startIndex;
+    const int index = std::strcspn(ptr, delims) + startIndex;
+    if (((endIndex != EndOfString) && (index >= endIndex)) || (index >= strLen)) {
+        return InvalidIndex;
+    }
+    else {
+        return index;
+    }
+}
+
+//------------------------------------------------------------------------------
+/**
+ Find index of first occurance of any chacters in delim in an external string, between startIndex
+ (including) and endIndex (excluding). If endIndex is EndOfString, search until end of string.
+ Returns InvalidIndex if not found.
+ */
+int32
+StringBuilder::FindFirstOf(const char* str, int32 startIndex, int32 endIndex, const char* delims) {
+    o_assert(0 != delims);
+    o_assert(str);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    const int32 strLen = std::strlen(str);
+    return findFirstOf(str, strLen, startIndex, endIndex, delims);
+}
+
+//------------------------------------------------------------------------------
 /**
  Find index of first occurance of any chacters in delim, between startIndex
  (including) and endIndex (excluding). If endIndex is 0, search until end of string.
@@ -305,49 +368,95 @@ StringBuilder::SubstituteFirst(const String& match, const String& subst) {
 int32
 StringBuilder::FindFirstOf(int32 startIndex, int32 endIndex, const char* delims) const {
     o_assert(0 != delims);
-    o_assert((endIndex == 0) || (endIndex >= startIndex));
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
     o_assert(startIndex < this->size);
     if (nullptr != this->buffer) {
-        const char* ptr = this->buffer + startIndex;
-        int index = std::strcspn(ptr, delims);
-        if (((endIndex != 0) && (index >= endIndex)) || (index >= this->size)) {
-            return InvalidIndex;
-        }
-        else {
-            return startIndex + index;
-        }
+        return findFirstOf(this->buffer, this->size, startIndex, endIndex, delims);
     }
     else {
         // no content
         return InvalidIndex;
     }
 }
-    
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::findFirstNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
+    const char* ptr = str + startIndex;
+    int index = std::strspn(ptr, delims) + startIndex;
+    if (((EndOfString != endIndex) && (index >= endIndex)) || (index >= strLen)) {
+        return InvalidIndex;
+    }
+    else {
+        return index;
+    }
+}
+
 //------------------------------------------------------------------------------
 /**
  Find index of first occurange of any characters NOT in delim, between startIndex
- (including) and endIndex (exluding). If endIndex is 0, search until end of string.
+ (including) and endIndex (exluding). If endIndex is EndOfString, search until end of string.
+ Returns InvalidIndex if not found.
+ */
+int32
+StringBuilder::FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims) {
+    o_assert(0 != delims);
+    o_assert(str);
+    o_assert((EndOfString != endIndex) || (endIndex >= startIndex));
+    const int32 strLen = std::strlen(str);
+    return findFirstOf(str, strLen, startIndex, endIndex, delims);
+}
+
+//------------------------------------------------------------------------------
+/**
+ Find index of first occurange of any characters NOT in delim, between startIndex
+ (including) and endIndex (exluding). If endIndex is EndOfString, search until end of string.
  Returns InvalidIndex if not found.
  */
 int32
 StringBuilder::FindFirstNotOf(int32 startIndex, int32 endIndex, const char* delims) const {
     o_assert(0 != delims);
-    o_assert((endIndex == 0) || (endIndex >= startIndex));
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
     o_assert(startIndex < this->size);
     if (nullptr != this->buffer) {
-        const char* ptr = this->buffer + startIndex;
-        int index = std::strspn(ptr, delims);
-        if (((endIndex != 0) && (index >= endIndex)) || (index >= this->size)) {
-            return InvalidIndex;
-        }
-        else {
-            return startIndex + index;
-        }
+        return findFirstNotOf(this->buffer, this->size, startIndex, endIndex, delims);
     }
     else {
         // no content
         return InvalidIndex;
     }
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::findSubString(const char* str, int32 startIndex, int32 endIndex, const char* subStr) {
+    const char* ptr = str + startIndex;
+    const char* occur = std::strstr(ptr, subStr);
+    if (nullptr == occur) {
+        return InvalidIndex;
+    }
+    else {
+        int32 index = (occur - ptr) + startIndex;
+        if ((EndOfString != endIndex) && (index >= endIndex)) {
+            return InvalidIndex;
+        }
+        else {
+            return index;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+/**
+ Find first occurance of subStr between startIndex (including) and endIndex
+ (excluding). If endIndex is 0, search until end of string.
+ Returns InvalidIndex if not found.
+ */
+int32
+StringBuilder::FindSubString(const char* str, int32 startIndex, int32 endIndex, const char* subStr) {
+    o_assert(0 != subStr);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    return findSubString(str, startIndex, endIndex, subStr);
 }
     
 //------------------------------------------------------------------------------
@@ -360,22 +469,9 @@ int32
 StringBuilder::FindSubString(int32 startIndex, int32 endIndex, const char* subStr) const {
     o_assert(0 != subStr);
     o_assert(startIndex < this->size);
-    o_assert((endIndex == 0) || (endIndex >= startIndex));
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
     if (nullptr != this->buffer) {
-        const char* ptr = this->buffer + startIndex;
-        const char* occur = std::strstr(ptr, subStr);
-        if (nullptr == occur) {
-            return InvalidIndex;
-        }
-        else {
-            int32 index = occur - ptr;
-            if ((endIndex != 0) && (index >= endIndex)) {
-                return InvalidIndex;
-            }
-            else {
-                return startIndex + index;
-            }
-        }
+        return findSubString(this->buffer, startIndex, endIndex, subStr);
     }
     else {
         // no content

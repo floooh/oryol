@@ -34,9 +34,9 @@ public:
     String();
     /// construct from C string (allocates!)
     String(const char* cstr);
-    /// construct from raw byte sequence
-    String(const char* ptr, int32 numCharBytes);
-    /// construct from substring of other string, endIndex can be 0 (means until end-of-string)
+    /// construct from raw byte sequence, endIndex can be EndOfString
+    String(const char* ptr, int32 startIndex, int32 endIndex);
+    /// construct from substring of other string, endIndex can be EndOfString
     String(const String& rhs, int32 startIndex, int32 endIndex);
     /// construct from std::string (allocates!)
     String(const std::string& str);
@@ -74,9 +74,9 @@ public:
 
     /// allocate room for numCharBytes, and return pointer
     char* Alloc(int32 numCharBytes);
-    /// assign from raw byte sequence, if numCharBytes is 0 -> until end-of-string
-    void Assign(const char* ptr, int32 numCharBytes);
-    /// assign from other string, with start index and endIndex, if endIndex is 0 -> until end-of-string
+    /// assign from raw byte sequence, endIndex can be EndOfString
+    void Assign(const char* ptr, int32 startIndex, int32 endIndex);
+    /// assign from other string, with start index and endIndex, endIndex can be EndOfString
     void Assign(const String& rhs, int32 startIndex, int32 endIndex);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const char* AsCStr() const;
@@ -319,29 +319,30 @@ String::String(const char* str) {
 
 //------------------------------------------------------------------------------
 /**
- Construct string from raw data (a pointer and the length of the string
- in bytes, excluding the terminating 0). If numCharBytes is 0, ptr is 
- expected to point to a null-terminated string, and this string will
- be copied into the new string object.
+ Construct string from raw data (a pointer, a start index and end index). 
+ If endIndex is 0, ptr is expected to point to a null-terminated string, and 
+ this string will be copied into the new string object.
 */
 inline
-String::String(const char* ptr, int32 numCharBytes) {
+String::String(const char* ptr, int32 startIndex, int32 endIndex) {
     o_assert(nullptr != ptr);
-    if (0 == numCharBytes) {
-        numCharBytes = std::strlen(ptr);
+    if (EndOfString == endIndex) {
+        endIndex = std::strlen(ptr);
     }
-    this->create(ptr, numCharBytes);
+    o_assert(startIndex < endIndex);
+    this->create(ptr + startIndex, endIndex - startIndex);
 }
 
 //------------------------------------------------------------------------------
 inline void
-String::Assign(const char* ptr, int32 numCharBytes) {
+String::Assign(const char* ptr, int32 startIndex, int32 endIndex) {
     o_assert(nullptr != ptr);
     this->release();
-    if (0 == numCharBytes) {
-        numCharBytes = std::strlen(ptr);
+    if (EndOfString == endIndex) {
+        endIndex = std::strlen(ptr);
     }
-    this->create(ptr, numCharBytes);
+    o_assert(startIndex < endIndex);
+    this->create(ptr + startIndex, endIndex - startIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -351,7 +352,7 @@ String::Assign(const char* ptr, int32 numCharBytes) {
 */
 inline
 String::String(const String& rhs, int32 startIndex, int32 endIndex) {
-    if (0 == endIndex) {
+    if (EndOfString == endIndex) {
         endIndex = rhs.Length();
     }
     o_assert((startIndex >= 0) && (startIndex < endIndex));
@@ -367,7 +368,7 @@ String::String(const String& rhs, int32 startIndex, int32 endIndex) {
 inline void
 String::Assign(const String& rhs, int32 startIndex, int32 endIndex) {
     this->release();
-    if (0 == endIndex) {
+    if (EndOfString == endIndex) {
         endIndex = rhs.Length();
     }
     o_assert((startIndex >= 0) && (startIndex < endIndex));
