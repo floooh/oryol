@@ -1,44 +1,44 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::StreamBuffer
-    @brief Base class for IO stream buffers
+    @class Oryol::IO::Stream
+    @brief Base class for IO streams
     
-    Base class for stream buffers. Stream buffers are used by Stream object
-    as data sink and/or source.
+    IO streams are data sinks or data sources with a tradition
+    Open/Read/Write/Close interface. Unlike POSIX file functions
+    they maintain a separate read- and write-cursor position.
 */
-#include "Core/Types.h"
+#include "Core/RefCounted.h"
 #include "IO/URL.h"
-#include "IO/Mode.h"
+#include "IO/OpenMode.h"
 
 namespace Oryol {
 namespace IO {
 
-class StreamBuffer {
+class Stream : public Core::RefCounted {
+    OryolClassDecl(Stream);
 public:
     /// constructor
-    StreamBuffer();
+    Stream();
     /// destructor
-    ~StreamBuffer();
+    virtual ~Stream();
     
     /// set URL
     void SetURL(const URL& u);
     /// get URL
     const URL& GetURL() const;
-    /// set open-mode
-    void SetMode(Mode m);
-    /// get open-mode
-    Mode GetMode() const;
     
     /// open the stream buffer
-    bool Open();
+    virtual bool Open(OpenMode::Enum mode);
     /// close the stream buffer
-    void Close();
+    virtual void Close();
     /// return true if currently open
     bool IsOpen() const;
     /// discard the content of the stream
-    void DiscardContent();
+    virtual void DiscardContent();
 
+    /// get current open-mode (only valid inside Open/Close)
+    OpenMode::Enum GetOpenMode() const;
     /// get the number of data bytes in the stream
     int32 GetSize() const;
     
@@ -47,28 +47,28 @@ public:
     /// get the write cursor position (byte offset from start)
     int32 GetWritePosition() const;
     /// write a number of bytes to the stream (returns bytes written)
-    int32 Write(void* ptr, int32 numBytes);
+    virtual int32 Write(void* ptr, int32 numBytes);
     /// map a memory area at the current write position and advance write position
-    void* MapWrite(int32 numBytes);
+    virtual void* MapWrite(int32 numBytes);
     /// unmap previously mapped memory area
-    void UnmapWrite();
+    virtual void UnmapWrite();
     
     /// set the read cursor position (byte offset from start)
     void SetReadPosition(int32 pos);
     /// get the read cursor position (byte offset from start)
     int32 GetReadPosition() const;
     /// read a number of bytes from the stream (returns bytes read)
-    int32 Read(void* ptr, int32 numBytes);
+    virtual int32 Read(void* ptr, int32 numBytes);
     /// map a memory area at the current read-position and advance read position
-    void* MapRead(int32 numBytes);
+    virtual void* MapRead(int32 numBytes);
     /// unmap previosuly mapped memory area
-    void UnmapRead();
+    virtual void UnmapRead();
     /// return true if read cursor is at end-of-file
     bool IsEof() const;
     
 protected:
     URL url;
-    Mode mode;
+    OpenMode::Enum openMode;
     bool isOpen;
     int32 size;
     int32 writePosition;
@@ -77,45 +77,38 @@ protected:
 
 //------------------------------------------------------------------------------
 inline bool
-StreamBuffer::IsOpen() const {
+Stream::IsOpen() const {
     return this->isOpen;
 }
 
 //------------------------------------------------------------------------------
 inline void
-StreamBuffer::SetURL(const URL& url_) {
+Stream::SetURL(const URL& url_) {
     o_assert(!this->isOpen);
     this->url = url_;
 }
 
 //------------------------------------------------------------------------------
 inline const URL&
-StreamBuffer::GetURL() const {
+Stream::GetURL() const {
     return this->url;
 }
 
 //------------------------------------------------------------------------------
-inline void
-StreamBuffer::SetMode(Mode mode_) {
-    o_assert(!this->isOpen);
-    this->mode = mode_;
-}
-
-//------------------------------------------------------------------------------
-inline Mode
-StreamBuffer::GetMode() const {
-    return this->mode;
+inline OpenMode::Enum
+Stream::GetOpenMode() const {
+    return this->openMode;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-StreamBuffer::GetSize() const {
+Stream::GetSize() const {
     return this->size;
 }
 
 //------------------------------------------------------------------------------
 inline void
-StreamBuffer::SetWritePosition(int32 pos) {
+Stream::SetWritePosition(int32 pos) {
     o_assert(this->isOpen);
     o_assert(pos >= 0 && pos < this->size);
     this->writePosition = pos;
@@ -123,13 +116,13 @@ StreamBuffer::SetWritePosition(int32 pos) {
 
 //------------------------------------------------------------------------------
 inline int32
-StreamBuffer::GetWritePosition() const {
+Stream::GetWritePosition() const {
     return this->writePosition;
 }
 
 //------------------------------------------------------------------------------
 inline void
-StreamBuffer::SetReadPosition(int32 pos) {
+Stream::SetReadPosition(int32 pos) {
     o_assert(this->isOpen);
     o_assert(pos >= 0 && pos < this->size);
     this->readPosition = pos;
@@ -137,13 +130,13 @@ StreamBuffer::SetReadPosition(int32 pos) {
 
 //------------------------------------------------------------------------------
 inline int32
-StreamBuffer::GetReadPosition() const {
+Stream::GetReadPosition() const {
     return this->readPosition;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-StreamBuffer::IsEof() const {
+Stream::IsEof() const {
     return this->readPosition == this->size;
 }
 

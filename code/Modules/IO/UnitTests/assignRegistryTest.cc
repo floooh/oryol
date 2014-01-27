@@ -7,9 +7,8 @@
 #include "IO/assignRegistry.h"
 #include "Core/Ptr.h"
 
-using namespace Oryol;
-using namespace Core;
-using namespace IO;
+using namespace Oryol::Core;
+using namespace Oryol::IO;
 
 TEST(assignRegistryTest) {
     

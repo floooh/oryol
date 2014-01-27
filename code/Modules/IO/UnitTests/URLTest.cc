@@ -6,9 +6,8 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/URL.h"
 
-using namespace Oryol;
-using namespace Core;
-using namespace IO;
+using namespace Oryol::Core;
+using namespace Oryol::IO;
 
 TEST(URLTest) {
     

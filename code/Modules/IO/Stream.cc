@@ -1,15 +1,17 @@
 //------------------------------------------------------------------------------
-//  StreamBuffer.cc
+//  Stream.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "StreamBuffer.h"
+#include "Stream.h"
 
 namespace Oryol {
 namespace IO {
-    
+
+OryolClassImpl(Stream);
+
 //------------------------------------------------------------------------------
-StreamBuffer::StreamBuffer() :
-mode(Mode::InvalidMode),
+Stream::Stream() :
+openMode(OpenMode::Invalid),
 isOpen(false),
 size(0),
 writePosition(0),
@@ -19,18 +21,22 @@ readPosition(0) {
 }
 
 //------------------------------------------------------------------------------
-StreamBuffer::~StreamBuffer() {
+Stream::~Stream() {
     o_assert(!this->isOpen);
 }
 
 //------------------------------------------------------------------------------
 bool
-StreamBuffer::Open() {
+Stream::Open(OpenMode::Enum mode) {
     
     o_assert(!this->isOpen);
-    o_assert(this->mode != Mode::InvalidMode);
+    o_assert(this->openMode == OpenMode::Invalid);
     
+    this->openMode = mode;
     this->isOpen = true;
+    
+    // you may want to override this in the subclass, see OpenMode!
+    this->size = 0;
     this->writePosition = 0;
     this->readPosition = 0;
     
@@ -39,55 +45,56 @@ StreamBuffer::Open() {
 
 //------------------------------------------------------------------------------
 void
-StreamBuffer::Close() {
+Stream::Close() {
     o_assert(this->isOpen);
     this->isOpen = false;
+    this->openMode = OpenMode::Invalid;
 }
 
 //------------------------------------------------------------------------------
 void
-StreamBuffer::DiscardContent() {
+Stream::DiscardContent() {
     o_assert(!this->isOpen);
     // this is usually implemented in a subclass
 }
 
 //------------------------------------------------------------------------------
 int32
-StreamBuffer::Write(void* ptr, int32 numBytes) {
+Stream::Write(void* ptr, int32 numBytes) {
     // implement in subclass!
     return 0;
 }
 
 //------------------------------------------------------------------------------
 void*
-StreamBuffer::MapWrite(int32 numBytes) {
+Stream::MapWrite(int32 numBytes) {
     // implement in subclass!
     return nullptr;
 }
 
 //------------------------------------------------------------------------------
 void
-StreamBuffer::UnmapWrite() {
+Stream::UnmapWrite() {
     // implement in subclass!
 }
 
 //------------------------------------------------------------------------------
 int32
-StreamBuffer::Read(void* ptr, int32 numBytes) {
+Stream::Read(void* ptr, int32 numBytes) {
     // implement in subclass!
     return 0;
 }
 
 //------------------------------------------------------------------------------
 void*
-StreamBuffer::MapRead(int32 numBytes) {
+Stream::MapRead(int32 numBytes) {
     // implement in subclass!
     return nullptr;
 }
 
 //------------------------------------------------------------------------------
 void
-StreamBuffer::UnmapRead() {
+Stream::UnmapRead() {
     // implement in subclass!
 }
 
