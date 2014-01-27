@@ -2,8 +2,9 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::Map
+    @brief simple key-value map similar to std::map
     
-    A key-value-pair container similar to std::map(), with the following
+    A key-value-pair container similar to std::map, with the following
     differences:
     
     - trying to access a non-existing element with operator[] will
@@ -27,6 +28,8 @@
     initially has spare room at the front and end. When inserting elements,
     movement happens towards the end which would create less move operations
     (so inserting at the front is just as fast as inserting at the end).
+    
+    @see KeyValuePair, Set
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"

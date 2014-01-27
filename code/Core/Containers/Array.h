@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::Array
+    @brief dynamic array class similar to std::vector
     
     Dynamic array class (similar to std::vector) with room for growth at
     the end. Internally this is a double-ended array, e.g. erasing items
@@ -25,7 +26,9 @@
     at the front.
     
     For sorting, iterating and sorted insertion, use the standard 
-    <algorithm> stuff!
+    algorithm stuff!
+    
+    @see ArrayMap, Map, Set, HashSet
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"

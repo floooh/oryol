@@ -2,9 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::RWLock
-    
-    A single-writer / multiple-reader lock. C++11 doesn't provide this
-    yet, so we roll our own.
+    @brief single-write / multiple-reader lock
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"

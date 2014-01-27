@@ -1,10 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @class Core::elementBuffer
-    
-    DO NOT USE THIS CLASS DIRECTLY, INSTEAD USE THE "PUBLIC" CONTAINERS
-    (starting with a capital letter).
+/*
+    private class, do not use
  
     Low-level dynamic memory buffer that is used as base for most
     higher-level Oryol container classes. Internally the buffer

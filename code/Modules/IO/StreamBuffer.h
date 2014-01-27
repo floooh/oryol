@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::IO::StreamBuffer
+    @brief Base class for IO stream buffers
     
     Base class for stream buffers. Stream buffers are used by Stream object
     as data sink and/or source.

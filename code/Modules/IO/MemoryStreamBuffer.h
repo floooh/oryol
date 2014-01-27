@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::IO::MemoryStreamBuffer
+    @brief a dynamic in-memory IO StreamBuffer
     
     A growable in-memory StreamBuffer.
 */

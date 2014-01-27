@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::String
+    @brief immutable, reference counted, shared strings
     
     An immutable, shared UTF-8 String class. Memory is only allocated
     when creating or assigning from non-String objects (const char*,
@@ -19,6 +20,8 @@
     will return the number of bytes including those intermittent 0-bytes
     (but String::NumChars will return the number of UTF-8 character up to
     the first 0-byte). This is intended behaviour, don't change this!
+    
+    @see StringBuilder, StringAtom
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"

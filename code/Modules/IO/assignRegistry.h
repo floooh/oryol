@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @class IO::assignRegistry
-    
+/*
+    private class, do not use
+ 
     Central registry for assign definitions. Assigns are
     path aliases (google for AmigaOS assign).
 */

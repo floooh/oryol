@@ -2,8 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @file Core/Macros.h
-
-    Essential macro definitions for oryol.
+    @brief essential macro definitions for Oryol
 */
 #include "Core/Types.h"
 #include "Core/Log.h"

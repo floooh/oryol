@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @class Oryol::Core::stringAtomBuffer
-  
+/*
+    private class, do not use
+    
     A growable buffer for raw string data for the StringAtom system.
 */
 #include "Core/Types.h"
@@ -15,7 +15,7 @@ class stringAtomTable;
 
 class stringAtomBuffer {
 public:
-    /// header data for a single entry (string data starts at end of header)
+    // header data for a single entry (string data starts at end of header)
     struct Header {
         // default constructor
         Header() : table(0), hash(0), str(0) { };

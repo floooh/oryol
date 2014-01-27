@@ -2,8 +2,11 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::StringBuilder
+    @brief manipulate and inspect string data
     
-    Helper class for dynamically building strings.
+    Use the StringBuilder methods to build, manipulate and inspect
+    string data. Internally a StringBuilder object has a dynamic
+    buffer which grows as needed, but never shrinks.
 */
 #include "Core/Types.h"
 #include "Core/String/String.h"

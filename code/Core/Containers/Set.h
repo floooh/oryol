@@ -1,9 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Core::Oryol::Set
-    
-    A sorted dynamic array of values.
+    @class Oryol::Core::Set
+    @brief a sorted, dynamic array of values
+
+    The Set class provides a dynamic array of binary-sorted values similar
+    to the std::set class.
+ 
+    @see Array, ArrayMap, Map
 */
 #include "Core/Containers/Array.h"
 

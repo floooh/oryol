@@ -1,10 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Core::RefCounted
-    
-    Reference-counted base class for use together with the Ptr<> smart-
-    pointer class.
+    @class Oryol::Core::RefCounted
+    @brief Oryol's reference-counted base class
+
+    The RefCounted class is used together with the Ptr smart-pointer class
+    to automatically manage the life-time of objects through 
+    reference-counting.
+ 
+    @see Ptr
 */
 #include "Core/Types.h"
 #include "Core/Ptr.h"

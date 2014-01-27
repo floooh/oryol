@@ -1,9 +1,17 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class IO::URL
+    @class Oryol::IO::URL
+    @brief Oryol's URL class
     
-    Oryol URL class.
+    All resource paths in Oryol are expressed as URLs. 
+    On creation and assignment, the URL will be
+    parsed and indices to its parts will be stored internally, this
+    is quite fast. The actual URL string will be stored as a StringAtom.
+    Expensive String construction only happens when actually getting
+    the URL parts. 
+    
+    @see URLBuilder
 */
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"

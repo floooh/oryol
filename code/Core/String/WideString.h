@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::WideString
+    @brief wide-character version of String class 
     
     An immutable, shared wchar_t string class. Depending on platform,
     this means UTF-16 (in Windows) or UTF-32 (everywhere else).

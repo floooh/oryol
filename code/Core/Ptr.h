@@ -1,8 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Core::Ptr
-    
+    @class Oryol::Core::Ptr
+    @brief Oryol's smart pointer class
+
+    The Oryol smart pointer class is used together with the RefCounted
+    base class to implement automatic object life-time management.
+
+    @see RefCounted
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"

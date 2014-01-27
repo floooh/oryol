@@ -2,9 +2,12 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::HashSet
+    @brief a Set using hashing for fast access
     
-    Implements a HashMap with a fixed number of buckets, each 
+    Implements a hash set with a fixed number of buckets, each
     bucket is a binary-sorted set.
+    
+    @see Array, ArrayMap, Map, Set
 */
 #include "Core/Config.h"
 #include "Core/Containers/Set.h"

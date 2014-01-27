@@ -2,9 +2,12 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::Logger
+    @brief base class for implementing custom loggers
+
+    Derive from this class and override its methods in order to implement
+    a custom logging functionality.
     
-    Base class for loggers. Create logger objects and add them to
-    Oryol::Core::Log.
+    @see Log
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"

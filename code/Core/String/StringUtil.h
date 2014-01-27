@@ -1,9 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @class Oryol::CoreStringUtil
-    
-    Various string utility functions.
+/*
+    @obsolete move this stuff to StringBuilder!
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"

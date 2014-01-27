@@ -1,6 +1,6 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
+/*
     private class, don't use!
  
     Thread-safe pool allocator with placement-new/delete. Uses 32-bit

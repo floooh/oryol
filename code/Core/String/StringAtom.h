@@ -2,10 +2,13 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::StringAtom
+    @brief immutable, unique strings for fast comparison
     
     A unique string, relatively slow on creation, but fast for comparison.
-    Stringatoms are stored in thread-local stringAtomTables and comparison
+    String atoms are stored in thread-local stringAtomTables and comparison
     is fastest in the creator thread.
+    
+    @see String
 */
 #include "Core/Types.h"
 #include "Core/String/stringAtomTable.h"

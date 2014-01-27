@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::ArrayMap
+    @brief map class which stores value in a separate array
     
     An ArrayMap works like a Map, but stores the values in a separate
     array from keys. This is useful if:
@@ -22,6 +23,8 @@
       needs to iterate over the keymap to find and replace the swapped-in index
     - Erase() and EraseIndex() need to do a sweep over the key map to
       fix-up indices, and are thus O(N)!!!
+      
+    @see Array, HashSet, Map, Set
 */
 #include "Core/Config.h"
 #include "Core/Containers/Array.h"

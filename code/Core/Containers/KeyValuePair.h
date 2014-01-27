@@ -2,9 +2,12 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::KeyValuePair
+    @brief key-value-pair for mapping containers
     
     Key-value-pair template class. Similar to pair<>, but members are not
     called first and second, but Key() and Value().
+    
+    @see Map
 */
 #include "Core/Config.h"
 

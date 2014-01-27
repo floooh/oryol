@@ -2,8 +2,13 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::Log
+    @brief logging functions
 
-    Basic logging functions.
+    The Log class provides a central place for logging. By default,
+    output is logged to stdout and stderr, but custom Logger objects
+    can be attached to handle log output differently.
+
+    @see Logger
 */
 #include "Core/Types.h"
 

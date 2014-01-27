@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @class Oryol::Core::stringAtomTable
+/*
+    private class, do not use
     
-    A thread-local StringAtom table. 
+    A thread-local StringAtom table.
 */
 #include "Core/Types.h"
 #include "Core/String/stringAtomBuffer.h"
