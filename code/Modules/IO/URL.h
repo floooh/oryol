@@ -3,11 +3,12 @@
 /**
     @class IO::URL
     
-    Oryol URL class. Use URLUtil and URLParts class if you
-    want to split an URL into its parts, or build an URL from parts.
+    Oryol URL class.
 */
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"
+#include "Core/Containers/Map.h"
+#include "Core/String/String.h"
 
 namespace Oryol {
 namespace IO {
