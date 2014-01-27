@@ -236,6 +236,9 @@ StringAtom::operator==(const char* rhs) const {
     else if ((0 == this->data) && (0 == rhs)) {
         return true;
     }
+    else if ((0 == this->data) && (0 != rhs)) {
+        return (rhs[0] == 0);
+    }
     else {
         return false;
     }

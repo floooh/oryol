@@ -20,6 +20,7 @@ TEST(StringAtomSingleThreaded) {
     CHECK(!atom0.IsValid());
     CHECK(atom0.AsCStr()[0] == 0);
     CHECK(atom0.AsString() == String());
+    CHECK(atom0 == "");
     
     StringAtom atom1("BLA!");
     CHECK(atom1.IsValid());
