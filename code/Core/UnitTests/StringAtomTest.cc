@@ -18,14 +18,17 @@ TEST(StringAtomSingleThreaded) {
     
     StringAtom atom0;
     CHECK(!atom0.IsValid());
+    CHECK(atom0.Length() == 0);
     CHECK(atom0.AsCStr()[0] == 0);
     CHECK(atom0.AsString() == String());
     CHECK(atom0 == "");
     
     StringAtom atom1("BLA!");
     CHECK(atom1.IsValid());
+    CHECK(atom1.Length() == 4);
     StringAtom atom2(String("BLA!"));
     CHECK(atom2.IsValid());
+    CHECK(atom2.Length() == 4);
     CHECK(atom1 == atom2);
     StringAtom atom3(atom2);
     CHECK(atom3.IsValid());
