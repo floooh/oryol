@@ -39,5 +39,8 @@ static const int32 InvalidIndex = -1;
 /// end-of-string indicator
 static const int32 EndOfString = -1;
 
+/// end-of-file indicator
+static const int32 EndOfStream = -1;
+
 } // namespace Oryol
 
