@@ -58,14 +58,21 @@ public:
         del();
     };
     
-    /// assign from compatible raw pointer
+    /// copy-assign from Ptr<TYPE>
+    void operator=(const Ptr<T>& rhs) noexcept {
+        if (rhs.p != p) {
+            del();
+            set(rhs.p);
+        }
+    };
+    /// copy-assign from compatible raw pointer
     template<class U> void operator=(U* rhs) noexcept {
         if (static_cast<T*>(rhs) != p) {
             del();
             set(static_cast<T*>(rhs));
         }
     };
-    /// assign from compatible Ptr<>
+    /// copy-assign from compatible Ptr<>
     template<class U> void operator=(const Ptr<U>& rhs) noexcept {
         const T* rhs_p = static_cast<T*>(rhs.GetUnsafe());
         if (rhs_p != p) {
