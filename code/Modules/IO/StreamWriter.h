@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class IO::StreamWriter
+    @class Oryol::IO::StreamWriter
     @brief base class for stream writers
     
     Stream writers provide a way to write structured/formatted data 

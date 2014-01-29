@@ -506,8 +506,7 @@ StringBuilder::Tokenize(const char* delims, Array<String>& outTokens) {
  NOTE: this method will destroy the content of the builder and clear it.
  */
 int32
-StringBuilder::Tokenize(const char* delims, char fence, Array<String>& outTokens)
-{
+StringBuilder::Tokenize(const char* delims, char fence, Array<String>& outTokens) {
     outTokens.Clear();
     if (nullptr != this->buffer) {
         char* ptr = this->buffer;

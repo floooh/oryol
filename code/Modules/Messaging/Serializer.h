@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Messaging::Serializer
+    @class Oryol::Messaging::Serializer
     @brief Serializer template class for a specific data type
     
     This is a simple template class which knows how to 
