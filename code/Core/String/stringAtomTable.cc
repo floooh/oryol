@@ -20,7 +20,7 @@ const stringAtomBuffer::Header*
 stringAtomTable::Find(int32 hash, const char* str) const {
     
     // need to create a temp object for searching in the set
-    stringAtomBuffer::Header dummyHead(this, hash, str);
+    stringAtomBuffer::Header dummyHead(this, hash, 0, str);
     Entry dummyEntry(&dummyHead);
     auto ptr = this->table.Find(dummyEntry);
     if (nullptr == ptr) {

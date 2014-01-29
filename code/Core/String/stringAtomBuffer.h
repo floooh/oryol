@@ -18,13 +18,14 @@ public:
     // header data for a single entry (string data starts at end of header)
     struct Header {
         // default constructor
-        Header() : table(0), hash(0), str(0) { };
+        Header() : table(0), hash(0), length(0), str(0) { };
         /// constructor
-        Header(const stringAtomTable* t, int32 h, const char* s) : table(t), hash(h), str(s) { };
+        Header(const stringAtomTable* t, int32 hsh, int32 len, const char* s) : table(t), hash(hsh), length(len), str(s) { };
     
-        const stringAtomTable* table = 0;
-        int32 hash = 0;
-        const char* str = 0;
+        const stringAtomTable* table;
+        int32 hash;
+        int32 length;
+        const char* str;
     };
 
     /// destructor

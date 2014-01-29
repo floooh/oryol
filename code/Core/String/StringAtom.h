@@ -65,6 +65,8 @@ public:
     void Clear();
     /// return true if valid (contains a non-empty string)
     bool IsValid() const;
+    /// get length
+    int32 Length() const;
     /// get contained c-string
     const char* AsCStr() const;
     /// get String (slow because string object must be constructed)
@@ -83,7 +85,7 @@ private:
 //------------------------------------------------------------------------------
 inline void
 StringAtom::Clear() {
-    this->data = 0;
+    this->data = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +104,7 @@ StringAtom::copy(const StringAtom& rhs) {
     }
     else {
         // fallthrough: rhs is invalid
-        this->data = 0;
+        this->data = nullptr;
     }
 }
 
@@ -126,14 +128,14 @@ StringAtom::setupFromCString(const char* str) {
     }
     else {
         // source was a null-ptr or empty string
-        this->data = 0;
+        this->data = nullptr;
     }
 }
 
 //------------------------------------------------------------------------------
 inline
 StringAtom::StringAtom()
-    : data(0) {
+    : data(nullptr) {
     // empty
 }
 
@@ -159,7 +161,7 @@ StringAtom::StringAtom(const StringAtom& rhs) {
 inline
 StringAtom::StringAtom(StringAtom&& rhs) {
     this->copy(rhs);
-    rhs.data = 0;
+    rhs.data = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -266,9 +268,20 @@ StringAtom::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
+inline int32
+StringAtom::Length() const {
+    if (nullptr != this->data) {
+        return this->data->length;
+    }
+    else {
+        return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
 inline const char*
 StringAtom::AsCStr() const {
-    if (0 != this->data) {
+    if (nullptr != this->data) {
         return this->data->str;
     }
     else {

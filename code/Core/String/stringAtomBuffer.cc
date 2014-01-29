@@ -39,7 +39,8 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     }
     
     // compute length of new entry (header + string len + 0 terminator byte)
-    size_t requiredSize = std::strlen(str) + sizeof(Header) + 1;
+    const int32 strLen = std::strlen(str);
+    size_t requiredSize = strLen + sizeof(Header) + 1;
     o_assert(requiredSize < this->chunkSize);
     
     // check if there's enough room in the current chunk
@@ -51,6 +52,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     Header* head = (Header*) this->curPointer;
     head->table = table;
     head->hash = hash;
+    head->length  = strLen;
     head->str  = (char*) this->curPointer + sizeof(Header);
     std::strcpy((char*)head->str, str);
     
