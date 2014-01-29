@@ -28,7 +28,7 @@
 /// memory debug fill pattern (int)
 #define ORYOL_MEMORY_DEBUG_INT (0xBBBBBBBB)
 
-/// minimum grow size for dynamic container classes
+/// minimum grow size for dynamic container classes (num elements)
 #define ORYOL_CONTAINER_DEFAULT_MIN_GROW (16)
-/// maximum grow size for dynamic container classes
+/// maximum grow size for dynamic container classes (num elements)
 #define ORYOL_CONTAINER_DEFAULT_MAX_GROW (1<<16)
