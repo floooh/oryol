@@ -13,6 +13,8 @@ OryolClassImpl(Stream);
 Stream::Stream() :
 openMode(OpenMode::Invalid),
 isOpen(false),
+isWriteMapped(false),
+isReadMapped(false),
 size(0),
 writePosition(0),
 readPosition(0) {
@@ -31,15 +33,40 @@ Stream::Open(OpenMode::Enum mode) {
     
     o_assert(!this->isOpen);
     o_assert(this->openMode == OpenMode::Invalid);
+    o_assert(mode != OpenMode::Invalid);
     
     this->openMode = mode;
     this->isOpen = true;
     
-    // you may want to override this in the subclass, see OpenMode!
-    this->size = 0;
-    this->writePosition = 0;
-    this->readPosition = 0;
-    
+    switch (this->openMode) {
+        case OpenMode::ReadOnly:
+            this->readPosition = 0;
+            break;
+            
+        case OpenMode::WriteOnly:
+            this->writePosition = 0;
+            this->size = 0;
+            break;
+            
+        case OpenMode::WriteAppend:
+            this->writePosition = this->size;
+            break;
+            
+        case OpenMode::ReadWrite:
+            this->readPosition = 0;
+            this->writePosition = 0;
+            this->size = 0;
+            break;
+            
+        case OpenMode::ReadWriteAppend:
+            this->readPosition = 0;
+            this->writePosition = this->size;
+            break;
+            
+        // silence compiler
+        case OpenMode::Invalid:
+            break;
+    }
     return true;
 }
 
@@ -47,6 +74,12 @@ Stream::Open(OpenMode::Enum mode) {
 void
 Stream::Close() {
     o_assert(this->isOpen);
+    if (this->IsWriteMapped()) {
+        this->UnmapWrite();
+    }
+    if (this->IsReadMapped()) {
+        this->UnmapRead();
+    }
     this->isOpen = false;
     this->openMode = OpenMode::Invalid;
 }
@@ -68,14 +101,18 @@ Stream::Write(void* ptr, int32 numBytes) {
 //------------------------------------------------------------------------------
 void*
 Stream::MapWrite(int32 numBytes) {
-    // implement in subclass!
+    o_assert(!this->isWriteMapped);
+    this->isWriteMapped = true;
+    // override in subclass!
     return nullptr;
 }
 
 //------------------------------------------------------------------------------
 void
 Stream::UnmapWrite() {
-    // implement in subclass!
+    o_assert(this->isWriteMapped);
+    this->isWriteMapped = false;
+    // override in subclass!
 }
 
 //------------------------------------------------------------------------------
@@ -86,16 +123,21 @@ Stream::Read(void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-void*
-Stream::MapRead(int32 numBytes) {
-    // implement in subclass!
+const void*
+Stream::MapRead(int32& outNumBytes) {
+    o_assert(!this->isReadMapped);
+    outNumBytes = 0;
+    this->isReadMapped = true;
+    // override in subclass!
     return nullptr;
 }
 
 //------------------------------------------------------------------------------
 void
 Stream::UnmapRead() {
-    // implement in subclass!
+    o_assert(this->isReadMapped);
+    this->isReadMapped = false;
+    // override in subclass!
 }
 
 } // namespace IO

@@ -27,7 +27,7 @@ class OpenMode {
 public:
     /// enum values
     enum Enum {
-        ReadOnly = 0,           //> open as read-only
+        ReadOnly = 0,       //> open as read-only
         WriteOnly,          //> open in write-only mode, overwrite content
         WriteAppend,        //> open in write-append mode, append content
         ReadWrite,          //> open in read/write mode

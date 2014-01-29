@@ -8,7 +8,7 @@
     memory buffer. The MemoryStream object will keep its contents until
     destroyed or the DiscardContent method is called. 
 */
-#include "Core/Config.h"
+#include "IO/Config.h"
 #include "IO/Stream.h"
 
 namespace Oryol {
@@ -20,12 +20,12 @@ public:
     /// constructor
     MemoryStream();
     /// construct with initial capacity and allocation strategy
-    MemoryStream(int32 initialCapacity, int32 minGrow=ORYOL_CONTAINER_DEFAULT_MIN_GROW, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    MemoryStream(int32 initialCapacity, int32 minGrow=ORYOL_STREAM_DEFAULT_MIN_GROW, int32 maxGrow=ORYOL_STREAM_DEFAULT_MAX_GROW);
     /// destructor
     virtual ~MemoryStream();
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_STREAM_DEFAULT_MAX_GROW);
     /// get min-grow value
     int32 GetMinGrow() const;
     /// get max-grow value
@@ -37,32 +37,30 @@ public:
     /// trim to actual size (reallocates)
     void Trim();
     
-    /// open the stream buffer
-    virtual bool Open(OpenMode::Enum mode);
-    /// close the stream buffer
-    virtual void Close();
     /// discard the content of the stream
     virtual void DiscardContent();
     
     /// write a number of bytes to the stream (returns bytes written)
-    virtual int32 Write(void* ptr, int32 numBytes);
+    virtual int32 Write(const void* ptr, int32 numBytes);
     /// map a memory area at the current write position and advance write position
     virtual void* MapWrite(int32 numBytes);
-    /// unmap previously mapped memory area
-    virtual void UnmapWrite();
 
-    /// read a number of bytes from the stream (returns bytes read)
+    /// read a number of bytes from the stream (returns bytes read), numBytes can be EndOfStream
     virtual int32 Read(void* ptr, int32 numBytes);
-    /// map a memory area at the current read-position and advance read position
-    virtual void* MapRead(int32 numBytes);
-    /// unmap previosuly mapped memory area
-    virtual void UnmapRead();
+    /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
+    virtual const void* MapRead(int32& outNumValidBytes);
 
 private:
+    /// check if there is enough room for writing numBytes
+    bool hasRoom(int32 numBytes) const;
     /// grow to make room for at least numBytes
     void makeRoom(int32 numBytes);
     /// (re-)allocate to a new capacity
     void alloc(int32 newCapacity);
+    /// increment writePosition, and probably size
+    void incrWritePosition(int32 numBytes);
+    /// increment readPosition
+    void incrReadPosition(int32 numBytes);
     
     int32 minGrow;
     int32 maxGrow;

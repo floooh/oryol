@@ -39,11 +39,17 @@ public:
 
     /// get current open-mode (only valid inside Open/Close)
     OpenMode::Enum GetOpenMode() const;
+    /// return true if the stream has been opened in a readable OpenMode
+    bool IsReadable() const;
+    /// return true if the stream has been opened in a writable OpenMode
+    bool IsWritable() const;
     /// get the number of data bytes in the stream
-    int32 GetSize() const;
+    int32 Size() const;
     
     /// set the write cursor position (byte offset from start)
     void SetWritePosition(int32 pos);
+    /// move write cursor position relativ to current write position
+    void MoveWritePosition(int32 diff);
     /// get the write cursor position (byte offset from start)
     int32 GetWritePosition() const;
     /// write a number of bytes to the stream (returns bytes written)
@@ -52,24 +58,32 @@ public:
     virtual void* MapWrite(int32 numBytes);
     /// unmap previously mapped memory area
     virtual void UnmapWrite();
+    /// return true if currently mapped for writing
+    bool IsWriteMapped() const;
     
     /// set the read cursor position (byte offset from start)
     void SetReadPosition(int32 pos);
+    /// move read cursor position relativ to current read position
+    void MoveReadPosition(int32 diff);
     /// get the read cursor position (byte offset from start)
     int32 GetReadPosition() const;
     /// read a number of bytes from the stream (returns bytes read)
     virtual int32 Read(void* ptr, int32 numBytes);
-    /// map a memory area at the current read-position and advance read position
-    virtual void* MapRead(int32 numBytes);
+    /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
+    virtual const void* MapRead(int32& outNumValidBytes);
     /// unmap previosuly mapped memory area
     virtual void UnmapRead();
-    /// return true if read cursor is at end-of-file
-    bool IsEof() const;
+    /// return true if currently locked for reading
+    bool IsReadMapped() const;
+    /// return true if read cursor is at end-of-stream
+    bool IsEndOfStream() const;
     
 protected:
     URL url;
     OpenMode::Enum openMode;
     bool isOpen;
+    bool isWriteMapped;
+    bool isReadMapped;
     int32 size;
     int32 writePosition;
     int32 readPosition;
@@ -79,6 +93,35 @@ protected:
 inline bool
 Stream::IsOpen() const {
     return this->isOpen;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Stream::IsReadable() const {
+    return (OpenMode::ReadOnly == this->openMode) ||
+           (OpenMode::ReadWrite == this->openMode) ||
+           (OpenMode::ReadWriteAppend == this->openMode);
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Stream::IsWritable() const {
+    return (OpenMode::WriteOnly == this->openMode) ||
+           (OpenMode::WriteAppend == this->openMode) ||
+           (OpenMode::ReadWrite == this->openMode) ||
+           (OpenMode::ReadWriteAppend == this->openMode);
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Stream::IsWriteMapped() const {
+    return this->isWriteMapped;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Stream::IsReadMapped() const {
+    return this->isReadMapped;
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +145,7 @@ Stream::GetOpenMode() const {
 
 //------------------------------------------------------------------------------
 inline int32
-Stream::GetSize() const {
+Stream::Size() const {
     return this->size;
 }
 
@@ -110,9 +153,19 @@ Stream::GetSize() const {
 inline void
 Stream::SetWritePosition(int32 pos) {
     o_assert(this->isOpen);
-    o_assert(pos >= 0 && pos < this->size);
+    o_assert((pos >= 0) && (pos <= this->size));
     this->writePosition = pos;
 }
+
+//------------------------------------------------------------------------------
+inline void
+Stream::MoveWritePosition(int32 diff) {
+    o_assert(this->isOpen);
+    int32 newPos = this->writePosition + diff;
+    o_assert((newPos >= 0) && (newPos <= this->size));
+    this->writePosition = newPos;
+}
+
 
 //------------------------------------------------------------------------------
 inline int32
@@ -124,8 +177,17 @@ Stream::GetWritePosition() const {
 inline void
 Stream::SetReadPosition(int32 pos) {
     o_assert(this->isOpen);
-    o_assert(pos >= 0 && pos < this->size);
+    o_assert((pos >= 0) && (pos <= this->size));
     this->readPosition = pos;
+}
+
+//------------------------------------------------------------------------------
+inline void
+Stream::MoveReadPosition(int32 diff) {
+    o_assert(this->isOpen);
+    int32 newPos = this->readPosition + diff;
+    o_assert((newPos >= 0) && (newPos <= this->size));
+    this->readPosition = newPos;
 }
 
 //------------------------------------------------------------------------------
@@ -136,7 +198,7 @@ Stream::GetReadPosition() const {
 
 //------------------------------------------------------------------------------
 inline bool
-Stream::IsEof() const {
+Stream::IsEndOfStream() const {
     return this->readPosition == this->size;
 }
 
