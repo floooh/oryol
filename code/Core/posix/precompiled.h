@@ -5,6 +5,10 @@
     
     Standard includes for POSIX platforms.
 */
+#ifdef __STRICT_ANSI__
+#undef __STRICT_ANSI__
+#endif
+    
 #include <cstdarg>
 #include <cstdint>
 #include <cstdlib>

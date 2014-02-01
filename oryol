@@ -59,9 +59,9 @@ def chooseConfigName() :
     elif hostOS == 'Darwin' :
         return 'osx-xcode-debug'
     elif hostOS == 'Linux' :
-        return 'linux-ninja-debug'
+        return 'linux-make-debug'
     else :
-        return 'unknown-ninja-debug'
+        error("'{}' is not currently supported as host OS".format(hostOS))
 
 # load a config json file into a dictionary
 def loadConfig(configName) :
@@ -201,9 +201,13 @@ def runCMake(config) :
         if buildType == 'unittests' :
             cmdLine.append('-DORYOL_UNITTESTS=ON')
 
+        # some platform-specific stuff
+        if targetPlatform == 'pnacl' :
+            cmdLine.append('-DNACL_RELATIVE_SDK_LOCATION=../nacl_sdk/pepper_canary')
+
         # toolchain file required?
         if isValidCrossPlatform(targetPlatform) :
-            cmdLine.append('-DCMAKE_TOOLCHAIN_FILE="../../cmake/{}.toolchain.cmake '.format(targetPlatform))
+            cmdLine.append('-DCMAKE_TOOLCHAIN_FILE=../../cmake/{}.toolchain.cmake'.format(targetPlatform))
         
         # relative path to root CMakeFile
         cmdLine.append('../..')
@@ -292,7 +296,7 @@ if len(sys.argv) == 1 :
     print 'oryol clean [config-name or all]'
     print '  delete the cmake cache and build files of the selected or provided config'
     print 'oryol config [config-name or all]'
-    print '  start cmake-gui tool on selected or provided config'
+    print '  NOT IMPLEMENT YET: start cmake-gui tool on selected or provided config'
 
 else :
     cmd = sys.argv[1]

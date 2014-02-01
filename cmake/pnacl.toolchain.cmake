@@ -22,14 +22,24 @@ if (NOT NACL_SDK_ROOT)
 endif()
 
 if ("${NACL_SDK_ROOT}" STREQUAL "")
-        message(FATAL_ERROR "Could not locate the NaCl toolchain directory! Either set the NACL_SDK_ROOT environment variable, or pass -DNACL_SDK_ROOT=xxx to CMake to explicitly specify the location of the compiler!")
+    set(NACL_SDK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/${NACL_RELATIVE_SDK_LOCATION})
 endif()
 
-# FIXME: this currently only works on Mac
-set(NACL_TOOLCHAIN_ROOT "${NACL_SDK_ROOT}/toolchain/mac_pnacl")
+if ("${NACL_SDK_ROOT}" STREQUAL "")
+    message(FATAL_ERROR "Could not locate the NaCl toolchain directory! Either set the NACL_SDK_ROOT environment variable, or pass -DNACL_RELATIVE_SDK_LOCATION=xxx to CMake to explicitly specify the location of the compiler!")
+endif()
 
-# Normalize, convert Windows backslashes to forward slashes or CMake will crash.
-get_filename_component(NACL_SDK_ROOT "${NACL_SDK_ROOT}" ABSOLUTE)
+get_filename_component(NACL_SDK_ROOT ${NACL_SDK_ROOT} ABSOLUTE)
+message("NACL_SDK_ROOT: ${NACL_SDK_ROOT}")
+
+# choose the right toolchain 
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
+    set(NACL_TOOLCHAIN_ROOT "${NACL_SDK_ROOT}/toolchain/mac_pnacl")
+elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
+    set(NACL_TOOLCHAIN_ROOT "${NACL_SDK_ROOT}/toolchain/linux_pnacl")
+elseif()
+    message(FATAL_ERROR "FIXME: set the right host toolchain in pnacl.toolchain.cmake!")
+endif()
 
 include(CMakeForceCompiler)
 CMAKE_FORCE_C_COMPILER("${CMAKE_C_COMPILER}" GNU)
@@ -44,6 +54,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
+message("NACL_TOOLCHAIN_ROOT: ${NACL_TOOLCHAIN_ROOT}")
+
 # specify cross-compilers
 set(CMAKE_C_COMPILER "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-clang" CACHE PATH "gcc" FORCE)
 set(CMAKE_CXX_COMPILER "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-clang++" CACHE PATH "g++" FORCE)
@@ -54,7 +66,7 @@ set(CMAKE_RANLIB "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-ranlib" CACHE PATH "ranlib" F
 set(CMAKE_LINKER "${NACL_TOOLCHAIN_ROOT}/bin/pnacl-clang++" CACHE PATH "linker" FORCE)
 
 # compiler flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -pthread -MMD -fno-exceptions -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -std=c++11 -pthread -MMD -fno-exceptions -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DNACL_SDK_DEBUG -DORYOL_DEBUG=1")
 
