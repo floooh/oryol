@@ -54,7 +54,7 @@ If the above prerequisites are met you should be able to simply run:
 
 from the Oryol root directory to run a default command line build for your operating system.
 
-After the build has finished, you should find a **hello** executable under either
+After the build has finished, you should find a **hello_debug** executable under either
 **oryol/bin/osx**, **oryol/bin/linux** or **oryol/bin/win32**. Running this
 executable from the command line should print a **Hello World!**.
 
