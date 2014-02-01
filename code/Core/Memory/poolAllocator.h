@@ -41,7 +41,7 @@ private:
         nodeTag next;          // tag of next node
         nodeTag myTag;        // my own tag
         nodeState state;       // current state
-        uint8 padding[16 - (2*sizeof(nodeTag) + sizeof(state))];      // pad to 16 bytes
+        uint8 padding[16 - (2*sizeof(nodeTag) + sizeof(nodeState))];      // pad to 16 bytes
     };
 
     /// pop a new node from the free-list, return 0 if empty

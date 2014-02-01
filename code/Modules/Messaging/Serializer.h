@@ -32,14 +32,14 @@ public:
 };
 
 //------------------------------------------------------------------------------
-template<typename TYPE> int32
+template<typename TYPE> inline int32
 Serializer<TYPE>::SizeOf(const TYPE& val) {
     static_assert(std::is_pod<TYPE>::value, "Serializer::SizeOf(): Type not POD, must provide specialization!");
     return sizeof(TYPE);
 }
     
 //------------------------------------------------------------------------------
-template<typename TYPE> uchar*
+template<typename TYPE> inline uchar*
 Serializer<TYPE>::Encode(const TYPE& val, uchar* dstPtr, int32 maxBytes) {
     static_assert(std::is_pod<TYPE>::value, "Serializer::Encode(): Type not POD, must provide specialization!");
     if (int32(sizeof(TYPE)) <= maxBytes) {
@@ -55,7 +55,7 @@ Serializer<TYPE>::Encode(const TYPE& val, uchar* dstPtr, int32 maxBytes) {
 }
     
 //------------------------------------------------------------------------------
-template<typename TYPE> const uchar*
+template<typename TYPE> inline const uchar*
 Serializer<TYPE>::Decode(const uchar* srcPtr, int32 maxBytes, TYPE& outVal) {
     static_assert(std::is_pod<TYPE>::value, "Serializer::Encode(): Type not POD, must provide specialization!");
     if (int32(sizeof(TYPE)) <= maxBytes) {
@@ -71,13 +71,13 @@ Serializer<TYPE>::Decode(const uchar* srcPtr, int32 maxBytes, TYPE& outVal) {
 }
     
 //------------------------------------------------------------------------------
-template<> int32
+template<> inline int32
 Serializer<Core::String>::SizeOf(const Core::String& val) {
     return sizeof(int32) + val.Length();
 }
     
 //------------------------------------------------------------------------------
-template<> uchar*
+template<> inline uchar*
 Serializer<Core::String>::Encode(const Core::String& val, uchar* dstPtr, int32 maxBytes) {
     if (SizeOf(val) <= maxBytes) {
         const int32 len = val.Length();
@@ -93,7 +93,7 @@ Serializer<Core::String>::Encode(const Core::String& val, uchar* dstPtr, int32 m
 }
     
 //------------------------------------------------------------------------------
-template<> const uchar*
+template<> inline const uchar*
 Serializer<Core::String>::Decode(const uchar* srcPtr, int32 maxBytes, Core::String& outVal) {
     if (int32(sizeof(int32)) < maxBytes) {
         // read length
@@ -111,13 +111,13 @@ Serializer<Core::String>::Decode(const uchar* srcPtr, int32 maxBytes, Core::Stri
 }
     
 //------------------------------------------------------------------------------
-template<> int32
+template<> inline int32
 Serializer<Core::StringAtom>::SizeOf(const Core::StringAtom& val) {
     return sizeof(int32) + val.Length();
 }
     
 //------------------------------------------------------------------------------
-template<> uchar*
+template<> inline uchar*
 Serializer<Core::StringAtom>::Encode(const Core::StringAtom& val, uchar* dstPtr, int32 maxBytes) {
     if (SizeOf(val) <= maxBytes) {
         const int32 len = val.Length();
@@ -133,7 +133,7 @@ Serializer<Core::StringAtom>::Encode(const Core::StringAtom& val, uchar* dstPtr,
 }
     
 //------------------------------------------------------------------------------
-template<> const uchar*
+template<> inline const uchar*
 Serializer<Core::StringAtom>::Decode(const uchar* srcPtr, int32 maxBytes, Core::StringAtom& outVal) {
     if (int32(sizeof(int32)) < maxBytes) {
         // read length
@@ -152,7 +152,7 @@ Serializer<Core::StringAtom>::Decode(const uchar* srcPtr, int32 maxBytes, Core::
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> int32
+template<typename TYPE> inline int32
 Serializer<TYPE>::SizeOf(const Core::Array<TYPE>& vals) {
     if (vals.Size() > 0) {
         int32 size = sizeof(int32);
@@ -169,7 +169,7 @@ Serializer<TYPE>::SizeOf(const Core::Array<TYPE>& vals) {
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> uchar*
+template<typename TYPE> inline uchar*
 Serializer<TYPE>::Encode(const Core::Array<TYPE>& vals, uchar* dstPtr, int32 maxBytes) {
     if (SizeOf(vals) <= maxBytes) {
         const int32 numElements = vals.Size();
@@ -190,7 +190,7 @@ Serializer<TYPE>::Encode(const Core::Array<TYPE>& vals, uchar* dstPtr, int32 max
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> const uchar*
+template<typename TYPE> inline const uchar*
 Serializer<TYPE>::Decode(const uchar* srcPtr, int32 maxBytes, Core::Array<TYPE>& outVals) {
     o_assert(outVals.Size() == 0);
     if (int32(sizeof(int32)) < maxBytes) {

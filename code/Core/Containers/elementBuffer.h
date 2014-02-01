@@ -77,9 +77,9 @@ public:
     /// test if to pointer is within [from, from+num]
     static bool overlaps(const TYPE* from, const TYPE* to, int32 num);
     /// copy-construct element range
-    static void copyConstruct(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num);
+    static void copyConstruct(const TYPE* from, TYPE* to, int32 num);
     /// copy-assign element range UNTESTED
-    static void copyAssign(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num);
+    static void copyAssign(const TYPE* from, TYPE* to, int32 num);
     
     /// push element at back (backSpare must be > 0!)
     void pushBack(const TYPE& elm);
@@ -166,7 +166,7 @@ elementBuffer<TYPE>::elementBuffer(elementBuffer&& rhs) :
 
 //------------------------------------------------------------------------------
 template<class TYPE>
-elementBuffer<TYPE>::~elementBuffer<TYPE>() {
+elementBuffer<TYPE>::~elementBuffer() {
     this->destroy();
 }
     
@@ -358,7 +358,7 @@ elementBuffer<TYPE>::overlaps(const TYPE* from, const TYPE* to, int32 num) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::copyConstruct(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num) {
+elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int32 num) {
     o_assert(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         new(to++) TYPE(*from++);
@@ -367,7 +367,7 @@ elementBuffer<TYPE>::copyConstruct(const TYPE* __restrict__ from, TYPE* __restri
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::copyAssign(const TYPE* __restrict__ from, TYPE* __restrict__ to, int32 num) {
+elementBuffer<TYPE>::copyAssign(const TYPE* from, TYPE* to, int32 num) {
     o_assert(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         *to++ = *from++;

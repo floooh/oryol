@@ -90,15 +90,15 @@ TEST(StringAtomPerformance) {
     };
     const int32 mask = numUniqueStrings - 1;
     
-    for (int32 i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         chrono::time_point<chrono::system_clock> start, end;
         start = chrono::system_clock::now();
         
         const int32 numStringAtoms = 1000000;
         Array<StringAtom> stringAtoms;
         stringAtoms.Reserve(numStringAtoms);
-        for (int32 i = 0; i < numStringAtoms; i++) {
-            stringAtoms.EmplaceBack(uniqueStrings[i & mask]);
+        for (int j = 0; j < numStringAtoms; j++) {
+            stringAtoms.EmplaceBack(uniqueStrings[j & mask]);
         }
         
         end = chrono::system_clock::now();

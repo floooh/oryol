@@ -29,7 +29,7 @@
         /// assert macro with programmer's message
         #define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } while(0)
     #else
-        #define o_assert(cond) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,nullptr__FILE__,__LINE__,__FUNCSIG__); ORYOL_TRAP(); } } while(0)
+        #define o_assert(cond) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__FUNCSIG__); ORYOL_TRAP(); } } while(0)
         #define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__FUNCSIG__); ORYOL_TRAP(); } } while (0)
     #endif
 #endif
@@ -38,7 +38,7 @@
     /// print a critical error and abort execution
     #define o_error(...) do { Oryol::Core::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
 #else
-    #define o_error(...) do { oryol::log::error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
+    #define o_error(...) do { Oryol::Core::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
 #endif
 
 /// declare an Oryol class with pool allocator (located inside class declaration)
@@ -110,7 +110,7 @@ private:
 /// thread-local singleton declaration macro (located inside class declaration)
 #define OryolLocalSingletonDecl(TYPE) \
 private:\
-    static __thread TYPE* singleton;\
+    static ORYOL_THREAD_LOCAL TYPE* singleton; \
 public:\
     static TYPE* Instance() {\
         o_assert(nullptr != singleton);\
@@ -134,6 +134,6 @@ public:\
 private:
 
 /// implementation-side macrot for thread-local singletons (located in .cc source file)
-#define OryolLocalSingletonImpl(TYPE) __thread TYPE* TYPE::singleton = 0;
+#define OryolLocalSingletonImpl(TYPE) ORYOL_THREAD_LOCAL TYPE* TYPE::singleton = 0;
 
 

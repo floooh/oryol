@@ -13,7 +13,7 @@ using namespace Oryol::IO;
 TEST(MemoryStreamTest) {
 
     const char* data = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const int32 dataSize = std::strlen(data);
+    const int32 dataSize = 26;
     
     // create empty stream
     Ptr<MemoryStream> stream0 = MemoryStream::Create();

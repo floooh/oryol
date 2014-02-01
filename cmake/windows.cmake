@@ -4,14 +4,14 @@
 #	(C) 2013 A.Weissflog
 #-------------------------------------------------------------------------------
 
-# detect 32-bit or 64-bit target platform
+# detect 32-bit or 64-bit target platform   
 if (CMAKE_CL_64)
 	message("Target Platform: Windows 64-bit")
 	set(ORYOL_PLATFORM WIN64)
 	set(ORYOL_PLATFORM_NAME "win64")
 	set(ORYOL_WIN64 1)
 	set(ORYOL_WINDOWS 1)
-	set(ORYOL_PLATFORM_DEFINES "/DORYOL_WINDOWS /DORYOL_WIN64")
+	set(ORYOL_PLATFORM_DEFINES "/DORYOL_WINDOWS=1 /DORYOL_WIN64=1")
 	set(ORYOL_WINDOWS_PLATFORM_NAME "x64")
 else()
 	message("Target Platform: Windows 32-bit")
@@ -19,7 +19,7 @@ else()
 	set(ORYOL_PLATFORM_NAME "win32")
 	set(ORYOL_WIN32 1)
 	set(ORYOL_WINDOWS 1)
-	set(ORYOL_PLATFORM_DEFINES "/DORYOL_WINDOWS /DORYOL_WIN32")
+	set(ORYOL_PLATFORM_DEFINES "/DORYOL_WINDOWS=1 /DORYOL_WIN32=1")
 	set(ORYOL_WINDOWS_PLATFORM_NAME "x86")
 endif()
 
@@ -61,18 +61,18 @@ else()
     message("C++ exceptions are disabled")
 	set(ORYOL_VS_EXCEPTION_FLAGS "/EHsc")
 endif()
-set(CMAKE_CXX_FLAGS ${ORYOL_VS_EXCEPTION_FLAGS} /WX /GF /Gm /arch:SSE2 /TP /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
-set(CMAKE_CXX_FLAGS_DEBUG "/ZI /Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
-set(CMAKE_CXX_FLAGS_RELEASE "/Ox /MT /GS- /DNDEBUG")
+set(CMAKE_CXX_FLAGS "${ORYOL_VS_EXCEPTION_FLAGS} /WX /TP /DWIN32 ${ORYOL_PLATFORM_DEFINES}")
+set(CMAKE_CXX_FLAGS_DEBUG "/Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
+set(CMAKE_CXX_FLAGS_RELEASE "/Ox /MT /DNDEBUG")
 
-set(CMAKE_C_FLAGS /WX /GF /Gm /arch:SSE2 /TC /fp:fast /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES} /c)
-set(CMAKE_C_FLAGS_DEBUG "/ZI /Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
-set(CMAKE_C_FLAGS_RELEASE "/Ox /MT /GS- /DNDEBUG ")
+set(CMAKE_C_FLAGS "/WX /TC /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES}")
+set(CMAKE_C_FLAGS_DEBUG "/Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
+set(CMAKE_C_FLAGS_RELEASE "/Ox /MT /DNDEBUG ")
 
 # define exe linker flags
 set(CMAKE_EXE_LINKER_FLAGS "/STACK:5000000 /machine:${ORYOL_WINDOWS_PLATFORM_NAME}")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:YES")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/INCREMENTAL:NO")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 # update cache variables for cmake gui
 set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "Config Type" FORCE)

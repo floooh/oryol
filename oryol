@@ -55,7 +55,7 @@ def loadSelectedConfigName() :
 def chooseConfigName() :
     hostOS = platform.system()
     if hostOS == 'Windows' :
-        return 'windows-vstudio-debug'
+        return 'win32-vstudio-debug'
     elif hostOS == 'Darwin' :
         return 'osx-xcode-debug'
     elif hostOS == 'Linux' :
@@ -146,7 +146,8 @@ def testConfigRequirements(config) :
     elif 'Xcode' in generator :
         testXCode()
     elif 'Visual Studio' in generator :
-        testVStudio()
+        # FIXME!
+        pass
     return True
 
 # read or guess the active build configuration

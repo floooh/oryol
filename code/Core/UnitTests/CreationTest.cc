@@ -98,7 +98,7 @@ TEST(CreatePtrBenchmark) {
         const int32 numObjects = 1000000;
         std::vector<shared_ptr<TestClass>> objs;
         objs.reserve(numObjects);
-        for (int32 i = 0; i < numObjects; i++) {
+        for (int j = 0; j < numObjects; j++) {
             objs.emplace_back(std::make_shared<TestClass>());
         }
         objs.clear();   // important: also measure destruction

@@ -1,0 +1,8 @@
+{
+    "name": "win32-vstudio-debug", 
+    "target": {
+        "platform": "win32", 
+        "generator": "Visual Studio 12", 
+        "build-type": "debug"
+    }
+}

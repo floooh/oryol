@@ -13,6 +13,12 @@
 #define ORYOL_HAS_THREADS (1)
 #endif
 
+#if ORYOL_WINDOWS
+#define ORYOL_THREAD_LOCAL __declspec(thread)
+#else
+#define ORYOL_THREAD_LOCAL __thread
+#endif
+
 // platform specific max-alignment
 #if ORYOL_EMSCRIPTEN
 #define ORYOL_MAX_PLATFORM_ALIGN (4)

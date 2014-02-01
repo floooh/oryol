@@ -4,6 +4,7 @@
 oryol_begin_module(Core)
 oryol_sources(. Threading String Memory Containers)
 oryol_sources_posix(posix)
+oryol_sources_windows(windows)
 oryol_end_module()
 
 oryol_begin_unittest(Core)
