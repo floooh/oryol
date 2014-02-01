@@ -9,19 +9,23 @@ Oryol supports the following host platforms for building:
 
 - OSX
 - Linux
-- Windows (planned)
+- Windows
 
 ...and the following target platforms:
 
 - OSX
 - Linux
-- Windows (planned)
+- Windows 32-bit and 64-bit (64-bit: planned)
 - iOS (planned)
 - Android (planned)
 - emscripten 
 - PNaCl
 
-Not all target platforms can be built on all host platforms!
+There are restrictions for cross-compiling:
+
+- host OS OSX can build for: OSX, emscripten, PNaCl, iOS, Android
+- host OS Linux can build for: Linux, emscripten, PNaCl, Android
+- host OS Windows can build for:  Windows 32-bit and Windows 64-bit
 
 ### Tools
 
@@ -30,9 +34,10 @@ The following tools are required on all host platforms:
 - python (2.7.x, 3.x is not currently supported)
 - cmake (at least version 2.8.11)
 
+Make sure python and cmake are in the path!
+
 #### OSX Tools
 
-- homebrew is recommended as package manager (http://brew.sh/)
 - Xcode 5 and the Xcode command line tools are required
 
 #### Linux Tools
@@ -42,7 +47,7 @@ The following tools are required on all host platforms:
 
 #### Windows
 
-TODO
+- get **Visual Studio 2013 Express for Windows Desktop** (not 'for Windows', that's for Windows8 metro apps only!)
 
 ## Building Oryol
 
@@ -53,6 +58,15 @@ If the above prerequisites are met you should be able to simply run:
 ```
 
 from the Oryol root directory to run a default command line build for your operating system.
+
+**Windows NOTES**: 
+On Windows, the Python script ```oryol``` cannot be directly invoked, and building from the command line
+is not supported yet, so instead run this from the command line inside Oryol's root directory:
+```
+oryol.cmd update
+```
+After this finishes, open the generated VStudio solution file: ```build/win32-vstudio-debug/oryol.sln```!
+
 
 After the build has finished, you should find a **hello_debug** executable under either
 **oryol/bin/osx**, **oryol/bin/linux** or **oryol/bin/win32**. Running this
@@ -102,6 +116,9 @@ CONFIGS:
   pnacl-make-release
   pnacl-ninja-debug
   pnacl-ninja-release
+  win32-vstudio-debug
+  win32-vstudio-release
+  win32-vstduio-unittests
 ```
 
 You can **select the active configuration** which will be used if no specific config name 
