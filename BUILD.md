@@ -1,5 +1,5 @@
 Oryol uses a python script ('oryol' in the project root directory) and
-CMake to manage the build configuration process for the supported host and target platforms.
+CMake to manage build configurations for the supported host and target platforms.
 
 ## Prerequisites
 
