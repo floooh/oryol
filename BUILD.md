@@ -118,7 +118,7 @@ CONFIGS:
   pnacl-ninja-release
   win32-vstudio-debug
   win32-vstudio-release
-  win32-vstduio-unittests
+  win32-vstudio-unittests
 ```
 
 You can **select the active configuration** which will be used if no specific config name 
