@@ -19,7 +19,7 @@ Oryol supports the following host platforms for building:
 - iOS (planned)
 - Android (planned)
 - emscripten 
-- PNaCl (planned, no C++11 support yet in the SDK?)
+- PNaCl
 
 Not all target platforms can be built on all host platforms!
 
