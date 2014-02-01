@@ -1,0 +1,8 @@
+{
+    "name": "pnacl-make-release", 
+    "target": {
+        "platform": "pnacl", 
+        "generator": "Unix Makefiles", 
+        "build-type": "release"
+    }
+}

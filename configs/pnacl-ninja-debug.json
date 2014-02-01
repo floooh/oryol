@@ -1,0 +1,8 @@
+{
+    "name": "pnacl-ninja-debug", 
+    "target": {
+        "platform": "pnacl", 
+        "generator": "Ninja", 
+        "build-type": "debug"
+    }
+}

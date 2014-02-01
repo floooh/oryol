@@ -1,3 +1,4 @@
 bin/
 vagrant/.vagrant
 doc/html
+build/*-*-*

@@ -1,0 +1,8 @@
+{
+    "name": "linux-ninja-unittests", 
+    "target": {
+        "platform": "linux", 
+        "generator": "Ninja", 
+        "build-type": "unittests"
+    }
+}

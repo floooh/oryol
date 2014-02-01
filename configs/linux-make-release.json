@@ -1,0 +1,8 @@
+{
+    "name": "linux-make-release", 
+    "target": {
+        "platform": "linux", 
+        "generator": "Unix Makefiles", 
+        "build-type": "release"
+    }
+}

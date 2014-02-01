@@ -1,0 +1,8 @@
+{
+    "name": "emscripten-ninja-release", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "release"
+    }
+}

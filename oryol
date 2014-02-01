@@ -1,0 +1,422 @@
+#!/usr/bin/env python
+'''
+Oryol build system control script.
+'''
+import sys
+import json
+import os
+import glob
+import platform
+import subprocess
+import shutil
+
+# supported platforms
+platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
+buildTypes = ['release', 'debug', 'unittests']
+
+# valid target platforms for a given host platforms
+validTargetPlatforms = { 
+    'Darwin': ['osx', 'ios', 'emscripten', 'pnacl', 'android'],
+    'Linux': ['linux', 'emscripten', 'pnacl', 'android'],
+    'Windows': ['win32', 'win64']
+}
+
+# valid non-cross-compiling platforms for a given host platform
+validNativePlatforms = {
+    'Darwin': ['osx'],
+    'Linux': ['linux'],
+    'Windows': ['win32', 'win64']
+}
+
+# valid cross-compiling platforms for a given host platform
+validCrossPlatforms = {
+    'Darwin': ['ios', 'emscripten', 'pnacl', 'android'],
+    'Linux': ['emscripten', 'pnacl', 'android'],
+    'Windows': []
+}
+
+# dump an error string and exit with code 10
+def error(msg) :
+    print "ERROR: {}".format(msg)
+    sys.exit(10)
+
+# test if the configs/.selected file exists
+def existsSelectedConfig() :
+    return os.path.isfile('configs/.selected')
+
+# return the currently selected config
+def loadSelectedConfigName() :
+    f = open('configs/.selected')
+    selConfig = f.read()
+    f.close()
+    return selConfig
+
+# automatically choose a config name for this platform (if none has been selected)
+def chooseConfigName() :
+    hostOS = platform.system()
+    if hostOS == 'Windows' :
+        return 'windows-vstudio-debug'
+    elif hostOS == 'Darwin' :
+        return 'osx-xcode-debug'
+    elif hostOS == 'Linux' :
+        return 'linux-ninja-debug'
+    else :
+        return 'unknown-ninja-debug'
+
+# load a config json file into a dictionary
+def loadConfig(configName) :
+    f = open('configs/{}.json'.format(configName))
+    jsn = json.loads(f.read())
+    f.close()
+    return jsn
+
+# check whether cmake exists
+def testCMake() :
+    try:
+        out = subprocess.check_output(["cmake", "--version"])
+        ver = out.split()[2].split('.')
+        if (int(ver[0]) >= 2) and (int(ver[1]) >= 8) and (int(ver[2]) >= 11) :
+            print "cmake: ok"
+            return True
+        else :
+            error("cmake must be at least version 2.8.11 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
+
+    except OSError:
+        error("cmake not found (at least cmake 2.8.11 required)")
+
+# check whether ninja exists
+def testNinja() :
+    try:
+        subprocess.check_output(["ninja", "--version"])
+        print "ninja: ok"
+        return True;
+    except OSError:
+        error("ninja not found")
+
+# check whether make exists
+def testMake() :
+    try :
+        subprocess.check_output(["make", "--version"])
+        print "make: ok"
+        return True
+    except OSError:
+        error("make not found")
+
+# check whether xcodebuild exists
+def testXCode() :
+    try :
+        subprocess.check_output(["xcodebuild", "-version"])
+        print "xcodebuild: ok"
+        return True
+    except OSError:
+        error("xcodebuild not found")
+
+# test if the given target platform is valid on the given host
+def isValidTargetPlatform(targetPlatform) :
+    return targetPlatform in validTargetPlatforms[platform.system()] 
+
+# test if the given target platform is a valid non-cross-compiling target
+def isValidNativePlatform(targetPlatform) :
+    return targetPlatform in validNativePlatforms[platform.system()]
+
+# test if a given target platform is a valid cross-compiling target
+def isValidCrossPlatform(targetPlatform) :
+    return targetPlatform in validCrossPlatforms[platform.system()]
+
+# test the requirements for a given config
+def testConfigRequirements(config) :
+    targetPlatform = config['target']['platform']
+    generator = config['target']['generator']
+
+    # is the target platform compatible with this host?
+    if not isValidTargetPlatform(targetPlatform) :
+        error("'{}' is not a valid target platform on host OS '{}'".format(targetPlatform, platform.system()))
+
+    # FIXME: if cross-compiling, check if the
+    # cross-compiling SDK is installed
+    
+    # cmake is always required
+    testCMake()
+
+    # test tools dependend on generator
+    if 'Makefiles' in generator :
+        testMake()
+    elif 'Ninja' in generator :
+        testNinja()
+    elif 'Xcode' in generator :
+        testXCode()
+    elif 'Visual Studio' in generator :
+        testVStudio()
+    return True
+
+# read or guess the active build configuration
+def getActiveConfig() :
+    if existsSelectedConfig() :
+        name = loadSelectedConfigName()
+        print "selected config is '{}'".format(name)
+    else :
+        name = chooseConfigName()
+        print "no selected config, '{}' choosen".format(name)
+    config = loadConfig(name)
+    return config
+
+# this gets all configs that are valid for this platform
+def getAllValidConfigs() :
+    validConfigs = []
+    configPaths = glob.glob('configs/*.json')
+    targetPlatforms = validTargetPlatforms[platform.system()]
+    for configPath in configPaths :
+        # load the config
+        f = open(configPath)
+        config = json.loads(f.read())
+        f.close()
+
+        # is the config valid for this platform?
+        if config['target']['platform'] in targetPlatforms :
+            validConfigs.append(config)
+    return validConfigs
+
+# do a cmake run for the selected config
+def runCMake(config) :
+    # check whether all required tools are installed
+    if testConfigRequirements(config) :
+        name = config['name']
+        generator = config['target']['generator']
+        targetPlatform = config['target']['platform']
+        buildType = config['target']['build-type']
+        if not targetPlatform in platforms :
+            error("Invalid platform '{}' in config '{}'!".format(targetPlatform, name))
+        if not buildType in buildTypes :
+            error("Invalid build-type '{}' in config '{}'!".format(targetPlatform, name))
+
+        # build the cmake cmd line
+        cmdLine = []
+        cmdLine.append('cmake')
+        cmdLine.append('-G')
+        cmdLine.append(generator)
+        if buildType == 'release' :
+            cmdLine.append('-DCMAKE_BUILD_TYPE=Release')
+        else :
+            cmdLine.append('-DCMAKE_BUILD_TYPE=Debug')
+        if buildType == 'unittests' :
+            cmdLine.append('-DORYOL_UNITTESTS=ON')
+
+        # toolchain file required?
+        if isValidCrossPlatform(targetPlatform) :
+            cmdLine.append('-DCMAKE_TOOLCHAIN_FILE="../../cmake/{}.toolchain.cmake '.format(targetPlatform))
+        
+        # relative path to root CMakeFile
+        cmdLine.append('../..')
+        print " ".join(cmdLine)
+
+        # make sure build path exists
+        buildPath = 'build/{}'.format(name)
+        if not os.path.exists(buildPath) :
+            os.makedirs(buildPath)
+
+        # change to build path and execute the cmake command
+        subprocess.call(args=cmdLine, cwd=buildPath)
+
+    else :
+        error("Build requirements not met!")
+
+# do a command line build
+def runBuild(config) :
+    if testConfigRequirements(config) :
+        name = config['name']
+        generator = config['target']['generator']
+        buildType = config['target']['build-type']
+        buildPath = "build/{}".format(name)
+        if 'Xcode' in generator :
+            # run the Xcode command line tool
+            if buildType == 'release' :
+                subprocess.call(args=["xcodebuild", "-configuration", "Release"], cwd=buildPath)
+            else :
+                subprocess.call(args=["xcodebuild", "-configuration", "Debug"], cwd=buildPath)
+        elif 'Makefiles' in generator :
+            # run make
+            subprocess.call(args="make", cwd=buildPath)
+        elif 'Ninja' in generator :
+            # run ninja
+            subprocess.call(args="ninja", cwd=buildPath)
+        else :
+            error("Unknown cmake generator, don't know how to run command line build!")            
+
+# do a command line build
+def runRebuild(config) :
+    if testConfigRequirements(config) :
+        name = config['name']
+        generator = config['target']['generator']
+        buildPath = "build/{}".format(name)
+        if 'Xcode' in generator :
+            # run the Xcode command line tool
+            subprocess.call(args=["xcodebuild", "clean"], cwd=buildPath)
+            if buildType == 'release' :
+                subprocess.call(args=["xcodebuild", "-configuration", "Release"], cwd=buildPath)
+            else :
+                subprocess.call(args=["xcodebuild", "-configuration", "Debug"], cwd=buildPath)
+        elif 'Makefiles' in generator :
+            # run make
+            subprocess.call(args=["make", "clean"], cwd=buildPath)
+            subprocess.call(args="make", cwd=buildPath)
+        elif 'Ninja' in generator :
+            # run ninja
+            subprocess.call(args=["ninja", "clean"], cwd=buildPath)
+            subprocess.call(args=["ninja"], cwd=buildPath)
+        else :
+            error("Unknown cmake generator, don't know how to run command line build!")            
+
+#===============================================================================
+if len(sys.argv) == 1 :
+    print '-------------------------------------'
+    print 'The Oryol build system control script'
+    print '-------------------------------------'
+    print 'This script is used to setup, delete, list build configs,'
+    print 'to select the active config, and build it.\n'
+    print 'Invocation:'
+    print 'oryol [COMMAND] [SUBCOMMAND] [config]\n'
+    print 'Commands:'
+    print '---------'
+    print 'oryol list [configs,platforms,build-types]'
+    print '  list configs, platforms, or build-types'
+    print 'oryol new [config-name]'
+    print '  create a config skeleton json file'
+    print 'oryol select [config-name]'
+    print '  set the active config (omit config-name to select the default config for the platform'
+    print 'oryol update [config-name or all]'
+    print '  do a cmake run on the selected or provided config (required after adding sources)'
+    print 'oryol build [config-name or all]'
+    print '  build selected or provided config'
+    print 'oryol rebuild [config-name or all]'
+    print '  rebuild selected or provided config'
+    print 'oryol clean [config-name or all]'
+    print '  delete the cmake cache and build files of the selected or provided config'
+    print 'oryol config [config-name or all]'
+    print '  start cmake-gui tool on selected or provided config'
+
+else :
+    cmd = sys.argv[1]
+    if cmd == 'new' :
+        # create new config skeleton file
+        if len(sys.argv) < 3 :
+            error("config name expected after 'new'!")
+        else :
+            name = sys.argv[2]
+            config = {
+                'name': name,
+                'target': {
+                    'platform': 'PUT TARGET PLATFORM HERE',
+                    'build-type': 'PUT BUILD TYPE HERE',
+                    'generator': 'PUT CMAKE GENERATOR HERE'
+                },
+            }
+            path = 'configs/{}.json'.format(name)
+            if os.path.isfile(path) :
+                error("Config '{}'' already exists in file '{}'!".format(name, path))
+            else :
+                f = open(path, 'w')
+                f.write(json.dumps(config, indent=4))
+                f.close()
+                print "Config '{}'' written to file '{}', now edit this file in a text editor!".format(name, path)
+
+    elif cmd == 'list' :
+        if len(sys.argv) < 3 or sys.argv[2] == 'configs' :
+            # list existing configs
+            print "CONFIGS:"
+            configs = glob.glob('configs/*.json')
+            for config in configs :            
+                path,nameExt = os.path.split(config)
+                name,ext = os.path.splitext(nameExt)
+                print "  {}".format(name)
+        if len(sys.argv) < 3 or sys.argv[2] == 'platforms' :
+            print "VALID PLATFORMS:"
+            for p in platforms :
+                print "  {}".format(p)
+        if len(sys.argv) < 3 or sys.argv[2] == 'build-types' :
+            print "VALID BUILD-TYPES:"
+            for t in buildTypes :
+                print "  {}".format(t)
+
+    elif cmd == 'select' :
+        # set the given config as active
+        if len(sys.argv) < 3 :
+            # select the default config
+            name = chooseConfigName()
+        else :
+            # select the provided config
+            name = sys.argv[2]
+        path = 'configs/{}.json'.format(name)
+        if os.path.isfile(path) :
+            f = open('configs/.selected', 'w')
+            f.write(name)
+            f.close
+            print "'{}' selected as current config".format(name)
+        else :
+            error("config '{}' does not exist (path should be '{}'!".format(name, path))
+
+    elif cmd == 'update' :
+        # do a cmake run on configs
+        if len(sys.argv) < 3 :
+            configs = [ getActiveConfig() ]
+        else :
+            if sys.argv[2] == 'all' : 
+                configs = getAllValidConfigs()
+            else :
+                configs = [ loadConfig(sys.argv[2]) ]
+        for config in configs: 
+            runCMake(config)
+
+    elif cmd == 'clean' :
+        # delete the build files for configs
+        if len(sys.argv) < 3 :
+            configs = [ getActiveConfig() ]
+        else :
+            if sys.argv[2] == 'all' :
+                configs = getAllValidConfigs()
+            else :
+                configs = [ loadConfig(sys.argv[2]) ]
+        for config in configs :
+            path = 'build/{}'.format(config['name'])
+            if os.path.isdir(path) :
+                shutil.rmtree(path)
+                print "Directory '{}' deleted!".format(path)
+            else :
+                print "Directory '{}' didn't exist, nothing done.".format(path)
+
+    elif cmd == 'build' :
+        # run a command line build
+        if len(sys.argv) < 3 :
+            configs = [ getActiveConfig() ]
+        else :
+            if sys.argv[2] == 'all' :
+                configs = getAllValidConfigs()
+            else :
+                configs = [ loadConfig(sys.argv[2]) ]
+        for config in configs :
+            runCMake(config)
+            runBuild(config)
+
+    elif cmd == 'rebuild' :
+        # run a command line build
+        if len(sys.argv) < 3 :
+            configs = [ getActiveConfig() ]
+        else :
+            if sys.argv[2] == 'all' :
+                configs = getAllValidConfigs()
+            else :
+                configs = [ loadConfig(sys.argv[2]) ]
+        for config in configs :
+            runCMake(config)
+            runRebuild(config)
+
+
+
+
+
+
+
+
+
+
+
+
