@@ -1,5 +1,5 @@
 Oryol uses a python script ('oryol' in the project root directory) and
-CMake to manage the build configuration process on various target platforms.
+CMake to manage the build configuration process for the supported host and target platforms.
 
 ## Prerequisites
 
@@ -9,19 +9,19 @@ Oryol supports the following host platforms for building:
 
 - OSX
 - Linux
-- Windows
+- Windows (planned)
 
 ...and the following target platforms:
 
 - OSX
 - Linux
-- Windows
-- iOS
-- Android
-- emscripten
-- PNaCl
+- Windows (planned)
+- iOS (planned)
+- Android (planned)
+- emscripten 
+- PNaCl (planned, no C++11 support yet in the SDK?)
 
-Not all target platforms can be built from all host platforms.
+Not all target platforms can be built on all host platforms!
 
 ### Tools
 
@@ -46,13 +46,13 @@ TODO
 
 ## Building Oryol
 
-If the above prerequisites are met you should be able to simple run
+If the above prerequisites are met you should be able to simply run:
 
 ```
 ./oryol build
 ```
 
-from the oryol project directory to run a default build for your host operating system.
+from the Oryol root directory to run a default command line build for your operating system.
 
 After the build has finished, you should find a **hello** executable under either
 **oryol/bin/osx**, **oryol/bin/linux** or **oryol/bin/win32**. Running this
@@ -63,10 +63,10 @@ executable from the command line should print a **Hello World!**.
 The ./oryol script is basically just a front-end to manage different CMake build 
 configurations. A build configuration has the following properties:
 
-1) a unique name (e.g. 'osx-xcode-debug')
-2) the target platform (e.g. 'osx', 'linux', 'emscripten')
-3) the CMake generator to use, for instance whether to use 'make' or 'ninja' for building, whether to generate XCode or VisualStudio project files
-4) the build-type (e.g. 'release', 'debug', 'unittests')
+1. a unique name (e.g. 'osx-xcode-debug')
+2. the target platform (e.g. 'osx', 'linux', 'emscripten')
+3. the CMake generator to use, for instance whether to use 'make' or 'ninja' for building, whether to generate XCode or VisualStudio project files
+4. the build-type (e.g. 'release', 'debug', 'unittests')
 
 Additionally, any CMake properties can be added to the configuration (this is planned, not yet
 implemented).
