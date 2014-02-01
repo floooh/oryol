@@ -169,4 +169,39 @@ configurations for the host platform:
 
 ## Cross-platform builds with Vagrant
 
-Oryol has a Vagrantfile which sets up a Linux VM with all required 
+Oryol comes with a Vagrantfile which sets up a Linux VM with all required tools and SDKs to compile
+native Linux builds and cross-compile to emscripten and PNaCl.
+
+First you need to setup vagrant:
+
+1. get VirtualBox for your host operating system (https://www.virtualbox.org/wiki/Downloads)
+2. get Vargrant for your host OS (http://www.vagrantup.com/downloads.html)
+3. install the vagrant-vbguest plugin: ```vagrant plugin install vagrant-vbguest```
+
+Now you're ready to setup the VM with **vagrant up**
+
+```
+flohofwoe:oryol floh$ pwd
+/Users/floh/oryol
+flohofwoe:oryol floh$ cd vagrant
+flohofwoe:vagrant floh$ vagrant up
+```
+
+This will download a Linux image and install all required tools and SDKs inside the VM, so this will take a while, go make a sandwich or something...
+
+After everything's setup, connect to the VM:
+
+```
+flohofwoe:vagrant floh$ vagrant ssh
+Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.2.0-23-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+Welcome to your Vagrant-built virtual machine.
+Last login: Sat Feb  1 15:50:56 2014 from 10.0.2.2
+vagrant@precise64:~$ cd oryol/
+vagrant@precise64:~/oryol$ ls
+bin  build  BUILD.md  cmake  CMakeLists.txt  code  configs  data  doc  IDEAS.md  LICENSE  oryol  README.md  vagrant
+vagrant@precise64:~/oryol$ ./oryol build all
+```
+
+There's you (shared) oryol directory, ready to go!
