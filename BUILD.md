@@ -166,3 +166,7 @@ configurations for the host platform:
 > ./oryol build all
 > ./oryol rebuild all
 ```
+
+## Cross-platform builds with Vagrant
+
+Oryol has a Vagrantfile which sets up a Linux VM with all required 
