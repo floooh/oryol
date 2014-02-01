@@ -29,6 +29,8 @@ endif()
 #
 macro(oryol_setup)
 
+    message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
     if (ORYOL_ROOT_DIR)
         message("ORYOL_ROOT_DIR: ${ORYOL_ROOT_DIR}")
     else()
