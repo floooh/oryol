@@ -14,8 +14,8 @@
         <Attr name="UInt16Val" type="uint16" />
         <Attr name="UInt32Val" type="uint32" />
         <Attr name="UInt64Val" type="uint64" />
-        <Attr name="Float32" type="float32" def="123.0f" />
-        <Attr name="Float64" type="float64" def="12.0" />
+        <Attr name="Float32Val" type="float32" def="123.0f" />
+        <Attr name="Float64Val" type="float64" def="12.0" />
     </Message>
 
     <Message name="TestMsg2" parent="TestMsg1">

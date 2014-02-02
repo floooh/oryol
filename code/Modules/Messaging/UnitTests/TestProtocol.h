@@ -49,8 +49,8 @@ public:
         this->uint16val = 0;
         this->uint32val = 0;
         this->uint64val = 0;
-        this->float32 = 123.0f;
-        this->float64 = 12.0;
+        this->float32val = 123.0f;
+        this->float64val = 12.0;
     };
     void SetInt8Val(int8 val) {
         this->int8val = val;
@@ -100,17 +100,17 @@ public:
     uint64 GetUInt64Val() const {
         return this->uint64val;
     };
-    void SetFloat32(float32 val) {
-        this->float32 = val;
+    void SetFloat32Val(float32 val) {
+        this->float32val = val;
     };
-    float32 GetFloat32() const {
-        return this->float32;
+    float32 GetFloat32Val() const {
+        return this->float32val;
     };
-    void SetFloat64(float64 val) {
-        this->float64 = val;
+    void SetFloat64Val(float64 val) {
+        this->float64val = val;
     };
-    float64 GetFloat64() const {
-        return this->float64;
+    float64 GetFloat64Val() const {
+        return this->float64val;
     };
 private:
     int8 int8val;
@@ -121,8 +121,8 @@ private:
     uint16 uint16val;
     uint32 uint32val;
     uint64 uint64val;
-    float32 float32;
-    float64 float64;
+    float32 float32val;
+    float64 float64val;
 };
 class TestMsg2 : public TestMsg1 {
     OryolClassDecl(TestMsg2);

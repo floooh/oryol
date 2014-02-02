@@ -3,4 +3,4 @@ vagrant/.vagrant
 doc/html
 build/*-*-*
 configs/.selected
-
+*.pyc
