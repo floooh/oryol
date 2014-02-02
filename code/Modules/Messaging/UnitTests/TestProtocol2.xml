@@ -1,0 +1,7 @@
+<Generator type="MessageProtocol" name="TestProtocol2" parent="TestProtocol" parenthdr="Messaging/UnitTests/TestProtocol.h" >
+
+    <Message name="TestMsgEx" parent="TestProtocol::TestMsg1" poolSize='128'>
+        <Attr name="ExVal2" type="int8" />
+    </Message>
+
+</Generator>

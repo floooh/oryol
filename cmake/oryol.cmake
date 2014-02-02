@@ -92,6 +92,14 @@ macro(oryol_setup)
         add_definitions(-DORYOL_UNITTESTS=0)
     endif()
 
+    # check whether python is installed
+    find_program(PYTHON "python")
+    if (PYTHON)
+        message("PYTHON INTERPRETER FOUND")
+    else()
+        message("PYTHON INTERPRETER NOT FOUND, *.xml FILES WILL NOT BE CONVERTED!")
+    endif()
+
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -144,9 +152,19 @@ macro(oryol_end_module)
     set_property(GLOBAL PROPERTY ${CurModuleName}_libs ${CurLinkLibs})
     set_property(GLOBAL PROPERTY ${CurModuleName}_frameworks ${CurFrameworks})
 
+    # handle XML generators (pre-target)
+    if (CurXmlFiles)
+        oryol_handle_generator_files_pretarget("${CurXmlFiles}")
+    endif()
+
 	# add library target
 	add_library(${CurModuleName} ${CurSources})
 	oryol_apply_target_group(${CurModuleName})
+
+    # handle XML generators (post-target)
+    if (CurXmlFiles)
+        oryol_handle_generator_files_posttarget(${CurModuleName} "${CurXmlFiles}")
+    endif()
 
 endmacro()
 
@@ -204,6 +222,11 @@ macro(oryol_end_app)
         message(FATAL_ERROR "No sources in target: ${CurAppName} !!!")
     endif()
 
+    # handle XML generators (pre-target)
+    if (CurXmlFiles)
+        oryol_handle_generator_files_pretarget("${CurXmlFiles}")
+    endif()
+
     # add executable target
     if (${CurAppType} STREQUAL "windowed")
     	# a windowed application 
@@ -224,6 +247,11 @@ macro(oryol_end_app)
     	endif()
     endif()
     oryol_apply_target_group(${CurAppName})
+
+    # handle XML generators (post-target)
+    if (CurXmlFiles)
+        oryol_handle_generator_files_posttarget(${CurAppName} "${CurXmlFiles}")
+    endif()
 
     # OSX: copy dylibs to executable directory
     if (ORYOL_IOS OR ORYOL_OSX)
@@ -288,23 +316,35 @@ macro(oryol_sources dirs)
 	foreach (dir ${ARGV})
 		# gather files
 		file(GLOB src ${dir}/*.cc ${dir}/*.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
+        file(GLOB xmls ${dir}/*.xml)
 		if (ORYOL_NACL)
 			file(GLOB nacl ${dir}/*.nmf ${dir}/*.html)
 		else()
 			set(nacl)
 		endif()
 
+        # add generated source files
+        foreach (xml ${xmls})
+            string(REPLACE .xml .cc xmlSrc ${xml})
+            string(REPLACE .xml .h xmlHdr ${xml})
+            list(APPEND CurSources ${xmlSrc} ${xmlHdr})
+        endforeach()
+
         # setup IDE groups
         string(REPLACE / \\ groupName ${dir})
         if (${dir} STREQUAL .)
-            source_group("" FILES ${src} ${nacl})
+            source_group("" FILES ${src} ${nacl} ${xmls})
         else()
-            source_group(${groupName} FILES ${src} ${nacl})
+            source_group(${groupName} FILES ${src} ${nacl} ${xmls})
         endif()
 
         # add to global tracker variables
-        list(APPEND CurSources ${src})
+        list(APPEND CurSources ${src} ${xmls})
         list(APPEND CurNaclFiles ${nacl})
+        list(APPEND CurXmlFiles ${xmls})
+
+        # remove duplicate sources 
+        list(REMOVE_DUPLICATES CurSources)
 
 	endforeach()
 endmacro()
