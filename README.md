@@ -13,7 +13,7 @@ Experimental C++11 multi-platform 3D engine
   - an Oryol project also has a manifest which lists the modules it needs
   - some build system magic gathers all the required module files from several github projects, and automagically creates the build files for compiling and linking the whole project
 
-2. multiplattform build system:
+2. multi-platform build system:
   - at the core are cmake scripts with a lot of custom macros to simplify the definition of **libs** (3rd party code compiled into static link libs, **modules** (Oryol code modules with dependencies to other modules, compiled into static link libs), and **apps** (actual executables)
   - above cmake there's a python helper script which manages different build configurations (host platforms and their native IDEs / build tools, cross-compiling, release vs. debug etc...)
 
