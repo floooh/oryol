@@ -18,7 +18,7 @@ Experimental C++11 multi-platform 3D engine
   - above cmake there's a python helper script which manages different build configurations (host platforms and their native IDEs / build tools, cross-compiling, release vs. debug etc...)
 
 3. unit testing integrated into the development process:
-  - Oryol integrates UnitTest++ into the build process, and writing unit tests is a seemless part of the development process
+  - Oryol integrates UnitTest++ into the build process, and writing unit tests is a seamless part of the development process
 
 4. multi-platform with focus on web / mobile:
   - make it extremely easy to support new POSIX+OpenGL-style target platforms
