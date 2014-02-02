@@ -252,6 +252,7 @@ def runRebuild(config) :
     if testConfigRequirements(config) :
         name = config['name']
         generator = config['target']['generator']
+        buildType = config['target']['build-type']
         buildPath = "build/{}".format(name)
         if 'Xcode' in generator :
             # run the Xcode command line tool
