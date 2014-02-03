@@ -38,13 +38,13 @@ BinaryStreamReader::Read(TYPE& val) {
     // better to Map/Unmap only once and call Decode many times
     // (which is a case for a code generator)
     bool retval = false;
-    int32 numValidBytes = 0;
-    const uchar* srcPtr = (uchar*) this->stream->MapRead(numValidBytes);
-    if (nullptr != srcPtr) {
-        const uchar* endPtr = Messaging::Serializer<TYPE>::Decode(srcPtr, numValidBytes, val);
-        if (nullptr != endPtr) {
+    const uint8* maxValidPtr = nullptr;
+    const uint8* srcPtr = this->stream->MapRead(maxValidPtr);
+    if (srcPtr != nullptr) {
+        const uint8* endPtr = Messaging::Serializer::Decode<TYPE>(srcPtr, maxValidPtr, val);
+        if (endPtr != nullptr) {
             const int32 numBytesDecoded = endPtr - srcPtr;
-            o_assert(numBytesDecoded == Messaging::Serializer<TYPE>::SizeOf(val));
+            o_assert(numBytesDecoded == Messaging::Serializer::EncodedSize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;
         }
@@ -60,13 +60,13 @@ BinaryStreamReader::Read(Core::Array<TYPE>& val) {
     // better to Map/Unmap only once and call Decode many times
     // (which is a case for a code generator)
     bool retval = false;
-    int32 numValidBytes = 0;
-    const uchar* srcPtr = (uchar*) this->stream->MapRead(numValidBytes);
+    const uint8* maxValidPtr = nullptr;
+    const uint8* srcPtr = this->stream->MapRead(maxValidPtr);
     if (nullptr != srcPtr) {
-        const uchar* endPtr = Messaging::Serializer<TYPE>::Decode(srcPtr, numValidBytes, val);
+        const uint8* endPtr = Messaging::Serializer::DecodeArray<TYPE>(srcPtr, maxValidPtr, val);
         if (nullptr != endPtr) {
             const int32 numBytesDecoded = endPtr - srcPtr;
-            o_assert(numBytesDecoded == Messaging::Serializer<TYPE>::SizeOf(val));
+            o_assert(numBytesDecoded == Messaging::Serializer::EncodedArraySize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;
         }

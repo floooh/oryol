@@ -4,3 +4,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Serializer.h"
+
+namespace Oryol {
+namespace Messaging {
+
+} // namespace Messaging
+} // namespace Oryol

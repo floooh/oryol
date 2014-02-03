@@ -52,6 +52,9 @@ public:
         this->float32val = 123.0f;
         this->float64val = 12.0;
     };
+    virtual int32 EncodedSize() const override;
+    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
+    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
     void SetInt8Val(int8 val) {
         this->int8val = val;
     };
@@ -131,6 +134,9 @@ public:
         this->msgId = MessageId::TestMsg2Id;
         this->stringval = "Test";
     };
+    virtual int32 EncodedSize() const override;
+    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
+    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
     void SetStringVal(const Core::String& val) {
         this->stringval = val;
     };
@@ -153,6 +159,9 @@ public:
     TestArrayMsg() {
         this->msgId = MessageId::TestArrayMsgId;
     };
+    virtual int32 EncodedSize() const override;
+    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
+    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
     void SetInt32ArrayVal(const Core::Array<int32>& val) {
         this->int32arrayval = val;
     };

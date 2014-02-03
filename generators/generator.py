@@ -3,6 +3,10 @@ The main generator.py script. This is integrated into the build process
 as build tool for *.xml files. At compile time, it parses the
 xml file, reads the 'generator' attr which names the actual
 generator script and hands off processing to this script.
+
+FIXME: this needs some sort of Generator Version in the header of
+the generated files, which must be used additionally to the file
+timestamps to decide whether processing must happen
 '''
 
 import sys

@@ -30,9 +30,9 @@ public:
     /// get the encoded size of the message
     virtual int32 EncodedSize() const;
     /// encode the message to raw memory, maxBytes must be at least EncodedSize()
-    virtual int32 Encode(uint8* ptr, int32 maxBytes) const;
+    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const;
     /// decode the message from raw memory
-    virtual int32 Decode(const uint8* ptr, int32 maxBytes);
+    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr);
 
 protected:
     MessageIdType msgId;

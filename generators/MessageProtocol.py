@@ -109,6 +109,21 @@ def getValueType(attrType) :
     return attrType
 
 #-------------------------------------------------------------------------------
+def isArrayType(attrType) :
+    '''
+    Test if the type string is an array type (Core::Array<TYPE>)
+    '''
+    return attrType.startswith('Core::Array<') and attrType.endswith('>')
+
+#-------------------------------------------------------------------------------
+def getArrayType(attrType) :
+    '''
+    Get the element type of an array type.
+    '''
+    # strip the 'Core::Array<' at the left, and the '>' at the right
+    return attrType[12:-1]
+
+#-------------------------------------------------------------------------------
 def writeMessageClasses(f, xmlRoot) :
     '''
     Write the message classes to the generated C++ header
@@ -134,6 +149,11 @@ def writeMessageClasses(f, xmlRoot) :
                 f.write('        this->' + attrName + ' = ' + defValue + ';\n')
         f.write('    };\n')
 
+        # write serializer methods
+        f.write('    virtual int32 EncodedSize() const override;\n')
+        f.write('    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
+        f.write('    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
+
         # write setters/getters
         for attr in msg.findall('Attr') :
             attrName = attr.get('name')
@@ -152,6 +172,59 @@ def writeMessageClasses(f, xmlRoot) :
             attrType = attr.get('type')
             f.write('    ' + getValueType(attrType) + ' ' + attrName + ';\n')
         f.write('};\n')
+
+#-------------------------------------------------------------------------------
+def writeSerializeMethods(f, xmlRoot) :
+    '''
+    Writes the serializer methods of the message to the source file.
+    '''
+    for msg in xmlRoot.findall('Message') :    
+        msgClassName = msg.get('name')
+        msgParentClassName = msg.get('parent', 'Messaging::Message')
+
+        # EncodedSize()
+        f.write('int32 ' + msgClassName + '::EncodedSize() const {\n')
+        f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
+        for attr in msg.findall('Attr') :
+            attrName = attr.get('name').lower()
+            attrType = attr.get('type')
+            if isArrayType(attrType) :
+                elmType = getArrayType(attrType)                
+                f.write('    s += Messaging::Serializer::EncodedArraySize<' + elmType + '>(this->' + attrName + ');\n')
+            else :
+                f.write('    s += Messaging::Serializer::EncodedSize<' + attrType + '>(this->' + attrName + ');\n')                
+        f.write('    return s;\n')
+        f.write('}\n')
+
+        # Encode
+        # FIXME: I think we need to diffentiate between "send" and "receive" attributes!
+        # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
+        f.write('uint8* ' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
+        f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
+        for attr in msg.findall('Attr') :
+            attrName = attr.get('name').lower()
+            attrType = attr.get('type')
+            if isArrayType(attrType) :
+                elmType = getArrayType(attrType)                
+                f.write('    dstPtr = Messaging::Serializer::EncodeArray<' + elmType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
+            else :            
+                f.write('    dstPtr = Messaging::Serializer::Encode<' + attrType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
+        f.write('    return dstPtr;\n')
+        f.write('}\n')
+
+        # Decode
+        f.write('const uint8* ' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
+        f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
+        for attr in msg.findall('Attr') :
+            attrName = attr.get('name').lower()
+            attrType = attr.get('type')
+            if isArrayType(attrType) :
+                elmType = getArrayType(attrType)
+                f.write('    srcPtr = Messaging::Serializer::DecodeArray<' + elmType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
+            else :
+                f.write('    srcPtr = Messaging::Serializer::Decode<' + attrType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
+        f.write('    return srcPtr;\n')
+        f.write('}\n')            
 
 #-------------------------------------------------------------------------------
 def generateHeader(xmlTree, absHeaderPath) :
@@ -204,9 +277,11 @@ def generateSource(xmlTree, absSourcePath) :
         msgClassName = msg.get('name')
         poolSize = msg.get('poolSize', '0')
         if int(poolSize) > 0 :
-            f.write('    OryolClassPoolAllocImpl(' + msgClassName + ', ' + poolSize + ');\n')
+            f.write('OryolClassPoolAllocImpl(' + msgClassName + ', ' + poolSize + ');\n')
         else :
-            f.write('    OryolClassImpl(' + msgClassName + ');\n')
+            f.write('OryolClassImpl(' + msgClassName + ');\n')
+
+    writeSerializeMethods(f, xmlRoot)
     f.write('}\n')
     f.write('}\n')
     f.close()

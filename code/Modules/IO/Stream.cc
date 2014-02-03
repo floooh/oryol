@@ -93,13 +93,13 @@ Stream::DiscardContent() {
 
 //------------------------------------------------------------------------------
 int32
-Stream::Write(void* ptr, int32 numBytes) {
+Stream::Write(const void* ptr, int32 numBytes) {
     // implement in subclass!
     return 0;
 }
 
 //------------------------------------------------------------------------------
-void*
+uint8*
 Stream::MapWrite(int32 numBytes) {
     o_assert(!this->isWriteMapped);
     this->isWriteMapped = true;
@@ -123,12 +123,12 @@ Stream::Read(void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-const void*
-Stream::MapRead(int32& outNumBytes) {
+const uint8*
+Stream::MapRead(const uint8*& outMaxValidPtr) {
     o_assert(!this->isReadMapped);
-    outNumBytes = 0;
     this->isReadMapped = true;
     // override in subclass!
+    outMaxValidPtr = nullptr;
     return nullptr;
 }
 

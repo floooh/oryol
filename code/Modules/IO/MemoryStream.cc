@@ -166,7 +166,7 @@ MemoryStream::Write(const void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-void*
+uint8*
 MemoryStream::MapWrite(int32 numBytes) {
     o_assert(this->isOpen);
     o_assert(!this->isWriteMapped);
@@ -180,7 +180,7 @@ MemoryStream::MapWrite(int32 numBytes) {
         this->makeRoom(numBytes);
     }
     
-    uchar* ptr = this->buffer + this->writePosition;
+    uint8* ptr = this->buffer + this->writePosition;
     this->incrWritePosition(numBytes);
     return ptr;
 }
@@ -214,8 +214,8 @@ MemoryStream::Read(void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-const void*
-MemoryStream::MapRead(int32& outNumBytes) {
+const uint8*
+MemoryStream::MapRead(const uint8*& outMaxValidPtr) {
     o_assert(this->isOpen);
     o_assert(!this->isReadMapped);
     o_assert(this->IsReadable());
@@ -224,11 +224,14 @@ MemoryStream::MapRead(int32& outNumBytes) {
     this->isReadMapped = true;
 
     // cap numBytes if trying to read past stream, or EndOfStream
-    outNumBytes = this->size - this->readPosition;
-    if (0 == outNumBytes) {
-        return 0;
+    int32 numBytes = this->size - this->readPosition;
+    o_assert(numBytes >= 0);
+    if (0 == numBytes) {
+        outMaxValidPtr = nullptr;
+        return nullptr;
     }
     else {
+        outMaxValidPtr = this->buffer + this->size;
         return this->buffer + this->readPosition;
     }
 }

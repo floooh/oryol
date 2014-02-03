@@ -33,6 +33,9 @@ public:
         this->msgId = MessageId::TestMsgExId;
         this->exval2 = 0;
     };
+    virtual int32 EncodedSize() const override;
+    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
+    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
     void SetExVal2(int8 val) {
         this->exval2 = val;
     };

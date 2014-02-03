@@ -53,9 +53,9 @@ public:
     /// get the write cursor position (byte offset from start)
     int32 GetWritePosition() const;
     /// write a number of bytes to the stream (returns bytes written)
-    virtual int32 Write(void* ptr, int32 numBytes);
+    virtual int32 Write(const void* ptr, int32 numBytes);
     /// map a memory area at the current write position and advance write position
-    virtual void* MapWrite(int32 numBytes);
+    virtual uint8* MapWrite(int32 numBytes);
     /// unmap previously mapped memory area
     virtual void UnmapWrite();
     /// return true if currently mapped for writing
@@ -70,7 +70,7 @@ public:
     /// read a number of bytes from the stream (returns bytes read)
     virtual int32 Read(void* ptr, int32 numBytes);
     /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
-    virtual const void* MapRead(int32& outNumValidBytes);
+    virtual const uint8* MapRead(const uint8*& outMaxValidPtr);
     /// unmap previosuly mapped memory area
     virtual void UnmapRead();
     /// return true if currently locked for reading

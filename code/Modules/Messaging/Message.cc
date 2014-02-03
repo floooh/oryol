@@ -22,17 +22,17 @@ Message::EncodedSize() const {
 }
 
 //------------------------------------------------------------------------------
-int32
-Message::Encode(uint8* ptr, int32 maxBytes) const {
+uint8*
+Message::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
     // FIXME!
-    return 0;
+    return dstPtr;
 }
 
 //------------------------------------------------------------------------------
-int32
-Message::Decode(const uint8* ptr, int32 maxBytes) {
+const uint8*
+Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
     // FIXME!
-    return 0;
+    return srcPtr;
 }
     
 } // namespace Messaging
