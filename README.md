@@ -92,3 +92,4 @@ Experimental C++11 multi-platform 3D engine
   - hopefully support glTF (https://github.com/KhronosGroup/glTF)
   - alternatively super-compact custom file format
   - drahtgitter python package for generating and converting assets: https://github.com/floooh/drahtgitter
+  - use GLI for texture loading (http://www.g-truc.net/project-0024.html#menu)
