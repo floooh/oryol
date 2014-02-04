@@ -27,5 +27,12 @@ public:
     };
 };
 
+class Factory {
+public:
+    static Messaging::Message* Create(Messaging::MessageIdType id) {
+        return Messaging::Message::Create();
+    };
+};
+
 } // namespace MessageProtocol
 } // namespace Oryol

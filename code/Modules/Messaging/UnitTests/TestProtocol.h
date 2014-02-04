@@ -36,6 +36,10 @@ public:
         return Messaging::InvalidMessageId;
     };
 };
+class Factory {
+public:
+    static Messaging::Message* Create(Messaging::MessageIdType id);
+};
 class TestMsg1 : public Messaging::Message {
     OryolClassDecl(TestMsg1);
 public:
@@ -51,6 +55,9 @@ public:
         this->uint64val = 0;
         this->float32val = 123.0f;
         this->float64val = 12.0;
+    };
+    static Messaging::Message* FactoryCreate() {
+        return (Messaging::Message*) Create();
     };
     virtual int32 EncodedSize() const override;
     virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
@@ -134,6 +141,9 @@ public:
         this->msgId = MessageId::TestMsg2Id;
         this->stringval = "Test";
     };
+    static Messaging::Message* FactoryCreate() {
+        return (Messaging::Message*) Create();
+    };
     virtual int32 EncodedSize() const override;
     virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
     virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
@@ -158,6 +168,9 @@ class TestArrayMsg : public Messaging::Message {
 public:
     TestArrayMsg() {
         this->msgId = MessageId::TestArrayMsgId;
+    };
+    static Messaging::Message* FactoryCreate() {
+        return (Messaging::Message*) Create();
     };
     virtual int32 EncodedSize() const override;
     virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;

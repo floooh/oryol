@@ -26,12 +26,19 @@ public:
         return Messaging::InvalidMessageId;
     };
 };
+class Factory {
+public:
+    static Messaging::Message* Create(Messaging::MessageIdType id);
+};
 class TestMsgEx : public TestProtocol::TestMsg1 {
     OryolClassPoolAllocDecl(TestMsgEx, 128);
 public:
     TestMsgEx() {
         this->msgId = MessageId::TestMsgExId;
         this->exval2 = 0;
+    };
+    static Messaging::Message* FactoryCreate() {
+        return (Messaging::Message*) Create();
     };
     virtual int32 EncodedSize() const override;
     virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;

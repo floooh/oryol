@@ -65,6 +65,40 @@ def writeMessageIdEnum(f, xmlRoot) :
     f.write('};\n')
 
 #-------------------------------------------------------------------------------
+def writeFactoryClassDecl(f, xmlRoot) :
+    '''
+    Writes the message factory for this protocol
+    '''
+    f.write('class Factory {\n')
+    f.write('public:\n')
+    f.write('    static Messaging::Message* Create(Messaging::MessageIdType id);\n')
+    f.write('};\n')
+
+#-------------------------------------------------------------------------------
+def writeFactoryClassImpl(f, xmlRoot) :
+    '''
+    Writes the factory class implementation
+    '''
+    nameSpace = xmlRoot.get('name')
+    parentNameSpace = xmlRoot.get('parent', 'MessageProtocol')
+
+    f.write('typedef Messaging::Message* (*CreateCallback)();\n')
+    f.write('CreateCallback jumpTable[MessageId::NumMessageIds] = { \n') 
+    for msg in xmlRoot.findall('Message') :
+        f.write('    &' + msg.get('name') + '::FactoryCreate,\n')
+    f.write('};\n')
+    f.write('Messaging::Message*\n')
+    f.write('Factory::Create(Messaging::MessageIdType id) {\n')
+    f.write('    if (id < ' + parentNameSpace + '::MessageId::NumMessageIds) {\n')
+    f.write('        return ' + parentNameSpace + '::Factory::Create(id);\n')
+    f.write('    }\n')
+    f.write('    else {\n')
+    f.write('        o_assert(id < ' + nameSpace + '::MessageId::NumMessageIds);\n')
+    f.write('        return jumpTable[id - ' + parentNameSpace + '::MessageId::NumMessageIds]();\n')
+    f.write('    };\n')
+    f.write('}\n')
+
+#-------------------------------------------------------------------------------
 def getAttrDefaultValue(attr) :
     '''
     Get the default value for a given attribute
@@ -147,6 +181,11 @@ def writeMessageClasses(f, xmlRoot) :
             defValue = getAttrDefaultValue(attr)
             if defValue :
                 f.write('        this->' + attrName + ' = ' + defValue + ';\n')
+        f.write('    };\n')
+
+        # special factory create method
+        f.write('    static Messaging::Message* FactoryCreate() {\n')
+        f.write('        return (Messaging::Message*) Create();\n')
         f.write('    };\n')
 
         # write serializer methods
@@ -234,13 +273,14 @@ def generateHeader(xmlTree, absHeaderPath) :
     xmlRoot = xmlTree.getroot()
     f = open(absHeaderPath, 'w')
 
-    nameSpace = xmlRoot.get('name', 'Messaging')
+    nameSpace = xmlRoot.get('name')
 
     writeHeaderTop(f, xmlRoot) 
     writeIncludes(f, xmlRoot)
     f.write('namespace Oryol {\n')
     f.write('namespace ' + nameSpace + ' {\n')
     writeMessageIdEnum(f, xmlRoot)
+    writeFactoryClassDecl(f, xmlRoot)
     writeMessageClasses(f, xmlRoot)
     f.write('}\n')
     f.write('}\n')
@@ -267,7 +307,7 @@ def generateSource(xmlTree, absSourcePath) :
     Generate the C++ source file
     '''
     xmlRoot = xmlTree.getroot()
-    nameSpace = xmlRoot.get('name', 'Messaging')
+    nameSpace = xmlRoot.get('name')
 
     f = open(absSourcePath, 'w')
     writeSourceTop(f, xmlRoot, absSourcePath)
@@ -281,6 +321,7 @@ def generateSource(xmlTree, absSourcePath) :
         else :
             f.write('OryolClassImpl(' + msgClassName + ');\n')
 
+    writeFactoryClassImpl(f, xmlRoot)
     writeSerializeMethods(f, xmlRoot)
     f.write('}\n')
     f.write('}\n')

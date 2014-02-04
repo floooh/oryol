@@ -7,6 +7,20 @@
 namespace Oryol {
 namespace TestProtocol2 {
 OryolClassPoolAllocImpl(TestMsgEx, 128);
+typedef Messaging::Message* (*CreateCallback)();
+CreateCallback jumpTable[MessageId::NumMessageIds] = { 
+    &TestMsgEx::FactoryCreate,
+};
+Messaging::Message*
+Factory::Create(Messaging::MessageIdType id) {
+    if (id < TestProtocol::MessageId::NumMessageIds) {
+        return TestProtocol::Factory::Create(id);
+    }
+    else {
+        o_assert(id < TestProtocol2::MessageId::NumMessageIds);
+        return jumpTable[id - TestProtocol::MessageId::NumMessageIds]();
+    };
+}
 int32 TestMsgEx::EncodedSize() const {
     int32 s = TestProtocol::TestMsg1::EncodedSize();
     s += Messaging::Serializer::EncodedSize<int8>(this->exval2);

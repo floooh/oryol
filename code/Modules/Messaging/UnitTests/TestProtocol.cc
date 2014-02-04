@@ -9,6 +9,22 @@ namespace TestProtocol {
 OryolClassImpl(TestMsg1);
 OryolClassImpl(TestMsg2);
 OryolClassImpl(TestArrayMsg);
+typedef Messaging::Message* (*CreateCallback)();
+CreateCallback jumpTable[MessageId::NumMessageIds] = { 
+    &TestMsg1::FactoryCreate,
+    &TestMsg2::FactoryCreate,
+    &TestArrayMsg::FactoryCreate,
+};
+Messaging::Message*
+Factory::Create(Messaging::MessageIdType id) {
+    if (id < MessageProtocol::MessageId::NumMessageIds) {
+        return MessageProtocol::Factory::Create(id);
+    }
+    else {
+        o_assert(id < TestProtocol::MessageId::NumMessageIds);
+        return jumpTable[id - MessageProtocol::MessageId::NumMessageIds]();
+    };
+}
 int32 TestMsg1::EncodedSize() const {
     int32 s = Messaging::Message::EncodedSize();
     s += Messaging::Serializer::EncodedSize<int8>(this->int8val);

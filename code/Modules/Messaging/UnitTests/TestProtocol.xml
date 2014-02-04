@@ -11,7 +11,7 @@
         <Attr name="Int32Val" type="int32" />
         <Attr name="Int64Val" type="int64" />
         <Attr name="UInt8Val" type="uint8" />
-        <Attr name="UInt16Val" type="uint16" />
+        <Attr name="UInt16Val" type="uint16" /> 
         <Attr name="UInt32Val" type="uint32" />
         <Attr name="UInt64Val" type="uint64" />
         <Attr name="Float32Val" type="float32" def="123.0f" />
