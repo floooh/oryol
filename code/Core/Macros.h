@@ -64,16 +64,16 @@ Oryol::Core::poolAllocator<TYPE, POOL_SIZE> TYPE::allocator;
 /// declare an oryol class without pool allocator (located inside class declaration)
 #define OryolClassDecl(TYPE) \
 protected:\
-virtual void destroy() {\
-    delete(this);\
-};\
+    virtual void destroy() {\
+        delete(this);\
+    };\
 public:\
-static int32 GetPoolSize() {\
-    return 0;\
-}\
-template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
-    return new TYPE(std::forward<ARGS>(args)...);\
-};\
+    static int32 GetPoolSize() {\
+        return 0;\
+    }\
+    template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
+        return new TYPE(std::forward<ARGS>(args)...);\
+    };\
 
 /// implementation-side macro for Oryol class without pool allocator (located in .cc source file)
 #define OryolClassImpl(TYPE)
