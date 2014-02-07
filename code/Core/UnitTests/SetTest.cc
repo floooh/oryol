@@ -66,4 +66,9 @@ TEST(SetTest) {
     CHECK(*set.Find(6) == 6);
     CHECK(*set.Find(7) == 7);
     CHECK(*set.Find(8) == 8);
+    
+    // test begin/end
+    CHECK(set.begin() == &set.ValueAtIndex(0));
+    CHECK(set.end() == &set.ValueAtIndex(7) + 1);
+    
 }

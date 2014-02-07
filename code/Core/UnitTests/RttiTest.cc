@@ -83,12 +83,12 @@ TEST(Rtti) {
     CHECK(a2->GetRefCount() == 2);
     CHECK(a2 == ab);
     
-    Ptr<A> a3 = aa.Get();
+    Ptr<A> a3 = aa.get();
     CHECK(bool(a3));
     CHECK(a3->GetRefCount() == 3);
     CHECK(a3 == aa);
     
-    Ptr<A> a4 = ab.GetUnsafe();
+    Ptr<A> a4 = ab.getUnsafe();
     CHECK(bool(a4));
     CHECK(a3->GetRefCount() == 3);
     CHECK(a4 == ab);

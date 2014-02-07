@@ -43,7 +43,7 @@ TEST(CreateShared) {
 
     Ptr<TestClass> ptr0 = TestClass::Create();
     CHECK(bool(ptr0));
-    CHECK(ptr0.IsValid());
+    CHECK(ptr0.isValid());
     CHECK(ptr0->GetRefCount() == 1);
     
     // assign from some pointer type
@@ -65,8 +65,8 @@ TEST(CreateShared) {
     
     // move semantics
     ptr0 = std::move(ptr1);
-    CHECK(ptr0.IsValid());
-    CHECK(!ptr1.IsValid());
+    CHECK(ptr0.isValid());
+    CHECK(!ptr1.isValid());
     CHECK(ptr0->GetRefCount() == 1);
 }
 
