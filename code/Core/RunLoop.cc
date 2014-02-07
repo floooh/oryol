@@ -79,8 +79,7 @@ RunLoop::FindCallback(const StringAtom& name) const {
 //------------------------------------------------------------------------------
 /**
  Add a new callback to the runloop. Callbacks with smaller priority
- values are called earlier in the frame. Return true if the callback has
- been added, false if another callback with the same name already existed.
+ values are called earlier in the frame. The callback name must be unique.
  NOTE that the callback will not be added immediately, but only at the 
  beginning of the next Run() call.
 */
