@@ -48,6 +48,9 @@ public:
     bool operator==(const StringAtom& rhs) const;
     /// inequality operator (FAST)
     bool operator!=(const StringAtom& rhs) const;
+    /// less-than operator (for storing in sets and maps)
+    bool operator<(const StringAtom& rhs) const;
+    
     /// equality operator with raw string (SLOW!)
     bool operator==(const char* rhs) const;
     /// inequality operator with raw string (SLOW!)
@@ -202,23 +205,21 @@ StringAtom::operator==(const StringAtom& rhs) const {
         return true;
     }
     else if (rhs.data && this->data) {
-        // both string atoms have data, if they are not from the same thread
-        // we need to do a string compare
+        // NOTE: we can compare string atoms from different threads for
+        // equality or inequality, but not for less/greater
         if (rhs.data->table == this->data->table) {
-            // from same thread, but data is not identical
+            // same thread, and not identical
+            return false;
+        }
+        else if (rhs.data->hash != this->data->hash) {
+            // different threads and hashes differ, definitely different
             return false;
         }
         else {
-            // different threads, quickly check hash
-            if (rhs.data->hash != this->data->hash) {
-                // different hashes, strings are different
-                return false;
-            }
-            else {
-                // same hash, need to do a string compare
-                return 0 == std::strcmp(rhs.data->str, this->data->str);
-            }
+            // different threads, same hash, must do string compare
+            return 0 == std::strcmp(this->data->str, rhs.data->str);
         }
+        return false;
     }
     else {
         // one has data, the other not
@@ -230,6 +231,16 @@ StringAtom::operator==(const StringAtom& rhs) const {
 inline bool
 StringAtom::operator!=(const StringAtom& rhs) const {
     return !operator==(rhs);
+}
+
+//------------------------------------------------------------------------------
+inline bool
+StringAtom::operator<(const StringAtom& rhs) const {
+    if (rhs.data && this->data) {
+        // it is forbidden to compare string from different threads!
+        o_assert(this->data->table == rhs.data->table);
+    }
+    return this->data < rhs.data;
 }
 
 //------------------------------------------------------------------------------
