@@ -5,8 +5,8 @@
     @brief a sorted, dynamic array of values
 
     The Set class provides a dynamic array of binary-sorted values similar
-    to the std::set class.
- 
+    to the std::set class. 
+     
     @see Array, ArrayMap, Map
 */
 #include "Core/Containers/Array.h"
@@ -109,6 +109,23 @@ public:
     /// get value at index
     const VALUETYPE& ValueAtIndex(int32 index) {
         return this->valueArray[index];
+    };
+    
+    /// C++ conform begin
+    VALUETYPE* begin() {
+        return this->valueArray.begin();
+    };
+    /// C++ conform begin
+    const VALUETYPE* begin() const {
+        return this->valueArray.begin();
+    };
+    /// C++ conform end
+    VALUETYPE* end() {
+        return this->valueArray.end();
+    };
+    /// C++ conform end
+    const VALUETYPE* end() const {
+        return this->valueArray.end();
     };
     
 private:
