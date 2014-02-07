@@ -18,7 +18,7 @@ namespace Core {
 template<class T> class Ptr {
 public:
     /// unsafe get, may return nullptr
-    T* GetUnsafe() const {
+    T* getUnsafe() const {
         return p;
     };
 
@@ -40,7 +40,7 @@ public:
     };
     /// copy-construct from Ptr<OTHER>
     template<class U> Ptr(const Ptr<U>& rhs) {
-        set(static_cast<T*>(rhs.GetUnsafe()));
+        set(static_cast<T*>(rhs.getUnsafe()));
     };
     /// move constructor from Ptr<TYPE>
     Ptr(Ptr<T>&& rhs) {
@@ -49,7 +49,7 @@ public:
     };
     /// move constructor from compatible type
     template<class U> Ptr(Ptr<U>&& rhs) {
-        p = static_cast<T*>(rhs.GetUnsafe());
+        p = static_cast<T*>(rhs.getUnsafe());
         rhs.p = nullptr;
     };
     
@@ -82,7 +82,7 @@ public:
     };
     /// move-assign from comptabile Ptr<>
     template<class U> void operator=(Ptr<U>&& rhs) {
-        T* rhs_p = static_cast<T*>(rhs.GetUnsafe());
+        T* rhs_p = static_cast<T*>(rhs.getUnsafe());
         if (rhs_p != p) {
             del();
             p = rhs_p;
@@ -96,7 +96,7 @@ public:
     
     /// operator==
     template<class U> bool operator==(const Ptr<U>& rhs) const {
-        return p == rhs.GetUnsafe();
+        return p == rhs.getUnsafe();
     };
     /// operator!=
     template<class U> bool operator!=(const Ptr<U>& rhs) const {
@@ -147,7 +147,7 @@ public:
     };
     
     /// return true if valid (equivalent with operator bool())
-    bool IsValid() const {
+    bool isValid() const {
         return nullptr != p;
     };
     /// invalidate the ptr (equivalent with assigning nullptr)
@@ -156,7 +156,7 @@ public:
     };
 
     /// get (assert that returned pointer is not nullptr)
-    T* Get() const {
+    T* get() const {
         o_assert(nullptr != p);
         return p;
     };
