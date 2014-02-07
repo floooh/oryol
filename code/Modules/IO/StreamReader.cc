@@ -36,7 +36,7 @@ void
 StreamReader::AttachStream(const Ptr<Stream>& s) {
     o_assert(s->IsOpen());
     o_assert(s->IsReadable());
-    o_assert(s.IsValid());
+    o_assert(s.isValid());
     if (this->stream) {
         this->DetachStream();
     }
