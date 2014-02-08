@@ -87,6 +87,8 @@ public:
     void pushBack(TYPE&& elm);
     /// emplace element at back (backSpare must be > 0!)
     template<class... ARGS> void emplaceBack(ARGS&&... args);
+    /// pop back element
+    TYPE popBack();
 
     /// push element at front (frontSpare must be > 0!)
     void pushFront(const TYPE& elm);
@@ -94,6 +96,8 @@ public:
     void pushFront(TYPE&& elm);
     /// emplace element at front (frontSpare must be > 0!)
     template<class... ARGS> void emplaceFront(ARGS&&... args);
+    /// pop front element
+    TYPE popFront();
     
     /// prepare insertion by making room and returning pointer to insert to
     TYPE* prepareInsert(int32 index, bool& outSlotConstructed);
@@ -680,6 +684,27 @@ elementBuffer<TYPE>::eraseSwapFront(int32 index) {
         this->elmStart++;
     }
 }
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE
+elementBuffer<TYPE>::popBack() {
+    o_assert(this->elmEnd > this->elmStart);
+    TYPE val(std::move(*--this->elmEnd));
+    this->elmEnd->~TYPE();
+    return val;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE
+elementBuffer<TYPE>::popFront() {
+    o_assert(this->elmStart < this->elmEnd);
+    TYPE val(std::move(*this->elmStart));
+    this->elmStart->~TYPE();
+    this->elmStart++;
+    return val;
+}
+
+
 
 } // namespace Core
 } // namespace Oryol

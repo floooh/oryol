@@ -31,7 +31,6 @@ public:
     }
     _test(_test&& rhs) {
         // NOTE: rhs must still be in the constructed state after this!
-        o_assert(ORYOL_MEMORY_DEBUG_INT == this->canary);
         o_assert(0xABBAABBA == rhs.canary);
         this->canary = 0xABBAABBA;
         this->value = rhs.value;
@@ -541,4 +540,25 @@ TEST(elementBufferTest) {
     buf5.eraseSwapFront(0);
     CHECK(buf5.size() == 1);
     CHECK(buf5[0] == _2);
+    
+    // test popFront/popBack
+    buf5.clear();
+    buf5.pushBack(1);
+    buf5.pushBack(2);
+    buf5.pushBack(3);
+    buf5.pushBack(4);
+    CHECK(buf5.popFront() == 1);
+    CHECK(buf5.size() == 3);
+    CHECK(buf5[0] == 2);
+    CHECK(buf5[1] == 3);
+    CHECK(buf5[2] == 4);
+    CHECK(buf5.popBack() == 4);
+    CHECK(buf5.size() == 2);
+    CHECK(buf5[0] == 2);
+    CHECK(buf5[1] == 3);
+    CHECK(buf5.popFront() == 2);
+    CHECK(buf5.size() == 1);
+    CHECK(buf5[0] == 3);
+    CHECK(buf5.popBack() == 3);
+    CHECK(buf5.size() == 0);
 }
