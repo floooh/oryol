@@ -36,7 +36,7 @@ public:
     virtual ~Dispatcher();
     
     /// put a message into the port
-    virtual void Put(const Core::Ptr<Message>& msg);
+    virtual bool Put(const Core::Ptr<Message>& msg) override;
     
     /// bind a function to a message
     template<class MSG> void Subscribe(std::function<void(const Core::Ptr<MSG>&)> func);
@@ -61,7 +61,7 @@ Dispatcher<PROTOCOL>::~Dispatcher() {
 }
 
 //------------------------------------------------------------------------------
-template<class PROTOCOL> void
+template<class PROTOCOL> bool
 Dispatcher<PROTOCOL>::Put(const Core::Ptr<Message>& msg) {
     // only consider messages of our protocol, ignore others
     if (msg->IsMemberOf(PROTOCOL::GetProtocolId())) {
@@ -73,8 +73,10 @@ Dispatcher<PROTOCOL>::Put(const Core::Ptr<Message>& msg) {
         if (this->jumpTable[msgId]) {
             // call the handler function
             this->jumpTable[msgId](msg);
+            return true;
         }
     }
+    return false;
 }
 
 //------------------------------------------------------------------------------

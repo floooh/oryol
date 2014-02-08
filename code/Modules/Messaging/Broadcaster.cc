@@ -24,11 +24,13 @@ Broadcaster::~Broadcaster() {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 Broadcaster::Put(const Ptr<Message>& msg) {
+    bool retval = false;
     for (const Ptr<Port>& sub : this->subscribers) {
-        sub->Put(msg);
+        retval |= sub->Put(msg);
     }
+    return retval;
 }
 
 //------------------------------------------------------------------------------

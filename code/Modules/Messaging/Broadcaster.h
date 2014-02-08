@@ -20,7 +20,7 @@ public:
     virtual ~Broadcaster();
     
     /// put a message into the port
-    virtual void Put(const Core::Ptr<Message>& msg);
+    virtual bool Put(const Core::Ptr<Message>& msg) override;
 
     /// subscribe to messages from this port
     void Subscribe(const Core::Ptr<Port>& port);

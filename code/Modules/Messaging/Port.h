@@ -31,7 +31,7 @@ public:
     virtual ~Port();
 
     /// put a message into the port
-    virtual void Put(const Core::Ptr<Message>& msg);
+    virtual bool Put(const Core::Ptr<Message>& msg);
     /// get the port's name
     const Core::StringAtom& GetName() const;
 
