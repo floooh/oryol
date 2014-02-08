@@ -10,43 +10,19 @@ namespace Core {
 OryolClassImpl(RunLoop);
 
 //------------------------------------------------------------------------------
-RunLoop::RunLoop() :
-    isValid(false)
+RunLoop::RunLoop()
 {
     // empty
 }
 
 //------------------------------------------------------------------------------
 RunLoop::~RunLoop() {
-    o_assert(!this->isValid);
-}
-
-//------------------------------------------------------------------------------
-bool
-RunLoop::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
-void
-RunLoop::Setup() {
-    o_assert(!this->isValid);
-    o_assert(this->callbacks.Empty());
-    this->isValid = true;
-}
-
-//------------------------------------------------------------------------------
-void
-RunLoop::Discard() {
-    o_assert(this->isValid);
     this->callbacks.Clear();
-    this->isValid = false;
 }
 
 //------------------------------------------------------------------------------
 void
 RunLoop::Run() {
-    o_assert(this->isValid);
     this->AddCallbacks();
     for (const auto& entry : this->callbacks) {
         const Callback& cb = entry.Value();
@@ -60,7 +36,6 @@ RunLoop::Run() {
 //------------------------------------------------------------------------------
 bool
 RunLoop::HasCallback(const StringAtom& name) const {
-    o_assert(this->isValid);
     return this->FindCallback(name);
 }
 
@@ -85,7 +60,6 @@ RunLoop::FindCallback(const StringAtom& name) const {
 */
 void
 RunLoop::Add(const Callback& callback) {
-    o_assert(this->isValid);
     o_assert(!this->toAdd.Contains(callback.Name()));
     o_assert(InvalidIndex == this->FindCallback(callback.Name()));
     
@@ -100,7 +74,6 @@ RunLoop::Add(const Callback& callback) {
 */
 void
 RunLoop::Remove(const StringAtom& name) {
-    o_assert(this->isValid);
     o_assert(!this->toRemove.Contains(name));
     
     int32 index = this->FindCallback(name);

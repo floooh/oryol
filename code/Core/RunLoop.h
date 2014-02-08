@@ -60,12 +60,6 @@ public:
     /// destructor
     virtual ~RunLoop();
     
-    /// setup the run loop
-    void Setup();
-    /// discard the run loop
-    void Discard();
-    /// return true if run loop has been setup
-    bool IsValid() const;
     /// run one frame
     void Run();
     
@@ -86,7 +80,6 @@ private:
     /// remove callbacks that have been removed (called at end of Run())
     void RemoveCallbacks();
     
-    bool isValid;
     Map<int32, Callback> callbacks;
     Map<StringAtom, Callback> toAdd;
     Set<StringAtom> toRemove;

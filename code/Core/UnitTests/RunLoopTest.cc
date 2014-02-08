@@ -25,9 +25,6 @@ public:
 
 TEST(RunLoopTest) {
     Ptr<RunLoop> runLoop = RunLoop::Create();
-    CHECK(!runLoop->IsValid());
-    runLoop->Setup();
-    CHECK(runLoop->IsValid());
     CHECK(runLoop->Callbacks().Empty());
     runLoop->Run();
     CHECK(0 == cb0Value);
@@ -51,8 +48,5 @@ TEST(RunLoopTest) {
     CHECK(1 == callbackObj.value);
     CHECK(runLoop->Callbacks().Size() == 1);
     CHECK(runLoop->Callbacks().ValueAtIndex(0).Name() == "callback0");
-
-    runLoop->Discard();
-    CHECK(!runLoop->IsValid());
     runLoop = 0;
 }
