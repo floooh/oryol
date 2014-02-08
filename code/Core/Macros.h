@@ -58,6 +58,10 @@ public:\
 #define OryolClassPoolAllocImpl(TYPE) \
 Oryol::Core::poolAllocator<TYPE> TYPE::allocator;
 
+/// implementation-side macro for template classes with pool allocator (located in .cc source file)
+#define OryolTemplClassPoolAllocImpl(TEMPLATE_TYPE, CLASS_TYPE) \
+template<class TEMPLATE_TYPE> Oryol::Core::poolAllocator<CLASS_TYPE<TEMPLATE_TYPE>> CLASS_TYPE<TEMPLATE_TYPE>::allocator;
+
 /// declare an oryol class without pool allocator (located inside class declaration)
 #define OryolClassDecl(TYPE) \
 protected:\
