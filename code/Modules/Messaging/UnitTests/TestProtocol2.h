@@ -31,7 +31,7 @@ public:
     static Messaging::Message* Create(Messaging::MessageIdType id);
 };
 class TestMsgEx : public TestProtocol::TestMsg1 {
-    OryolClassPoolAllocDecl(TestMsgEx, 128);
+    OryolClassPoolAllocDecl(TestMsgEx);
 public:
     TestMsgEx() {
         this->msgId = MessageId::TestMsgExId;

@@ -166,11 +166,7 @@ def writeMessageClasses(f, xmlRoot) :
         msgClassName = msg.get('name')
         msgParentClassName = msg.get('parent', 'Messaging::Message')
         f.write('class ' + msgClassName + ' : public ' + msgParentClassName + ' {\n')
-        poolSize = msg.get('poolSize', '0')
-        if int(poolSize) > 0 :
-            f.write('    OryolClassPoolAllocDecl(' + msgClassName + ', ' + poolSize + ');\n')
-        else :
-            f.write('    OryolClassDecl(' + msgClassName + ');\n')
+        f.write('    OryolClassPoolAllocDecl(' + msgClassName + ');\n')
         f.write('public:\n')
 
         # write constructor
@@ -315,12 +311,8 @@ def generateSource(xmlTree, absSourcePath) :
     f.write('namespace ' + nameSpace + ' {\n')
     for msg in xmlRoot.findall('Message') :
         msgClassName = msg.get('name')
-        poolSize = msg.get('poolSize', '0')
-        if int(poolSize) > 0 :
-            f.write('OryolClassPoolAllocImpl(' + msgClassName + ', ' + poolSize + ');\n')
-        else :
-            f.write('OryolClassImpl(' + msgClassName + ');\n')
-
+        f.write('OryolClassPoolAllocImpl(' + msgClassName + ');\n')
+        
     writeFactoryClassImpl(f, xmlRoot)
     writeSerializeMethods(f, xmlRoot)
     f.write('}\n')

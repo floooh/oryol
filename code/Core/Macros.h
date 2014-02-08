@@ -42,24 +42,21 @@
 #endif
 
 /// declare an Oryol class with pool allocator (located inside class declaration)
-#define OryolClassPoolAllocDecl(TYPE, POOL_SIZE) \
+#define OryolClassPoolAllocDecl(TYPE) \
 private:\
-    static Oryol::Core::poolAllocator<TYPE, POOL_SIZE> allocator;\
+    static Oryol::Core::poolAllocator<TYPE> allocator;\
 protected:\
     virtual void destroy() {\
         TYPE::allocator.Destroy(this);\
     };\
 public:\
-    static int32 GetPoolSize() {\
-        return TYPE::allocator.GetPoolSize();\
-    }\
     template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
         return TYPE::allocator.Create(std::forward<ARGS>(args)...);\
     };\
 
 /// implementation-side macro for Oryol class with pool allocator (located in .cc source file)
-#define OryolClassPoolAllocImpl(TYPE, POOL_SIZE) \
-Oryol::Core::poolAllocator<TYPE, POOL_SIZE> TYPE::allocator;
+#define OryolClassPoolAllocImpl(TYPE) \
+Oryol::Core::poolAllocator<TYPE> TYPE::allocator;
 
 /// declare an oryol class without pool allocator (located inside class declaration)
 #define OryolClassDecl(TYPE) \
@@ -68,9 +65,6 @@ protected:\
         delete(this);\
     };\
 public:\
-    static int32 GetPoolSize() {\
-        return 0;\
-    }\
     template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
         return new TYPE(std::forward<ARGS>(args)...);\
     };\

@@ -41,7 +41,7 @@ public:
     static Messaging::Message* Create(Messaging::MessageIdType id);
 };
 class TestMsg1 : public Messaging::Message {
-    OryolClassDecl(TestMsg1);
+    OryolClassPoolAllocDecl(TestMsg1);
 public:
     TestMsg1() {
         this->msgId = MessageId::TestMsg1Id;
@@ -135,7 +135,7 @@ private:
     float64 float64val;
 };
 class TestMsg2 : public TestMsg1 {
-    OryolClassDecl(TestMsg2);
+    OryolClassPoolAllocDecl(TestMsg2);
 public:
     TestMsg2() {
         this->msgId = MessageId::TestMsg2Id;
@@ -164,7 +164,7 @@ private:
     Core::StringAtom stringatomval;
 };
 class TestArrayMsg : public Messaging::Message {
-    OryolClassDecl(TestArrayMsg);
+    OryolClassPoolAllocDecl(TestArrayMsg);
 public:
     TestArrayMsg() {
         this->msgId = MessageId::TestArrayMsgId;

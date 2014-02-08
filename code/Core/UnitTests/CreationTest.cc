@@ -21,7 +21,7 @@ using namespace Oryol::Core;
 
 // define a custom class
 class TestClass : public RefCounted {
-    OryolClassPoolAllocDecl(TestClass, 4096);
+    OryolClassPoolAllocDecl(TestClass);
 public:
     TestClass() : val(0) {
 //        Core::Log::Info("constructor called!\n");
@@ -37,7 +37,7 @@ public:
 private:
     int32 val;
 };
-OryolClassPoolAllocImpl(TestClass, 4096);
+OryolClassPoolAllocImpl(TestClass);
 
 TEST(CreateShared) {
 
@@ -76,7 +76,7 @@ TEST(CreatePtrBenchmark) {
         chrono::time_point<chrono::system_clock> start, end;
         start = chrono::system_clock::now();
         
-        const int32 maxLiveObjects = TestClass::GetPoolSize();
+        const int32 maxLiveObjects = 65535;
         const int32 numObjects = 1000000;
         const int32 numOuterLoop = numObjects / maxLiveObjects;
         for (int32 j = 0; j < numOuterLoop; j++) {
@@ -110,7 +110,7 @@ TEST(CreatePtrBenchmark) {
 }
 
 #if ORYOL_HAS_THREADS
-const int numInner = TestClass::GetPoolSize() / 8;
+const int numInner = 65535 / 8;
 const int numOuter = 1000000 / numInner;
 
 void threadFunc() {

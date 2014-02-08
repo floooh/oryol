@@ -6,9 +6,9 @@
 
 namespace Oryol {
 namespace TestProtocol {
-OryolClassImpl(TestMsg1);
-OryolClassImpl(TestMsg2);
-OryolClassImpl(TestArrayMsg);
+OryolClassPoolAllocImpl(TestMsg1);
+OryolClassPoolAllocImpl(TestMsg2);
+OryolClassPoolAllocImpl(TestArrayMsg);
 typedef Messaging::Message* (*CreateCallback)();
 CreateCallback jumpTable[MessageId::NumMessageIds] = { 
     &TestMsg1::FactoryCreate,

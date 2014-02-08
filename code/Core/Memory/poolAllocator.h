@@ -6,7 +6,11 @@
     Thread-safe pool allocator with placement-new/delete. Uses 32-bit
     tags with a unique-count masked-in for its forward-linked list 
     instead of pointers because of the ABA problem (which I was actually 
-    running into with many threads and high object reuse).
+    running into with many threads and high object reuse). The pool
+    is split into up to 256 "puddles", where each puddle can hold
+    up to 256 elements. When no elements are in the free list, 
+    a new puddle is allocated. Thus one pool can hold up to
+    65536 elements.
 */
 #include "Core/Types.h"
 #include "Core/Memory/Memory.h"
@@ -14,7 +18,7 @@
 namespace Oryol {
 namespace Core {
     
-template<class TYPE, int POOL_SIZE> class poolAllocator {
+template<class TYPE> class poolAllocator {
 public:
     /// constructor
     poolAllocator();
@@ -26,15 +30,12 @@ public:
     /// delete and free an object
     void Destroy(TYPE* obj);
     
-    /// get pool size
-    int32 GetPoolSize() const;
-    
 private:
     enum class nodeState : uint8 {
         init, free, used,
     };
     
-    typedef uint32 nodeTag;    // [16bit counter] | [16bit elm_index])
+    typedef uint32 nodeTag;    // [16bit counter] | [8bit puddle index ] | [8bit elm_index])
     static const uint32 invalidTag = 0xFFFFFFFF;
 
     struct node {
@@ -48,8 +49,8 @@ private:
     node* pop();
     /// push a node onto the free-list
     void push(node*);
-    /// allocate pool and populate free-list
-    void allocPool();
+    /// allocate a new puddle and add entries to free-list
+    void allocPuddle();
     /// get node address from a tag
     node* addressFromTag(nodeTag tag) const;
     /// get tag from a node address
@@ -57,50 +58,57 @@ private:
     /// test if a pointer is owned by this allocator (SLOW)
     bool isOwned(TYPE* obj) const;
     
-    int32 elmSize;                     // offset to next element in bytes
+    static const int32 MaxNumPuddles = 256;
+    static const int32 NumPuddleElements = 256;
+    
+    int32 elmSize;                      // offset to next element in bytes
     std::atomic<uint32> uniqueCount;
-    std::atomic<nodeTag> head;         // free-list head
-    uint8* pool;
+    std::atomic<nodeTag> head;          // free-list head
+    std::atomic<uint32> numPuddles;     // current number of puddles
+    uint8* puddles[MaxNumPuddles];
 };
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
-poolAllocator<TYPE,POOL_SIZE>::poolAllocator()
+template<class TYPE>
+poolAllocator<TYPE>::poolAllocator()
 {
     static_assert(sizeof(node) == 16, "pool_allocator::node should be 16 bytes!");
-    static_assert(POOL_SIZE <= ((1<<16) - 1), "POOL_SIZE must be < (1<<16)-1!");
 
-    this->pool = 0;
+    Memory::Clear(this->puddles, sizeof(this->puddles));
+    this->numPuddles = 0;
     this->elmSize = Memory::RoundUp(sizeof(node) + sizeof(TYPE), sizeof(node));
     o_assert((this->elmSize & (sizeof(node) - 1)) == 0);
     o_assert(this->elmSize >= (int32)(2*sizeof(node)));
     this->uniqueCount = 0;
     this->head = invalidTag;
-    this->allocPool();
-    o_assert(0 != pool);
+    this->allocPuddle();
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
-poolAllocator<TYPE,POOL_SIZE>::~poolAllocator() {
-    Memory::Free(this->pool);
-    this->pool = 0;
+template<class TYPE>
+poolAllocator<TYPE>::~poolAllocator() {
+
+    const uint32 num = this->numPuddles;
+    for (uint32 i = 0; i < num; i++) {
+        Memory::Free(this->puddles[i]);
+        this->puddles[i] = 0;
+    }
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
-typename poolAllocator<TYPE,POOL_SIZE>::node*
-poolAllocator<TYPE,POOL_SIZE>::addressFromTag(nodeTag tag) const {
-    uint32 elmIndex = tag & 0xFFFF;
-    o_assert(elmIndex < POOL_SIZE);
-    uint8* ptr = this->pool + elmIndex * elmSize;
+template<class TYPE>
+typename poolAllocator<TYPE>::node*
+poolAllocator<TYPE>::addressFromTag(nodeTag tag) const {
+    uint32 elmIndex = tag & 0xFF;
+    uint32 puddleIndex = (tag & 0xFF00) >> 8;
+    uint8* ptr = this->puddles[puddleIndex] + elmIndex * elmSize;
     return (node*) ptr;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
-typename poolAllocator<TYPE,POOL_SIZE>::nodeTag
-poolAllocator<TYPE,POOL_SIZE>::tagFromAddress(node* n) const {
+template<class TYPE>
+typename poolAllocator<TYPE>::nodeTag
+poolAllocator<TYPE>::tagFromAddress(node* n) const {
     o_assert(nullptr != n);
     nodeTag tag = n->myTag;
     #if ORYOL_ALLOCATOR_DEBUG
@@ -110,30 +118,33 @@ poolAllocator<TYPE,POOL_SIZE>::tagFromAddress(node* n) const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE> void
-poolAllocator<TYPE,POOL_SIZE>::allocPool() {
+template<class TYPE> void
+poolAllocator<TYPE>::allocPuddle() {
+
+    // increment the puddle-counter (this must happen first because the
+    // method can be called from different threads
+    uint32 newPuddleIndex = this->numPuddles.fetch_add(1, std::memory_order_relaxed);
+    o_assert(newPuddleIndex < MaxNumPuddles);
     
-    o_assert(0 == this->pool);
-    
-    // allocate new pool
-    const size_t poolByteSize = POOL_SIZE * this->elmSize;
-    this->pool = (uint8*) Memory::Alloc(poolByteSize);
-    Memory::Clear(this->pool, poolByteSize);
+    // allocate new puddle
+    const uint32 puddleByteSize = NumPuddleElements * this->elmSize;
+    this->puddles[newPuddleIndex] = (uint8*) Memory::Alloc(puddleByteSize);
+    Memory::Clear(this->puddles[newPuddleIndex], puddleByteSize);
     
     // populate the free stack
-    for (int32 elmIndex = (POOL_SIZE - 1); elmIndex >= 0; elmIndex--) {
-        uint8* ptr = this->pool + elmIndex * this->elmSize;
+    for (int32 elmIndex = (NumPuddleElements - 1); elmIndex >= 0; elmIndex--) {
+        uint8* ptr = this->puddles[newPuddleIndex] + elmIndex * this->elmSize;
         node* nodePtr = (node*) ptr;
         nodePtr->next  = invalidTag;
-        nodePtr->myTag = elmIndex;
+        nodePtr->myTag = (newPuddleIndex << 8) | elmIndex;
         nodePtr->state = nodeState::init;
         this->push(nodePtr);
     }
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE> void
-poolAllocator<TYPE,POOL_SIZE>::push(node* newHead) {
+template<class TYPE> void
+poolAllocator<TYPE>::push(node* newHead) {
     
     // see http://www.boost.org/doc/libs/1_53_0/boost/lockfree/stack.hpp
     o_assert((nodeState::init == newHead->state) || (nodeState::used == newHead->state));
@@ -155,9 +166,9 @@ poolAllocator<TYPE,POOL_SIZE>::push(node* newHead) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
-typename poolAllocator<TYPE,POOL_SIZE>::node*
-poolAllocator<TYPE,POOL_SIZE>::pop()
+template<class TYPE>
+typename poolAllocator<TYPE>::node*
+poolAllocator<TYPE>::pop()
 {
     // see http://www.boost.org/doc/libs/1_53_0/boost/lockfree/stack.hpp
     for (;;) {
@@ -181,12 +192,17 @@ poolAllocator<TYPE,POOL_SIZE>::pop()
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE>
+template<class TYPE>
 template<typename... ARGS> TYPE*
-poolAllocator<TYPE, POOL_SIZE>::Create(ARGS&&... args) {
+poolAllocator<TYPE>::Create(ARGS&&... args) {
     
     // pop a new node from the free-stack
     node* n = this->pop();
+    if (nullptr == n) {
+        // need to allocate a new puddle
+        this->allocPuddle();
+        n = this->pop();
+    }
     o_assert(nullptr != n);
     
     // construct with placement new
@@ -197,17 +213,23 @@ poolAllocator<TYPE, POOL_SIZE>::Create(ARGS&&... args) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE> bool
-poolAllocator<TYPE, POOL_SIZE>::isOwned(TYPE* obj) const {
-    const uint8* start = this->pool;
-    const uint8* end = this->pool + POOL_SIZE * this->elm_size;
-    const uint8* ptr = (uint8*) obj;
-    return ((ptr >= start) && (ptr < end));
+template<class TYPE> bool
+poolAllocator<TYPE>::isOwned(TYPE* obj) const {
+    const uint32 num = this->numPuddles;
+    for (uint32 i = 0; i < num; i++) {
+        const uint8* start = this->puddles[i];
+        const uint8* end = this->puddles[i] + NumPuddleElements * this->elmSize;
+        const uint8* ptr = (uint8*) obj;
+        if ((ptr >= start) && (ptr < end)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE> void
-poolAllocator<TYPE, POOL_SIZE>::Destroy(TYPE* obj) {
+template<class TYPE> void
+poolAllocator<TYPE>::Destroy(TYPE* obj) {
     
     #if ORYOL_ALLOCATOR_DEBUG
     // make sure this object has been allocated by us
@@ -220,12 +242,6 @@ poolAllocator<TYPE, POOL_SIZE>::Destroy(TYPE* obj) {
     // push the pool element back on the free-stack
     node* n = ((node*)obj) - 1;
     push(n);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE, int POOL_SIZE> int32
-poolAllocator<TYPE, POOL_SIZE>::GetPoolSize() const {
-    return POOL_SIZE;
 }
 
 } // namespace Core

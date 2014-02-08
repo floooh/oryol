@@ -15,8 +15,7 @@ using namespace Oryol::Core;
 
 TEST(PoolAllocator) {
 
-    // an allocator with a pool size of one
-    poolAllocator<RefCounted, 1> allocatorOne;
+    poolAllocator<RefCounted> allocatorOne;
     
     // allocating and releasing the same object twice should return the same pointer
     RefCounted* obj = allocatorOne.Create();
