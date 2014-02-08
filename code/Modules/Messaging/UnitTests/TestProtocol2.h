@@ -31,6 +31,8 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
+    typedef Messaging::Message* (*CreateCallback)();
+    static CreateCallback jumpTable[TestProtocol2::MessageId::NumMessageIds];
     class Factory {
     public:
         static Messaging::Message* Create(Messaging::MessageIdType id);

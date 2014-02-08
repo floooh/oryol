@@ -43,6 +43,7 @@ def writeMessageIdEnum(f, xmlRoot) :
     '''
     Write the enum with message ids
     '''
+    protocol = xmlRoot.get('name')
     parentProtocol = xmlRoot.get('parent', 'Messaging::Protocol')
 
     f.write('    class MessageId {\n')
@@ -72,6 +73,8 @@ def writeMessageIdEnum(f, xmlRoot) :
     f.write('            return Messaging::InvalidMessageId;\n')
     f.write('        };\n')
     f.write('    };\n')
+    f.write('    typedef Messaging::Message* (*CreateCallback)();\n')
+    f.write('    static CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds];\n')
 
 #-------------------------------------------------------------------------------
 def writeFactoryClassDecl(f, xmlRoot) :
@@ -91,8 +94,7 @@ def writeFactoryClassImpl(f, xmlRoot) :
     protocol = xmlRoot.get('name')
     parentProtocol = xmlRoot.get('parent', 'Messaging::Protocol')
 
-    f.write('typedef Messaging::Message* (*CreateCallback)();\n')
-    f.write('CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds] = { \n') 
+    f.write(protocol + '::CreateCallback ' + protocol + '::jumpTable[' + protocol + '::MessageId::NumMessageIds] = { \n') 
     for msg in xmlRoot.findall('Message') :
         f.write('    &' + protocol + '::' + msg.get('name') + '::FactoryCreate,\n')
     f.write('};\n')

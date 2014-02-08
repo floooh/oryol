@@ -9,8 +9,7 @@ namespace Messaging {
 OryolClassPoolAllocImpl(TestProtocol::TestMsg1);
 OryolClassPoolAllocImpl(TestProtocol::TestMsg2);
 OryolClassPoolAllocImpl(TestProtocol::TestArrayMsg);
-typedef Messaging::Message* (*CreateCallback)();
-CreateCallback jumpTable[TestProtocol::MessageId::NumMessageIds] = { 
+TestProtocol::CreateCallback TestProtocol::jumpTable[TestProtocol::MessageId::NumMessageIds] = { 
     &TestProtocol::TestMsg1::FactoryCreate,
     &TestProtocol::TestMsg2::FactoryCreate,
     &TestProtocol::TestArrayMsg::FactoryCreate,
