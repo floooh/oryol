@@ -2,8 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::Types
-    
-    Type definitions for Messaging module.
+    @brief type definitions for messaging modules
 */
 #include "Core/Types.h"
 

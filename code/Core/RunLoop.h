@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::RunLoop
+    @brief universal run-loop object for on-frame callbacks
     
     A runloop object manages a priority-sorted array of callback 
     functions which are called per-frame. By default, each thread

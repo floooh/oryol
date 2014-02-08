@@ -2,8 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Core::Queue
-    
-    A first-in-first-out queue container.
+    @brief a FIFO queue
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"

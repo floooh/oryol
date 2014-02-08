@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::Port
+    @brief base class for message ports
     
     A Port is a generic Message handler. It receives a Message in the
     Put method and either somehow handles the message, or forwards it

@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::AsyncQueue
+    @brief single-threaded asynchronous message queue
     
     A Port which acts as a single-threaded, asynchronous, message queue.
     Incoming messages are put on a Queue, and are forwarded to the

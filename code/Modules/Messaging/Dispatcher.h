@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::Dispatcher
+    @brief call message handler functions on incoming messages
     
     A Dispatcher is a Port where message handler functions for a specific
     message protocol can subcribe to. One specific Dispatcher object

@@ -2,8 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::Message
-    
-    Base class for messages.
+    @brief base class for messages
 */
 #include "Core/RefCounted.h"
 #include "Messaging/Types.h"

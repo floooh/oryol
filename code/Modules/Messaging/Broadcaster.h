@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Messaging::Broadcaster
+    @brief broadcast incoming messages to subscriber ports
     
     A Messaging Port which sends an incoming message to any number
     of subscriber Ports.
