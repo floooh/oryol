@@ -205,6 +205,29 @@ public:
         this->buffer.eraseSwapFront(index);
     };
     
+    /// find element index with slow linear search
+    int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) {
+        const int32 size = this->buffer.size();
+        if (size > 0) {
+            o_assert(startIndex < size);
+            if (InvalidIndex == endIndex) {
+                endIndex = size;
+            }
+            else {
+                o_assert(endIndex <= size);
+            }
+            o_assert(startIndex <= endIndex);
+            for (int32 i = startIndex; i < endIndex; i++) {
+                TYPE* ptr = this->buffer.elmStart + i;
+                if (elm == *ptr) {
+                    return i;
+                }
+            }
+        }
+        // fallthrough: not found
+        return InvalidIndex;
+    };
+    
     /// C++ conform begin
     TYPE* begin() {
         return this->buffer.elmStart;

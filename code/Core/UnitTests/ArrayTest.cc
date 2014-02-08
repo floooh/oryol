@@ -6,6 +6,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Array.h"
 
+using namespace Oryol;
 using namespace Oryol::Core;
 
 TEST(ArrayTest) {
@@ -278,5 +279,11 @@ TEST(ArrayTest) {
     CHECK(array2[3] == 7);
     CHECK(array2[4] == 9);
     CHECK(array2[5] == 11);
+    
+    // FindIndexLinear
+    CHECK(array2.FindIndexLinear(3) == 2);
+    CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);
+    CHECK(array2.FindIndexLinear(7, 3, InvalidIndex) == 3);
+    CHECK(array2.FindIndexLinear(11) == 5);
 }
 
