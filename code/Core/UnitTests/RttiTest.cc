@@ -73,12 +73,12 @@ TEST(Rtti) {
     CHECK(type_index(classTypeAA) == type_index(objTypeAA));
     CHECK(type_index(classTypeA) != type_index(classTypeAA));
     
-    Ptr<A> a1 = aa;
+    Ptr<A> a1(aa);
     CHECK(bool(a1));
     CHECK(a1->GetRefCount() == 2);
     CHECK(a1 == aa);
     
-    Ptr<A> a2 = ab;
+    Ptr<A> a2(ab);
     CHECK(bool(a2));
     CHECK(a2->GetRefCount() == 2);
     CHECK(a2 == ab);
