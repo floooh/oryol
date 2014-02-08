@@ -6,13 +6,10 @@
     Base class for messages.
 */
 #include "Core/RefCounted.h"
+#include "Messaging/Types.h"
 
 namespace Oryol {
 namespace Messaging {
-
-/// the type for message ids
-typedef int32 MessageIdType;
-static const MessageIdType InvalidMessageId = -1;
 
 class Message : public Core::RefCounted {
     OryolClassDecl(Message);
@@ -22,7 +19,11 @@ public:
     /// destructor
     virtual ~Message();
     
-    /// get the message id
+    /// test if this message belongs to a protocol
+    virtual bool IsMemberOf(ProtocolIdType protId) const;
+    /// get the class message id
+    static MessageIdType ClassMessageId();
+    /// get the object message id
     MessageIdType MessageId() const;
     /// return true if the message has been handled
     bool Handled() const;

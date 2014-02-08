@@ -22,7 +22,7 @@ def writeIncludes(f, xmlRoot) :
     '''
     f.write('#include "Messaging/Message.h"\n')
     f.write('#include "Messaging/Serializer.h"\n')
-    parentHdr = xmlRoot.get('parenthdr', 'Messaging/MessageProtocol.h')
+    parentHdr = xmlRoot.get('parenthdr', 'Messaging/Protocol.h')
     f.write('#include "{}"\n'.format(parentHdr))
 
     for hdr in xmlRoot.findall('Header') :
@@ -30,71 +30,80 @@ def writeIncludes(f, xmlRoot) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
+def writeProtocolMethods(f, xmlRoot) :
+    '''
+    Write the protocol methods
+    '''
+    f.write('    static ProtocolIdType GetProtocolId() {\n')
+    f.write("        return '{}';\n".format(xmlRoot.get('id')))
+    f.write('    };\n')
+
+#-------------------------------------------------------------------------------
 def writeMessageIdEnum(f, xmlRoot) :
     '''
     Write the enum with message ids
     '''
-    parentNameSpace = xmlRoot.get('parent', 'MessageProtocol')
+    parentProtocol = xmlRoot.get('parent', 'Messaging::Protocol')
 
-    f.write('class MessageId {\n')
-    f.write('public:\n')
-    f.write('    enum {\n')
+    f.write('    class MessageId {\n')
+    f.write('    public:\n')
+    f.write('        enum {\n')
     msgCount = 0
     for msg in xmlRoot.findall('Message') :
         if msgCount == 0:
-            f.write('        ' + msg.get('name') + 'Id = ' + parentNameSpace + '::MessageId::NumMessageIds, \n')
+            f.write('            ' + msg.get('name') + 'Id = ' + parentProtocol + '::MessageId::NumMessageIds, \n')
         else :
-            f.write('        ' + msg.get('name') + 'Id,\n')
+            f.write('            ' + msg.get('name') + 'Id,\n')
         msgCount += 1
-    f.write('        NumMessageIds\n')
-    f.write('    };\n')
-    f.write('    static const char* ToString(Messaging::MessageIdType c) {\n')
-    f.write('        switch (c) {\n')
+    f.write('            NumMessageIds\n')
+    f.write('        };\n')
+    f.write('        static const char* ToString(Messaging::MessageIdType c) {\n')
+    f.write('            switch (c) {\n')
     for msg in xmlRoot.findall('Message') :
         msgName = msg.get('name') + 'Id'
-        f.write('            case ' + msgName + ': return "' + msgName + '";\n')
-    f.write('            default: return "InvalidMessageId";\n')
-    f.write('        }\n')
-    f.write('    };\n')
-    f.write('    static Messaging::MessageIdType FromString(const char* str) {\n')
+        f.write('                case ' + msgName + ': return "' + msgName + '";\n')
+    f.write('                default: return "InvalidMessageId";\n')
+    f.write('            }\n')
+    f.write('        };\n')
+    f.write('        static Messaging::MessageIdType FromString(const char* str) {\n')
     for msg in xmlRoot.findall('Message') :
         msgName = msg.get('name') + 'Id'
-        f.write('        if (std::strcmp("' + msgName + '", str) == 0) return ' + msgName + ';\n')
-    f.write('        return Messaging::InvalidMessageId;\n')
+        f.write('            if (std::strcmp("' + msgName + '", str) == 0) return ' + msgName + ';\n')
+    f.write('            return Messaging::InvalidMessageId;\n')
+    f.write('        };\n')
     f.write('    };\n')
-    f.write('};\n')
 
 #-------------------------------------------------------------------------------
 def writeFactoryClassDecl(f, xmlRoot) :
     '''
     Writes the message factory for this protocol
     '''
-    f.write('class Factory {\n')
-    f.write('public:\n')
-    f.write('    static Messaging::Message* Create(Messaging::MessageIdType id);\n')
-    f.write('};\n')
+    f.write('    class Factory {\n')
+    f.write('    public:\n')
+    f.write('        static Messaging::Message* Create(Messaging::MessageIdType id);\n')
+    f.write('    };\n')
 
 #-------------------------------------------------------------------------------
 def writeFactoryClassImpl(f, xmlRoot) :
     '''
     Writes the factory class implementation
     '''
-    nameSpace = xmlRoot.get('name')
-    parentNameSpace = xmlRoot.get('parent', 'MessageProtocol')
+    protocol = xmlRoot.get('name')
+    parentProtocol = xmlRoot.get('parent', 'Messaging::Protocol')
 
     f.write('typedef Messaging::Message* (*CreateCallback)();\n')
-    f.write('CreateCallback jumpTable[MessageId::NumMessageIds] = { \n') 
+    f.write('CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds] = { \n') 
     for msg in xmlRoot.findall('Message') :
-        f.write('    &' + msg.get('name') + '::FactoryCreate,\n')
+        f.write('    &' + protocol + '::' + msg.get('name') + '::FactoryCreate,\n')
     f.write('};\n')
     f.write('Messaging::Message*\n')
-    f.write('Factory::Create(Messaging::MessageIdType id) {\n')
-    f.write('    if (id < ' + parentNameSpace + '::MessageId::NumMessageIds) {\n')
-    f.write('        return ' + parentNameSpace + '::Factory::Create(id);\n')
+    f.write(protocol + '::Factory::Create(Messaging::MessageIdType id) {\n')
+    f.write('    if (id < ' + parentProtocol + '::MessageId::NumMessageIds) {\n')
+    f.write('        return ' + parentProtocol + '::Factory::Create(id);\n')
     f.write('    }\n')
     f.write('    else {\n')
-    f.write('        o_assert(id < ' + nameSpace + '::MessageId::NumMessageIds);\n')
-    f.write('        return jumpTable[id - ' + parentNameSpace + '::MessageId::NumMessageIds]();\n')
+    f.write('        o_assert(id < ' + protocol + '::MessageId::NumMessageIds);\n')
+    f.write('        return jumpTable[id - ' + parentProtocol + '::MessageId::NumMessageIds]();\n')
     f.write('    };\n')
     f.write('}\n')
 
@@ -162,51 +171,63 @@ def writeMessageClasses(f, xmlRoot) :
     '''
     Write the message classes to the generated C++ header
     '''
+    protocolId = xmlRoot.get('id')
     for msg in xmlRoot.findall('Message') :
         msgClassName = msg.get('name')
         msgParentClassName = msg.get('parent', 'Messaging::Message')
-        f.write('class ' + msgClassName + ' : public ' + msgParentClassName + ' {\n')
-        f.write('    OryolClassPoolAllocDecl(' + msgClassName + ');\n')
-        f.write('public:\n')
+        f.write('    class ' + msgClassName + ' : public ' + msgParentClassName + ' {\n')
+        f.write('        OryolClassPoolAllocDecl(' + msgClassName + ');\n')
+        f.write('    public:\n')
 
         # write constructor
-        f.write('    ' + msgClassName + '() {\n')
-        f.write('        this->msgId = MessageId::' + msgClassName + 'Id;\n')
+        f.write('        ' + msgClassName + '() {\n')
+        f.write('            this->msgId = MessageId::' + msgClassName + 'Id;\n')
         for attr in msg.findall('Attr') :
             attrName = attr.get('name').lower()
             defValue = getAttrDefaultValue(attr)
             if defValue :
-                f.write('        this->' + attrName + ' = ' + defValue + ';\n')
-        f.write('    };\n')
+                f.write('            this->' + attrName + ' = ' + defValue + ';\n')
+        f.write('        };\n')
 
         # special factory create method
-        f.write('    static Messaging::Message* FactoryCreate() {\n')
-        f.write('        return (Messaging::Message*) Create();\n')
-        f.write('    };\n')
+        f.write('        static Messaging::Message* FactoryCreate() {\n')
+        f.write('            return (Messaging::Message*) Create();\n')
+        f.write('        };\n')
+
+        # special class message id static method
+        f.write('        static Messaging::MessageIdType ClassMessageId() {\n')
+        f.write('            return MessageId::' + msgClassName + 'Id;\n')
+        f.write('        };\n')
+
+        # virtual method which checks whether the method belongs to a protocol
+        f.write('        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {\n')
+        f.write("            if (protId == '" + protocolId + "') return true;\n")
+        f.write('            else return ' + msgParentClassName + '::IsMemberOf(protId);\n')
+        f.write('        };\n') 
 
         # write serializer methods
-        f.write('    virtual int32 EncodedSize() const override;\n')
-        f.write('    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
-        f.write('    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
+        f.write('        virtual int32 EncodedSize() const override;\n')
+        f.write('        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
+        f.write('        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
 
         # write setters/getters
         for attr in msg.findall('Attr') :
             attrName = attr.get('name')
             attrType = attr.get('type')
-            f.write('    void Set' + attrName + '(' + getRefType(attrType) + ' val) {\n')
-            f.write('        this->' + attrName.lower() + ' = val;\n')
-            f.write('    };\n')
-            f.write('    ' + getRefType(attrType) + ' Get' + attrName + '() const {\n')
-            f.write('        return this->' + attrName.lower() + ';\n')
-            f.write('    };\n')
+            f.write('        void Set' + attrName + '(' + getRefType(attrType) + ' val) {\n')
+            f.write('            this->' + attrName.lower() + ' = val;\n')
+            f.write('        };\n')
+            f.write('        ' + getRefType(attrType) + ' Get' + attrName + '() const {\n')
+            f.write('            return this->' + attrName.lower() + ';\n')
+            f.write('        };\n')
 
         # write members
         f.write('private:\n')
         for attr in msg.findall('Attr') :
             attrName = attr.get('name').lower()
             attrType = attr.get('type')
-            f.write('    ' + getValueType(attrType) + ' ' + attrName + ';\n')
-        f.write('};\n')
+            f.write('        ' + getValueType(attrType) + ' ' + attrName + ';\n')
+        f.write('    };\n')
 
 #-------------------------------------------------------------------------------
 def writeSerializeMethods(f, xmlRoot) :
@@ -214,11 +235,12 @@ def writeSerializeMethods(f, xmlRoot) :
     Writes the serializer methods of the message to the source file.
     '''
     for msg in xmlRoot.findall('Message') :    
+        protocol = xmlRoot.get('name')
         msgClassName = msg.get('name')
         msgParentClassName = msg.get('parent', 'Messaging::Message')
 
         # EncodedSize()
-        f.write('int32 ' + msgClassName + '::EncodedSize() const {\n')
+        f.write('int32 ' + protocol + '::' + msgClassName + '::EncodedSize() const {\n')
         f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
         for attr in msg.findall('Attr') :
             attrName = attr.get('name').lower()
@@ -234,7 +256,7 @@ def writeSerializeMethods(f, xmlRoot) :
         # Encode
         # FIXME: I think we need to diffentiate between "send" and "receive" attributes!
         # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
-        f.write('uint8* ' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
+        f.write('uint8* ' + protocol + '::' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
         f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
         for attr in msg.findall('Attr') :
             attrName = attr.get('name').lower()
@@ -248,7 +270,7 @@ def writeSerializeMethods(f, xmlRoot) :
         f.write('}\n')
 
         # Decode
-        f.write('const uint8* ' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
+        f.write('const uint8* ' + protocol + '::' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
         f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
         for attr in msg.findall('Attr') :
             attrName = attr.get('name').lower()
@@ -269,15 +291,20 @@ def generateHeader(xmlTree, absHeaderPath) :
     xmlRoot = xmlTree.getroot()
     f = open(absHeaderPath, 'w')
 
-    nameSpace = xmlRoot.get('name')
-
+    nameSpace = xmlRoot.get('ns')
+    protocol = xmlRoot.get('name')
+    
     writeHeaderTop(f, xmlRoot) 
     writeIncludes(f, xmlRoot)
     f.write('namespace Oryol {\n')
     f.write('namespace ' + nameSpace + ' {\n')
+    f.write('class ' + protocol + ' {\n')
+    f.write('public:\n')
+    writeProtocolMethods(f, xmlRoot)
     writeMessageIdEnum(f, xmlRoot)
     writeFactoryClassDecl(f, xmlRoot)
     writeMessageClasses(f, xmlRoot)
+    f.write('};\n')
     f.write('}\n')
     f.write('}\n')
     f.close()
@@ -303,7 +330,8 @@ def generateSource(xmlTree, absSourcePath) :
     Generate the C++ source file
     '''
     xmlRoot = xmlTree.getroot()
-    nameSpace = xmlRoot.get('name')
+    nameSpace = xmlRoot.get('ns')
+    protocol = xmlRoot.get('name')
 
     f = open(absSourcePath, 'w')
     writeSourceTop(f, xmlRoot, absSourcePath)
@@ -311,7 +339,7 @@ def generateSource(xmlTree, absSourcePath) :
     f.write('namespace ' + nameSpace + ' {\n')
     for msg in xmlRoot.findall('Message') :
         msgClassName = msg.get('name')
-        f.write('OryolClassPoolAllocImpl(' + msgClassName + ');\n')
+        f.write('OryolClassPoolAllocImpl(' + protocol + '::' + msgClassName + ');\n')
         
     writeFactoryClassImpl(f, xmlRoot)
     writeSerializeMethods(f, xmlRoot)

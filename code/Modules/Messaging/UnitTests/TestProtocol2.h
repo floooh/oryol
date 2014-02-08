@@ -8,49 +8,62 @@
 #include "Messaging/UnitTests/TestProtocol.h"
 
 namespace Oryol {
-namespace TestProtocol2 {
-class MessageId {
+namespace Messaging {
+class TestProtocol2 {
 public:
-    enum {
-        TestMsgExId = TestProtocol::MessageId::NumMessageIds, 
-        NumMessageIds
+    static ProtocolIdType GetProtocolId() {
+        return 'TSP2';
     };
-    static const char* ToString(Messaging::MessageIdType c) {
-        switch (c) {
-            case TestMsgExId: return "TestMsgExId";
-            default: return "InvalidMessageId";
-        }
+    class MessageId {
+    public:
+        enum {
+            TestMsgExId = Messaging::TestProtocol::MessageId::NumMessageIds, 
+            NumMessageIds
+        };
+        static const char* ToString(Messaging::MessageIdType c) {
+            switch (c) {
+                case TestMsgExId: return "TestMsgExId";
+                default: return "InvalidMessageId";
+            }
+        };
+        static Messaging::MessageIdType FromString(const char* str) {
+            if (std::strcmp("TestMsgExId", str) == 0) return TestMsgExId;
+            return Messaging::InvalidMessageId;
+        };
     };
-    static Messaging::MessageIdType FromString(const char* str) {
-        if (std::strcmp("TestMsgExId", str) == 0) return TestMsgExId;
-        return Messaging::InvalidMessageId;
+    class Factory {
+    public:
+        static Messaging::Message* Create(Messaging::MessageIdType id);
     };
-};
-class Factory {
-public:
-    static Messaging::Message* Create(Messaging::MessageIdType id);
-};
-class TestMsgEx : public TestProtocol::TestMsg1 {
-    OryolClassPoolAllocDecl(TestMsgEx);
-public:
-    TestMsgEx() {
-        this->msgId = MessageId::TestMsgExId;
-        this->exval2 = 0;
-    };
-    static Messaging::Message* FactoryCreate() {
-        return (Messaging::Message*) Create();
-    };
-    virtual int32 EncodedSize() const override;
-    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
-    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
-    void SetExVal2(int8 val) {
-        this->exval2 = val;
-    };
-    int8 GetExVal2() const {
-        return this->exval2;
-    };
+    class TestMsgEx : public Messaging::TestProtocol::TestMsg1 {
+        OryolClassPoolAllocDecl(TestMsgEx);
+    public:
+        TestMsgEx() {
+            this->msgId = MessageId::TestMsgExId;
+            this->exval2 = 0;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::TestMsgExId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'TSP2') return true;
+            else return Messaging::TestProtocol::TestMsg1::IsMemberOf(protId);
+        };
+        virtual int32 EncodedSize() const override;
+        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
+        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
+        void SetExVal2(int8 val) {
+            this->exval2 = val;
+        };
+        int8 GetExVal2() const {
+            return this->exval2;
+        };
 private:
-    int8 exval2;
+        int8 exval2;
+    };
 };
 }
 }

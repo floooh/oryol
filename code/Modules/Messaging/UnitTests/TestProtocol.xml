@@ -1,17 +1,17 @@
-<Generator type="MessageProtocol" name="TestProtocol" >
+<Generator type="MessageProtocol" ns="Messaging" name="TestProtocol" id="TSTP" >
 
     <Header path="Core/RefCounted.h"/>
     <Header path="Core/Ptr.h"/>
     <Header path="Core/String/String.h"/>
     <Header path="Core/String/StringAtom.h"/>
- 
+
     <Message name="TestMsg1">
         <Attr name="Int8Val" type="int8" />
         <Attr name="Int16Val" type="int16" def="-1" />
         <Attr name="Int32Val" type="int32" />
         <Attr name="Int64Val" type="int64" />
         <Attr name="UInt8Val" type="uint8" />
-        <Attr name="UInt16Val" type="uint16" /> 
+        <Attr name="UInt16Val" type="uint16" />
         <Attr name="UInt32Val" type="uint32" />
         <Attr name="UInt64Val" type="uint64" />
         <Attr name="Float32Val" type="float32" def="123.0f" />

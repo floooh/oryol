@@ -1,45 +1,38 @@
 //------------------------------------------------------------------------------
-//  Message.cc
+//  Port.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Message.h"
+#include "Port.h"
 
 namespace Oryol {
 namespace Messaging {
     
-OryolClassImpl(Message);
+OryolClassImpl(Port);
+    
+using namespace Core;
 
 //------------------------------------------------------------------------------
-Message::~Message() {
+Port::Port(const StringAtom& name_) :
+name(name_) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-bool
-Message::IsMemberOf(ProtocolIdType protId) const {
-    return false;
+Port::~Port() {
+    // empty
 }
 
 //------------------------------------------------------------------------------
-int32
-Message::EncodedSize() const {
-    // FIXME!
-    return 0;
+void
+Port::Put(const Ptr<Message>& msg) {
+    // empty, override in subclass as needed
 }
 
 //------------------------------------------------------------------------------
-uint8*
-Message::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
-    // FIXME!
-    return dstPtr;
+const StringAtom&
+Port::GetName() const {
+    return this->name;
 }
 
-//------------------------------------------------------------------------------
-const uint8*
-Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
-    // FIXME!
-    return srcPtr;
-}
-    
 } // namespace Messaging
 } // namespace Oryol
