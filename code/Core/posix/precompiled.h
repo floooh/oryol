@@ -22,6 +22,7 @@
 #include <string>
 #include <type_traits>
 #include <algorithm>
+#include <functional>
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>
