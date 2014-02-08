@@ -39,7 +39,7 @@ public:
         set(rhs.p);
     };
     /// copy-construct from Ptr<OTHER>
-    template<class U> Ptr(const Ptr<U>& rhs) {
+    template<class U> explicit Ptr(const Ptr<U>& rhs) {
         set(static_cast<T*>(rhs.getUnsafe()));
     };
     /// move constructor from Ptr<TYPE>
@@ -132,8 +132,13 @@ public:
         return nullptr != p;
     };
     /// cast to compatible type
+    /*
     template<class U, class=typename std::enable_if<std::is_convertible<U*,T*>::value>::type> operator U() const {
-        return static_cast<Ptr<U>>(*this);
+        return static_cast<U>(*this);
+    };
+    */
+    template<class U, class=typename std::enable_if<std::is_convertible<T*,U*>::value>::type> operator const Ptr<U>&() const {
+        return *(const Ptr<U>*)this;
     };
     /// operator*
     T& operator*() const {
