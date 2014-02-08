@@ -81,7 +81,6 @@ poolAllocator<TYPE>::poolAllocator()
     o_assert(this->elmSize >= (int32)(2*sizeof(node)));
     this->uniqueCount = 0;
     this->head = invalidTag;
-    this->allocPuddle();
 }
 
 //------------------------------------------------------------------------------
