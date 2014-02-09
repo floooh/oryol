@@ -14,123 +14,211 @@
 namespace Oryol {
 namespace Core {
 
-template<class VALUETYPE> class Set {
+template<class VALUE> class Set {
 public:
     /// default constructor
-    Set() {
-    };
+    Set();
     /// setup with allocation strategy
-    Set(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW) :
-        valueArray(minGrow, maxGrow) {
-    };
+    Set(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor (truncates to actual size)
-    Set(const Set& rhs) :
-        valueArray(rhs.values) {
-    };
+    Set(const Set& rhs);
     /// move constructor (same capacity and size)
-    Set(Set&& rhs) :
-        valueArray(std::move(rhs.values)) {
-    };
+    Set(Set&& rhs);
 
     /// copy-assignment operator (truncates to actual size)
-    void operator=(const Set& rhs) {
-        if (&rhs != this) {
-            this->valueArray = rhs.valueArray;
-        }
-    };
+    void operator=(const Set& rhs);
     /// move-assignment operator (same capacity and size)
-    void operator=(Set&& rhs) {
-        if (&rhs != this) {
-            this->valueArray = std::move(rhs.valueArray);
-        }
-    };
+    void operator=(Set&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-        this->valueArray.SetAllocStrategy(minGrow, maxGrow);
-    };
+    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const {
-        return this->valueArray.GetMinGrow();
-    };
+    int32 GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const {
-        return this->valueArray.GetMaxGrow();
-    };
+    int32 GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const {
-        return this->valueArray.Size();
-    };
+    int32 Size() const;
     /// return true if empty
-    bool Empty() const {
-        return this->valueArray.Empty();
-    };
+    bool Empty() const;
     /// get capacity of array
-    int32 Capacity() const {
-        return this->valueArray.Capacity();
-    };
+    int32 Capacity() const;
     /// test if an element exists
-    bool Contains(const VALUETYPE& val) const {
-        return std::binary_search(this->valueArray.begin(), this->valueArray.end(), val);
-    };
+    bool Contains(const VALUE& val) const;
     /// find element
-    const VALUETYPE* Find(const VALUETYPE& val) const {
-        const VALUETYPE* ptr = std::lower_bound(this->valueArray.begin(), this->valueArray.end(), val);
-        if (ptr != this->valueArray.end() && val == *ptr) {
-            return ptr;
-        }
-        else {
-            return nullptr;
-        }
-    };
+    const VALUE* Find(const VALUE& val) const;
     /// insert element
-    void Insert(const VALUETYPE& val) {
-        const VALUETYPE* begin = this->valueArray.begin();
-        const VALUETYPE* end = this->valueArray.end();
-        const VALUETYPE* ptr = std::lower_bound(begin, end, val);
-        if ((ptr != end) && (*ptr == val)) {
-            o_error("Trying to insert duplicate element!\n");
-        }
-        else {
-            int32 index = ptr - begin;
-            this->valueArray.Insert(index, val);
-        }
-    };
+    void Insert(const VALUE& val);
     /// erase element
-    void Erase(const VALUETYPE& val) {
-        const VALUETYPE* begin = this->valueArray.begin();
-        const VALUETYPE* end = this->valueArray.end();
-        const VALUETYPE* ptr = std::lower_bound(begin, end, val);
-        if (ptr != end) {
-            int32 index = ptr - begin;
-            this->valueArray.Erase(index);
-        }
-    };
+    void Erase(const VALUE& val);
     /// get value at index
-    const VALUETYPE& ValueAtIndex(int32 index) {
-        return this->valueArray[index];
-    };
+    const VALUE& ValueAtIndex(int32 index);
     
     /// C++ conform begin
-    VALUETYPE* begin() {
-        return this->valueArray.begin();
-    };
+    VALUE* begin();
     /// C++ conform begin
-    const VALUETYPE* begin() const {
-        return this->valueArray.begin();
-    };
+    const VALUE* begin() const;
     /// C++ conform end
-    VALUETYPE* end() {
-        return this->valueArray.end();
-    };
+    VALUE* end();
     /// C++ conform end
-    const VALUETYPE* end() const {
-        return this->valueArray.end();
-    };
+    const VALUE* end() const;
     
 private:
-    Array<VALUETYPE> valueArray;
+    Array<VALUE> valueArray;
+};
+
+//------------------------------------------------------------------------------
+template<class VALUE>
+Set<VALUE>::Set() {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE>
+Set<VALUE>::Set(int32 minGrow, int32 maxGrow) :
+valueArray(minGrow, maxGrow) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE>
+Set<VALUE>::Set(const Set& rhs) :
+valueArray(rhs.values) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE>
+Set<VALUE>::Set(Set&& rhs) :
+valueArray(std::move(rhs.values)) {
+    // empty
+}
+    
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::operator=(const Set& rhs) {
+    if (&rhs != this) {
+        this->valueArray = rhs.valueArray;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::operator=(Set&& rhs) {
+    if (&rhs != this) {
+        this->valueArray = std::move(rhs.valueArray);
+    }
+}
+    
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::SetAllocStrategy(int32 minGrow, int32 maxGrow) {
+    this->valueArray.SetAllocStrategy(minGrow, maxGrow);
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> int32
+Set<VALUE>::GetMinGrow() const {
+    return this->valueArray.GetMinGrow();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> int32
+Set<VALUE>::GetMaxGrow() const {
+    return this->valueArray.GetMaxGrow();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> int32
+Set<VALUE>::Size() const {
+    return this->valueArray.Size();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> bool
+Set<VALUE>::Empty() const {
+    return this->valueArray.Empty();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> int32
+Set<VALUE>::Capacity() const {
+    return this->valueArray.Capacity();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> bool
+Set<VALUE>::Contains(const VALUE& val) const {
+    return std::binary_search(this->valueArray.begin(), this->valueArray.end(), val);
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> const VALUE*
+Set<VALUE>::Find(const VALUE& val) const {
+    const VALUE* ptr = std::lower_bound(this->valueArray.begin(), this->valueArray.end(), val);
+    if (ptr != this->valueArray.end() && val == *ptr) {
+        return ptr;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::Insert(const VALUE& val) {
+    const VALUE* begin = this->valueArray.begin();
+    const VALUE* end = this->valueArray.end();
+    const VALUE* ptr = std::lower_bound(begin, end, val);
+    if ((ptr != end) && (*ptr == val)) {
+        o_error("Trying to insert duplicate element!\n");
+    }
+    else {
+        int32 index = ptr - begin;
+        this->valueArray.Insert(index, val);
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::Erase(const VALUE& val) {
+    const VALUE* begin = this->valueArray.begin();
+    const VALUE* end = this->valueArray.end();
+    const VALUE* ptr = std::lower_bound(begin, end, val);
+    if (ptr != end) {
+        int32 index = ptr - begin;
+        this->valueArray.Erase(index);
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> const VALUE&
+Set<VALUE>::ValueAtIndex(int32 index) {
+    return this->valueArray[index];
 };
     
+//------------------------------------------------------------------------------
+template<class VALUE> VALUE*
+Set<VALUE>::begin() {
+    return this->valueArray.begin();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> const VALUE*
+Set<VALUE>::begin() const {
+    return this->valueArray.begin();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> VALUE*
+Set<VALUE>::end() {
+    return this->valueArray.end();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> const VALUE*
+Set<VALUE>::end() const {
+    return this->valueArray.end();
+}
+
 } // namespace Core
 } // namespace Oryol
