@@ -19,6 +19,7 @@
     'XXXX' - valid element (guaranteed to be constructed)
 */
 #include <new>
+#include <utility>
 #include "Core/Types.h"
 #include "Core/Macros.h"
 #include "Core/Memory/Memory.h"

@@ -24,7 +24,6 @@ include_directories(code/Modules)
 include_directories(code/Ext)
 
 # add subdirectories
-oryol_add_subdirectory(code/Core)
 oryol_add_subdirectory(code/Hello)
 oryol_group(Modules)
 oryol_add_subdirectory(code/Modules)

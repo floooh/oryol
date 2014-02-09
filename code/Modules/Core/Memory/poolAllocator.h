@@ -13,6 +13,7 @@
     65536 elements.
 */
 #include <atomic>
+#include <utility>
 #include "Core/Types.h"
 #include "Core/Memory/Memory.h"
 

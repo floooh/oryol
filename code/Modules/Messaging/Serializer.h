@@ -8,6 +8,7 @@
     encode/decode a specific data type (the template arg) to and from
     a plain-old-data memory region.
 */
+#include <string.h>
 #include "Core/Types.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"

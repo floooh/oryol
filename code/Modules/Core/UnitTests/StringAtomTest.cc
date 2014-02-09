@@ -8,6 +8,7 @@
 #include "Core/String/String.h"
 #include "Core/Module.h"
 
+#include <cstring>
 #include <thread>
 #include <array>
 

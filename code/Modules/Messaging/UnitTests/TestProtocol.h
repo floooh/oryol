@@ -3,6 +3,7 @@
 /*
     machine generated, do not edit!
 */
+#include <cstring>
 #include "Messaging/Message.h"
 #include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"

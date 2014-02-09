@@ -52,7 +52,7 @@ private:
 //------------------------------------------------------------------------------
 template<class PROTOCOL>
 Dispatcher<PROTOCOL>::Dispatcher(const Core::StringAtom& name_) :
-Port(name) {
+Port(name_) {
     // empty
 }
 

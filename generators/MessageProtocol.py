@@ -14,6 +14,7 @@ def writeHeaderTop(f, xmlRoot) :
     f.write('/*\n')
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
+    f.write('#include <cstring>\n')
 
 #-------------------------------------------------------------------------------
 def writeIncludes(f, xmlRoot) :

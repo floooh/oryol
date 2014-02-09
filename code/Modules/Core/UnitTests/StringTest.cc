@@ -7,6 +7,8 @@
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 
+#include <cstring>
+
 using namespace Oryol;
 using namespace Oryol::Core;
 

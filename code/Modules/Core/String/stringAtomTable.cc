@@ -1,60 +1,57 @@
-#pragma once
 //------------------------------------------------------------------------------
-/*
-    private class, do not use
-    
-    A thread-local StringAtom table.
-*/
-#include "Core/Types.h"
-#include "Core/String/stringAtomBuffer.h"
-#include "Core/Macros.h"
-#include "Core/Containers/HashSet.h"
+//  stringAtomTable.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include <cstring>
+#include "stringAtomTable.h"
 
 namespace Oryol {
 namespace Core {
 
-class stringAtomTable {
-    OryolLocalSingletonDecl(stringAtomTable);
-public:
-    /// constructor
-    stringAtomTable();
-    /// destructor
-    ~stringAtomTable();
-    
-    /// compute hash value for string
-    static int32 HashForString(const char* str);
-    /// find a matching buffer header in the table
-    const stringAtomBuffer::Header* Find(int32 hash, const char* str) const;
-    /// add a string to the atom table
-    const stringAtomBuffer::Header* Add(int32 hash, const char* str);
-
-private:
-    /// a bucket entry
-    struct Entry {
-        /// default constructor
-        Entry() : header(0) { };
-        /// constructor with header ptr
-        Entry(const stringAtomBuffer::Header* h) : header(h) { };
-        /// equality operator
-        bool operator==(const Entry& rhs) const;
-        /// less-then operator
-        bool operator<(const Entry& rhs) const;
-        
-        const stringAtomBuffer::Header* header;
-    };
-    
-    /// hash function for bucket entry
-    struct Hasher {
-        int32 operator()(const Entry& e) const {
-            return e.header->hash;
-        };
-    };
-    stringAtomBuffer buffer;
-    Core::HashSet<Entry, Hasher, 1024> table;
-};
+OryolLocalSingletonImpl(stringAtomTable);
 
 //------------------------------------------------------------------------------
-inline int32
+stringAtomTable::stringAtomTable() {
+    
+    SingletonEnsureUnique();
+}
+
+//------------------------------------------------------------------------------
+const stringAtomBuffer::Header*
+stringAtomTable::Find(int32 hash, const char* str) const {
+    
+    // need to create a temp object for searching in the set
+    stringAtomBuffer::Header dummyHead(this, hash, 0, str);
+    Entry dummyEntry(&dummyHead);
+    auto ptr = this->table.Find(dummyEntry);
+    if (nullptr == ptr) {
+        return nullptr;
+    }
+    else {
+        o_assert(nullptr != ptr->header);
+        return ptr->header;
+    }
+}
+
+//------------------------------------------------------------------------------
+const stringAtomBuffer::Header*
+stringAtomTable::Add(int32 hash, const char* str) {
+    
+    #if ORYOL_DEBUG
+    o_assert(nullptr == this->Find(hash, str));
+    #endif
+    
+    // add new string to the string buffer
+    const stringAtomBuffer::Header* newHeader = this->buffer.AddString(this, hash, str);
+    o_assert(nullptr != newHeader);
+    
+    // add new entry to our lookup table
+    this->table.Insert(Entry(newHeader));
+    return newHeader;
+}
+
+//------------------------------------------------------------------------------
+int32
 stringAtomTable::HashForString(const char* str) {
 
     // see here: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
@@ -74,7 +71,7 @@ stringAtomTable::HashForString(const char* str) {
 }
 
 //------------------------------------------------------------------------------
-inline bool
+bool
 stringAtomTable::Entry::operator==(const Entry& rhs) const {
 
     #if ORYOL_DEBUG
@@ -94,7 +91,7 @@ stringAtomTable::Entry::operator==(const Entry& rhs) const {
 }
 
 //------------------------------------------------------------------------------
-inline bool
+bool
 stringAtomTable::Entry::operator<(const Entry& rhs) const {
         
     #if ORYOL_DEBUG
@@ -107,3 +104,5 @@ stringAtomTable::Entry::operator<(const Entry& rhs) const {
 
 } // namespace Core
 } // namespace Oryol
+
+

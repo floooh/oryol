@@ -6,6 +6,8 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/MemoryStream.h"
 
+#include <cstring>
+
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;

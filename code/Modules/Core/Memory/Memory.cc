@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include <memory>
 #include <cstdlib>
+#include <cstring>
 #include "Memory.h"
 
 namespace Oryol {

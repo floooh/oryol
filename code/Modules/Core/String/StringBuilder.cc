@@ -2,6 +2,7 @@
 //  StringBuilder.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include <cstring>
 #include "StringBuilder.h"
 #include "Core/Memory/Memory.h"
 

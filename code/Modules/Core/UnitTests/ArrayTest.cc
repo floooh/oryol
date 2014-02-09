@@ -3,6 +3,7 @@
 //  Test Array class.
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include <algorithm>
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Array.h"
 
