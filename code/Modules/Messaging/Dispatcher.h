@@ -21,6 +21,7 @@
     The Dispatcher will never "own" the message, it only looks up and
     calls the handler function subscribed to a specific message.
 */
+#include <functional>
 #include "Messaging/Port.h"
 
 namespace Oryol {

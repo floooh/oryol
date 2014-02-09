@@ -12,6 +12,7 @@
 #include "Core/Module.h"
 #include "Core/Containers/Array.h"
 
+#include <thread>
 #include <array>
 #include <vector>
 

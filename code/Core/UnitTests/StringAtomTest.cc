@@ -8,6 +8,7 @@
 #include "Core/String/String.h"
 #include "Core/Module.h"
 
+#include <thread>
 #include <array>
 
 using namespace std;

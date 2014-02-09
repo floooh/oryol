@@ -13,6 +13,7 @@
     from and to WideString when needed. Use the StringUtil class to 
     convert between UTF encodings.
 */
+#include <string>
 #include "Core/Types.h"
 #include "Core/Macros.h"
 

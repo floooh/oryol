@@ -10,6 +10,7 @@
 
     @see Logger
 */
+#include <cstdarg>
 #include "Core/Types.h"
 
 namespace Oryol {

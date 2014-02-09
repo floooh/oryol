@@ -18,6 +18,7 @@
     '----' - empty memory slot (guaranteed to be destructed)
     'XXXX' - valid element (guaranteed to be constructed)
 */
+#include <new>
 #include "Core/Types.h"
 #include "Core/Macros.h"
 #include "Core/Memory/Memory.h"

@@ -23,6 +23,7 @@
     
     @see StringBuilder, StringAtom
 */
+#include <string>
 #include "Core/Types.h"
 #include "Core/Macros.h"
 

@@ -4,6 +4,8 @@
     @file Core/Types.h
     @brief defines basic data types for Oryol
 */
+#include <cstdint>
+
 namespace Oryol {
 
 /// signed 8-bit integer

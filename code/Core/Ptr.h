@@ -9,6 +9,7 @@
 
     @see RefCounted
 */
+#include <type_traits>
 #include "Core/Types.h"
 #include "Core/Macros.h"
 

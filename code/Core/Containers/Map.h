@@ -31,6 +31,7 @@
     
     @see KeyValuePair, Set
 */
+#include <algorithm>
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
 #include "Core/Containers/KeyValuePair.h"

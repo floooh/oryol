@@ -2,6 +2,7 @@
 //  Log.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include <cstdio>
 #include "Core/Log.h"
 #include "Core/Macros.h"
 #include "Core/Logger.h"
@@ -100,7 +101,7 @@ void
 Log::vprint(Level lvl, const char* msg, va_list args) {
     lock.LockRead();
     if (loggers.Empty()) {
-        ::vprintf(msg, args);
+        std::vprintf(msg, args);
     }
     else {
         for (auto l : loggers) {
@@ -115,7 +116,7 @@ void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
-        ::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
+        std::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
                  cond, msg ? msg : "none", file, line, func);
     }
     else

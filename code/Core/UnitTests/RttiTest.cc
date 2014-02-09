@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
-//  RttiTest.cc
-//  Test standard C++ rtti stuff with oryol classes.
+// RttiTest.cc
+// Test standard C++ rtti stuff with oryol classes.
+// FIXME: C++ rtti may be switched off in the future.
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
@@ -8,6 +9,8 @@
 #include "Core/Log.h"
 #include "Core/RefCounted.h"
 #include "Core/Ptr.h"
+
+#include <typeindex>
 
 using namespace std;
 using namespace Oryol;

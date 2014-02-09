@@ -23,11 +23,11 @@ public:
     /// default constructor
     StringAtom();
     /// construct from String
-    explicit StringAtom(const String& str);
+    StringAtom(const String& str);
     /// construct from raw string (slow)
-    explicit StringAtom(const char* str);
+    StringAtom(const char* str);
     /// construct from raw string (slow)
-    explicit StringAtom(const uchar* str);
+    StringAtom(const uchar* str);
     /// copy-constructor (fast if rhs was created in same thread)
     StringAtom(const StringAtom& rhs);
     /// move-constructor

@@ -12,6 +12,7 @@
     advanced in the future.
 */
 #include "Core/Types.h"
+#include "Core/Config.h"
 
 namespace Oryol {
 namespace Core {
@@ -36,53 +37,6 @@ public:
     static void* Align(void* ptr, int32 byteSize);
     /// round-up a value to the next multiple of byteSize
     static int32 RoundUp(int32 val, int32 byteSize);
-};
-
-//------------------------------------------------------------------------------
-inline void*
-Memory::Alloc(int32 numBytes) {
-    void* ptr = std::malloc(numBytes);
-    #if ORYOL_ALLOCATOR_DEBUG || ORYOL_UNITTESTS
-    Memory::Fill(ptr, numBytes, ORYOL_MEMORY_DEBUG_BYTE);
-    #endif
-    return ptr;
-};
-
-//------------------------------------------------------------------------------
-inline void
-Memory::Fill(void* ptr, int32 numBytes, uint8 value) {
-    std::memset(ptr, value, numBytes);
-}
-
-//------------------------------------------------------------------------------
-inline void*
-Memory::ReAlloc(void* ptr, int32 s) {
-    // FIXME: HMM need to fix fill with debug pattern...
-    return std::realloc(ptr, s);
-};
-
-//------------------------------------------------------------------------------
-inline void
-Memory::Free(void* p) {
-    std::free(p);
-};
-
-//------------------------------------------------------------------------------
-inline void
-Memory::Copy(const void* from, void* to, int32 numBytes) {
-    std::memcpy(to, from, numBytes);
-};
-
-//------------------------------------------------------------------------------
-inline void
-Memory::Move(const void* from, void* to, int32 numBytes) {
-    std::memmove(to, from, numBytes);
-};
-
-//------------------------------------------------------------------------------
-inline void
-Memory::Clear(void* ptr, int32 numBytes) {
-    std::memset(ptr, 0, numBytes);
 };
 
 //------------------------------------------------------------------------------

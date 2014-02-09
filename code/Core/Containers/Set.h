@@ -9,6 +9,7 @@
      
     @see Array, ArrayMap, Map
 */
+#include <algorithm>
 #include "Core/Containers/Array.h"
 
 namespace Oryol {

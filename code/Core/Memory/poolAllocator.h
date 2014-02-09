@@ -12,6 +12,7 @@
     a new puddle is allocated. Thus one pool can hold up to
     65536 elements.
 */
+#include <atomic>
 #include "Core/Types.h"
 #include "Core/Memory/Memory.h"
 
