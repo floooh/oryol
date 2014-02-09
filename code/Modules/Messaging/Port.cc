@@ -23,15 +23,21 @@ Port::~Port() {
 }
 
 //------------------------------------------------------------------------------
+const StringAtom&
+Port::GetName() const {
+    return this->name;
+}
+
+//------------------------------------------------------------------------------
 bool
 Port::Put(const Ptr<Message>& msg) {
     return false;
 }
 
 //------------------------------------------------------------------------------
-const StringAtom&
-Port::GetName() const {
-    return this->name;
+void
+Port::DoWork() {
+    // empty, override in subclass
 }
 
 } // namespace Messaging

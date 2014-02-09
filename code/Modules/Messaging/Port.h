@@ -31,10 +31,13 @@ public:
     /// destructor
     virtual ~Port();
 
-    /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg);
     /// get the port's name
     const Core::StringAtom& GetName() const;
+
+    /// put a message into the port
+    virtual bool Put(const Core::Ptr<Message>& msg);
+    /// perform work, this will be invoked on downstream ports
+    virtual void DoWork();
 
 protected:
     Core::StringAtom name;

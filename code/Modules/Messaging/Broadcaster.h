@@ -20,9 +20,6 @@ public:
     /// destructor
     virtual ~Broadcaster();
     
-    /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg) override;
-
     /// subscribe to messages from this port
     void Subscribe(const Core::Ptr<Port>& port);
     /// unsubscribe from this port
@@ -30,6 +27,11 @@ public:
     /// get subscribers
     const Core::Array<Core::Ptr<Port>>& GetSubscribers() const;
 
+    /// put a message into the port
+    virtual bool Put(const Core::Ptr<Message>& msg) override;
+    /// perform work, this will be invoked on downstream ports
+    virtual void DoWork();
+    
 protected:
     Core::Array<Core::Ptr<Port>> subscribers;
 };

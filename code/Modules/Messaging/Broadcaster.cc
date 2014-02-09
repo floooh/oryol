@@ -35,6 +35,14 @@ Broadcaster::Put(const Ptr<Message>& msg) {
 
 //------------------------------------------------------------------------------
 void
+Broadcaster::DoWork() {
+    for (const Ptr<Port>& sub : this->subscribers) {
+        sub->DoWork();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Broadcaster::Subscribe(const Ptr<Port>& port) {
     o_assert(InvalidIndex == this->subscribers.FindIndexLinear(port));
     this->subscribers.AddBack(port);

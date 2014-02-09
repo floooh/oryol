@@ -33,6 +33,7 @@ AsyncQueue::DoWork() {
             this->forwardingPort->Put(this->queue.Dequeue());
         }
     }
+    this->forwardingPort->DoWork();
 }
 
 } // namespace Messaging
