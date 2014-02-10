@@ -128,7 +128,9 @@ Here's a simple message protocol XML file (NOTE: syntax details are very likely 
 
 A Port is a generic base class which accepts a Message in its Put() method and "does something" with
 the message. What happens to the message is implemented in subclasses of Port, and this is where it 
-becomes interesting. There are Port subclasses which broadcast a message to other ports (**Broadcaster**),
+gets interesting:
+
+There are Port subclasses which broadcast a message to other ports (**Broadcaster**),
 invoke a handler method when a specific message arrives (**Dispatcher**), queue messages, and only forward
 them to another port when a special DoWork method is called (**AsyncQueue**), or forward messages to
 another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
