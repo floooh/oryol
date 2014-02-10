@@ -48,7 +48,7 @@ Message classes can be derived from other message classes, the parent message cl
 from the same Protocol, or from the parent Protocol (see below in the Protocol section).
 
 Messages can serialize/deserialize themselves to and from plain-old-data (POD) representation. Serialization
-to POD is only used when the message needs to leave process boundaries, otherwise a (smart-)pointer to the
+to POD is only used when the message needs to cross process boundaries, otherwise a (smart-)pointer to the
 message is passed around.
 
 Care has been taken, that message-pointers are either forwarded by reference, or moved, so that no
