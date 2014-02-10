@@ -21,23 +21,41 @@ Message::IsMemberOf(ProtocolIdType protId) const {
 }
 
 //------------------------------------------------------------------------------
+void
+Message::SetHandled() {
+    this->handled = true;
+}
+
+//------------------------------------------------------------------------------
+bool
+Message::Pending() const {
+    return !this->handled;
+}
+
+//------------------------------------------------------------------------------
+bool
+Message::Handled() const {
+    return this->handled;
+}
+
+//------------------------------------------------------------------------------
 int32
 Message::EncodedSize() const {
-    // FIXME!
+    // @fixme
     return 0;
 }
 
 //------------------------------------------------------------------------------
 uint8*
 Message::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
-    // FIXME!
+    // @fixme
     return dstPtr;
 }
 
 //------------------------------------------------------------------------------
 const uint8*
 Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
-    // FIXME!
+    // @fixme
     return srcPtr;
 }
     

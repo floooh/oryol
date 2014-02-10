@@ -142,7 +142,7 @@ Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::StringAtom& o
         srcPtr = Serializer::Decode<int32>(srcPtr, maxPtr, len);
         o_assert(nullptr != srcPtr);
         if ((srcPtr + len) <= maxPtr) {
-            // FIXME: meh, must create temp string
+            // @fixme: meh, must create temp string
             Core::String str((const char*) srcPtr, 0, len);
             outVal = str;
             return srcPtr + len;

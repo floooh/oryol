@@ -15,9 +15,11 @@ static int val0 = 0;
 static int val1 = 0;
 static void MsgHandler1(const Ptr<TestProtocol::TestMsg1>& msg) {
     val0++;
+    msg->SetHandled();
 }
 static void MsgHandler2(const Ptr<TestProtocol::TestMsg2>& msg) {
     val1++;
+    msg->SetHandled();
 }
 
 TEST(AsyncQueueTest) {
@@ -45,7 +47,7 @@ TEST(AsyncQueueTest) {
     CHECK(asyncQueue->GetNumQueuedMessages() == 4);
     
     // process queued messages
-    asyncQueue->DoWork();
+    asyncQueue->ForwardMessages();
     CHECK(asyncQueue->GetNumQueuedMessages() == 0);
     CHECK(val0 == 2);
     CHECK(val1 == 2);

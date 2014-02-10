@@ -29,10 +29,12 @@ public:
     /// get number of queued messages
     int32 GetNumQueuedMessages() const;
     
-    /// perform work, this will be invoked on downstream ports
+    /// this only forwards the DoWork() call to the forwarding port
     virtual void DoWork();
     /// put a message into the port
     virtual bool Put(const Core::Ptr<Message>& msg) override;
+    /// explicitely forward queued messages
+    void ForwardMessages();
 
 protected:
     Core::Queue<Core::Ptr<Message>> queue;

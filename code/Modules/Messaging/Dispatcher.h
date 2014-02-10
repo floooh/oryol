@@ -87,7 +87,7 @@ Dispatcher<PROTOCOL>::Subscribe(std::function<void(const Core::Ptr<MSG>&)> func)
     const MessageIdType classMsgId = MSG::ClassMessageId();
     o_assert((classMsgId >= 0) && (classMsgId < PROTOCOL::MessageId::NumMessageIds));
     
-    // FIXME: is this safe?
+    // @fixme: is this safe?
     o_assert(sizeof(HandlerFunc) == sizeof(func));
     this->jumpTable[classMsgId] = *(HandlerFunc*)&func;
 }

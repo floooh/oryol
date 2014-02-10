@@ -4,6 +4,7 @@
     @class Oryol::Messaging::Message
     @brief base class for messages
 */
+#include "Core/Config.h"
 #include "Core/RefCounted.h"
 #include "Messaging/Types.h"
 
@@ -24,6 +25,10 @@ public:
     static MessageIdType ClassMessageId();
     /// get the object message id
     MessageIdType MessageId() const;
+    /// set message to Handled state
+    void SetHandled();
+    /// return true if the message is in Pending state
+    bool Pending() const;
     /// return true if the message has been handled
     bool Handled() const;
     
@@ -36,7 +41,11 @@ public:
 
 protected:
     MessageIdType msgId;
+    #if ORYOL_HAS_THREADS
+    std::atomic<bool> handled;
+    #else
     bool handled;
+    #endif
 };
 
 //------------------------------------------------------------------------------
@@ -50,12 +59,6 @@ handled(false) {
 inline MessageIdType
 Message::MessageId() const {
     return this->msgId;
-}
-
-//------------------------------------------------------------------------------
-inline bool
-Message::Handled() const {
-    return this->handled;
 }
 
 } // namespace Messaging
