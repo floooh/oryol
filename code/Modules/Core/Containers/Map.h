@@ -188,7 +188,7 @@ Map<KEY, VALUE>::~Map() {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::operator=(const Map& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->copy(rhs);
@@ -198,7 +198,7 @@ Map<KEY, VALUE>::operator=(const Map& rhs) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::operator=(Map&& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->move(std::move(rhs));

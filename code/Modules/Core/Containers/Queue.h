@@ -187,7 +187,7 @@ Queue<TYPE>::~Queue() {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Queue<TYPE>::operator=(const Queue& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->copy(rhs);
@@ -197,7 +197,7 @@ Queue<TYPE>::operator=(const Queue& rhs) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Queue<TYPE>::operator=(Queue&& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->move(std::move(rhs));

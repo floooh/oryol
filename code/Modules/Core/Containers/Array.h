@@ -175,7 +175,7 @@ Array<TYPE>::~Array() {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::operator=(const Array<TYPE>& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->copy(rhs);
@@ -185,7 +185,7 @@ Array<TYPE>::operator=(const Array<TYPE>& rhs) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::operator=(Array<TYPE>&& rhs) {
-    // FIXME: this should be optimized when rhs.size() < this->capacity()!
+    // @fixme: this should be optimized when rhs.size() < this->capacity()!
     if (&rhs != this) {
         this->destroy();
         this->move(std::move(rhs));

@@ -8,7 +8,7 @@
     differs by platforms (e.g. platforms with SSE support return 16-byte
     aligned memory.
     
-    FIXME: for now this simply calls malloc()/free(), may be more
+    @fixme for now this simply calls malloc()/free(), may be more
     advanced in the future.
 */
 #include "Core/Types.h"

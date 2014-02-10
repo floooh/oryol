@@ -28,7 +28,7 @@ Memory::Fill(void* ptr, int32 numBytes, uint8 value) {
 //------------------------------------------------------------------------------
 void*
 Memory::ReAlloc(void* ptr, int32 s) {
-    // FIXME: HMM need to fix fill with debug pattern...
+    // @fixme: HMM need to fix fill with debug pattern...
     return std::realloc(ptr, s);
 }
 

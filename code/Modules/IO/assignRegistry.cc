@@ -93,7 +93,7 @@ assignRegistry::ResolveAssigns(const String& str) const {
 //------------------------------------------------------------------------------
 void
 assignRegistry::setStandardAssigns() {
-    // FIXME: implement a platform-specific systemPaths class
+    // @fixme: implement a platform-specific systemPaths class
     // which obtains the systemPaths in a platform-specific way
 }
 
