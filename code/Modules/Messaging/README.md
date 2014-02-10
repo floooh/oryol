@@ -56,8 +56,8 @@ unnecessary copying or ref-count-bumping happens.
 
 The disadvantage with passing messages around by pointers is that - even though they are pooled - once
 the content of the message needs to be accessed, a cache miss is likely, since different message objects
-can be far away from each other in memory. This is why a more low-level system for computation work 
-which works with plain message buffers will be more efficient.
+can be far away from each other in memory. This is why a more low-level system which works with 
+plain memory-buffers for passing data back and forth may be more efficient in some use cases.
 
 #### Protocols
 
