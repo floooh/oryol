@@ -41,7 +41,7 @@ Message classes have the following attributes:
 
 Messages are generally created through pool-allocators. When a message is created, a pointer is popped from
 a lock-free forward-linked list, and placement-new is called on the memory block (so, no expensive "dynamic 
-allocation" happens, but the constructor is called). Messages are ref-counted. When a message is destroyed, the
+allocation" happens, but a constructor is called). Messages are ref-counted. When a message is destroyed, the
 destructor is called on the object, and the memory block is put back into the pool-allocator's free-list.
 
 Message classes can be derived from other message classes, the parent message class can be either
