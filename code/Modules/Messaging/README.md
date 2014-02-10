@@ -71,8 +71,8 @@ The following classes are embedded in the Protocol class:
 - the actual Message classes
 
 Protocols can be derived from one another. The first MessageId of a derived protocol will be the last 
-MessageId of the parent protocol + 1, so that MessageIds are unique within a Protocol's ancestor chain, which
-makes it possible to build a jump-table which are indexed directly with the MessageId.
+MessageId of the parent protocol + 1, so that MessageIds are unique within a Protocol's ancestor chain. This
+makes it possible to build jump-tables as simple linear arrays with the MessageId as index.
 
 The C++ source code for protocols is usually not written by hand, but generated from XML files. The 
 conversion from XML source code to C++ happens transparently during the build process (you 
