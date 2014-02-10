@@ -105,8 +105,7 @@ Queue<TYPE>::move(Queue&& rhs) {
     this->minGrow = rhs.minGrow;
     this->maxGrow = rhs.maxGrow;
     this->buffer  = std::move(rhs.buffer);
-    rhs.minGrow = 0;
-    rhs.maxGrow = 0;
+    // NOTE: don't reset minGrow/maxGrow, rhs is empty, but still a valid object!
 }
 
 //------------------------------------------------------------------------------

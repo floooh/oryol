@@ -528,13 +528,12 @@ Map<KEY, VALUE>::copy(const Map& rhs) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::move(Map&& rhs) {
+    o_assert(!rhs.inBulkMode);
     this->minGrow    = rhs.minGrow;
     this->maxGrow    = rhs.maxGrow;
     this->inBulkMode = rhs.inBulkMode;
     this->buffer  = std::move(rhs.buffer);
-    rhs.minGrow = 0;
-    rhs.maxGrow = 0;
-    rhs.inBulkMode = false;
+    // NOTE: don't reset minGrow/maxGrow, rhs is empty, but still a valid object!
 }
 
 //------------------------------------------------------------------------------
