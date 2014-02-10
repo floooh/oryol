@@ -7,10 +7,6 @@
         {
             "module":   "Core",
             "git":      "git://github.com/floooh/oryol-core#master"
-        },
-        {
-            "module":   "Messaging",
-            "git":      "git://github.com/floooh/oryol-messaging#master"
         }
     ]
 }
