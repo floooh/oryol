@@ -132,12 +132,12 @@ gets interesting:
 
 There are Port subclasses which broadcast a message to other ports (**Broadcaster**),
 invoke a handler method when a specific message arrives (**Dispatcher**), queue messages, and only forward
-them to another port when a special DoWork method is called (**AsyncQueue**), or forward messages to
+them to another port when a special DoWork method is called (**AsyncQueue**), forward messages to
 another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
-on round-robin scheduling (**RoundRobinScheduler**), etc...
+on round-robin scheduling (**RoundRobinScheduler**), and so on...
 
-Ports are simple building blocks which make it easy to construct differnet message-passing and
--processing scenarios, and Ports are meant to be subclassed for new scenarios (such as message
+Ports are basically simple building blocks which make it easy to construct differet message-passing and
+-processing scenarios, and they are meant to be subclassed for new scenarios (such as message
 transfer over a network connection).
 
 Ports have a **DoWork()** which is used in some port types to trigger per-frame work. Only
