@@ -1,6 +1,6 @@
 # The Oryol Messaging Module
 
-Disclaimer: details may change as the Messaging Module is under development.
+Disclaimer: the Messaging module is work-in-progress and stuff will change.
 
 ## Overview
 
