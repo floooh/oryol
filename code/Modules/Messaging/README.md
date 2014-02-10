@@ -132,7 +132,7 @@ gets interesting:
 
 There are Port subclasses which broadcast a message to other ports (**Broadcaster**),
 invoke a handler method when a specific message arrives (**Dispatcher**), queue messages, and only forward
-them to another port when a special DoWork method is called (**AsyncQueue**), forward messages to
+them to another port when a special PullMessages() method is called (**AsyncQueue**), forward messages to
 another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
 on round-robin scheduling (**RoundRobinScheduler**), and so on...
 
