@@ -16,13 +16,13 @@ using namespace std::chrono;
 // message handling functions (these run in threads)
 static int value0;
 static void HandleTestMsg1(const Ptr<TestProtocol::TestMsg1>& msg) {
-    Log::Info("TestMsg1 received!\n");
+//    Log::Info("TestMsg1 received!\n");
     value0++;
     msg->SetHandled();
 }
 static int value1;
 static void HandleTestMsg2(const Ptr<TestProtocol::TestMsg2>& msg) {
-    Log::Info("TestMsg2 received!\n");
+//    Log::Info("TestMsg2 received!\n");
     value1++;
     msg->SetHandled();
 }
@@ -50,6 +50,27 @@ TEST(ThreadedQueueTest) {
     }
     CHECK(value0 == 1);
     CHECK(value1 == 1);
+    
+    // now let's create some pressure on the thread...
+    time_point<system_clock> start, end;
+    start = system_clock::now();
+    value0 = 0;
+    for (int i = 0; i < 1000; i++) {
+        Ptr<TestProtocol::TestMsg1> msg;
+        for (int j = 0; j < 1000; j++) {
+            msg = TestProtocol::TestMsg1::Create();
+            threadedQueue->Put(msg);
+        }
+        // busy-loop until the last message has been handled
+        while (!msg->Handled()) {
+            threadedQueue->DoWork();
+            std::this_thread::yield();
+        }
+    }
+    CHECK(value0 == 1000000);
+    end = system_clock::now();
+    duration<double> dur = end - start;
+    Log::Info("ThreadedQueue: 1000000 msgs created and handled: %f sec\n", dur);
     
     // shutdown the threaded queue
     threadedQueue = 0;
