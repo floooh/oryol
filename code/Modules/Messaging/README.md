@@ -22,7 +22,7 @@ a lot of messages need to be passed between the threads.
 The Messaging module is based on 3 simple concepts:
 
 - **Message**: an actual message object
-- **Protocol**: a collection of related messages
+- **Protocol**: a group of related messages
 - **Port**: a generic message receiver/handler/forwarder object
 
 
