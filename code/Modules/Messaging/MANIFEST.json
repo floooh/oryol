@@ -1,0 +1,16 @@
+{
+    "module":       "Messaging",
+    "author":       "Andre Weissflog",
+    "license":      "The MIT License (MIT)",
+    "git":          "git://github.com/floooh/oryol-messaging",
+    "depends": [
+        {
+            "module":   "Core",
+            "git":      "git://github.com/floooh/oryol-core#master"
+        },
+        {
+            "module":   "Messaging",
+            "git":      "git://github.com/floooh/oryol-messaging#master"
+        }
+    ]
+}
