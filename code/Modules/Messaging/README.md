@@ -1,8 +1,8 @@
-## The Oryol Messaging Module
+# The Oryol Messaging Module
 
 Disclaimer: details may change as the Messaging Module is under development.
 
-### Overview
+## Overview
 
 The Messaging module implements a simple message-passing framework for the higher-level modules of Oryol. It
 is very flexible, easy to use and reasonably fast, but it may be too heavy-weight for some scenarios. Specifically,
@@ -17,7 +17,7 @@ Good use cases for the messaging frame-work are:
 I wouldn't recommend the messaging framework for offloading heavy compute tasks to threads if this means
 a lot of messages need to be passed between the threads.
 
-### Concepts
+## Concepts
 
 The Messaging module is based on 3 simple concepts:
 
@@ -26,7 +26,7 @@ The Messaging module is based on 3 simple concepts:
 - **Port**: message sender/receiver/handler/forwarder objects
 
 
-#### Messages
+### Messages
 
 A Message is a simple, ref-counted C++ object used to hold the message parameters, and to communicate the 
 current state of the message. Message classes are usually not written by hand, but their C++ source is 
@@ -124,7 +124,7 @@ Here's a simple message protocol XML file (NOTE: syntax details are very likely 
 </Generator>
 ```
 
-#### Ports
+### Ports
 
 A Port is a generic base class which accepts a Message in its Put() method and "does something" with
 the message. What happens to the message is implemented in subclasses of Port, and this is where it 
@@ -136,7 +136,7 @@ them to another port when a special DoWork method is called (**AsyncQueue**), fo
 another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
 on round-robin scheduling (**RoundRobinScheduler**), and so on...
 
-Ports are basically simple building blocks which make it easy to construct differet message-passing and
+Ports are basically simple building blocks which make it easy to construct different message-passing and
 -processing scenarios, and they are meant to be subclassed for new scenarios (such as message
 transfer over a network connection).
 
@@ -199,7 +199,60 @@ void HandleTestMsg(const Ptr<TestMsg>& msg) {
   // here on the main-thread.
 ```
 
+### More on Dispatchers
 
+A Dispatcher is a Port subclass which calls a handler function when a specific message is received.
+One Dispatcher object can only handle Messages from a single Protocol, and only one handler function
+can be associated with one MessageId (this is because MessageIds are only unique within one Protocol,
+and they are used to index into a jump-table).
 
+Because a Dispatcher is limited to one Protocol, the Protocol must be provided as a template argument
+on creation:
 
+```cpp
+Ptr<Dispatcher<MyProtocol>> dispatcher = Dispatcher<MyProtocol>::Create("MyDispatcher");
+```
 
+The main reason why the protocol is a template parameter is that the Dispatcher object directly
+embeds a jumptable with one entry for each MessageId of the protocol.
+
+Once the Dispatcher object is created, message handler functions can be attached. The simple case
+is to attach a global or static function (not an object method):
+
+```cpp
+// the handler function's signature must match the expected message class:
+void HandlerFunc(const Ptr<TestMsg>& msg) {
+  //... do something, and set the message to handled
+  msg->SetState(Message::Handled);
+}
+
+...
+// subscribe HandlerFunc() to TestMsg:
+dispatcher->Subscribe<TestMsg>(&HandlerFunc);
+...
+```
+
+From now on, when a message object of class TestMsg is passed to the Dispatcher's Put() method, the
+function HandlerFunc() will be called.
+
+The parameter of the Subscribe() method is a std::function object. This means we can also pass a
+"real" method call to an object, although the syntax looks a bit arcane:
+
+```cpp
+// declare a simple class with a handler-method:
+class HandlerClass {
+public:
+  void Handle(const Ptr<TestMsg>& msg) {
+    this->value += msg->GetHitpoints();
+  }
+  int32 value = 0;
+};
+
+...
+// create an object of class HandlerClass, and subscribe its Handle() method 
+// to message class TestMsg:
+HandlerClass obj;
+using namespace std::placeholders;
+dispatcher->Subscribe<TestMsg>(std::bind(&HandlerClass::Handle, &handlerObj, _1));
+...
+```
