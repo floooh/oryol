@@ -51,8 +51,8 @@ Messages can serialize/deserialize themselves to and from plain-old-data (POD) r
 to POD is only used when the message needs to cross process boundaries, otherwise a (smart-)pointer to the
 message is passed around.
 
-Care has been taken, that message-pointers are either forwarded by reference, or moved, so that no
-unnecessary copying or ref-count bumping takes place.
+Care has been taken that message-pointers are either passed by reference or moved, so that no
+unnecessary copying or ref-count-bumping happens.
 
 The disadvantage with passing messages around by pointers is that - even though they are pooled - once
 the content of the message needs to be accessed, a cache miss is likely, since different message objects
