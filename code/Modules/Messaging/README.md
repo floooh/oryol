@@ -40,9 +40,9 @@ Message classes have the following attributes:
 - a set of member variables with their respecitive setter/getter methods
 
 Messages are generally created through pool-allocators. When a message is created, a pointer is popped from
-a lockless forwarded-linked free-list, and placement-new is called on the memory block (so, no allocation 
+a lock-free forward-linked-list, and placement-new is called on the memory block (so, no allocation 
 happens, but a C++ constructor is called). Messages are ref-counted. When a message is destroyed, the
-destructor is called on the object, and the memory block is put back into the pool-allocator.
+destructor is called on the object, and the memory block is put back into the pool-allocator's free-list.
 
 Message classes can be derived from other message classes, the parent message class can be either
 from the same Protocol, or from the parent Protocol (see below in the Protocol section).
