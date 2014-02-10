@@ -23,7 +23,7 @@ The Messaging module is based on 3 simple concepts:
 
 - **Message**: an actual message object
 - **Protocol**: a group of related messages
-- **Port**: a generic message receiver/handler/forwarder object
+- **Port**: message sender/receiver/handler/forwarder objects
 
 
 #### Messages
