@@ -147,10 +147,10 @@ Here's an extremely simple code-sample to delegate message processing to another
 we need a ThreadedQueue-port and a Dispatcher-port which runs in the thread created by the
 ThreadedQueue:
 
-    // this is a message handler method which is invoked by the Dispatcher 
+    // this is a message handler function which is invoked by the Dispatcher 
     void HandleTestMsg(const Ptr<TestMsg>& msg) {
       Log::Info("TestMsg received: Hitpoints=%d, Duration=%f\n", msg->GetHitpoints() msg->GetDuration());
-      msg->SetState(Message::Handled);
+      msg->SetHandled();
     }
 
     ...
@@ -159,15 +159,15 @@ ThreadedQueue:
       // and handles the 'TestMsg' message of protocol 'TestProtocol'
       Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create("dispatcher");
       
-      // subscribe the HandleTestMsg method to the TestMsg message:
+      // subscribe the HandleTestMsg function to the TestMsg message:
       dispatcher->Subscribe<TestMsg>(&HandleTestMsg);
 
       // create the threaded-message-queue port, set the Dispatcher
-      // as forwarding port (this runs in the thread)
+      // as forwarding port (which runs in the thread)
       Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create("thread", dispatcher);
       
       // create and send a few messages to the to the thread, these will be
-      // queued until DoWork() is called (which normally happens automatically
+      // queued on the main-threaf side until DoWork() is called (which normally happens automatically
       // as part of the run-loop)
       Ptr<TestMsg> msg0 = TestMsg::Create();
       msg0->SetHitpoints(20);
@@ -201,8 +201,7 @@ One Dispatcher object can only handle Messages from a single Protocol, and only 
 can be associated with one MessageId (this is because MessageIds are only unique within one Protocol,
 and they are used to index into a jump-table).
 
-Because a Dispatcher is limited to one Protocol, the Protocol must be provided as a template argument
-on creation:
+The Protocol must be provided as a template argument on creation:
 
     Ptr<Dispatcher<MyProtocol>> dispatcher = Dispatcher<MyProtocol>::Create("MyDispatcher");
 
@@ -210,12 +209,12 @@ The main reason why the protocol is a template parameter is that the Dispatcher 
 embeds a jumptable with one entry for each MessageId of the protocol.
 
 Once the Dispatcher object is created, message handler functions can be attached. The simple case
-is to attach a global or static function (not an object method):
+is to attach a global function or static class method:
 
     // the handler function's signature must match the expected message class:
     void HandlerFunc(const Ptr<TestMsg>& msg) {
       //... do something, and set the message to handled
-      msg->SetState(Message::Handled);
+      msg->SetHandled();
     }
 
     ...
