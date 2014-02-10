@@ -44,15 +44,33 @@ public:
     virtual void DoWork();
 
 protected:
+    /// test if we are on the creation-thread
+    bool isCreateThread();
+    /// test if we are on the worker-thread
+    bool isWorkerThread();
+    /// the thread entry function
+    static void threadFunc(ThreadedQueue* self);
+    /// called in thread on thread-entry
+    virtual void onThreadStarted();
+    /// called in thread before thread is left
+    virtual void onThreadStop();
+    /// move messages from the write queue to the transfer queue
+    void moveWriteToTransferQueue();
+    /// move messages from transfer queue to read queue
+    void moveTransferToReadQueue();
+    
     Core::Queue<Core::Ptr<Message>> writeQueue;     // written by sender thread
     Core::Queue<Core::Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
     Core::Queue<Core::Ptr<Message>> readQueue;      // read by worker thread
     Core::Ptr<Port> forwardingPort;                // runs in thread!
 
-    std::thread workerThread;
+    std::__thread_id createThreadId;
+    std::__thread_id workThreadId;
+    std::thread thread;
     std::mutex transferQueueLock;
-    std::mutex condMutex;
-    std::condition_variable condVar;
+    std::mutex wakeupMutex;
+    std::condition_variable wakeup;
+    bool threadStopRequested;
 };
     
 } // namespace Messaging
