@@ -6,7 +6,7 @@ Disclaimer: the Messaging module is work-in-progress and stuff will change.
 
 The Messaging module implements a simple message-passing framework for the higher-level modules of Oryol. It
 is very flexible, easy to use and reasonably fast, but it may be too heavy-weight for some scenarios. Specifically,
-if the number of messages per frame is more then a few hundred, another approach might be needed.
+if the number of messages per frame ~~is more then a few hundred~~ (update: it looks like the messaging framework won't be the bottleneck, it can currently create, forward into a thread, and call a simple handler function at a rate of about 10 million per second, without any performance optimizations).
 
 Good use cases for the messaging frame-work are:
 
