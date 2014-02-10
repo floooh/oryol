@@ -74,7 +74,7 @@ Protocols can be derived from one another. The first MessageId of a derived prot
 MessageId of the parent protocol + 1, so that MessageIds are unique within a Protocol's ancestor chain, which
 makes it possible to build a jump-table which are indexed directly with the MessageId.
 
-The complete source code for protocols is usually not written by hand, but generated from XML files. The 
+The C++ source code for protocols is usually not written by hand, but generated from XML files. The 
 conversion from XML source code to C++ happens transparently during the build process (you 
 can simply edit an XML file in your favourite IDE, hit the "Build" button, and the right thing will happen).
 
