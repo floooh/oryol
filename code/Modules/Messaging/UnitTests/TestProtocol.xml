@@ -1,7 +1,5 @@
 <Generator type="MessageProtocol" ns="Messaging" name="TestProtocol" id="TSTP" >
 
-    <Header path="Core/RefCounted.h"/>
-    <Header path="Core/Ptr.h"/>
     <Header path="Core/String/String.h"/>
     <Header path="Core/String/StringAtom.h"/>
 
