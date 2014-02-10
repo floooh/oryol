@@ -64,8 +64,8 @@ protected:
     Core::Queue<Core::Ptr<Message>> readQueue;      // read by worker thread
     Core::Ptr<Port> forwardingPort;                // runs in thread!
 
-    std::__thread_id createThreadId;
-    std::__thread_id workThreadId;
+    std::thread::id createThreadId;
+    std::thread::id workThreadId;
     std::thread thread;
     std::mutex transferQueueLock;
     std::mutex wakeupMutex;
