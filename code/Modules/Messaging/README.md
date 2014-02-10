@@ -81,7 +81,7 @@ The magic behind the source code generation process is handled by python scripts
 (see the *oryol/generators* directory, and the integration into the build process is handled through
 the cmake-scripts under *oryol/cmake*)
 
-Here's a simple message protocol XML file:
+Here's a simple message protocol XML file (NOTE: syntax details are very likely to change):
 
 ```xml
 <!-- 
@@ -122,3 +122,81 @@ Here's a simple message protocol XML file:
 
 </Generator>
 ```
+
+#### Ports
+
+A Port is a generic base class which accepts a Message in its Put() method and "does something" with
+the message. What happens to the message is implemented in subclasses of Port, and this is where it 
+becomes interesting. There are Port subclasses which broadcast a message to other ports (**Broadcaster**),
+invoke a handler method when a specific message arrives (**Dispatcher**), queue messages, and only forward
+them to another port when a special DoWork method is called (**AsyncQueue**), or forward messages to
+another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
+on round-robin scheduling (**RoundRobinScheduler**), etc...
+
+Ports are simple building blocks which make it easy to construct differnet message-passing and
+-processing scenarios, and Ports are meant to be subclassed for new scenarios (such as message
+transfer over a network connection).
+
+Ports have a **DoWork()** which is used in some port types to trigger per-frame work. Only
+"front-end" ports are usually connected to the thread's main RunLoop, the DoWork call
+will be forwarded to connected ports by the front-end port. This makes sure that the cascade
+of the DoWork() calls happens in the right order.
+
+Here's an extremely simple code-sample to delegate message processing to another thread, for this
+we need a ThreadedQueue-port and a Dispatcher-port which runs in the thread created by the
+ThreadedQueue:
+
+```cpp
+
+// this is a message handler method which is invoked by the Dispatcher 
+void HandleTestMsg(const Ptr<TestMsg>& msg) {
+  Log::Info("TestMsg received: Hitpoints=%d, Duration=%f\n", msg->GetHitpoints() msg->GetDuration());
+  msg->SetState(Message::Handled);
+}
+
+...
+{
+  // first setup the dispatcher which runs in the work-thread
+  // and handles the 'TestMsg' message of protocol 'TestProtocol'
+  Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create("dispatcher");
+  
+  // subscribe the HandleTestMsg method to the TestMsg message:
+  dispatcher->Subscribe<TestMsg>(&HandleTestMsg);
+
+  // create the threaded-message-queue port, set the Dispatcher
+  // as forwarding port (this runs in the thread)
+  Ptr<ThreadedQueue> threadQueue = ThreadedQueue::Create("thread", dispatcher);
+  
+  // create and send a few messages to the to the thread, these will be
+  // queued until DoWork() is called (which normally happens automatically
+  // as part of the run-loop)
+  Ptr<TestMsg> msg0 = TestMsg::Create();
+  msg0->SetHitpoints(20);
+  msg0->SetDuration(100.0f);
+  threadedQueue->Put(msg0);
+  
+  Ptr<TestMsg> msg1 = TestMsg::Create();
+  msg0->SetHitpoints(100);
+  msg0->SetDuration(10.0f);
+  threadedQueue->Put(msg1);
+  
+  // So far nothing has happened, since the messages have been queued up,
+  // and the worker thread is sleeping... calling DoWork will internally
+  // move the messages queued up in the main thread to the worker thread's queue
+  // and wake up the worker thread. DoWork() is normally called once per frame
+  // as part of the RunLoop. This has the advantage, that locking only happens
+  // once per frame for a very short amount of time, instead of once for
+  // each message, but the disadvantage is, that message handling will be delayed
+  // by one frame.
+  threadedQueue->DoWork();
+  
+  // The work thread should now wake up, and the HandleTestMsg function
+  // should be called exactly twice. Once the work thread has handled the
+  // messages, the message state should switch to Handled, which can check
+  // here on the main-thread.
+```
+
+
+
+
+
