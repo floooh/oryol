@@ -59,7 +59,7 @@ the content of the message needs to be accessed, a cache miss is likely, since d
 can be far away from each other in memory. This is why a more low-level system which works with 
 plain memory-buffers for passing data back and forth may be more efficient in some use cases.
 
-#### Protocols
+### Protocols
 
 A Protocol is a group of related messages. Technically it is a C++ class with a bunch of static methods,
 and more embedded classes. There are no Protocol objects.
