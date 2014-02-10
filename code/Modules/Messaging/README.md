@@ -168,7 +168,7 @@ void HandleTestMsg(const Ptr<TestMsg>& msg) {
 
   // create the threaded-message-queue port, set the Dispatcher
   // as forwarding port (this runs in the thread)
-  Ptr<ThreadedQueue> threadQueue = ThreadedQueue::Create("thread", dispatcher);
+  Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create("thread", dispatcher);
   
   // create and send a few messages to the to the thread, these will be
   // queued until DoWork() is called (which normally happens automatically
