@@ -84,45 +84,43 @@ the cmake-scripts under *oryol/cmake*)
 
 Here's a simple message protocol XML file (NOTE: syntax details are very likely to change):
 
-```xml
-<!-- 
-  - type: conversion happens through the MessageProtocol.py python script
-  - ns: the C++ namespace of the protocol
-  - name: the C++ class name of the protocol
-  - id: the protocolId (FourCC code)
--->
-<Generator type="MessageProtocol" ns="Messaging" name="TestProtocol" id="TSTP" >
-    
-    <!-- the required C++ headers for non-trivial types -->
-    <Header path="Core/String/StringAtom.h"/>
-    
     <!-- 
-      A simple message with one 32bit-integer, and one 32-bit-float value.
-      - the C++ class name is "TestMsg" and has the following setters/getters:
-        - void SetHitpoints(int32 val)
-        - int32 GetHitpoints() const
-        - void SetDuration(float32 val)
-        - float32 GetDuration() const
-      - the Hitpoints value will be set to 10 in the constructor
-      - the Duration value will be set to 0.0 (0 is the default for all
-        simple numeric types
+      - type: conversion happens through the MessageProtocol.py python script
+      - ns: the C++ namespace of the protocol
+      - name: the C++ class name of the protocol
+      - id: the protocolId (FourCC code)
     -->
-    <Message name="TestMsg">
-        <Attr name="Hitpoints" type="int32" def="10" />
-        <Attr name="Duration" type="float32" />
-    </Message>
-    
-    <!-- 
-      A derived message with TestMsg as parent class, this only
-      adds a StringAtom attribute 'Name'. To set the default value,
-      we need to use XML's escape mechanism (&quot; is ")
-    -->
-    <Message name="DerivedMsg" parent="TestMsg">
-        <Attr name="Name" type="Core::StringAtom" def="&quot;Test&quot;"/>
-    </Message>
+    <Generator type="MessageProtocol" ns="Messaging" name="TestProtocol" id="TSTP" >
+        
+        <!-- the required C++ headers for non-trivial types -->
+        <Header path="Core/String/StringAtom.h"/>
+        
+        <!-- 
+          A simple message with one 32bit-integer, and one 32-bit-float value.
+          - the C++ class name is "TestMsg" and has the following setters/getters:
+            - void SetHitpoints(int32 val)
+            - int32 GetHitpoints() const
+            - void SetDuration(float32 val)
+            - float32 GetDuration() const
+          - the Hitpoints value will be set to 10 in the constructor
+          - the Duration value will be set to 0.0 (0 is the default for all
+            simple numeric types
+        -->
+        <Message name="TestMsg">
+            <Attr name="Hitpoints" type="int32" def="10" />
+            <Attr name="Duration" type="float32" />
+        </Message>
+        
+        <!-- 
+          A derived message with TestMsg as parent class, this only
+          adds a StringAtom attribute 'Name'. To set the default value,
+          we need to use XML's escape mechanism (&quot; is ")
+        -->
+        <Message name="DerivedMsg" parent="TestMsg">
+            <Attr name="Name" type="Core::StringAtom" def="&quot;Test&quot;"/>
+        </Message>
 
-</Generator>
-```
+    </Generator>
 
 ### Ports
 
@@ -149,55 +147,52 @@ Here's an extremely simple code-sample to delegate message processing to another
 we need a ThreadedQueue-port and a Dispatcher-port which runs in the thread created by the
 ThreadedQueue:
 
-```cpp
+    // this is a message handler method which is invoked by the Dispatcher 
+    void HandleTestMsg(const Ptr<TestMsg>& msg) {
+      Log::Info("TestMsg received: Hitpoints=%d, Duration=%f\n", msg->GetHitpoints() msg->GetDuration());
+      msg->SetState(Message::Handled);
+    }
 
-// this is a message handler method which is invoked by the Dispatcher 
-void HandleTestMsg(const Ptr<TestMsg>& msg) {
-  Log::Info("TestMsg received: Hitpoints=%d, Duration=%f\n", msg->GetHitpoints() msg->GetDuration());
-  msg->SetState(Message::Handled);
-}
+    ...
+    {
+      // first setup the dispatcher which runs in the work-thread
+      // and handles the 'TestMsg' message of protocol 'TestProtocol'
+      Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create("dispatcher");
+      
+      // subscribe the HandleTestMsg method to the TestMsg message:
+      dispatcher->Subscribe<TestMsg>(&HandleTestMsg);
 
-...
-{
-  // first setup the dispatcher which runs in the work-thread
-  // and handles the 'TestMsg' message of protocol 'TestProtocol'
-  Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create("dispatcher");
-  
-  // subscribe the HandleTestMsg method to the TestMsg message:
-  dispatcher->Subscribe<TestMsg>(&HandleTestMsg);
-
-  // create the threaded-message-queue port, set the Dispatcher
-  // as forwarding port (this runs in the thread)
-  Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create("thread", dispatcher);
-  
-  // create and send a few messages to the to the thread, these will be
-  // queued until DoWork() is called (which normally happens automatically
-  // as part of the run-loop)
-  Ptr<TestMsg> msg0 = TestMsg::Create();
-  msg0->SetHitpoints(20);
-  msg0->SetDuration(100.0f);
-  threadedQueue->Put(msg0);
-  
-  Ptr<TestMsg> msg1 = TestMsg::Create();
-  msg0->SetHitpoints(100);
-  msg0->SetDuration(10.0f);
-  threadedQueue->Put(msg1);
-  
-  // So far nothing has happened, since the messages have been queued up,
-  // and the worker thread is sleeping... calling DoWork will internally
-  // move the messages queued up in the main thread to the worker thread's queue
-  // and wake up the worker thread. DoWork() is normally called once per frame
-  // as part of the RunLoop. This has the advantage, that locking only happens
-  // once per frame for a very short amount of time, instead of once for
-  // each message, but the disadvantage is, that message handling will be delayed
-  // by one frame.
-  threadedQueue->DoWork();
-  
-  // The work thread should now wake up, and the HandleTestMsg function
-  // should be called exactly twice. Once the work thread has handled the
-  // messages, the message state should switch to Handled, which can check
-  // here on the main-thread.
-```
+      // create the threaded-message-queue port, set the Dispatcher
+      // as forwarding port (this runs in the thread)
+      Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create("thread", dispatcher);
+      
+      // create and send a few messages to the to the thread, these will be
+      // queued until DoWork() is called (which normally happens automatically
+      // as part of the run-loop)
+      Ptr<TestMsg> msg0 = TestMsg::Create();
+      msg0->SetHitpoints(20);
+      msg0->SetDuration(100.0f);
+      threadedQueue->Put(msg0);
+      
+      Ptr<TestMsg> msg1 = TestMsg::Create();
+      msg0->SetHitpoints(100);
+      msg0->SetDuration(10.0f);
+      threadedQueue->Put(msg1);
+      
+      // So far nothing has happened, since the messages have been queued up,
+      // and the worker thread is sleeping... calling DoWork will internally
+      // move the messages queued up in the main thread to the worker thread's queue
+      // and wake up the worker thread. DoWork() is normally called once per frame
+      // as part of the RunLoop. This has the advantage, that locking only happens
+      // once per frame for a very short amount of time, instead of once for
+      // each message, but the disadvantage is, that message handling will be delayed
+      // by one frame.
+      threadedQueue->DoWork();
+      
+      // The work thread should now wake up, and the HandleTestMsg function
+      // should be called exactly twice. Once the work thread has handled the
+      // messages, the message state should switch to Handled, which can check
+      // here on the main-thread.
 
 ### More on Dispatchers
 
@@ -209,9 +204,7 @@ and they are used to index into a jump-table).
 Because a Dispatcher is limited to one Protocol, the Protocol must be provided as a template argument
 on creation:
 
-```cpp
-Ptr<Dispatcher<MyProtocol>> dispatcher = Dispatcher<MyProtocol>::Create("MyDispatcher");
-```
+    Ptr<Dispatcher<MyProtocol>> dispatcher = Dispatcher<MyProtocol>::Create("MyDispatcher");
 
 The main reason why the protocol is a template parameter is that the Dispatcher object directly
 embeds a jumptable with one entry for each MessageId of the protocol.
@@ -219,18 +212,16 @@ embeds a jumptable with one entry for each MessageId of the protocol.
 Once the Dispatcher object is created, message handler functions can be attached. The simple case
 is to attach a global or static function (not an object method):
 
-```cpp
-// the handler function's signature must match the expected message class:
-void HandlerFunc(const Ptr<TestMsg>& msg) {
-  //... do something, and set the message to handled
-  msg->SetState(Message::Handled);
-}
+    // the handler function's signature must match the expected message class:
+    void HandlerFunc(const Ptr<TestMsg>& msg) {
+      //... do something, and set the message to handled
+      msg->SetState(Message::Handled);
+    }
 
-...
-// subscribe HandlerFunc() to TestMsg:
-dispatcher->Subscribe<TestMsg>(&HandlerFunc);
-...
-```
+    ...
+    // subscribe HandlerFunc() to TestMsg:
+    dispatcher->Subscribe<TestMsg>(&HandlerFunc);
+    ...
 
 From now on, when a message object of class TestMsg is passed to the Dispatcher's Put() method, the
 function HandlerFunc() will be called.
@@ -238,21 +229,19 @@ function HandlerFunc() will be called.
 The parameter of the Subscribe() method is a std::function object. This means we can also pass a
 "real" method call to an object, although the syntax looks a bit arcane:
 
-```cpp
-// declare a simple class with a handler-method:
-class HandlerClass {
-public:
-  void Handle(const Ptr<TestMsg>& msg) {
-    this->value += msg->GetHitpoints();
-  }
-  int32 value = 0;
-};
+    // declare a simple class with a handler-method:
+    class HandlerClass {
+    public:
+      void Handle(const Ptr<TestMsg>& msg) {
+        this->value += msg->GetHitpoints();
+      }
+      int32 value = 0;
+    };
 
-...
-// create an object of class HandlerClass, and subscribe its Handle() method 
-// to message class TestMsg:
-HandlerClass obj;
-using namespace std::placeholders;
-dispatcher->Subscribe<TestMsg>(std::bind(&HandlerClass::Handle, &handlerObj, _1));
-...
-```
+    ...
+    // create an object of class HandlerClass, and subscribe its Handle() method 
+    // to message class TestMsg:
+    HandlerClass obj;
+    using namespace std::placeholders;
+    dispatcher->Subscribe<TestMsg>(std::bind(&HandlerClass::Handle, &handlerObj, _1));
+    ...
