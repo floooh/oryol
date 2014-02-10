@@ -134,7 +134,7 @@ There are Port subclasses which broadcast a message to other ports (**Broadcaste
 invoke a handler method when a specific message arrives (**Dispatcher**), queue messages, and only forward
 them to another port when a special ForwardMessages() method is called (**AsyncQueue**), forward messages to
 another Port running in a worker thread (**ThreadedQueue**), forward messages to different ports based
-on round-robin scheduling (**RoundRobinScheduler**), and so on...
+on round-robin scheme (**RoundRobinForwarder**), and so on...
 
 Ports are basically simple building blocks which make it easy to construct different message-passing and
 -processing scenarios, and they are meant to be subclassed for new scenarios (such as message
