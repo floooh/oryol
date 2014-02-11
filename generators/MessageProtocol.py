@@ -35,7 +35,7 @@ def writeProtocolMethods(f, xmlRoot) :
     '''
     Write the protocol methods
     '''
-    f.write('    static ProtocolIdType GetProtocolId() {\n')
+    f.write('    static Messaging::ProtocolIdType GetProtocolId() {\n')
     f.write("        return '{}';\n".format(xmlRoot.get('id')))
     f.write('    };\n')
 
@@ -123,6 +123,9 @@ def getAttrDefaultValue(attr) :
     elif attrType in ('char', 'unsigned char', 'int', 'unsigned int', 'short', 'unsigned short', 'long', 'unsigned long') :
         if not defValue :
             defValue = '0'
+    elif attrType == 'bool' :
+        if not defValue :
+            defValue = 'false'
     elif attrType in ('float32', 'float') :
         if not defValue :
             defValue = '0.0f'
@@ -138,7 +141,7 @@ def getRefType(attrType) :
     ''' 
     if attrType in ('int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64') :
         return attrType
-    elif attrType in ('char', 'unsigned char', 'int', 'unsigned int', 'short', 'unsigned short', 'long', 'unsigned long') :
+    elif attrType in ('bool', 'char', 'unsigned char', 'int', 'unsigned int', 'short', 'unsigned short', 'long', 'unsigned long') :
         return attrType
     elif attrType in ('float32', 'float') :
         return attrType
@@ -209,9 +212,10 @@ def writeMessageClasses(f, xmlRoot) :
         f.write('        };\n') 
 
         # write serializer methods
-        f.write('        virtual int32 EncodedSize() const override;\n')
-        f.write('        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
-        f.write('        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
+        if msg.get('serialize', 'true') == 'true' :
+            f.write('        virtual int32 EncodedSize() const override;\n')
+            f.write('        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
+            f.write('        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
 
         # write setters/getters
         for attr in msg.findall('Attr') :
@@ -237,54 +241,55 @@ def writeSerializeMethods(f, xmlRoot) :
     '''
     Writes the serializer methods of the message to the source file.
     '''
-    for msg in xmlRoot.findall('Message') :    
-        protocol = xmlRoot.get('name')
-        msgClassName = msg.get('name')
-        msgParentClassName = msg.get('parent', 'Messaging::Message')
+    for msg in xmlRoot.findall('Message') : 
+        if msg.get('serialize', 'true') == 'true' :   
+            protocol = xmlRoot.get('name')
+            msgClassName = msg.get('name')
+            msgParentClassName = msg.get('parent', 'Messaging::Message')
 
-        # EncodedSize()
-        f.write('int32 ' + protocol + '::' + msgClassName + '::EncodedSize() const {\n')
-        f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
-        for attr in msg.findall('Attr') :
-            attrName = attr.get('name').lower()
-            attrType = attr.get('type')
-            if isArrayType(attrType) :
-                elmType = getArrayType(attrType)                
-                f.write('    s += Messaging::Serializer::EncodedArraySize<' + elmType + '>(this->' + attrName + ');\n')
-            else :
-                f.write('    s += Messaging::Serializer::EncodedSize<' + attrType + '>(this->' + attrName + ');\n')                
-        f.write('    return s;\n')
-        f.write('}\n')
+            # EncodedSize()
+            f.write('int32 ' + protocol + '::' + msgClassName + '::EncodedSize() const {\n')
+            f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
+            for attr in msg.findall('Attr') :
+                attrName = attr.get('name').lower()
+                attrType = attr.get('type')
+                if isArrayType(attrType) :
+                    elmType = getArrayType(attrType)                
+                    f.write('    s += Messaging::Serializer::EncodedArraySize<' + elmType + '>(this->' + attrName + ');\n')
+                else :
+                    f.write('    s += Messaging::Serializer::EncodedSize<' + attrType + '>(this->' + attrName + ');\n')                
+            f.write('    return s;\n')
+            f.write('}\n')
 
-        # Encode
-        # FIXME: I think we need to diffentiate between "send" and "receive" attributes!
-        # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
-        f.write('uint8* ' + protocol + '::' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
-        f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
-        for attr in msg.findall('Attr') :
-            attrName = attr.get('name').lower()
-            attrType = attr.get('type')
-            if isArrayType(attrType) :
-                elmType = getArrayType(attrType)                
-                f.write('    dstPtr = Messaging::Serializer::EncodeArray<' + elmType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
-            else :            
-                f.write('    dstPtr = Messaging::Serializer::Encode<' + attrType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
-        f.write('    return dstPtr;\n')
-        f.write('}\n')
+            # Encode
+            # FIXME: I think we need to diffentiate between "send" and "receive" attributes!
+            # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
+            f.write('uint8* ' + protocol + '::' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
+            f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
+            for attr in msg.findall('Attr') :
+                attrName = attr.get('name').lower()
+                attrType = attr.get('type')
+                if isArrayType(attrType) :
+                    elmType = getArrayType(attrType)                
+                    f.write('    dstPtr = Messaging::Serializer::EncodeArray<' + elmType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
+                else :            
+                    f.write('    dstPtr = Messaging::Serializer::Encode<' + attrType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
+            f.write('    return dstPtr;\n')
+            f.write('}\n')
 
-        # Decode
-        f.write('const uint8* ' + protocol + '::' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
-        f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
-        for attr in msg.findall('Attr') :
-            attrName = attr.get('name').lower()
-            attrType = attr.get('type')
-            if isArrayType(attrType) :
-                elmType = getArrayType(attrType)
-                f.write('    srcPtr = Messaging::Serializer::DecodeArray<' + elmType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
-            else :
-                f.write('    srcPtr = Messaging::Serializer::Decode<' + attrType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
-        f.write('    return srcPtr;\n')
-        f.write('}\n')            
+            # Decode
+            f.write('const uint8* ' + protocol + '::' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
+            f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
+            for attr in msg.findall('Attr') :
+                attrName = attr.get('name').lower()
+                attrType = attr.get('type')
+                if isArrayType(attrType) :
+                    elmType = getArrayType(attrType)
+                    f.write('    srcPtr = Messaging::Serializer::DecodeArray<' + elmType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
+                else :
+                    f.write('    srcPtr = Messaging::Serializer::Decode<' + attrType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
+            f.write('    return srcPtr;\n')
+            f.write('}\n')            
 
 #-------------------------------------------------------------------------------
 def generateHeader(xmlTree, absHeaderPath) :
