@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 // RttiTest.cc
 // Test standard C++ rtti stuff with oryol classes.
-// @fixme: C++ rtti may be switched off in the future.
+/// @todo: C++ rtti may be switched off in the future.
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"

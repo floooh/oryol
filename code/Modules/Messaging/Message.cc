@@ -41,21 +41,21 @@ Message::Handled() const {
 //------------------------------------------------------------------------------
 int32
 Message::EncodedSize() const {
-    // @fixme
+    /// @todo: this should include some sort of header information
     return 0;
 }
 
 //------------------------------------------------------------------------------
 uint8*
 Message::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
-    // @fixme
+    // @todo: this should write a header with the MessageId
     return dstPtr;
 }
 
 //------------------------------------------------------------------------------
 const uint8*
 Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
-    // @fixme
+    /// @todo: this should decode the header
     return srcPtr;
 }
     

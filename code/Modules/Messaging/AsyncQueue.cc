@@ -13,7 +13,7 @@ using namespace Core;
 
 //------------------------------------------------------------------------------
 AsyncQueue::~AsyncQueue() {
-    // @fixme: should we issue a warning if the queue is not empty?
+    /// @todo: should we issue a warning if the queue is not empty?
     this->queue.Clear();
     this->forwardingPort = 0;
 }

@@ -100,8 +100,8 @@ TEST(MemoryStreamTest) {
     CHECK(stream0->GetReadPosition() == 2 * dataSize);
     CHECK(stream0->IsEndOfStream());
     
-    // @fixme: test reading and MapRead with EndOfStream
+    /// @todo: test reading and MapRead with EndOfStream
     
-    // @fixme: test with small initial capacity and small min/max grow
+    /// @todo: test with small initial capacity and small min/max grow
     Ptr<MemoryStream> stream1 = MemoryStream::Create(4, 4, 8);
 }
