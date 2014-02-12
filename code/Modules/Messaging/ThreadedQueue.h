@@ -33,8 +33,10 @@ namespace Messaging {
 class ThreadedQueue : public Port {
     OryolClassPoolAllocDecl(ThreadedQueue);
 public:
-    /// constructor
-    ThreadedQueue(const Core::StringAtom& name, const Core::Ptr<Port>& forwardingPort);
+    /// default constructor (must setup forwardingPort in subclass!)
+    ThreadedQueue();
+    /// constructor with forwarding port
+    ThreadedQueue(const Core::Ptr<Port>& forwardingPort);
     /// destructor
     virtual ~ThreadedQueue();
     
@@ -51,9 +53,11 @@ protected:
     /// the thread entry function
     static void threadFunc(ThreadedQueue* self);
     /// called in thread on thread-entry
-    virtual void onThreadStarted();
+    virtual void onThreadEnter();
+    /// called to forward one message
+    virtual void onMessage(const Core::Ptr<Message>& msg);
     /// called in thread before thread is left
-    virtual void onThreadStop();
+    virtual void onThreadLeave();
     /// move messages from the write queue to the transfer queue
     void moveWriteToTransferQueue();
     /// move messages from transfer queue to read queue

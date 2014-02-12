@@ -12,9 +12,7 @@ OryolClassPoolAllocImpl(Broadcaster);
 using namespace Core;
 
 //------------------------------------------------------------------------------
-Broadcaster::Broadcaster(const StringAtom& name_) :
-    Port(name_)
-{
+Broadcaster::Broadcaster() {
     // empty
 }
 

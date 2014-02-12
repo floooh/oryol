@@ -30,12 +30,12 @@ static void HandleTestMsg2(const Ptr<TestProtocol::TestMsg2>& msg) {
 TEST(ThreadedQueueTest) {
 
     // create a Dispatcher port, this will run in the worker thread!
-    Ptr<Dispatcher<TestProtocol>> disp = Dispatcher<TestProtocol>::Create("disp");
+    Ptr<Dispatcher<TestProtocol>> disp = Dispatcher<TestProtocol>::Create();
     disp->Subscribe<TestProtocol::TestMsg1>(&HandleTestMsg1);
     disp->Subscribe<TestProtocol::TestMsg2>(&HandleTestMsg2);
     
     // create a ThreadedQueue port and attach dispatcher to it
-    Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create("thread", disp);
+    Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create(disp);
     
     // send messages, these should be queued up
     Ptr<TestProtocol::TestMsg1> msg1 = TestProtocol::TestMsg1::Create();

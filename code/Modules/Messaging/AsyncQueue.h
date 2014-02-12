@@ -18,7 +18,7 @@ class AsyncQueue : public Port {
     OryolClassPoolAllocDecl(AsyncQueue);
 public:
     /// constructor
-    AsyncQueue(const Core::StringAtom& name);
+    AsyncQueue();
     /// destructor
     virtual ~AsyncQueue();
     
@@ -41,30 +41,5 @@ protected:
     Core::Ptr<Port> forwardingPort;
 };
 
-//------------------------------------------------------------------------------
-inline
-AsyncQueue::AsyncQueue(const Core::StringAtom& name_) :
-Port(name_) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline void
-AsyncQueue::SetForwardingPort(const Core::Ptr<Port>& port) {
-    this->forwardingPort = port;
-}
-
-//------------------------------------------------------------------------------
-inline const Core::Ptr<Port>&
-AsyncQueue::GetForwardingPort() const {
-    return this->forwardingPort;
-}
-
-//------------------------------------------------------------------------------
-inline int32
-AsyncQueue::GetNumQueuedMessages() const {
-    return this->queue.Size();
-}
-    
 } // namespace Messaging
 } // namespace Oryol

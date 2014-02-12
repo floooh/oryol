@@ -33,7 +33,7 @@ template<class PROTOCOL> class Dispatcher : public Port {
     OryolClassDecl(Dispatcher);
 public:
     /// constructor
-    Dispatcher(const Core::StringAtom& name);
+    Dispatcher();
     /// destructor
     virtual ~Dispatcher();
     
@@ -51,8 +51,7 @@ private:
 
 //------------------------------------------------------------------------------
 template<class PROTOCOL>
-Dispatcher<PROTOCOL>::Dispatcher(const Core::StringAtom& name_) :
-Port(name_) {
+Dispatcher<PROTOCOL>::Dispatcher() {
     // empty
 }
 

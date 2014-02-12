@@ -9,7 +9,7 @@
 #include "Core/RefCounted.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
-#include <mutex>
+#include "Core/Threading/RWLock.h"
 
 namespace Oryol {
 namespace IO {
@@ -34,8 +34,8 @@ public:
 private:
     /// setup the standard assigns
     void setStandardAssigns();
-
-    mutable std::mutex mtx;
+    
+    mutable Core::RWLock rwLock;
     Core::Map<Core::String, Core::String> assigns;
 };
     

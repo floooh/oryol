@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ThreadedQueue.h"
+#include "Core/Module.h"
 
 namespace Oryol {
 namespace Messaging {
@@ -12,8 +13,19 @@ OryolClassPoolAllocImpl(ThreadedQueue);
 using namespace Core;
 
 //------------------------------------------------------------------------------
-ThreadedQueue::ThreadedQueue(const StringAtom& name_, const Ptr<Port>& port_) :
-Port(name_),
+/**
+ NOTE: if the default constructor is used, a forwarding port must be 
+ provided by the subclass in the onThreadStarted() method, or in the
+ subclasses constructor!
+*/
+ThreadedQueue::ThreadedQueue() :
+threadStopRequested(false) {
+    // empty
+}
+
+
+//------------------------------------------------------------------------------
+ThreadedQueue::ThreadedQueue(const Ptr<Port>& port_) :
 forwardingPort(port_),
 threadStopRequested(false) {
     
@@ -100,7 +112,7 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
     self->workThreadId = std::this_thread::get_id();
     
     // notify subclass that thread has been entered
-    self->onThreadStarted();
+    self->onThreadEnter();
     
     // the message processing loop waits for messages to arrive,
     // and forwards them to the forwardingPort
@@ -114,24 +126,30 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
         
         // now process the messages, this happens without locking
         while (!self->readQueue.Empty()) {
-            self->forwardingPort->Put(std::move(self->readQueue.Dequeue()));
+            self->onMessage(std::move(self->readQueue.Dequeue()));
         }
     }
     
     // notify subclass that we're about to leave the thread
-    self->onThreadStop();
+    self->onThreadLeave();
 }
 
 //------------------------------------------------------------------------------
 void
-ThreadedQueue::onThreadStarted() {
-    Log::Info("ThreadedQueue::onThreadStarted(): '%s'\n", this->name.AsCStr());
+ThreadedQueue::onThreadEnter() {
+    Core::Module::EnterThread();
 }
 
 //------------------------------------------------------------------------------
 void
-ThreadedQueue::onThreadStop() {
-    Log::Info("ThreadedQueue::onThreadStop(): '%s'\n", this->name.AsCStr());
+ThreadedQueue::onMessage(const Ptr<Message>& msg) {
+    this->forwardingPort->Put(msg);
+}
+
+//------------------------------------------------------------------------------
+void
+ThreadedQueue::onThreadLeave() {
+    Core::Module::LeaveThread();
 }
 
 } // namespace Messaging

@@ -149,8 +149,15 @@ URL::parseIndices() {
     this->valid = false;
     
     if (this->content.IsValid()) {
+    
+        // convert assigns
+        String urlString = this->content.AsString();
+        if (assignRegistry::HasInstance()) {
+            urlString = assignRegistry::Instance()->ResolveAssigns(urlString);
+        }
+    
         StringBuilder builder;
-        builder.Set(this->content);
+        builder.Set(urlString);
         
         // extract scheme
         this->indices[schemeStart] = 0;

@@ -26,25 +26,29 @@ assignRegistry::~assignRegistry() {
 //------------------------------------------------------------------------------
 void
 assignRegistry::SetAssign(const String& assign, const String& path) {
-    o_assert(assign.Back() == ':'); // assign must end with a ':'
+    o_assert(assign.Back() == ':'); // "assign must end with a ':'\n"
     o_assert(assign.Length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
     o_assert(!path.Empty());
     o_assert((path.Back() == '/') || (path.Back() == ':')); // path must end in a '/' (dir) or ':' (other assign)
-    std::lock_guard<std::mutex> lock(this->mtx);
+    
+    this->rwLock.LockWrite();
     if (this->assigns.Contains(assign)) {
         this->assigns[assign] = path;
     }
     else {
         this->assigns.Insert(assign, path);
     }
+    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 bool
 assignRegistry::HasAssign(const String& assign) const {
     o_assert(!assign.Empty());
-    std::lock_guard<std::mutex> lock(this->mtx);
-    return this->assigns.Contains(assign);
+    this->rwLock.LockRead();
+    bool result = this->assigns.Contains(assign);
+    this->rwLock.UnlockRead();
+    return result;
 }
 
 //------------------------------------------------------------------------------
@@ -52,21 +56,21 @@ String
 assignRegistry::LookupAssign(const String& assign) const {
     o_assert(!assign.Empty());
     o_assert(assign.Back() == ':');
-    std::lock_guard<std::mutex> lock(this->mtx);
+    String result;
+    this->rwLock.LockRead();
     if (this->assigns.Contains(assign)) {
-        return this->assigns[assign];
+        result = this->assigns[assign];
     }
-    else {
-        return String();
-    }
+    this->rwLock.UnlockRead();
+    return result;
 }
 
 //------------------------------------------------------------------------------
 String
 assignRegistry::ResolveAssigns(const String& str) const {
 
-    std::lock_guard<std::mutex> lock(this->mtx);
-
+    this->rwLock.LockRead();
+    
     StringBuilder builder;
     builder.Set(str);
     
@@ -87,7 +91,9 @@ assignRegistry::ResolveAssigns(const String& str) const {
         }
         else break;
     }
-    return builder.GetString();
+    String result = builder.GetString();
+    this->rwLock.UnlockRead();
+    return result;
 }
 
 //------------------------------------------------------------------------------

@@ -39,9 +39,9 @@ public:
 TEST(DispatcherTest) {
     
     // build a broad caster with 2 dispatchers
-    Ptr<Broadcaster> sink = Broadcaster::Create("sink");
-    Ptr<Dispatcher<TestProtocol>> disp0 = Dispatcher<TestProtocol>::Create("disp0");
-    Ptr<Dispatcher<TestProtocol2>> disp1 = Dispatcher<TestProtocol2>::Create("disp1");
+    Ptr<Broadcaster> sink = Broadcaster::Create();
+    Ptr<Dispatcher<TestProtocol>> disp0 = Dispatcher<TestProtocol>::Create();
+    Ptr<Dispatcher<TestProtocol2>> disp1 = Dispatcher<TestProtocol2>::Create();
     
     // define a global callback method
     disp0->Subscribe<TestProtocol::TestMsg1>(&GlobalHandler);

@@ -26,8 +26,8 @@ TEST(AsyncQueueTest) {
     
     // create an uncapped async queue port and set a dispatcher port as
     // forwarding port which handle messages
-    Ptr<AsyncQueue> asyncQueue = AsyncQueue::Create("asyncQueue");
-    Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create("dispatcher");
+    Ptr<AsyncQueue> asyncQueue = AsyncQueue::Create();
+    Ptr<Dispatcher<TestProtocol>> dispatcher = Dispatcher<TestProtocol>::Create();
     dispatcher->Subscribe<TestProtocol::TestMsg1>(&MsgHandler1);
     dispatcher->Subscribe<TestProtocol::TestMsg2>(&MsgHandler2);
     asyncQueue->SetForwardingPort(dispatcher);

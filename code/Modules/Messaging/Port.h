@@ -27,20 +27,14 @@ class Port : public Core::RefCounted {
     OryolClassDecl(Port);
 public:
     /// construct with ProtocolId
-    Port(const Core::StringAtom& name);
+    Port();
     /// destructor
     virtual ~Port();
-
-    /// get the port's name
-    const Core::StringAtom& GetName() const;
 
     /// put a message into the port
     virtual bool Put(const Core::Ptr<Message>& msg);
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork();
-
-protected:
-    Core::StringAtom name;
 };
 } // namespace Messaging
 } // namespace Oryol

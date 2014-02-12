@@ -9,6 +9,7 @@
 #include "Messaging/Protocol.h"
 #include "Core/Ptr.h"
 #include "IO/URL.h"
+#include "IO/IOStatus.h"
 #include "IO/MemoryStream.h"
 
 namespace Oryol {
@@ -23,18 +24,33 @@ public:
         enum {
             RequestId = Messaging::Protocol::MessageId::NumMessageIds, 
             GetId,
+            GetRangeId,
+            notifyLanesId,
+            notifyFileSystemRemovedId,
+            notifyFileSystemReplacedId,
+            notifyFileSystemAddedId,
             NumMessageIds
         };
         static const char* ToString(Messaging::MessageIdType c) {
             switch (c) {
                 case RequestId: return "RequestId";
                 case GetId: return "GetId";
+                case GetRangeId: return "GetRangeId";
+                case notifyLanesId: return "notifyLanesId";
+                case notifyFileSystemRemovedId: return "notifyFileSystemRemovedId";
+                case notifyFileSystemReplacedId: return "notifyFileSystemReplacedId";
+                case notifyFileSystemAddedId: return "notifyFileSystemAddedId";
                 default: return "InvalidMessageId";
             }
         };
         static Messaging::MessageIdType FromString(const char* str) {
             if (std::strcmp("RequestId", str) == 0) return RequestId;
             if (std::strcmp("GetId", str) == 0) return GetId;
+            if (std::strcmp("GetRangeId", str) == 0) return GetRangeId;
+            if (std::strcmp("notifyLanesId", str) == 0) return notifyLanesId;
+            if (std::strcmp("notifyFileSystemRemovedId", str) == 0) return notifyFileSystemRemovedId;
+            if (std::strcmp("notifyFileSystemReplacedId", str) == 0) return notifyFileSystemReplacedId;
+            if (std::strcmp("notifyFileSystemAddedId", str) == 0) return notifyFileSystemAddedId;
             return Messaging::InvalidMessageId;
         };
     };
@@ -49,10 +65,10 @@ public:
     public:
         Request() {
             this->msgId = MessageId::RequestId;
-            this->channel = 0;
+            this->lane = 0;
             this->cachereadenabled = false;
             this->cachewriteenabled = false;
-            this->result = 0;
+            this->status = IOStatus::InvalidIOStatus;
         };
         static Messaging::Message* FactoryCreate() {
             return (Messaging::Message*) Create();
@@ -70,11 +86,11 @@ public:
         const IO::URL& GetURL() const {
             return this->url;
         };
-        void SetChannel(int32 val) {
-            this->channel = val;
+        void SetLane(int32 val) {
+            this->lane = val;
         };
-        int32 GetChannel() const {
-            return this->channel;
+        int32 GetLane() const {
+            return this->lane;
         };
         void SetCacheReadEnabled(bool val) {
             this->cachereadenabled = val;
@@ -88,26 +104,24 @@ public:
         bool GetCacheWriteEnabled() const {
             return this->cachewriteenabled;
         };
-        void SetResult(int32 val) {
-            this->result = val;
+        void SetStatus(const IOStatus::Code& val) {
+            this->status = val;
         };
-        int32 GetResult() const {
-            return this->result;
+        const IOStatus::Code& GetStatus() const {
+            return this->status;
         };
 private:
         IO::URL url;
-        int32 channel;
+        int32 lane;
         bool cachereadenabled;
         bool cachewriteenabled;
-        int32 result;
+        IOStatus::Code status;
     };
-    class Get : public Messaging::Message {
+    class Get : public Request {
         OryolClassPoolAllocDecl(Get);
     public:
         Get() {
             this->msgId = MessageId::GetId;
-            this->rangestartindex = InvalidIndex;
-            this->rangeendindex = InvalidIndex;
         };
         static Messaging::Message* FactoryCreate() {
             return (Messaging::Message*) Create();
@@ -117,19 +131,7 @@ private:
         };
         virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
-        };
-        void SetRangeStartIndex(int32 val) {
-            this->rangestartindex = val;
-        };
-        int32 GetRangeStartIndex() const {
-            return this->rangestartindex;
-        };
-        void SetRangeEndIndex(int32 val) {
-            this->rangeendindex = val;
-        };
-        int32 GetRangeEndIndex() const {
-            return this->rangeendindex;
+            else return Request::IsMemberOf(protId);
         };
         void SetStream(const Core::Ptr<IO::MemoryStream>& val) {
             this->stream = val;
@@ -138,9 +140,134 @@ private:
             return this->stream;
         };
 private:
-        int32 rangestartindex;
-        int32 rangeendindex;
         Core::Ptr<IO::MemoryStream> stream;
+    };
+    class GetRange : public Get {
+        OryolClassPoolAllocDecl(GetRange);
+    public:
+        GetRange() {
+            this->msgId = MessageId::GetRangeId;
+            this->startoffset = 0;
+            this->endoffset = 0;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::GetRangeId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'IOPT') return true;
+            else return Get::IsMemberOf(protId);
+        };
+        void SetStartOffset(int32 val) {
+            this->startoffset = val;
+        };
+        int32 GetStartOffset() const {
+            return this->startoffset;
+        };
+        void SetEndOffset(int32 val) {
+            this->endoffset = val;
+        };
+        int32 GetEndOffset() const {
+            return this->endoffset;
+        };
+private:
+        int32 startoffset;
+        int32 endoffset;
+    };
+    class notifyLanes : public Messaging::Message {
+        OryolClassPoolAllocDecl(notifyLanes);
+    public:
+        notifyLanes() {
+            this->msgId = MessageId::notifyLanesId;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::notifyLanesId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'IOPT') return true;
+            else return Messaging::Message::IsMemberOf(protId);
+        };
+private:
+    };
+    class notifyFileSystemRemoved : public notifyLanes {
+        OryolClassPoolAllocDecl(notifyFileSystemRemoved);
+    public:
+        notifyFileSystemRemoved() {
+            this->msgId = MessageId::notifyFileSystemRemovedId;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::notifyFileSystemRemovedId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'IOPT') return true;
+            else return notifyLanes::IsMemberOf(protId);
+        };
+        void SetScheme(const Core::StringAtom& val) {
+            this->scheme = val;
+        };
+        const Core::StringAtom& GetScheme() const {
+            return this->scheme;
+        };
+private:
+        Core::StringAtom scheme;
+    };
+    class notifyFileSystemReplaced : public notifyLanes {
+        OryolClassPoolAllocDecl(notifyFileSystemReplaced);
+    public:
+        notifyFileSystemReplaced() {
+            this->msgId = MessageId::notifyFileSystemReplacedId;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::notifyFileSystemReplacedId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'IOPT') return true;
+            else return notifyLanes::IsMemberOf(protId);
+        };
+        void SetScheme(const Core::StringAtom& val) {
+            this->scheme = val;
+        };
+        const Core::StringAtom& GetScheme() const {
+            return this->scheme;
+        };
+private:
+        Core::StringAtom scheme;
+    };
+    class notifyFileSystemAdded : public notifyLanes {
+        OryolClassPoolAllocDecl(notifyFileSystemAdded);
+    public:
+        notifyFileSystemAdded() {
+            this->msgId = MessageId::notifyFileSystemAddedId;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::notifyFileSystemAddedId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'IOPT') return true;
+            else return notifyLanes::IsMemberOf(protId);
+        };
+        void SetScheme(const Core::StringAtom& val) {
+            this->scheme = val;
+        };
+        const Core::StringAtom& GetScheme() const {
+            return this->scheme;
+        };
+private:
+        Core::StringAtom scheme;
     };
 };
 }

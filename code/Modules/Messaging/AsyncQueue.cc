@@ -12,6 +12,11 @@ OryolClassPoolAllocImpl(AsyncQueue);
 using namespace Core;
 
 //------------------------------------------------------------------------------
+AsyncQueue::AsyncQueue() {
+    // empty
+}
+    
+//------------------------------------------------------------------------------
 AsyncQueue::~AsyncQueue() {
     /// @todo: should we issue a warning if the queue is not empty?
     this->queue.Clear();
@@ -41,6 +46,24 @@ AsyncQueue::ForwardMessages() {
             this->forwardingPort->Put(this->queue.Dequeue());
         }
     }
+}
+
+//------------------------------------------------------------------------------
+void
+AsyncQueue::SetForwardingPort(const Core::Ptr<Port>& port) {
+    this->forwardingPort = port;
+}
+
+//------------------------------------------------------------------------------
+const Core::Ptr<Port>&
+AsyncQueue::GetForwardingPort() const {
+    return this->forwardingPort;
+}
+
+//------------------------------------------------------------------------------
+int32
+AsyncQueue::GetNumQueuedMessages() const {
+    return this->queue.Size();
 }
 
 } // namespace Messaging

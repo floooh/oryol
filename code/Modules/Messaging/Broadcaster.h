@@ -16,7 +16,7 @@ class Broadcaster : public Port {
     OryolClassPoolAllocDecl(Broadcaster);
 public:
     /// constructor
-    Broadcaster(const Core::StringAtom& name);
+    Broadcaster();
     /// destructor
     virtual ~Broadcaster();
     
