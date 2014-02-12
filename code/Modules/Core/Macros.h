@@ -88,9 +88,10 @@ public:\
     static bool HasInstance() {\
         return nullptr != singleton;\
     };\
-    static void CreateSingleton() {\
+    static TYPE* CreateSingleton() {\
         o_assert(0 == singleton);\
         singleton = new TYPE();\
+        return singleton;\
     };\
     static void DestroySingleton() {\
         o_assert(0 != singleton);\
@@ -117,9 +118,10 @@ public:\
     static bool HasInstance() {\
         return nullptr != singleton;\
     };\
-    static void CreateSingleton() {\
+    static TYPE* CreateSingleton() {\
         o_assert(0 == singleton);\
         singleton = new TYPE();\
+        return singleton; \
     };\
     static void DestroySingleton() {\
         o_assert(0 != singleton);\
