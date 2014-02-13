@@ -20,9 +20,11 @@ using namespace Core;
 */
 ThreadedQueue::ThreadedQueue() :
 threadStopRequested(false) {
-    // empty
-}
 
+    // start the thread
+    this->createThreadId = std::this_thread::get_id();
+    this->thread = std::thread(threadFunc, this);
+}
 
 //------------------------------------------------------------------------------
 ThreadedQueue::ThreadedQueue(const Ptr<Port>& port_) :
