@@ -39,9 +39,6 @@ ioLane::onThreadEnter() {
     disp->Subscribe<IOProtocol::notifyFileSystemReplaced>(std::bind(&ioLane::onNotifyFileSystemReplaced, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemRemoved>(std::bind(&ioLane::onNotifyFileSystemRemoved, this, _1));
     this->forwardingPort = disp;
-    
-    // create thread-local filesystem objects
-    this->fileSystems = schemeRegistry::Instance()->CreateFileSystems();
 }
 
 //------------------------------------------------------------------------------

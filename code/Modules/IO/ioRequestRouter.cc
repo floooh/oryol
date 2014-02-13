@@ -35,6 +35,7 @@ ioRequestRouter::Put(const Ptr<Message>& msg) {
         for (const auto& lane : this->ioLanes) {
             lane->Put(msg);
         }
+        return true;
     }
     else {
         Ptr<IOProtocol::Request> req = msg.dynamicCast<IOProtocol::Request>();

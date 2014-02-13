@@ -10,17 +10,22 @@ using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;
 
+std::atomic<int32> val0{0};
+std::atomic<int32> val1{0};
+
 class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
 public:
     /// called when the IOProtocol::Get message is received
     virtual void onGet(const Core::Ptr<IOProtocol::Get>& msg) {
         Log::Info("TestFileSystem::onGet() called!\n");
+        val0++;
         msg->SetHandled();
     };
     /// called when the IOProtocol::GetRange message is received
     virtual void onGetRange(const Core::Ptr<IOProtocol::GetRange>& msg) {
         Log::Info("TestFileSystem::onGetRange() called!\n");
+        val1++;
         msg->SetHandled();
     }
 };
@@ -46,6 +51,8 @@ TEST(IOFacadeTest) {
     while (!msg->Handled()) {
         CoreFacade::Instance()->ThreadRunLoop()->Run();
     }
+    CHECK(val0 == 1);
+    CHECK(val1 == 0);
     
     // FIXME: dynamically add/remove/replace filesystems, ...
     

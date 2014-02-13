@@ -50,18 +50,5 @@ schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     return fileSystem;
 }
 
-//------------------------------------------------------------------------------
-Map<StringAtom, Ptr<FileSystem>>
-schemeRegistry::CreateFileSystems() const {
-    this->rwLock.LockRead();
-    Map<StringAtom, Ptr<FileSystem>> result;
-    for (const auto& fs : this->registry) {
-        // call creator function for each entry
-        result.Insert(fs.Key(), fs.Value()());
-    }
-    this->rwLock.UnlockRead();
-    return result;
-}
-
 } // namespace IO
 } // namespace Oryol

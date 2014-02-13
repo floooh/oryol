@@ -32,8 +32,6 @@ public:
     bool IsFileSystemRegistered(const Core::StringAtom& scheme) const;
     /// return a new filesystem instance
     Core::Ptr<FileSystem> CreateFileSystem(const Core::StringAtom& scheme) const;
-    /// get a map which new filesystem instances
-    Core::Map<Core::StringAtom, Core::Ptr<FileSystem>> CreateFileSystems() const;
     
 private:
     mutable Core::RWLock rwLock;

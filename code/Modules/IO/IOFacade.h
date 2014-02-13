@@ -67,7 +67,7 @@ private:
 template<class TYPE> void
 IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*()> creator) {
     schemeRegistry* reg = schemeRegistry::Instance();
-    bool newFileSystem = reg->IsFileSystemRegistered(scheme);
+    bool newFileSystem = !reg->IsFileSystemRegistered(scheme);
     reg->RegisterFileSystem<TYPE>(scheme, creator);
     if (newFileSystem) {
         // notify IO threads that a filesystem was added
