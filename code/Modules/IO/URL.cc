@@ -52,23 +52,21 @@ URL::URL(URL&& rhs) {
     
 //------------------------------------------------------------------------------
 URL::URL(const char* rhs) :
-content(rhs),
 valid(false) {
-    this->parseIndices();
+    this->parseIndices(rhs);
 }
     
 //------------------------------------------------------------------------------
 URL::URL(const Core::StringAtom& rhs) :
-content(rhs),
 valid(false) {
-    this->parseIndices();
+    this->parseIndices(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
 URL::URL(const Core::String& rhs) :
 content(rhs),
 valid(false) {
-    this->parseIndices();
+    this->parseIndices(rhs);
 }
     
 //------------------------------------------------------------------------------
@@ -94,21 +92,21 @@ URL::operator=(URL&& rhs) {
 void
 URL::operator=(const char* rhs) {
     this->content = rhs;
-    this->parseIndices();
+    this->parseIndices(rhs);
 }
     
 //------------------------------------------------------------------------------
 void
 URL::operator=(const Core::StringAtom& rhs) {
     this->content = rhs;
-    this->parseIndices();
+    this->parseIndices(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
 void
 URL::operator=(const Core::String& rhs) {
     this->content = rhs;
-    this->parseIndices();
+    this->parseIndices(rhs);
 }
     
 //------------------------------------------------------------------------------
@@ -143,21 +141,20 @@ URL::Empty() const {
 
 //------------------------------------------------------------------------------
 bool
-URL::parseIndices() {
+URL::parseIndices(String urlString) {
 
+    this->content.Clear();
     this->clearIndices();
     this->valid = false;
     
-    if (this->content.IsValid()) {
-    
-        // convert assigns
-        String urlString = this->content.AsString();
-        if (assignRegistry::HasInstance()) {
-            urlString = assignRegistry::Instance()->ResolveAssigns(urlString);
-        }
+    if (assignRegistry::HasInstance()) {
+        urlString = assignRegistry::Instance()->ResolveAssigns(urlString);
+    }
+    if (urlString.IsValid()) {
     
         StringBuilder builder;
         builder.Set(urlString);
+        this->content = urlString;
         
         // extract scheme
         this->indices[schemeStart] = 0;

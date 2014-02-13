@@ -79,7 +79,7 @@ public:
     
 private:
     /// parse URL, populates string indices
-    bool parseIndices();
+    bool parseIndices(Core::String urlString);
     /// clear string indices
     void clearIndices();
     /// copy string indices
