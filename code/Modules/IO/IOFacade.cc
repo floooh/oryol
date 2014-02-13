@@ -39,6 +39,7 @@ IOFacade::~IOFacade() {
 //------------------------------------------------------------------------------
 void
 IOFacade::doWork() {
+    o_assert(this->isMainThread());
     if (this->ioRequestRouter.isValid()) {
         this->ioRequestRouter->DoWork();
     }
@@ -120,8 +121,6 @@ IOFacade::IsPreloadingFinished() const {
     /// @todo: implement IsPreloadingFinished()
     return false;
 }
-
-
     
 } // namespace IO
 } // namespace Oryol
