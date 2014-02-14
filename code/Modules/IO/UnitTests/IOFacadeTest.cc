@@ -5,13 +5,16 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/IOFacade.h"
 #include "Core/CoreFacade.h"
+#include "IO/BinaryStreamReader.h"
+#include "IO/BinaryStreamWriter.h"
+#include "IO/MemoryStream.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;
 
-std::atomic<int32> val0{0};
-std::atomic<int32> val1{0};
+std::atomic<int32> numGetHandled{0};
+std::atomic<int32> numGetRangeHandled{0};
 
 class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
@@ -19,13 +22,23 @@ public:
     /// called when the IOProtocol::Get message is received
     virtual void onGet(const Core::Ptr<IOProtocol::Get>& msg) {
         Log::Info("TestFileSystem::onGet() called!\n");
-        val0++;
+        numGetHandled++;
+        
+        // create a stream object, and just write the URL from the msg to it
+        Ptr<MemoryStream> stream = MemoryStream::Create();
+        stream->Open(OpenMode::WriteOnly);
+        Ptr<BinaryStreamWriter> writer = BinaryStreamWriter::Create(stream);
+        writer->Write(msg->GetURL().Get());
+        stream->Close();
+        
+        msg->SetStream(stream);
+        msg->SetStatus(IOStatus::OK);
         msg->SetHandled();
     };
     /// called when the IOProtocol::GetRange message is received
     virtual void onGetRange(const Core::Ptr<IOProtocol::GetRange>& msg) {
         Log::Info("TestFileSystem::onGetRange() called!\n");
-        val1++;
+        numGetRangeHandled++;
         msg->SetHandled();
     }
 };
@@ -51,8 +64,19 @@ TEST(IOFacadeTest) {
     while (!msg->Handled()) {
         CoreFacade::Instance()->ThreadRunLoop()->Run();
     }
-    CHECK(val0 == 1);
-    CHECK(val1 == 0);
+    CHECK(numGetHandled == 1);
+    CHECK(numGetRangeHandled == 0);
+    
+    // check the msg result
+    CHECK(msg->GetStream().isValid());
+    CHECK(msg->GetStatus() == IOStatus::OK);
+    const Ptr<Stream>& stream = msg->GetStream();
+    stream->Open(OpenMode::ReadOnly);
+    Ptr<BinaryStreamReader> reader = BinaryStreamReader::Create(stream);
+    StringAtom str;
+    CHECK(reader->Read(str));
+    stream->Close();
+    CHECK(str == msg->GetURL().Get());
     
     // FIXME: dynamically add/remove/replace filesystems, ...
     
