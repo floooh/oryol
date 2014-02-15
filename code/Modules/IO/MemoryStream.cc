@@ -152,16 +152,18 @@ MemoryStream::Write(const void* ptr, int32 numBytes) {
     o_assert(this->IsWritable());
     o_assert((this->writePosition >= 0) && (this->writePosition <= this->size));
     
-    // need to make room?
-    if (!this->hasRoom(numBytes)) {
-        this->makeRoom(numBytes);
+    if (numBytes > 0) {
+        // need to make room?
+        if (!this->hasRoom(numBytes)) {
+            this->makeRoom(numBytes);
+        }
+        
+        // write data to stream and update write cursor and size
+        o_assert(0 != this->buffer);
+        o_assert((this->writePosition + numBytes) <= this->capacity);
+        Memory::Copy(ptr, this->buffer + this->writePosition, numBytes);
+        this->incrWritePosition(numBytes);
     }
-    
-    // write data to stream and update write cursor and size
-    o_assert(0 != this->buffer);
-    o_assert((this->writePosition + numBytes) <= this->capacity);
-    Memory::Copy(ptr, this->buffer + this->writePosition, numBytes);
-    this->incrWritePosition(numBytes);
     return numBytes;
 }
 
