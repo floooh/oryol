@@ -11,7 +11,7 @@ OryolClassImpl(Stream);
 
 //------------------------------------------------------------------------------
 Stream::Stream() :
-openMode(OpenMode::Invalid),
+openMode(OpenMode::InvalidOpenMode),
 isOpen(false),
 isWriteMapped(false),
 isReadMapped(false),
@@ -32,8 +32,8 @@ bool
 Stream::Open(OpenMode::Enum mode) {
     
     o_assert(!this->isOpen);
-    o_assert(this->openMode == OpenMode::Invalid);
-    o_assert(mode != OpenMode::Invalid);
+    o_assert(this->openMode == OpenMode::InvalidOpenMode);
+    o_assert(mode != OpenMode::InvalidOpenMode);
     
     this->openMode = mode;
     this->isOpen = true;
@@ -64,7 +64,7 @@ Stream::Open(OpenMode::Enum mode) {
             break;
             
         // silence compiler
-        case OpenMode::Invalid:
+        case OpenMode::InvalidOpenMode:
             break;
     }
     return true;
@@ -81,7 +81,7 @@ Stream::Close() {
         this->UnmapRead();
     }
     this->isOpen = false;
-    this->openMode = OpenMode::Invalid;
+    this->openMode = OpenMode::InvalidOpenMode;
 }
 
 //------------------------------------------------------------------------------
