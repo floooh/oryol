@@ -14,6 +14,10 @@ class osxURLLoader : public baseURLLoader {
 public:
     /// process enqueued requests
     void doWork();
+    
+private:
+    /// handle a single request, synchronously
+    void doOneRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
 };
     
 } // namespace HTTP

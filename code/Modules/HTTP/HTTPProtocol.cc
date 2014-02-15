@@ -6,8 +6,10 @@
 
 namespace Oryol {
 namespace HTTP {
+OryolClassPoolAllocImpl(HTTPProtocol::HTTPResponse);
 OryolClassPoolAllocImpl(HTTPProtocol::HTTPRequest);
 HTTPProtocol::CreateCallback HTTPProtocol::jumpTable[HTTPProtocol::MessageId::NumMessageIds] = { 
+    &HTTPProtocol::HTTPResponse::FactoryCreate,
     &HTTPProtocol::HTTPRequest::FactoryCreate,
 };
 Messaging::Message*

@@ -1,22 +1,30 @@
 <Generator type="MessageProtocol" ns="HTTP" name="HTTPProtocol" id="HTPR" >
 
     <Header path="IO/URL.h"/>
-    <Header path="HTTP/HTTPResponse.h"/>
     <Header path="HTTP/HTTPMethod.h" />
     <Header path="Core/Containers/Map.h"/>
     <Header path="Core/String/String.h"/>
     <Header path="IO/Stream.h"/>
+    <Header path="IO/IOStatus.h"/>
+
+    <!-- a HTTPResponse -->
+    <Message name="HTTPResponse" serialize="false">
+        <Attr name="Status" type="IO::IOStatus::Code" default="IO::IOStatus::InvalidIOStatus" />
+        <Attr name="Fields" type="Core::Map&lt;Core::String,Core::String&gt;" />
+        <Attr name="Body" type="Core::Ptr&lt;IO::Stream&gt;" />
+        <Attr name="ErrorDesc" type="Core::String" />
+    </Message>
 
     <!-- a HTTPRequest -->
     <Message name="HTTPRequest" serialize="false">
         <!-- input -->
-        <Attr name="Method" type="HTTP::HTTPMethod" default="HTTP::HTTPMethod::InvalidHTTPMethod" />
+        <Attr name="Method" type="HTTP::HTTPMethod::Code" default="HTTP::HTTPMethod::GET" />
         <Attr name="URL" type="IO::URL" />
         <Attr name="Fields" type="Core::Map&lt;Core::String,Core::String&gt;" />
         <Attr name="Body" type="Core::Ptr&lt;IO::Stream&gt;" />
         
         <!-- output -->
-        <Attr name="Response" type="Core::Ptr&lt;HTTP::HTTPResponse&gt;" dir="out" />
+        <Attr name="Response" type="Core::Ptr&lt;HTTPProtocol::HTTPResponse&gt;" dir="out" />
     </Message>
     
 </Generator>

@@ -8,11 +8,11 @@
 #include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"
 #include "IO/URL.h"
-#include "HTTP/HTTPResponse.h"
 #include "HTTP/HTTPMethod.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
 #include "IO/Stream.h"
+#include "IO/IOStatus.h"
 
 namespace Oryol {
 namespace HTTP {
@@ -24,16 +24,19 @@ public:
     class MessageId {
     public:
         enum {
-            HTTPRequestId = Messaging::Protocol::MessageId::NumMessageIds, 
+            HTTPResponseId = Messaging::Protocol::MessageId::NumMessageIds, 
+            HTTPRequestId,
             NumMessageIds
         };
         static const char* ToString(Messaging::MessageIdType c) {
             switch (c) {
+                case HTTPResponseId: return "HTTPResponseId";
                 case HTTPRequestId: return "HTTPRequestId";
                 default: return "InvalidMessageId";
             }
         };
         static Messaging::MessageIdType FromString(const char* str) {
+            if (std::strcmp("HTTPResponseId", str) == 0) return HTTPResponseId;
             if (std::strcmp("HTTPRequestId", str) == 0) return HTTPRequestId;
             return Messaging::InvalidMessageId;
         };
@@ -43,6 +46,52 @@ public:
     class Factory {
     public:
         static Messaging::Message* Create(Messaging::MessageIdType id);
+    };
+    class HTTPResponse : public Messaging::Message {
+        OryolClassPoolAllocDecl(HTTPResponse);
+    public:
+        HTTPResponse() {
+            this->msgId = MessageId::HTTPResponseId;
+        };
+        static Messaging::Message* FactoryCreate() {
+            return (Messaging::Message*) Create();
+        };
+        static Messaging::MessageIdType ClassMessageId() {
+            return MessageId::HTTPResponseId;
+        };
+        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+            if (protId == 'HTPR') return true;
+            else return Messaging::Message::IsMemberOf(protId);
+        };
+        void SetStatus(const IO::IOStatus::Code& val) {
+            this->status = val;
+        };
+        const IO::IOStatus::Code& GetStatus() const {
+            return this->status;
+        };
+        void SetFields(const Core::Map<Core::String,Core::String>& val) {
+            this->fields = val;
+        };
+        const Core::Map<Core::String,Core::String>& GetFields() const {
+            return this->fields;
+        };
+        void SetBody(const Core::Ptr<IO::Stream>& val) {
+            this->body = val;
+        };
+        const Core::Ptr<IO::Stream>& GetBody() const {
+            return this->body;
+        };
+        void SetErrorDesc(const Core::String& val) {
+            this->errordesc = val;
+        };
+        const Core::String& GetErrorDesc() const {
+            return this->errordesc;
+        };
+private:
+        IO::IOStatus::Code status;
+        Core::Map<Core::String,Core::String> fields;
+        Core::Ptr<IO::Stream> body;
+        Core::String errordesc;
     };
     class HTTPRequest : public Messaging::Message {
         OryolClassPoolAllocDecl(HTTPRequest);
@@ -60,10 +109,10 @@ public:
             if (protId == 'HTPR') return true;
             else return Messaging::Message::IsMemberOf(protId);
         };
-        void SetMethod(const HTTP::HTTPMethod& val) {
+        void SetMethod(const HTTP::HTTPMethod::Code& val) {
             this->method = val;
         };
-        const HTTP::HTTPMethod& GetMethod() const {
+        const HTTP::HTTPMethod::Code& GetMethod() const {
             return this->method;
         };
         void SetURL(const IO::URL& val) {
@@ -84,18 +133,18 @@ public:
         const Core::Ptr<IO::Stream>& GetBody() const {
             return this->body;
         };
-        void SetResponse(const Core::Ptr<HTTP::HTTPResponse>& val) {
+        void SetResponse(const Core::Ptr<HTTPProtocol::HTTPResponse>& val) {
             this->response = val;
         };
-        const Core::Ptr<HTTP::HTTPResponse>& GetResponse() const {
+        const Core::Ptr<HTTPProtocol::HTTPResponse>& GetResponse() const {
             return this->response;
         };
 private:
-        HTTP::HTTPMethod method;
+        HTTP::HTTPMethod::Code method;
         IO::URL url;
         Core::Map<Core::String,Core::String> fields;
         Core::Ptr<IO::Stream> body;
-        Core::Ptr<HTTP::HTTPResponse> response;
+        Core::Ptr<HTTPProtocol::HTTPResponse> response;
     };
 };
 }
