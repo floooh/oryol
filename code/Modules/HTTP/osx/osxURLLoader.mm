@@ -67,7 +67,6 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         NSHTTPURLResponse* urlResponse = nil;
         NSError* urlError = nil;
         NSData* responseData = [NSURLConnection sendSynchronousRequest:urlRequest returningResponse:&urlResponse error:&urlError];
-        [urlRequest autorelease];
         if (nil != responseData) {
             o_assert(nil != urlResponse);
             
@@ -89,11 +88,13 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // extract response body...
             const void* responseBytes = [responseData bytes];
             const int responseLength = [responseData length];
-            Ptr<MemoryStream> responseBody = MemoryStream::Create();
-            responseBody->Open(OpenMode::WriteOnly);
-            responseBody->Write(responseBytes, responseLength);
-            responseBody->Close();
-            response->SetBody(responseBody);
+            if (responseLength > 0) {
+                Ptr<MemoryStream> responseBody = MemoryStream::Create();
+                responseBody->Open(OpenMode::WriteOnly);
+                responseBody->Write(responseBytes, responseLength);
+                responseBody->Close();
+                response->SetBody(responseBody);
+            }
             req->SetResponse(response);
         }
         else {
@@ -107,6 +108,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             }
             req->SetResponse(response);
         }
+        [urlRequest autorelease];
     }
 }
 
