@@ -3,7 +3,19 @@ Code generator for message protocol xml files.
 '''
 
 import os
+import sys
 
+#-------------------------------------------------------------------------------
+def error(msg) :
+    print "ERROR: {}".format(msg)
+    sys.exit(10)
+
+#-------------------------------------------------------------------------------
+def checkValidAttr(attr) :
+    for key in attr.keys() :
+        if not key in ('name', 'type', 'def', 'dir') :
+            error('Invalid Attr attr "{}"'.format(key))
+    
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, xmlRoot) :
     '''
@@ -219,6 +231,7 @@ def writeMessageClasses(f, xmlRoot) :
 
         # write setters/getters
         for attr in msg.findall('Attr') :
+            checkValidAttr(attr)
             attrName = attr.get('name')
             attrType = attr.get('type')
             f.write('        void Set' + attrName + '(' + getRefType(attrType) + ' val) {\n')
