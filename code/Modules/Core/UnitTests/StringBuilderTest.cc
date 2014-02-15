@@ -164,5 +164,11 @@ TEST(StringBuilderTest) {
     CHECK(builder.FindFirstOf(0, 4, ":") == InvalidIndex);
     CHECK(builder.FindFirstOf(7, 12, ".") == 10);
     CHECK(builder.FindSubString(0, EndOfString, "://") == 4);
+    
+    // test Format
+    CHECK(!builder.Format(4, "One: %d, Two: %d, Three: %d", 1, 2, 3));   // this should fail because of no room
+    CHECK(builder.GetString() == "");
+    CHECK(builder.Format(256, "One: %d, Two: %d, Three: %d", 1, 2, 3));
+    CHECK(builder.GetString() == "One: 1, Two: 2, Three: 3");
 }
 

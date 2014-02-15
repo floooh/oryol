@@ -548,5 +548,28 @@ StringBuilder::Tokenize(const char* delims, char fence, Array<String>& outTokens
     return outTokens.Size();
 }
 
+//------------------------------------------------------------------------------
+bool
+StringBuilder::Format(int32 maxLength, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    
+    bool retval = true;
+    this->Clear();
+    this->ensureRoom(maxLength);
+    int res = std::vsnprintf(this->buffer, maxLength, fmt, args);
+    if ((res < 0) || (res >= (maxLength-1))) {
+        // error or string was truncated
+        this->Clear();
+        retval = false;
+    }
+    else {
+        // all ok, need to adjust length
+        this->size = res;
+    }
+    va_end(args);
+    return retval;
+}
+
 } // namespace Core
 } // namespace Oryol

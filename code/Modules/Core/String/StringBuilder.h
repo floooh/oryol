@@ -35,6 +35,9 @@ public:
     /// get a substring, if endIndex can be EndOfString
     String GetSubString(int32 startIndex, int32 endIndex) const;
     
+    /// printf-style formatting, max string length must be provided, returns false if resulting string is too long
+    bool Format(int32 maxLength, const char* fmt, ...);
+    
     /// (re)set to raw null-terminated string
     void Set(const char* str);
     /// (re)set to raw character sequence, endIndex can be EndOfString
