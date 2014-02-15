@@ -52,6 +52,7 @@ public:
     public:
         HTTPResponse() {
             this->msgId = MessageId::HTTPResponseId;
+            this->status = IO::IOStatus::InvalidIOStatus;
         };
         static Messaging::Message* FactoryCreate() {
             return (Messaging::Message*) Create();
@@ -98,6 +99,7 @@ private:
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;
+            this->method = HTTP::HTTPMethod::GET;
         };
         static Messaging::Message* FactoryCreate() {
             return (Messaging::Message*) Create();

@@ -12,24 +12,31 @@ using namespace Oryol::HTTP;
 
 TEST(HTTPClientTest) {
 
-    // create a GET request to www.flohofwoe.net
-    Ptr<HTTPProtocol::HTTPRequest> req = HTTPProtocol::HTTPRequest::Create();
-    req->SetMethod(HTTPMethod::GET);
-    req->SetURL("http://www.flohofwoe.net/index.html");
+    // create a couple of requests
+    Ptr<HTTPProtocol::HTTPRequest> reqOk = HTTPProtocol::HTTPRequest::Create();
+    CHECK(reqOk->GetMethod() == HTTPMethod::GET);
+    reqOk->SetURL("http://www.flohofwoe.net/index.html");
+    Ptr<HTTPProtocol::HTTPRequest> req404 = HTTPProtocol::HTTPRequest::Create();
+    req404->SetURL("http://www.google.com/blargh");
 
     // create a HTTP client and fire the request
     Ptr<HTTPClient> httpClient = HTTPClient::Create();
-    httpClient->Put(req);
-    while (!req->Handled()) {
+    httpClient->Put(reqOk);
+    httpClient->Put(req404);
+    while (!(reqOk->Handled() && req404->Handled())) {
         httpClient->DoWork();
     }
     
-    // check response
-    CHECK(req->GetResponse().isValid());
-    CHECK(req->GetResponse()->GetStatus() == IOStatus::OK);
-    const Map<String, String>& fields = req->GetResponse()->GetFields();
+    // check valid response
+    CHECK(reqOk->GetResponse().isValid());
+    CHECK(reqOk->GetResponse()->GetStatus() == IOStatus::OK);
+    const Map<String, String>& fields = reqOk->GetResponse()->GetFields();
     CHECK(fields.Contains("Content-Type"));
     CHECK(fields["Content-Type"] == "text/html");
-    CHECK(req->GetResponse()->GetBody().isValid());
-    CHECK(req->GetResponse()->GetBody()->Size() > 500);
+    CHECK(reqOk->GetResponse()->GetBody().isValid());
+    CHECK(reqOk->GetResponse()->GetBody()->Size() > 500);
+    
+    // check 404 response
+    CHECK(req404->GetResponse().isValid());
+    CHECK(req404->GetResponse()->GetStatus() == IOStatus::NotFound);
 }
