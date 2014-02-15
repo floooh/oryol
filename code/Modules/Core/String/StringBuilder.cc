@@ -133,6 +133,7 @@ StringBuilder::Append(const char* ptr, int32 startIndex, int32 endIndex) {
     if (length > 0) {
         o_assert(ptr);
         this->ensureRoom(length);
+        o_assert(this->buffer);
         std::strncpy(this->buffer + this->size, ptr + startIndex, length);
         this->size += length;
         this->buffer[this->size] = 0;
