@@ -1,46 +1,46 @@
 #-------------------------------------------------------------------------------
-#	oryol_private.cmake
-#	Private cmake macros (all the public stuff is in oryol.cmake)
-#	(C) 2013 A.Weissflog
+#   oryol_private.cmake
+#   Private cmake macros (all the public stuff is in oryol.cmake)
+#   (C) 2013 A.Weissflog
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-#	oryol_reset(target)
-#	Reset the global tracker variables.
+#   oryol_reset(target)
+#   Reset the global tracker variables.
 #
 macro(oryol_reset target)
-	set(CurSources)
-	set(CurNaclFiles)
+    set(CurSources)
+    set(CurNaclFiles)
     set(CurXmlFiles)
-	set(CurDependencies)
-	set(CurLinkLibs)
-	set(CurFrameworks)
-	set(CurModuleName)
+    set(CurDependencies)
+    set(CurLinkLibs)
+    set(CurFrameworks)
+    set(CurModuleName)
     set(CurLibraryName)
-	set(CurAppName)
-	set(CurAppType)
+    set(CurAppName)
+    set(CurAppType)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_apply_target_group(target)
-#	Apply IDE group name to target.
+#   oryol_apply_target_group(target)
+#   Apply IDE group name to target.
 #
 macro(oryol_apply_target_group target)
-	if (NOT ${ORYOL_TARGET_GROUP} STREQUAL "")
-    	set_target_properties(${target} PROPERTIES FOLDER ${ORYOL_TARGET_GROUP})
+    if (NOT ${ORYOL_TARGET_GROUP} STREQUAL "")
+        set_target_properties(${target} PROPERTIES FOLDER ${ORYOL_TARGET_GROUP})
     endif()
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_setup_link_directories()
-#	Setup the link library search paths.
+#   oryol_setup_link_directories()
+#   Setup the link library search paths.
 #
 macro(oryol_setup_link_directories)
-	include_directories(${ORYOL_ROOT_DIR}/lib/${ORYOL_PLATFORM_NAME})
+    include_directories(${ORYOL_ROOT_DIR}/lib/${ORYOL_PLATFORM_NAME})
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_recurse_deps(input output)
+#   oryol_recurse_deps(input output)
 #
 macro(oryol_recurse_deps input output)
     list(APPEND ${output} ${input})
@@ -51,24 +51,24 @@ macro(oryol_recurse_deps input output)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_resolve_dependencies(target)
-#	Recursively resolve dependencies of a target.
+#   oryol_resolve_dependencies(target)
+#   Recursively resolve dependencies of a target.
 #
 macro(oryol_resolve_dependencies target)
-	set(resolvedDeps)
+    set(resolvedDeps)
     get_property(input GLOBAL PROPERTY ${target}_deps)
     foreach(dep ${input})
         oryol_recurse_deps(${dep} resolvedDeps)
     endforeach()
     if (resolvedDeps)
-	   list(REMOVE_DUPLICATES resolvedDeps)
+       list(REMOVE_DUPLICATES resolvedDeps)
     endif()
-	message("${target} Dependencies: ${resolvedDeps}")
-	target_link_libraries(${target} ${resolvedDeps})
+    message("${target} Dependencies: ${resolvedDeps}")
+    target_link_libraries(${target} ${resolvedDeps})
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_recurse_libs(input output)
+#   oryol_recurse_libs(input output)
 #
 macro(oryol_recurse_libs input output)
     list(APPEND ${output} ${input})
@@ -79,24 +79,24 @@ macro(oryol_recurse_libs input output)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_resolve_dependencies(target)
-#	Recursively resolve dependencies of a target.
+#   oryol_resolve_dependencies(target)
+#   Recursively resolve dependencies of a target.
 #
 macro(oryol_resolve_linklibs target)
-	set(resolvedLibs)
+    set(resolvedLibs)
     get_property(input GLOBAL PROPERTY ${target}_libs)
     foreach(lib ${input})
         oryol_recurse_deps(${lib} resolvedLibs)
     endforeach()
     if (resolvedLibs)
-	   list(REMOVE_DUPLICATES resolvedLibs)
+       list(REMOVE_DUPLICATES resolvedLibs)
     endif()
-	message("${target} Libs: ${resolvedLibs}")
-	target_link_libraries(${target} ${resolvedLibs})
+    message("${target} Libs: ${resolvedLibs}")
+    target_link_libraries(${target} ${resolvedLibs})
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_recurse_frameworks(input output)
+#   oryol_recurse_frameworks(input output)
 #
 macro(oryol_recurse_frameworks input output)
     list(APPEND ${output} ${input})
@@ -107,28 +107,28 @@ macro(oryol_recurse_frameworks input output)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_resolve_frameworks(target)
-#	Recursively resolve dependencies of a target.
+#   oryol_resolve_frameworks(target)
+#   Recursively resolve dependencies of a target.
 #
 macro(oryol_resolve_frameworks target)
-	set(resolvedFws)
+    set(resolvedFws)
     get_property(input GLOBAL PROPERTY ${target}_frameworks)
     foreach(fw ${input})
         oryol_recurse_deps(${fw} resolvedFws)
     endforeach()
     if (resolvedFws)
-	   list(REMOVE_DUPLICATES resolvedFws)
+       list(REMOVE_DUPLICATES resolvedFws)
     endif()
-	message("${target} Frameworks: ${resolvedFws}")
-	foreach (fw ${resolvedFws})
-		FIND_LIBRARY(found_framework ${fw})
-		target_link_libraries(${target} ${found_framework})
-	endforeach()
+    message("${target} Frameworks: ${resolvedFws}")
+    foreach (fw ${resolvedFws})
+        FIND_LIBRARY(found_framework ${fw})
+        target_link_libraries(${target} ${found_framework})
+    endforeach()
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_copy_osx_dylib_files(target isbundle)
-#	Copy OSX dynamic link libs to the executables directory.
+#   oryol_copy_osx_dylib_files(target isbundle)
+#   Copy OSX dynamic link libs to the executables directory.
 #
 macro(oryol_copy_osx_dylib_files target isbundle)
     if (ORYOL_IOS OR ORYOL_OSX)
@@ -146,30 +146,30 @@ macro(oryol_copy_osx_dylib_files target isbundle)
 endmacro()
 
 #-------------------------------------------------------------------------------
-#	oryol_osx_add_target_properties(target)
+#   oryol_osx_add_target_properties(target)
 #   Setup setup special target properties for OSX/iOS.
 #
 macro(oryol_osx_add_target_properties target)
-	if (ORYOL_IOS OR ORYOL_OSX)
-		if (ORYOL_IOS)
-	        set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")    
-	        set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "'1,2'")
-	    endif()
-	    if (ORYOL_IOS)
-	        file(GLOB plist *.ios.plist)
-	    else()
-	        file(GLOB plist *.osx.plist)
-	    endif()
-	    if (NOT ${plist} STREQUAL "")
-	        message("iOS/OSX plist file:" ${plist} " GUI identifier: " ${ORYOL_OSX_GUI_IDENTIFIER})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_EXECUTABLE_NAME \${EXECUTABLE_NAME})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_PRODUCT_NAME \${PRODUCT_NAME})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${ORYOL_OSX_GUI_IDENTIFIER})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME \${PRODUCT_NAME})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${plist})
-	        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_ICON_FILE "Icon.png")
-	    endif()
-	endif()
+    if (ORYOL_IOS OR ORYOL_OSX)
+        if (ORYOL_IOS)
+            set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")    
+            set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "'1,2'")
+        endif()
+        if (ORYOL_IOS)
+            file(GLOB plist *.ios.plist)
+        else()
+            file(GLOB plist *.osx.plist)
+        endif()
+        if (NOT ${plist} STREQUAL "")
+            message("iOS/OSX plist file:" ${plist} " GUI identifier: " ${ORYOL_OSX_GUI_IDENTIFIER})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_EXECUTABLE_NAME \${EXECUTABLE_NAME})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_PRODUCT_NAME \${PRODUCT_NAME})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${ORYOL_OSX_GUI_IDENTIFIER})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME \${PRODUCT_NAME})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${plist})
+            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_ICON_FILE "Icon.png")
+        endif()
+    endif()
 endmacro()
 
 #-------------------------------------------------------------------------------
