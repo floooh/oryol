@@ -21,7 +21,7 @@ TEST(MemoryStreamTest) {
     Ptr<MemoryStream> stream0 = MemoryStream::Create();
     CHECK(stream0->GetURL().Empty());
     CHECK(!stream0->IsOpen());
-    CHECK(stream0->GetOpenMode() == OpenMode::Invalid);
+    CHECK(stream0->GetOpenMode() == OpenMode::InvalidOpenMode);
     CHECK(stream0->Size() == 0);
     CHECK(stream0->GetWritePosition() == 0);
     CHECK(stream0->GetReadPosition() == 0);
@@ -48,7 +48,7 @@ TEST(MemoryStreamTest) {
     
     // close the stream
     stream0->Close();
-    CHECK(stream0->GetOpenMode() == OpenMode::Invalid);
+    CHECK(stream0->GetOpenMode() == OpenMode::InvalidOpenMode);
     CHECK(!stream0->IsOpen());
     CHECK(stream0->Size() == dataSize);
     
