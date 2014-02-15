@@ -37,8 +37,6 @@ template<class KEY, class VALUE> class ArrayMap {
 public:
     /// default constructor
     ArrayMap();
-    /// construct with allocation strategy
-    ArrayMap(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor (truncates to actual size)
     ArrayMap(const ArrayMap& rhs);
     /// move constructor (same capacity and size)
@@ -110,14 +108,6 @@ private:
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE>
 ArrayMap<KEY, VALUE>::ArrayMap() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-template<class KEY, class VALUE>
-ArrayMap<KEY, VALUE>::ArrayMap(int32 minGrow, int32 maxGrow) :
-indexMap(minGrow, maxGrow),
-valueArray(minGrow, maxGrow) {
     // empty
 }
 

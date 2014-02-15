@@ -19,8 +19,6 @@ template<class VALUE> class Set {
 public:
     /// default constructor
     Set();
-    /// setup with allocation strategy
-    Set(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor (truncates to actual size)
     Set(const Set& rhs);
     /// move constructor (same capacity and size)
@@ -70,13 +68,6 @@ private:
 //------------------------------------------------------------------------------
 template<class VALUE>
 Set<VALUE>::Set() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-template<class VALUE>
-Set<VALUE>::Set(int32 minGrow, int32 maxGrow) :
-valueArray(minGrow, maxGrow) {
     // empty
 }
 

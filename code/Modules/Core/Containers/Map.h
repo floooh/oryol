@@ -43,8 +43,6 @@ template<class KEY, class VALUE> class Map {
 public:
     /// default constructor
     Map();
-    /// setup with allocation strategy
-    Map(int32 minGrow_, int32 maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor (truncates to actual size)
     Map(const Map& rhs);
     /// move constructor (same capacity and size)
@@ -154,15 +152,6 @@ template<class KEY, class VALUE>
 Map<KEY, VALUE>::Map() :
 minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW),
-inBulkMode(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-template<class KEY, class VALUE>
-Map<KEY, VALUE>::Map(int32 minGrow_, int32 maxGrow_) :
-minGrow(minGrow_),
-maxGrow(maxGrow_),
 inBulkMode(false) {
     // empty
 }

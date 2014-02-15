@@ -14,8 +14,6 @@ template<class TYPE> class Queue {
 public:
     /// default constructor
     Queue();
-    /// setup with allocation strategy
-    Queue(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor
     Queue(const Queue& rhs);
     /// move constructor
@@ -154,14 +152,6 @@ template<class TYPE>
 Queue<TYPE>::Queue() :
 minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE>
-Queue<TYPE>::Queue(int32 minGrow_, int32 maxGrow_) :
-minGrow(minGrow_),
-maxGrow(maxGrow_) {
     // empty
 }
 

@@ -40,8 +40,6 @@ template<class TYPE> class Array {
 public:
     /// default constructor
     Array();
-    /// setup with allocation strategy
-    Array(int32 minGrow_, int32 maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor (truncates to actual size)
     Array(const Array& rhs);
     /// move constructor (same capacity and size)
@@ -143,14 +141,6 @@ template<class TYPE>
 Array<TYPE>::Array() :
     minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
     maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE>
-Array<TYPE>::Array(int32 minGrow_, int32 maxGrow_) :
-minGrow(minGrow_),
-maxGrow(maxGrow_) {
     // empty
 }
 

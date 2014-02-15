@@ -19,8 +19,6 @@ template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> class HashSet {
 public:
     /// default constructor
     HashSet();
-    /// construct with allocation strategy
-    HashSet(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// copy constructor
     HashSet(const HashSet& rhs);
     /// move constructor
@@ -66,13 +64,6 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::HashSet() :
 size(0) {
     // empty
 };
-
-//------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS>
-HashSet<VALUETYPE, HASHER, NUMBUCKETS>::HashSet(int32 minGrow, int32 maxGrow) :
-size(0) {
-    this->SetAllocStrategy(minGrow, maxGrow);
-}
 
 //------------------------------------------------------------------------------
 template<class VALUETYPE, class HASHER, int32 NUMBUCKETS>
