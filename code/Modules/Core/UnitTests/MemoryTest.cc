@@ -5,6 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Memory/Memory.h"
+#include "Core/Macros.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -15,7 +16,7 @@ TEST(Memory) {
     // allocate memory
     int32 byteSize = 64;
     uint8* p0 = (uint8*) Memory::Alloc(byteSize);
-    CHECK(nullptr != p0);
+    o_assert(p0);
     
     // clear memory
     int32 i;
