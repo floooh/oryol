@@ -4,4 +4,5 @@
 oryol_add_subdirectory(Core)
 oryol_add_subdirectory(IO)
 oryol_add_subdirectory(Messaging)
+oryol_add_subdirectory(HTTP)
 

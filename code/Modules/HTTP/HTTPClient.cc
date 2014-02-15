@@ -1,0 +1,42 @@
+//------------------------------------------------------------------------------
+//  HTTPClient.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "HTTPClient.h"
+
+namespace Oryol {
+namespace HTTP {
+    
+OryolClassImpl(HTTPClient);
+
+using namespace Core;
+using namespace Messaging;
+
+//------------------------------------------------------------------------------
+HTTPClient::HTTPClient() {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+HTTPClient::~HTTPClient() {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+bool
+HTTPClient::Put(const Ptr<Message>& msg) {
+    o_assert(msg->IsMemberOf(HTTPProtocol::GetProtocolId()));
+    Ptr<HTTPProtocol::HTTPRequest> req = msg.dynamicCast<HTTPProtocol::HTTPRequest>();
+    o_assert(req.isValid());
+    this->urlLoader.putRequest(req);
+    return true;
+}
+
+//------------------------------------------------------------------------------
+void
+HTTPClient::DoWork() {
+    this->urlLoader.doWork();
+}
+
+} // namespace HTTP
+} // namespace Oryol
