@@ -136,4 +136,6 @@ private:
 /// implementation-side macrot for thread-local singletons (located in .cc source file)
 #define OryolLocalSingletonImpl(TYPE) ORYOL_THREAD_LOCAL TYPE* TYPE::singleton = 0;
 
-
+/// to-string / from-string helper macros
+#define __ORYOL_FROMSTRING(code) if (0 == std::strcmp(#code, str)) return code
+#define __ORYOL_TOSTRING(code) case code: return #code

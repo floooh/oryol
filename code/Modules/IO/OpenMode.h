@@ -33,7 +33,7 @@ public:
         ReadWrite,          //> open in read/write mode
         ReadWriteAppend,    //> open in read/write-append mode
         
-        Invalid             //> invalid mode
+        InvalidOpenMode     //> invalid open mode
     };
 
     /// convert OpenMode to string
