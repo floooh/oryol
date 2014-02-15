@@ -16,11 +16,13 @@ TEST(URLTest) {
     CHECK(url.Empty());
     CHECK(!url.IsValid());
     CHECK(url.Get() == "");
+    CHECK(std::strcmp(url.AsCStr(), "") == 0);
     
     // a simple URL
     URL url0("http://www.flohofwoe.net/index.html");
     URL url1("http://www.flohofwoe.org/index.html");
     CHECK(url0.Get() == "http://www.flohofwoe.net/index.html");
+    CHECK(std::strcmp(url0.AsCStr(), "http://www.flohofwoe.net/index.html") == 0);
     CHECK(url0 != url1);
 
     // check parts

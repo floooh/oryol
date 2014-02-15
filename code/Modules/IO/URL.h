@@ -59,6 +59,8 @@ public:
     bool Empty() const;
     /// get the URL string
     const Core::StringAtom& Get() const;
+    /// shortcut: get content as C string
+    const char* AsCStr() const;
     
     /// get the scheme string
     Core::String Scheme() const;

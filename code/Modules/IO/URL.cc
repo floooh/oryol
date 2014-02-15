@@ -128,6 +128,12 @@ URL::Get() const {
 }
 
 //------------------------------------------------------------------------------
+const char*
+URL::AsCStr() const {
+    return this->content.AsCStr();
+}
+
+//------------------------------------------------------------------------------
 bool
 URL::IsValid() const {
     return this->valid;
