@@ -23,7 +23,7 @@ IOFacade::IOFacade() {
     this->mainThreadId = std::this_thread::get_id();
     assignRegistry::CreateSingleton();
     schemeRegistry::CreateSingleton();
-    this->ioRequestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
+    this->requestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
     CoreFacade::Instance()->ThreadRunLoop()->Add(RunLoop::Callback("IO::IOFacade", 0, std::bind(&IOFacade::doWork, this)));
 }
 
@@ -31,7 +31,7 @@ IOFacade::IOFacade() {
 IOFacade::~IOFacade() {
     o_assert(this->isMainThread());
     CoreFacade::Instance()->ThreadRunLoop()->Remove("IO::IOFacade");
-    this->ioRequestRouter = 0;
+    this->requestRouter = 0;
     schemeRegistry::DestroySingleton();
     assignRegistry::DestroySingleton();
 }
@@ -40,8 +40,8 @@ IOFacade::~IOFacade() {
 void
 IOFacade::doWork() {
     o_assert(this->isMainThread());
-    if (this->ioRequestRouter.isValid()) {
-        this->ioRequestRouter->DoWork();
+    if (this->requestRouter.isValid()) {
+        this->requestRouter->DoWork();
     }
 }
 
@@ -93,7 +93,7 @@ IOFacade::LoadFile(const URL& url, int32 ioLane) {
     Ptr<IOProtocol::Get> ioReq = IOProtocol::Get::Create();
     ioReq->SetURL(url);
     ioReq->SetLane(ioLane);
-    this->ioRequestRouter->Put(ioReq);
+    this->requestRouter->Put(ioReq);
     return ioReq;
 }
 
@@ -105,7 +105,7 @@ IOFacade::LoadFileRange(const URL& url, int32 startOffset, int32 endOffset, int3
     ioReq->SetLane(ioLane);
     ioReq->SetStartOffset(startOffset);
     ioReq->SetEndOffset(endOffset);
-    this->ioRequestRouter->Put(ioReq);
+    this->requestRouter->Put(ioReq);
     return ioReq;
 }
 

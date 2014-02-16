@@ -12,7 +12,7 @@
 #include "Core/String/StringAtom.h"
 #include "IO/schemeRegistry.h"
 #include "IO/IOProtocol.h"
-#include "IO/IORequestRouter.h"
+#include "IO/ioRequestRouter.h"
 #include <thread>
 
 namespace Oryol {
@@ -59,7 +59,7 @@ private:
     void doWork();
 
     std::thread::id mainThreadId;
-    Core::Ptr<ioRequestRouter> ioRequestRouter;
+    Core::Ptr<ioRequestRouter> requestRouter;
     static const int32 numIOLanes;
 };
 
@@ -73,13 +73,13 @@ IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*
         // notify IO threads that a filesystem was added
         Core::Ptr<IOProtocol::notifyFileSystemAdded> msg = IOProtocol::notifyFileSystemAdded::Create();
         msg->SetScheme(scheme);
-        this->ioRequestRouter->Put(msg);
+        this->requestRouter->Put(msg);
     }
     else {
         // notify IO threads that a filesystem was replaced
         Core::Ptr<IOProtocol::notifyFileSystemReplaced> msg = IOProtocol::notifyFileSystemReplaced::Create();
         msg->SetScheme(scheme);
-        this->ioRequestRouter->Put(msg);
+        this->requestRouter->Put(msg);
     }
 }
     

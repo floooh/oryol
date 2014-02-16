@@ -36,7 +36,7 @@ public:
     virtual void DoWork() override;
     
 private:
-    urlLoader urlLoader;
+    urlLoader loader;
 };
     
 } // namespace HTTP

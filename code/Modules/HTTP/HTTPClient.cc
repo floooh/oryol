@@ -28,14 +28,14 @@ HTTPClient::Put(const Ptr<Message>& msg) {
     o_assert(msg->IsMemberOf(HTTPProtocol::GetProtocolId()));
     Ptr<HTTPProtocol::HTTPRequest> req = msg.dynamicCast<HTTPProtocol::HTTPRequest>();
     o_assert(req.isValid());
-    this->urlLoader.putRequest(req);
+    this->loader.putRequest(req);
     return true;
 }
 
 //------------------------------------------------------------------------------
 void
 HTTPClient::DoWork() {
-    this->urlLoader.doWork();
+    this->loader.doWork();
 }
 
 } // namespace HTTP
