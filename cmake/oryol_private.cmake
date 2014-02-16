@@ -60,9 +60,12 @@ macro(oryol_resolve_dependencies target)
     foreach(dep ${input})
         oryol_recurse_deps(${dep} resolvedDeps)
     endforeach()
-    if (resolvedDeps)
-       list(REMOVE_DUPLICATES resolvedDeps)
-    endif()
+
+# NOTE: we do NOT remove dups, this simplifies the tricy linker order
+# requirements on GCC
+#    if (resolvedDeps)
+#       list(REMOVE_DUPLICATES resolvedDeps)
+#    endif()
     message("${target} Dependencies: ${resolvedDeps}")
     target_link_libraries(${target} ${resolvedDeps})
 endmacro()
