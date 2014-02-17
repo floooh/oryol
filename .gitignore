@@ -4,3 +4,4 @@ doc/html
 build/*-*-*
 configs/.selected
 *.pyc
+*.txt.user
