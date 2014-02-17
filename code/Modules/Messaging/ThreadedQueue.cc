@@ -145,6 +145,7 @@ ThreadedQueue::onThreadEnter() {
 //------------------------------------------------------------------------------
 void
 ThreadedQueue::onMessage(const Ptr<Message>& msg) {
+    o_assert(this->forwardingPort.isValid());
     this->forwardingPort->Put(msg);
 }
 
