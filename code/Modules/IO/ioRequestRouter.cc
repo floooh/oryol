@@ -17,13 +17,18 @@ numLanes(numLanes_) {
     // create ioLanes
     this->ioLanes.Reserve(this->numLanes);
     for (int32 i = 0; i < this->numLanes; i++) {
-        this->ioLanes.AddBack(ioLane::Create());
+        Ptr<ioLane> newLane = ioLane::Create();
+        newLane->StartThread();
+        this->ioLanes.AddBack(newLane);
     }
 }
 
 //------------------------------------------------------------------------------
 ioRequestRouter::~ioRequestRouter() {
-    // empty
+    for (const auto& lane : this->ioLanes) {
+        lane->StopThread();
+    }
+    this->ioLanes.Clear();
 }
 
 //------------------------------------------------------------------------------

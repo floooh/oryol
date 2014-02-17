@@ -40,6 +40,10 @@ public:
     /// destructor
     virtual ~ThreadedQueue();
     
+    /// start the handler thread, this cannot happen in the constructor
+    virtual void StartThread();
+    /// stop the handler thread, this cannot happen in the destructor
+    virtual void StopThread();
     /// put a message into the port
     virtual bool Put(const Core::Ptr<Message>& msg) override;
     /// perform work, this will be invoked on downstream ports
@@ -74,7 +78,9 @@ protected:
     std::mutex transferQueueLock;
     std::mutex wakeupMutex;
     std::condition_variable wakeup;
+    bool threadStarted;
     bool threadStopRequested;
+    bool threadStopped;
 };
     
 } // namespace Messaging

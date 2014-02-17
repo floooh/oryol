@@ -19,37 +19,52 @@ using namespace Core;
  subclasses constructor!
 */
 ThreadedQueue::ThreadedQueue() :
-threadStopRequested(false) {
-
-    // start the thread
+threadStarted(false),
+threadStopRequested(false),
+threadStopped(false) {
     this->createThreadId = std::this_thread::get_id();
-    this->thread = std::thread(threadFunc, this);
 }
 
 //------------------------------------------------------------------------------
 ThreadedQueue::ThreadedQueue(const Ptr<Port>& port_) :
 forwardingPort(port_),
-threadStopRequested(false) {
-    
-    // start the thread
+threadStarted(false),
+threadStopRequested(false),
+threadStopped(false) {
     this->createThreadId = std::this_thread::get_id();
-    this->thread = std::thread(threadFunc, this);
 }
 
 //------------------------------------------------------------------------------
 ThreadedQueue::~ThreadedQueue() {
     o_assert(this->isCreateThread());
+    o_assert(this->threadStopped);
+}
 
-    // stop thread and wait until stopped
+//------------------------------------------------------------------------------
+void
+ThreadedQueue::StartThread() {
+    o_assert(this->isCreateThread());
+    o_assert(!this->threadStarted);
+    this->thread = std::thread(threadFunc, this);
+    this->threadStarted = true;
+}
+
+//------------------------------------------------------------------------------
+void
+ThreadedQueue::StopThread() {
+    o_assert(this->threadStarted);
     this->threadStopRequested = true;
     this->wakeup.notify_one();
     this->thread.join();
+    this->threadStopped = true;
 }
 
 //------------------------------------------------------------------------------
 bool
 ThreadedQueue::Put(const Ptr<Message>& msg) {
     o_assert(this->isCreateThread());
+    o_assert(this->threadStarted);
+    o_assert(!this->threadStopped);
     this->writeQueue.Enqueue(msg);
     return true;
 }
@@ -59,6 +74,8 @@ void
 ThreadedQueue::DoWork() {
     // move messages to transfer queue and wake up thread
     o_assert(this->isCreateThread());
+    o_assert(this->threadStarted);
+    o_assert(!this->threadStopped);
     if (!this->writeQueue.Empty()) {
         this->moveWriteToTransferQueue();
     }

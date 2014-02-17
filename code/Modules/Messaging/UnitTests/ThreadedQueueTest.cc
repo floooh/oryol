@@ -36,6 +36,7 @@ TEST(ThreadedQueueTest) {
     
     // create a ThreadedQueue port and attach dispatcher to it
     Ptr<ThreadedQueue> threadedQueue = ThreadedQueue::Create(disp);
+    threadedQueue->StartThread();
     
     // send messages, these should be queued up
     Ptr<TestProtocol::TestMsg1> msg1 = TestProtocol::TestMsg1::Create();
@@ -73,7 +74,6 @@ TEST(ThreadedQueueTest) {
     Log::Info("ThreadedQueue: 1000000 msgs created and handled: %f sec\n", dur);
     
     // shutdown the threaded queue
+    threadedQueue->StopThread();
     threadedQueue = 0;
-    
-    
 }
