@@ -12,8 +12,7 @@ using namespace Oryol::IO;
 
 TEST(assignRegistryTest) {
     
-    assignRegistry::CreateSingleton();
-    assignRegistry* reg = assignRegistry::Instance();
+    assignRegistry* reg = assignRegistry::CreateSingleton();
     
     reg->SetAssign("home:", "c:/program files/bla/");
     reg->SetAssign("bla:", "home:");
@@ -33,4 +32,6 @@ TEST(assignRegistryTest) {
     reg->SetAssign("home:", "http://www.flohofwoe.net/");
     res = reg->ResolveAssigns("blub:");
     CHECK(res == "http://www.flohofwoe.net/blub/");
+    
+    assignRegistry::DestroySingleton();
 }
