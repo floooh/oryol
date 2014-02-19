@@ -14,7 +14,7 @@ TEST(HTTPClientTest) {
 
     // create a couple of requests
     Ptr<HTTPProtocol::HTTPRequest> reqOk = HTTPProtocol::HTTPRequest::Create();
-    CHECK(reqOk->GetMethod() == HTTPMethod::GET);
+    CHECK(reqOk->GetMethod() == HTTPMethod::Get);
     reqOk->SetURL("http://www.flohofwoe.net/index.html");
     Ptr<HTTPProtocol::HTTPRequest> req404 = HTTPProtocol::HTTPRequest::Create();
     req404->SetURL("http://www.google.com/blargh");
@@ -30,7 +30,7 @@ TEST(HTTPClientTest) {
     // check valid response
     CHECK(reqOk->GetResponse().isValid());
     CHECK(reqOk->GetResponse()->GetStatus() == IOStatus::OK);
-    const Map<String, String>& fields = reqOk->GetResponse()->GetFields();
+    const Map<String, String>& fields = reqOk->GetResponse()->GetResponseHeaders();
     CHECK(fields.Contains("Content-Type"));
     CHECK(fields["Content-Type"] == "text/html");
     CHECK(reqOk->GetResponse()->GetBody().isValid());
