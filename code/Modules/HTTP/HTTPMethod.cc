@@ -13,15 +13,31 @@ namespace HTTP {
 const char*
 HTTPMethod::ToString(Code c) {
     switch (c) {
-        __ORYOL_TOSTRING(OPTIONS);
-        __ORYOL_TOSTRING(GET);
-        __ORYOL_TOSTRING(HEAD);
-        __ORYOL_TOSTRING(POST);
-        __ORYOL_TOSTRING(PUT);
-        __ORYOL_TOSTRING(DELETE);
-        __ORYOL_TOSTRING(TRACE);
-        __ORYOL_TOSTRING(CONNECT);
+        __ORYOL_TOSTRING(Options);
+        __ORYOL_TOSTRING(Get);
+        __ORYOL_TOSTRING(Head);
+        __ORYOL_TOSTRING(Post);
+        __ORYOL_TOSTRING(Put);
+        __ORYOL_TOSTRING(Delete);
+        __ORYOL_TOSTRING(Trace);
+        __ORYOL_TOSTRING(Connect);
         default: return "InvalidHTTPMethod";
+    }
+}
+
+//------------------------------------------------------------------------------
+const wchar_t*
+HTTPMethod::ToWideString(Code c) {
+    switch (c) {
+        __ORYOL_TOWIDESTRING(Options);
+        __ORYOL_TOWIDESTRING(Get);
+        __ORYOL_TOWIDESTRING(Head);
+        __ORYOL_TOWIDESTRING(Post);
+        __ORYOL_TOWIDESTRING(Put);
+        __ORYOL_TOWIDESTRING(Delete);
+        __ORYOL_TOWIDESTRING(Trace);
+        __ORYOL_TOWIDESTRING(Connect);
+        default: return L"InvalidHTTPMethod";
     }
 }
 
@@ -29,14 +45,14 @@ HTTPMethod::ToString(Code c) {
 HTTPMethod::Code
 HTTPMethod::FromString(const char* str) {
     o_assert(str);
-    __ORYOL_FROMSTRING(OPTIONS);
-    __ORYOL_FROMSTRING(GET);
-    __ORYOL_FROMSTRING(HEAD);
-    __ORYOL_FROMSTRING(POST);
-    __ORYOL_FROMSTRING(PUT);
-    __ORYOL_FROMSTRING(DELETE);
-    __ORYOL_FROMSTRING(TRACE);
-    __ORYOL_FROMSTRING(CONNECT);
+    __ORYOL_FROMSTRING(Options);
+    __ORYOL_FROMSTRING(Get);
+    __ORYOL_FROMSTRING(Head);
+    __ORYOL_FROMSTRING(Post);
+    __ORYOL_FROMSTRING(Put);
+    __ORYOL_FROMSTRING(Delete);
+    __ORYOL_FROMSTRING(Trace);
+    __ORYOL_FROMSTRING(Connect);
     return InvalidHTTPMethod;
 }
 

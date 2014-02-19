@@ -15,14 +15,14 @@ class HTTPMethod {
 public:
     /// methods enum
     enum Code {
-        OPTIONS = 0,
-        GET,
-        HEAD,
-        POST,
-        PUT,
-        DELETE,
-        TRACE,
-        CONNECT,
+        Options = 0,
+        Get,
+        Head,
+        Post,
+        Put,
+        Delete,
+        Trace,
+        Connect,
         
         NumHTTPMethods,
         InvalidHTTPMethod,
@@ -30,6 +30,8 @@ public:
     
     /// convert to string
     static const char* ToString(Code c);
+    /// convert to wide-string
+    static const wchar_t* ToWideString(Code c);
     /// convert from string
     static Code FromString(const char* str);
 };
