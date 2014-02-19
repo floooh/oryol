@@ -70,11 +70,11 @@ public:
         const IO::IOStatus::Code& GetStatus() const {
             return this->status;
         };
-        void SetFields(const Core::Map<Core::String,Core::String>& val) {
-            this->fields = val;
+        void SetResponseHeaders(const Core::Map<Core::String,Core::String>& val) {
+            this->responseheaders = val;
         };
-        const Core::Map<Core::String,Core::String>& GetFields() const {
-            return this->fields;
+        const Core::Map<Core::String,Core::String>& GetResponseHeaders() const {
+            return this->responseheaders;
         };
         void SetBody(const Core::Ptr<IO::Stream>& val) {
             this->body = val;
@@ -90,7 +90,7 @@ public:
         };
 private:
         IO::IOStatus::Code status;
-        Core::Map<Core::String,Core::String> fields;
+        Core::Map<Core::String,Core::String> responseheaders;
         Core::Ptr<IO::Stream> body;
         Core::String errordesc;
     };
@@ -99,7 +99,7 @@ private:
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;
-            this->method = HTTP::HTTPMethod::GET;
+            this->method = HTTP::HTTPMethod::Get;
         };
         static Messaging::Message* FactoryCreate() {
             return (Messaging::Message*) Create();
@@ -123,11 +123,11 @@ private:
         const IO::URL& GetURL() const {
             return this->url;
         };
-        void SetFields(const Core::Map<Core::String,Core::String>& val) {
-            this->fields = val;
+        void SetRequestHeaders(const Core::Map<Core::String,Core::String>& val) {
+            this->requestheaders = val;
         };
-        const Core::Map<Core::String,Core::String>& GetFields() const {
-            return this->fields;
+        const Core::Map<Core::String,Core::String>& GetRequestHeaders() const {
+            return this->requestheaders;
         };
         void SetBody(const Core::Ptr<IO::Stream>& val) {
             this->body = val;
@@ -144,7 +144,7 @@ private:
 private:
         HTTP::HTTPMethod::Code method;
         IO::URL url;
-        Core::Map<Core::String,Core::String> fields;
+        Core::Map<Core::String,Core::String> requestheaders;
         Core::Ptr<IO::Stream> body;
         Core::Ptr<HTTPProtocol::HTTPResponse> response;
     };

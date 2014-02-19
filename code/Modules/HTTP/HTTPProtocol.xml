@@ -10,7 +10,7 @@
     <!-- a HTTPResponse -->
     <Message name="HTTPResponse" serialize="false">
         <Attr name="Status" type="IO::IOStatus::Code" def="IO::IOStatus::InvalidIOStatus" />
-        <Attr name="Fields" type="Core::Map&lt;Core::String,Core::String&gt;" />
+        <Attr name="ResponseHeaders" type="Core::Map&lt;Core::String,Core::String&gt;" />
         <Attr name="Body" type="Core::Ptr&lt;IO::Stream&gt;" />
         <Attr name="ErrorDesc" type="Core::String" />
     </Message>
@@ -18,9 +18,9 @@
     <!-- a HTTPRequest -->
     <Message name="HTTPRequest" serialize="false">
         <!-- input -->
-        <Attr name="Method" type="HTTP::HTTPMethod::Code" def="HTTP::HTTPMethod::GET" />
+        <Attr name="Method" type="HTTP::HTTPMethod::Code" def="HTTP::HTTPMethod::Get" />
         <Attr name="URL" type="IO::URL" />
-        <Attr name="Fields" type="Core::Map&lt;Core::String,Core::String&gt;" />
+        <Attr name="RequestHeaders" type="Core::Map&lt;Core::String,Core::String&gt;" />
         <Attr name="Body" type="Core::Ptr&lt;IO::Stream&gt;" />
         
         <!-- output -->
