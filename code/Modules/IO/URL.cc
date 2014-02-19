@@ -53,20 +53,20 @@ URL::URL(URL&& rhs) {
 //------------------------------------------------------------------------------
 URL::URL(const char* rhs) :
 valid(false) {
-    this->parseIndices(rhs);
+    this->crack(rhs);
 }
     
 //------------------------------------------------------------------------------
 URL::URL(const Core::StringAtom& rhs) :
 valid(false) {
-    this->parseIndices(rhs.AsString());
+    this->crack(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
 URL::URL(const Core::String& rhs) :
 content(rhs),
 valid(false) {
-    this->parseIndices(rhs);
+    this->crack(rhs);
 }
     
 //------------------------------------------------------------------------------
@@ -92,21 +92,21 @@ URL::operator=(URL&& rhs) {
 void
 URL::operator=(const char* rhs) {
     this->content = rhs;
-    this->parseIndices(rhs);
+    this->crack(rhs);
 }
     
 //------------------------------------------------------------------------------
 void
 URL::operator=(const Core::StringAtom& rhs) {
     this->content = rhs;
-    this->parseIndices(rhs.AsString());
+    this->crack(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
 void
 URL::operator=(const Core::String& rhs) {
     this->content = rhs;
-    this->parseIndices(rhs);
+    this->crack(rhs);
 }
     
 //------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ URL::Empty() const {
 
 //------------------------------------------------------------------------------
 bool
-URL::parseIndices(String urlString) {
+URL::crack(String urlString) {
 
     this->content.Clear();
     this->clearIndices();
@@ -166,7 +166,7 @@ URL::parseIndices(String urlString) {
         this->indices[schemeStart] = 0;
         this->indices[schemeEnd] = builder.FindSubString(0, 8, "://");
         if (EndOfString == this->indices[schemeEnd]) {
-            Log::Warn("URL::parseIndices(): '%s' is not a valid URL!\n", this->content.AsCStr());
+            Log::Warn("URL::crack(): '%s' is not a valid URL!\n", this->content.AsCStr());
             this->clearIndices();
             return false;
         }
@@ -320,6 +320,25 @@ URL::Port() const {
 
 //------------------------------------------------------------------------------
 String
+URL::HostAndPort() const  {
+    if (InvalidIndex != this->indices[hostStart]) {
+        if (InvalidIndex != this->indices[portEnd]) {
+            // URL has host and port definition
+            return String(this->content.AsCStr(), this->indices[hostStart], this->indices[portEnd]);
+        }
+        else {
+            // URL only has host
+            return String(this->content.AsCStr(), this->indices[hostStart], this->indices[hostEnd]);
+        }
+    }
+    else {
+        // no host in URL
+        return String();
+    }
+}
+
+//------------------------------------------------------------------------------
+String
 URL::Path() const {
     if (InvalidIndex != this->indices[pathStart]) {
         return String(this->content.AsCStr(), this->indices[pathStart], this->indices[pathEnd]);
@@ -334,6 +353,17 @@ String
 URL::Fragment() const {
     if (InvalidIndex != this->indices[fragStart]) {
         return String(this->content.AsCStr(), this->indices[fragStart], this->indices[fragEnd]);
+    }
+    else {
+        return String();
+    }
+}
+
+//------------------------------------------------------------------------------
+String
+URL::PathToEnd() const {
+    if (InvalidIndex != this->indices[pathStart]) {
+        return String(this->content.AsCStr(), this->indices[pathStart], EndOfString);
     }
     else {
         return String();

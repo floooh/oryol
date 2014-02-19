@@ -18,6 +18,7 @@ TEST(URLTest) {
     CHECK(!url.IsValid());
     CHECK(url.Get() == "");
     CHECK(std::strcmp(url.AsCStr(), "") == 0);
+    CHECK(url.HostAndPort() == "");
     
     // a simple URL
     URL url0("http://www.flohofwoe.net/index.html");
@@ -34,9 +35,11 @@ TEST(URLTest) {
     CHECK(url0.Password().Empty());
     CHECK(url0.Host() == "www.flohofwoe.net");
     CHECK(url0.Port().Empty());
+    CHECK(url0.HostAndPort() == "www.flohofwoe.net");
     CHECK(url0.Path() == "index.html");
     CHECK(url0.Query().Empty());
     CHECK(url0.Fragment().Empty());
+    CHECK(url0.PathToEnd() == "index.html");
     
     // test some invalid URL
     URL brokenUrl;
@@ -51,9 +54,11 @@ TEST(URLTest) {
     CHECK(url2.Password().Empty());
     CHECK(url2.Host() == "www.flohofwoe.net");
     CHECK(url2.Port() == "8000");
+    CHECK(url2.HostAndPort() == "www.flohofwoe.net:8000");
     CHECK(url2.Path() == "bla/blub/blob.txt");
     CHECK(url2.Query().Empty());
     CHECK(url2.Fragment() == "frag");
+    CHECK(url2.PathToEnd() == "bla/blub/blob.txt#frag");
     
     // a complex URL with user+password and a query
     URL url3("http://user:pwd@www.flohofwoe.net/bla.txt?key0=val0&key1=val1#frag");
@@ -68,5 +73,5 @@ TEST(URLTest) {
     CHECK(query["key0"] == "val0");
     CHECK(query["key1"] == "val1");
     CHECK(url3.Fragment() == "frag");
-    
+    CHECK(url3.PathToEnd() == "bla.txt?key0=val0&key1=val1#frag");
 }

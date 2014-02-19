@@ -72,16 +72,20 @@ public:
     Core::String Host() const;
     /// get the port string
     Core::String Port() const;
+    /// get host and port (only host if no port was in URL)
+    Core::String HostAndPort() const;
     /// get the path string
     Core::String Path() const;
     /// get the fragment string
     Core::String Fragment() const;
     /// get the query component
     Core::Map<Core::String, Core::String> Query() const;
+    /// get everything right of the server
+    Core::String PathToEnd() const;
     
 private:
-    /// parse URL, populates string indices
-    bool parseIndices(Core::String urlString);
+    /// crack URL, populates string indices
+    bool crack(Core::String urlString);
     /// clear string indices
     void clearIndices();
     /// copy string indices
