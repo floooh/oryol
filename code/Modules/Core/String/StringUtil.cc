@@ -5,6 +5,7 @@
 #include "Core/Macros.h"
 #include "StringUtil.h"
 #include "Ext/ConvertUTF/ConvertUTF.h"
+#include <cstdlib>
 
 namespace Oryol {
 namespace Core {

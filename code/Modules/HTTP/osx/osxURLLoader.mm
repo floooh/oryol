@@ -36,7 +36,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         [urlRequest setHTTPMethod:methodString];
         
         // additional header fields
-        for (const auto& field : req->GetFields()) {
+        for (const auto& field : req->GetRequestHeaders()) {
             NSString* name  = [NSString stringWithUTF8String: field.Key().AsCStr()];
             NSString* value = [NSString stringWithUTF8String: field.Value().AsCStr()];
             [urlRequest setValue:value forHTTPHeaderField:name];
@@ -83,7 +83,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 String valString = [[headerFields objectForKey:key] UTF8String];
                 fields.Insert(keyString, valString);
             }
-            response->SetFields(fields);
+            response->SetResponseHeaders(fields);
             
             // extract response body...
             const void* responseBytes = [responseData bytes];

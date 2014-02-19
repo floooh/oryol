@@ -29,6 +29,7 @@ HTTPMethod::ToString(Code c) {
 const wchar_t*
 HTTPMethod::ToWideString(Code c) {
     switch (c) {
+        #if !__clang__
         __ORYOL_TOWIDESTRING(Options);
         __ORYOL_TOWIDESTRING(Get);
         __ORYOL_TOWIDESTRING(Head);
@@ -37,6 +38,17 @@ HTTPMethod::ToWideString(Code c) {
         __ORYOL_TOWIDESTRING(Delete);
         __ORYOL_TOWIDESTRING(Trace);
         __ORYOL_TOWIDESTRING(Connect);
+        #else
+        // clang preprocessor adds a wiered white space before # >:(
+        case Options: return L"Options";
+        case Get: return L"Get";
+        case Head: return L"Head";
+        case Post: return L"Post";
+        case Put: return L"Put";
+        case Delete: return L"Delete";
+        case Trace: return L"Trace";
+        case Connect: return L"Connect";
+        #endif
         default: return L"InvalidHTTPMethod";
     }
 }
