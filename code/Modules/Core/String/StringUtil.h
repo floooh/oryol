@@ -17,11 +17,27 @@ public:
     template<class TYPE> static String ToString(const TYPE& val);
     /// convert a string to simple type
     template<class TYPE> static TYPE FromString(const String& str);
-    /// convert an UTF-8 String to WideString
-    static WideString UTF8ToWideString(const String& str);
-    /// convert WideString to String
-    static String WideToUTF8String(const WideString& str);
-};
     
+    /// convert raw UTF8 string range to raw wide string
+    static int32 UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes);
+    /// convert raw wide string range to raw UTF8 string
+    static int32 WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes);
+    /// convert raw wide string range to UTF-8 string object
+    static String  WideToUTF8(const wchar_t* wide, int32 numWideChars);
+    /// convert raw null-terminated wide-string to string object
+    static String WideToUTF8(const wchar_t* wide);
+    /// convert WideString object to UTF8 string object
+    static String WideToUTF8(const WideString& wide);
+    /// convert raw UTF8 string range to wide string object
+    static WideString UTF8ToWide(const unsigned char* src, int32 srcNumBytes);
+    /// convert null-terminated UTF8 raw string to wide string object
+    static WideString UTF8ToWide(const unsigned char* src);
+    /// convert UTF8 string object to wide string object
+    static WideString UTF8ToWide(const String& src);
+
+private:
+    static const int32 MaxInternalBufferWChars = 128;
+};
+
 } // namespace Core
 } // namespace Oryol
