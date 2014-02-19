@@ -44,7 +44,7 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib s
 #	/EHa: fat exception model
 #
 # DEBUG compiler flags:
-#	/ZI create debugging information PDB file with support for Edit-and-Continue
+#	/Zi create debugging information PDB file
 #	/Od disable optimizations
 # 	/Oy- do not suppress frame pointers (recommended for debugging)
 #	/MTd use statically linked, thread-safe, debug CRT libs
@@ -62,16 +62,16 @@ else()
 	set(ORYOL_VS_EXCEPTION_FLAGS "/EHsc")
 endif()
 set(CMAKE_CXX_FLAGS "${ORYOL_VS_EXCEPTION_FLAGS} /WX /TP /DWIN32 ${ORYOL_PLATFORM_DEFINES}")
-set(CMAKE_CXX_FLAGS_DEBUG "/Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
+set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
 set(CMAKE_CXX_FLAGS_RELEASE "/Ox /MT /DNDEBUG")
 
 set(CMAKE_C_FLAGS "/WX /TC /errorReport:queue /DWIN32 ${ORYOL_PLATFORM_DEFINES}")
-set(CMAKE_C_FLAGS_DEBUG "/Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
+set(CMAKE_C_FLAGS_DEBUG "/Zi /Od /Oy- /MTd /D_DEBUG /DORYOL_DEBUG=1")
 set(CMAKE_C_FLAGS_RELEASE "/Ox /MT /DNDEBUG ")
 
 # define exe linker flags
 set(CMAKE_EXE_LINKER_FLAGS "/STACK:5000000 /machine:${ORYOL_WINDOWS_PLATFORM_NAME}")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "/DEBUG")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 # update cache variables for cmake gui
