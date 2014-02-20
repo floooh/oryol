@@ -6,6 +6,7 @@
 #include "StringUtil.h"
 #include "Ext/ConvertUTF/ConvertUTF.h"
 #include <cstdlib>
+#include <cstring>
 
 namespace Oryol {
 namespace Core {
