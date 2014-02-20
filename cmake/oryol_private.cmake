@@ -36,7 +36,7 @@ endmacro()
 #   Setup the link library search paths.
 #
 macro(oryol_setup_link_directories)
-    include_directories(${ORYOL_ROOT_DIR}/lib/${ORYOL_PLATFORM_NAME})
+    link_directories(${ORYOL_ROOT_DIR}/lib/${ORYOL_PLATFORM_NAME})
 endmacro()
 
 #-------------------------------------------------------------------------------
