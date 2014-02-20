@@ -17,6 +17,12 @@ namespace Oryol {
 namespace HTTP {
 class urlLoader : public winURLLoader {};
 } }
+#elif ORYOL_LINUX
+#include "HTTP/curl/curlURLLoader.h"
+namespace Oryol {
+namespace HTTP {
+class urlLoader : public curlURLLoader {};
+} }
 #else
 #include "HTTP/base/baseURLLoader.h"
 namespace Oryol {
