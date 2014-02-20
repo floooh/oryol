@@ -115,6 +115,17 @@ StringBuilder::GetSubString(int32 startIndex, int32 endIndex) const {
 }
 
 //------------------------------------------------------------------------------
+const char*
+StringBuilder::AsCStr() const {
+    if (this->buffer) {
+        return this->buffer;
+    }
+    else {
+        return "";
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 StringBuilder::Append(char c) {
     this->ensureRoom(1);

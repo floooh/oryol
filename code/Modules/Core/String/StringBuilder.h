@@ -34,6 +34,8 @@ public:
     String GetString() const;
     /// get a substring, if endIndex can be EndOfString
     String GetSubString(int32 startIndex, int32 endIndex) const;
+    /// get content as raw C string
+    const char* AsCStr() const;
     
     /// printf-style formatting, max string length must be provided, returns false if resulting string is too long
     bool Format(int32 maxLength, const char* fmt, ...);
