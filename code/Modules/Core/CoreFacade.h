@@ -24,7 +24,7 @@ public:
     virtual ~CoreFacade();
     
     /// get pointer to the per-thread runloop
-    RunLoop* RunLoop();
+    class RunLoop* RunLoop();
     /// trigger the thread runloop (usually called once per-frame)
     void DoRun();
 

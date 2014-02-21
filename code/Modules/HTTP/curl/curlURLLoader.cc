@@ -168,7 +168,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         o_assert(postStream.isValid());
         postStream->Open(OpenMode::ReadOnly);
         const uint8* endPtr = nullptr;
-        const uint8* postData = postStream->MapRead(endPtr);
+        const uint8* postData = postStream->MapRead(&endPtr);
         const int32 postDataSize = postStream->Size();
         o_assert((endPtr - postData) == postDataSize);
         curl_easy_setopt(this->curlSession, CURLOPT_POSTFIELDS, postData);
