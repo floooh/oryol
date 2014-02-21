@@ -140,5 +140,129 @@ Stream::UnmapRead() {
     // override in subclass!
 }
 
+//------------------------------------------------------------------------------
+bool
+Stream::IsOpen() const {
+    return this->isOpen;
+}
+
+//------------------------------------------------------------------------------
+bool
+Stream::IsReadable() const {
+    return (OpenMode::ReadOnly == this->openMode) ||
+           (OpenMode::ReadWrite == this->openMode) ||
+           (OpenMode::ReadWriteAppend == this->openMode);
+}
+    
+//------------------------------------------------------------------------------
+bool
+Stream::IsWritable() const {
+    return (OpenMode::WriteOnly == this->openMode) ||
+           (OpenMode::WriteAppend == this->openMode) ||
+           (OpenMode::ReadWrite == this->openMode) ||
+           (OpenMode::ReadWriteAppend == this->openMode);
+}
+    
+//------------------------------------------------------------------------------
+bool
+Stream::IsWriteMapped() const {
+    return this->isWriteMapped;
+}
+    
+//------------------------------------------------------------------------------
+bool
+Stream::IsReadMapped() const {
+    return this->isReadMapped;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::SetURL(const URL& url_) {
+    o_assert(!this->isOpen);
+    this->url = url_;
+}
+    
+//------------------------------------------------------------------------------
+const URL&
+Stream::GetURL() const {
+    return this->url;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::SetContentType(const ContentType& ct) {
+    this->contentType = ct;
+}
+    
+//------------------------------------------------------------------------------
+const ContentType&
+Stream::GetContentType() const {
+    return this->contentType;
+}
+    
+//------------------------------------------------------------------------------
+OpenMode::Enum
+Stream::GetOpenMode() const {
+    return this->openMode;
+}
+    
+//------------------------------------------------------------------------------
+int32
+Stream::Size() const {
+    return this->size;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::SetWritePosition(int32 pos) {
+    o_assert(this->isOpen);
+    o_assert((pos >= 0) && (pos <= this->size));
+    this->writePosition = pos;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::MoveWritePosition(int32 diff) {
+    o_assert(this->isOpen);
+    int32 newPos = this->writePosition + diff;
+    o_assert((newPos >= 0) && (newPos <= this->size));
+    this->writePosition = newPos;
+}
+    
+//------------------------------------------------------------------------------
+int32
+Stream::GetWritePosition() const {
+    return this->writePosition;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::SetReadPosition(int32 pos) {
+    o_assert(this->isOpen);
+    o_assert((pos >= 0) && (pos <= this->size));
+    this->readPosition = pos;
+}
+    
+//------------------------------------------------------------------------------
+void
+Stream::MoveReadPosition(int32 diff) {
+    o_assert(this->isOpen);
+    int32 newPos = this->readPosition + diff;
+    o_assert((newPos >= 0) && (newPos <= this->size));
+    this->readPosition = newPos;
+}
+    
+//------------------------------------------------------------------------------
+int32
+Stream::GetReadPosition() const {
+    return this->readPosition;
+}
+    
+//------------------------------------------------------------------------------
+bool
+Stream::IsEndOfStream() const {
+    return this->readPosition == this->size;
+}
+
 } // namespace IO
 } // namespace Oryol
