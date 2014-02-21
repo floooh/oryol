@@ -11,6 +11,7 @@
 #include "Core/RefCounted.h"
 #include "IO/URL.h"
 #include "IO/OpenMode.h"
+#include "IO/ContentType.h"
 
 namespace Oryol {
 namespace IO {
@@ -27,6 +28,10 @@ public:
     void SetURL(const URL& u);
     /// get URL
     const URL& GetURL() const;
+    /// set content-type (aka MIME type)
+    void SetContentType(const ContentType& ct);
+    /// get content-type
+    const ContentType& GetContentType() const;
     
     /// open the stream buffer
     virtual bool Open(OpenMode::Enum mode);
@@ -80,6 +85,7 @@ public:
     
 protected:
     URL url;
+    ContentType contentType;
     OpenMode::Enum openMode;
     bool isOpen;
     bool isWriteMapped;
@@ -135,6 +141,18 @@ Stream::SetURL(const URL& url_) {
 inline const URL&
 Stream::GetURL() const {
     return this->url;
+}
+
+//------------------------------------------------------------------------------
+inline void
+Stream::SetContentType(const ContentType& ct) {
+    this->contentType = ct;
+}
+
+//------------------------------------------------------------------------------
+inline const ContentType&
+Stream::GetContentType() const {
+    return this->contentType;
 }
 
 //------------------------------------------------------------------------------
