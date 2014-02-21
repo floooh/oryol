@@ -24,13 +24,13 @@ IOFacade::IOFacade() {
     assignRegistry::CreateSingleton();
     schemeRegistry::CreateSingleton();
     this->requestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
-    CoreFacade::Instance()->ThreadRunLoop()->Add(RunLoop::Callback("IO::IOFacade", 0, std::bind(&IOFacade::doWork, this)));
+    CoreFacade::Instance()->RunLoop()->Add(RunLoop::Callback("IO::IOFacade", 0, std::bind(&IOFacade::doWork, this)));
 }
 
 //------------------------------------------------------------------------------
 IOFacade::~IOFacade() {
     o_assert(this->isMainThread());
-    CoreFacade::Instance()->ThreadRunLoop()->Remove("IO::IOFacade");
+    CoreFacade::Instance()->RunLoop()->Remove("IO::IOFacade");
     this->requestRouter = 0;
     schemeRegistry::DestroySingleton();
     assignRegistry::DestroySingleton();

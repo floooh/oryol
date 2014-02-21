@@ -30,7 +30,7 @@ CoreFacade::~CoreFacade() {
 
 //------------------------------------------------------------------------------
 RunLoop*
-CoreFacade::ThreadRunLoop() {
+CoreFacade::RunLoop() {
     o_assert(nullptr != threadRunLoop);
     return threadRunLoop;
 }

@@ -24,7 +24,7 @@ public:
     virtual ~CoreFacade();
     
     /// get pointer to the per-thread runloop
-    RunLoop* ThreadRunLoop();
+    RunLoop* RunLoop();
     /// trigger the thread runloop (usually called once per-frame)
     void DoRun();
 
@@ -38,7 +38,7 @@ private:
     bool isMainThread() const;
 
     std::thread::id mainThreadId;
-    static ORYOL_THREAD_LOCAL RunLoop* threadRunLoop;
+    static ORYOL_THREAD_LOCAL class RunLoop* threadRunLoop;
 };
 
 } // namespace Core
