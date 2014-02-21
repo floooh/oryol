@@ -235,17 +235,18 @@ def runBuild(config) :
         if 'Xcode' in generator :
             # run the Xcode command line tool
             if buildType == 'release' :
-                subprocess.call(args=["xcodebuild", "-configuration", "Release"], cwd=buildPath)
+                subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
             else :
-                subprocess.call(args=["xcodebuild", "-configuration", "Debug"], cwd=buildPath)
+                subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)
         elif 'Makefiles' in generator :
             # run make
-            subprocess.call(args="make", cwd=buildPath)
+            subprocess.call(args=["make", "-j3"], cwd=buildPath)
         elif 'Ninja' in generator :
             # run ninja
             subprocess.call(args="ninja", cwd=buildPath)
         else :
-            error("Unknown cmake generator, don't know how to run command line build!")            
+            # generic invokation of cmake --build
+            subprocess.call(args=["cmake", "--build", "."], cwd=buildPath)
 
 # do a command line build
 def runRebuild(config) :
@@ -258,19 +259,20 @@ def runRebuild(config) :
             # run the Xcode command line tool
             subprocess.call(args=["xcodebuild", "clean"], cwd=buildPath)
             if buildType == 'release' :
-                subprocess.call(args=["xcodebuild", "-configuration", "Release"], cwd=buildPath)
+                subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
             else :
-                subprocess.call(args=["xcodebuild", "-configuration", "Debug"], cwd=buildPath)
+                subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)
         elif 'Makefiles' in generator :
             # run make
             subprocess.call(args=["make", "clean"], cwd=buildPath)
-            subprocess.call(args="make", cwd=buildPath)
+            subprocess.call(args=["make", "-j3"], cwd=buildPath)
         elif 'Ninja' in generator :
             # run ninja
             subprocess.call(args=["ninja", "clean"], cwd=buildPath)
             subprocess.call(args=["ninja"], cwd=buildPath)
         else :
-            error("Unknown cmake generator, don't know how to run command line build!")            
+            # generic invokation of cmake --build
+            subprocess.call(args=["cmake", "--clean-first", "--build", "."], cwd=buildPath)
 
 #===============================================================================
 if len(sys.argv) == 1 :
@@ -283,8 +285,8 @@ if len(sys.argv) == 1 :
     print 'oryol [COMMAND] [SUBCOMMAND] [config]\n'
     print 'Commands:'
     print '---------'
-    print 'oryol list [configs,platforms,build-types]'
-    print '  list configs, platforms, or build-types'
+    print 'oryol list [configs,platforms,build-types,selected]'
+    print '  list configs, platforms, build-types, or selected config'
     print 'oryol new [config-name]'
     print '  create a config skeleton json file'
     print 'oryol select [config-name]'
@@ -326,6 +328,13 @@ else :
                 print "Config '{}'' written to file '{}', now edit this file in a text editor!".format(name, path)
 
     elif cmd == 'list' :
+        if len(sys.argv) == 3 and sys.argv[2] == 'selected' :
+            # display the currently selected config
+            if existsSelectedConfig() :
+                print "selected config is: '{}'".format(loadSelectedConfigName())
+            else :
+                print "no selected config, default is: '{}'".format(chooseConfigName())
+
         if len(sys.argv) < 3 or sys.argv[2] == 'configs' :
             # list existing configs
             print "CONFIGS:"
