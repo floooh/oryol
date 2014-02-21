@@ -39,7 +39,7 @@ BinaryStreamReader::Read(TYPE& val) {
     // (which is a case for a code generator)
     bool retval = false;
     const uint8* maxValidPtr = nullptr;
-    const uint8* srcPtr = this->stream->MapRead(maxValidPtr);
+    const uint8* srcPtr = this->stream->MapRead(&maxValidPtr);
     if (srcPtr != nullptr) {
         const uint8* endPtr = Messaging::Serializer::Decode<TYPE>(srcPtr, maxValidPtr, val);
         if (endPtr != nullptr) {
@@ -61,7 +61,7 @@ BinaryStreamReader::Read(Core::Array<TYPE>& val) {
     // (which is a case for a code generator)
     bool retval = false;
     const uint8* maxValidPtr = nullptr;
-    const uint8* srcPtr = this->stream->MapRead(maxValidPtr);
+    const uint8* srcPtr = this->stream->MapRead(&maxValidPtr);
     if (nullptr != srcPtr) {
         const uint8* endPtr = Messaging::Serializer::DecodeArray<TYPE>(srcPtr, maxValidPtr, val);
         if (nullptr != endPtr) {

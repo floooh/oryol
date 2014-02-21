@@ -55,7 +55,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // add the body data
             bodyStream->Open(OpenMode::ReadOnly);
             const uint8* maxValidPtr = nullptr;
-            const uint8* bodyDataPtr = bodyStream->MapRead(maxValidPtr);
+            const uint8* bodyDataPtr = bodyStream->MapRead(&maxValidPtr);
             o_assert((0 != bodyDataPtr) && ((bodyDataPtr + bodySize) == maxValidPtr));
             NSData* bodyData = [NSData dataWithBytes:bodyDataPtr length:bodySize];
             bodyStream->UnmapRead();

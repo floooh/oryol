@@ -216,8 +216,11 @@ MemoryStream::Read(void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ See Stream::MapRead() for details!
+*/
 const uint8*
-MemoryStream::MapRead(const uint8*& outMaxValidPtr) {
+MemoryStream::MapRead(const uint8** outMaxValidPtr) {
     o_assert(this->isOpen);
     o_assert(!this->isReadMapped);
     o_assert(this->IsReadable());
@@ -229,11 +232,15 @@ MemoryStream::MapRead(const uint8*& outMaxValidPtr) {
     int32 numBytes = this->size - this->readPosition;
     o_assert(numBytes >= 0);
     if (0 == numBytes) {
-        outMaxValidPtr = nullptr;
+        if (nullptr != outMaxValidPtr) {
+            *outMaxValidPtr = nullptr;
+        }
         return nullptr;
     }
     else {
-        outMaxValidPtr = this->buffer + this->size;
+        if (nullptr != outMaxValidPtr) {
+            *outMaxValidPtr = this->buffer + this->size;
+        }
         return this->buffer + this->readPosition;
     }
 }

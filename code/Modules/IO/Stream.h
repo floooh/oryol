@@ -75,7 +75,7 @@ public:
     /// read a number of bytes from the stream (returns bytes read)
     virtual int32 Read(void* ptr, int32 numBytes);
     /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
-    virtual const uint8* MapRead(const uint8*& outMaxValidPtr);
+    virtual const uint8* MapRead(const uint8** outMaxValidPtr);
     /// unmap previosuly mapped memory area
     virtual void UnmapRead();
     /// return true if currently locked for reading

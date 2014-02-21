@@ -123,12 +123,20 @@ Stream::Read(void* ptr, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ Returns a pointer to the current read position, and optionally a pointer
+ to the end of the readable area. It is save to read bytes until outMaxValidPtr.
+ outMaxValidPtr can be nullptr if this information is not required
+ (it is recommended though to always get the end of the readable area
+ and perform checks against this when reading).
+*/
 const uint8*
-Stream::MapRead(const uint8*& outMaxValidPtr) {
+Stream::MapRead(const uint8** outMaxValidPtr) {
     o_assert(!this->isReadMapped);
     this->isReadMapped = true;
-    // override in subclass!
-    outMaxValidPtr = nullptr;
+    if (nullptr != outMaxValidPtr) {
+        *outMaxValidPtr = nullptr;
+    }
     return nullptr;
 }
 

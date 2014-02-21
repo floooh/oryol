@@ -48,7 +48,7 @@ public:
     /// read a number of bytes from the stream (returns bytes read), numBytes can be EndOfStream
     virtual int32 Read(void* ptr, int32 numBytes) override;
     /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
-    virtual const uint8* MapRead(const uint8*& outMaxValidPtr) override;
+    virtual const uint8* MapRead(const uint8** outMaxValidPtr) override;
 
 private:
     /// check if there is enough room for writing numBytes
