@@ -62,22 +62,38 @@ public:
     /// shortcut: get content as C string
     const char* AsCStr() const;
     
+    /// test if the URL has a scheme
+    bool HasScheme() const;
     /// get the scheme string
     Core::String Scheme() const;
+    /// test if the URL has a user string
+    bool HasUser() const;
     /// get the user string
     Core::String User() const;
+    /// test if the URL has a password
+    bool HasPassword() const;
     /// get the password string
     Core::String Password() const;
+    /// test if the URL has a host string
+    bool HasHost() const;
     /// get the host string
     Core::String Host() const;
+    /// test if the URL has a port string
+    bool HasPort() const;
     /// get the port string
     Core::String Port() const;
     /// get host and port (only host if no port was in URL)
     Core::String HostAndPort() const;
+    /// test if the URL has a path string
+    bool HasPath() const;
     /// get the path string
     Core::String Path() const;
+    /// test if the URL has a fragment
+    bool HasFragment() const;
     /// get the fragment string
     Core::String Fragment() const;
+    /// test if the URL has a query
+    bool HasQuery() const;
     /// get the query component
     Core::Map<Core::String, Core::String> Query() const;
     /// get everything right of the server
@@ -85,7 +101,7 @@ public:
     
 private:
     /// crack URL, populates string indices
-    bool crack(Core::String urlString);
+    void crack(Core::String urlString);
     /// clear string indices
     void clearIndices();
     /// copy string indices

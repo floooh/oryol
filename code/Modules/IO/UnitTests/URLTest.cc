@@ -19,6 +19,14 @@ TEST(URLTest) {
     CHECK(url.Get() == "");
     CHECK(std::strcmp(url.AsCStr(), "") == 0);
     CHECK(url.HostAndPort() == "");
+    CHECK(!url.HasScheme());
+    CHECK(!url.HasHost());
+    CHECK(!url.HasUser());
+    CHECK(!url.HasPassword());
+    CHECK(!url.HasPort());
+    CHECK(!url.HasPath());
+    CHECK(!url.HasQuery());
+    CHECK(!url.HasFragment());
     
     // a simple URL
     URL url0("http://www.flohofwoe.net/index.html");
@@ -30,14 +38,22 @@ TEST(URLTest) {
     // check parts
     CHECK(url0.IsValid());
     CHECK(!url0.Empty());
+    CHECK(url0.HasScheme());
     CHECK(url0.Scheme() == "http");
+    CHECK(!url0.HasUser());
     CHECK(url0.User().Empty());
+    CHECK(!url0.HasPassword());
     CHECK(url0.Password().Empty());
+    CHECK(url0.HasHost());
     CHECK(url0.Host() == "www.flohofwoe.net");
+    CHECK(!url0.HasPort());
     CHECK(url0.Port().Empty());
     CHECK(url0.HostAndPort() == "www.flohofwoe.net");
+    CHECK(url0.HasPath());
     CHECK(url0.Path() == "index.html");
+    CHECK(!url0.HasQuery());
     CHECK(url0.Query().Empty());
+    CHECK(!url0.HasFragment());
     CHECK(url0.Fragment().Empty());
     CHECK(url0.PathToEnd() == "index.html");
     
@@ -49,14 +65,22 @@ TEST(URLTest) {
     // test with username, no password, port number, deep path and fragment
     URL url2("http://user@www.flohofwoe.net:8000/bla/blub/blob.txt#frag");
     CHECK(url2.IsValid());
+    CHECK(url2.HasScheme());
     CHECK(url2.Scheme() == "http");
+    CHECK(url2.HasUser());
     CHECK(url2.User() == "user");
+    CHECK(!url2.HasPassword());
     CHECK(url2.Password().Empty());
+    CHECK(url2.HasHost());
     CHECK(url2.Host() == "www.flohofwoe.net");
+    CHECK(url2.HasPort());
     CHECK(url2.Port() == "8000");
     CHECK(url2.HostAndPort() == "www.flohofwoe.net:8000");
+    CHECK(url2.HasPath());
     CHECK(url2.Path() == "bla/blub/blob.txt");
+    CHECK(!url2.HasQuery());
     CHECK(url2.Query().Empty());
+    CHECK(url2.HasFragment());
     CHECK(url2.Fragment() == "frag");
     CHECK(url2.PathToEnd() == "bla/blub/blob.txt#frag");
     

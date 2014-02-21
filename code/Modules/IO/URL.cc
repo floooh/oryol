@@ -72,20 +72,24 @@ valid(false) {
 //------------------------------------------------------------------------------
 void
 URL::operator=(const URL& rhs) {
-    this->content = rhs.content;
-    this->copyIndices(rhs);
-    this->valid = rhs.valid;
+    if (&rhs != this) {
+        this->content = rhs.content;
+        this->copyIndices(rhs);
+        this->valid = rhs.valid;
+    }
 }
     
 //------------------------------------------------------------------------------
 void
 URL::operator=(URL&& rhs) {
-    this->content = rhs.content;
-    this->copyIndices(rhs);
-    this->valid = rhs.valid;
-    rhs.content.Clear();
-    rhs.clearIndices();
-    rhs.valid = false;
+    if (&rhs != this) {
+        this->content = rhs.content;
+        this->copyIndices(rhs);
+        this->valid = rhs.valid;
+        rhs.content.Clear();
+        rhs.clearIndices();
+        rhs.valid = false;
+    }
 }
     
 //------------------------------------------------------------------------------
@@ -146,7 +150,7 @@ URL::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-bool
+void
 URL::crack(String urlString) {
 
     this->content.Clear();
@@ -168,7 +172,7 @@ URL::crack(String urlString) {
         if (EndOfString == this->indices[schemeEnd]) {
             Log::Warn("URL::crack(): '%s' is not a valid URL!\n", this->content.AsCStr());
             this->clearIndices();
-            return false;
+            return;
         }
         
         // extract host fields
@@ -260,13 +264,18 @@ URL::crack(String urlString) {
         this->valid = true;
     }
     // fallthrough if valid or empty URL
-    return true;
+}
+
+//------------------------------------------------------------------------------
+bool
+URL::HasScheme() const {
+    return InvalidIndex != this->indices[schemeStart];
 }
 
 //------------------------------------------------------------------------------
 String
 URL::Scheme() const {
-    if (InvalidIndex != this->indices[schemeStart]) {
+    if (this->HasScheme()) {
         return String(this->content.AsCStr(), this->indices[schemeStart], this->indices[schemeEnd]);
     }
     else {
@@ -275,9 +284,15 @@ URL::Scheme() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasUser() const {
+    return InvalidIndex != this->indices[userStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::User() const {
-    if (InvalidIndex != this->indices[userStart]) {
+    if (this->HasUser()) {
         return String(this->content.AsCStr(), this->indices[userStart], this->indices[userEnd]);
     }
     else {
@@ -286,9 +301,15 @@ URL::User() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasPassword() const {
+    return InvalidIndex != this->indices[pwdStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::Password() const {
-    if (InvalidIndex != this->indices[pwdStart]) {
+    if (this->HasPassword()) {
         return String(this->content.AsCStr(), this->indices[pwdStart], this->indices[pwdEnd]);
     }
     else {
@@ -297,9 +318,15 @@ URL::Password() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasHost() const {
+    return InvalidIndex != this->indices[hostStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::Host() const {
-    if (InvalidIndex != this->indices[hostStart]) {
+    if (this->HasHost()) {
         return String(this->content.AsCStr(), this->indices[hostStart], this->indices[hostEnd]);
     }
     else {
@@ -308,9 +335,15 @@ URL::Host() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasPort() const {
+    return InvalidIndex != this->indices[portStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::Port() const {
-    if (InvalidIndex != this->indices[portStart]) {
+    if (this->HasPort()) {
         return String(this->content.AsCStr(), this->indices[portStart], this->indices[portEnd]);
     }
     else {
@@ -321,8 +354,8 @@ URL::Port() const {
 //------------------------------------------------------------------------------
 String
 URL::HostAndPort() const  {
-    if (InvalidIndex != this->indices[hostStart]) {
-        if (InvalidIndex != this->indices[portEnd]) {
+    if (this->HasHost()) {
+        if (this->HasPort()) {
             // URL has host and port definition
             return String(this->content.AsCStr(), this->indices[hostStart], this->indices[portEnd]);
         }
@@ -338,9 +371,15 @@ URL::HostAndPort() const  {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasPath() const {
+    return InvalidIndex != this->indices[pathStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::Path() const {
-    if (InvalidIndex != this->indices[pathStart]) {
+    if (this->HasPath()) {
         return String(this->content.AsCStr(), this->indices[pathStart], this->indices[pathEnd]);
     }
     else {
@@ -349,9 +388,15 @@ URL::Path() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasFragment() const {
+    return InvalidIndex != this->indices[fragStart];
+}
+
+//------------------------------------------------------------------------------
 String
 URL::Fragment() const {
-    if (InvalidIndex != this->indices[fragStart]) {
+    if (this->HasFragment()) {
         return String(this->content.AsCStr(), this->indices[fragStart], this->indices[fragEnd]);
     }
     else {
@@ -362,7 +407,7 @@ URL::Fragment() const {
 //------------------------------------------------------------------------------
 String
 URL::PathToEnd() const {
-    if (InvalidIndex != this->indices[pathStart]) {
+    if (this->HasPath()) {
         return String(this->content.AsCStr(), this->indices[pathStart], EndOfString);
     }
     else {
@@ -371,9 +416,15 @@ URL::PathToEnd() const {
 }
 
 //------------------------------------------------------------------------------
+bool
+URL::HasQuery() const {
+    return InvalidIndex != this->indices[queryStart];
+}
+
+//------------------------------------------------------------------------------
 Map<String, String>
 URL::Query() const {
-    if (InvalidIndex != this->indices[queryStart]) {
+    if (this->HasQuery()) {
         Map<String, String> query;
         StringBuilder builder;
         builder.Set(this->content.AsCStr(), this->indices[queryStart], this->indices[queryEnd]);
