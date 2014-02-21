@@ -19,6 +19,7 @@ using namespace Core;
  subclasses constructor!
 */
 ThreadedQueue::ThreadedQueue() :
+tickDuration(0),
 threadStarted(false),
 threadStopRequested(false),
 threadStopped(false) {
@@ -27,6 +28,7 @@ threadStopped(false) {
 
 //------------------------------------------------------------------------------
 ThreadedQueue::ThreadedQueue(const Ptr<Port>& port_) :
+tickDuration(0),
 forwardingPort(port_),
 threadStarted(false),
 threadStopRequested(false),
@@ -38,6 +40,26 @@ threadStopped(false) {
 ThreadedQueue::~ThreadedQueue() {
     o_assert(this->isCreateThread());
     o_assert(this->threadStopped);
+}
+
+//------------------------------------------------------------------------------
+/**
+ If a tick-duration is set, the thread will wakeup after this duration
+ even when no messages are pending. This is useful to do some work
+ which dosn't depend on incoming messages. A tick duration of 0 is the
+ default and means that the thread will NOT tick (e.g. only wake up
+ when messages arrive)
+*/
+void
+ThreadedQueue::SetTickDuration(uint32 milliSec) {
+    o_assert(!this->threadStarted);
+    this->tickDuration = milliSec;
+}
+
+//------------------------------------------------------------------------------
+uint32
+ThreadedQueue::GetTickDuration() const {
+    return this->tickDuration;
 }
 
 //------------------------------------------------------------------------------
@@ -139,7 +161,14 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
 
         // wait for messages to arrive, and if so, transfer to read queue
         std::unique_lock<std::mutex> lock(self->wakeupMutex);
-        self->wakeup.wait(lock);
+        if (0 != self->tickDuration) {
+            // wait with timeout
+            self->wakeup.wait_for(lock, std::chrono::milliseconds(self->tickDuration));
+        }
+        else {
+            // wait infinitely for messages
+            self->wakeup.wait(lock);
+        }
         self->moveTransferToReadQueue();
         lock.unlock();
         
@@ -147,6 +176,7 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
         while (!self->readQueue.Empty()) {
             self->onMessage(std::move(self->readQueue.Dequeue()));
         }
+        self->onTick();
     }
     
     // notify subclass that we're about to leave the thread
@@ -154,12 +184,20 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ The default implementation of onThreadEnter() will call 
+ Core::Module::EnterThread() to setup any thread-locale data.
+*/
 void
 ThreadedQueue::onThreadEnter() {
     Core::Module::EnterThread();
 }
 
 //------------------------------------------------------------------------------
+/**
+ The default implementation of onMessage will invoke the Put() method
+ on the forwarding port with the message as argument.
+*/
 void
 ThreadedQueue::onMessage(const Ptr<Message>& msg) {
     o_assert(this->forwardingPort.isValid());
@@ -167,6 +205,21 @@ ThreadedQueue::onMessage(const Ptr<Message>& msg) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ The default implementation of onTick() will invoke the DoWork() method
+ on the forwarding port.
+*/
+void
+ThreadedQueue::onTick() {
+    o_assert(this->forwardingPort.isValid());
+    this->forwardingPort->DoWork();
+}
+
+//------------------------------------------------------------------------------
+/**
+ The default implementation of onThreadLeave() will call 
+ Core::Module::LeaveThread() to discard any thread-locale data.
+*/
 void
 ThreadedQueue::onThreadLeave() {
     Core::Module::LeaveThread();

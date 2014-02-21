@@ -30,6 +30,8 @@ private:
     virtual void onThreadEnter() override;
     /// called in thread before thread is left
     virtual void onThreadLeave() override;
+    /// called after messages are processed, and on each tick (if a TickDuration is set)
+    virtual void onTick();
     /// callback for IOProtocol::Get
     void onGet(const Core::Ptr<IOProtocol::Get>& msg);
     /// callback for IOProtocol::GetRange

@@ -77,3 +77,4 @@ TEST(ThreadedQueueTest) {
     threadedQueue->StopThread();
     threadedQueue = 0;
 }
+

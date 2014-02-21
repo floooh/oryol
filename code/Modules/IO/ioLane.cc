@@ -16,7 +16,8 @@ using namespace Messaging;
 
 //------------------------------------------------------------------------------
 ioLane::ioLane() {
-    // empty
+    // let our thread wake up from time to time
+    this->SetTickDuration(100);
 }
 
 //------------------------------------------------------------------------------
@@ -47,6 +48,17 @@ ioLane::onThreadLeave() {
     this->forwardingPort = 0;
     this->fileSystems.Clear();
     ThreadedQueue::onThreadLeave();
+}
+
+//------------------------------------------------------------------------------
+void
+ioLane::onTick() {
+    ThreadedQueue::onTick();
+    
+    // also tick our file systems
+    for (const auto& kvp : this->fileSystems) {
+        kvp.Value()->DoWork();
+    }
 }
 
 //------------------------------------------------------------------------------

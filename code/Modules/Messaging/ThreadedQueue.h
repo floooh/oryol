@@ -40,6 +40,10 @@ public:
     /// destructor
     virtual ~ThreadedQueue();
     
+    /// set optional tick-duration in millsecs, thread will wake up even if no messages pending
+    void SetTickDuration(uint32 milliSecs);
+    /// get optional tick-rate in millisecs
+    uint32 GetTickDuration() const;
     /// start the handler thread, this cannot happen in the constructor
     virtual void StartThread();
     /// stop the handler thread, this cannot happen in the destructor
@@ -60,6 +64,8 @@ protected:
     virtual void onThreadEnter();
     /// called to forward one message
     virtual void onMessage(const Core::Ptr<Message>& msg);
+    /// called after messages are processed, and on each tick (if a TickDuration is set)
+    virtual void onTick();
     /// called in thread before thread is left
     virtual void onThreadLeave();
     /// move messages from the write queue to the transfer queue
@@ -67,6 +73,7 @@ protected:
     /// move messages from transfer queue to read queue
     void moveTransferToReadQueue();
     
+    uint32 tickDuration;
     Core::Queue<Core::Ptr<Message>> writeQueue;     // written by sender thread
     Core::Queue<Core::Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
     Core::Queue<Core::Ptr<Message>> readQueue;      // read by worker thread
