@@ -20,6 +20,7 @@ TEST(StringAtomSingleThreaded) {
     
     StringAtom atom0;
     CHECK(!atom0.IsValid());
+    CHECK(atom0.Empty());
     CHECK(atom0.Length() == 0);
     CHECK(atom0.AsCStr()[0] == 0);
     CHECK(atom0.AsString() == String());
@@ -27,6 +28,7 @@ TEST(StringAtomSingleThreaded) {
     
     StringAtom atom1("BLA!");
     CHECK(atom1.IsValid());
+    CHECK(!atom1.Empty());
     CHECK(atom1.Length() == 4);
     StringAtom atom2(String("BLA!"));
     CHECK(atom2.IsValid());
@@ -47,6 +49,7 @@ TEST(StringAtomSingleThreaded) {
     
     atom0 = "";
     CHECK(!atom0.IsValid());
+    CHECK(atom0.Empty());
     atom1 = "";
     CHECK(atom0 == atom1);
     atom0.Clear();

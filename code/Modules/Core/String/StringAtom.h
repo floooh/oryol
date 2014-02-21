@@ -35,8 +35,10 @@ public:
     /// destructor
     ~StringAtom();
     
-    /// assignment
+    /// copy assignment
     void operator=(const StringAtom& rhs);
+    /// move assignment
+    void operator=(StringAtom&& rhs);
     /// assign raw string (slow)
     void operator=(const char* rhs);
     /// assign raw string (slow)
@@ -68,6 +70,8 @@ public:
     void Clear();
     /// return true if valid (contains a non-empty string)
     bool IsValid() const;
+    /// return true if empty (contains no string, or empty string)
+    bool Empty() const;
     /// get length
     int32 Length() const;
     /// get contained c-string
@@ -140,6 +144,16 @@ StringAtom::operator=(const StringAtom& rhs) {
 
 //------------------------------------------------------------------------------
 inline void
+StringAtom::operator=(StringAtom&& rhs) {
+    if (&rhs != this) {
+        this->Clear();
+        this->copy(rhs);
+        rhs.data = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+inline void
 StringAtom::operator=(const char* rhs) {
     this->Clear();
     this->setupFromCString(rhs);
@@ -184,6 +198,12 @@ StringAtom::operator==(const uchar* rhs) const {
 inline bool
 StringAtom::IsValid() const {
     return (0 != this->data);
+}
+
+//------------------------------------------------------------------------------
+inline bool
+StringAtom::Empty() const {
+    return (0 == this->data);
 }
 
 //------------------------------------------------------------------------------
