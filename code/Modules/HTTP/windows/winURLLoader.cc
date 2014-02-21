@@ -94,14 +94,13 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
             // do we have body-data?
             const uint8* bodyDataPtr = WINHTTP_NO_REQUEST_DATA;
-            const uint8* bodyDataEnd = nullptr;
             int32 bodySize = 0;
             if (req->GetBody().isValid()) {
                 const Ptr<Stream>& bodyStream = req->GetBody();
                 bodySize = bodyStream->Size();
                 o_assert(bodySize > 0);
                 bodyStream->Open(OpenMode::ReadOnly);
-                bodyDataPtr = bodyStream->MapRead(bodyDataEnd);
+                bodyDataPtr = bodyStream->MapRead(nullptr);
             }
 
             // create a response object, no matter whether the
