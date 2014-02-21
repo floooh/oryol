@@ -12,6 +12,7 @@
         <Attr name="CacheReadEnabled" type="bool" />
         <Attr name="CacheWriteEnabled" type="bool" />
         <Attr name="Status" type="IOStatus::Code" def="IOStatus::InvalidIOStatus" dir="out" />
+        <Attr name="ErrorDesc" type="Core::String" dir="out" />
     </Message>
     
     <!-- fetch complete file -->

@@ -110,12 +110,19 @@ public:
         const IOStatus::Code& GetStatus() const {
             return this->status;
         };
+        void SetErrorDesc(const Core::String& val) {
+            this->errordesc = val;
+        };
+        const Core::String& GetErrorDesc() const {
+            return this->errordesc;
+        };
 private:
         IO::URL url;
         int32 lane;
         bool cachereadenabled;
         bool cachewriteenabled;
         IOStatus::Code status;
+        Core::String errordesc;
     };
     class Get : public Request {
         OryolClassPoolAllocDecl(Get);
