@@ -70,6 +70,24 @@ def loadConfig(configName) :
     f.close()
     return jsn
 
+# load configs matching sub-string
+def loadMatchingConfigs(partialConfigName) :
+    matchingConfigs = []
+    configPaths = glob.glob('configs/*.json')
+    targetPlatforms = validTargetPlatforms[platform.system()]
+    for configPath in configPaths :
+        # load the config
+        f = open(configPath)
+        config = json.loads(f.read())
+        f.close()
+
+        # is the config valid for this platform?
+        if config['target']['platform'] in targetPlatforms :
+            # does the name match?
+            if partialConfigName in config['name'] :
+                matchingConfigs.append(config)
+    return matchingConfigs
+
 # check whether cmake exists
 def testCMake() :
     try:
@@ -291,16 +309,14 @@ if len(sys.argv) == 1 :
     print '  create a config skeleton json file'
     print 'oryol select [config-name]'
     print '  set the active config (omit config-name to select the default config for the platform'
-    print 'oryol update [config-name or all]'
+    print 'oryol update [config-name, partial-config-name or all]'
     print '  do a cmake run on the selected or provided config (required after adding sources)'
-    print 'oryol build [config-name or all]'
+    print 'oryol build [config-name, partial-config-name or all]'
     print '  build selected or provided config'
-    print 'oryol rebuild [config-name or all]'
+    print 'oryol rebuild [config-name, partial-config-name or all]'
     print '  rebuild selected or provided config'
-    print 'oryol clean [config-name or all]'
+    print 'oryol clean [config-name, partial-config-name or all]'
     print '  delete the cmake cache and build files of the selected or provided config'
-    print 'oryol config [config-name or all]'
-    print '  NOT IMPLEMENT YET: start cmake-gui tool on selected or provided config'
 
 else :
     cmd = sys.argv[1]
@@ -377,7 +393,7 @@ else :
             if sys.argv[2] == 'all' : 
                 configs = getAllValidConfigs()
             else :
-                configs = [ loadConfig(sys.argv[2]) ]
+                configs = loadMatchingConfigs(sys.argv[2])
         for config in configs: 
             runCMake(config)
 
@@ -389,7 +405,7 @@ else :
             if sys.argv[2] == 'all' :
                 configs = getAllValidConfigs()
             else :
-                configs = [ loadConfig(sys.argv[2]) ]
+                configs = loadMatchingConfigs(sys.argv[2])
         for config in configs :
             path = 'build/{}'.format(config['name'])
             if os.path.isdir(path) :
@@ -406,7 +422,7 @@ else :
             if sys.argv[2] == 'all' :
                 configs = getAllValidConfigs()
             else :
-                configs = [ loadConfig(sys.argv[2]) ]
+                configs = loadMatchingConfigs(sys.argv[2])
         for config in configs :
             runCMake(config)
             runBuild(config)
@@ -419,7 +435,7 @@ else :
             if sys.argv[2] == 'all' :
                 configs = getAllValidConfigs()
             else :
-                configs = [ loadConfig(sys.argv[2]) ]
+                configs = loadMatchingConfigs(sys.argv[2])
         for config in configs :
             runCMake(config)
             runRebuild(config)
