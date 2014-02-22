@@ -160,7 +160,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                         Map<String, String> fields;
                         fields.Reserve(tokens.Size());
                         for (const String& str : tokens) {
-                            const int32 colonIndex = StringBuilder::FindFirstOf(str.AsCStr(), 0, EndOfString, ": ");
+                            const int32 colonIndex = StringBuilder::FindFirstOf(str.AsCStr(), 0, EndOfString, ":");
                             o_assert(colonIndex != InvalidIndex);
                             String key(str.AsCStr(), 0, colonIndex);
                             String value(str.AsCStr(), colonIndex+2, EndOfString);
