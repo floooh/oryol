@@ -37,6 +37,7 @@ private:
     void garbageCollectConnections();
 
     static const std::chrono::seconds connectionMaxAge;   // disconnect after 10 seconds
+    const Core::String contentTypeString;
     HINTERNET hSession;
     struct connection {
         HINTERNET hConnection;

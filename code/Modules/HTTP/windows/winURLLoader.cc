@@ -19,7 +19,9 @@ using namespace IO;
 const std::chrono::seconds winURLLoader::connectionMaxAge{10};
 
 //------------------------------------------------------------------------------
-winURLLoader::winURLLoader() {
+winURLLoader::winURLLoader() :
+contentTypeString("Content-Type")
+{
     this->hSession = WinHttpOpen(NULL,      // pwszUserAgent
                                  WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,     // dwAccessType
                                  WINHTTP_NO_PROXY_NAME, // pwszProxyName
@@ -80,6 +82,14 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     this->stringBuilder.Append(kvp.Value());
                     this->stringBuilder.Append("\r\n");
                 }
+
+                // check if we need to add a Content-Type field:
+                if (req->GetBody().isValid() && req->GetBody()->GetContentType().IsValid()) {
+                    this->stringBuilder.Append("Content-Type: ");
+                    this->stringBuilder.Append(req->GetBody()->GetContentType().AsCStr());
+                    this->stringBuilder.Append("\r\n");
+                }
+
                 // remove last CRLF
                 this->stringBuilder.PopBack();
                 this->stringBuilder.PopBack();
@@ -161,10 +171,11 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                         fields.Reserve(tokens.Size());
                         for (const String& str : tokens) {
                             const int32 colonIndex = StringBuilder::FindFirstOf(str.AsCStr(), 0, EndOfString, ":");
-                            o_assert(colonIndex != InvalidIndex);
-                            String key(str.AsCStr(), 0, colonIndex);
-                            String value(str.AsCStr(), colonIndex+2, EndOfString);
-                            fields.Insert(key, value);
+                            if (colonIndex != InvalidIndex) {
+                                String key(str.AsCStr(), 0, colonIndex);
+                                String value(str.AsCStr(), colonIndex+2, EndOfString);
+                                fields.Insert(key, value);
+                            }
                         }
                         httpResponse->SetResponseHeaders(fields);
                     }
@@ -192,6 +203,14 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     }
                     while (bytesToRead > 0);
                     responseBodyStream->Close();
+
+                    // extract the Content-Type response header field and set on responseBodyStream
+                    if (httpResponse->GetResponseHeaders().Contains(this->contentTypeString)) {
+                        ContentType contentType(httpResponse->GetResponseHeaders()[this->contentTypeString]);
+                        responseBodyStream->SetContentType(contentType);
+                    }
+
+                    // ...and finally set the responseBodyStream on the httpResponse
                     httpResponse->SetBody(responseBodyStream);
 
                     // @todo: write error desc to httpResponse if something went wront
