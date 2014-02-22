@@ -457,7 +457,7 @@ elementBuffer<TYPE>::moveInsertBack(int32 index) {
     // free a slot for insertion by moving the elements
     // after it towards the back
     // the freed slot will NOT be deconstructed!
-    o_assert(this->elmEnd < (this->bufEnd - 1));
+    o_assert(this->elmEnd < this->bufEnd);
     o_assert((index >= 0) && (index < this->size()));
     
     new(this->elmEnd) TYPE(std::move(*(this->elmEnd-1)));
