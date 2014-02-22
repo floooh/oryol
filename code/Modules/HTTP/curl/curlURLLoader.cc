@@ -174,7 +174,9 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
         // add a Content-Type request header if the post-stream has a content-type set
         if (postStream->GetContentType().IsValid()) {
-            requestHeaders = curl_slist_append(requestHeaders, postStream->GetContentType().AsCStr());
+            this->stringBuilder.Set("Content-Type: ");
+            this->stringBuilder.Append(postStream->GetContentType().AsCStr());
+            requestHeaders = curl_slist_append(requestHeaders, this->stringBuilder.AsCStr());
         }
     }
 
