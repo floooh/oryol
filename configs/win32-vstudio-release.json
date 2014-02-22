@@ -1,5 +1,5 @@
 {
-    "name": "win32-vstudio-debug", 
+    "name": "win32-vstudio-release", 
     "target": {
         "platform": "win32", 
         "generator": "Visual Studio 12", 
