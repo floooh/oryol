@@ -36,6 +36,7 @@ private:
 
     static bool curlInitCalled;
     static std::mutex curlInitMutex;
+    const Core::String contentTypeString;
     void* curlSession;
     char* curlError;
     Core::StringBuilder stringBuilder;

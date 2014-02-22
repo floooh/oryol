@@ -21,6 +21,7 @@ std::mutex curlURLLoader::curlInitMutex;
 
 //------------------------------------------------------------------------------
 curlURLLoader::curlURLLoader() :
+contentTypeString("Content-Type"),
 curlSession(0),
 curlError(0) {
 
@@ -158,9 +159,6 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         this->stringBuilder.Append(kvp.Value());
         requestHeaders = curl_slist_append(requestHeaders, this->stringBuilder.AsCStr());
     }
-    if (0 != requestHeaders) {
-        curl_easy_setopt(this->curlSession, CURLOPT_HTTPHEADER, requestHeaders);
-    }
 
     // if this is a POST, set the data to post
     const Ptr<Stream>& postStream = req->GetBody();
@@ -173,6 +171,16 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         o_assert((endPtr - postData) == postDataSize);
         curl_easy_setopt(this->curlSession, CURLOPT_POSTFIELDS, postData);
         curl_easy_setopt(this->curlSession, CURLOPT_POSTFIELDSIZE, postDataSize);
+
+        // add a Content-Type request header if the post-stream has a content-type set
+        if (postStream->GetContentType().IsValid()) {
+            requestHeaders = curl_slist_append(requestHeaders, postStream->GetContentType().AsCStr());
+        }
+    }
+
+    // set the http request headers
+    if (0 != requestHeaders) {
+        curl_easy_setopt(this->curlSession, CURLOPT_HTTPHEADER, requestHeaders);
     }
 
     // prepare the HTTPResponse and the response-body stream
@@ -201,6 +209,11 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         Log::Warn("curlURLLoader: curl_easy_peform failed with '%s' for '%s', httpStatus='%d'\n",
             req->GetURL().AsCStr(), this->curlError, curlHttpCode);
         httpResponse->SetErrorDesc(this->curlError);
+    }
+
+    // check if the responseHeaders contained a Content-Type, if yes, set it on the responseBodyStream
+    if (this->responseHeaders.Contains(this->contentTypeString)) {
+        responseBodyStream->SetContentType(this->responseHeaders[this->contentTypeString]);
     }
 
     // close the responseBodyStream, and set the result
