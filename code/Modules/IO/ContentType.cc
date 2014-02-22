@@ -183,6 +183,22 @@ ContentType::SubType() const {
 }
 
 //------------------------------------------------------------------------------
+String
+ContentType::TypeAndSubType() const {
+    if (this->HasType()) {
+        if (this->HasSubType()) {
+            return String(this->content.AsCStr(), this->indices[typeStart], this->indices[subTypeEnd]);
+        }
+        else {
+            return String(this->content.AsCStr(), this->indices[typeStart], this->indices[typeEnd]);
+        }
+    }
+    else {
+        return String();
+    }
+}
+
+//------------------------------------------------------------------------------
 bool
 ContentType::HasParams() const {
     return InvalidIndex != this->indices[paramStart];

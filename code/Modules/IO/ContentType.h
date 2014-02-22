@@ -66,6 +66,8 @@ public:
     bool HasSubType() const;
     /// get the subtype
     Core::String SubType() const;
+    /// get the type and subtype string (but not params)
+    Core::String TypeAndSubType() const;
     /// check if the media-type has parameters
     bool HasParams() const;
     /// get the parameters

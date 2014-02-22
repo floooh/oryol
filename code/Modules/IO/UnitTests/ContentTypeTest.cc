@@ -20,6 +20,7 @@ TEST(ContentTypeTest) {
     CHECK(std::strcmp(ct.AsCStr(), "") == 0);
     CHECK(ct.Type() == "");
     CHECK(ct.SubType() == "");
+    CHECK(ct.TypeAndSubType() == "");
     CHECK(ct.Params().Empty());
     CHECK(!ct.HasType());
     CHECK(!ct.HasSubType());
@@ -36,6 +37,7 @@ TEST(ContentTypeTest) {
     CHECK(!ct0.HasParams());
     CHECK(ct0.Type() == "image");
     CHECK(ct0.SubType() == "png");
+    CHECK(ct0.TypeAndSubType() == "image/png");
     
     // copy construction
     ContentType ct1(ct0);
@@ -84,6 +86,7 @@ TEST(ContentTypeTest) {
     ContentType ct5(str);
     CHECK(ct5.Type() == "text");
     CHECK(ct5.SubType() == "plain");
+    CHECK(ct5.TypeAndSubType() == "text/plain");
     CHECK(ct5.HasParams());
     Map<String,String> ct5Params = ct5.Params();
     CHECK(ct5Params.Size() == 1);
