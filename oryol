@@ -264,7 +264,10 @@ def runBuild(config) :
             subprocess.call(args="ninja", cwd=buildPath)
         else :
             # generic invokation of cmake --build
-            subprocess.call(args=["cmake", "--build", "."], cwd=buildPath)
+            if 'release' in buildType :
+                subprocess.call(args=["cmake", "--build", ".", "--config", "Release"], cwd=buildPath)
+            else :
+                subprocess.call(args=["cmake", "--build", ".", "--config", "Debug"], cwd=buildPath)
 
 # do a command line build
 def runRebuild(config) :
@@ -290,7 +293,10 @@ def runRebuild(config) :
             subprocess.call(args=["ninja"], cwd=buildPath)
         else :
             # generic invokation of cmake --build
-            subprocess.call(args=["cmake", "--clean-first", "--build", "."], cwd=buildPath)
+            if 'release' in buildType :
+                subprocess.call(args=["cmake", "--clean-first", "--build", ".", "--config", "Release"], cwd=buildPath)
+            else :                
+                subprocess.call(args=["cmake", "--clean-first", "--build", ".", "--config", "Debug"], cwd=buildPath)
 
 #===============================================================================
 if len(sys.argv) == 1 :
