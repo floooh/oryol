@@ -1,8 +1,8 @@
 {
-    "name": "osx-xcode-unittests", 
+    "name": "osx-xcode-unittests-debug", 
     "target": {
         "platform": "osx", 
         "generator": "Xcode", 
-        "build-type": "unittests"
+        "build-type": "unittests-debug"
     }
 }

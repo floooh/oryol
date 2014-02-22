@@ -12,7 +12,7 @@ import shutil
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
-buildTypes = ['release', 'debug', 'unittests']
+buildTypes = ['release', 'debug', 'unittests-debug', 'unittests-release']
 
 # valid target platforms for a given host platforms
 validTargetPlatforms = { 
@@ -195,11 +195,11 @@ def runCMake(config) :
         cmdLine.append('cmake')
         cmdLine.append('-G')
         cmdLine.append(generator)
-        if buildType == 'release' :
+        if 'release' in buildType :
             cmdLine.append('-DCMAKE_BUILD_TYPE=Release')
         else :
             cmdLine.append('-DCMAKE_BUILD_TYPE=Debug')
-        if buildType == 'unittests' :
+        if 'unittests' in buildType :
             cmdLine.append('-DORYOL_UNITTESTS=ON')
 
         # some platform-specific stuff
@@ -234,7 +234,7 @@ def runBuild(config) :
         buildPath = "build/{}".format(name)
         if 'Xcode' in generator :
             # run the Xcode command line tool
-            if buildType == 'release' :
+            if 'release' in buildType :
                 subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
             else :
                 subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)
@@ -258,7 +258,7 @@ def runRebuild(config) :
         if 'Xcode' in generator :
             # run the Xcode command line tool
             subprocess.call(args=["xcodebuild", "clean"], cwd=buildPath)
-            if buildType == 'release' :
+            if 'release' in buildType :
                 subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
             else :
                 subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)

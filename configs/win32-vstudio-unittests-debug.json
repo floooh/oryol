@@ -1,8 +1,8 @@
 {
-    "name": "win32-vstudio-unittests", 
+    "name": "win32-vstudio-unittests-debug", 
     "target": {
         "platform": "win32", 
         "generator": "Visual Studio 12", 
-        "build-type": "unittests"
+        "build-type": "unittests-debug"
     }
 }

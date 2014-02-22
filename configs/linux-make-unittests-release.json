@@ -1,8 +1,8 @@
 {
-    "name": "linux-make-unittests", 
+    "name": "linux-make-unittests-release", 
     "target": {
         "platform": "linux", 
         "generator": "Unix Makefiles", 
-        "build-type": "unittests"
+        "build-type": "unittests-release"
     }
 }

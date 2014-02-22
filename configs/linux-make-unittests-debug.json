@@ -1,0 +1,8 @@
+{
+    "name": "linux-make-unittests-debug", 
+    "target": {
+        "platform": "linux", 
+        "generator": "Unix Makefiles", 
+        "build-type": "unittests-debug"
+    }
+}
