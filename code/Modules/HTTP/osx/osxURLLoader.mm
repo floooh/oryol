@@ -52,6 +52,13 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             NSString* contentLengthString = [NSString stringWithFormat:@"%d", bodySize];
             [urlRequest setValue:contentLengthString forHTTPHeaderField:@"Content-Length"];
             
+            // add Content-Type field
+            if (bodyStream->GetContentType().IsValid()) {
+                const ContentType& contentType = bodyStream->GetContentType();
+                NSString* contentTypeString = [NSString stringWithUTF8String: contentType.AsCStr()];
+                [urlRequest setValue:contentTypeString forHTTPHeaderField:@"Content-Type"];
+            }
+            
             // add the body data
             bodyStream->Open(OpenMode::ReadOnly);
             const uint8* maxValidPtr = nullptr;
@@ -71,6 +78,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             o_assert(nil != urlResponse);
             
             Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
+            ContentType responseContentType;
             
             // extract HTTP status...
             response->SetStatus((IOStatus::Code) [urlResponse statusCode]);
@@ -82,6 +90,9 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 String keyString = [key UTF8String];
                 String valString = [[headerFields objectForKey:key] UTF8String];
                 fields.Insert(keyString, valString);
+                if (keyString == "Content-Type") {
+                    responseContentType = valString;
+                }
             }
             response->SetResponseHeaders(fields);
             
@@ -93,6 +104,9 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 responseBody->Open(OpenMode::WriteOnly);
                 responseBody->Write(responseBytes, responseLength);
                 responseBody->Close();
+                if (responseContentType.IsValid()) {
+                    responseBody->SetContentType(responseContentType);
+                }
                 response->SetBody(responseBody);
             }
             req->SetResponse(response);

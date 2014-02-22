@@ -35,6 +35,7 @@ TEST(HTTPClientTest) {
     CHECK(fields["Content-Type"] == "text/html");
     CHECK(reqOk->GetResponse()->GetBody().isValid());
     CHECK(reqOk->GetResponse()->GetBody()->Size() > 500);
+    CHECK(reqOk->GetResponse()->GetBody()->GetContentType().TypeAndSubType() == "text/html");
     
     // check 404 response
     CHECK(req404->GetResponse().isValid());

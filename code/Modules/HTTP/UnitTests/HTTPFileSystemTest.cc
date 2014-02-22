@@ -32,6 +32,7 @@ TEST(HTTPFileSystemTest) {
     const Ptr<Stream>& loadedData = req->GetStream();
     CHECK(loadedData.isValid());
     CHECK(loadedData->Size() > 0);
+    CHECK(loadedData->GetContentType().TypeAndSubType() == "text/html");
     loadedData->Open(OpenMode::ReadOnly);
     String content((const char*)loadedData->MapRead(nullptr), 0, loadedData->Size());
     Log::Info("%s\n", content.AsCStr());
