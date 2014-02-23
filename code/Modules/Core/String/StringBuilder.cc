@@ -24,6 +24,42 @@ size(0) {
 }
 
 //------------------------------------------------------------------------------
+StringBuilder::StringBuilder(const char* str) :
+StringBuilder() {
+    this->Set(str);
+}
+
+//------------------------------------------------------------------------------
+StringBuilder::StringBuilder(const char* str, int32 startIndex, int32 endIndex) :
+StringBuilder() {
+    this->Set(str, startIndex, endIndex);
+}
+
+//------------------------------------------------------------------------------
+StringBuilder::StringBuilder(const String& str) :
+StringBuilder() {
+    this->Set(str);
+}
+
+//------------------------------------------------------------------------------
+StringBuilder::StringBuilder(const String& str, int32 startIndex, int32 endIndex) :
+StringBuilder() {
+    this->Set(str, startIndex, endIndex);
+}
+
+//------------------------------------------------------------------------------
+StringBuilder::StringBuilder(std::initializer_list<String> list) :
+StringBuilder() {
+    this->Set(list);
+}
+
+//------------------------------------------------------------------------------
+StringBuilder::StringBuilder(char delim, std::initializer_list<String> list) :
+StringBuilder() {
+    this->Set(delim, list);
+}
+
+//------------------------------------------------------------------------------
 StringBuilder::~StringBuilder() {
     if (0 != this->buffer) {
         Memory::Free(this->buffer);

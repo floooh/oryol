@@ -19,6 +19,18 @@ class StringBuilder {
 public:
     /// constructor
     StringBuilder();
+    /// initialize from raw string
+    StringBuilder(const char* str);
+    /// initialize from raw character sequence, endIndex can be EndOfString
+    StringBuilder(const char* str, int32 startIndex, int32 endIndex);
+    /// initialize from string
+    StringBuilder(const String& str);
+    /// initialize from range of string, endIndex can be EndOfString
+    StringBuilder(const String& str, int32 startIndex, int32 endIndex);
+    /// initialize from an initializer list of strings
+    StringBuilder(std::initializer_list<String> list);
+    /// initialize from a list of strings with delimiters
+    StringBuilder(char delim, std::initializer_list<String> list);
     /// destructor
     ~StringBuilder();
     
@@ -46,7 +58,7 @@ public:
     void Set(const char* str, int32 startIndex, int32 endIndex);
     /// (re)set to string
     void Set(const String& str);
-    /// (re)set to range from string, if endIndex can be EndOfString
+    /// (re)set to range from string, endIndex can be EndOfString
     void Set(const String& str, int32 startIndex, int32 endIndex);
     /// (re)set to a list of strings
     void Set(std::initializer_list<String> list);
