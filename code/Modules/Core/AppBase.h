@@ -13,7 +13,7 @@
     Regardless of target platform, an Oryol platform's main source
     will always look like this:
  
-    ```
+    ```cpp
     #include "Core/AppBase.h"
     
     OryolApp("MyAppName", "1.0");

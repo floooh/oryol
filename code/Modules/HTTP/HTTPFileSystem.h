@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class HTTP::HTTPFileSystem
+    @class Oryol::HTTP::HTTPFileSystem
     @brief implements a simple HTTP-based filesystem
     @see HTTPClient, FileSystem
     
