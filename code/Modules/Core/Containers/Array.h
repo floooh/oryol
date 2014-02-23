@@ -108,7 +108,7 @@ public:
     void EraseSwapFront(int32 index);
     
     /// find element index with slow linear search
-    int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex);
+    int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) const;
     
     /// C++ conform begin
     TYPE* begin();
@@ -356,7 +356,7 @@ Array<TYPE>::EraseSwapFront(int32 index) {
     
 //------------------------------------------------------------------------------
 template<class TYPE> int32
-Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) {
+Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) const {
     const int32 size = this->buffer.size();
     if (size > 0) {
         o_assert(startIndex < size);
