@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-//  StringUtil.cc
+//  StringConverter.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Macros.h"
-#include "StringUtil.h"
+#include "StringConverter.h"
 #include "Ext/ConvertUTF/ConvertUTF.h"
 #include <cstdlib>
 #include <cstring>
@@ -18,12 +18,12 @@ DumpWarning(ConversionResult convRes) {
     if (sourceExhausted == convRes) err = "sourceExhausted";
     else if (targetExhausted == convRes) err = "targetExhausted";
     else if (sourceIllegal == convRes) err = "sourceIllegal";
-    Log::Warn("StringUtil::UTF8ToWide(): failed with '%s'\n", err);
+    Log::Warn("StringConverter: conversion failed with '%s'\n", err);
 }
 
 //------------------------------------------------------------------------------
 int32
-StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes) {
+StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes) {
     o_assert((0 != src) && (0 != dst));
     int32 result = 0;
     const UTF8* srcPtr = src;
@@ -60,7 +60,7 @@ StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst
 
 //------------------------------------------------------------------------------
 int32
-StringUtil::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes) {
+StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes) {
     o_assert((0 != src) && (0 != dst));
     int32 result = 0;
     UTF8* dstPtr = dst;
@@ -71,7 +71,7 @@ StringUtil::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst
     o_assert(dstEnd > dst);
     if (sizeof(wchar_t) == 4) {
         o_assert(4 == sizeof(wchar_t));
-        const UTF32* srcPtr = (UTF32*) src;
+        const UTF32* srcPtr = (const UTF32*) src;
         const UTF32* srcEndPtr = (UTF32*) src + srcNumChars;
         convRes = ConvertUTF32toUTF8(&srcPtr, srcEndPtr, &dstPtr, dstEnd, strictConversion);
         o_assert(dstPtr < (dst + dstMaxBytes));
@@ -100,21 +100,20 @@ StringUtil::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst
 
 //------------------------------------------------------------------------------
 String
-StringUtil::WideToUTF8(const wchar_t* wide, int32 numWideChars) {
+StringConverter::WideToUTF8(const wchar_t* wide, int32 numWideChars) {
     String converted;
     o_assert(0 != wide);
     if (numWideChars > 0) {
         if (numWideChars < MaxInternalBufferWChars) {
-            // utf8 means up to 4 byte for a character
-            unsigned char dstBuf[(MaxInternalBufferWChars + 1) * 4]; // 4 is the max size of a single UTF8 character
-            if (0 < StringUtil::WideToUTF8(wide, numWideChars, dstBuf, (int32)sizeof(dstBuf))) {
+            unsigned char dstBuf[(MaxInternalBufferWChars + 1) * MaxUTF8Size];
+            if (0 < StringConverter::WideToUTF8(wide, numWideChars, dstBuf, (int32)sizeof(dstBuf))) {
                 converted = (char*) dstBuf;
             }
         }
         else {
-            int32 dstBufSize = (numWideChars * 4) + 1;
+            int32 dstBufSize = (numWideChars * MaxUTF8Size) + 1;
             unsigned char* dstBuf = (unsigned char*) Memory::Alloc(dstBufSize);
-            if (0 < StringUtil::WideToUTF8(wide, numWideChars, dstBuf, dstBufSize)) {
+            if (0 < StringConverter::WideToUTF8(wide, numWideChars, dstBuf, dstBufSize)) {
                 converted = (char*) dstBuf;
             }
             Memory::Free(dstBuf);
@@ -126,7 +125,7 @@ StringUtil::WideToUTF8(const wchar_t* wide, int32 numWideChars) {
 
 //------------------------------------------------------------------------------
 String
-StringUtil::WideToUTF8(const wchar_t* wide) {
+StringConverter::WideToUTF8(const wchar_t* wide) {
     o_assert(0 != wide);
     int numWideChars = (int) std::wcslen(wide);
     return WideToUTF8(wide, numWideChars);
@@ -134,13 +133,13 @@ StringUtil::WideToUTF8(const wchar_t* wide) {
 
 //------------------------------------------------------------------------------
 String
-StringUtil::WideToUTF8(const WideString& wide) {
+StringConverter::WideToUTF8(const WideString& wide) {
     return WideToUTF8(wide.AsCStr(), wide.Length());
 }
 
 //------------------------------------------------------------------------------
 WideString
-StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
+StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
     o_assert(0 != src);
     WideString result;
     if (srcNumBytes > 0) {
@@ -149,7 +148,7 @@ StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
         // check, since the NumBytes is always >= NumChars!
         if (srcNumBytes < MaxInternalBufferWChars) {
             wchar_t dstBuf[MaxInternalBufferWChars];
-            bool success = (0 < StringUtil::UTF8ToWide(src, srcNumBytes, dstBuf, sizeof(dstBuf)));
+            bool success = (0 < StringConverter::UTF8ToWide(src, srcNumBytes, dstBuf, sizeof(dstBuf)));
             if (success) {
                 result = dstBuf;
             }
@@ -158,7 +157,7 @@ StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
             // use buffer 
             int32 bufferSize = (srcNumBytes + 1) * sizeof(wchar_t);
             wchar_t* dstBuf = (wchar_t*) Memory::Alloc(bufferSize);
-            bool success = (0 < StringUtil::UTF8ToWide(src, srcNumBytes, dstBuf, bufferSize));
+            bool success = (0 < StringConverter::UTF8ToWide(src, srcNumBytes, dstBuf, bufferSize));
             if (success) {
                 result = dstBuf;
             }
@@ -170,7 +169,7 @@ StringUtil::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
 
 //------------------------------------------------------------------------------
 WideString
-StringUtil::UTF8ToWide(const unsigned char* src) {
+StringConverter::UTF8ToWide(const unsigned char* src) {
     o_assert(0 != src);
     int32 srcNumBytes = (int32) std::strlen((const char*) src);
     return UTF8ToWide(src, srcNumBytes);
@@ -178,32 +177,50 @@ StringUtil::UTF8ToWide(const unsigned char* src) {
 
 //------------------------------------------------------------------------------
 WideString
-StringUtil::UTF8ToWide(const String& src) {
+StringConverter::UTF8ToWide(const String& src) {
     return UTF8ToWide((uchar*)src.AsCStr(), src.Length());
 }
 
 //------------------------------------------------------------------------------
+template<> int8
+StringConverter::FromString(const String& str) {
+    return (int8) std::atoi(str.AsCStr());
+}
+
+//------------------------------------------------------------------------------
+template<> uint8
+StringConverter::FromString(const String& str) {
+    return (uint8) std::atoi(str.AsCStr());
+}
+
+//------------------------------------------------------------------------------
 template<> int16
-StringUtil::FromString(const String& str) {
+StringConverter::FromString(const String& str) {
     return (int16) std::atoi(str.AsCStr());
 }
 
 //------------------------------------------------------------------------------
 template<> uint16
-StringUtil::FromString(const String& str) {
+StringConverter::FromString(const String& str) {
     return (uint16) std::atoi(str.AsCStr());
 }
 
 //------------------------------------------------------------------------------
 template<> int32
-StringUtil::FromString(const String& str) {
+StringConverter::FromString(const String& str) {
     return (int32) std::atoi(str.AsCStr());
 }
 
 //------------------------------------------------------------------------------
 template<> uint32
-StringUtil::FromString(const String& str) {
+StringConverter::FromString(const String& str) {
     return (int32) std::atoi(str.AsCStr());
+}
+
+//------------------------------------------------------------------------------
+template<> float32
+StringConverter::FromString(const String& str) {
+    return (float32) std::atof(str.AsCStr());
 }
 
 } // namespace Core

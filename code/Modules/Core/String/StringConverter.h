@@ -1,7 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /*
-    @obsolete move this stuff to StringBuilder!
+    @class Oryol::String::StringConverter
+    @brief various string conversion helpers
+
+    StringConverter has methods to convert between UTF-8 and wide-strings,
+    and from and to simple types (int, float, ...). Please note that
+    wchar_t is 2 bytes (UTF-16) on Windows, but 4 bytes (UTF-32) 
+    on other UNIX-like platforms!
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
@@ -11,7 +17,7 @@
 namespace Oryol {
 namespace Core {
     
-class StringUtil {
+class StringConverter {
 public:
     /// convert a simple type to string
     template<class TYPE> static String ToString(const TYPE& val);
@@ -37,6 +43,7 @@ public:
 
 private:
     static const int32 MaxInternalBufferWChars = 128;
+    static const int32 MaxUTF8Size = 6;
 };
 
 } // namespace Core
