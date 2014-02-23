@@ -87,7 +87,8 @@
     bit mask & shift operations.
 ------------------------------------------------------------------------ */
 
-typedef unsigned long	UTF32;	/* at least 32 bits */
+// ORYOL FIX: unsigned long -> unsigned int (unsigned long is 64 bit on clang x64)
+typedef unsigned int	UTF32;	/* at least 32 bits */
 typedef unsigned short	UTF16;	/* at least 16 bits */
 typedef unsigned char	UTF8;	/* typically 8 bits */
 typedef unsigned char	Boolean; /* 0 or 1 */
