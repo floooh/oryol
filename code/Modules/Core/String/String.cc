@@ -124,15 +124,6 @@ String::create(const char* ptr, int32 len) {
 }
 
 //------------------------------------------------------------------------------
-char*
-String::Alloc(int32 numCharBytes) {
-    this->release();
-    this->alloc(numCharBytes);
-    Memory::Clear((void*)this->strPtr, numCharBytes + 1);
-    return (char*)this->strPtr;
-}
-
-//------------------------------------------------------------------------------
 void
 String::addRef() {
     o_assert(nullptr != this->data);
@@ -355,12 +346,6 @@ String::RefCount() const {
     else {
         return this->data->refCount;
     }
-}
-
-//------------------------------------------------------------------------------
-String
-String::MakeCopy() const {
-    return String(this->AsCStr());
 }
 
 //------------------------------------------------------------------------------

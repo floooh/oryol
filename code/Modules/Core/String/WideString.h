@@ -80,8 +80,6 @@ public:
     void Clear();
     /// get the refcount of this string
     int32 RefCount() const;
-    /// create an explicit copy of the string
-    WideString MakeCopy() const;
     
 private:
     /// shared string data header, this is followed by the actual string

@@ -126,12 +126,6 @@ TEST(StringTest) {
     CHECK(str3.AsStdString() == blub);
     CHECK(str4.AsStringAtom() == blob);
     
-    // make an explicit copy
-    String copy = str3.MakeCopy();
-    CHECK(copy == str3);
-    CHECK(copy.RefCount() == 1);
-    CHECK(str3.RefCount() == 1);
-    
     // test range-assignment
     const char* hello = "Hello World!";
     String subStr(hello, 0, 5);

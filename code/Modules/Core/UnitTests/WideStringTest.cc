@@ -102,12 +102,6 @@ TEST(WideStringTest) {
     // getters
     CHECK(str3.AsStdWString() == blub);
     
-    // make an explicit copy
-    WideString copy = str3.MakeCopy();
-    CHECK(copy == str3);
-    CHECK(copy.RefCount() == 1);
-    CHECK(str3.RefCount() == 1);
-    
     // test range-assignment
     const wchar_t* hello = L"Hello World!";
     WideString subStr(hello, 5);

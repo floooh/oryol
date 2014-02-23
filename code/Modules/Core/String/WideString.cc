@@ -281,12 +281,6 @@ WideString::RefCount() const {
 }
 
 //------------------------------------------------------------------------------
-WideString
-WideString::MakeCopy() const {
-    return WideString(this->AsCStr());
-}
-    
-//------------------------------------------------------------------------------
 void
 WideString::Assign(const wchar_t* ptr, int32 numChars) {
     o_assert(nullptr != ptr);
