@@ -344,7 +344,9 @@ macro(oryol_sources dirs)
         list(APPEND CurXmlFiles ${xmls})
 
         # remove duplicate sources 
-        list(REMOVE_DUPLICATES CurSources)
+        if (CurSources)
+            list(REMOVE_DUPLICATES CurSources)
+        endif()
 
     endforeach()
 endmacro()
