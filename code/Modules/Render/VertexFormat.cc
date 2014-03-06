@@ -65,6 +65,7 @@ VertexFormat::ByteSize(Code c) {
         case Short4N:
             return 8;
         default:
+            o_error("VertexFormat::ByteSize() called with invalid format!\n");
             return 0;
     }
 }
