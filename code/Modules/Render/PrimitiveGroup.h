@@ -68,8 +68,8 @@ PrimitiveGroup::GetBaseElement() const {
 
 //------------------------------------------------------------------------------
 inline int32
-PrimitiveGroup::GetNumELements() const {
-    return this->numELements;
+PrimitiveGroup::GetNumElements() const {
+    return this->numElements;
 }
 
 } // namespace Render

@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
-//  TextureType.cc
+//  TextureWrapMode.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "TextureType.h"
 #include "Core/Macros.h"
+#include "TextureWrapMode.h"
 #include <cstring>
 
 namespace Oryol {
@@ -11,23 +11,23 @@ namespace Render {
     
 //------------------------------------------------------------------------------
 const char*
-TextureType::ToString(Code c) {
+TextureWrapMode::ToString(Code c) {
     switch (c) {
-        __ORYOL_TOSTRING(Texture2D);
-        __ORYOL_TOSTRING(Texture3D);
-        __ORYOL_TOSTRING(TextureCube);
-        default: return "InvalidTextureType";
+        __ORYOL_TOSTRING(ClampToEdge);
+        __ORYOL_TOSTRING(Repeat);
+        __ORYOL_TOSTRING(MirroredRepeat);
+        default: return "InvalidTextureWrapMode";
     }
 }
 
 //------------------------------------------------------------------------------
-TextureType::Code
-TextureType::FromString(const char* str) {
+TextureWrapMode::Code
+TextureWrapMode::FromString(const char* str) {
     o_assert(str);
-    __ORYOL_FROMSTRING(Texture2D);
-    __ORYOL_FROMSTRING(Texture3D);
-    __ORYOL_FROMSTRING(TextureCube);
-    return InvalidTextureType;
+    __ORYOL_FROMSTRING(ClampToEdge);
+    __ORYOL_FROMSTRING(Repeat);
+    __ORYOL_FROMSTRING(MirroredRepeat);
+    return InvalidTextureWrapMode;
 }
 
 } // namespace Render

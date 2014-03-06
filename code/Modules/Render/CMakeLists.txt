@@ -2,7 +2,7 @@
 #   oryol Render module
 #-------------------------------------------------------------------------------
 oryol_begin_module(Render)
-oryol_sources(. base)
+oryol_sources(. base gl)
 oryol_deps(Resource Core)
 oryol_end_module()
 

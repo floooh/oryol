@@ -14,12 +14,11 @@ public:
     /// pixel format enum
     enum Code {
         // generic pixel formats
-        X8R8G8B8 = 0,   ///> 32-bit wide, 3 usable channels @ 8-bit
-        A8R8G8B8,       ///> 32-bit wide, 4 channels @ 8-bit
+        R8G8B8A8 = 0,   ///> 32-bit wide, 4 channels @ 8-bit
         R8G8B8,         ///> 24-bit wide, 3 channels @ 8-bit
         R5G6B5,         ///> 16-bit wide, 3 channels @ 5/6/5 bits
-        A1R5G5B5,       ///> 16-bit wide, 4 channels @ 1-bit alpha, 5-bit rgb
-        A4R4G4B4,       ///> 16-bit wide, 4 channels @ 4-bit
+        R5G5B5A1,       ///> 16-bit wide, 4 channels @ 1-bit alpha, 5-bit rgb
+        R4G4B4A4,       ///> 16-bit wide, 4 channels @ 4-bit
         L8,             ///> 8-bit wide, single channel
         
         // S3TC compressed pixel formats
@@ -29,7 +28,6 @@ public:
         
         // depth pixel formats
         D16,            ///> 16-bit depth
-        D24,            ///> 24-bit depth
         D32,            ///> 32-bit depth
         D24S8,          ///> 24-bit depth, 8-bit stencil
         
