@@ -3,6 +3,7 @@
 /**
     @class Oryol::Render::VertexFormat
     @brief vertex component formats
+    @see VertexComponent, VertexLayout
     
     Describes the data type of a vertex component.
 */
