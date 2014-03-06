@@ -13,11 +13,11 @@ class IndexType {
 public:
     /// type enum
     enum Code {
-        Index16 = 0,        ///> 16-bit indices
-        Index32,            ///> 32-bit indices
+        Index16,            ///< 16-bit indices
+        Index32,            ///< 32-bit indices
         
-        NumIndexTypes,      ///> number of index types
-        InvalidIndexType,   ///> the invalid index type value
+        NumIndexTypes,      ///< number of index types
+        InvalidIndexType,   ///< the invalid index type value
     };
     
     /// convert to string

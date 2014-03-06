@@ -13,15 +13,15 @@ class TextureFilterMode {
 public:
     /// filtering modes
     enum Code {
-        Nearest = 0,                ///> nearest (point) filtering, no mipmapping
-        Linear,                     ///> linear filtering, no mipmapping
-        NearestMipmapNearest,       ///> nearest texel, nearest mipmap
-        NearestMipmapLinear,        ///> nearest texel, linear mipmap filtering
-        LinearMipmapNearest,        ///> linear texel filtering, nearest mipmap filtering
-        LinearMipmapLinear,         ///> linear texel filtering, nearest mipmap filtering
+        Nearest,                    ///< nearest (point) filtering, no mipmapping
+        Linear,                     ///< linear filtering, no mipmapping
+        NearestMipmapNearest,       ///< nearest texel, nearest mipmap
+        NearestMipmapLinear,        ///< nearest texel, linear mipmap filtering
+        LinearMipmapNearest,        ///< linear texel filtering, nearest mipmap filtering
+        LinearMipmapLinear,         ///< linear texel filtering, nearest mipmap filtering
         
-        NumTextureFilterModes,      ///> number of texture filtering modes
-        InvalidTextureFilterMode    ///> the invalid texture filtering mode value
+        NumTextureFilterModes,      ///< number of texture filtering modes
+        InvalidTextureFilterMode    ///< the invalid texture filtering mode value
     };
     
     /// convert to string

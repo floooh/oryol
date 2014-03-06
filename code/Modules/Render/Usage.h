@@ -13,12 +13,12 @@ class Usage {
 public:
     /// usage enum
     enum Code {
-        Immutable = 0,  ///> resource is immutable, can only be initialized
-        DynamicWrite,   ///> dynamic resource, infrequently written by CPU
-        DynamicStream,  ///> dynamic resource, frequently written by CPU
+        Immutable,      ///< resource is immutable, can only be initialized
+        DynamicWrite,   ///< dynamic resource, infrequently written by CPU
+        DynamicStream,  ///< dynamic resource, frequently written by CPU
         
-        NumUsages,      ///> number of resource usages
-        InvalidUsage    ///> the invalid usage value
+        NumUsages,      ///< number of resource usages
+        InvalidUsage    ///< the invalid usage value
     };
     
     /// convert to string

@@ -14,12 +14,12 @@ class TextureType {
 public:
     /// texture type enum
     enum Code {
-        Texture2D,              ///> 2D texture
-        Texture3D,              ///> 3D texture
-        TextureCube,            ///> cube map texture
+        Texture2D,              ///< 2D texture
+        Texture3D,              ///< 3D texture
+        TextureCube,            ///< cube map texture
         
-        NumTextureTypes,        ///> number of texture types
-        InvalidTextureType,     ///> the invalid texture type value
+        NumTextureTypes,        ///< number of texture types
+        InvalidTextureType,     ///< the invalid texture type value
     };
     
     /// convert TextureType to string
