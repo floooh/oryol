@@ -41,6 +41,10 @@ elseif()
     message(FATAL_ERROR "FIXME: set the right host toolchain in pnacl.toolchain.cmake!")
 endif()
 
+# standard header and lib search paths
+include_directories(${NACL_SDK_ROOT}/include)
+link_directories(${NACL_SDK_ROOT}/lib/pnacl/Release)
+
 include(CMakeForceCompiler)
 CMAKE_FORCE_C_COMPILER("${CMAKE_C_COMPILER}" GNU)
 CMAKE_FORCE_CXX_COMPILER("${CMAKE_CXX_COMPILER}" GNU)
