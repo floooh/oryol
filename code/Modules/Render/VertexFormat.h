@@ -27,8 +27,8 @@ public:
         Short4,         ///> 4-component signed short
         Short4N,        ///> 4-component signed short, normalized (value / 32767.0)
         
-        NumVertexFormats,
-        InvalidVertexFormat,
+        NumVertexFormats,       ///> number of vertex formats
+        InvalidVertexFormat,    ///> the invalid vertex format value
     };
     
     /// convert to string

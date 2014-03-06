@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::TextureType
-    @brief texture type (1D, 2D, 3D, Cube)
+    @brief texture type (2D, 3D, Cube)
     
     The type of data in a texture object (1D, 2D, 3D, Cube).
 */
@@ -14,12 +14,12 @@ class TextureType {
 public:
     /// texture type enum
     enum Code {
-        Texture2D,
-        Texture3D,
-        TextureCube,
+        Texture2D,              ///> 2D texture
+        Texture3D,              ///> 3D texture
+        TextureCube,            ///> cube map texture
         
-        NumTextureTypes,
-        InvalidTextureType,
+        NumTextureTypes,        ///> number of texture types
+        InvalidTextureType,     ///> the invalid texture type value
     };
     
     /// convert TextureType to string

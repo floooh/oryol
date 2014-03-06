@@ -13,12 +13,12 @@ class TextureWrapMode {
 public:
     /// wrap modes
     enum Code {
-        ClampToEdge = 0,
-        Repeat,
-        MirroredRepeat,
+        ClampToEdge = 0,            ///> clamp uv coords to [0,1]
+        Repeat,                     ///> repeat (wrap-around) uv coords
+        MirroredRepeat,             ///> mirror-repeat uv coords
         
-        NumTextureWrapModes,
-        InvalidTextureWrapMode,
+        NumTextureWrapModes,        ///> number of texture wrap modes
+        InvalidTextureWrapMode,     ///> the invalid texture wrap mode value
     };
     
     /// convert to string

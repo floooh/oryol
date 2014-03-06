@@ -38,8 +38,8 @@ public:
         PVRTC2,         ///> PVRTC2 compressed format
         PVRTC4,         ///> PVRTC4 compressed format
         
-        NumPixelFormats,
-        InvalidPixelFormat,
+        NumPixelFormats,    ///> number of pixel formats
+        InvalidPixelFormat, ///> invalid pixel format value
     };
     
     /// convert to string

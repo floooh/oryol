@@ -17,8 +17,8 @@ public:
         DynamicWrite,   ///> dynamic resource, infrequently written by CPU
         DynamicStream,  ///> dynamic resource, frequently written by CPU
         
-        NumUsages,
-        InvalidUsage
+        NumUsages,      ///> number of resource usages
+        InvalidUsage    ///> the invalid usage value
     };
     
     /// convert to string

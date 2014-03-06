@@ -13,16 +13,16 @@ class PrimitiveType {
 public:
     /// primitive type enum
     enum Code {
-        Points = 0,
-        LineStrip,
-        LineLoop,
-        Lines,
-        TriangleStrip,
-        TriangleFan,
-        Triangles,
+        Points = 0,             ///> point list
+        LineStrip,              ///> line strip
+        LineLoop,               ///> closed line loop
+        Lines,                  ///> line list
+        TriangleStrip,          ///> triangle strip
+        TriangleFan,            ///> triangle fan
+        Triangles,              ///> triangle list
         
-        NumPrimitiveTypes,
-        InvalidPrimitiveType,
+        NumPrimitiveTypes,      ///> number of primitive types
+        InvalidPrimitiveType,   ///> invalid primitive type value
     };
     
     /// convert to string

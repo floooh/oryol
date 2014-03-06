@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resources::Id
+    @class Oryol::Resource::Id
     @brief a generic resource identifier
     
     Resource identifiers are abstract handles to a resource object.
