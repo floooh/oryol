@@ -14,10 +14,10 @@
 #elif ORYOL_IOS
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
-#elif ORYOL_NACL
+#elif ORYOL_PNACL
 #define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include "GLES2/gl2.h"
+#include "GLES2/gl2ext.h"
 #include <ppapi/gles2/gl2ext_ppapi.h>
 #elif ORYOL_EMSCRIPTEN
 #define GL_GLEXT_PROTOTYPES
@@ -29,4 +29,10 @@
 #include <GLES2/gl2ext.h>
 #else
 #error "Missing platform for GL header include!"
+#endif
+
+#if ORYOL_PNACL
+#define GL_UNSIGNED_INT_24_8 GL_UNSIGNED_INT_24_8_OES
+#define GL_TEXTURE_3D GL_TEXTURE_3D_OES
+#define GL_DEPTH_STENCIL GL_DEPTH_STENCIL_OES
 #endif
