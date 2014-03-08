@@ -61,8 +61,6 @@ public:
     /// these are the render state values
     enum Value {
         Undefined,      ///< state is not set
-        True,           ///< state is enabled
-        False,          ///< state is disabled
         Zero,           ///< stencil func / blend factor: zero, or replace with zerp
         One,            ///< blend factor: set to one
         

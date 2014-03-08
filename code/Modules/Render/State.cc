@@ -89,8 +89,6 @@ const char*
 State::ValueToString(Value v) {
     switch (v) {
         __ORYOL_TOSTRING(Undefined);
-        __ORYOL_TOSTRING(True);
-        __ORYOL_TOSTRING(False);
         __ORYOL_TOSTRING(Zero);
         __ORYOL_TOSTRING(One);
         __ORYOL_TOSTRING(CW);
@@ -134,8 +132,6 @@ State::Value
 State::ValueFromString(const char* str) {
     o_assert(str);
     __ORYOL_FROMSTRING(Undefined);
-    __ORYOL_FROMSTRING(True);
-    __ORYOL_FROMSTRING(False);
     __ORYOL_FROMSTRING(Zero);
     __ORYOL_FROMSTRING(One);
     __ORYOL_FROMSTRING(CW);
