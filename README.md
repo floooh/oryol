@@ -83,6 +83,7 @@ Experimental C++11 multi-platform 3D engine
   - completely asynchronous resource loading
   - Twiggy-style medium-level rendering API (http://flohofwoe.blogspot.de/2012/08/twiggy.html)
   - shaders are "source code" (integrated into compile process, and linked into the executable)
+  - GLFW as window system glue on supported platforms 
 
 ### Highlevel Rendering:
   [todo]
