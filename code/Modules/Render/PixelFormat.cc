@@ -54,5 +54,74 @@ PixelFormat::FromString(const char* str) {
     return InvalidPixelFormat;
 }
 
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsValidRenderTargetColorFormat(Code c) {
+    switch (c) {
+        case R8G8B8A8:
+        case R8G8B8:
+        case R5G6B5:
+        case R5G5B5A1:
+        case R4G4B4A4:
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsValidRenderTargetDepthFormat(Code c) {
+    switch (c) {
+        case D16:
+        case D32:
+        case D24S8:
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsValidTextureColorFormat(Code c) {
+    switch (c) {
+        case D16:
+        case D32:
+        case D24S8:
+            return false;
+        default:
+            return true;
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsValidTextureDepthFormat(Code c) {
+    switch (c) {
+        case D16:
+        case D32:
+        case D24S8:
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsCompressedFormat(Code c) {
+    switch (c) {
+        case DXT1:
+        case DXT3:
+        case DXT5:
+        case PVRTC2:
+        case PVRTC4:
+            return true;
+        default:
+            return false;
+    }
+}
+
 } // namespace Render
 } // namespace Oryol

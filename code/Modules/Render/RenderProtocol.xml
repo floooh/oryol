@@ -1,0 +1,14 @@
+<Generator type="MessageProtocol" ns="Render" name="RenderProtocol" id="RRPT">
+
+    <Header path="Render/DisplayAttrs.h"/>
+
+    <!-- display has been setup -->
+    <Message name="DisplaySetup" serialize="false"/>
+    
+    <!-- display has been discarded -->
+    <Message name="DisplayDiscarded" serialize="false"/>
+
+    <!-- display has been modified -->
+    <Message name="DisplayModified" serialize="false"/>
+    
+</Generator>

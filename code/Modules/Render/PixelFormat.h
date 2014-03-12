@@ -37,6 +37,16 @@ public:
     static const char* ToString(Code c);
     /// convert from string
     static Code FromString(const char* str);
+    /// return true for valid render target color formats
+    static bool IsValidRenderTargetColorFormat(Code c);
+    /// return true for valid render target depth formats
+    static bool IsValidRenderTargetDepthFormat(Code c);
+    /// return true for valid color texture formats
+    static bool IsValidTextureColorFormat(Code c);
+    /// return true for valid depth texture formats
+    static bool IsValidTextureDepthFormat(Code c);
+    /// return true if the pixel format is a compressed format
+    static bool IsCompressedFormat(Code c);
 };
     
 } // namespace Render
