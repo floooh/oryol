@@ -28,6 +28,8 @@ public:
     bool IsValid() const;
     /// modify the display (may not be supported on all platforms)
     void ModifyDisplay(const DisplaySetup& displaySetup);
+    /// test if the window system wants the application to quit
+    bool QuitRequested() const;
     
     /// get the original display set object
     const DisplaySetup& GetDisplaySetup() const;

@@ -49,6 +49,12 @@ RenderFacade::ModifyDisplay(const DisplaySetup& displaySetup) {
 }
 
 //------------------------------------------------------------------------------
+bool
+RenderFacade::QuitRequested() const {
+    return this->displayManager.QuitRequested();
+}
+
+//------------------------------------------------------------------------------
 const DisplaySetup&
 RenderFacade::GetDisplaySetup() const {
     return this->displayManager.GetDisplaySetup();
