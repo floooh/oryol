@@ -7,7 +7,6 @@
 namespace Oryol {
 namespace Core {
     
-OryolClassImpl(CoreFacade);
 OryolGlobalSingletonImpl(CoreFacade);
 
 ORYOL_THREAD_LOCAL RunLoop* CoreFacade::threadRunLoop = 0;

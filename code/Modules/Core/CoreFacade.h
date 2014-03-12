@@ -14,8 +14,7 @@
 namespace Oryol {
 namespace Core {
 
-class CoreFacade : public Core::RefCounted {
-    OryolClassDecl(CoreFacade);
+class CoreFacade {
     OryolGlobalSingletonDecl(CoreFacade);
 public:
     /// constructor

@@ -11,7 +11,6 @@ namespace IO {
 
 using namespace Core;
     
-OryolClassImpl(IOFacade);
 OryolGlobalSingletonImpl(IOFacade);
 
 /// @todo: make numIOLanes configurable

@@ -18,8 +18,7 @@
 namespace Oryol {
 namespace IO {
 
-class IOFacade : public Core::RefCounted {
-    OryolClassDecl(IOFacade);
+class IOFacade {
     OryolGlobalSingletonDecl(IOFacade);
 public:
     /// constructor
