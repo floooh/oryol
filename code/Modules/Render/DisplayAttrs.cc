@@ -11,64 +11,93 @@ using namespace Core;
     
 //------------------------------------------------------------------------------
 DisplayAttrs::DisplayAttrs() :
-width(0),
-height(0),
-left(0),
-top(0),
+windowWidth(0),
+windowHeight(0),
+windowPosX(0),
+windowPosY(0),
+framebufferWidth(0),
+framebufferHeight(0),
 colorPixelFormat(PixelFormat::InvalidPixelFormat),
 depthPixelFormat(PixelFormat::InvalidPixelFormat),
+swapInterval(1),
 fullscreen(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-DisplayAttrs::SetWidth(int32 w) {
+DisplayAttrs::SetWindowWidth(int32 w) {
     o_assert(w > 0);
-    this->width = w;
+    this->windowWidth = w;
 }
 
 //------------------------------------------------------------------------------
 int32
-DisplayAttrs::GetWidth() const {
-    return this->width;
+DisplayAttrs::GetWindowWidth() const {
+    return this->windowWidth;
 }
     
 //------------------------------------------------------------------------------
 void
-DisplayAttrs::SetHeight(int32 h) {
+DisplayAttrs::SetWindowHeight(int32 h) {
     o_assert(h > 0);
-    this->height = h;
+    this->windowHeight = h;
 }
     
 //------------------------------------------------------------------------------
 int32
-DisplayAttrs::GetHeight() const {
-    return this->height;
+DisplayAttrs::GetWindowHeight() const {
+    return this->windowHeight;
 }
     
 //------------------------------------------------------------------------------
 void
-DisplayAttrs::SetLeft(int32 x) {
-    this->left = x;
+DisplayAttrs::SetWindowPosX(int32 x) {
+    this->windowPosX = x;
 }
     
 //------------------------------------------------------------------------------
 int32
-DisplayAttrs::GetLeft() const {
-    return this->left;
+DisplayAttrs::GetWindowPosX() const {
+    return this->windowPosX;
 }
     
 //------------------------------------------------------------------------------
 void
-DisplayAttrs::SetTop(int32 y) {
-    this->top = y;
+DisplayAttrs::SetWindowPosY(int32 y) {
+    this->windowPosY = y;
 }
     
 //------------------------------------------------------------------------------
 int32
-DisplayAttrs::GetTop() const {
-    return this->top;
+DisplayAttrs::GetWindowPosY() const {
+    return this->windowPosY;
+}
+
+//------------------------------------------------------------------------------
+void
+DisplayAttrs::SetFramebufferWidth(int32 w) {
+    o_assert(w > 0);
+    this->framebufferWidth = w;
+}
+
+//------------------------------------------------------------------------------
+int32
+DisplayAttrs::GetFramebufferWidth() const {
+    return this->framebufferWidth;
+}
+
+//------------------------------------------------------------------------------
+void
+DisplayAttrs::SetFramebufferHeight(int32 h) {
+    o_assert(h > 0);
+    this->framebufferHeight = h;
+}
+
+//------------------------------------------------------------------------------
+int32
+DisplayAttrs::GetFramebufferHeight() const {
+    return this->framebufferHeight;
 }
     
 //------------------------------------------------------------------------------
@@ -108,7 +137,19 @@ bool
 DisplayAttrs::IsFullscreen() const {
     return this->fullscreen;
 }
-    
+
+//------------------------------------------------------------------------------
+void
+DisplayAttrs::SetSwapInterval(int32 interval) {
+    this->swapInterval = interval;
+}
+
+//------------------------------------------------------------------------------
+int32
+DisplayAttrs::GetSwapInterval() const {
+    return this->swapInterval;
+}
+
 //------------------------------------------------------------------------------
 void
 DisplayAttrs::SetWindowTitle(const String& title) {
@@ -121,17 +162,5 @@ DisplayAttrs::GetWindowTitle() const {
     return this->windowTitle;
 }
 
-//------------------------------------------------------------------------------
-void
-DisplayAttrs::SetIconName(const String& icon) {
-    this->iconName = icon;
-}
-
-//------------------------------------------------------------------------------
-const String&
-DisplayAttrs::GetIconName() const {
-    return this->iconName;
-}
-    
 } // namespace Render
 } // namespace Oryol

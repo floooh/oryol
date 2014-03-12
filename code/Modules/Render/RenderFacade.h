@@ -31,8 +31,13 @@ public:
     
     /// get the original display set object
     const DisplaySetup& GetDisplaySetup() const;
-    /// get the current display attributes
+    /// get the current actual display attributes (can be different from setup)
     const DisplayAttrs& GetDisplayAttrs() const;
+    
+    /// begin frame rendering
+    bool BeginFrame();
+    /// end frame rendering
+    void EndFrame();
 
 private:
     displayMgr displayManager;

@@ -20,21 +20,29 @@ public:
     DisplayAttrs();
     
     /// set display width in pixels
-    void SetWidth(int32 w);
+    void SetWindowWidth(int32 w);
     /// get display width in pixels
-    int32 GetWidth() const;
+    int32 GetWindowWidth() const;
     /// set display height in pixels
-    void SetHeight(int32 h);
+    void SetWindowHeight(int32 h);
     /// get display height in pixels
-    int32 GetHeight() const;
+    int32 GetWindowHeight() const;
     /// set x-pos (ignored if fullscreen)
-    void SetLeft(int32 left);
+    void SetWindowPosX(int32 left);
     /// get x-pos
-    int32 GetLeft() const;
+    int32 GetWindowPosX() const;
     /// set y-pos (ignored if fullscreen)
-    void SetTop(int32 top);
+    void SetWindowPosY(int32 top);
     /// get y-pos
-    int32 GetTop() const;
+    int32 GetWindowPosY() const;
+    /// set framebuffer width (usually only set by the display manager)
+    void SetFramebufferWidth(int32 w);
+    /// get framebuffer width
+    int32 GetFramebufferWidth() const;
+    /// set framebuffer height (usually only set by the display manager)
+    void SetFramebufferHeight(int32 h);
+    /// get framebuffer height
+    int32 GetFramebufferHeight() const;
     /// set the color pixel format
     void SetColorPixelFormat(PixelFormat::Code colorPixelFormat);
     /// get the color pixel format
@@ -47,25 +55,27 @@ public:
     void SetFullscreen(bool fullscreen);
     /// get fullscreen flag
     bool IsFullscreen() const;
+    /// intended swap interval (0: no vsync, 1: vsync@60fps, etc...)
+    void SetSwapInterval(int32 interval);
+    /// get swap interval
+    int32 GetSwapInterval() const;
     /// set window title (UTF-8)
     void SetWindowTitle(const Core::String& title);
     /// get window title
     const Core::String& GetWindowTitle() const;
-    /// set icon name
-    void SetIconName(const Core::String& icon);
-    /// get icon name
-    const Core::String& GetIconName() const;
 
 protected:
-    int32 width;
-    int32 height;
-    int32 left;
-    int32 top;
+    int32 windowWidth;
+    int32 windowHeight;
+    int32 windowPosX;
+    int32 windowPosY;
+    int32 framebufferWidth;
+    int32 framebufferHeight;
     PixelFormat::Code colorPixelFormat;
     PixelFormat::Code depthPixelFormat;
+    int32 swapInterval;
     bool fullscreen;
     Core::String windowTitle;
-    Core::String iconName;
 };
 } // namespace Render
 } // namespace Oryol

@@ -87,6 +87,12 @@ displayMgrBase::Present() {
 }
 
 //------------------------------------------------------------------------------
+bool
+displayMgrBase::QuitRequested() const {
+    return false;
+}
+
+//------------------------------------------------------------------------------
 const DisplaySetup&
 displayMgrBase::GetDisplaySetup() const {
     return this->displaySetup;

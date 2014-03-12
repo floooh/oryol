@@ -18,7 +18,7 @@ namespace Render {
 class DisplaySetup : public DisplayAttrs {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static DisplaySetup Windowed(int32 x, int32 y, int32 w, int32 h, const Core::String& windowTitle);
+    static DisplaySetup Windowed(int32 w, int32 h, const Core::String& windowTitle);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
     static DisplaySetup Fullscreen(int32 w, int32 h, const Core::String& windowTitle);
     

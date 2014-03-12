@@ -33,6 +33,8 @@ public:
     void ProcessSystemEvents();
     /// present the current rendered frame
     void Present();
+    /// check whether the window system requests to quit the application
+    bool QuitRequested() const;
     
     /// get original display setup settings
     const DisplaySetup& GetDisplaySetup() const;

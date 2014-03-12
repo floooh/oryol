@@ -60,5 +60,20 @@ RenderFacade::GetDisplayAttrs() const {
     return this->displayManager.GetDisplayAttrs();
 }
 
+//------------------------------------------------------------------------------
+bool
+RenderFacade::BeginFrame() {
+    this->displayManager.ProcessSystemEvents();
+    
+    /// @todo: check and return wheter rendering is possible / necessary
+    return true;
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::EndFrame() {
+    this->displayManager.Present();
+}
+
 } // namespace Render
 } // namespace Oryol

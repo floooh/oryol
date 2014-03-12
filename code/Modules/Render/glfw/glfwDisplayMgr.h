@@ -10,7 +10,7 @@
 */
 #include "Render/base/displayMgrBase.h"
 
-class GLFWWindow;
+struct GLFWwindow;
 
 namespace Oryol {
 namespace Render {
@@ -30,9 +30,14 @@ public:
     void ProcessSystemEvents();
     /// present the current rendered frame
     void Present();
+    /// check whether the window system requests to quit the application
+    bool QuitRequested() const;
     
 private:
-    GLFWWindow* glfwWindow;
+    /// error callback for GLFW
+    static void glfwErrorCallback(int error, const char* desc);
+
+    GLFWwindow* glfwWindow;
 };
     
 } // namespace Render
