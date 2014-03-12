@@ -20,7 +20,7 @@ public:
     /// constructor
     CoreFacade();
     /// destructor
-    virtual ~CoreFacade();
+    ~CoreFacade();
     
     /// get pointer to the per-thread runloop
     class RunLoop* RunLoop();

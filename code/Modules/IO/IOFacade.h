@@ -24,7 +24,7 @@ public:
     /// constructor
     IOFacade();
     /// destructor
-    virtual ~IOFacade();
+    ~IOFacade();
     
     /// add or replace an assign definition
     void SetAssign(const Core::String& assign, const Core::String& path);
