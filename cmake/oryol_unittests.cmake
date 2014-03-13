@@ -11,7 +11,7 @@
 macro(oryol_begin_unittest name)
     oryol_reset(${name})
     set(CurAppName ${name}Test)
-    set(CurAppType "cmdline")
+    set(CurAppType "windowed")
 endmacro()
 
 #-------------------------------------------------------------------------------
