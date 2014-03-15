@@ -18,7 +18,6 @@
                        will be set to position 0, write cursor to end of content
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 
 namespace Oryol {
 namespace IO {

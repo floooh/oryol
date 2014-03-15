@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "MeshBuilder.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {

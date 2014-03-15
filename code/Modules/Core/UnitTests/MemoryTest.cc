@@ -5,7 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Memory/Memory.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;

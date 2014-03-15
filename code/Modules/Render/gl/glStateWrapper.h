@@ -12,7 +12,7 @@
 #include "Core/Types.h"
 #include "Render/Types/State.h"
 #include "Render/gl/gl.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {

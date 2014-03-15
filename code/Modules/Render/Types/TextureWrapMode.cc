@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Macros.h"
+#include "Core/Assert.h"
 #include "TextureWrapMode.h"
 #include <cstring>
 

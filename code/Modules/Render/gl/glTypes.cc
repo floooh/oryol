@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glTypes.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {

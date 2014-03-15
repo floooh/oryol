@@ -9,7 +9,7 @@
 #include "Render/Attrs/IndexBufferAttrs.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Setup/MeshSetup.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {

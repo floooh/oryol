@@ -5,7 +5,6 @@
     @brief single-write / multiple-reader lock
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 
 namespace Oryol {
 namespace Core {

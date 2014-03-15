@@ -11,7 +11,7 @@
 */
 #include <type_traits>
 #include "Core/Types.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Core {

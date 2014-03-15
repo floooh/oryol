@@ -4,6 +4,8 @@
 #include "Pre.h"
 #include <cstring>
 #include "OpenMode.h"
+#include "Core/Macros.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace IO {

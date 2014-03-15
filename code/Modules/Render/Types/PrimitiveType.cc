@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "PrimitiveType.h"
+#include "Core/Assert.h"
 #include "Core/Macros.h"
 #include <cstring>
 
