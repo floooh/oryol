@@ -8,7 +8,7 @@ if (ORYOL_OSX OR ORYOL_WINDOWS OR ORYOL_LINUX)
     oryol_sources(glfw)
     oryol_deps(glfw3)
 endif()
-oryol_deps(Resource Messaging Core)
+oryol_deps(Resource Messaging IO Core)
 oryol_end_module()
 
 oryol_begin_unittest(Render)
