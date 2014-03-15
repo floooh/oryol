@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Render/VertexFormat.h"
+#include "Render/Types/VertexFormat.h"
 #include "Core/String/String.h"
 
 using namespace Oryol::Core;

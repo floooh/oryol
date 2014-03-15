@@ -4,13 +4,13 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/String.h"
-#include "Render/PixelFormat.h"
-#include "Render/PrimitiveType.h"
-#include "Render/TextureType.h"
-#include "Render/Usage.h"
-#include "Render/TextureWrapMode.h"
-#include "Render/IndexType.h"
-#include "Render/TextureFilterMode.h"
+#include "Render/Types/PixelFormat.h"
+#include "Render/Types/PrimitiveType.h"
+#include "Render/Types/TextureType.h"
+#include "Render/Types/Usage.h"
+#include "Render/Types/TextureWrapMode.h"
+#include "Render/Types/IndexType.h"
+#include "Render/Types/TextureFilterMode.h"
 
 using namespace Oryol::Core;
 using namespace Oryol::Render;

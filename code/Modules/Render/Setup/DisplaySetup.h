@@ -10,7 +10,7 @@
     
     @see RenderFacade, DisplayAttrs
 */
-#include "Render/DisplayAttrs.h"
+#include "Render/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
 namespace Render {

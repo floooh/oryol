@@ -4,8 +4,8 @@
     @class Oryol::Render::VertexBufferAttrs
     @brief attributes of one vertex buffer
 */
-#include "Render/VertexLayout.h"
-#include "Render/Usage.h"
+#include "Render/Core/VertexLayout.h"
+#include "Render/Types/Usage.h"
 
 namespace Oryol {
 namespace Render {

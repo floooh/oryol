@@ -5,14 +5,14 @@
     @brief OpenGL type conversion helpers
 */
 #include "Core/Types.h"
-#include "Render/PixelFormat.h"
-#include "Render/PrimitiveType.h"
-#include "Render/TextureType.h"
-#include "Render/Usage.h"
-#include "Render/VertexFormat.h"
-#include "Render/TextureWrapMode.h"
-#include "Render/TextureFilterMode.h"
-#include "Render/IndexType.h"
+#include "Render/Types/PixelFormat.h"
+#include "Render/Types/PrimitiveType.h"
+#include "Render/Types/TextureType.h"
+#include "Render/Types/Usage.h"
+#include "Render/Types/VertexFormat.h"
+#include "Render/Types/TextureWrapMode.h"
+#include "Render/Types/TextureFilterMode.h"
+#include "Render/Types/IndexType.h"
 #include "Render/gl/gl.h"
 
 namespace Oryol {

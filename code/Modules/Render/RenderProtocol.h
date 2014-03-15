@@ -7,7 +7,6 @@
 #include "Messaging/Message.h"
 #include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"
-#include "Render/DisplayAttrs.h"
 
 namespace Oryol {
 namespace Render {

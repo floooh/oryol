@@ -4,8 +4,8 @@
     @class Oryol::Render::IndexBufferAttrs
     @brief attributes of an index buffer
 */
-#include "Render/IndexType.h"
-#include "Render/Usage.h"
+#include "Render/Types/IndexType.h"
+#include "Render/Types/Usage.h"
 
 namespace Oryol {
 namespace Render {

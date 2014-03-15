@@ -5,7 +5,7 @@
     @brief describes a single component of a vertex
     @see VertexFormat, VertexLayout
 */
-#include "Render/VertexFormat.h"
+#include "Render/Types/VertexFormat.h"
 #include "Core/String/StringAtom.h"
 
 namespace Oryol {

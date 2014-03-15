@@ -9,7 +9,7 @@
 */
 #include "Core/Types.h"
 #include "Core/String/String.h"
-#include "Render/PixelFormat.h"
+#include "Render/Types/PixelFormat.h"
 
 namespace Oryol {
 namespace Render {

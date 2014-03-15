@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Render/VertexLayout.h"
+#include "Render/Core/VertexLayout.h"
 
 using namespace Oryol::Core;
 using namespace Oryol::Render;

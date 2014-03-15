@@ -5,10 +5,10 @@
     @brief private: base class for platform-specific mesh implementations
 */
 #include "Resource/resourceBase.h"
-#include "Render/VertexBufferAttrs.h"
-#include "Render/IndexBufferAttrs.h"
-#include "Render/PrimitiveGroup.h"
-#include "Render/MeshSetup.h"
+#include "Render/Attrs/VertexBufferAttrs.h"
+#include "Render/Attrs/IndexBufferAttrs.h"
+#include "Render/Core/PrimitiveGroup.h"
+#include "Render/Setup/MeshSetup.h"
 #include "Core/Macros.h"
 
 namespace Oryol {

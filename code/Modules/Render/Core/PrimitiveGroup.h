@@ -12,7 +12,7 @@
     to vertices living in a vertex buffer.
 */
 #include "Core/Types.h"
-#include "Render/PrimitiveType.h"
+#include "Render/Types/PrimitiveType.h"
 
 namespace Oryol {
 namespace Render {

@@ -1,7 +1,5 @@
 <Generator type="MessageProtocol" ns="Render" name="RenderProtocol" id="RRPT">
 
-    <Header path="Render/DisplayAttrs.h"/>
-
     <!-- display has been setup -->
     <Message name="DisplaySetup" serialize="false"/>
     

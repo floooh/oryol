@@ -5,7 +5,7 @@
     @brief describes the data layout of a vertex in a vertex buffer
     @see VertexComponent
 */
-#include "Render/VertexComponent.h"
+#include "Render/Core/VertexComponent.h"
 
 namespace Oryol {
 namespace Render {

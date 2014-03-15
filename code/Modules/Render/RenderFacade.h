@@ -7,7 +7,7 @@
     @todo: describe RenderFacade
 */
 #include "Core/Macros.h"
-#include "displayMgr.h"
+#include "Render/Core/displayMgr.h"
 
 namespace Oryol {
 namespace Render {

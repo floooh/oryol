@@ -6,8 +6,8 @@
     
     @see displayMgr
 */
-#include "Render/DisplaySetup.h"
-#include "Render/DisplayAttrs.h"
+#include "Render/Setup/DisplaySetup.h"
+#include "Render/Attrs/DisplayAttrs.h"
 #include "Core/Containers/Array.h"
 #include "Messaging/Port.h"
 
