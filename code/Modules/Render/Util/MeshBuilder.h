@@ -64,34 +64,40 @@ class MeshBuilder {
 public:
     /// constructor
     MeshBuilder();
-    /// destructor
-    ~MeshBuilder();
     
     /// set number of vertices
-    void SetNumVertices(int32 numVertices);
+    void SetNumVertices(uint32 numVertices);
     /// set number of indices (default 0 for non-indexed meshes)
-    void SetNumIndices(int32 numIndices);
+    void SetNumIndices(uint32 numIndices);
     /// set the index type (default is 16-bit indices)
     void SetIndexType(IndexType::Code indexType);
     /// add vertex component
     void AddComponent(const VertexComponent& comp);
+    /// add vertex component
+    void AddComponent(const Core::StringAtom& attrName, VertexFormat::Code format);
     /// add a primitive group (at least one needed!)
-    void AddPrimGroup(const PrimitiveGroup& primGroup);
+    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
+    /// add a primitive group (at least one needed!)
+    void AddPrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements);
     
     /// begin writing vertex and index data
     void Begin();
     /// write D component vertex data
-    void Vertex1(int32 vertexIndex, int32 componentIndex, float32 x);
+    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x);
     /// write 2D vertex data
-    void Vertex2(int32 vertexIndex, int32 componentIndex, float32 x, float32 y);
+    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y);
     /// write 3D vertex data
-    void Vertex3(int32 vertexIndex, int32 componentIndex, float32 x, float32 y, float32 z);
+    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y, float32 z);
     /// write 4D vertex data
-    void Vertex4(int32 vertexIndex, int32 componentIndex, float32 x, float32 y, float32 z, float32 w);
+    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y, float32 z, float32 w);
     /// write 16-bit vertex-index at index-buffer-index
-    void Index16(int32 index, uint16 vertexIndex);
+    void Index(uint32 index, uint16 vertexIndex);
     /// write 32-bit vertex-index at index-buffer-index
-    void Index32(int32 index, uint32 vertexIndex);
+    void Index32(uint32 index, uint32 vertexIndex);
+    /// write 16-bit triangle indices
+    void Triangle(uint32 triangleIndex, uint16 vertexIndex0, uint16 vertexIndex1, uint16 vertexIndex2);
+    /// write 32-bit triangle indices
+    void Triangle32(uint32 triangleIndex, uint32 vertexIndex0, uint32 vertexIndex1, uint32 vertexIndex2);
     /// end writing vertex and index data
     void End();
     
@@ -125,10 +131,10 @@ public:
     
 private:
     /// compute byte offset into vertex buffer given vertex and component index
-    int32 vertexByteOffset(int32 vertexIndex, int32 componentIndex) const;
+    uint32 vertexByteOffset(uint32 vertexIndex, uint32 componentIndex) const;
 
-    int32 numVertices;
-    int32 numIndices;
+    uint32 numVertices;
+    uint32 numIndices;
     IndexType::Code indexType;
     VertexLayout layout;
     Core::Array<PrimitiveGroup> primGroups;
@@ -145,8 +151,10 @@ private:
 
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Index16(int32 index, uint16 vertexIndex) {
-    o_assert_dbg(this->inBegin && (index >= 0) && (index < this->numIndices) && (this->indexType == IndexType::Index16));
+MeshBuilder::Index(uint32 index, uint16 vertexIndex) {
+    o_assert_dbg(this->inBegin && (index < this->numIndices) && (this->indexType == IndexType::Index16));
+    o_assert_dbg(vertexIndex < this->numVertices);
+    
     uint16* ptr = ((uint16*)this->indexPointer) + index;
     o_assert_dbg(ptr < (uint16*)this->endPointer);
     *ptr = vertexIndex;
@@ -154,23 +162,37 @@ MeshBuilder::Index16(int32 index, uint16 vertexIndex) {
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Index32(int32 index, uint32 vertexIndex) {
-    o_assert_dbg(this->inBegin && (index >= 0) && (index < this->numIndices) && (this->indexType == IndexType::Index32));
+MeshBuilder::Index32(uint32 index, uint32 vertexIndex) {
+    o_assert_dbg(this->inBegin && (index < this->numIndices) && (this->indexType == IndexType::Index32));
+    o_assert_dbg(vertexIndex < this->numVertices);
+    
     uint32* ptr = ((uint32*)this->indexPointer) + index;
     o_assert_dbg(ptr < (uint32*)this->endPointer);
     *ptr = vertexIndex;
 }
 
 //------------------------------------------------------------------------------
-inline int32
-MeshBuilder::vertexByteOffset(int32 vertexIndex, int32 compIndex) const {
-    o_assert_dbg((vertexIndex >= 0) && (vertexIndex < this->numVertices));
+inline void
+MeshBuilder::Triangle(uint32 triIndex, uint16 vi0, uint16 vi1, uint16 vi2) {
+    o_assert_dbg(this->inBegin && (triIndex >= 0) && (triIndex*3 < this->numIndices));
+    o_assert_dbg((vi0 < this->numVertices) && (vi1 < this->numVertices) && (vi2 < this->numVertices));
+    
+    uint16* ptr = ((uint16*)this->indexPointer) + triIndex * 3;
+    o_assert_dbg(ptr < (uint16*)this->endPointer);
+    ptr[0] = vi0; ptr[1] = vi1; ptr[2] = vi2;
+}
+
+
+//------------------------------------------------------------------------------
+inline uint32
+MeshBuilder::vertexByteOffset(uint32 vertexIndex, uint32 compIndex) const {
+    o_assert_dbg(vertexIndex < this->numVertices);
     return vertexIndex * this->layout.GetByteSize() + this->layout.GetComponentByteOffset(compIndex);
 }
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex1(int32 vertexIndex, int32 compIndex, float x) {
+MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x) {
     o_assert_dbg(this->inBegin);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x);
@@ -178,7 +200,7 @@ MeshBuilder::Vertex1(int32 vertexIndex, int32 compIndex, float x) {
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex2(int32 vertexIndex, int32 compIndex, float x, float y) {
+MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y) {
     o_assert_dbg(this->inBegin);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y);
@@ -186,7 +208,7 @@ MeshBuilder::Vertex2(int32 vertexIndex, int32 compIndex, float x, float y) {
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex3(int32 vertexIndex, int32 compIndex, float x, float y, float z) {
+MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y, float z) {
     o_assert_dbg(this->inBegin);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z);
@@ -194,7 +216,7 @@ MeshBuilder::Vertex3(int32 vertexIndex, int32 compIndex, float x, float y, float
 
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex4(int32 vertexIndex, int32 compIndex, float x, float y, float z, float w) {
+MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y, float z, float w) {
     o_assert_dbg(this->inBegin);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z, w);

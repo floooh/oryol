@@ -27,7 +27,7 @@ endPointer(nullptr) {
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::SetNumVertices(int32 num) {
+MeshBuilder::SetNumVertices(uint32 num) {
     o_assert(num > 0);
     o_assert(!this->inBegin);
     this->numVertices = num;
@@ -35,7 +35,7 @@ MeshBuilder::SetNumVertices(int32 num) {
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::SetNumIndices(int32 num) {
+MeshBuilder::SetNumIndices(uint32 num) {
     o_assert(num >= 0);
     o_assert(!this->inBegin);
     this->numIndices = num;
@@ -52,14 +52,30 @@ MeshBuilder::SetIndexType(IndexType::Code t) {
 void
 MeshBuilder::AddComponent(const VertexComponent& comp) {
     o_assert(!this->inBegin);
+    o_assert(std::strlen(comp.GetAttrName().AsCStr()) < sizeof(HeaderVertexComponent::attrName));
     this->layout.Add(comp);
 }
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::AddPrimGroup(const PrimitiveGroup& primGroup) {
+MeshBuilder::AddComponent(const StringAtom& attrName, VertexFormat::Code format) {
+    o_assert(!this->inBegin);
+    o_assert(std::strlen(attrName.AsCStr()) < sizeof(HeaderVertexComponent::attrName));
+    this->layout.Add(attrName, format);
+}
+
+//------------------------------------------------------------------------------
+void
+MeshBuilder::AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
     o_assert(!this->inBegin);
     this->primGroups.AddBack(primGroup);
+}
+
+//------------------------------------------------------------------------------
+void
+MeshBuilder::AddPrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements) {
+    o_assert(!this->inBegin);
+    this->primGroups.EmplaceBack(type, baseElement, numElements);
 }
 
 //------------------------------------------------------------------------------
@@ -135,6 +151,12 @@ MeshBuilder::End() {
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
+}
+
+//------------------------------------------------------------------------------
+const Ptr<Stream>&
+MeshBuilder::GetStream() const {
+    return this->stream;
 }
 
 } // namespace Render
