@@ -116,7 +116,7 @@ void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
-        std::printf("oryol assert: cond='%s' msg='%s', file='%s', line='%d', func='%s'\n",
+        std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
                  cond, msg ? msg : "none", file, line, func);
     }
     else
