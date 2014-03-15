@@ -17,6 +17,8 @@ VertexFormat::ToString(Code c) {
         __ORYOL_TOSTRING(Float2);
         __ORYOL_TOSTRING(Float3);
         __ORYOL_TOSTRING(Float4);
+        __ORYOL_TOSTRING(Byte4);
+        __ORYOL_TOSTRING(Byte4N);
         __ORYOL_TOSTRING(UByte4);
         __ORYOL_TOSTRING(UByte4N);
         __ORYOL_TOSTRING(Short2);
@@ -35,6 +37,8 @@ VertexFormat::FromString(const char* str) {
     __ORYOL_FROMSTRING(Float2);
     __ORYOL_FROMSTRING(Float3);
     __ORYOL_FROMSTRING(Float4);
+    __ORYOL_FROMSTRING(Byte4);
+    __ORYOL_FROMSTRING(Byte4N);
     __ORYOL_FROMSTRING(UByte4);
     __ORYOL_FROMSTRING(UByte4N);
     __ORYOL_FROMSTRING(Short2);
@@ -56,6 +60,8 @@ VertexFormat::ByteSize(Code c) {
             return 12;
         case Float4:
             return 16;
+        case Byte4:
+        case Byte4N:
         case UByte4:
         case UByte4N:
         case Short2:
