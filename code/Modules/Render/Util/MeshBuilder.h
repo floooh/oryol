@@ -1,0 +1,204 @@
+#pragma once
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::MeshBuilder
+    @brief build mesh data programmatically
+    
+    The MeshBuilder class simplifies creating mesh data from scratch with
+    the CPU. It is mainly build for convenience, less for performance, 
+    so it should mainly be used to setup static, immutable geometry. For
+    dynamic geometry which needs to change every frame lower level approaches
+    shouls be used (such as VertexWriter). To create pre-defined shapes
+    such as cube, sphere or donuts, consider using the higher level 
+    ShapeBuilder class which is built on top of MeshBuilder.
+    
+    In order to start writing vertices and indices, first tell the
+    MeshBuilder the number of vertices and their layout, the number of
+    indices (in case of indexed geometry), the index type (16- or
+    32-bits) and finally the primitive group definitions, then call
+    the Begin() method, and start writing vertices and indices,
+    when done call End() and get the resulting Stream object
+    object which can be handed together with a MeshSetup object to 
+    RenderFacade::CreateMesh().
+    
+    Vertex format packing happens on the fly when writing vertex data 
+    according to the vertex layout given.
+    
+    This is the format of the stream data that will be written, this
+    is compatible with the RawMeshLoader format:
+    
+    uint32 magic = 'ORAW'
+    uint32 numVertices
+    uint32 numIndices
+    uint32 indexType (0=no indices, 1=16-bit, 2=32-bit)
+    uint32 numVertexComponents
+    uint32 numPrimitiveGroups
+    uint32 verticesByteSize (size of vertex data in bytes, rounded up to 4)
+    uint32 indicesByteSize (size of index data in bytes)
+    [1..numVertexComponents]:
+        uint32 format       (VertexFormat::Code)
+        char attrName[16]  (guaranteed to be 0-terminated)
+    [1..numPrimitiveGroups]
+        uint32 type         (PrimitiveType::Code)
+        uint32 baseElement
+        uint32 numElements
+    [1..numVertices]
+        [1..N bytes per vertex]
+    [4-byte aligned, 1..numIndices]
+        [2 or 4 bytes per index]
+ 
+    @see VertexWriter, ShapeBuilder
+*/
+#include "Core/Types.h"
+#include "Render/Types/IndexType.h"
+#include "Render/Core/VertexLayout.h"
+#include "Render/Core/PrimitiveGroup.h"
+#include "Render/Setup/MeshSetup.h"
+#include "Render/Util/VertexWriter.h"
+#include "IO/MemoryStream.h"
+
+namespace Oryol {
+namespace Render {
+
+class MeshBuilder {
+public:
+    /// constructor
+    MeshBuilder();
+    /// destructor
+    ~MeshBuilder();
+    
+    /// set number of vertices
+    void SetNumVertices(int32 numVertices);
+    /// set number of indices (default 0 for non-indexed meshes)
+    void SetNumIndices(int32 numIndices);
+    /// set the index type (default is 16-bit indices)
+    void SetIndexType(IndexType::Code indexType);
+    /// add vertex component
+    void AddComponent(const VertexComponent& comp);
+    /// add a primitive group (at least one needed!)
+    void AddPrimGroup(const PrimitiveGroup& primGroup);
+    
+    /// begin writing vertex and index data
+    void Begin();
+    /// write D component vertex data
+    void Vertex1(int32 vertexIndex, int32 componentIndex, float32 x);
+    /// write 2D vertex data
+    void Vertex2(int32 vertexIndex, int32 componentIndex, float32 x, float32 y);
+    /// write 3D vertex data
+    void Vertex3(int32 vertexIndex, int32 componentIndex, float32 x, float32 y, float32 z);
+    /// write 4D vertex data
+    void Vertex4(int32 vertexIndex, int32 componentIndex, float32 x, float32 y, float32 z, float32 w);
+    /// write 16-bit vertex-index at index-buffer-index
+    void Index16(int32 index, uint16 vertexIndex);
+    /// write 32-bit vertex-index at index-buffer-index
+    void Index32(int32 index, uint32 vertexIndex);
+    /// end writing vertex and index data
+    void End();
+    
+    /// get the resulting data stream with vertex and index data
+    const Core::Ptr<IO::Stream>& GetStream() const;
+    
+    /// the mesh data header
+    struct Header {
+        uint32 magic;
+        uint32 numVertices;
+        uint32 numIndices;
+        uint32 indexType;
+        uint32 numVertexComponents;
+        uint32 numPrimitiveGroups;
+        uint32 verticesByteSize;
+        uint32 indicesByteSize;
+    };
+    
+    /// a vertex component entry in the header
+    struct HeaderVertexComponent {
+        uint32 format;
+        char attrName[16];
+    };
+    
+    /// a primitive group entry in the header
+    struct HeaderPrimitiveGroup {
+        uint32 type;
+        uint32 baseElement;
+        uint32 numElements;
+    };
+    
+private:
+    /// compute byte offset into vertex buffer given vertex and component index
+    int32 vertexByteOffset(int32 vertexIndex, int32 componentIndex) const;
+
+    int32 numVertices;
+    int32 numIndices;
+    IndexType::Code indexType;
+    VertexLayout layout;
+    Core::Array<PrimitiveGroup> primGroups;
+    Core::Ptr<IO::MemoryStream> stream;
+    MeshSetup meshSetup;
+    bool inBegin;
+    bool resultValid;
+    
+    uint8* headerPointer;
+    uint8* vertexPointer;
+    uint8* indexPointer;
+    uint8* endPointer;
+};
+
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Index16(int32 index, uint16 vertexIndex) {
+    o_assert_dbg(this->inBegin && (index >= 0) && (index < this->numIndices) && (this->indexType == IndexType::Index16));
+    uint16* ptr = ((uint16*)this->indexPointer) + index;
+    o_assert_dbg(ptr < (uint16*)this->endPointer);
+    *ptr = vertexIndex;
+}
+    
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Index32(int32 index, uint32 vertexIndex) {
+    o_assert_dbg(this->inBegin && (index >= 0) && (index < this->numIndices) && (this->indexType == IndexType::Index32));
+    uint32* ptr = ((uint32*)this->indexPointer) + index;
+    o_assert_dbg(ptr < (uint32*)this->endPointer);
+    *ptr = vertexIndex;
+}
+
+//------------------------------------------------------------------------------
+inline int32
+MeshBuilder::vertexByteOffset(int32 vertexIndex, int32 compIndex) const {
+    o_assert_dbg((vertexIndex >= 0) && (vertexIndex < this->numVertices));
+    return vertexIndex * this->layout.GetByteSize() + this->layout.GetComponentByteOffset(compIndex);
+}
+    
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Vertex1(int32 vertexIndex, int32 compIndex, float x) {
+    o_assert_dbg(this->inBegin);
+    uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
+    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x);
+}
+    
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Vertex2(int32 vertexIndex, int32 compIndex, float x, float y) {
+    o_assert_dbg(this->inBegin);
+    uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
+    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y);
+}
+    
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Vertex3(int32 vertexIndex, int32 compIndex, float x, float y, float z) {
+    o_assert_dbg(this->inBegin);
+    uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
+    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z);
+}
+
+//------------------------------------------------------------------------------
+inline void
+MeshBuilder::Vertex4(int32 vertexIndex, int32 compIndex, float x, float y, float z, float w) {
+    o_assert_dbg(this->inBegin);
+    uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
+    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z, w);
+}
+
+} // namespace Render
+} // namespace Oryol

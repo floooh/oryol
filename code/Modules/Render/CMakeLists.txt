@@ -2,7 +2,7 @@
 #   oryol Render module
 #-------------------------------------------------------------------------------
 oryol_begin_module(Render)
-oryol_sources(. Attrs Core Setup Types base gl)
+oryol_sources(. Attrs Core Setup Types Util base gl)
 if (ORYOL_OSX OR ORYOL_WINDOWS OR ORYOL_LINUX)
     include_directories(${ORYOL_ROOT_DIR}/code/Ext/glfw/include)
     oryol_sources(glfw)
