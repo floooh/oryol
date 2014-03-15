@@ -11,17 +11,15 @@ namespace Render {
 PrimitiveGroup::PrimitiveGroup() :
 type(PrimitiveType::InvalidPrimitiveType),
 baseElement(0),
-numElements(0),
-indexed(false) {
+numElements(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-PrimitiveGroup::PrimitiveGroup(PrimitiveType::Code type_, bool indexed_, int32 base_, int32 num_) :
+PrimitiveGroup::PrimitiveGroup(PrimitiveType::Code type_, int32 base_, int32 num_) :
 type(type_),
 baseElement(base_),
-numElements(num_),
-indexed(indexed_) {
+numElements(num_) {
     // empty
 }
 
@@ -29,12 +27,6 @@ indexed(indexed_) {
 void
 PrimitiveGroup::SetPrimitiveType(PrimitiveType::Code t) {
     this->type = t;
-}
-
-//------------------------------------------------------------------------------
-void
-PrimitiveGroup::SetIndexedFlag(bool b) {
-    this->indexed = b;
 }
 
 //------------------------------------------------------------------------------
