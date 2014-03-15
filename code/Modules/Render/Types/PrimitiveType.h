@@ -11,9 +11,9 @@ namespace Render {
     
 class PrimitiveType {
 public:
-    /// primitive type enum
+    /// primitive type enum (don't change order, append to end!)
     enum Code {
-        Points,                 ///< point list
+        Points = 0,             ///< point list
         LineStrip,              ///< line strip
         LineLoop,               ///< closed line loop
         Lines,                  ///< line list
