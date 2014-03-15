@@ -32,7 +32,12 @@
     #define o_assert_dbg ((void)0)
     #endif
     /// assert macro with programmer's message
-    #define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } while(0)
+    #define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+    #if ORYOL_DEBUG
+    #define o_assert2_dbg(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+    #else
+    #define o_assert2_dbg ((void)0)
+    #endif
     /// perform a range check (x >= 0) && (x < max)
     #define o_assert_range(val, max) o_assert((val >= 0) && (val < max))
     #define o_assert_range_dbg(val, max) o_assert_dbg((val >= 0) && (val < max))
