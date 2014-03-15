@@ -39,6 +39,5 @@ TEST(DisplaySetuptest) {
     f->Discard();
     
     RenderFacade::DestroySingleton();
-
 }
 

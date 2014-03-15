@@ -110,9 +110,11 @@ TEST(TextureWrapMode) {
 
 //------------------------------------------------------------------------------
 TEST(IndexTypeTest) {
-    CHECK(IndexType::NumIndexTypes == 2);
+    CHECK(IndexType::NumIndexTypes == 3);
+    CHECK(IndexType::FromString("None") == IndexType::None);
     CHECK(IndexType::FromString("Index16") == IndexType::Index16);
     CHECK(IndexType::FromString("Index32") == IndexType::Index32);
+    CHECK(String(IndexType::ToString(IndexType::None)) == "None");
     CHECK(String(IndexType::ToString(IndexType::Index16)) == "Index16");
     CHECK(String(IndexType::ToString(IndexType::Index32)) == "Index32");
     CHECK(IndexType::ByteSize(IndexType::Index16) == 2);
