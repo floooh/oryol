@@ -112,6 +112,7 @@ resourceBase<SETUP>::GetState() const {
 template<class SETUP> void
 resourceBase<SETUP>::setSetup(const SETUP& setup_) {
     this->setup = setup_;
+    this->locator = setup_.GetLocator();
 }
 
 //------------------------------------------------------------------------------
