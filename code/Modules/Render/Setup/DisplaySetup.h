@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Render::DisplaySetup
+    @class Oryol::Render::DisplaySetup
     @brief display setup parameters
     
     Create a DisplaySetup object and hand it to RenderFacade::SetupDisplay()

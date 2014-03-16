@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Render::DisplayAttrs
+    @class Oryol::Render::DisplayAttrs
     @brief actual display attributes
     
     Holds the properties of the current display, these can be 
