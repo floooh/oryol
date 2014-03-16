@@ -9,6 +9,7 @@ set(ORYOL_PLATFORM Linux)
 set(ORYOL_PLATFORM_NAME "linux")
 set(ORYOL_LINUX 1)
 set(ORYOL_POSIX 1)
+set(ORYOL_OPENGL 1)
 set(ORYOL_PLATFORM_DEFINES "-DORYOL_LINUX=1 -DORYOL_POSIX=1")
 
 # define configuration types

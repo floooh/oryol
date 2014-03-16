@@ -22,6 +22,7 @@ else()
 	set(ORYOL_PLATFORM_DEFINES "/DORYOL_WINDOWS=1 /DORYOL_WIN32=1")
 	set(ORYOL_WINDOWS_PLATFORM_NAME "x86")
 endif()
+set(ORYOL_OPENGL 1)
 
 # define configuration types
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
