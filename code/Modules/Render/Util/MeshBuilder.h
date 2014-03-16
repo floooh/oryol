@@ -74,7 +74,7 @@ public:
     /// add vertex component
     void AddComponent(const VertexComponent& comp);
     /// add vertex component
-    void AddComponent(const Core::StringAtom& attrName, VertexFormat::Code format);
+    void AddComponent(const VertexAttr::Code attr, VertexFormat::Code format);
     /// add a primitive group (at least one needed!)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// add a primitive group (at least one needed!)
@@ -112,14 +112,14 @@ public:
         uint32 indexType;
         uint32 numVertexComponents;
         uint32 numPrimitiveGroups;
-        uint32 verticesByteSize;
+        uint32 verticesByteSize;        // rounded up to multiples of 4!
         uint32 indicesByteSize;
     };
     
     /// a vertex component entry in the header
     struct HeaderVertexComponent {
+        uint32 attr;
         uint32 format;
-        char attrName[16];
     };
     
     /// a primitive group entry in the header
@@ -174,7 +174,7 @@ MeshBuilder::Index32(uint32 index, uint32 vertexIndex) {
 //------------------------------------------------------------------------------
 inline void
 MeshBuilder::Triangle(uint32 triIndex, uint16 vi0, uint16 vi1, uint16 vi2) {
-    o_assert_dbg(this->inBegin && (triIndex >= 0) && (triIndex*3 < this->numIndices));
+    o_assert_dbg(this->inBegin && (triIndex*3 < this->numIndices));
     o_assert_dbg((vi0 < this->numVertices) && (vi1 < this->numVertices) && (vi2 < this->numVertices));
     
     uint16* ptr = ((uint16*)this->indexPointer) + triIndex * 3;

@@ -1,16 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    Central GL header file.
+    Central GL header file, this is BIG, make sure to only include
+    this in implementation files, not header files.
 */
-#if ORYOL_WINDOWS
-#include <gl/gl.h>
+#if (ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_OSX)
 #define GLEW_STATIC (1)
 #include "glew/GL/glew.h"
-#include "glew/GL/wglew.h"
-#elif ORYOL_MACOS
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
 #elif ORYOL_IOS
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
@@ -35,4 +31,11 @@
 #define GL_UNSIGNED_INT_24_8 GL_UNSIGNED_INT_24_8_OES
 #define GL_TEXTURE_3D GL_TEXTURE_3D_OES
 #define GL_DEPTH_STENCIL GL_DEPTH_STENCIL_OES
+#endif
+
+// Oryol GL error checking macro
+#if ORYOL_DEBUG
+#define ORYOL_GL_CHECK_ERROR() o_assert(glGetError() == GL_NO_ERROR)
+#else
+
 #endif

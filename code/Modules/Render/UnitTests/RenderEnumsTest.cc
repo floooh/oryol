@@ -11,6 +11,8 @@
 #include "Render/Types/TextureWrapMode.h"
 #include "Render/Types/IndexType.h"
 #include "Render/Types/TextureFilterMode.h"
+#include "Render/Types/VertexFormat.h"
+#include "Render/Types/VertexAttr.h"
 
 using namespace Oryol::Core;
 using namespace Oryol::Render;
@@ -138,3 +140,85 @@ TEST(TextureFilterModeTest) {
     CHECK(String(TextureFilterMode::ToString(TextureFilterMode::LinearMipmapLinear)) == "LinearMipmapLinear");
 }
 
+//------------------------------------------------------------------------------
+TEST(VertexFormatTest) {
+    CHECK(VertexFormat::NumVertexFormats == 12);
+    
+    CHECK(VertexFormat::FromString("Float") == VertexFormat::Float);
+    CHECK(VertexFormat::FromString("Float2") == VertexFormat::Float2);
+    CHECK(VertexFormat::FromString("Float3") == VertexFormat::Float3);
+    CHECK(VertexFormat::FromString("Float4") == VertexFormat::Float4);
+    CHECK(VertexFormat::FromString("Byte4") == VertexFormat::Byte4);
+    CHECK(VertexFormat::FromString("Byte4N") == VertexFormat::Byte4N);
+    CHECK(VertexFormat::FromString("UByte4") == VertexFormat::UByte4);
+    CHECK(VertexFormat::FromString("UByte4N") == VertexFormat::UByte4N);
+    CHECK(VertexFormat::FromString("Short2") == VertexFormat::Short2);
+    CHECK(VertexFormat::FromString("Short2N") == VertexFormat::Short2N);
+    CHECK(VertexFormat::FromString("Short4") == VertexFormat::Short4);
+    CHECK(VertexFormat::FromString("Short4N") == VertexFormat::Short4N);
+    
+    CHECK(String(VertexFormat::ToString(VertexFormat::Float)) == "Float");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Float2)) == "Float2");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Float3)) == "Float3");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Float4)) == "Float4");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Byte4)) == "Byte4");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Byte4N)) == "Byte4N");
+    CHECK(String(VertexFormat::ToString(VertexFormat::UByte4)) == "UByte4");
+    CHECK(String(VertexFormat::ToString(VertexFormat::UByte4N)) == "UByte4N");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Short2)) == "Short2");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Short2N)) == "Short2N");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Short4)) == "Short4");
+    CHECK(String(VertexFormat::ToString(VertexFormat::Short4N)) == "Short4N");
+    
+    CHECK(VertexFormat::ByteSize(VertexFormat::Float) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Float2) == 8);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Float3) == 12);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Float4) == 16);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Byte4) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Byte4N) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::UByte4) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::UByte4N) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Short2) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Short2N) == 4);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Short4) == 8);
+    CHECK(VertexFormat::ByteSize(VertexFormat::Short4N) == 8);
+}
+
+//------------------------------------------------------------------------------
+TEST(VertexAttrTest) {
+    CHECK(VertexAttr::NumVertexAttrs == 16);
+    
+    CHECK(VertexAttr::FromString("position") == VertexAttr::Position);
+    CHECK(VertexAttr::FromString("normal") == VertexAttr::Normal);
+    CHECK(VertexAttr::FromString("texcoord0") == VertexAttr::TexCoord0);
+    CHECK(VertexAttr::FromString("texcoord1") == VertexAttr::TexCoord1);
+    CHECK(VertexAttr::FromString("texcoord2") == VertexAttr::TexCoord2);
+    CHECK(VertexAttr::FromString("texcoord3") == VertexAttr::TexCoord3);
+    CHECK(VertexAttr::FromString("tangent") == VertexAttr::Tangent);
+    CHECK(VertexAttr::FromString("binormal") == VertexAttr::Binormal);
+    CHECK(VertexAttr::FromString("weights") == VertexAttr::Weights);
+    CHECK(VertexAttr::FromString("indices") == VertexAttr::Indices);
+    CHECK(VertexAttr::FromString("color0") == VertexAttr::Color0);
+    CHECK(VertexAttr::FromString("color1") == VertexAttr::Color1);
+    CHECK(VertexAttr::FromString("custom0") == VertexAttr::Custom0);
+    CHECK(VertexAttr::FromString("custom1") == VertexAttr::Custom1);
+    CHECK(VertexAttr::FromString("custom2") == VertexAttr::Custom2);
+    CHECK(VertexAttr::FromString("custom3") == VertexAttr::Custom3);
+    
+    CHECK(String(VertexAttr::ToString(VertexAttr::Position)) == "position");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Normal)) == "normal");
+    CHECK(String(VertexAttr::ToString(VertexAttr::TexCoord0)) == "texcoord0");
+    CHECK(String(VertexAttr::ToString(VertexAttr::TexCoord1)) == "texcoord1");
+    CHECK(String(VertexAttr::ToString(VertexAttr::TexCoord2)) == "texcoord2");
+    CHECK(String(VertexAttr::ToString(VertexAttr::TexCoord3)) == "texcoord3");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Tangent)) == "tangent");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Binormal)) == "binormal");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Weights)) == "weights");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Indices)) == "indices");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Color0)) == "color0");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Color1)) == "color1");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Custom0)) == "custom0");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Custom1)) == "custom1");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Custom2)) == "custom2");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Custom3)) == "custom3");
+}

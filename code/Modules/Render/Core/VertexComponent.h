@@ -6,7 +6,7 @@
     @see VertexFormat, VertexLayout
 */
 #include "Render/Types/VertexFormat.h"
-#include "Core/String/StringAtom.h"
+#include "Render/Types/VertexAttr.h"
 
 namespace Oryol {
 namespace Render {
@@ -16,33 +16,33 @@ public:
     /// default constructor
     VertexComponent();
     /// constructor
-    VertexComponent(const Core::StringAtom& attrName, VertexFormat::Code format);
+    VertexComponent(VertexAttr::Code attr, VertexFormat::Code format);
     /// return true if valid (name and format set)
     bool IsValid() const;
     /// clear/invalidate the vertex component
     void Clear();
-    /// get vertex attribute name
-    const Core::StringAtom& GetAttrName() const;
+    /// get vertex attribute
+    VertexAttr::Code GetAttr() const;
     /// get vertex format
     VertexFormat::Code GetFormat() const;
     /// get byte size of component
     int32 GetByteSize() const;
     
 private:
-    Core::StringAtom attrName;
+    VertexAttr::Code attr;
     VertexFormat::Code format;
 };
 
 //------------------------------------------------------------------------------
 inline bool
 VertexComponent::IsValid() const {
-    return this->attrName.IsValid() && (VertexFormat::InvalidVertexFormat != this->format);
+    return (VertexAttr::InvalidVertexAttr != this->attr) && (VertexFormat::InvalidVertexFormat != this->format);
 }
 
 //------------------------------------------------------------------------------
-inline const Core::StringAtom&
-VertexComponent::GetAttrName() const {
-    return this->attrName;
+inline VertexAttr::Code
+VertexComponent::GetAttr() const {
+    return this->attr;
 }
 
 //------------------------------------------------------------------------------

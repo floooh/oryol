@@ -8,10 +8,12 @@
     index buffer, and one or more primitive groups.
     @todo: describe mesh creation etc...
 */
-// only GL platforms for now
+#if ORYOL_OPENGL
 #include "Render/gl/glMesh.h"
 namespace Oryol {
 namespace Render {
-class Mesh : public glMesh { };
-};
+class mesh : public glMesh { };
 } }
+#else
+#error "Target platform not yet supported!"
+#endif

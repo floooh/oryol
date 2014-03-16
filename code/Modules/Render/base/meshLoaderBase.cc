@@ -1,38 +1,37 @@
 //------------------------------------------------------------------------------
-//  VertexBufferAttrs.cc
+//  meshLoaderBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "VertexBufferAttrs.h"
-#include "Core/Assert.h"
+#include "meshLoaderBase.h"
 
 namespace Oryol {
 namespace Render {
     
 //------------------------------------------------------------------------------
-VertexBufferAttrs::VertexBufferAttrs() :
-numVertices(0),
-usage(Usage::InvalidUsage) {
+meshLoaderBase::meshLoaderBase() :
+mshFactory(nullptr) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-void
-VertexBufferAttrs::setNumVertices(int32 num) {
-    o_assert(num > 0);
-    this->numVertices = num;
+meshLoaderBase::~meshLoaderBase() {
+    o_assert(nullptr == this->mshFactory);
 }
 
 //------------------------------------------------------------------------------
 void
-VertexBufferAttrs::setVertexLayout(const VertexLayout& vl) {
-    this->vertexLayout = vl;
+meshLoaderBase::onAttachToFactory(meshFactory* factory) {
+    o_assert(nullptr == this->mshFactory);
+    o_assert(nullptr != factory);
+    this->mshFactory = factory;
 }
 
 //------------------------------------------------------------------------------
 void
-VertexBufferAttrs::setUsage(Usage::Code usg) {
-    this->usage = usg;
+meshLoaderBase::onDetachFromFactory() {
+    o_assert(nullptr != this->mshFactory);
+    this->mshFactory = 0;
 }
-
+    
 } // namespace Render
 } // namespace Oryol

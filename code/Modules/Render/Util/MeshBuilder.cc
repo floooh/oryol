@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "MeshBuilder.h"
 #include "Core/Assert.h"
+#include <cstring>
 
 namespace Oryol {
 namespace Render {
@@ -36,7 +37,6 @@ MeshBuilder::SetNumVertices(uint32 num) {
 //------------------------------------------------------------------------------
 void
 MeshBuilder::SetNumIndices(uint32 num) {
-    o_assert(num >= 0);
     o_assert(!this->inBegin);
     this->numIndices = num;
 }
@@ -52,16 +52,14 @@ MeshBuilder::SetIndexType(IndexType::Code t) {
 void
 MeshBuilder::AddComponent(const VertexComponent& comp) {
     o_assert(!this->inBegin);
-    o_assert(std::strlen(comp.GetAttrName().AsCStr()) < sizeof(HeaderVertexComponent::attrName));
     this->layout.Add(comp);
 }
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::AddComponent(const StringAtom& attrName, VertexFormat::Code format) {
+MeshBuilder::AddComponent(VertexAttr::Code attr, VertexFormat::Code format) {
     o_assert(!this->inBegin);
-    o_assert(std::strlen(attrName.AsCStr()) < sizeof(HeaderVertexComponent::attrName));
-    this->layout.Add(attrName, format);
+    this->layout.Add(attr, format);
 }
 
 //------------------------------------------------------------------------------
@@ -119,9 +117,8 @@ MeshBuilder::Begin() {
     HeaderVertexComponent* hdrComp = (HeaderVertexComponent*) (this->headerPointer + sizeof(Header));
     for (int32 i = 0; i < this->layout.GetNumComponents(); i++, hdrComp++) {
         const VertexComponent& src = this->layout.GetComponent(i);
+        hdrComp->attr   = src.GetAttr();
         hdrComp->format = src.GetFormat();
-        Memory::Clear(hdrComp->attrName, sizeof(hdrComp->attrName));
-        std::strncpy(hdrComp->attrName, src.GetAttrName().AsCStr(), sizeof(hdrComp->attrName) - 1);
     }
     
     HeaderPrimitiveGroup* hdrPrimGroup = (HeaderPrimitiveGroup*) hdrComp;

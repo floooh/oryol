@@ -2,6 +2,7 @@
 //  glfwDisplayMgr.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Render/gl/gl_impl.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "GLFW/glfw3.h"
@@ -100,6 +101,9 @@ glfwDisplayMgr::SetupDisplay(const DisplaySetup& setup) {
     // and make the window's GL context current
     glfwMakeContextCurrent(this->glfwWindow);
     glfwSwapInterval(setup.GetSwapInterval());
+    
+    // initialize GLEW
+    glewInit();
     
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;

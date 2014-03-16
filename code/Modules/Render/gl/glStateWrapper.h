@@ -11,7 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Render/Types/State.h"
-#include "Render/gl/gl.h"
+#include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 
 namespace Oryol {
@@ -57,6 +57,15 @@ public:
     void ApplyState(State::Code state, State::Value v0, int32 i0, int32 i1);
     /// apply state
     void ApplyState(State::Code state, State::Value v0, State::Value v1, int32 i0, int32 i1);
+    
+    /// invalidate bound mesh state
+    void InvalidateMeshState();
+    /// bind vertex buffer
+    void glBindVertexBuffer(GLuint vb);
+    /// bind index buffer
+    void glBindIndexBuffer(GLuint ib);
+    /// bind vertex array object
+    void glBindVertexArrayObject(GLuint vao);
     
 private:
     /// a state value union wrapper
@@ -239,6 +248,10 @@ private:
     GLsizei curViewPortHeight;
     GLfloat curDepthRangeNear;
     GLfloat curDepthRangeFar;
+    
+    GLuint curVertexBuffer;
+    GLuint curIndexBuffer;
+    GLuint curVertexArrayObject;
 };
 
 //------------------------------------------------------------------------------

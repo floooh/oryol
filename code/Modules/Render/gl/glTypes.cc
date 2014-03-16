@@ -2,6 +2,7 @@
 //  glTypes.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Render/gl/gl_impl.h"
 #include "glTypes.h"
 #include "Core/Assert.h"
 

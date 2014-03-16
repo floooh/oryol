@@ -5,7 +5,9 @@
     @brief GL implement of Mesh
 */
 #include "Render/base/meshBase.h"
-#include "Render/gl/gl.h"
+#include "Render/Types/VertexAttr.h"
+#include "Render/gl/gl_decl.h"
+#include "Render/gl/glVertexAttr.h"
 
 namespace Oryol {
 namespace Render {
@@ -16,28 +18,32 @@ public:
     glMesh();
     /// destructor
     ~glMesh();
-    
-    /// get GL vertex buffer
-    GLuint glGetVertexBuffer() const;
-    /// get GL index buffer (can be 0)
-    GLuint glGetIndexBuffer() const;
-    /// get GL vertex array object (0 if not supported)
-    GLuint glGetVertexArrayObject() const;
-    
-protected:
-    friend class glMeshFactory;
+
     /// clear the object
     void clear();
+    
     /// set GL vertex buffer
     void glSetVertexBuffer(GLuint vb);
+    /// get GL vertex buffer
+    GLuint glGetVertexBuffer() const;
     /// set GL index buffer
     void glSetIndexBuffer(GLuint ib);
+    /// get GL index buffer (can be 0)
+    GLuint glGetIndexBuffer() const;
     /// set GL vertex array object
     void glSetVertexArrayObject(GLuint vao);
+    /// get GL vertex array object (0 if not supported)
+    GLuint glGetVertexArrayObject() const;
+    /// set glVertexAttr object at index
+    void glSetAttr(int32 index, const glVertexAttr& attr);
+    /// get glVertexAttr object at index
+    glVertexAttr& glAttr(int32 index);
     
+protected:
     GLuint glVertexBuffer;
     GLuint glIndexBuffer;
     GLuint glVertexArrayObject;
+    class glVertexAttr glAttrs[VertexAttr::NumVertexAttrs];
 };
 
 //------------------------------------------------------------------------------
@@ -56,6 +62,13 @@ glMesh::glGetIndexBuffer() const {
 inline GLuint
 glMesh::glGetVertexArrayObject() const {
     return this->glVertexArrayObject;
+}
+
+//------------------------------------------------------------------------------
+inline glVertexAttr&
+glMesh::glAttr(int32 index) {
+    o_assert_range(index, VertexAttr::NumVertexAttrs);
+    return this->glAttrs[index];
 }
 
 } // namespace Oryol

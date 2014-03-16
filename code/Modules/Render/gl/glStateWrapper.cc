@@ -2,6 +2,7 @@
 //  glStateWrapper.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Render/gl/gl_impl.h"
 #include "glStateWrapper.h"
 #include "Core/Memory/Memory.h"
 
@@ -52,7 +53,10 @@ curClearStencil(0),
 curViewPortX(0),
 curViewPortY(0),
 curViewPortWidth(-1),
-curViewPortHeight(-1)
+curViewPortHeight(-1),
+curVertexBuffer(0),
+curIndexBuffer(0),
+curVertexArrayObject(0)
 {
     for (int32 i = 0; i < 2; i++) {
         this->curStencilFunc[i] = GL_ALWAYS;
@@ -681,6 +685,49 @@ glStateWrapper::setupStateVector() {
     // glDepthRange(GLclampf, GLclampf)
     this->funcs[State::DepthRange].cb = &glStateWrapper::onDepthRange;
     this->funcs[State::DepthRange].sig = F0_F1;
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::InvalidateMeshState() {
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    this->curVertexArrayObject = 0;
+    this->curVertexBuffer = 0;
+    this->curIndexBuffer = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::glBindVertexBuffer(GLuint vb) {
+    if (vb != this->curVertexBuffer) {
+        this->curVertexArrayObject = 0;
+        this->curVertexBuffer = vb;
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::glBindIndexBuffer(GLuint ib) {
+    if (ib != this->curIndexBuffer) {
+        this->curIndexBuffer = ib;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::glBindVertexArrayObject(GLuint vao) {
+    if (vao != this->curVertexArrayObject) {
+        this->curVertexBuffer = 0;
+        this->curVertexArrayObject = vao;
+        glBindVertexArray(vao);
+        ORYOL_GL_CHECK_ERROR();
+    }
 }
 
 } // namespace Render

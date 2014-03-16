@@ -3,11 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "VertexLayout.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {
-
-using namespace Core;
 
 //------------------------------------------------------------------------------
 VertexLayout::VertexLayout() :
@@ -31,8 +30,8 @@ VertexLayout::Add(const VertexComponent& comp) {
 
 //------------------------------------------------------------------------------
 void
-VertexLayout::Add(const StringAtom& name, VertexFormat::Code format) {
-    this->Add(VertexComponent(name, format));
+VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
+    this->Add(VertexComponent(attr, format));
 }
 
 //------------------------------------------------------------------------------

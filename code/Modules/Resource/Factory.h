@@ -32,32 +32,61 @@
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
 #include "IO/Stream.h"
+#include "Resource/State.h"
 
 namespace Oryol {
 namespace Resource {
 
 template<class RESOURCE, class LOADER> class Factory {
 public:
+    /// destructor
+    ~Factory();
+
     /// attach a resource loader
-    void AttachLoader(const Ptr<LOADER>& loader);
+    void AttachLoader(const Core::Ptr<LOADER>& loader);
     /// setup resource, continue calling until res state is not Pending
     bool Setup(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    bool SetupWithData(RESOURCE& resource, const Ptr<IO::Stream>& data);
+    bool SetupWithData(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
+    /// destroy the resource
+    void Destroy(RESOURCE& resource);
 
-    /// set factory name (for debugging)
-    void SetName(const Util::StringAtom& name);
     /// get factory name
-    const Util::StringAtom& GetName() const;
+    const Core::StringAtom& GetName() const;
     
 protected:
-    Core::Array<Ptr<LOADER>> loaders;
+    /// set factory name (for debugging)
+    void setName(const Core::StringAtom& name);
+
+    Core::Array<Core::Ptr<LOADER>> loaders;
+    Core::StringAtom name;
 };
 
 //------------------------------------------------------------------------------
+template<class RESOURCE, class LOADER>
+Factory<RESOURCE,LOADER>::~Factory() {
+    for (const auto& loader : this->loaders) {
+        loader->onDetachFromFactory();
+    }
+}
+
+//------------------------------------------------------------------------------
 template<class RESOURCE, class LOADER> void
-Factory<RESOURCE,LOADER>::RegisterLoader(const Ptr<LOADER>& loader) {
+Factory<RESOURCE,LOADER>::setName(const Core::StringAtom& n) {
+    this->name = n;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class LOADER> const Core::StringAtom&
+Factory<RESOURCE,LOADER>::GetName() const {
+    return this->name;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class LOADER> void
+Factory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
     o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
+    loader->onAttachToFactory(this);
     this->loaders.AddBack(loader);
 }
 
@@ -78,7 +107,7 @@ Factory<RESOURCE,LOADER>::Setup(RESOURCE& res) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
-
+    
     // if the resource already has the loader index set, just call
     // the right loader, this should only happen when continouing to
     // load asynchronous resources
@@ -109,7 +138,7 @@ Factory<RESOURCE,LOADER>::Setup(RESOURCE& res) {
  from data in memory instead of loading the input data through the IO system.
 */
 template<class RESOURCE, class LOADER> bool
-Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Ptr<IO::Stream>& data) {
+Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
@@ -122,7 +151,7 @@ Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Ptr<IO::Stream>& da
     else {
         o_assert(State::Setup == state);
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
-            if (this->loaders[loaderIndex]->Accepts(res)) {
+            if (this->loaders[loaderIndex]->Accepts(res, data)) {
                 res.SetLoaderIndex(loaderIndex);
                 return this->loaders[loaderIndex]->Load(res, data);
             }
@@ -131,6 +160,15 @@ Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Ptr<IO::Stream>& da
         o_warning("Resource::Factory(%s): No suitable loader for resource '%s'\n", res.GetLocator().Location().AsCStr());
         return false;
     }
+}
+
+//------------------------------------------------------------------------------
+/**
+ The Discard method must reset the resource to the Setup state.
+*/
+template<class RESOURCE, class LOADER> void
+Factory<RESOURCE,LOADER>::Destroy(RESOURCE& res) {
+    // implement in derived class
 }
 
 } // namespace Resource

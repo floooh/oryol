@@ -32,8 +32,7 @@ public:
     int32 GetNumPrimitiveGroups() const;
     /// get primitive group at index
     const PrimitiveGroup& GetPrimitiveGroup(int32 index) const;
-    
-protected:
+
     /// clear the object
     void clear();
     /// set vertex buffer attrs at index
@@ -44,7 +43,8 @@ protected:
     void setNumPrimitiveGroups(int32 num);
     /// set primitive group at index
     void setPrimitiveGroup(int32 index, const PrimitiveGroup& group);
-
+    
+protected:
     int32 numVertexBuffers;
     VertexBufferAttrs vertexBufferAttrs;
     IndexBufferAttrs indexBufferAttrs;

@@ -21,7 +21,7 @@ public:
     /// add a component
     void Add(const VertexComponent& comp);
     /// add component by name and format
-    void Add(const Core::StringAtom& name, VertexFormat::Code format);
+    void Add(VertexAttr::Code attr, VertexFormat::Code format);
     /// get number of components
     int32 GetNumComponents() const;
     /// read-only get component at index

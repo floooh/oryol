@@ -13,7 +13,7 @@
 #include "Render/Types/TextureWrapMode.h"
 #include "Render/Types/TextureFilterMode.h"
 #include "Render/Types/IndexType.h"
-#include "Render/gl/gl.h"
+#include "Render/gl/gl_decl.h"
 
 namespace Oryol {
 namespace Render {

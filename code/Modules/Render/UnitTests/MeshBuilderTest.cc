@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Render/Util/MeshBuilder.h"
+#include <cstring>
 
 using namespace Oryol;
 using namespace Oryol::IO;
@@ -18,8 +19,8 @@ TEST(MeshBuilderTest) {
     mb.SetNumVertices(4);
     mb.SetNumIndices(6);
     mb.SetIndexType(IndexType::Index16);
-    mb.AddComponent("position", VertexFormat::Float3);
-    mb.AddComponent("abcdefghijklmno", VertexFormat::Float2);     // 16 bytes long, last character should be clipped
+    mb.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    mb.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
     mb.Begin();
     
@@ -47,7 +48,7 @@ TEST(MeshBuilderTest) {
     
     // see MeshBuilder header for those sizes
     const int32 hdrSize = 8 * sizeof(int32);
-    const int32 hdrCompSize = 2 * (sizeof(int32) + 16);
+    const int32 hdrCompSize = 2 * 2 * sizeof(int32);
     const int32 hdrPrimGroupSize = 3 * sizeof(int32);
     const int32 vbufSize = 4 * 5 * sizeof(float32);
     const int32 ibufSize = 6 * sizeof(uint16);
@@ -74,18 +75,18 @@ TEST(MeshBuilderTest) {
     CHECK(i32ptr[7] == ibufSize);   // indices byte size
     
     // check header vertex components
-    CHECK(i32ptr[8] == VertexFormat::Float3);                               // comp0: format
-    CHECK(std::strcmp((const char*)&(i32ptr[9]), "position") == 0);         // comp0: attr name
-    CHECK(i32ptr[13] == VertexFormat::Float2);                              // comp1: format
-    CHECK(std::strcmp((const char*)&(i32ptr[14]), "abcdefghijklmno") == 0); // comp1: attr name
+    CHECK(i32ptr[8] == VertexAttr::Position);                               // comp0: attr
+    CHECK(i32ptr[9] == VertexFormat::Float3);                               // comp0: format
+    CHECK(i32ptr[10] == VertexAttr::TexCoord0);                             // comp1: attr
+    CHECK(i32ptr[11] == VertexFormat::Float2);                              // comp1: format
     
     // check primitive group
-    CHECK(i32ptr[18] == PrimitiveType::Triangles);  // prim-group 0: primitive type
-    CHECK(i32ptr[19] == 0);                         // prim-group 0: baseElement
-    CHECK(i32ptr[20] == 6);                         // prim-group 0: numElements
+    CHECK(i32ptr[12] == PrimitiveType::Triangles);  // prim-group 0: primitive type
+    CHECK(i32ptr[13] == 0);                         // prim-group 0: baseElement
+    CHECK(i32ptr[14] == 6);                         // prim-group 0: numElements
     
     // check vertices
-    const float32* vPtr = (const float32*) &(i32ptr[21]);
+    const float32* vPtr = (const float32*) &(i32ptr[15]);
     CHECK(vPtr[0] == 0.0f); CHECK(vPtr[1] == 0.0f); CHECK(vPtr[2] == 0.0f);
     CHECK(vPtr[3] == 0.0f); CHECK(vPtr[4] == 0.0f);
     CHECK(vPtr[5] == 1.0f); CHECK(vPtr[6] == 0.0f); CHECK(vPtr[7] == 0.0f);
@@ -103,6 +104,4 @@ TEST(MeshBuilderTest) {
     CHECK((uint8*)&(iPtr[6]) == maxPtr);
     
     stream->Close();
-    
-    
 }

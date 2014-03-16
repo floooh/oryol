@@ -7,17 +7,16 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 VertexComponent::VertexComponent() :
+attr(VertexAttr::InvalidVertexAttr),
 format(VertexFormat::InvalidVertexFormat) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-VertexComponent::VertexComponent(const StringAtom& name, VertexFormat::Code fmt) :
-attrName(name),
+VertexComponent::VertexComponent(VertexAttr::Code att, VertexFormat::Code fmt) :
+attr(att),
 format(fmt) {
     // empty
 }
@@ -25,7 +24,7 @@ format(fmt) {
 //------------------------------------------------------------------------------
 void
 VertexComponent::Clear() {
-    this->attrName.Clear();
+    this->attr = VertexAttr::InvalidVertexAttr;
     this->format = VertexFormat::InvalidVertexFormat;
 }
 

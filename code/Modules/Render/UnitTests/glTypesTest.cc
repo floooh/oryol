@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
+#include "Render/gl/gl_impl.h"
 #include "Render/gl/glTypes.h"
 
 using namespace Oryol::Render;
