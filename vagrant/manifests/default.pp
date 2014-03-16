@@ -42,6 +42,8 @@ class essentials {
     package { "vim": }
     package { "git": }
     package { "unzip": }
+    package { "libglu1-mesa-dev": }
+    package { "xorg-dev": }
 }
 
 # ninja build-system
