@@ -31,6 +31,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
+#include "Core/Log.h"
 #include "IO/Stream.h"
 #include "Resource/State.h"
 
@@ -45,9 +46,9 @@ public:
     /// attach a resource loader
     void AttachLoader(const Core::Ptr<LOADER>& loader);
     /// setup resource, continue calling until res state is not Pending
-    bool Setup(RESOURCE& resource);
+    bool Create(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    bool SetupWithData(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
+    bool CreateWithData(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
     /// destroy the resource
     void Destroy(RESOURCE& resource);
 
@@ -85,9 +86,9 @@ Factory<RESOURCE,LOADER>::GetName() const {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class LOADER> void
 Factory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
-    o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
-    loader->onAttachToFactory(this);
-    this->loaders.AddBack(loader);
+    // must override in Factory subclass matching the LOADER class,
+    // otherwise we would need to do some dirty pointer casting
+    o_error("Factory::AttachLoader() must be overridden in subclass!\n");
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +104,7 @@ Factory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
  Pending state.
 */
 template<class RESOURCE, class LOADER> bool
-Factory<RESOURCE,LOADER>::Setup(RESOURCE& res) {
+Factory<RESOURCE,LOADER>::Create(RESOURCE& res) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
@@ -121,12 +122,13 @@ Factory<RESOURCE,LOADER>::Setup(RESOURCE& res) {
         o_assert(State::Setup == state);
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res)) {
-                res.SetLoaderIndex(loaderIndex);
+                res.setLoaderIndex(loaderIndex);
                 return this->loaders[loaderIndex]->Load(res);
             }
         }
         // fallthrough: no suitable loader found
-        o_warning("Resource::Factory(%s): No suitable loader for resource '%s'\n", res.GetLocator().Location().AsCStr());
+        Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n",
+                        this->name.AsCStr(), res.GetLocator().Location().AsCStr());
         return false;
     }
 }
@@ -138,7 +140,7 @@ Factory<RESOURCE,LOADER>::Setup(RESOURCE& res) {
  from data in memory instead of loading the input data through the IO system.
 */
 template<class RESOURCE, class LOADER> bool
-Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
+Factory<RESOURCE,LOADER>::CreateWithData(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
@@ -152,12 +154,13 @@ Factory<RESOURCE,LOADER>::SetupWithData(RESOURCE& res, const Core::Ptr<IO::Strea
         o_assert(State::Setup == state);
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res, data)) {
-                res.SetLoaderIndex(loaderIndex);
+                res.setLoaderIndex(loaderIndex);
                 return this->loaders[loaderIndex]->Load(res, data);
             }
         }
         // fallthrough: no suitable loader found
-        o_warning("Resource::Factory(%s): No suitable loader for resource '%s'\n", res.GetLocator().Location().AsCStr());
+        Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n",
+                        this->name.AsCStr(), res.GetLocator().Location().AsCStr());
         return false;
     }
 }

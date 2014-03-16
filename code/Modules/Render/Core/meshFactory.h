@@ -9,10 +9,15 @@
 #include "Render/gl/glMeshFactory.h"
 namespace Oryol {
 namespace Render {
-class meshFactory : public glMeshFactory { };
+
+class meshFactory : public glMeshFactory {
+public:
+    /// attach a resource loader
+    void AttachLoader(const Core::Ptr<meshLoaderBase>& loader);
+};
+
 } // namespace Render
 } // namespace Oryol
-
 #else
 #error "Platform not yet supported!"
 #endif

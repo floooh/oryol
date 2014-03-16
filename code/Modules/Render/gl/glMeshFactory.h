@@ -26,7 +26,6 @@ public:
     void Discard();
     /// return true if the object has been setup
     bool IsValid() const;
-    
     /// discard the resource
     void Destroy(mesh& mesh);
     

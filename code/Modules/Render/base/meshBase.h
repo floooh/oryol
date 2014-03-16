@@ -22,8 +22,6 @@ public:
     /// max number of primitive groups in the mesh
     static const int32 MaxNumPrimitiveGroups = 16;
     
-    /// return true if the object contains data
-    bool IsValid() const;
     /// get vertex buffer attributes
     const VertexBufferAttrs& GetVertexBufferAttrs() const;
     /// get the index buffer attributes
@@ -45,18 +43,11 @@ public:
     void setPrimitiveGroup(int32 index, const PrimitiveGroup& group);
     
 protected:
-    int32 numVertexBuffers;
     VertexBufferAttrs vertexBufferAttrs;
     IndexBufferAttrs indexBufferAttrs;
     int numPrimitiveGroups;
     PrimitiveGroup primitiveGroups[MaxNumPrimitiveGroups];
 };
-
-//------------------------------------------------------------------------------
-inline bool
-meshBase::IsValid() const {
-    return this->numVertexBuffers > 0;
-}
 
 //------------------------------------------------------------------------------
 inline const VertexBufferAttrs&

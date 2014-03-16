@@ -6,6 +6,7 @@
 #include "Render/gl/gl_impl.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/gl/glTypes.h"
+#include "Render/gl/glFunc.h"
 #include "Resource/State.h"
 
 namespace Oryol {
@@ -54,17 +55,18 @@ glMeshFactory::Destroy(mesh& mesh) {
     
     GLuint vb = mesh.glGetVertexBuffer();
     if (0 != vb) {
-        glDeleteBuffers(1, &vb);
+        ::glDeleteBuffers(1, &vb);
     }
     GLuint ib = mesh.glGetIndexBuffer();
     if (0 != ib) {
-        glDeleteBuffers(1, &ib);
+        ::glDeleteBuffers(1, &ib);
     }
     GLuint vao = mesh.glGetVertexArrayObject();
     if (0 != vao) {
-        glDeleteVertexArrays(1, &vao);
+        glFunc::glDeleteVertexArrays(1, &vao);
     }
     mesh.clear();
+    mesh.setState(Resource::State::Setup);
 }
 
 //------------------------------------------------------------------------------
@@ -81,12 +83,12 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
     
     this->glStateWrapper->InvalidateMeshState();
     GLuint vb = 0;
-    glGenBuffers(1, &vb);
+    ::glGenBuffers(1, &vb);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != vb);
     GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
     this->glStateWrapper->glBindVertexBuffer(vb);
-    glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glUsage);
+    ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetVertexBuffer(vb);
 }
@@ -105,12 +107,12 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, me
     
     this->glStateWrapper->InvalidateMeshState();
     GLuint ib = 0;
-    glGenBuffers(1, &ib);
+    ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != ib);
     GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
     this->glStateWrapper->glBindIndexBuffer(ib);
-    glBufferData(GL_ARRAY_BUFFER, indexDataSize, indexData, glUsage);
+    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetIndexBuffer(ib);
 }
@@ -129,7 +131,7 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     // create and initialize vertex array object
     this->glStateWrapper->InvalidateMeshState();
     GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
+    glFunc::glGenVertexArrays(1, &vao);
     this->glStateWrapper->glBindVertexArrayObject(vao);
     this->glStateWrapper->glBindIndexBuffer(outMesh.glGetIndexBuffer());
     this->glStateWrapper->glBindVertexBuffer(outMesh.glGetVertexBuffer());
@@ -137,19 +139,20 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& glAttr = outMesh.glAttr(attrIndex);
         if (glAttr.enabled) {
-            glVertexAttribPointer(glAttr.index,
-                                  glAttr.size,
-                                  glAttr.type,
-                                  glAttr.normalized,
-                                  glAttr.stride,
-                                  (const GLvoid*) (GLintptr) glAttr.offset);
-            glEnableVertexAttribArray(glAttr.index);
+            ::glVertexAttribPointer(glAttr.index,
+                                    glAttr.size,
+                                    glAttr.type,
+                                    glAttr.normalized,
+                                    glAttr.stride,
+                                    (const GLvoid*) (GLintptr) glAttr.offset);
+            ::glEnableVertexAttribArray(glAttr.index);
         }
         else {
-            glDisableVertexAttribArray(glAttr.index);
+            ::glDisableVertexAttribArray(glAttr.index);
         }
     }
     ORYOL_GL_CHECK_ERROR();
+    outMesh.glSetVertexArrayObject(vao);
 }
 
 //------------------------------------------------------------------------------

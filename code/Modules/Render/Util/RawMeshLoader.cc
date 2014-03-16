@@ -23,6 +23,13 @@ RawMeshLoader::Accepts(const mesh& mesh) const {
 
 //------------------------------------------------------------------------------
 bool
+RawMeshLoader::Load(mesh& mesh) const {
+    // we don't support loading from files (yet?), so just return false here
+    return false;
+}
+
+//------------------------------------------------------------------------------
+bool
 RawMeshLoader::Accepts(const mesh& mesh, const Ptr<Stream>& stream) const {
     o_assert(mesh.GetState() == Resource::State::Setup);
 
