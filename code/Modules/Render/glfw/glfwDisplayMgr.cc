@@ -83,6 +83,10 @@ glfwDisplayMgr::SetupDisplay(const DisplaySetup& setup) {
     glfwWindowHint(GLFW_ALPHA_BITS, alphaBits);
     glfwWindowHint(GLFW_DEPTH_BITS, depthBits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencilBits);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
@@ -103,7 +107,10 @@ glfwDisplayMgr::SetupDisplay(const DisplaySetup& setup) {
     glfwSwapInterval(setup.GetSwapInterval());
     
     // initialize GLEW
+    #if !ORYOL_OSX
     glewInit();
+    o_assert(GLEW_VERSION_3_2);
+    #endif
     
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;
