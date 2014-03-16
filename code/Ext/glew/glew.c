@@ -32,9 +32,9 @@
 #include "GL/glew.h"
 
 #if defined(_WIN32)
-#  include <GL/wglew.h>
+#  include "GL/wglew.h"
 #elif !defined(__ANDROID__) && !defined(__native_client__) && (!defined(__APPLE__) || defined(GLEW_APPLE_GLX))
-#  include <GL/glxew.h>
+#  include "GL/glxew.h"
 #endif
 
 /*
