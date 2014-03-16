@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Render/gl/gl_impl.h"
 #include "glStateWrapper.h"
+#include "Render/gl/glFunc.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
@@ -73,13 +74,18 @@ curVertexArrayObject(0)
 }
 
 //------------------------------------------------------------------------------
+glStateWrapper::~glStateWrapper() {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 void
 glStateWrapper::onFrontFace(const ValBlock& input) {
     o_assert_range_dbg(input.val[0].v, State::NumStateValues);
     const GLenum frontFaceMode = this->glEnum[input.val[0].v];
     if (frontFaceMode != this->curFrontFaceMode) {
         this->curFrontFaceMode = frontFaceMode;
-        glFrontFace(frontFaceMode);
+        ::glFrontFace(frontFaceMode);
     }
 }
 
@@ -90,10 +96,10 @@ glStateWrapper::onCullFaceEnabled(const ValBlock& input) {
     if (b0 != this->curCullFaceEnabled) {
         this->curCullFaceEnabled = b0;
         if (b0) {
-            glEnable(GL_CULL_FACE);
+            ::glEnable(GL_CULL_FACE);
         }
         else {
-            glDisable(GL_CULL_FACE);
+            ::glDisable(GL_CULL_FACE);
         }
     }
 }
@@ -105,7 +111,7 @@ glStateWrapper::onCullFace(const ValBlock& input) {
     const GLenum cullFaceMode = this->glEnum[input.val[0].v];
     if (cullFaceMode != this->curCullFaceMode) {
         this->curCullFaceMode = cullFaceMode;
-        glCullFace(cullFaceMode);
+        ::glCullFace(cullFaceMode);
     }
 }
 
@@ -116,10 +122,10 @@ glStateWrapper::onDepthOffsetEnabled(const ValBlock& input) {
     if (b0 != this->curDepthOffsetEnabled) {
         this->curDepthOffsetEnabled = b0;
         if (b0) {
-            glEnable(GL_POLYGON_OFFSET_FILL);
+            ::glEnable(GL_POLYGON_OFFSET_FILL);
         }
         else {
-            glDisable(GL_POLYGON_OFFSET_FILL);
+            ::glDisable(GL_POLYGON_OFFSET_FILL);
         }
     }
 }
@@ -132,7 +138,7 @@ glStateWrapper::onDepthOffset(const ValBlock& input) {
     if ((factor != this->curDepthOffsetFactor) || (units != this->curDepthOffsetUnits)) {
         this->curDepthOffsetFactor = factor;
         this->curDepthOffsetUnits = units;
-        glPolygonOffset(factor, units);
+        ::glPolygonOffset(factor, units);
     }
 }
 
@@ -143,10 +149,10 @@ glStateWrapper::onScissorTestEnabled(const ValBlock& input) {
     if (b0 != this->curScissorTestEnabled) {
         this->curScissorTestEnabled = b0;
         if (b0) {
-            glEnable(GL_SCISSOR_TEST);
+            ::glEnable(GL_SCISSOR_TEST);
         }
         else {
-            glDisable(GL_SCISSOR_TEST);
+            ::glDisable(GL_SCISSOR_TEST);
         }
     }
 }
@@ -164,7 +170,7 @@ glStateWrapper::onScissorRect(const ValBlock& input) {
         this->curScissorBottom = bottom;
         this->curScissorWidth = width;
         this->curScissorHeight = height;
-        glScissor(left, bottom, width, height);
+        ::glScissor(left, bottom, width, height);
     }
 }
 
@@ -175,10 +181,10 @@ glStateWrapper::onStencilTestEnabled(const ValBlock& input) {
     if (b0 != this->curStencilTestEnabled) {
         this->curStencilTestEnabled = b0;
         if (b0) {
-            glEnable(GL_STENCIL_TEST);
+            ::glEnable(GL_STENCIL_TEST);
         }
         else {
-            glDisable(GL_STENCIL_TEST);
+            ::glDisable(GL_STENCIL_TEST);
         }
     }
 }
@@ -198,7 +204,7 @@ glStateWrapper::onStencilFunc(const ValBlock& input) {
             this->curStencilFuncRef[i]  = ref;
             this->curStencilFuncMask[i] = mask;
         }
-        glStencilFunc(func, ref, mask);
+        ::glStencilFunc(func, ref, mask);
     }
 }
 
@@ -216,7 +222,7 @@ glStateWrapper::onStencilFuncSeparate(const ValBlock& input) {
         this->curStencilFunc[i] = func;
         this->curStencilFuncRef[i] = ref;
         this->curStencilFuncMask[i] = mask;
-        glStencilFuncSeparate(face, func, ref, mask);
+        ::glStencilFuncSeparate(face, func, ref, mask);
     }
 }
 
@@ -237,7 +243,7 @@ glStateWrapper::onStencilOp(const ValBlock& input) {
             this->curStencilOpDpFail[i] = dpfail;
             this->curStencilOpDpPass[i] = dppass;
         }
-        glStencilOp(sfail, dpfail, dppass);
+        ::glStencilOp(sfail, dpfail, dppass);
     }
 }
 
@@ -257,7 +263,7 @@ glStateWrapper::onStencilOpSeparate(const ValBlock& input) {
         this->curStencilOpSFail[i] = sfail;
         this->curStencilOpDpFail[i] = dpfail;
         this->curStencilOpDpPass[i] = dppass;
-        glStencilOpSeparate(face, sfail, dpfail, dppass);
+        ::glStencilOpSeparate(face, sfail, dpfail, dppass);
     }
 }
 
@@ -268,10 +274,10 @@ glStateWrapper::onDepthTestEnabled(const ValBlock& input) {
     if (b0 != this->curDepthTestEnabled) {
         this->curDepthTestEnabled = b0;
         if (b0) {
-            glEnable(GL_DEPTH_TEST);
+            ::glEnable(GL_DEPTH_TEST);
         }
         else {
-            glDisable(GL_DEPTH_TEST);
+            ::glDisable(GL_DEPTH_TEST);
         }
     }
 }
@@ -283,7 +289,7 @@ glStateWrapper::onDepthFunc(const ValBlock& input) {
     const GLenum depthFunc = this->glEnum[input.val[0].v];
     if (depthFunc != this->curDepthFunc) {
         this->curDepthFunc = depthFunc;
-        glDepthFunc(depthFunc);
+        ::glDepthFunc(depthFunc);
     }
 }
 
@@ -294,10 +300,10 @@ glStateWrapper::onBlendEnabled(const ValBlock& input) {
     if (b0 != this->curBlendEnabled) {
         this->curBlendEnabled = b0;
         if (b0) {
-            glEnable(GL_BLEND);
+            ::glEnable(GL_BLEND);
         }
         else {
-            glDisable(GL_BLEND);
+            ::glDisable(GL_BLEND);
         }
     }
 }
@@ -310,7 +316,7 @@ glStateWrapper::onBlendEquation(const ValBlock& input) {
     if ((mode != this->curBlendEquationRGB) || (mode != this->curBlendEquationAlpha)) {
         this->curBlendEquationRGB = mode;
         this->curBlendEquationAlpha = mode;
-        glBlendEquation(mode);
+        ::glBlendEquation(mode);
     }
 }
 
@@ -324,7 +330,7 @@ glStateWrapper::onBlendEquationSeparate(const ValBlock& input) {
     if ((modeRGB != this->curBlendEquationRGB) || (modeAlpha != this->curBlendEquationAlpha)) {
         this->curBlendEquationRGB = modeRGB;
         this->curBlendEquationAlpha = modeAlpha;
-        glBlendEquationSeparate(modeRGB, modeAlpha);
+        ::glBlendEquationSeparate(modeRGB, modeAlpha);
     }
 }
 
@@ -339,7 +345,7 @@ glStateWrapper::onBlendFunc(const ValBlock& input) {
         (dst != this->curBlendFuncDstRGB) || (dst != this->curBlendFuncDstAlpha)) {
         this->curBlendFuncSrcRGB = this->curBlendFuncSrcAlpha = src;
         this->curBlendFuncDstRGB = this->curBlendFuncDstAlpha = dst;
-        glBlendFunc(src, dst);
+        ::glBlendFunc(src, dst);
     }
 }
 
@@ -360,7 +366,7 @@ glStateWrapper::onBlendFuncSeparate(const ValBlock& input) {
         this->curBlendFuncSrcAlpha = srcAlpha;
         this->curBlendFuncDstRGB = dstRGB;
         this->curBlendFuncDstAlpha = dstAlpha;
-        glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        ::glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
     }
 }
 
@@ -376,7 +382,7 @@ glStateWrapper::onBlendColor(const ValBlock& input) {
         this->curBlendColorG = g;
         this->curBlendColorB = b;
         this->curBlendColorA = a;
-        glBlendColor(r, g, b, a);
+        ::glBlendColor(r, g, b, a);
     }
 }
 
@@ -387,10 +393,10 @@ glStateWrapper::onDitherEnabled(const ValBlock& input) {
     if (b0 != this->curDitherEnabled) {
         this->curDitherEnabled = b0;
         if (b0) {
-            glEnable(GL_DITHER);
+            ::glEnable(GL_DITHER);
         }
         else {
-            glDisable(GL_DITHER);
+            ::glDisable(GL_DITHER);
         }
     }
 }
@@ -407,7 +413,7 @@ glStateWrapper::onColorMask(const ValBlock& input) {
         this->curColorMaskG = bg;
         this->curColorMaskB = bb;
         this->curColorMaskA = ba;
-        glColorMask(br, bg, bb, ba);
+        ::glColorMask(br, bg, bb, ba);
     }
 }
 
@@ -417,7 +423,7 @@ glStateWrapper::onDepthMask(const ValBlock& input) {
     const bool b0 = input.val[0].b;
     if (b0 != this->curDepthMask) {
         this->curDepthMask = b0;
-        glDepthMask(b0);
+        ::glDepthMask(b0);
     }
 }
 
@@ -428,7 +434,7 @@ glStateWrapper::onStencilMask(const ValBlock& input) {
     if ((mask != this->curStencilMask[0]) || (mask != this->curStencilMask[1])) {
         this->curStencilMask[0] = mask;
         this->curStencilMask[1] = mask;
-        glStencilMask(mask);
+        ::glStencilMask(mask);
     }
 }
 
@@ -441,7 +447,7 @@ glStateWrapper::onStencilMaskSeparate(const ValBlock& input) {
     int32 i = (face == GL_FRONT) ? 0 : 1;
     if (mask != this->curStencilMask[i]) {
         this->curStencilMask[i] = mask;
-        glStencilMaskSeparate(face, mask);
+        ::glStencilMaskSeparate(face, mask);
     }
     
 }
@@ -459,7 +465,7 @@ glStateWrapper::onClearColor(const ValBlock& input) {
         this->curClearColorG = g;
         this->curClearColorB = b;
         this->curClearColorA = a;
-        glClearColor(r, g, b, a);
+        ::glClearColor(r, g, b, a);
     }
 }
 
@@ -469,7 +475,7 @@ glStateWrapper::onClearDepth(const ValBlock& input) {
     const GLclampf f = input.val[0].f;
     if (f != this->curClearDepth) {
         this->curClearDepth = f;
-        glClearDepth(f);
+        ::glClearDepth(f);
     }
 }
 
@@ -479,7 +485,7 @@ glStateWrapper::onClearStencil(const ValBlock& input) {
     const GLint s = input.val[0].i;
     if (s != this->curClearStencil) {
         this->curClearStencil = s;
-        glClearStencil(s);
+        ::glClearStencil(s);
     }
 }
 
@@ -496,7 +502,7 @@ glStateWrapper::onViewPort(const ValBlock& input) {
         this->curViewPortY = y;
         this->curViewPortWidth = width;
         this->curViewPortHeight = height;
-        glViewport(x, y, width, height);
+        ::glViewport(x, y, width, height);
     }
 }
 
@@ -508,7 +514,7 @@ glStateWrapper::onDepthRange(const ValBlock& input) {
     if ((nearVal != this->curDepthRangeNear) || (farVal != this->curDepthRangeFar)) {
         this->curDepthRangeNear = nearVal;
         this->curDepthRangeFar = farVal;
-        glDepthRange(nearVal, farVal);
+        ::glDepthRange(nearVal, farVal);
     }
 }
 
@@ -557,7 +563,9 @@ glStateWrapper::setupStateTranslationTable() {
     // check that we didn't forget some state
     #if ORYOL_DEBUG
     for (int32 i = 0; i < State::NumStateValues; i++) {
-        o_assert(0 != this->glEnum[i]);
+        if (State::Zero != i) {
+            o_assert(0 != this->glEnum[i]);
+        }
     }
     #endif
 }
@@ -690,9 +698,9 @@ glStateWrapper::setupStateVector() {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateMeshState() {
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    ::glBindBuffer(GL_ARRAY_BUFFER, 0);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glFunc::glBindVertexArray(0);
     this->curVertexArrayObject = 0;
     this->curVertexBuffer = 0;
     this->curIndexBuffer = 0;
@@ -704,7 +712,7 @@ glStateWrapper::glBindVertexBuffer(GLuint vb) {
     if (vb != this->curVertexBuffer) {
         this->curVertexArrayObject = 0;
         this->curVertexBuffer = vb;
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        ::glBindBuffer(GL_ARRAY_BUFFER, vb);
         ORYOL_GL_CHECK_ERROR();
     }
 }
@@ -714,7 +722,7 @@ void
 glStateWrapper::glBindIndexBuffer(GLuint ib) {
     if (ib != this->curIndexBuffer) {
         this->curIndexBuffer = ib;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+        ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
         ORYOL_GL_CHECK_ERROR();
     }
 }
@@ -725,7 +733,7 @@ glStateWrapper::glBindVertexArrayObject(GLuint vao) {
     if (vao != this->curVertexArrayObject) {
         this->curVertexBuffer = 0;
         this->curVertexArrayObject = vao;
-        glBindVertexArray(vao);
+        glFunc::glBindVertexArray(vao);
         ORYOL_GL_CHECK_ERROR();
     }
 }
