@@ -44,6 +44,7 @@ class essentials {
     package { "unzip": }
     package { "libglu1-mesa-dev": }
     package { "xorg-dev": }
+    package { "cmake-curses-gui": }
 }
 
 # ninja build-system
