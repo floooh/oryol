@@ -56,8 +56,8 @@ that the resource system can return different resource objects for an Id (for in
 as long as a resource is still loading), and that resources live in recycled pool slots, so that a 
 simple pointer could point to a slot which no longer holds the original resource object.
 
-Id objects are 8 bytes wide and hold 3 components: a slot index into a resource pool,
-a resource type, and a unique counter value which prevents that an old resource id accidentially 
+Id objects are 8 bytes wide and hold 3 components: a **slot index** into a resource pool,
+a **resource type**, and a **unique counter value** which prevents that an old resource id accidentially 
 points to a new resource now living in the same pool slot.
 
 **Locators** are essentially strings that are used for resource sharing (resource with identical 
