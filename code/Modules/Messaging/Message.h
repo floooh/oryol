@@ -27,10 +27,14 @@ public:
     MessageIdType MessageId() const;
     /// set message to Handled state
     void SetHandled();
+    /// cancel the message
+    void SetCancelled();
     /// return true if the message is in Pending state
     bool Pending() const;
     /// return true if the message has been handled
     bool Handled() const;
+    /// return true if the message is in cancelled state
+    bool Cancelled() const;
     
     /// get the encoded size of the message
     virtual int32 EncodedSize() const;
@@ -43,15 +47,18 @@ protected:
     MessageIdType msgId;
     #if ORYOL_HAS_THREADS
     std::atomic<bool> handled;
+    std::atomic<bool> cancelled;
     #else
     bool handled;
+    bool cancelled;
     #endif
 };
 
 //------------------------------------------------------------------------------
 inline Message::Message() :
 msgId(InvalidMessageId),
-handled(false) {
+handled(false),
+cancelled(false) {
     // empty
 }
 

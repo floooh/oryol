@@ -65,6 +65,9 @@ public:
         GatewayTimeout = 504,
         HTTPVersionNotSupported = 505,
         
+        // these are custom Oryol status codes
+        Cancelled = 1000,
+        
         InvalidIOStatus = InvalidIndex
     };
     

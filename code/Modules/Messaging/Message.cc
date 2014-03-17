@@ -27,6 +27,12 @@ Message::SetHandled() {
 }
 
 //------------------------------------------------------------------------------
+void
+Message::SetCancelled() {
+    this->cancelled = true;
+}
+
+//------------------------------------------------------------------------------
 bool
 Message::Pending() const {
     return !this->handled;
@@ -36,6 +42,12 @@ Message::Pending() const {
 bool
 Message::Handled() const {
     return this->handled;
+}
+
+//------------------------------------------------------------------------------
+bool
+Message::Cancelled() const {
+    return this->cancelled;
 }
 
 //------------------------------------------------------------------------------

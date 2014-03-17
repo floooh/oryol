@@ -55,6 +55,7 @@ TEST(IOStatusTest) {
     CHECK(TOSTR(ServiceUnavailable));
     CHECK(TOSTR(GatewayTimeout));
     CHECK(TOSTR(HTTPVersionNotSupported));
+    CHECK(TOSTR(Cancelled));
 
     CHECK(FROMSTR(Continue));
     CHECK(FROMSTR(SwitchingProtocols));
@@ -96,4 +97,5 @@ TEST(IOStatusTest) {
     CHECK(FROMSTR(ServiceUnavailable));
     CHECK(FROMSTR(GatewayTimeout));
     CHECK(FROMSTR(HTTPVersionNotSupported));
+    CHECK(FROMSTR(Cancelled));
 }

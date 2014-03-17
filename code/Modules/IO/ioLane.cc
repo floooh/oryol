@@ -77,15 +77,27 @@ ioLane::fileSystemForURL(const URL& url) {
 //------------------------------------------------------------------------------
 void
 ioLane::onGet(const Ptr<IOProtocol::Get>& msg) {
-    Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
-    if (fs) {
-        fs->onGet(msg);
+    if (msg->Cancelled()) {
+        // message has been cancelled, don't waste time with it
+        msg->SetStatus(IOStatus::Cancelled);
+        msg->SetHandled();
+    }
+    else {
+        Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
+        if (fs) {
+            fs->onGet(msg);
+        }
     }
 }
 
 //------------------------------------------------------------------------------
 void
 ioLane::onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
+    if (msg->Cancelled()) {
+        // message has been cancelled, don't waste time with it
+        msg->SetStatus(IOStatus::Cancelled);
+        msg->SetHandled();
+    }
     Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
     if (fs) {
         fs->onGetRange(msg);

@@ -54,6 +54,7 @@ IOStatus::ToString(Code c) {
         __ORYOL_TOSTRING(ServiceUnavailable);
         __ORYOL_TOSTRING(GatewayTimeout);
         __ORYOL_TOSTRING(HTTPVersionNotSupported);
+        __ORYOL_TOSTRING(Cancelled);
         default: return "InvalidIOStatus";
     }
 }
@@ -102,6 +103,7 @@ IOStatus::FromString(const char* str) {
     __ORYOL_FROMSTRING(ServiceUnavailable);
     __ORYOL_FROMSTRING(GatewayTimeout);
     __ORYOL_FROMSTRING(HTTPVersionNotSupported);
+    __ORYOL_FROMSTRING(Cancelled);
     return InvalidIOStatus;
 }
     
