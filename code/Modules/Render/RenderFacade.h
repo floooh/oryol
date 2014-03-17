@@ -8,6 +8,7 @@
 */
 #include "Core/Macros.h"
 #include "Render/Core/displayMgr.h"
+#include "Render/Core/transformMgr.h"
 #include "IO/Stream.h"
 #include "Resource/Id.h"
 #include "Resource/State.h"
@@ -105,7 +106,32 @@ public:
 
 private:
     displayMgr displayManager;
+    transformMgr transformManager;
 };
-    
+
+//------------------------------------------------------------------------------
+inline void
+RenderFacade::ApplyModelTransform(const glm::mat4& m) {
+    this->transformManager.SetModel(m);
+}
+
+//------------------------------------------------------------------------------
+inline void
+RenderFacade::ApplyViewTransform(const glm::mat4& m) {
+    this->transformManager.SetView(m);
+}
+
+//------------------------------------------------------------------------------
+inline void
+RenderFacade::ApplyProjTransform(const glm::mat4& m) {
+    this->transformManager.SetProj(m);
+}
+
+//------------------------------------------------------------------------------
+inline const glm::mat4&
+RenderFacade::QueryTransform(TransformType::Code type) const {
+    return this->transformManager.GetTransform(type);
+}
+
 } // namespace Render
 } // namespace Oryol

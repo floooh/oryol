@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "transformMgr.h"
+#include "Core/Assert.h"
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
 
@@ -227,21 +228,31 @@ transformMgr::GetInvViewProj() const {
 //------------------------------------------------------------------------------
 const glm::mat4&
 transformMgr::GetTransform(TransformType::Code type) const {
-    // hrmpf
-    switch (type) {
-        case TransformType::Model:              return this->GetModel();
-        case TransformType::View:               return this->GetView();
-        case TransformType::Proj:               return this->GetProj();
-        case TransformType::ModelView:          return this->GetModelView();
-        case TransformType::ViewProj:           return this->GetViewProj();
-        case TransformType::ModelViewProj:      return this->GetModelViewProj();
-        case TransformType::InvModel:           return this->GetInvModel();
-        case TransformType::InvView:            return this->GetInvView();
-        case TransformType::InvProj:            return this->GetInvProj();
-        case TransformType::InvModelView:       return this->GetInvModelView();
-        case TransformType::InvModelViewProj:   return this->GetInvModelViewProj();
-        case TransformType::InvViewProj:        return this->GetInvViewProj();
-        default:                                return this->dummyIdentity;
+    if (!this->isDirty(type)) {
+        o_assert_range(type, TransformType::NumTransformTypes);
+        return this->transforms[type];
+    }
+    else {
+        // if the requested transform is dirty, we need to go the long way...
+        switch (type) {
+            #if ORYOL_DEBUG
+            case TransformType::Model:
+            case TransformType::View:
+            case TransformType::Proj:
+                o_assert2_dbg(false, "transformMgr::GetTransform(): can't happen!");
+                return this->dummyIdentity;
+            #endif
+            case TransformType::ModelView:          return this->GetModelView();
+            case TransformType::ViewProj:           return this->GetViewProj();
+            case TransformType::ModelViewProj:      return this->GetModelViewProj();
+            case TransformType::InvModel:           return this->GetInvModel();
+            case TransformType::InvView:            return this->GetInvView();
+            case TransformType::InvProj:            return this->GetInvProj();
+            case TransformType::InvModelView:       return this->GetInvModelView();
+            case TransformType::InvModelViewProj:   return this->GetInvModelViewProj();
+            case TransformType::InvViewProj:        return this->GetInvViewProj();
+            default:                                return this->dummyIdentity;
+        }
     }
 }
 
