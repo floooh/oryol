@@ -32,13 +32,13 @@ created and attached as well.
 
 A resource object goes through different states during its lifetime:
 
-1) **Initial**: the resource object is in its initial, empty state, and has no Setup object attached yet
-2) **Setup**: a Setup object with creation parameters has been attached, but the resource hasn't been 
+1. **Initial**: the resource object is in its initial, empty state, and has no Setup object attached yet
+2. **Setup**: a Setup object with creation parameters has been attached, but the resource hasn't been 
 created/loaded yet
-3) **Pending**: a resource goes into the Pending state when it is asynchronously created, and the required
+3. **Pending**: a resource goes into the Pending state when it is asynchronously created, and the required
 data isn't loaded yet, synchronously created resources never go into the Pending state
-4) **Valid**: a resource is valid when it has been successfully created/loaded and is ready to be used
-5) **Failed**: a resource goes into the Failed state when it couldn't be created or loaded (for instance because
+4. **Valid**: a resource is valid when it has been successfully created/loaded and is ready to be used
+5. **Failed**: a resource goes into the Failed state when it couldn't be created or loaded (for instance because
 a required file doesn't exist)
 
 A Valid resource can go back into the Setup state (which basically means it has been unloaded and has
