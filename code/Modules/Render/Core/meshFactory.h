@@ -14,6 +14,10 @@ class meshFactory : public glMeshFactory {
 public:
     /// attach a resource loader
     void AttachLoader(const Core::Ptr<meshLoaderBase>& loader);
+    /// determine whether asynchronous loading has finished
+    bool NeedsSetupResource(const mesh& mesh) const;
+    /// destroy the resource
+    void DestroyResource(mesh& mesh);
 };
 
 } // namespace Render

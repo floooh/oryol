@@ -25,9 +25,9 @@ public:
     /// test if the loader accepts the resource, with data stream
     virtual bool Accepts(const mesh& resource, const Core::Ptr<IO::Stream>& data) const = 0;
     /// start to load, or continue loading
-    virtual bool Load(mesh& resource) const = 0;
+    virtual void Load(mesh& resource) const = 0;
     /// start to load, or continue loading, with data stream
-    virtual bool Load(mesh& resource, const Core::Ptr<IO::Stream>& data) const = 0;
+    virtual void Load(mesh& resource, const Core::Ptr<IO::Stream>& data) const = 0;
 
     /// called when attached to factory
     void onAttachToFactory(meshFactory* factory);

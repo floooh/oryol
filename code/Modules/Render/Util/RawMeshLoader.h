@@ -19,9 +19,9 @@ public:
     /// test if the loader accepts the resource (with stream data)
     virtual bool Accepts(const mesh& mesh, const Core::Ptr<IO::Stream>& data) const override;
     /// setup the mesh object (currently not supported)
-    virtual bool Load(mesh& mesh) const override;
+    virtual void Load(mesh& mesh) const override;
     /// setup the mesh object from data in stream
-    virtual bool Load(mesh& mesh, const Core::Ptr<IO::Stream>& data) const override;
+    virtual void Load(mesh& mesh, const Core::Ptr<IO::Stream>& data) const override;
 };
     
 } // namespace Render

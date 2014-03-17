@@ -9,7 +9,9 @@
 #include "Render/Attrs/IndexBufferAttrs.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Setup/MeshSetup.h"
+#include "Render/Types/ResourceType.h"
 #include "Core/Assert.h"
+#include "IO/IOProtocol.h"
 
 namespace Oryol {
 namespace Render {
@@ -21,7 +23,11 @@ public:
     
     /// max number of primitive groups in the mesh
     static const int32 MaxNumPrimitiveGroups = 16;
+    /// get the resource type of this resource class
+    static uint16 GetResourceType();
     
+    /// get (optional) IORequest
+    const Core::Ptr<IO::IOProtocol::Request>& GetIORequest() const;
     /// get vertex buffer attributes
     const VertexBufferAttrs& GetVertexBufferAttrs() const;
     /// get the index buffer attributes
@@ -33,6 +39,8 @@ public:
 
     /// clear the object
     void clear();
+    /// set IO request for asynchronous loading
+    void setIORequest(const Core::Ptr<IO::IOProtocol::Request>& ioRequest);
     /// set vertex buffer attrs at index
     void setVertexBufferAttrs(const VertexBufferAttrs& attrs);
     /// set index buffer attrs
@@ -43,11 +51,24 @@ public:
     void setPrimitiveGroup(int32 index, const PrimitiveGroup& group);
     
 protected:
+    Core::Ptr<IO::IOProtocol::Request> ioRequest;
     VertexBufferAttrs vertexBufferAttrs;
     IndexBufferAttrs indexBufferAttrs;
     int numPrimitiveGroups;
     PrimitiveGroup primitiveGroups[MaxNumPrimitiveGroups];
 };
+
+//------------------------------------------------------------------------------
+inline uint16
+meshBase::GetResourceType() {
+    return ResourceType::Mesh;
+}
+
+//------------------------------------------------------------------------------
+inline const Core::Ptr<IO::IOProtocol::Request>&
+meshBase::GetIORequest() const {
+    return this->ioRequest;
+}
 
 //------------------------------------------------------------------------------
 inline const VertexBufferAttrs&

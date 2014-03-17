@@ -61,8 +61,7 @@ TEST(MeshFactoryTest) {
     mesh.setSetup(MeshSetup::FromData(Locator("myQuad")));
     mesh.setState(Resource::State::Setup);
     
-    CHECK(!factory.Create(mesh));
-    CHECK(factory.CreateWithData(mesh, meshData));
+    factory.SetupResource(mesh, meshData);
     CHECK(mesh.GetState() == Resource::State::Valid);
     CHECK(mesh.GetLocator().Location() == "myQuad");
     CHECK(mesh.GetVertexBufferAttrs().GetNumVertices() == 4);

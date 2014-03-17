@@ -6,6 +6,9 @@
 
 namespace Oryol {
 namespace Render {
+
+using namespace Core;
+using namespace IO;
     
 //------------------------------------------------------------------------------
 meshBase::meshBase() :
@@ -16,12 +19,19 @@ numPrimitiveGroups(0) {
 //------------------------------------------------------------------------------
 void
 meshBase::clear() {
+    this->ioRequest.Invalidate();
     this->vertexBufferAttrs = VertexBufferAttrs();
     this->indexBufferAttrs = IndexBufferAttrs();
     for (int32 i = 0; i < this->numPrimitiveGroups; i++) {
         this->primitiveGroups[i] = PrimitiveGroup();
     }
     this->numPrimitiveGroups = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+meshBase::setIORequest(const Ptr<IOProtocol::Request>& req) {
+    this->ioRequest = req;
 }
 
 //------------------------------------------------------------------------------

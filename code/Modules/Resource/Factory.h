@@ -45,12 +45,14 @@ public:
 
     /// attach a resource loader
     void AttachLoader(const Core::Ptr<LOADER>& loader);
+    /// test if setup should be called for a resource
+    bool NeedsSetupResource(const RESOURCE& resource) const;
     /// setup resource, continue calling until res state is not Pending
-    bool Create(RESOURCE& resource);
+    void SetupResource(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    bool CreateWithData(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
+    void SetupResource(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
     /// destroy the resource
-    void Destroy(RESOURCE& resource);
+    void DestroyResource(RESOURCE& resource);
 
     /// get factory name
     const Core::StringAtom& GetName() const;
@@ -84,6 +86,23 @@ Factory<RESOURCE,LOADER>::GetName() const {
 }
 
 //------------------------------------------------------------------------------
+/**
+ The NeedsSetup() method is needed when loading resources asynchronously.
+ In this case the first call to Setup() will set the resource object
+ to the Pending state, and a second call is needed to actually intialize
+ the resource after the asynchronous load has finished. To determine when
+ Setup must be called a second time, call the NeedsSetup() method.
+ 
+*/
+template<class RESOURCE, class LOADER> bool
+Factory<RESOURCE,LOADER>::NeedsSetupResource(const RESOURCE& res) const {
+    // this method must be implemented in a subclass, because
+    // there may be different ways to determine when asynchronous
+    // intialization has finished
+}
+
+
+//------------------------------------------------------------------------------
 template<class RESOURCE, class LOADER> void
 Factory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
     // must override in Factory subclass matching the LOADER class,
@@ -96,15 +115,15 @@ Factory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
  Setup a resource object synchronously or asynchronously. The resource
  object must be in the Setup state when the method is first called (which
  means that a valid Setup object must be set in the resource object).
- The caller is expected to continue calling the Setup method with the
- same resource object as long as it is in the Pending state. When creating
- the resource was successful, it will change into the Valid state. When
- creating the resource has failed, it will go into Failed state, and as long
- as asynchronous creation hasn't finished yet, the resource will be in 
- Pending state.
+ After the Setup method is called, the resource must be in the
+ Pending, Valid or Failed state. If the resource is in Pending state,
+ the NeedsSetup() method must be called frequently, and if this
+ returns true, the Setup() method must be called again to finish
+ the asynchronous load. In this case, the resource must be in the
+ Valid or Failed state after Setup returns.
 */
-template<class RESOURCE, class LOADER> bool
-Factory<RESOURCE,LOADER>::Create(RESOURCE& res) {
+template<class RESOURCE, class LOADER> void
+Factory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
@@ -115,7 +134,9 @@ Factory<RESOURCE,LOADER>::Create(RESOURCE& res) {
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
         o_assert(State::Pending == state);
-        return this->loaders[loaderIndex]->Load(res);
+        this->loaders[loaderIndex]->Load(res);
+        o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+        return;
     }
     else {
         // no loader yet, delegate to first loader which accepts the resource
@@ -123,13 +144,15 @@ Factory<RESOURCE,LOADER>::Create(RESOURCE& res) {
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res)) {
                 res.setLoaderIndex(loaderIndex);
-                return this->loaders[loaderIndex]->Load(res);
+                this->loaders[loaderIndex]->Load(res);
+                o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+                return;
             }
         }
         // fallthrough: no suitable loader found
         Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n",
                         this->name.AsCStr(), res.GetLocator().Location().AsCStr());
-        return false;
+        res.SetState(State::Failed);
     }
 }
 
@@ -139,8 +162,8 @@ Factory<RESOURCE,LOADER>::Create(RESOURCE& res) {
  with input data. This is useful when the resource should be initialized
  from data in memory instead of loading the input data through the IO system.
 */
-template<class RESOURCE, class LOADER> bool
-Factory<RESOURCE,LOADER>::CreateWithData(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
+template<class RESOURCE, class LOADER> void
+Factory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
 
     const State::Code state = res.GetState();
     o_assert((State::Setup == state) || (State::Pending == state));
@@ -148,29 +171,32 @@ Factory<RESOURCE,LOADER>::CreateWithData(RESOURCE& res, const Core::Ptr<IO::Stre
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
         o_assert(State::Pending == state);
-        return this->loaders[loaderIndex]->Load(res, data);
+        this->loaders[loaderIndex]->Load(res, data);
+        o_assert((res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+        return;
     }
     else {
         o_assert(State::Setup == state);
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res, data)) {
                 res.setLoaderIndex(loaderIndex);
-                return this->loaders[loaderIndex]->Load(res, data);
+                this->loaders[loaderIndex]->Load(res, data);
+                o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+                return;
             }
         }
         // fallthrough: no suitable loader found
-        Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n",
-                        this->name.AsCStr(), res.GetLocator().Location().AsCStr());
-        return false;
+        Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n", this->name.AsCStr(), res.GetLocator().Location().AsCStr());
+        res.setState(State::Failed);
     }
 }
 
 //------------------------------------------------------------------------------
 /**
- The Discard method must reset the resource to the Setup state.
+ NOTE: The Destroy method must reset the resource to the Setup state.
 */
 template<class RESOURCE, class LOADER> void
-Factory<RESOURCE,LOADER>::Destroy(RESOURCE& res) {
+Factory<RESOURCE,LOADER>::DestroyResource(RESOURCE& res) {
     // implement in derived class
 }
 

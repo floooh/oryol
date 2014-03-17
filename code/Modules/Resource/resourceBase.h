@@ -111,7 +111,9 @@ resourceBase<SETUP>::GetState() const {
 //------------------------------------------------------------------------------
 template<class SETUP> void
 resourceBase<SETUP>::setSetup(const SETUP& setup_) {
+    o_assert(State::Initial == this->state);
     this->setup = setup_;
+    this->state = State::Setup;
     this->locator = setup_.GetLocator();
 }
 

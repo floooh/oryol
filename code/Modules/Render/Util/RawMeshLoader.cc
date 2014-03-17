@@ -22,10 +22,10 @@ RawMeshLoader::Accepts(const mesh& mesh) const {
 }
 
 //------------------------------------------------------------------------------
-bool
+void
 RawMeshLoader::Load(mesh& mesh) const {
-    // we don't support loading from files (yet?), so just return false here
-    return false;
+    // this loader doesn't support loading without data
+    mesh.setState(Resource::State::Failed);
 }
 
 //------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ RawMeshLoader::Accepts(const mesh& mesh, const Ptr<Stream>& stream) const {
 }
 
 //------------------------------------------------------------------------------
-bool
+void
 RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
     o_assert(mesh.GetState() == Resource::State::Setup);
     o_assert(nullptr != this->mshFactory);
@@ -106,12 +106,11 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
         
         stream->UnmapRead();
         stream->Close();
-        return true;
     }
     else {
         // this shouldn't happen
         o_error("RawMeshLoader::Load(): failed to open stream!\n");
-        return false;
+        mesh.setState(Resource::State::Failed);
     }
 }
     
