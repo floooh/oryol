@@ -5,6 +5,9 @@
 #include "Render/gl/gl_impl.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
+#if ORYOL_OSX
+#define GLFW_INCLUDE_GLCOREARB
+#endif
 #include "GLFW/glfw3.h"
 
 namespace Oryol {
