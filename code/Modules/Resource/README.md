@@ -66,6 +66,6 @@ as the filename of the resource.
 
 ### Sharing
 
-Resource sharing is implemented in resource Registry objects. A Registry is a simple Map with resource Locators as key and resource Ids as value. Entries in a resource registry maintain a use count. If the use count
+Resource sharing is implemented in resource **Registry** objects. A Registry is a simple Map with resource Locators as key and resource Ids as value. Entries in a resource registry maintain a use count. If the use count
 drop to zero, the resource is discarded and its resource pool slot is freed. Resources that are added to a resource registry can have (a limited number of) dependent resources. The use count of the dependent resources will be incremented and decrement together with the "parent" resource. This basically means that dependent resources are
 guaranteed to remain in memory for the lifetime of the parent.
