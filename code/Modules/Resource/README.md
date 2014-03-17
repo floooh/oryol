@@ -1,19 +1,19 @@
 # Oryol Resources
 
-## Overview
+### Overview
 
 Oryol doesn't have a single, centralized resource management system, instead the Resource module
 provides generic classes to build small, localized resource management systems inside other modules.
 
 The Oryol resource system provides the following features:
 
-- **resource sharing**: Data which is managed by a resource object only exists once in memory, not
-matter how many users refer to it. Sharing is optional, it is also possible to force uniqueness.
+- **resource sharing**: Data which is managed by a resource object only exists once in memory, no
+matter how often it is used. Sharing is optional, it is also possible to force a resource to remain unique.
 - **asynchronous or synchronous creation**: Resources can be created asynchronously or synchronously,
 asynchronously created resources provide a place holder as long as the actual resource data is not loaded.
 - **fixed-size object pools**: all resource objects live in fixed-size pools
 
-## Resource Creation
+### Resource Creation
 
 Resource creation is handled through 3 object types:
 
@@ -29,7 +29,7 @@ factory object for each resource type (e.g. a texture factory, a mesh factory, a
 (for instance from a specific file type). Oryol comes with a set of standard loaders, but custom loaders can be
 created and attached at any time.
 
-## Resource States
+### Resource States
 
 A resource object goes through different states during its lifetime:
 
@@ -49,7 +49,7 @@ required information is still in the Setup object.
 Valid or Failed resources can also go back into the Initial state. This happens when a resource is no longer
 needed, and its resource pool slot should be freed.
 
-## Ids and Locators
+### Ids and Locators
 
 The actual resource objects usually cannot be accessed publicly, instead they are referenced by a small
 **Id** object which is an opaque handle to a resource. The reason for this is that the resource system
@@ -64,3 +64,9 @@ points to a new resource now living in the same pool slot.
 **Locators** are essentially strings that are used for resource sharing (resource with identical 
 Locators are shared), and if a resource is loaded from a file, the Locator usually also serves
 as the filename of the resource.
+
+### Sharing
+
+Resource sharing is implemented in resource Registry objects. A Registry is essentially a simple Map with resource Locators as key and resource Ids as value. Entries in a resource registry maintain a use count. If the use count
+drop to zero, the resource is discarded and its resource pool slot is freed. Resources that are added to a resource registry can have (a limited number of) dependent resources. The use count of the dependent resources will be incremented and decrement together with the "parent" resource. This basically means that dependent resources are
+guaranteed to remain in memory for the lifetime of the parent.
