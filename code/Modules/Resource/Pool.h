@@ -150,7 +150,7 @@ Pool<RESOURCE,FACTORY>::AllocId() {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::FreeId(const Id& id) {
+Pool<RESOURCE,FACTORY>::freeId(const Id& id) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
@@ -213,12 +213,12 @@ Pool<RESOURCE,FACTORY>::Lookup(const Id& id) const {
         else {
             // resource exists but is not currently valid (pending or failed to load)
             // try to return matching placeholder
-            return this->LookupPlaceholder(slot.GetPlaceholderType());
+            return this->lookupPlaceholder(slot.GetPlaceholderType());
         }
     }
     else {
         // resource does not currently exist, return generic placeholder
-        return this->LookupPlaceholder(this->genericPlaceholderType);
+        return this->lookupPlaceholder(this->genericPlaceholderType);
     }
 }
 
@@ -232,7 +232,7 @@ Pool<RESOURCE,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& id) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class FACTORY> const RESOURCE*
-Pool<RESOURCE,FACTORY>::LookupPlaceholder(uint32 typeFourcc) const {
+Pool<RESOURCE,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
     o_assert(this->isValid);
     
     int32 index = this->placeholders.FindIndex(typeFourcc);
