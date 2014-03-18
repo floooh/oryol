@@ -6,7 +6,7 @@
     
     @see displayMgr
 */
-#include "Render/Setup/DisplaySetup.h"
+#include "Render/Setup/RenderSetup.h"
 #include "Render/Attrs/DisplayAttrs.h"
 #include "Core/Containers/Array.h"
 #include "Messaging/Port.h"
@@ -22,13 +22,13 @@ public:
     ~displayMgrBase();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const DisplaySetup& displaySetup);
+    void SetupDisplay(const RenderSetup& displaySetup);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// return true if display is currently setup
     bool IsDisplayValid() const;
     /// modify the display settings, may not be supported on all platforms
-    void ModifyDisplay(const DisplaySetup& displaySetup);
+    void ModifyDisplay(const RenderSetup& displaySetup);
     /// process window system events (call near start of frame)
     void ProcessSystemEvents();
     /// present the current rendered frame
@@ -36,8 +36,6 @@ public:
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
     
-    /// get original display setup settings
-    const DisplaySetup& GetDisplaySetup() const;
     /// get actual display attributes (can be different from DisplaySetup)
     const DisplayAttrs& GetDisplayAttrs() const;
     
@@ -50,7 +48,7 @@ protected:
     /// notify event handlers, all handlers get the same message object
     void notifyEventHandlers(const Core::Ptr<Messaging::Message>& msg);
 
-    DisplaySetup displaySetup;
+    RenderSetup renderSetup;
     DisplayAttrs displayAttrs;
     Core::Array<Core::Ptr<Messaging::Port>> handlers;
     bool displayValid;

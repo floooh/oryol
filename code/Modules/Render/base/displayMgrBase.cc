@@ -32,11 +32,11 @@ displayMgrBase::~displayMgrBase() {
  This method must be overwritten in a platform-specific subclass.
 */
 void
-displayMgrBase::SetupDisplay(const DisplaySetup& setup) {
+displayMgrBase::SetupDisplay(const RenderSetup& setup) {
     o_assert(!this->displayValid);
     
     this->displayValid = true;
-    this->displaySetup = setup;
+    this->renderSetup = setup;
     this->displayAttrs = setup.GetDisplayAttrs();
 }
 
@@ -56,7 +56,7 @@ displayMgrBase::IsDisplayValid() const {
 
 //------------------------------------------------------------------------------
 void
-displayMgrBase::ModifyDisplay(const DisplaySetup& setup) {
+displayMgrBase::ModifyDisplay(const RenderSetup& setup) {
     o_assert(this->displayValid);
     this->displayAttrs = setup.GetDisplayAttrs();
     this->notifyEventHandlers(RenderProtocol::DisplayModified::Create());
@@ -90,12 +90,6 @@ displayMgrBase::Present() {
 bool
 displayMgrBase::QuitRequested() const {
     return false;
-}
-
-//------------------------------------------------------------------------------
-const DisplaySetup&
-displayMgrBase::GetDisplaySetup() const {
-    return this->displaySetup;
 }
 
 //------------------------------------------------------------------------------

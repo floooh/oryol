@@ -6,8 +6,13 @@
 
 namespace Oryol {
 namespace Render {
-    
+
 OryolLocalSingletonImpl(RenderFacade);
+
+using namespace Core;
+using namespace IO;
+using namespace Resource;
+using namespace Messaging;
     
 //------------------------------------------------------------------------------
 RenderFacade::RenderFacade() {
@@ -23,15 +28,20 @@ RenderFacade::~RenderFacade() {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::Setup(const DisplaySetup& displaySetup) {
+RenderFacade::Setup(const RenderSetup& setup) {
     o_assert(!this->IsValid());
-    this->displayManager.SetupDisplay(displaySetup);
+    this->renderSetup = setup;
+    this->displayManager.SetupDisplay(setup);
+    this->stateWrapper.Setup();
+    this->resourceManager.Setup(setup, &this->stateWrapper);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::Discard() {
     o_assert(this->IsValid());
+    this->resourceManager.Discard();
+    this->stateWrapper.Discard();
     this->displayManager.DiscardDisplay();
 }
 
@@ -43,9 +53,9 @@ RenderFacade::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::ModifyDisplay(const DisplaySetup& displaySetup) {
+RenderFacade::ModifyDisplay(const RenderSetup& renderSetup) {
     o_assert(this->IsValid());
-    this->displayManager.ModifyDisplay(displaySetup);
+    this->displayManager.ModifyDisplay(renderSetup);
 }
 
 //------------------------------------------------------------------------------
@@ -55,9 +65,29 @@ RenderFacade::QuitRequested() const {
 }
 
 //------------------------------------------------------------------------------
-const DisplaySetup&
-RenderFacade::GetDisplaySetup() const {
-    return this->displayManager.GetDisplaySetup();
+template<class LOADER> void
+RenderFacade::AttachLoader(const Ptr<LOADER>& loader) {
+    this->resourceManager.AttachLoader(loader);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::AttachEventHandler(const Ptr<Port>& handler) {
+    o_assert(handler.isValid());
+    this->displayManager.AttachDisplayEventHandler(handler);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::DetachEventHandler(const Ptr<Port>& handler) {
+    o_assert(handler.isValid());
+    this->displayManager.DetachDisplayEventHandler(handler);
+}
+
+//------------------------------------------------------------------------------
+const RenderSetup&
+RenderFacade::GetRenderSetup() const {
+    return this->renderSetup;
 }
 
 //------------------------------------------------------------------------------
@@ -67,11 +97,51 @@ RenderFacade::GetDisplayAttrs() const {
 }
 
 //------------------------------------------------------------------------------
+/**
+ NOTE: the LookupResource() method will bump the use-count of looked up
+ resource, so make sure to call DiscardResource() when you're done with it!
+*/
+Id
+RenderFacade::LookupResource(const Locator& loc) {
+    o_assert(this->IsValid());
+    return this->resourceManager.LookupResource(loc);
+}
+
+//------------------------------------------------------------------------------
+template<class SETUP> Id
+RenderFacade::CreateResource(const SETUP& setup) {
+    o_assert(this->IsValid());
+    return this->resourceManager.CreateResource(setup);
+}
+
+//------------------------------------------------------------------------------
+template<class SETUP> Id
+RenderFacade::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
+    o_assert(this->IsValid());
+    return this->resourceManager.CreateResource(setup, data);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::DiscardResource(const Id& resId) {
+    o_assert(this->IsValid());
+    this->resourceManager.DiscardResource(resId);
+}
+
+//------------------------------------------------------------------------------
+Resource::State::Code
+RenderFacade::QueryResourceState(const Id& resId) const {
+    o_assert(this->IsValid());
+    return this->resourceManager.QueryResourceState(resId);
+}
+
+//------------------------------------------------------------------------------
 bool
 RenderFacade::BeginFrame() {
+    this->resourceManager.Update();
     this->displayManager.ProcessSystemEvents();
     
-    /// @todo: check and return wheter rendering is possible / necessary
+    /// @todo: check and return whether rendering is possible / necessary
     return true;
 }
 

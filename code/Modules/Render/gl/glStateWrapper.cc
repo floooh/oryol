@@ -14,6 +14,7 @@ using namespace Core;
     
 //------------------------------------------------------------------------------
 glStateWrapper::glStateWrapper() :
+isValid(false),
 curFrontFaceMode(GL_CCW),
 curCullFaceEnabled(false),
 curCullFaceMode(GL_BACK),
@@ -75,7 +76,29 @@ curVertexArrayObject(0)
 
 //------------------------------------------------------------------------------
 glStateWrapper::~glStateWrapper() {
-    // empty
+    o_assert(!this->isValid);
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::Setup() {
+    o_assert(!this->isValid);
+    this->isValid = true;
+
+    /// @todo: this must initialize GL to the default state
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::Discard() {
+    o_assert(this->isValid);
+    this->isValid = false;
+}
+
+//------------------------------------------------------------------------------
+bool
+glStateWrapper::IsValid() const {
+    return this->isValid;
 }
 
 //------------------------------------------------------------------------------

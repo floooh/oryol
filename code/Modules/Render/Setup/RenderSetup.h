@@ -1,29 +1,53 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::DisplaySetup
-    @brief display setup parameters
+    @class Oryol::Render::RenderSetup
+    @brief Render module setup parameters
     
-    Create a DisplaySetup object and hand it to RenderFacade::SetupDisplay()
-    to setup the app window, default render target, and rendering API
-    context.
-    
+    The Render setup object holds the parameter used to setup the
+    Rendering system. Create a RenderSetup object, optionally tweak
+    its values, and call the RenderFacade::Setup method with the
+    RenderSetup object as argument.
+ 
     @see RenderFacade, DisplayAttrs
 */
 #include "Render/Attrs/DisplayAttrs.h"
+#include "Render/Types/ResourceType.h"
 
 namespace Oryol {
 namespace Render {
     
-class DisplaySetup : public DisplayAttrs {
+class RenderSetup : public DisplayAttrs {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static DisplaySetup Windowed(int32 w, int32 h, const Core::String& windowTitle);
+    static RenderSetup Windowed(int32 width, int32 height, const Core::String& windowTitle);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static DisplaySetup Fullscreen(int32 w, int32 h, const Core::String& windowTitle);
+    static RenderSetup Fullscreen(int32 width, int32 height, const Core::String& windowTitle);
+    
+    /// default constructor
+    RenderSetup();
+    /// tweak resource pool size for a rendering resource type
+    void SetPoolSize(ResourceType::Code type, int32 poolSize);
+    /// get resource pool size for a rendering resoruce type
+    int32 GetPoolSize(ResourceType::Code type) const;
+    /// tweak resource throttling value for a resource type, 0 means unthrottled
+    void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
+    /// get resource throttling value
+    int32 GetThrottling(ResourceType::Code type) const;
+    /// tweak the resource registry initial capacity (this can reduce memory re-allocations)
+    void SetResourceRegistryCapacity(int32 capacity);
+    /// get the resource registry initial capacity
+    int32 GetResourceRegistryCapacity() const;
     
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
+
+private:
+    static const int32 DefaultPoolSize = 128;
+    
+    int32 poolSizes[ResourceType::NumResourceTypes];
+    int32 throttling[ResourceType::NumResourceTypes];
+    int32 registryCapacity;
 };
     
 } // namespace Render

@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-//  DisplaySetupTest.cc
+//  RenderSetupTest.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
@@ -9,22 +9,23 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------
-TEST(DisplaySetuptest) {
+TEST(RenderSetupTest) {
 
     RenderFacade* f = RenderFacade::CreateSingleton();
-    
-    auto dispSetup = DisplaySetup::Windowed(400, 300, "Oryol Test");
+    auto dispSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
     f->Setup(dispSetup);
     CHECK(f->IsValid());
-    CHECK(f->GetDisplaySetup().GetWindowWidth() == 400);
-    CHECK(f->GetDisplaySetup().GetWindowHeight() == 300);
-    CHECK(f->GetDisplaySetup().GetWindowPosX() == 0);
-    CHECK(f->GetDisplaySetup().GetWindowPosY() == 0);
-    CHECK(f->GetDisplaySetup().GetColorPixelFormat() == PixelFormat::R8G8B8);
-    CHECK(f->GetDisplaySetup().GetDepthPixelFormat() == PixelFormat::D24S8);
-    CHECK(f->GetDisplaySetup().GetSwapInterval() == 1);
-    CHECK(f->GetDisplaySetup().GetWindowTitle() == "Oryol Test");
-    CHECK(f->GetDisplaySetup().IsFullscreen() == false);
+    
+    CHECK(f->GetRenderSetup().GetWindowWidth() == 400);
+    CHECK(f->GetRenderSetup().GetWindowHeight() == 300);
+    CHECK(f->GetRenderSetup().GetWindowPosX() == 0);
+    CHECK(f->GetRenderSetup().GetWindowPosY() == 0);
+    CHECK(f->GetRenderSetup().GetColorPixelFormat() == PixelFormat::R8G8B8);
+    CHECK(f->GetRenderSetup().GetDepthPixelFormat() == PixelFormat::D24S8);
+    CHECK(f->GetRenderSetup().GetSwapInterval() == 1);
+    CHECK(f->GetRenderSetup().GetWindowTitle() == "Oryol Test");
+    CHECK(f->GetRenderSetup().IsFullscreen() == false);
+    
     CHECK(f->GetDisplayAttrs().GetWindowWidth() >= 400);
     CHECK(f->GetDisplayAttrs().GetWindowHeight() >= 300);
     CHECK(f->GetDisplayAttrs().GetWindowPosX() >= 0);
@@ -36,8 +37,8 @@ TEST(DisplaySetuptest) {
     CHECK(f->GetDisplayAttrs().GetSwapInterval() == 1);
     CHECK(f->GetDisplayAttrs().GetWindowTitle() == "Oryol Test");
     CHECK(f->GetDisplayAttrs().IsFullscreen() == false);
-    f->Discard();
     
+    f->Discard();
     RenderFacade::DestroySingleton();
 }
 

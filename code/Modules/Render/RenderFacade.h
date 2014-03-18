@@ -13,9 +13,13 @@
 #include "Resource/Id.h"
 #include "Resource/State.h"
 #include "Resource/Locator.h"
+#include "Render/Setup/RenderSetup.h"
 #include "Render/Types/TransformType.h"
 #include "Render/Types/State.h"
 #include "Render/Core/PrimitiveGroup.h"
+#include "Render/Core/stateWrapper.h"
+#include "Render/Core/resourceMgr.h"
+#include "Render/Setup/MeshSetup.h"
 #include "glm/fwd.hpp"
 
 namespace Oryol {
@@ -30,36 +34,38 @@ public:
     ~RenderFacade();
     
     /// setup the RenderFacade, initialize rendering system
-    void Setup(const DisplaySetup& displaySetup);
+    void Setup(const RenderSetup& renderSetup);
     /// discard the RenderFacade, tear down rendering system
     void Discard();
     /// return true if the RenderFacade is valid
     bool IsValid() const;
     /// modify the display (may not be supported on all platforms)
-    void ModifyDisplay(const DisplaySetup& displaySetup);
+    void ModifyDisplay(const RenderSetup& displaySetup);
     /// test if the window system wants the application to quit
     bool QuitRequested() const;
-    
-    /// get the original display set object
-    const DisplaySetup& GetDisplaySetup() const;
-    /// get the current actual display attributes (can be different from setup)
-    const DisplayAttrs& GetDisplayAttrs() const;
-    
+    /// attach a resource loader
+    template<class LOADER> void AttachLoader(const Core::Ptr<LOADER>& loader);
     /// attach a display event handler
     void AttachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     /// detach a display event handler
     void DetachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     
-    /// create a resource
+    /// get the original render set object
+    const RenderSetup& GetRenderSetup() const;
+    /// get the current actual display attributes (can be different from setup)
+    const DisplayAttrs& GetDisplayAttrs() const;
+        
+    /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
-    /// create a resource with data stream
+    /// create a resource with data stream, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
-    /// discard a resource
-    void DiscardResource(const Resource::Id& resId) const;
-    /// lookup a resource by resource locator
-    Resource::Id LookupResource(const Resource::Locator& locator) const;
+    /// lookup a resource by resource locator (incremenets use-count of resource!)
+    Resource::Id LookupResource(const Resource::Locator& locator);
+    /// discard a resource (decrement use-count, free resource if use-count is 0)
+    void DiscardResource(const Resource::Id& resId);
     /// get the loading state of a resource
     Resource::State::Code QueryResourceState(const Resource::Id& resId) const;
+
     /// get one of the transform matrices
     const glm::mat4& QueryTransform(TransformType::Code transformType) const;
     
@@ -105,8 +111,11 @@ public:
     void DrawFullscreenQuad();
 
 private:
+    RenderSetup renderSetup;
     displayMgr displayManager;
     transformMgr transformManager;
+    stateWrapper stateWrapper;
+    resourceMgr resourceManager;
 };
 
 //------------------------------------------------------------------------------

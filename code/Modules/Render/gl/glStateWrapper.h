@@ -24,8 +24,12 @@ public:
     /// destructor
     ~glStateWrapper();
     
-    /// set initial state
-    void Initialize();
+    /// setup the state wrapper, sets the initial state
+    void Setup();
+    /// discard the state wrapper
+    void Discard();
+    /// return true if the state wrapper has been setup
+    bool IsValid() const;
     
     /// apply state
     void ApplyState(State::Code state, bool b0);
@@ -188,6 +192,8 @@ private:
     void onViewPort(const ValBlock& input);
     /// DepthRange state function
     void onDepthRange(const ValBlock& input);
+    
+    bool isValid;
 
     Function funcs[State::NumStateCodes];
     GLenum glEnum[State::NumStateValues];

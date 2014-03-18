@@ -34,7 +34,7 @@ glfwDisplayMgr::~glfwDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-glfwDisplayMgr::SetupDisplay(const DisplaySetup& setup) {
+glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     o_assert(!this->IsDisplayValid());
     o_assert(nullptr == this->glfwWindow);
     

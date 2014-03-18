@@ -5,7 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/meshFactory.h"
-#include "Render/Setup/DisplaySetup.h"
+#include "Render/Setup/RenderSetup.h"
 #include "Render/Core/displayMgr.h"
 #include "Render/Util/MeshBuilder.h"
 #include "Render/Util/RawMeshLoader.h"
@@ -25,9 +25,9 @@ using namespace Oryol::Resource;
 TEST(MeshFactoryTest) {
     
     // setup a GL context
-    auto displaySetup = DisplaySetup::Windowed(400, 300, "Oryol Test");
+    auto renderSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
     displayMgr displayManager;
-    displayManager.SetupDisplay(displaySetup);
+    displayManager.SetupDisplay(renderSetup);
     
     // setup a meshFactory object
     stateWrapper stWrapper;
