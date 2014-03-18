@@ -26,9 +26,9 @@ public:
     /// return true if the registry has been setup
     bool IsValid() const;
     
-    /// add a resource to the registry
+    /// add a new resource id to the registry
     void AddResource(const Locator& loc, const Id& id);
-    /// add resource with dependents
+    /// add a new resource id with dependents
     void AddResource(const Locator& loc, const Id& id, const Core::Array<Id>& deps);
     /// lookup resource by locator, will increment the use-count of the resource!
     Id LookupResource(const Locator& loc);
@@ -54,15 +54,25 @@ private:
     void incrUseCount(const Id& id);
     /// descrement use count of resource and dependents, return 0-usecount resources
     int32 decrUseCount(const Id& id, Core::Array<Id>& outToRemove);
+    #if ORYOL_DEBUG
     /// validate integrity of internal data structures
-    bool checkIntegrity();
+    bool checkIntegrity() const;
+    #endif
     
     /// max number of dependents
     static const int32 MaxNumDependents = 8;
     
     struct Entry {
-        Entry() : useCount(0), numDeps(0) { };
-        Entry(const Locator& loc_, const Id& id_) : useCount(0), locator(loc_), id(id_) { };
+        Entry() :
+            useCount(0),
+            numDeps(0) {
+        };
+        Entry(const Locator& loc_, const Id& id_) :
+            useCount(0),
+            locator(loc_),
+            id(id_),
+            numDeps(0) {
+        };
         
         int32 useCount;
         Locator locator;

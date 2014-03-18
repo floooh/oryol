@@ -43,6 +43,12 @@ Registry::Discard() {
 }
 
 //------------------------------------------------------------------------------
+bool
+Registry::IsValid() const {
+    return this->isValid;
+}
+
+//------------------------------------------------------------------------------
 void
 Registry::AddResource(const Locator& loc, const Id& id) {
     o_assert(this->isValid);
@@ -262,6 +268,35 @@ Registry::GetIdByIndex(int32 index) const {
     o_assert(this->isValid);
     return this->entries[index].id;
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+bool
+Registry::checkIntegrity() const {
+    for (const auto& kvp : this->locatorIndexMap) {
+        const Locator& loc = kvp.key;
+        const int32 entryIndex = kvp.value;
+        const Locator& entryLoc = this->entries[entryIndex].locator;
+        if (entryLoc != loc) {
+            o_error("Resource::Registry: locator mismatch at index '%d' (%s != %s)\n",
+                    entryIndex, entryLoc.Location().AsCStr(), loc.Location().AsCStr());
+            return false;
+        }
+    }
+    for (const auto& kvp : this->idIndexMap) {
+        const Id& id = kvp.key;
+        const int32 entryIndex = kvp.value;
+        const Id& entryId = this->entries[entryIndex].id;
+        if (entryId != id) {
+            o_error("Resource::Registry:: id mismatch at index '%d' (%d,%d,%d != %d,%d,%d)\n",
+                    entryIndex, entryId.UniqueStamp(), entryId.SlotIndex(), entryId.Type(),
+                    id.UniqueStamp(), id.SlotIndex(), id.Type());
+            return false;
+        }
+    }
+    return true;
+}
+#endif
 
 } // namespace Render
 } // namespace Oryol
