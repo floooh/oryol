@@ -16,10 +16,10 @@
 namespace Oryol {
 namespace Resource {
     
-template<class RESOURCE, class FACTORY> class Pool {
+template<class RESOURCE, class SETUP, class FACTORY> class Pool {
 public:
     /// max number of resources in a pool
-    static const uint32 = MaxNumPoolResources = (1<<16);
+    static const uint32 MaxNumPoolResources = (1<<16);
 
     /// constructor
     Pool();
@@ -41,11 +41,13 @@ public:
     /// assign a resource to a free slot
     void Assign(const Id& id, const SETUP& setup);
     /// assign a resource to a free slot,
-    void Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data);
+    void Assign(const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder
     const RESOURCE* Lookup(const Id& id) const;
+    /// query the loading state of a contained resource
+    State::Code QueryState(const Id& id) const;
     
     /// add a placeholder
     void RegisterPlaceholder(uint32 typeFourcc, const Id& id);
@@ -69,18 +71,18 @@ protected:
     FACTORY* factory;
     int32 uniqueCounter;
     int32 maxNumCreatePerFrame;
-    uin32 genericPlaceholderType;
+    uint32 genericPlaceholderType;
     uint16 resourceType;
     
-    Core::Array<slot<RESOURCE,FACTORY>> slots;
+    Core::Array<slot<RESOURCE,SETUP,FACTORY>> slots;
     Core::Map<uint32, Id> placeholders;
     Core::Queue<uint16> freeSlots;
     Core::Array<uint16> pendingSlots;
 };
     
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY>
-Pool<RESOURCE,FACTORY>::Pool() :
+template<class RESOURCE, class SETUP, class FACTORY>
+Pool<RESOURCE,SETUP,FACTORY>::Pool() :
 isValid(false),
 factory(nullptr),
 uniqueCounter(0),
@@ -91,22 +93,22 @@ resourceType(0xFFFF) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY>
-Pool<RESOURCE,FACTORY>::~Pool() {
+template<class RESOURCE, class SETUP, class FACTORY>
+Pool<RESOURCE,SETUP,FACTORY>::~Pool() {
     o_assert(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 maxCreatePerFrame, uint32 genericPlaceholderTypeFourcc) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 maxCreatePerFrame, uint32 genericPlaceholderTypeFourcc) {
     o_assert(!this->isValid);
-    o_assert(factory_)
+    o_assert(factory_);
     o_assert(poolSize > 0);
     
     this->maxNumCreatePerFrame = maxCreatePerFrame;
     this->genericPlaceholderType = genericPlaceholderTypeFourcc;
     this->slots.Reserve(poolSize);
-    this->slots.AllocStrategy(0, 0);    // make this a fixed-size array
+    this->slots.SetAllocStrategy(0, 0);    // make this a fixed-size array
     this->freeSlots.Reserve(poolSize);
     
     // setup empty slots
@@ -123,11 +125,12 @@ Pool<RESOURCE,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 maxCreate
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Discard() {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Discard() {
     o_assert(this->isValid);
     // make sure that all resources had been freed (or should we do this here?)
     o_assert(this->freeSlots.Size() == this->slots.Size());
+    this->isValid = false;
     
     this->slots.Clear();
     this->freeSlots.Clear();
@@ -136,21 +139,21 @@ Pool<RESOURCE,FACTORY>::Discard() {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::IsValid() const {
+template<class RESOURCE, class SETUP, class FACTORY> bool
+Pool<RESOURCE,SETUP,FACTORY>::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> Id
-Pool<RESOURCE,FACTORY>::AllocId() {
+template<class RESOURCE, class SETUP, class FACTORY> Id
+Pool<RESOURCE,SETUP, FACTORY>::AllocId() {
     o_assert(this->isValid);
     return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::freeId(const Id& id) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::freeId(const Id& id) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
@@ -159,8 +162,8 @@ Pool<RESOURCE,FACTORY>::freeId(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Assign(const Id& id, const SETUP& setup) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
@@ -173,8 +176,8 @@ Pool<RESOURCE,FACTORY>::Assign(const Id& id, const SETUP& setup) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
@@ -187,8 +190,8 @@ Pool<RESOURCE,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<IO::S
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Unassign(const Id& id) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Unassign(const Id& id) {
     o_assert(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex()];
@@ -199,8 +202,8 @@ Pool<RESOURCE,FACTORY>::Unassign(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Lookup(const Id& id) const {
+template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE*
+Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) const {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
@@ -223,16 +226,31 @@ Pool<RESOURCE,FACTORY>::Lookup(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& id) {
+template<class RESOURCE, class SETUP, class FACTORY> State::Code
+Pool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) const {
+    o_assert(this->isValid);
+    
+    const uint16 slotIndex = id.SlotIndex();
+    const auto& slot = this->slots[slotIndex];
+    if (slot.GetId() == id) {
+        return slot.GetResource().GetState();
+    }
+    else {
+        return State::InvalidState;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& id) {
     o_assert(this->isValid);
     o_assert(!this->placeholders.Contains(typeFourcc));
     this->placeholders.Insert(typeFourcc, id);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> const RESOURCE*
-Pool<RESOURCE,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
+template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE*
+Pool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
     o_assert(this->isValid);
     
     int32 index = this->placeholders.FindIndex(typeFourcc);
@@ -251,8 +269,8 @@ Pool<RESOURCE,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::Update() {
+template<class RESOURCE, class SETUP, class FACTORY> void
+Pool<RESOURCE,SETUP,FACTORY>::Update() {
     o_assert(this->isValid);
     
     // go over pending slots (these are currently loading), and call their update
@@ -264,7 +282,7 @@ Pool<RESOURCE,FACTORY>::Update() {
         if (slot.ReadyForValidate(this->factory)) {
             // ok, slot is done loading, call the validate method and remove from pending array
             slot.Validate(this->factory);
-            this->pendingSlots.EraseIndex(i);
+            this->pendingSlots.Erase(i);
             
             // perform throttling if enabled
             numCreated++;
@@ -276,26 +294,26 @@ Pool<RESOURCE,FACTORY>::Update() {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-Pool<RESOURCE,FACTORY>::GetNumSlots() const {
+template<class RESOURCE, class SETUP, class FACTORY> int32
+Pool<RESOURCE,SETUP,FACTORY>::GetNumSlots() const {
     return this->slots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> int32
-Pool<RESOURCE,FACTORY>::GetNumUsedSlots() const {
+template<class RESOURCE, class SETUP, class FACTORY> int32
+Pool<RESOURCE,SETUP,FACTORY>::GetNumUsedSlots() const {
     return this->slots.Size() - this->freeSlots.Size() - this->pendingSlots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> int32
-Pool<RESOURCE,FACTORY>::GetNumFreeSlots() const {
+template<class RESOURCE, class SETUP, class FACTORY> int32
+Pool<RESOURCE,SETUP,FACTORY>::GetNumFreeSlots() const {
     return this->freeSlots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> int32
-Pool<RESOURCE,FACTORY>::GetNumPendingSlots() const {
+template<class RESOURCE, class SETUP, class FACTORY> int32
+Pool<RESOURCE,SETUP,FACTORY>::GetNumPendingSlots() const {
     return this->pendingSlots.Size();
 }
 

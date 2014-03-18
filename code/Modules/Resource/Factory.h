@@ -152,7 +152,7 @@ Factory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
         // fallthrough: no suitable loader found
         Core::Log::Warn("Resource::Factory(%s): No suitable loader for resource '%s'\n",
                         this->name.AsCStr(), res.GetLocator().Location().AsCStr());
-        res.SetState(State::Failed);
+        res.setState(State::Failed);
     }
 }
 

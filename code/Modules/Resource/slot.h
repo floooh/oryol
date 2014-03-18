@@ -10,7 +10,7 @@
 namespace Oryol {
 namespace Resource {
     
-template<class RESOURCE, class FACTORY> class slot {
+template<class RESOURCE, class SETUP, class FACTORY> class slot {
 public:
     /// constructor
     slot();
@@ -18,7 +18,7 @@ public:
     /// assign a resource to the slot
     void Assign(FACTORY* factory, const Id& id, const SETUP& setup);
     /// assign a resource with creation data to the slot
-    void Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data);
+    void Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data);
     /// test if the resource is ready for the validate method (asynchronous creation)
     bool ReadyForValidate(FACTORY* factory) const;
     /// validate the slot (asynchronous creation)
@@ -41,67 +41,67 @@ public:
     
 private:
     RESOURCE resource;
-    Ptr<IO::Stream> stream;
+    Core::Ptr<IO::Stream> stream;
 };
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY>
-slot<RESOURCE,FACTORY>::slot() {
+template<class RESOURCE, class SETUP, class FACTORY>
+slot<RESOURCE,SETUP,FACTORY>::slot() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> const Id&
-slot<RESOURCE,FACTORY>::GetId() const {
+template<class RESOURCE, class SETUP, class FACTORY> const Id&
+slot<RESOURCE,SETUP,FACTORY>::GetId() const {
     return this->resource.GetId();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> const RESOURCE&
-slot<RESOURCE,FACTORY>::GetResource() const {
+template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE&
+slot<RESOURCE,SETUP,FACTORY>::GetResource() const {
     return this->resource;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> bool
-slot<RESOURCE,FACTORY>::IsAssigned() const {
+template<class RESOURCE, class SETUP, class FACTORY> bool
+slot<RESOURCE,SETUP,FACTORY>::IsAssigned() const {
     return this->resource.GetState() != State::Initial;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> bool
-slot<RESOURCE,FACTORY>::IsUnassigned() const {
+template<class RESOURCE, class SETUP, class FACTORY> bool
+slot<RESOURCE,SETUP,FACTORY>::IsUnassigned() const {
     return this->resource.GetState() == State::Initial;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> bool
-slot<RESOURCE,FACTORY>::IsPending() const {
-    return this->resource.GetState() == State::Pending);
+template<class RESOURCE, class SETUP, class FACTORY> bool
+slot<RESOURCE,SETUP,FACTORY>::IsPending() const {
+    return this->resource.GetState() == State::Pending;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> bool
-slot<RESOURCE,FACTORY>::IsValid() const {
-    return this->resource.GetState() == State::Valid);
+template<class RESOURCE, class SETUP, class FACTORY> bool
+slot<RESOURCE,SETUP,FACTORY>::IsValid() const {
+    return this->resource.GetState() == State::Valid;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-slot<RESOURCE,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup) {
-    n_assert(this->IsUnassigned());
+template<class RESOURCE, class SETUP, class FACTORY> void
+slot<RESOURCE,SETUP,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup) {
+    o_assert(this->IsUnassigned());
     o_assert(!this->stream.isValid());
     o_assert(factory);
 
     this->resource.setId(id);
     this->resource.setSetup(setup);
     factory->SetupResource(this->resource);
-    o_assert((this->resource.GetState() == State::pending) || (this->resource.GetState() == State::Valid) || (this->resource.GetState() == State::Failed));
+    o_assert((this->resource.GetState() == State::Pending) || (this->resource.GetState() == State::Valid) || (this->resource.GetState() == State::Failed));
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-slot<RESOURCE,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+slot<RESOURCE,SETUP,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
     o_assert(this->IsUnassigned());
     o_assert(!this->stream.isValid());
     o_assert(factory);
@@ -119,16 +119,16 @@ slot<RESOURCE,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setu
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> bool
-slot<RESOURCE,FACTORY>::ReadyForValidate(FACTORY* factory) const {
+template<class RESOURCE, class SETUP, class FACTORY> bool
+slot<RESOURCE,SETUP,FACTORY>::ReadyForValidate(FACTORY* factory) const {
     o_assert(this->IsPending());
     o_assert(factory);
     return factory->NeedsSetupResource(this->resource);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-slot<RESOURCE,FACTORY>::Validate(FACTORY* factory) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+slot<RESOURCE,SETUP,FACTORY>::Validate(FACTORY* factory) {
     o_assert(this->IsPending());
     o_assert(factory);
     
@@ -142,8 +142,8 @@ slot<RESOURCE,FACTORY>::Validate(FACTORY* factory) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class FACTORY> void
-slot<RESOURCE,FACTORY>::Unassign(FACTORY* factory) {
+template<class RESOURCE, class SETUP, class FACTORY> void
+slot<RESOURCE,SETUP,FACTORY>::Unassign(FACTORY* factory) {
     o_assert(this->IsAssigned());
     o_assert(factory);
     
