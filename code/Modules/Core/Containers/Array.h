@@ -153,7 +153,7 @@ Array<TYPE>::Array(const Array& rhs) {
 //------------------------------------------------------------------------------
 template<class TYPE>
 Array<TYPE>::Array(Array&& rhs) {
-    this->move(rhs);
+    this->move(std::move(rhs));
 }
 
 //------------------------------------------------------------------------------
