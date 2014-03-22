@@ -127,6 +127,7 @@ macro(oryol_resolve_frameworks target)
         unset(found_framework CACHE)
         find_library(found_framework ${fw})
         target_link_libraries(${target} ${found_framework})
+        unset(found_framework CACHE)
     endforeach()
 endmacro()
 
