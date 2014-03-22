@@ -15,7 +15,21 @@ signature(DefaultSignature) {
 }
 
 //------------------------------------------------------------------------------
+Locator::Locator(const char* loc) :
+location(loc),
+signature(DefaultSignature) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 Locator::Locator(const Core::StringAtom& loc, uint32 sig) :
+location(loc),
+signature(sig) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+Locator::Locator(const char* loc, uint32 sig) :
 location(loc),
 signature(sig) {
     // empty

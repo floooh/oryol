@@ -31,8 +31,12 @@ public:
     Locator();
     /// shared locator from location
     Locator(const Core::StringAtom& location);
+    /// shared locator from raw location string
+    Locator(const char* location);
     /// shared locator from location and signature
     Locator(const Core::StringAtom& location, uint32 signature);
+    /// shared locator from raw location string
+    Locator(const char* location, uint32 signature);
     
     /// create a unique Locator without location
     static Locator NonShared();
