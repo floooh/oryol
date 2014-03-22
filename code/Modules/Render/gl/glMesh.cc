@@ -8,10 +8,11 @@ namespace Oryol {
 namespace Render {
     
 //------------------------------------------------------------------------------
-glMesh::glMesh() {
-    this->glVertexBuffer = 0;
-    this->glIndexBuffer = 0;
-    this->glVertexArrayObject = 0;
+glMesh::glMesh() :
+glVertexBuffer(0),
+glIndexBuffer(0),
+glVertexArrayObject(0) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
