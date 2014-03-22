@@ -108,20 +108,6 @@ RenderFacade::LookupResource(const Locator& loc) {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Id
-RenderFacade::CreateResource(const SETUP& setup) {
-    o_assert(this->IsValid());
-    return this->resourceManager.CreateResource(setup);
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> Id
-RenderFacade::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
-    o_assert(this->IsValid());
-    return this->resourceManager.CreateResource(setup, data);
-}
-
-//------------------------------------------------------------------------------
 void
 RenderFacade::DiscardResource(const Id& resId) {
     o_assert(this->IsValid());

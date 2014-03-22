@@ -142,5 +142,19 @@ RenderFacade::QueryTransform(TransformType::Code type) const {
     return this->transformManager.GetTransform(type);
 }
 
+//------------------------------------------------------------------------------
+template<class SETUP> Resource::Id
+RenderFacade::CreateResource(const SETUP& setup) {
+    o_assert(this->IsValid());
+    return this->resourceManager.CreateResource(setup);
+}
+
+//------------------------------------------------------------------------------
+template<class SETUP> Resource::Id
+RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
+    o_assert(this->IsValid());
+    return this->resourceManager.CreateResource(setup, data);
+}
+
 } // namespace Render
 } // namespace Oryol

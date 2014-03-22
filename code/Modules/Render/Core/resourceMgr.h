@@ -9,9 +9,11 @@
 */
 #include "Render/Setup/RenderSetup.h"
 #include "Render/Core/meshFactory.h"
+#include "Render/Core/mesh.h"
+#include "Render/Core/shaderFactory.h"
+#include "Render/Core/shader.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
-#include "Render/Core/mesh.h"
 
 namespace Oryol {
 namespace Render {
@@ -54,7 +56,9 @@ private:
     Resource::Registry resourceRegistry;
     Core::Array<Resource::Id> removedIds;
     class meshFactory meshFactory;
+    class shaderFactory shaderFactory;
     Resource::Pool<mesh, MeshSetup, class meshFactory> meshPool;
+    Resource::Pool<shader, ShaderSetup, class shaderFactory> shaderPool;
 };
     
 } // namespace Render

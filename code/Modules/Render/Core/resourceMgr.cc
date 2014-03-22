@@ -2,6 +2,7 @@
 //  resourceMgr.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Render/base/meshLoaderBase.h"
 #include "resourceMgr.h"
 
 namespace Oryol {
@@ -39,6 +40,8 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper) {
 
     this->meshFactory.Setup(this->stateWrapper);
     this->meshPool.Setup(&this->meshFactory, setup.GetPoolSize(ResourceType::Mesh), setup.GetThrottling(ResourceType::Mesh), 'MESH');
+    this->shaderFactory.Setup();
+    this->shaderPool.Setup(&this->shaderFactory, setup.GetPoolSize(ResourceType::Shader), 0, 'SHDR');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
 }
@@ -49,6 +52,8 @@ resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     this->resourceRegistry.Discard();
+    this->shaderPool.Discard();
+    this->shaderFactory.Discard();
     this->meshPool.Discard();
     this->meshFactory.Discard();
     this->stateWrapper = nullptr;
@@ -70,21 +75,25 @@ resourceMgr::Update() {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup) {
-    o_assert(this->IsValid());
+    o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
     Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
-    if (!resId.IsValid()) {
+    if (resId.IsValid()) {
+        o_assert(resId.Type() == ResourceType::Mesh);
+        return resId;
+    }
+    else {
         resId = this->meshPool.AllocId();
         this->resourceRegistry.AddResource(loc, resId);
         this->meshPool.Assign(resId, setup);
+        return resId;
     }
-    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data) {
-    o_assert(this->IsValid());
+    o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
     Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
     if (!resId.IsValid()) {
@@ -95,6 +104,24 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data)
     return resId;
 }
 
+//------------------------------------------------------------------------------
+template<> Id
+resourceMgr::CreateResource(const ShaderSetup& setup) {
+    o_assert(this->isValid);
+    const Locator& loc = setup.GetLocator();
+    Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
+    if (resId.IsValid()) {
+        o_assert(resId.Type() == ResourceType::Shader);
+        return resId;
+    }
+    else {
+        resId = this->shaderPool.AllocId();
+        this->resourceRegistry.AddResource(loc, resId);
+        this->shaderPool.Assign(resId, setup);
+        return resId;
+    }
+}
+    
 //------------------------------------------------------------------------------
 Id
 resourceMgr::LookupResource(const Locator& loc) {
@@ -116,7 +143,10 @@ resourceMgr::DiscardResource(const Id& resId) {
                 case ResourceType::Mesh:
                     this->meshPool.Unassign(resId);
                     break;
-                case ResourceType::Program:
+                case ResourceType::Shader:
+                    this->shaderPool.Unassign(resId);
+                    break;
+                case ResourceType::ProgramBundle:
                     o_assert2(false, "FIXME!!!\n");
                     break;
                 case ResourceType::StateBlock:
@@ -144,7 +174,9 @@ resourceMgr::QueryResourceState(const Id& resId) const {
         case ResourceType::Mesh:
             return this->meshPool.QueryState(resId);
             break;
-        case ResourceType::Program:
+        case ResourceType::Shader:
+            return this->shaderPool.QueryState(resId);
+        case ResourceType::ProgramBundle:
             o_assert2(false, "FIXME!!!\n");
             break;
         case ResourceType::StateBlock:
