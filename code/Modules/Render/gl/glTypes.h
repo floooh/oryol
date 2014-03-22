@@ -13,6 +13,7 @@
 #include "Render/Types/TextureWrapMode.h"
 #include "Render/Types/TextureFilterMode.h"
 #include "Render/Types/IndexType.h"
+#include "Render/Types/ShaderType.h"
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
@@ -36,6 +37,8 @@ public:
     static GLenum AsGLTextureFilterMode(TextureFilterMode::Code c);
     /// convert Oryol texture type to GL enum
     static GLenum AsGLTextureTarget(TextureType::Code c);
+    /// convert Oryol shader type to GL enum
+    static GLenum AsGLShaderType(ShaderType::Code c);
 };
     
 } // namespace Render

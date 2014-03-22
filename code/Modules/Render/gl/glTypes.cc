@@ -153,5 +153,17 @@ glTypes::AsGLTextureTarget(TextureType::Code c) {
     }
 }
 
+//------------------------------------------------------------------------------
+GLenum
+glTypes::AsGLShaderType(ShaderType::Code c) {
+    switch (c) {
+        case ShaderType::VertexShader: return GL_VERTEX_SHADER;
+        case ShaderType::FragmentShader: return GL_FRAGMENT_SHADER;
+        default:
+            o_error("glTypes::AsGLShaderType(): invalid param!\n");
+            return 0;
+    }
+}
+
 } // namespace Render
 } // namespace Oryol
