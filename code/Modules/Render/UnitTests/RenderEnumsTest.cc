@@ -15,6 +15,7 @@
 #include "Render/Types/VertexAttr.h"
 #include "Render/Types/ResourceType.h"
 #include "Render/Types/TransformType.h"
+#include "Render/Types/ShaderType.h"
 
 using namespace Oryol::Core;
 using namespace Oryol::Render;
@@ -227,17 +228,19 @@ TEST(VertexAttrTest) {
 
 //------------------------------------------------------------------------------
 TEST(RenderResourceTypeTest) {
-    CHECK(ResourceType::NumResourceTypes == 5);
+    CHECK(ResourceType::NumResourceTypes == 6);
     
     CHECK(ResourceType::FromString("Texture") == ResourceType::Texture);
     CHECK(ResourceType::FromString("Mesh") == ResourceType::Mesh);
-    CHECK(ResourceType::FromString("Program") == ResourceType::Program);
+    CHECK(ResourceType::FromString("Shader") == ResourceType::Shader);
+    CHECK(ResourceType::FromString("ProgramBundle") == ResourceType::ProgramBundle);
     CHECK(ResourceType::FromString("StateBlock") == ResourceType::StateBlock);
     CHECK(ResourceType::FromString("ConstantBlock") == ResourceType::ConstantBlock);
 
     CHECK(String(ResourceType::ToString(ResourceType::Texture)) == "Texture");
     CHECK(String(ResourceType::ToString(ResourceType::Mesh)) == "Mesh");
-    CHECK(String(ResourceType::ToString(ResourceType::Program)) == "Program");
+    CHECK(String(ResourceType::ToString(ResourceType::Shader)) == "Shader");
+    CHECK(String(ResourceType::ToString(ResourceType::ProgramBundle)) == "ProgramBundle");
     CHECK(String(ResourceType::ToString(ResourceType::StateBlock)) == "StateBlock");
     CHECK(String(ResourceType::ToString(ResourceType::ConstantBlock)) == "ConstantBlock");
 }
@@ -271,4 +274,15 @@ TEST(TransformTypeTest) {
     CHECK(String(TransformType::ToString(TransformType::InvModelView)) == "InvModelView");
     CHECK(String(TransformType::ToString(TransformType::InvModelViewProj)) == "InvModelViewProj");
     CHECK(String(TransformType::ToString(TransformType::InvViewProj)) == "InvViewProj");
+}
+
+//------------------------------------------------------------------------------
+TEST(ShaderTypeTest) {
+    CHECK(ShaderType::NumShaderTypes == 2);
+    
+    CHECK(ShaderType::FromString("VertexShader") == ShaderType::VertexShader);
+    CHECK(ShaderType::FromString("FragmentShader") == ShaderType::FragmentShader);
+    
+    CHECK(String(ShaderType::ToString(ShaderType::VertexShader)) == "VertexShader");
+    CHECK(String(ShaderType::ToString(ShaderType::FragmentShader)) == "FragmentShader");
 }

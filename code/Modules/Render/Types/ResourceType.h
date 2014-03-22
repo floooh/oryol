@@ -18,7 +18,8 @@ public:
     enum Code {
         Texture,            ///< a texture
         Mesh,               ///< a mesh
-        Program,            ///< shader program
+        Shader,             ///< a vertex shader
+        ProgramBundle,      ///< shader program bundle
         StateBlock,         ///< block of render states
         ConstantBlock,      ///< block constant shader uniforms
         
