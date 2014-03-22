@@ -105,6 +105,8 @@ Pool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 max
     o_assert(factory_);
     o_assert(poolSize > 0);
     
+    this->factory = factory_;
+    this->resourceType = this->factory->GetResourceType();
     this->maxNumCreatePerFrame = maxCreatePerFrame;
     this->genericPlaceholderType = genericPlaceholderTypeFourcc;
     this->slots.Reserve(poolSize);
@@ -136,6 +138,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Discard() {
     this->freeSlots.Clear();
     this->pendingSlots.Clear();
     this->placeholders.Clear();
+    this->factory = nullptr;
 }
 
 //------------------------------------------------------------------------------
