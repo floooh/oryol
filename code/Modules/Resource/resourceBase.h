@@ -30,8 +30,6 @@ public:
     
     /// get the resource id
     const Id& GetId() const;
-    /// get the locator
-    const Locator& GetLocator() const;
     /// get the current state of the resource
     State::Code GetState() const;
     /// get the setup object
@@ -39,8 +37,6 @@ public:
 
     /// set the resource id of the resource
     void setId(const Id& id);
-    /// set the resource locator
-    void setLocator(const Locator& loc);
     /// set the resource state
     void setState(State::Code s);
     /// set the setup object
@@ -52,7 +48,6 @@ public:
     
 protected:
     Id id;
-    Locator locator;
     State::Code state;
     SETUP setup;
     int32 loaderIndex;
@@ -86,18 +81,6 @@ resourceBase<SETUP>::GetId() const {
 
 //------------------------------------------------------------------------------
 template<class SETUP> void
-resourceBase<SETUP>::setLocator(const Locator& loc) {
-    this->locator = loc;
-}
-    
-//------------------------------------------------------------------------------
-template<class SETUP> const Locator&
-resourceBase<SETUP>::GetLocator() const {
-    return this->locator;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
 resourceBase<SETUP>::setState(State::Code s) {
     this->state = s;
 }
@@ -114,7 +97,6 @@ resourceBase<SETUP>::setSetup(const SETUP& setup_) {
     o_assert(State::Initial == this->state);
     this->setup = setup_;
     this->state = State::Setup;
-    this->locator = setup_.GetLocator();
 }
 
 //------------------------------------------------------------------------------
