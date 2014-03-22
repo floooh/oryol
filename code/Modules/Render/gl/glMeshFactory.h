@@ -4,16 +4,17 @@
     @class Oryol::Render::glMeshFactory
     @brief GL implementation of MeshFactory
 */
-#include "Resource/Factory.h"
+#include "Resource/loaderFactory.h"
 #include "Render/Core/mesh.h"
-#include "Render/base/meshLoaderBase.h"
 
 namespace Oryol {
 namespace Render {
 
 class stateWrapper;
+class mesh;
+class meshLoaderBase;
 
-class glMeshFactory : public Resource::Factory<mesh, meshLoaderBase> {
+class glMeshFactory : public Resource::loaderFactory<mesh, meshLoaderBase> {
 public:
     /// constructor
     glMeshFactory();
@@ -27,7 +28,7 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
     /// discard the resource
-    void Destroy(mesh& mesh);
+    void DestroyResource(mesh& mesh);
     
     /// helper method to create vertex buffer in mesh
     void createVertexBuffer(const void* vertexData, uint32 vertexDataSize, mesh& outMesh);

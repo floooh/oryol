@@ -2,6 +2,7 @@
 //  glMeshFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Render/base/meshLoaderBase.h"
 #include "glMeshFactory.h"
 #include "Render/gl/gl_impl.h"
 #include "Render/Core/stateWrapper.h"
@@ -49,7 +50,7 @@ glMeshFactory::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
-glMeshFactory::Destroy(mesh& mesh) {
+glMeshFactory::DestroyResource(mesh& mesh) {
     o_assert(nullptr != this->glStateWrapper);
     this->glStateWrapper->InvalidateMeshState();
     

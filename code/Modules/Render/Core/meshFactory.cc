@@ -3,13 +3,20 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "meshFactory.h"
+#include "Render/base/meshLoaderBase.h"
 
 namespace Oryol {
 namespace Render {
 
 using namespace IO;
 using namespace Core;
-    
+
+//------------------------------------------------------------------------------
+uint16
+meshFactory::GetResourceType() const {
+    return ResourceType::Mesh;
+}
+
 //------------------------------------------------------------------------------
 void
 meshFactory::AttachLoader(const Ptr<meshLoaderBase>& loader) {
@@ -41,7 +48,7 @@ meshFactory::DestroyResource(mesh& mesh) {
     if (ioRequest.isValid()) {
         ioRequest->SetCancelled();
     }
-    glMeshFactory::Destroy(mesh);
+    glMeshFactory::DestroyResource(mesh);
 }
 
 
