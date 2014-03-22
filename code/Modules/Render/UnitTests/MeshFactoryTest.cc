@@ -63,7 +63,8 @@ TEST(MeshFactoryTest) {
     
     factory.SetupResource(mesh, meshData);
     CHECK(mesh.GetState() == Resource::State::Valid);
-    CHECK(mesh.GetLocator().Location() == "myQuad");
+    CHECK(!mesh.GetId().IsValid());
+    CHECK(mesh.GetSetup().GetLocator().Location() == "myQuad");
     CHECK(mesh.GetVertexBufferAttrs().GetNumVertices() == 4);
     CHECK(mesh.GetVertexBufferAttrs().GetUsage() == Usage::Immutable);
     CHECK(mesh.GetVertexBufferAttrs().GetVertexLayout().GetNumComponents() == 2);
@@ -120,8 +121,9 @@ TEST(MeshFactoryTest) {
     }
     #endif
     
-    factory.Destroy(mesh);
+    factory.DestroyResource(mesh);
     CHECK(mesh.GetState() == Resource::State::Setup);
+    CHECK(!mesh.GetId().IsValid());
     CHECK(mesh.GetVertexBufferAttrs().GetNumVertices() == 0);
     CHECK(mesh.GetVertexBufferAttrs().GetUsage() == Usage::InvalidUsage);
     CHECK(mesh.GetVertexBufferAttrs().GetVertexLayout().GetNumComponents() == 0);
