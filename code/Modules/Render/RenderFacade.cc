@@ -156,5 +156,26 @@ RenderFacade::EndFrame() {
     this->displayManager.Present();
 }
 
+//------------------------------------------------------------------------------
+void
+RenderFacade::Clear(bool color, bool depth, bool stencil) {
+    o_assert_dbg(this->isValid);
+    this->renderManager.Clear(color, depth, stencil);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::Draw(int32 primGroupIndex) {
+    o_assert_dbg(this->isValid);
+    this->renderManager.Draw(primGroupIndex);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::Draw(const PrimitiveGroup& primGroup) {
+    o_assert_dbg(this->isValid);
+    this->renderManager.Draw(primGroup);
+}
+
 } // namespace Render
 } // namespace Oryol

@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glRenderMgr.h"
+#include "Render/gl/glTypes.h"
 #include "Render/gl/gl_impl.h"
 #define GLM_FORCE_RADIANS
 #include "glm/vec2.hpp"
@@ -251,6 +252,64 @@ glRenderMgr::ApplyVariableArray(int32 index, const glm::mat2* values, int32 numV
         GLint glLoc = this->curProgramBundle->getUniformLocation(index);
         ::glUniformMatrix2fv(glLoc, numValues, GL_FALSE, glm::value_ptr(*values));
     }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderMgr::Clear(bool color, bool depth, bool stencil) {
+    o_assert_dbg(this->isValid);
+
+    GLbitfield clearMask = 0;
+    if (color) {
+        clearMask |= GL_COLOR_BUFFER_BIT;
+    }
+    if (depth) {
+        clearMask |= GL_DEPTH_BUFFER_BIT;
+    }
+    if (stencil) {
+        clearMask |= GL_STENCIL_BUFFER_BIT;
+    }
+    ::glClear(clearMask);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->curMesh);
+    
+    const GLenum glPrimType = glTypes::AsGLPrimitiveType(primGroup.GetPrimitiveType());
+    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
+    if (indexType != IndexType::None) {
+        // indexed geometry
+        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        GLenum glIndexType = glTypes::AsGLIndexType(indexType);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
+        ::glDrawElements(glPrimType, primGroup.GetNumElements(), glIndexType, indices);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    else {
+        // non-indexed geometry
+        ::glDrawArrays(glPrimType, primGroup.GetBaseElement(), primGroup.GetNumElements());
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderMgr::Draw(int32 primGroupIndex) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->curMesh);
+    
+    if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curMesh->GetPrimitiveGroup(primGroupIndex);
+    this->Draw(primGroup);
 }
 
 } // namespace Render
