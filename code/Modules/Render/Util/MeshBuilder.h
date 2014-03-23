@@ -36,8 +36,8 @@
     uint32 verticesByteSize (size of vertex data in bytes, rounded up to 4)
     uint32 indicesByteSize (size of index data in bytes)
     [1..numVertexComponents]:
+        uint32 attr
         uint32 format       (VertexFormat::Code)
-        char attrName[16]  (guaranteed to be 0-terminated)
     [1..numPrimitiveGroups]
         uint32 type         (PrimitiveType::Code)
         uint32 baseElement
