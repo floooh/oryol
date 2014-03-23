@@ -69,20 +69,31 @@ glShaderFactory::SetupResource(shader& shd) {
     
     // setup the shader source
     StringBuilder strBuilder;
-    strBuilder.Reserve(2 * srcLength);
+    strBuilder.Reserve(2 * srcLength + 1024);
     #if ORYOL_OPENGL
         strBuilder.Append("#version 150\n");
         strBuilder.Append("#define ORYOL_OPENGL (1)\n");
         strBuilder.Append("#define lowp\n");
         strBuilder.Append("#define mediump\n");
         strBuilder.Append("#define highp\n");
+        if (GL_VERTEX_SHADER == glShaderType) {
+            strBuilder.Append("#define VERTEX_COMPONENT(type,name) in type name\n");
+        }
+        if (GL_FRAGMENT_SHADER == glShaderType) {
+            strBuilder.Append("out vec4 FragmentColor;\n");
+        }
     #elif ORYOL_OPENGLES2
-        strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
         strBuilder.Append("#version 100\n");
+        strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("precision mediump float;\n");
+            strBuilder.Append("#define FragmentColor gl_FragColor\n");
+        }
+        if (GL_VERTEX_SHADER == glShaderType) {
+            strBuilder.Append("#define VERTEX_COMPONENT(type,name) attribute type name");
         }
     #endif
+    
     #if ORYOL_WINDOWS
         strBuilder.Append("#define ORYOL_WINDOWS (1)\n");
     #elif ORYOL_OSX
@@ -146,18 +157,13 @@ glShaderFactory::SetupResource(shader& shd) {
     if (!compileStatus) {
         o_error("Failed to compile shader '%s'\n", setup.GetLocator().Location().AsCStr());
         shd.setState(State::Failed);
+        return;
     }
     
     // all ok, shader has been successfully compiled
     shd.setShaderType(setup.GetType());
     shd.glSetShader(glShader);
     shd.setState(State::Valid);
-}
-
-//------------------------------------------------------------------------------
-void
-glShaderFactory::SetupResource(shader& shd, const Ptr<Stream>& data) {
-    o_assert2(false, "glShaderFactory: setup with stream data is not supported!\n");
 }
 
 //------------------------------------------------------------------------------
