@@ -159,5 +159,19 @@ RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& da
     return this->resourceManager.CreateResource(setup, data);
 }
 
+//------------------------------------------------------------------------------
+template<class T> void
+RenderFacade::ApplyVariable(int32 index, const T& value) {
+    o_assert_dbg(this->isValid);
+    this->renderManager.ApplyVariable(index, value);
+}
+
+//------------------------------------------------------------------------------
+template<class T> void
+RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
+    o_assert_dbg(this->isValid);
+    this->renderManager.ApplyVariableArray(index, values, numValues);
+}
+
 } // namespace Render
 } // namespace Oryol
