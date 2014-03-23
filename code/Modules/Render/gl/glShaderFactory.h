@@ -19,7 +19,7 @@ public:
     /// destructor
     ~glShaderFactory();
     
-    /// setup with a pointer to the state wrapper object
+    /// setup the factory
     void Setup();
     /// discard the factory
     void Discard();
@@ -28,14 +28,10 @@ public:
 
     /// setup shader resource (directly setup shader, no loaders)
     void SetupResource(shader& shd);
-    /// setup with input data (directly setup shader, no loaders)
-    void SetupResource(shader& shd, const Core::Ptr<IO::Stream>& data);
     /// destroy the shader
     void DestroyResource(shader& shd);
     
 private:
-    static const uint32 MaxNumShaderSources = 32;
-
     bool isValid;
 };
     
