@@ -45,9 +45,9 @@ public:
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder
-    const RESOURCE* Lookup(const Id& id) const;
+    RESOURCE* Lookup(const Id& id);
     /// query the loading state of a contained resource
-    State::Code QueryState(const Id& id) const;
+    State::Code QueryState(const Id& id);
     
     /// add a placeholder
     void RegisterPlaceholder(uint32 typeFourcc, const Id& id);
@@ -65,7 +65,7 @@ protected:
     /// free a resource id
     void freeId(const Id& id);
     /// lookup placeholder
-    const RESOURCE* lookupPlaceholder(uint32 typeFourcc) const;
+    RESOURCE* lookupPlaceholder(uint32 typeFourcc);
 
     bool isValid;
     FACTORY* factory;
@@ -205,12 +205,12 @@ Pool<RESOURCE,SETUP,FACTORY>::Unassign(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE*
-Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) const {
+template<class RESOURCE, class SETUP, class FACTORY> RESOURCE*
+Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
-    const auto& slot = this->slots[slotIndex];
+    auto& slot = this->slots[slotIndex];
     if (slot.GetId() == id) {
         if (slot.IsValid()) {
             // resource exists and is valid, all ok
@@ -219,7 +219,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) const {
         else {
             // resource exists but is not currently valid (pending or failed to load)
             // try to return matching placeholder
-            return this->lookupPlaceholder(slot.GetPlaceholderType());
+            return this->lookupPlaceholder(slot.GetResource().GetPlaceholderType());
         }
     }
     else {
@@ -230,11 +230,11 @@ Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) const {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> State::Code
-Pool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) const {
+Pool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
-    const auto& slot = this->slots[slotIndex];
+    auto& slot = this->slots[slotIndex];
     if (slot.GetId() == id) {
         return slot.GetResource().GetState();
     }
@@ -252,8 +252,8 @@ Pool<RESOURCE,SETUP,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& i
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE*
-Pool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
+template<class RESOURCE, class SETUP, class FACTORY> RESOURCE*
+Pool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) {
     o_assert(this->isValid);
     
     int32 index = this->placeholders.FindIndex(typeFourcc);
@@ -261,7 +261,7 @@ Pool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
         // can't simply call Lookup() here, or we'd risk an infinite recursion
         // if the placeholder resource isn't valid
         const Id& id = this->placeholders.ValueAtIndex(index);
-        const auto& slot = this->slots[id.SlotIndex()];
+        auto& slot = this->slots[id.SlotIndex()];
         if ((slot.GetId() == id) && slot.IsValid()) {
             return &slot.GetResource();
         }
