@@ -60,6 +60,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
             break;
         case PixelFormat::R4G4B4A4:
             redBits=greenBits=blueBits=alphaBits=4;
+            break;
         case PixelFormat::R8G8B8A8:
         default:
             redBits=greenBits=blueBits=alphaBits=8;

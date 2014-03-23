@@ -19,9 +19,14 @@
 #include <assert.h>
 #define o_assert(cond) assert(cond)
 #define o_assert2(cond, msg) assert(cond)
+#define o_assert_dbg(cond) assert(cond)
+#define o_assert2_dbg(cond, msg) assert(cond)
+#define o_assert_range(val, max) assert((val >= 0) && (val < max))
+#define o_assert_range_dbg(val, max) assert((val >= 0) && (val < max))
 #elif ORIOL_NO_ASSERT
 #define o_assert(cond) ((void)0)
 #define o_assert2(cond, msg) ((void)0)
+#define o_assert_range(val, max) ((void)0)
 #else
 /// standard assert macro
 #define o_assert(cond) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)

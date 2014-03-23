@@ -59,6 +59,7 @@ TEST(MeshBuilderTest) {
     stream->Open(OpenMode::ReadOnly);
     const uint8* maxPtr = nullptr;
     const uint8* ptr = stream->MapRead(&maxPtr);
+    o_assert(nullptr != ptr);
     CHECK(ptr != nullptr);
     CHECK(maxPtr == ptr + allDataSize);
     

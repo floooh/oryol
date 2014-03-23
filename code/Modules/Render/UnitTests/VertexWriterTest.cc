@@ -77,7 +77,7 @@ TEST(VertexWriterTest) {
     
     // test Byte4N packing
     i8p = (int8*) ptr;
-    ptr = VertexWriter::Write(ptr, VertexFormat::Byte4N, -1.0f, +1.0f, -0.5f, +0.5f);
+    VertexWriter::Write(ptr, VertexFormat::Byte4N, -1.0f, +1.0f, -0.5f, +0.5f);
     CHECK(i8p[0] == -127);
     CHECK(i8p[1] == 127);
     CHECK(i8p[2] == -64);
@@ -121,7 +121,7 @@ TEST(VertexWriterTest) {
     ptr = VertexWriter::Write(ptr, VertexFormat::Short2N, -2.0f, +2.0f);
     ptr = VertexWriter::Write(ptr, VertexFormat::Short2N, -1.0f, +1.0f);
     ptr = VertexWriter::Write(ptr, VertexFormat::Short2N, -0.5f, +0.5f);
-    ptr = VertexWriter::Write(ptr, VertexFormat::Short2N, 0.0f, 0.0f);
+    VertexWriter::Write(ptr, VertexFormat::Short2N, 0.0f, 0.0f);
     CHECK(i16p[0] == -32767);
     CHECK(i16p[1] == 32767);
     CHECK(i16p[2] == -32767);
