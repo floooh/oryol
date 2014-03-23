@@ -29,17 +29,19 @@ RenderFacade::~RenderFacade() {
 //------------------------------------------------------------------------------
 void
 RenderFacade::Setup(const RenderSetup& setup) {
-    o_assert(!this->IsValid());
+    o_assert_dbg(!this->IsValid());
     this->renderSetup = setup;
     this->displayManager.SetupDisplay(setup);
     this->stateWrapper.Setup();
     this->resourceManager.Setup(setup, &this->stateWrapper);
+    this->renderManager.Setup(&this->stateWrapper);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::Discard() {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->IsValid());
+    this->renderManager.Discard();
     this->resourceManager.Discard();
     this->stateWrapper.Discard();
     this->displayManager.DiscardDisplay();
@@ -54,7 +56,7 @@ RenderFacade::IsValid() const {
 //------------------------------------------------------------------------------
 void
 RenderFacade::ModifyDisplay(const RenderSetup& renderSetup) {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->IsValid());
     this->displayManager.ModifyDisplay(renderSetup);
 }
 
@@ -73,14 +75,14 @@ RenderFacade::AttachLoader(const Ptr<LOADER>& loader) {
 //------------------------------------------------------------------------------
 void
 RenderFacade::AttachEventHandler(const Ptr<Port>& handler) {
-    o_assert(handler.isValid());
+    o_assert_dbg(handler.isValid());
     this->displayManager.AttachDisplayEventHandler(handler);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::DetachEventHandler(const Ptr<Port>& handler) {
-    o_assert(handler.isValid());
+    o_assert_dbg(handler.isValid());
     this->displayManager.DetachDisplayEventHandler(handler);
 }
 
@@ -103,22 +105,36 @@ RenderFacade::GetDisplayAttrs() const {
 */
 Id
 RenderFacade::LookupResource(const Locator& loc) {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->IsValid());
     return this->resourceManager.LookupResource(loc);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::DiscardResource(const Id& resId) {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->IsValid());
     this->resourceManager.DiscardResource(resId);
 }
 
 //------------------------------------------------------------------------------
 Resource::State::Code
-RenderFacade::QueryResourceState(const Id& resId) const {
-    o_assert(this->IsValid());
+RenderFacade::QueryResourceState(const Id& resId) {
+    o_assert_dbg(this->IsValid());
     return this->resourceManager.QueryResourceState(resId);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyMesh(const Id& resId) {
+    o_assert_dbg(this->IsValid());
+    this->renderManager.ApplyMesh(this->resourceManager.LookupMesh(resId));
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyProgram(const Id& resId, uint32 selMask) {
+    o_assert_dbg(this->IsValid());
+    this->renderManager.ApplyProgram(this->resourceManager.LookupProgramBundle(resId), selMask);
 }
 
 //------------------------------------------------------------------------------

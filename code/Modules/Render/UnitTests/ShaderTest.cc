@@ -13,23 +13,14 @@ using namespace Resource;
 
 static const char* vsSource =
 "uniform mat4 mvp;\n"
-"#if ORYOL_OPENGL\n"
-"in vec4 position;\n"
-"#else\n"
-"attribute vec4 position;\n"
-"#endif\n"
+"VERTEX_COMPONENT(vec4, position);\n"
 "void main() {\n"
 "  gl_Position = mvp * position;\n"
 "}\n";
 
 static const char* fsSource =
-"#if ORYOL_OPENGL\n"
-"out vec4 colorOut;\n"
-"#else\n"
-"#define colorOut gl_FragColor\n"
-"#endif\n"
 "void main() {\n"
-"  colorOut = vec4(1.0, 0.0, 0.0, 1.0);\n"
+"  FragmentColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
 "}\n";
 
 //------------------------------------------------------------------------------
@@ -107,6 +98,43 @@ TEST(ShaderCreationTest) {
     CHECK(!fac->LookupResource(vsLoc).IsValid());
     CHECK(!fac->LookupResource(fsLoc).IsValid());
 
+    RenderFacade::DestroySingleton();
+}
+
+//------------------------------------------------------------------------------
+TEST(ProgramTest) {
+
+    RenderFacade* facade = RenderFacade::CreateSingleton();
+    facade->Setup(RenderSetup::Windowed(400, 400, "ProgramTest"));
+    
+    // setup a vertex- and fragment-shader
+    Id vs = facade->CreateResource(ShaderSetup::FromSource("vstest", ShaderType::VertexShader, vsSource));
+    Id fs = facade->CreateResource(ShaderSetup::FromSource("fstest", ShaderType::FragmentShader, fsSource));
+
+    // setup program bundle from the vertex- and fragment shader
+    ProgramBundleSetup progSetup("prog");
+    progSetup.AddProgram(0, vs, fs);
+    progSetup.AddUniform("mvp", 0); // note: ModelViewProh is normally a standard uniform
+    CHECK(progSetup.GetNumPrograms() == 1);
+    CHECK(progSetup.GetVertexShader(0) == vs);
+    CHECK(progSetup.GetFragmentShader(0) == fs);
+    CHECK(progSetup.GetNumUniforms() == 1);
+    CHECK(progSetup.GetUniformName(0) == "mvp");
+    CHECK(progSetup.GetUniformSlot(0) == 0);
+    CHECK(progSetup.GetNumStandardUniforms() == 0);
+    
+    Id prog = facade->CreateResource(progSetup);
+    CHECK(prog.IsValid());
+    CHECK(prog.Type() == ResourceType::ProgramBundle);
+    
+    // apply the program
+    facade->ApplyProgram(prog);
+    
+    // and discard the program
+    facade->DiscardResource(prog);
+    facade->DiscardResource(vs);
+    facade->DiscardResource(fs);
+    
     RenderFacade::DestroySingleton();
 }
 

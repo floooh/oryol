@@ -1,0 +1,89 @@
+//------------------------------------------------------------------------------
+//  glProgramBundle.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "glProgramBundle.h"
+#include "Core/Memory/Memory.h"
+
+namespace Oryol {
+namespace Render {
+
+using namespace Core;
+    
+//------------------------------------------------------------------------------
+glProgramBundle::glProgramBundle() {
+    this->clear();
+}
+
+//------------------------------------------------------------------------------
+glProgramBundle::~glProgramBundle() {
+    for (int32 i = 0; i < this->numProgramEntries; i++) {
+        o_assert(0 == this->programEntries[i].program);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glProgramBundle::clear() {
+    this->selMask = 0xFFFFFFFF;
+    this->selIndex = 0;
+    this->numProgramEntries = 0;
+    for (int32 progIndex = 0; progIndex < MaxNumPrograms; progIndex++) {
+        programEntry& entry = this->programEntries[progIndex];
+        entry.mask = 0;
+        entry.program = 0;
+        for (int32 i = 0; i < StandardUniform::NumStandardUniforms; i++) {
+            entry.stdUniformMapping[i] = -1;
+        }
+        for (int32 i = 0; i < MaxNumUniforms; i++) {
+            entry.uniformMapping[i] = -1;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+int32
+glProgramBundle::addProgram(uint32 mask, GLuint glProg) {
+    o_assert(this->numProgramEntries < MaxNumPrograms);
+
+    // make sure the mask is unique
+    for (int32 i = 0; i < this->numProgramEntries; i++) {
+        o_assert(this->programEntries[i].mask != mask);
+    }
+    
+    this->programEntries[this->numProgramEntries].mask = mask;
+    this->programEntries[this->numProgramEntries].program = glProg;
+    return this->numProgramEntries++;
+}
+
+//------------------------------------------------------------------------------
+void
+glProgramBundle::bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation) {
+    o_assert_range(progIndex, this->numProgramEntries);
+    o_assert_range(slotIndex, MaxNumUniforms);
+    this->programEntries[progIndex].uniformMapping[slotIndex] = glUniformLocation;
+}
+
+//------------------------------------------------------------------------------
+void
+glProgramBundle::bindStandardUniform(int32 progIndex, StandardUniform::Code stdUniform, GLint glUniformLocation) {
+    o_assert_range(progIndex, this->numProgramEntries);
+    o_assert_range(stdUniform, StandardUniform::NumStandardUniforms);
+    this->programEntries[progIndex].stdUniformMapping[stdUniform] = glUniformLocation;
+}
+
+//------------------------------------------------------------------------------
+int32
+glProgramBundle::getNumPrograms() const {
+    return this->numProgramEntries;
+}
+
+//------------------------------------------------------------------------------
+GLuint
+glProgramBundle::getProgramAtIndex(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].program;
+}
+
+} // namespace Render
+} // namespace Oryol

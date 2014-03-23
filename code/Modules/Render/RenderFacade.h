@@ -19,6 +19,7 @@
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/resourceMgr.h"
+#include "Render/Core/renderMgr.h"
 #include "Render/Setup/MeshSetup.h"
 #include "glm/fwd.hpp"
 
@@ -64,7 +65,7 @@ public:
     /// discard a resource (decrement use-count, free resource if use-count is 0)
     void DiscardResource(const Resource::Id& resId);
     /// get the loading state of a resource
-    Resource::State::Code QueryResourceState(const Resource::Id& resId) const;
+    Resource::State::Code QueryResourceState(const Resource::Id& resId);
 
     /// get one of the transform matrices
     const glm::mat4& QueryTransform(TransformType::Code transformType) const;
@@ -85,7 +86,7 @@ public:
     /// apply mesh to use for rendering
     void ApplyMesh(const Resource::Id& resId);
     /// apply program to use for rendering
-    void ApplyProgram(const Resource::Id& resId, uint32 selector=0);
+    void ApplyProgram(const Resource::Id& resId, uint32 selectionMask=0);
     /// apply a render state block
     void ApplyStateBlock(const Resource::Id& resId);
     /// apply a shader constant block
@@ -113,6 +114,7 @@ public:
 private:
     RenderSetup renderSetup;
     displayMgr displayManager;
+    renderMgr renderManager;
     transformMgr transformManager;
     stateWrapper stateWrapper;
     resourceMgr resourceManager;

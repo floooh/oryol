@@ -58,7 +58,8 @@ curViewPortWidth(-1),
 curViewPortHeight(-1),
 curVertexBuffer(0),
 curIndexBuffer(0),
-curVertexArrayObject(0)
+curVertexArrayObject(0),
+curProgram(0)
 {
     for (int32 i = 0; i < 2; i++) {
         this->curStencilFunc[i] = GL_ALWAYS;
@@ -757,6 +758,24 @@ glStateWrapper::glBindVertexArrayObject(GLuint vao) {
         this->curVertexBuffer = 0;
         this->curVertexArrayObject = vao;
         glFunc::glBindVertexArray(vao);
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::InvalidateProgramState() {
+    ::glUseProgram(0);
+    ORYOL_GL_CHECK_ERROR();
+    this->curProgram = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::glUseProgram(GLuint prog) {
+    if (prog != this->curProgram) {
+        this->curProgram = prog;
+        ::glUseProgram(prog);
         ORYOL_GL_CHECK_ERROR();
     }
 }

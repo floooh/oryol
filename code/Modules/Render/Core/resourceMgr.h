@@ -8,10 +8,9 @@
     rendering resources.
 */
 #include "Render/Setup/RenderSetup.h"
-#include "Render/Core/meshFactory.h"
-#include "Render/Core/mesh.h"
-#include "Render/Core/shaderFactory.h"
-#include "Render/Core/shader.h"
+#include "Render/Core/meshPool.h"
+#include "Render/Core/shaderPool.h"
+#include "Render/Core/programBundlePool.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
 
@@ -48,7 +47,12 @@ public:
     /// discard a resource (decrement use-count, free resource if use-count is 0)
     void DiscardResource(const Resource::Id& resId);
     /// get the loading state of a resource
-    Resource::State::Code QueryResourceState(const Resource::Id& resId) const;
+    Resource::State::Code QueryResourceState(const Resource::Id& resId);
+    
+    /// lookup mesh object
+    mesh* LookupMesh(const Resource::Id& resId);
+    /// lookup program bundle object
+    programBundle* LookupProgramBundle(const Resource::Id& resId);
 
 private:
     bool isValid;
@@ -57,10 +61,26 @@ private:
     Core::Array<Resource::Id> removedIds;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
-    Resource::Pool<mesh, MeshSetup, class meshFactory> meshPool;
-    Resource::Pool<shader, ShaderSetup, class shaderFactory> shaderPool;
+    class programBundleFactory programBundleFactory;
+    class meshPool meshPool;
+    class shaderPool shaderPool;
+    class programBundlePool programBundlePool;
 };
-    
+
+//------------------------------------------------------------------------------
+inline mesh*
+resourceMgr::LookupMesh(const Resource::Id& resId) {
+    o_assert_dbg(this->isValid);
+    return this->meshPool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline programBundle*
+resourceMgr::LookupProgramBundle(const Resource::Id& resId) {
+    o_assert_dbg(this->isValid);
+    return this->programBundlePool.Lookup(resId);
+}
+
 } // namespace Render
 } // namespace Oryol
  

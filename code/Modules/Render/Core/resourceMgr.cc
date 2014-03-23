@@ -42,6 +42,8 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper) {
     this->meshPool.Setup(&this->meshFactory, setup.GetPoolSize(ResourceType::Mesh), setup.GetThrottling(ResourceType::Mesh), 'MESH');
     this->shaderFactory.Setup();
     this->shaderPool.Setup(&this->shaderFactory, setup.GetPoolSize(ResourceType::Shader), 0, 'SHDR');
+    this->programBundleFactory.Setup(this->stateWrapper, &this->shaderPool);
+    this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
 }
@@ -52,6 +54,8 @@ resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     this->resourceRegistry.Discard();
+    this->programBundlePool.Discard();
+    this->programBundleFactory.Discard();
     this->shaderPool.Discard();
     this->shaderFactory.Discard();
     this->meshPool.Discard();
@@ -69,6 +73,8 @@ resourceMgr::IsValid() const {
 void
 resourceMgr::Update() {
     o_assert(this->isValid);
+    
+    // only call Update on pools which support asynchronous resource loading
     this->meshPool.Update();
 }
 
@@ -77,7 +83,7 @@ template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup) {
     o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
+    Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Mesh);
         return resId;
@@ -109,7 +115,7 @@ template<> Id
 resourceMgr::CreateResource(const ShaderSetup& setup) {
     o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
+    Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Shader);
         return resId;
@@ -118,6 +124,32 @@ resourceMgr::CreateResource(const ShaderSetup& setup) {
         resId = this->shaderPool.AllocId();
         this->resourceRegistry.AddResource(loc, resId);
         this->shaderPool.Assign(resId, setup);
+        return resId;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<> Id
+resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
+    o_assert(this->isValid);
+    const Locator& loc = setup.GetLocator();
+    Id resId = this->resourceRegistry.LookupResource(loc);
+    if (resId.IsValid()) {
+        o_assert(resId.Type() == ResourceType::ProgramBundle);
+        return resId;
+    }
+    else {
+        resId = this->programBundlePool.AllocId();
+        // add vertex/fragment shaders as dependencies
+        Array<Id> deps;
+        const int32 numProgs = setup.GetNumPrograms();
+        deps.Reserve(numProgs * 2);
+        for (int32 i = 0; i < setup.GetNumPrograms(); i++) {
+            deps.AddBack(setup.GetVertexShader(i));
+            deps.AddBack(setup.GetFragmentShader(i));
+        }
+        this->resourceRegistry.AddResource(loc, resId, deps);
+        this->programBundlePool.Assign(resId, setup);
         return resId;
     }
 }
@@ -147,7 +179,7 @@ resourceMgr::DiscardResource(const Id& resId) {
                     this->shaderPool.Unassign(resId);
                     break;
                 case ResourceType::ProgramBundle:
-                    o_assert2(false, "FIXME!!!\n");
+                    this->programBundlePool.Unassign(resId);
                     break;
                 case ResourceType::StateBlock:
                     o_assert2(false, "FIXME!!!\n");
@@ -165,7 +197,7 @@ resourceMgr::DiscardResource(const Id& resId) {
 
 //------------------------------------------------------------------------------
 State::Code
-resourceMgr::QueryResourceState(const Id& resId) const {
+resourceMgr::QueryResourceState(const Id& resId) {
     o_assert(this->isValid);
     switch (resId.Type()) {
         case ResourceType::Texture:
@@ -177,8 +209,7 @@ resourceMgr::QueryResourceState(const Id& resId) const {
         case ResourceType::Shader:
             return this->shaderPool.QueryState(resId);
         case ResourceType::ProgramBundle:
-            o_assert2(false, "FIXME!!!\n");
-            break;
+            return this->programBundlePool.QueryState(resId);
         case ResourceType::StateBlock:
             o_assert2(false, "FIXME!!!\n");
             break;

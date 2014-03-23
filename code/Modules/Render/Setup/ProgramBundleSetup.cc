@@ -1,17 +1,28 @@
 //------------------------------------------------------------------------------
-//  ProgramSetup.cc
+//  ProgramBundleSetup.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "ProgramSetup.h"
+#include "ProgramBundleSetup.h"
+#include "Render/Types/ResourceType.h"
 
 namespace Oryol {
 namespace Render {
 
 using namespace Core;
+using namespace Resource;
     
 //------------------------------------------------------------------------------
-ProgramSetup::ProgramSetup() :
-numCodeEntries(0),
+ProgramBundleSetup::ProgramBundleSetup() :
+numProgramEntries(0),
+numUniformEntries(0),
+numStdUniformEntries(0) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+ProgramBundleSetup::ProgramBundleSetup(const Locator& locator) :
+loc(locator),
+numProgramEntries(0),
 numUniformEntries(0),
 numStdUniformEntries(0) {
     // empty
@@ -19,38 +30,111 @@ numStdUniformEntries(0) {
 
 //------------------------------------------------------------------------------
 void
-ProgramSetup::AddCode(uint32 mask, const String& vsSource, const String& fsSource) {
-    o_assert(this->numCodeEntries < MaxNumCodeEntries);
-    o_assert(vsSource.IsValid());
-    o_assert(fsSource.IsValid());
+ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
+    o_assert(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert(vs.IsValid() && vs.Type() == ResourceType::Shader);
+    o_assert(fs.IsValid() && fs.Type() == ResourceType::Shader);
     
-    codeEntry& entry = this->codeEntries[this->numCodeEntries++];
+    programEntry& entry = this->programEntries[this->numProgramEntries++];
     entry.mask = mask;
-    entry.vsSource = vsSource;
-    entry.fsSource = fsSource;
+    entry.vertexShader = vs;
+    entry.fragmentShader = fs;
 }
 
 //------------------------------------------------------------------------------
 void
-ProgramSetup::AddUniform(const String& uniformName, uint32 slotIndex) {
+ProgramBundleSetup::AddUniform(const String& uniformName, uint32 slotIndex) {
     o_assert(this->numUniformEntries < MaxNumUniformEntries);
     o_assert(uniformName.IsValid());
 
-    uniformEntry& entry = this->uniformEntries[this->numUniformEntries];
+    uniformEntry& entry = this->uniformEntries[this->numUniformEntries++];
     entry.uniformName = uniformName;
     entry.slotIndex = slotIndex;
 }
 
 //------------------------------------------------------------------------------
 void
-ProgramSetup::AddStandardUniform(const String& uniformName, const StandardUniform::Code stdUniform) {
+ProgramBundleSetup::AddStandardUniform(const String& uniformName, const StandardUniform::Code stdUniform) {
     o_assert(this->numStdUniformEntries < MaxNumStdUniformEntries);
     o_assert(uniformName.IsValid());
     o_assert(stdUniform < StandardUniform::NumStandardUniforms);
 
-    stdUniformEntry& entry = this->stdUniformEntries[this->numStdUniformEntries];
+    stdUniformEntry& entry = this->stdUniformEntries[this->numStdUniformEntries++];
     entry.uniformName = uniformName;
     entry.stdUniform = stdUniform;
+}
+
+//------------------------------------------------------------------------------
+const Locator&
+ProgramBundleSetup::GetLocator() const {
+    return this->loc;
+}
+
+//------------------------------------------------------------------------------
+int32
+ProgramBundleSetup::GetNumPrograms() const {
+    return this->numProgramEntries;
+}
+
+//------------------------------------------------------------------------------
+uint32
+ProgramBundleSetup::GetMask(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].mask;
+}
+
+//------------------------------------------------------------------------------
+const Id&
+ProgramBundleSetup::GetVertexShader(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].vertexShader;
+}
+
+//------------------------------------------------------------------------------
+const Id&
+ProgramBundleSetup::GetFragmentShader(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].fragmentShader;
+}
+
+//------------------------------------------------------------------------------
+int32
+ProgramBundleSetup::GetNumUniforms() const {
+    return this->numUniformEntries;
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::GetUniformName(int32 uniformIndex) const {
+    o_assert_range(uniformIndex, this->numUniformEntries);
+    return this->uniformEntries[uniformIndex].uniformName;
+}
+
+//------------------------------------------------------------------------------
+uint32
+ProgramBundleSetup::GetUniformSlot(int32 uniformIndex) const {
+    o_assert_range(uniformIndex, this->numUniformEntries);
+    return this->uniformEntries[uniformIndex].slotIndex;
+}
+
+//------------------------------------------------------------------------------
+int32
+ProgramBundleSetup::GetNumStandardUniforms() const {
+    return this->numStdUniformEntries;
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::GetStandardUniformName(int32 stdUniformIndex) const {
+    o_assert_range(stdUniformIndex, this->numStdUniformEntries);
+    return this->stdUniformEntries[stdUniformIndex].uniformName;
+}
+
+//------------------------------------------------------------------------------
+StandardUniform::Code
+ProgramBundleSetup::GetStandardUniform(int32 stdUniformIndex) const {
+    o_assert_range(stdUniformIndex, this->numStdUniformEntries);
+    return this->stdUniformEntries[stdUniformIndex].stdUniform;
 }
 
 } // namespace Render

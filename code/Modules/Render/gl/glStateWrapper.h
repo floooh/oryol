@@ -13,6 +13,7 @@
 #include "Render/Types/State.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
+#include "Render/Core/programBundle.h"
 
 namespace Oryol {
 namespace Render {
@@ -70,6 +71,11 @@ public:
     void glBindIndexBuffer(GLuint ib);
     /// bind vertex array object
     void glBindVertexArrayObject(GLuint vao);
+    
+    /// invalidate program state
+    void InvalidateProgramState();
+    /// invoke glUseProgram (if changed)
+    void glUseProgram(GLuint prog);
     
 private:
     /// a state value union wrapper
@@ -258,6 +264,7 @@ private:
     GLuint curVertexBuffer;
     GLuint curIndexBuffer;
     GLuint curVertexArrayObject;
+    GLuint curProgram;
 };
 
 //------------------------------------------------------------------------------
