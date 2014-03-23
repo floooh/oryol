@@ -112,6 +112,7 @@ public:
     void DrawFullscreenQuad();
 
 private:
+    bool isValid;
     RenderSetup renderSetup;
     displayMgr displayManager;
     renderMgr renderManager;
@@ -147,14 +148,14 @@ RenderFacade::QueryTransform(TransformType::Code type) const {
 //------------------------------------------------------------------------------
 template<class SETUP> Resource::Id
 RenderFacade::CreateResource(const SETUP& setup) {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->isValid);
     return this->resourceManager.CreateResource(setup);
 }
 
 //------------------------------------------------------------------------------
 template<class SETUP> Resource::Id
 RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
-    o_assert(this->IsValid());
+    o_assert_dbg(this->isValid);
     return this->resourceManager.CreateResource(setup, data);
 }
 
