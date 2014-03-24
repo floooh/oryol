@@ -6,6 +6,7 @@
     Setup and discard the Core module.
 */
 #include "Core/Types.h"
+#include "Core/CoreFacade.h"
 
 namespace Oryol {
 namespace Core {

@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Module.h"
-#include "Core/CoreFacade.h"
 #include "String/stringAtomTable.h"
 
 namespace Oryol {
