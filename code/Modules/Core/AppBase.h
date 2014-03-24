@@ -30,12 +30,14 @@
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
+#include "Core/Args.h"
+#include "Core/String/WideString.h"
+#include <functional>
 
 namespace Oryol {
 namespace Core {
 
 class AppBase {
-    OryolLocalSingletonDecl(AppBase);
 public:
     /// constructor
     AppBase();
@@ -44,18 +46,20 @@ public:
     
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();
-    /// set the quit-requested flag
-    void SetQuitRequested();
-    /// test the quit-requested flag
-    bool IsQuitRequested() const;
-    
+
 protected:
-    /// the on-frame-callback
-    virtual void OnFrame();
+    /// set the frame callback
+    void setFrameCallback(std::function<void(void)> cb);
+    /// set quit-requested flag
+    void setQuitRequested();
+    /// return true if quit requested flag is set
+    bool isQuitRequested() const;
+    /// static frame function
+    static void onFrame();
     
-private:
-    /// internal static on-frame helper method
-    static void staticOnFrame();
+    static AppBase* self;
+    std::function<void(void)> frameCallback;
+    bool quitRequested;
 };
 
 #if ORYOL_WINDOWS
@@ -63,10 +67,11 @@ private:
 void OryolMain(); \
 const char* const OryolAppName = name; \
 const char* const OryolAppVersion = ver; \
+Oryol::Core::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
-    Core::WideString cmdLine = ::GetCommandLineW(); \
-    Core::Args args(cmdLine); \
-    OryolMain(args); \
+    Oryol::Core::WideString cmdLine = ::GetCommandLineW(); \
+    OryolArgs = Oryol::Core::Args(cmdLine); \
+    OryolMain(); \
     return 0; \
 }
 #else
@@ -74,9 +79,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
 void OryolMain(); \
 const char* const OryolAppName = name; \
 const char* const OryolAppVersion = ver; \
+Oryol::Core::Args OryolArgs; \
 int main(int argc, const char** argv) { \
-    Core::Args args(argc, argv); \
-    OryolMain(args); \
+    OryolArgs = Oryol::Core::Args(argc, argv); \
+    OryolMain(); \
     return 0; \
 }
 #endif
