@@ -31,14 +31,13 @@ OryolMain() {
 //------------------------------------------------------------------------------
 AppState::Code
 OryolInit() {
-    // setup subsystems
+    // setup modules
     Core::Module::Setup();
     IO::Module::Setup();
     Render::Module::Setup();
     
-    // setup render system
+    // setup rendering system
     RenderFacade::Instance()->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
-    
     return AppState::Running;
 }
 
@@ -48,30 +47,23 @@ OryolRunning() {
     CoreFacade* coreFacade = CoreFacade::Instance();
     RenderFacade* renderFacade = RenderFacade::Instance();
     
-    static float r = 0.0f;
+    static float r = 0.0f, g = 0.0f, b = 0.0f;
     coreFacade->RunLoop()->Run();
     if (renderFacade->BeginFrame()) {
-        renderFacade->ApplyState(Render::State::ClearColor, r, 0.0f, 0.0f, 1.0f);
-        r += 0.01f;
-        if (r >= 1.0f) {
-            r = 0.0f;
-        }
+        renderFacade->ApplyState(Render::State::ClearColor, r, g, b, 1.0f);
         renderFacade->Clear(true, false, false);
         renderFacade->EndFrame();
+        if ((r += 0.01f) > 1.0f) r = 0.0f;
+        if ((g += 0.005f) > 1.0f) g = 0.0f;
+        if ((b += 0.0025f) > 1.0f) b = 0.0f;
     }
-    if (renderFacade->QuitRequested()) {
-        return AppState::Cleanup;
-    }
-    else {
-        return AppState::Running;
-    }
+    return renderFacade->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 OryolCleanup() {
     RenderFacade::Instance()->Discard();
-
     Render::Module::Discard();
     IO::Module::Discard();
     Core::Module::Discard();
