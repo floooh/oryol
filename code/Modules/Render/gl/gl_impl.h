@@ -40,5 +40,5 @@
 #if ORYOL_DEBUG
 #define ORYOL_GL_CHECK_ERROR() o_assert(glGetError() == GL_NO_ERROR)
 #else
-
+#define ORYOL_GL_CHECK_ERROR() ((void)0)
 #endif

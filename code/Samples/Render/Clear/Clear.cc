@@ -48,9 +48,15 @@ OryolRunning() {
     CoreFacade* coreFacade = CoreFacade::Instance();
     RenderFacade* renderFacade = RenderFacade::Instance();
     
+    static float r = 0.0f;
     coreFacade->RunLoop()->Run();
     if (renderFacade->BeginFrame()) {
-        // FIXME
+        renderFacade->ApplyState(Render::State::ClearColor, r, 0.0f, 0.0f, 1.0f);
+        r += 0.01f;
+        if (r >= 1.0f) {
+            r = 0.0f;
+        }
+        renderFacade->Clear(true, false, false);
         renderFacade->EndFrame();
     }
     if (renderFacade->QuitRequested()) {

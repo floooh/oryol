@@ -173,5 +173,11 @@ RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) 
     this->renderManager.ApplyVariableArray(index, values, numValues);
 }
 
+//------------------------------------------------------------------------------
+template<> void
+RenderFacade::ApplyState(State::Code state, float v0, float v1, float v2, float v3) {
+    this->stateWrapper.ApplyState(state, v0, v1, v2, v3);
+}
+
 } // namespace Render
 } // namespace Oryol
