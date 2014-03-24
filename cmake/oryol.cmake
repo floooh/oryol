@@ -9,10 +9,11 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
 #-------------------------------------------------------------------------------
-option(ORYOL_UNITTESTS "Enable unit tests" OFF)
-option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after building" ON)
+option(ORYOL_UNITTESTS "Enable unit tests" ON)
+option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after building" OFF)
 option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
 option(ORYOL_ALLOCATOR_DEBUG "Enable allocator debugging code (slow)" OFF)
+option(ORYOL_SAMPLES "Compile sample programs" ON)
 
 # turn some dependent options on/off
 if (ORYOL_UNITTESTS)
@@ -222,6 +223,9 @@ endmacro()
 #   End defining an application.
 #
 macro(oryol_end_app)
+
+    # add standard frameworks and libs
+    oryol_frameworks_osx(Foundation IOKit OpenGL Cocoa CoreVideo)    
 
     # setup dependency tracker variables for this module, executable
     # targets use this to resolve their dependencies
