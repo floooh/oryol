@@ -29,7 +29,10 @@ oryol_group(Modules)
 oryol_add_subdirectory(code/Modules)
 oryol_group(Ext)
 oryol_add_subdirectory(code/Ext)
-
+if (ORYOL_SAMPLES)
+    oryol_group(Samples)
+    oryol_add_subdirectory(code/Samples)
+endif()
 
 
 
