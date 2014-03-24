@@ -18,7 +18,6 @@ oryol_deps(Resource Messaging IO Core)
 oryol_end_module()
 
 oryol_begin_unittest(Render)
-oryol_frameworks_osx(Foundation IOKit OpenGL Cocoa CoreVideo)
 oryol_sources(UnitTests)
 oryol_deps(Render)
 oryol_end_unittest()
