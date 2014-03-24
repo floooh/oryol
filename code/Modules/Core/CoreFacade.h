@@ -24,8 +24,6 @@ public:
     
     /// get pointer to the per-thread runloop
     class RunLoop* RunLoop();
-    /// trigger the thread runloop (usually called once per-frame)
-    void DoRun();
 
     /// private: called when a thread is entered
     void enterThread();
