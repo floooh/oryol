@@ -77,9 +77,11 @@ glShaderFactory::SetupResource(shader& shd) {
         strBuilder.Append("#define mediump\n");
         strBuilder.Append("#define highp\n");
         if (GL_VERTEX_SHADER == glShaderType) {
-            strBuilder.Append("#define VERTEX_COMPONENT(type,name) in type name\n");
+            strBuilder.Append("#define VS_INPUT(type,name) in type name\n");
+            strBuilder.Append("#define VS_OUTPUT(type,name) out type name\n");
         }
         if (GL_FRAGMENT_SHADER == glShaderType) {
+            strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
             strBuilder.Append("out vec4 FragmentColor;\n");
         }
     #elif ORYOL_OPENGLES2
@@ -87,10 +89,12 @@ glShaderFactory::SetupResource(shader& shd) {
         strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("precision mediump float;\n");
+            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
             strBuilder.Append("#define FragmentColor gl_FragColor\n");
         }
         if (GL_VERTEX_SHADER == glShaderType) {
-            strBuilder.Append("#define VERTEX_COMPONENT(type,name) attribute type name");
+            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
+            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
         }
     #endif
     
