@@ -18,6 +18,7 @@ namespace Oryol {
 namespace Render {
 
 class stateWrapper;
+class meshBaseLoader;
     
 class resourceMgr {
 public:
@@ -27,7 +28,7 @@ public:
     ~resourceMgr();
     
     /// attach a resource loader
-    template<class LOADER> void AttachLoader(const Core::Ptr<LOADER>& loader);
+    void AttachLoader(const Core::Ptr<meshLoaderBase>& loader);
     
     /// setup the resource manager
     void Setup(const RenderSetup& setup, stateWrapper* stWrapper);

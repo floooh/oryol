@@ -24,11 +24,11 @@ resourceMgr::~resourceMgr() {
 }
 
 //------------------------------------------------------------------------------
-template<> void
-resourceMgr::AttachLoader(const Ptr<meshLoaderBase>& loader) {
+void
+resourceMgr::AttachLoader(const Core::Ptr<meshLoaderBase>& loader) {
     this->meshFactory.AttachLoader(loader);
 }
-
+    
 //------------------------------------------------------------------------------
 void
 resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper) {
@@ -173,13 +173,13 @@ resourceMgr::DiscardResource(const Id& resId) {
                     o_assert2(false, "FIXME!!!\n");
                     break;
                 case ResourceType::Mesh:
-                    this->meshPool.Unassign(resId);
+                    this->meshPool.Unassign(removeId);
                     break;
                 case ResourceType::Shader:
-                    this->shaderPool.Unassign(resId);
+                    this->shaderPool.Unassign(removeId);
                     break;
                 case ResourceType::ProgramBundle:
-                    this->programBundlePool.Unassign(resId);
+                    this->programBundlePool.Unassign(removeId);
                     break;
                 case ResourceType::StateBlock:
                     o_assert2(false, "FIXME!!!\n");
