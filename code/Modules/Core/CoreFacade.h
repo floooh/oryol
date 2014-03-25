@@ -25,10 +25,10 @@ public:
     /// get pointer to the per-thread runloop
     class RunLoop* RunLoop();
 
-    /// private: called when a thread is entered
-    void enterThread();
-    /// private: called before a thread is left
-    void leaveThread();
+    /// called when a thread is entered
+    static void EnterThread();
+    /// called before a thread is left
+    static void LeaveThread();
 
 private:
     /// return true if main thread

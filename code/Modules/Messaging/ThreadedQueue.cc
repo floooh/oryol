@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ThreadedQueue.h"
-#include "Core/Module.h"
+#include "Core/CoreFacade.h"
 
 namespace Oryol {
 namespace Messaging {
@@ -190,7 +190,7 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
 */
 void
 ThreadedQueue::onThreadEnter() {
-    Core::Module::EnterThread();
+    Core::CoreFacade::EnterThread();
 }
 
 //------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ ThreadedQueue::onTick() {
 */
 void
 ThreadedQueue::onThreadLeave() {
-    Core::Module::LeaveThread();
+    Core::CoreFacade::LeaveThread();
 }
 
 } // namespace Messaging

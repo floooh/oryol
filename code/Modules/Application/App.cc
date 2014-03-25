@@ -12,46 +12,90 @@ using namespace std::placeholders;
 //------------------------------------------------------------------------------
 App::App() :
 curState(AppState::Construct) {
-    this->setFrameCallback(std::bind(&App::dispatch, this));
+    // empty
 }
 
 //------------------------------------------------------------------------------
 App::~App() {
-    // call the destruct state if set
-    if (this->callbacks[AppState::Destroy]) {
-        this->callbacks[AppState::Destroy]();
-    }
+    // empty
 }
 
 //------------------------------------------------------------------------------
 void
-App::AddCallback(AppState::Code state, AppCallback cb) {
-    o_assert(cb);
-    o_assert(state < AppState::NumAppStates);
-    this->callbacks[state] = cb;
-}
-
-//------------------------------------------------------------------------------
-void
-App::dispatch() {
+App::onFrame() {
     // if the current state is the destroy state, set
     if (AppState::Destroy == this->curState) {
         this->setQuitRequested();
     }
-    // skip unset state callbacks
-    while ((this->curState < AppState::NumAppStates) && !this->callbacks[this->curState]) {
-        int stateNum = (int) this->curState;
-        stateNum++;
-        this->curState = (AppState::Code) stateNum;
+    switch (this->curState) {
+        case AppState::Construct:
+            this->curState = this->OnConstruct();
+            break;
+        case AppState::EnqueuePreload:
+            this->curState = this->OnEnqueuePreload();
+            break;
+        case AppState::Preloading:
+            this->curState = this->OnPreloading();
+            break;
+        case AppState::Init:
+            this->curState = this->OnInit();
+            break;
+        case AppState::Running:
+            this->curState = this->OnRunning();
+            break;
+        case AppState::Cleanup:
+            this->curState = this->OnCleanup();
+            break;
+        case AppState::Destroy:
+            this->curState = this->OnDestroy();
+            break;
+        default:
+            // can't happen...
+            o_assert(false);
+            break;
     }
-    // call state callback
-    if (this->curState < AppState::NumAppStates) {
-        o_assert(this->callbacks[this->curState]);
-        this->curState = this->callbacks[this->curState]();
-    }
-    else {
-        this->setQuitRequested();
-    }
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnConstruct() {
+    return AppState::EnqueuePreload;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnEnqueuePreload() {
+    return AppState::Preloading;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnPreloading() {
+    return AppState::Init;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnInit() {
+    return AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnRunning() {
+    return AppState::Cleanup;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnCleanup() {
+    return AppState::Destroy;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+App::OnDestroy() {
+    return AppState::InvalidAppState;
 }
 
 } // namespace Application

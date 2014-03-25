@@ -19,15 +19,27 @@ public:
     App();
     /// destructor
     ~App();
-    /// add a callback
-    void AddCallback(AppState::Code state, AppCallback callback);
+
+    /// on construction callback
+    virtual AppState::Code OnConstruct();
+    /// on enqueue preload files frame method
+    virtual AppState::Code OnEnqueuePreload();
+    /// on preloading frame method
+    virtual AppState::Code OnPreloading();
+    /// on init frame method
+    virtual AppState::Code OnInit();
+    /// on running frame method
+    virtual AppState::Code OnRunning();
+    /// on cleanup frame method
+    virtual AppState::Code OnCleanup();
+    /// on destroy frame method
+    virtual AppState::Code OnDestroy();
 
 protected:
     /// per-frame dispatch method, which calls the on-state callbacks
-    void dispatch();
+    virtual void onFrame();
 
     AppState::Code curState;
-    AppCallback callbacks[AppState::NumAppStates];    
 };
     
 } // namespace Application

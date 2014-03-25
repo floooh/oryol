@@ -37,6 +37,8 @@
 namespace Oryol {
 namespace Core {
 
+class CoreFacade;
+
 class AppBase {
 public:
     /// constructor
@@ -48,17 +50,17 @@ public:
     void StartMainLoop();
 
 protected:
-    /// set the frame callback
-    void setFrameCallback(std::function<void(void)> cb);
+    /// static frame function
+    static void staticOnFrame();
+    /// virtual onFrame method to be overwritten by subclass
+    virtual void onFrame();
     /// set quit-requested flag
     void setQuitRequested();
     /// return true if quit requested flag is set
     bool isQuitRequested() const;
-    /// static frame function
-    static void onFrame();
     
     static AppBase* self;
-    std::function<void(void)> frameCallback;
+    CoreFacade* coreFacade;
     bool quitRequested;
 };
 

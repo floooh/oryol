@@ -3,9 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Application/App.h"
-#include "Core/Module.h"
-#include "IO/Module.h"
-#include "Render/Module.h"
+#include "Render/RenderFacade.h"
 
 OryolApp("Clear", "1.0");
 
@@ -14,58 +12,56 @@ using namespace Oryol::Application;
 using namespace Oryol::Render;
 using namespace Oryol::Core;
 
-AppState::Code OryolInit();
-AppState::Code OryolRunning();
-AppState::Code OryolCleanup();
+class ClearApp : public Application::App {
+public:
+    /// on init frame method
+    virtual AppState::Code OnInit();
+    /// on running frame method
+    virtual AppState::Code OnRunning();
+    /// on cleanup frame method
+    virtual AppState::Code OnCleanup();
+    
+private:
+    RenderFacade* renderFacade;
+    float red, green, blue;
+};
 
 //------------------------------------------------------------------------------
 void
 OryolMain() {
-    App app;
-    app.AddCallback(AppState::Init, &OryolInit);
-    app.AddCallback(AppState::Running, &OryolRunning);
-    app.AddCallback(AppState::Cleanup, &OryolCleanup);
+    ClearApp app;
     app.StartMainLoop();
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
-OryolInit() {
-    // setup modules
-    Core::Module::Setup();
-    IO::Module::Setup();
-    Render::Module::Setup();
-    
+ClearApp::OnInit() {
     // setup rendering system
-    RenderFacade::Instance()->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    this->renderFacade = RenderFacade::CreateSingleton();
+    this->renderFacade->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    this->red = this->green = this->blue = 0.0f;
     return AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
-OryolRunning() {
-    CoreFacade* coreFacade = CoreFacade::Instance();
-    RenderFacade* renderFacade = RenderFacade::Instance();
-    
-    static float r = 0.0f, g = 0.0f, b = 0.0f;
-    coreFacade->RunLoop()->Run();
-    if (renderFacade->BeginFrame()) {
-        renderFacade->ApplyState(Render::State::ClearColor, r, g, b, 1.0f);
-        renderFacade->Clear(true, false, false);
-        renderFacade->EndFrame();
-        if ((r += 0.01f) > 1.0f) r = 0.0f;
-        if ((g += 0.005f) > 1.0f) g = 0.0f;
-        if ((b += 0.0025f) > 1.0f) b = 0.0f;
+ClearApp::OnRunning() {
+    if (this->renderFacade->BeginFrame()) {
+        this->renderFacade->ApplyState(Render::State::ClearColor, this->red, this->green, this->blue, 1.0f);
+        this->renderFacade->Clear(true, false, false);
+        this->renderFacade->EndFrame();
+        if ((this->red += 0.01f) > 1.0f) this->red = 0.0f;
+        if ((this->green += 0.005f) > 1.0f) this->green = 0.0f;
+        if ((this->blue += 0.0025f) > 1.0f) this->blue = 0.0f;
     }
     return renderFacade->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
-OryolCleanup() {
-    RenderFacade::Instance()->Discard();
-    Render::Module::Discard();
-    IO::Module::Discard();
-    Core::Module::Discard();
+ClearApp::OnCleanup() {
+    this->renderFacade->Discard();
+    this->renderFacade = nullptr;
+    RenderFacade::DestroySingleton();
     return AppState::Destroy;
 }
