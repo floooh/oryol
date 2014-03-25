@@ -70,12 +70,6 @@ RenderFacade::QuitRequested() const {
 }
 
 //------------------------------------------------------------------------------
-template<class LOADER> void
-RenderFacade::AttachLoader(const Ptr<LOADER>& loader) {
-    this->resourceManager.AttachLoader(loader);
-}
-
-//------------------------------------------------------------------------------
 void
 RenderFacade::AttachEventHandler(const Ptr<Port>& handler) {
     o_assert_dbg(handler.isValid());

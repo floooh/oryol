@@ -45,7 +45,7 @@ public:
     /// test if the window system wants the application to quit
     bool QuitRequested() const;
     /// attach a resource loader
-    template<class LOADER> void AttachLoader(const Core::Ptr<LOADER>& loader);
+    template<class LOADER> void AttachLoader(LOADER* loader);
     /// attach a display event handler
     void AttachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     /// detach a display event handler
@@ -177,6 +177,12 @@ RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) 
 template<> void
 RenderFacade::ApplyState(State::Code state, float v0, float v1, float v2, float v3) {
     this->stateWrapper.ApplyState(state, v0, v1, v2, v3);
+}
+
+//------------------------------------------------------------------------------
+template<class LOADER> void
+RenderFacade::AttachLoader(LOADER* loader) {
+    this->resourceManager.AttachLoader(loader);
 }
 
 } // namespace Render
