@@ -10,25 +10,23 @@ OryolApp("Clear", "1.0");
 using namespace Oryol;
 using namespace Oryol::Application;
 using namespace Oryol::Render;
-using namespace Oryol::Core;
 
-class ClearApp : public Application::App {
+// derived application class
+class ClearApp : public App {
 public:
-    /// on init frame method
     virtual AppState::Code OnInit();
-    /// on running frame method
     virtual AppState::Code OnRunning();
-    /// on cleanup frame method
     virtual AppState::Code OnCleanup();
     
 private:
-    RenderFacade* renderFacade;
+    RenderFacade* render;
     float red, green, blue;
 };
 
 //------------------------------------------------------------------------------
 void
 OryolMain() {
+    // execution starts here, create our app and start the main loop
     ClearApp app;
     app.StartMainLoop();
 }
@@ -37,8 +35,8 @@ OryolMain() {
 AppState::Code
 ClearApp::OnInit() {
     // setup rendering system
-    this->renderFacade = RenderFacade::CreateSingleton();
-    this->renderFacade->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    this->render = RenderFacade::CreateSingleton();
+    this->render->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
     this->red = this->green = this->blue = 0.0f;
     return AppState::Running;
 }
@@ -46,22 +44,26 @@ ClearApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnRunning() {
-    if (this->renderFacade->BeginFrame()) {
-        this->renderFacade->ApplyState(Render::State::ClearColor, this->red, this->green, this->blue, 1.0f);
-        this->renderFacade->Clear(true, false, false);
-        this->renderFacade->EndFrame();
+    // render one frame
+    if (this->render->BeginFrame()) {
+        this->render->ApplyState(Render::State::ClearColor, this->red, this->green, this->blue, 1.0f);
+        this->render->Clear(true, false, false);
+        this->render->EndFrame();
         if ((this->red += 0.01f) > 1.0f) this->red = 0.0f;
         if ((this->green += 0.005f) > 1.0f) this->green = 0.0f;
         if ((this->blue += 0.0025f) > 1.0f) this->blue = 0.0f;
     }
-    return renderFacade->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnCleanup() {
-    this->renderFacade->Discard();
-    this->renderFacade = nullptr;
+    // cleanup everything
+    this->render->Discard();
+    this->render = nullptr;
     RenderFacade::DestroySingleton();
     return AppState::Destroy;
 }
