@@ -1,3 +1,3 @@
-Generate and render a simple triangle.
+Generate and render a simple triangle mesh.
 
 
