@@ -17,7 +17,7 @@ ShapeBuilder::AddComponent(const VertexComponent& comp) {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddComponent(const VertexAttr::Code attr, VertexFormat::Code format) {
+ShapeBuilder::AddComponent(VertexAttr::Code attr, VertexFormat::Code format) {
     this->meshBuilder.AddComponent(attr, format);
 }
 

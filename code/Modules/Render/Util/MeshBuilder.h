@@ -74,7 +74,7 @@ public:
     /// add vertex component
     void AddComponent(const VertexComponent& comp);
     /// add vertex component
-    void AddComponent(const VertexAttr::Code attr, VertexFormat::Code format);
+    void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
     /// add a primitive group (at least one needed!)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// add a primitive group (at least one needed!)

@@ -18,7 +18,7 @@ public:
     /// add vertex component
     void AddComponent(const VertexComponent& comp);
     /// add vertex component
-    void AddComponent(const VertexAttr::Code attr, VertexFormat::Code format);
+    void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
     /// add a box shape
     void AddBox(const glm::mat4& transform, float32 w, float32 h, float32 d, int32 subDivs, const glm::vec4& color);
     /// add a sphere shape
