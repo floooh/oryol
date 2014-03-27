@@ -395,7 +395,7 @@ StringBuilder::findFirstOf(const char* str, int32 strLen, int32 startIndex, int3
 
 //------------------------------------------------------------------------------
 /**
- Find index of first occurance of any chacters in delim in an external string, between startIndex
+ Find index of first occurrence of any characters in delim in an external string, between startIndex
  (including) and endIndex (excluding). If endIndex is EndOfString, search until end of string.
  Returns InvalidIndex if not found.
  */
@@ -410,7 +410,7 @@ StringBuilder::FindFirstOf(const char* str, int32 startIndex, int32 endIndex, co
 
 //------------------------------------------------------------------------------
 /**
- Find index of first occurance of any chacters in delim, between startIndex
+ Find index of first occurrence of any characters in delim, between startIndex
  (including) and endIndex (excluding). If endIndex is 0, search until end of string.
  Returns InvalidIndex if not found.
  */
@@ -443,8 +443,8 @@ StringBuilder::findFirstNotOf(const char* str, int32 strLen, int32 startIndex, i
 
 //------------------------------------------------------------------------------
 /**
- Find index of first occurange of any characters NOT in delim, between startIndex
- (including) and endIndex (exluding). If endIndex is EndOfString, search until end of string.
+ Find index of first occurrence of any characters NOT in delim, between startIndex
+ (including) and endIndex (excluding). If endIndex is EndOfString, search until end of string.
  Returns InvalidIndex if not found.
  */
 int32
@@ -458,8 +458,8 @@ StringBuilder::FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex,
 
 //------------------------------------------------------------------------------
 /**
- Find index of first occurange of any characters NOT in delim, between startIndex
- (including) and endIndex (exluding). If endIndex is EndOfString, search until end of string.
+ Find index of first occurrence of any characters NOT in delim, between startIndex
+ (including) and endIndex (excluding). If endIndex is EndOfString, search until end of string.
  Returns InvalidIndex if not found.
  */
 int32
@@ -497,7 +497,7 @@ StringBuilder::findSubString(const char* str, int32 startIndex, int32 endIndex, 
 
 //------------------------------------------------------------------------------
 /**
- Find first occurance of subStr between startIndex (including) and endIndex
+ Find first occurrence of subStr between startIndex (including) and endIndex
  (excluding). If endIndex is 0, search until end of string.
  Returns InvalidIndex if not found.
  */
@@ -510,7 +510,7 @@ StringBuilder::FindSubString(const char* str, int32 startIndex, int32 endIndex, 
     
 //------------------------------------------------------------------------------
 /**
- Find first occurance of subStr between startIndex (including) and endIndex
+ Find first occurrence of subStr between startIndex (including) and endIndex
  (excluding). If endIndex is 0, search until end of string.
  Returns InvalidIndex if not found.
  */

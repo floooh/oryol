@@ -53,7 +53,7 @@ public:
     
     /// set the write cursor position (byte offset from start)
     void SetWritePosition(int32 pos);
-    /// move write cursor position relativ to current write position
+    /// move write cursor position relative to current write position
     void MoveWritePosition(int32 diff);
     /// get the write cursor position (byte offset from start)
     int32 GetWritePosition() const;
@@ -68,7 +68,7 @@ public:
     
     /// set the read cursor position (byte offset from start)
     void SetReadPosition(int32 pos);
-    /// move read cursor position relativ to current read position
+    /// move read cursor position relative to current read position
     void MoveReadPosition(int32 diff);
     /// get the read cursor position (byte offset from start)
     int32 GetReadPosition() const;
@@ -76,7 +76,7 @@ public:
     virtual int32 Read(void* ptr, int32 numBytes);
     /// map a memory area at the current read-position, DOES NOT ADVANCE READ-POS!
     virtual const uint8* MapRead(const uint8** outMaxValidPtr);
-    /// unmap previosuly mapped memory area
+    /// unmap previously mapped memory area
     virtual void UnmapRead();
     /// return true if currently locked for reading
     bool IsReadMapped() const;

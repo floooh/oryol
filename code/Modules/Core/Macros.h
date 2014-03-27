@@ -27,7 +27,7 @@ Oryol::Core::poolAllocator<TYPE> TYPE::allocator;
 #define OryolTemplClassPoolAllocImpl(TEMPLATE_TYPE, CLASS_TYPE) \
 template<class TEMPLATE_TYPE> Oryol::Core::poolAllocator<CLASS_TYPE<TEMPLATE_TYPE>> CLASS_TYPE<TEMPLATE_TYPE>::allocator;
 
-/// declare an oryol class without pool allocator (located inside class declaration)
+/// declare an Oryol class without pool allocator (located inside class declaration)
 #define OryolClassDecl(TYPE) \
 protected:\
     virtual void destroy() {\
@@ -98,7 +98,7 @@ public:\
     };\
 private:
 
-/// implementation-side macrot for thread-local singletons (located in .cc source file)
+/// implementation-side macro for thread-local singletons (located in .cc source file)
 #define OryolLocalSingletonImpl(TYPE) ORYOL_THREAD_LOCAL TYPE* TYPE::singleton = 0;
 
 /// to-string / from-string helper macros

@@ -33,7 +33,7 @@ public:
     virtual void DoWork();
     /// put a message into the port
     virtual bool Put(const Core::Ptr<Message>& msg) override;
-    /// explicitely forward queued messages
+    /// explicitly forward queued messages
     void ForwardMessages();
 
 protected:

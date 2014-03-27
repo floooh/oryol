@@ -6,7 +6,7 @@
     @see Stream
  
     ContentType describes the data type contained in a Stream. Some 
-    filesystem implementation can make use of this (for instance the
+    filesystem implementations can make use of this (for instance the
     HTTPFileSystem will use this in the Content-Type request/response
     header fields).
 */

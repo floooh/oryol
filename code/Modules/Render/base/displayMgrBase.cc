@@ -65,7 +65,7 @@ displayMgrBase::ModifyDisplay(const RenderSetup& setup) {
 //------------------------------------------------------------------------------
 /**
  This method is expected to process the platform specific window system 
- messages. This is also usally the place where input events from the
+ messages. This is also usually the place where input events from the
  host system are consumed and forwarded to the Oryol input system. The method
  is usually called at the start of a new frame, and must be overwritten 
  by platform-specific subclasses.

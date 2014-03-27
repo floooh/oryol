@@ -10,7 +10,7 @@
     bound the rendering system will update the uniform values when needed.
     
     The most important StandardUniform is the ModelViewProj matrix, but
-    there are also a couple of other useful matrices, and a continouous
+    there are also a couple of other useful matrices, and a continuous
     Timer for implementing simple animations in shaders.
     
     @see Program, ProgramSetup

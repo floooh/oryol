@@ -105,7 +105,7 @@ public:
     void InsertBulk(KeyValuePair<KEY, VALUE>&& kvp);
     /// insert element in bulk-mode (destroys sorting order)
     void InsertBulk(const KEY& key, const VALUE& value);
-    /// end bulk-mode (sorting happend here)
+    /// end bulk-mode (sorting happens here)
     void EndBulk();
     /// find the first duplicate element, or InvalidIndex if not found, this is O(N)!
     int32 FindDuplicate(int32 startIndex) const;

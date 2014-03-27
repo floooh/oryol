@@ -8,7 +8,7 @@
     the CPU. It is mainly build for convenience, less for performance, 
     so it should mainly be used to setup static, immutable geometry. For
     dynamic geometry which needs to change every frame lower level approaches
-    shouls be used (such as VertexWriter). To create pre-defined shapes
+    should be used (such as VertexWriter). To create pre-defined shapes
     such as cube, sphere or donuts, consider using the higher level 
     ShapeBuilder class which is built on top of MeshBuilder.
     

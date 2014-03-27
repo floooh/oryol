@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::VertexAttr
-    @brief vertex attribut enum (position, texcoord, ...)
+    @brief vertex attribute enum (position, texcoord, ...)
     
     The VertexAttr definitions don't have a hardwired meaning, they just
     exist to make the binding of vertex components (living in vertex buffers)

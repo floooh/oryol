@@ -192,7 +192,7 @@ native Linux builds and cross-compile to emscripten and PNaCl.
 First you need to setup vagrant:
 
 1. get VirtualBox for your host operating system (https://www.virtualbox.org/wiki/Downloads)
-2. get Vargrant for your host OS (http://www.vagrantup.com/downloads.html)
+2. get Vagrant for your host OS (http://www.vagrantup.com/downloads.html)
 3. install the vagrant-vbguest plugin: ```vagrant plugin install vagrant-vbguest```
 
 Now you're ready to setup the VM with **vagrant up**
