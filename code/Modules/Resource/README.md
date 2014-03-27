@@ -2,7 +2,7 @@
 
 ### Overview
 
-Oryol doesn't have a single, centralizeed resource management system, instead the Resource module
+Oryol doesn't have a single, centralized resource management system, instead the Resource module
 provides generic classes to build small, localized resource management systems inside other modules.
 
 The Oryol resource system provides the following features:
@@ -57,7 +57,7 @@ as long as a resource is still loading), and that resources live in recycled poo
 simple pointer could point to a slot which no longer holds the original resource object.
 
 Id objects are 8 bytes wide and hold 3 components: a **slot index** into a resource pool,
-a **resource type**, and a **unique counter value** which prevents that an old resource id accidentially 
+a **resource type**, and a **unique counter value** which prevents that an old resource id accidentally 
 points to a new resource now living in the same pool slot.
 
 **Locators** are essentially strings that are used for resource sharing (resource with identical 

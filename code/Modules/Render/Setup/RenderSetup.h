@@ -28,7 +28,7 @@ public:
     RenderSetup();
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
-    /// get resource pool size for a rendering resoruce type
+    /// get resource pool size for a rendering resource type
     int32 GetPoolSize(ResourceType::Code type) const;
     /// tweak resource throttling value for a resource type, 0 means unthrottled
     void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);

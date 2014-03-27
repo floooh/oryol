@@ -60,7 +60,7 @@ public:
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
-    /// lookup a resource by resource locator (incremenets use-count of resource!)
+    /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
     /// discard a resource (decrement use-count, free resource if use-count is 0)
     void DiscardResource(const Resource::Id& resId);

@@ -46,7 +46,7 @@ ThreadedQueue::~ThreadedQueue() {
 /**
  If a tick-duration is set, the thread will wakeup after this duration
  even when no messages are pending. This is useful to do some work
- which dosn't depend on incoming messages. A tick duration of 0 is the
+ which doesn't depend on incoming messages. A tick duration of 0 is the
  default and means that the thread will NOT tick (e.g. only wake up
  when messages arrive)
 */

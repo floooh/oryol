@@ -50,9 +50,9 @@ public:
     Id GetIdByIndex(int32 index) const;
     
 private:
-    /// incremenet use count of resource and dependents
+    /// increment use count of resource and dependents
     void incrUseCount(const Id& id);
-    /// descrement use count of resource and dependents, return 0-usecount resources
+    /// decrement use count of resource and dependents, return 0-usecount resources
     int32 decrUseCount(const Id& id, Core::Array<Id>& outToRemove);
     #if ORYOL_DEBUG
     /// validate integrity of internal data structures

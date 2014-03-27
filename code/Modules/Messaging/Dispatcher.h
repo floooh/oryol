@@ -5,7 +5,7 @@
     @brief call message handler functions on incoming messages
     
     A Dispatcher is a Port where message handler functions for a specific
-    message protocol can subcribe to. One specific Dispatcher object
+    message protocol can subscribe to. One specific Dispatcher object
     can only handle messages from one specific protocol. The Protocol must
     be given as a template argument.
  
@@ -13,7 +13,7 @@
     is looked up in a jump table and called. If no handler function exists
     for the message, nothing will happen.
  
-    The message handler function is excpected to "handle" the message, which
+    The message handler function is expected to "handle" the message, which
     means to set the Handled flag of the message at some point in time.
     Setting the Handled flag doesn't have to happen within the handler function,
     it can also happen at some later time.

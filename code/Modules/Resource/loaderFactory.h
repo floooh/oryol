@@ -69,7 +69,7 @@ loaderFactory<RESOURCE,LOADER>::~loaderFactory() {
 /**
  The NeedsSetup() method is needed when loading resources asynchronously.
  In this case the first call to Setup() will set the resource object
- to the Pending state, and a second call is needed to actually intialize
+ to the Pending state, and a second call is needed to actually initialize
  the resource after the asynchronous load has finished. To determine when
  Setup must be called a second time, call the NeedsSetup() method.
  
@@ -78,7 +78,7 @@ template<class RESOURCE, class LOADER> bool
 loaderFactory<RESOURCE,LOADER>::NeedsSetupResource(const RESOURCE& res) const {
     // this method must be implemented in a subclass, because
     // there may be different ways to determine when asynchronous
-    // intialization has finished
+    // initialization has finished
     return false;
 }
 
@@ -109,7 +109,7 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
     o_assert((State::Setup == state) || (State::Pending == state));
     
     // if the resource already has the loader index set, just call
-    // the right loader, this should only happen when continouing to
+    // the right loader, this should only happen when continuing to
     // load asynchronous resources
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {

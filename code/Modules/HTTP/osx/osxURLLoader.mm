@@ -83,7 +83,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // extract HTTP status...
             response->SetStatus((IOStatus::Code) [urlResponse statusCode]);
             
-            // exract response header fields...
+            // extract response header fields...
             NSDictionary* headerFields = [urlResponse allHeaderFields];
             Map<String,String> fields;
             for (id key in headerFields) {
@@ -112,7 +112,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             req->SetResponse(response);
         }
         else {
-            // an error occured
+            // an error occurred
             Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
             if (nil != urlResponse) {
                 response->SetStatus((IOStatus::Code) [urlResponse statusCode]);

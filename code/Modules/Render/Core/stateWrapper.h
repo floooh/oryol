@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::StateWrapper
-    @brief platform-agnostic wrapper for render state managment
+    @brief platform-agnostic wrapper for render state management
     @todo describe StateWrapper
 */
 #if ORYOL_OPENGL

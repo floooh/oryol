@@ -32,7 +32,7 @@ Each Oryol module should come with a set of unit tests:
 
 
 * populate the 'unittests' directory with C++ files with the actual tests. Each C++ file can contain several tests, and there can be any number of files in the 'unittests' directory
-* a minimal sucessful test looks like this:
+* a minimal successful test looks like this:
 
 ```cpp
     //------------------------------------------------------------------------------

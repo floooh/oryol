@@ -213,7 +213,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     // ...and finally set the responseBodyStream on the httpResponse
                     httpResponse->SetBody(responseBodyStream);
 
-                    // @todo: write error desc to httpResponse if something went wront
+                    // @todo: write error desc to httpResponse if something went wrong
                 }
                 else {
                     Log::Warn("winURLLoader: WinHttpReceiveResponse() failed for '%s'!\n", req->GetURL().AsCStr());

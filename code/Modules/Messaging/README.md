@@ -37,7 +37,7 @@ Message classes have the following attributes:
 - a numeric message id (auto-generated), message ids are only unique within their protocol
 - a protocol id (this is a FourCC uint32)
 - a current state (Initial, Pending, Handled)
-- a set of member variables with their respecitive setter/getter methods
+- a set of member variables with their respective setter/getter methods
 
 Messages are generally created through pool-allocators. When a message is created, a pointer is popped from
 a lock-free forward-linked list, and placement-new is called on the memory block (so, no expensive "dynamic 

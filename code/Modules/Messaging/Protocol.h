@@ -14,7 +14,7 @@ namespace Messaging {
 
 class Protocol {
 public:
-    /// get the protocol if
+    /// get the protocol id
     static ProtocolIdType GetProtocolId() {
         return 'BASE';
     };

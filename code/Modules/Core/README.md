@@ -12,7 +12,7 @@ Core/Types.h defines the following basic datatypes in the Oryol namespace:
 * **intptr, uintptr**: an integer with as many bits as a pointer (32 or 64 bits)
 * **uchar**: an unsigned 8-bit character
 
-Use the standard wchar_t for wide-characters, but be aware that this is 2 bytes on Windows, and 4 bytes everwhere else.
+Use the standard wchar_t for wide-characters, but be aware that this is 2 bytes on Windows, and 4 bytes everywhere else.
 
 The following constants are defined (all resolve to -1):
 
@@ -35,7 +35,7 @@ Log::Info("Hello World!");
 // warning-level output
 Log::Warn("Earth will be destroyed in %d seconds...\n", secsToDestruction);
 // error-level output
-Log::Error("Something terrible has happend...\n");
+Log::Error("Something terrible has happened...\n");
 // debug-level output
 Log::Dbg("Some spammy debug-only message\n");
 
@@ -47,7 +47,7 @@ The Log class is supposed to be thread-safe.
 
 ### Asserts
 
-Instead of the basic C-style assert(), use Oryols **o_assert()** and **o_assert2()** macros. Both provide
+Instead of the basic C-style assert(), use Oryol's **o_assert()** and **o_assert2()** macros. Both provide
 additional information, like the pretty-printed function signature of the enclosing function, which is
 very useful when the assert is inside templated code. **o_assert2()** takes an additional human-readable
 string which is output to the console when the assert triggers. In the future, o_assert() will very likely

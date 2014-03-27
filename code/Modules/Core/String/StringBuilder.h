@@ -87,13 +87,13 @@ public:
     /// substitute a range of characters with a string, endIndex can be EndOfString
     void SubstituteRange(int32 startIndex, int32 endIndex, const char* subst);
     
-    /// find byte-index of first occurence of delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence of delim chars, return EndOfString if not found
     int32 FindFirstOf(int32 startIndex, int32 endIndex, const char* delims) const;
-    /// find byte-index of first occurence of delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence of delim chars, return EndOfString if not found
     static int32 FindFirstOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
-    /// find byte-index of first occurence not in delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence not in delim chars, return EndOfString if not found
     int32 FindFirstNotOf(int32 startIndex, int32 endIndex, const char* delims) const;
-    /// find byte-index of first occurence not in delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence not in delim chars, return EndOfString if not found
     static int32 FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
     /// find substring index, endIndex can be EndOfString, return EndOfString if not found
     int32 FindSubString(int32 startIndex, int32 endIndex, const char* subString) const;

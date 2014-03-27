@@ -54,7 +54,7 @@ RWLock::UnlockWrite() {
 inline void
 RWLock::LockRead() {
 #if ORYOL_HAS_THREADS
-    /// spin until noone's writing anymore
+    /// spin until no one is writing anymore
     while (this->writeLock) {
         // spinning...
     }
