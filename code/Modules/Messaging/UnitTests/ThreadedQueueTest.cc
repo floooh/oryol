@@ -71,7 +71,7 @@ TEST(ThreadedQueueTest) {
     CHECK(value0 == 1000000);
     end = system_clock::now();
     duration<double> dur = end - start;
-    Log::Info("ThreadedQueue: 1000000 msgs created and handled: %f sec\n", dur);
+    Log::Info("ThreadedQueue: 1000000 msgs created and handled: %f sec\n", dur.count());
     
     // shutdown the threaded queue
     threadedQueue->StopThread();
