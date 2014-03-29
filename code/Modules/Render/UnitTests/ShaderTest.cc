@@ -13,7 +13,7 @@ using namespace Resource;
 
 static const char* vsSource =
 "uniform mat4 mvp;\n"
-"VERTEX_COMPONENT(vec4, position);\n"
+"VS_INPUT(vec4, position);\n"
 "void main() {\n"
 "  gl_Position = mvp * position;\n"
 "}\n";
