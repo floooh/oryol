@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ShapeBuilder.h"
+#include "glm/gtc/random.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -10,8 +11,20 @@ namespace Render {
 using namespace Core;
 
 //------------------------------------------------------------------------------
+ShapeBuilder::ShapeBuilder() :
+primitiveType(PrimitiveType::Triangles),
+color(1.0f, 1.0f, 1.0f, 1.0f),
+randomColors(false) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 void
 ShapeBuilder::Clear() {
+    this->primitiveType = PrimitiveType::Triangles;
+    this->transform = glm::mat4();
+    this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    this->randomColors = false;
     this->shapes.Clear();
     this->meshBuilder.Clear();
 }
@@ -30,84 +43,132 @@ ShapeBuilder::AddComponent(VertexAttr::Code attr, VertexFormat::Code format) {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddBox(const glm::mat4& tform, float32 w, float32 h, float32 d, int32 tiles, const glm::vec4& color) {
+ShapeBuilder::SetTransform(const glm::mat4& m) {
+    this->transform = m;
+}
+
+//------------------------------------------------------------------------------
+const glm::mat4&
+ShapeBuilder::GetTransform() const {
+    return this->transform;
+}
+
+//------------------------------------------------------------------------------
+void
+ShapeBuilder::SetColor(const glm::vec4& c) {
+    this->color = c;
+}
+
+//------------------------------------------------------------------------------
+const glm::vec4&
+ShapeBuilder::GetColor() const {
+    return this->color;
+}
+
+//------------------------------------------------------------------------------
+void
+ShapeBuilder::SetRandomColorsFlag(bool b) {
+    this->randomColors = b;
+}
+
+//------------------------------------------------------------------------------
+bool
+ShapeBuilder::GetRandomColorsFlag() const {
+    return this->randomColors;
+}
+
+//------------------------------------------------------------------------------
+void
+ShapeBuilder::SetPrimitiveType(PrimitiveType::Code primType) {
+    this->primitiveType = primType;
+}
+
+//------------------------------------------------------------------------------
+PrimitiveType::Code
+ShapeBuilder::GetPrimitiveType() const {
+    return this->primitiveType;
+}
+
+//------------------------------------------------------------------------------
+void
+ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles) {
     o_assert(tiles >= 1);
     
     ShapeData shape;
     shape.type = Box;
-    shape.transform = tform;
+    shape.transform = this->transform;
     shape.f0 = w;
     shape.f1 = h;
     shape.f2 = d;
     shape.i0 = tiles;
-    shape.color = color;
+    shape.color = this->color;
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddSphere(const glm::mat4& tform, float32 radius, int32 slices, int32 stacks, const glm::vec4& color) {
+ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks) {
     o_assert((slices >= 3) && (stacks >= 2));
 
     ShapeData shape;
     shape.type = Sphere;
-    shape.transform = tform;
+    shape.transform = this->transform;
     shape.f0 = radius;
     shape.i0 = slices;
     shape.i1 = stacks;
-    shape.color = color;
+    shape.color = this->color;
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddCylinder(const glm::mat4& tform, float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks, const glm::vec4& color) {
+ShapeBuilder::AddCylinder(float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks) {
     o_assert((slices >= 3) && (stacks >= 1));
 
     ShapeData shape;
     shape.type = Cylinder;
-    shape.transform = tform;
+    shape.transform = this->transform;
     shape.f0 = radius1;
     shape.f1 = radius2;
     shape.f2 = length;
     shape.i0 = slices;
     shape.i1 = stacks;
-    shape.color = color;
+    shape.color = this->color;
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddTorus(const glm::mat4& tform, float32 innerRadius, float32 outerRadius, int32 sides, int32 rings, const glm::vec4& color) {
+ShapeBuilder::AddTorus(float32 innerRadius, float32 outerRadius, int32 sides, int32 rings) {
     o_assert((sides >= 3) && (rings >= 3));
 
     ShapeData shape;
     shape.type = Torus;
-    shape.transform = tform;
+    shape.transform = this->transform;
     shape.f0 =innerRadius;
     shape.f1 = outerRadius;
     shape.i0 = sides;
     shape.i1 = rings;
-    shape.color = color;
+    shape.color = this->color;
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddPlane(const glm::mat4& tform, float32 w, float32 d, int32 tiles, const glm::vec4& color) {
+ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles) {
     o_assert(tiles >= 1);
 
     ShapeData shape;
     shape.type = Plane;
-    shape.transform = tform;
+    shape.transform = this->transform;
     shape.f0 = w;
     shape.f1 = d;
     shape.i0 = tiles;
-    shape.color = color;
+    shape.color = this->color;
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
 }
@@ -183,7 +244,7 @@ ShapeBuilder::Build() {
     this->meshBuilder.SetNumVertices(numVerticesAll);
     this->meshBuilder.SetIndexType(IndexType::Index16);
     this->meshBuilder.SetNumIndices(numIndicesAll);
-    this->meshBuilder.AddPrimitiveGroup(PrimitiveType::Triangles, 0, numIndicesAll);
+    this->meshBuilder.AddPrimitiveGroup(this->primitiveType, 0, numIndicesAll);
     this->meshBuilder.Begin();
     int32 curVertexIndex = 0;
     int32 curTriIndex = 0;
@@ -216,6 +277,29 @@ ShapeBuilder::Build() {
 
 //------------------------------------------------------------------------------
 void
+ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) {
+    o_assert(this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Color0));
+    if (this->randomColors) {
+        const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
+        const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
+        for (int32 i = 0; i < shape.numVertices; i++) {
+            glm::vec3 rnd = glm::linearRand(minRand, maxRand);
+            this->meshBuilder.Vertex(startVertexIndex + i, VertexAttr::Color0, rnd.x, rnd.y, rnd.z, 1.0f);
+        }
+    }
+    else {
+        const float32 r = shape.color.x;
+        const float32 g = shape.color.y;
+        const float32 b = shape.color.z;
+        const float32 a = shape.color.w;
+        for (int32 i = 0; i < shape.numVertices; i++) {
+            this->meshBuilder.Vertex(startVertexIndex + i, VertexAttr::Color0, r, g, b, a);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
     o_assert(this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Position));
     
@@ -238,7 +322,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     const float32 dz = d / numTiles;
     
     // bottom/top plane vertices
-    glm::vec4 pos;
+    glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
     for (int32 topBottom = 0; topBottom < 2; topBottom++) {
         pos.y = (topBottom == 0) ? y0 : y1;
         for (int32 ix = 0; ix <= numTiles; ix++) {
@@ -277,13 +361,17 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
         }
     }
     
+    if (this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Color0)) {
+        this->BuildVertexColors(shape, startVertexIndex);
+    }
+    
     // FIXME: colors
     // FIXME: normals/binormals/tangents
     // FIXME: uvs
     
-    // write triangle indices
+    // write indices
     for (int32 face = 0; face < 6; face++) {
-        uint16 faceStartIndex = startVertexIndex + numVerticesPerFace;
+        uint16 faceStartIndex = startVertexIndex + face * numVerticesPerFace;
         for (int32 j = 0; j < numTiles; j++) {
             for (int32 i = 0; i < numTiles; i++) {
                 // tile vertex indices
@@ -293,8 +381,8 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
                 uint16 i3 = i2 + 1;
                 
                 // the 2 tile triangles
-                this->meshBuilder.Triangle(curTriIndex++, i0, i1, i2);
-                this->meshBuilder.Triangle(curTriIndex++, i0, i2, i3);
+                this->meshBuilder.Triangle(curTriIndex++, i0, i1, i3);
+                this->meshBuilder.Triangle(curTriIndex++, i0, i3, i2);
             }
         }
     }

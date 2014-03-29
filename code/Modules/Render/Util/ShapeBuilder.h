@@ -15,20 +15,41 @@ namespace Render {
     
 class ShapeBuilder {
 public:
+    /// constructor
+    ShapeBuilder();
+
     /// add vertex component
     void AddComponent(const VertexComponent& comp);
     /// add vertex component
     void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
+    
+    /// set the primitive type to use for the resulting mesh
+    void SetPrimitiveType(PrimitiveType::Code primType);
+    /// get the primitive type
+    PrimitiveType::Code GetPrimitiveType() const;
+    /// set current transform
+    void SetTransform(const glm::mat4& transform);
+    /// get current transform
+    const glm::mat4& GetTransform() const;
+    /// set current color
+    void SetColor(const glm::vec4& color);
+    /// get current color
+    const glm::vec4& GetColor() const;
+    /// assign random vertex colors (useful for debugging)
+    void SetRandomColorsFlag(bool b);
+    /// get random colors flag
+    bool GetRandomColorsFlag() const;
+    
     /// add a box shape
-    void AddBox(const glm::mat4& transform, float32 w, float32 h, float32 d, int32 tiles, const glm::vec4& color);
+    void AddBox(float32 w, float32 h, float32 d, int32 tiles);
     /// add a sphere shape
-    void AddSphere(const glm::mat4& transform, float32 radius, int32 slices, int32 stacks, const glm::vec4& color);
+    void AddSphere(float32 radius, int32 slices, int32 stacks);
     /// add a cylinder shape
-    void AddCylinder(const glm::mat4& transform, float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks, const glm::vec4& color);
+    void AddCylinder(float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks);
     /// add a torus
-    void AddTorus(const glm::mat4& transform, float32 innerRadius, float32 outerRadius, int32 sides, int32 rings, const glm::vec4& color);
+    void AddTorus(float32 innerRadius, float32 outerRadius, int32 sides, int32 rings);
     /// add a plane
-    void AddPlane(const glm::mat4& transform, float32 w, float32 d, int32 tiles, const glm::vec4& color);
+    void AddPlane(float32 w, float32 d, int32 tiles);
     
     /// clear everything
     void Clear();
@@ -61,6 +82,8 @@ private:
 
     /// update number of vertices and triangles in shape
     void UpdateNumElements(ShapeData& shapeData);
+    /// helper method: build vertex colord
+    void BuildVertexColors(const ShapeData& shape, int32 startVertexIndex);
     /// build box vertices and indices
     void BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);
     /// build sphere vertices and indices
@@ -72,6 +95,10 @@ private:
     /// build plane vertices and indices
     void BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);
     
+    PrimitiveType::Code primitiveType;
+    glm::mat4 transform;
+    glm::vec4 color;
+    bool randomColors;
     Core::Array<ShapeData> shapes;
     MeshBuilder meshBuilder;
 };
