@@ -50,7 +50,7 @@ public:
     const char* AsCStr() const;
     
     /// printf-style formatting, max string length must be provided, returns false if resulting string is too long
-    bool Format(int32 maxLength, const char* fmt, ...);
+    bool Format(int32 maxLength, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
     
     /// (re)set to raw null-terminated string
     void Set(const char* str);

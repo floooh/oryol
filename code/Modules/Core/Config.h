@@ -38,3 +38,7 @@
 #define ORYOL_CONTAINER_DEFAULT_MIN_GROW (16)
 /// maximum grow size for dynamic container classes (num elements)
 #define ORYOL_CONTAINER_DEFAULT_MAX_GROW (1<<16)
+
+#ifndef __GNUC__
+#define __attribute__(x)
+#endif
