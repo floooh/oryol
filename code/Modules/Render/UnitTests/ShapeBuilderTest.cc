@@ -40,7 +40,7 @@ TEST(ShapeBuilderTest) {
     
     // build a simple cube
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddBox(glm::mat4(), 1.0f, 1.0f, 1.0f, 1, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Build();
     
     // ...create a mesh from it and verify the mesh
