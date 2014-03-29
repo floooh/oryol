@@ -23,7 +23,7 @@ glRenderMgr::ApplyMesh(mesh* msh) {
     if (renderMgrBase::ApplyMesh(msh)) {
         GLuint vao = msh->glGetVertexArrayObject();
         o_assert_dbg(0 != vao);
-        this->stateWrapper->glBindVertexArrayObject(vao);
+        this->stateWrapper->BindVertexArrayObject(vao);
         return true;
     }
     else {
@@ -37,7 +37,7 @@ glRenderMgr::ApplyProgram(programBundle* progBundle, uint32 selMask) {
     if (renderMgrBase::ApplyProgram(progBundle, selMask)) {
         GLuint glProg = progBundle->getProgram();
         o_assert_dbg(0 != glProg);
-        this->stateWrapper->glUseProgram(glProg);
+        this->stateWrapper->UseProgram(glProg);
         return true;
     }
     else {

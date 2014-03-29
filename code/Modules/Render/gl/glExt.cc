@@ -1,17 +1,36 @@
 //------------------------------------------------------------------------------
-//  glFunc.cc
+//  glExt.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Render/gl/gl_impl.h"
-#include "glFunc.h"
+#include "glExt.h"
 #include "Core/Assert.h"
+#include "Core/String/StringBuilder.h"
 
 namespace Oryol {
 namespace Render {
+
+bool glExt::isValid = false;
+bool glExt::extensions[NumExtensions] = { false };
     
 //------------------------------------------------------------------------------
 void
-glFunc::glGenVertexArrays(GLsizei n, GLuint* arrays) {
+glExt::Setup() {
+    o_assert(!isValid);
+    isValid = true;
+
+    // initialize GLEW
+    #if ORYOL_LINUX || ORYOL_WINDOWS
+    glewInit();
+    #endif
+
+    Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
+    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
+}
+
+//------------------------------------------------------------------------------
+void
+glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_OPENGLES2
         o_error("FIXME!\n");
     #elif ORYOL_OPENGL
@@ -23,7 +42,7 @@ glFunc::glGenVertexArrays(GLsizei n, GLuint* arrays) {
 
 //------------------------------------------------------------------------------
 void
-glFunc::glDeleteVertexArrays(GLsizei n, const GLuint* arrays) {
+glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
     #if ORYOL_OPENGLES2
         o_error("FIXME!\n");
     #elif ORYOL_OPENGL
@@ -35,7 +54,7 @@ glFunc::glDeleteVertexArrays(GLsizei n, const GLuint* arrays) {
 
 //------------------------------------------------------------------------------
 void
-glFunc::glBindVertexArray(GLuint array) {
+glExt::BindVertexArray(GLuint array) {
     #if ORYOL_OPENGLES2
         o_error("FIXME!\n");
     #elif ORYOL_OPENGL

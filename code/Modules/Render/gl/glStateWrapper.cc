@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Render/gl/gl_impl.h"
 #include "glStateWrapper.h"
-#include "Render/gl/glFunc.h"
+#include "Render/gl/glExt.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
@@ -724,7 +724,7 @@ void
 glStateWrapper::InvalidateMeshState() {
     ::glBindBuffer(GL_ARRAY_BUFFER, 0);
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glFunc::glBindVertexArray(0);
+    glExt::BindVertexArray(0);
     this->curVertexArrayObject = 0;
     this->curVertexBuffer = 0;
     this->curIndexBuffer = 0;
@@ -732,7 +732,7 @@ glStateWrapper::InvalidateMeshState() {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::glBindVertexBuffer(GLuint vb) {
+glStateWrapper::BindVertexBuffer(GLuint vb) {
     if (vb != this->curVertexBuffer) {
         this->curVertexArrayObject = 0;
         this->curVertexBuffer = vb;
@@ -743,7 +743,7 @@ glStateWrapper::glBindVertexBuffer(GLuint vb) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::glBindIndexBuffer(GLuint ib) {
+glStateWrapper::BindIndexBuffer(GLuint ib) {
     if (ib != this->curIndexBuffer) {
         this->curIndexBuffer = ib;
         ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
@@ -753,11 +753,11 @@ glStateWrapper::glBindIndexBuffer(GLuint ib) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::glBindVertexArrayObject(GLuint vao) {
+glStateWrapper::BindVertexArrayObject(GLuint vao) {
     if (vao != this->curVertexArrayObject) {
         this->curVertexBuffer = 0;
         this->curVertexArrayObject = vao;
-        glFunc::glBindVertexArray(vao);
+        glExt::BindVertexArray(vao);
         ORYOL_GL_CHECK_ERROR();
     }
 }
@@ -772,7 +772,7 @@ glStateWrapper::InvalidateProgramState() {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::glUseProgram(GLuint prog) {
+glStateWrapper::UseProgram(GLuint prog) {
     if (prog != this->curProgram) {
         this->curProgram = prog;
         ::glUseProgram(prog);

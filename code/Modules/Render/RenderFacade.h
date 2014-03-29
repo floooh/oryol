@@ -117,7 +117,7 @@ private:
     displayMgr displayManager;
     renderMgr renderManager;
     transformMgr transformManager;
-    stateWrapper stateWrapper;
+    class stateWrapper stateWrapper;
     resourceMgr resourceManager;
 };
 
@@ -146,41 +146,41 @@ RenderFacade::QueryTransform(TransformType::Code type) const {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Resource::Id
+template<class SETUP> inline Resource::Id
 RenderFacade::CreateResource(const SETUP& setup) {
     o_assert_dbg(this->isValid);
     return this->resourceManager.CreateResource(setup);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Resource::Id
+template<class SETUP> inline Resource::Id
 RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
     o_assert_dbg(this->isValid);
     return this->resourceManager.CreateResource(setup, data);
 }
 
 //------------------------------------------------------------------------------
-template<class T> void
+template<class T> inline void
 RenderFacade::ApplyVariable(int32 index, const T& value) {
     o_assert_dbg(this->isValid);
     this->renderManager.ApplyVariable(index, value);
 }
 
 //------------------------------------------------------------------------------
-template<class T> void
+template<class T> inline void
 RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
     o_assert_dbg(this->isValid);
     this->renderManager.ApplyVariableArray(index, values, numValues);
 }
 
 //------------------------------------------------------------------------------
-template<> void
+template<> inline void
 RenderFacade::ApplyState(State::Code state, float v0, float v1, float v2, float v3) {
     this->stateWrapper.ApplyState(state, v0, v1, v2, v3);
 }
 
 //------------------------------------------------------------------------------
-template<class LOADER> void
+template<class LOADER> inline void
 RenderFacade::AttachLoader(LOADER* loader) {
     this->resourceManager.AttachLoader(loader);
 }

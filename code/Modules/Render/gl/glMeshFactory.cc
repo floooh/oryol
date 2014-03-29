@@ -7,7 +7,7 @@
 #include "Render/gl/gl_impl.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/gl/glTypes.h"
-#include "Render/gl/glFunc.h"
+#include "Render/gl/glExt.h"
 #include "Resource/State.h"
 
 namespace Oryol {
@@ -64,7 +64,7 @@ glMeshFactory::DestroyResource(mesh& mesh) {
     }
     GLuint vao = mesh.glGetVertexArrayObject();
     if (0 != vao) {
-        glFunc::glDeleteVertexArrays(1, &vao);
+        glExt::DeleteVertexArrays(1, &vao);
     }
     mesh.clear();
     mesh.setState(Resource::State::Setup);
@@ -88,7 +88,7 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != vb);
     GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
-    this->glStateWrapper->glBindVertexBuffer(vb);
+    this->glStateWrapper->BindVertexBuffer(vb);
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetVertexBuffer(vb);
@@ -112,7 +112,7 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, me
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != ib);
     GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
-    this->glStateWrapper->glBindIndexBuffer(ib);
+    this->glStateWrapper->BindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetIndexBuffer(ib);
@@ -132,10 +132,10 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     // create and initialize vertex array object
     this->glStateWrapper->InvalidateMeshState();
     GLuint vao = 0;
-    glFunc::glGenVertexArrays(1, &vao);
-    this->glStateWrapper->glBindVertexArrayObject(vao);
-    this->glStateWrapper->glBindIndexBuffer(outMesh.glGetIndexBuffer());
-    this->glStateWrapper->glBindVertexBuffer(outMesh.glGetVertexBuffer());
+    glExt::GenVertexArrays(1, &vao);
+    this->glStateWrapper->BindVertexArrayObject(vao);
+    this->glStateWrapper->BindIndexBuffer(outMesh.glGetIndexBuffer());
+    this->glStateWrapper->BindVertexBuffer(outMesh.glGetVertexBuffer());
     
     for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& glAttr = outMesh.glAttr(attrIndex);

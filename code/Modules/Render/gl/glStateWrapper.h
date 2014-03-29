@@ -66,16 +66,16 @@ public:
     /// invalidate bound mesh state
     void InvalidateMeshState();
     /// bind vertex buffer
-    void glBindVertexBuffer(GLuint vb);
+    void BindVertexBuffer(GLuint vb);
     /// bind index buffer
-    void glBindIndexBuffer(GLuint ib);
+    void BindIndexBuffer(GLuint ib);
     /// bind vertex array object
-    void glBindVertexArrayObject(GLuint vao);
+    void BindVertexArrayObject(GLuint vao);
     
     /// invalidate program state
     void InvalidateProgramState();
     /// invoke glUseProgram (if changed)
-    void glUseProgram(GLuint prog);
+    void UseProgram(GLuint prog);
     
 private:
     /// a state value union wrapper

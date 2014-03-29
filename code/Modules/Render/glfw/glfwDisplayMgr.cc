@@ -3,6 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Render/gl/gl_impl.h"
+#include "Render/gl/glInfo.h"
+#include "Render/gl/glExt.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #if ORYOL_OSX
@@ -87,11 +89,13 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwWindowHint(GLFW_ALPHA_BITS, alphaBits);
     glfwWindowHint(GLFW_DEPTH_BITS, depthBits);
     glfwWindowHint(GLFW_STENCIL_BITS, stencilBits);
+    #if ORYOL_OSX
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+    #endif
+
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
     if (setup.IsFullscreen()) {
@@ -109,12 +113,12 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     // and make the window's GL context current
     glfwMakeContextCurrent(this->glfwWindow);
     glfwSwapInterval(setup.GetSwapInterval());
-    
-    // initialize GLEW
-    #if !ORYOL_OSX
-    glewInit();
-    o_assert(GLEW_VERSION_3_2);
-    #endif
+
+    // dump GL information
+    glInfo::PrintInfo();
+
+    // setup extensions
+    glExt::Setup();
     
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;
