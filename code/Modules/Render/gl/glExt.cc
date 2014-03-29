@@ -24,8 +24,24 @@ glExt::Setup() {
     glewInit();
     #endif
 
+    for (int32 i = 0; i < NumExtensions; i++) {
+        extensions[i] = false;
+    }
     Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
+}
+
+//------------------------------------------------------------------------------
+void
+glExt::Discard() {
+    o_assert(isValid);
+    isValid = false;
+}
+
+//------------------------------------------------------------------------------
+bool
+glExt::IsValid() {
+    return isValid;
 }
 
 //------------------------------------------------------------------------------

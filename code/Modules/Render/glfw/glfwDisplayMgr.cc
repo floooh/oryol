@@ -144,6 +144,7 @@ glfwDisplayMgr::DiscardDisplay() {
     glfwDestroyWindow(this->glfwWindow);
     this->glfwWindow = nullptr;
     glfwTerminate();
+    glExt::Discard();
     
     displayMgrBase::DiscardDisplay();
 }

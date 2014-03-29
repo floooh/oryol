@@ -24,6 +24,10 @@ public:
 
     /// setup extensions
     static void Setup();
+    /// discard extenstion wrapper object
+    static void Discard();
+    /// check if the extension wrapper object is valid
+    static bool IsValid();
     /// test if an extension is supported
     static bool HasExtension(Code c);
 
