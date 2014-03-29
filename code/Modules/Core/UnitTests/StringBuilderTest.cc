@@ -169,6 +169,8 @@ TEST(StringBuilderTest) {
     CHECK(builder.FindFirstOf(0, 4, ":") == InvalidIndex);
     CHECK(builder.FindFirstOf(7, 12, ".") == 10);
     CHECK(builder.FindSubString(0, EndOfString, "://") == 4);
+    CHECK(builder.Contains("bla.blob"));
+    CHECK(!builder.Contains("blub"));
     
     // test Format
     CHECK(!builder.Format(4, "One: %d, Two: %d, Three: %d", 1, 2, 3));   // this should fail because of no room
