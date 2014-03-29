@@ -156,5 +156,11 @@ MeshBuilder::GetStream() const {
     return this->stream;
 }
 
+//------------------------------------------------------------------------------
+const VertexLayout&
+MeshBuilder::GetVertexLayout() const {
+    return this->layout;
+}
+
 } // namespace Render
 } // namespace Oryol

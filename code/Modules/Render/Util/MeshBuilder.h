@@ -83,13 +83,13 @@ public:
     /// begin writing vertex and index data
     void Begin();
     /// write D component vertex data
-    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x);
+    void Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x);
     /// write 2D vertex data
-    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y);
+    void Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x, float32 y);
     /// write 3D vertex data
-    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y, float32 z);
+    void Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x, float32 y, float32 z);
     /// write 4D vertex data
-    void Vertex(uint32 vertexIndex, uint32 componentIndex, float32 x, float32 y, float32 z, float32 w);
+    void Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x, float32 y, float32 z, float32 w);
     /// write 16-bit vertex-index at index-buffer-index
     void Index(uint32 index, uint16 vertexIndex);
     /// write 32-bit vertex-index at index-buffer-index
@@ -103,6 +103,8 @@ public:
     
     /// get the resulting data stream with vertex and index data
     const Core::Ptr<IO::Stream>& GetStream() const;
+    /// get the included vertex layout object
+    const VertexLayout& GetVertexLayout() const;
     
     /// the mesh data header
     struct Header {
@@ -131,7 +133,7 @@ public:
     
 private:
     /// compute byte offset into vertex buffer given vertex and component index
-    uint32 vertexByteOffset(uint32 vertexIndex, uint32 componentIndex) const;
+    uint32 vertexByteOffset(uint32 vertexIndex, int32 compIndex) const;
 
     uint32 numVertices;
     uint32 numIndices;
@@ -185,39 +187,44 @@ MeshBuilder::Triangle(uint32 triIndex, uint16 vi0, uint16 vi1, uint16 vi2) {
 
 //------------------------------------------------------------------------------
 inline uint32
-MeshBuilder::vertexByteOffset(uint32 vertexIndex, uint32 compIndex) const {
+MeshBuilder::vertexByteOffset(uint32 vertexIndex, int32 compIndex) const {
     o_assert_dbg(vertexIndex < this->numVertices);
+    o_assert_dbg(InvalidIndex != compIndex);
     return vertexIndex * this->layout.GetByteSize() + this->layout.GetComponentByteOffset(compIndex);
 }
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x) {
+MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x) {
     o_assert_dbg(this->inBegin);
+    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x);
 }
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y) {
+MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y) {
     o_assert_dbg(this->inBegin);
+    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y);
 }
     
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y, float z) {
+MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y, float z) {
     o_assert_dbg(this->inBegin);
+    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z);
 }
 
 //------------------------------------------------------------------------------
 inline void
-MeshBuilder::Vertex(uint32 vertexIndex, uint32 compIndex, float x, float y, float z, float w) {
+MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y, float z, float w) {
     o_assert_dbg(this->inBegin);
+    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
     VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z, w);
 }

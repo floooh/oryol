@@ -69,14 +69,14 @@ TriangleApp::OnInit() {
     meshBuilder.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 3);
     meshBuilder.Begin();
     // first vertex pos and color
-    meshBuilder.Vertex(0, 0, 0.0f, 0.5f, 0.5f);
-    meshBuilder.Vertex(0, 1, 1.0f, 0.0f, 0.0f, 1.0f);
+    meshBuilder.Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f);
+    meshBuilder.Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f);
     // second vertex pos and color
-    meshBuilder.Vertex(1, 0, 0.5f, -0.5f, 0.5f);
-    meshBuilder.Vertex(1, 1, 0.0f, 1.0f, 0.0f, 1.0f);
+    meshBuilder.Vertex(1, VertexAttr::Position, 0.5f, -0.5f, 0.5f);
+    meshBuilder.Vertex(1, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f);
     // third vertex pos and color
-    meshBuilder.Vertex(2, 0, -0.5f, -0.5f, 0.5f);
-    meshBuilder.Vertex(2, 1, 0.0f, 0.0f, 1.0f, 1.0f);
+    meshBuilder.Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f);
+    meshBuilder.Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
     meshBuilder.End();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
     

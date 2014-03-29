@@ -43,14 +43,14 @@ TEST(MeshFactoryTest) {
     mb.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
     mb.Begin();
-    mb.Vertex(0, 0, 0.0f, 0.0f, 0.0f);  // top-left
-    mb.Vertex(1, 0, 1.0f, 0.0f, 0.0f);  // top-right
-    mb.Vertex(2, 0, 1.0f, 1.0f, 0.0f);  // bottom-right
-    mb.Vertex(3, 0, 0.0f, 1.0f, 0.0f);  // bottom-left
-    mb.Vertex(0, 1, 0.0f, 0.0f);
-    mb.Vertex(1, 1, 1.0f, 0.0f);
-    mb.Vertex(2, 1, 1.0f, 1.0f);
-    mb.Vertex(3, 1, 0.0f, 1.0f);
+    mb.Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f);  // top-left
+    mb.Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f);  // top-right
+    mb.Vertex(2, VertexAttr::Position, 1.0f, 1.0f, 0.0f);  // bottom-right
+    mb.Vertex(3, VertexAttr::Position, 0.0f, 1.0f, 0.0f);  // bottom-left
+    mb.Vertex(0, VertexAttr::TexCoord0, 0.0f, 0.0f);
+    mb.Vertex(1, VertexAttr::TexCoord0, 1.0f, 0.0f);
+    mb.Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f);
+    mb.Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f);
     mb.Triangle(0, 0, 1, 2);
     mb.Triangle(1, 0, 2, 3);
     mb.End();
