@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "VertexComponent.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {
@@ -18,7 +19,8 @@ format(VertexFormat::InvalidVertexFormat) {
 VertexComponent::VertexComponent(VertexAttr::Code att, VertexFormat::Code fmt) :
 attr(att),
 format(fmt) {
-    // empty
+    o_assert(this->attr < VertexAttr::NumVertexAttrs);
+    o_assert(this->format < VertexFormat::NumVertexFormats);
 }
 
 //------------------------------------------------------------------------------
