@@ -175,7 +175,25 @@ RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) 
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyState(State::Code state, float v0, float v1, float v2, float v3) {
+RenderFacade::ApplyState(State::Code state, bool b) {
+    this->stateWrapper.ApplyState(state, b);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, State::Value val) {
+    this->stateWrapper.ApplyState(state, val);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, float32 v0) {
+    this->stateWrapper.ApplyState(state, v0);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, float32 v0, float32 v1, float32 v2, float32 v3) {
     this->stateWrapper.ApplyState(state, v0, v1, v2, v3);
 }
 
