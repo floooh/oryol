@@ -153,4 +153,16 @@ TEST(StringTest) {
     subStr.Clear();
     CHECK(subStr.Front() == 0);
     CHECK(subStr.Back() == 0);
+    
+    // construction and assignment from nullpointers is explicitely allowed
+    const char* nullPointer = nullptr;
+    String nullString(nullPointer);
+    CHECK(nullString.Empty());
+    CHECK(nullString.AsCStr() != nullptr);
+    CHECK(nullString.AsCStr()[0] == 0);
+    nullString = "Bla";
+    nullString = nullPointer;
+    CHECK(nullString.Empty());
+    CHECK(nullString.AsCStr() != nullptr);
+    CHECK(nullString.AsCStr()[0] == 0);    
 }

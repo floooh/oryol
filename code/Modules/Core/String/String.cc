@@ -19,8 +19,13 @@ String::String(const StringAtom& str) {
 
 //------------------------------------------------------------------------------
 String::String(const char* str) {
-    o_assert(nullptr != str);
-    this->create(str, std::strlen(str));
+    if (nullptr != str) {
+        this->create(str, std::strlen(str));
+    }
+    else {
+        this->data = nullptr;
+        this->strPtr = nullptr;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -147,7 +152,7 @@ String::release() {
             this->destroy();
         }
         this->data = nullptr;
-        this->strPtr = 0;
+        this->strPtr = nullptr;
     }
 }
 
@@ -190,9 +195,10 @@ String::String(String&& rhs) {
 //------------------------------------------------------------------------------
 void
 String::operator=(const char* str) {
-    o_assert(0 != str);
     this->release();
-    this->create(str, std::strlen(str));
+    if (nullptr != str) {
+        this->create(str, std::strlen(str));
+    }
 }
 
 //------------------------------------------------------------------------------

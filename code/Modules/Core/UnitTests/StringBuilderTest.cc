@@ -30,6 +30,10 @@ TEST(StringBuilderTest) {
     CHECK(builder.GetSubString(1, EndOfString) == "Bla");
     CHECK(builder.GetSubString(1, 3) == "Bl");
     
+    // appending nullptr is allowed
+    builder.Append(nullptr);
+    CHECK(builder.GetString() == "xBla");
+    
     const char* blubber = "BlubberZZZ";
     builder.Append(blubber, 0, 7);
     CHECK(builder.Length() == 11);

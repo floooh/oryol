@@ -197,8 +197,9 @@ StringBuilder::Set(const char* ptr, int32 startIndex, int32 endIndex) {
 //------------------------------------------------------------------------------
 void
 StringBuilder::Append(const char* ptr) {
-    o_assert(ptr);
-    this->Append(ptr, 0, std::strlen(ptr));
+    if (ptr) {
+        this->Append(ptr, 0, std::strlen(ptr));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -539,9 +540,9 @@ StringBuilder::FindSubString(const char* str, int32 startIndex, int32 endIndex, 
 int32
 StringBuilder::FindSubString(int32 startIndex, int32 endIndex, const char* subStr) const {
     o_assert(0 != subStr);
-    o_assert(startIndex < this->size);
     o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
     if (nullptr != this->buffer) {
+        o_assert(startIndex < this->size);
         return findSubString(this->buffer, startIndex, endIndex, subStr);
     }
     else {
