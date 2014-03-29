@@ -45,19 +45,19 @@ public:
     /// get current log level
     static Level GetLogLevel();
     /// print a debug message
-    static void Dbg(const char* msg, ...);
+    static void Dbg(const char* msg, ...) __attribute__((format(printf, 1, 2)));
     /// print an info message
-    static void Info(const char* msg, ...);
+    static void Info(const char* msg, ...) __attribute__((format(printf, 1, 2)));
     /// print a warning
-    static void Warn(const char* msg, ...);
+    static void Warn(const char* msg, ...) __attribute__((format(printf, 1, 2)));
     /// print an error (use o_error() macro to also abort the program)
-    static void Error(const char* msg, ...);
+    static void Error(const char* msg, ...) __attribute__((format(printf, 1, 2)));
     /// print an assert message
     static void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
 
 private:
     /// generic vprint-style method
-    static void vprint(Level l, const char* msg, va_list args);
+    static void vprint(Level l, const char* msg, va_list args) __attribute__((format(printf, 2, 0)));
 };
 } // namespace Core
 } // namespace Oryol

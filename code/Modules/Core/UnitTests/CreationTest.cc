@@ -117,8 +117,9 @@ const int numOuter = 1000000 / numInner;
 
 void threadFunc() {
     Oryol::Core::CoreFacade::EnterThread();
+    hash<thread::id> hashfn;
     
-    Log::Info("create_multithreaded: thread '%d' entered!\n", this_thread::get_id());
+    Log::Info("CreateMultiThreaded: thread '%lu' entered!\n", hashfn(this_thread::get_id()));
     
     for (int i = 0; i < numOuter; i++) {
         Array<Ptr<TestClass>> pointers;
@@ -129,7 +130,7 @@ void threadFunc() {
         }
     }
 
-    Log::Info("CreateMultiThreaded: thread '%d' leaving!\n", this_thread::get_id());
+    Log::Info("CreateMultiThreaded: thread '%lu' leaving!\n", hashfn(this_thread::get_id()));
     
     Oryol::Core::CoreFacade::LeaveThread();
 }
