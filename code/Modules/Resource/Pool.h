@@ -10,7 +10,7 @@
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Map.h"
 #include "Resource/Id.h"
-#include "Resource/Slot.h"
+#include "Resource/slot.h"
 #include "IO/Stream.h"
 
 namespace Oryol {
