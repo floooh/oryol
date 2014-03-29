@@ -80,9 +80,13 @@ public:
     /// append a list of strings with delimiter
     void Append(char delim, std::initializer_list<String> list);
     
-    /// substitute first occurance of a string with another, return true if substituted
+    /// substitute all occurances of a string, return number of substitutions
+    int32 SubstituteAll(const char* match, const char* subst);
+    /// substitute all, with String objects
+    int32 SubstituteAll(const String& match, const String& subst);
+    /// substitute first occurance of a string, return true if substituted
     bool SubstituteFirst(const char* match, const char* subst);
-    /// substitute, with String objects
+    /// substitute first, with String objects
     bool SubstituteFirst(const String& match, const String& subst);
     /// substitute a range of characters with a string, endIndex can be EndOfString
     void SubstituteRange(int32 startIndex, int32 endIndex, const char* subst);

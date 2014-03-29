@@ -121,7 +121,12 @@ TEST(StringBuilderTest) {
     CHECK(builder.GetString() == "ZweiThreeFiveSixSieben");
     builder.SubstituteRange(4, 9, "Drei");
     CHECK(builder.GetString() == "ZweiDreiFiveSixSieben");
-    
+
+    // SubstituteAll
+    builder.Set(" One Two Three Four ");
+    CHECK(builder.SubstituteAll(" ", "XXX") == 5);
+    CHECK(builder.GetString() == "XXXOneXXXTwoXXXThreeXXXFourXXX");
+
     // test tokenize
     Array<String> tokens;
     builder.Set("One Two Three");

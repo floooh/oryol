@@ -346,6 +346,30 @@ StringBuilder::SubstituteRange(int32 startIndex, int32 endIndex, const char* sub
     this->substituteCommon(occur, matchLen, substLen, subst);
 }
 
+//------------------------------------------------------------------------------
+int32
+StringBuilder::SubstituteAll(const char* match, const char* subst) {
+    o_assert(match && subst);
+    o_assert(match[0] != 0);
+
+    int32 numSubst = 0;
+    if (nullptr != this->buffer) {
+        char* ptr = this->buffer;
+        const int32 matchLen = std::strlen(match);
+        const int32 substLen = std::strlen(subst);
+        while (nullptr != (ptr = std::strstr(ptr, match))) {
+            this->substituteCommon(ptr, matchLen, substLen, subst);
+            numSubst++;
+        }
+    }
+    return numSubst;
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::SubstituteAll(const String& match, const String& subst) {
+    return this->SubstituteAll(match, subst);
+}
 
 //------------------------------------------------------------------------------
 bool
@@ -354,10 +378,8 @@ StringBuilder::SubstituteFirst(const char* match, const char* subst) {
     o_assert(match[0] != 0);
     
     if (nullptr != this->buffer) {
-        // find the first occurance of 'match'
         char* occur = std::strstr(this->buffer, match);
         if (nullptr != occur) {
-            // we have a match, make sure we have enough room
             const int32 matchLen = std::strlen(match);
             const int32 substLen = std::strlen(subst);
             this->substituteCommon(occur, matchLen, substLen, subst);
