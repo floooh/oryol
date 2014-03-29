@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Render/Core/VertexLayout.h"
 
+using namespace Oryol;
 using namespace Oryol::Render;
 
 TEST(VertexLayoutTest) {
@@ -35,6 +36,15 @@ TEST(VertexLayoutTest) {
     CHECK(layout.GetComponentByteOffset(0) == 0);
     CHECK(layout.GetComponentByteOffset(1) == 12);
     CHECK(layout.GetComponentByteOffset(2) == 16);
+    
+    CHECK(layout.GetComponentIndexByVertexAttr(VertexAttr::Position) == 0);
+    CHECK(layout.GetComponentIndexByVertexAttr(VertexAttr::Normal) == 1);
+    CHECK(layout.GetComponentIndexByVertexAttr(VertexAttr::TexCoord0) == 2);
+    CHECK(layout.GetComponentIndexByVertexAttr(VertexAttr::TexCoord1) == InvalidIndex);
+    CHECK(layout.Contains(VertexAttr::Position));
+    CHECK(layout.Contains(VertexAttr::Normal));
+    CHECK(layout.Contains(VertexAttr::TexCoord0));
+    CHECK(!layout.Contains(VertexAttr::TexCoord1));
     
     layout.Clear();
     CHECK(layout.Empty());
