@@ -649,7 +649,7 @@ glStateWrapper::setupStateVector() {
 
     // glEnable(DEPTH_TEST)
     this->funcs[State::DepthTestEnabled].cb = &glStateWrapper::onDepthTestEnabled;
-    this->funcs[State::DepthTestEnabled].sig = V0;
+    this->funcs[State::DepthTestEnabled].sig = B0;
     
     // glDepthFunc(GLenum)
     this->funcs[State::DepthFunc].cb = &glStateWrapper::onDepthFunc;
@@ -689,7 +689,7 @@ glStateWrapper::setupStateVector() {
     
     // glDepthMask(GLenum)
     this->funcs[State::DepthMask].cb = &glStateWrapper::onDepthMask;
-    this->funcs[State::DepthMask].sig = V0;
+    this->funcs[State::DepthMask].sig = B0;
     
     // glStencilMask(GLuint)
     this->funcs[State::StencilMask].cb = &glStateWrapper::onStencilMask;
