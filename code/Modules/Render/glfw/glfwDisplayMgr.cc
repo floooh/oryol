@@ -115,7 +115,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSwapInterval(setup.GetSwapInterval());
 
     // dump GL information
-    glInfo::PrintInfo();
+//    glInfo::PrintInfo();
 
     // setup extensions
     glExt::Setup();

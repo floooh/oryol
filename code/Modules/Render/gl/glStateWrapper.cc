@@ -490,6 +490,7 @@ glStateWrapper::onClearColor(const ValBlock& input) {
         this->curClearColorB = b;
         this->curClearColorA = a;
         ::glClearColor(r, g, b, a);
+        ORYOL_GL_CHECK_ERROR();
     }
 }
 

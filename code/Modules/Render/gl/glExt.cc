@@ -23,12 +23,18 @@ glExt::Setup() {
     #if ORYOL_LINUX || ORYOL_WINDOWS
     glewInit();
     #endif
-
+    
     for (int32 i = 0; i < NumExtensions; i++) {
         extensions[i] = false;
     }
+    
+    #if !ORYOL_OSX
+    // on OSX we're using the Core Profile where getting the extensions string seems
+    // to be an error
     Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
+    ORYOL_GL_CHECK_ERROR();
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
+    #endif
 }
 
 //------------------------------------------------------------------------------

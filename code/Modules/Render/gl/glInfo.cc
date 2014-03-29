@@ -22,7 +22,10 @@ glInfo::PrintInfo() {
     glInfo::PrintString(GL_SHADING_LANGUAGE_VERSION, "GL_SHADING_LANGUAGE_VERSION", false);
     glInfo::PrintString(GL_VENDOR, "GL_VENDOR", false);
     glInfo::PrintString(GL_RENDERER, "GL_RENDERER", false);
+    #if !ORYOL_OSX
+    // on OSX, core profile is used, where getting the extensions string is an error
     glInfo::PrintString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -30,6 +33,7 @@ void
 glInfo::PrintString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLine) {
     o_assert(name);
     String str = (const char*) ::glGetString(glEnum);
+    ORYOL_GL_CHECK_ERROR();
     if (replaceSpaceWithNewLine) {
         StringBuilder strBuilder;
         strBuilder.Append(" ");
@@ -47,6 +51,7 @@ glInfo::PrintInt(GLenum glEnum, const char* name, int dim) {
     o_assert_range(dim, 4);
     GLint value[4];
     ::glGetIntegerv(glEnum, &(value[0]));
+    ORYOL_GL_CHECK_ERROR();
     if (1 == dim) Log::Info("%s: %d\n", name, value[0]);
     else if (2 == dim) Log::Info("%s: %d %d\n", name, value[0], value[1]);
     else if (3 == dim) Log::Info("%s: %d %d %d\n", name, value[0], value[1], value[2]);
