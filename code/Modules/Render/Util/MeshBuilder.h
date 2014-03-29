@@ -101,6 +101,8 @@ public:
     /// end writing vertex and index data
     void End();
     
+    /// clear the mesh builder
+    void Clear();
     /// get the resulting data stream with vertex and index data
     const Core::Ptr<IO::Stream>& GetStream() const;
     /// get the included vertex layout object

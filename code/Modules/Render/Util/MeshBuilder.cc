@@ -28,6 +28,26 @@ endPointer(nullptr) {
 
 //------------------------------------------------------------------------------
 void
+MeshBuilder::Clear() {
+    o_assert(!this->inBegin);
+    
+    this->numVertices = 0;
+    this->numIndices = 0;
+    this->indexType = IndexType::Index16;
+    this->layout.Clear();
+    this->primGroups.Clear();
+    this->meshSetup = MeshSetup();
+    this->inBegin = false;
+    this->resultValid = false;
+    this->headerPointer = nullptr;
+    this->vertexPointer = nullptr;
+    this->indexPointer = nullptr;
+    this->endPointer = nullptr;
+    this->stream.Invalidate();
+}
+
+//------------------------------------------------------------------------------
+void
 MeshBuilder::SetNumVertices(uint32 num) {
     o_assert(num > 0);
     o_assert(!this->inBegin);
