@@ -119,7 +119,7 @@ void threadFunc() {
     Oryol::Core::CoreFacade::EnterThread();
     hash<thread::id> hashfn;
     
-    Log::Info("create_multithreaded: thread '%lu' entered!\n", hashfn(this_thread::get_id()));
+    Log::Info("CreateMultiThreaded: thread '%lu' entered!\n", hashfn(this_thread::get_id()));
     
     for (int i = 0; i < numOuter; i++) {
         Array<Ptr<TestClass>> pointers;
