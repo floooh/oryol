@@ -52,6 +52,9 @@ void
 glShaderFactory::SetupResource(shader& shd) {
     o_assert(this->isValid);
     o_assert(shd.GetState() == State::Setup);
+    ORYOL_GL_CHECK_ERROR();
+    
+    Log::Info("glShaderFactory: compiling shader '%s'\n", shd.GetSetup().GetLocator().Location().AsCStr());
     
     // create a shader object
     const ShaderSetup& setup = shd.GetSetup();
@@ -70,7 +73,18 @@ glShaderFactory::SetupResource(shader& shd) {
     // setup the shader source
     StringBuilder strBuilder;
     strBuilder.Reserve(2 * srcLength + 1024);
-    #if ORYOL_OPENGL
+    #if ORYOL_OPENGLES2
+        strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
+        if (GL_FRAGMENT_SHADER == glShaderType) {
+            strBuilder.Append("precision mediump float;\n");
+            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
+            strBuilder.Append("#define FragmentColor gl_FragColor\n");
+        }
+        if (GL_VERTEX_SHADER == glShaderType) {
+            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
+            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
+        }
+    #else
         strBuilder.Append("#version 150\n");
         strBuilder.Append("#define ORYOL_OPENGL (1)\n");
         strBuilder.Append("#define lowp\n");
@@ -83,18 +97,6 @@ glShaderFactory::SetupResource(shader& shd) {
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
             strBuilder.Append("out vec4 FragmentColor;\n");
-        }
-    #elif ORYOL_OPENGLES2
-        strBuilder.Append("#version 100\n");
-        strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
-        if (GL_FRAGMENT_SHADER == glShaderType) {
-            strBuilder.Append("precision mediump float;\n");
-            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
-            strBuilder.Append("#define FragmentColor gl_FragColor\n");
-        }
-        if (GL_VERTEX_SHADER == glShaderType) {
-            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
-            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
         }
     #endif
     
@@ -136,26 +138,26 @@ glShaderFactory::SetupResource(shader& shd) {
     
     // compilation failed?
     GLint compileStatus = 0;
-    GLint logLength = 0;
     glGetShaderiv(glShader, GL_COMPILE_STATUS, &compileStatus);
+    ORYOL_GL_CHECK_ERROR();
+
+    #if ORYOL_DEBUG
+    GLint logLength = 0;
     glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
+    ORYOL_GL_CHECK_ERROR();
     if (logLength > 0) {
         
-        // first get the shader source
-        GLsizei shdSrcLen = 0;
-        glGetShaderiv(glShader, GL_SHADER_SOURCE_LENGTH, &shdSrcLen);
-        o_assert(srcLength > 0);
-        GLchar* shdSrcBuf = (GLchar*) Memory::Alloc(shdSrcLen);
-        glGetShaderSource(glShader, shdSrcLen, &shdSrcLen, shdSrcBuf);
-        Log::Info("%s\n", shdSrcBuf);
-        Memory::Free(shdSrcBuf);
+        // first print the shader source
+        Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
         
         // now print the info log
         GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
         glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
-        Log::Info("SHADER LOG: %s\n", shdLogBuf);
+        ORYOL_GL_CHECK_ERROR();
+        Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
         Memory::Free(shdLogBuf);
     }
+    #endif
     
     // if compilation has failed, stop the program
     if (!compileStatus) {

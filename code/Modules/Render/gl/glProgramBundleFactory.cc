@@ -96,6 +96,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // did it work?
         GLint linkStatus;
         ::glGetProgramiv(glProg, GL_LINK_STATUS, &linkStatus);
+        #if ORYOL_DEBUG
         GLint logLength;
         ::glGetProgramiv(glProg, GL_INFO_LOG_LENGTH, &logLength);
         if (logLength > 0) {
@@ -104,6 +105,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
             Log::Info("%s\n", logBuffer);
             Memory::Free(logBuffer);
         }
+        #endif
         
         // if linking failed, stop the app
         if (!linkStatus) {
