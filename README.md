@@ -1,7 +1,9 @@
 oryol
 =====
  
-Experimental C++11 multi-platform 3D engine
+Experimental C++11 multi-platform 3D engine.
+
+Live sample demos are here: http://floooh.github.io/oryol/
 
 ### Goals
 
