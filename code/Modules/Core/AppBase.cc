@@ -4,6 +4,9 @@
 #include "Pre.h"
 #include "AppBase.h"
 #include "Core/CoreFacade.h"
+#if ORYOL_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -28,7 +31,7 @@ AppBase::StartMainLoop() {
     o_assert(nullptr != self);
     this->coreFacade = CoreFacade::CreateSingleton();
     #if ORYOL_EMSCRIPTEN
-    emscripten_set_main_loop(onFrame, 0, 1);
+    emscripten_set_main_loop(staticOnFrame, 0, 1);
     #else
     while (!this->quitRequested) {
         onFrame();
