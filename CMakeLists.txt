@@ -34,5 +34,8 @@ if (ORYOL_SAMPLES)
     oryol_add_subdirectory(code/Samples)
 endif()
 
+# keep this at the end
+oryol_finish()
+
 
 

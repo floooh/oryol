@@ -116,7 +116,19 @@ macro(oryol_setup)
         message("PYTHON INTERPRETER NOT FOUND, *.xml FILES WILL NOT BE CONVERTED!")
     endif()
 
+    # clear the web samples config file
+    oryol_begin_web_samples()
+
 endmacro()
+
+#-------------------------------------------------------------------------------
+#   oryol_finish()
+#   Call at the end of the root CMakeLists.txt file
+#
+macro(oryol_finish)
+    oryol_end_web_samples()
+endmacro()
+
 
 #-------------------------------------------------------------------------------
 #   oryol_group(group)

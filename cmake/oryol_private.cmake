@@ -257,3 +257,24 @@ macro(oryol_handle_generator_files_posttarget target xmlFiles)
         message("WARNING: Python not found, skipping XML generators!")
     endif()
 endmacro()
+
+#-------------------------------------------------------------------------------
+#   Clear and start websamples description file.
+#
+macro(oryol_begin_web_samples)
+    file(WRITE ${CMAKE_SOURCE_DIR}/build/websamples.json "{\n  \"samples\": [\n")
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   Add a sample file to the web samples description file
+#
+macro(oryol_add_web_sample name desc type)
+    file(APPEND ${CMAKE_SOURCE_DIR}/build/websamples.json "    { \"name\": \"${name}\", \"desc\": \"${desc}\", \"type\": \"${type}\" },\n")
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   Finish the web samples description file
+#
+macro(oryol_end_web_samples)
+    file(APPEND ${CMAKE_SOURCE_DIR}/build/websamples.json "    { \"name\": \"__end__\" }\n  ]\n}\n")
+endmacro()

@@ -1,4 +1,5 @@
 oryol_begin_app(Shapes windowed)
     oryol_sources(.)
     oryol_deps(Application Render)
+    oryol_add_web_sample(Shapes "Demonstrates the ShapeBuilder class" emscripten)    
 oryol_end_app()
