@@ -9,7 +9,11 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
 #-------------------------------------------------------------------------------
-option(ORYOL_UNITTESTS "Enable unit tests" ON)
+if (ORYOL_EMSCRIPTEN OR ORYOL_NACL)
+    option(ORYOL_UNITTESTS "Enable unit tests" OFF)
+else()
+    option(ORYOL_UNITTESTS "Enable unit tests" ON)
+endif()
 option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after building" OFF)
 option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
 option(ORYOL_ALLOCATOR_DEBUG "Enable allocator debugging code (slow)" OFF)
