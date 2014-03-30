@@ -16,8 +16,6 @@ using namespace Core;
 //------------------------------------------------------------------------------
 void
 glInfo::PrintInfo() {
-    glInfo::PrintInt(GL_MAJOR_VERSION, "GL_MAJOR_VERSION", 1);
-    glInfo::PrintInt(GL_MINOR_VERSION, "GL_MINOR_VERSION", 1);
     glInfo::PrintString(GL_VERSION, "GL_VERSION", false);
     glInfo::PrintString(GL_SHADING_LANGUAGE_VERSION, "GL_SHADING_LANGUAGE_VERSION", false);
     glInfo::PrintString(GL_VENDOR, "GL_VENDOR", false);
