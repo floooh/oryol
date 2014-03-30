@@ -49,46 +49,14 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW window
-    int redBits=0, greenBits=0, blueBits=0, alphaBits=0;
-    switch (setup.GetColorPixelFormat()) {
-        case PixelFormat::R8G8B8:
-            redBits=greenBits=blueBits=8; alphaBits=0;
-            break;
-        case PixelFormat::R5G6B5:
-            redBits=5; greenBits=6; blueBits=5; alphaBits=0;
-            break;
-        case PixelFormat::R5G5B5A1:
-            redBits=greenBits=blueBits=5; alphaBits=1;
-            break;
-        case PixelFormat::R4G4B4A4:
-            redBits=greenBits=blueBits=alphaBits=4;
-            break;
-        case PixelFormat::R8G8B8A8:
-        default:
-            redBits=greenBits=blueBits=alphaBits=8;
-            break;
-    }
-    int depthBits=0, stencilBits=0;
-    switch (setup.GetDepthPixelFormat()) {
-        case PixelFormat::D16:
-            depthBits=16; stencilBits=0;
-            break;
-        case PixelFormat::D32:
-            depthBits=32; stencilBits=0;
-            break;
-        case PixelFormat::D24S8:
-            depthBits=24; stencilBits=8;
-            break;
-        default:
-            depthBits=0; stencilBits=0;
-            break;
-    }
-    glfwWindowHint(GLFW_RED_BITS, redBits);
-    glfwWindowHint(GLFW_GREEN_BITS, greenBits);
-    glfwWindowHint(GLFW_BLUE_BITS, blueBits);
-    glfwWindowHint(GLFW_ALPHA_BITS, alphaBits);
-    glfwWindowHint(GLFW_DEPTH_BITS, depthBits);
-    glfwWindowHint(GLFW_STENCIL_BITS, stencilBits);
+    PixelFormat::Code colorPixelFormat = setup.GetColorPixelFormat();
+    PixelFormat::Code depthPixelFormat = setup.GetDepthPixelFormat();
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Alpha));
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(depthPixelFormat, PixelFormat::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Stencil));
     #if ORYOL_OSX
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -115,7 +83,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSwapInterval(setup.GetSwapInterval());
 
     // dump GL information
-//    glInfo::PrintInfo();
+    glInfo::PrintInfo();
 
     // setup extensions
     glExt::Setup();
