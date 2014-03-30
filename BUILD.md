@@ -6,8 +6,8 @@ CMake to manage build configurations for the supported host and target platforms
 ### You need: ###
 - python 2.7.x
 - cmake 2.8.11 or better
-- for *OSX:* Xcode 5.x
-- for *emscripten:* a working emscripten fastcomp compile environment
+- for **OSX:** Xcode 5.x
+- for **emscripten:** a working emscripten fastcomp compile environment
 
 ### OSX ###
 To build and run the Triangle sample on OSX:
@@ -40,7 +40,7 @@ Clear.html Shapes.html Triangle.html ...
 Serving HTTP on 0.0.0.0 port 8000 ...
 ```
 
-Now start Chrome or Firefox and navigate to *http://0.0.0.0:8000/Triangle.html*.
+Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000/Triangle.html**.
 
 ## Prerequisites
 
