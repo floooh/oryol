@@ -54,7 +54,8 @@ glExt::IsValid() {
 void
 glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_OPENGLES2
-        o_error("FIXME!\n");
+        // FIXME: this works in emscripten for now
+        ::glGenVertexArrays(n, arrays);
     #elif ORYOL_OPENGL
         ::glGenVertexArrays(n, arrays);
     #else
@@ -66,7 +67,8 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
 void
 glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
     #if ORYOL_OPENGLES2
-        o_error("FIXME!\n");
+        // FIXME: this works in emscripten for now
+        ::glDeleteVertexArrays(n, arrays);
     #elif ORYOL_OPENGL
         ::glDeleteVertexArrays(n, arrays);
     #else
@@ -78,7 +80,8 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
 void
 glExt::BindVertexArray(GLuint array) {
     #if ORYOL_OPENGLES2
-        o_error("FIXME!\n");
+        // FIXME: this works in emscripten for now
+        ::glBindVertexArray(array);
     #elif ORYOL_OPENGL
         ::glBindVertexArray(array);
     #else
