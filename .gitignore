@@ -2,6 +2,8 @@ bin/
 vagrant/.vagrant
 doc/html
 build/*-*-*
+build/*.json
+build/webpage
 configs/.selected
 *.pyc
 *.txt.user
