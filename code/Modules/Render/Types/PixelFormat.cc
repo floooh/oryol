@@ -124,5 +124,75 @@ PixelFormat::IsCompressedFormat(Code c) {
     }
 }
 
+//------------------------------------------------------------------------------
+int8
+PixelFormat::NumBits(Code pixelFormat, Channel chn) {
+    switch (pixelFormat) {
+        case R8G8B8A8:
+            if ((Red == chn) || (Green == chn) || (Blue == chn) || (Alpha == chn)) {
+                return 8;
+            }
+            break;
+        case R8G8B8:
+            if ((Red == chn) || (Green == chn) || (Blue == chn)) {
+                return 8;
+            }
+            break;
+        case R5G6B5:
+            if ((Red == chn) || (Blue == chn)) {
+                return 5;
+            }
+            else if (Green == chn) {
+                return 6;
+            }
+            break;
+        case R5G5B5A1:
+            if ((Red == chn) || (Green == chn) || (Blue == chn)) {
+                return 5;
+            }
+            else if (Alpha == chn) {
+                return 1;
+            }
+            break;
+        case R4G4B4A4:
+            if ((Red == chn) || (Green == chn) || (Blue == chn) || (Alpha == chn)) {
+                return 4;
+            }
+            break;
+        case L8:
+            if (Red == chn) {
+                return 8;
+            }
+            break;
+        case D16:
+            if (Depth == chn) {
+                return 16;
+            }
+            break;
+        case D32:
+            if (Depth == chn) {
+                return 32;
+            }
+            break;
+        case D24S8:
+            if (Depth == chn) {
+                return 24;
+            }
+            else if (Stencil == chn) {
+                return 8;
+            }
+            break;
+        case R32F:
+            if (Red == chn) {
+                return 32;
+            }
+            break;
+        default:
+            break;
+    }
+    // fallthrough: unsupported combination
+    return 0;
+}
+
 } // namespace Render
 } // namespace Oryol

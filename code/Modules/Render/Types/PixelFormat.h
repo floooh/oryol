@@ -32,6 +32,19 @@ public:
         NumPixelFormats,    ///< number of pixel formats
         InvalidPixelFormat, ///< invalid pixel format value
     };
+
+    /// a pixel format channel
+    enum Channel {
+        Red,            ///< red bits
+        Green,          ///< green bits
+        Blue,           ///< blue bits
+        Alpha,          ///< alpha bits
+        Depth,          ///< depth bits
+        Stencil,        ///< stencil bits
+
+        NumChannels,    ///< number of channels
+        InvalidChannel, ///< invalid channel value
+    };
     
     /// convert to string
     static const char* ToString(Code c);
@@ -47,6 +60,8 @@ public:
     static bool IsValidTextureDepthFormat(Code c);
     /// return true if the pixel format is a compressed format
     static bool IsCompressedFormat(Code c);
+    /// get number of bits in a pixel format channel (only for non-compressed formats!)
+    static int8 NumBits(Code pixelFormat, Channel channel);
 };
     
 } // namespace Render
