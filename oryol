@@ -9,6 +9,7 @@ import glob
 import platform
 import subprocess
 import shutil
+from string import Template
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
@@ -298,6 +299,44 @@ def runRebuild(config) :
             else :                
                 subprocess.call(args=["cmake", "--clean-first", "--build", ".", "--config", "Debug"], cwd=buildPath)
 
+# build a web page under /build/webpage
+def buildWebPage() :
+    # first clean up previous page
+    if os.path.isdir('build/webpage') :
+        shutil.rmtree('build/webpage')
+    os.makedirs('build/webpage')
+
+    # load the websamples.json file, should have been created during the last build
+    f = open('build/websamples.json')
+    samples = json.loads(f.read())
+    f.close
+
+    # load the samples html template
+    f = open('web/samples.template.html')
+    templ = Template(f.read())
+    f.close
+
+    # build the html link list
+    content = ''
+    for sample in samples['samples'] :
+        if sample['name'] != '__end__' :
+            content += '<li><a href="{}.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
+
+    # populate the html template, and write to the build directory
+    html = templ.safe_substitute(samples=content)
+    f = open('build/webpage/index.html', 'w')
+    f.write(html)
+    f.close()
+
+    # copy the sample files over
+    for sample in samples['samples'] :
+        if sample['name'] != '__end__' :
+            for ext in ['html', 'js', 'html.mem'] :
+                shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
+
+    print 'Generated Samples web page under build/webpage!'
+
+
 #===============================================================================
 if len(sys.argv) == 1 :
     print '-------------------------------------'
@@ -323,6 +362,8 @@ if len(sys.argv) == 1 :
     print '  rebuild selected or provided config'
     print 'oryol clean [config-name, partial-config-name or all]'
     print '  delete the cmake cache and build files of the selected or provided config'
+    print 'oryol webpage'
+    print '  build web samples and create web page from it'
 
 else :
     cmd = sys.argv[1]
@@ -445,6 +486,12 @@ else :
         for config in configs :
             runCMake(config)
             runRebuild(config)
+
+    elif cmd == 'webpage' :
+        config = loadConfig("emscripten-make-release")
+        runCMake(config)
+        runRebuild(config)
+        buildWebPage()
 
 
 
