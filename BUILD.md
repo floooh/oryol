@@ -1,6 +1,47 @@
 Oryol uses a python script ('oryol' in the project root directory) and
 CMake to manage build configurations for the supported host and target platforms.
 
+## TL;DR: how to build and run the samples
+
+### You need: ###
+- python 2.7.x
+- cmake 2.8.11 or better
+- for **OSX:** Xcode 5.x
+- for **emscripten:** a working emscripten fastcomp compile environment
+
+### OSX ###
+To build and run the Triangle sample on OSX:
+
+```
+> cd oryol
+> ./oryol select
+'osx-xcode-debug' selected as current config
+> ./oryol build
+[this should run cmake and compile the samples]
+> cd bin/osx
+> ls
+Clear.app Triangle.app ...
+> open Triangle.app
+```
+
+### emscripten ###
+To build and run the Triangle sample for emscripten:
+
+```
+> cd oryol
+> ./oryol select emscripten-make-debug
+'emscripten-make-debug' selected as current config
+> ./oryol build
+[this should run cmake and compile the samples]
+> cd bin/emsc
+> ls
+Clear.html Shapes.html Triangle.html ...
+> python -m SimpleHTTPServer
+Serving HTTP on 0.0.0.0 port 8000 ...
+```
+
+Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000/Triangle.html**.
+
 ## Prerequisites
 
 ### Host and Target Platforms
