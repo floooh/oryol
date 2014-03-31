@@ -29,8 +29,8 @@ To build and run the Triangle sample for emscripten:
 
 ```
 > cd oryol
-> ./oryol select emscripten-make-debug
-'emscripten-make-debug' selected as current config
+> ./oryol select emscripten-make-release
+'emscripten-make-release' selected as current config
 > ./oryol build
 [this should run cmake and compile the samples]
 > cd bin/emsc
