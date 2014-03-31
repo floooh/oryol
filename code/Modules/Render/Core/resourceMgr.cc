@@ -101,7 +101,7 @@ template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data) {
     o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(setup.GetLocator());
+    Id resId = this->resourceRegistry.LookupResource(loc);
     if (!resId.IsValid()) {
         resId = this->meshPool.AllocId();
         this->resourceRegistry.AddResource(loc, resId);
