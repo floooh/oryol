@@ -73,24 +73,24 @@ ShapeApp::OnInit() {
     this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Shapes Sample"));
 
     // create a cube mesh
-    ShapeBuilder cubeShapeBuilder;
-    cubeShapeBuilder.SetRandomColorsFlag(true);
-    cubeShapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    cubeShapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
-    cubeShapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
-    cubeShapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
-    cubeShapeBuilder.Build();
-    this->cubeMeshId = this->render->CreateResource(MeshSetup::FromData("cube"), cubeShapeBuilder.GetStream());
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.SetRandomColorsFlag(true);
+    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
+    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
+    shapeBuilder.Build();
+    this->cubeMeshId = this->render->CreateResource(MeshSetup::FromData("cube"), shapeBuilder.GetStream());
 
     // create a sphere mesh
-    ShapeBuilder sphereShapeBuilder;
-    sphereShapeBuilder.SetRandomColorsFlag(true);
-    sphereShapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    sphereShapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
-    sphereShapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
-    sphereShapeBuilder.AddSphere(0.75f, 36, 20);
-    sphereShapeBuilder.Build();
-    this->sphereMeshId = this->render->CreateResource(MeshSetup::FromData("sphere"), sphereShapeBuilder.GetStream());
+    shapeBuilder.Clear();
+    shapeBuilder.SetRandomColorsFlag(true);
+    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
+    shapeBuilder.AddSphere(0.75f, 36, 20);
+    shapeBuilder.Build();
+    this->sphereMeshId = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     
     // build a shader program from a vertex- and fragment shader
     Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
