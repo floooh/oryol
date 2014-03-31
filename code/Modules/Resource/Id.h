@@ -65,7 +65,7 @@ Id::InvalidId() {
 }
 
 //------------------------------------------------------------------------------
-uint64
+inline uint64
 Id::makeId(uint32 uniqueStamp, uint16 slotIndex, uint16 type) {
     // type must be most-signifant, then uniqueStamp, then slotIndex
     uint64 result = type;
