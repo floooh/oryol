@@ -4,6 +4,8 @@
 #include "Pre.h"
 #include "ShapeBuilder.h"
 #include "glm/gtc/random.hpp"
+#include "glm/gtc/constants.hpp"
+#include "glm/trigonometric.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -192,10 +194,11 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
             break;
         case Sphere:
             {
+                // see BuildSphere() for geometry layout
                 const int32 numSlices = shape.i0;
                 const int32 numStacks = shape.i1;
-                shape.numVertices = 2 + (numSlices + 1) * (numStacks - 1);
-                shape.numTris = 2 * numSlices + 2 * numSlices * (numStacks - 2);
+                shape.numVertices = (numSlices + 1) * (numStacks + 1);
+                shape.numTris = (2 * numSlices * numStacks) - (2 * numSlices);
             }
             break;
         case Cylinder:
@@ -301,7 +304,8 @@ ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) 
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    o_assert(this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Position));
+    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    o_assert(vertexLayout.Contains(VertexAttr::Position));
     
     const int32 startVertexIndex = curVertexIndex;
     const int32 numTiles = shape.i0;
@@ -310,7 +314,6 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     const float32 w = shape.f0;
     const float32 h = shape.f1;
     const float32 d = shape.f2;
-    //const glm::vec4& color = shape.color;
     const float32 x0 = -w * 0.5f;
     const float32 x1 = +w * 0.5f;
     const float32 y0 = -h * 0.5f;
@@ -360,16 +363,26 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
             }
         }
     }
+    o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
-    if (this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Color0)) {
+    if (vertexLayout.Contains(VertexAttr::Color0)) {
         this->BuildVertexColors(shape, startVertexIndex);
     }
-    
-    // FIXME: colors
-    // FIXME: normals/binormals/tangents
-    // FIXME: uvs
+    if (vertexLayout.Contains(VertexAttr::Normal)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildBox() normals not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::Binormal)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildBox() binormals not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::Tangent)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildBox() tangents not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildBox() texcoord not implemented yet!\n");
+    }
     
     // write indices
+    const int32 startTriIndex = curTriIndex;
     for (int32 face = 0; face < 6; face++) {
         uint16 faceStartIndex = startVertexIndex + face * numVerticesPerFace;
         for (int32 j = 0; j < numTiles; j++) {
@@ -386,29 +399,113 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
             }
         }
     }
+    o_assert((curTriIndex - startTriIndex) == shape.numTris);
+}
+
+//------------------------------------------------------------------------------
+/*
+    Geometry layout is as follows (for 5 slices, 4 stacks):
+    
+    +  +  +  +  +  +
+    |\ |\ |\ |\ |\
+    | \| \| \| \| \
+    +--+--+--+--+--+        30 vertices (slices + 1) * (stacks + 1)
+    |\ |\ |\ |\ |\ |        30 triangles (2 * slices * stacks) - (2 * slices)
+    | \| \| \| \| \|        2 orphan vertices, but f*ck it
+    +--+--+--+--+--+
+    |\ |\ |\ |\ |\ |
+    | \| \| \| \| \|
+    +--+--+--+--+--+
+     \ |\ |\ |\ |\ |
+      \| \| \| \| \|
+    +  +  +  +  +  +
+*/
+void
+ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
+    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    o_assert(vertexLayout.Contains(VertexAttr::Position));
+    const int32 startVertexIndex = curVertexIndex;
+    const int32 numSlices = shape.i0;
+    const int32 numStacks = shape.i1;
+    const float32 radius = shape.f0;
+    
+    bool hasNormals = vertexLayout.Contains(VertexAttr::Normal);
+    const float32 pi = glm::pi<float32>();
+    const float32 twoPi = 2.0f * pi;
+    for (int32 stack = 0; stack <= numStacks; stack++) {
+        const float32 stackAngle = (pi * stack) / numStacks;
+        const float32 sinStack = glm::sin(stackAngle);
+        const float32 cosStack = glm::cos(stackAngle);
+        for (int32 slice = 0; slice <= numSlices; slice++) {
+            const float32 sliceAngle = (twoPi * slice) / numSlices;
+            const float32 sinSlice = glm::sin(sliceAngle);
+            const float32 cosSlice = glm::cos(sliceAngle);
+            const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
+            const glm::vec3 pos(norm * radius);
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, pos.x, pos.y, pos.z);
+            if (hasNormals) {
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+            }
+            curVertexIndex++;
+        }
+    }
+    o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
+
+    if (vertexLayout.Contains(VertexAttr::Color0)) {
+        this->BuildVertexColors(shape, startVertexIndex);
+    }
+    if (vertexLayout.Contains(VertexAttr::Binormal)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildSphere() binormals not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::Tangent)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildSphere() tangents not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildSphere() texcoord not implemented yet!\n");
+    }
+    
+    // north-pole triangles
+    const int32 startTriIndex = curTriIndex;
+    int32 rowA = startVertexIndex;
+    int32 rowB = rowA + numSlices + 1;
+    for (int32 slice = 0; slice < numSlices; slice++) {
+        this->meshBuilder.Triangle(curTriIndex++, rowA, rowB + slice + 1, rowB + slice);
+    }
+    
+    // stack triangles
+    for (int32 stack = 1; stack < numStacks - 1; stack++) {
+        rowA = stack * (numSlices + 1);
+        rowB = rowA + numSlices + 1;
+        for (int32 slice = 0; slice < numSlices; slice++) {
+            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
+            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
+        }
+    }
+    
+    // south-pole triangles
+    rowA = (numStacks - 1) * (numSlices + 1);
+    rowB = rowA + numSlices + 1;
+    for (int32 slice = 0; slice < numSlices; slice++) {
+        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
+    }
+    o_assert((curTriIndex - startTriIndex) == shape.numTris);
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 curIndexIndex) {
+ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
     o_error("FIXME!");
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 curIndexIndex) {
+ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
     o_error("FIXME!");
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 curIndexIndex) {
-    o_error("FIXME!");
-}
-
-//------------------------------------------------------------------------------
-void
-ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curIndexIndex) {
+ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
     o_error("FIXME!");
 }
 

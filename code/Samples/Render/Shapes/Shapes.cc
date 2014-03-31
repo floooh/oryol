@@ -26,9 +26,9 @@ public:
     
 private:
     RenderFacade* render = nullptr;
-    Resource::Id meshId;
+    Resource::Id cubeMeshId;
+    Resource::Id sphereMeshId;
     Resource::Id progId;
-    glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -70,17 +70,27 @@ ShapeApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingleton();
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(400, 400, "Oryol Shapes Sample"));
+    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Shapes Sample"));
 
-    // create a shape mesh
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
-    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
-    shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("cube"), shapeBuilder.GetStream());
+    // create a cube mesh
+    ShapeBuilder cubeShapeBuilder;
+    cubeShapeBuilder.SetRandomColorsFlag(true);
+    cubeShapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    cubeShapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    cubeShapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
+    cubeShapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
+    cubeShapeBuilder.Build();
+    this->cubeMeshId = this->render->CreateResource(MeshSetup::FromData("cube"), cubeShapeBuilder.GetStream());
+
+    // create a sphere mesh
+    ShapeBuilder sphereShapeBuilder;
+    sphereShapeBuilder.SetRandomColorsFlag(true);
+    sphereShapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    sphereShapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    sphereShapeBuilder.SetPrimitiveType(PrimitiveType::Triangles);
+    sphereShapeBuilder.AddSphere(0.75f, 36, 20);
+    sphereShapeBuilder.Build();
+    this->sphereMeshId = this->render->CreateResource(MeshSetup::FromData("sphere"), sphereShapeBuilder.GetStream());
     
     // build a shader program from a vertex- and fragment shader
     Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
@@ -94,9 +104,8 @@ ShapeApp::OnInit() {
     this->render->DiscardResource(vs);
     this->render->DiscardResource(fs);
     
-    this->proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
-    this->model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -5.0f));
-    this->view  = glm::mat4();
+    this->proj = glm::perspective(glm::radians(45.0f), 1.5f, 0.01f, 100.0f);
+    this->view = glm::mat4();
     
     return AppState::Running;
 }
@@ -110,11 +119,15 @@ ShapeApp::OnRunning() {
         // compute a new ModelViewProj matrix
         this->angleY += 0.01f;
         this->angleX += 0.02f;
-        glm::mat4 m = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -5.0f));
-        m = glm::rotate(m, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-        m = glm::rotate(m, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-        this->model = m;
-        glm::mat4 mvp = this->proj * this->view * this->model;
+        glm::mat4 cubeModelTform = glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -5.0f));
+        cubeModelTform = glm::rotate(cubeModelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+        cubeModelTform = glm::rotate(cubeModelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 cubeMVP = this->proj * this->view * cubeModelTform;
+
+        glm::mat4 sphereModelTform = glm::translate(glm::mat4(), glm::vec3(+1.0f, 0.0f, -5.0f));
+        sphereModelTform = glm::rotate(sphereModelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+        sphereModelTform = glm::rotate(sphereModelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 sphereMVP = this->proj * this->view * sphereModelTform;
         
         // clear, apply mesh and shader program, and draw
         this->render->ApplyState(Render::State::DepthMask, true);
@@ -123,9 +136,12 @@ ShapeApp::OnRunning() {
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->meshId);
         this->render->ApplyProgram(this->progId, 0);
-        this->render->ApplyVariable(ModelViewProjection, mvp);
+        this->render->ApplyVariable(ModelViewProjection, cubeMVP);
+        this->render->ApplyMesh(this->cubeMeshId);
+        this->render->Draw(0);
+        this->render->ApplyMesh(this->sphereMeshId);
+        this->render->ApplyVariable(ModelViewProjection, sphereMVP);
         this->render->Draw(0);
         
         this->render->EndFrame();
@@ -140,7 +156,8 @@ AppState::Code
 ShapeApp::OnCleanup() {
     // cleanup everything
     this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->DiscardResource(this->sphereMeshId);
+    this->render->DiscardResource(this->cubeMeshId);
     this->render->Discard();
     this->render = nullptr;
     RenderFacade::DestroySingleton();
