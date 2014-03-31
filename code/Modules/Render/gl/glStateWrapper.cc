@@ -723,9 +723,9 @@ glStateWrapper::setupStateVector() {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateMeshState() {
+    glExt::BindVertexArray(0);
     ::glBindBuffer(GL_ARRAY_BUFFER, 0);
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glExt::BindVertexArray(0);
     this->curVertexArrayObject = 0;
     this->curVertexBuffer = 0;
     this->curIndexBuffer = 0;
