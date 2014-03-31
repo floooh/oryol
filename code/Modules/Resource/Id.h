@@ -52,9 +52,10 @@ public:
     uint32 UniqueStamp() const;
     
 private:
-    uint32 uniqueStamp;
-    uint16 slotIndex;
-    uint16 type;
+    /// make id from uniqueStamp, slotIndex and type
+    uint64 makeId(uint32 uniqueStamp, uint16 slotIndex, uint16 type);
+
+    uint64 id;
 };
 
 //------------------------------------------------------------------------------
@@ -64,29 +65,33 @@ Id::InvalidId() {
 }
 
 //------------------------------------------------------------------------------
-inline
-Id::Id() :
-uniqueStamp(InvalidUniqueStamp),
-slotIndex(InvalidSlotIndex),
-type(InvalidType) {
-    // empty
+uint64
+Id::makeId(uint32 uniqueStamp, uint16 slotIndex, uint16 type) {
+    // type must be most-signifant, then uniqueStamp, then slotIndex
+    uint64 result = type;
+    result <<= 32;
+    result |= uniqueStamp;
+    result <<= 16;
+    result |= slotIndex;
+    return result;
 }
 
 //------------------------------------------------------------------------------
 inline
-Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint16 type_) :
-uniqueStamp(uniqueStamp_),
-slotIndex(slotIndex_),
-type(type_) {
-    // empty
+Id::Id() {
+    this->id = this->makeId(InvalidUniqueStamp, InvalidSlotIndex, InvalidType);
+}
+
+//------------------------------------------------------------------------------
+inline
+Id::Id(uint32 uniqueStamp, uint16 slotIndex, uint16 type) {
+    this->id = this->makeId(uniqueStamp, slotIndex, type);
 }
 
 //------------------------------------------------------------------------------
 inline
 Id::Id(const Id& rhs) :
-uniqueStamp(rhs.uniqueStamp),
-slotIndex(rhs.slotIndex),
-type(rhs.type) {
+id(rhs.id) {
     // empty
 }
 
@@ -94,75 +99,56 @@ type(rhs.type) {
 inline void
 Id::operator=(const Id& rhs) {
     if (this != &rhs) {
-        this->uniqueStamp = rhs.uniqueStamp;
-        this->slotIndex = rhs.slotIndex;
-        this->type = rhs.type;
+        this->id = rhs.id;
     }
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator==(const Id& rhs) const {
-    return (this->uniqueStamp == rhs.uniqueStamp) &&
-           (this->slotIndex == rhs.slotIndex) &&
-           (this->type == rhs.type);
+    return this->id == rhs.id;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator!=(const Id& rhs) const {
-    return (this->uniqueStamp != rhs.uniqueStamp) ||
-           (this->slotIndex != rhs.slotIndex) ||
-           (this->type != rhs.type);
+    return this->id != rhs.id;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator<(const Id& rhs) const {
-    if (this->type < rhs.type) {
-        return true;
-    }
-    else if (this->slotIndex < rhs.slotIndex) {
-        return true;
-    }
-    else if (this->uniqueStamp < rhs.uniqueStamp) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-//------------------------------------------------------------------------------
-inline bool
-Id::IsValid() const {
-    return InvalidUniqueStamp != this->uniqueStamp;
-}
-
-//------------------------------------------------------------------------------
-inline void
-Id::Invalidate() {
-    this->uniqueStamp = InvalidUniqueStamp;
-    this->slotIndex = InvalidSlotIndex;
-    this->type = InvalidType;
+    return this->id < rhs.id;
 }
 
 //------------------------------------------------------------------------------
 inline uint16
 Id::SlotIndex() const {
-    return this->slotIndex;
+    return this->id & 0xFFFF;
 }
 
 //------------------------------------------------------------------------------
 inline uint16
 Id::Type() const {
-    return this->type;
+    return (this->id >> 48) & 0xFFFF;
 }
 
 //------------------------------------------------------------------------------
 inline uint32
 Id::UniqueStamp() const {
-    return this->uniqueStamp;
+    return (this->id >> 16) & 0xFFFFFFFF;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Id::IsValid() const {
+    return InvalidUniqueStamp != this->UniqueStamp();
+}
+
+//------------------------------------------------------------------------------
+inline void
+Id::Invalidate() {
+    this->id = this->makeId(InvalidUniqueStamp, InvalidSlotIndex, InvalidType);
 }
 
 } // namespace Resource
