@@ -154,6 +154,7 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     }
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetVertexArrayObject(vao);
+    this->glStateWrapper->InvalidateMeshState();
 }
 
 //------------------------------------------------------------------------------
