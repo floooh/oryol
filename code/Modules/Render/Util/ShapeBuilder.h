@@ -23,10 +23,6 @@ public:
     /// add vertex component
     void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
     
-    /// set the primitive type to use for the resulting mesh
-    void SetPrimitiveType(PrimitiveType::Code primType);
-    /// get the primitive type
-    PrimitiveType::Code GetPrimitiveType() const;
     /// set current transform
     void SetTransform(const glm::mat4& transform);
     /// get current transform
@@ -39,6 +35,11 @@ public:
     void SetRandomColorsFlag(bool b);
     /// get random colors flag
     bool GetRandomColorsFlag() const;
+    
+    /// begin a new primitive group
+    void BeginPrimitiveGroup();
+    /// end current primitive group
+    void EndPrimitiveGroup();
     
     /// add a box shape
     void AddBox(float32 w, float32 h, float32 d, int32 tiles);
@@ -95,7 +96,9 @@ private:
     /// build plane vertices and indices
     void BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);
     
-    PrimitiveType::Code primitiveType;
+    bool inBeginPrimitiveGroup;
+    int32 curPrimGroupBaseElement;
+    int32 curPrimGroupNumElements;
     glm::mat4 transform;
     glm::vec4 color;
     bool randomColors;
