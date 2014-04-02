@@ -79,7 +79,7 @@ ShapeApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
     
-    // add a cube
+    // add a cube (FIXME:
     shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
     shapeBuilder.EndPrimitiveGroup();
@@ -97,6 +97,11 @@ ShapeApp::OnInit() {
     // add a torus
     shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
+    shapeBuilder.EndPrimitiveGroup();
+    
+    // add a plane
+    shapeBuilder.BeginPrimitiveGroup();
+    shapeBuilder.AddPlane(1.5f, 1.5f, 10);
     shapeBuilder.EndPrimitiveGroup();
     
     shapeBuilder.Build();
@@ -150,20 +155,24 @@ ShapeApp::OnRunning() {
         this->render->ApplyMesh(this->meshId);
         
         // render the cube
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0, -5.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0, -6.0f)));
         this->render->Draw(0);
         
         // render the sphere
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -5.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);
         
         // render the cylinder
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0f, -1.0f, -5.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
         this->render->Draw(2);
         
         // render the torus
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(+1.0f, -1.0f, -5.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
         this->render->Draw(3);
+        
+        // render the plane
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
+        this->render->Draw(4);
         
         this->render->EndFrame();
     }

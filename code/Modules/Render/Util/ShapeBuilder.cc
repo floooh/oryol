@@ -651,7 +651,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
 
 //------------------------------------------------------------------------------
 /**
-    Geometry layout for torus (sides = 4, rings = 5
+    Geometry layout for torus (sides = 4, rings = 5):
     
     +--+--+--+--+--+
     |\ |\ |\ |\ |\ |
@@ -728,9 +728,81 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
 }
 
 //------------------------------------------------------------------------------
+/**
+    Geometry layout for plane (4 tiles):
+
+    +--+--+--+--+
+    |\ |\ |\ |\ |
+    | \| \| \| \|
+    +--+--+--+--+    25 vertices (tiles + 1) * (tiles + 1)
+    |\ |\ |\ |\ |    32 triangles (tiles + 1) * (tiles + 1) * 2
+    | \| \| \| \|
+    +--+--+--+--+
+    |\ |\ |\ |\ |
+    | \| \| \| \|
+    +--+--+--+--+
+    |\ |\ |\ |\ |
+    | \| \| \| \|
+    +--+--+--+--+
+*/
 void
 ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    o_error("FIXME!");
+    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    o_assert(vertexLayout.Contains(VertexAttr::Position));
+    const int32 startVertexIndex = curVertexIndex;
+
+    const int32 numTiles = shape.i0;
+    const float32 w = shape.f0;
+    const float32 d = shape.f1;
+    const float32 x0 = -w * 0.5f;
+    const float32 z0 = -d * 0.5f;
+    const float32 dx = w / numTiles;
+    const float32 dz = d / numTiles;
+    
+    // vertices
+    glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
+    for (int32 ix = 0; ix <= numTiles; ix++) {
+        pos.x = x0 + dx * ix;
+        for (int32 iz = 0; iz <= numTiles; iz++) {
+            pos.z = z0 + dz * iz;
+            glm::vec4 tpos = shape.transform * pos;
+            this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+        }
+    }
+    o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
+    
+    if (vertexLayout.Contains(VertexAttr::Color0)) {
+        this->BuildVertexColors(shape, startVertexIndex);
+    }
+    if (vertexLayout.Contains(VertexAttr::Normal)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildPlane() normals not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::Binormal)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildPlane() binormals not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::Tangent)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildPlane() tangents not implemented yet!\n");
+    }
+    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
+        Log::Warn("FIXME: ShapeBuilder::BuildPlane() texcoord not implemented yet!\n");
+    }
+
+    // write indices
+    const int32 startTriIndex = curTriIndex;
+    for (int32 j = 0; j < numTiles; j++) {
+        for (int32 i = 0; i < numTiles; i++) {
+            // tile vertex indices
+            uint16 i0 = startVertexIndex + (j * (numTiles + 1)) + i;
+            uint16 i1 = i0 + 1;
+            uint16 i2 = i0 + numTiles + 1;
+            uint16 i3 = i2 + 1;
+            
+            // the 2 tile triangles
+            this->meshBuilder.Triangle(curTriIndex++, i0, i1, i3);
+            this->meshBuilder.Triangle(curTriIndex++, i0, i3, i2);
+        }
+    }
+    o_assert((curTriIndex - startTriIndex) == shape.numTris);
 }
 
 } // namespace Render
