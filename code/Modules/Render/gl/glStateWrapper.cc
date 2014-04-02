@@ -6,6 +6,7 @@
 #include "glStateWrapper.h"
 #include "Render/gl/glExt.h"
 #include "Core/Memory/Memory.h"
+#include "Render/Core/mesh.h"
 
 namespace Oryol {
 namespace Render {
@@ -723,7 +724,9 @@ glStateWrapper::setupStateVector() {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateMeshState() {
-    glExt::BindVertexArray(0);
+    if (glExt::HasExtension(glExt::VertexArrayObject)) {
+        glExt::BindVertexArray(0);
+    }
     ::glBindBuffer(GL_ARRAY_BUFFER, 0);
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->curVertexArrayObject = 0;
@@ -760,6 +763,39 @@ glStateWrapper::BindVertexArrayObject(GLuint vao) {
         this->curVertexArrayObject = vao;
         glExt::BindVertexArray(vao);
         ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::BindMesh(const mesh* msh) {
+    if (glExt::HasExtension(glExt::VertexArrayObject)) {
+        GLuint vao = msh->glGetVertexArrayObject();
+        o_assert_dbg(0 != vao);
+        this->BindVertexArrayObject(vao);
+    }
+    else {
+        const GLuint vb = msh->glGetVertexBuffer();
+        const GLuint ib = msh->glGetIndexBuffer();
+        this->BindIndexBuffer(ib);
+        if (vb != this->curVertexBuffer) {
+            this->curVertexBuffer = vb;
+            ::glBindBuffer(GL_ARRAY_BUFFER, vb);
+            ORYOL_GL_CHECK_ERROR();
+            for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+                const glVertexAttr& attr = msh->glAttr(i);
+                if (attr.enabled) {
+                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                    ORYOL_GL_CHECK_ERROR();
+                    ::glEnableVertexAttribArray(attr.index);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+                else {
+                    ::glDisableVertexAttribArray(attr.index);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+            }
+        }
     }
 }
 

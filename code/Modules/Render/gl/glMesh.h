@@ -36,8 +36,10 @@ public:
     GLuint glGetVertexArrayObject() const;
     /// set glVertexAttr object at index
     void glSetAttr(int32 index, const glVertexAttr& attr);
-    /// get glVertexAttr object at index
+    /// get glVertexAttr object at index (read/write)
     glVertexAttr& glAttr(int32 index);
+    /// get glVertexAttr object (read only)
+    const glVertexAttr& glAttr(int32 index) const;
     
 protected:
     GLuint glVertexBuffer;
@@ -67,7 +69,14 @@ glMesh::glGetVertexArrayObject() const {
 //------------------------------------------------------------------------------
 inline glVertexAttr&
 glMesh::glAttr(int32 index) {
-    o_assert_range(index, VertexAttr::NumVertexAttrs);
+    o_assert_range_dbg(index, VertexAttr::NumVertexAttrs);
+    return this->glAttrs[index];
+}
+
+//------------------------------------------------------------------------------
+inline const glVertexAttr&
+glMesh::glAttr(int32 index) const {
+    o_assert_range_dbg(index, VertexAttr::NumVertexAttrs);
     return this->glAttrs[index];
 }
 

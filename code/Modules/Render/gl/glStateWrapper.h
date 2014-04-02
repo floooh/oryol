@@ -17,6 +17,8 @@
 
 namespace Oryol {
 namespace Render {
+
+class mesh;
     
 class glStateWrapper {
 public:
@@ -71,6 +73,8 @@ public:
     void BindIndexBuffer(GLuint ib);
     /// bind vertex array object
     void BindVertexArrayObject(GLuint vao);
+    /// bind complete mesh object
+    void BindMesh(const mesh* msh);
     
     /// invalidate program state
     void InvalidateProgramState();

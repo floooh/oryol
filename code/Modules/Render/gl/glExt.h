@@ -8,6 +8,7 @@
     to resolve (e.g. GL_APPLE_vertex_array_object vs GL_ARB_vertex_array_object)
 */
 #include "Render/gl/gl_decl.h"
+#include "Core/Assert.h"
 
 namespace Oryol {
 namespace Render {
@@ -43,6 +44,12 @@ private:
     static bool isValid;
 };
 
-    
+//------------------------------------------------------------------------------
+inline bool
+glExt::HasExtension(Code c) {
+    o_assert_dbg(c < NumExtensions);
+    return extensions[c];
+}
+
 } // namespace Render
 } // namespace Oryol

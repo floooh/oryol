@@ -131,29 +131,35 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     
     // create and initialize vertex array object
     this->glStateWrapper->InvalidateMeshState();
-    GLuint vao = 0;
-    glExt::GenVertexArrays(1, &vao);
-    this->glStateWrapper->BindVertexArrayObject(vao);
-    this->glStateWrapper->BindIndexBuffer(outMesh.glGetIndexBuffer());
-    this->glStateWrapper->BindVertexBuffer(outMesh.glGetVertexBuffer());
     
-    for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& glAttr = outMesh.glAttr(attrIndex);
-        if (glAttr.enabled) {
-            ::glVertexAttribPointer(glAttr.index,
-                                    glAttr.size,
-                                    glAttr.type,
-                                    glAttr.normalized,
-                                    glAttr.stride,
-                                    (const GLvoid*) (GLintptr) glAttr.offset);
-            ::glEnableVertexAttribArray(glAttr.index);
+    // vertex array objects supported?
+    if (glExt::HasExtension(glExt::VertexArrayObject)) {
+        GLuint vao = 0;
+        glExt::GenVertexArrays(1, &vao);
+        this->glStateWrapper->BindVertexArrayObject(vao);
+        this->glStateWrapper->BindIndexBuffer(outMesh.glGetIndexBuffer());
+        this->glStateWrapper->BindVertexBuffer(outMesh.glGetVertexBuffer());
+        
+        for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+            const glVertexAttr& glAttr = outMesh.glAttr(attrIndex);
+            if (glAttr.enabled) {
+                ::glVertexAttribPointer(glAttr.index,
+                                        glAttr.size,
+                                        glAttr.type,
+                                        glAttr.normalized,
+                                        glAttr.stride,
+                                        (const GLvoid*) (GLintptr) glAttr.offset);
+                ORYOL_GL_CHECK_ERROR();
+                ::glEnableVertexAttribArray(glAttr.index);
+                ORYOL_GL_CHECK_ERROR();
+            }
+            else {
+                ::glDisableVertexAttribArray(glAttr.index);
+                ORYOL_GL_CHECK_ERROR();
+            }
         }
-        else {
-            ::glDisableVertexAttribArray(glAttr.index);
-        }
+        outMesh.glSetVertexArrayObject(vao);
     }
-    ORYOL_GL_CHECK_ERROR();
-    outMesh.glSetVertexArrayObject(vao);
     this->glStateWrapper->InvalidateMeshState();
 }
 

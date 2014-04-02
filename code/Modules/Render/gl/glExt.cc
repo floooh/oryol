@@ -10,6 +10,8 @@
 namespace Oryol {
 namespace Render {
 
+using namespace Core;
+
 bool glExt::isValid = false;
 bool glExt::extensions[NumExtensions] = { false };
     
@@ -28,13 +30,21 @@ glExt::Setup() {
         extensions[i] = false;
     }
     
-    #if !ORYOL_OSX
+    #if ORYOL_OSX
     // on OSX we're using the Core Profile where getting the extensions string seems
     // to be an error
+    extensions[VertexArrayObject] = true;
+    #else
     Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     ORYOL_GL_CHECK_ERROR();
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     #endif
+
+    // put warnings to the console for extensions that we expect but are not
+    // provides
+    if (!extensions[VertexArrayObject]) {
+        Log::Warn("glExt::Setup(): vertex_array_object extension not found!\n");
+    }
 }
 
 //------------------------------------------------------------------------------

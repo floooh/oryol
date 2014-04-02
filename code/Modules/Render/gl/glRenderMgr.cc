@@ -21,9 +21,7 @@ namespace Render {
 bool
 glRenderMgr::ApplyMesh(mesh* msh) {
     if (renderMgrBase::ApplyMesh(msh)) {
-        GLuint vao = msh->glGetVertexArrayObject();
-        o_assert_dbg(0 != vao);
-        this->stateWrapper->BindVertexArrayObject(vao);
+        this->stateWrapper->BindMesh(msh);
         return true;
     }
     else {
