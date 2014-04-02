@@ -40,7 +40,20 @@ Clear.html Shapes.html Triangle.html ...
 Serving HTTP on 0.0.0.0 port 8000 ...
 ```
 
-Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000/Triangle.html**.
+Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000**
+
+### Building the Web Samples HTML page ###
+To build the complete samples web page (provided you have a working emscripten SDK installation), simply run:
+
+```
+> cd oryol
+> ./oryol webpage
+[this should run cmake, compile the samples, and build an index.html page]
+> cd build/webpage
+> python -m SimpleHTTPServer
+Serving HTTP on 0.0.0.0 port 8000 ...
+```
+
 
 ## Prerequisites
 
