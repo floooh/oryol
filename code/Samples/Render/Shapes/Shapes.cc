@@ -91,7 +91,7 @@ ShapeApp::OnInit() {
     
     // add a cylinder
     shapeBuilder.BeginPrimitiveGroup();
-    shapeBuilder.AddCylinder(0.5f, 0.5f, 1.5f, 36, 10);
+    shapeBuilder.AddCylinder(0.5f, 1.5f, 36, 10);
     shapeBuilder.EndPrimitiveGroup();
     
     // add a torus
