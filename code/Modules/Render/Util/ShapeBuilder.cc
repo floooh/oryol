@@ -143,15 +143,14 @@ ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks) {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddCylinder(float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks) {
+ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks) {
     o_assert((slices >= 3) && (stacks >= 1));
     o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Cylinder;
     shape.transform = this->transform;
-    shape.f0 = radius1;
-    shape.f1 = radius2;
+    shape.f0 = radius;
     shape.f2 = length;
     shape.i0 = slices;
     shape.i1 = stacks;
@@ -163,15 +162,15 @@ ShapeBuilder::AddCylinder(float32 radius1, float32 radius2, float32 length, int3
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddTorus(float32 innerRadius, float32 outerRadius, int32 sides, int32 rings) {
+ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings) {
     o_assert((sides >= 3) && (rings >= 3));
     o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Torus;
     shape.transform = this->transform;
-    shape.f0 =innerRadius;
-    shape.f1 = outerRadius;
+    shape.f0 = ringRadius;
+    shape.f1 = radius;
     shape.i0 = sides;
     shape.i1 = rings;
     shape.color = this->color;
@@ -350,16 +349,27 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     const float32 dy = h / numTiles;
     const float32 dz = d / numTiles;
     
+    const bool hasNormals = vertexLayout.Contains(VertexAttr::Normal);
+    
     // bottom/top plane vertices
     glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec4 norm;
     for (int32 topBottom = 0; topBottom < 2; topBottom++) {
         pos.y = (topBottom == 0) ? y0 : y1;
+        if (hasNormals) {
+            norm = (topBottom == 0) ? glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) : glm::vec4(0.0f, +1.0f, 0.0f, 0.0f);
+            norm = shape.transform * norm;
+        }
         for (int32 ix = 0; ix <= numTiles; ix++) {
             pos.x = x0 + dx * ix;
             for (int32 iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                if (hasNormals) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+                }
+                curVertexIndex++;
             }
         }
     }
@@ -367,12 +377,20 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     // left/right plane vertices
     for (int32 leftRight = 0; leftRight < 2; leftRight++) {
         pos.x = (leftRight == 0) ? x0 : x1;
+        if (hasNormals) {
+            norm = (leftRight == 0) ? glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) : glm::vec4(+1.0f, 0.0f, 0.0f, 0.0f);
+            norm = shape.transform * norm;
+        }
         for (int32 iy = 0; iy <= numTiles; iy++) {
             pos.y = y0 + dy * iy;
             for (int32 iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                if (hasNormals) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+                }
+                curVertexIndex++;
             }
         }
     }
@@ -380,12 +398,20 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     // front/back plane vertices
     for (int32 frontBack = 0; frontBack < 2; frontBack++) {
         pos.z = (frontBack == 0) ? z0 : z1;
+        if (hasNormals) {
+            norm = (frontBack == 0) ? glm::vec4(0.0, 0.0f, -1.0f, 0.0f) : glm::vec4(0.0f, 0.0f, +1.0f, 0.0f);
+            norm = shape.transform * norm;
+        }
         for (int32 ix = 0; ix <= numTiles; ix++) {
             pos.x = x0 + dx * ix;
             for (int32 iy = 0; iy <= numTiles; iy++) {
                 pos.y = y0 + dy * iy;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+                if (hasNormals) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+                }
+                curVertexIndex++;
             }
         }
     }
@@ -393,9 +419,6 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     
     if (vertexLayout.Contains(VertexAttr::Color0)) {
         this->BuildVertexColors(shape, startVertexIndex);
-    }
-    if (vertexLayout.Contains(VertexAttr::Normal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildBox() normals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
         Log::Warn("FIXME: ShapeBuilder::BuildBox() binormals not implemented yet!\n");
@@ -547,18 +570,23 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
     const int32 startVertexIndex = curVertexIndex;
     const int32 numSlices = shape.i0;
     const int32 numStacks = shape.i1;
-    const float32 radius1 = shape.f0;
-    const float32 radius2 = shape.f1;
+    const float32 radius = shape.f0;
     const float32 length  = shape.f2;
     const float32 pi = glm::pi<float32>();
     const float32 twoPi = 2.0f * pi;
+    const bool hasNormal = vertexLayout.Contains(VertexAttr::Normal);
     
     // north cap center vertices
+    glm::vec4 norm = shape.transform * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
     float32 y = length * 0.5f;
     glm::vec4 cpos(0.0f, y, 0.0f, 1.0f);
     glm::vec4 tcpos = shape.transform * cpos;
     for (int32 slice = 0; slice <= numSlices; slice++) {
-        this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tcpos.x, tcpos.y, tcpos.z);
+        this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tcpos.x, tcpos.y, tcpos.z);
+        if (hasNormal) {
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+        }
+        curVertexIndex++;
     }
     
     // top radius verticescap
@@ -566,16 +594,18 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
         const float32 sliceAngle = (twoPi * slice) / numSlices;
         const float32 sinSlice = glm::sin(sliceAngle);
         const float32 cosSlice = glm::cos(sliceAngle);
-        const glm::vec4 pos(sinSlice * radius1, y, cosSlice * radius1, 1.0f);
+        const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
         const glm::vec4 tpos = shape.transform * pos;
-        this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+        this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+        if (hasNormal) {
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+        }
+        curVertexIndex++;
     }
     
     // cylinder shaft
-    float radiusDiff = (radius2 - radius1) / numStacks;
-    float yDiff = length / numStacks;
+    float32 yDiff = length / numStacks;
     for (int32 stack = 0; stack <= numStacks; stack++) {
-        const float32 radius = radius1 + radiusDiff * stack;
         y = (length * 0.5f) - yDiff * stack;
         for (int32 slice = 0; slice <= numSlices; slice++) {
             const float32 sliceAngle = (twoPi * slice) / numSlices;
@@ -583,34 +613,46 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
             const float32 cosSlice = glm::cos(sliceAngle);
             const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
             const glm::vec4 tpos = shape.transform * pos;
-            this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            if (hasNormal) {
+                glm::vec4 norm(sinSlice, 0.0f, cosSlice, 0.0f);
+                norm = shape.transform * norm;
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+            }
+            curVertexIndex++;
         }
     }
     
     // bottom cap radius vertices
+    norm = shape.transform * glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
     y = -length * 0.5f;
     for (int32 slice = 0; slice <= numSlices; slice++) {
         const float32 sliceAngle = (twoPi * slice) / numSlices;
         const float32 sinSlice = glm::sin(sliceAngle);
         const float32 cosSlice = glm::cos(sliceAngle);
-        const glm::vec4 pos(sinSlice * radius2, y, cosSlice * radius2, 1.0f);
+        const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
         const glm::vec4 tpos = shape.transform * pos;
-        this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+        this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+        if (hasNormal) {
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+        }
+        curVertexIndex++;
     }
     
     // bottom cap center vertices
     cpos = glm::vec4(0.0f, y, 0.0f, 1.0f);
     tcpos = shape.transform * cpos;
     for (int32 slice = 0; slice <= numSlices; slice++) {
-        this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tcpos.x, tcpos.y, tcpos.z);
+        this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tcpos.x, tcpos.y, tcpos.z);
+        if (hasNormal) {
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+        }
+        curVertexIndex++;
     }
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (vertexLayout.Contains(VertexAttr::Color0)) {
         this->BuildVertexColors(shape, startVertexIndex);
-    }
-    if (vertexLayout.Contains(VertexAttr::Normal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildCylinder() normals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
         Log::Warn("FIXME: ShapeBuilder::BuildCylinder() binormals not implemented yet!\n");
@@ -673,12 +715,13 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
     const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
-    static const float32 innerRadius = shape.f0;
-    static const float32 outerRadius = shape.f1;
+    static const float32 ringRadius = shape.f0;
+    static const float32 radius = shape.f1;
     static const int32 numSides = shape.i0;
     static const int32 numRings = shape.i1;
     const float32 pi = glm::pi<float32>();
     const float32 twoPi = 2.0f * pi;
+    const bool hasNormals = vertexLayout.Contains(VertexAttr::Normal);
     
     // vertex positions
     for (int32 side = 0; side <= numSides; side++) {
@@ -689,20 +732,33 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
             const float32 theta = (ring * twoPi) / numRings;
             const float32 sinTheta = glm::sin(theta);
             const float32 cosTheta = glm::cos(theta);
-            const float32 px = cosTheta * (outerRadius + (innerRadius * cosPhi));
-            const float32 py = -sinTheta * (outerRadius + (innerRadius * cosPhi));
-            const float32 pz = sinPhi * innerRadius;
-            const glm::vec4 tpos = shape.transform * glm::vec4(px, py, pz, 1.0f);
-            this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            
+            // surface position
+            const float32 spx = cosTheta * (radius + (ringRadius * cosPhi));
+            const float32 spy = -sinTheta * (radius + (ringRadius * cosPhi));
+            const float32 spz = sinPhi * ringRadius;
+
+            // surface position
+            const glm::vec4 tpos = shape.transform * glm::vec4(spx, spy, spz, 1.0f);
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            
+            // surface normal
+            if (hasNormals) {
+                // inner radius position
+                const float32 ipx = cosTheta * radius;
+                const float32 ipy = -sinTheta * radius;
+                const float32 ipz = 0.0f;
+                glm::vec4 norm  = glm::normalize(glm::vec4(spx - ipx, spy - ipy, spz - ipz, 0.0f));
+                norm = shape.transform * norm;
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+            }
+            curVertexIndex++;
         }
     }
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (vertexLayout.Contains(VertexAttr::Color0)) {
         this->BuildVertexColors(shape, startVertexIndex);
-    }
-    if (vertexLayout.Contains(VertexAttr::Normal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildToris() normals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
         Log::Warn("FIXME: ShapeBuilder::BuildTorus() binormals not implemented yet!\n");
@@ -758,24 +814,27 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     const float32 z0 = -d * 0.5f;
     const float32 dx = w / numTiles;
     const float32 dz = d / numTiles;
+    const bool hasNormal = vertexLayout.Contains(VertexAttr::Normal);
     
     // vertices
     glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec4 norm = shape.transform * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
     for (int32 ix = 0; ix <= numTiles; ix++) {
         pos.x = x0 + dx * ix;
         for (int32 iz = 0; iz <= numTiles; iz++) {
             pos.z = z0 + dz * iz;
             glm::vec4 tpos = shape.transform * pos;
-            this->meshBuilder.Vertex(curVertexIndex++, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
+            if (hasNormal) {
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+            }
+            curVertexIndex++;
         }
     }
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (vertexLayout.Contains(VertexAttr::Color0)) {
         this->BuildVertexColors(shape, startVertexIndex);
-    }
-    if (vertexLayout.Contains(VertexAttr::Normal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildPlane() normals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
         Log::Warn("FIXME: ShapeBuilder::BuildPlane() binormals not implemented yet!\n");

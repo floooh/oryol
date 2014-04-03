@@ -46,9 +46,9 @@ public:
     /// add a sphere shape
     void AddSphere(float32 radius, int32 slices, int32 stacks);
     /// add a cylinder shape
-    void AddCylinder(float32 radius1, float32 radius2, float32 length, int32 slices, int32 stacks);
+    void AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks);
     /// add a torus
-    void AddTorus(float32 innerRadius, float32 outerRadius, int32 sides, int32 rings);
+    void AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings);
     /// add a plane
     void AddPlane(float32 w, float32 d, int32 tiles);
     
