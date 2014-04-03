@@ -49,15 +49,6 @@ VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y) {
 
 //------------------------------------------------------------------------------
 uint8*
-VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z) {
-    o_assert_dbg(dst && (VertexFormat::Float3 == fmt));
-    float32* p = (float32*) dst;
-    *p++ = x; *p++ = y; *p++ = z;
-    return (uint8*) p;
-}
-
-//------------------------------------------------------------------------------
-uint8*
 VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z, float32 w) {
     o_assert_dbg(dst);
     if (VertexFormat::Float4 == fmt) {
@@ -122,6 +113,22 @@ VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, fl
         return nullptr;
     }
 }
+
+//------------------------------------------------------------------------------
+uint8*
+VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z) {
+    if (VertexFormat::Float3 == fmt) {
+        float32* p = (float32*) dst;
+        *p++ = x; *p++ = y; *p++ = z;
+        return (uint8*) p;
+    }
+    else {
+        // hmm, try to extend to 4 components
+        return Write(dst, fmt, x, y, z, 0.0f);
+    }
+}
+    
+
 
 } // namespace Render
 } // namespace Oryol
