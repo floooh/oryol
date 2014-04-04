@@ -36,21 +36,16 @@ public:
     /// get random colors flag
     bool GetRandomColorsFlag() const;
     
-    /// begin a new primitive group
-    void BeginPrimitiveGroup();
-    /// end current primitive group
-    void EndPrimitiveGroup();
-    
     /// add a box shape
-    void AddBox(float32 w, float32 h, float32 d, int32 tiles);
+    void AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup=true);
     /// add a sphere shape
-    void AddSphere(float32 radius, int32 slices, int32 stacks);
+    void AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup=true);
     /// add a cylinder shape
-    void AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks);
+    void AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup=true);
     /// add a torus
-    void AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings);
+    void AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool builPrimGroup=true);
     /// add a plane
-    void AddPlane(float32 w, float32 d, int32 tiles);
+    void AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup=true);
     
     /// clear everything
     void Clear();
@@ -95,8 +90,9 @@ private:
     void BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);
     /// build plane vertices and indices
     void BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);
+    /// build a primitive group
+    void buildPrimitiveGroup();
     
-    bool inBeginPrimitiveGroup;
     int32 curPrimGroupBaseElement;
     int32 curPrimGroupNumElements;
     glm::mat4 transform;

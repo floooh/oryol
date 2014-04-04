@@ -73,37 +73,16 @@ PackedNormalsApp::OnInit() {
     this->render->AttachLoader(RawMeshLoader::Create());
     this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample"));
 
-    // create a cube mesh (with vertex normal packed into a Byte4N)
+    // create shapes (each shape gets its own primitive group)
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
-    
-    // add a cube (FIXME:
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
-    shapeBuilder.EndPrimitiveGroup();
-    
-    // add a sphere
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddSphere(0.75f, 36, 20);
-    shapeBuilder.EndPrimitiveGroup();
-
-    // add a cylinder
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddCylinder(0.5f, 1.5f, 36, 10);
-    shapeBuilder.EndPrimitiveGroup();
-    
-    // add a torus
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
-    shapeBuilder.EndPrimitiveGroup();
-    
-    // add a plane
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddPlane(1.5f, 1.5f, 10);
-    shapeBuilder.EndPrimitiveGroup();
-    
     shapeBuilder.Build();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("cube"), shapeBuilder.GetStream());
 
@@ -154,23 +133,15 @@ PackedNormalsApp::OnRunning() {
         this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyMesh(this->meshId);
         
-        // render the cube
+        // draw shape primitive groups
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0, -6.0f)));
         this->render->Draw(0);
-        
-        // render the sphere
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);
-
-        // render the cylinder
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
         this->render->Draw(2);
-        
-        // render the torus
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
         this->render->Draw(3);
-        
-        // render the plane
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
         this->render->Draw(4);
         

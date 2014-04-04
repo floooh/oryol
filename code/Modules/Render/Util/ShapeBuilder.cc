@@ -14,7 +14,6 @@ using namespace Core;
 
 //------------------------------------------------------------------------------
 ShapeBuilder::ShapeBuilder() :
-inBeginPrimitiveGroup(false),
 curPrimGroupBaseElement(0),
 curPrimGroupNumElements(0),
 color(1.0f, 1.0f, 1.0f, 1.0f),
@@ -25,7 +24,6 @@ randomColors(false) {
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::Clear() {
-    this->inBeginPrimitiveGroup = false;
     this->curPrimGroupBaseElement = 0;
     this->curPrimGroupNumElements = 0;
     this->transform = glm::mat4();
@@ -85,30 +83,20 @@ ShapeBuilder::GetRandomColorsFlag() const {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BeginPrimitiveGroup() {
-    o_assert(!this->inBeginPrimitiveGroup);
-    this->inBeginPrimitiveGroup = true;
+ShapeBuilder::buildPrimitiveGroup() {
+    o_assert(this->curPrimGroupNumElements > 0);
+    PrimitiveGroup primGroup(PrimitiveType::Triangles,
+                             this->curPrimGroupBaseElement,
+                             this->curPrimGroupNumElements);
+    this->meshBuilder.AddPrimitiveGroup(primGroup);
     this->curPrimGroupBaseElement += this->curPrimGroupNumElements;
     this->curPrimGroupNumElements = 0;
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::EndPrimitiveGroup() {
-    o_assert(this->inBeginPrimitiveGroup);
-    o_assert(this->curPrimGroupNumElements > 0);
-    PrimitiveGroup primGroup(PrimitiveType::Triangles,
-                             this->curPrimGroupBaseElement,
-                             this->curPrimGroupNumElements);
-    this->meshBuilder.AddPrimitiveGroup(primGroup);
-    this->inBeginPrimitiveGroup = false;
-}
-
-//------------------------------------------------------------------------------
-void
-ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles) {
+ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup) {
     o_assert(tiles >= 1);
-    o_assert(this->inBeginPrimitiveGroup);
     
     ShapeData shape;
     shape.type = Box;
@@ -121,13 +109,15 @@ ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles) {
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
+    if (buildPrimGroup) {
+        this->buildPrimitiveGroup();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks) {
+ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup) {
     o_assert((slices >= 3) && (stacks >= 2));
-    o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Sphere;
@@ -139,13 +129,15 @@ ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks) {
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
+    if (buildPrimGroup) {
+        this->buildPrimitiveGroup();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks) {
+ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup) {
     o_assert((slices >= 3) && (stacks >= 1));
-    o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Cylinder;
@@ -158,13 +150,15 @@ ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 st
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
+    if (buildPrimGroup) {
+        this->buildPrimitiveGroup();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings) {
+ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool buildPrimGroup) {
     o_assert((sides >= 3) && (rings >= 3));
-    o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Torus;
@@ -177,13 +171,15 @@ ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 ri
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
+    if (buildPrimGroup) {
+        this->buildPrimitiveGroup();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles) {
+ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
     o_assert(tiles >= 1);
-    o_assert(this->inBeginPrimitiveGroup);
 
     ShapeData shape;
     shape.type = Plane;
@@ -195,6 +191,9 @@ ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles) {
     this->UpdateNumElements(shape);
     this->shapes.AddBack(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
+    if (buildPrimGroup) {
+        this->buildPrimitiveGroup();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -258,8 +257,11 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
 void
 ShapeBuilder::Build() {
     o_assert(!this->shapes.Empty());
-    o_assert(!this->inBeginPrimitiveGroup);
-    o_assert(this->curPrimGroupNumElements > 0);
+    
+    // build a final primitive group?
+    if (this->curPrimGroupNumElements > 0) {
+        this->buildPrimitiveGroup();
+    }
     
     // overall number of vertices and indices
     int32 numVerticesAll = 0;
