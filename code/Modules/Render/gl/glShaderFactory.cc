@@ -176,9 +176,7 @@ glShaderFactory::SetupResource(shader& shd) {
 void
 glShaderFactory::DestroyResource(shader& shd) {
     o_assert(this->isValid);
-
-    const State::Code state = shd.GetState();
-    o_assert(State::Valid == state);
+    o_assert(State::Valid == shd.GetState());
 
     GLuint glShader = shd.glGetShader();
     o_assert(0 != glShader);

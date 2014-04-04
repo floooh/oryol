@@ -220,6 +220,7 @@ resourceMgr::QueryResourceState(const Id& resId) {
             o_assert(false);
             break;
     }
+    return State::InvalidState;
 }
 
 } // namespace Render

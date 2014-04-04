@@ -105,22 +105,19 @@ loaderFactory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
 template<class RESOURCE, class LOADER> void
 loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
 
-    const State::Code state = res.GetState();
-    o_assert((State::Setup == state) || (State::Pending == state));
-    
     // if the resource already has the loader index set, just call
     // the right loader, this should only happen when continuing to
     // load asynchronous resources
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
-        o_assert(State::Pending == state);
+        o_assert(State::Pending == res.GetState());
         this->loaders[loaderIndex]->Load(res);
         o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
         return;
     }
     else {
         // no loader yet, delegate to first loader which accepts the resource
-        o_assert(State::Setup == state);
+        o_assert(State::Setup == res.GetState());
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res)) {
                 res.setLoaderIndex(loaderIndex);
@@ -144,18 +141,15 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
 template<class RESOURCE, class LOADER> void
 loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
 
-    const State::Code state = res.GetState();
-    o_assert((State::Setup == state) || (State::Pending == state));
-    
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
-        o_assert(State::Pending == state);
+        o_assert(State::Pending == res.GetState());
         this->loaders[loaderIndex]->Load(res, data);
         o_assert((res.GetState() == State::Valid) || (res.GetState() == State::Failed));
         return;
     }
     else {
-        o_assert(State::Setup == state);
+        o_assert(State::Setup == res.GetState());
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res, data)) {
                 res.setLoaderIndex(loaderIndex);

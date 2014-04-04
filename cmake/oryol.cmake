@@ -9,6 +9,7 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
 #-------------------------------------------------------------------------------
+option(ORYOL_NO_ASSERTS_IN_RELEASE "Remove asserts in release-mode" OFF)
 if (ORYOL_EMSCRIPTEN OR ORYOL_NACL)
     option(ORYOL_UNITTESTS "Enable unit tests" OFF)
 else()
@@ -106,6 +107,11 @@ macro(oryol_setup)
     else()
         add_definitions(-DORYOL_OPENGL=0)
         add_definitions(-DORYOL_OPENGLES2=0)
+    endif()
+    if (ORYOL_NO_ASSERTS_IN_RELEASE)
+        add_definitions(-DORYOL_NO_ASSERT=1)
+    else()
+        add_definitions(-DORYOL_NO_ASSERT=0)
     endif()
     
     # check whether python is installed

@@ -2,6 +2,7 @@
 //  ShapeBuilder.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Config.h"
 #include "ShapeBuilder.h"
 #include "glm/gtc/random.hpp"
 #include "glm/gtc/constants.hpp"
@@ -433,7 +434,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     }
     
     // write indices
-    const int32 startTriIndex = curTriIndex;
+    ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
     for (int32 face = 0; face < 6; face++) {
         uint16 faceStartIndex = startVertexIndex + face * numVerticesPerFace;
         for (int32 j = 0; j < numTiles; j++) {
@@ -518,7 +519,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
     }
     
     // north-pole triangles
-    const int32 startTriIndex = curTriIndex;
+    ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
     int32 rowA = startVertexIndex;
     int32 rowB = rowA + numSlices + 1;
     for (int32 slice = 0; slice < numSlices; slice++) {
@@ -667,7 +668,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
     }
     
     // north cap triangles
-    const int32 startTriIndex = curTriIndex;
+    ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
     int32 rowA = startVertexIndex;
     int32 rowB = rowA + numSlices + 1;
     for (int32 slice = 0; slice < numSlices; slice++) {
@@ -773,7 +774,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
     }
     
     // triangles
-    const int32 startTriIndex = curTriIndex;
+    ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
     for (int32 side = 0; side < numSides; side++) {
         const int32 rowA = startVertexIndex + side * (numRings + 1);
         const int32 rowB = rowA + numRings + 1;
@@ -849,7 +850,7 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     }
 
     // write indices
-    const int32 startTriIndex = curTriIndex;
+    ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
     for (int32 j = 0; j < numTiles; j++) {
         for (int32 i = 0; i < numTiles; i++) {
             // tile vertex indices
