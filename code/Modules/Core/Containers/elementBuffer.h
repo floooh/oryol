@@ -670,8 +670,7 @@ elementBuffer<TYPE>::eraseSwapBack(int32 index) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::eraseSwapFront(int32 index) {
-    const int32 size = this->size();
-    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    o_assert((index >= 0) && (index < this->size()) && (0 != this->elmStart));
     
     if (0 == index) {
         // special case: first element
