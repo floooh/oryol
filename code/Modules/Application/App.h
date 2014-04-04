@@ -11,8 +11,6 @@
 namespace Oryol {
 namespace Application {
 
-typedef std::function<AppState::Code(void)> AppCallback;
-    
 class App : public Core::AppBase {
 public:
     /// constructor

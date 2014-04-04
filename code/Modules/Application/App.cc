@@ -7,8 +7,6 @@
 namespace Oryol {
 namespace Application {
 
-using namespace std::placeholders;
-
 //------------------------------------------------------------------------------
 App::App() :
 curState(AppState::Construct) {

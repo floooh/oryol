@@ -32,7 +32,6 @@
 #include "Core/Macros.h"
 #include "Core/Args.h"
 #include "Core/String/WideString.h"
-#include <functional>
 
 namespace Oryol {
 namespace Core {
