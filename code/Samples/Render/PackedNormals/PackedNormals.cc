@@ -71,7 +71,7 @@ PackedNormalsApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingleton();
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Shapes Sample"));
+    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample"));
 
     // create a cube mesh (with vertex normal packed into a Byte4N)
     ShapeBuilder shapeBuilder;
