@@ -40,9 +40,7 @@ TEST(ShapeBuilderTest) {
     
     // build a simple cube
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.BeginPrimitiveGroup();
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 1);
-    shapeBuilder.EndPrimitiveGroup();
     shapeBuilder.Build();
     
     // ...create a mesh from it and verify the mesh
