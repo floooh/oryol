@@ -23,8 +23,6 @@ public:
     
     /// max number of primitive groups in the mesh
     static const int32 MaxNumPrimitiveGroups = 16;
-    /// get the resource type of this resource class
-    static uint16 GetResourceType();
     
     /// get (optional) IORequest
     const Core::Ptr<IO::IOProtocol::Request>& GetIORequest() const;
@@ -57,12 +55,6 @@ protected:
     int numPrimitiveGroups;
     PrimitiveGroup primitiveGroups[MaxNumPrimitiveGroups];
 };
-
-//------------------------------------------------------------------------------
-inline uint16
-meshBase::GetResourceType() {
-    return ResourceType::Mesh;
-}
 
 //------------------------------------------------------------------------------
 inline const Core::Ptr<IO::IOProtocol::Request>&

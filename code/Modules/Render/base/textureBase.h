@@ -18,9 +18,6 @@ public:
     /// constructor
     textureBase();
     
-    /// get the resource type of this resource class
-    static uint16 GetResourceType();
-
     /// get (optional) IORequest
     const Core::Ptr<IO::IOProtocol::Request>& GetIORequest() const;
     /// get texture attrs object
@@ -37,12 +34,6 @@ protected:
     Core::Ptr<IO::IOProtocol::Request> ioRequest;
     TextureAttrs textureAttrs;
 };
-
-//------------------------------------------------------------------------------
-inline uint16
-textureBase::GetResourceType() {
-    return ResourceType::Texture;
-}
 
 //------------------------------------------------------------------------------
 inline const Core::Ptr<IO::IOProtocol::Request>&
