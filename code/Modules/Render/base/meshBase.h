@@ -41,7 +41,7 @@ public:
     void clear();
     /// set IO request for asynchronous loading
     void setIORequest(const Core::Ptr<IO::IOProtocol::Request>& ioRequest);
-    /// set vertex buffer attrs at index
+    /// set vertex buffer attrs
     void setVertexBufferAttrs(const VertexBufferAttrs& attrs);
     /// set index buffer attrs
     void setIndexBufferAttrs(const IndexBufferAttrs& attrs);
