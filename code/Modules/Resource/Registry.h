@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Resource::Registry
+    @class Oryol::Resource::Registry
     @brief implements use-counted resource-sharing
 */
 #include "Resource/Locator.h"

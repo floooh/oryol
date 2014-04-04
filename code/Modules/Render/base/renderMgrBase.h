@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Renderer::renderMgrBase
+    @class Oryol::Render::renderMgrBase
     @brief base class for platform-specific renderers
 */
 #include "Core/Types.h"

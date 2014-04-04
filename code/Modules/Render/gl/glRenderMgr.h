@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Renderer::glRenderMgr
+    @class Oryol::Render::glRenderMgr
     @brief GL implementation of renderer class
 */
 #include "Render/base/renderMgrBase.h"

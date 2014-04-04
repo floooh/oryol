@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Application::AppState
+    @class Oryol::Application::AppState
     @brief application states
 */
 #include "Core/Types.h"
