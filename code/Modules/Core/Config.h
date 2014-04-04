@@ -42,3 +42,6 @@
 #ifndef __GNUC__
 #define __attribute__(x)
 #endif
+
+/// silence unused variable warning
+#define ORYOL_UNUSED __attribute__((unused))
