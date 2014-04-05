@@ -111,6 +111,18 @@ PixelFormat::IsValidTextureDepthFormat(Code c) {
 
 //------------------------------------------------------------------------------
 bool
+PixelFormat::IsDepthFormat(Code c) {
+    return (D16 == c) || (D32 == c);
+}
+
+//------------------------------------------------------------------------------
+bool
+PixelFormat::IsDepthStencilFormat(Code c) {
+    return D24S8 == c;
+}
+
+//------------------------------------------------------------------------------
+bool
 PixelFormat::IsCompressedFormat(Code c) {
     switch (c) {
         case DXT1:

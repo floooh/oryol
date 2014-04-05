@@ -58,6 +58,10 @@ public:
     static bool IsValidTextureColorFormat(Code c);
     /// return true for valid depth texture formats
     static bool IsValidTextureDepthFormat(Code c);
+    /// test if the pixel format is a pure depth format (not a depth/stencil format)
+    static bool IsDepthFormat(Code c);
+    /// test if the pixel format is a depth/stencil format
+    static bool IsDepthStencilFormat(Code c);
     /// return true if the pixel format is a compressed format
     static bool IsCompressedFormat(Code c);
     /// get number of bits in a pixel format channel (only for non-compressed formats!)
