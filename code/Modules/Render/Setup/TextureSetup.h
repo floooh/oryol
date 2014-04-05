@@ -34,6 +34,8 @@ public:
     bool ShouldSetupAsRenderTarget() const;
     /// return true if rel-size render target
     bool IsRelSizeRenderTarget() const;
+    /// return true if render target has depth (shared or non-shared)
+    bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
     

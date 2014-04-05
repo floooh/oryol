@@ -114,6 +114,12 @@ TextureSetup::IsRelSizeRenderTarget() const {
 
 //------------------------------------------------------------------------------
 bool
+TextureSetup::HasDepth() const {
+    return this->hasSharedDepth || (this->depthFormat != PixelFormat::InvalidPixelFormat);
+}
+
+//------------------------------------------------------------------------------
+bool
 TextureSetup::HasSharedDepth() const {
     return this->hasSharedDepth;
 }
