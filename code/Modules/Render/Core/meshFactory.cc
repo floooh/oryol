@@ -51,6 +51,5 @@ meshFactory::DestroyResource(mesh& mesh) {
     glMeshFactory::DestroyResource(mesh);
 }
 
-
 } // namespace Render
 } // namespace Oryol
