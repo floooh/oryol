@@ -9,6 +9,7 @@
     GL context management, and consuming window input events.
 */
 #include "Render/base/displayMgrBase.h"
+#include "Render/gl/gl_decl.h"
 
 struct GLFWwindow;
 
@@ -32,6 +33,9 @@ public:
     void Present();
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
+    
+    /// get the GL default framebuffer id (this is not 0 on some platforms!)
+    GLuint glGetDefaultFramebuffer() const;
     
 private:
     /// error callback for GLFW

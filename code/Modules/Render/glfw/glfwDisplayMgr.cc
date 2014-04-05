@@ -141,5 +141,11 @@ glfwDisplayMgr::Present() {
     displayMgrBase::Present();
 }
 
+//------------------------------------------------------------------------------
+GLuint
+glfwDisplayMgr::glGetDefaultFramebuffer() const {
+    return 0;
+}
+
 } // namespace Render
 } // namespace Oryol

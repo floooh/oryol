@@ -120,5 +120,11 @@ eglDisplayMgr::DiscardDisplay() {
     displayMgrBase::DiscardDisplay();
 }
 
+//------------------------------------------------------------------------------
+GLuint
+eglDisplayMgr::glGetDefaultFramebuffer() const {
+    return 0;
+}
+
 } // namespace Render
 } // namespace Oryol
