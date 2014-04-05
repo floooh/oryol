@@ -59,7 +59,6 @@ TEST(MeshFactoryTest) {
     const Ptr<Stream>& meshData = mb.GetStream();
     mesh mesh;
     mesh.setSetup(MeshSetup::FromData(Locator("myQuad")));
-    mesh.setState(Resource::State::Setup);
     
     factory.SetupResource(mesh, meshData);
     CHECK(mesh.GetState() == Resource::State::Valid);
