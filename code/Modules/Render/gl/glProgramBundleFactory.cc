@@ -151,6 +151,7 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
         GLuint glProg = progBundle.getProgramAtIndex(progIndex);
         if (0 != glProg) {
             ::glDeleteProgram(glProg);
+            ORYOL_GL_CHECK_ERROR();
         }
     }
     progBundle.clear();

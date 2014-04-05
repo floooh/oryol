@@ -181,6 +181,7 @@ glShaderFactory::DestroyResource(shader& shd) {
     GLuint glShader = shd.glGetShader();
     o_assert(0 != glShader);
     glDeleteShader(glShader);
+    ORYOL_GL_CHECK_ERROR();
     
     shd.clear();
     shd.setState(State::Setup);
