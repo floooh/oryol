@@ -12,14 +12,14 @@ using namespace Resource;
 //------------------------------------------------------------------------------
 TextureAttrs::TextureAttrs() :
 type(TextureType::InvalidTextureType),
-pixelFormat(PixelFormat::InvalidPixelFormat),
+colorFormat(PixelFormat::InvalidPixelFormat),
+depthFormat(PixelFormat::InvalidPixelFormat),
 usage(Usage::InvalidUsage),
 width(0),
 height(0),
 depth(0),
 hasMipmaps(false),
 isRenderTarget(false),
-isDefaultRenderTarget(false),
 hasDepthBuffer(false),
 hasSharedDepthBuffer(false),
 isDepthTexture(false) {
@@ -40,8 +40,14 @@ TextureAttrs::setType(TextureType::Code t) {
 
 //------------------------------------------------------------------------------
 void
-TextureAttrs::setPixelFormat(PixelFormat::Code f) {
-    this->pixelFormat = f;
+TextureAttrs::setColorFormat(PixelFormat::Code f) {
+    this->colorFormat = f;
+}
+
+//------------------------------------------------------------------------------
+void
+TextureAttrs::setDepthFormat(PixelFormat::Code f) {
+    this->depthFormat = f;
 }
 
 //------------------------------------------------------------------------------
@@ -78,12 +84,6 @@ TextureAttrs::setMipmapsFlag(bool b) {
 void
 TextureAttrs::setRenderTargetFlag(bool b) {
     this->isRenderTarget = b;
-}
-
-//------------------------------------------------------------------------------
-void
-TextureAttrs::setDefaultRenderTargetFlag(bool b) {
-    this->isDefaultRenderTarget = b;
 }
 
 //------------------------------------------------------------------------------

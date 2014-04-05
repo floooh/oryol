@@ -25,8 +25,10 @@ public:
     
     /// get texture type
     TextureType::Code GetType() const;
-    /// get pixel format
-    PixelFormat::Code GetPixelFormat() const;
+    /// get color pixel format
+    PixelFormat::Code GetColorFormat() const;
+    /// get depth pixel format
+    PixelFormat::Code GetDepthFormat() const;
     /// get usage
     Usage::Code GetUsage() const;
     
@@ -41,8 +43,6 @@ public:
     bool HasMipmaps() const;
     /// return true if texture is a render target
     bool IsRenderTarget() const;
-    /// return true if render target is the default render target
-    bool IsDefaultRenderTarget() const;
     /// return true if render target, and has depth buffer
     bool HasDepthBuffer() const;
     /// return true if render target, and has shared depth buffer
@@ -54,8 +54,10 @@ public:
     void setLocator(const Resource::Locator& loc);
     /// set texture type
     void setType(TextureType::Code type);
-    /// set pixel format
-    void setPixelFormat(PixelFormat::Code format);
+    /// set color pixel format
+    void setColorFormat(PixelFormat::Code format);
+    /// set depth pixel format
+    void setDepthFormat(PixelFormat::Code format);
     /// set usage
     void setUsage(Usage::Code usage);
     /// set width
@@ -68,8 +70,6 @@ public:
     void setMipmapsFlag(bool b);
     /// set render target flag
     void setRenderTargetFlag(bool b);
-    /// set default render target flag
-    void setDefaultRenderTargetFlag(bool b);
     /// set depth buffer flag
     void setDepthBufferFlag(bool b);
     /// set shared depth buffer flag
@@ -80,14 +80,14 @@ public:
 private:
     Resource::Locator locator;
     TextureType::Code type;
-    PixelFormat::Code pixelFormat;
+    PixelFormat::Code colorFormat;
+    PixelFormat::Code depthFormat;
     Usage::Code usage;
     int32 width;
     int32 height;
     int32 depth;
     bool hasMipmaps : 1;
     bool isRenderTarget : 1;
-    bool isDefaultRenderTarget : 1;
     bool hasDepthBuffer : 1;
     bool hasSharedDepthBuffer : 1;
     bool isDepthTexture : 1;
@@ -107,8 +107,14 @@ TextureAttrs::GetType() const {
 
 //------------------------------------------------------------------------------
 inline PixelFormat::Code
-TextureAttrs::GetPixelFormat() const {
-    return this->pixelFormat;
+TextureAttrs::GetColorFormat() const {
+    return this->colorFormat;
+}
+
+//------------------------------------------------------------------------------
+inline PixelFormat::Code
+TextureAttrs::GetDepthFormat() const {
+    return this->depthFormat;
 }
 
 //------------------------------------------------------------------------------
@@ -145,12 +151,6 @@ TextureAttrs::HasMipmaps() const {
 inline bool
 TextureAttrs::IsRenderTarget() const {
     return this->isRenderTarget;
-}
-
-//------------------------------------------------------------------------------
-inline bool
-TextureAttrs::IsDefaultRenderTarget() const {
-    return this->isDefaultRenderTarget;
 }
 
 //------------------------------------------------------------------------------
