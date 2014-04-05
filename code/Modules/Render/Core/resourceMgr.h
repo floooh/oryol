@@ -11,6 +11,7 @@
 #include "Render/Core/meshPool.h"
 #include "Render/Core/shaderPool.h"
 #include "Render/Core/programBundlePool.h"
+#include "Render/Core/texturePool.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
 
@@ -18,6 +19,7 @@ namespace Oryol {
 namespace Render {
 
 class stateWrapper;
+class displayMgr;
 class meshBaseLoader;
     
 class resourceMgr {
@@ -31,7 +33,7 @@ public:
     void AttachLoader(const Core::Ptr<meshLoaderBase>& loader);
     
     /// setup the resource manager
-    void Setup(const RenderSetup& setup, stateWrapper* stWrapper);
+    void Setup(const RenderSetup& setup, stateWrapper* stWrapper, displayMgr* dspMgr);
     /// discard the resource manager
     void Discard();
     /// return true if the resource manager has been setup
@@ -54,18 +56,23 @@ public:
     mesh* LookupMesh(const Resource::Id& resId);
     /// lookup program bundle object
     programBundle* LookupProgramBundle(const Resource::Id& resId);
+    /// lookup texture object
+    texture* LookupTexture(const Resource::Id& resId);
 
 private:
     bool isValid;
     class stateWrapper* stateWrapper;
+    class displayMgr* displayMgr;
     Resource::Registry resourceRegistry;
     Core::Array<Resource::Id> removedIds;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
+    class textureFactory textureFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class programBundlePool programBundlePool;
+    class texturePool texturePool;
 };
 
 //------------------------------------------------------------------------------
@@ -80,6 +87,13 @@ inline programBundle*
 resourceMgr::LookupProgramBundle(const Resource::Id& resId) {
     o_assert_dbg(this->isValid);
     return this->programBundlePool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline texture*
+resourceMgr::LookupTexture(const Resource::Id& resId) {
+    o_assert_dbg(this->isValid);
+    return this->texturePool.Lookup(resId);
 }
 
 } // namespace Render

@@ -17,6 +17,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
+    CHECK(!rt.HasDepth());
     CHECK(rt.GetLocator().Location() == "absSize");
     CHECK(rt.GetWidth() == 320);
     CHECK(rt.GetHeight() == 256);
@@ -38,6 +39,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
+    CHECK(rt.HasDepth());
     CHECK(rt.GetLocator().Location() == "absSize");
     CHECK(rt.GetWidth() == 320);
     CHECK(rt.GetHeight() == 256);
@@ -59,6 +61,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
+    CHECK(!rt.HasDepth());
     CHECK(rt.GetLocator().Location() == "relSize");
     CHECK(rt.GetWidth() == 0);
     CHECK(rt.GetHeight() == 0);
@@ -80,6 +83,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
+    CHECK(rt.HasDepth());
     CHECK(rt.GetLocator().Location() == "relSize");
     CHECK(rt.GetWidth() == 0);
     CHECK(rt.GetHeight() == 0);
@@ -101,6 +105,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(rt.HasSharedDepth());
+    CHECK(rt.HasDepth());
     CHECK(rt.GetLocator().Location() == "sharedDepth");
     CHECK(rt.GetWidth() == 0);
     CHECK(rt.GetHeight() == 0);

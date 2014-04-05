@@ -6,11 +6,14 @@
 */
 #include "Core/Types.h"
 #include "Render/Core/mesh.h"
+#include "Render/Core/texture.h"
 #include "Render/Core/programBundle.h"
-#include "Render/Core/stateWrapper.h"
 
 namespace Oryol {
 namespace Render {
+
+class displayMgr;
+class stateWrapper;
     
 class renderMgrBase {
 public:
@@ -20,29 +23,32 @@ public:
     ~renderMgrBase();
     
     /// setup the renderer
-    void Setup(stateWrapper* stateWrapper);
+    void Setup(stateWrapper* stateWrapper, displayMgr* dispMgr);
     /// discard the renderer
     void Discard();
     /// return true if the renderer has been setup
     bool IsValid() const;
     
-    /// apply the current mesh object
-    bool ApplyMesh(mesh* mesh);
-    /// invalidate the currently set mesh object
-    void ClearMesh();
+    /// apply the current render target (can be 0)
+    void ApplyRenderTarget(texture* rt);
+    /// get the currently set render target
+    texture* GetTexture() const;
+    
+    /// apply the current mesh object (can be 0)
+    void ApplyMesh(mesh* mesh);
     /// get the currently set mesh object
     mesh* GetMesh() const;
     
-    /// apply the current program object
-    bool ApplyProgram(programBundle* progBundle, uint32 selectionMask);
-    /// invalidate the currently set program object
-    void ClearProgram();
+    /// apply the current program object (can be 0)
+    void ApplyProgram(programBundle* progBundle, uint32 selectionMask);
     /// get the currently set program object
     programBundle* GetProgram() const;
 
 protected:
     bool isValid;
+    displayMgr* displayManager;
     class stateWrapper* stateWrapper;
+    texture* curRenderTarget;
     mesh* curMesh;
     programBundle* curProgramBundle;
 };
@@ -54,24 +60,17 @@ renderMgrBase::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-inline bool
-renderMgrBase::ApplyMesh(mesh* msh) {
-    o_assert_dbg(this->isValid && (nullptr != msh));
-    if (msh != this->curMesh) {
-        this->curMesh = msh;
-        return true;
-    }
-    else {
-        return false;
-    }
+inline void
+renderMgrBase::ApplyRenderTarget(texture* rt) {
+    o_assert_dbg(this->isValid);
+    this->curRenderTarget = rt;
 }
 
 //------------------------------------------------------------------------------
 inline void
-renderMgrBase::ClearMesh() {
+renderMgrBase::ApplyMesh(mesh* msh) {
     o_assert_dbg(this->isValid);
-    this->stateWrapper->InvalidateMeshState();
-    this->curMesh = nullptr;
+    this->curMesh = msh;
 }
 
 //------------------------------------------------------------------------------
@@ -82,29 +81,13 @@ renderMgrBase::GetMesh() const {
 }
 
 //------------------------------------------------------------------------------
-inline bool
-renderMgrBase::ApplyProgram(programBundle* prog, uint32 selMask) {
-    o_assert_dbg(this->isValid && (nullptr != prog));
-    if (prog != this->curProgramBundle) {
-        this->curProgramBundle = prog;
-        this->curProgramBundle->selectProgram(selMask);
-        return true;
-    }
-    else {
-        if (this->curProgramBundle->getSelectionMask() != selMask) {
-            this->curProgramBundle->selectProgram(selMask);
-            return true;
-        }
-    }
-    return false;
-}
-
-//------------------------------------------------------------------------------
 inline void
-renderMgrBase::ClearProgram() {
+renderMgrBase::ApplyProgram(programBundle* prog, uint32 selMask) {
     o_assert_dbg(this->isValid);
-    this->stateWrapper->InvalidateProgramState();
-    this->curProgramBundle = nullptr;
+    this->curProgramBundle = prog;
+    if (nullptr != this->curProgramBundle) {
+        this->curProgramBundle->selectProgram(selMask);
+    }
 }
 
 //------------------------------------------------------------------------------

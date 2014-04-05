@@ -3,6 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glRenderMgr.h"
+#include "Render/Core/displayMgr.h"
+#include "Render/Core/stateWrapper.h"
 #include "Render/gl/glTypes.h"
 #include "Render/gl/gl_impl.h"
 #define GLM_FORCE_RADIANS
@@ -16,31 +18,34 @@
 
 namespace Oryol {
 namespace Render {
-    
+
 //------------------------------------------------------------------------------
-bool
-glRenderMgr::ApplyMesh(mesh* msh) {
-    if (renderMgrBase::ApplyMesh(msh)) {
-        this->stateWrapper->BindMesh(msh);
-        return true;
+void
+glRenderMgr::ApplyRenderTarget(texture* rt) {
+    renderMgrBase::ApplyRenderTarget(rt);
+    if (nullptr == rt) {
+        // bind default render target
+        ::glBindFramebuffer(GL_FRAMEBUFFER, this->displayManager->glGetDefaultFramebuffer());
+        ORYOL_GL_CHECK_ERROR();
     }
     else {
-        return false;
+        ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glGetFramebuffer());
+        ORYOL_GL_CHECK_ERROR();
     }
 }
 
 //------------------------------------------------------------------------------
-bool
+void
+glRenderMgr::ApplyMesh(mesh* msh) {
+    renderMgrBase::ApplyMesh(msh);
+    this->stateWrapper->BindMesh(msh);
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderMgr::ApplyProgram(programBundle* progBundle, uint32 selMask) {
-    if (renderMgrBase::ApplyProgram(progBundle, selMask)) {
-        GLuint glProg = progBundle->getProgram();
-        o_assert_dbg(0 != glProg);
-        this->stateWrapper->UseProgram(glProg);
-        return true;
-    }
-    else {
-        return false;
-    }
+    renderMgrBase::ApplyProgram(progBundle, selMask);
+    this->stateWrapper->BindProgram(progBundle);
 }
 
 //------------------------------------------------------------------------------

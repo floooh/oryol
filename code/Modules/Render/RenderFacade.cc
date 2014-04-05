@@ -35,8 +35,8 @@ RenderFacade::Setup(const RenderSetup& setup) {
     this->renderSetup = setup;
     this->displayManager.SetupDisplay(setup);
     this->stateWrapper.Setup();
-    this->resourceManager.Setup(setup, &this->stateWrapper);
-    this->renderManager.Setup(&this->stateWrapper);
+    this->resourceManager.Setup(setup, &this->stateWrapper, &this->displayManager);
+    this->renderManager.Setup(&this->stateWrapper, &this->displayManager);
 }
 
 //------------------------------------------------------------------------------
@@ -118,6 +118,21 @@ Resource::State::Code
 RenderFacade::QueryResourceState(const Id& resId) {
     o_assert_dbg(this->isValid);
     return this->resourceManager.QueryResourceState(resId);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyRenderTarget(const Id& resId) {
+    o_assert_dbg(this->isValid);
+    if (resId.IsValid()) {
+        // apply default framebuffer
+        this->renderManager.ApplyRenderTarget(nullptr);
+    }
+    else {
+        texture* renderTarget = this->resourceManager.LookupTexture(resId);
+        o_assert_dbg(nullptr != renderTarget);
+        this->renderManager.ApplyRenderTarget(renderTarget);
+    }
 }
 
 //------------------------------------------------------------------------------

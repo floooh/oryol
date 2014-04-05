@@ -29,9 +29,13 @@ public:
     /// get the GL texture target
     GLuint glGetTarget() const;
     /// set GL framebuffer (if this is a render target texture)
-    void glSetFrameBuffer(GLuint fb);
+    void glSetFramebuffer(GLuint fb);
     /// get GL framebuffer (if this is a render target texture)
-    GLuint glGetFrameBuffer() const;
+    GLuint glGetFramebuffer() const;
+    /// set GL depth render buffer object (if render target texture with depth buffer, and no depth textures supported)
+    void glSetDepthRenderbuffer(GLuint drb);
+    /// get GL depth render buffer object
+    GLuint glGetDepthRenderbuffer() const;
     /// set GL depth texture (if render target texture with depth buffer, and depth textures supported)
     void glSetDepthTexture(GLuint dtx);
     /// get GL depth texture (if render target texture with depth buffer, and depth textures supported)
@@ -40,7 +44,8 @@ public:
 protected:
     GLuint glTex;
     GLenum glTarget;
-    GLuint glFrameBuffer;
+    GLuint glFramebuffer;
+    GLuint glDepthRenderbuffer;
     GLuint glDepthTexture;
 };
 
@@ -58,8 +63,14 @@ glTexture::glGetTarget() const {
 
 //------------------------------------------------------------------------------
 inline GLuint
-glTexture::glGetFrameBuffer() const {
-    return this->glFrameBuffer;
+glTexture::glGetFramebuffer() const {
+    return this->glFramebuffer;
+}
+
+//------------------------------------------------------------------------------
+inline GLuint
+glTexture::glGetDepthRenderbuffer() const {
+    return this->glDepthRenderbuffer;
 }
 
 //------------------------------------------------------------------------------

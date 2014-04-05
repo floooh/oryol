@@ -11,7 +11,8 @@ namespace Render {
 glTexture::glTexture() :
 glTex(0),
 glTarget(0),
-glFrameBuffer(0),
+glFramebuffer(0),
+glDepthRenderbuffer(0),
 glDepthTexture(0) {
     // empty
 }
@@ -20,7 +21,8 @@ glDepthTexture(0) {
 glTexture::~glTexture() {
     o_assert(0 == this->glTex);
     o_assert(0 == this->glTarget);
-    o_assert(0 == this->glFrameBuffer);
+    o_assert(0 == this->glFramebuffer);
+    o_assert(0 == this->glDepthRenderbuffer);
     o_assert(0 == this->glDepthTexture);
 }
 
@@ -30,7 +32,8 @@ glTexture::clear() {
     textureBase::clear();
     this->glTex = 0;
     this->glTarget = 0;
-    this->glFrameBuffer = 0;
+    this->glFramebuffer = 0;
+    this->glDepthRenderbuffer = 0;
     this->glDepthTexture = 0;
 }
 
@@ -48,8 +51,14 @@ glTexture::glSetTarget(GLenum tgt) {
 
 //------------------------------------------------------------------------------
 void
-glTexture::glSetFrameBuffer(GLuint fb) {
-    this->glFrameBuffer = fb;
+glTexture::glSetFramebuffer(GLuint fb) {
+    this->glFramebuffer = fb;
+}
+
+//------------------------------------------------------------------------------
+void
+glTexture::glSetDepthRenderbuffer(GLuint drb) {
+    this->glDepthRenderbuffer = drb;
 }
 
 //------------------------------------------------------------------------------

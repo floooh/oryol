@@ -11,10 +11,12 @@ namespace Render {
     
 class glRenderMgr : public renderMgrBase {
 public:
+    /// apply the current render target
+    void ApplyRenderTarget(texture* rt);
     /// apply the current mesh object
-    bool ApplyMesh(mesh* mesh);
+    void ApplyMesh(mesh* mesh);
     /// apply the current program object
-    bool ApplyProgram(programBundle* progBundle, uint32 selectionMask);    
+    void ApplyProgram(programBundle* progBundle, uint32 selectionMask);
     /// apply a shader variable
     template<class T> void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
