@@ -80,6 +80,11 @@ public:
     void InvalidateProgramState();
     /// invoke glUseProgram (if changed)
     void UseProgram(GLuint prog);
+    /// bind currently selected program in program bundle
+    void BindProgram(const programBundle* progBundle);
+
+    /// invalidate texture state
+    void InvalidateTextureState();
     
 private:
     /// a state value union wrapper

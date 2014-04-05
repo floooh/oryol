@@ -29,6 +29,8 @@ public:
     static GLenum AsGLTexImageFormat(PixelFormat::Code c);
     /// convert Oryol pixel format to glTexImage type
     static GLenum AsGLTexImageType(PixelFormat::Code c);
+    /// convert Oryol pixel format to renderbuffer format
+    static GLenum AsGLRenderbufferFormat(PixelFormat::Code c);
     /// convert Oryol resource usage to GL usage
     static GLenum AsGLUsage(Usage::Code);
     /// convert Oryol texture wrap mode to GL enum

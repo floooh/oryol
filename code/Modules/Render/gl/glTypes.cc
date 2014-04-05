@@ -56,11 +56,57 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
             return GL_DEPTH_COMPONENT;
             
         case PixelFormat::D24S8:
+            #if ORYOL_OPENGLES2
+            return GL_DEPTH_STENCIL_OES;
+            #else
             return GL_DEPTH_STENCIL;
+            #endif
             
         default:
             // FIXME: add missing values
             o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
+    switch (c) {
+        case PixelFormat::R8G8B8A8: 
+            #if ORYOL_OPENGLES2
+            return GL_RGBA8_OES;
+            #else
+            return GL_RGBA8;
+            #endif
+        case PixelFormat::R8G8B8:   
+            #if ORYOL_OPENGLES2
+            return GL_RGB8_OES;
+            #else
+            return GL_RGB8;
+            #endif
+        case PixelFormat::R5G6B5:   
+            return GL_RGB565;
+        case PixelFormat::R5G5B5A1: 
+            return GL_RGB5_A1;
+        case PixelFormat::R4G4B4A4: 
+            return GL_RGBA4;
+        case PixelFormat::D16:      
+            return GL_DEPTH_COMPONENT16;
+        case PixelFormat::D32:      
+            #if ORYOL_OPENGLES2
+            return GL_DEPTH_COMPONENT32_OES;
+            #else
+            return GL_DEPTH_COMPONENT32;
+            #endif
+        case PixelFormat::D24S8:    
+            #if ORYOL_OPENGLES2
+            return GL_DEPTH24_STENCIL8_OES;
+            #else
+            return GL_DEPTH24_STENCIL8;
+            #endif
+        default:
+            o_error("glTypes::AsGLRenderbufferFormat(): invalid param!\n");
             return 0;
     }
 }
@@ -89,7 +135,11 @@ glTypes::AsGLTexImageType(PixelFormat::Code c) {
             return GL_UNSIGNED_INT;
             
         case PixelFormat::D24S8:
+            #if ORYOL_OPENGLES2
+            return GL_UNSIGNED_INT_24_8_OES;
+            #else
             return GL_UNSIGNED_INT_24_8;
+            #endif
             
         default:
             // FIXME: add missing values
@@ -144,9 +194,16 @@ glTypes::AsGLTextureFilterMode(TextureFilterMode::Code c) {
 GLenum
 glTypes::AsGLTextureTarget(TextureType::Code c) {
     switch (c) {
-        case TextureType::Texture2D: return GL_TEXTURE_2D;
-        case TextureType::Texture3D: return GL_TEXTURE_3D;
-        case TextureType::TextureCube: return GL_TEXTURE_CUBE_MAP;
+        case TextureType::Texture2D: 
+            return GL_TEXTURE_2D;
+        case TextureType::Texture3D: 
+            #if ORYOL_OPENGLES2
+            return GL_TEXTURE_3D_OES;
+            #else
+            return GL_TEXTURE_3D;
+            #endif
+        case TextureType::TextureCube: 
+            return GL_TEXTURE_CUBE_MAP;
         default:
             o_error("glTypes::AsGLTextureTarget(): invalid param!\n");
             return 0;

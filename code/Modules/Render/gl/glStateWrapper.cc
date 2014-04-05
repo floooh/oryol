@@ -501,7 +501,11 @@ glStateWrapper::onClearDepth(const ValBlock& input) {
     const GLclampf f = input.val[0].f;
     if (f != this->curClearDepth) {
         this->curClearDepth = f;
+        #if ORYOL_OPENGLES2
+        ::glClearDepthf(f);
+        #else
         ::glClearDepth(f);
+        #endif
     }
 }
 
@@ -540,7 +544,11 @@ glStateWrapper::onDepthRange(const ValBlock& input) {
     if ((nearVal != this->curDepthRangeNear) || (farVal != this->curDepthRangeFar)) {
         this->curDepthRangeNear = nearVal;
         this->curDepthRangeFar = farVal;
+        #if ORYOL_OPENGLES2
+        ::glDepthRangef(nearVal, farVal);
+        #else
         ::glDepthRange(nearVal, farVal);
+        #endif
     }
 }
 
@@ -769,30 +777,35 @@ glStateWrapper::BindVertexArrayObject(GLuint vao) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::BindMesh(const mesh* msh) {
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        GLuint vao = msh->glGetVertexArrayObject();
-        o_assert_dbg(0 != vao);
-        this->BindVertexArrayObject(vao);
+    if (nullptr == msh) {
+        this->InvalidateMeshState();
     }
     else {
-        const GLuint vb = msh->glGetVertexBuffer();
-        const GLuint ib = msh->glGetIndexBuffer();
-        this->BindIndexBuffer(ib);
-        if (vb != this->curVertexBuffer) {
-            this->curVertexBuffer = vb;
-            ::glBindBuffer(GL_ARRAY_BUFFER, vb);
-            ORYOL_GL_CHECK_ERROR();
-            for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-                const glVertexAttr& attr = msh->glAttr(i);
-                if (attr.enabled) {
-                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                    ORYOL_GL_CHECK_ERROR();
-                    ::glEnableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
-                }
-                else {
-                    ::glDisableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
+        if (glExt::HasExtension(glExt::VertexArrayObject)) {
+            GLuint vao = msh->glGetVertexArrayObject();
+            o_assert_dbg(0 != vao);
+            this->BindVertexArrayObject(vao);
+        }
+        else {
+            const GLuint vb = msh->glGetVertexBuffer();
+            const GLuint ib = msh->glGetIndexBuffer();
+            this->BindIndexBuffer(ib);
+            if (vb != this->curVertexBuffer) {
+                this->curVertexBuffer = vb;
+                ::glBindBuffer(GL_ARRAY_BUFFER, vb);
+                ORYOL_GL_CHECK_ERROR();
+                for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+                    const glVertexAttr& attr = msh->glAttr(i);
+                    if (attr.enabled) {
+                        ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                        ORYOL_GL_CHECK_ERROR();
+                        ::glEnableVertexAttribArray(attr.index);
+                        ORYOL_GL_CHECK_ERROR();
+                    }
+                    else {
+                        ::glDisableVertexAttribArray(attr.index);
+                        ORYOL_GL_CHECK_ERROR();
+                    }
                 }
             }
         }
@@ -815,6 +828,25 @@ glStateWrapper::UseProgram(GLuint prog) {
         ::glUseProgram(prog);
         ORYOL_GL_CHECK_ERROR();
     }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::BindProgram(const programBundle* progBundle) {
+    if (nullptr == progBundle) {
+        this->InvalidateProgramState();
+    }
+    else {
+        GLuint glProg = progBundle->getProgram();
+        o_assert_dbg(0 != glProg);
+        this->UseProgram(glProg);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::InvalidateTextureState() {
+    // FIXME!
 }
 
 } // namespace Render
