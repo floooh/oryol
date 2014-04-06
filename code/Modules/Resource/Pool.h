@@ -207,7 +207,8 @@ Pool<RESOURCE,SETUP,FACTORY>::Unassign(const Id& id) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> RESOURCE*
 Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type() == this->resourceType);
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
@@ -231,7 +232,8 @@ Pool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> State::Code
 Pool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type() == this->resourceType);
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
