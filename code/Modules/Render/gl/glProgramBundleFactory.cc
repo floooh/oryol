@@ -118,10 +118,8 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // linking succeeded, store GL program
         progBundle.addProgram(setup.GetMask(progIndex), glProg);
         
-        // FIXME: this might disable parallel compilation of
-        this->glStateWrapper->UseProgram(glProg);
-
         // resolve user uniform locations
+        this->glStateWrapper->UseProgram(glProg);
         int32 samplerIndex = 0;
         const int32 numUniforms = setup.GetNumUniforms();
         for (int32 i = 0; i < numUniforms; i++) {
