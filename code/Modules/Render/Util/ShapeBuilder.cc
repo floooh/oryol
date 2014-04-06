@@ -351,8 +351,10 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     const float32 dx = w / numTiles;
     const float32 dy = h / numTiles;
     const float32 dz = d / numTiles;
+    const float32 duv = 1.0f / numTiles;
     
     const bool hasNormals = vertexLayout.Contains(VertexAttr::Normal);
+    const bool hasTexCoords = vertexLayout.Contains(VertexAttr::TexCoord0);
     
     // bottom/top plane vertices
     glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
@@ -371,6 +373,9 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
                 this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
                 if (hasNormals) {
                     this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+                }
+                if (hasTexCoords) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::TexCoord0, ix * duv, iz * duv);
                 }
                 curVertexIndex++;
             }
@@ -393,6 +398,9 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
                 if (hasNormals) {
                     this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
                 }
+                if (hasTexCoords) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::TexCoord0, iy * duv, iz * duv);
+                }
                 curVertexIndex++;
             }
         }
@@ -414,6 +422,9 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
                 if (hasNormals) {
                     this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
                 }
+                if (hasTexCoords) {
+                    this->meshBuilder.Vertex(curVertexIndex, VertexAttr::TexCoord0, ix * duv, iy * duv);
+                }
                 curVertexIndex++;
             }
         }
@@ -428,9 +439,6 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
         Log::Warn("FIXME: ShapeBuilder::BuildBox() tangents not implemented yet!\n");
-    }
-    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildBox() texcoord not implemented yet!\n");
     }
     
     // write indices
@@ -482,8 +490,12 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
     const float32 radius = shape.f0;
     const float32 pi = glm::pi<float32>();
     const float32 twoPi = 2.0f * pi;
+    const float32 du = 1.0f / numSlices;
+    const float32 dv = 1.0f / numStacks;
     
     bool hasNormals = vertexLayout.Contains(VertexAttr::Normal);
+    bool hasTexCoords = vertexLayout.Contains(VertexAttr::TexCoord0);
+    
     for (int32 stack = 0; stack <= numStacks; stack++) {
         const float32 stackAngle = (pi * stack) / numStacks;
         const float32 sinStack = glm::sin(stackAngle);
@@ -500,6 +512,9 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
                 const glm::vec4 tnorm = shape.transform * glm::vec4(norm, 0.0f);
                 this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, tnorm.x, tnorm.y, tnorm.z);
             }
+            if (hasTexCoords) {
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::TexCoord0, du * slice, dv * stack);
+            }
             curVertexIndex++;
         }
     }
@@ -513,9 +528,6 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
         Log::Warn("FIXME: ShapeBuilder::BuildSphere() tangents not implemented yet!\n");
-    }
-    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildSphere() texcoord not implemented yet!\n");
     }
     
     // north-pole triangles
