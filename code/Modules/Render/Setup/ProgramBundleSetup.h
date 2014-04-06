@@ -23,7 +23,9 @@ public:
     /// add a program consisting of vertex and fragment shader
     void AddProgram(uint32 mask, const Resource::Id& vertexShader, const Resource::Id& fragmentShader);
     /// bind a shader uniform name to a variable slot
-    void AddUniform(const Core::String& uniformName, uint32 slotIndex);
+    void AddUniform(const Core::String& uniformName, int16 slotIndex);
+    /// bind a shader uniform name to a texture variable slot
+    void AddTextureUniform(const Core::String& uniformName, int16 slotIndex);
     /// bind a shader uniform name to a standard variable
     void AddStandardUniform(const Core::String& uniformName, StandardUniform::Code stdUniform);
     
@@ -43,8 +45,10 @@ public:
     int32 GetNumUniforms() const;
     /// get uniform name at index
     const Core::String& GetUniformName(int32 uniformIndex) const;
+    /// return true if uniform is a texture
+    bool IsTextureUniform(int32 uniformIndex) const;
     /// get uniform slot index
-    uint32 GetUniformSlot(int32 uniformIndex) const;
+    int16 GetUniformSlot(int32 uniformIndex) const;
     
     /// get number of standard uniforms
     int32 GetNumStandardUniforms() const;
@@ -65,9 +69,10 @@ private:
         Resource::Id fragmentShader;
     };
     struct uniformEntry {
-        uniformEntry() : slotIndex(InvalidIndex) {};
+        uniformEntry() : isTexture(false), slotIndex(InvalidIndex) {};
         Core::String uniformName;
-        uint32 slotIndex;
+        bool isTexture;
+        int16 slotIndex;
     };
     struct stdUniformEntry {
         stdUniformEntry() : stdUniform(StandardUniform::InvalidStandardUniform) { };

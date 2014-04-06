@@ -85,6 +85,8 @@ public:
 
     /// invalidate texture state
     void InvalidateTextureState();
+    /// bind a texture to a sampler index
+    void BindTexture(int32 samplerIndex, GLenum target, GLuint tex);
     
 private:
     /// a state value union wrapper
@@ -274,6 +276,10 @@ private:
     GLuint curIndexBuffer;
     GLuint curVertexArrayObject;
     GLuint curProgram;
+    
+    static const int32 MaxTextureSamplers = 16;
+    GLuint samplers2D[MaxTextureSamplers];
+    GLuint samplersCube[MaxTextureSamplers];
 };
 
 //------------------------------------------------------------------------------

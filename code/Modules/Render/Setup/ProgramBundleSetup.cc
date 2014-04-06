@@ -43,13 +43,26 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddUniform(const String& uniformName, uint32 slotIndex) {
+ProgramBundleSetup::AddUniform(const String& uniformName, int16 slotIndex) {
     o_assert(this->numUniformEntries < MaxNumUniformEntries);
     o_assert(uniformName.IsValid());
 
     uniformEntry& entry = this->uniformEntries[this->numUniformEntries++];
     entry.uniformName = uniformName;
     entry.slotIndex = slotIndex;
+    entry.isTexture = false;
+}
+
+//------------------------------------------------------------------------------
+void
+ProgramBundleSetup::AddTextureUniform(const String& uniformName, int16 slotIndex) {
+    o_assert(this->numUniformEntries < MaxNumUniformEntries);
+    o_assert(uniformName.IsValid());
+
+    uniformEntry& entry = this->uniformEntries[this->numUniformEntries++];
+    entry.uniformName = uniformName;
+    entry.slotIndex = slotIndex;
+    entry.isTexture = true;
 }
 
 //------------------------------------------------------------------------------
@@ -111,10 +124,17 @@ ProgramBundleSetup::GetUniformName(int32 uniformIndex) const {
 }
 
 //------------------------------------------------------------------------------
-uint32
+int16
 ProgramBundleSetup::GetUniformSlot(int32 uniformIndex) const {
     o_assert_range(uniformIndex, this->numUniformEntries);
     return this->uniformEntries[uniformIndex].slotIndex;
+}
+
+//------------------------------------------------------------------------------
+bool
+ProgramBundleSetup::IsTextureUniform(int32 uniformIndex) const {
+    o_assert_range(uniformIndex, this->numUniformEntries);
+    return this->uniformEntries[uniformIndex].isTexture;
 }
 
 //------------------------------------------------------------------------------

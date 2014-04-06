@@ -26,6 +26,8 @@ public:
     int32 addProgram(uint32 mask, GLuint glProg);
     /// bind a uniform location to a slot index
     void bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation);
+    /// bind a sampler uniform location to a slot index
+    void bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
     /// bind a uniform location to a standard uniform
     void bindStandardUniform(int32 progIndex, StandardUniform::Code stdUniform, GLint glUniformLocation);
     
@@ -37,6 +39,8 @@ public:
     GLuint getProgram() const;
     /// get uniform location by slot index in currently selected program (-1 if not exists)
     GLint getUniformLocation(int32 slotIndex) const;
+    /// get sampler location by slot index in currently selected program (-1 if not exists)
+    int32 getSamplerIndex(int32 slotIndex) const;
     /// get uniform location by slot index in currently selected program (-1 if not exists)
     GLint getStandardUniformLocation(StandardUniform::Code stdUniform) const;
     
@@ -54,6 +58,7 @@ private:
         GLuint program;
         GLint stdUniformMapping[StandardUniform::NumStandardUniforms];
         GLint uniformMapping[MaxNumUniforms];
+        int32 samplerMapping[MaxNumUniforms];
     };
     uint32 selMask;
     int32 selIndex;
@@ -94,6 +99,13 @@ inline GLint
 glProgramBundle::getUniformLocation(int32 slotIndex) const {
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
     return this->programEntries[this->selIndex].uniformMapping[slotIndex];
+}
+
+//------------------------------------------------------------------------------
+inline int32
+glProgramBundle::getSamplerIndex(int32 slotIndex) const {
+    o_assert_range_dbg(slotIndex, MaxNumUniforms);
+    return this->programEntries[this->selIndex].samplerMapping[slotIndex];
 }
 
 //------------------------------------------------------------------------------

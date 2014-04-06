@@ -49,6 +49,24 @@ glRenderMgr::ApplyProgram(programBundle* progBundle, uint32 selMask) {
 }
 
 //------------------------------------------------------------------------------
+/**
+ Special method to set a texture in a shader program:
+ The texture unit associated with a sampler uniform is set once during shader
+ program setup, all we need to do here glActiveTexture and glBindTexture. 
+ This will be handled by the GL state wrapper, which also filters redundant
+ texture binds.
+*/
+void
+glRenderMgr::ApplyTexture(int32 index, const texture* tex) {
+    if (this->curProgramBundle) {
+        int32 samplerIndex = this->curProgramBundle->getSamplerIndex(index);
+        GLuint glTexture = tex->glGetTexture();
+        GLenum glTarget = tex->glGetTarget();
+        this->stateWrapper->BindTexture(samplerIndex, glTarget, glTexture);
+    }
+}
+
+//------------------------------------------------------------------------------
 template<> void
 glRenderMgr::ApplyVariable(int32 index, const float32& val) {
     if (this->curProgramBundle) {

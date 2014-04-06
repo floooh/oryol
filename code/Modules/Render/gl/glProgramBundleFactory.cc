@@ -58,6 +58,7 @@ void
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert(this->isValid);
     o_assert(progBundle.GetState() == Resource::State::Setup);
+    this->glStateWrapper->InvalidateProgramState();
 
     // for each program in the bundle...
     const ProgramBundleSetup& setup = progBundle.GetSetup();
@@ -117,13 +118,25 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // linking succeeded, store GL program
         progBundle.addProgram(setup.GetMask(progIndex), glProg);
         
+        // FIXME: this might disable parallel compilation of
+        this->glStateWrapper->UseProgram(glProg);
+
         // resolve user uniform locations
+        int32 samplerIndex = 0;
         const int32 numUniforms = setup.GetNumUniforms();
         for (int32 i = 0; i < numUniforms; i++) {
             const String& name = setup.GetUniformName(i);
-            const uint32 slotIndex = setup.GetUniformSlot(i);
+            const int16 slotIndex = setup.GetUniformSlot(i);
             const GLint glLocation = ::glGetUniformLocation(glProg, name.AsCStr());
             progBundle.bindUniform(progIndex, slotIndex, glLocation);
+            
+            // special case for texture samplers
+            if (setup.IsTextureUniform(i)) {
+                progBundle.bindSamplerUniform(progIndex, slotIndex, glLocation, samplerIndex);
+                
+                // set the sampler index in the shader program, this will never change
+                ::glUniform1i(glLocation, samplerIndex++);
+            }
         }
         
         // resolve standard uniform locations

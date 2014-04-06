@@ -160,6 +160,14 @@ RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& da
 }
 
 //------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyVariable(int32 index, const Resource::Id& texResId) {
+    o_assert_dbg(this->isValid);
+    texture* tex = this->resourceManager.LookupTexture(texResId);
+    this->renderManager.ApplyTexture(index, tex);
+}
+
+//------------------------------------------------------------------------------
 template<class T> inline void
 RenderFacade::ApplyVariable(int32 index, const T& value) {
     o_assert_dbg(this->isValid);

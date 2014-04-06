@@ -71,7 +71,10 @@ curProgram(0)
         this->curStencilOpDpPass[i] = GL_KEEP;
         this->curStencilMask[i] = 0xFFFFFFFF;
     }
-
+    for (int32 i = 0; i < MaxTextureSamplers; i++) {
+        this->samplers2D[i] = 0;
+        this->samplersCube[i] = 0;
+    }
     this->setupStateTranslationTable();
     this->setupStateVector();
 }
@@ -846,7 +849,25 @@ glStateWrapper::BindProgram(const programBundle* progBundle) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateTextureState() {
-    // FIXME!
+    for (int32 i = 0; i < MaxTextureSamplers; i++) {
+        this->samplers2D[i] = 0;
+        this->samplersCube[i] = 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::BindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
+    o_assert_range_dbg(samplerIndex, MaxTextureSamplers);
+    o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP));
+    GLuint* samplers = (GL_TEXTURE_2D == target) ? this->samplers2D : this->samplersCube;
+    if (tex != samplers[samplerIndex]) {
+        samplers[samplerIndex] = tex;
+        ::glActiveTexture(GL_TEXTURE0 + samplerIndex);
+        ORYOL_GL_CHECK_ERROR();
+        ::glBindTexture(target, tex);
+        ORYOL_GL_CHECK_ERROR();
+    }
 }
 
 } // namespace Render
