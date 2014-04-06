@@ -251,6 +251,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     tex.glSetTexture(glColorRenderTexture);
     tex.glSetFramebuffer(glFramebuffer);
     tex.glSetDepthRenderbuffer(glDepthRenderBuffer);
+    tex.glSetTarget(GL_TEXTURE_2D);
     tex.setState(Resource::State::Valid);
     
     // bind the default frame buffer
