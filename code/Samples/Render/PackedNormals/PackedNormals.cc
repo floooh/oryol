@@ -75,7 +75,6 @@ PackedNormalsApp::OnInit() {
 
     // create shapes (each shape gets its own primitive group)
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
@@ -119,7 +118,7 @@ PackedNormalsApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
         
-        // compute a new ModelViewProj matrix
+        // update angles
         this->angleY += 0.01f;
         this->angleX += 0.02f;
 
@@ -134,7 +133,7 @@ PackedNormalsApp::OnRunning() {
         this->render->ApplyMesh(this->meshId);
         
         // draw shape primitive groups
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0, -6.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
         this->render->Draw(0);
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);

@@ -119,7 +119,7 @@ ShapeApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
         
-        // compute a new ModelViewProj matrix
+        // update rotation angles
         this->angleY += 0.01f;
         this->angleX += 0.02f;
 
@@ -134,7 +134,7 @@ ShapeApp::OnRunning() {
         this->render->ApplyMesh(this->meshId);
         
         // render shape primitive groups
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0, -6.0f)));
+        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
         this->render->Draw(0);
         this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);
