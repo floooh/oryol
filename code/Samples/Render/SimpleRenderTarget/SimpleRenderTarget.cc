@@ -101,7 +101,7 @@ SimpleRenderTargetApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingleton();
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Simple Render Target Sample"));
+    this->render->Setup(RenderSetup::Windowed(800, 600, "Oryol Simple Render Target Sample"));
 
     // create an offscreen render target, we explicitely want repeat texture wrap mode
     // and linear blending...
@@ -154,7 +154,7 @@ SimpleRenderTargetApp::OnInit() {
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
-    this->displayProj = glm::perspective(glm::radians(45.0f), 1.5f, 0.01f, 100.0f);
+    this->displayProj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 100.0f);
     this->view = glm::mat4();
     
     return AppState::Running;
