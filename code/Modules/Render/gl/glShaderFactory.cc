@@ -75,14 +75,15 @@ glShaderFactory::SetupResource(shader& shd) {
     strBuilder.Reserve(2 * srcLength + 1024);
     #if ORYOL_OPENGLES2
         strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
-        if (GL_FRAGMENT_SHADER == glShaderType) {
-            strBuilder.Append("precision mediump float;\n");
-            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
-            strBuilder.Append("#define FragmentColor gl_FragColor\n");
-        }
         if (GL_VERTEX_SHADER == glShaderType) {
             strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
             strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
+        }
+        if (GL_FRAGMENT_SHADER == glShaderType) {
+            strBuilder.Append("precision mediump float;\n");
+            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
+            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");            
+            strBuilder.Append("#define FragmentColor gl_FragColor\n");
         }
     #else
         strBuilder.Append("#version 150\n");
@@ -96,6 +97,7 @@ glShaderFactory::SetupResource(shader& shd) {
         }
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
+            strBuilder.Append("#define TEXTURE2D(x,y) texture(x,y)\n");
             strBuilder.Append("out vec4 FragmentColor;\n");
         }
     #endif
