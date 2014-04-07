@@ -175,8 +175,8 @@ glTextureFactory::createRenderTarget(texture& tex) {
     GLenum glColorType = glTypes::AsGLTexImageType(setup.GetColorFormat());
     GLuint glColorRenderTexture = 0;
     ::glGenTextures(1, &glColorRenderTexture);
-    ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ::glActiveTexture(GL_TEXTURE0);
+    ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ORYOL_GL_CHECK_ERROR();
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::AsGLTextureFilterMode(setup.GetMinFilter()));
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::AsGLTextureFilterMode(setup.GetMagFilter()));
