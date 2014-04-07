@@ -32,6 +32,11 @@
 #include "Core/Macros.h"
 #include "Core/Args.h"
 #include "Core/String/WideString.h"
+#if ORYOL_WINDOWS
+#define VC_EXTRALEAN (1)
+#define WIN32_LEAN_AND_MEAN (1)
+#include <Windows.h>
+#endif
 
 namespace Oryol {
 namespace Core {

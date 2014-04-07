@@ -14,6 +14,11 @@
 #define ORYOL_TRAP __builtin_trap
 #endif
 
+#if !(__GNUC__ || __GNUC__)
+// on Visual Studio, replace __PRETTY_FUNCTION__ with __FUNCSIC__
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
+
 // assert macros
 #if (__clang_analyzer__ || ORYOL_USE_STDASSERT)
 #include <assert.h>

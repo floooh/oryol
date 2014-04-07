@@ -12,7 +12,7 @@ namespace Oryol {
 namespace Messaging {
 class TestProtocol2 {
 public:
-    static ProtocolIdType GetProtocolId() {
+    static Messaging::ProtocolIdType GetProtocolId() {
         return 'TSP2';
     };
     class MessageId {

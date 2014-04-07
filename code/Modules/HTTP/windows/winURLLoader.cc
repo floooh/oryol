@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "winURLLoader.h"
-#include "Core/String/StringUtil.h"
+#include "Core/String/StringConverter.h"
 #include "IO/MemoryStream.h"
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
@@ -60,7 +60,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     HINTERNET hConn = this->obtainConnection(req->GetURL());
     if (NULL != hConn) {
         WideString method(HTTPMethod::ToWideString(req->GetMethod()));
-        WideString path(StringUtil::UTF8ToWide(req->GetURL().PathToEnd()));
+        WideString path(StringConverter::UTF8ToWide(req->GetURL().PathToEnd()));
 
         // setup an HTTP request
         HINTERNET hRequest = WinHttpOpenRequest(
@@ -93,7 +93,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 // remove last CRLF
                 this->stringBuilder.PopBack();
                 this->stringBuilder.PopBack();
-                WideString reqHeaders(StringUtil::UTF8ToWide(this->stringBuilder.GetString()));
+                WideString reqHeaders(StringConverter::UTF8ToWide(this->stringBuilder.GetString()));
                 BOOL headerResult = WinHttpAddRequestHeaders(
                     hRequest, 
                     reqHeaders.AsCStr(), 
@@ -164,7 +164,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                         o_assert(headerResult);
                     
                         // convert from wide and split the header fields
-                        this->stringBuilder.Set(StringUtil::WideToUTF8((const wchar_t*) headerBuffer, dwSize / sizeof(wchar_t)));
+                        this->stringBuilder.Set(StringConverter::WideToUTF8((const wchar_t*) headerBuffer, dwSize / sizeof(wchar_t)));
                         Array<String> tokens;
                         this->stringBuilder.Tokenize("\r\n", tokens);
                         Map<String, String> fields;
@@ -253,11 +253,11 @@ winURLLoader::obtainConnection(const URL& url) {
     else {
         // new connection
         connection con;
-        const WideString host = StringUtil::UTF8ToWide(url.Host());
+        const WideString host = StringConverter::UTF8ToWide(url.Host());
         const String portString = url.Port();
         INTERNET_PORT port = INTERNET_DEFAULT_HTTP_PORT;
         if (!portString.Empty()) {
-            port = StringUtil::FromString<int16>(portString);
+            port = StringConverter::FromString<int16>(portString);
         }
         con.hConnection = WinHttpConnect(this->hSession,        // hSession
                                           host.AsCStr(),        // pswzServerName
