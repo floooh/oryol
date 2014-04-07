@@ -59,7 +59,7 @@ To build the 64-bit samples:
 ```
 
 ### emscripten ###
-To build and run the (32-bit) Triangle sample for emscripten:
+To build and run the Triangle sample for emscripten:
 
 ```
 > cd oryol
