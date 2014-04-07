@@ -7,6 +7,7 @@ CMake to manage build configurations for the supported host and target platforms
 - python 2.7.x
 - cmake 2.8.11 or better
 - for **OSX:** Xcode 5.x
+- for **Windows:** VStudio 2013 (Express should work fine)
 - for **emscripten:** a working emscripten fastcomp compile environment
 
 ### OSX ###
@@ -14,7 +15,7 @@ To build and run the Triangle sample on OSX:
 
 ```
 > cd oryol
-> ./oryol select
+> ./oryol select 
 'osx-xcode-debug' selected as current config
 > ./oryol build
 [this should run cmake and compile the samples]
@@ -24,8 +25,41 @@ Clear.app Triangle.app ...
 > open Triangle.app
 ```
 
+### Windows ###
+To build and run the (32-bit) Triangle sample on Windows:
+
+```
+> cd oryol
+> oryol select
+'win32-vstudio-debug' selected as current config
+> oryol build
+[this should run cmake and compile the samples]
+> cd bin\win32
+> dir *.exe
+...
+07.04.2014  19:31         2.651.648 Triangle_debug.exe
+...
+> Triangle_debug.exe
+```
+
+To build the 64-bit samples:
+
+```
+> cd oryol
+> oryol select win64-vstudio-debug
+'win64-vstudio-debug' selected as current config
+> oryol build
+[this should run cmake and compile the samples]
+> cd bin\win64
+> dir *.exe
+...
+07.04.2014  19:48         3.194.368 Triangle_debug.exe
+...
+> Triangle_debug.exe
+```
+
 ### emscripten ###
-To build and run the Triangle sample for emscripten:
+To build and run the (32-bit) Triangle sample for emscripten:
 
 ```
 > cd oryol

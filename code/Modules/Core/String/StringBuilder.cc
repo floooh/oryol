@@ -369,7 +369,7 @@ StringBuilder::SubstituteAll(const char* match, const char* subst) {
 //------------------------------------------------------------------------------
 int32
 StringBuilder::SubstituteAll(const String& match, const String& subst) {
-    return this->SubstituteAll(match, subst);
+    return this->SubstituteAll(match.AsCStr(), subst.AsCStr());
 }
 
 //------------------------------------------------------------------------------
