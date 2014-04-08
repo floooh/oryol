@@ -5,6 +5,12 @@ Experimental C++11 multi-platform 3D engine.
 
 Live sample demos are here: http://floooh.github.io/oryol/
 
+### Cloning
+
+Use **'git clone --recursive https://github.com/floooh/oryol.git oryol'** to clone the repo, so that you're getting any submodules.
+
+If you have cloned without the submodules, use **'git submodule update --init --recursive'** to fetch the submodules.
+
 ### Goals
 
 1. github-centric distributed development model, this is only an idea at the moment:
