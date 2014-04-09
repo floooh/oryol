@@ -47,12 +47,12 @@ TEST(MeshBuilderTest) {
     CHECK(!stream->IsOpen());
     
     // see MeshBuilder header for those sizes
-    const int32 hdrSize = 8 * sizeof(int32);
-    const int32 hdrCompSize = 2 * 2 * sizeof(int32);
-    const int32 hdrPrimGroupSize = 3 * sizeof(int32);
-    const int32 vbufSize = 4 * 5 * sizeof(float32);
-    const int32 ibufSize = 6 * sizeof(uint16);
-    const int32 allDataSize = hdrSize + hdrCompSize + hdrPrimGroupSize + vbufSize + ibufSize;
+    const uint32 hdrSize = 8 * sizeof(int32);
+    const uint32 hdrCompSize = 2 * 2 * sizeof(int32);
+    const uint32 hdrPrimGroupSize = 3 * sizeof(int32);
+    const uint32 vbufSize = 4 * 5 * sizeof(float32);
+    const uint32 ibufSize = 6 * sizeof(uint16);
+    const uint32 allDataSize = hdrSize + hdrCompSize + hdrPrimGroupSize + vbufSize + ibufSize;
     CHECK(stream->Size() == allDataSize);
     
     // check the generated data
