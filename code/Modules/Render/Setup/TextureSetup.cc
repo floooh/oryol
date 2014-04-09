@@ -16,6 +16,7 @@ shouldSetupFromData(false),
 shouldSetupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
+ioLane(0),
 width(0),
 height(0),
 relWidth(0.0f),
@@ -86,6 +87,12 @@ TextureSetup::AsSharedDepthRenderTarget(const Locator& loc, PixelFormat::Code co
     setup.wrapV = TextureWrapMode::ClampToEdge;
     setup.wrapW = TextureWrapMode::InvalidTextureWrapMode;
     return setup;
+}
+
+//------------------------------------------------------------------------------
+int32
+TextureSetup::GetIOLane() const {
+    return this->ioLane;
 }
 
 //------------------------------------------------------------------------------

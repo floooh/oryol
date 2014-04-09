@@ -38,6 +38,8 @@ public:
     bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
+    /// get ioLane index
+    int32 GetIOLane() const;
     
     /// get the resource locator
     const Resource::Locator& GetLocator() const;
@@ -86,6 +88,7 @@ private:
     bool hasSharedDepth : 1;
     
     Resource::Locator locator;
+    int32 ioLane;
     int32 width;
     int32 height;
     float32 relWidth;
