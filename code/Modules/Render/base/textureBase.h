@@ -19,24 +19,24 @@ public:
     textureBase();
     
     /// get (optional) IORequest
-    const Core::Ptr<IO::IOProtocol::Request>& GetIORequest() const;
+    const Core::Ptr<IO::IOProtocol::Get>& GetIORequest() const;
     /// get texture attrs object
     const TextureAttrs& GetTextureAttrs() const;
 
     /// clear the object
     void clear();
     /// set IO request for asynchronous loading
-    void setIORequest(const Core::Ptr<IO::IOProtocol::Request>& ioRequest);
+    void setIORequest(const Core::Ptr<IO::IOProtocol::Get>& ioRequest);
     /// set texture attributes object
     void setTextureAttrs(const TextureAttrs& attrs);
     
 protected:
-    Core::Ptr<IO::IOProtocol::Request> ioRequest;
+    Core::Ptr<IO::IOProtocol::Get> ioRequest;
     TextureAttrs textureAttrs;
 };
 
 //------------------------------------------------------------------------------
-inline const Core::Ptr<IO::IOProtocol::Request>&
+inline const Core::Ptr<IO::IOProtocol::Get>&
 textureBase::GetIORequest() const {
     return this->ioRequest;
 }
