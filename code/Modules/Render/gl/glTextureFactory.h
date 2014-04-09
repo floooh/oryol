@@ -36,6 +36,9 @@ public:
     void SetupResource(texture& tex, const Core::Ptr<IO::Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
+    
+    /// generate a new GL texture and bind to texture unit 0 (called by texture loaders)
+    GLuint glGenAndBindTexture(GLenum target);
 
 private:
     /// create a render target

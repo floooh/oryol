@@ -259,5 +259,18 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ORYOL_GL_CHECK_ERROR();
 }
 
+//------------------------------------------------------------------------------
+GLuint
+glTextureFactory::glGenAndBindTexture(GLenum target) {
+    o_assert(this->isValid);
+    this->glStateWrapper->InvalidateTextureState();
+    GLuint glTex = 0;
+    ::glGenTextures(1, &glTex);
+    ::glActiveTexture(GL_TEXTURE0);
+    ::glBindTexture(target, glTex);
+    ORYOL_GL_CHECK_ERROR();
+    return glTex;
+}
+
 } // namespace Render
 } // namespace Oryol
