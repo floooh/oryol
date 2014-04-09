@@ -27,7 +27,7 @@ glTextureLoader::Accepts(const texture& tex) const {
 
     // test the file extension
     const char* loc = tex.GetSetup().GetLocator().Location().AsCStr();
-    if (StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) {
+    if (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) {
         return true;
     }
     else {
