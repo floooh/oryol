@@ -60,8 +60,8 @@ private:
     /// test if a pointer is owned by this allocator (SLOW)
     bool isOwned(TYPE* obj) const;
     
-    static const int32 MaxNumPuddles = 256;
-    static const int32 NumPuddleElements = 256;
+    static const uint32 MaxNumPuddles = 256;
+    static const uint32 NumPuddleElements = 256;
     
     int32 elmSize;                      // offset to next element in bytes
 
