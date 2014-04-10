@@ -33,7 +33,7 @@ public:
     void release();
 
 private:
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
     std::atomic<int32> refCount{0};
     #else
     int32 refCount{0};
@@ -43,7 +43,7 @@ private:
 //------------------------------------------------------------------------------
 inline void
 RefCounted::addRef() {
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
     this->refCount.fetch_add(1, std::memory_order_relaxed);
     #else
     this->refCount++;
@@ -53,7 +53,7 @@ RefCounted::addRef() {
 //------------------------------------------------------------------------------
 inline void
 RefCounted::release() {
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
     if (1 == this->refCount.fetch_sub(1, std::memory_order_relaxed)) {
     #else
     if (1 == this->refCount--) {

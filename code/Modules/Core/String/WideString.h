@@ -84,7 +84,7 @@ public:
 private:
     /// shared string data header, this is followed by the actual string
     struct StringData {
-        #if ORYOL_HAS_THREADS
+        #if ORYOL_HAS_ATOMIC
         std::atomic<int32> refCount{0};
         #else
         int32 refCount{0};

@@ -45,7 +45,7 @@ public:
 
 protected:
     MessageIdType msgId;
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
     std::atomic<bool> handled;
     std::atomic<bool> cancelled;
     #else

@@ -7,9 +7,11 @@
 
 // does the platform have threading support?
 #if ORYOL_EMSCRIPTEN
+#define ORYOL_HAS_ATOMIC (1)
 #define ORYOL_HAS_THREADS (0)
 #else
 /// set to (1) on platform with pthreads-style threading support
+#define ORYOL_HAS_ATOMIC (1)
 #define ORYOL_HAS_THREADS (1)
 #endif
 

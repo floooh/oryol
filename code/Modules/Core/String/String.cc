@@ -132,7 +132,7 @@ String::create(const char* ptr, int32 len) {
 void
 String::addRef() {
     o_assert(nullptr != this->data);
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
     this->data->refCount.fetch_add(1, std::memory_order_relaxed);
     #else
     this->data->refCount++;
@@ -143,7 +143,7 @@ String::addRef() {
 void
 String::release() {
     if (nullptr != this->data) {
-        #if ORYOL_HAS_THREADS
+        #if ORYOL_HAS_ATOMIC
         if (1 == this->data->refCount.fetch_sub(1, std::memory_order_relaxed)) {
         #else
         if (1 == this->data->refCount--) {

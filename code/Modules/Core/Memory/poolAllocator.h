@@ -65,7 +65,7 @@ private:
     
     int32 elmSize;                      // offset to next element in bytes
 
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
         std::atomic<uint32> uniqueCount;
         std::atomic<nodeTag> head;          // free-list head
         std::atomic<uint32> numPuddles;     // current number of puddles
@@ -131,7 +131,7 @@ poolAllocator<TYPE>::allocPuddle() {
 
     // increment the puddle-counter (this must happen first because the
     // method can be called from different threads
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
         uint32 newPuddleIndex = this->numPuddles.fetch_add(1, std::memory_order_relaxed);
     #else 
         uint32 newPuddleIndex = this->numPuddles++;
@@ -168,7 +168,7 @@ poolAllocator<TYPE>::push(node* newHead) {
     
     newHead->state = nodeState::free;
     newHead->myTag = (newHead->myTag & 0x0000FFFF) | (++this->uniqueCount & 0xFFFF) << 16;
-    #if ORYOL_HAS_THREADS
+    #if ORYOL_HAS_ATOMIC
         nodeTag oldHeadTag = this->head.load(std::memory_order_relaxed);
         for (;;) {
             newHead->next = oldHeadTag;
@@ -190,7 +190,7 @@ poolAllocator<TYPE>::pop()
 {
     // see http://www.boost.org/doc/libs/1_53_0/boost/lockfree/stack.hpp
     for (;;) {
-        #if ORYOL_HAS_THREADS
+        #if ORYOL_HAS_ATOMIC
             nodeTag oldHeadTag = this->head.load(std::memory_order_consume);
         #else 
             nodeTag oldHeadTag = this->head;
@@ -199,7 +199,7 @@ poolAllocator<TYPE>::pop()
             return nullptr;
         }
         nodeTag newHeadTag = this->addressFromTag(oldHeadTag)->next;
-        #if ORYOL_HAS_THREADS
+        #if ORYOL_HAS_ATOMIC
         if (this->head.compare_exchange_weak(oldHeadTag, newHeadTag)) {
         #else
         this->head = newHeadTag;
@@ -213,7 +213,7 @@ poolAllocator<TYPE>::pop()
             nodePtr->next = invalidTag;
             nodePtr->state = nodeState::used;
             return nodePtr;
-        #if ORYOL_HAS_THREADS
+        #if ORYOL_HAS_ATOMIC
         }
         #endif
     }
