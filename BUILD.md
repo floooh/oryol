@@ -15,9 +15,7 @@ To build and run the Triangle sample on OSX:
 
 ```
 > cd oryol
-> ./oryol select 
-'osx-xcode-debug' selected as current config
-> ./oryol build
+> ./oryol build osx-xcode-debug 
 [this should run cmake and compile the samples]
 > cd bin/osx
 > ls
@@ -30,9 +28,7 @@ To build and run the (32-bit) Triangle sample on Windows:
 
 ```
 > cd oryol
-> oryol select
-'win32-vstudio-debug' selected as current config
-> oryol build
+> oryol build win32-vstudio-debug
 [this should run cmake and compile the samples]
 > cd bin\win32
 > dir *.exe
@@ -46,9 +42,7 @@ To build the 64-bit samples:
 
 ```
 > cd oryol
-> oryol select win64-vstudio-debug
-'win64-vstudio-debug' selected as current config
-> oryol build
+> oryol build win64-vstudio-debug
 [this should run cmake and compile the samples]
 > cd bin\win64
 > dir *.exe
@@ -63,9 +57,7 @@ To build and run the Triangle sample for emscripten:
 
 ```
 > cd oryol
-> ./oryol select emscripten-make-release
-'emscripten-make-release' selected as current config
-> ./oryol build
+> ./oryol build emscripten-make-release
 [this should run cmake and compile the samples]
 > cd bin/emsc
 > ls
@@ -103,7 +95,7 @@ Oryol supports the following host platforms for building:
 
 - OSX
 - Linux
-- Windows 32-bit and 64-bit (64-bit: planned)
+- Windows 32-bit and 64-bit
 - iOS (planned)
 - Android (planned)
 - emscripten 
@@ -148,11 +140,9 @@ If the above prerequisites are met you should be able to simply run:
 from the Oryol root directory to run a default command line build for your operating system.
 
 **Windows NOTES**: 
-On Windows, the Python script ```oryol``` cannot be directly invoked, and building from the command line
-is not supported yet, so instead run this from the command line inside Oryol's root directory:
-```
-oryol.cmd update
-```
+On Windows, an additional **oryol.cmd** batch file exists, which can be invoked simply with 
+**oryol**.
+
 After this finishes, open the generated VStudio solution file: ```build/win32-vstudio-debug/oryol.sln```!
 
 
@@ -188,25 +178,14 @@ This should print a list of the currently existing configurations, e.g.:
 flohofwoe:oryol floh$ ./oryol list configs
 CONFIGS:
   emscripten-make-debug
-  emscripten-make-release
-  emscripten-ninja-debug
-  emscripten-ninja-release
+  ...
   linux-make-debug
-  linux-make-release
-  linux-make-unittests
-  linux-ninja-debug
-  linux-ninja-release
-  linux-ninja-unittests
+  ...
   osx-xcode-debug
-  osx-xcode-release
-  osx-xcode-unittests
+  ...
   pnacl-make-debug
-  pnacl-make-release
-  pnacl-ninja-debug
-  pnacl-ninja-release
+  ...
   win32-vstudio-debug
-  win32-vstudio-release
-  win32-vstudio-unittests
 ```
 
 You can **select the active configuration** which will be used if no specific config name 
