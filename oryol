@@ -334,6 +334,10 @@ def buildWebPage() :
             for ext in ['html', 'js', 'html.mem'] :
                 shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
+    # copy data files over
+    for dataFile in glob.glob('data/*') :
+        shutil.copy(dataFile, 'build/webpage')
+
     print 'Generated Samples web page under build/webpage!'
 
 
