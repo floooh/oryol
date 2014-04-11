@@ -1,0 +1,146 @@
+//------------------------------------------------------------------------------
+//  DDSLoadTest.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "UnitTest++/src/UnitTest++.h"
+#include "Core/CoreFacade.h"
+#include "HTTP/HTTPFileSystem.h"
+#include "IO/IOFacade.h"
+#define GLIML_ASSERT o_assert
+#include "gliml/gliml.h"
+#include <thread>
+#include <chrono>
+
+using namespace Oryol;
+using namespace Oryol::Core;
+using namespace Oryol::IO;
+using namespace Oryol::HTTP;
+
+TEST(DDSLoadTest) {
+    
+    // setup an IO facade, and associate http: with the HTTPFileSystem
+    IOFacade* ioFacade = IOFacade::CreateSingleton();
+    ioFacade->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
+
+    // DXT1
+    Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
+    while (!req->Handled()) {
+        CoreFacade::Instance()->RunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    CHECK(req->GetStatus() == IOStatus::OK);
+    if (req->GetStatus() == IOStatus::OK) {
+        
+        // parse DDS data with gliml
+        const Ptr<Stream>& stream = req->GetStream();
+        stream->Open(OpenMode::ReadOnly);
+        const int32 size = stream->Size();
+        const void* data = stream->MapRead(nullptr);
+        CHECK(gliml::is_dds(data, size));
+        gliml::context ctx;
+        CHECK(ctx.load_dds(data, size));
+        CHECK(ctx.error() == GLIML_SUCCESS);
+        CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.is_compressed());
+        CHECK(ctx.is_2d());
+        CHECK(!ctx.is_3d());
+        CHECK(ctx.num_faces() == 1);
+        CHECK(ctx.num_mipmaps(0) == 9);
+        CHECK(ctx.image_target(0) == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.image_internal_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
+        CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
+        CHECK(ctx.image_type() == 0);
+        int w = 256, h = 256;
+        for (int32 i = 0; i < 9; i++) {
+            CHECK(ctx.image_width(0, i) == (w >> i));
+            CHECK(ctx.image_height(0, i) == (h >> i));
+            CHECK(ctx.image_depth(0, i) == 1);
+            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 8;
+            if (mipSize < 8) mipSize = 8;
+            CHECK(ctx.image_size(0, i) == mipSize);
+        }
+    }
+    
+    // DXT3
+    req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt3.dds");
+    while (!req->Handled()) {
+        CoreFacade::Instance()->RunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    CHECK(req->GetStatus() == IOStatus::OK);
+    if (req->GetStatus() == IOStatus::OK) {
+        
+        // parse DDS data with gliml
+        const Ptr<Stream>& stream = req->GetStream();
+        stream->Open(OpenMode::ReadOnly);
+        const int32 size = stream->Size();
+        const void* data = stream->MapRead(nullptr);
+        CHECK(gliml::is_dds(data, size));
+        gliml::context ctx;
+        CHECK(ctx.load_dds(data, size));
+        CHECK(ctx.error() == GLIML_SUCCESS);
+        CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.is_compressed());
+        CHECK(ctx.is_2d());
+        CHECK(!ctx.is_3d());
+        CHECK(ctx.num_faces() == 1);
+        CHECK(ctx.num_mipmaps(0) == 9);
+        CHECK(ctx.image_target(0) == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.image_internal_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
+        CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
+        CHECK(ctx.image_type() == 0);
+        int w = 256, h = 256;
+        for (int32 i = 0; i < 9; i++) {
+            CHECK(ctx.image_width(0, i) == (w >> i));
+            CHECK(ctx.image_height(0, i) == (h >> i));
+            CHECK(ctx.image_depth(0, i) == 1);
+            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
+            if (mipSize < 8) mipSize = 16;
+            CHECK(ctx.image_size(0, i) == mipSize);
+        }
+    }
+
+    // DXT5
+    req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt5.dds");
+    while (!req->Handled()) {
+        CoreFacade::Instance()->RunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    CHECK(req->GetStatus() == IOStatus::OK);
+    if (req->GetStatus() == IOStatus::OK) {
+        
+        // parse DDS data with gliml
+        const Ptr<Stream>& stream = req->GetStream();
+        stream->Open(OpenMode::ReadOnly);
+        const int32 size = stream->Size();
+        const void* data = stream->MapRead(nullptr);
+        CHECK(gliml::is_dds(data, size));
+        gliml::context ctx;
+        CHECK(ctx.load_dds(data, size));
+        CHECK(ctx.error() == GLIML_SUCCESS);
+        CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.is_compressed());
+        CHECK(ctx.is_2d());
+        CHECK(!ctx.is_3d());
+        CHECK(ctx.num_faces() == 1);
+        CHECK(ctx.num_mipmaps(0) == 9);
+        CHECK(ctx.image_target(0) == GLIML_GL_TEXTURE_2D);
+        CHECK(ctx.image_internal_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+        CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+        CHECK(ctx.image_type() == 0);
+        int w = 256, h = 256;
+        for (int32 i = 0; i < 9; i++) {
+            CHECK(ctx.image_width(0, i) == (w >> i));
+            CHECK(ctx.image_height(0, i) == (h >> i));
+            CHECK(ctx.image_depth(0, i) == 1);
+            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
+            if (mipSize < 8) mipSize = 16;
+            CHECK(ctx.image_size(0, i) == mipSize);
+        }
+    }
+    
+    // FIXME: RGBA, LUM
+
+    req.Invalidate();
+    IOFacade::DestroySingleton();
+}
