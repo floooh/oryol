@@ -83,8 +83,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
 #else
 #define OryolApp(name, ver) \
 void OryolMain(); \
-const char* const OryolAppName = name; \
-const char* const OryolAppVersion = ver; \
+ORYOL_UNUSED const char* const OryolAppName = name; \
+ORYOL_UNUSED const char* const OryolAppVersion = ver; \
 Oryol::Core::Args OryolArgs; \
 int main(int argc, const char** argv) { \
     OryolArgs = Oryol::Core::Args(argc, argv); \
