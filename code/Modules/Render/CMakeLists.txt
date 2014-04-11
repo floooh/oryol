@@ -18,7 +18,7 @@ endif()
 if (ORYOL_LINUX)
     oryol_deps(X11 Xrandr Xi Xxf86vm Xcursor GL)
 endif()
-oryol_deps(Resource Messaging IO Core)
+oryol_deps(Resource HTTP Messaging IO Core)
 oryol_end_module()
 
 oryol_begin_unittest(Render)
