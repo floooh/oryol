@@ -248,6 +248,10 @@ def runCMake(config) :
             cmdLine.append('-DCMAKE_BUILD_TYPE=Debug')
         if 'unittests' in buildType :
             cmdLine.append('-DORYOL_UNITTESTS=ON')
+            cmdLine.append('-DORYOL_EXCEPTIONS=ON')
+        else :
+            cmdLine.append('-DORYOL_UNITTESTS=OFF')
+            cmdLine.append('-DORYOL_EXCEPTIONS=OFF')
 
         # some platform-specific stuff
         if targetPlatform == 'pnacl' :
