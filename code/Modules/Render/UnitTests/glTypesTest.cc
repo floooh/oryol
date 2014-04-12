@@ -33,7 +33,11 @@ TEST(glTypesTest) {
     CHECK(glTypes::AsGLTexImageFormat(PixelFormat::R4G4B4A4) == GL_RGBA);
     CHECK(glTypes::AsGLTexImageFormat(PixelFormat::D16) == GL_DEPTH_COMPONENT);
     CHECK(glTypes::AsGLTexImageFormat(PixelFormat::D32) == GL_DEPTH_COMPONENT);
+    #if ORYOL_OPENGLES2
+    CHECK(glTypes::AsGLTexImageFormat(PixelFormat::D24S8) == GL_DEPTH_STENCIL_OES);
+    #else
     CHECK(glTypes::AsGLTexImageFormat(PixelFormat::D24S8) == GL_DEPTH_STENCIL);
+    #endif
     
     // glTexImage type
     // FIXME: incomplete
@@ -44,7 +48,11 @@ TEST(glTypesTest) {
     CHECK(glTypes::AsGLTexImageType(PixelFormat::R4G4B4A4) == GL_UNSIGNED_SHORT_4_4_4_4);
     CHECK(glTypes::AsGLTexImageType(PixelFormat::D16) == GL_UNSIGNED_SHORT);
     CHECK(glTypes::AsGLTexImageType(PixelFormat::D32) == GL_UNSIGNED_INT);
+    #if ORYOL_OPENGLES2
+    CHECK(glTypes::AsGLTexImageType(PixelFormat::D24S8) == GL_UNSIGNED_INT_24_8_OES);
+    #else
     CHECK(glTypes::AsGLTexImageType(PixelFormat::D24S8) == GL_UNSIGNED_INT_24_8);
+    #endif
 
     // Usage
     CHECK(glTypes::AsGLUsage(Usage::Immutable) == GL_STATIC_DRAW);
@@ -66,6 +74,10 @@ TEST(glTypesTest) {
     
     // TextureType
     CHECK(glTypes::AsGLTextureTarget(TextureType::Texture2D) == GL_TEXTURE_2D);
+    #if ORYOL_OPENGLES2
+    CHECK(glTypes::AsGLTextureTarget(TextureType::Texture3D) == GL_TEXTURE_3D_OES);
+    #else
     CHECK(glTypes::AsGLTextureTarget(TextureType::Texture3D) == GL_TEXTURE_3D);
+    #endif
     CHECK(glTypes::AsGLTextureTarget(TextureType::TextureCube) == GL_TEXTURE_CUBE_MAP);
 }
