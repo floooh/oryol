@@ -52,6 +52,10 @@ def loadSelectedConfigName() :
     f.close()
     return selConfig
 
+# test if a config exists
+def isValidConfig(configName) :
+    return os.path.isfile('configs{}.json'.format(configName))
+
 # automatically choose a config name for this platform (if none has been selected)
 def chooseConfigName() :
     hostOS = platform.system()
@@ -95,40 +99,60 @@ def testCMake() :
         out = subprocess.check_output(["cmake", "--version"])
         ver = out.split()[2].split('.')
         if (int(ver[0]) >= 2) and (int(ver[1]) >= 8) and (int(ver[2]) >= 11) :
-            print "cmake: ok"
+            print "cmake: found"
             return True
         else :
             error("cmake must be at least version 2.8.11 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
 
     except OSError:
-        error("cmake not found (at least cmake 2.8.11 required)")
+        error("cmake NOT FOUND (at least cmake 2.8.11 required)")
+
+# check whether ccmake config tool exists
+def testCCMake() :
+    try:
+        out = subprocess.check_output(["ccmake", "--version"])
+        print "ccmake: found"
+        return True
+    except OSError:
+        print "ccmake: NOT FOUND"
+        return False;
+
+# check whether cmake-gui config tool exists
+def testCMakeGUI() :
+    try:
+        out = subprocess.check_output(["cmake-gui", "--version"])
+        print "cmake-gui: found"
+        return True
+    except OSError:
+        print "cmake-gui: NOT FOUND"
+        return False;
 
 # check whether ninja exists
 def testNinja() :
     try:
         subprocess.check_output(["ninja", "--version"])
-        print "ninja: ok"
+        print "ninja: found"
         return True;
     except OSError:
-        error("ninja not found")
+        error("ninja NOT FOUND")
 
 # check whether make exists
 def testMake() :
     try :
         subprocess.check_output(["make", "--version"])
-        print "make: ok"
+        print "make: found"
         return True
     except OSError:
-        error("make not found")
+        error("make NOT FOUND")
 
 # check whether xcodebuild exists
 def testXCode() :
     try :
         subprocess.check_output(["xcodebuild", "-version"])
-        print "xcodebuild: ok"
+        print "xcodebuild: found"
         return True
     except OSError:
-        error("xcodebuild not found")
+        error("xcodebuild NOT FOUND")
 
 # test if the given target platform is valid on the given host
 def isValidTargetPlatform(targetPlatform) :
@@ -244,8 +268,8 @@ def runCMake(config) :
     else :
         error("Build requirements not met!")
 
-# do a command line build
-def runBuild(config) :
+# do a command line build, if target is None, build all targets
+def runBuild(config, target) :
     if testConfigRequirements(config) :
         name = config['name']
         generator = config['target']['generator']
@@ -253,25 +277,33 @@ def runBuild(config) :
         buildPath = "build/{}".format(name)
         if 'Xcode' in generator :
             # run the Xcode command line tool
+            args = ['xcodebuild', '-jobs', '3']
             if 'release' in buildType :
-                subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
+                args.extend(['-configuration', 'Release'])
             else :
-                subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)
+                args.extend(['-configuration', 'Debug'])
+            if target != None :
+                args.extend(['-target', target])
         elif 'Makefiles' in generator :
-            # run make
-            subprocess.call(args=["make", "-j3"], cwd=buildPath)
+            args = ['make', '-j3']
+            if target != None :
+                args.append(target)
         elif 'Ninja' in generator :
-            # run ninja
-            subprocess.call(args="ninja", cwd=buildPath)
+            args = ['ninja']
+            if target != None :
+                args.append(target)
         else :
             # generic invokation of cmake --build
+            args = ['cmake', '--build', '.']
             if 'release' in buildType :
-                subprocess.call(args=["cmake", "--build", ".", "--config", "Release"], cwd=buildPath)
+                # FIXME: does this even work?
+                args.extend(['--config', 'Release'])
             else :
-                subprocess.call(args=["cmake", "--build", ".", "--config", "Debug"], cwd=buildPath)
+                args.extend('--config', 'Debug')
+        subprocess.call(args=args, cwd=buildPath)
 
-# do a command line build
-def runRebuild(config) :
+# do a command line build, build all if target is None
+def runRebuild(config, target) :
     if testConfigRequirements(config) :
         name = config['name']
         generator = config['target']['generator']
@@ -279,25 +311,30 @@ def runRebuild(config) :
         buildPath = "build/{}".format(name)
         if 'Xcode' in generator :
             # run the Xcode command line tool
-            subprocess.call(args=["xcodebuild", "clean"], cwd=buildPath)
-            if 'release' in buildType :
-                subprocess.call(args=["xcodebuild", "-configuration", "Release", "-jobs", "3"], cwd=buildPath)
-            else :
-                subprocess.call(args=["xcodebuild", "-configuration", "Debug", "-jobs", "3"], cwd=buildPath)
+            subprocess.call(args=['xcodebuild', 'clean'], cwd=buildPath)
         elif 'Makefiles' in generator :
             # run make
-            subprocess.call(args=["make", "clean"], cwd=buildPath)
-            subprocess.call(args=["make", "-j3"], cwd=buildPath)
+            subprocess.call(args=['make', 'clean'], cwd=buildPath)
         elif 'Ninja' in generator :
             # run ninja
-            subprocess.call(args=["ninja", "clean"], cwd=buildPath)
-            subprocess.call(args=["ninja"], cwd=buildPath)
+            subprocess.call(args=['ninja', 'clean'], cwd=buildPath)
         else :
             # generic invokation of cmake --build
-            if 'release' in buildType :
-                subprocess.call(args=["cmake", "--clean-first", "--build", ".", "--config", "Release"], cwd=buildPath)
-            else :                
-                subprocess.call(args=["cmake", "--clean-first", "--build", ".", "--config", "Debug"], cwd=buildPath)
+            subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
+        runBuild(config, target)
+
+# run cmake-gui or ccmake on config
+def runConfigure(config) :
+    if testConfigRequirements(config) :
+        name = config['name']
+        buildPath = "build/{}".format(name)
+        # prefer ccmake over cmake-gui
+        if testCCMake() :
+            subprocess.call(args=['ccmake', buildPath])
+        elif testCMakeGUI() :
+            subprocess.call(args=['cmake-gui', buildPath])
+        else :
+            error('Cannot call cmake-gui or ccmake, not installed or not in path!')
 
 # build a web page under /build/webpage
 def buildWebPage() :
@@ -366,6 +403,10 @@ if len(sys.argv) == 1 :
     print '  rebuild selected or provided config'
     print 'oryol clean [config-name, partial-config-name or all]'
     print '  delete the cmake cache and build files of the selected or provided config'
+    print 'oryol make target [config-name, partial-config-name or all]'
+    print '  build a specific target'
+    print 'oryol config [config-name]'
+    print '  call cmake-gui or ccmake for selected or specific config'
     print 'oryol webpage'
     print '  build web samples and create web page from it'
 
@@ -468,6 +509,7 @@ else :
     elif cmd == 'build' :
         # run a command line build
         if len(sys.argv) < 3 :
+            # no args given, build the active config
             configs = [ getActiveConfig() ]
         else :
             if sys.argv[2] == 'all' :
@@ -476,7 +518,7 @@ else :
                 configs = loadMatchingConfigs(sys.argv[2])
         for config in configs :
             runCMake(config)
-            runBuild(config)
+            runBuild(config, None)
 
     elif cmd == 'rebuild' :
         # run a command line build
@@ -489,7 +531,33 @@ else :
                 configs = loadMatchingConfigs(sys.argv[2])
         for config in configs :
             runCMake(config)
-            runRebuild(config)
+            runRebuild(config, None)
+
+    elif cmd == 'make' :
+        # build a specific target
+        if len(sys.argv) < 3 :
+            error("need at least a target name!")
+        else :
+            target = sys.argv[2]
+            if len(sys.argv) < 4 :
+                configs = [ getActiveConfig() ]
+            else :
+                if sys.argv[3] == 'all' :
+                    configs = getAllValidConfigs()
+                else :
+                    configs = loadMatchingConfigs(sys.argv[3])
+            for config in configs :
+                runCMake(config)
+                runBuild(config, target)
+
+    elif cmd == 'config' :
+        # call ccmake or cmake-gui on a config
+        if len(sys.argv) < 3 :
+            config = getActiveConfig()
+        else :
+            config = loadConfig(sys.argv[2])
+        runCMake(config)
+        runConfigure(config)            
 
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
@@ -497,9 +565,8 @@ else :
         runRebuild(config)
         buildWebPage()
 
-
-
-
+    else :
+        error('Oryol called with unknown argument: {}'.format(cmd))
 
 
 
