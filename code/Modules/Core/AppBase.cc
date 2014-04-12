@@ -43,6 +43,14 @@ AppBase::StartMainLoop() {
 
 //------------------------------------------------------------------------------
 void
+AppBase::stopMainLoop() {
+    #if ORYOL_EMSCRIPTEN
+    emscripten_cancel_main_loop();
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
 AppBase::staticOnFrame() {
     o_assert(nullptr != self);
     self->onFrame();

@@ -56,6 +56,8 @@ public:
 protected:
     /// static frame function
     static void staticOnFrame();
+    /// stop the main loop, for callback-driven platforms
+    static void stopMainLoop();
     /// virtual onFrame method to be overwritten by subclass
     virtual void onFrame();
     /// set quit-requested flag

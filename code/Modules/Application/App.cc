@@ -48,8 +48,8 @@ App::onFrame() {
             this->curState = this->OnDestroy();
             break;
         default:
-            // can't happen...
-            o_assert(false);
+            // InvalidAppState is also set on end of OnDestroy
+            AppBase::stopMainLoop();
             break;
     }
 }
