@@ -10,7 +10,7 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 #   define top-level options for the whole project
 #-------------------------------------------------------------------------------
 option(ORYOL_NO_ASSERTS_IN_RELEASE "Remove asserts in release-mode" OFF)
-if (ORYOL_EMSCRIPTEN OR ORYOL_NACL)
+if (ORYOL_NACL)
     option(ORYOL_UNITTESTS "Enable unit tests" OFF)
 else()
     option(ORYOL_UNITTESTS "Enable unit tests" ON)
