@@ -116,6 +116,7 @@ eglDisplayMgr::DiscardDisplay() {
     eglTerminate(this->eglDisplay);
     this->eglConfig = nullptr;
     this->eglDisplay = nullptr;
+    glExt::Discard();
 
     displayMgrBase::DiscardDisplay();
 }
