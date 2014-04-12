@@ -220,6 +220,10 @@ def getAllValidConfigs() :
             validConfigs.append(config)
     return validConfigs
 
+# test if the build directory of a config exists
+def buildDirExists(config) :
+    return os.path.isdir('build/{}'.format(config['name']))
+
 # do a cmake run for the selected config
 def runCMake(config) :
     # check whether all required tools are installed
@@ -556,7 +560,8 @@ else :
             config = getActiveConfig()
         else :
             config = loadConfig(sys.argv[2])
-        runCMake(config)
+        if not buildDirExists(config) :
+            runCMake(config)
         runConfigure(config)            
 
     elif cmd == 'webpage' :
