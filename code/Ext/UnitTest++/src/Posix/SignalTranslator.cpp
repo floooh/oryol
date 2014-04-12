@@ -2,6 +2,7 @@
 
 namespace UnitTest {
 
+#ifndef EMSCRIPTEN
 sigjmp_buf* SignalTranslator::s_jumpTarget = 0;
 
 namespace {
@@ -41,6 +42,6 @@ SignalTranslator::~SignalTranslator()
 
     s_jumpTarget = m_oldJumpTarget;
 }
-
+#endif
 
 }

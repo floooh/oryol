@@ -6,6 +6,8 @@
 
 namespace UnitTest {
 
+// Oryol: change
+#ifndef EMSCRIPTEN
 class SignalTranslator
 {
 public:
@@ -28,6 +30,7 @@ private:
     struct sigaction m_old_SIGALRM_action;
     */
 };
+#endif
 
 #if !defined (__GNUC__)
     #define UNITTEST_EXTENSION
@@ -35,11 +38,15 @@ private:
     #define UNITTEST_EXTENSION __extension__
 #endif
 
+// Oryol: change
+#ifndef EMSCRIPTEN
 #define UNITTEST_THROW_SIGNALS \
 	UnitTest::SignalTranslator sig; \
 	if (UNITTEST_EXTENSION sigsetjmp(*UnitTest::SignalTranslator::s_jumpTarget, 1) != 0) \
         throw ("Unhandled system exception"); 
-
+#else
+#define UNITTEST_THROW_SIGNALS
+#endif
 }
 
 #endif
