@@ -494,8 +494,11 @@ else :
                 configs = getAllValidConfigs()
             else :
                 configs = loadMatchingConfigs(sys.argv[2])
-        for config in configs: 
-            runCMake(config)
+        if len(configs) == 0 :
+            error('No matching configs found!')
+        else :
+            for config in configs: 
+                runCMake(config)
 
     elif cmd == 'clean' :
         # delete the build files for configs
@@ -506,13 +509,16 @@ else :
                 configs = getAllValidConfigs()
             else :
                 configs = loadMatchingConfigs(sys.argv[2])
-        for config in configs :
-            path = 'build/{}'.format(config['name'])
-            if os.path.isdir(path) :
-                shutil.rmtree(path)
-                print "Directory '{}' deleted!".format(path)
-            else :
-                print "Directory '{}' didn't exist, nothing done.".format(path)
+        if len(configs) == 0 :
+            error('No matching configs found!')
+        else :
+            for config in configs :
+                path = 'build/{}'.format(config['name'])
+                if os.path.isdir(path) :
+                    shutil.rmtree(path)
+                    print "Directory '{}' deleted!".format(path)
+                else :
+                    print "Directory '{}' didn't exist, nothing done.".format(path)
 
     elif cmd == 'build' :
         # run a command line build
@@ -524,9 +530,12 @@ else :
                 configs = getAllValidConfigs()
             else :
                 configs = loadMatchingConfigs(sys.argv[2])
-        for config in configs :
-            runCMake(config)
-            runBuild(config, None)
+        if len(configs) == 0 :
+            error('No matching configs found!')
+        else :
+            for config in configs :
+                runCMake(config)
+                runBuild(config, None)
 
     elif cmd == 'rebuild' :
         # run a command line build
@@ -537,9 +546,12 @@ else :
                 configs = getAllValidConfigs()
             else :
                 configs = loadMatchingConfigs(sys.argv[2])
-        for config in configs :
-            runCMake(config)
-            runRebuild(config, None)
+        if len(configs) == 0 :
+            error('No matching configs found!')
+        else :
+            for config in configs :
+                runCMake(config)
+                runRebuild(config, None)
 
     elif cmd == 'make' :
         # build a specific target
