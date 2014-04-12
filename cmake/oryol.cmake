@@ -19,6 +19,7 @@ option(ORYOL_UNITTESTS_RUN_AFTER_BUILD "Automatically run unit tests after build
 option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
 option(ORYOL_ALLOCATOR_DEBUG "Enable allocator debugging code (slow)" OFF)
 option(ORYOL_SAMPLES "Compile sample programs" ON)
+option(ORYOL_FORCE_NO_THREADS "Enable to simulate no support for std::thread" OFF)
 
 # turn some dependent options on/off
 if (ORYOL_UNITTESTS)
@@ -112,6 +113,11 @@ macro(oryol_setup)
         add_definitions(-DORYOL_NO_ASSERT=1)
     else()
         add_definitions(-DORYOL_NO_ASSERT=0)
+    endif()
+    if (ORYOL_FORCE_NO_THREADS)
+        add_definitions(-DORYOL_FORCE_NO_THREADS=1)
+    else()
+        add_definitions(-DORYOL_FORCE_NO_THREADS=0)
     endif()
     
     # check whether python is installed

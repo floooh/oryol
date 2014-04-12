@@ -5,15 +5,17 @@
     @brief global configuration defines
 */
 
-// does the platform have threading support?
-#if ORYOL_EMSCRIPTEN
-#define ORYOL_HAS_ATOMIC (1)
+// does the platform have std::thread support?
+#if ORYOL_FORCE_NO_THREADS
+#define ORYOL_HAS_THREADS (0)
+#elif ORYOL_EMSCRIPTEN
 #define ORYOL_HAS_THREADS (0)
 #else
-/// set to (1) on platform with pthreads-style threading support
-#define ORYOL_HAS_ATOMIC (1)
 #define ORYOL_HAS_THREADS (1)
 #endif
+
+// does the platform have std::atomic support?
+#define ORYOL_HAS_ATOMIC (1)
 
 #if ORYOL_WINDOWS
 #define ORYOL_THREAD_LOCAL __declspec(thread)
