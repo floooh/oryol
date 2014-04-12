@@ -23,6 +23,12 @@ namespace Oryol {
 namespace HTTP {
 class urlLoader : public curlURLLoader {};
 } }
+#elif ORYOL_EMSCRIPTEN
+#include "HTTP/emsc/emscURLLoader.h"
+namespace Oryol {
+namespace HTTP {
+class urlLoader : public emscURLLoader {};
+} }
 #else
 #include "HTTP/base/baseURLLoader.h"
 namespace Oryol {

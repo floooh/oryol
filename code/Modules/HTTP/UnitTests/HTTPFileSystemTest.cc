@@ -13,6 +13,7 @@ using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 
+#if !ORYOL_EMSCRIPTEN
 TEST(HTTPFileSystemTest) {
     
     // setup an IO facade, and associate http: with the HTTPFileSystem
@@ -41,3 +42,4 @@ TEST(HTTPFileSystemTest) {
     
     IOFacade::DestroySingleton();
 }
+#endif

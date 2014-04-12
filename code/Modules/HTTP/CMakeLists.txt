@@ -6,6 +6,7 @@ oryol_sources(. base)
 oryol_sources_osx(osx)
 oryol_sources_linux(curl)
 oryol_sources_windows(windows)
+oryol_sources_emscripten(emsc)
 oryol_deps(IO Messaging Core)
 oryol_end_module()
 

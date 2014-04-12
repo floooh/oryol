@@ -10,6 +10,7 @@ using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 
+#if !ORYOL_EMSCRIPTEN
 TEST(HTTPClientTest) {
 
     // create a couple of requests
@@ -41,3 +42,5 @@ TEST(HTTPClientTest) {
     CHECK(req404->GetResponse().isValid());
     CHECK(req404->GetResponse()->GetStatus() == IOStatus::NotFound);
 }
+#endif
+
