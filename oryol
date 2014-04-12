@@ -583,7 +583,7 @@ else :
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
         runCMake(config)
-        runRebuild(config)
+        runRebuild(config, None)
         buildWebPage()
 
     else :
