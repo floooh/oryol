@@ -49,6 +49,7 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
 
     // user data is a HTTPRequest ptr, put it back into a smart pointer
     Ptr<HTTPProtocol::HTTPRequest> req = userData;
+    req->release();
     Log::Dbg("emscURLLoader::onLoaded(url=%s, size=%d)\n", req->GetURL().AsCStr(), size);
 
     // create a HTTPResponse and fill it out
@@ -62,17 +63,9 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     responseBody->Close();
     response->SetBody(responseBody);
 
-    // set the response on the request
+    // set the response on the request, mark the request as handled
     req->SetResponse(response);
-
-    // and we're done here!
     req->SetHandled();
-
-    // this fixes the ref-count we had to increase earlier because a raw
-    // pointer was involved, we better only decrement the refcount again
-    // here at the end, just to make really sure that the method body worked
-    // on a valid object (hmm ok, shouldn't be necessary)
-    req->release();
 }
 
 //------------------------------------------------------------------------------
@@ -82,6 +75,7 @@ emscURLLoader::onFailed(void* userData) {
 
     // user data is a HTTPRequest ptr, put it back into a smart pointer
     Ptr<HTTPProtocol::HTTPRequest> req = userData;
+    req->release();
     Log::Dbg("emscURLLoader::onFailed(url=%s)\n", req->GetURL().AsCStr());
 
     // hmm we don't know why it failed, so make something up, we should definitely
@@ -89,10 +83,7 @@ emscURLLoader::onFailed(void* userData) {
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
     response->SetStatus(IOStatus::NotFound);
     req->SetResponse(response);
-
-    // and we're done, see onLoaded()
     req->SetHandled();
-    req->release();
 }
 
 } // namespace HTTP
