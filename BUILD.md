@@ -27,7 +27,7 @@ Clear.app Triangle.app ...
 To build and run the (32-bit) Triangle sample on Windows:
 
 ```
-> cd oryola
+> cd oryol
 > oryol build win32-vstudio-debug
 [this should run cmake and compile the samples]
 > cd bin\win32
@@ -252,7 +252,7 @@ Or if you only want the ninja files, but not make:
 > ./oryol update emscripten-ninja
 ```
 
-Finally, you can also update **all** configs which are supported on you host platform:
+Finally, you can also update **all** configs which are supported on your host platform:
 
 ```
 > ./oryol update all
@@ -288,6 +288,21 @@ oryol/bin/ios
 ```
 
 Note that configurations for the same target platform will currently overwrite each other's executable!
+
+#### Building Specific Targets ####
+
+Use the **make** arg if you only want to compile one executable, or generally want to evaluate a specific build target.
+For instance to only build the InfiteSpheres sample in the active configuration:
+
+```
+> ./oryol make InfiniteSpheres
+```
+
+You can also append a specific config name:
+
+```
+> ./oryol make InfiniteSpheres emscripten-make-debug
+```
 
 #### Configuring Builds ####
 
