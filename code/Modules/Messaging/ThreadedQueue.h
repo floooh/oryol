@@ -21,11 +21,14 @@
     is empty it will check the transfer queue for more messages, and if this
     is empty, go to sleep.
 */
+#include "Core/Config.h"
 #include "Messaging/Port.h"
 #include "Core/Containers/Queue.h"
+#if ORYOL_HAS_THREADS
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#endif
 
 namespace Oryol {
 namespace Messaging {
@@ -54,12 +57,14 @@ public:
     virtual void DoWork();
 
 protected:
+    /// the thread entry function
+    #if ORYOL_HAS_THREADS
+    static void threadFunc(ThreadedQueue* self);
+    #endif
     /// test if we are on the creation-thread
     bool isCreateThread();
     /// test if we are on the worker-thread
     bool isWorkerThread();
-    /// the thread entry function
-    static void threadFunc(ThreadedQueue* self);
     /// called in thread on thread-entry
     virtual void onThreadEnter();
     /// called to forward one message
@@ -77,14 +82,16 @@ protected:
     Core::Queue<Core::Ptr<Message>> writeQueue;     // written by sender thread
     Core::Queue<Core::Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
     Core::Queue<Core::Ptr<Message>> readQueue;      // read by worker thread
-    Core::Ptr<Port> forwardingPort;                // runs in thread!
-
+    Core::Ptr<Port> forwardingPort;                 // runs in thread!
+    
+    #if ORYOL_HAS_THREADS
     std::thread::id createThreadId;
     std::thread::id workThreadId;
     std::thread thread;
     std::mutex transferQueueLock;
     std::mutex wakeupMutex;
     std::condition_variable wakeup;
+    #endif
     bool threadStarted;
     bool threadStopRequested;
     bool threadStopped;

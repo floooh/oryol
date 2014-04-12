@@ -23,7 +23,9 @@ tickDuration(0),
 threadStarted(false),
 threadStopRequested(false),
 threadStopped(false) {
-    this->createThreadId = std::this_thread::get_id();
+    #if ORYOL_HAS_THREADS
+        this->createThreadId = std::this_thread::get_id();
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -33,7 +35,9 @@ forwardingPort(port_),
 threadStarted(false),
 threadStopRequested(false),
 threadStopped(false) {
-    this->createThreadId = std::this_thread::get_id();
+    #if ORYOL_HAS_THREADS
+        this->createThreadId = std::this_thread::get_id();
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -67,7 +71,11 @@ void
 ThreadedQueue::StartThread() {
     o_assert(this->isCreateThread());
     o_assert(!this->threadStarted);
-    this->thread = std::thread(threadFunc, this);
+    #if ORYOL_HAS_THREADS
+        this->thread = std::thread(threadFunc, this);
+    #else
+        this->onThreadEnter();
+    #endif
     this->threadStarted = true;
 }
 
@@ -76,8 +84,12 @@ void
 ThreadedQueue::StopThread() {
     o_assert(this->threadStarted);
     this->threadStopRequested = true;
-    this->wakeup.notify_one();
-    this->thread.join();
+    #if ORYOL_HAS_THREADS
+        this->wakeup.notify_one();
+        this->thread.join();
+    #else
+        this->onThreadLeave();
+    #endif
     this->threadStopped = true;
 }
 
@@ -103,19 +115,38 @@ ThreadedQueue::DoWork() {
     }
     // signal the worker thread even if no messages have to be processed,
     // this is to prevent any messages getting stuck on the transfer queue
-    this->wakeup.notify_one();
+    #if ORYOL_HAS_THREADS
+        this->wakeup.notify_one();
+    #else
+        // if no threads are available, we pump the message queue right
+        // here
+        // FIXME: we could do without all those queue transfers here!
+        this->moveTransferToReadQueue();
+        while (!this->readQueue.Empty()) {
+            this->onMessage(std::move(this->readQueue.Dequeue()));
+        }
+        this->onTick();
+    #endif
 }
 
 //------------------------------------------------------------------------------
 bool
 ThreadedQueue::isCreateThread() {
-    return std::this_thread::get_id() == this->createThreadId;
+    #if ORYOL_HAS_THREADS
+        return std::this_thread::get_id() == this->createThreadId;
+    #else
+        return true;
+    #endif
 }
 
 //------------------------------------------------------------------------------
 bool
 ThreadedQueue::isWorkerThread() {
+    #if ORYOL_HAS_THREADS
     return std::this_thread::get_id() == this->workThreadId;
+    #else
+    return true;
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -123,7 +154,9 @@ void
 ThreadedQueue::moveWriteToTransferQueue() {
     o_assert(this->isCreateThread());
     // if the transfer queue is empty, we can do a very fast complete move
-    this->transferQueueLock.lock();
+    #if ORYOL_HAS_THREADS
+        this->transferQueueLock.lock();
+    #endif
     if (this->transferQueue.Empty()) {
         this->transferQueue = std::move(this->writeQueue);
     }
@@ -133,7 +166,9 @@ ThreadedQueue::moveWriteToTransferQueue() {
             this->transferQueue.Enqueue(std::move(this->writeQueue.Dequeue()));
         }
     }
-    this->transferQueueLock.unlock();
+    #if ORYOL_HAS_THREADS
+        this->transferQueueLock.unlock();
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -141,12 +176,17 @@ void
 ThreadedQueue::moveTransferToReadQueue() {
     o_assert(this->isWorkerThread());
     o_assert(this->readQueue.Empty());
-    this->transferQueueLock.lock();
+    #if ORYOL_HAS_THREADS
+        this->transferQueueLock.lock();
+    #endif
     this->readQueue = std::move(this->transferQueue);
-    this->transferQueueLock.unlock();
+    #if ORYOL_HAS_THREADS
+        this->transferQueueLock.unlock();
+    #endif
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_HAS_THREADS
 void
 ThreadedQueue::threadFunc(ThreadedQueue* self) {
     
@@ -182,6 +222,7 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
     // notify subclass that we're about to leave the thread
     self->onThreadLeave();
 }
+#endif
 
 //------------------------------------------------------------------------------
 /**

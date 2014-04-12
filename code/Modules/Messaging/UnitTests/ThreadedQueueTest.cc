@@ -7,6 +7,7 @@
 #include "Messaging/Dispatcher.h"
 #include "Messaging/UnitTests/TestProtocol.h"
 #include <chrono>
+#include <thread>
 
 using namespace Oryol;
 using namespace Oryol::Core;
