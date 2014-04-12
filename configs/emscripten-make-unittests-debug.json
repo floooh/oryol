@@ -1,0 +1,8 @@
+{
+    "name": "emscripten-make-unittests-debug", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Unix Makefiles", 
+        "build-type": "unittests-debug"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "emscripten-ninja-unittests-release", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "unittests-release"
+    }
+}
