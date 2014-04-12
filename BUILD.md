@@ -27,7 +27,7 @@ Clear.app Triangle.app ...
 To build and run the (32-bit) Triangle sample on Windows:
 
 ```
-> cd oryol
+> cd oryola
 > oryol build win32-vstudio-debug
 [this should run cmake and compile the samples]
 > cd bin\win32
@@ -113,8 +113,9 @@ The following tools are required on all host platforms:
 
 - python (2.7.x, 3.x is not currently supported)
 - cmake (at least version 2.8.11)
+- cmake-gui and/or ccmake (on some platforms these are installed with the cmake package)
 
-Make sure python and cmake are in the path!
+Make sure all these tools are in the path!
 
 #### OSX Tools
 
@@ -129,129 +130,192 @@ Make sure python and cmake are in the path!
 
 - get **Visual Studio 2013 Express for Windows Desktop** (not 'for Windows', that's for Windows8 metro apps only!)
 
-## Building Oryol
+## Using The oryol Build System Wrapper Script
 
-If the above prerequisites are met you should be able to simply run:
+#### Check if the oryol script is working ####
+
+First, try to run the **oryol** python script without args from the command line:
 
 ```
-./oryol build
+On OSX/Linux:
+> ./oryol
+On Windows:
+> oryol
 ```
 
-from the Oryol root directory to run a default command line build for your operating system.
+This should print a summary of command line args and what they do.
 
-**Windows NOTES**: 
-On Windows, an additional **oryol.cmd** batch file exists, which can be invoked simply with 
-**oryol**.
+The oryol script simplifies working with the many combinations of target platforms, build tools and build configurations by adding an abstraction layer above cmake. Usually instead of calling cmake directly, the oryol script is invoked with command line arguments.
 
-After this finishes, open the generated VStudio solution file: ```build/win32-vstudio-debug/oryol.sln```!
+#### Build Configs ####
 
+A build config describes how Oryol build files should be created for a specific target platform, build environment and compilation modes (like Release and Debug).
 
-After the build has finished, you should find a **hello_debug** executable under either
-**oryol/bin/osx**, **oryol/bin/linux** or **oryol/bin/win32**. Running this
-executable from the command line should print a **Hello World!**.
-
-### Using the ./oryol Python script ###
-
-The ./oryol script is basically just a front-end to manage different CMake build 
-configurations. A build configuration has the following properties:
-
-1. a unique name (e.g. 'osx-xcode-debug')
-2. the target platform (e.g. 'osx', 'linux', 'emscripten')
-3. the CMake generator to use, for instance whether to use 'make' or 'ninja' for building, whether to generate XCode or VisualStudio project files
-4. the build-type (e.g. 'release', 'debug', 'unittests')
-
-Additionally, any CMake properties can be added to the configuration (this is planned, not yet
-implemented).
-
-
-### Working with Configurations ###
-
-To **list all configurations**, type 
+To see a list of currently supported build configs:
 
 ```
 > ./oryol list configs
 ```
 
-This should print a list of the currently existing configurations, e.g.:
+This should dump a list containing lines like this:
 
 ```
-flohofwoe:oryol floh$ ./oryol list configs
-CONFIGS:
-  emscripten-make-debug
-  ...
-  linux-make-debug
-  ...
-  osx-xcode-debug
-  ...
-  pnacl-make-debug
-  ...
-  win32-vstudio-debug
+emscripten-make-debug
+linux-ninja-release
+osx-xcode-debug
+win32-vstudio-debug
 ```
 
-You can **select the active configuration** which will be used if no specific config name 
-is provided:
+The config names are descriptive: the first part indicates the target platform (e.g. emscripten, linux, osx...), the second part the build tool or IDE (make, ninja, xcode or vstudio), and the third part the build config (here: debug or release).
+
+Each host platform has a default config, which is one of these:
 
 ```
-> ./oryol select osx-xcode-unittests
+linux-make-debug
+osx-xcode-debug
+win32-vstudio-debug
 ```
 
-If you omit the configuration name, the default configuration name for your host platform
-will be selected. 
+#### The Active Config ####
 
-**NOTE** that you cannot select a configuration which would be invalid for your platform, so trying
-to run the above command on Linux or Windows would display an error.
+To save typing when working with the oryol build script you can set an **active config**, which will then automatically be used when no specific configuration name is specified.
 
-To **generate build files** for the active configuration with:
+**To set the active configuration:**
+```
+> ./oryol select [config-name]
+```
+
+**To display the current active configuration:**
+```
+> ./oryol list selected
+```
+
+For instance on OSX:
+
+```
+> ./oryol select osx-xcode-debug
+'osx-xcode-debug' selected as current config
+> ./oryol list selected
+selected config is: 'osx-xcode-debug'
+```
+
+To make the default configuration of the current host platform active, simply use select without a config name:
+
+```
+> ./oryol select
+'osx-xcode-debug' selected as current config
+> ./oryol list selected
+selected config is: 'osx-xcode-debug'
+```
+
+#### Generating the Build Files ####
+
+To generate the Makefiles, ninja-files or IDE-specific project files for the currently active config, use the
+**update** argument:
 
 ```
 > ./oryol update
 ```
 
-Or to generate build files for a specific configuration:
+This will dump a lot of stuff to the console, starting and ending like this:
 
 ```
-> ./oryol update linux-ninja-release
+selected config is 'osx-xcode-debug'
+cmake: found
+xcodebuild: found
+cmake -G Xcode -DCMAKE_BUILD_TYPE=Debug -DORYOL_UNITTESTS=OFF -DORYOL_EXCEPTIONS=OFF ../..
+-- The C compiler identification is Clang 5.1.0
+...
+...
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/floh/projects/oryol/build/osx-xcode-debug
 ```
 
-You can now either run a command line build (see below), or open the generated project file in Xcode or
-Visual Studio by looking in the **build/[config-name]** subdirectory for an **oryol.xcodeproj**
-or **oryol.sln** file.
+Note the last line which says where the build files have been written to. Since Xcode project files have been generated, you can now open Xcode, and open the project **oryol.xcodeproj** file from this directory.
 
-To **build the currently selected configuration** on the command line, run:
+You can also specify a configuration name after update, to generate build files for a specific configuration:
+
+```
+> ./oryol update emscripten-ninja-debug
+```
+
+Or you can just give part of a configuration name, for instance to create the build files for all emscripten-configs, you could run:
+
+```
+> ./oryol update emscripten
+```
+
+Or if you only want the ninja files, but not make:
+
+```
+> ./oryol update emscripten-ninja
+```
+
+Finally, you can also update **all** configs which are supported on you host platform:
+
+```
+> ./oryol update all
+```
+
+#### Building from the Command Line ####
+
+You can simply build all targets in the active config on the command line (also for IDE configs like Xcode or Visual Studio) like this:
 
 ```
 > ./oryol build
 ```
 
-To build a specific configuration, run for instance:
+To build a specific config, just append the config name:
 
 ```
-> ./oryol build osx-xcode-release
+> ./oryol build emscripten-make-release
 ```
 
-For a **complete rebuild**, you can just as well use the **rebuild** command instead of **build**:
+The oryol script will do some behind the scene magic, for instance create the build files if no update was called beforehand, and try to activate parallel builds (usually over 3 jobs).
+
+The resulting executables can be found in one of the following directories (depending on the target platform):
 
 ```
-> ./oryol rebuild
+oryol/bin/win32
+oryol/bin/win64
+oryol/bin/osx
+oryol/bin/linux
+oryol/bin/emsc
+oryol/bin/pnacl
+oryol/bin/android
+oryol/bin/ios
 ```
 
-To delete all generated build files for a config, run:
+Note that configurations for the same target platform will currently overwrite each other's executable!
+
+#### Configuring Builds ####
+
+The oryol script can call either the cmake-gui or ccmake configuration tools for fine-tuning the build configuration. To start configuring the active configuration, simply call:
 
 ```
+> ./oryol config
+```
+
+This will first try to start ccmake, and if this is not available, cmake-gui. If none of those can be called, an error will be displayed.
+``
+
+#### Starting From Scratch ####
+
+You can delete the build directory of one or more configuration with the **clean** arg:
+
+```
+> ./oryol clean
 > ./oryol clean [config-name]
-```
-
-Finally, you can use the special config name **all** to invoke a command on all valid 
-configurations for the host platform:
-
-```
 > ./oryol clean all
-> ./oryol update all
-> ./oryol build all
-> ./oryol rebuild all
 ```
+
+This deletes all files generated by cmake and the build process, like IDE project files, make and ninja files, compiled object files and static libraries, etc...
+
 
 ## Cross-platform builds with Vagrant
+
+NOTE: this probably doesn't work right now!
 
 Oryol comes with a Vagrantfile which sets up a Linux VM with all required tools and SDKs to compile
 native Linux builds and cross-compile to emscripten and PNaCl.
