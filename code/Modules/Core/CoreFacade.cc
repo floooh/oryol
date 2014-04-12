@@ -41,12 +41,17 @@ CoreFacade::RunLoop() {
 //------------------------------------------------------------------------------
 bool
 CoreFacade::isMainThread() const {
+    #if ORYOL_HAS_THREADS
     return this->mainThreadId == std::this_thread::get_id();
+    #else
+    return true;
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 CoreFacade::EnterThread() {
+    #if ORYOL_HAS_THREADS
     o_assert(nullptr == threadRunLoop);
     
     // create thread-local string atom table
@@ -55,16 +60,19 @@ CoreFacade::EnterThread() {
     // create thread-local run loop
     threadRunLoop = RunLoop::Create();
     threadRunLoop->addRef();
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 CoreFacade::LeaveThread() {
+    #if ORYOL_HAS_THREADS
     o_assert(nullptr != threadRunLoop);
     threadRunLoop->release();
 
     // do NOT destroy the thread-local string atom table to
-    // ensure that string atom data pointers still point to valid data    
+    // ensure that string atom data pointers still point to valid data
+    #endif
 }
 
 } // namespace Core
