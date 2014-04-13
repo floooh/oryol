@@ -40,10 +40,13 @@ AppState::Code
 HTTPClientApp::OnInit() {
 
     this->httpClient = HTTPClient::Create();
-
-    // fire 2 HTTP requests, one should succeed and one should fail
+    
+    // we assume that a local HTTP server with 
+    // python -m SimpleHTTPServer had been started, for web apps, the
+    // host is currently ignored (everything must be loaded from
+    // from the domain the app is running on)
     this->req = HTTPProtocol::HTTPRequest::Create();
-    this->req->SetURL("http:///httptest.txt");
+    this->req->SetURL("http://localhost:8000/httptest.txt");
     this->httpClient->Put(this->req);
 
     return AppState::Running;
