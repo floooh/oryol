@@ -10,6 +10,7 @@
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
 #include "Windows.h"
+const Oryol::int32 LogBufSize = 2048;
 #endif
 
 namespace Oryol {
@@ -106,8 +107,9 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
     if (loggers.Empty()) {
         std::vprintf(msg, args);
         #if ORYOL_WINDOWS
-            char buf[2048];
+            char buf[LogBufSize];
             std::vsnprintf(buf, sizeof(buf), msg, args);
+            buf[LogBufSize - 1] = 0;
             OutputDebugString(buf);
         #endif
     }
@@ -127,9 +129,10 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, 
         std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
                     cond, msg ? msg : "none", file, line, func);
         #if ORYOL_WINDOWS
-            char buf[2048];
+            char buf[LogBufSize];
             _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
                         cond, msg ? msg : "none", file, line, func);
+            buf[LogBufSize - 1] = 0;
             OutputDebugString(buf);
         #endif   
     }
