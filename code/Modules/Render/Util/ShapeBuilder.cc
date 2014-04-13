@@ -829,7 +829,10 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     const float32 z0 = -d * 0.5f;
     const float32 dx = w / numTiles;
     const float32 dz = d / numTiles;
+    const float32 duv = 1.0f / numTiles;
+    
     const bool hasNormal = vertexLayout.Contains(VertexAttr::Normal);
+    const bool hasTexCoords = vertexLayout.Contains(VertexAttr::TexCoord0);
     
     // vertices
     glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
@@ -842,6 +845,9 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
             this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Position, tpos.x, tpos.y, tpos.z);
             if (hasNormal) {
                 this->meshBuilder.Vertex(curVertexIndex, VertexAttr::Normal, norm.x, norm.y, norm.z);
+            }
+            if (hasTexCoords) {
+                this->meshBuilder.Vertex(curVertexIndex, VertexAttr::TexCoord0, ix * duv, iz * duv);
             }
             curVertexIndex++;
         }
