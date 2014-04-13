@@ -21,6 +21,9 @@ App::~App() {
 //------------------------------------------------------------------------------
 void
 App::onFrame() {
+    // call parent class
+    AppBase::onFrame();
+
     // if the current state is the destroy state, set
     if (AppState::Destroy == this->curState) {
         this->setQuitRequested();
