@@ -1,4 +1,4 @@
-oryol_begin_app(HTTPClientSample cmdline)
+oryol_begin_app(HTTPClientSample windowed)
     oryol_sources(.)
     oryol_deps(Application HTTP)
     oryol_add_web_sample(HTTPClientSample "Low-level HTTP loading sample" emscripten)
