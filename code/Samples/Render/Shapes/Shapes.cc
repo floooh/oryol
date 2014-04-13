@@ -84,7 +84,7 @@ ShapeApp::OnInit() {
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.AddPlane(1.5f, 1.5f, 10);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("cube"), shapeBuilder.GetStream());
+    this->meshId = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
 
     // build a shader program from a vertex- and fragment shader
     Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
