@@ -53,6 +53,15 @@ TextureSetup::AsRenderTarget(const Locator& loc, int32 w, int32 h, PixelFormat::
 
 //------------------------------------------------------------------------------
 TextureSetup
+TextureSetup::FromFile(const Locator& loc) {
+    TextureSetup setup;
+    setup.shouldSetupFromFile = true;
+    setup.locator = loc;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
 TextureSetup::AsRelSizeRenderTarget(const Locator& loc, float32 relWidth, float32 relHeight, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
     o_assert(relWidth > 0.0f);
     o_assert(relHeight > 0.0f);

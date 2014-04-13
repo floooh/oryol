@@ -17,6 +17,8 @@ namespace Render {
     
 class TextureSetup {
 public:
+    /// setup a texture from a file URL
+    static TextureSetup FromFile(const Resource::Locator& loc);
     /// setup as absolute-size render target
     static TextureSetup AsRenderTarget(const Resource::Locator& loc, int32 w, int32 h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt=PixelFormat::InvalidPixelFormat);
     /// setup as render target with size relative to current display size
