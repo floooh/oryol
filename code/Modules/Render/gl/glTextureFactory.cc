@@ -64,7 +64,7 @@ glTextureFactory::IsValid() const {
 void
 glTextureFactory::SetupResource(texture& tex) {
     o_assert(this->isValid);
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert((tex.GetState() == Resource::State::Setup) || (tex.GetState() == Resource::State::Pending));
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (tex.GetSetup().ShouldSetupAsRenderTarget()) {
