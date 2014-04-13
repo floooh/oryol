@@ -39,7 +39,7 @@ public:
     /// factory class for the protocol
     class Factory {
     public:
-        static Messaging::Message* Create(Messaging::MessageIdType id) {
+        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id) {
             return Messaging::Message::Create();
         };
     };

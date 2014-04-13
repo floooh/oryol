@@ -41,11 +41,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Messaging::Message* (*CreateCallback)();
+    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[HTTPProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Messaging::Message* Create(Messaging::MessageIdType id);
+        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class HTTPResponse : public Messaging::Message {
         OryolClassPoolAllocDecl(HTTPResponse);
@@ -54,8 +54,8 @@ public:
             this->msgId = MessageId::HTTPResponseId;
             this->status = IO::IOStatus::InvalidIOStatus;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::HTTPResponseId;
@@ -101,8 +101,8 @@ private:
             this->msgId = MessageId::HTTPRequestId;
             this->method = HTTP::HTTPMethod::Get;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::HTTPRequestId;

@@ -14,7 +14,7 @@ RenderProtocol::CreateCallback RenderProtocol::jumpTable[RenderProtocol::Message
     &RenderProtocol::DisplayDiscarded::FactoryCreate,
     &RenderProtocol::DisplayModified::FactoryCreate,
 };
-Messaging::Message*
+Core::Ptr<Messaging::Message>
 RenderProtocol::Factory::Create(Messaging::MessageIdType id) {
     if (id < Messaging::Protocol::MessageId::NumMessageIds) {
         return Messaging::Protocol::Factory::Create(id);

@@ -15,8 +15,8 @@ protected:\
         TYPE::allocator.Destroy(this);\
     };\
 public:\
-    template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
-        return TYPE::allocator.Create(std::forward<ARGS>(args)...);\
+    template<typename... ARGS> static Core::Ptr<TYPE> Create(ARGS&&... args) {\
+        return Core::Ptr<TYPE>(TYPE::allocator.Create(std::forward<ARGS>(args)...));\
     };\
 
 /// implementation-side macro for Oryol class with pool allocator (located in .cc source file)
@@ -34,8 +34,8 @@ protected:\
         delete(this);\
     };\
 public:\
-    template<typename... ARGS> static TYPE* Create(ARGS&&... args) {\
-        return new TYPE(std::forward<ARGS>(args)...);\
+    template<typename... ARGS> static Core::Ptr<TYPE> Create(ARGS&&... args) {\
+        return Core::Ptr<TYPE>(new TYPE(std::forward<ARGS>(args)...));\
     };\
 
 /// implementation-side macro for Oryol class without pool allocator (located in .cc source file)

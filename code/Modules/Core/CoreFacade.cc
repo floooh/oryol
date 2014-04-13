@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "CoreFacade.h"
+#include "Core/Ptr.h"
 
 namespace Oryol {
 namespace Core {
@@ -15,9 +16,10 @@ ORYOL_THREAD_LOCAL RunLoop* CoreFacade::threadRunLoop = 0;
 CoreFacade::CoreFacade() {
     this->SingletonEnsureUnique();
     this->mainThreadId = std::this_thread::get_id();
-    stringAtomTable::CreateSingleton();    
-    threadRunLoop = RunLoop::Create();
-    threadRunLoop->addRef();
+    stringAtomTable::CreateSingleton();
+    auto ptr = RunLoop::Create();
+    ptr->addRef();
+    threadRunLoop = ptr.get();
 }
 
 //------------------------------------------------------------------------------
@@ -58,8 +60,9 @@ CoreFacade::EnterThread() {
     stringAtomTable::CreateSingleton();
     
     // create thread-local run loop
-    threadRunLoop = RunLoop::Create();
-    threadRunLoop->addRef();
+    auto ptr = RunLoop::Create();
+    ptr->addRef();
+    threadRunLoop = ptr.get();
     #endif
 }
 

@@ -43,20 +43,20 @@ OryolClassPoolAllocImpl(TestClass);
 
 TEST(CreateShared) {
 
-    Ptr<TestClass> ptr0 = TestClass::Create();
+    auto ptr0 = TestClass::Create();
     CHECK(bool(ptr0));
     CHECK(ptr0.isValid());
     CHECK(ptr0->GetRefCount() == 1);
     
     // assign from some pointer type
-    Ptr<TestClass> ptr1 = ptr0;
+    auto ptr1 = ptr0;
     CHECK(ptr0 == ptr1);
     CHECK(ptr0 && ptr1);
     CHECK(ptr0->GetRefCount() == 2);
     CHECK(ptr1->GetRefCount() == 2);
     
     // non-default constructor
-    Ptr<TestClass> ptr2 = TestClass::Create(128);
+    auto ptr2 = TestClass::Create(128);
     CHECK(ptr2->Get() == 128);
     
     // invalidation

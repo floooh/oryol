@@ -14,7 +14,7 @@ namespace Oryol {
 namespace Messaging {
 class TestProtocol {
 public:
-    static ProtocolIdType GetProtocolId() {
+    static Messaging::ProtocolIdType GetProtocolId() {
         return 'TSTP';
     };
     class MessageId {
@@ -40,11 +40,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Messaging::Message* (*CreateCallback)();
+    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[TestProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Messaging::Message* Create(Messaging::MessageIdType id);
+        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class TestMsg1 : public Messaging::Message {
         OryolClassPoolAllocDecl(TestMsg1);
@@ -62,8 +62,8 @@ public:
             this->float32val = 123.0f;
             this->float64val = 12.0;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::TestMsg1Id;
@@ -154,8 +154,8 @@ private:
             this->msgId = MessageId::TestMsg2Id;
             this->stringval = "Test";
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::TestMsg2Id;
@@ -189,8 +189,8 @@ private:
         TestArrayMsg() {
             this->msgId = MessageId::TestArrayMsgId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::TestArrayMsgId;

@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Render/base/meshLoaderBase.h"
+#include "Render/base/textureLoaderBase.h"
 #include "resourceMgr.h"
 
 namespace Oryol {
@@ -26,8 +27,14 @@ resourceMgr::~resourceMgr() {
 
 //------------------------------------------------------------------------------
 void
-resourceMgr::AttachLoader(const Core::Ptr<meshLoaderBase>& loader) {
+resourceMgr::AttachLoader(meshLoaderBase* loader) {
     this->meshFactory.AttachLoader(loader);
+}
+
+//------------------------------------------------------------------------------
+void
+resourceMgr::AttachLoader(textureLoaderBase* loader) {
+    this->textureFactory.AttachLoader(loader);
 }
     
 //------------------------------------------------------------------------------

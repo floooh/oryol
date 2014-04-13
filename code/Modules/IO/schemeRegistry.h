@@ -25,7 +25,7 @@ public:
     virtual ~schemeRegistry();
     
     /// associate URL scheme with filesystem
-    template<class TYPE> void RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*()> creator);
+    template<class TYPE> void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator);
     /// unregister a filesystem
     void UnregisterFileSystem(const Core::StringAtom& scheme);
     /// test if a filesystem has been registered
@@ -35,12 +35,12 @@ public:
     
 private:
     mutable Core::RWLock rwLock;
-    Core::Map<Core::StringAtom, std::function<FileSystem*()>> registry;
+    Core::Map<Core::StringAtom, std::function<Core::Ptr<FileSystem>()>> registry;
 };
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*()> creator) {
+schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator) {
     static_assert(std::is_base_of<FileSystem, TYPE>::value, "schemeRegistry::RegisterFileSystem: TYPE must be derived from FileSystem!");
     this->rwLock.LockWrite();
     o_assert(!this->registry.Contains(scheme));

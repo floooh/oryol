@@ -12,7 +12,7 @@ HTTPProtocol::CreateCallback HTTPProtocol::jumpTable[HTTPProtocol::MessageId::Nu
     &HTTPProtocol::HTTPResponse::FactoryCreate,
     &HTTPProtocol::HTTPRequest::FactoryCreate,
 };
-Messaging::Message*
+Core::Ptr<Messaging::Message>
 HTTPProtocol::Factory::Create(Messaging::MessageIdType id) {
     if (id < Messaging::Protocol::MessageId::NumMessageIds) {
         return Messaging::Protocol::Factory::Create(id);

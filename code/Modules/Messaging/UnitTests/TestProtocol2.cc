@@ -10,7 +10,7 @@ OryolClassPoolAllocImpl(TestProtocol2::TestMsgEx);
 TestProtocol2::CreateCallback TestProtocol2::jumpTable[TestProtocol2::MessageId::NumMessageIds] = { 
     &TestProtocol2::TestMsgEx::FactoryCreate,
 };
-Messaging::Message*
+Core::Ptr<Messaging::Message>
 TestProtocol2::Factory::Create(Messaging::MessageIdType id) {
     if (id < Messaging::TestProtocol::MessageId::NumMessageIds) {
         return Messaging::TestProtocol::Factory::Create(id);

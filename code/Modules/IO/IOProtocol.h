@@ -54,11 +54,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Messaging::Message* (*CreateCallback)();
+    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[IOProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Messaging::Message* Create(Messaging::MessageIdType id);
+        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class Request : public Messaging::Message {
         OryolClassPoolAllocDecl(Request);
@@ -70,8 +70,8 @@ public:
             this->cachewriteenabled = false;
             this->status = IOStatus::InvalidIOStatus;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::RequestId;
@@ -130,8 +130,8 @@ private:
         Get() {
             this->msgId = MessageId::GetId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::GetId;
@@ -157,8 +157,8 @@ private:
             this->startoffset = 0;
             this->endoffset = 0;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::GetRangeId;
@@ -189,8 +189,8 @@ private:
         notifyLanes() {
             this->msgId = MessageId::notifyLanesId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::notifyLanesId;
@@ -207,8 +207,8 @@ private:
         notifyFileSystemRemoved() {
             this->msgId = MessageId::notifyFileSystemRemovedId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemRemovedId;
@@ -232,8 +232,8 @@ private:
         notifyFileSystemReplaced() {
             this->msgId = MessageId::notifyFileSystemReplacedId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemReplacedId;
@@ -257,8 +257,8 @@ private:
         notifyFileSystemAdded() {
             this->msgId = MessageId::notifyFileSystemAddedId;
         };
-        static Messaging::Message* FactoryCreate() {
-            return (Messaging::Message*) Create();
+        static Core::Ptr<Messaging::Message> FactoryCreate() {
+            return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemAddedId;

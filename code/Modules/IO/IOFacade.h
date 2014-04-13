@@ -36,7 +36,7 @@ public:
     Core::String ResolveAssigns(const Core::String& str) const;
     
     /// associate URL scheme with filesystem
-    template<class TYPE> void RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*()> creator);
+    template<class TYPE> void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator);
     /// unregister a filesystem
     void UnregisterFileSystem(const Core::StringAtom& scheme);
     /// test if a filesystem has been registered
@@ -64,7 +64,7 @@ private:
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<TYPE*()> creator) {
+IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator) {
     schemeRegistry* reg = schemeRegistry::Instance();
     bool newFileSystem = !reg->IsFileSystemRegistered(scheme);
     reg->RegisterFileSystem<TYPE>(scheme, creator);

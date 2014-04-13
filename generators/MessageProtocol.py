@@ -86,7 +86,7 @@ def writeMessageIdEnum(f, xmlRoot) :
     f.write('            return Messaging::InvalidMessageId;\n')
     f.write('        };\n')
     f.write('    };\n')
-    f.write('    typedef Messaging::Message* (*CreateCallback)();\n')
+    f.write('    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();\n')
     f.write('    static CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds];\n')
 
 #-------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ def writeFactoryClassDecl(f, xmlRoot) :
     '''
     f.write('    class Factory {\n')
     f.write('    public:\n')
-    f.write('        static Messaging::Message* Create(Messaging::MessageIdType id);\n')
+    f.write('        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);\n')
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ def writeFactoryClassImpl(f, xmlRoot) :
     for msg in xmlRoot.findall('Message') :
         f.write('    &' + protocol + '::' + msg.get('name') + '::FactoryCreate,\n')
     f.write('};\n')
-    f.write('Messaging::Message*\n')
+    f.write('Core::Ptr<Messaging::Message>\n')
     f.write(protocol + '::Factory::Create(Messaging::MessageIdType id) {\n')
     f.write('    if (id < ' + parentProtocol + '::MessageId::NumMessageIds) {\n')
     f.write('        return ' + parentProtocol + '::Factory::Create(id);\n')
@@ -208,8 +208,8 @@ def writeMessageClasses(f, xmlRoot) :
         f.write('        };\n')
 
         # special factory create method
-        f.write('        static Messaging::Message* FactoryCreate() {\n')
-        f.write('            return (Messaging::Message*) Create();\n')
+        f.write('        static Core::Ptr<Messaging::Message> FactoryCreate() {\n')
+        f.write('            return Create();\n')
         f.write('        };\n')
 
         # special class message id static method
