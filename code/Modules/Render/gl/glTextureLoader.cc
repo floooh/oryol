@@ -64,6 +64,7 @@ glTextureLoader::Load(texture& tex) const {
     if (state == Resource::State::Setup) {
         // start loading the resource
         tex.setIORequest(IOFacade::Instance()->LoadFile(setup.GetLocator().Location(), setup.GetIOLane()));
+        tex.setState(Resource::State::Pending);
         return;
     }
     else if (state == Resource::State::Pending) {
