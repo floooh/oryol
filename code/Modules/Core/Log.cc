@@ -8,6 +8,9 @@
 #include "Core/Logger.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
+#if ORYOL_WINDOWS
+#include "Windows.h"
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -102,6 +105,11 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
     lock.LockRead();
     if (loggers.Empty()) {
         std::vprintf(msg, args);
+        #if ORYOL_WINDOWS
+            char buf[2048];
+            std::vsnprintf(buf, sizeof(buf), msg, args);
+            OutputDebugString(buf);
+        #endif
     }
     else {
         for (auto l : loggers) {
@@ -117,7 +125,13 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, 
     lock.LockRead();
     if (loggers.Empty()) {
         std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                 cond, msg ? msg : "none", file, line, func);
+                    cond, msg ? msg : "none", file, line, func);
+        #if ORYOL_WINDOWS
+            char buf[2048];
+            _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
+                        cond, msg ? msg : "none", file, line, func);
+            OutputDebugString(buf);
+        #endif   
     }
     else
     {
