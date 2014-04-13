@@ -53,8 +53,8 @@ TextureSetup::AsRenderTarget(const Locator& loc, int32 w, int32 h, PixelFormat::
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromFile(const Locator& loc) {
-    TextureSetup setup;
+TextureSetup::FromFile(const Locator& loc, TextureSetup bluePrint) {
+    TextureSetup setup(bluePrint);
     setup.shouldSetupFromFile = true;
     setup.locator = loc;
     return setup;
