@@ -33,7 +33,8 @@ public:
     
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
-
+    
+    float32 distVal = 0.0f;
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
     Resource::Id meshId;
@@ -91,19 +92,26 @@ DDSTextureLoadingApp::OnInit() {
     this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol DDS Loading Sample"));
 
     // start loading textures
-    this->texId[0] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds"));
+    TextureSetup texBluePrint;
+    texBluePrint.SetMinFilter(TextureFilterMode::LinearMipmapLinear);
+    texBluePrint.SetMagFilter(TextureFilterMode::Linear);
+    texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
+    texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
+    this->texId[0] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
+    this->texId[1] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
+    this->texId[2] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
+    this->texId[3] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb.dds", texBluePrint));
 /*
-    this->texId[1] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds"));
-    this->texId[2] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds"));
-    this->texId[3] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb.dds"));
     this->texId[4] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_lumi.dds"));
 */
 
     // create a shape with uvs
+    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
+    shapeBuilder.SetTransform(rot90);
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
+    shapeBuilder.AddPlane(1.0f, 1.0f, 4);
     shapeBuilder.Build();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
 
@@ -138,6 +146,8 @@ AppState::Code
 DDSTextureLoadingApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
+    
+        this->distVal += 0.01f;
         
         // clear, apply mesh and shader program, and draw
         this->render->ApplyState(Render::State::DepthMask, true);
@@ -150,14 +160,27 @@ DDSTextureLoadingApp::OnRunning() {
         this->render->ApplyMesh(this->meshId);
         
         // only render when texture is loaded (until texture placeholder are implemented)
-        const auto resState = this->render->QueryResourceState(this->texId[0]);
-        if (resState == Resource::State::Valid) {
-            this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            this->render->ApplyVariable(Texture, this->texId[0]);
-            this->render->Draw(0);
-        }
-        else if (resState == Resource::State::Failed) {
-            Log::Warn("Failed to load texture resource!\n");
+        static const std::array<glm::vec3, NumTextures> pos{ {
+            glm::vec3(-1.1f, +0.55f, 0.0f),
+            glm::vec3( 0.0f, +0.55f, 0.0f),
+            glm::vec3(+1.1f, +0.55f, 0.0f),
+            glm::vec3( 0.0f, -0.55f, 0.0f),
+            glm::vec3(-1.1f, -0.55f, 0.0f)
+        } };
+        for (int32 i = 0; i < NumTextures; i++) {
+            const Id& tex = this->texId[i];
+            if (tex.IsValid()) {
+                const auto resState = this->render->QueryResourceState(tex);
+                if (resState == Resource::State::Valid) {
+                    glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
+                    this->render->ApplyVariable(ModelViewProjection, this->computeMVP(p));
+                    this->render->ApplyVariable(Texture, tex);
+                    this->render->Draw(0);
+                }
+                else if (resState == Resource::State::Failed) {
+                    Log::Warn("Failed to load texture resource!\n");
+                }
+            }
         }
         this->render->EndFrame();
     }
