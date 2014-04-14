@@ -863,9 +863,6 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
         Log::Warn("FIXME: ShapeBuilder::BuildPlane() tangents not implemented yet!\n");
     }
-    if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildPlane() texcoord not implemented yet!\n");
-    }
 
     // write indices
     ORYOL_UNUSED const int32 startTriIndex = curTriIndex;
