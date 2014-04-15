@@ -34,6 +34,9 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         NSURL* url = [NSURL URLWithString:urlString];
         [urlRequest setURL:url];
         [urlRequest setHTTPMethod:methodString];
+        #if ORYOL_DEBUG
+        [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+        #endif
         
         // additional header fields
         for (const auto& field : req->GetRequestHeaders()) {
