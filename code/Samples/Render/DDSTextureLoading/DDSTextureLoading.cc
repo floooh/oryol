@@ -39,7 +39,7 @@ private:
     RenderFacade* render = nullptr;
     Resource::Id meshId;
     Resource::Id progId;
-    static const int32 NumTextures = 5;
+    static const int32 NumTextures = 13;
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
@@ -97,13 +97,19 @@ DDSTextureLoadingApp::OnInit() {
     texBluePrint.SetMagFilter(TextureFilterMode::Linear);
     texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
     texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
-    this->texId[0] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
-    this->texId[1] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
-    this->texId[2] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
-    this->texId[3] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb.dds", texBluePrint));
-/*
-    this->texId[4] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_lumi.dds"));
-*/
+    this->texId[0]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
+    this->texId[1]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
+    this->texId[2]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
+    this->texId[3]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
+    this->texId[4]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
+    this->texId[5]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
+    this->texId[6]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
+    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba4.dds", texBluePrint));
+    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra4.dds", texBluePrint));
+    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba5551.dds", texBluePrint));
+    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra5551.dds", texBluePrint));
+    this->texId[11] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
+    this->texId[12] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
     // create a shape with uvs
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -161,11 +167,24 @@ DDSTextureLoadingApp::OnRunning() {
         
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {
-            glm::vec3(-1.1f, +0.55f, 0.0f),
-            glm::vec3( 0.0f, +0.55f, 0.0f),
-            glm::vec3(+1.1f, +0.55f, 0.0f),
-            glm::vec3( 0.0f, -0.55f, 0.0f),
-            glm::vec3(-1.1f, -0.55f, 0.0f)
+            // dxt1, dxt3, dxt5
+            glm::vec3(-1.1f, +1.1f, 0.0f),
+            glm::vec3( 0.0f, +1.1f, 0.0f),
+            glm::vec3(+1.1f, +1.1f, 0.0f),
+            
+            // rgba8, bgra8, rgb8, bgr8
+            glm::vec3(-1.65f, 0.0f, 0.0f),
+            glm::vec3(-0.55f, 0.0f, 0.0f),
+            glm::vec3(+0.55f, 0.0f, 0.0f),
+            glm::vec3(+1.65f, 0.0f, 0.0f),
+            
+            // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
+            glm::vec3(-2.75f, -1.1f, 0.0f),
+            glm::vec3(-1.65f, -1.1f, 0.0f),
+            glm::vec3(-0.55f, -1.1f, 0.0f),
+            glm::vec3(+0.55f, -1.1f, 0.0f),
+            glm::vec3(+1.65f, -1.1f, 0.0f),
+            glm::vec3(+2.75f, -1.1f, 0.0f)
         } };
         for (int32 i = 0; i < NumTextures; i++) {
             const Id& tex = this->texId[i];
