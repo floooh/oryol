@@ -82,7 +82,8 @@ glShaderFactory::SetupResource(shader& shd) {
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("precision mediump float;\n");
             strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
-            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");            
+            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
+            strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");
             strBuilder.Append("#define FragmentColor gl_FragColor\n");
         }
     #else
@@ -98,6 +99,7 @@ glShaderFactory::SetupResource(shader& shd) {
         if (GL_FRAGMENT_SHADER == glShaderType) {
             strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
             strBuilder.Append("#define TEXTURE2D(x,y) texture(x,y)\n");
+            strBuilder.Append("#define TEXTURECUBE(x,y) texture(x,y)\n");
             strBuilder.Append("out vec4 FragmentColor;\n");
         }
     #endif
