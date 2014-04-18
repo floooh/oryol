@@ -104,10 +104,10 @@ DDSTextureLoadingApp::OnInit() {
     this->texId[4]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
     this->texId[5]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
     this->texId[6]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
-    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba4.dds", texBluePrint));
-    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra4.dds", texBluePrint));
-    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba5551.dds", texBluePrint));
-    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra5551.dds", texBluePrint));
+    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
+    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
+    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
+    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
     this->texId[11] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
     this->texId[12] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
