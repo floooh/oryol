@@ -243,7 +243,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     attrs.setWidth(ctx.image_width(0, 0));
     attrs.setHeight(ctx.image_height(0, 0));
     attrs.setDepth(ctx.image_depth(0, 0));
-    attrs.setMipmapsFlag(ctx.num_mipmaps(0));
+    attrs.setMipmapsFlag(ctx.num_mipmaps(0) > 1);
     
     // setup texture
     tex.setTextureAttrs(attrs);
