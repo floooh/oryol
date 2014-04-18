@@ -43,16 +43,46 @@ def toDDS(srcFilename, dstFilename, fmt, rgbFmt=None) :
     '''
     Convert a file to DDS format
     '''
-    nvcompress = getToolsBinPath() + '/nvcompress'
+    nvcompress = getToolsBinPath() + 'nvcompress'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
-    print '========= {} => {}:'.format(srcPath, dstPath)
+    print '=== toDDS: {} => {}:'.format(srcPath, dstPath)
     cmdLine = [nvcompress, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
         cmdLine.append(rgbFmt)
     cmdLine.append(srcPath)
     cmdLine.append(dstPath)
+    subprocess.call(args=cmdLine)
+
+#-------------------------------------------------------------------------------
+def toCubeDDS(srcDir, srcExt, dstFilename, fmt, rgbFmt=None) :
+    '''
+    Generate a cube map and convert to dds.
+    '''
+    nvassemble = getToolsBinPath() + 'nvassemble'
+    nvcompress = getToolsBinPath() + 'nvcompress'
+    srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
+    dstPath  = TexDstDirectory + '/' + dstFilename
+
+    print '=== toCubeDDS: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+
+    # call nvassemble to generate an uncompressed cube map...
+    cmdLine = [nvassemble, '-cube']
+    for src in srcFiles :
+        cmdLine.append(TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt)
+    cmdLine.append('-o')
+    cmdLine.append(dstPath)
+    subprocess.call(args=cmdLine)
+
+    # ...and compress/convert to the desired format
+    cmdLine = [nvcompress, '-'+fmt]
+    if rgbFmt != None :
+        cmdLine.append('-rgbfmt')
+        cmdLine.append(rgbFmt)
+    cmdLine.append(dstPath)
+    cmdLine.append(dstPath)
+    print cmdLine
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
@@ -70,6 +100,7 @@ def exportSampleTextures() :
     toDDS('lok256.jpg', 'lok_bgr565.dds', 'rgb', 'bgr565')
     toDDS('lok256.jpg', 'lok_argb1555.dds', 'rgb', 'argb1555')
     toDDS('lok256.jpg', 'lok_abgr1555.dds', 'rgb', 'abgr1555')
+    toCubeDDS('RomeChurch', 'jpg', 'romechurch_dxt1.dds', 'bc1')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
