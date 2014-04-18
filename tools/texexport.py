@@ -32,8 +32,8 @@ def getToolsBinPath() :
         path += '/win32/'
     elif platform.system() == 'Darwin' :
         path += '/osx/'
-    elif paltform.system() == 'Linux' :
-        path +=  '/linux'
+    elif platform.system() == 'Linux' :
+        path +=  '/linux/'
     else :
         error("Unknown host system {}".format(platform.system()))
     return path;
