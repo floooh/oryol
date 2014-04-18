@@ -7,7 +7,7 @@ import os
 import platform
 import subprocess
 
-ProjectDirectory = os.path.abspath(os.path.dirname(__file__) + '/..')
+ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 TexSrcDirectory = ProjectDirectory + '/data'
 TexDstDirectory = ProjectDirectory + '/build/webpage'
 
@@ -39,10 +39,16 @@ def getToolsBinPath() :
     return path;
 
 #-------------------------------------------------------------------------------
+def ensureDstDirectory() :
+    if not os.path.exists(TexDstDirectory) :
+        os.makedirs(TexDstDirectory)
+
+#-------------------------------------------------------------------------------
 def toDDS(srcFilename, dstFilename, fmt, rgbFmt=None) :
     '''
     Convert a file to DDS format
     '''
+    ensureDstDirectory()
     nvcompress = getToolsBinPath() + 'nvcompress'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
@@ -60,6 +66,7 @@ def toCubeDDS(srcDir, srcExt, dstFilename, fmt, rgbFmt=None) :
     '''
     Generate a cube map and convert to dds.
     '''
+    ensureDstDirectory()
     nvassemble = getToolsBinPath() + 'nvassemble'
     nvcompress = getToolsBinPath() + 'nvcompress'
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
@@ -104,4 +111,5 @@ def exportSampleTextures() :
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
+    print "{}".format(__file__)
     exportSampleTextures()
