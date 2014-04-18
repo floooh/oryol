@@ -10,6 +10,7 @@ import platform
 import subprocess
 import shutil
 from string import Template
+from tools import texexport as TexExport
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
@@ -344,6 +345,11 @@ def runConfigure(config) :
         else :
             error('Cannot call cmake-gui or ccmake, not installed or not in path!')
 
+# export the sample assets to build/webpage
+def exportSampleAssets() :
+    TexExport.configure(os.path.abspath(os.path.dirname(__file__)), 'data', 'build/webpage')
+    TexExport.exportSampleTextures()
+
 # build a web page under /build/webpage
 def buildWebPage() :
     # first clean up previous page
@@ -373,18 +379,20 @@ def buildWebPage() :
     f.write(html)
     f.close()
 
-    # copy the sample files over
+    # copy the HTML sample files over
     for sample in samples['samples'] :
         if sample['name'] != '__end__' :
             for ext in ['html', 'js', 'html.mem'] :
                 shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
+    # export the sample assets
+    exportSampleAssets()
+
     # copy data files over
-    for dataFile in glob.glob('data/*') :
+    for dataFile in glob.glob('data/dst/*.txt') :
         shutil.copy(dataFile, 'build/webpage')
 
     print 'Generated Samples web page under build/webpage!'
-
 
 #===============================================================================
 if len(sys.argv) == 1 :
@@ -583,7 +591,7 @@ else :
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
         runCMake(config)
-        runRebuild(config, None)
+        runBuild(config, None)
         buildWebPage()
 
     else :
