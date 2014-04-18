@@ -1,0 +1,5 @@
+oryol_begin_app(DDSCubeMap windowed)
+    oryol_sources(.)
+    oryol_deps(Application Render)
+    oryol_add_web_sample(DDSCubeMap "Load and display DDS DXT1 cube map" emscripten)    
+oryol_end_app()

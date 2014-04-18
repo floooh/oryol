@@ -5,4 +5,5 @@ oryol_add_subdirectory(PackedNormals)
 oryol_add_subdirectory(SimpleRenderTarget)
 oryol_add_subdirectory(InfiniteSpheres)
 oryol_add_subdirectory(DDSTextureLoading)
+oryol_add_subdirectory(DDSCubeMap)
 
