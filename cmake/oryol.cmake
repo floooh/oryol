@@ -5,6 +5,7 @@
 
 include("${ORYOL_ROOT_DIR}/cmake/oryol_private.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
+include("${ORYOL_ROOT_DIR}/cmake/oryol_android.cmake")
 
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
@@ -292,6 +293,12 @@ macro(oryol_end_app)
         endif()
     endif()
     oryol_apply_target_group(${CurAppName})
+
+    # android specific stuff
+    if (ORYOL_ANDROID)
+        oryol_android_create_project(${CurAppName})
+        oryol_android_postbuildstep(${CurAppName})
+    endif()
 
     # handle XML generators (post-target)
     if (CurXmlFiles)

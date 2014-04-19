@@ -13,7 +13,17 @@
 
 # set the name of the custom android-toolchain
 set(ANDROID_TOOLCHAIN_DIRNAME "android-toolchain" CACHE STRING "Standalone Android toolchain directory name")
+set(ANDROID_PLATFORM "android-19" CACHE STRING "Android platform version")
 set(ANDROID_NDK_ABI "arm-linux-androideabi" CACHE STRING "Android ABI name")
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    # FIXME: is this the right directory name?
+    set(ANDROID_SDK_DIRNAME "android-sdk-windows")
+elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
+    set(ANDROID_SDK_DIRNAME "android-sdk-macosx")
+elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
+    # FIXME: is this the right directory name?
+    set(ANDROID_SDK_DIRNAME "android-sdk-linux")
+endif()
 
 set(ORYOL_PLATFORM ANDROID)
 set(ORYOL_PLATFORM_NAME "android")
@@ -61,15 +71,48 @@ macro(find_android_toolchain_root)
     find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../../../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
     find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../../../../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
     if ("${ANDROID_TOOLCHAIN_ROOT}" STREQUAL "")
-        message(FATAL_ERROR "Could not locate Android standalone toolchain (${ANDROID_TOOLCHAIN_DIRNAME})! Either set the ANDROID_TOOLCHAIN_ROOT environment variable, or pass -DANDROID_TOOLCHAIN_ROOT=xxx to CMake to explicitly specify the path!")
+        message(FATAL_ERROR "Could not locate Android standalone toolchain (${ANDROID_TOOLCHAIN_DIRNAME})! Either set the ANDROID_TOOLCHAIN_ROOT environment variable, or pass -DANDROID_TOOLCHAIN_ROOT=xxx to cmake to explicitly specify the path!")
     else()
         message("Android standalone toolchain found: ${ANDROID_TOOLCHAIN_ROOT}")
         set(ANDROID_TOOLCHAIN_ROOT ${ANDROID_TOOLCHAIN_ROOT} CACHE STRING "Android standalone toolchain path")
     endif()
 endmacro()
 
-# try to find the Android NDK and standalone toolchain
+macro(find_android_sdk_root)
+
+    # first try environment variable
+    if ("${ANDROID_SDK_ROOT}" STREQUAL "")
+        message("Checking env variable ANDROID_SDK_ROOT...")
+        set(ANDROID_SDK_ROOT "$ENV{ANDROID_SDK_ROOT}")
+    endif()
+
+    # then try relative paths
+    find_relative_dir(ANDROID_SDK_ROOT "../${ANDROID_SDK_DIRNAME}" "tools/android")
+    find_relative_dir(ANDROID_SDK_ROOT "../../${ANDROID_SDK_DIRNAME}" "tools/android")
+    find_relative_dir(ANDROID_SDK_ROOT "../../../${ANDROID_SDK_DIRNAME}" "tools/android")
+    find_relative_dir(ANDROID_SDK_ROOT "../../../../${ANDROID_SDK_DIRNAME}" "tools/android")
+    if ("${ANDROID_SDK_ROOT}" STREQUAL "")
+        message(FATAL_ERROR "Could not locate Android SDK (${ANDROID_SDK_DIRNAME})! Either set the ANDROID_SDK_ROOT environment variable, or pass -DANDROID_SDK_ROOT=xxx to cmake to explicitely specify the path!")
+    else()
+        message("Android SDK found: ${ANDROID_SDK_ROOT}")
+        set(ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT} CACHE STRING "Android SDK location.")
+    endif()
+endmacro()
+
+# try to find the Android standalone toolchain and the Android SDK
 find_android_toolchain_root()
+find_android_sdk_root()
+
+# set path to Android tool
+set(ANDROID_SDK_TOOL "${ANDROID_SDK_ROOT}/tools/android")
+
+# find the ant tool
+find_program(ANDROID_ANT "ant")
+if (ANDROID_ANT)
+    message("ant tool found")
+else()
+    message(FATAL_ERROR "ant tool NOT FOUND (must be in path)!")
+endif()
 
 # set path to toolchain binaries
 set(ANDROID_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}/sysroot")
