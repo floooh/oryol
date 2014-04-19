@@ -89,7 +89,6 @@ def toCubeDDS(srcDir, srcExt, dstFilename, fmt, rgbFmt=None) :
         cmdLine.append(rgbFmt)
     cmdLine.append(dstPath)
     cmdLine.append(dstPath)
-    print cmdLine
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
