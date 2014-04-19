@@ -635,7 +635,11 @@ StringBuilder::Format(int32 maxLength, const char* fmt, ...) {
     bool retval = true;
     this->Clear();
     this->ensureRoom(maxLength);
+    #if ORYOL_ANDROID
+    int res = vsnprintf(this->buffer, maxLength, fmt, args);
+    #else
     int res = std::vsnprintf(this->buffer, maxLength, fmt, args);
+    #endif
     if ((res < 0) || (res >= (maxLength-1))) {
         // error or string was truncated
         this->Clear();
