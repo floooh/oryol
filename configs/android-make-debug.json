@@ -1,0 +1,8 @@
+{
+    "name": "android-make-debug", 
+    "target": {
+        "platform": "android", 
+        "generator": "Unix Makefiles", 
+        "build-type": "debug"
+    }
+}
