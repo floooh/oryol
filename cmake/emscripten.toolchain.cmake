@@ -50,20 +50,34 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(COMPILING on)
 set(CMAKE_CROSSCOMPILING TRUE)
 
-# Locate where the Emscripten compiler resides in relative to this toolchain file.
-if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-    get_filename_component(GUESS_EMSCRIPTEN_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../../emscripten" ABSOLUTE)
-    if (EXISTS "${GUESS_EMSCRIPTEN_ROOT_PATH}/emranlib")
-        set(EMSCRIPTEN_ROOT_PATH "${GUESS_EMSCRIPTEN_ROOT_PATH}")
+macro(find_relative_dir outPath relPath fileToTest)
+    if ("${${outPath}}" STREQUAL "")
+        get_filename_component(CHECK_PATH "${CMAKE_CURRENT_LIST_DIR}/${relPath}" ABSOLUTE)
+        message("Checking ${CHECK_PATH}/")
+        if (EXISTS "${CHECK_PATH}/${fileToTest}")
+            set(${outPath} "${CHECK_PATH}")
+        endif()
     endif()
-endif()
+endmacro()
+macro(find_emscripten_sdk)
+    # first check if EMSCRIPTEN_ROOT or EMSCRIPTEN env variables are set
+    if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+        message("Checking env variable EMSCRIPTEN_ROOT...")
+        set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN_ROOT}")
+    endif()
+    if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+        message("Checking env variable EMSCRIPTEN...")
+        set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN}")
+    endif()
+    # then proceed searching in parent directories
+    find_relative_dir(EMSCRIPTEN_ROOT_PATH "../emscripten" "emcc")
+    find_relative_dir(EMSCRIPTEN_ROOT_PATH "../../emscripten" "emcc")
+    find_relative_dir(EMSCRIPTEN_ROOT_PATH "../../../emscripten" "emcc")
+    find_relative_dir(EMSCRIPTEN_ROOT_PATH "../../../../emscripten" "emcc")
+endmacro()
 
-# If not found by above search, locate using the EMSCRIPTEN environment variable.
-if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-    set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN}")
-endif()
-
-# Abort if not found. 
+# find the emscripten SDK
+find_emscripten_sdk()
 if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
     message(FATAL_ERROR "Could not locate the Emscripten compiler toolchain directory! Either set the EMSCRIPTEN environment variable, or pass -DEMSCRIPTEN_ROOT_PATH=xxx to CMake to explicitly specify the location of the compiler!")
 endif()
