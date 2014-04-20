@@ -15,6 +15,7 @@
 set(ANDROID_TOOLCHAIN_DIRNAME "android-toolchain" CACHE STRING "Standalone Android toolchain directory name")
 set(ANDROID_PLATFORM "android-19" CACHE STRING "Android platform version")
 set(ANDROID_NDK_ABI "arm-linux-androideabi" CACHE STRING "Android ABI name")
+set(ANDROID_NDK_CPU "armeabi-v7a" CACHE STRING "Android CPU instruction set identifier")
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
     # FIXME: is this the right directory name?
     set(ANDROID_SDK_DIRNAME "android-sdk-windows")
@@ -158,17 +159,17 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
 
 # Android-specific C/C++/Linker flags
-set(ANDROID_CXX_FLAGS "-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -D_NDK_MATH_NO_SOFTFP=1 -fpic -ffunction-sections -no-canonical-prefixes")
-set(ANDROID_LDFLAGS "-march=armv7-a -shared -no-canonical-prefixes -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch")
+set(ANDROID_CXX_FLAGS "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
+set(ANDROID_LD_FLAGS "-shared -lgcc -llog -landroid -lEGL -lGLESv2 -lm_hard -llog -llog -landroid -lEGL -lGLESv2 -lm_hard -lc -lm -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now")
 
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 # c compiler flags
-set(CMAKE_C_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
+set(CMAKE_C_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 message("CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")

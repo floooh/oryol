@@ -181,16 +181,17 @@ endmacro()
 #   Internal macro to set the configuration postfixes
 #
 macro(oryol_config_postfixes_for_exe target)
-
-    if (ORYOL_EMSCRIPTEN)
-        set_target_properties(${target} PROPERTIES RELEASE_POSTFIX .html)
-        set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug.html)
-    elseif (ORYOL_PNACL)
-        set_target_properties(${target} PROPERTIES RELEASE_POSTFIX .pexe)
-        set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug.pexe)
-    else()
-        # set_target_properties(${target} PROPERTIES RELEASE_POSTFIX "")
-        set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug)
+    if (NOT ORYOL_ANDROID)
+        if (ORYOL_EMSCRIPTEN)
+            set_target_properties(${target} PROPERTIES RELEASE_POSTFIX .html)
+            set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug.html)
+        elseif (ORYOL_PNACL)
+            set_target_properties(${target} PROPERTIES RELEASE_POSTFIX .pexe)
+            set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug.pexe)
+        else()
+            # set_target_properties(${target} PROPERTIES RELEASE_POSTFIX "")
+            set_target_properties(${target} PROPERTIES DEBUG_POSTFIX _debug)
+        endif()
     endif()
 endmacro(oryol_config_postfixes_for_exe)
 
@@ -198,7 +199,7 @@ endmacro(oryol_config_postfixes_for_exe)
 #   Internal macro to set the output directory
 #
 function(oryol_exe_output_directory target)
-    if (NOT ORYOL_IOS)
+    if (NOT (ORYOL_IOS OR ORYOL_ANDROID))
         set(dir ${ORYOL_PROJECT_DIR}/bin/${ORYOL_PLATFORM_NAME})
 
         # exes
