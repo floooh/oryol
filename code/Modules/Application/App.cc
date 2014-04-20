@@ -52,7 +52,7 @@ App::onFrame() {
             break;
         default:
             // InvalidAppState is also set on end of OnDestroy
-            AppBase::stopMainLoop();
+            this->stopMainLoop();
             break;
     }
 }

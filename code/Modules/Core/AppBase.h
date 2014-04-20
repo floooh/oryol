@@ -37,6 +37,9 @@
 #define WIN32_LEAN_AND_MEAN (1)
 #include <Windows.h>
 #endif
+#if ORYOL_ANDROID
+#include "android_native/android_native_app_glue.h"
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -57,7 +60,7 @@ protected:
     /// static frame function
     static void staticOnFrame();
     /// stop the main loop, for callback-driven platforms
-    static void stopMainLoop();
+    void stopMainLoop();
     /// virtual onFrame method to be overwritten by subclass
     virtual void onFrame();
     /// set quit-requested flag
@@ -81,6 +84,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
     OryolArgs = Oryol::Core::Args(cmdLine); \
     OryolMain(); \
     return 0; \
+}
+#elif ORYOL_ANDROID
+#define OryolApp(name, ver) \
+void OryolMain(); \
+const char* const OryolAppName = name; \
+const char* const OryolAppVersion = ver; \
+Oryol::Core::Args OryolArgs; \
+void android_main(struct android_app* app) { \
+    app_dummy(); \
+    OryolMain(); \
 }
 #else
 #define OryolApp(name, ver) \

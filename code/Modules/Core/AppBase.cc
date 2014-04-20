@@ -47,6 +47,7 @@ AppBase::stopMainLoop() {
     #if ORYOL_EMSCRIPTEN
     emscripten_cancel_main_loop();
     #endif
+    this->quitRequested = true;
 }
 
 //------------------------------------------------------------------------------
