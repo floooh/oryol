@@ -8,7 +8,7 @@ oryol_sources_windows(windows)
 oryol_deps(ConvertUTF)
 if (ORYOL_ANDROID)
     oryol_deps(android_native)
-    oryol_deps(log android c m)
+    oryol_deps(log android)
 endif()
 oryol_end_module()
 

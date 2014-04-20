@@ -131,8 +131,8 @@ message("ANDROID_SYSROOT_INCLUDE: ${ANDROID_SYSROOT_INCLUDE}")
 message("ANDROID_SYSROOT_LIB: ${ANDROID_SYSROOT_LIB}")
 
 # standard header and lib search paths
-include_directories(${ANDROID_TOOLCHAIN_INCLUDE})
-# link_directories(${ANDROID_TOOLCHAIN_LIB})
+include_directories(${ANDROID_TOOLCHAIN_INCLUDE} ${ANDROID_SYSROOT_INCLUDE})
+link_directories(${ANDROID_TOOLCHAIN_LIB})
 
 # disable compiler detection
 include(CMakeForceCompiler)
@@ -146,7 +146,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set(CMAKE_C_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-gcc" CACHE PATH "gcc" FORCE)
 set(CMAKE_CXX_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-g++" CACHE PATH "g++" FORCE)
 set(CMAKE_AR "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-ar" CACHE PATH "archive" FORCE)
-set(CMAKE_LINKER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-gcc" CACHE PATH "linker" FORCE)
+set(CMAKE_LINKER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-g++" CACHE PATH "linker" FORCE)
 set(CMAKE_RANLIB "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-ranlib" CACHE PATH "ranlib" FORCE)
 
 # only search for libraries and includes in the toolchain
@@ -159,8 +159,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
 
 # Android-specific C/C++/Linker flags
-set(ANDROID_CXX_FLAGS "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
-set(ANDROID_LD_FLAGS "-shared -lgcc -llog -landroid -lEGL -lGLESv2 -lm_hard -llog -llog -landroid -lEGL -lGLESv2 -lm_hard -lc -lm -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now")
+set(ANDROID_CXX_FLAGS "-v -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
+set(ANDROID_LD_FLAGS "-shared -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--verbose")
 
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
