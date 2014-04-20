@@ -12,6 +12,9 @@
 #include "Windows.h"
 const Oryol::int32 LogBufSize = 2048;
 #endif
+#if ORYOL_ANDROID
+#include <android/log.h>
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -105,12 +108,24 @@ void
 Log::vprint(Level lvl, const char* msg, va_list args) {
     lock.LockRead();
     if (loggers.Empty()) {
-        std::vprintf(msg, args);
-        #if ORYOL_WINDOWS
-            char buf[LogBufSize];
-            std::vsnprintf(buf, sizeof(buf), msg, args);
-            buf[LogBufSize - 1] = 0;
-            OutputDebugString(buf);
+        #if ORYOL_ANDROID
+            android_LogPriority pri = ANDROID_LOG_DEFAULT;
+            switch (lvl) {
+                case Level::Error: pri = ANDROID_LOG_ERROR; break;
+                case Level::Warn:  pri = ANDROID_LOG_WARN; break;
+                case Level::Info:  pri = ANDROID_LOG_INFO; break;
+                case Level::Dbg:   pri = ANDROID_LOG_DEBUG; break;
+                default:           pri = ANDROID_LOG_DEFAULT; break;
+            }
+            __android_log_vprint(pri, "oryol", msg, args);
+        #else
+            std::vprintf(msg, args);
+            #if ORYOL_WINDOWS
+                char buf[LogBufSize];
+                std::vsnprintf(buf, sizeof(buf), msg, args);
+                buf[LogBufSize - 1] = 0;
+                OutputDebugString(buf);
+            #endif
         #endif
     }
     else {
