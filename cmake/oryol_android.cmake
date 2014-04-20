@@ -24,17 +24,6 @@ macro(oryol_android_create_project target)
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ANDROID_SO_OUTDIR})
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ANDROID_SO_OUTDIR})
 
-    # copy shared libraries over from the Android toolchain directory
-    # FIXME: this should be automated as post-build-step by invoking the ndk-depends command
-    # to find out the .so's, and copy them over
-    file(COPY ${ANDROID_SYSROOT_LIB}/libm.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/liblog.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/libdl.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/libc.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/libandroid.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/libGLESv2.so DESTINATION ${ANDROID_SO_OUTDIR})
-    file(COPY ${ANDROID_SYSROOT_LIB}/libEGL.so DESTINATION ${ANDROID_SO_OUTDIR})
-
     # override AndroidManifest.xml 
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/android/AndroidManifest.xml
         "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
