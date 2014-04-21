@@ -464,6 +464,16 @@ macro(oryol_sources_pnacl dirs)
 endmacro()
 
 #-------------------------------------------------------------------------------
+#   oryol_sources_android(dirs ...)
+#   Add Android specific sources.
+#-------------------------------------------------------------------------------
+macro(oryol_sources_android dirs)
+    if (ORYOL_ANDROID)
+        oryol_sources(${ARGV})
+    endif()
+endmacro()
+
+#-------------------------------------------------------------------------------
 #   oryol_add_subdirectory(dir)
 #
 macro(oryol_add_subdirectory dir)
