@@ -1,0 +1,259 @@
+//------------------------------------------------------------------------------
+//  androidBridge.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "androidBridge.h"
+#include "Core/AppBase.h"
+#include "Core/Log.h"
+#include "Ext/android_native/android_native_app_glue.h"
+
+// this is in the app's main file (see AppBase.h -> OryolApp)
+extern android_app* OryolAndroidAppState;
+
+namespace Oryol {
+namespace Core {    
+
+//------------------------------------------------------------------------------
+androidBridge::androidBridge() :
+valid(false),
+hasWindow(false),
+hasFocus(false),
+appBase(nullptr) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+androidBridge::~androidBridge() {
+    o_assert(!this->isValid());
+}
+
+//------------------------------------------------------------------------------
+void
+androidBridge::setup(AppBase* appBase_) {
+    Log::Info("androidBridge::setup(): %p\n", this);
+    o_assert(!this->isValid());
+    o_assert(nullptr != appBase_);
+    o_assert(nullptr != OryolAndroidAppState);
+    this->appBase = appBase_;
+    this->hasWindow = false;
+    this->hasFocus = false;
+    this->valid = true;
+}
+
+//------------------------------------------------------------------------------
+void
+androidBridge::discard() {
+    o_assert(this->isValid());
+    this->valid = false;
+    this->appBase = nullptr;
+    Log::Info("androidBridge::discard()\n");
+}
+
+//------------------------------------------------------------------------------
+bool
+androidBridge::isValid() const {
+    return this->valid;
+}
+
+//------------------------------------------------------------------------------
+void
+androidBridge::onStart() {
+    o_assert(this->isValid());
+    Log::Info("androidBridge::onStart()\n");
+
+    // setup the callback hook for AppCmds
+    OryolAndroidAppState->userData = this;
+    OryolAndroidAppState->onAppCmd = androidBridge::onAppCmd;
+}
+
+//------------------------------------------------------------------------------
+void
+androidBridge::onFrame() {
+    o_assert(this->isValid());
+    o_assert(this->appBase);
+
+    // poll all pending application events for this frame
+    int id;
+    int events;
+    android_poll_source* source;
+    while (0 <= (id = ALooper_pollAll(this->hasWindow ? 0 : 100, NULL, &events, (void**) &source))) {
+        if (source) {
+            source->process(OryolAndroidAppState, source);
+        }
+        if (OryolAndroidAppState->destroyRequested != 0) {
+            Log::Info("androidBridge: destroy requested\n");
+            this->appBase->setQuitRequested();
+        }
+    }
+
+    // if our window is valid, call the app's on-frame method
+    if (this->hasWindow) {
+        this->appBase->onFrame();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+androidBridge::onStop() {
+    o_assert(this->isValid());
+
+    // hmm nothing to do here?
+    Log::Info("androidBridge::onStop()\n");
+}
+
+//------------------------------------------------------------------------------
+/**
+    FIXME: AppBase should support some sort of callback mechanism
+    (not Messages, too highlevel for Core), which notifies the
+    higher parts about these App lifetime events!!
+*/
+void
+androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
+    androidBridge* self = (androidBridge*) appState->userData;
+    o_assert(self && self->isValid());
+    switch (cmd) {
+        /**
+         * Command from main thread: the AInputQueue has changed.  Upon processing
+         * this command, android_app->inputQueue will be updated to the new queue
+         * (or NULL).
+         */
+        case APP_CMD_INPUT_CHANGED:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_INPUT_CHANGED\n");
+            break;
+
+        /**
+         * Command from main thread: a new ANativeWindow is ready for use.  Upon
+         * receiving this command, android_app->window will contain the new window
+         * surface.
+         */
+        case APP_CMD_INIT_WINDOW:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_INIT_WINDOW %p\n", self);
+            self->hasWindow = true;
+            break;
+
+        /**
+         * Command from main thread: the existing ANativeWindow needs to be
+         * terminated.  Upon receiving this command, android_app->window still
+         * contains the existing window; after calling android_app_exec_cmd
+         * it will be set to NULL.
+         */
+        case APP_CMD_TERM_WINDOW:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_TERM_WINDOW\n");
+            self->hasWindow = false;
+            break;
+
+        /**
+         * Command from main thread: the current ANativeWindow has been resized.
+         * Please redraw with its new size.
+         */
+        case APP_CMD_WINDOW_RESIZED:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_WINDOW_RESIZED\n");
+            break;
+
+        /**
+         * Command from main thread: the system needs that the current ANativeWindow
+         * be redrawn.  You should redraw the window before handing this to
+         * android_app_exec_cmd() in order to avoid transient drawing glitches.
+         */
+        case APP_CMD_WINDOW_REDRAW_NEEDED:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_WINDOW_REDRAW_NEEDED\n");
+            break;
+
+        /**
+         * Command from main thread: the content area of the window has changed,
+         * such as from the soft input window being shown or hidden.  You can
+         * find the new content rect in android_app::contentRect.
+         */
+        case APP_CMD_CONTENT_RECT_CHANGED:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_CONTENT_RECT_CHANGED\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity window has gained
+         * input focus.
+         */
+        case APP_CMD_GAINED_FOCUS:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_GAINED_FOCUS\n");
+            self->hasFocus = true;
+            break;
+
+        /**
+         * Command from main thread: the app's activity window has lost
+         * input focus.
+         */
+        case APP_CMD_LOST_FOCUS:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_LOST_FOCUS\n");
+            self->hasFocus = false;
+            break;
+
+        /**
+         * Command from main thread: the current device configuration has changed.
+         */
+        case APP_CMD_CONFIG_CHANGED:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_CONFIG_CHANGED\n");
+            break;
+
+        /**
+         * Command from main thread: the system is running low on memory.
+         * Try to reduce your memory use.
+         */
+        case APP_CMD_LOW_MEMORY:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_LOW_MEMORY\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity has been started.
+         */
+        case APP_CMD_START:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_START\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity has been resumed.
+         */
+        case APP_CMD_RESUME:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_RESUME\n");
+            break;
+
+        /**
+         * Command from main thread: the app should generate a new saved state
+         * for itself, to restore from later if needed.  If you have saved state,
+         * allocate it with malloc and place it in android_app.savedState with
+         * the size in android_app.savedStateSize.  The will be freed for you
+         * later.
+         */
+        case APP_CMD_SAVE_STATE:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_SAVE_STATE\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity has been paused.
+         */
+        case APP_CMD_PAUSE:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_PAUSE\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity has been stopped.
+         */
+        case APP_CMD_STOP:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_STOP\n");
+            break;
+
+        /**
+         * Command from main thread: the app's activity is being destroyed,
+         * and waiting for the app thread to clean up and exit before proceeding.
+         */
+        case APP_CMD_DESTROY:
+            Log::Info("androidBridge::onAppCmd(): APP_CMD_DESTROY\n");
+            self->appBase->setQuitRequested();
+            break;
+
+        default:
+            Log::Warn("androidBridge::onAppCmd(): UNKNOWN!\n");
+            break;
+    }
+}
+
+} // namespace Core
+} // namespace Oryol

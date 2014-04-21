@@ -18,10 +18,16 @@ AppBase::AppBase() :
 coreFacade(nullptr),
 quitRequested(false) {
     self = this;
+    #if ORYOL_ANDROID
+    this->androidBridge.setup(this);
+    #endif
 }
 
 //------------------------------------------------------------------------------
 AppBase::~AppBase() {
+    #if ORYOL_ANDROID
+    this->androidBridge.discard();
+    #endif
     self = nullptr;
 }
 
@@ -30,13 +36,22 @@ void
 AppBase::StartMainLoop() {
     o_assert(nullptr != self);
     this->coreFacade = CoreFacade::CreateSingleton();
+    Log::Info("=> AppBase::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
-    emscripten_set_main_loop(staticOnFrame, 0, 1);
+        emscripten_set_main_loop(staticOnFrame, 0, 1);
+    #elif ORYOL_ANDROID
+        this->androidBridge.onStart();
+        while (!this->quitRequested) {
+            this->androidBridge.onFrame();
+        }
+        this->androidBridge.onStop();
     #else
-    while (!this->quitRequested) {
-        onFrame();
-    }
+        while (!this->quitRequested) {
+            this->onFrame();
+        }
     #endif
+
+    Log::Info("<= AppBase::StartMainLoop()\n");
     CoreFacade::DestroySingleton();
     this->coreFacade = nullptr;
 }
@@ -71,7 +86,7 @@ AppBase::setQuitRequested() {
     this->quitRequested = true;
 }
 
-//------------------------------------------------------------------------------
+//-------------------------§-----------------------------------------------------
 bool
 AppBase::isQuitRequested() const {
     return this->quitRequested;

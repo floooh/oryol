@@ -39,6 +39,7 @@
 #endif
 #if ORYOL_ANDROID
 #include "android_native/android_native_app_glue.h"
+#include "Core/android/androidBridge.h"
 #endif
 
 namespace Oryol {
@@ -56,7 +57,6 @@ public:
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();
 
-protected:
     /// static frame function
     static void staticOnFrame();
     /// stop the main loop, for callback-driven platforms
@@ -67,10 +67,14 @@ protected:
     void setQuitRequested();
     /// return true if quit requested flag is set
     bool isQuitRequested() const;
-    
+
+protected:    
     static AppBase* self;
     CoreFacade* coreFacade;
     bool quitRequested;
+    #if ORYOL_ANDROID
+    class androidBridge androidBridge;
+    #endif
 };
 
 #if ORYOL_WINDOWS
@@ -90,9 +94,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
 void OryolMain(); \
 const char* const OryolAppName = name; \
 const char* const OryolAppVersion = ver; \
+android_app* OryolAndroidAppState = nullptr; \
 Oryol::Core::Args OryolArgs; \
 void android_main(struct android_app* app) { \
     app_dummy(); \
+    OryolAndroidAppState = app; \
     OryolMain(); \
 }
 #else
