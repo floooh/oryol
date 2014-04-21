@@ -141,15 +141,20 @@ void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
-        std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                    cond, msg ? msg : "none", file, line, func);
-        #if ORYOL_WINDOWS
-            char buf[LogBufSize];
-            _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
+        #if ORYOL_ANDROID
+            __android_log_print(ANDROID_LOG_FATAL, "oryol", "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n", 
+                cond, msg ? msg : "none", file, line, func);
+        #else
+            std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
                         cond, msg ? msg : "none", file, line, func);
-            buf[LogBufSize - 1] = 0;
-            OutputDebugString(buf);
-        #endif   
+            #if ORYOL_WINDOWS
+                char buf[LogBufSize];
+                _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
+                            cond, msg ? msg : "none", file, line, func);
+                buf[LogBufSize - 1] = 0;
+                OutputDebugString(buf);
+            #endif
+        #endif
     }
     else
     {
