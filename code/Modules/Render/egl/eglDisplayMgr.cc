@@ -6,9 +6,18 @@
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
+#if ORYOL_ANDROID
+#include "android/native_window.h"
+#include "android_native/android_native_app_glue.h"
+#endif
 #include "Render/gl/gl_impl.h"
 #include "Render/gl/glInfo.h"
 #include "Render/gl/glExt.h"
+
+#if ORYOL_ANDROID
+// this is in the app's main file (see AppBase.h -> OryolApp)
+extern android_app* OryolAndroidAppState;
+#endif
 
 namespace Oryol {
 namespace Render {
@@ -43,9 +52,11 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
 
     // this is the window-system specific part
     #if ORYOL_EMSCRIPTEN
-    emscripten_set_canvas_size(renderSetup.GetWindowWidth(), renderSetup.GetWindowHeight());
+        emscripten_set_canvas_size(renderSetup.GetWindowWidth(), renderSetup.GetWindowHeight());
+    #elif ORYOL_ANDROID
+        // nothing to do here
     #else
-    #error "Unsupported platform in eglDisplay::SetupDisplay()"
+    #error "Unsupported platform in eglDisplayMgr::SetupDisplay()"
     #endif
 
     // EGL stuff starts here
@@ -61,6 +72,7 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     PixelFormat::Code colorPixelFormat = renderSetup.GetColorPixelFormat();
     PixelFormat::Code depthPixelFormat = renderSetup.GetDepthPixelFormat();
     EGLint eglConfigAttrs[] = {
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_RED_SIZE, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Red),
         EGL_GREEN_SIZE, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Green),
         EGL_BLUE_SIZE, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Blue),
@@ -76,9 +88,27 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     }
     o_assert(eglGetError() == EGL_SUCCESS);
 
+    // the window handle
+    #if ORYOL_ANDROID
+        o_assert(OryolAndroidAppState);
+        EGLNativeWindowType window = OryolAndroidAppState->window;
+    #else
+        EGLNativeWindowType window = 0;
+    #endif
+
+    #if ORYOL_ANDROID
+    // from the native_activity NDK sample:
+    /* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+     * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
+     * As soon as we picked a EGLConfig, we can safely reconfigure the
+     * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+    EGLint format;
+    eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
+    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
+    #endif
+
     // create window surface
-    EGLNativeWindowType dummyWindow = 0;
-    this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, dummyWindow, NULL);
+    this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);
     o_assert(eglGetError() == EGL_SUCCESS);
     o_assert(nullptr != this->eglSurface);
 
@@ -119,6 +149,14 @@ eglDisplayMgr::DiscardDisplay() {
     glExt::Discard();
 
     displayMgrBase::DiscardDisplay();
+}
+
+//------------------------------------------------------------------------------
+void
+eglDisplayMgr::Present() {
+    o_assert(this->eglDisplay && this->eglSurface);
+    eglSwapBuffers(this->eglDisplay, this->eglSurface);
+    displayMgrBase::Present();
 }
 
 //------------------------------------------------------------------------------

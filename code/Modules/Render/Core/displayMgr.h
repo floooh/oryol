@@ -16,7 +16,7 @@ class displayMgr : public glfwDisplayMgr {
     // empty
 };
 } }
-#elif ORYOL_EMSCRIPTEN
+#elif (ORYOL_EMSCRIPTEN || ORYOL_ANDROID)
 #include "Render/egl/eglDisplayMgr.h"
 namespace Oryol {
 namespace Render {
