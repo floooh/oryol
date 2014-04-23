@@ -389,15 +389,20 @@ List of devices attached
 
 ```
 
-And that's it! If everything is setup right, you can now select and Android build configuration,
+And that's it! If everything is setup right, you can now select one of the Android build configurations,
 compile a sample, and deploy it to your device:
 
 ```
 > ./oryol select android-make-debug
+...
+> ./oryol make PackedNormals
+...
 > ./oryol deploy PackedNormals 
+...
+3275 KB/s (1726765 bytes in 0.514s)
+	pkg: /data/local/tmp/PackedNormals-debug.apk
+Success
 ```
-
-The deploy command will compile and package the sample, and upload it to the device.
 
 The App Launcher (or whatever it is called) now has a new PackedNormals app!
 
