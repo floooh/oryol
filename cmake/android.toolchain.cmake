@@ -9,6 +9,9 @@
 #                                   –-install-dir=/Users/[user]/android-toolchain 
 #                                   –-toolchain=arm-linux-androideabi-4.8
 #                                   --system=darwin-x86_64
+#
+#   FIXME: don't change the floating-point model without fixing the default
+#   math library (m_hard)
 #-------------------------------------------------------------------------------
 
 # set the name of the custom android-toolchain
@@ -151,6 +154,10 @@ CMAKE_FORCE_CXX_COMPILER("${CMAKE_CXX_COMPILER}" GNU)
 # define configurations
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
+# standard libraries
+set(CMAKE_CXX_STANDARD_LIBRARIES "-lgcc -lm_hard -llog -landroid")
+set(CMAKE_C_STANDARD_LIBRARIES "-lgcc -lm_hard -llog -landroid")
+
 # specify cross-compilers
 set(CMAKE_C_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-gcc" CACHE PATH "gcc" FORCE)
 set(CMAKE_CXX_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-g++" CACHE PATH "g++" FORCE)
@@ -167,20 +174,19 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
 
-set(ANDROID_CXX_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
-set(ANDROID_LD_FLAGS "-shared -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ANDROID_LINK_VERBOSE}")
+set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
+
+set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_SYSROOT} -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
-set(CMAKE_CXX_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
+set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
-message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 # c compiler flags
-set(CMAKE_C_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
+set(CMAKE_C_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
+set(CMAKE_C_FLAGS_RELEASE "-Os -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=64 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
-message("CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 
 # shared linker flags (native code on Android always lives in DLLs)
 set(CMAKE_SHARED_LINKER_FLAGS "${ANDROID_LD_FLAGS} -pthread -dead_strip")
