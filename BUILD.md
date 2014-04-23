@@ -75,8 +75,7 @@ Triangle sample to your Android device (with unlocked development mode):
 **NOTE**: this currently only works on OSX:
 
 ```
-> which ant
-/usr/local/bin/ant
+> brew install ant
 > cd ~/oryol
 > ./oryol setup android
 [...this downloads the required SDKs...]
