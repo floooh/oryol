@@ -1,0 +1,8 @@
+{
+    "name": "android-make-release", 
+    "target": {
+        "platform": "android", 
+        "generator": "Unix Makefiles", 
+        "build-type": "release"
+    }
+}
