@@ -110,11 +110,12 @@ def ensureSdkDirectory() :
 #-------------------------------------------------------------------------------
 def checkAndroidSdk() :
     if not os.path.isdir(getAndroidSdkPath()) :
-        return False;
+        return False
     if not os.path.isdir(getAndroidNdkPath()) :
-        return False;
+        return False
     if not os.path.isdir(getAndroidToolchainPath()) :
-        return False;
+        return False
+    return True
 
 #-------------------------------------------------------------------------------
 def uncompress(path) :
@@ -129,7 +130,7 @@ def updateAndroidSdk() :
            'update','sdk',
            '-f', '-u', 
            '-t', 'platform-tools,build-tools-19.0.3,android-19']
-    print cmd;
+    print cmd
     subprocess.call(args=cmd, cwd=ProjectDirectory)
 
 #-------------------------------------------------------------------------------
@@ -146,7 +147,7 @@ def createAndroidToolchain() :
            '--install-dir={}'.format(getAndroidToolchainPath()),
            '--toolchain=arm-linux-androideabi-4.8',
            '--system={}'.format(toolchainSystem)]
-    print cmd;
+    print cmd
     subprocess.call(args=cmd, cwd=ProjectDirectory)
 
 #-------------------------------------------------------------------------------
@@ -155,7 +156,6 @@ def setupAndroid() :
     Setup everything needed for Oryol Android development
     '''
     if checkAndroidSdk() :
-        print 'Android SDK already seems to be installed, doing nothing.'
         return
 
     ensureSdkDirectory()
@@ -167,7 +167,7 @@ def setupAndroid() :
     print '\n => unpacking SDK...'
     uncompress(getAndroidSdkArchivePath())
     print '\n => downloading additional SDK files...'
-    updateAndroidSdk();
+    updateAndroidSdk()
 
     # ... and the NDK plus standalone toolchain
     ndkUrl = getAndroidNdkUrl()
