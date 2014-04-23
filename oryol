@@ -155,6 +155,15 @@ def testXCode() :
     except OSError:
         error("xcodebuild NOT FOUND")
 
+# check whether adb exists (for Android deployment)
+def testAdb() :
+    try :
+        subprocess.check_output(["adb", "version"])
+        print "adb: found"
+        return True
+    except OSError:
+        error("adb NOT FOUND")
+
 # test if the given target platform is valid on the given host
 def isValidTargetPlatform(targetPlatform) :
     return targetPlatform in validTargetPlatforms[platform.system()] 
@@ -224,6 +233,20 @@ def getAllValidConfigs() :
 # test if the build directory of a config exists
 def buildDirExists(config) :
     return os.path.isdir('build/{}'.format(config['name']))
+
+# recursively find path to file
+def findPath(startDir, subDir, fileName) :
+    curDir  = startDir + '/' + subDir
+    curPath = curDir + '/' + fileName
+    if os.path.isfile(curPath) :
+        return curPath
+    else :
+        for entry in glob.glob(startDir + '/*') :
+            if os.path.isdir(entry) :
+                result = findPath(entry, subDir, fileName)
+                if result != None :
+                    return result
+    return None
 
 # do a cmake run for the selected config
 def runCMake(config) :
@@ -332,6 +355,23 @@ def runRebuild(config, target) :
             subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
         runBuild(config, target)
 
+# deploy a target executable to a connected mobile device (for Android and iOS development)
+def runDeploy(config, target) :
+    if 'android-' in config['name'] :
+        apkName = target
+        if '-debug' in config['name'] :
+            apkName += '-debug'
+        apkName += '.apk'
+        pathToApk = findPath('build/{}/code'.format(config['name']), 'android/bin', apkName)
+        if pathToApk != None :
+            subprocess.call(args=['adb', 'install', '-r', pathToApk])
+        else :
+            error('Could not find apk: {}'.format(apkName))
+    elif 'ios-' in config['name'] :
+        error('ios deployment not yet supported')
+    else :
+        error('{} is not a mobile platform'.format(config['name']))
+
 # run cmake-gui or ccmake on config
 def runConfigure(config) :
     if testConfigRequirements(config) :
@@ -421,6 +461,8 @@ if len(sys.argv) == 1 :
     print '  delete the cmake cache and build files of the selected or provided config'
     print 'oryol make target [config-name, partial-config-name or all]'
     print '  build a specific target'
+    print 'oryol deploy target [config-name]'
+    print '  deploy a target executable to mobile device'
     print 'oryol config [config-name]'
     print '  call cmake-gui or ccmake for selected or specific config'
     print 'oryol webpage'
@@ -575,8 +617,21 @@ else :
                 else :
                     configs = loadMatchingConfigs(sys.argv[3])
             for config in configs :
-                runCMake(config)
+                if not buildDirExists(config) :
+                    runCMake(config)
                 runBuild(config, target)
+
+    elif cmd == 'deploy' :
+        # deploy to mobile device
+        if len(sys.argv) < 3 :
+            error("need at least target name!")
+        else :
+            target = sys.argv[2]
+            if len(sys.argv) < 4 :
+                config = getActiveConfig()
+            else :
+                configs = loadConfig(sys.argv[3])
+            runDeploy(config, target)
 
     elif cmd == 'config' :
         # call ccmake or cmake-gui on a config
