@@ -9,7 +9,6 @@ oryol_sources_android(android)
 oryol_deps(ConvertUTF)
 if (ORYOL_ANDROID)
     oryol_deps(android_native)
-    oryol_deps(log android)
 endif()
 oryol_end_module()
 
