@@ -79,6 +79,7 @@ Triangle sample to your Android device (with unlocked development mode):
 > cd ~/oryol
 > ./oryol setup android
 [...this downloads the required SDKs...]
+> ./oryol select android-make-debug
 > ./oryol make Triangle
 > ./oryol deploy Triangle
 ```
