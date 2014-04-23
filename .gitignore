@@ -4,6 +4,7 @@ doc/html
 build/*-*-*
 build/*.json
 build/webpage
+sdks/
 configs/.selected
 *.pyc
 *.txt.user
