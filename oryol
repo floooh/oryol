@@ -462,7 +462,7 @@ if len(sys.argv) == 1 :
     print 'oryol make target [config-name, partial-config-name or all]'
     print '  build a specific target'
     print 'oryol deploy target [config-name]'
-    print '  deploy a target executable to mobile device'
+    print '  make and deploy a target executable to mobile device'
     print 'oryol config [config-name]'
     print '  call cmake-gui or ccmake for selected or specific config'
     print 'oryol webpage'
@@ -631,6 +631,7 @@ else :
                 config = getActiveConfig()
             else :
                 configs = loadConfig(sys.argv[3])
+            runBuild(config, target)
             runDeploy(config, target)
 
     elif cmd == 'config' :
