@@ -79,7 +79,8 @@ Triangle sample to your Android device (with unlocked development mode):
 /usr/local/bin/ant
 > cd oryol
 > ./oryol setup android
-> ./oryol make android-make-debug
+[...this will take a while...]
+> ./oryol make Triangle
 > ./oryol deploy Triangle
 ```
 If everything has worked, there should be a new Triangle app installed,
