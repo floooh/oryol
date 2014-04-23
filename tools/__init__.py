@@ -1,3 +1,3 @@
 # __init__.py
 
-__all__ = ['texexport']
+__all__ = ['texexport', 'sdksetup']

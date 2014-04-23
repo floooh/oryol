@@ -1,21 +1,11 @@
 #-------------------------------------------------------------------------------
 #   android.toolchain.cmake
 #
-#   NOTE: this script expects a standalone android toolchain built
-#   with [ndk-dir]/build/tools/make-standalone-toolchain.sh with the 
-#   directory name 'android-toolchain':
-#   sh make-standalone-toolchain.sh –-platform=android-19 
-#                                   –-ndk-dir=/Users/[user]/android-ndk-r9d 
-#                                   –-install-dir=/Users/[user]/android-toolchain 
-#                                   –-toolchain=arm-linux-androideabi-4.8
-#                                   --system=darwin-x86_64
-#
-#   FIXME: don't change the floating-point model without fixing the default
-#   math library (m_hard)
+#   NOTE: this script expects the Android SDK, NDK and a standalone
+#   toolchain in the 'sdks' subdirectory as created by 
+#   './oryol setup android'
 #-------------------------------------------------------------------------------
 
-# set the name of the custom android-toolchain
-set(ANDROID_TOOLCHAIN_DIRNAME "android-toolchain" CACHE STRING "Standalone Android toolchain directory name")
 set(ANDROID_PLATFORM "android-19" CACHE STRING "Android platform version")
 set(ANDROID_NDK_ABI "arm-linux-androideabi" CACHE STRING "Android ABI name")
 set(ANDROID_NDK_CPU "armeabi-v7a" CACHE STRING "Android CPU instruction set identifier")
@@ -60,31 +50,10 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(COMPILING on)
 set(CMAKE_CROSSCOMPILING TRUE)
 
-macro(find_relative_dir outPath relPath fileToTest)
-    if ("${${outPath}}" STREQUAL "")
-        get_filename_component(CHECK_PATH "${CMAKE_CURRENT_LIST_DIR}/${relPath}" ABSOLUTE)
-        message("Checking ${CHECK_PATH}/")
-        if (EXISTS "${CHECK_PATH}/${fileToTest}")
-            set(${outPath} "${CHECK_PATH}")
-        endif()
-    endif()
-endmacro()
-
 macro(find_android_toolchain_root)
-
-    # first try environment variable
-    if ("${ANDROID_TOOLCHAIN_ROOT}" STREQUAL "")
-        message("Checking env variable ANDROID_TOOLCHAIN_ROOT...")
-        set(ANDROID_TOOLCHAIN_ROOT "$ENV{ANDROID_TOOLCHAIN_ROOT}")
-    endif()
-
-    # then try relative paths
-    find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
-    find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
-    find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../../../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
-    find_relative_dir(ANDROID_TOOLCHAIN_ROOT "../../../../${ANDROID_TOOLCHAIN_DIRNAME}" "SOURCES")
-    if ("${ANDROID_TOOLCHAIN_ROOT}" STREQUAL "")
-        message(FATAL_ERROR "Could not locate Android standalone toolchain (${ANDROID_TOOLCHAIN_DIRNAME})! Either set the ANDROID_TOOLCHAIN_ROOT environment variable, or pass -DANDROID_TOOLCHAIN_ROOT=xxx to cmake to explicitly specify the path!")
+    get_filename_component(ANDROID_TOOLCHAIN_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/android-toolchain" ABSOLUTE)
+    if (NOT EXISTS "${ANDROID_TOOLCHAIN_ROOT}/SOURCES")
+        message(FATAL_ERROR "Could not find Android standalone toolchain at ${ANDROID_TOOLCHAIN_ROOT}! See BUILD.md for instructions to setup Oryol for Android development!")
     else()
         message("Android standalone toolchain found: ${ANDROID_TOOLCHAIN_ROOT}")
         set(ANDROID_TOOLCHAIN_ROOT ${ANDROID_TOOLCHAIN_ROOT} CACHE STRING "Android standalone toolchain path")
@@ -92,20 +61,9 @@ macro(find_android_toolchain_root)
 endmacro()
 
 macro(find_android_sdk_root)
-
-    # first try environment variable
-    if ("${ANDROID_SDK_ROOT}" STREQUAL "")
-        message("Checking env variable ANDROID_SDK_ROOT...")
-        set(ANDROID_SDK_ROOT "$ENV{ANDROID_SDK_ROOT}")
-    endif()
-
-    # then try relative paths
-    find_relative_dir(ANDROID_SDK_ROOT "../${ANDROID_SDK_DIRNAME}" "tools/android")
-    find_relative_dir(ANDROID_SDK_ROOT "../../${ANDROID_SDK_DIRNAME}" "tools/android")
-    find_relative_dir(ANDROID_SDK_ROOT "../../../${ANDROID_SDK_DIRNAME}" "tools/android")
-    find_relative_dir(ANDROID_SDK_ROOT "../../../../${ANDROID_SDK_DIRNAME}" "tools/android")
-    if ("${ANDROID_SDK_ROOT}" STREQUAL "")
-        message(FATAL_ERROR "Could not locate Android SDK (${ANDROID_SDK_DIRNAME})! Either set the ANDROID_SDK_ROOT environment variable, or pass -DANDROID_SDK_ROOT=xxx to cmake to explicitely specify the path!")
+    get_filename_component(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/${ANDROID_SDK_DIRNAME}" ABSOLUTE)
+    if (NOT EXISTS "${ANDROID_SDK_ROOT}/tools/android")
+        message(FATAL_ERROR "Could not  Android SDK at ${ANDROID_SDK_DIRNAME}! See BUILD.md for instructions to setup Oryol for Android development!")
     else()
         message("Android SDK found: ${ANDROID_SDK_ROOT}")
         set(ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT} CACHE STRING "Android SDK location.")
