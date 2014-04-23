@@ -79,7 +79,7 @@ Triangle sample to your Android device (with unlocked development mode):
 /usr/local/bin/ant
 > cd ~/oryol
 > ./oryol setup android
-[...this will take a while...]
+[...this download the required SDKs...]
 > ./oryol make Triangle
 > ./oryol deploy Triangle
 ```
@@ -395,9 +395,7 @@ compile a sample, and deploy it to your device:
 
 ```
 > ./oryol select android-make-debug
-...
 > ./oryol make PackedNormals
-...
 > ./oryol deploy PackedNormals 
 ...
 3275 KB/s (1726765 bytes in 0.514s)
