@@ -10,7 +10,7 @@
 macro(oryol_android_create_project target)
     
     # call the android SDK tool to create a new project
-    execute_process(COMMAND ${ANDROID_SDK_TOOL} create project
+    execute_process(COMMAND ${ANDROID_SDK_TOOL} --silent create project
                     --path ${CMAKE_CURRENT_BINARY_DIR}/android
                     --target ${ANDROID_PLATFORM}
                     --name ${target}
