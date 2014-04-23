@@ -34,6 +34,15 @@ set(ORYOL_OPENGL 1)
 set(ORYOL_OPENGLES2 1)
 set(ORYOL_PLATFORM_DEFINES "-DORYOL_ANDROID=1 -DORYOL_POSIX=1")
 
+# verbose compile mode? (to check how headers and link libs are resolved)
+if (ORYOL_COMPILE_VERBOSE)
+    set(ORYOL_ANDROID_COMPILE_VERBOSE "-v")
+    set(ORYOL_ANDROID_LINK_VERBOSE "-Wl,--verbose")
+else()
+    set(ORYOL_ANDROID_COMPILE_VERBOSE "")
+    set(ORYOL_ANDROID_LINK_VERBOSE "")
+endif()
+
 # exceptions on/off?
 if (ORYOL_EXCEPTIONS)
     message("C++ exceptions are enabled")
@@ -158,9 +167,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
 
-# Android-specific C/C++/Linker flags
-set(ANDROID_CXX_FLAGS "-v -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
-set(ANDROID_LD_FLAGS "-shared -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--verbose")
+set(ANDROID_CXX_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -mthumb -mhard-float -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
+set(ANDROID_LD_FLAGS "-shared -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ANDROID_CXX_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")

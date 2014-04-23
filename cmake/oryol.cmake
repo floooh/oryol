@@ -21,6 +21,7 @@ option(ORYOL_EXCEPTIONS "Enable C++ exceptions" OFF)
 option(ORYOL_ALLOCATOR_DEBUG "Enable allocator debugging code (slow)" OFF)
 option(ORYOL_SAMPLES "Compile sample programs" ON)
 option(ORYOL_FORCE_NO_THREADS "Enable to simulate no support for std::thread" OFF)
+option(ORYOL_COMPILE_VERBOSE "Enable very verbose compilation" OFF)
 
 # turn some dependent options on/off
 if (ORYOL_UNITTESTS)
