@@ -15,7 +15,7 @@ CMake to manage build configurations for the supported host and target platforms
 To build and run the Triangle sample on OSX:
 
 ```
-> cd oryol
+> cd ~/oryol
 > ./oryol build osx-xcode-debug 
 [this should run cmake and compile the samples]
 > cd bin/osx
@@ -57,7 +57,7 @@ To build the 64-bit samples:
 To build and run the Triangle sample for emscripten:
 
 ```
-> cd oryol
+> cd ~/oryol
 > ./oryol build emscripten-make-release
 [this should run cmake and compile the samples]
 > cd bin/emsc
@@ -77,7 +77,7 @@ Triangle sample to your Android device (with unlocked development mode):
 ```
 > which ant
 /usr/local/bin/ant
-> cd oryol
+> cd ~/oryol
 > ./oryol setup android
 [...this will take a while...]
 > ./oryol make Triangle
@@ -90,7 +90,7 @@ tap to run.
 To build the complete samples web page (provided you have a working emscripten SDK installation), simply run:
 
 ```
-> cd oryol
+> cd ~/oryol
 > ./oryol webpage
 [this should run cmake, compile the samples, and build an index.html page]
 > cd build/webpage
