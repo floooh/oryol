@@ -90,6 +90,8 @@ DDSTextureLoadingApp::OnInit() {
     this->render->AttachLoader(RawMeshLoader::Create());
     this->render->AttachLoader(TextureLoader::Create());
     this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol DDS Loading Sample"));
+    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
+    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
     // start loading textures
     TextureSetup texBluePrint;
@@ -134,7 +136,7 @@ DDSTextureLoadingApp::OnInit() {
     this->render->DiscardResource(vs);
     this->render->DiscardResource(fs);
     
-    this->proj = glm::perspective(glm::radians(45.0f), 1.5f, 0.01f, 100.0f);
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
     return AppState::Running;

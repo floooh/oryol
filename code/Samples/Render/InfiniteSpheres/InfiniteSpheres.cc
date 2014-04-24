@@ -84,6 +84,8 @@ InfiniteSpheresApp::OnInit() {
     this->render = RenderFacade::CreateSingleton();
     this->render->AttachLoader(RawMeshLoader::Create());
     this->render->Setup(RenderSetup::Windowed(800, 600, "Oryol Infinite Spheres Sample"));
+    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
+    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
     // create 2 offscreen render targets
     for (int32 i = 0; i < 2; i++) {
@@ -119,7 +121,7 @@ InfiniteSpheresApp::OnInit() {
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
-    this->displayProj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 20.0f);
+    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();
     
     return AppState::Running;
