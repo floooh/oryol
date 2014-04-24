@@ -132,6 +132,16 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
 
     // setup extensions
     glExt::Setup();
+
+    // query actual display size and set in DisplayAttrs
+    EGLint actualWidth = 0, actualHeight = 0;
+    eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_WIDTH, &actualWidth);
+    eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_HEIGHT, &actualHeight);
+    Log::Info("eglDisplayMgr: actual framebuffer size w=%d, h=%d\n", actualWidth, actualHeight);
+    this->displayAttrs.SetFramebufferWidth(actualWidth);
+    this->displayAttrs.SetFramebufferHeight(actualHeight);
+    this->displayAttrs.SetWindowWidth(actualWidth);
+    this->displayAttrs.SetWindowHeight(actualHeight);
 }
 
 //------------------------------------------------------------------------------
