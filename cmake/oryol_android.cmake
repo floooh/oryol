@@ -35,6 +35,7 @@ macro(oryol_android_create_project target)
         "  <application android:label=\"${target}\" android:hasCode=\"false\">\n"
         "    <activity android:name=\"android.app.NativeActivity\"\n"
         "      android:label=\"${target}\"\n"
+        "      android:screenOrientation=\"landscape\"\n"
         "      android:configChanges=\"orientation|keyboardHidden\">\n"
         "      <meta-data android:name=\"android.app.lib_name\" android:value=\"${target}\"/>\n"
         "      <intent-filter>\n"
