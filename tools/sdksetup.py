@@ -53,7 +53,12 @@ def error(msg) :
 
 #-------------------------------------------------------------------------------
 def getSdkDir() :
-    return ProjectDirectory + '/sdks'
+    if platform.system() == 'Darwin' :        
+        return ProjectDirectory + '/sdks/osx'
+    elif platform.system() == 'Windows' :
+        return ProjectDirectory + '/sdks/windows'
+    else :
+        return ProjectDirectory + '/sdks/linux'
 
 #-------------------------------------------------------------------------------
 def getAndroidSdkPath() :
@@ -138,6 +143,8 @@ def createAndroidToolchain() :
 
     if platform.system() == 'Darwin' :
         toolchainSystem = 'darwin-x86_64'
+    elif platform.system() == 'Linux' :
+        toolchainSystem = 'linux-x86_64'
     else :
         error('FIXME: additional toolchain system names')
 
@@ -157,6 +164,9 @@ def setupAndroid() :
     '''
     if checkAndroidSdk() :
         return
+
+    if platform.system() == 'Windows' :
+        error('Not yet supported on Windows')
 
     ensureSdkDirectory()
 
