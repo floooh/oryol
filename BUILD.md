@@ -384,7 +384,7 @@ the 'adb' tool in the Android SDK:
 
 ```
 > cd ~/oryol
-> sdks/android-sdk-macosx/platform-tools/adb devices
+> sdks/osx/android-sdk-macosx/platform-tools/adb devices
 List of devices attached 
 0xxxxxxx  device
 
