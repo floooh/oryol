@@ -12,14 +12,6 @@ $cmake_name = "cmake-2.8.12.1"
 $cmake_tar  = "${cmake_name}.tar.gz"
 $cmake_url  = "http://www.cmake.org/files/v2.8/${cmake_tar}"
 
-$clang_name = "clang+llvm-3.2-x86-linux-ubuntu-12.04"
-$clang_tar  = "${clang_name}.tar.gz"
-$clang_url = "http://llvm.org/releases/3.2/${clang_tar}"
-
-$nacl_name = "nacl_sdk"
-$nacl_zip  = "${nacl_name}.zip"
-$nacl_url = "http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/${nacl_zip}"
-
 # run all commands as vagrant user
 Exec {
     user => "${user}",
@@ -36,6 +28,8 @@ class essentials {
         ensure => directory
     }
     
+    package { "lib32z1": }
+    package { "zlib1g": }
     package { "libc6:i386": }
     package { "libstdc++6:i386": }
     package { "build-essential": }
@@ -45,6 +39,8 @@ class essentials {
     package { "libglu1-mesa-dev": }
     package { "xorg-dev": }
     package { "cmake-curses-gui": }
+    package { "default-jre": }
+    package { "ant": }
 }
 
 # ninja build-system
@@ -144,82 +140,9 @@ class gcc {
     }
 }
 
-# get clang-llvm 3.2 for emscripten
-class clang {
-
-    exec { "/usr/bin/wget ${clang_url}":
-        alias => "get-clang",
-        cwd => "${pkg}",
-        creates => "${pkg}/${clang_tar}"        
-    }
-
-    exec { "/bin/tar -xvf ${clang_tar}":
-        alias => "untar-clang",
-        cwd => "${pkg}",
-        require => Exec["get-clang"],
-        creates => "${pkg}/${clang_name}/bin/clang"
-    }
-}
-
-# emscripten SDK
-class emscripten {
-
-    require essentials
-    
-    $deps = [ "default-jre", "nodejs" ]
-
-    package { $deps: }
-
-    exec { "/usr/bin/git clone https://github.com/floooh/emscripten.git":
-        alias => "git-clone-emscripten",
-        cwd => "${home}",
-        creates => "${home}/emscripten/emcc",
-    }
-
-    exec { "/usr/bin/git checkout incoming":
-        alias => "git-checkout-emscripten",
-        cwd => "${home}/emscripten",
-        require => Exec["git-clone-emscripten"],
-    }
-
-    file { "${home}/.emscripten":
-        mode => 664,
-        source => "${files}/dot.emscripten"
-    }
-}
-
-# PNaCl SDK
-class nacl-sdk {
-
-    require essentials
-    
-    exec { "/usr/bin/wget ${nacl_url}":
-        alias => "get-nacl",
-        cwd => "${pkg}",
-        creates => "${pkg}/${nacl_zip}"        
-    }
-
-    exec { "/usr/bin/unzip ${nacl_zip} -d ..":
-        alias => "unzip-nacl",
-        cwd => "${pkg}",
-        require => Exec["get-nacl"],
-        creates => "${home}/${nacl_name}/naclsdk"
-    }
-
-    exec { "${home}/${nacl_name}/naclsdk update pepper_canary":
-        alias => "update-nacl",
-        cwd => "${home}",
-        require => Exec["unzip-nacl"],
-        creates => "${home}/${nacl_name}/pepper_canary/README",
-    }
-}
-
 include essentials
 include ninja
 include cmake
 include oryol-build
-include clang
 include gcc
-include emscripten
-include nacl-sdk
 
