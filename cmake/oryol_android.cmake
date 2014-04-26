@@ -32,9 +32,9 @@ macro(oryol_android_create_project target)
         "  android:versionName=\"1.0\">\n"
         "  <uses-sdk android:minSdkVersion=\"11\" android:targetSdkVersion=\"19\"/>\n"
         "  <uses-feature android:glEsVersion=\"0x00020000\"></uses-feature>"
-        "  <application android:label=\"${target}\" android:hasCode=\"false\">\n"
+        "  <application android:label=\"Oryol ${target}\" android:hasCode=\"false\">\n"
         "    <activity android:name=\"android.app.NativeActivity\"\n"
-        "      android:label=\"${target}\"\n"
+        "      android:label=\"Oryol ${target}\"\n"
         "      android:screenOrientation=\"landscape\"\n"
         "      android:configChanges=\"orientation|keyboardHidden\">\n"
         "      <meta-data android:name=\"android.app.lib_name\" android:value=\"${target}\"/>\n"
@@ -50,13 +50,16 @@ endmacro()
 
 #-------------------------------------------------------------------------------
 #   oryol_android_postbuildstep
-#   Setup a post-build-step which creates the actual APK file.
+#   Setup a post-build-step which creates the actual APK file, and copy to
+#   bin/android
 #
 macro(oryol_android_postbuildstep target)
     if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(ANT_BUILD_TYPE "debug")
     else()
-        set(ANT_BUILD_TYPE "release")
+        # NOTE: not a bug, just allow debug-signed apps with native optimizations
+        set(ANT_BUILD_TYPE "debug")
     endif()
     add_custom_command(TARGET ${target} POST_BUILD COMMAND ${ANDROID_ANT} ${ANT_BUILD_TYPE} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/android)
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/android/bin/${target}-debug.apk ${ORYOL_ROOT_DIR}/bin/android)
 endmacro()

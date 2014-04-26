@@ -350,11 +350,8 @@ def runRebuild(config, target) :
 # deploy a target executable to a connected mobile device (for Android and iOS development)
 def runDeploy(config, target) :
     if 'android-' in config['name'] :
-        apkName = target
-        if '-debug' in config['name'] :
-            apkName += '-debug'
-        apkName += '.apk'
-        pathToApk = findPath('build/{}/code'.format(config['name']), 'android/bin', apkName)
+        apkName = target + '-debug.apk'
+        pathToApk = 'bin/android/{}'.format(apkName)
         if pathToApk != None :
             subprocess.call(args=[SDKSetup.getAdbPath(), 'install', '-r', pathToApk])
         else :
@@ -400,22 +397,31 @@ def buildWebPage() :
     f.close
 
     # build the html link list
-    content = ''
+    emscriptenContent = ''
+    androidContent = ''
     for sample in samples['samples'] :
         if sample['name'] != '__end__' :
-            content += '<li><a href="{}.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
+            if sample['type'] == 'emscripten' :
+                emscriptenContent += '<li><a href="{}.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
+            elif sample['type'] == 'android' :
+                androidContent += '<li><a href="{}-debug.apk">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
 
     # populate the html template, and write to the build directory
-    html = templ.safe_substitute(samples=content)
+    html = templ.safe_substitute(emscripten_samples=emscriptenContent, android_samples=androidContent)
     f = open('build/webpage/index.html', 'w')
     f.write(html)
     f.close()
 
     # copy the HTML sample files over
     for sample in samples['samples'] :
-        if sample['name'] != '__end__' :
+        if sample['name'] != '__end__' and sample['type'] == 'emscripten' :
             for ext in ['html', 'js', 'html.mem'] :
                 shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
+
+    # copy the Android sample files over
+    for sample in samples['samples'] :
+        if sample['name'] != '__end__' and sample['type'] == 'android' :
+            shutil.copy('bin/android/{}-debug.apk'.format(sample['name']), 'build/webpage')
 
     # export the sample assets
     exportSampleAssets()
@@ -638,6 +644,9 @@ else :
 
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
+        runCMake(config)
+        runBuild(config, None)
+        config = loadConfig("android-make-release")
         runCMake(config)
         runBuild(config, None)
         buildWebPage()
