@@ -18,7 +18,8 @@ App::App() :
 coreFacade(nullptr),
 curState(AppState::Construct),
 nextState(AppState::InvalidAppState),
-quitRequested(false) {
+quitRequested(false),
+suspendRequested(false) {
     self = this;
     #if ORYOL_ANDROID
     this->androidBridge.setup(this);
@@ -133,6 +134,7 @@ App::onFrame() {
                 break;
             case AppState::Destroy:
                 this->nextState = this->OnDestroy();
+                this->curState = AppState::InvalidAppState;
                 break;
             default:
                 Log::Warn("App::onFrame(): UNHANDLED APP STATE '%s'!\n", AppState::ToString(this->curState));
