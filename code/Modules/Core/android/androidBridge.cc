@@ -3,11 +3,11 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "androidBridge.h"
-#include "Core/AppBase.h"
+#include "Core/App.h"
 #include "Core/Log.h"
 #include "Ext/android_native/android_native_app_glue.h"
 
-// this is in the app's main file (see AppBase.h -> OryolApp)
+// this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
 
 namespace Oryol {
@@ -18,7 +18,7 @@ androidBridge::androidBridge() :
 valid(false),
 hasWindow(false),
 hasFocus(false),
-appBase(nullptr) {
+app(nullptr) {
     // empty
 }
 
@@ -29,12 +29,12 @@ androidBridge::~androidBridge() {
 
 //------------------------------------------------------------------------------
 void
-androidBridge::setup(AppBase* appBase_) {
+androidBridge::setup(App* app_) {
     Log::Info("androidBridge::setup(): %p\n", this);
     o_assert(!this->isValid());
-    o_assert(nullptr != appBase_);
+    o_assert(nullptr != app_);
     o_assert(nullptr != OryolAndroidAppState);
-    this->appBase = appBase_;
+    this->app = app_;
     this->hasWindow = false;
     this->hasFocus = false;
     this->valid = true;
@@ -45,7 +45,7 @@ void
 androidBridge::discard() {
     o_assert(this->isValid());
     this->valid = false;
-    this->appBase = nullptr;
+    this->app = nullptr;
     Log::Info("androidBridge::discard()\n");
 }
 
@@ -67,10 +67,10 @@ androidBridge::onStart() {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 androidBridge::onFrame() {
     o_assert(this->isValid());
-    o_assert(this->appBase);
+    o_assert(this->app);
 
     // poll all pending application events for this frame
     int id;
@@ -80,16 +80,9 @@ androidBridge::onFrame() {
         if (source) {
             source->process(OryolAndroidAppState, source);
         }
-        if (OryolAndroidAppState->destroyRequested != 0) {
-            Log::Info("androidBridge: destroy requested\n");
-            this->appBase->setQuitRequested();
-        }
     }
-
-    // if our window is valid, call the app's on-frame method
-    if (this->hasWindow) {
-        this->appBase->onFrame();
-    }
+    this->app->onFrame();
+    return 0 == OryolAndroidAppState->destroyRequested;
 }
 
 //------------------------------------------------------------------------------
@@ -97,13 +90,12 @@ void
 androidBridge::onStop() {
     o_assert(this->isValid());
 
-    // hmm nothing to do here?
     Log::Info("androidBridge::onStop()\n");
 }
 
 //------------------------------------------------------------------------------
 /**
-    FIXME: AppBase should support some sort of callback mechanism
+    FIXME: App should support some sort of callback mechanism
     (not Messages, too highlevel for Core), which notifies the
     higher parts about these App lifetime events!!
 */
@@ -129,6 +121,7 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
         case APP_CMD_INIT_WINDOW:
             Log::Info("androidBridge::onAppCmd(): APP_CMD_INIT_WINDOW %p\n", self);
             self->hasWindow = true;
+            self->app->readyForInit();
             break;
 
         /**
@@ -140,6 +133,7 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
         case APP_CMD_TERM_WINDOW:
             Log::Info("androidBridge::onAppCmd(): APP_CMD_TERM_WINDOW\n");
             self->hasWindow = false;
+            self->app->requestSuspend();
             break;
 
         /**
@@ -246,7 +240,6 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
          */
         case APP_CMD_DESTROY:
             Log::Info("androidBridge::onAppCmd(): APP_CMD_DESTROY\n");
-            self->appBase->setQuitRequested();
             break;
 
         default:

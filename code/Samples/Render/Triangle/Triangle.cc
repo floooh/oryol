@@ -2,13 +2,13 @@
 //  Triangle.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Application/App.h"
+#include "Core/App.h"
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/MeshBuilder.h"
 
 using namespace Oryol;
-using namespace Oryol::Application;
+using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
@@ -91,7 +91,7 @@ TriangleApp::OnInit() {
     this->render->DiscardResource(vs);
     this->render->DiscardResource(fs);
     
-    return AppState::Running;
+    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
@@ -123,5 +123,5 @@ TriangleApp::OnCleanup() {
     this->render->Discard();
     this->render = nullptr;
     RenderFacade::DestroySingleton();
-    return AppState::Destroy;
+    return App::OnCleanup();
 }

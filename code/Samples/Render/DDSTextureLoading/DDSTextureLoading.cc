@@ -2,7 +2,7 @@
 //  DDSTextureLoading.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Application/App.h"
+#include "Core/App.h"
 #include "IO/IOFacade.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Render/RenderFacade.h"
@@ -18,7 +18,6 @@ using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
-using namespace Oryol::Application;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
@@ -139,7 +138,7 @@ DDSTextureLoadingApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
-    return AppState::Running;
+    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
@@ -227,5 +226,5 @@ DDSTextureLoadingApp::OnCleanup() {
     this->io = nullptr;
     IOFacade::DestroySingleton();
     
-    return AppState::Destroy;
+    return App::OnCleanup();
 }

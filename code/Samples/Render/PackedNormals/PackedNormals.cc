@@ -2,7 +2,7 @@
 //  PackedNormals.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Application/App.h"
+#include "Core/App.h"
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
@@ -11,7 +11,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Application;
+using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
@@ -102,7 +102,7 @@ PackedNormalsApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
-    return AppState::Running;
+    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
@@ -162,5 +162,5 @@ PackedNormalsApp::OnCleanup() {
     this->render->Discard();
     this->render = nullptr;
     RenderFacade::DestroySingleton();
-    return AppState::Destroy;
+    return App::OnCleanup();
 }

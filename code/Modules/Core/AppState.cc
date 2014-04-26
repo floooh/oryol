@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace Oryol {
-namespace Application {
+namespace Core {
     
 //------------------------------------------------------------------------------
 const char*
@@ -20,6 +20,7 @@ AppState::ToString(Code c) {
         __ORYOL_TOSTRING(Running);
         __ORYOL_TOSTRING(Cleanup);
         __ORYOL_TOSTRING(Destroy);
+        __ORYOL_TOSTRING(Blocked);
         default: return "InvalidAppState";
     }
 }
@@ -34,8 +35,9 @@ AppState::FromString(const char* str) {
     __ORYOL_FROMSTRING(Running);
     __ORYOL_FROMSTRING(Cleanup);
     __ORYOL_FROMSTRING(Destroy);
+    __ORYOL_FROMSTRING(Blocked);
     return AppState::InvalidAppState;
 }
 
-} // namespace Application
+} // namespace Core
 } // namespace Oryol

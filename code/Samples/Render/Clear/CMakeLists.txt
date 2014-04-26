@@ -1,5 +1,5 @@
 oryol_begin_app(Clear windowed)
     oryol_sources(.)
-    oryol_deps(Application Render)
+    oryol_deps(Render)
     oryol_add_web_sample(Clear "Just call glClear in a loop" emscripten)
 oryol_end_app()

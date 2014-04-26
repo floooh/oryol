@@ -10,7 +10,7 @@ struct android_app;
 
 namespace Oryol {
 namespace Core {
-class AppBase;
+class App;
 
 class androidBridge {
 public:
@@ -18,16 +18,16 @@ public:
     androidBridge();
     /// destructor
     ~androidBridge();
-    /// setup the bridge with pointer to AppBase object
-    void setup(AppBase* appBase);
+    /// setup the bridge with pointer to App object
+    void setup(App* app);
     /// discard the object
     void discard();
     /// return true if the object has been setup
     bool isValid() const;
-    /// called in AppBase::StartMainLoop
+    /// called in App::StartMainLoop
     void onStart();
-    /// called in a loop by AppBase::StartMainLoop
-    void onFrame();
+    /// called in a loop by App::StartMainLoop
+    bool onFrame();
     /// called at end of start main loop
     void onStop();
 
@@ -37,7 +37,7 @@ private:
     bool valid;
     bool hasWindow;
     bool hasFocus;
-    AppBase* appBase;
+    App* app;
 };
 } // namespace Core
 } // namespace Oryol

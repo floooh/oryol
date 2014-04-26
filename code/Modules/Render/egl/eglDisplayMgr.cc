@@ -15,7 +15,7 @@
 #include "Render/gl/glExt.h"
 
 #if ORYOL_ANDROID
-// this is in the app's main file (see AppBase.h -> OryolApp)
+// this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
 #endif
 

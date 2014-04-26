@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Application::AppState
+    @class Oryol::Core::AppState
     @brief application states
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Application {
+namespace Core {
     
 class AppState {
 public:
@@ -20,6 +20,7 @@ public:
         Running,
         Cleanup,
         Destroy,
+        Blocked,
         
         NumAppStates,
         InvalidAppState,
@@ -31,5 +32,5 @@ public:
     static Code FromString(const char* str);
 };
     
-} // namespace Application
+} // namespace Core
 } // namespace Oryol

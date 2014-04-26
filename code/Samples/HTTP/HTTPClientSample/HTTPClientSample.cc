@@ -2,7 +2,7 @@
 //  HTTPClientSample.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Application/App.h"
+#include "Core/App.h"
 #include "HTTP/HTTPClient.h"
 #include <thread>
 #include <chrono>
@@ -12,7 +12,6 @@ OryolApp("HTTPClient", "1.0");
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;
-using namespace Oryol::Application;
 using namespace Oryol::HTTP;
 
 // derived application class

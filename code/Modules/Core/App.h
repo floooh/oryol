@@ -1,37 +1,36 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::AppBase
+    @class Oryol::Core::App
     @brief Oryol's lowlevel application wrapper class
-    
-    The AppBase header provides the lowest-level application wrapper
-    class, which basically only provides the StartMainLoop() method,
-    and a macro OryolMain() which wraps the application entry 
-    procedure on different target platforms (not all platforms have a
-    main, for instance).
+
+    This is Oryol's base application class which implements the
+    application's life-cycle. 
 
     Regardless of target platform, an Oryol platform's main source
     will always look like this:
  
     ```cpp
-    #include "Core/AppBase.h"
+    #include "Core/App.h"
     
     OryolApp("MyAppName", "1.0");
  
     OryolMain(const Args& args) {
-        AppBase app;
+        App app;
         app.SetArgs(args);
         app.StartMainLoop();
     }
     
     ```
-    ...where AppBase is usually replaced with a user-provided 
+    ...where App is usually replaced with a user-provided 
     derived application class.
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
 #include "Core/Args.h"
+#include "Core/AppState.h"
 #include "Core/String/WideString.h"
+#include "Core/Containers/Set.h"
 #if ORYOL_WINDOWS
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
@@ -47,31 +46,55 @@ namespace Core {
 
 class CoreFacade;
 
-class AppBase {
+class App {
 public:
     /// constructor
-    AppBase();
+    App();
     /// destructor
-    ~AppBase();
+    ~App();
     
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();
 
+    /// on construction callback
+    virtual AppState::Code OnConstruct();
+    /// on enqueue preload files frame method
+    virtual AppState::Code OnEnqueuePreload();
+    /// on preloading frame method
+    virtual AppState::Code OnPreloading();
+    /// on init frame method
+    virtual AppState::Code OnInit();
+    /// on running frame method
+    virtual AppState::Code OnRunning();
+    /// on cleanup frame method
+    virtual AppState::Code OnCleanup();
+    /// on destroy frame method
+    virtual AppState::Code OnDestroy();
+
+    /// add a blocker which prevents entering this state
+    void addBlocker(AppState::Code blockedState);
+    /// remove a blocker, state can be entered if needed
+    void remBlocker(AppState::Code blockedState);
+
     /// static frame function
     static void staticOnFrame();
-    /// stop the main loop, for callback-driven platforms
-    void stopMainLoop();
     /// virtual onFrame method to be overwritten by subclass
     virtual void onFrame();
-    /// set quit-requested flag
-    void setQuitRequested();
-    /// return true if quit requested flag is set
-    bool isQuitRequested() const;
+    /// low-level ready for init notifier
+    void readyForInit();
+    /// low-level request app to quit notifier
+    void requestQuit();
+    /// low-level request app to suspend notifier
+    void requestSuspend();
 
 protected:    
-    static AppBase* self;
+    static App* self;
     CoreFacade* coreFacade;
+    AppState::Code curState;
+    AppState::Code nextState;
+    Set<AppState::Code> blockers;
     bool quitRequested;
+    bool suspendRequested;
     #if ORYOL_ANDROID
     class androidBridge androidBridge;
     #endif

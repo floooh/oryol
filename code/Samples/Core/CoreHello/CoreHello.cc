@@ -2,7 +2,7 @@
 //  CoreHello.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/AppBase.h"
+#include "Core/App.h"
 #include "Core/Log.h"
 #include <thread>
 
@@ -11,7 +11,7 @@ OryolApp("CoreHello", "1.0");
 using namespace Oryol;
 using namespace Oryol::Core;
 
-class CoreHelloApp : public AppBase {
+class CoreHelloApp : public App {
 public:
     virtual void onFrame();
 private:
@@ -32,5 +32,5 @@ CoreHelloApp::onFrame() {
         Log::Info("Hello World %d!\n", this->frameCount);
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    AppBase::onFrame();
+    App::onFrame();
 }
