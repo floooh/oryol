@@ -20,8 +20,10 @@ public:
     /// construct with resource locator
     ProgramBundleSetup(const Resource::Locator& loc);
     
-    /// add a program consisting of vertex and fragment shader
+    /// add a program consisting of precompiled vertex and fragment shader
     void AddProgram(uint32 mask, const Resource::Id& vertexShader, const Resource::Id& fragmentShader);
+    /// add a program from vertex- and fragment-shader sources
+    void AddProgramFromSources(uint32 mask, const Core::String& vsSource, const Core::String& fsSource);
     /// bind a shader uniform name to a variable slot
     void AddUniform(const Core::String& uniformName, int16 slotIndex);
     /// bind a shader uniform name to a texture variable slot
@@ -36,10 +38,14 @@ public:
     int32 GetNumPrograms() const;
     /// get program mask by index
     uint32 GetMask(int32 progIndex) const;
-    /// get program vertex shader
+    /// get program vertex shader (only valid if setup from precompiled shaders)
     const Resource::Id& GetVertexShader(int32 progIndex) const;
-    /// get program fragment shader
+    /// get program fragment shader (only valid if setup from precompiled shaders)
     const Resource::Id& GetFragmentShader(int32 progIndex) const;
+    /// get program vertex shader source (only valid if setup from sources)
+    const Core::String& GetVertexShaderSource(int32 progIndex) const;
+    /// get program fragment shader source (only valid if setup from sources)
+    const Core::String& GetFragmentShaderSource(int32 progIndex) const;
     
     /// get number of uniforms
     int32 GetNumUniforms() const;
@@ -67,6 +73,8 @@ private:
         uint32 mask;
         Resource::Id vertexShader;
         Resource::Id fragmentShader;
+        Core::String vsSource;
+        Core::String fsSource;
     };
     struct uniformEntry {
         uniformEntry() : isTexture(false), slotIndex(InvalidIndex) {};

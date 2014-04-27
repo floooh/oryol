@@ -80,16 +80,10 @@ TriangleApp::OnInit() {
     meshBuilder.End();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
     
-    // build a shader program from a vertex- and fragment shader
-    Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
-    Id fs = this->render->CreateResource(ShaderSetup::FromSource("fs", ShaderType::FragmentShader, fsSource));
+    // build a shader program (shortcut without precompiled vertex/fragment shaders)
     ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgram(0, vs, fs);
+    progSetup.AddProgramFromSources(0, vsSource, fsSource);
     this->progId = this->render->CreateResource(progSetup);
-    
-    // can release vertex- and fragment shader handle now
-    this->render->DiscardResource(vs);
-    this->render->DiscardResource(fs);
     
     return App::OnInit();
 }

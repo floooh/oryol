@@ -88,18 +88,13 @@ ShapeApp::OnInit() {
     shapeBuilder.Build();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
 
-    // build a shader program from a vertex- and fragment shader
-    Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
-    Id fs = this->render->CreateResource(ShaderSetup::FromSource("fs", ShaderType::FragmentShader, fsSource));
+    // build a shader program from vs/fs sources
     ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgram(0, vs, fs);
+    progSetup.AddProgramFromSources(0, vsSource, fsSource);
     progSetup.AddUniform("mvp", ModelViewProjection);
     this->progId = this->render->CreateResource(progSetup);
     
-    // can release vertex- and fragment shader handle now
-    this->render->DiscardResource(vs);
-    this->render->DiscardResource(fs);
-    
+    // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

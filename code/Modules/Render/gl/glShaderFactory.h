@@ -6,6 +6,7 @@
 */
 #include "Resource/simpleFactory.h"
 #include "Render/Core/mesh.h"
+#include "Render/Types/ShaderType.h"
 
 namespace Oryol {
 namespace Render {
@@ -30,6 +31,9 @@ public:
     void SetupResource(shader& shd);
     /// destroy the shader
     void DestroyResource(shader& shd);
+    
+    /// compile a GL shader (return 0 if failed)
+    GLuint compileShader(ShaderType::Code type, const Core::String& src, const Core::Map<Core::String,Core::String>& defines=Core::Map<Core::String,Core::String>()) const;
     
 private:
     bool isValid;

@@ -58,17 +58,52 @@ glShaderFactory::SetupResource(shader& shd) {
     
     // create a shader object
     const ShaderSetup& setup = shd.GetSetup();
-    GLenum glShaderType = glTypes::AsGLShaderType(setup.GetType());
-    const GLuint glShader = glCreateShader(glShaderType);
+    GLuint glShader = this->compileShader(setup.GetType(), setup.GetSource(), setup.GetDefines());
+    
+    // if compilation has failed, stop the program
+    if (0 == glShader) {
+        o_error("Failed to compile shader '%s'\n", setup.GetLocator().Location().AsCStr());
+        shd.setState(State::Failed);
+        return;
+    }
+    
+    // all ok, shader has been successfully compiled
+    shd.setShaderType(setup.GetType());
+    shd.glSetShader(glShader);
+    shd.setState(State::Valid);
+}
+
+//------------------------------------------------------------------------------
+void
+glShaderFactory::DestroyResource(shader& shd) {
+    o_assert(this->isValid);
+    o_assert(State::Valid == shd.GetState());
+
+    GLuint glShader = shd.glGetShader();
+    o_assert(0 != glShader);
+    glDeleteShader(glShader);
+    ORYOL_GL_CHECK_ERROR();
+    
+    shd.clear();
+    shd.setState(State::Setup);
+}
+
+//------------------------------------------------------------------------------
+GLuint
+glShaderFactory::compileShader(ShaderType::Code type, const String& src, const Map<String,String>& defines) const {
+    o_assert(src.IsValid());
+    
+    GLenum glShaderType = glTypes::AsGLShaderType(type);
+    GLuint glShader = glCreateShader(glShaderType);
     o_assert(0 != glShader);
     ORYOL_GL_CHECK_ERROR();
     
     // estimate length of complete source string
     int32 srcLength = 0;
-    for (const auto& define : setup.GetDefines()) {
+    for (const auto& define : defines) {
         srcLength += 10 + define.Key().Length() + define.Value().Length();
     }
-    srcLength += setup.GetSource().Length();
+    srcLength += src.Length();
     
     // setup the shader source
     StringBuilder strBuilder;
@@ -119,16 +154,16 @@ glShaderFactory::SetupResource(shader& shd) {
     #elif ORYOL_LINUX
         strBuilder.Append("#define ORYOL_LINUX (1)\n");
     #endif
-    for (int32 i = 0; i < setup.GetDefines().Size(); i++) {
-        const String& curDefineKey = setup.GetDefines().KeyAtIndex(i);
-        const String& curDefineVal = setup.GetDefines().ValueAtIndex(i);
+    for (int32 i = 0; i < defines.Size(); i++) {
+        const String& curDefineKey = defines.KeyAtIndex(i);
+        const String& curDefineVal = defines.ValueAtIndex(i);
         strBuilder.Append("#define ");
         strBuilder.Append(curDefineKey);
         strBuilder.Append(' ');
         strBuilder.Append(curDefineVal);
         strBuilder.Append('\n');
     }
-    strBuilder.Append(setup.GetSource());
+    strBuilder.Append(src);
     
     // attach source to shader object
     const GLchar* sourceString = strBuilder.AsCStr();
@@ -137,58 +172,39 @@ glShaderFactory::SetupResource(shader& shd) {
     ORYOL_GL_CHECK_ERROR();
     
     // compile the shader
-    glCompileShader(glShader);
+    ::glCompileShader(glShader);
     ORYOL_GL_CHECK_ERROR();
     
     // compilation failed?
     GLint compileStatus = 0;
     glGetShaderiv(glShader, GL_COMPILE_STATUS, &compileStatus);
     ORYOL_GL_CHECK_ERROR();
-
+    
     #if ORYOL_DEBUG
-    GLint logLength = 0;
-    glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
-    ORYOL_GL_CHECK_ERROR();
-    if (logLength > 0) {
-        
-        // first print the shader source
-        Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
-        
-        // now print the info log
-        GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
-        glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
+        GLint logLength = 0;
+        glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
         ORYOL_GL_CHECK_ERROR();
-        Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
-        Memory::Free(shdLogBuf);
-    }
+        if (logLength > 0) {
+            
+            // first print the shader source
+            Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
+            
+            // now print the info log
+            GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
+            glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
+            ORYOL_GL_CHECK_ERROR();
+            Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
+            Memory::Free(shdLogBuf);
+        }
     #endif
     
-    // if compilation has failed, stop the program
     if (!compileStatus) {
-        o_error("Failed to compile shader '%s'\n", setup.GetLocator().Location().AsCStr());
-        shd.setState(State::Failed);
-        return;
+        // compiling failed
+        glDeleteShader(glShader);
+        ORYOL_GL_CHECK_ERROR();
+        glShader = 0;
     }
-    
-    // all ok, shader has been successfully compiled
-    shd.setShaderType(setup.GetType());
-    shd.glSetShader(glShader);
-    shd.setState(State::Valid);
-}
-
-//------------------------------------------------------------------------------
-void
-glShaderFactory::DestroyResource(shader& shd) {
-    o_assert(this->isValid);
-    o_assert(State::Valid == shd.GetState());
-
-    GLuint glShader = shd.glGetShader();
-    o_assert(0 != glShader);
-    glDeleteShader(glShader);
-    ORYOL_GL_CHECK_ERROR();
-    
-    shd.clear();
-    shd.setState(State::Setup);
+    return glShader;
 }
 
 } // namespace Render

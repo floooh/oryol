@@ -5,6 +5,8 @@
 #include "glProgramBundleFactory.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/shader.h"
+#include "Render/Core/shaderPool.h"
+#include "Render/Core/shaderFactory.h"
 #include "Render/gl/gl_impl.h"
 #include "Core/Memory/Memory.h"
 
@@ -18,6 +20,7 @@ using namespace Resource;
 glProgramBundleFactory::glProgramBundleFactory() :
 glStateWrapper(0),
 shdPool(0),
+shdFactory(0),
 isValid(false) {
     // empty
 }
@@ -29,13 +32,15 @@ glProgramBundleFactory::~glProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Setup(stateWrapper* stWrapper, shaderPool* pool) {
+glProgramBundleFactory::Setup(stateWrapper* stWrapper, shaderPool* pool, shaderFactory* factory) {
     o_assert(!this->isValid);
     o_assert(nullptr != stWrapper);
     o_assert(nullptr != pool);
+    o_assert(nullptr != factory);
     this->isValid = true;
     this->glStateWrapper = stWrapper;
     this->shdPool = pool;
+    this->shdFactory = factory;
 }
 
 //------------------------------------------------------------------------------
@@ -45,6 +50,7 @@ glProgramBundleFactory::Discard() {
     this->isValid = false;
     this->glStateWrapper = nullptr;
     this->shdPool = nullptr;
+    this->shdFactory = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -65,14 +71,36 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     const int32 numProgs = setup.GetNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         
-        // lookup vertex and fragment shader objects
-        const shader* vertexShader = this->shdPool->Lookup(setup.GetVertexShader(progIndex));
-        o_assert(nullptr != vertexShader);
-        const shader* fragmentShader = this->shdPool->Lookup(setup.GetFragmentShader(progIndex));
-        o_assert(nullptr != fragmentShader);
-        GLuint glVertexShader = vertexShader->glGetShader();
+        // lookup or compile vertex shader
+        GLuint glVertexShader = 0;
+        bool deleteVertexShader = false;
+        if (setup.GetVertexShaderSource(progIndex).IsValid()) {
+            // compile the vertex shader from source
+            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex));
+            deleteVertexShader = true;
+        }
+        else {
+            // vertex shader is precompiled
+            const shader* vertexShader = this->shdPool->Lookup(setup.GetVertexShader(progIndex));
+            o_assert(nullptr != vertexShader);
+            glVertexShader = vertexShader->glGetShader();
+        }
         o_assert(0 != glVertexShader);
-        GLuint glFragmentShader = fragmentShader->glGetShader();
+        
+        // lookup or compile fragment shader
+        GLuint glFragmentShader = 0;
+        bool deleteFragmentShader = false;
+        if (setup.GetFragmentShaderSource(progIndex).IsValid()) {
+            // compile the fragment shader from source
+            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex));
+            deleteFragmentShader = true;
+        }
+        else {
+            // fragment shader is precompiled
+            const shader* fragmentShader = this->shdPool->Lookup(setup.GetFragmentShader(progIndex));
+            o_assert(nullptr != fragmentShader);
+            glFragmentShader = fragmentShader->glGetShader();
+        }
         o_assert(0 != glFragmentShader);
         
         // create GL program object and attach vertex/fragment shader
@@ -94,7 +122,17 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         ::glLinkProgram(glProg);
         ORYOL_GL_CHECK_ERROR();
         
-        // did it work?
+        // can discard shaders now if we compiled them ourselves
+        if (deleteVertexShader) {
+            glDeleteShader(glVertexShader);
+            glVertexShader = 0;
+        }
+        if (deleteFragmentShader) {
+            glDeleteShader(glFragmentShader);
+            glFragmentShader = 0;
+        }
+        
+        // linking successful?
         GLint linkStatus;
         ::glGetProgramiv(glProg, GL_LINK_STATUS, &linkStatus);
         #if ORYOL_DEBUG

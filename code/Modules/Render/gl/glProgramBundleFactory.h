@@ -6,12 +6,13 @@
 */
 #include "Resource/simpleFactory.h"
 #include "Render/Core/programBundle.h"
-#include "Render/Core/shaderPool.h"
 
 namespace Oryol {
 namespace Render {
 
 class stateWrapper;
+class shaderPool;
+class shaderFactory;
     
 class glProgramBundleFactory : public Resource::simpleFactory<programBundle> {
 public:
@@ -21,7 +22,7 @@ public:
     ~glProgramBundleFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(stateWrapper* stWrapper, shaderPool* pool);
+    void Setup(stateWrapper* stWrapper, shaderPool* shdPool, shaderFactory* shdFactory);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -35,6 +36,7 @@ public:
 private:
     stateWrapper* glStateWrapper;
     shaderPool* shdPool;
+    shaderFactory* shdFactory;
     bool isValid;
 };
     

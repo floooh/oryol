@@ -43,6 +43,18 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 
 //------------------------------------------------------------------------------
 void
+ProgramBundleSetup::AddProgramFromSources(uint32 mask, const String& vsSource, const String& fsSource) {
+    o_assert(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert(vsSource.IsValid() && fsSource.IsValid());
+    
+    programEntry& entry = this->programEntries[this->numProgramEntries++];
+    entry.mask = mask;
+    entry.vsSource = vsSource;
+    entry.fsSource = fsSource;
+}
+
+//------------------------------------------------------------------------------
+void
 ProgramBundleSetup::AddUniform(const String& uniformName, int16 slotIndex) {
     o_assert(this->numUniformEntries < MaxNumUniformEntries);
     o_assert(uniformName.IsValid());
@@ -108,6 +120,20 @@ const Id&
 ProgramBundleSetup::GetFragmentShader(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].fragmentShader;
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::GetVertexShaderSource(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].vsSource;
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::GetFragmentShaderSource(int32 progIndex) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    return this->programEntries[progIndex].fsSource;
 }
 
 //------------------------------------------------------------------------------

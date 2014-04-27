@@ -52,7 +52,7 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->meshPool.Setup(&this->meshFactory, setup.GetPoolSize(ResourceType::Mesh), setup.GetThrottling(ResourceType::Mesh), 'MESH');
     this->shaderFactory.Setup();
     this->shaderPool.Setup(&this->shaderFactory, setup.GetPoolSize(ResourceType::Shader), 0, 'SHDR');
-    this->programBundleFactory.Setup(this->stateWrapper, &this->shaderPool);
+    this->programBundleFactory.Setup(this->stateWrapper, &this->shaderPool, &this->shaderFactory);
     this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
@@ -200,8 +200,12 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
         const int32 numProgs = setup.GetNumPrograms();
         deps.Reserve(numProgs * 2);
         for (int32 i = 0; i < setup.GetNumPrograms(); i++) {
-            deps.AddBack(setup.GetVertexShader(i));
-            deps.AddBack(setup.GetFragmentShader(i));
+            if (setup.GetVertexShader(i).IsValid()) {
+                deps.AddBack(setup.GetVertexShader(i));
+            }
+            if (setup.GetFragmentShader(i).IsValid()) {
+                deps.AddBack(setup.GetFragmentShader(i));
+            }
         }
         this->resourceRegistry.AddResource(loc, resId, deps);
         this->programBundlePool.Assign(resId, setup);

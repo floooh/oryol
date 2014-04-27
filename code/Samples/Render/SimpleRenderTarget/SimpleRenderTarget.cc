@@ -132,27 +132,17 @@ SimpleRenderTargetApp::OnInit() {
     this->sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
 
     // build shader for rendering to render-target
-    Id rtVs = this->render->CreateResource(ShaderSetup::FromSource("rtVs", ShaderType::VertexShader, rtVsSource));
-    Id rtFs = this->render->CreateResource(ShaderSetup::FromSource("rtFs", ShaderType::FragmentShader, rtFsSource));
     ProgramBundleSetup rtProgSetup("rtProg");
-    rtProgSetup.AddProgram(0, rtVs, rtFs);
+    rtProgSetup.AddProgramFromSources(0, rtVsSource, rtFsSource);
     rtProgSetup.AddUniform("mvp", ModelViewProjection);
     this->rtProg = this->render->CreateResource(rtProgSetup);
     
     // build shader for rendering to display
-    Id dispVs = this->render->CreateResource(ShaderSetup::FromSource("dispVs", ShaderType::VertexShader, dispVsSource));
-    Id dispFs = this->render->CreateResource(ShaderSetup::FromSource("dispFs", ShaderType::FragmentShader, dispFsSource));
     ProgramBundleSetup dispProgSetup("dispProg");
-    dispProgSetup.AddProgram(0, dispVs, dispFs);
+    dispProgSetup.AddProgramFromSources(0, dispVsSource, dispFsSource);
     dispProgSetup.AddUniform("mvp", ModelViewProjection);
     dispProgSetup.AddTextureUniform("tex", Texture);
     this->dispProg = this->render->CreateResource(dispProgSetup);
-    
-    // can release vertex- and fragment shader handles now
-    this->render->DiscardResource(rtVs);
-    this->render->DiscardResource(rtFs);
-    this->render->DiscardResource(dispVs);
-    this->render->DiscardResource(dispFs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);

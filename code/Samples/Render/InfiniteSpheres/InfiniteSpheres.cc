@@ -107,17 +107,11 @@ InfiniteSpheresApp::OnInit() {
     this->sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
 
     // build shader for rendering to render-target
-    Id vs = this->render->CreateResource(ShaderSetup::FromSource("vs", ShaderType::VertexShader, vsSource));
-    Id fs = this->render->CreateResource(ShaderSetup::FromSource("fs", ShaderType::FragmentShader, fsSource));
     ProgramBundleSetup progSetup("rtProg");
-    progSetup.AddProgram(0, vs, fs);
+    progSetup.AddProgramFromSources(0, vsSource, fsSource);
     progSetup.AddUniform("mvp", ModelViewProjection);
     progSetup.AddTextureUniform("tex", Texture);
     this->prog = this->render->CreateResource(progSetup);
-    
-    // can release vertex- and fragment shader handles now
-    this->render->DiscardResource(vs);
-    this->render->DiscardResource(fs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
