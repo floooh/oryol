@@ -645,10 +645,10 @@ else :
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
         runCMake(config)
-        runBuild(config, None)
+        runRebuild(config, None)
         config = loadConfig("android-make-release")
         runCMake(config)
-        runBuild(config, None)
+        runRebuild(config, None)
         buildWebPage()
 
     elif cmd == 'setup' :
