@@ -34,15 +34,15 @@ public:
     
     /// test if the window system wants the application to quit
     bool QuitRequested() const;
+    
     /// attach a resource loader
     template<class T> void AttachLoader(Core::Ptr<T> loader);
-    
     /// attach a display event handler
     void AttachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     /// detach a display event handler
     void DetachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     
-    /// get the original render set object
+    /// get the original render setup object
     const RenderSetup& GetRenderSetup() const;
     /// get the current actual display attributes (can be different from setup)
     const DisplayAttrs& GetDisplayAttrs() const;
