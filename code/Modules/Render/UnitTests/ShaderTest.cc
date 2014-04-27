@@ -63,10 +63,7 @@ TEST(ShaderFactoryTest) {
 TEST(ShaderCreationTest) {
 
     // setup render facade object
-    RenderFacade* fac = RenderFacade::CreateSingleton();
-    auto dispSetup = RenderSetup::Windowed(400, 300, "ShaderCompileTest");
-    fac->Setup(dispSetup);
-    CHECK(fac->IsValid());
+    RenderFacade* fac = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "ShaderCompileTest"));
     
     // setup vertex shader
     const Locator vsLoc("vstest");
@@ -98,14 +95,13 @@ TEST(ShaderCreationTest) {
     CHECK(!fac->LookupResource(vsLoc).IsValid());
     CHECK(!fac->LookupResource(fsLoc).IsValid());
 
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
 }
 
 //------------------------------------------------------------------------------
 TEST(ProgramTest) {
 
-    RenderFacade* facade = RenderFacade::CreateSingleton();
-    facade->Setup(RenderSetup::Windowed(400, 400, "ProgramTest"));
+    RenderFacade* facade = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 400, "ProgramTest"));
     
     // setup a vertex- and fragment-shader
     Id vs = facade->CreateResource(ShaderSetup::FromSource("vstest", ShaderType::VertexShader, vsSource));
@@ -121,7 +117,6 @@ TEST(ProgramTest) {
     CHECK(progSetup.GetNumUniforms() == 1);
     CHECK(progSetup.GetUniformName(0) == "mvp");
     CHECK(progSetup.GetUniformSlot(0) == 0);
-    CHECK(progSetup.GetNumStandardUniforms() == 0);
     
     Id prog = facade->CreateResource(progSetup);
     CHECK(prog.IsValid());
@@ -135,7 +130,7 @@ TEST(ProgramTest) {
     facade->DiscardResource(vs);
     facade->DiscardResource(fs);
     
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
 }
 
 } // namespace Render

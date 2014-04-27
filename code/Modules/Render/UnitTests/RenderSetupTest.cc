@@ -11,10 +11,7 @@ using namespace Oryol::Render;
 //------------------------------------------------------------------------------
 TEST(RenderSetupTest) {
 
-    RenderFacade* f = RenderFacade::CreateSingleton();
-    auto dispSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
-    f->Setup(dispSetup);
-    CHECK(f->IsValid());
+    RenderFacade* f = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Test"));
     
     CHECK(f->GetRenderSetup().GetWindowWidth() == 400);
     CHECK(f->GetRenderSetup().GetWindowHeight() == 300);
@@ -38,7 +35,6 @@ TEST(RenderSetupTest) {
     CHECK(f->GetDisplayAttrs().GetWindowTitle() == "Oryol Test");
     CHECK(f->GetDisplayAttrs().IsFullscreen() == false);
     
-    f->Discard();
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
 }
 

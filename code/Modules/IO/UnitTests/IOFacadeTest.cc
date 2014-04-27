@@ -45,7 +45,7 @@ public:
 OryolClassImpl(TestFileSystem);
 
 TEST(IOFacadeTest) {
-    IOFacade* ioFacade = IOFacade::CreateSingleton();
+    IOFacade* ioFacade = IOFacade::CreateSingle();
     
     // register our test file-system as URI scheme "test"
     ioFacade->RegisterFileSystem<TestFileSystem>("test", &TestFileSystem::Create<>);
@@ -80,5 +80,5 @@ TEST(IOFacadeTest) {
     
     // FIXME: dynamically add/remove/replace filesystems, ...
     
-    IOFacade::DestroySingleton();
+    IOFacade::DestroySingle();
 }

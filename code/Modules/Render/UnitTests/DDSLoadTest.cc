@@ -19,7 +19,7 @@ using namespace Oryol::HTTP;
 TEST(DDSLoadTest) {
 #if !ORYOL_EMSCRIPTEN
     // setup an IO facade, and associate http: with the HTTPFileSystem
-    IOFacade* ioFacade = IOFacade::CreateSingleton();
+    IOFacade* ioFacade = IOFacade::CreateSingle();
     ioFacade->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
 
     // DXT1
@@ -142,6 +142,6 @@ TEST(DDSLoadTest) {
     // FIXME: RGBA, LUM
 
     req.Invalidate();
-    IOFacade::DestroySingleton();
+    IOFacade::DestroySingle();
 #endif
 }

@@ -44,7 +44,7 @@ TEST(schemeRegistryTest) {
     const StringAtom file("file");
     const StringAtom bla("bla");
 
-    schemeRegistry::CreateSingleton();
+    schemeRegistry::CreateSingle();
     schemeRegistry* reg = schemeRegistry::Instance();
     
     // @todo: hrmpf, this is ugly ...
@@ -67,6 +67,6 @@ TEST(schemeRegistryTest) {
     CHECK(fsc);
     CHECK(fsc->GetType() == 2);
     
-    schemeRegistry::DestroySingleton();
+    schemeRegistry::DestroySingle();
 }
 

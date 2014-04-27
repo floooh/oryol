@@ -17,7 +17,7 @@ using namespace Oryol::HTTP;
 TEST(HTTPFileSystemTest) {
     
     // setup an IO facade, and associate http: with the HTTPFileSystem
-    IOFacade* ioFacade = IOFacade::CreateSingleton();
+    IOFacade* ioFacade = IOFacade::CreateSingle();
     ioFacade->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
     
     // asynchronously load the index.html file
@@ -40,6 +40,6 @@ TEST(HTTPFileSystemTest) {
     loadedData->Close();
     req = 0;
     
-    IOFacade::DestroySingleton();
+    IOFacade::DestroySingle();
 }
 #endif

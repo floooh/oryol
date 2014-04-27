@@ -14,7 +14,6 @@
 #include "Render/Types/VertexFormat.h"
 #include "Render/Types/VertexAttr.h"
 #include "Render/Types/ResourceType.h"
-#include "Render/Types/TransformType.h"
 #include "Render/Types/ShaderType.h"
 
 using namespace Oryol::Core;
@@ -335,37 +334,6 @@ TEST(RenderResourceTypeTest) {
     CHECK(String(ResourceType::ToString(ResourceType::ProgramBundle)) == "ProgramBundle");
     CHECK(String(ResourceType::ToString(ResourceType::StateBlock)) == "StateBlock");
     CHECK(String(ResourceType::ToString(ResourceType::ConstantBlock)) == "ConstantBlock");
-}
-
-//------------------------------------------------------------------------------
-TEST(TransformTypeTest) {
-    CHECK(TransformType::NumTransformTypes == 12);
-    
-    CHECK(TransformType::FromString("Model") == TransformType::Model);
-    CHECK(TransformType::FromString("View") == TransformType::View);
-    CHECK(TransformType::FromString("Proj") == TransformType::Proj);
-    CHECK(TransformType::FromString("ModelView") == TransformType::ModelView);
-    CHECK(TransformType::FromString("ViewProj") == TransformType::ViewProj);
-    CHECK(TransformType::FromString("ModelViewProj") == TransformType::ModelViewProj);
-    CHECK(TransformType::FromString("InvModel") == TransformType::InvModel);
-    CHECK(TransformType::FromString("InvView") == TransformType::InvView);
-    CHECK(TransformType::FromString("InvProj") == TransformType::InvProj);
-    CHECK(TransformType::FromString("InvModelView") == TransformType::InvModelView);
-    CHECK(TransformType::FromString("InvModelViewProj") == TransformType::InvModelViewProj);
-    CHECK(TransformType::FromString("InvViewProj") == TransformType::InvViewProj);
-
-    CHECK(String(TransformType::ToString(TransformType::Model)) == "Model");
-    CHECK(String(TransformType::ToString(TransformType::View)) == "View");
-    CHECK(String(TransformType::ToString(TransformType::Proj)) == "Proj");
-    CHECK(String(TransformType::ToString(TransformType::ModelView)) == "ModelView");
-    CHECK(String(TransformType::ToString(TransformType::ViewProj)) == "ViewProj");
-    CHECK(String(TransformType::ToString(TransformType::ModelViewProj)) == "ModelViewProj");
-    CHECK(String(TransformType::ToString(TransformType::InvModel)) == "InvModel");
-    CHECK(String(TransformType::ToString(TransformType::InvView)) == "InvView");
-    CHECK(String(TransformType::ToString(TransformType::InvProj)) == "InvProj");
-    CHECK(String(TransformType::ToString(TransformType::InvModelView)) == "InvModelView");
-    CHECK(String(TransformType::ToString(TransformType::InvModelViewProj)) == "InvModelViewProj");
-    CHECK(String(TransformType::ToString(TransformType::InvViewProj)) == "InvViewProj");
 }
 
 //------------------------------------------------------------------------------
