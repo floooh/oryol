@@ -14,8 +14,7 @@ using namespace Resource;
 //------------------------------------------------------------------------------
 ProgramBundleSetup::ProgramBundleSetup() :
 numProgramEntries(0),
-numUniformEntries(0),
-numStdUniformEntries(0) {
+numUniformEntries(0) {
     // empty
 }
 
@@ -23,8 +22,7 @@ numStdUniformEntries(0) {
 ProgramBundleSetup::ProgramBundleSetup(const Locator& locator) :
 loc(locator),
 numProgramEntries(0),
-numUniformEntries(0),
-numStdUniformEntries(0) {
+numUniformEntries(0) {
     // empty
 }
 
@@ -75,18 +73,6 @@ ProgramBundleSetup::AddTextureUniform(const String& uniformName, int16 slotIndex
     entry.uniformName = uniformName;
     entry.slotIndex = slotIndex;
     entry.isTexture = true;
-}
-
-//------------------------------------------------------------------------------
-void
-ProgramBundleSetup::AddStandardUniform(const String& uniformName, const StandardUniform::Code stdUniform) {
-    o_assert(this->numStdUniformEntries < MaxNumStdUniformEntries);
-    o_assert(uniformName.IsValid());
-    o_assert(stdUniform < StandardUniform::NumStandardUniforms);
-
-    stdUniformEntry& entry = this->stdUniformEntries[this->numStdUniformEntries++];
-    entry.uniformName = uniformName;
-    entry.stdUniform = stdUniform;
 }
 
 //------------------------------------------------------------------------------
@@ -161,26 +147,6 @@ bool
 ProgramBundleSetup::IsTextureUniform(int32 uniformIndex) const {
     o_assert_range(uniformIndex, this->numUniformEntries);
     return this->uniformEntries[uniformIndex].isTexture;
-}
-
-//------------------------------------------------------------------------------
-int32
-ProgramBundleSetup::GetNumStandardUniforms() const {
-    return this->numStdUniformEntries;
-}
-
-//------------------------------------------------------------------------------
-const String&
-ProgramBundleSetup::GetStandardUniformName(int32 stdUniformIndex) const {
-    o_assert_range(stdUniformIndex, this->numStdUniformEntries);
-    return this->stdUniformEntries[stdUniformIndex].uniformName;
-}
-
-//------------------------------------------------------------------------------
-StandardUniform::Code
-ProgramBundleSetup::GetStandardUniform(int32 stdUniformIndex) const {
-    o_assert_range(stdUniformIndex, this->numStdUniformEntries);
-    return this->stdUniformEntries[stdUniformIndex].stdUniform;
 }
 
 } // namespace Render

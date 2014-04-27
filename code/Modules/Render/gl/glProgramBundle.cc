@@ -32,9 +32,6 @@ glProgramBundle::clear() {
         programEntry& entry = this->programEntries[progIndex];
         entry.mask = 0;
         entry.program = 0;
-        for (int32 i = 0; i < StandardUniform::NumStandardUniforms; i++) {
-            entry.stdUniformMapping[i] = -1;
-        }
         for (int32 i = 0; i < MaxNumUniforms; i++) {
             entry.uniformMapping[i] = -1;
             entry.samplerMapping[i] = -1;
@@ -74,14 +71,6 @@ glProgramBundle::bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUn
     this->programEntries[progIndex].samplerMapping[slotIndex] = samplerIndex;
 }
 
-
-//------------------------------------------------------------------------------
-void
-glProgramBundle::bindStandardUniform(int32 progIndex, StandardUniform::Code stdUniform, GLint glUniformLocation) {
-    o_assert_range(progIndex, this->numProgramEntries);
-    o_assert_range(stdUniform, StandardUniform::NumStandardUniforms);
-    this->programEntries[progIndex].stdUniformMapping[stdUniform] = glUniformLocation;
-}
 
 //------------------------------------------------------------------------------
 int32

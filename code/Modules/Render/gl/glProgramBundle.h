@@ -5,7 +5,6 @@
     @brief private: GL implementation of program bundle
 */
 #include "Render/base/programBundleBase.h"
-#include "Render/Types/StandardUniform.h"
 #include "Core/Assert.h"
 #include "Render/gl/gl_decl.h"
 
@@ -28,8 +27,6 @@ public:
     void bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
     void bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
-    /// bind a uniform location to a standard uniform
-    void bindStandardUniform(int32 progIndex, StandardUniform::Code stdUniform, GLint glUniformLocation);
     
     /// select program in the bundle
     bool selectProgram(uint32 mask);
@@ -41,8 +38,6 @@ public:
     GLint getUniformLocation(int32 slotIndex) const;
     /// get sampler location by slot index in currently selected program (-1 if not exists)
     int32 getSamplerIndex(int32 slotIndex) const;
-    /// get uniform location by slot index in currently selected program (-1 if not exists)
-    GLint getStandardUniformLocation(StandardUniform::Code stdUniform) const;
     
     /// get number of programs
     int32 getNumPrograms() const;
@@ -56,7 +51,6 @@ private:
     struct programEntry {
         uint32 mask;
         GLuint program;
-        GLint stdUniformMapping[StandardUniform::NumStandardUniforms];
         GLint uniformMapping[MaxNumUniforms];
         int32 samplerMapping[MaxNumUniforms];
     };
@@ -106,13 +100,6 @@ inline int32
 glProgramBundle::getSamplerIndex(int32 slotIndex) const {
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
     return this->programEntries[this->selIndex].samplerMapping[slotIndex];
-}
-
-//------------------------------------------------------------------------------
-inline GLint
-glProgramBundle::getStandardUniformLocation(StandardUniform::Code stdUniform) const {
-    o_assert_range_dbg(stdUniform, StandardUniform::NumStandardUniforms);
-    return this->programEntries[this->selIndex].stdUniformMapping[stdUniform];
 }
     
 } // namespace Render

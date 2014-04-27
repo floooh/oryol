@@ -8,13 +8,11 @@
 */
 #include "Core/Macros.h"
 #include "Render/Core/displayMgr.h"
-#include "Render/Core/transformMgr.h"
 #include "IO/Stream.h"
 #include "Resource/Id.h"
 #include "Resource/State.h"
 #include "Resource/Locator.h"
 #include "Render/Setup/RenderSetup.h"
-#include "Render/Types/TransformType.h"
 #include "Render/Types/State.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Core/stateWrapper.h"
@@ -60,20 +58,11 @@ public:
     /// get the loading state of a resource
     Resource::State::Code QueryResourceState(const Resource::Id& resId);
 
-    /// get one of the transform matrices
-    const glm::mat4& QueryTransform(TransformType::Code transformType) const;
-    
     /// begin frame rendering
     bool BeginFrame();
     /// end frame rendering
     void EndFrame();
 
-    /// apply the model transform
-    void ApplyModelTransform(const glm::mat4& model);
-    /// apply the view transform
-    void ApplyViewTransform(const glm::mat4& view);
-    /// apply the projection transform
-    void ApplyProjTransform(const glm::mat4& proj);
     /// apply a render target to use
     void ApplyRenderTarget(const Resource::Id& resId);
     /// apply mesh to use for rendering
@@ -116,34 +105,9 @@ private:
     RenderSetup renderSetup;
     displayMgr displayManager;
     renderMgr renderManager;
-    transformMgr transformManager;
     class stateWrapper stateWrapper;
     resourceMgr resourceManager;
 };
-
-//------------------------------------------------------------------------------
-inline void
-RenderFacade::ApplyModelTransform(const glm::mat4& m) {
-    this->transformManager.SetModel(m);
-}
-
-//------------------------------------------------------------------------------
-inline void
-RenderFacade::ApplyViewTransform(const glm::mat4& m) {
-    this->transformManager.SetView(m);
-}
-
-//------------------------------------------------------------------------------
-inline void
-RenderFacade::ApplyProjTransform(const glm::mat4& m) {
-    this->transformManager.SetProj(m);
-}
-
-//------------------------------------------------------------------------------
-inline const glm::mat4&
-RenderFacade::QueryTransform(TransformType::Code type) const {
-    return this->transformManager.GetTransform(type);
-}
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Resource::Id

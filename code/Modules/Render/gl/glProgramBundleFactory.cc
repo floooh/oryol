@@ -175,15 +175,6 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
                 ::glUniform1i(glLocation, samplerIndex++);
             }
         }
-        
-        // resolve standard uniform locations
-        const int32 numStdUniforms = setup.GetNumStandardUniforms();
-        for (int32 i = 0; i < numStdUniforms; i++) {
-            const String& name = setup.GetStandardUniformName(i);
-            StandardUniform::Code stdUniform = setup.GetStandardUniform(i);
-            const GLint glLocation = ::glGetUniformLocation(glProg, name.AsCStr());
-            progBundle.bindStandardUniform(progIndex, stdUniform, glLocation);
-        }
     }
     
     // at this point the whole programBundle object has been successfully setup
