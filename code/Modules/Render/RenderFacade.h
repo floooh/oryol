@@ -30,18 +30,10 @@ class RenderFacade {
     OryolLocalSingletonDecl(RenderFacade);
 public:
     /// constructor
-    RenderFacade();
+    RenderFacade(const RenderSetup& renderSetup);
     /// destructor
     ~RenderFacade();
     
-    /// setup the RenderFacade, initialize rendering system
-    void Setup(const RenderSetup& renderSetup);
-    /// discard the RenderFacade, tear down rendering system
-    void Discard();
-    /// return true if the RenderFacade is valid
-    bool IsValid() const;
-    /// modify the display (may not be supported on all platforms)
-    void ModifyDisplay(const RenderSetup& displaySetup);
     /// test if the window system wants the application to quit
     bool QuitRequested() const;
     /// attach a resource loader
@@ -113,7 +105,14 @@ public:
     void DrawFullscreenQuad();
 
 private:
-    bool isValid;
+    /// setup the RenderFacade, initialize rendering system
+    void setup(const RenderSetup& renderSetup);
+    /// discard the RenderFacade, tear down rendering system
+    void discard();
+    /// return true if the RenderFacade is valid
+    bool isValid() const;
+
+    bool valid;
     RenderSetup renderSetup;
     displayMgr displayManager;
     renderMgr renderManager;
@@ -149,21 +148,21 @@ RenderFacade::QueryTransform(TransformType::Code type) const {
 //------------------------------------------------------------------------------
 template<class SETUP> inline Resource::Id
 RenderFacade::CreateResource(const SETUP& setup) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->resourceManager.CreateResource(setup);
 }
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Resource::Id
 RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->resourceManager.CreateResource(setup, data);
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
 RenderFacade::ApplyVariable(int32 index, const Resource::Id& texResId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     texture* tex = this->resourceManager.LookupTexture(texResId);
     this->renderManager.ApplyTexture(index, tex);
 }
@@ -171,14 +170,14 @@ RenderFacade::ApplyVariable(int32 index, const Resource::Id& texResId) {
 //------------------------------------------------------------------------------
 template<class T> inline void
 RenderFacade::ApplyVariable(int32 index, const T& value) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.ApplyVariable(index, value);
 }
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.ApplyVariableArray(index, values, numValues);
 }
 

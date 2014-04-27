@@ -53,12 +53,12 @@ public:\
     static bool HasInstance() {\
         return nullptr != singleton;\
     };\
-    static TYPE* CreateSingleton() {\
+    template<typename... ARGS> static TYPE* CreateSingle(ARGS&&... args) {\
         o_assert(0 == singleton);\
-        singleton = new TYPE();\
+        singleton = new TYPE(std::forward<ARGS>(args)...);\
         return singleton;\
     };\
-    static void DestroySingleton() {\
+    static void DestroySingle() {\
         o_assert(0 != singleton);\
         delete singleton;\
         singleton = 0;\
@@ -83,12 +83,12 @@ public:\
     static bool HasInstance() {\
         return nullptr != singleton;\
     };\
-    static TYPE* CreateSingleton() {\
+    template<typename... ARGS> static TYPE* CreateSingle(ARGS&&... args) {\
         o_assert(0 == singleton);\
-        singleton = new TYPE();\
+        singleton = new TYPE(std::forward<ARGS>(args)...);\
         return singleton; \
     };\
-    static void DestroySingleton() {\
+    static void DestroySingle() {\
         o_assert(0 != singleton);\
         delete singleton;\
         singleton = 0;\

@@ -56,9 +56,8 @@ OryolMain() {
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 400, "Oryol Triangle Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(400, 400, "Oryol Triangle Sample"));
     
     // create a triangle mesh, with position and vertex color
     MeshBuilder meshBuilder;
@@ -114,8 +113,7 @@ TriangleApp::OnCleanup() {
     // cleanup everything
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

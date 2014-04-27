@@ -99,9 +99,8 @@ OryolMain() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Simple Render Target Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(800, 600, "Oryol Simple Render Target Sample"));
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
@@ -213,8 +212,7 @@ SimpleRenderTargetApp::OnCleanup() {
     this->render->DiscardResource(this->sphere);
     this->render->DiscardResource(this->torus);
     this->render->DiscardResource(this->renderTarget);
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

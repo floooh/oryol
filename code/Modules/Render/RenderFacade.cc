@@ -15,23 +15,24 @@ using namespace Resource;
 using namespace Messaging;
     
 //------------------------------------------------------------------------------
-RenderFacade::RenderFacade() :
-isValid(false) {
+RenderFacade::RenderFacade(const RenderSetup& setup) :
+valid(false) {
     this->SingletonEnsureUnique();
+    this->setup(setup);
 }
 
 //------------------------------------------------------------------------------
 RenderFacade::~RenderFacade() {
-    if (this->isValid) {
-        this->Discard();
+    if (this->valid) {
+        this->discard();
     }
 }
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::Setup(const RenderSetup& setup) {
-    o_assert_dbg(!this->isValid);
-    this->isValid = true;
+RenderFacade::setup(const RenderSetup& setup) {
+    o_assert_dbg(!this->valid);
+    this->valid = true;
     this->renderSetup = setup;
     this->displayManager.SetupDisplay(setup);
     this->stateWrapper.Setup();
@@ -41,26 +42,19 @@ RenderFacade::Setup(const RenderSetup& setup) {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::Discard() {
-    o_assert_dbg(this->isValid);
+RenderFacade::discard() {
+    o_assert_dbg(this->valid);
     this->renderManager.Discard();
     this->resourceManager.Discard();
     this->stateWrapper.Discard();
     this->displayManager.DiscardDisplay();
-    this->isValid = false;
+    this->valid = false;
 }
 
 //------------------------------------------------------------------------------
 bool
-RenderFacade::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
-void
-RenderFacade::ModifyDisplay(const RenderSetup& renderSetup) {
-    o_assert_dbg(this->isValid);
-    this->displayManager.ModifyDisplay(renderSetup);
+RenderFacade::isValid() const {
+    return this->valid;
 }
 
 //------------------------------------------------------------------------------
@@ -102,28 +96,28 @@ RenderFacade::GetDisplayAttrs() const {
 */
 Id
 RenderFacade::LookupResource(const Locator& loc) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->resourceManager.LookupResource(loc);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::DiscardResource(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->resourceManager.DiscardResource(resId);
 }
 
 //------------------------------------------------------------------------------
 Resource::State::Code
 RenderFacade::QueryResourceState(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->resourceManager.QueryResourceState(resId);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::ApplyRenderTarget(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     int32 width, height;
     if (!resId.IsValid()) {
         // apply default framebuffer
@@ -151,14 +145,14 @@ RenderFacade::ApplyRenderTarget(const Id& resId) {
 //------------------------------------------------------------------------------
 void
 RenderFacade::ApplyMesh(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.ApplyMesh(this->resourceManager.LookupMesh(resId));
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::ApplyProgram(const Id& resId, uint32 selMask) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.ApplyProgram(this->resourceManager.LookupProgramBundle(resId), selMask);
 }
 
@@ -181,21 +175,21 @@ RenderFacade::EndFrame() {
 //------------------------------------------------------------------------------
 void
 RenderFacade::Clear(bool color, bool depth, bool stencil) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.Clear(color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::Draw(int32 primGroupIndex) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.Draw(primGroupIndex);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::Draw(const PrimitiveGroup& primGroup) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     this->renderManager.Draw(primGroup);
 }
 

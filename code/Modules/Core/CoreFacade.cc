@@ -16,7 +16,7 @@ ORYOL_THREAD_LOCAL RunLoop* CoreFacade::threadRunLoop = 0;
 CoreFacade::CoreFacade() {
     this->SingletonEnsureUnique();
     this->mainThreadId = std::this_thread::get_id();
-    stringAtomTable::CreateSingleton();
+    stringAtomTable::CreateSingle();
     auto ptr = RunLoop::Create();
     ptr->addRef();
     threadRunLoop = ptr.get();
@@ -57,7 +57,7 @@ CoreFacade::EnterThread() {
     o_assert(nullptr == threadRunLoop);
     
     // create thread-local string atom table
-    stringAtomTable::CreateSingleton();
+    stringAtomTable::CreateSingle();
     
     // create thread-local run loop
     auto ptr = RunLoop::Create();

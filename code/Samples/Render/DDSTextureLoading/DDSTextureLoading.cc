@@ -80,15 +80,14 @@ AppState::Code
 DDSTextureLoadingApp::OnInit() {
 
     // setup IO system
-    this->io = IOFacade::CreateSingleton();
+    this->io = IOFacade::CreateSingle();
     this->io->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
     this->io->SetAssign("tex:", "http://localhost:8000/");
 
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol DDS Loading Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
     this->render->AttachLoader(TextureLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol DDS Loading Sample"));
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
@@ -214,11 +213,10 @@ DDSTextureLoadingApp::OnCleanup() {
     }
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     this->io = nullptr;
-    IOFacade::DestroySingleton();
+    IOFacade::DestroySingle();
     
     return App::OnCleanup();
 }

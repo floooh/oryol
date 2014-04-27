@@ -81,9 +81,8 @@ OryolMain() {
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Infinite Spheres Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(800, 600, "Oryol Infinite Spheres Sample"));
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
@@ -194,8 +193,7 @@ InfiniteSpheresApp::OnCleanup() {
     for (int32 i = 0; i < 2; i++) {
         this->render->DiscardResource(this->renderTargets[i]);
     }
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

@@ -21,7 +21,7 @@ registryCapacity(1024) {
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::Windowed(int32 w, int32 h, const Core::String& title) {
+RenderSetup::Windowed(int32 w, int32 h, String title, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
     o_assert((w > 0) && (h > 0));
 
     RenderSetup setup;
@@ -29,8 +29,8 @@ RenderSetup::Windowed(int32 w, int32 h, const Core::String& title) {
     setup.windowHeight = h;
     setup.framebufferWidth = w;
     setup.framebufferHeight = h;
-    setup.colorPixelFormat = PixelFormat::R8G8B8;
-    setup.depthPixelFormat = PixelFormat::D24S8;
+    setup.colorPixelFormat = colorFmt;
+    setup.depthPixelFormat = depthFmt;
     setup.fullscreen = false;
     setup.windowTitle = title;
     return setup;
@@ -38,7 +38,7 @@ RenderSetup::Windowed(int32 w, int32 h, const Core::String& title) {
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::Fullscreen(int32 w, int32 h, const Core::String& title) {
+RenderSetup::Fullscreen(int32 w, int32 h, String title, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
     o_assert((w > 0) && (h > 0));
     
     RenderSetup setup;
@@ -46,8 +46,8 @@ RenderSetup::Fullscreen(int32 w, int32 h, const Core::String& title) {
     setup.windowHeight = h;
     setup.framebufferWidth = w;
     setup.framebufferHeight = h;
-    setup.colorPixelFormat = PixelFormat::R8G8B8;
-    setup.depthPixelFormat = PixelFormat::D24S8;
+    setup.colorPixelFormat = colorFmt;
+    setup.depthPixelFormat = depthFmt;
     setup.fullscreen = true;
     setup.windowTitle = title;
     return setup;

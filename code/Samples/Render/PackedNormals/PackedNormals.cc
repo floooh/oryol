@@ -69,9 +69,8 @@ OryolMain() {
 AppState::Code
 PackedNormalsApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->Setup(RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample"));
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
@@ -154,8 +153,7 @@ PackedNormalsApp::OnCleanup() {
     // cleanup everything
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

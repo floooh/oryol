@@ -38,7 +38,7 @@ App::~App() {
 void
 App::StartMainLoop() {
     o_assert(nullptr != self);
-    this->coreFacade = CoreFacade::CreateSingleton();
+    this->coreFacade = CoreFacade::CreateSingle();
     Log::Info("=> App::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
@@ -55,7 +55,7 @@ App::StartMainLoop() {
     #endif
 
     Log::Info("<= App::StartMainLoop()\n");
-    CoreFacade::DestroySingleton();
+    CoreFacade::DestroySingle();
     this->coreFacade = nullptr;
 }
 

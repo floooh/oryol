@@ -20,8 +20,8 @@ const int32 IOFacade::numIOLanes = 4;
 IOFacade::IOFacade() {
     this->SingletonEnsureUnique();
     this->mainThreadId = std::this_thread::get_id();
-    assignRegistry::CreateSingleton();
-    schemeRegistry::CreateSingleton();
+    assignRegistry::CreateSingle();
+    schemeRegistry::CreateSingle();
     this->requestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
     CoreFacade::Instance()->RunLoop()->Add(RunLoop::Callback("IO::IOFacade", 0, std::bind(&IOFacade::doWork, this)));
 }
@@ -31,8 +31,8 @@ IOFacade::~IOFacade() {
     o_assert(this->isMainThread());
     CoreFacade::Instance()->RunLoop()->Remove("IO::IOFacade");
     this->requestRouter = 0;
-    schemeRegistry::DestroySingleton();
-    assignRegistry::DestroySingleton();
+    schemeRegistry::DestroySingle();
+    assignRegistry::DestroySingle();
 }
 
 //------------------------------------------------------------------------------

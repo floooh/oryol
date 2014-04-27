@@ -20,12 +20,13 @@ namespace Render {
 class RenderSetup : public DisplayAttrs {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Windowed(int32 width, int32 height, const Core::String& windowTitle);
+    static RenderSetup Windowed(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::R8G8B8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Fullscreen(int32 width, int32 height, const Core::String& windowTitle);
+    static RenderSetup Fullscreen(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::R8G8B8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
     
     /// default constructor
     RenderSetup();
+    
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
     /// get resource pool size for a rendering resource type
@@ -38,7 +39,7 @@ public:
     void SetResourceRegistryCapacity(int32 capacity);
     /// get the resource registry initial capacity
     int32 GetResourceRegistryCapacity() const;
-    
+
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
 

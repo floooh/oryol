@@ -35,8 +35,7 @@ OryolMain() {
 AppState::Code
 ClearApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingleton();
-    this->render->Setup(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
     this->red = this->green = this->blue = 0.0f;
     return App::OnInit();
 }
@@ -62,8 +61,7 @@ ClearApp::OnRunning() {
 AppState::Code
 ClearApp::OnCleanup() {
     // cleanup everything
-    this->render->Discard();
     this->render = nullptr;
-    RenderFacade::DestroySingleton();
+    RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
