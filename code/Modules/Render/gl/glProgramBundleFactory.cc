@@ -72,11 +72,12 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         
         // lookup or compile vertex shader
+        Map<String,String> noDefines;
         GLuint glVertexShader = 0;
         bool deleteVertexShader = false;
         if (setup.GetVertexShaderSource(progIndex).IsValid()) {
             // compile the vertex shader from source
-            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex));
+            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex), noDefines);
             deleteVertexShader = true;
         }
         else {
@@ -92,7 +93,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         bool deleteFragmentShader = false;
         if (setup.GetFragmentShaderSource(progIndex).IsValid()) {
             // compile the fragment shader from source
-            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex));
+            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex), noDefines);
             deleteFragmentShader = true;
         }
         else {
