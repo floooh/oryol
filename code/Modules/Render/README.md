@@ -31,7 +31,7 @@ All resource types are created and destroyed the same way:
 2. call the **RenderFacade::CreateResource()** method with the Setup object as argument
 3. the CreateResource() method will create a small **Resource::Id** object which uniquely identifies the resource object and which can immediately be used (even if the resource is still loading)
 4. the CreateResource() method might either return a new Resource::Id, or an existing Resource::Id in case of a shared resource
-5. after the resource is no longer needed, call the **ResourceFactory::DiscardResource()** method, if the caller was the last user of the resource, the internal resource data will be released
+5. after the resource is no longer needed, call the **RenderFactory::DiscardResource()** method, if the caller was the last user of the resource, the internal resource data will be released
 
 ##### Resource Setup Objects
 
