@@ -117,6 +117,9 @@ macro(oryol_setup)
     else()
         add_definitions(-DORYOL_FORCE_NO_THREADS=0)
     endif()
+
+    # GLM (math lib) definitions
+    add_definitions(-DGLM_FORCE_RADIANS=1)
     
     # check whether python is installed
     find_program(PYTHON "python")

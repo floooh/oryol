@@ -9,7 +9,6 @@
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/TextureLoader.h"
-#define GLM_FORCE_RADIANS
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <array>
