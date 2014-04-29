@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Array.h"
+#include "Core/String/String.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -286,5 +287,13 @@ TEST(ArrayTest) {
     CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);
     CHECK(array2.FindIndexLinear(7, 3, InvalidIndex) == 3);
     CHECK(array2.FindIndexLinear(11) == 5);
+    
+    // construct from initializer list
+    Array<String> array4( { "Bla", "Blub", "Blob", "Blubber" } );
+    CHECK(array4.Size() == 4);
+    CHECK(array4[0] == "Bla");
+    CHECK(array4[1] == "Blub");
+    CHECK(array4[2] == "Blob");
+    CHECK(array4[3] == "Blubber");
 }
 

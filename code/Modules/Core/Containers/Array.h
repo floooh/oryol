@@ -32,6 +32,7 @@
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
+#include <initializer_list>
 
 namespace Oryol {
 namespace Core {
@@ -44,6 +45,8 @@ public:
     Array(const Array& rhs);
     /// move constructor (same capacity and size)
     Array(Array&& rhs);
+    /// initialize from initializer list
+    Array(std::initializer_list<TYPE> l);
     /// destructor
     ~Array();
 
@@ -139,8 +142,8 @@ private:
 //------------------------------------------------------------------------------
 template<class TYPE>
 Array<TYPE>::Array() :
-    minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
-    maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
+minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
+maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
     // empty
 }
 
@@ -154,6 +157,17 @@ Array<TYPE>::Array(const Array& rhs) {
 template<class TYPE>
 Array<TYPE>::Array(Array&& rhs) {
     this->move(std::move(rhs));
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE>
+Array<TYPE>::Array(std::initializer_list<TYPE> l) :
+minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
+maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
+    this->Reserve(l.size());
+    for (const auto& elm : l) {
+        this->AddBack(elm);
+    }
 }
 
 //------------------------------------------------------------------------------
