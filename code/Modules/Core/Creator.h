@@ -11,7 +11,7 @@
     
     Suppose there's a method argument like this:
     
-    void SetFileSystem(CreatorRef<FileSystem>> fs);
+    void SetFileSystem(CreatorRef<FileSystem> fs);
     
     This means that the SetFileSystem method expects a creator object
     which can create a FileSystem object (or objects of derived classes).
