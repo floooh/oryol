@@ -26,7 +26,6 @@ public:
     
     /// get reference count
     int32 GetRefCount() const;
-
     /// add reference
     void addRef();
     /// release reference (calls destructor when ref_count reaches zero)
