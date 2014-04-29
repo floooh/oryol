@@ -48,7 +48,7 @@ TEST(IOFacadeTest) {
     IOFacade* ioFacade = IOFacade::CreateSingle();
     
     // register our test file-system as URI scheme "test"
-    ioFacade->RegisterFileSystem<TestFileSystem>("test", &TestFileSystem::Create<>);
+    ioFacade->RegisterFileSystem("test", Creator<TestFileSystem,FileSystem>());
     
     // setup an assign which resolves to the test file system
     ioFacade->SetAssign("bla:", "test://blub.com/");

@@ -48,9 +48,9 @@ TEST(schemeRegistryTest) {
     schemeRegistry* reg = schemeRegistry::Instance();
     
     // @todo: hrmpf, this is ugly ...
-    reg->RegisterFileSystem<TestFS_A>(http, &TestFS_A::Create<>);
-    reg->RegisterFileSystem<TestFS_B>(ftp, &TestFS_B::Create<>);
-    reg->RegisterFileSystem<TestFS_C>(file, &TestFS_C::Create<>);
+    reg->RegisterFileSystem(http, Creator<TestFS_A,FileSystem>());
+    reg->RegisterFileSystem(ftp, Creator<TestFS_B,FileSystem>());
+    reg->RegisterFileSystem(file, Creator<TestFS_C,FileSystem>());
     
     CHECK(reg->IsFileSystemRegistered(http));
     CHECK(reg->IsFileSystemRegistered(ftp));

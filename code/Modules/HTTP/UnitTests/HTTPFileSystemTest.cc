@@ -18,7 +18,7 @@ TEST(HTTPFileSystemTest) {
     
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOFacade* ioFacade = IOFacade::CreateSingle();
-    ioFacade->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
+    ioFacade->RegisterFileSystem("http", Creator<HTTPFileSystem,FileSystem>());
     
     // asynchronously load the index.html file
     Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://www.flohofwoe.net/index.html");

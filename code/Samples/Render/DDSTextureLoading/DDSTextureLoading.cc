@@ -81,7 +81,7 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup IO system
     this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem<HTTPFileSystem>("http", &HTTPFileSystem::Create<>);
+    this->io->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
     this->io->SetAssign("tex:", "http://localhost:8000/");
 
     // setup rendering system

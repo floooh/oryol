@@ -9,6 +9,7 @@
 #include "Core/Threading/RWLock.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"
+#include "Core/Creator.h"
 #include "IO/FileSystem.h"
 #include <functional>
 #include <type_traits>
@@ -25,7 +26,7 @@ public:
     virtual ~schemeRegistry();
     
     /// associate URL scheme with filesystem
-    template<class TYPE> void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator);
+    void RegisterFileSystem(const Core::StringAtom& scheme, Core::CreatorRef<FileSystem> fsCreator);
     /// unregister a filesystem
     void UnregisterFileSystem(const Core::StringAtom& scheme);
     /// test if a filesystem has been registered
@@ -35,18 +36,8 @@ public:
     
 private:
     mutable Core::RWLock rwLock;
-    Core::Map<Core::StringAtom, std::function<Core::Ptr<FileSystem>()>> registry;
+    Core::Map<Core::StringAtom, Core::CreatorRef<FileSystem>> registry;
 };
 
-//------------------------------------------------------------------------------
-template<class TYPE> void
-schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<TYPE>()> creator) {
-    static_assert(std::is_base_of<FileSystem, TYPE>::value, "schemeRegistry::RegisterFileSystem: TYPE must be derived from FileSystem!");
-    this->rwLock.LockWrite();
-    o_assert(!this->registry.Contains(scheme));
-    this->registry.Insert(scheme, creator);
-    this->rwLock.UnlockWrite();
-}
-    
 } // namespace IO
 } // namespace Oryol
