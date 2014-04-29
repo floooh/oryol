@@ -39,7 +39,8 @@ The main purpose of resource setup objects is that they store the required setup
 automatic unloading and reloading of resource data as needed (for instance
 for a resource streaming system, or more mundanely, because of a lost GL context).
 
-Other nice side-effects or Setup objects are:
+Other nice side-effects of Setup objects are:
+
 1. they simplify and unify the resource creation process
 2. they can be stored, copied and generally handed around
 
