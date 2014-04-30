@@ -13,28 +13,39 @@ set(ORYOL_OSX 1)
 set(ORYOL_POSIX 1)
 set(ORYOL_OPENGL 1)
 set(ORYOL_OPENGLES2 1)
-set(ORYOL_PLATFORM_DEFINES " -DORYOL_IOS=1 -DORYOL_OSX=1 -DORYOL_POSIX=1)
+set(ORYOL_PLATFORM_DEFINES "-DORYOL_IOS=1 -DORYOL_OSX=1 -DORYOL_POSIX=1")
 
-# disable compiler detection
 include(CMakeForceCompiler)
 CMAKE_FORCE_C_COMPILER(gcc GNU)
 CMAKE_FORCE_CXX_COMPILER(g++ GNU)
 
-# Do a no-op access on the CMAKE_TOOLCHAIN_FILE variable so that CMake will not issue a warning on it being unused.
-if (CMAKE_TOOLCHAIN_FILE)
-endif()
+set(CMAKE_OSX_ARCHITECTURES "armv7")
+set(CMAKE_OSX_SYSROOT "iphoneos7.1")
+set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos;-iphonesimulator")
 
-# define configuration types
+# define configurations
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-# compiler flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fno-exceptions -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1 -ggdb")
+# need to set some flags directly as Xcode attributes
+set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 
-set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue  -Wno-deprecated-writable-strings")
-set(CMAKE_C_FLAGS_RELEASE "-O3 -msse3 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g -DORYOL_DEBUG=1")
+if (ORYOL_EXCEPTIONS)
+    message("C++ exceptions are enabled")
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS "YES")
+else()
+    message("C++ exceptions are disabled")
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS "NO")
+endif()
+
+# compiler flags
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g")
+
+set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue  -Wno-deprecated-writable-strings -D__OSX__=1  -D__IOS__=1 -D__LINUX__=1")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -D_DEBUG_ -D_DEBUG -g")
 
 set(CMAKE_EXE_LINKER_FLAGS "-ObjC -dead_strip -lstdc++ -lpthread")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")

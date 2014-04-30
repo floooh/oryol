@@ -309,11 +309,6 @@ macro(oryol_end_app)
         oryol_handle_generator_files_posttarget(${CurAppName} "${CurXmlFiles}")
     endif()
 
-    # OSX: copy dylibs to executable directory
-    if (ORYOL_IOS OR ORYOL_OSX)
-        oryol_copy_osx_dylib_files(${CurAppName} 0)
-    endif()
-    
     # pNaCl: add finalizer build step
     if (ORYOL_PNACL)
         oryol_pnacl_post_buildsteps(${CurAppName})
