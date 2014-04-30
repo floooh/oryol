@@ -20,7 +20,7 @@ glInfo::PrintInfo() {
     glInfo::PrintString(GL_SHADING_LANGUAGE_VERSION, "GL_SHADING_LANGUAGE_VERSION", false);
     glInfo::PrintString(GL_VENDOR, "GL_VENDOR", false);
     glInfo::PrintString(GL_RENDERER, "GL_RENDERER", false);
-    #if !ORYOL_OSX
+    #if !ORYOL_MACOS
     // on OSX, core profile is used, where getting the extensions string is an error
     glInfo::PrintString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
     #endif

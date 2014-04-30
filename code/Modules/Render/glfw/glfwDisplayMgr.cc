@@ -7,7 +7,7 @@
 #include "Render/gl/glExt.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
-#if ORYOL_OSX
+#if ORYOL_MACOS
 #define GLFW_INCLUDE_GLCOREARB
 #endif
 #include "GLFW/glfw3.h"
@@ -57,7 +57,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Alpha));
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(depthPixelFormat, PixelFormat::Depth));
     glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Stencil));
-    #if ORYOL_OSX
+    #if ORYOL_MACOS
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);

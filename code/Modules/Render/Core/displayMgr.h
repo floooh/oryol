@@ -8,7 +8,7 @@
     GL context creation, and usually processes host window system
     events (such as input events) and forwards them to Oryol.
 */
-#if (ORYOL_WINDOWS || ORYOL_OSX || ORYOL_LINUX)
+#if (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Render/glfw/glfwDisplayMgr.h"
 namespace Oryol {
 namespace Render {

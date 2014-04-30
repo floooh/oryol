@@ -30,7 +30,7 @@ glExt::Setup() {
         extensions[i] = false;
     }
     
-    #if ORYOL_OSX
+    #if ORYOL_MACOS
     // on OSX we're using the Core Profile where getting the extensions string seems
     // to be an error
     extensions[VertexArrayObject] = true;

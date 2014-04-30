@@ -141,8 +141,8 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
     
     #if ORYOL_WINDOWS
         strBuilder.Append("#define ORYOL_WINDOWS (1)\n");
-    #elif ORYOL_OSX
-        strBuilder.Append("#define ORYOL_OSX (1)\n");
+    #elif ORYOL_MACOS
+        strBuilder.Append("#define ORYOL_MACOS (1)\n");
     #elif ORYOL_IOS
         strBuilder.Append("#define ORYOL_IOS (1)\n");
     #elif ORYOL_EMSCRIPTEN
