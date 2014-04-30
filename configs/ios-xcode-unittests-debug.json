@@ -1,0 +1,8 @@
+{
+    "name": "ios-xcode-unittests-debug", 
+    "target": {
+        "platform": "ios", 
+        "generator": "Xcode", 
+        "build-type": "unittests-debug"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "ios-xcode-unittests-release", 
+    "target": {
+        "platform": "ios", 
+        "generator": "Xcode", 
+        "build-type": "unittests-release"
+    }
+}
