@@ -3,7 +3,7 @@
 #	The most simple hello-world to test the build system.
 #-------------------------------------------------------------------------------
 
-if (NOT ORYOL_ANDROID)
+if (NOT ORYOL_ANDROID AND NOT ORYOL_IOS)
 oryol_begin_app(hello cmdline)
     oryol_sources(.)
     oryol_deps(Core)
