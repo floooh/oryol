@@ -25,9 +25,9 @@ public:
     /// present the current rendered frame
     void Present();
     
-    /// get the GL default framebuffer id (this is not 0 on some platforms!)
-    GLuint glGetDefaultFramebuffer() const;    
-
+    /// bind the default frame buffer
+    void glBindDefaultFramebuffer();
+    
 private:
     EGLDisplay eglDisplay;
     EGLConfig eglConfig;

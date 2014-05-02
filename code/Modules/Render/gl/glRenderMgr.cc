@@ -24,8 +24,7 @@ glRenderMgr::ApplyRenderTarget(texture* rt) {
     renderMgrBase::ApplyRenderTarget(rt);
     if (nullptr == rt) {
         // bind default render target
-        ::glBindFramebuffer(GL_FRAMEBUFFER, this->displayManager->glGetDefaultFramebuffer());
-        ORYOL_GL_CHECK_ERROR();
+        this->displayManager->glBindDefaultFramebuffer();
     }
     else {
         ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glGetFramebuffer());

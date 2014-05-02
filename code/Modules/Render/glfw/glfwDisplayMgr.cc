@@ -142,9 +142,10 @@ glfwDisplayMgr::Present() {
 }
 
 //------------------------------------------------------------------------------
-GLuint
-glfwDisplayMgr::glGetDefaultFramebuffer() const {
-    return 0;
+void
+glfwDisplayMgr::glBindDefaultFramebuffer() {
+    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 } // namespace Render

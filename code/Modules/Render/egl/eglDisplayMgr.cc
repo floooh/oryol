@@ -170,9 +170,10 @@ eglDisplayMgr::Present() {
 }
 
 //------------------------------------------------------------------------------
-GLuint
-eglDisplayMgr::glGetDefaultFramebuffer() const {
-    return 0;
+void
+eglDisplayMgr::glBindDefaultFramebuffer() {
+    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 } // namespace Render
