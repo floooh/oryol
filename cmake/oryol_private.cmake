@@ -61,7 +61,7 @@ macro(oryol_resolve_dependencies target)
         oryol_recurse_deps(${dep} resolvedDeps)
     endforeach()
 
-# NOTE: we do NOT remove dups, this simplifies the tricy linker order
+# NOTE: we do NOT remove dups, this simplifies the tricky linker order
 # requirements on GCC
 #    if (resolvedDeps)
 #       list(REMOVE_DUPLICATES resolvedDeps)
@@ -96,85 +96,6 @@ macro(oryol_resolve_linklibs target)
     endif()
     message("${target} Libs: ${resolvedLibs}")
     target_link_libraries(${target} ${resolvedLibs})
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_recurse_frameworks(input output)
-#
-macro(oryol_recurse_frameworks input output)
-    list(APPEND ${output} ${input})
-    get_property(sub_input GLOBAL PROPERTY ${input}_frameworks)
-    foreach(fw ${sub_input})
-        oryol_recurse_frameworks(${fw} ${output})
-    endforeach()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_resolve_frameworks(target)
-#   Recursively resolve dependencies of a target.
-#
-macro(oryol_resolve_frameworks target)
-    set(resolvedFws)
-    get_property(input GLOBAL PROPERTY ${target}_frameworks)
-    foreach(fw ${input})
-        oryol_recurse_frameworks(${fw} resolvedFws)
-    endforeach()
-    if (resolvedFws)
-       list(REMOVE_DUPLICATES resolvedFws)
-    endif()
-    message("${target} Frameworks: ${resolvedFws}")
-    foreach (fw ${resolvedFws})
-        unset(found_framework CACHE)
-        find_library(found_framework ${fw})
-        target_link_libraries(${target} ${found_framework})
-        unset(found_framework CACHE)
-    endforeach()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_copy_osx_dylib_files(target isbundle)
-#   Copy OSX dynamic link libs to the executables directory.
-#
-macro(oryol_copy_osx_dylib_files target isbundle)
-    if (ORYOL_IOS OR ORYOL_OSX)
-        if (${isbundle})
-            set(XCODE_OUTPUT_DIR \${TARGET_BUILD_DIR}/\${FULL_PRODUCT_NAME}/Contents/MacOS)
-        else()
-            set(XCODE_OUTPUT_DIR \${TARGET_BUILD_DIR})
-        endif()
-        foreach (dylib ${CurDylibFiles})
-            set(fullDylibName lib${dylib}.dylib)
-            message("Add post build step to copy dylib: ${ORYOL_ROOT_DIR}/lib/osx/${fullDylibName}")
-            add_custom_command(TARGET ${target} POST_BUILD COMMAND pwd\; cp ${ORYOL_ROOT_DIR}/lib/osx/${fullDylibName} ${XCODE_OUTPUT_DIR})
-        endforeach()
-    endif()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_osx_add_target_properties(target)
-#   Setup setup special target properties for OSX/iOS.
-#
-macro(oryol_osx_add_target_properties target)
-    if (ORYOL_IOS OR ORYOL_OSX)
-        if (ORYOL_IOS)
-            set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")    
-            set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "'1,2'")
-        endif()
-        if (ORYOL_IOS)
-            file(GLOB plist *.ios.plist)
-        else()
-            file(GLOB plist *.osx.plist)
-        endif()
-        if (NOT ${plist} STREQUAL "")
-            message("iOS/OSX plist file:" ${plist} " GUI identifier: " ${ORYOL_OSX_GUI_IDENTIFIER})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_EXECUTABLE_NAME \${EXECUTABLE_NAME})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_PRODUCT_NAME \${PRODUCT_NAME})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${ORYOL_OSX_GUI_IDENTIFIER})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME \${PRODUCT_NAME})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${plist})
-            set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_ICON_FILE "Icon.png")
-        endif()
-    endif()
 endmacro()
 
 #-------------------------------------------------------------------------------

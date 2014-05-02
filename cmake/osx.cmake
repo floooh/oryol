@@ -17,6 +17,9 @@ set(ORYOL_PLATFORM_DEFINES "-DORYOL_MACOS=1 -DORYOL_OSX=1 -DORYOL_POSIX=1")
 # define configuration types
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
+# define standard frame works that are always linked
+set(ORYOL_OSX_STANDARD_FRAMEWORKS Foundation IOKit OpenGL Cocoa CoreVideo)
+
 # need to set some flags directly as Xcode attributes
 set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
 set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")

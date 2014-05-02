@@ -6,6 +6,7 @@
 include("${ORYOL_ROOT_DIR}/cmake/oryol_private.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_android.cmake")
+include("${ORYOL_ROOT_DIR}/cmake/oryol_osx.cmake")
 
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
@@ -142,7 +143,6 @@ macro(oryol_finish)
     oryol_end_web_samples()
 endmacro()
 
-
 #-------------------------------------------------------------------------------
 #   oryol_group(group)
 #   Define the IDE group name for the following targets. 
@@ -157,18 +157,6 @@ endmacro()
 #
 macro(oryol_project proj)
     project(${proj})
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_osx_gui_identifier
-#   Setup setup special target properties for OSX/iOS. See 
-#   oryol_osx_add_target_properties() for details
-#
-macro(oryol_osx_gui_identifier id)
-    if (ORYOL_OSX OR ORYOL_IOS)
-        set(ORYOL_OSX_GUI_IDENTIFIER "${id}")
-        message("oryol_osx_gui_identifier called: ${ORYOL_OSX_GUI_IDENTIFIER}")
-    endif()
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -254,7 +242,9 @@ endmacro()
 macro(oryol_end_app)
 
     # add standard frameworks and libs
-    oryol_frameworks_osx(Foundation IOKit OpenGL Cocoa CoreVideo)    
+    if (ORYOL_OSX) 
+        oryol_frameworks_osx(${ORYOL_OSX_STANDARD_FRAMEWORKS})
+    endif()
 
     # setup dependency tracker variables for this module, executable
     # targets use this to resolve their dependencies
@@ -318,7 +308,7 @@ macro(oryol_end_app)
     oryol_resolve_dependencies(${CurAppName})
     oryol_resolve_linklibs(${CurAppName})
     if (ORYOL_OSX OR ORYOL_IOS)
-        oryol_resolve_frameworks(${CurAppName})
+        oryol_osx_resolve_frameworks(${CurAppName})
     endif()
 
     # setup executable output directory and postfixes (_debug, etc...)
@@ -344,17 +334,6 @@ endmacro()
 macro(oryol_libs libs)
     foreach(lib ${ARGV})
         list(APPEND CurLinkLibs ${lib})
-    endforeach()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   oryol_frameworks_osx(frameworks ...)
-#   OSX specific: Add one or more OSX frameworks for linking with the
-#   current target.
-#
-macro(oryol_frameworks_osx frameworks)
-    foreach (fw ${ARGV})
-        list(APPEND CurFrameworks ${fw})
     endforeach()
 endmacro()
 
@@ -468,6 +447,16 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(oryol_sources_android dirs)
     if (ORYOL_ANDROID)
+        oryol_sources(${ARGV})
+    endif()
+endmacro()
+
+#-------------------------------------------------------------------------------
+#   oryol_sources_ios(dirs ...)
+#   Add IOS specific sources.
+#-------------------------------------------------------------------------------
+macro(oryol_sources_ios dirs)
+    if (ORYOL_IOS)
         oryol_sources(${ARGV})
     endif()
 endmacro()
