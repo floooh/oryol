@@ -21,7 +21,8 @@ app(app_),
 appDelegate(nil),
 appWindow(nil),
 eaglContext(nil),
-glkView(nil) {
+glkView(nil),
+glkViewController(nil) {
     o_assert(nullptr != this->app);
     this->SingletonEnsureUnique();
     Log::Info("iosBridge::iosBridge() called.\n");
