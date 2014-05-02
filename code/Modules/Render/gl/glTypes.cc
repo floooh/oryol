@@ -198,7 +198,8 @@ glTypes::AsGLTextureTarget(TextureType::Code c) {
             return GL_TEXTURE_2D;
         case TextureType::Texture3D: 
             #if ORYOL_OPENGLES2
-            return GL_TEXTURE_3D_OES;
+            o_error("OpenGLES2 doesn't have 3D texture support!\n");
+            return 0;
             #else
             return GL_TEXTURE_3D;
             #endif
