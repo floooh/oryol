@@ -5,6 +5,8 @@
     @brief essential macro definitions for Oryol
 */
 #include "Core/Types.h"
+#include "Core/Assert.h"
+#include <type_traits>
 
 /// declare an Oryol class with pool allocator (located inside class declaration)
 #define OryolClassPoolAllocDecl(TYPE) \
