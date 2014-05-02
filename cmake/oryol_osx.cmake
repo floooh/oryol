@@ -108,6 +108,8 @@ macro(oryol_osx_generate_plist_file target)
             "    <true/>\n"
             "    <key>UIStatusBarHidden</key>\n"
             "    <true/>\n"
+            "    <key>UIViewControllerBasedStatusBarAppearance</key>\n"
+            "    <false/>\n"
             "    <key>UIInterfaceOrientation</key>\n"
             "    <string>UIInterfaceOrientationLandscapeRight</string>\n"
             "    <key>UISupportedInterfaceOrientations</key>\n"
