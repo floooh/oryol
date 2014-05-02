@@ -19,10 +19,13 @@ coreFacade(nullptr),
 curState(AppState::Construct),
 nextState(AppState::InvalidAppState),
 quitRequested(false),
-suspendRequested(false) {
+suspendRequested(false)
+{
     self = this;
     #if ORYOL_ANDROID
     this->androidBridge.setup(this);
+    #elif ORYOL_IOS
+    this->iosBridge = iosBridge::CreateSingle(this);
     #endif
 }
 
@@ -30,6 +33,9 @@ suspendRequested(false) {
 App::~App() {
     #if ORYOL_ANDROID
     this->androidBridge.discard();
+    #elif ORYOL_IOS
+    iosBridge::DestroySingle();
+    this->iosBridge = nullptr;
     #endif
     self = nullptr;
 }
@@ -42,6 +48,8 @@ App::StartMainLoop() {
     Log::Info("=> App::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
+    #elif ORYOL_IOS
+        this->iosBridge->startMainLoop();
     #elif ORYOL_ANDROID
         this->addBlocker(AppState::Init);
         this->androidBridge.onStart();

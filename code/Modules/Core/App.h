@@ -40,6 +40,9 @@
 #include "android_native/android_native_app_glue.h"
 #include "Core/android/androidBridge.h"
 #endif
+#if ORYOL_IOS
+#include "Core/ios/iosBridge.h"
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -95,6 +98,9 @@ protected:
     Set<AppState::Code> blockers;
     bool quitRequested;
     bool suspendRequested;
+    #if ORYOL_IOS
+    class iosBridge* iosBridge;
+    #endif
     #if ORYOL_ANDROID
     class androidBridge androidBridge;
     #endif

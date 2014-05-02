@@ -24,6 +24,14 @@ class displayMgr : public eglDisplayMgr {
     // empty;
 };
 } }
+#elif ORYOL_IOS
+#include "Render/ios/iosDisplayMgr.h"
+namespace Oryol {
+namespace Render {
+class displayMgr : public iosDisplayMgr {
+    // empty
+};
+} }
 #else
 #include "Render/base/displayMgrBase.h"
 namespace Oryol {
