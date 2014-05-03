@@ -4,7 +4,11 @@
     @class Oryol::Core::RWLock
     @brief single-write / multiple-reader lock
 */
+#include "Core/Config.h"
 #include "Core/Types.h"
+#if ORYOL_HAS_ATOMIC
+#include <atomic>
+#endif
 
 namespace Oryol {
 namespace Core {
