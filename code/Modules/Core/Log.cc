@@ -10,10 +10,16 @@
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
 #include "Windows.h"
-const Oryol::int32 LogBufSize = 2048;
 #endif
 #if ORYOL_ANDROID
 #include <android/log.h>
+#endif
+#if ORYOL_PNACL
+#include "Core/pnacl/pnaclInstance.h"
+#endif
+
+#if ORYOL_WINDOWS || ORYOL_PNACL
+const Oryol::int32 LogBufSize = 2048;
 #endif
 
 namespace Oryol {
@@ -119,12 +125,26 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
             }
             __android_log_vprint(pri, "oryol", msg, args);
         #else
+            #if ORYOL_WINDOWS || ORYOL_PNACL
+            va_list argsCopy;
+            va_copy(argsCopy, args);
+            #endif
+
+            // do the vprintf, this will destroy the original
+            // va_list, so we made a copy before if necessary
             std::vprintf(msg, args);
-            #if ORYOL_WINDOWS
+
+            #if ORYOL_WINDOWS || ORYOL_PNACL
                 char buf[LogBufSize];
-                std::vsnprintf(buf, sizeof(buf), msg, args);
+                std::vsnprintf(buf, sizeof(buf), msg, argsCopy);
                 buf[LogBufSize - 1] = 0;
-                OutputDebugString(buf);
+                #if ORYOL_WINDOWS
+                    OutputDebugString(buf);
+                #elif ORYOL_PNACL
+                    if (pnaclInstance::HasInstance()) {
+                        pnaclInstance::Instance()->putMsg(buf);
+                    }
+                #endif
             #endif
         #endif
     }
@@ -153,6 +173,14 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, 
                             cond, msg ? msg : "none", file, line, func);
                 buf[LogBufSize - 1] = 0;
                 OutputDebugString(buf);
+            #elif ORYOL_PNACL
+                if (pnaclInstance::HasInstance()) {
+                    char buf[LogBufSize];
+                    std::snprintf(buf, sizeof(buf), "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
+                                  cond, msg ? msg : "none", file, line, func);
+                    buf[LogBufSize - 1] = 0;                
+                    pnaclInstance::Instance()->putMsg(buf);
+                }
             #endif
         #endif
     }
