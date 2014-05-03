@@ -129,9 +129,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
 #define OryolMain(clazz) \
 android_app* OryolAndroidAppState = nullptr; \
 Oryol::Core::Args OryolArgs; \
-void android_main(struct android_app* app) { \
+void android_main(struct android_app* app_) { \
     app_dummy(); \
-    OryolAndroidAppState = app; \
+    OryolAndroidAppState = app_; \
     clazz app; \
     app.StartMainLoop(); \
 }
