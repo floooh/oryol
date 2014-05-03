@@ -10,7 +10,6 @@
 #
 macro(oryol_reset target)
     set(CurSources)
-    set(CurNaclFiles)
     set(CurXmlFiles)
     set(CurDependencies)
     set(CurLinkLibs)
@@ -134,19 +133,6 @@ function(oryol_exe_output_directory target)
         set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${dir})
     endif()
 endfunction()
-
-#-------------------------------------------------------------------------------
-#   NACL: setup post-build step to run the finalizer.
-#
-macro(oryol_pnacl_post_buildsteps target)
-    if (ORYOL_PNACL)
-        add_custom_command(TARGET ${target} POST_BUILD COMMAND ${NACL_TOOLCHAIN_ROOT}/bin/pnacl-finalize $<TARGET_FILE:${target}>)
-        foreach(curFile ${CurNaclFiles})
-            message("Copy NaCl file: ${curFile}")
-            add_custom_command(TARGET ${target} POST_BUILD COMMAND cp ${curFile} $<TARGET_FILE_DIR:${target}>)
-        endforeach()
-    endif()
-endmacro()
 
 #-------------------------------------------------------------------------------
 #   Handle XML generator files before the dependent target exists. This

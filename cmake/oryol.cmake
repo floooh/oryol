@@ -7,6 +7,7 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_private.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_android.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_osx.cmake")
+include("${ORYOL_ROOT_DIR}/cmake/oryol_pnacl.cmake")
 
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
@@ -299,8 +300,9 @@ macro(oryol_end_app)
         oryol_handle_generator_files_posttarget(${CurAppName} "${CurXmlFiles}")
     endif()
 
-    # pNaCl: add finalizer build step
+    # PNaCl specific stuff
     if (ORYOL_PNACL)
+        oryol_pnacl_create_wrapper(${CurAppName})
         oryol_pnacl_post_buildsteps(${CurAppName})
     endif()
 
@@ -347,11 +349,6 @@ macro(oryol_sources dirs)
         # gather files
         file(GLOB src ${dir}/*.cc ${dir}/*.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
         file(GLOB xmls ${dir}/*.xml)
-        if (ORYOL_NACL)
-            file(GLOB nacl ${dir}/*.nmf ${dir}/*.html)
-        else()
-            set(nacl)
-        endif()
 
         # add generated source files
         foreach (xml ${xmls})
@@ -363,14 +360,13 @@ macro(oryol_sources dirs)
         # setup IDE groups
         string(REPLACE / \\ groupName ${dir})
         if (${dir} STREQUAL .)
-            source_group("" FILES ${src} ${nacl} ${xmls})
+            source_group("" FILES ${src} ${xmls})
         else()
-            source_group(${groupName} FILES ${src} ${nacl} ${xmls})
+            source_group(${groupName} FILES ${src} ${xmls})
         endif()
 
         # add to global tracker variables
         list(APPEND CurSources ${src} ${xmls})
-        list(APPEND CurNaclFiles ${nacl})
         list(APPEND CurXmlFiles ${xmls})
 
         # remove duplicate sources 
