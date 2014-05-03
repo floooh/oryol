@@ -1,5 +1,5 @@
 '''
-Helper functions for setting up third party sdks. This is called from the
+Helper functions for setting up the Android SDK. This is called from the
 main oryol script.
 '''
 
@@ -61,6 +61,10 @@ def getSdkDir() :
         return ProjectDirectory + '/sdks/linux'
 
 #-------------------------------------------------------------------------------
+def ensureSdkDirectory() :
+    if not os.path.exists(getSdkDir()) :
+        os.makedirs(getSdkDir())
+#-------------------------------------------------------------------------------
 def getAndroidSdkPath() :
     if platform.system() in androidSdkPaths :
         return getSdkDir() + '/' + androidSdkPaths[platform.system()]
@@ -106,11 +110,6 @@ def getAndroidNdkArchivePath() :
 #-------------------------------------------------------------------------------
 def getAdbPath() :
     return getAndroidSdkPath() + '/platform-tools/adb'        
-
-#-------------------------------------------------------------------------------
-def ensureSdkDirectory() :
-    if not os.path.exists(getSdkDir()) :
-        os.makedirs(getSdkDir())
 
 #-------------------------------------------------------------------------------
 def checkAndroidSdk() :
