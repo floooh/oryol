@@ -6,6 +6,8 @@
 #   './oryol setup android'
 #-------------------------------------------------------------------------------
 
+message("Target Platform: Android")
+
 set(ANDROID_PLATFORM "android-19" CACHE STRING "Android platform version")
 set(ANDROID_NDK_ABI "arm-linux-androideabi" CACHE STRING "Android ABI name")
 set(ANDROID_NDK_CPU "armeabi-v7a" CACHE STRING "Android CPU instruction set identifier")
@@ -86,7 +88,7 @@ else()
     message(FATAL_ERROR "ant tool NOT FOUND (must be in path)!")
 endif()
 
-# set path to toolchain binaries
+# set paths to toolchain components
 set(ANDROID_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}/sysroot")
 set(ANDROID_TOOLCHAIN_BIN "${ANDROID_TOOLCHAIN_ROOT}/bin")
 set(ANDROID_TOOLCHAIN_INCLUDE "${ANDROID_TOOLCHAIN_ROOT}/include")
@@ -132,9 +134,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
-
 set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
-
 set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_SYSROOT} -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
