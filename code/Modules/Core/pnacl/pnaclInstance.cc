@@ -168,7 +168,7 @@ pnaclInstance::GetFramebufferHeight() const {
 
 //------------------------------------------------------------------------------
 /**
-    NOTE: this method can be called from any frame
+    NOTE: this method can be called from any thread.
 */
 void
 pnaclInstance::putMsg(const char* str) {
