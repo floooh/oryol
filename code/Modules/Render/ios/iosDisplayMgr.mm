@@ -4,6 +4,8 @@
 #include "Pre.h"
 #include "iosDisplayMgr.h"
 #include "Render/gl/gl_impl.h"
+#include "Render/gl/glInfo.h"
+#include "Render/gl/glExt.h"
 #include <GLKit/GLKit.h>
 
 namespace Oryol {
@@ -82,6 +84,12 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
     }
+    
+    // dump GL information
+    glInfo::PrintInfo();
+
+    // setup extensions
+    glExt::Setup();
     
     // update the displayAttrs with the actual frame buffer size
     this->glFramebufferWidth = glkView.drawableWidth;
