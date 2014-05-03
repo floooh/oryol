@@ -270,10 +270,6 @@ def runCMake(config) :
             cmdLine.append('-DORYOL_UNITTESTS=OFF')
             cmdLine.append('-DORYOL_EXCEPTIONS=OFF')
 
-        # some platform-specific stuff
-        if targetPlatform == 'pnacl' :
-            cmdLine.append('-DNACL_RELATIVE_SDK_LOCATION=../nacl_sdk/pepper_canary')
-
         # toolchain file required?
         if isValidCrossPlatform(targetPlatform) :
             cmdLine.append('-DCMAKE_TOOLCHAIN_FILE=../../cmake/{}.toolchain.cmake'.format(targetPlatform))
