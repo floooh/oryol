@@ -11,7 +11,8 @@ import subprocess
 import shutil
 from string import Template
 from tools import texexport as TexExport
-from tools import sdksetup as SDKSetup
+from tools import sdksetup_android as SDKSetupAndroid
+from tools import sdksetup_nacl as SDKSetupNacl
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
@@ -353,7 +354,7 @@ def runDeploy(config, target) :
         apkName = target + '-debug.apk'
         pathToApk = 'bin/android/{}'.format(apkName)
         if pathToApk != None :
-            subprocess.call(args=[SDKSetup.getAdbPath(), 'install', '-r', pathToApk])
+            subprocess.call(args=[SDKSetupAndroid.getAdbPath(), 'install', '-r', pathToApk])
         else :
             error('Could not find apk: {}'.format(apkName))
     elif 'ios-' in config['name'] :
@@ -655,7 +656,9 @@ else :
         if len(sys.argv) < 3 :
             error('must provide sdk name (one of android, emscripten, nacl)')
         if sys.argv[2] == 'android' :
-            SDKSetup.setupAndroid()
+            SDKSetupAndroid.setupAndroid()
+        elif sys.argv[2] == 'nacl' :
+            SDKSetupNacl.setupNacl()
         else :
             error('sdk {} not yet supported'.format())
 
