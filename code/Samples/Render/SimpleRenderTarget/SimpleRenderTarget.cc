@@ -14,8 +14,6 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("SimpleRenderTarget", "1.0");
-
 // derived application class
 class SimpleRenderTargetApp : public App {
 public:
@@ -42,6 +40,7 @@ private:
     static const int32 ModelViewProjection = 0;
     static const int32 Texture = 1;
 };
+OryolMain(SimpleRenderTargetApp);
 
 // vertex shader for rendering to render target
 static const char* rtVsSource =
@@ -85,14 +84,6 @@ static const char* dispFsSource =
 "  float l = clamp(dot(nrm.xyz, normalize(vec3(1.0, 1.0, -1.0))), 0.0, 1.0) * 2.0;\n"
 "  FragmentColor = c * (l + 0.25);\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    SimpleRenderTargetApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

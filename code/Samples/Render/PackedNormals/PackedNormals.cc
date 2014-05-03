@@ -14,8 +14,6 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("PackedNormals", "1.0");
-
 // derived application class
 class PackedNormalsApp : public App {
 public:
@@ -37,6 +35,7 @@ private:
     // shader slots
     static const int32 ModelViewProjection = 0;
 };
+OryolMain(PackedNormalsApp);
 
 // the vertex shader
 static const char* vsSource =
@@ -55,14 +54,6 @@ static const char* fsSource =
 "void main() {\n"
 "  FragmentColor = nrm * 0.5 + 0.5;\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    PackedNormalsApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

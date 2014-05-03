@@ -6,31 +6,19 @@
 #include "Core/Log.h"
 #include <thread>
 
-OryolApp("CoreHello", "1.0");
-
 using namespace Oryol;
 using namespace Oryol::Core;
 
 class CoreHelloApp : public App {
 public:
-    virtual void onFrame();
+    virtual void onFrame() {
+        if (0 == (this->frameCount++ % 10)) {
+            Log::Info("Hello World %d!\n", this->frameCount);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        App::onFrame();        
+    }
 private:
     int frameCount = 0;
 };
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    CoreHelloApp app;
-    app.StartMainLoop();
-}
-
-//------------------------------------------------------------------------------
-void
-CoreHelloApp::onFrame() {
-    if (0 == (this->frameCount++ % 10)) {
-        Log::Info("Hello World %d!\n", this->frameCount);
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    App::onFrame();
-}
+OryolMain(CoreHelloApp);

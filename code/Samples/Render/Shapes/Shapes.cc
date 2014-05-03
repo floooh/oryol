@@ -14,8 +14,6 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("Shapes", "1.0");
-
 // derived application class
 class ShapeApp : public App {
 public:
@@ -37,6 +35,7 @@ private:
     // shader slots
     static const int32 ModelViewProjection = 0;
 };
+OryolMain(ShapeApp);
 
 // the vertex shader
 static const char* vsSource =
@@ -55,14 +54,6 @@ static const char* fsSource =
 "void main() {\n"
 "  FragmentColor = color;\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    ShapeApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

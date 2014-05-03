@@ -5,13 +5,10 @@
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
 
-OryolApp("Clear", "1.0");
-
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::Render;
 
-// derived application class
 class ClearApp : public Core::App {
 public:
     virtual AppState::Code OnInit();
@@ -22,14 +19,7 @@ private:
     RenderFacade* render;
     float red, green, blue;
 };
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    ClearApp app;
-    app.StartMainLoop();
-}
+OryolMain(ClearApp);
 
 //------------------------------------------------------------------------------
 AppState::Code

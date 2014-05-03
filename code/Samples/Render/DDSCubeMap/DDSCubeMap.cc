@@ -20,8 +20,6 @@ using namespace Oryol::HTTP;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("DDSCubeMap", "1.0");
-
 // derived application class
 class DDSCubeMapApp : public App {
 public:
@@ -46,6 +44,7 @@ private:
     static const int32 ModelViewProjection = 0;
     static const int32 Texture = 1;
 };
+OryolMain(DDSCubeMapApp);
 
 // the vertex shader
 static const char* vsSource =
@@ -65,14 +64,6 @@ static const char* fsSource =
 "void main() {\n"
 "  FragmentColor = TEXTURECUBE(tex, nrm);\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    DDSCubeMapApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

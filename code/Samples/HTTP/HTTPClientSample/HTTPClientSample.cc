@@ -7,8 +7,6 @@
 #include <thread>
 #include <chrono>
 
-OryolApp("HTTPClient", "1.0");
-
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::IO;
@@ -25,14 +23,7 @@ private:
     Ptr<HTTPClient> httpClient;
     Ptr<HTTPProtocol::HTTPRequest> req;
 };
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    HTTPClientApp app;
-    app.StartMainLoop();
-}
+OryolMain(HTTPClientApp);
 
 //------------------------------------------------------------------------------
 AppState::Code

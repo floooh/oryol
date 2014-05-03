@@ -7,6 +7,9 @@
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
+#if ORYOL_PNACL
+#include "Core/pnacl/pnaclInstance.h"
+#endif
 
 namespace Oryol {
 namespace Core {
@@ -56,15 +59,21 @@ App::StartMainLoop() {
         while (this->androidBridge.onFrame()) {
         }
         this->androidBridge.onStop();
+    #elif ORYOL_PNACL
+        pnaclInstance::Instance()->startMainLoop(this);
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();
         }
     #endif
 
+    // NOTE: PNaCl is the only platform where StartMainLoop
+    // returns while the app continues running!
+    #if !ORYOL_PNACL
     Log::Info("<= App::StartMainLoop()\n");
     CoreFacade::DestroySingle();
     this->coreFacade = nullptr;
+    #endif
 }
 
 //------------------------------------------------------------------------------

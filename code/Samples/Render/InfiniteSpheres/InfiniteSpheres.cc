@@ -15,9 +15,6 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("InfiniteSpheres", "1.0");
-
-// derived application class
 class InfiniteSpheresApp : public App {
 public:
     virtual AppState::Code OnInit();
@@ -43,6 +40,7 @@ private:
     static const int32 ModelViewProjection = 0;
     static const int32 Texture = 2;
 };
+OryolMain(InfiniteSpheresApp);
 
 // vertex shader for rendering to render target
 static const char* vsSource =
@@ -67,14 +65,6 @@ static const char* fsSource =
 "  vec4 texColor = TEXTURE2D(tex, uv * vec2(5.0, 3.0));"
 "  FragmentColor = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    InfiniteSpheresApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

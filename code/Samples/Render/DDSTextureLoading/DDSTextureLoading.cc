@@ -20,9 +20,6 @@ using namespace Oryol::HTTP;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("DDSTextureLoader", "1.0");
-
-// derived application class
 class DDSTextureLoadingApp : public App {
 public:
     virtual AppState::Code OnInit();
@@ -46,6 +43,7 @@ private:
     static const int32 ModelViewProjection = 0;
     static const int32 Texture = 1;
 };
+OryolMain(DDSTextureLoadingApp);
 
 // the vertex shader
 static const char* vsSource =
@@ -65,14 +63,6 @@ static const char* fsSource =
 "void main() {\n"
 "  FragmentColor = TEXTURE2D(tex, uv);\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    DDSTextureLoadingApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code

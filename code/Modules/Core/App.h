@@ -7,23 +7,29 @@
     This is Oryol's base application class which implements the
     application's life-cycle. 
 
+    Oryol doesn't provide a main function, instead an Oryol app must derive
+    from the Oryol::Core::App class and override application lifecycle methods.
+
     Regardless of target platform, an Oryol platform's main source
     will always look like this:
  
     ```cpp
     #include "Core/App.h"
     
-    OryolApp("MyAppName", "1.0");
- 
-    OryolMain(const Args& args) {
-        App app;
-        app.SetArgs(args);
-        app.StartMainLoop();
-    }
-    
+    class MyAppClass : public Oryol::Core::App {
+    public:
+        virtual AppState::Code OnInit() {
+            ...
+        }
+        virtual AppState::Code OnRunning() {
+            ...
+        }
+        virtual AppState::Code OnCleanup() {
+            ...
+        }
+    };
+    OryolMain(MyAppClass);    
     ```
-    ...where App is usually replaced with a user-provided 
-    derived application class.
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
@@ -42,6 +48,9 @@
 #endif
 #if ORYOL_IOS
 #include "Core/ios/iosBridge.h"
+#endif
+#if ORYOL_PNACL
+#include "Core/pnacl/pnaclModule.h"
 #endif
 
 namespace Oryol {
@@ -107,38 +116,45 @@ protected:
 };
 
 #if ORYOL_WINDOWS
-#define OryolApp(name, ver) \
-void OryolMain(); \
-const char* const OryolAppName = name; \
-const char* const OryolAppVersion = ver; \
+#define OryolApp(clazz) \
 Oryol::Core::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
     Oryol::Core::WideString cmdLine = ::GetCommandLineW(); \
     OryolArgs = Oryol::Core::Args(cmdLine); \
-    OryolMain(); \
+    clazz app; \
+    app.StartMainLoop(); \
     return 0; \
 }
 #elif ORYOL_ANDROID
-#define OryolApp(name, ver) \
-void OryolMain(); \
-const char* const OryolAppName = name; \
-const char* const OryolAppVersion = ver; \
+#define OryolMain(clazz) \
 android_app* OryolAndroidAppState = nullptr; \
 Oryol::Core::Args OryolArgs; \
 void android_main(struct android_app* app) { \
     app_dummy(); \
     OryolAndroidAppState = app; \
-    OryolMain(); \
+    clazz app; \
+    app.StartMainLoop(); \
+}
+#elif ORYOL_PNACL
+#define OryolMain(clazz) \
+namespace pp \
+{ \
+    Module* CreateModule() \
+    { \
+        return new Oryol::Core::pnaclModule(); \
+    }; \
+} \
+void PNaclAppCreator() {\
+    static clazz* app = new clazz(); \
+    app->StartMainLoop(); \
 }
 #else
-#define OryolApp(name, ver) \
-void OryolMain(); \
-ORYOL_UNUSED const char* const OryolAppName = name; \
-ORYOL_UNUSED const char* const OryolAppVersion = ver; \
+#define OryolMain(clazz) \
 Oryol::Core::Args OryolArgs; \
 int main(int argc, const char** argv) { \
     OryolArgs = Oryol::Core::Args(argc, argv); \
-    OryolMain(); \
+    clazz app; \
+    app.StartMainLoop(); \
     return 0; \
 }
 #endif

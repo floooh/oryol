@@ -12,8 +12,6 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
-OryolApp("Triangle", "1.0");
-
 // derived application class
 class TriangleApp : public App {
 public:
@@ -26,6 +24,7 @@ private:
     Resource::Id meshId;
     Resource::Id progId;
 };
+OryolMain(TriangleApp);
 
 // the vertex shader
 static const char* vsSource =
@@ -43,14 +42,6 @@ static const char* fsSource =
 "void main() {\n"
 "  FragmentColor = color;\n"
 "}\n";
-
-//------------------------------------------------------------------------------
-void
-OryolMain() {
-    // execution starts here, create our app and start the main loop
-    TriangleApp app;
-    app.StartMainLoop();
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
