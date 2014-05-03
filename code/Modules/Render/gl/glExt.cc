@@ -34,6 +34,10 @@ glExt::Setup() {
     // on OSX we're using the Core Profile where getting the extensions string seems
     // to be an error
     extensions[VertexArrayObject] = true;
+    #elif ORYOL_PNACL
+    // vertex array objects isn't actually supported on NaCl even though the 
+    // extension is listed in the returned extensions string
+    extensions[VertexArrayObject] = false;
     #else
     Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     ORYOL_GL_CHECK_ERROR();
@@ -64,8 +68,11 @@ glExt::IsValid() {
 void
 glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_OPENGLES2
-        // FIXME: this works in emscripten for now
+        #if !ORYOL_PNACL
         ::glGenVertexArraysOES(n, arrays);
+        #else
+        o_error("glGenVertexArrays not implemented in NaCl\n");
+        #endif
     #elif ORYOL_OPENGL
         ::glGenVertexArrays(n, arrays);
     #else
@@ -77,8 +84,11 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
 void
 glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
     #if ORYOL_OPENGLES2
-        // FIXME: this works in emscripten for now
+        #if !ORYOL_PNACL
         ::glDeleteVertexArraysOES(n, arrays);
+        #else
+        o_error("glDeleteVertexArrays not implemented in NaCl\n");
+        #endif        
     #elif ORYOL_OPENGL
         ::glDeleteVertexArrays(n, arrays);
     #else
@@ -90,8 +100,11 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
 void
 glExt::BindVertexArray(GLuint array) {
     #if ORYOL_OPENGLES2
-        // FIXME: this works in emscripten for now
+        #if !ORYOL_PNACL
         ::glBindVertexArrayOES(array);
+        #else
+        o_error("glBindVertexArray not implemented in NaCl!\n");
+        #endif
     #elif ORYOL_OPENGL
         ::glBindVertexArray(array);
     #else
