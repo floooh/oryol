@@ -395,16 +395,19 @@ def buildWebPage() :
 
     # build the html link list
     emscriptenContent = ''
+    pnaclContent = ''
     androidContent = ''
     for sample in samples['samples'] :
         if sample['name'] != '__end__' :
             if sample['type'] == 'emscripten' :
                 emscriptenContent += '<li><a href="{}.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
+            elif sample['type'] == 'pnacl' :
+                pnaclContent += '<li><a href="{}_pnacl.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
             elif sample['type'] == 'android' :
                 androidContent += '<li><a href="{}-debug.apk">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
 
     # populate the html template, and write to the build directory
-    html = templ.safe_substitute(emscripten_samples=emscriptenContent, android_samples=androidContent)
+    html = templ.safe_substitute(emscripten_samples=emscriptenContent, pnacl_samples=pnaclContent, android_samples=androidContent)
     f = open('build/webpage/index.html', 'w')
     f.write(html)
     f.close()
@@ -414,6 +417,13 @@ def buildWebPage() :
         if sample['name'] != '__end__' and sample['type'] == 'emscripten' :
             for ext in ['html', 'js', 'html.mem'] :
                 shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
+
+    # copy the PNaCl sample files over
+    for sample in samples['samples'] :
+        if sample['name'] != '__end__' and sample['type'] == 'pnacl' :
+            shutil.copy('bin/pnacl/{}_pnacl.html'.format(sample['name']), 'build/webpage')
+            for ext in ['nmf', 'pexe'] :
+                shutil.copy('bin/pnacl/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
     # copy the Android sample files over
     for sample in samples['samples'] :
@@ -641,6 +651,9 @@ else :
 
     elif cmd == 'webpage' :
         config = loadConfig("emscripten-make-release")
+        runCMake(config)
+        runRebuild(config, None)
+        config = loadConfig("pnacl-make-release")
         runCMake(config)
         runRebuild(config, None)
         config = loadConfig("android-make-release")
