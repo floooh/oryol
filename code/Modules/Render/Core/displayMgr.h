@@ -32,6 +32,14 @@ class displayMgr : public iosDisplayMgr {
     // empty
 };
 } }
+#elif ORYOL_PNACL
+#include "Render/pnacl/pnaclDisplayMgr.h"
+namespace Oryol {
+namespace Render {
+class displayMgr : public pnaclDisplayMgr {
+    // empty
+};
+} }
 #else
 #include "Render/base/displayMgrBase.h"
 namespace Oryol {
