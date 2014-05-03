@@ -164,7 +164,7 @@ Queue<TYPE>::Queue(const Queue& rhs) {
 //------------------------------------------------------------------------------
 template<class TYPE>
 Queue<TYPE>::Queue(Queue&& rhs) {
-    this->move(rhs);
+    this->move(std::move(rhs));
 }
 
 //------------------------------------------------------------------------------
