@@ -89,6 +89,10 @@ tap to run.
 ### Google Native Client ###
 To setup the NaCl SDK, and build the Triangle sample on OSX or Linux:
 
+**Linux Note:** on a 64-bit Linux you need to install 32-bit runtime libs first:
+* sudo apt-get install libc6:i386
+* sudo apt-get install libstdc++6:i386
+
 ```
 > cd ~/oryol
 ~ ./oryol setup nacl
