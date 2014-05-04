@@ -86,6 +86,21 @@ Triangle sample to your Android device (with unlocked development mode):
 If everything has worked, there should be a new Triangle app installed,
 tap to run.
 
+### Google Native Client ###
+To setup the NaCl SDK, and build the Triangle sample on OSX or Linux:
+
+```
+> cd ~/oryol
+~ ./oryol setup nacl
+[...this downloads the NaCl SDK...]
+> ./oryol select pnacl-make-release
+> ./oryol make Triangle
+> cd bin/pnacl
+> python -m SimpleHTTPServer
+```
+
+Now open a recent version of Google Chrome and navigate to http://localhost:8000/Triangle_pnacl.html.
+
 ### Building the Web Samples HTML page ###
 To build the complete samples web page (provided you have a working emscripten SDK installation), simply run:
 
@@ -114,8 +129,8 @@ Oryol supports the following host platforms for building:
 - OSX
 - Linux
 - Windows 32-bit and 64-bit
-- iOS (planned)
-- Android (planned)
+- iOS
+- Android
 - emscripten 
 - PNaCl
 
