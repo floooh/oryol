@@ -116,7 +116,7 @@ protected:
 };
 
 #if ORYOL_WINDOWS
-#define OryolApp(clazz) \
+#define OryolMain(clazz) \
 Oryol::Core::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
     Oryol::Core::WideString cmdLine = ::GetCommandLineW(); \
