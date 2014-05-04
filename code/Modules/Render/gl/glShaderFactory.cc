@@ -121,7 +121,8 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
             strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");
             strBuilder.Append("#define FragmentColor gl_FragColor\n");
         }
-    #else
+    #elif ORYOL_OSX
+        // FIXME: this is actually the OpenGL 3.x Core Profile
         strBuilder.Append("#version 150\n");
         strBuilder.Append("#define ORYOL_OPENGL (1)\n");
         strBuilder.Append("#define lowp\n");
@@ -136,6 +137,21 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
             strBuilder.Append("#define TEXTURE2D(x,y) texture(x,y)\n");
             strBuilder.Append("#define TEXTURECUBE(x,y) texture(x,y)\n");
             strBuilder.Append("out vec4 FragmentColor;\n");
+        }
+    #else
+        strBuilder.Append("#define ORYOL_OPENGL (1)\n");
+        strBuilder.Append("#define lowp\n");
+        strBuilder.Append("#define mediump\n");
+        strBuilder.Append("#define highp\n");
+        if (GL_VERTEX_SHADER == glShaderType) {
+            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
+            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
+        }
+        if (GL_FRAGMENT_SHADER == glShaderType) {
+            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
+            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
+            strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");
+            strBuilder.Append("#define FragmentColor gl_FragColor\n");
         }
     #endif
     
