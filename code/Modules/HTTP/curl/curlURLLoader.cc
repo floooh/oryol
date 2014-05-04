@@ -203,12 +203,12 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     if (CURLE_PARTIAL_FILE == performResult) {
         // this seems to happen quite often even though all data has been received,
         // not sure what to do about this, but don't treat it as an error
-        Log::Warn("curlURLLoader: CURLE_PARTIAL_FILE received for '%s', httpStatus='%d'\n", req->GetURL().AsCStr(), curlHttpCode);
+        Log::Warn("curlURLLoader: CURLE_PARTIAL_FILE received for '%s', httpStatus='%ld'\n", req->GetURL().AsCStr(), curlHttpCode);
         httpResponse->SetErrorDesc(this->curlError);
     }
     else if (0 != performResult) {
         // some other curl error
-        Log::Warn("curlURLLoader: curl_easy_peform failed with '%s' for '%s', httpStatus='%d'\n",
+        Log::Warn("curlURLLoader: curl_easy_peform failed with '%s' for '%s', httpStatus='%ld'\n",
             req->GetURL().AsCStr(), this->curlError, curlHttpCode);
         httpResponse->SetErrorDesc(this->curlError);
     }
