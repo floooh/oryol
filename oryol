@@ -317,10 +317,9 @@ def runBuild(config, target) :
             # generic invokation of cmake --build
             args = ['cmake', '--build', '.']
             if 'release' in buildType :
-                # FIXME: does this even work?
                 args.extend(['--config', 'Release'])
             else :
-                args.extend('--config', 'Debug')
+                args.extend(['--config', 'Debug'])
         subprocess.call(args=args, cwd=buildPath)
 
 # do a command line build, build all if target is None
