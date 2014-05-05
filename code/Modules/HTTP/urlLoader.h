@@ -29,6 +29,12 @@ namespace Oryol {
 namespace HTTP {
 class urlLoader : public emscURLLoader {};
 } }
+#elif ORYOL_PNACL
+#include "HTTP/pnacl/pnaclURLLoader.h"
+namespace Oryol {
+namespace HTTP {
+class urlLoader : public pnaclURLLoader {};
+} }
 #else
 #include "HTTP/base/baseURLLoader.h"
 namespace Oryol {
