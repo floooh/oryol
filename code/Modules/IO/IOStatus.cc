@@ -55,6 +55,7 @@ IOStatus::ToString(Code c) {
         __ORYOL_TOSTRING(GatewayTimeout);
         __ORYOL_TOSTRING(HTTPVersionNotSupported);
         __ORYOL_TOSTRING(Cancelled);
+        __ORYOL_TOSTRING(DownloadError);
         default: return "InvalidIOStatus";
     }
 }
@@ -104,6 +105,7 @@ IOStatus::FromString(const char* str) {
     __ORYOL_FROMSTRING(GatewayTimeout);
     __ORYOL_FROMSTRING(HTTPVersionNotSupported);
     __ORYOL_FROMSTRING(Cancelled);
+    __ORYOL_FROMSTRING(DownloadError);
     return InvalidIOStatus;
 }
     

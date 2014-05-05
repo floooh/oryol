@@ -56,6 +56,7 @@ TEST(IOStatusTest) {
     CHECK(TOSTR(GatewayTimeout));
     CHECK(TOSTR(HTTPVersionNotSupported));
     CHECK(TOSTR(Cancelled));
+    CHECK(TOSTR(DownloadError));
 
     CHECK(FROMSTR(Continue));
     CHECK(FROMSTR(SwitchingProtocols));
@@ -98,4 +99,5 @@ TEST(IOStatusTest) {
     CHECK(FROMSTR(GatewayTimeout));
     CHECK(FROMSTR(HTTPVersionNotSupported));
     CHECK(FROMSTR(Cancelled));
+    CHECK(FROMSTR(DownloadError));
 }
