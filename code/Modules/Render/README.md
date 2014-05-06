@@ -1,6 +1,6 @@
 ## Render Module
 
-The Render module is Oryol's low-level rendering API wrapper. It encapsulates an OpenGL-style rendering API under a platform-agnostic and easier to use C++ API.
+The Render module is Oryol's low-level rendering API wrapper. It encapsulates an OpenGL-style rendering API into a platform-agnostic and easier to use C++ API.
 
 ### Concepts
 
@@ -8,16 +8,15 @@ The Render module is Oryol's low-level rendering API wrapper. It encapsulates an
 
 The RenderFacade class is the public interface to the Render module. Before 3D rendering can start, a RenderFacade singleton object must be created which sets up an application window, the GL context and the default frame buffer.
 
-The RenderFacade class interface is roughly split into the following method groups:
+The RenderFacade class interface is roughly split into 3 method groups:
 
-* **Resource Management:** methods for creating and destroying shared resource objects (see below)
-* **Apply Methods:** these apply resource objects, render states or shader variables for used in a following action
-* **Draw Methods:** these invoke some rendering operation
+* **Resource Management:** methods for creating and destroying resource objects
+* **Apply Methods:** these methods apply state for the following Draw method
+* **Draw Methods:** several methods to submit a draw call
 
 #### Resources
 
-Render resources are data objects necessary for rendering, for instance textures, meshes or shader programs. Oryol's resource management system is
-slightly higher-level then OpenGL or Direct3D:
+Render resources are data objects necessary for rendering, for instance textures, meshes or shader programs. Oryol's resource management system is slightly higher-level then OpenGL or Direct3D:
 
 - **transparent asynchronous resource loading:** All data loading happens asynchronously and behind the scenes, the caller doesn't need to care about (but can query) the current loading state of a resource. A resource handle can be used immediately for rendering, even if the resource is still loading, in this case, either a placeholder or nothing is rendered until all required resources for a drawing operation have become valid.
 - **resource sharing**: Resource data which is already loaded will only have its use-count bumped. Sharing can be disabled if a unique copy of the resource data is needed.
