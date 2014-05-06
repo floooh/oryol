@@ -1,5 +1,7 @@
 ## Render Module
 
+NOTE: I really need to clean this up :/ The resource description overlaps with the Resource subsystem readme, and a "HOWTO" approach with sample code would probably be better...
+
 The Render module is Oryol's low-level rendering API wrapper. It encapsulates an OpenGL-style rendering API into a platform-agnostic and easier to use C++ API.
 
 ### Concepts
