@@ -255,7 +255,7 @@ resourceMgr::DiscardResource(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-State::Code
+Resource::State::Code
 resourceMgr::QueryResourceState(const Id& resId) {
     o_assert(this->isValid);
     switch (resId.Type()) {
@@ -277,7 +277,7 @@ resourceMgr::QueryResourceState(const Id& resId) {
             o_assert(false);
             break;
     }
-    return State::InvalidState;
+    return Resource::State::InvalidState;
 }
 
 } // namespace Render

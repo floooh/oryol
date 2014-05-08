@@ -5,7 +5,7 @@
     @brief GL implement of Mesh
 */
 #include "Render/base/meshBase.h"
-#include "Render/Types/VertexAttr.h"
+#include "Render/Core/Enums.h"
 #include "Render/gl/gl_decl.h"
 #include "Render/gl/glVertexAttr.h"
 

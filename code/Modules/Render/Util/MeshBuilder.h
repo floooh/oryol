@@ -50,7 +50,7 @@
     @see VertexWriter, ShapeBuilder
 */
 #include "Core/Types.h"
-#include "Render/Types/IndexType.h"
+#include "Render/Core/Enums.h"
 #include "Render/Core/VertexLayout.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Setup/MeshSetup.h"

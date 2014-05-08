@@ -178,10 +178,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ::glActiveTexture(GL_TEXTURE0);
     ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ORYOL_GL_CHECK_ERROR();
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::AsGLTextureFilterMode(setup.GetMinFilter()));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::AsGLTextureFilterMode(setup.GetMagFilter()));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::AsGLTextureWrapMode(setup.GetWrapU()));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::AsGLTextureWrapMode(setup.GetWrapV()));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setup.GetMinFilter());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.GetMagFilter());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.GetWrapU());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.GetWrapV());
     ORYOL_GL_CHECK_ERROR();
     ::glTexImage2D(GL_TEXTURE_2D, 0, glColorFormat, width, height, 0, glColorFormat, glColorType, NULL);
     ORYOL_GL_CHECK_ERROR();

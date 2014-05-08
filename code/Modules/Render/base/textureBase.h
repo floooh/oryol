@@ -7,7 +7,7 @@
 #include "Resource/resourceBase.h"
 #include "Render/Attrs/TextureAttrs.h"
 #include "Render/Setup/TextureSetup.h"
-#include "Render/Types/ResourceType.h"
+#include "Render/Core/Enums.h"
 #include "IO/IOProtocol.h"
 
 namespace Oryol {

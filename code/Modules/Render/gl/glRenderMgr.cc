@@ -298,19 +298,18 @@ glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->curMesh);
     
-    const GLenum glPrimType = glTypes::AsGLPrimitiveType(primGroup.GetPrimitiveType());
+    const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
-        GLenum glIndexType = glTypes::AsGLIndexType(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
-        ::glDrawElements(glPrimType, primGroup.GetNumElements(), glIndexType, indices);
+        ::glDrawElements(primType, primGroup.GetNumElements(), indexType, indices);
         ORYOL_GL_CHECK_ERROR();
     }
     else {
         // non-indexed geometry
-        ::glDrawArrays(glPrimType, primGroup.GetBaseElement(), primGroup.GetNumElements());
+        ::glDrawArrays(primType, primGroup.GetBaseElement(), primGroup.GetNumElements());
         ORYOL_GL_CHECK_ERROR();
     }
 }

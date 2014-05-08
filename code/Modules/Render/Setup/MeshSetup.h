@@ -5,7 +5,7 @@
     @brief setup attributes for meshes
 */
 #include "Resource/Locator.h"
-#include "Render/Types/Usage.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

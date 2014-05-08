@@ -5,7 +5,7 @@
     @brief attributes of one vertex buffer
 */
 #include "Render/Core/VertexLayout.h"
-#include "Render/Types/Usage.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

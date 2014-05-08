@@ -51,7 +51,7 @@ glShaderFactory::IsValid() const {
 void
 glShaderFactory::SetupResource(shader& shd) {
     o_assert(this->isValid);
-    o_assert(shd.GetState() == State::Setup);
+    o_assert(shd.GetState() == Resource::State::Setup);
     ORYOL_GL_CHECK_ERROR();
     
     Log::Info("glShaderFactory: compiling shader '%s'\n", shd.GetSetup().GetLocator().Location().AsCStr());
@@ -63,21 +63,21 @@ glShaderFactory::SetupResource(shader& shd) {
     // if compilation has failed, stop the program
     if (0 == glShader) {
         o_error("Failed to compile shader '%s'\n", setup.GetLocator().Location().AsCStr());
-        shd.setState(State::Failed);
+        shd.setState(Resource::State::Failed);
         return;
     }
     
     // all ok, shader has been successfully compiled
     shd.setShaderType(setup.GetType());
     shd.glSetShader(glShader);
-    shd.setState(State::Valid);
+    shd.setState(Resource::State::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
 glShaderFactory::DestroyResource(shader& shd) {
     o_assert(this->isValid);
-    o_assert(State::Valid == shd.GetState());
+    o_assert(Resource::State::Valid == shd.GetState());
 
     GLuint glShader = shd.glGetShader();
     o_assert(0 != glShader);
@@ -85,7 +85,7 @@ glShaderFactory::DestroyResource(shader& shd) {
     ORYOL_GL_CHECK_ERROR();
     
     shd.clear();
-    shd.setState(State::Setup);
+    shd.setState(Resource::State::Setup);
 }
 
 //------------------------------------------------------------------------------
@@ -93,8 +93,7 @@ GLuint
 glShaderFactory::compileShader(ShaderType::Code type, const String& src, const Map<String,String>& defines) const {
     o_assert(src.IsValid());
     
-    GLenum glShaderType = glTypes::AsGLShaderType(type);
-    GLuint glShader = glCreateShader(glShaderType);
+    GLuint glShader = glCreateShader(type);
     o_assert(0 != glShader);
     ORYOL_GL_CHECK_ERROR();
     
@@ -110,11 +109,11 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
     strBuilder.Reserve(2 * srcLength + 1024);
     #if ORYOL_OPENGLES2
         strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
-        if (GL_VERTEX_SHADER == glShaderType) {
+        if (GL_VERTEX_SHADER == type) {
             strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
             strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
         }
-        if (GL_FRAGMENT_SHADER == glShaderType) {
+        if (GL_FRAGMENT_SHADER == type) {
             strBuilder.Append("precision mediump float;\n");
             strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
             strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
@@ -128,11 +127,11 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
         strBuilder.Append("#define lowp\n");
         strBuilder.Append("#define mediump\n");
         strBuilder.Append("#define highp\n");
-        if (GL_VERTEX_SHADER == glShaderType) {
+        if (GL_VERTEX_SHADER == type) {
             strBuilder.Append("#define VS_INPUT(type,name) in type name\n");
             strBuilder.Append("#define VS_OUTPUT(type,name) out type name\n");
         }
-        if (GL_FRAGMENT_SHADER == glShaderType) {
+        if (GL_FRAGMENT_SHADER == type) {
             strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
             strBuilder.Append("#define TEXTURE2D(x,y) texture(x,y)\n");
             strBuilder.Append("#define TEXTURECUBE(x,y) texture(x,y)\n");
@@ -143,11 +142,11 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src, const M
         strBuilder.Append("#define lowp\n");
         strBuilder.Append("#define mediump\n");
         strBuilder.Append("#define highp\n");
-        if (GL_VERTEX_SHADER == glShaderType) {
+        if (GL_VERTEX_SHADER == type) {
             strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
             strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
         }
-        if (GL_FRAGMENT_SHADER == glShaderType) {
+        if (GL_FRAGMENT_SHADER == type) {
             strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
             strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
             strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");

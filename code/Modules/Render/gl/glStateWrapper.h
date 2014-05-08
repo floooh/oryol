@@ -10,7 +10,7 @@
     ApplyState method overrides.
 */
 #include "Core/Types.h"
-#include "Render/Types/State.h"
+#include "Render/Core/Enums.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 #include "Render/Core/programBundle.h"
@@ -145,8 +145,6 @@ private:
         Signature sig;
     };
     
-    /// setup the state-value translation table
-    void setupStateTranslationTable();
     /// setup the state-vector table
     void setupStateVector();
     /// FontFace state function
@@ -213,7 +211,6 @@ private:
     bool isValid;
 
     Function funcs[State::NumStateCodes];
-    GLenum glEnum[State::NumStateValues];
     
     GLenum curFrontFaceMode;
     bool curCullFaceEnabled;

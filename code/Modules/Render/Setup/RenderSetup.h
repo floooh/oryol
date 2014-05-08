@@ -12,7 +12,7 @@
     @see RenderFacade, DisplayAttrs
 */
 #include "Render/Attrs/DisplayAttrs.h"
-#include "Render/Types/ResourceType.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

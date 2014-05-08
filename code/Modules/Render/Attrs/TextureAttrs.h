@@ -8,9 +8,7 @@
 */
 #include "Core/Types.h"
 #include "Resource/Locator.h"
-#include "Render/Types/Usage.h"
-#include "Render/Types/TextureType.h"
-#include "Render/Types/PixelFormat.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

@@ -5,7 +5,7 @@
     @brief efficiently write packed vertex components
 */
 #include "Core/Types.h"
-#include "Render/Types/VertexFormat.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

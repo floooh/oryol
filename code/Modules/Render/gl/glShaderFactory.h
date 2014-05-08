@@ -6,7 +6,7 @@
 */
 #include "Resource/simpleFactory.h"
 #include "Render/Core/mesh.h"
-#include "Render/Types/ShaderType.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {
