@@ -5,8 +5,7 @@
     @brief describes a single component of a vertex
     @see VertexFormat, VertexLayout
 */
-#include "Render/Types/VertexFormat.h"
-#include "Render/Types/VertexAttr.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

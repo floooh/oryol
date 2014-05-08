@@ -9,7 +9,7 @@
 #include "Render/Attrs/IndexBufferAttrs.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Setup/MeshSetup.h"
-#include "Render/Types/ResourceType.h"
+#include "Render/Core/Enums.h"
 #include "Core/Assert.h"
 #include "IO/IOProtocol.h"
 

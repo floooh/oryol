@@ -10,7 +10,7 @@
     depends on the Mesh being rendered (whether it has indices or not).
 */
 #include "Core/Types.h"
-#include "Render/Types/PrimitiveType.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

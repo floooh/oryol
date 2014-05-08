@@ -13,7 +13,7 @@
 #include "Resource/State.h"
 #include "Resource/Locator.h"
 #include "Render/Setup/RenderSetup.h"
-#include "Render/Types/State.h"
+#include "Render/Core/Enums.h"
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/resourceMgr.h"

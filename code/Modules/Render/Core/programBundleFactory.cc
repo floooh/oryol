@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "programBundleFactory.h"
-#include "Render/Types/ResourceType.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

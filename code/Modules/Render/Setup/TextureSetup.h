@@ -7,10 +7,7 @@
 */
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
-#include "Render/Types/Usage.h"
-#include "Render/Types/PixelFormat.h"
-#include "Render/Types/TextureWrapMode.h"
-#include "Render/Types/TextureFilterMode.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {

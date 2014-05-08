@@ -6,7 +6,7 @@
  */
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
-#include "Render/Types/ShaderType.h"
+#include "Render/Core/Enums.h"
 #include "Resource/Locator.h"
 
 namespace Oryol {

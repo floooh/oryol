@@ -10,7 +10,7 @@
     ApplyState method overrides.
 */
 #include "Core/Types.h"
-#include "Render/Types/State.h"
+#include "Render/Core/Enums.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 #include "Render/Core/programBundle.h"
