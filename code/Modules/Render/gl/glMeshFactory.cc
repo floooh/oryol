@@ -87,7 +87,7 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
     ::glGenBuffers(1, &vb);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != vb);
-    GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
+    const GLenum glUsage = outMesh.GetVertexBufferAttrs().GetUsage();
     this->glStateWrapper->BindVertexBuffer(vb);
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
@@ -111,7 +111,7 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, me
     ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != ib);
-    GLenum glUsage = glTypes::AsGLUsage(outMesh.GetVertexBufferAttrs().GetUsage());
+    const GLenum glUsage = outMesh.GetVertexBufferAttrs().GetUsage();
     this->glStateWrapper->BindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glUsage);
     ORYOL_GL_CHECK_ERROR();

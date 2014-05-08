@@ -6,6 +6,9 @@
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
+#if ORYOL_OPENGL
+#include "Render/gl/glEnums.h"
+#endif
 
 namespace Oryol {
 namespace Render {
@@ -15,17 +18,10 @@ namespace Render {
     @class Oryol::Render::IndexType
     @brief selects 16- or 32-bit indices
 */
-class IndexType {
+#if ORYOL_OPENGL
+class IndexType : public glIndexType {
+#endif
 public:
-    /// type enum
-    enum Code {
-        None = 0,           ///< mesh has no indices
-        Index16 = 1,        ///< 16-bit indices
-        Index32 = 2,        ///< 32-bit indices
-        
-        NumIndexTypes,      ///< number of index types
-        InvalidIndexType,   ///< the invalid index type value
-    };
     /// get byte size of index type
     static int32 ByteSize(IndexType::Code c) {
         switch (c) {
@@ -224,22 +220,9 @@ public:
     @class Oryol::Render::PrimitiveType
     @brief primitive type enum (triangle strips, lists, etc...)
 */
-class PrimitiveType {
-public:
-    /// primitive type enum (don't change order, append to end!)
-    enum Code {
-        Points = 0,             ///< point list
-        LineStrip,              ///< line strip
-        LineLoop,               ///< closed line loop
-        Lines,                  ///< line list
-        TriangleStrip,          ///< triangle strip
-        TriangleFan,            ///< triangle fan
-        Triangles,              ///< triangle list
-        
-        NumPrimitiveTypes,      ///< number of primitive types
-        InvalidPrimitiveType,   ///< invalid primitive type value
-    };
-};
+#if ORYOL_OPENGL
+class PrimitiveType : public glPrimitiveType { };
+#endif
 
 //------------------------------------------------------------------------------
 /**
@@ -270,24 +253,18 @@ public:
     @class Oryol::Render::ShaderType
     @brief shader types (vertex shader, fragment shader)
 */
-class ShaderType {
-public:
-    /// shader types enum
-    enum Code {
-        VertexShader,       ///< vertex shader
-        FragmentShader,     ///< fragment shader
-        
-        NumShaderTypes,     ///< number of shader types
-        InvalidShaderType,  ///< invalid shader type
-    };
-};
+#if ORYOL_OPENGL
+class ShaderType : public glShaderType { };
+#endif
 
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::State
     @brief render states
 */
-class State {
+#if ORYOL_OPENGL
+class State : public glState {
+#endif
 public:
     /// these are the render state codes (keys)
     enum Code {
@@ -333,56 +310,6 @@ public:
         NumStateCodes,
         InvalidStateCode
     };
-    
-    /// these are the render state values
-    enum Value {
-        Undefined,      ///< state is not set
-        Zero,           ///< stencil func / blend factor: zero, or replace with zerp
-        One,            ///< blend factor: set to one
-        
-        CW,             ///< for FrontFace state
-        CCW,            ///< for FrontFace state
-        
-        Front,          ///< polygon front side
-        Back,           ///< polygon back side
-        FrontAndBack,   ///< polygon front and back
-        
-        Never,          ///< stencil/depth func: never pass
-        Always,         ///< stencil/depth func: always pass
-        Less,           ///< stencil/depth func: pass if less-then
-        LessEqual,      ///< stencil/depth func: pass if less-or-equal
-        GreaterEqual,   ///< stencil/depth func: pass if greater-or-equal
-        Greater,        ///< stencil/dpeth func: pass if greater
-        NotEqual,       ///< stencil/depth func: pass if not equal
-        
-        Keep,           ///< stencil func: keep value
-        // Zero,        ///< stencil func: set value to zero
-        Replace,        ///< stencil func: replace with reference value
-        Incr,           ///< stencil func: incremenet with saturation
-        Decr,           ///< stencil func: decrement with saturation
-        Invert,         ///< stencil func: bitwise invert
-        IncrWrap,       ///< stencil func: increment with wrap-around
-        DecrWrap,       ///< stencil func: decrement with wrap-around
-        
-        // Zero             ///< blend factor: zero
-        // One              ///< blend factor: one
-        SrcColor,           ///< blend factor: src-color
-        InvSrcColor,        ///< blend factor: one-minus-src-color
-        DstColor,           ///< blend factor: dst-color
-        InvDstColor,        ///< blend factor: one-minus-dst-color
-        SrcAlpha,           ///< blend factor: src-alpha
-        InvSrcAlpha,        ///< blend factor: one-minus-src-alpha
-        DstAlpha,           ///< blend factor: dst-alpha
-        InvDstAlpha,        ///< blend factor: one-minus-dst-alpha
-        ConstColor,         ///< blend factor: constant-color
-        InvConstColor,      ///< blend factor: one-minus-constant-color
-        ConstAlpha,         ///< blend factor: constant-alpha
-        InvConstAlpha,      ///< blend factor: one-minus-constant-alpha
-        SrcAlphaSaturate,   ///< blend factor: (f,f,f), f=min(As,1-Ad)
-        
-        NumStateValues,
-        InvalidStateValue
-    };
 };
 
 //------------------------------------------------------------------------------
@@ -390,75 +317,36 @@ public:
     @class Oryol::Render::TextureFilterMode
     @brief texture sampling filter mode
 */
-class TextureFilterMode {
-public:
-    /// filtering modes
-    enum Code {
-        Nearest,                    ///< nearest (point) filtering, no mipmapping
-        Linear,                     ///< linear filtering, no mipmapping
-        NearestMipmapNearest,       ///< nearest texel, nearest mipmap
-        NearestMipmapLinear,        ///< nearest texel, linear mipmap filtering
-        LinearMipmapNearest,        ///< linear texel filtering, nearest mipmap filtering
-        LinearMipmapLinear,         ///< linear texel filtering, nearest mipmap filtering
-        
-        NumTextureFilterModes,      ///< number of texture filtering modes
-        InvalidTextureFilterMode    ///< the invalid texture filtering mode value
-    };
-};
+#if ORYOL_OPENGL
+class TextureFilterMode  : public glTextureFilterMode { };
+#endif
    
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::TextureType
     @brief texture type (2D, 3D, Cube)
 */
-class TextureType {
-public:
-    /// texture type enum
-    enum Code {
-        Texture2D,              ///< 2D texture
-        Texture3D,              ///< 3D texture
-        TextureCube,            ///< cube map texture
-        
-        NumTextureTypes,        ///< number of texture types
-        InvalidTextureType,     ///< the invalid texture type value
-    };
-};
+#if ORYOL_OPENGL
+class TextureType : public glTextureType { };
+#endif
 
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::TextureWrapMode
     @brief texture coordinate wrapping modes
 */
-class TextureWrapMode {
-public:
-    /// wrap modes
-    enum Code {
-        ClampToEdge,                ///< clamp uv coords to [0,1]
-        Repeat,                     ///< repeat (wrap-around) uv coords
-        MirroredRepeat,             ///< mirror-repeat uv coords
-        
-        NumTextureWrapModes,        ///< number of texture wrap modes
-        InvalidTextureWrapMode,     ///< the invalid texture wrap mode value
-    };
-};
+#if ORYOL_OPENGL
+class TextureWrapMode : public glTextureWrapMode { };
+#endif
 
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::Usage
     @brief graphics resource usage types
 */
-class Usage {
-public:
-    /// usage enum
-    enum Code {
-        Immutable,      ///< resource is immutable, can only be initialized
-        DynamicWrite,   ///< dynamic resource, infrequently written by CPU
-        DynamicStream,  ///< dynamic resource, frequently written by CPU
-        
-        NumUsages,      ///< number of resource usages
-        InvalidUsage    ///< the invalid usage value
-    };
-};
+#if ORYOL_OPENGL
+class Usage : public glUsage { };
+#endif
 
 //------------------------------------------------------------------------------
 /**

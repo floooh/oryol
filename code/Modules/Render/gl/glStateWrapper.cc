@@ -75,7 +75,6 @@ curProgram(0)
         this->samplers2D[i] = 0;
         this->samplersCube[i] = 0;
     }
-    this->setupStateTranslationTable();
     this->setupStateVector();
 }
 
@@ -109,8 +108,7 @@ glStateWrapper::IsValid() const {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onFrontFace(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum frontFaceMode = this->glEnum[input.val[0].v];
+    const GLenum frontFaceMode = input.val[0].v;
     if (frontFaceMode != this->curFrontFaceMode) {
         this->curFrontFaceMode = frontFaceMode;
         ::glFrontFace(frontFaceMode);
@@ -135,8 +133,7 @@ glStateWrapper::onCullFaceEnabled(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onCullFace(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum cullFaceMode = this->glEnum[input.val[0].v];
+    const GLenum cullFaceMode = input.val[0].v;
     if (cullFaceMode != this->curCullFaceMode) {
         this->curCullFaceMode = cullFaceMode;
         ::glCullFace(cullFaceMode);
@@ -220,8 +217,7 @@ glStateWrapper::onStencilTestEnabled(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onStencilFunc(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum func = this->glEnum[input.val[0].v];
+    const GLenum func = input.val[0].v;
     const GLint ref = input.val[1].i;
     const GLuint mask = (GLuint) input.val[2].i;
     if ((func != this->curStencilFunc[0]) || (func != this->curStencilFunc[1]) ||
@@ -239,10 +235,8 @@ glStateWrapper::onStencilFunc(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onStencilFuncSeparate(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    const GLenum face = this->glEnum[input.val[0].v];
-    const GLenum func = this->glEnum[input.val[1].v];
+    const GLenum face = input.val[0].v;
+    const GLenum func = input.val[1].v;
     const GLint ref = input.val[2].i;
     const GLuint mask = (GLuint) input.val[3].i;
     int32 i = (GL_FRONT == face) ? 0 : 1;
@@ -257,12 +251,9 @@ glStateWrapper::onStencilFuncSeparate(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onStencilOp(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[2].v, State::NumStateValues);
-    const GLenum sfail = this->glEnum[input.val[0].v];
-    const GLenum dpfail = this->glEnum[input.val[1].v];
-    const GLenum dppass = this->glEnum[input.val[2].v];
+    const GLenum sfail = input.val[0].v;
+    const GLenum dpfail = input.val[1].v;
+    const GLenum dppass = input.val[2].v;
     if ((sfail != this->curStencilOpSFail[0]) || (sfail != this->curStencilOpSFail[1]) ||
         (dpfail != this->curStencilOpDpFail[0]) || (dpfail != this->curStencilOpDpFail[1]) ||
         (dppass != this->curStencilOpDpPass[0]) || (dppass != this->curStencilOpDpPass[1])) {
@@ -278,14 +269,10 @@ glStateWrapper::onStencilOp(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onStencilOpSeparate(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[2].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[3].v, State::NumStateValues);
-    const GLenum face = this->glEnum[input.val[0].v];
-    const GLenum sfail = this->glEnum[input.val[1].v];
-    const GLenum dpfail = this->glEnum[input.val[2].v];
-    const GLenum dppass = this->glEnum[input.val[3].v];
+    const GLenum face = input.val[0].v;
+    const GLenum sfail = input.val[1].v;
+    const GLenum dpfail = input.val[2].v;
+    const GLenum dppass = input.val[3].v;
     int32 i = (GL_FRONT == face) ? 0 : 1;
     if ((sfail != this->curStencilOpSFail[i]) || (dpfail != this->curStencilOpDpFail[i]) || (dppass != this->curStencilOpDpPass[i])) {
         this->curStencilOpSFail[i] = sfail;
@@ -313,8 +300,7 @@ glStateWrapper::onDepthTestEnabled(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onDepthFunc(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum depthFunc = this->glEnum[input.val[0].v];
+    const GLenum depthFunc = input.val[0].v;
     if (depthFunc != this->curDepthFunc) {
         this->curDepthFunc = depthFunc;
         ::glDepthFunc(depthFunc);
@@ -339,8 +325,7 @@ glStateWrapper::onBlendEnabled(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onBlendEquation(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum mode = this->glEnum[input.val[0].v];
+    const GLenum mode = input.val[0].v;
     if ((mode != this->curBlendEquationRGB) || (mode != this->curBlendEquationAlpha)) {
         this->curBlendEquationRGB = mode;
         this->curBlendEquationAlpha = mode;
@@ -351,10 +336,8 @@ glStateWrapper::onBlendEquation(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onBlendEquationSeparate(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    const GLenum modeRGB = this->glEnum[input.val[0].v];
-    const GLenum modeAlpha = this->glEnum[input.val[1].v];
+    const GLenum modeRGB = input.val[0].v;
+    const GLenum modeAlpha = input.val[1].v;
     if ((modeRGB != this->curBlendEquationRGB) || (modeAlpha != this->curBlendEquationAlpha)) {
         this->curBlendEquationRGB = modeRGB;
         this->curBlendEquationAlpha = modeAlpha;
@@ -365,10 +348,8 @@ glStateWrapper::onBlendEquationSeparate(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onBlendFunc(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    const GLenum src = this->glEnum[input.val[0].v];
-    const GLenum dst = this->glEnum[input.val[1].v];
+    const GLenum src = input.val[0].v;
+    const GLenum dst = input.val[1].v;
     if ((src != this->curBlendFuncSrcRGB) || (src != this->curBlendFuncSrcAlpha) ||
         (dst != this->curBlendFuncDstRGB) || (dst != this->curBlendFuncDstAlpha)) {
         this->curBlendFuncSrcRGB = this->curBlendFuncSrcAlpha = src;
@@ -380,14 +361,10 @@ glStateWrapper::onBlendFunc(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onBlendFuncSeparate(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[1].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[2].v, State::NumStateValues);
-    o_assert_range_dbg(input.val[3].v, State::NumStateValues);
-    const GLenum srcRGB = this->glEnum[input.val[0].v];
-    const GLenum dstRGB = this->glEnum[input.val[1].v];
-    const GLenum srcAlpha = this->glEnum[input.val[2].v];
-    const GLenum dstAlpha = this->glEnum[input.val[3].v];
+    const GLenum srcRGB = input.val[0].v;
+    const GLenum dstRGB = input.val[1].v;
+    const GLenum srcAlpha = input.val[2].v;
+    const GLenum dstAlpha = input.val[3].v;
     if ((srcRGB != this->curBlendFuncSrcRGB) || (srcAlpha != this->curBlendFuncSrcAlpha) ||
         (dstRGB != this->curBlendFuncDstRGB) || (dstAlpha != this->curBlendFuncDstAlpha)) {
         this->curBlendFuncSrcRGB = srcRGB;
@@ -469,8 +446,7 @@ glStateWrapper::onStencilMask(const ValBlock& input) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onStencilMaskSeparate(const ValBlock& input) {
-    o_assert_range_dbg(input.val[0].v, State::NumStateValues);
-    const GLenum face = this->glEnum[input.val[0].v];
+    const GLenum face = input.val[0].v;
     const GLuint mask = input.val[1].i;
     int32 i = (face == GL_FRONT) ? 0 : 1;
     if (mask != this->curStencilMask[i]) {
@@ -553,58 +529,6 @@ glStateWrapper::onDepthRange(const ValBlock& input) {
         ::glDepthRange(nearVal, farVal);
         #endif
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::setupStateTranslationTable() {
-    #if ORYOL_DEBUG
-        Memory::Clear(this->glEnum, sizeof(this->glEnum));
-    #endif
-    this->glEnum[State::Undefined]          = -1;
-    this->glEnum[State::Zero]               = GL_ZERO;
-    this->glEnum[State::One]                = GL_ONE;
-    this->glEnum[State::CW]                 = GL_CW;
-    this->glEnum[State::CCW]                = GL_CCW;
-    this->glEnum[State::Front]              = GL_FRONT;
-    this->glEnum[State::Back]               = GL_BACK;
-    this->glEnum[State::FrontAndBack]       = GL_FRONT_AND_BACK;
-    this->glEnum[State::Never]              = GL_NEVER;
-    this->glEnum[State::Always]             = GL_ALWAYS;
-    this->glEnum[State::Less]               = GL_LESS;
-    this->glEnum[State::LessEqual]          = GL_LEQUAL;
-    this->glEnum[State::GreaterEqual]       = GL_GEQUAL;
-    this->glEnum[State::Greater]            = GL_GREATER;
-    this->glEnum[State::NotEqual]           = GL_NOTEQUAL;
-    this->glEnum[State::Keep]               = GL_KEEP;
-    this->glEnum[State::Replace]            = GL_REPLACE;
-    this->glEnum[State::Incr]               = GL_INCR;
-    this->glEnum[State::Decr]               = GL_DECR;
-    this->glEnum[State::Invert]             = GL_INVERT;
-    this->glEnum[State::IncrWrap]           = GL_INCR_WRAP;
-    this->glEnum[State::DecrWrap]           = GL_DECR_WRAP;
-    this->glEnum[State::SrcColor]           = GL_SRC_COLOR;
-    this->glEnum[State::InvSrcColor]        = GL_ONE_MINUS_SRC_COLOR;
-    this->glEnum[State::DstColor]           = GL_DST_COLOR;
-    this->glEnum[State::InvDstColor]        = GL_ONE_MINUS_DST_COLOR;
-    this->glEnum[State::SrcAlpha]           = GL_SRC_ALPHA;
-    this->glEnum[State::InvSrcAlpha]        = GL_ONE_MINUS_SRC_ALPHA;
-    this->glEnum[State::DstAlpha]           = GL_DST_ALPHA;
-    this->glEnum[State::InvDstAlpha]        = GL_ONE_MINUS_DST_ALPHA;
-    this->glEnum[State::ConstColor]         = GL_CONSTANT_COLOR;
-    this->glEnum[State::InvConstColor]      = GL_ONE_MINUS_CONSTANT_COLOR;
-    this->glEnum[State::ConstAlpha]         = GL_CONSTANT_ALPHA;
-    this->glEnum[State::InvConstAlpha]      = GL_ONE_MINUS_CONSTANT_ALPHA;
-    this->glEnum[State::SrcAlphaSaturate]   = GL_SRC_ALPHA_SATURATE;
-
-    // check that we didn't forget some state
-    #if ORYOL_DEBUG
-    for (int32 i = 0; i < State::NumStateValues; i++) {
-        if (State::Zero != i) {
-            o_assert(0 != this->glEnum[i]);
-        }
-    }
-    #endif
 }
 
 //------------------------------------------------------------------------------

@@ -128,8 +128,8 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     GLuint glTex = this->texFactory->glGenAndBindTexture(glTexTarget);
     
     // setup texture params
-    GLenum glMinFilter = glTypes::AsGLTextureFilterMode(setup.GetMinFilter());
-    GLenum glMagFilter = glTypes::AsGLTextureFilterMode(setup.GetMagFilter());
+    GLenum glMinFilter = setup.GetMinFilter();
+    GLenum glMagFilter = setup.GetMagFilter();
     if (1 == ctx.num_mipmaps(0)) {
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
             glMinFilter = GL_NEAREST;
@@ -140,13 +140,13 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     }
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, glTypes::AsGLTextureWrapMode(setup.GetWrapU()));
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, glTypes::AsGLTextureWrapMode(setup.GetWrapV()));
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, setup.GetWrapU());
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, setup.GetWrapV());
     if (ctx.is_3d()) {
         #if ORYOL_OPENGLES2
         o_error("glTextureLoader: 3D texture not supported on OpenGLES2!\n");
         #else
-        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, glTypes::AsGLTextureWrapMode(setup.GetWrapW()));
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, setup.GetWrapW());
         #endif
     }
     ORYOL_GL_CHECK_ERROR();
