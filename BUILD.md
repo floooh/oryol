@@ -8,7 +8,7 @@ CMake to manage build configurations for the supported host and target platforms
 - cmake 2.8.11 or better
 - for **OSX:** Xcode 5.x
 - for **Windows:** VStudio 2013 (Express should work fine)
-- for **emscripten:** a working emscripten fastcomp compile environment
+- for **emscripten:** 'node' must be in the path, and a JRE must be installed
 - for **Android:** the 'ant' Java build tool must be in the path
 
 ### OSX ###
@@ -54,10 +54,12 @@ To build the 64-bit samples:
 ```
 
 ### emscripten ###
-To build and run the Triangle sample for emscripten:
+To build and run the Triangle sample for emscripten (NOTE: you also 
+need node.js and Java runtime installation):
 
 ```
 > cd ~/oryol
+> ./oryol setup emscripten
 > ./oryol build emscripten-make-release
 [this should run cmake and compile the samples]
 > cd bin/emsc
@@ -72,10 +74,9 @@ Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000**
 To setup a local Android development environment, build and deploy the
 Triangle sample to your Android device (with unlocked development mode):
 
-**NOTE**: this currently only works on OSX:
-
 ```
 > brew install ant
+[...or use the package manager of your choice]
 > cd ~/oryol
 > ./oryol setup android
 [...this downloads the required SDKs...]
@@ -170,6 +171,11 @@ Make sure all these tools are in the path!
 #### Android
 
 - make sure 'ant' is in the path (e.g. on OSX: 'brew install ant')
+
+#### Emscripten
+
+- make sure 'node' is in the path (e.g. on OSX: 'brew install node')
+- make sure a JRE is installed: 'java -version'
 
 ## Using The oryol Build System Wrapper Script
 

@@ -13,6 +13,7 @@ from string import Template
 from tools import texexport as TexExport
 from tools import sdksetup_android as SDKSetupAndroid
 from tools import sdksetup_nacl as SDKSetupNacl
+from tools import sdksetup_emscripten as SDKSetupEmsc
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
@@ -471,6 +472,8 @@ if len(sys.argv) == 1 :
     print '  call cmake-gui or ccmake for selected or specific config'
     print 'oryol webpage'
     print '  build web samples and create web page from it'
+    print 'oryol setup [android | nacl | emscripten]'
+    print '  setup a local Android, Google Native Client, or Emscripten SDK'
 
 else :
     cmd = sys.argv[1]
@@ -667,8 +670,10 @@ else :
             SDKSetupAndroid.setupAndroid()
         elif sys.argv[2] == 'nacl' :
             SDKSetupNacl.setupNacl()
+        elif sys.argv[2] == 'emscripten' :
+            SDKSetupEmsc.setupEmscripten()
         else :
-            error('sdk {} not yet supported'.format())
+            error('sdk {} not yet supported (try android, emscripten, nacl)'.format())
 
     else :
         error('Oryol called with unknown argument: {}'.format(cmd))
