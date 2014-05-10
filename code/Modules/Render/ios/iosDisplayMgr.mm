@@ -56,8 +56,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             break;
             
         default:
-            Log::Warn("iosDisplayMgr: requested color format '%s' not supported, falling back to '%s'!\n",
-                      PixelFormat::ToString(colorFmt), PixelFormat::ToString(PixelFormat::R5G6B5));
+            Log::Warn("iosDisplayMgr: requested color format not supported, falling back to R5G6B5!\n");
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
     }
@@ -78,8 +77,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             break;
             
         default:
-            Log::Warn("iosDisplayMgr: requested depth format '%s' not supported, falling back to '%s'!\n",
-                      PixelFormat::ToString(depthFmt), PixelFormat::ToString(PixelFormat::D16));
+            Log::Warn("iosDisplayMgr: requested depth format not supported, falling back to D16!\n");
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormat16;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
