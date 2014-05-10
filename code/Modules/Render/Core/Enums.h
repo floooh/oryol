@@ -310,6 +310,44 @@ public:
         NumStateCodes,
         InvalidStateCode
     };
+    
+    struct Variant {
+        Variant() : i(0) {};
+        union {
+            State::Value v;
+            int32 i;
+            float32 f;
+            bool b;
+        };
+    };
+    struct Vector {
+        Variant val[4];
+    };
+    
+    static const uint32 U = 0; // undefined
+    static const uint32 V = 1; // State::Value
+    static const uint32 F = 2; // float32
+    static const uint32 I = 3; // int32
+    static const uint32 B = 4; // bool
+    
+    enum Signature {
+        Void = 0,
+        B0 = B,                             ///< 1 bool
+        B0_B1_B2_B3 = B|B<<3|B<<6|B<<9,     ///< 4 bool
+        V0 = V,                             ///< 1 State::Value
+        V0_V1 = V|V<<3,                     ///< 2 State::Value
+        V0_V1_V2 = V|V<<3|V<<6,             ///< 3 State::Value
+        V0_V1_V2_V3 = V|V<<3|V<<6|V<<9,     ///< 4 State::Value
+        F0 = F,                             ///< 1 float32
+        F0_F1 = F|F<<3,                     ///< 2 float32
+        F0_F1_F2_F3 = F|F<<3|F<<6|F<<9,     ///< 4 float32
+        I0 = I,                             ///< 1 int32
+        I0_I1 = I|I<<3,                     ///< 2 int32
+        I0_I1_I2_I3 = I|I<<3|I<<6|I<<9,     ///< 4 int32
+        V0_I0 = V|I<<3,                     ///< 1 State::Value, 1 int32
+        V0_I0_I1 = V|I<<3|I<<6,             ///< 1 State::Value, 2 int32
+        V0_V1_I0_I1 = V|V<<3|I<<6|I<<9      ///< 2 State::Value, 2 int32
+    };
 };
 
 //------------------------------------------------------------------------------
