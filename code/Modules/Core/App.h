@@ -63,7 +63,7 @@ public:
     /// constructor
     App();
     /// destructor
-    ~App();
+    virtual ~App();
     
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();
@@ -132,8 +132,9 @@ Oryol::Core::Args OryolArgs; \
 void android_main(struct android_app* app_) { \
     app_dummy(); \
     OryolAndroidAppState = app_; \
-    clazz app; \
-    app.StartMainLoop(); \
+    clazz* app = new clazz(); \
+    app->StartMainLoop(); \
+    delete(app); \
 }
 #elif ORYOL_PNACL
 #define OryolMain(clazz) \
@@ -153,8 +154,9 @@ void PNaclAppCreator() {\
 Oryol::Core::Args OryolArgs; \
 int main(int argc, const char** argv) { \
     OryolArgs = Oryol::Core::Args(argc, argv); \
-    clazz app; \
-    app.StartMainLoop(); \
+    clazz* app = new clazz(); \
+    app->StartMainLoop(); \
+    delete(app); \
     return 0; \
 }
 #endif
