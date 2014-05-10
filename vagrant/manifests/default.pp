@@ -36,11 +36,10 @@ class essentials {
     package { "vim": }
     package { "git": }
     package { "unzip": }
-    package { "libglu1-mesa-dev": }
-    package { "xorg-dev": }
     package { "cmake-curses-gui": }
     package { "default-jre": }
     package { "ant": }
+    package { "nodejs": }
 }
 
 # ninja build-system
@@ -119,6 +118,8 @@ class cmake {
 class oryol-build {
     package { "libcurl4-gnutls-dev": }
     package { "uuid-dev": }
+    package { "libglu1-mesa-dev": }
+    package { "xorg-dev": }
 }
 
 # need gcc4.8 for C++11
