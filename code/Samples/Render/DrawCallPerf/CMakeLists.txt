@@ -1,0 +1,6 @@
+oryol_begin_app(DrawCallPerf windowed)
+    oryol_sources(.)
+    oryol_deps(Render)
+    oryol_add_web_sample(DrawCallPerf "Measure draw call performance" emscripten)    
+    oryol_add_web_sample(DrawCallPerf "Measure draw call performance" pnacl)    
+oryol_end_app()
