@@ -29,6 +29,7 @@ private:
     Resource::Id renderTargets[2];
     Resource::Id sphere;
     Resource::Id prog;
+    Resource::Id depthState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -101,6 +102,14 @@ InfiniteSpheresApp::OnInit() {
     progSetup.AddTextureUniform("tex", Texture);
     this->prog = this->render->CreateResource(progSetup);
     
+    // setup static depth render states
+    StateBlockSetup depthStateSetup("depthState");
+    depthStateSetup.AddState(Render::State::DepthMask, true);
+    depthStateSetup.AddState(Render::State::DepthTestEnabled, true);
+    depthStateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
+    depthStateSetup.AddState(Render::State::ClearDepth, 1.0f);
+    this->depthState = this->render->CreateResource(depthStateSetup);
+    
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
@@ -138,10 +147,7 @@ InfiniteSpheresApp::OnRunning() {
         const int32 index1 = (this->frameIndex + 1) % 2;
         
         // general render states
-        this->render->ApplyState(Render::State::DepthMask, true);
-        this->render->ApplyState(Render::State::DepthTestEnabled, true);
-        this->render->ApplyState(Render::State::DepthFunc, Render::State::LessEqual);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyStateBlock(this->depthState);
         
         // render sphere to offscreen render target, using the other render target as
         // source texture
@@ -177,6 +183,7 @@ InfiniteSpheresApp::OnRunning() {
 AppState::Code
 InfiniteSpheresApp::OnCleanup() {
     // cleanup everything
+    this->render->DiscardResource(this->depthState);
     this->render->DiscardResource(this->prog);
     this->render->DiscardResource(this->sphere);
     for (int32 i = 0; i < 2; i++) {

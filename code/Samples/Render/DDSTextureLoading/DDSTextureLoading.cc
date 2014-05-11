@@ -34,6 +34,7 @@ private:
     RenderFacade* render = nullptr;
     Resource::Id meshId;
     Resource::Id progId;
+    Resource::Id state;
     static const int32 NumTextures = 13;
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
@@ -117,6 +118,15 @@ DDSTextureLoadingApp::OnInit() {
     progSetup.AddTextureUniform("tex", Texture);
     this->progId = this->render->CreateResource(progSetup);
     
+    // setup static render states
+    StateBlockSetup stateSetup("state");
+    stateSetup.AddState(Render::State::DepthMask, true);
+    stateSetup.AddState(Render::State::DepthTestEnabled, true);
+    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
+    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
+    stateSetup.AddState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
+    this->state = this->render->CreateResource(stateSetup);
+    
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -139,14 +149,10 @@ DDSTextureLoadingApp::OnRunning() {
         this->distVal += 0.01f;
         
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyState(Render::State::DepthMask, true);
-        this->render->ApplyState(Render::State::DepthTestEnabled, true);
-        this->render->ApplyState(Render::State::DepthFunc, Render::State::LessEqual);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->Clear(true, true, true);
+        this->render->ApplyStateBlock(this->state);
         this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyMesh(this->meshId);
+        this->render->Clear(true, true, true);
         
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {
@@ -200,6 +206,7 @@ DDSTextureLoadingApp::OnCleanup() {
             this->render->DiscardResource(tex);
         }
     }
+    this->render->DiscardResource(this->state);
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
     this->render = nullptr;

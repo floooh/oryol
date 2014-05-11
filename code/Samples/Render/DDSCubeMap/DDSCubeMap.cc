@@ -35,6 +35,7 @@ private:
     Resource::Id meshId;
     Resource::Id progId;
     Resource::Id texId;
+    Resource::Id stateId;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -106,6 +107,15 @@ DDSCubeMapApp::OnInit() {
     progSetup.AddTextureUniform("tex", Texture);
     this->progId = this->render->CreateResource(progSetup);
     
+    // setup static state block object
+    StateBlockSetup stateSetup("state");
+    stateSetup.AddState(Render::State::DepthMask, true);
+    stateSetup.AddState(Render::State::DepthTestEnabled, true);
+    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
+    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
+    stateSetup.AddState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
+    this->stateId = this->render->CreateResource(stateSetup);
+    
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -133,14 +143,10 @@ DDSCubeMapApp::OnRunning() {
         this->angleX += 0.01f;
         
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyState(Render::State::DepthMask, true);
-        this->render->ApplyState(Render::State::DepthTestEnabled, true);
-        this->render->ApplyState(Render::State::DepthFunc, Render::State::LessEqual);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
-        this->render->Clear(true, true, true);
         this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyMesh(this->meshId);
+        this->render->ApplyStateBlock(this->stateId);
+        this->render->Clear(true, true, true);
         
         const auto resState = this->render->QueryResourceState(this->texId);
         if (resState == Resource::State::Valid) {
@@ -162,6 +168,7 @@ DDSCubeMapApp::OnRunning() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
+    this->render->DiscardResource(this->stateId);
     this->render->DiscardResource(this->texId);
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);

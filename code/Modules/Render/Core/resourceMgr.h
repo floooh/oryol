@@ -12,6 +12,7 @@
 #include "Render/Core/shaderPool.h"
 #include "Render/Core/programBundlePool.h"
 #include "Render/Core/texturePool.h"
+#include "Render/Core/stateBlockPool.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
 
@@ -60,6 +61,8 @@ public:
     programBundle* LookupProgramBundle(const Resource::Id& resId);
     /// lookup texture object
     texture* LookupTexture(const Resource::Id& resId);
+    /// lookup stateblock object
+    stateBlock* LookupStateBlock(const Resource::Id& resId);
 
 private:
     bool isValid;
@@ -71,10 +74,12 @@ private:
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
     class textureFactory textureFactory;
+    class stateBlockFactory stateBlockFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class programBundlePool programBundlePool;
     class texturePool texturePool;
+    class stateBlockPool stateBlockPool;
 };
 
 //------------------------------------------------------------------------------
@@ -96,6 +101,13 @@ inline texture*
 resourceMgr::LookupTexture(const Resource::Id& resId) {
     o_assert_dbg(this->isValid);
     return this->texturePool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline stateBlock*
+resourceMgr::LookupStateBlock(const Resource::Id& resId) {
+    o_assert_dbg(this->isValid);
+    return this->stateBlockPool.Lookup(resId);
 }
 
 } // namespace Render

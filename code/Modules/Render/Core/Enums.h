@@ -348,6 +348,12 @@ public:
         V0_I0_I1 = V|I<<3|I<<6,             ///< 1 State::Value, 2 int32
         V0_V1_I0_I1 = V|V<<3|I<<6|I<<9      ///< 2 State::Value, 2 int32
     };
+    
+    struct Object {
+        Code state;
+        Signature sig;
+        Vector vec;
+    };
 };
 
 //------------------------------------------------------------------------------

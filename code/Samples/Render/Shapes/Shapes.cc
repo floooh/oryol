@@ -27,6 +27,7 @@ private:
     RenderFacade* render = nullptr;
     Resource::Id meshId;
     Resource::Id progId;
+    Resource::Id stateId;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -82,7 +83,16 @@ ShapeApp::OnInit() {
     progSetup.AddProgramFromSources(0, vsSource, fsSource);
     progSetup.AddUniform("mvp", ModelViewProjection);
     this->progId = this->render->CreateResource(progSetup);
-    
+
+    // build a state block with the static depth state
+    StateBlockSetup stateSetup("state");
+    stateSetup.AddState(Render::State::DepthMask, true);
+    stateSetup.AddState(Render::State::DepthTestEnabled, true);
+    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
+    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
+    stateSetup.AddState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
+    this->stateId = this->render->CreateResource(stateSetup);
+        
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -110,11 +120,7 @@ ShapeApp::OnRunning() {
         this->angleX += 0.02f;
 
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyState(Render::State::DepthMask, true);
-        this->render->ApplyState(Render::State::DepthTestEnabled, true);
-        this->render->ApplyState(Render::State::DepthFunc, Render::State::LessEqual);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
+        this->render->ApplyStateBlock(this->stateId);
         this->render->Clear(true, true, true);
         this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyMesh(this->meshId);
@@ -142,6 +148,7 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnCleanup() {
     // cleanup everything
+    this->render->DiscardResource(this->stateId);
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
     this->render = nullptr;

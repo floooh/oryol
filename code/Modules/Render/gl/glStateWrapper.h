@@ -19,6 +19,7 @@ namespace Oryol {
 namespace Render {
 
 class mesh;
+class stateBlock;
     
 class glStateWrapper {
 public:
@@ -34,6 +35,8 @@ public:
     /// return true if the state wrapper has been setup
     bool IsValid() const;
     
+    /// apply state block
+    void ApplyStateBlock(stateBlock* sb);
     /// apply state
     void ApplyState(State::Code state, bool b0);
     /// apply state

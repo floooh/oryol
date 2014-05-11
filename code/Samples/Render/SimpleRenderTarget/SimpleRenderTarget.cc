@@ -30,6 +30,7 @@ private:
     Resource::Id torus;
     Resource::Id rtProg;
     Resource::Id dispProg;
+    Resource::Id state;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -133,6 +134,15 @@ SimpleRenderTargetApp::OnInit() {
     dispProgSetup.AddTextureUniform("tex", Texture);
     this->dispProg = this->render->CreateResource(dispProgSetup);
     
+    // constant state
+    StateBlockSetup stateSetup("state");
+    stateSetup.AddState(Render::State::DepthMask, true);
+    stateSetup.AddState(Render::State::DepthTestEnabled, true);
+    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
+    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
+    stateSetup.AddState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
+    this->state = this->render->CreateResource(stateSetup);
+    
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -160,15 +170,11 @@ SimpleRenderTargetApp::OnRunning() {
         this->angleY += 0.01f;
         this->angleX += 0.02f;
         
-        // general render states
-        this->render->ApplyState(Render::State::DepthMask, true);
-        this->render->ApplyState(Render::State::DepthTestEnabled, true);
-        this->render->ApplyState(Render::State::DepthFunc, Render::State::LessEqual);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        // apply general states
+        this->render->ApplyStateBlock(this->state);
         
         // render donut to offscreen render target
         this->render->ApplyRenderTarget(this->renderTarget);
-        this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
         this->render->Clear(true, true, true);
         this->render->ApplyMesh(this->torus);
         this->render->ApplyProgram(this->rtProg, 0);
@@ -178,7 +184,6 @@ SimpleRenderTargetApp::OnRunning() {
         
         // render sphere to display, with offscreen render target as texture
         this->render->ApplyRenderTarget(Resource::Id());
-        this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
         this->render->Clear(true, true, true);
         this->render->ApplyMesh(this->sphere);
         this->render->ApplyProgram(this->dispProg, 0);
@@ -197,6 +202,7 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
     // cleanup everything
+    this->render->DiscardResource(this->state);
     this->render->DiscardResource(this->rtProg);
     this->render->DiscardResource(this->dispProg);
     this->render->DiscardResource(this->sphere);

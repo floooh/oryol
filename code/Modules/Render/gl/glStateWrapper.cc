@@ -7,6 +7,7 @@
 #include "Render/gl/glExt.h"
 #include "Core/Memory/Memory.h"
 #include "Render/Core/mesh.h"
+#include "Render/Core/stateBlock.h"
 
 namespace Oryol {
 namespace Render {
@@ -541,7 +542,7 @@ glStateWrapper::setupJumpTable() {
     
     // glEnable(GL_CULL_FACE)
     this->funcs[State::CullFaceEnabled].cb = &glStateWrapper::onCullFaceEnabled;
-    this->funcs[State::CullFaceEnabled].sig = State::V0;
+    this->funcs[State::CullFaceEnabled].sig = State::B0;
     
     // glCullFace(GLenum mode)
     this->funcs[State::CullFace].cb = &glStateWrapper::onCullFace;
@@ -549,7 +550,7 @@ glStateWrapper::setupJumpTable() {
     
     // glEnable(GL_POLYGON_OFFSET_FILL)
     this->funcs[State::DepthOffsetEnabled].cb = &glStateWrapper::onDepthOffsetEnabled;
-    this->funcs[State::DepthOffsetEnabled].sig = State::V0;
+    this->funcs[State::DepthOffsetEnabled].sig = State::B0;
     
     // glPolygonOffset(GLfloat, GLfloat)
     this->funcs[State::DepthOffset].cb = &glStateWrapper::onDepthOffset;
@@ -557,7 +558,7 @@ glStateWrapper::setupJumpTable() {
     
     // glEnable(GL_SCISSOR_TEST)
     this->funcs[State::ScissorTestEnabled].cb = &glStateWrapper::onScissorTestEnabled;
-    this->funcs[State::ScissorTestEnabled].sig = State::V0;
+    this->funcs[State::ScissorTestEnabled].sig = State::B0;
     
     // glScissor(GLint, GLint, GLint, GLint)
     this->funcs[State::ScissorRect].cb = &glStateWrapper::onScissorRect;
@@ -565,7 +566,7 @@ glStateWrapper::setupJumpTable() {
     
     // glEnable(GL_STENCIL_TEST)
     this->funcs[State::StencilTestEnabled].cb = &glStateWrapper::onStencilTestEnabled;
-    this->funcs[State::StencilTestEnabled].sig = State::V0;
+    this->funcs[State::StencilTestEnabled].sig = State::B0;
     
     // glStencilFunc(GLenum, int, uint)
     this->funcs[State::StencilFunc].cb = &glStateWrapper::onStencilFunc;
@@ -593,7 +594,7 @@ glStateWrapper::setupJumpTable() {
     
     // glEnable(GL_BLEND)
     this->funcs[State::BlendEnabled].cb = &glStateWrapper::onBlendEnabled;
-    this->funcs[State::BlendEnabled].sig = State::V0;
+    this->funcs[State::BlendEnabled].sig = State::B0;
     
     // glBlendEquation(GLenum)
     this->funcs[State::BlendEquation].cb = &glStateWrapper::onBlendEquation;
@@ -617,11 +618,11 @@ glStateWrapper::setupJumpTable() {
 
     // glEnable(GL_DITHER)
     this->funcs[State::DitherEnabled].cb = &glStateWrapper::onDitherEnabled;
-    this->funcs[State::DitherEnabled].sig = State::V0;
+    this->funcs[State::DitherEnabled].sig = State::B0;
     
     // glColorMask(GLenum, GLenum, GLenum, GLenum)
     this->funcs[State::ColorMask].cb = &glStateWrapper::onColorMask;
-    this->funcs[State::ColorMask].sig = State::V0_V1_V2_V3;
+    this->funcs[State::ColorMask].sig = State::B0_B1_B2_B3;
     
     // glDepthMask(GLenum)
     this->funcs[State::DepthMask].cb = &glStateWrapper::onDepthMask;
@@ -791,6 +792,20 @@ glStateWrapper::BindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
         ORYOL_GL_CHECK_ERROR();
         ::glBindTexture(target, tex);
         ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyStateBlock(stateBlock* sb) {
+    o_assert_dbg((nullptr != sb) && (sb->GetState() == Resource::State::Valid));
+    int32 numStates = sb->GetNumStates();
+    const State::Object* states = sb->GetStates();
+    for (int32 i = 0; i < numStates; i++) {
+        const State::Object& curState = states[i];
+        o_assert_dbg((curState.state >= 0) && (curState.state < State::NumStateCodes));
+        o_assert_dbg(curState.sig == this->funcs[curState.state].sig);
+        (this->*funcs[curState.state].cb)(curState.vec);
     }
 }
 
