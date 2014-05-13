@@ -1,0 +1,5 @@
+<Generator type="ShaderLibrary" >
+    <ShaderLibrary name="TestShaderLibrary">
+        <AddDir path="shd"/>
+    </ShaderLibrary>
+</Generator>

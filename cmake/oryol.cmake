@@ -349,6 +349,7 @@ macro(oryol_sources dirs)
         # gather files
         file(GLOB src ${dir}/*.cc ${dir}/*.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
         file(GLOB xmls ${dir}/*.xml)
+        file(GLOB shds ${dir}/*.shd)
 
         # add generated source files
         foreach (xml ${xmls})
@@ -360,13 +361,13 @@ macro(oryol_sources dirs)
         # setup IDE groups
         string(REPLACE / \\ groupName ${dir})
         if (${dir} STREQUAL .)
-            source_group("" FILES ${src} ${xmls})
+            source_group("" FILES ${src} ${xmls} ${shds})
         else()
-            source_group(${groupName} FILES ${src} ${xmls})
+            source_group(${groupName} FILES ${src} ${xmls} ${shds})
         endif()
 
         # add to global tracker variables
-        list(APPEND CurSources ${src} ${xmls})
+        list(APPEND CurSources ${src} ${xmls} ${shds})
         list(APPEND CurXmlFiles ${xmls})
 
         # remove duplicate sources 
