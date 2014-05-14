@@ -47,13 +47,15 @@ def processFile(absXmlPath) :
             # generated header file doesn't exist yet
             needsProcessing = True
 
+        # dynamically load the generator module
+        moduleName = xmlRoot.get('type')
+        fp, pathname, description = imp.find_module(moduleName)
+        module = imp.load_module(moduleName, fp, pathname, description)
+
+        if not needsProcessing :
+            needsProcessing = module.isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath)
         if needsProcessing :
             print "  Generating source file from '{}'".format(absXmlPath)
-
-            # read the generator script to use
-            moduleName = xmlRoot.get('type')
-            fp, pathname, description = imp.find_module(moduleName)
-            module = imp.load_module(moduleName, fp, pathname, description)
             module.generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath)
         else :
             print "  Nothing to do for '{}'".format(absXmlPath)

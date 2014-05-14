@@ -369,6 +369,10 @@ def generateSource(xmlTree, absSourcePath) :
     f.close()
 
 #-------------------------------------------------------------------------------
+def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
+    return False
+
+#-------------------------------------------------------------------------------
 def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     generateHeader(xmlTree, absHeaderPath)
     generateSource(xmlTree, absSourcePath)
