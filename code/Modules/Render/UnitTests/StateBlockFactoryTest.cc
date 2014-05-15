@@ -15,7 +15,7 @@ static void check(const State::Object* stateObj) {
     CHECK(stateObj[0].vec.val[0].v == State::CW);
     CHECK(stateObj[1].state == State::CullFaceEnabled);
     CHECK(stateObj[1].sig == State::B0);
-    CHECK(stateObj[1].vec.val[0].v == true);
+    CHECK(stateObj[1].vec.val[0].b == true);
     CHECK(stateObj[2].state == State::DepthOffset);
     CHECK(stateObj[2].sig == State::F0_F1);
     CHECK_CLOSE(0.1f, stateObj[2].vec.val[0].f, 0.0001f);
