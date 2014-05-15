@@ -51,6 +51,12 @@ def error(msg) :
     sys.exit(10)
 
 #-------------------------------------------------------------------------------
+def srcError(msg, fileName, line) :
+    # FIXME: format so that IDE can parse the string
+    print '{}:{}: error: {}\n'.format(fileName, line, msg)
+    sys.exit(10)
+
+#-------------------------------------------------------------------------------
 def dump(obj) :
     pprint(vars(obj))
 
@@ -144,28 +150,85 @@ class Parser :
     '''
     def __init__(self, shaderLib) :
         self.shaderLib = shaderLib
+        self.fileName = None
+        self.lines = []
         self.current = None
+        self.inComment = False
+        self.braceDepth = 0
 
-    def parseLine(self, line, lineNumber) :
+    def stripComments(self, line, fileName, lineNumber) :
+        '''
+        Remove comments from a single line, can carry
+        over to next or from previous line.
+        '''
+        done = False
+        while not done :
+            # if currently in comment, look for end-of-comment
+            if self.inComment :
+                endIndex = line.find('*/')
+                if endIndex == -1 :
+                    # entire line is comment
+                    if '/*' in line or '//' in line :
+                        srcError('comment in comment!', fileName, lineNumber)
+                    else :
+                        return ''
+                else :
+                    comment = line[:endIndex+2]
+                    if '/*' in comment or '//' in comment :
+                        srcError('comment in comment!', fileName, lineNumber)
+                    else :
+                        line = line[endIndex+2:]
+                        self.inComment = False
+
+            # clip off winged comment (if exists)
+            wingedIndex = line.find('//')
+            if wingedIndex != -1 :
+                line = line[:wingedIndex]
+
+            # look for start of comment
+            startIndex = line.find('/*')
+            if startIndex != -1 :
+                # ...and for the matching end...
+                endIndex = line.find('*/', startIndex)
+                if endIndex != -1 :
+                    line = line[:startIndex] + line[endIndex+2:]
+                else :
+                    # comment carries over to next line
+                    self.inComment = True
+                    line = line[:startIndex]
+                    done = True
+            else :
+                # no comment until end of line, done
+                done = True;
+        return line
+
+    def parseLine(self, line, fileName, lineNumber) :
         '''
         Parse a single line.
         '''
+        line = self.stripComments(line, fileName, lineNumber)
+        if not line.isspace():
+            self.lines.append((lineNumber, line))
+            sys.stdout.write(line)
+
         # check if the line contains a tag
         tagStartIndex = line.find('${')
         if tagStartIndex != -1 :
             tagEndIndex = line.index('}', tagStartIndex)
             tagString = line[tagStartIndex+2:tagEndIndex]
-            print "found tag '{}'".format(tagString)
+            print ">>> found tag '{}'".format(tagString)
 
-    def parse(self, path) :
+    def parse(self, fileName) :
         '''
         Parse a single file and populate shader lib
         '''
-        print '=> parsing {}'.format(path)
-        f = open(path, 'r')
+        print '=> parsing {}'.format(fileName)
+        f = open(fileName, 'r')
         lineNumber = 0
+        self.fileName = fileName
+        self.lines = []
         for line in f :
-            self.parseLine(line, lineNumber)
+            self.parseLine(line, fileName, lineNumber)
             lineNumber += 1
         f.close()
 
