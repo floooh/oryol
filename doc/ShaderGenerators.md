@@ -39,8 +39,7 @@ script which is selected in the header of the XML file.
 
 This process is already integrated into the build process as a CMake pre-build-step.
 
-For shader generation there is only a minimal XML file per shader library which contains the name of the 
-library and where to find the shader snippet files for the library, e.g.:
+For shader generation there is only a very minimal XML file per shader library (since I didn't want to embed GLSL into XML) which contains the name of the library and where to find the shader snippet files for the library, e.g.:
 
 ```xml
 <Generator type="ShaderLibrary" name="PreLightPassLib">
@@ -49,7 +48,7 @@ library and where to find the shader snippet files for the library, e.g.:
 </Generator>
 ```
 
-This would gather all snippet sources from the directories "shd/prelightpass" and "shd/common" and 
+This would gather all GLSL snippet files from the directories "shd/prelightpass" and "shd/common" and 
 create a C++ header/source pair "PreLightPassLib.h/.cc" as part of the build process.
 
 #### Shader Snippet Parsing
