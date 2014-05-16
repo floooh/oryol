@@ -186,7 +186,7 @@ Also note the special ${texture2D} tag. Since different GLSL version have differ
 sampling functions it is necessary to handle them as special tags which will be replaced by the code
 generator with the right function.
 
-###### Bundles and Program Tags:
+##### Bundles and Program Tags:
 
 A program tag associates a vertex- with a fragment-shader, these will be linked into a GL shader program at
 runtime.
@@ -202,7 +202,7 @@ ${program:MyRigidProgram MyRigidVertexShader MyFragmentShader}
 ...
 ```
 
-### Outlook
+### What's next
 
 From here on it gets rather murky, what's missing are high-level 'rendering technique template' which
 would differentiate a forward renderer shader library from a deferred renderer shader library.
