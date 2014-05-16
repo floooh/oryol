@@ -67,8 +67,7 @@ or
 ${tag}
 ```
 
-Everything within **${ }** contains meta-data for the parser and either be removed from the final GLSL code, or replaced
-with an actual GLSL statement.
+Everything within **${ }** contains special information for the parser and will either be removed from the final GLSL code, or replaced with an actual GLSL statement.
 
 ##### Function Tags
 
