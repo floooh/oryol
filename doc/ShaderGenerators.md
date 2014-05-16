@@ -2,6 +2,8 @@
 
 Generate C++ code with embedded GLSL shaders from annotated shader source snippets through a python generator script.
 
+**NOTE:** this is work-in-progress, and currently the focus is on simple OpenGL ES GLSL (however later hopefully special features of higher GLSL versions will be supported by the code generators).
+
 ### Problems:
 
 Creating and managing shader libraries can be tricky, especially in GLSL:
@@ -161,11 +163,9 @@ ${out: vec2 uv}
 
 The ${in:} and ${out:} tag have a special meaning in vertex shaders:
 
-${in:} describes a vertex attribute, these have special names in Oryol (e.g. position, normal, tangent, texcoord0..7 etc).
-
-${out:} describes a varying which is handed over to the fragment shader.
-
-$${uniform:} tags behave the same as described above.
+* **${in:}** describes a vertex attribute, these have special names in Oryol (e.g. position, normal, tangent, texcoord0..7 etc).
+* **${out:}** describes a varying which is handed over to the fragment shader.
+* **${uniform:}** tags behave the same as described above.
 
 ##### Fragment Shader Tags
 
