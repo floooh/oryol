@@ -6,7 +6,7 @@ Generate C++ code with embedded GLSL shaders from annotated shader source snippe
 
 ### Problems:
 
-Creating and managing shader libraries can be tricky, especially in GLSL:
+Creating and maintaining shader libraries can be tricky, especially in GLSL:
 
 * incompatibilities between different GLSL versions
 * no include or 'external dependencies' mechanism
