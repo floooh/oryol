@@ -33,11 +33,11 @@ with binding / reflection information, these classes are only data providers and
 
 #### Build Process Integration
 
-Oryol already comes with a general source code generation mechanism integrated into the build process, called 'generator 
-scripts'. This usually converts one XML file into one C++ header and one C++ source file through a python script selected 
-in the header of the XML file.
+Oryol already comes with a general source code generation mechanism called 'generator 
+scripts'. This usually converts one XML file into one C++ header and one C++ source file through a python 
+script which is selected in the header of the XML file.
 
-This process is already integrated transparently as a CMake pre-build-step into the compile process.
+This process is already integrated into the build process as a CMake pre-build-step.
 
 For shader generation there is only a minimal XML file per shader library which contains the name of the 
 library and where to find the shader snippet files for the library, e.g.:
