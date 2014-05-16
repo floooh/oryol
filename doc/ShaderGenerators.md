@@ -1,6 +1,6 @@
 ## Shader Generators
 
-Generate C++ code with embedded GLSL shaders from annotated shader source snippets.
+Generate C++ code with embedded GLSL shaders from annotated shader source snippets through a python generator script.
 
 ### Problems:
 
@@ -188,8 +188,27 @@ Also note the special ${texture2D} tag. Since different GLSL version have differ
 sampling functions it is necessary to handle them as special tags which will be replaced by the code
 generator with the right function.
 
+###### Bundles and Program Tags:
 
+A program tag associates a vertex- with a fragment-shader, these will be linked into a GL shader program at
+runtime.
 
+A bundle groups several related shader-programs and under a single handle and adds a common set of uniform variables.
+These are basically different variations of the same shader, e.g. a skinned vs a static, lit vs unlit, surface
+material vs shadow map shader...
 
+```
+${bundle:MyShaderBundle}
+${program:MySkinnedProgram MySkinnedVertexShader MyFragmentShader}
+${program:MyRigidProgram MyRigidVertexShader MyFragmentShader}
+...
+```
 
+### Outlook
+
+From here on it gets rather murky, what's missing are high-level 'rendering technique template' which
+would differentiate a forward renderer shader library from a deferred renderer shader library.
+
+After that it may be useful to think about adding support for a 'data-flow' shader editor, which would
+require new tags for input- and output slots, and some limited support for code generation at runtime.
 
