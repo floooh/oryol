@@ -43,6 +43,7 @@ UniformTypes = [ 'bool', 'int', 'uint', 'float',
                  'mat2', 'mat3', 'mat4',
                  'sampler1D', 'sampler2D', 'sampler2DRect', 
                  'sampler3D', 'sampler3DRect', 'samplerCube' ]
+
 AttrTypes = [ 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4' ]
 
 #-------------------------------------------------------------------------------
@@ -70,16 +71,17 @@ class Snippet :
         self.name = None
         self.deps = []
         self.path = None
-        self.lineIndex = 0
-        self.numLindex = 0
+        self.lines = []
 
 #-------------------------------------------------------------------------------
 class Func(Snippet) :
     '''
     A function snippet
     '''
-    def __init__(self) :
-        super(Func, self).__init__()
+    def __init__(self, name, path) :
+        Snippet.__init__(self)
+        self.name = name
+        self.path = path
         
 #-------------------------------------------------------------------------------
 class Uniform :
@@ -105,8 +107,10 @@ class VertexShader(Snippet) :
     '''
     A vertex shader function.
     '''
-    def __init__(self) :
-        super(VertexShader, self).__init__()
+    def __init__(self, name, path) :
+        Snippet.__init__(self)
+        self.name = name
+        self.path = path
         self.uniforms = []
         self.inAttrs = []
         self.outAttrs = []
@@ -116,8 +120,10 @@ class FragmentShader(Snippet) :
     '''
     A fragment shader function.
     '''
-    def __init__(self) :
-        super(FragmentShader, self).__init__()
+    def __init__(self, name, path) :
+        Snippet.__init__(self)
+        self.name = name
+        self.path = path
         self.inAttrs = []
         self.uniforms = []
 
@@ -134,12 +140,12 @@ class Program() :
         self.uniforms = []
 
 #-------------------------------------------------------------------------------
-class ProgramBundle() :
+class Bundle() :
     '''
     A program bundle (array of vertex/fragment shader tuples, and uniforms)
     '''
-    def __init__(self) :
-        self.name = None
+    def __init__(self, name) :
+        self.name = name
         self.programs = []
         self.uniforms = []
 
@@ -148,15 +154,16 @@ class Parser :
     '''
     Populate a shader library from annotated shader source files.
     '''
+    #---------------------------------------------------------------------------
     def __init__(self, shaderLib) :
         self.shaderLib = shaderLib
         self.fileName = None
-        self.lines = []
+        self.lineNumber = 0
         self.current = None
         self.inComment = False
-        self.braceDepth = 0
 
-    def stripComments(self, line, fileName, lineNumber) :
+    #---------------------------------------------------------------------------
+    def stripComments(self, line) :
         '''
         Remove comments from a single line, can carry
         over to next or from previous line.
@@ -169,13 +176,13 @@ class Parser :
                 if endIndex == -1 :
                     # entire line is comment
                     if '/*' in line or '//' in line :
-                        srcError('comment in comment!', fileName, lineNumber)
+                        srcError('comment in comment!', self.fileName, self.lineNumber)
                     else :
                         return ''
                 else :
                     comment = line[:endIndex+2]
                     if '/*' in comment or '//' in comment :
-                        srcError('comment in comment!', fileName, lineNumber)
+                        srcError('comment in comment!', self.fileName, self.lineNumber)
                     else :
                         line = line[endIndex+2:]
                         self.inComment = False
@@ -200,36 +207,180 @@ class Parser :
             else :
                 # no comment until end of line, done
                 done = True;
+        line = line.strip(' \t\n\r')
         return line
 
-    def parseLine(self, line, fileName, lineNumber) :
+    #---------------------------------------------------------------------------
+    def removeTag(self, line, startIndex, endIndex) :
+        return line[:startIndex] + line[endIndex+1:]
+
+    #---------------------------------------------------------------------------
+    def fillTag(self, line, startIndex, endIndex, char) :
+        return line[:startIndex] + char * ((endIndex + 1) - startIndex) + line[endIndex+1:]
+
+    #---------------------------------------------------------------------------
+    def newFunc(self, line, kw, args, startIndex, endIndex) :
+        print 'newFunc: kw={} args={}'.format(kw, args)
+        if len(args) != 1 :
+            srcError("func: exactly 1 arg expected (name), {} given".format(len(args)), self.fileName, self.lineNumber)
+        name = args[0]
+        if name in self.shaderLib.functions :
+            srcError("func: function '{}'' already defined!".format(name), self.fileName, self.lineNumber)
+        func = Func(name, self.fileName)
+        self.shaderLib.functions[name] = func
+        self.current = func
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def newVertexShader(self, line, kw, args, startIndex, endIndex) :
+        print 'newVertexShader: kw={} args={}'.format(kw, args)
+        if len(args) != 1:
+            srcError("vs: exactly 1 arg expected (name), {} given".format(len(args)), self.fileName, self.lineNumber)
+        name = args[0]
+        if name in self.shaderLib.vertexShaders :
+            srcError("vs: vertex shader '{}' already defined!".format(name), self.fileName, self.lineNumber)            
+        vs = VertexShader(name, self.fileName)
+        self.shaderLib.vertexShaders[name] = vs
+        self.current = vs        
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def newFragmentShader(self, line, kw, args, startIndex, endIndex) :
+        print 'newFragmentShader: kw={} args={}'.format(kw, args)
+        if len(args) != 1:
+            srcError("fs: exactly 1 arg expected (name), {} given".format(len(args)), self.fileName, self.lineNumber)
+        name = args[0]
+        if name in self.shaderLib.fragmentShaders :
+            srcError("fs: fragment shader '{}' already defined!".format(name), self.fileName, self.lineNumber)
+        fs = FragmentShader(name, self.fileName)
+        self.shaderLib.fragmentShaders[name] = fs
+        self.current = fs
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def newBundle(self, line, kw, args, startIndex, endIndex) :
+        print 'newBundle: kw={} args={}'.format(kw, args)
+        if len(args) != 1:
+            srcError("bundle: exactly 1 arg expected (name), {} given".format(len(args)), self.fileName, self.lineNumber);
+        name = args[0]
+        if name in self.shaderLib.bundles :
+            srcError("bundle: bundle '{}' already defined!".format(name), self.fileName, self.lineNumber)
+        bundle = Bundle(name)
+        self.shaderLib.bundles[name] = bundle
+        self.current = bundle            
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addInTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addInTag: kw={} args={}'.format(kw, args)
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addOutTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addOutTag: kw={} args={}'.format(kw, args)
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addReturnTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addReturnTag: kw={} args={}'.format(kw, args)
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addUniformTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addUniformTag: kw={} args={}'.format(kw, args)
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addProgramTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addProgramTag: kw={} args={}'.format(kw, args)
+        return self.removeTag(line, startIndex, endIndex)
+
+    #---------------------------------------------------------------------------
+    def addReplaceTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addReplaceTag: kw={} args={}'.format(kw, args)
+        return self.fillTag(line, startIndex, endIndex, 'X')
+
+    #---------------------------------------------------------------------------
+    def addDependencyTag(self, line, kw, args, startIndex, endIndex) :
+        print 'addDependencyTag: kw={} args={}'.format(kw, args)
+        return self.fillTag(line, startIndex, endIndex, 'D')
+
+    #---------------------------------------------------------------------------
+    def parseTags(self, line) :
+        startIndex = 0
+        endIndex = 0
+        while startIndex != -1 :
+            startIndex = line.find('${')
+            if startIndex != -1 :
+                endIndex = line.find('}', startIndex)
+                if endIndex != -1 :
+                    tag = line[startIndex+2 : endIndex]
+                    tag = tag.strip(' \t')
+                    colonIndex = tag.find(':')
+                    if colonIndex == -1 :
+                        kw = tag
+                        args = []
+                    else :
+                        kw = tag[:colonIndex]
+                        args = tag[colonIndex+1:].split()
+
+                    if kw == 'func':
+                        line = self.newFunc(line, kw, args, startIndex, endIndex)
+                    elif kw == 'vs':
+                        line = self.newVertexShader(line, kw, args, startIndex, endIndex)
+                    elif kw == 'fs':
+                        line = self.newFragmentShader(line, kw, args, startIndex, endIndex)
+                    elif kw == 'bundle':
+                        line = self.newBundle(line, kw, args, startIndex, endIndex)
+                    elif kw == 'in':
+                        line = self.addInTag(line, kw, args, startIndex, endIndex)
+                    elif kw == 'out':
+                        line = self.addOutTag(line, kw, args, startIndex, endIndex)
+                    elif kw == 'return':
+                        line = self.addReturnTag(line, kw, args, startIndex, endIndex)
+                    elif kw == 'uniform':
+                        line = self.addUniformTag(line, kw, args, startIndex, endIndex)
+                    elif kw == 'program':
+                        line = self.addProgramTag(line, kw, args, startIndex, endIndex)
+                    elif kw in ['texture2D', 'texture2DProj', 'texture2DLod', 'texture2DProjLod',
+                                'textureCube', 'textureCubeLod', 'position', 'color'] :
+                        if args :
+                            srcError("replacement tag '{}' can't have args!".format(kw), self.fileName, self.lineNumber)
+                        line = self.addReplaceTag(line, kw, args, startIndex, endIndex)
+                    else :
+                        if args :
+                            srcError("function call tag '{}' can't have args!".format(kw), self.fileName, self.lineNumber)
+                        line = self.addDependencyTag(line, kw, args, startIndex, endIndex)
+                else :
+                    srcError('unterminated tag', self.fileName, self.lineNumber)
+        line = line.strip(' \t\r\n')
+        return line
+
+    #---------------------------------------------------------------------------
+    def parseLine(self, line) :
         '''
         Parse a single line.
         '''
-        line = self.stripComments(line, fileName, lineNumber)
-        if not line.isspace():
-            self.lines.append((lineNumber, line))
-            sys.stdout.write(line)
+        line = self.stripComments(line)
+        if line != '':
+            line = self.parseTags(line)
+            if line != '':
+                print '{}: {}'.format(self.lineNumber, line)
+                if self.current != None:
+                    self.current.lines.append((self.lineNumber, line))
 
-        # check if the line contains a tag
-        tagStartIndex = line.find('${')
-        if tagStartIndex != -1 :
-            tagEndIndex = line.index('}', tagStartIndex)
-            tagString = line[tagStartIndex+2:tagEndIndex]
-            print ">>> found tag '{}'".format(tagString)
-
+    #---------------------------------------------------------------------------
     def parse(self, fileName) :
         '''
         Parse a single file and populate shader lib
         '''
         print '=> parsing {}'.format(fileName)
         f = open(fileName, 'r')
-        lineNumber = 0
         self.fileName = fileName
-        self.lines = []
+        self.lineNumber = 0
         for line in f :
-            self.parseLine(line, fileName, lineNumber)
-            lineNumber += 1
+            self.parseLine(line)
+            self.lineNumber += 1
         f.close()
 
 #-------------------------------------------------------------------------------
@@ -237,42 +388,46 @@ class ShaderLibrary :
     '''
     This represents the entire shader lib.
     '''
+    #---------------------------------------------------------------------------
     def __init__(self, xmlTree, absXmlPath) :
         self.xmlRoot = xmlTree.getroot()
         self.xmlPath = absXmlPath
         self.name = None
         self.dirs = []
         self.sources = []
-        self.funcs = {}
+        self.functions = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
         self.programs = {}
-        self.programBundles = {}
+        self.bundles = {}
         self.current = None
 
-    '''
-    Parse the root xml file, this sets the name
-    and the source directories members.
-    '''
+    #---------------------------------------------------------------------------
     def parseXmlTree(self) :
+        '''
+        Parse the root xml file, this sets the name
+        and the source directories members.
+        '''
         rootDir = os.path.dirname(self.xmlPath)
         print 'ROOT DIR: {}'.format(rootDir)
         self.name = self.xmlRoot.get('name')
         for dir in self.xmlRoot.findall('AddDir') :
             self.dirs.append(rootDir + '/' + dir.get('path'))
 
-    '''
-    This gathers the shader source file names from
-    all source directories.
-    '''
+    #---------------------------------------------------------------------------
     def gatherSources(self) :
+        '''
+        This gathers the shader source file names from
+        all source directories.
+        '''
         for dir in self.dirs :
             self.sources.extend(glob.glob(dir + '/*.shd'))
 
-    '''
-    Parse one source file.
-    '''
+    #---------------------------------------------------------------------------
     def parseSources(self) :
+        '''
+        Parse one source file.
+        '''
         parser = Parser(self)
         for source in self.sources :            
             parser.parse(source)
@@ -308,6 +463,7 @@ def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     shaderLibrary.gatherSources()
     dump(shaderLibrary)
     shaderLibrary.parseSources()
+    dump(shaderLibrary)
 
     generateHeader(xmlTree, absHeaderPath)
     generateSource(xmlTree, absSourcePath)
