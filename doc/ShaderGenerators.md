@@ -98,7 +98,98 @@ The GLSL code for this function would look like this:
 ```
 vec4 MyFunction(float arg0, vec2 arg1)
 {
-    vec4 result;
-    // normal GLSL code...
-    return result;
+vec4 result;
+... (comments and whitespace is removed)
+return result;
 }
+```
+
+Multiple output and in/out arguments are possible:
+
+```
+${func: MyFunction}
+${in: float bla}
+${in: vec2 blub}
+${inout: vec3 blob}
+${out: vec4 foo}
+${out: vec4 baz}
+{
+    // GLSL code which assigns values to blob, foo and baz
+}
+```
+
+Functions can also directly access uniform variables, these will be added to a shader's uniform variables at code generation time. Uniforms have a type, a GLSL variable name, and finally a binding name for the C++ side (the generated
+shader class will contain a constant of that name). Here's an example of a function which directly uses
+the ModelViewProj uniform:
+
+```
+${func: MyTransform}
+${uniform: mat4 mvp ModelViewProj}
+${in: vec4 pos}
+${return: vec4}
+{
+    return mvp * pos;
+}
+```
+
+To call a function defined with a ${func:} tag, just embed the function name in **${ }** somewhere else:
+
+```
+    ...
+    vec4 transformedPos = ${MyTransform}(position);
+    ...
+```
+
+This will also automatically pull in the MyTransform function as a dependency into the generated GLSL code.
+
+
+##### Vertex Shader Tags
+
+Vertex shaders are special function tags which describe a vertex shader main function. The transformed
+position must be assigned to the special tag ${position} (this will be replaced with gl_Position by the
+code generator):
+
+```
+${vs:MyVertexShader}
+${uniform: mat4 mvp ModelViewProj}
+${in: vec4 position}
+${in: vec2 texcoord0}
+${out: vec2 uv}
+{
+    ${position} = ${MyTransform}(pos);
+    uv = texcoord0
+}
+```
+
+The ${in:} and ${out:} tag have a special meaning in vertex shaders:
+
+${in:} describes a vertex attribute, these have special names in Oryol (e.g. position, normal, tangent, texcoord0..7 etc).
+
+${out:} describes a varying which is handed over to the fragment shader.
+
+$${uniform:} tags behave the same as described above.
+
+##### Fragment Shader Tags
+
+Same idea as vertex shader tags, but for fragment shaders. The resulting color must be assigned to the
+special tag ${color} (this will be replaced with gl_FragColor, or a special output variable, depending on the GLSL
+version:
+
+```
+${fs:MyFragmentShader}
+${uniform: sampler2D tex ColorTexture}
+${in: vec2 uv}
+{
+    ${color} = ${texture2D}(ColorTexture, uv);
+}
+```
+
+Also note the special ${texture2D} tag. Since different GLSL version have different incompatible texture
+sampling functions it is necessary to handle them as special tags which will be replaced by the code
+generator with the right function.
+
+
+
+
+
+
