@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// machine generated, do not edit!
+// #version:2# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOProtocol.h"

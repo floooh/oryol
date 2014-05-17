@@ -4,17 +4,15 @@ Code generator for message protocol xml files.
 
 import os
 import sys
+import util
 
-#-------------------------------------------------------------------------------
-def error(msg) :
-    print "ERROR: {}".format(msg)
-    sys.exit(10)
+Version = 2
 
 #-------------------------------------------------------------------------------
 def checkValidAttr(attr) :
     for key in attr.keys() :
         if not key in ('name', 'type', 'def', 'dir') :
-            error('Invalid Attr attr "{}"'.format(key))
+            util.error('Invalid Attr attr "{}"'.format(key))
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, xmlRoot) :
@@ -23,7 +21,7 @@ def writeHeaderTop(f, xmlRoot) :
     '''
     f.write('#pragma once\n')
     f.write('//-----------------------------------------------------------------------------\n')
-    f.write('/*\n')
+    f.write('/* #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
     f.write('#include <cstring>\n')
@@ -339,7 +337,7 @@ def writeSourceTop(f, xmlRoot, absSourcePath) :
     hdrFile, ext = os.path.splitext(hdrFileAndExt)
 
     f.write('//-----------------------------------------------------------------------------\n')
-    f.write('// machine generated, do not edit!\n')
+    f.write('// #version:{}# machine generated, do not edit!\n'.format(Version))
     f.write('//-----------------------------------------------------------------------------\n')
     f.write('#include "Pre.h"\n')
     f.write('#include "' + hdrFile + '.h"\n')
@@ -370,7 +368,7 @@ def generateSource(xmlTree, absSourcePath) :
 
 #-------------------------------------------------------------------------------
 def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    return False
+    return util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version)
 
 #-------------------------------------------------------------------------------
 def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
