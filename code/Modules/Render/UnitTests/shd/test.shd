@@ -7,6 +7,15 @@ Bla Bla Bla
 */
 
 //------------------------------------------------------------------------------
+${func: MyTransformFunc}
+${uniform: mat4 mvp ModelViewProj}
+${in: vec4 pos}
+${return: vec4}
+{
+    return mvp * pos;
+}
+
+//------------------------------------------------------------------------------
 ${func: MyColorFunc}
 ${in: vec4 nrm}
 ${in: vec4 texColor}
@@ -17,20 +26,20 @@ ${return: vec4}
 
 //------------------------------------------------------------------------------
 ${vs: MyVertexShader}
-${uniform: mat4 mvp ModelViewProj}
-${in:vec4: normal}
+${in: vec4 position}
+${in: vec4 normal}
 ${in: vec2 texcoord0}
 ${out: vec4 nrm}
 ${out: vec2 uv}
 {
-    ${position} = mvp * position;
+    ${position} = ${MyTransformFunc}(position);
     nrm = normal;
     uv  = texcoord0;
 }
 
 //------------------------------------------------------------------------------
 ${fs: MyFragmentShader}
-${uniform: sampler2D tex}
+${uniform: sampler2D tex Texture}
 ${in: vec4 nrm}
 ${in: vec2 uv}
 {
