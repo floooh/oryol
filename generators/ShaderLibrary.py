@@ -10,9 +10,54 @@ import glob
 from pprint import pprint
 import util
 
+glslVersions = [ 100, 140 ]
+
+glsl100Macros = {
+    '_TEXTURE2D': 'texture2D',
+    '_TEXTURE2DPROJ': 'texture2DProj',
+    '_TEXTURE2DLOD': 'texture2DLod',
+    '_TEXTURE2DPROJLOD': 'texture2DProjLod',
+    '_TEXTURECUBE': 'textureCube',
+    '_TEXTURECUBELOD': 'textureCubeLod',
+    '_POSITION': 'gl_Position',
+    '_COLOR': 'gl_FragColor'
+}
+
+glsl130Macros = {
+    '_TEXTURE2D': 'texture',
+    '_TEXTURE2DPROJ': 'textureProj',
+    '_TEXTURE2DLOD': 'texture',
+    '_TEXTURE2DPROJLOD': 'textureProj',
+    '_TEXTURECUBE': 'texture',
+    '_TEXTURECUBELOD': 'texture',
+    '_POSITION': 'gl_Position',
+    '_COLOR': '_FragColor'    
+}
+
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
     pprint(vars(obj))
+
+#---------------------------------------------------------------------------
+def checkListDup(name, objList) :
+    for obj in objList :
+        if name == obj.name :
+            return True
+    return False
+
+#-------------------------------------------------------------------------------
+def findByName(name, objList) :
+    for obj in objList :
+        if name == obj.name :
+            return obj
+    return None
+
+#-------------------------------------------------------------------------------
+def getMacroValue(macro, glslVersion) :
+    if glslVersion < 130 :
+        return glsl100Macros[macro]
+    else :
+        return glsl130Macros[macro]
 
 #-------------------------------------------------------------------------------
 class Snippet :
@@ -24,8 +69,8 @@ class Snippet :
         self.name = None
         self.path = None
         self.lines = []
-        self.replace = []
         self.dependencies = []
+        self.macros = []
 
     def dump(self) :
         dumpObj(self)
@@ -77,10 +122,12 @@ class Uniform :
     '''
     A shader uniform definition.
     '''
-    def __init__(self, type, name, bind) :
+    def __init__(self, type, name, bind, filePath, lineNumber) :
         self.type = type
         self.name = name
         self.bind = bind
+        self.filePath = filePath
+        self.lineNumber = lineNumber
 
     def dump(self) :
         dumpObj(self)
@@ -90,9 +137,11 @@ class Attr :
     '''
     A shader input or output attribute.
     '''         
-    def __init__(self, type, name) :
+    def __init__(self, type, name, filePath, lineNumber) :
         self.type = type
         self.name = name
+        self.filePath = filePath
+        self.lineNumber = lineNumber
 
     def dump(self) :
         dumpObj(self)
@@ -110,6 +159,7 @@ class VertexShader(Snippet) :
         self.inputs = []
         self.outputs = []
         self.resolvedDeps = []
+        self.generatedSource = {}
 
     def getTag(self) :
         return 'vs' 
@@ -138,6 +188,7 @@ class FragmentShader(Snippet) :
         self.uniforms = []
         self.inputs = []
         self.resolvedDeps = []        
+        self.generatedSource = {}
 
     def getTag(self) :
         return 'fs'
@@ -250,19 +301,8 @@ class Parser :
         return line[:startIndex] + line[endIndex+1:]
 
     #---------------------------------------------------------------------------
-    def fillTag(self, line, startIndex, endIndex, char) :
-        return line[:startIndex] + char * ((endIndex + 1) - startIndex) + line[endIndex+1:]
-
-    #---------------------------------------------------------------------------
     def replaceTag(self, line, startIndex, endIndex, replace) :
         return line[:startIndex] + replace + line[endIndex+1:]      
-
-    #---------------------------------------------------------------------------
-    def checkListDup(self, name, objList) :
-        for obj in objList :
-            if name == obj.name :
-                return True
-        return False
 
     #---------------------------------------------------------------------------
     def newFunc(self, line, kw, args, startIndex, endIndex) :
@@ -325,9 +365,9 @@ class Parser :
             util.fmtError("in: must have 2 args (type name)")
         type = args[0]
         name = args[1]
-        if self.checkListDup(name, self.current.inputs) :
+        if checkListDup(name, self.current.inputs) :
             util.fmtError("in: input name '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.inputs.append(Attr(type, name))
+        self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
         return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
@@ -339,9 +379,9 @@ class Parser :
             util.fmtError("out: must have 2 args (type name)")
         type = args[0]
         name = args[1]
-        if self.checkListDup(name, self.current.outputs) :
+        if checkListDup(name, self.current.outputs) :
             util.fmtError("out: output name '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.outputs.append(Attr(type, name))
+        self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
         return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
@@ -367,9 +407,9 @@ class Parser :
         type = args[0]
         name = args[1]
         bind = args[2]
-        if self.checkListDup(name, self.current.uniforms) :
+        if checkListDup(name, self.current.uniforms) :
             util.fmtError("uniform: uniform name '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.uniforms.append(Uniform(type, name, bind))
+        self.current.uniforms.append(Uniform(type, name, bind, self.fileName, self.lineNumber))
         return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
@@ -385,14 +425,16 @@ class Parser :
         return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addReplaceTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addReplaceTag: kw={} args={}'.format(kw, args)
+    def addMacroTag(self, line, kw, args, startIndex, endIndex) :
+        print 'replaceMacroTag: kw={} args={}'.format(kw, args)
         if not self.current or not self.current.getTag() in ['func', 'vs', 'fs'] :
             util.fmtError("replacement tag {}: only valid after 'func', 'vs' or 'fs' tag!".format(kw))
         if len(args) != 0:
             util.fmtError("replacement tag {}: can't have args!".format(kw))
-        self.current.replace.append(Reference(kw, self.fileName, self.lineNumber, startIndex, endIndex))
-        return self.fillTag(line, startIndex, endIndex, 'R')
+        macro = '_' + kw.upper();
+        if not macro in self.current.macros :
+            self.current.macros.append(macro)
+        return line[:startIndex] + macro + line[endIndex+1:]
 
     #---------------------------------------------------------------------------
     def addDependencyTag(self, line, kw, args, startIndex, endIndex) :
@@ -443,7 +485,7 @@ class Parser :
                         line = self.addProgramTag(line, kw, args, startIndex, endIndex)
                     elif kw in ['texture2D', 'texture2DProj', 'texture2DLod', 'texture2DProjLod',
                                 'textureCube', 'textureCubeLod', 'position', 'color'] :
-                        line = self.addReplaceTag(line, kw, args, startIndex, endIndex)
+                        line = self.addMacroTag(line, kw, args, startIndex, endIndex)
                     else :
                         if args :
                             util.fmtError("function call tag '{}' can't have args!".format(kw))
@@ -480,6 +522,120 @@ class Parser :
             self.parseLine(line)
             self.lineNumber += 1
         f.close()
+
+#-------------------------------------------------------------------------------
+class Generator :
+    '''
+    Generate vertex and fragment shader source code.
+    '''
+    def __init__(self, shaderLib) :
+        self.shaderLib = shaderLib
+
+    #---------------------------------------------------------------------------
+    def genFunctionBody(self, dstLines, srcLines, lastFunc, glslVersion) :
+        for line in srcLines :
+            dstLines.append(line[1])
+        return dstLines
+
+    #---------------------------------------------------------------------------
+    def genFunctionSource(self, dstLines, func, glslVersion) :
+
+        # construct and write function head
+        head = ''
+        if func.returnType == None:
+            head += 'void '
+        else :
+            head += '{} '.format(func.returnType)
+        head += func.name + '('
+        for arg in func.inputs :
+            head += 'in {} {},'.format(arg.type, arg.name)
+        for arg in func.outputs :
+            head += 'out {} {},'.format(arg.type, arg.name)
+        head = head[:-1]
+        head += ')'
+        dstLines.append(head)
+
+        # write function body
+        dstLines = self.genFunctionBody(dstLines, func.lines, False, glslVersion)
+        return dstLines
+
+    #---------------------------------------------------------------------------
+    def genVertexShaderSource(self, vs, glslVersion) :
+        lines = []
+
+        # version tag
+        if glslVersion > 100 :
+            lines.append('#version {}'.format(glslVersion))
+
+        # write macros
+        for macro in vs.macros :
+            lines.append('#define {} {}'.format(macro, getMacroValue(macro, glslVersion)))
+
+        # write uniforms
+        for uniform in vs.uniforms :
+            lines.append('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind))
+
+        # write vertex shader inputs
+        for input in vs.inputs :
+            if glslVersion < 130 :
+                lines.append('attribute {} {};'.format(input.type, input.name))
+            else :
+                lines.append('in {} {};'.format(input.type, input.name))
+        # write vertex shader outputs
+        for output in vs.outputs :
+            if glslVersion < 130 :
+                lines.append('varying {} {};'.format(output.type, output.name))
+            else :
+                lines.append('out {} {};'.format(output.type, output.name))
+
+        # write functions the vs depends on
+        for dep in vs.resolvedDeps :
+            lines = self.genFunctionSource(lines, self.shaderLib.functions[dep], glslVersion)
+
+        # write vertex shader function
+        lines.append('void main()')
+        lines = self.genFunctionBody(lines, vs.lines, True, glslVersion)
+        vs.generatedSource[glslVersion] = lines
+
+    #---------------------------------------------------------------------------
+    def genFragmentShaderSource(self, fs, glslVersion) :
+        lines = []
+
+        # version tag
+        if glslVersion > 100 :
+            lines.append('#version {}'.format(glslVersion))
+
+        # precision modifiers
+        if glslVersion == 100 :
+            lines.append('precision mediump float;')
+
+        # write macros
+        for macro in fs.macros :
+            lines.append('#define {} {}'.format(macro, getMacroValue(macro, glslVersion)))
+
+        # write uniforms
+        for uniform in fs.uniforms :
+            lines.append('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind))
+
+        # write fragment shader inputs
+        for input in fs.inputs :
+            if glslVersion < 130 :
+                lines.append('varying {} {};'.format(input.type, input.name))
+            else :
+                lines.append('in {} {};'.format(input.type, input.name))
+
+        # write the fragcolor output
+        if glslVersion >= 130 :
+            lines.append('out vec4 _FragColor;')
+
+        # write functions the fs depends on
+        for dep in fs.resolvedDeps :
+            lines = self.genFunctionSource(lines, self.shaderLib.functions[dep], glslVersion)
+
+        # write fragment shader function
+        lines.append('void main()')
+        lines = self.genFunctionBody(lines, fs.lines, True, glslVersion)
+        fs.generatedSource[glslVersion] = lines
 
 #-------------------------------------------------------------------------------
 class ShaderLibrary :
@@ -566,9 +722,44 @@ class ShaderLibrary :
         deps.reverse()
         shd.resolvedDeps = deps
 
+    def resolveUniforms(self, shd) :
+        '''
+        This adds and verifies uniforms from function 
+        dependencies to the vertex or fragment shader.
+        '''
+        for dep in shd.resolvedDeps :            
+            for uniform in self.functions[dep].uniforms :
+                # if the uniform already exists, check
+                # whether type and binding are matching
+                shdUniform = findByName(uniform.name, shd.uniforms)
+                if shdUniform is not None:
+                    # redundant uniform, check if type and binding name match
+                    if shdUniform.type != uniform.type :
+                        util.setErrorLocation(uniform.filePath, uniform.lineNumber)
+                        util.fmtError("uniform type mismatch '{}' vs '{}'".format(uniform.type, shdUniform.type), False)
+                        util.setErrorLocation(shdUniform.filePath, shdUniform.lineNumber)
+                        util.fmtError("uniform type mismatch '{}' vs '{}'".format(shdUniform.type, uniform.type))
+                    if shdUniform.bind != uniform.bind :
+                        util.setErrorLocation(uniform.filePath, uniform.lineNumber)
+                        util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(uniform.bind, shdUniform.bind), False)
+                        util.setErrorLocation(shdUniform.filePath, shdUniform.lineNumber)
+                        util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(shdUniform.bind, uniform.bind))
+                else :
+                    # new uniform from function, add to shader uniforms
+                    shd.uniforms.append(uniform)
+
+    def resolveMacros(self, shd) :
+        '''
+        Adds any macros used by dependent functions to the shader.
+        '''
+        for dep in shd.resolvedDeps :
+            for macro in self.functions[dep].macros :
+                if macro not in shd.macros :
+                    shd.macros.append(macro)
+
     def resolveAllDependencies(self) :
         '''
-        Resolve function dependencies for vertex- and fragment shaders.
+        Resolve function and uniform dependencies for vertex- and fragment shaders.
         This populates the resolvedDeps array, with duplicates
         removed, in the right order.
         '''
@@ -580,6 +771,22 @@ class ShaderLibrary :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
         self.removeDuplicateDeps(fs)
+        for vs in self.vertexShaders.values() :
+            self.resolveUniforms(vs)
+        for fs in self.fragmentShaders.values() :
+            self.resolveUniforms(fs)
+
+    def generateShaderSources(self) :
+        '''
+        This generates the vertex- and fragment-shader source 
+        for all GLSL versions.
+        '''
+        gen = Generator(self)
+        for glslVersion in glslVersions :
+            for vs in self.vertexShaders.values() :
+                gen.genVertexShaderSource(vs, glslVersion)
+            for fs in self.fragmentShaders.values() :
+                gen.genFragmentShaderSource(fs, glslVersion)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -602,10 +809,11 @@ def writeHeaderBottom(f, shdLib) :
 def generateHeader(absHeaderPath, shdLib) :
     f = open(absHeaderPath, 'w')
     writeHeaderTop(f, shdLib)
-    for vs in shdLib.vertexShaders.values() :
-        f.write('    static const char* {}_src;\n'.format(vs.name))
-    for fs in shdLib.fragmentShaders.values() :
-        f.write('    static const char* {}_src;\n'.format(fs.name))
+    for glslVersion in glslVersions :
+        for vs in shdLib.vertexShaders.values() :
+            f.write('    static const char* {}_{}_src;\n'.format(vs.name, glslVersion))
+        for fs in shdLib.fragmentShaders.values() :
+            f.write('    static const char* {}_{}_src;\n'.format(fs.name, glslVersion))
 
     writeHeaderBottom(f, shdLib)
     f.close()
@@ -629,95 +837,28 @@ def writeSourceBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeFunctionBody(f, shdLib, lines, lastFunc, glslVersion) :
-    for i in range(0, len(lines)) :
-        f.write('"{}\\n"'.format(lines[i][1]))
-        if lastFunc and i == len(lines)-1 :
-            f.write(';\n')
-        else :
-            f.write('\n')
-
-#-------------------------------------------------------------------------------
-def writeFunctionSource(f, shdLib, func, glslVersion) :
-
-    # construct and write function head
-    head = '"'
-    if func.returnType == None:
-        head += 'void '
-    else :
-        head += '{} '.format(func.returnType)
-    head += func.name + '('
-    for arg in func.inputs :
-        head += 'in {} {},'.format(arg.type, arg.name)
-    for arg in func.outputs :
-        head += 'out {} {},'.format(arg.type, arg.name)
-    head = head[:-1]
-    head += ')\\n"\n'
-    f.write(head)
-
-    # write function body
-    writeFunctionBody(f, shdLib, func.lines, False, glslVersion)
-
-#-------------------------------------------------------------------------------
 def writeVertexShaderSource(f, shdLib, vs, glslVersion) :
-    f.write('const char* {}::{}_src = \n'.format(shdLib.name, vs.name))
-
-    # write uniforms
-    for uniform in vs.uniforms :
-        f.write('"uniform {} {}; // {}\\n"\n'.format(uniform.type, uniform.name, uniform.bind))
-
-    # write vertex shader inputs
-    for input in vs.inputs :
-        if glslVersion < 140 :
-            f.write('"attribute {} {};\\n"\n'.format(input.type, input.name))
-        else :
-            f.write('"in {} {};\\n"\n'.format(input.type, input.name))
-    # write vertex shader outputs
-    for output in vs.outputs :
-        if glslVersion < 140 :
-            f.write('"varying {} {};\\n"\n'.format(output.type, output.name))
-        else :
-            f.write('"out {} {};\\n"\n'.format(output.type, output.name))
-
-    # write functions the vs depends on
-    for dep in vs.resolvedDeps :
-        writeFunctionSource(f, shdLib, shdLib.functions[dep], glslVersion)
-
-    # write vertex shader function
-    f.write('"void main()\\n"\n')
-    writeFunctionBody(f, shdLib, vs.lines, True, glslVersion)
+    f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, vs.name, glslVersion))
+    for line in vs.generatedSource[glslVersion] :
+        f.write('"{}\\n"\n'.format(line))
+    f.write(';\n')
 
 #-------------------------------------------------------------------------------
 def writeFragmentShaderSource(f, shdLib, fs, glslVersion) :
-    f.write('const char* {}::{}_src = \n'.format(shdLib.name, fs.name))
-
-    # write uniforms
-    for uniform in fs.uniforms :
-        f.write('"uniform {} {};\\n" // {}\n'.format(uniform.type, uniform.name, uniform.bind))
-
-    # write fragment shader inputs
-    for input in fs.inputs :
-        if glslVersion < 140 :
-            f.write('"varying {} {};\\n"\n'.format(input.type, input.name))
-        else :
-            f.write('"in {} {};\\n"\n'.format(input.type, input.name))
-
-    # write functions the fs depends on
-    for dep in fs.resolvedDeps :
-        writeFunctionSource(f, shdLib, shdLib.functions[dep], glslVersion)
-
-    # write fragment shader function
-    f.write('"void main()\\n"\n')
-    writeFunctionBody(f, shdLib, fs.lines, True, glslVersion)
+    f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, fs.name, glslVersion))
+    for line in fs.generatedSource[glslVersion] :
+        f.write('"{}\\n"\n'.format(line))
+    f.write(';\n')
 
 #-------------------------------------------------------------------------------
 def generateSource(absSourcePath, shaderLibrary) :
     f = open(absSourcePath, 'w')  
     writeSourceTop(f, absSourcePath, shaderLibrary)
-    for vs in shaderLibrary.vertexShaders.values() :
-        writeVertexShaderSource(f, shaderLibrary, vs, 100)
-    for fs in shaderLibrary.fragmentShaders.values() :
-        writeFragmentShaderSource(f, shaderLibrary, fs, 100)
+    for glslVersion in glslVersions :
+        for vs in shaderLibrary.vertexShaders.values() :
+            writeVertexShaderSource(f, shaderLibrary, vs, glslVersion)
+        for fs in shaderLibrary.fragmentShaders.values() :
+            writeFragmentShaderSource(f, shaderLibrary, fs, glslVersion)
     writeSourceBottom(f, shaderLibrary)  
     f.close()
 
@@ -735,6 +876,7 @@ def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     shaderLibrary.gatherSources()
     shaderLibrary.parseSources()
     shaderLibrary.resolveAllDependencies()
+    shaderLibrary.generateShaderSources()
     shaderLibrary.dump()
 
     generateHeader(absHeaderPath, shaderLibrary)

@@ -5,7 +5,9 @@
 #include "TestShaderLibrary.h"
 
 namespace Oryol {
-const char* TestShaderLibrary::MyVertexShader_src = 
+const char* TestShaderLibrary::MyVertexShader_100_src = 
+"#define _POSITION gl_Position\n"
+"uniform mat4 mvp;\n"
 "attribute vec4 position;\n"
 "attribute vec4 normal;\n"
 "attribute vec2 texcoord0;\n"
@@ -17,12 +19,16 @@ const char* TestShaderLibrary::MyVertexShader_src =
 "}\n"
 "void main()\n"
 "{\n"
-"RRRRRRRRRRR = MyTransformFunc(position);\n"
+"_POSITION = MyTransformFunc(position);\n"
 "nrm = normal;\n"
 "uv  = texcoord0;\n"
-"}\n";
-const char* TestShaderLibrary::MyFragmentShader_src = 
-"uniform sampler2D tex;\n" // Texture
+"}\n"
+;
+const char* TestShaderLibrary::MyFragmentShader_100_src = 
+"precision mediump float;\n"
+"#define _TEXTURE2D texture2D\n"
+"#define _COLOR gl_FragColor\n"
+"uniform sampler2D tex;\n"
 "varying vec4 nrm;\n"
 "varying vec2 uv;\n"
 "vec4 MyColorFunc(in vec4 nrm,in vec4 texColor)\n"
@@ -31,8 +37,47 @@ const char* TestShaderLibrary::MyFragmentShader_src =
 "}\n"
 "void main()\n"
 "{\n"
-"vec4 texColor = RRRRRRRRRRRR(tex, uv * vec2(5.0, 3.0));\n"
-"RRRRRRRR = MyColorFunc(nrm, texColor);\n"
-"}\n";
+"vec4 texColor = _TEXTURE2D(tex, uv * vec2(5.0, 3.0));\n"
+"_COLOR = MyColorFunc(nrm, texColor);\n"
+"}\n"
+;
+const char* TestShaderLibrary::MyVertexShader_140_src = 
+"#version 140\n"
+"#define _POSITION gl_Position\n"
+"uniform mat4 mvp;\n"
+"in vec4 position;\n"
+"in vec4 normal;\n"
+"in vec2 texcoord0;\n"
+"out vec4 nrm;\n"
+"out vec2 uv;\n"
+"vec4 MyTransformFunc(in vec4 pos)\n"
+"{\n"
+"return mvp * pos;\n"
+"}\n"
+"void main()\n"
+"{\n"
+"_POSITION = MyTransformFunc(position);\n"
+"nrm = normal;\n"
+"uv  = texcoord0;\n"
+"}\n"
+;
+const char* TestShaderLibrary::MyFragmentShader_140_src = 
+"#version 140\n"
+"#define _TEXTURE2D texture\n"
+"#define _COLOR _FragColor\n"
+"uniform sampler2D tex;\n"
+"in vec4 nrm;\n"
+"in vec2 uv;\n"
+"out vec4 _FragColor;\n"
+"vec4 MyColorFunc(in vec4 nrm,in vec4 texColor)\n"
+"{\n"
+"return ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor;\n"
+"}\n"
+"void main()\n"
+"{\n"
+"vec4 texColor = _TEXTURE2D(tex, uv * vec2(5.0, 3.0));\n"
+"_COLOR = MyColorFunc(nrm, texColor);\n"
+"}\n"
+;
 }
 

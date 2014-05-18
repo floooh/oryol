@@ -22,7 +22,7 @@ def setErrorLocation(filePath, lineNumber) :
     LineNumber = lineNumber
 
 #-------------------------------------------------------------------------------
-def fmtError(msg) :
+def fmtError(msg, terminate=True) :
     '''
     Print an error message formatted so that IDEs can parse them,
     and return with error code 10.
@@ -30,7 +30,8 @@ def fmtError(msg) :
     # this is for Xcode
     print '{}:{}: error: {}\n'.format(FilePath, LineNumber + 1, msg)
     # FIXME: VisualStudio
-    sys.exit(10)
+    if terminate:
+        sys.exit(10)
 
 #-------------------------------------------------------------------------------
 def fileVersionDirty(filePath, version) :
