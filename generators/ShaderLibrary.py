@@ -12,26 +12,37 @@ import util
 
 glslVersions = [ 100, 140 ]
 
+macroKeywords = {
+    '$position': '_POSITION',
+    '$color': '_COLOR',
+    '$texture2D': '_TEXTURE2D',
+    '$texture2DProj': '_TEXTURE2DPROJ',
+    '$texture2DLod': '_TEXTURE2DLOD',
+    '$texture2DProjLod': '_TEXTURE2DPROJLOD',
+    '$textureCube': '_TEXTURECUBE',
+    '$textureCubeLod': '_TEXTURECUBELOD'
+}
+
 glsl100Macros = {
+    '_POSITION': 'gl_Position',
+    '_COLOR': 'gl_FragColor',
     '_TEXTURE2D': 'texture2D',
     '_TEXTURE2DPROJ': 'texture2DProj',
     '_TEXTURE2DLOD': 'texture2DLod',
     '_TEXTURE2DPROJLOD': 'texture2DProjLod',
     '_TEXTURECUBE': 'textureCube',
-    '_TEXTURECUBELOD': 'textureCubeLod',
-    '_POSITION': 'gl_Position',
-    '_COLOR': 'gl_FragColor'
+    '_TEXTURECUBELOD': 'textureCubeLod'
 }
 
 glsl130Macros = {
+    '_POSITION': 'gl_Position',
+    '_COLOR': '_FragColor', 
     '_TEXTURE2D': 'texture',
     '_TEXTURE2DPROJ': 'textureProj',
     '_TEXTURE2DLOD': 'texture',
     '_TEXTURE2DPROJLOD': 'textureProj',
     '_TEXTURECUBE': 'texture',
-    '_TEXTURECUBELOD': 'texture',
-    '_POSITION': 'gl_Position',
-    '_COLOR': '_FragColor'    
+    '_TEXTURECUBELOD': 'texture'
 }
 
 #-------------------------------------------------------------------------------
@@ -62,7 +73,7 @@ def getMacroValue(macro, glslVersion) :
 #-------------------------------------------------------------------------------
 class Snippet :
     '''
-    A snippet from a shader file, can be a function, vertex/fragment shader,
+    A snippet from a shader file, can be a block, vertex/fragment shader,
     etc...
     '''
     def __init__(self) :
@@ -78,44 +89,33 @@ class Snippet :
 #-------------------------------------------------------------------------------
 class Reference :
     '''
-    A reference to another function, with information where the 
-    ref is located (source, linenumber, start/end indices)
+    A reference to another block, with information where the 
+    ref is located (source, linenumber)
     '''
-    def __init__(self, name, path, lineNumber, startIndex, endIndex) :
+    def __init__(self, name, path, lineNumber) :
         self.name = name
         self.path = path
         self.lineNumber = lineNumber
-        self.startIndex = startIndex
-        self.endIndex = endIndex
         
 #-------------------------------------------------------------------------------
-class Func(Snippet) :
+class Block(Snippet) :
     '''
-    A function snippet
+    A code block snippet.
     '''
     def __init__(self, name, path) :
         Snippet.__init__(self)
         self.name = name
         self.path = path
         self.uniforms = []
-        self.inputs = []
-        self.outputs = []
-        self.returnType = None
 
     def getTag(self) :
-        return 'func'
+        return 'block'
 
     def dump(self) :
         Snippet.dump(self)
         print 'Uniforms:'
         for uniform in self.uniforms :
             uniform.dump()
-        print 'Inputs:'
-        for input in self.inputs :
-            input.dump()
-        print 'Outputs:'
-        for output in self.outputs :
-            outputs.dump()
 
 #-------------------------------------------------------------------------------
 class Uniform :
@@ -297,202 +297,173 @@ class Parser :
         return line
 
     #---------------------------------------------------------------------------
-    def removeTag(self, line, startIndex, endIndex) :
-        return line[:startIndex] + line[endIndex+1:]
-
-    #---------------------------------------------------------------------------
-    def replaceTag(self, line, startIndex, endIndex, replace) :
-        return line[:startIndex] + replace + line[endIndex+1:]      
-
-    #---------------------------------------------------------------------------
-    def newFunc(self, line, kw, args, startIndex, endIndex) :
-        print 'newFunc: kw={} args={}'.format(kw, args)
+    def onBlock(self, args) :
         if len(args) != 1 :
-            util.fmtError("func: must have 1 arg (name)")
+            util.fmtError("@block must have 1 arg (name)")
+        if self.current is not None :
+            util.fmtError("cannot nest @block (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
-        if name in self.shaderLib.functions :
-            util.fmtError("func: function '{}'' already defined in '{}'!".format(name, self.current.name))
-        func = Func(name, self.fileName)
-        self.shaderLib.functions[name] = func
-        self.current = func
-        return self.removeTag(line, startIndex, endIndex)
+        if name in self.shaderLib.blocks :
+            util.fmtError("@block '{}' already defined".format(name))
+        block = Block(name, self.fileName)
+        self.shaderLib.blocks[name] = block
+        self.current = block
 
     #---------------------------------------------------------------------------
-    def newVertexShader(self, line, kw, args, startIndex, endIndex) :
-        print 'newVertexShader: kw={} args={}'.format(kw, args)
+    def onVertexShader(self, args) :
         if len(args) != 1:
-            util.fmtError("vs: must have 1 arg (name)")
+            util.fmtError("@vs must have 1 arg (name)")
+        if self.current is not None :
+            util.fmtError("cannot nest @vs (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
         if name in self.shaderLib.vertexShaders :
-            util.fmtError("vs: vertex shader '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@vs '{}' already defined".format(name))
         vs = VertexShader(name, self.fileName)
         self.shaderLib.vertexShaders[name] = vs
         self.current = vs        
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def newFragmentShader(self, line, kw, args, startIndex, endIndex) :
-        print 'newFragmentShader: kw={} args={}'.format(kw, args)
+    def onFragmentShader(self, args) :
         if len(args) != 1:
-            util.fmtError("fs: must have 1 arg (name)")
+            util.fmtError("@fs must have 1 arg (name)")
+        if self.current is not None :
+            util.fmtError("cannot nest @fs (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
         if name in self.shaderLib.fragmentShaders :
-            util.fmtError("fs: fragment shader '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@fs '{}' already defined!".format(name))
         fs = FragmentShader(name, self.fileName)
         self.shaderLib.fragmentShaders[name] = fs
         self.current = fs
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def newBundle(self, line, kw, args, startIndex, endIndex) :
-        print 'newBundle: kw={} args={}'.format(kw, args)
+    def onBundle(self, args) :
         if len(args) != 1:
-            util.fmtError("bundle: must have 1 arg (name)")
+            util.fmtError("@bundle must have 1 arg (name)")
+        if self.current is not None :
+            util.fmtError("cannot nest @bundle (missing @end tag in '{}'?)".format(self.current.name))
         name = args[0]
         if name in self.shaderLib.bundles :
-            util.fmtError("bundle: bundle '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@bundle '{}' already defined!".format(name))
         bundle = Bundle(name, self.fileName)
         self.shaderLib.bundles[name] = bundle
         self.current = bundle            
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addInTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addInTag: kw={} args={}'.format(kw, args)
-        if not self.current or not self.current.getTag() in ['func', 'vs', 'fs'] :
-            util.fmtError("in: must come after a 'func', 'vs' or 'fs' tag!")
+    def onIn(self, args) :
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@in must come after @vs or @fs!")
         if len(args) != 2:
-            util.fmtError("in: must have 2 args (type name)")
+            util.fmtError("@in must have 2 args (type name)")
         type = args[0]
         name = args[1]
         if checkListDup(name, self.current.inputs) :
-            util.fmtError("in: input name '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@in '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addOutTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addOutTag: kw={} args={}'.format(kw, args)
-        if not self.current or not self.current.getTag() in ['func', 'vs'] :
-            util.fmtError("out: must come after a 'func' or 'vs' tag!")
+    def onOut(self, args) :
+        if not self.current or not self.current.getTag() in ['vs'] :
+            util.fmtError("@out must come after @vs!")
         if len(args) != 2:
-            util.fmtError("out: must have 2 args (type name)")
+            util.fmtError("@out must have 2 args (type name)")
         type = args[0]
         name = args[1]
         if checkListDup(name, self.current.outputs) :
-            util.fmtError("out: output name '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@out '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addReturnTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addReturnTag: kw={} args={}'.format(kw, args)
-        if not self.current or self.current.getTag() != 'func' :
-            util.fmtError("return: must come after a 'func' tag!")
-        if len(args) != 1:
-            util.fmtError("return: must have 1 arg (type)")
-        if self.current.returnType != None :
-            util.fmtError("return: only one return tag allowed")
-        type = args[0]
-        self.current.returnType = type            
-        return self.removeTag(line, startIndex, endIndex)
-
-    #---------------------------------------------------------------------------
-    def addUniformTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addUniformTag: kw={} args={}'.format(kw, args)
-        if not self.current or not self.current.getTag() in ['func', 'vs', 'fs'] :
-            util.fmtError("uniform: must come after a 'func', 'vs' or 'fs' tag!")
+    def onUniform(self, args) :
+        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
+            util.fmtError("@uniform must come after @block, @vs or @fs tag!")
         if len(args) != 3:
-            util.fmtError("uniform: must have 3 args (type name binding)")
+            util.fmtError("@uniform must have 3 args (type name binding)")
         type = args[0]
         name = args[1]
         bind = args[2]
         if checkListDup(name, self.current.uniforms) :
-            util.fmtError("uniform: uniform name '{}' already defined in '{}'!".format(name, self.current.name))
+            util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.uniforms.append(Uniform(type, name, bind, self.fileName, self.lineNumber))
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addProgramTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addProgramTag: kw={} args={}'.format(kw, args)
+    def onProgram(self, args) :
         if not self.current or self.current.getTag() != 'bundle' :
-            util.fmtError("program: must come after a 'bundle' tag!")
+            util.fmtError("@program must come after @bundle!")
         if len(args) != 2:
-            util.fmtError("program: must have 2 args (vs fs)")
+            util.fmtError("@program must have 2 args (vs fs)")
         vs = args[0]
         fs = args[1]
         self.current.programs.append(Program(vs, fs))
-        return self.removeTag(line, startIndex, endIndex)
 
     #---------------------------------------------------------------------------
-    def addMacroTag(self, line, kw, args, startIndex, endIndex) :
-        print 'replaceMacroTag: kw={} args={}'.format(kw, args)
-        if not self.current or not self.current.getTag() in ['func', 'vs', 'fs'] :
-            util.fmtError("replacement tag {}: only valid after 'func', 'vs' or 'fs' tag!".format(kw))
-        if len(args) != 0:
-            util.fmtError("replacement tag {}: can't have args!".format(kw))
-        macro = '_' + kw.upper();
-        if not macro in self.current.macros :
-            self.current.macros.append(macro)
-        return line[:startIndex] + macro + line[endIndex+1:]
+    def onUse(self, args) :
+        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
+            util.fmtError("@use must come after @block, @vs or @fs!")
+        if len(args) < 1:
+            util.fmtError("@use must have at least one arg!")
+        for arg in args :
+            self.current.dependencies.append(Reference(arg, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
-    def addDependencyTag(self, line, kw, args, startIndex, endIndex) :
-        print 'addDependencyTag: kw={} args={}'.format(kw, args)
-        if not self.current or not self.current.getTag() in ['func', 'vs', 'fs'] :
-            util.fmtError("dependency tag {}: only valid after 'func', 'vs' or 'fs' tag!".format(kw))
+    def onEnd(self, args) :
+        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs', 'bundle'] :
+            util.fmtError("@end must come after @block, @vs, @fs or @bundle!")
         if len(args) != 0:
-            util.fmtError("dependency tag {}: can't have args!".format(kw))
-        self.current.dependencies.append(Reference(kw, self.fileName, self.lineNumber, startIndex, endIndex))
-        return self.replaceTag(line, startIndex, endIndex, kw)
+            util.fmtError("@end must not have arguments")
+        self.current = None
 
     #---------------------------------------------------------------------------
     def parseTags(self, line) :
-        startIndex = 0
-        endIndex = 0
-        while startIndex != -1 :
-            startIndex = line.find('${')
-            if startIndex != -1 :
-                endIndex = line.find('}', startIndex)
-                if endIndex != -1 :
-                    tag = line[startIndex+2 : endIndex]
-                    tag = tag.strip(' \t')
-                    colonIndex = tag.find(':')
-                    if colonIndex == -1 :
-                        kw = tag
-                        args = []
-                    else :
-                        kw = tag[:colonIndex]
-                        args = tag[colonIndex+1:].split()
+        # first check if the line contains a tag, the tag must be
+        # alone on the line
+        tagStartIndex = line.find('@')
+        if tagStartIndex != -1 :
+            if tagStartIndex > 0 :
+                util.fmtError("only whitespace allowed in front of tag")
 
-                    if kw == 'func':
-                        line = self.newFunc(line, kw, args, startIndex, endIndex)
-                    elif kw == 'vs':
-                        line = self.newVertexShader(line, kw, args, startIndex, endIndex)
-                    elif kw == 'fs':
-                        line = self.newFragmentShader(line, kw, args, startIndex, endIndex)
-                    elif kw == 'bundle':
-                        line = self.newBundle(line, kw, args, startIndex, endIndex)
-                    elif kw == 'in':
-                        line = self.addInTag(line, kw, args, startIndex, endIndex)
-                    elif kw == 'out':
-                        line = self.addOutTag(line, kw, args, startIndex, endIndex)
-                    elif kw == 'return':
-                        line = self.addReturnTag(line, kw, args, startIndex, endIndex)
-                    elif kw == 'uniform':
-                        line = self.addUniformTag(line, kw, args, startIndex, endIndex)
-                    elif kw == 'program':
-                        line = self.addProgramTag(line, kw, args, startIndex, endIndex)
-                    elif kw in ['texture2D', 'texture2DProj', 'texture2DLod', 'texture2DProjLod',
-                                'textureCube', 'textureCubeLod', 'position', 'color'] :
-                        line = self.addMacroTag(line, kw, args, startIndex, endIndex)
+            tagAndArgs = line[tagStartIndex+1 :].split()
+            tag = tagAndArgs[0]
+            args = tagAndArgs[1:]
+            if tag == 'block':
+                self.onBlock(args)
+            elif tag == 'vs':
+                self.onVertexShader(args)
+            elif tag == 'fs':
+                self.onFragmentShader(args)
+            elif tag == 'bundle':
+                self.onBundle(args)
+            elif tag == 'use':
+                self.onUse(args)
+            elif tag == 'in':
+                self.onIn(args)
+            elif tag == 'out':
+                self.onOut(args)
+            elif tag == 'uniform':
+                self.onUniform(args)
+            elif tag == 'program':
+                self.onProgram(args)
+            elif tag == 'end':
+                self.onEnd(args)
+            else :
+                util.fmtError("unrecognized @ tag '{}'".format(tag))
+            return ''
+
+        # handle any $ macros
+        for macro in macroKeywords :
+            startIndex = line.find(macro)
+            if startIndex != -1 :
+                if self.current is not None:
+                    line = line.replace(macro, macroKeywords[macro])
+                    if macro not in self.current.macros :
+                        self.current.macros.append(macroKeywords[macro])
                     else :
-                        if args :
-                            util.fmtError("function call tag '{}' can't have args!".format(kw))
-                        line = self.addDependencyTag(line, kw, args, startIndex, endIndex)
-                else :
-                    util.fmtError('unterminated tag')
-        line = line.strip(' \t\r\n')
+                        util.fmtError('$ tag must come after @block, @vs, @fs and before @end')
+
+        # if there are still $ characters in the line, it must be an 
+        # unrecognized macro keyword (typo?)
+        if '$' in line :
+            util.fmtError('unrecognized $ keyword!')
+
         return line
 
     #---------------------------------------------------------------------------
@@ -504,12 +475,11 @@ class Parser :
         if line != '':
             line = self.parseTags(line)
             if line != '':
-                print '{}: {}'.format(self.lineNumber, line)
-                if self.current != None:
+                if self.current is not None:
                     self.current.lines.append((self.lineNumber, line))
 
     #---------------------------------------------------------------------------
-    def parse(self, fileName) :
+    def parseSource(self, fileName) :
         '''
         Parse a single file and populate shader lib
         '''
@@ -523,6 +493,10 @@ class Parser :
             self.lineNumber += 1
         f.close()
 
+        # all blocks must be closed
+        if self.current is not None :
+            util.fmtError('missing @end at end of file')
+
 #-------------------------------------------------------------------------------
 class Generator :
     '''
@@ -532,31 +506,9 @@ class Generator :
         self.shaderLib = shaderLib
 
     #---------------------------------------------------------------------------
-    def genFunctionBody(self, dstLines, srcLines, lastFunc, glslVersion) :
+    def genLines(self, dstLines, srcLines) :
         for line in srcLines :
             dstLines.append(line[1])
-        return dstLines
-
-    #---------------------------------------------------------------------------
-    def genFunctionSource(self, dstLines, func, glslVersion) :
-
-        # construct and write function head
-        head = ''
-        if func.returnType == None:
-            head += 'void '
-        else :
-            head += '{} '.format(func.returnType)
-        head += func.name + '('
-        for arg in func.inputs :
-            head += 'in {} {},'.format(arg.type, arg.name)
-        for arg in func.outputs :
-            head += 'out {} {},'.format(arg.type, arg.name)
-        head = head[:-1]
-        head += ')'
-        dstLines.append(head)
-
-        # write function body
-        dstLines = self.genFunctionBody(dstLines, func.lines, False, glslVersion)
         return dstLines
 
     #---------------------------------------------------------------------------
@@ -588,13 +540,12 @@ class Generator :
             else :
                 lines.append('out {} {};'.format(output.type, output.name))
 
-        # write functions the vs depends on
+        # write blocks the vs depends on
         for dep in vs.resolvedDeps :
-            lines = self.genFunctionSource(lines, self.shaderLib.functions[dep], glslVersion)
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
 
         # write vertex shader function
-        lines.append('void main()')
-        lines = self.genFunctionBody(lines, vs.lines, True, glslVersion)
+        lines = self.genLines(lines, vs.lines)
         vs.generatedSource[glslVersion] = lines
 
     #---------------------------------------------------------------------------
@@ -628,13 +579,12 @@ class Generator :
         if glslVersion >= 130 :
             lines.append('out vec4 _FragColor;')
 
-        # write functions the fs depends on
+        # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            lines = self.genFunctionSource(lines, self.shaderLib.functions[dep], glslVersion)
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
 
         # write fragment shader function
-        lines.append('void main()')
-        lines = self.genFunctionBody(lines, fs.lines, True, glslVersion)
+        lines = self.genLines(lines, fs.lines)
         fs.generatedSource[glslVersion] = lines
 
 #-------------------------------------------------------------------------------
@@ -648,7 +598,7 @@ class ShaderLibrary :
         self.name = None
         self.dirs = []
         self.sources = []
-        self.functions = {}
+        self.blocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
         self.bundles = {}
@@ -656,9 +606,9 @@ class ShaderLibrary :
 
     def dump(self) :
         dumpObj(self)
-        print 'Functions:'
-        for func in self.functions.values() :
-            func.dump()
+        print 'Blocks:'
+        for block in self.blocks.values() :
+            block.dump()
         print 'Vertex Shaders:'
         for vs in self.vertexShaders.values() :
             vs.dump()
@@ -694,7 +644,7 @@ class ShaderLibrary :
         '''
         parser = Parser(self)
         for source in self.sources :            
-            parser.parse(source)
+            parser.parseSource(source)
 
     def resolveDeps(self, shd, dep) :
         '''
@@ -702,11 +652,11 @@ class ShaderLibrary :
         '''
         # just add new dependencies at the end of resolvedDeps,
         # and remove dups in a second pass after recursion
-        if not dep.name in self.functions :
+        if not dep.name in self.blocks :
             util.setErrorLocation(dep.path, dep.lineNumber)
-            util.fmtError("unknown function dependency '{}'".format(dep.name))
+            util.fmtError("unknown block dependency '{}'".format(dep.name))
         shd.resolvedDeps.append(dep.name)
-        for depdep in self.functions[dep.name].dependencies :
+        for depdep in self.blocks[dep.name].dependencies :
             self.resolveDeps(shd, depdep)
 
     def removeDuplicateDeps(self, shd) :
@@ -724,11 +674,11 @@ class ShaderLibrary :
 
     def resolveUniforms(self, shd) :
         '''
-        This adds and verifies uniforms from function 
+        This adds and verifies uniforms from block 
         dependencies to the vertex or fragment shader.
         '''
         for dep in shd.resolvedDeps :            
-            for uniform in self.functions[dep].uniforms :
+            for uniform in self.blocks[dep].uniforms :
                 # if the uniform already exists, check
                 # whether type and binding are matching
                 shdUniform = findByName(uniform.name, shd.uniforms)
@@ -745,21 +695,21 @@ class ShaderLibrary :
                         util.setErrorLocation(shdUniform.filePath, shdUniform.lineNumber)
                         util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(shdUniform.bind, uniform.bind))
                 else :
-                    # new uniform from function, add to shader uniforms
+                    # new uniform from block, add to shader uniforms
                     shd.uniforms.append(uniform)
 
     def resolveMacros(self, shd) :
         '''
-        Adds any macros used by dependent functions to the shader.
+        Adds any macros used by dependent blocks to the shader.
         '''
         for dep in shd.resolvedDeps :
-            for macro in self.functions[dep].macros :
+            for macro in self.blocks[dep].macros :
                 if macro not in shd.macros :
                     shd.macros.append(macro)
 
     def resolveAllDependencies(self) :
         '''
-        Resolve function and uniform dependencies for vertex- and fragment shaders.
+        Resolve block and uniform dependencies for vertex- and fragment shaders.
         This populates the resolvedDeps array, with duplicates
         removed, in the right order.
         '''
@@ -877,7 +827,6 @@ def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     shaderLibrary.parseSources()
     shaderLibrary.resolveAllDependencies()
     shaderLibrary.generateShaderSources()
-    shaderLibrary.dump()
 
     generateHeader(absHeaderPath, shaderLibrary)
     generateSource(absSourcePath, shaderLibrary)

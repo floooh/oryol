@@ -7,45 +7,52 @@ Bla Bla Bla
 */
 
 //------------------------------------------------------------------------------
-${func: MyTransformFunc}
-${uniform: mat4 mvp ModelViewProj}
-${in: vec4 pos}
-${return: vec4}
+@block TransformUtil
+@uniform mat4 mvp ModelViewProj
+vec4 myTransform(vec4 pos)
 {
     return mvp * pos;
 }
+@end
 
 //------------------------------------------------------------------------------
-${func: MyColorFunc}
-${in: vec4 nrm}
-${in: vec4 texColor}
-${return: vec4}
+@block FSUtil
+vec4 myColor(vec4 nrm, vec4 texColor)
 {
     return ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor;
 }
+@end
 
 //------------------------------------------------------------------------------
-${vs: MyVertexShader}
-${in: vec4 position}
-${in: vec4 normal}
-${in: vec2 texcoord0}
-${out: vec4 nrm}
-${out: vec2 uv}
+@vs MyVertexShader
+@use TransformUtil
+@in vec4 position
+@in vec4 normal
+@in vec2 texcoord0
+@out vec4 nrm
+@out vec2 uv
+void main()
 {
-    ${position} = ${MyTransformFunc}(position);
+    $position = myTransform(position);
     nrm = normal;
     uv  = texcoord0;
 }
+@end
 
 //------------------------------------------------------------------------------
-${fs: MyFragmentShader}
-${uniform: sampler2D tex Texture}
-${in: vec4 nrm}
-${in: vec2 uv}
+@fs MyFragmentShader
+@use FSUtil
+@uniform sampler2D tex Texture
+@in vec4 nrm
+@in vec2 uv
+void main()
 {
-    vec4 texColor = ${texture2D}(tex, uv * vec2(5.0, 3.0));
-    ${color} = ${MyColorFunc}(nrm, texColor);
+    vec4 texColor = $texture2D(tex, uv * vec2(5.0, 3.0));
+    $color = myColor(nrm, texColor);
 }
+@end
 
-${bundle: MyShader}
-${program: MyVertexShader MyFragmentShader}
+@bundle MyShader
+@program MyVertexShader MyFragmentShader
+@end
+
