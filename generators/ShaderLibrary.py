@@ -9,6 +9,7 @@ import sys
 import glob
 from pprint import pprint
 import util
+import glslcompiler
 
 glslVersions = [ 100, 140 ]
 
@@ -71,6 +72,16 @@ def getMacroValue(macro, glslVersion) :
         return glsl130Macros[macro]
 
 #-------------------------------------------------------------------------------
+class Line :
+    '''
+    A line object with mapping to a source file and line number.
+    '''
+    def __init__(self, content, path='', lineNumber=0) :
+        self.content = content
+        self.path = path
+        self.lineNumber = lineNumber
+
+#-------------------------------------------------------------------------------
 class Snippet :
     '''
     A snippet from a shader file, can be a block, vertex/fragment shader,
@@ -78,7 +89,6 @@ class Snippet :
     '''
     def __init__(self) :
         self.name = None
-        self.path = None
         self.lines = []
         self.dependencies = []
         self.macros = []
@@ -102,10 +112,9 @@ class Block(Snippet) :
     '''
     A code block snippet.
     '''
-    def __init__(self, name, path) :
+    def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.path = path
         self.uniforms = []
 
     def getTag(self) :
@@ -151,10 +160,9 @@ class VertexShader(Snippet) :
     '''
     A vertex shader function.
     '''
-    def __init__(self, name, path) :
+    def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.path = path
         self.uniforms = []
         self.inputs = []
         self.outputs = []
@@ -181,10 +189,9 @@ class FragmentShader(Snippet) :
     '''
     A fragment shader function.
     '''
-    def __init__(self, name, path) :
+    def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.path = path
         self.uniforms = []
         self.inputs = []
         self.resolvedDeps = []        
@@ -223,9 +230,8 @@ class Bundle() :
     '''
     A program bundle (array of vertex/fragment shader tuples, and uniforms)
     '''
-    def __init__(self, name, path) :
+    def __init__(self, name) :
         self.name = name
-        self.path = path
         self.programs = []
         self.uniforms = []
 
@@ -305,7 +311,7 @@ class Parser :
         name = args[0]
         if name in self.shaderLib.blocks :
             util.fmtError("@block '{}' already defined".format(name))
-        block = Block(name, self.fileName)
+        block = Block(name)
         self.shaderLib.blocks[name] = block
         self.current = block
 
@@ -318,7 +324,7 @@ class Parser :
         name = args[0]
         if name in self.shaderLib.vertexShaders :
             util.fmtError("@vs '{}' already defined".format(name))
-        vs = VertexShader(name, self.fileName)
+        vs = VertexShader(name)
         self.shaderLib.vertexShaders[name] = vs
         self.current = vs        
 
@@ -331,7 +337,7 @@ class Parser :
         name = args[0]
         if name in self.shaderLib.fragmentShaders :
             util.fmtError("@fs '{}' already defined!".format(name))
-        fs = FragmentShader(name, self.fileName)
+        fs = FragmentShader(name)
         self.shaderLib.fragmentShaders[name] = fs
         self.current = fs
 
@@ -344,7 +350,7 @@ class Parser :
         name = args[0]
         if name in self.shaderLib.bundles :
             util.fmtError("@bundle '{}' already defined!".format(name))
-        bundle = Bundle(name, self.fileName)
+        bundle = Bundle(name)
         self.shaderLib.bundles[name] = bundle
         self.current = bundle            
 
@@ -476,7 +482,7 @@ class Parser :
             line = self.parseTags(line)
             if line != '':
                 if self.current is not None:
-                    self.current.lines.append((self.lineNumber, line))
+                    self.current.lines.append(Line(line, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def parseSource(self, fileName) :
@@ -507,8 +513,8 @@ class Generator :
 
     #---------------------------------------------------------------------------
     def genLines(self, dstLines, srcLines) :
-        for line in srcLines :
-            dstLines.append(line[1])
+        for srcLine in srcLines :
+            dstLines.append(srcLine)
         return dstLines
 
     #---------------------------------------------------------------------------
@@ -517,28 +523,28 @@ class Generator :
 
         # version tag
         if glslVersion > 100 :
-            lines.append('#version {}'.format(glslVersion))
+            lines.append(Line('#version {}'.format(glslVersion)))
 
         # write macros
         for macro in vs.macros :
-            lines.append('#define {} {}'.format(macro, getMacroValue(macro, glslVersion)))
+            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, glslVersion))))
 
         # write uniforms
         for uniform in vs.uniforms :
-            lines.append('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind))
+            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind), uniform.filePath, uniform.lineNumber))
 
         # write vertex shader inputs
         for input in vs.inputs :
             if glslVersion < 130 :
-                lines.append('attribute {} {};'.format(input.type, input.name))
+                lines.append(Line('attribute {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
             else :
-                lines.append('in {} {};'.format(input.type, input.name))
+                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
         # write vertex shader outputs
         for output in vs.outputs :
             if glslVersion < 130 :
-                lines.append('varying {} {};'.format(output.type, output.name))
+                lines.append(Line('varying {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
             else :
-                lines.append('out {} {};'.format(output.type, output.name))
+                lines.append(Line('out {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
@@ -554,30 +560,30 @@ class Generator :
 
         # version tag
         if glslVersion > 100 :
-            lines.append('#version {}'.format(glslVersion))
+            lines.append(Line('#version {}'.format(glslVersion)))
 
         # precision modifiers
         if glslVersion == 100 :
-            lines.append('precision mediump float;')
+            lines.append(Line('precision mediump float;'))
 
         # write macros
         for macro in fs.macros :
-            lines.append('#define {} {}'.format(macro, getMacroValue(macro, glslVersion)))
+            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, glslVersion))))
 
         # write uniforms
         for uniform in fs.uniforms :
-            lines.append('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind))
+            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind), uniform.filePath, uniform.lineNumber))
 
         # write fragment shader inputs
         for input in fs.inputs :
             if glslVersion < 130 :
-                lines.append('varying {} {};'.format(input.type, input.name))
+                lines.append(Line('varying {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
             else :
-                lines.append('in {} {};'.format(input.type, input.name))
+                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
 
         # write the fragcolor output
         if glslVersion >= 130 :
-            lines.append('out vec4 _FragColor;')
+            lines.append(Line('out vec4 _FragColor;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -738,6 +744,16 @@ class ShaderLibrary :
             for fs in self.fragmentShaders.values() :
                 gen.genFragmentShaderSource(fs, glslVersion)
 
+    def validateShaders(self) :
+        '''
+        Run the shader sources through the GLSL reference compiler
+        '''
+        for glslVersion in glslVersions :
+            for vs in self.vertexShaders.values() :
+                glslcompiler.validate(vs.generatedSource[glslVersion], 'vs', glslVersion)
+            for fs in self.fragmentShaders.values() :
+                glslcompiler.validate(fs.generatedSource[glslVersion], 'fs', glslVersion)
+
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
     f.write('#pragma once\n')
@@ -790,14 +806,14 @@ def writeSourceBottom(f, shdLib) :
 def writeVertexShaderSource(f, shdLib, vs, glslVersion) :
     f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, vs.name, glslVersion))
     for line in vs.generatedSource[glslVersion] :
-        f.write('"{}\\n"\n'.format(line))
+        f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
 
 #-------------------------------------------------------------------------------
 def writeFragmentShaderSource(f, shdLib, fs, glslVersion) :
     f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, fs.name, glslVersion))
     for line in fs.generatedSource[glslVersion] :
-        f.write('"{}\\n"\n'.format(line))
+        f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
 
 #-------------------------------------------------------------------------------
@@ -827,6 +843,7 @@ def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     shaderLibrary.parseSources()
     shaderLibrary.resolveAllDependencies()
     shaderLibrary.generateShaderSources()
+    shaderLibrary.validateShaders()
 
     generateHeader(absHeaderPath, shaderLibrary)
     generateSource(absSourcePath, shaderLibrary)
