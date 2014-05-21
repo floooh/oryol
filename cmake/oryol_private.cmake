@@ -135,38 +135,6 @@ function(oryol_exe_output_directory target)
 endfunction()
 
 #-------------------------------------------------------------------------------
-#   Handle XML generator files before the dependent target exists. This
-#   runs the python script to generate the C++ sources required by
-#   the target.
-#
-macro(oryol_handle_generator_files_pretarget xmlFiles)
-
-    if (PYTHON)
-        # run generator immediately to generate source file
-        execute_process(COMMAND ${PYTHON} ${ORYOL_ROOT_DIR}/generators/generator.py ${xmlFiles})
-    else()  
-        message("WARNING: Python not found, skipping XML generators!")
-    endif()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   Handle XML generator files after the target has been created. This
-#   adds a custom target to update the generated C++ sources when the
-#   XML file changes and adds the custom target as dependency to the target
-#
-macro(oryol_handle_generator_files_posttarget target xmlFiles)
-
-    if (PYTHON)
-        # ...and add a custom target to build the sources
-        add_custom_target(${target}_gen COMMAND ${PYTHON} ${ORYOL_ROOT_DIR}/generators/generator.py ${xmlFiles} COMMENT "Generating sources...")
-        set_target_properties(${target}_gen PROPERTIES FOLDER "Generators")
-        add_dependencies(${target} ${target}_gen)
-    else()  
-        message("WARNING: Python not found, skipping XML generators!")
-    endif()
-endmacro()
-
-#-------------------------------------------------------------------------------
 #   Clear and start websamples description file.
 #
 macro(oryol_begin_web_samples)

@@ -8,6 +8,7 @@ include("${ORYOL_ROOT_DIR}/cmake/oryol_unittests.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_android.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_osx.cmake")
 include("${ORYOL_ROOT_DIR}/cmake/oryol_pnacl.cmake")
+include("${ORYOL_ROOT_DIR}/cmake/oryol_generators.cmake")
 
 #-------------------------------------------------------------------------------
 #   define top-level options for the whole project
@@ -351,20 +352,25 @@ macro(oryol_sources dirs)
         file(GLOB xmls ${dir}/*.xml)
         file(GLOB shds ${dir}/*.shd)
 
-        # add generated source files
-        foreach (xml ${xmls})
-            string(REPLACE .xml .cc xmlSrc ${xml})
-            string(REPLACE .xml .h xmlHdr ${xml})
-            list(APPEND CurSources ${xmlSrc} ${xmlHdr})
-        endforeach()
-
-        # setup IDE groups
+        # determine group folder name
         string(REPLACE / \\ groupName ${dir})
         if (${dir} STREQUAL .)
             source_group("" FILES ${src} ${xmls} ${shds})
         else()
             source_group(${groupName} FILES ${src} ${xmls} ${shds})
         endif()
+
+        # add generated source files
+        foreach (xml ${xmls})
+            string(REPLACE .xml .cc xmlSrc ${xml})
+            string(REPLACE .xml .h xmlHdr ${xml})
+            list(APPEND CurSources ${xmlSrc} ${xmlHdr})
+            if (${dir} STREQUAL .)
+                source_group("" FILES ${xmlSrc} ${xmlHdr})
+            else()
+                source_group(${groupName} FILES ${xmlSrc} ${xmlHdr})
+            endif()
+        endforeach()
 
         # add to global tracker variables
         list(APPEND CurSources ${src} ${xmls} ${shds})
