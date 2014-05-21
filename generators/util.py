@@ -2,6 +2,7 @@
     Common utilities for generator scripts.
 '''
 import sys
+import platform
 
 FilePath = ''
 LineNumber = 0
@@ -27,9 +28,10 @@ def fmtError(msg, terminate=True) :
     Print an error message formatted so that IDEs can parse them,
     and return with error code 10.
     '''
-    # this is for Xcode
-    print '{}:{}: error: {}\n'.format(FilePath, LineNumber + 1, msg)
-    # FIXME: VisualStudio
+    if platform.system() == 'Windows' :
+        print '{}({}): error: {}'.format(FilePath, LineNumber + 1, msg)
+    else :
+        print '{}:{}: error: {}\n'.format(FilePath, LineNumber + 1, msg)
     if terminate:
         sys.exit(10)
 
