@@ -181,7 +181,9 @@ String::String(const std::string& str) {
 String::String(const String& rhs) {
     this->data = rhs.data;
     this->strPtr = rhs.strPtr;
-    this->addRef();
+    if (nullptr != this->data) {
+        this->addRef();
+    }
 }
 
 //------------------------------------------------------------------------------
