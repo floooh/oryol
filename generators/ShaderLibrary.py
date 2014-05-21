@@ -774,9 +774,13 @@ class ShaderLibrary :
         '''
         for glslVersion in glslVersions :
             for vs in self.vertexShaders.values() :
-                glslcompiler.validate(vs.generatedSource[glslVersion], 'vs', glslVersion)
+                print "=> validating '{}' for glsl version {}".format(vs.name, glslVersion)
+                srcLines = vs.generatedSource[glslVersion]
+                glslcompiler.validate(srcLines, 'vs', glslVersion)
             for fs in self.fragmentShaders.values() :
-                glslcompiler.validate(fs.generatedSource[glslVersion], 'fs', glslVersion)
+                print "=> validating '{}' for glsl version {}".format(fs.name, glslVersion)
+                srcLines = fs.generatedSource[glslVersion]
+                glslcompiler.validate(srcLines, 'fs', glslVersion)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -887,6 +891,9 @@ def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
     Glob all source files and check their last-modified time
     against the source/header path sources. 
     '''
+    if util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version) :
+        return True
+
     srcTime = os.path.getmtime(absSourcePath)    
     hdrTime = os.path.getmtime(absHeaderPath)
     shdFiles = gatherShaderSources(xmlTree.getroot(), absXmlPath)

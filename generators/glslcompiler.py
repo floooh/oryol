@@ -20,14 +20,12 @@ def getToolsBinPath() :
         error("Unknown host system {}".format(platform.system()))
     return path;
 
-def writeFile(path, lines) :
+def writeFile(f, lines) :
     '''
     Write an array of lines to a file.
     '''
-    f = open(path, 'w')
     for line in lines :
         f.write(line.content + '\n')
-    f.close()
 
 def callValidator(cmd) :
     ''' 
@@ -79,18 +77,19 @@ def validate(lines, type, glslVersion) :
     '''
     Validate a vertex-/fragment-shader pair for a given glsl version.
     '''
-    tmpDir = tempfile.gettempdir()
     ext = {
-        'vs': 'vert',
-        'fs': 'frag'
+        'vs': '.vert',
+        'fs': '.frag'
     }
-    shdPath = tmpDir + '/' + type + '.' + ext[type]
-    writeFile(shdPath, lines)
+    f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
+    print '=> compiling {}'.format(f.name)
+    writeFile(f, lines)
+    f.close()
 
     toolPath = getToolsBinPath() + 'glslangValidator'
-    cmd = [toolPath, shdPath]
-    print cmd
+    cmd = [toolPath, f.name]
     output = callValidator(cmd)
+    os.unlink(f.name)
     parseOutput(output, lines)
 
 
