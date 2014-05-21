@@ -508,6 +508,23 @@ public:
         }
     }
 };
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::ShaderLang
+    @brief shader language syntax
+*/
+class ShaderLang {
+public:
+    enum Code {
+        GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
+        GLSL120,        ///< OpenGL 2.1
+        GLSL150,        ///< OpenGL 3.0
+    
+        NumShaderLangs,
+        InvalidShaderLang
+    };
+};
     
 } // namespace Render
 } // namespace Oryol

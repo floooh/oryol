@@ -27,28 +27,42 @@ numUniformEntries(0) {
 }
 
 //------------------------------------------------------------------------------
+ProgramBundleSetup::programEntry&
+ProgramBundleSetup::obtainEntry(uint32 mask) {
+    // find existing entry with matching mask
+    for (int32 i = 0; i < this->numProgramEntries; i++) {
+        if (this->programEntries[i].mask == mask) {
+            return this->programEntries[i];
+        }
+    }
+    // fallthrough: return new entry
+    programEntry& newEntry = this->programEntries[this->numProgramEntries++];
+    newEntry.mask = mask;
+    return newEntry;
+}
+
+//------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
     o_assert(this->numProgramEntries < MaxNumProgramEntries);
     o_assert(vs.IsValid() && vs.Type() == ResourceType::Shader);
     o_assert(fs.IsValid() && fs.Type() == ResourceType::Shader);
     
-    programEntry& entry = this->programEntries[this->numProgramEntries++];
-    entry.mask = mask;
+    programEntry& entry = this->obtainEntry(mask);
     entry.vertexShader = vs;
     entry.fragmentShader = fs;
 }
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddProgramFromSources(uint32 mask, const String& vsSource, const String& fsSource) {
+ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
     o_assert(this->numProgramEntries < MaxNumProgramEntries);
     o_assert(vsSource.IsValid() && fsSource.IsValid());
+    o_assert_range(slang, ShaderLang::NumShaderLangs);
     
-    programEntry& entry = this->programEntries[this->numProgramEntries++];
-    entry.mask = mask;
-    entry.vsSource = vsSource;
-    entry.fsSource = fsSource;
+    programEntry& entry = this->obtainEntry(mask);
+    entry.vsSources[slang] = vsSource;
+    entry.fsSources[slang] = fsSource;
 }
 
 //------------------------------------------------------------------------------
@@ -110,16 +124,18 @@ ProgramBundleSetup::GetFragmentShader(int32 progIndex) const {
 
 //------------------------------------------------------------------------------
 const String&
-ProgramBundleSetup::GetVertexShaderSource(int32 progIndex) const {
+ProgramBundleSetup::GetVertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
     o_assert_range(progIndex, this->numProgramEntries);
-    return this->programEntries[progIndex].vsSource;
+    o_assert_range(slang, ShaderLang::NumShaderLangs);
+    return this->programEntries[progIndex].vsSources[slang];
 }
 
 //------------------------------------------------------------------------------
 const String&
-ProgramBundleSetup::GetFragmentShaderSource(int32 progIndex) const {
+ProgramBundleSetup::GetFragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const {
     o_assert_range(progIndex, this->numProgramEntries);
-    return this->programEntries[progIndex].fsSource;
+    o_assert_range(slang, ShaderLang::NumShaderLangs);
+    return this->programEntries[progIndex].fsSources[slang];
 }
 
 //------------------------------------------------------------------------------

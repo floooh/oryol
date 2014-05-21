@@ -8,6 +8,7 @@
 #include "Render/gl/gl_impl.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Memory/Memory.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {
@@ -58,7 +59,15 @@ glShaderFactory::SetupResource(shader& shd) {
     
     // create a shader object
     const ShaderSetup& setup = shd.GetSetup();
-    GLuint glShader = this->compileShader(setup.GetType(), setup.GetSource(), setup.GetDefines());
+    
+    #if ORYOL_OPENGLES2
+    const ShaderLang::Code slang = ShaderLang::GLSL100;
+    #elif ORYOL_OSX 
+    const ShaderLang::Code slang = ShaderLang::GLSL150;
+    #else
+    const ShaderLang::Code slang = ShaderLang::GLSL120;
+    #endif
+    GLuint glShader = this->compileShader(setup.GetType(), setup.GetSource(slang));
     
     // if compilation has failed, stop the program
     if (0 == glShader) {
@@ -90,99 +99,16 @@ glShaderFactory::DestroyResource(shader& shd) {
 
 //------------------------------------------------------------------------------
 GLuint
-glShaderFactory::compileShader(ShaderType::Code type, const String& src, const Map<String,String>& defines) const {
+glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
     o_assert(src.IsValid());
     
     GLuint glShader = glCreateShader(type);
     o_assert(0 != glShader);
     ORYOL_GL_CHECK_ERROR();
     
-    // estimate length of complete source string
-    int32 srcLength = 0;
-    for (const auto& define : defines) {
-        srcLength += 10 + define.Key().Length() + define.Value().Length();
-    }
-    srcLength += src.Length();
-    
-    // setup the shader source
-    StringBuilder strBuilder;
-    strBuilder.Reserve(2 * srcLength + 1024);
-    #if ORYOL_OPENGLES2
-        strBuilder.Append("#define ORYOL_OPENGLES2 (1)\n");
-        if (GL_VERTEX_SHADER == type) {
-            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
-            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
-        }
-        if (GL_FRAGMENT_SHADER == type) {
-            strBuilder.Append("precision mediump float;\n");
-            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
-            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
-            strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");
-            strBuilder.Append("#define FragmentColor gl_FragColor\n");
-        }
-    #elif ORYOL_OSX
-        // FIXME: this is actually the OpenGL 3.x Core Profile
-        strBuilder.Append("#version 150\n");
-        strBuilder.Append("#define ORYOL_OPENGL (1)\n");
-        strBuilder.Append("#define lowp\n");
-        strBuilder.Append("#define mediump\n");
-        strBuilder.Append("#define highp\n");
-        if (GL_VERTEX_SHADER == type) {
-            strBuilder.Append("#define VS_INPUT(type,name) in type name\n");
-            strBuilder.Append("#define VS_OUTPUT(type,name) out type name\n");
-        }
-        if (GL_FRAGMENT_SHADER == type) {
-            strBuilder.Append("#define FS_INPUT(type,name) in type name\n");
-            strBuilder.Append("#define TEXTURE2D(x,y) texture(x,y)\n");
-            strBuilder.Append("#define TEXTURECUBE(x,y) texture(x,y)\n");
-            strBuilder.Append("out vec4 FragmentColor;\n");
-        }
-    #else
-        strBuilder.Append("#define ORYOL_OPENGL (1)\n");
-        strBuilder.Append("#define lowp\n");
-        strBuilder.Append("#define mediump\n");
-        strBuilder.Append("#define highp\n");
-        if (GL_VERTEX_SHADER == type) {
-            strBuilder.Append("#define VS_INPUT(type,name) attribute type name\n");
-            strBuilder.Append("#define VS_OUTPUT(type,name) varying type name\n");
-        }
-        if (GL_FRAGMENT_SHADER == type) {
-            strBuilder.Append("#define FS_INPUT(type,name) varying type name\n");
-            strBuilder.Append("#define TEXTURE2D(x,y) texture2D(x,y)\n");
-            strBuilder.Append("#define TEXTURECUBE(x,y) textureCube(x,y)\n");
-            strBuilder.Append("#define FragmentColor gl_FragColor\n");
-        }
-    #endif
-    
-    #if ORYOL_WINDOWS
-        strBuilder.Append("#define ORYOL_WINDOWS (1)\n");
-    #elif ORYOL_MACOS
-        strBuilder.Append("#define ORYOL_MACOS (1)\n");
-    #elif ORYOL_IOS
-        strBuilder.Append("#define ORYOL_IOS (1)\n");
-    #elif ORYOL_EMSCRIPTEN
-        strBuilder.Append("#define ORYOL_EMSCRIPTEN (1)\n");
-    #elif ORYOL_PNACL
-        strBuilder.Append("#define ORYOL_PNACL (1)\n");
-    #elif ORYOL_ANDROID
-        strBuilder.Append("#define ORYOL_ANDROID (1)\n");
-    #elif ORYOL_LINUX
-        strBuilder.Append("#define ORYOL_LINUX (1)\n");
-    #endif
-    for (int32 i = 0; i < defines.Size(); i++) {
-        const String& curDefineKey = defines.KeyAtIndex(i);
-        const String& curDefineVal = defines.ValueAtIndex(i);
-        strBuilder.Append("#define ");
-        strBuilder.Append(curDefineKey);
-        strBuilder.Append(' ');
-        strBuilder.Append(curDefineVal);
-        strBuilder.Append('\n');
-    }
-    strBuilder.Append(src);
-    
     // attach source to shader object
-    const GLchar* sourceString = strBuilder.AsCStr();
-    const int sourceLength = strBuilder.Length();
+    const GLchar* sourceString = src.AsCStr();
+    const int sourceLength = src.Length();
     glShaderSource(glShader, 1, &sourceString, &sourceLength);
     ORYOL_GL_CHECK_ERROR();
     

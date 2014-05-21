@@ -66,6 +66,14 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert(progBundle.GetState() == Resource::State::Setup);
     this->glStateWrapper->InvalidateProgramState();
 
+    #if ORYOL_OPENGLES2
+    const ShaderLang::Code slang = ShaderLang::GLSL100;
+    #elif ORYOL_OSX
+    const ShaderLang::Code slang = ShaderLang::GLSL150;
+    #else
+    const ShaderLang::Code slang = ShaderLang::GLSL120;
+    #endif
+
     // for each program in the bundle...
     const ProgramBundleSetup& setup = progBundle.GetSetup();
     const int32 numProgs = setup.GetNumPrograms();
@@ -75,9 +83,9 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         Map<String,String> noDefines;
         GLuint glVertexShader = 0;
         bool deleteVertexShader = false;
-        if (setup.GetVertexShaderSource(progIndex).IsValid()) {
+        if (setup.GetVertexShaderSource(progIndex, slang).IsValid()) {
             // compile the vertex shader from source
-            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex), noDefines);
+            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex, slang));
             deleteVertexShader = true;
         }
         else {
@@ -91,9 +99,9 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // lookup or compile fragment shader
         GLuint glFragmentShader = 0;
         bool deleteFragmentShader = false;
-        if (setup.GetFragmentShaderSource(progIndex).IsValid()) {
+        if (setup.GetFragmentShaderSource(progIndex, slang).IsValid()) {
             // compile the fragment shader from source
-            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex), noDefines);
+            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex, slang));
             deleteFragmentShader = true;
         }
         else {

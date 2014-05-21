@@ -14,27 +14,23 @@ namespace Render {
     
 class ShaderSetup {
 public:
-    /// setup from source string
-    static ShaderSetup FromSource(const Resource::Locator& loc, ShaderType::Code type, const Core::String& source);
-    /// setup from source string and defines
-    static ShaderSetup FromSourceAndDefines(const Resource::Locator& loc, ShaderType::Code type, const Core::String& source, const Core::Map<Core::String,Core::String>& defines);
-    
     /// default constructor
     ShaderSetup();
+    /// construct with locator and shader type
+    ShaderSetup(const Resource::Locator& loc, ShaderType::Code type);
     /// get locator
     const Resource::Locator& GetLocator() const;
     /// get the shader type
     ShaderType::Code GetType() const;
-    /// get the shader source
-    const Core::String& GetSource() const;
-    /// get defines
-    const Core::Map<Core::String,Core::String>& GetDefines() const;
+    /// add a source code of a shader language syntax
+    void AddSource(ShaderLang::Code slang, const Core::String& source);
+    /// get the shader sources by shader language version (may return empty string)
+    const Core::String& GetSource(ShaderLang::Code slang) const;
     
 private:
     Resource::Locator loc;
     ShaderType::Code type;
-    Core::String source;
-    Core::Map<Core::String,Core::String> defines;
+    Core::String sources[ShaderLang::NumShaderLangs];
 };
     
 } // namespace Render

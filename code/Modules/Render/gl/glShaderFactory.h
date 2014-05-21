@@ -33,7 +33,7 @@ public:
     void DestroyResource(shader& shd);
     
     /// compile a GL shader (return 0 if failed)
-    GLuint compileShader(ShaderType::Code type, const Core::String& src, const Core::Map<Core::String,Core::String>& defines) const;
+    GLuint compileShader(ShaderType::Code type, const Core::String& src) const;
     
 private:
     bool isValid;
