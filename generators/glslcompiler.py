@@ -79,9 +79,6 @@ def validate(lines, type, glslVersion) :
     '''
     Validate a vertex-/fragment-shader pair for a given glsl version.
     '''
-    for line in lines :
-        print 'content={} path={} linenr={}'.format(line.content, line.path, line.lineNumber)
-
     tmpDir = tempfile.gettempdir()
     ext = {
         'vs': 'vert',
