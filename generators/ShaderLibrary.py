@@ -79,6 +79,15 @@ def getMacroValue(macro, glslVersion) :
         return glsl130Macros[macro]
 
 #-------------------------------------------------------------------------------
+def gatherShaderSources(xmlRoot, absXmlPath) :
+    srcList = []
+    rootDir = os.path.dirname(absXmlPath)
+    for dirNode in xmlRoot.findall('AddDir') :
+        path = rootDir + '/' + dirNode.get('path')
+        srcList.extend(glob.glob(path + '/*.shd'))
+    return srcList
+
+#-------------------------------------------------------------------------------
 class Line :
     '''
     A line object with mapping to a source file and line number.
@@ -608,7 +617,6 @@ class ShaderLibrary :
         self.xmlRoot = xmlTree.getroot()
         self.xmlPath = absXmlPath
         self.name = None
-        self.dirs = []
         self.sources = []
         self.blocks = {}
         self.vertexShaders = {}
@@ -636,19 +644,8 @@ class ShaderLibrary :
         Parse the root xml file, this sets the name
         and the source directories members.
         '''
-        rootDir = os.path.dirname(self.xmlPath)
-        print 'ROOT DIR: {}'.format(rootDir)
         self.name = self.xmlRoot.get('name')
-        for dir in self.xmlRoot.findall('AddDir') :
-            self.dirs.append(rootDir + '/' + dir.get('path'))
-
-    def gatherSources(self) :
-        '''
-        This gathers the shader source file names from
-        all source directories.
-        '''
-        for dir in self.dirs :
-            self.sources.extend(glob.glob(dir + '/*.shd'))
+        self.sources = gatherShaderSources(self.xmlRoot, self.xmlPath)
 
     def parseSources(self) :
         '''
@@ -886,16 +883,24 @@ def generateSource(absSourcePath, shdLib) :
 
 #-------------------------------------------------------------------------------
 def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    # FIXME: check time stamp of shader sources against 
-    # source/header (if exists)
-    return True
+    '''
+    Glob all source files and check their last-modified time
+    against the source/header path sources. 
+    '''
+    srcTime = os.path.getmtime(absSourcePath)    
+    hdrTime = os.path.getmtime(absHeaderPath)
+    shdFiles = gatherShaderSources(xmlTree.getroot(), absXmlPath)
+    for shdFile in shdFiles :
+        shdTime = os.path.getmtime(shdFile)
+        if shdTime > srcTime or shdTime > hdrTime :
+            return True
+    return False
 
 #-------------------------------------------------------------------------------
 def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
 
     shaderLibrary = ShaderLibrary(xmlTree, absXmlPath)
     shaderLibrary.parseXmlTree()
-    shaderLibrary.gatherSources()
     shaderLibrary.parseSources()
     shaderLibrary.resolveAllDependencies()
     shaderLibrary.generateShaderSources()
