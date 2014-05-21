@@ -65,8 +65,11 @@ def parseOutput(output, lines) :
             msg = outLine[msgStartIndex:]
 
             # map to original location
-            srcPath = lines[lineNr-1].path
-            srcLineNr = lines[lineNr-1].lineNumber
+            lineIndex = lineNr - 1
+            if lineIndex >= len(lines) :
+                lineIndex = len(lines) - 1
+            srcPath = lines[lineIndex].path
+            srcLineNr = lines[lineIndex].lineNumber
             
             # and output...
             util.setErrorLocation(srcPath, srcLineNr)

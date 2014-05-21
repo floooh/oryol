@@ -11,7 +11,14 @@ from pprint import pprint
 import util
 import glslcompiler
 
-glslVersions = [ 100, 140 ]
+# GLSL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0
+glslVersions = [ 100, 120, 150 ]
+
+glslSlangTypes = {
+    100: 'Render::ShaderLang::GLSL100',
+    120: 'Render::ShaderLang::GLSL120',
+    150: 'Render::ShaderLang::GLSL150'
+}
 
 macroKeywords = {
     '$position': '_POSITION',
@@ -217,7 +224,6 @@ class Program() :
     def __init__(self, vs, fs) :
         self.vs = vs
         self.fs = fs
-        self.uniforms = []
 
     def getTag(self) :
         return 'program'
@@ -678,7 +684,31 @@ class ShaderLibrary :
         deps.reverse()
         shd.resolvedDeps = deps
 
-    def resolveUniforms(self, shd) :
+    def checkAddUniform(self, uniform, list) :
+        '''
+        Check if uniform already exists in list, if yes
+        check if type and binding matches, if not write error.
+        If uniform doesn't exist yet in list, add it.
+        '''
+        listUniform = findByName(uniform.name, list)
+        if listUniform is not None:
+            # redundant uniform, check if type and binding name match
+            if listUniform.type != uniform.type :
+                util.setErrorLocation(uniform.filePath, uniform.lineNumber)
+                util.fmtError("uniform type mismatch '{}' vs '{}'".format(uniform.type, listUniform.type), False)
+                util.setErrorLocation(listUniform.filePath, listUniform.lineNumber)
+                util.fmtError("uniform type mismatch '{}' vs '{}'".format(listUniform.type, uniform.type))
+            if listUniform.bind != uniform.bind :
+                util.setErrorLocation(uniform.filePath, uniform.lineNumber)
+                util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(uniform.bind, listUniform.bind), False)
+                util.setErrorLocation(listUniform.filePath, listUniform.lineNumber)
+                util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(listUniform.bind, uniform.bind))
+        else :
+            # new uniform from block, add to list
+            list.append(uniform)
+
+
+    def resolveShaderUniforms(self, shd) :
         '''
         This adds and verifies uniforms from block 
         dependencies to the vertex or fragment shader.
@@ -687,22 +717,17 @@ class ShaderLibrary :
             for uniform in self.blocks[dep].uniforms :
                 # if the uniform already exists, check
                 # whether type and binding are matching
-                shdUniform = findByName(uniform.name, shd.uniforms)
-                if shdUniform is not None:
-                    # redundant uniform, check if type and binding name match
-                    if shdUniform.type != uniform.type :
-                        util.setErrorLocation(uniform.filePath, uniform.lineNumber)
-                        util.fmtError("uniform type mismatch '{}' vs '{}'".format(uniform.type, shdUniform.type), False)
-                        util.setErrorLocation(shdUniform.filePath, shdUniform.lineNumber)
-                        util.fmtError("uniform type mismatch '{}' vs '{}'".format(shdUniform.type, uniform.type))
-                    if shdUniform.bind != uniform.bind :
-                        util.setErrorLocation(uniform.filePath, uniform.lineNumber)
-                        util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(uniform.bind, shdUniform.bind), False)
-                        util.setErrorLocation(shdUniform.filePath, shdUniform.lineNumber)
-                        util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(shdUniform.bind, uniform.bind))
-                else :
-                    # new uniform from block, add to shader uniforms
-                    shd.uniforms.append(uniform)
+                self.checkAddUniform(uniform, shd.uniforms)
+
+    def resolveBundleUniforms(self, bundle) :
+        '''
+        Gathers all uniforms from all shaders in the bundle.
+        '''
+        for program in bundle.programs :
+            for uniform in self.vertexShaders[program.vs].uniforms :
+                self.checkAddUniform(uniform, bundle.uniforms)
+            for uniform in self.fragmentShaders[program.fs].uniforms :
+                self.checkAddUniform(uniform, bundle.uniforms)
 
     def resolveMacros(self, shd) :
         '''
@@ -722,15 +747,17 @@ class ShaderLibrary :
         for vs in self.vertexShaders.values() :
             for dep in vs.dependencies :
                 self.resolveDeps(vs, dep)
-        self.removeDuplicateDeps(vs)
+            self.removeDuplicateDeps(vs)
         for fs in self.fragmentShaders.values() :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
-        self.removeDuplicateDeps(fs)
+            self.removeDuplicateDeps(fs)
         for vs in self.vertexShaders.values() :
-            self.resolveUniforms(vs)
+            self.resolveShaderUniforms(vs)
         for fs in self.fragmentShaders.values() :
-            self.resolveUniforms(fs)
+            self.resolveShaderUniforms(fs)
+        for bundle in self.bundles.values() :
+            self.resolveBundleUniforms(bundle)
 
     def generateShaderSources(self) :
         '''
@@ -761,26 +788,31 @@ def writeHeaderTop(f, shdLib) :
     f.write('/*  #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
+    f.write('#include "Render/Setup/ProgramBundleSetup.h"\n')
     f.write('namespace Oryol {\n')
-    f.write('class ' + shdLib.name + ' {\n')
-    f.write('public:\n')
+    f.write('namespace ' + shdLib.name + ' {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
-    f.write('};\n')
+    f.write('}\n')
     f.write('}\n')
     f.write('\n')
+
+#-------------------------------------------------------------------------------
+def writeBundleHeader(f, shdLib, bundle) :
+    f.write('    class ' + bundle.name + ' {\n')
+    f.write('    public:\n')
+    for i in range(0, len(bundle.uniforms)) :
+        f.write('        static const int32 {} = {};\n'.format(bundle.uniforms[i].bind, i))
+    f.write('        static Render::ProgramBundleSetup CreateSetup();\n')
+    f.write('    };\n')
 
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, shdLib) :
     f = open(absHeaderPath, 'w')
     writeHeaderTop(f, shdLib)
-    for glslVersion in glslVersions :
-        for vs in shdLib.vertexShaders.values() :
-            f.write('    static const char* {}_{}_src;\n'.format(vs.name, glslVersion))
-        for fs in shdLib.fragmentShaders.values() :
-            f.write('    static const char* {}_{}_src;\n'.format(fs.name, glslVersion))
-
+    for bundle in shdLib.bundles.values() :
+        writeBundleHeader(f, shdLib, bundle)
     writeHeaderBottom(f, shdLib)
     f.close()
 
@@ -796,36 +828,60 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
+    f.write('namespace ' + shdLib.name + '{\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
+    f.write('}\n')
     f.write('}\n')
     f.write('\n')
 
 #-------------------------------------------------------------------------------
 def writeVertexShaderSource(f, shdLib, vs, glslVersion) :
-    f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, vs.name, glslVersion))
+    f.write('const char* {}_{}_src = \n'.format(vs.name, glslVersion))
     for line in vs.generatedSource[glslVersion] :
         f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
 
 #-------------------------------------------------------------------------------
 def writeFragmentShaderSource(f, shdLib, fs, glslVersion) :
-    f.write('const char* {}::{}_{}_src = \n'.format(shdLib.name, fs.name, glslVersion))
+    f.write('const char* {}_{}_src = \n'.format(fs.name, glslVersion))
     for line in fs.generatedSource[glslVersion] :
         f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
 
 #-------------------------------------------------------------------------------
-def generateSource(absSourcePath, shaderLibrary) :
+def writeBundleSource(f, shdLib, bundle) :
+    f.write('Render::ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
+    f.write('    Render::ProgramBundleSetup setup("' + bundle.name + '");\n')
+    for i in range(0, len(bundle.programs)) :
+        vsName = shdLib.vertexShaders[bundle.programs[i].vs].name
+        fsName = shdLib.fragmentShaders[bundle.programs[i].fs].name
+        for glslVersion in glslVersions :
+            slangType = glslSlangTypes[glslVersion]
+            vsSource = '{}_{}_src'.format(vsName, glslVersion)
+            fsSource = '{}_{}_src'.format(fsName, glslVersion)
+            f.write('    setup.AddProgramFromSources({}, {}, {}, {});\n'.format(i, slangType, vsSource, fsSource));
+    for uniform in bundle.uniforms :
+        if uniform.type.startswith('sampler') :
+            f.write('    setup.AddTextureUniform("{}", {});\n'.format(uniform.name, uniform.bind))
+        else :
+            f.write('    setup.AddUniform("{}", {});\n'.format(uniform.name, uniform.bind))
+    f.write('    return setup;\n')
+    f.write('}\n')
+
+#-------------------------------------------------------------------------------
+def generateSource(absSourcePath, shdLib) :
     f = open(absSourcePath, 'w')  
-    writeSourceTop(f, absSourcePath, shaderLibrary)
+    writeSourceTop(f, absSourcePath, shdLib)
     for glslVersion in glslVersions :
-        for vs in shaderLibrary.vertexShaders.values() :
-            writeVertexShaderSource(f, shaderLibrary, vs, glslVersion)
-        for fs in shaderLibrary.fragmentShaders.values() :
-            writeFragmentShaderSource(f, shaderLibrary, fs, glslVersion)
-    writeSourceBottom(f, shaderLibrary)  
+        for vs in shdLib.vertexShaders.values() :
+            writeVertexShaderSource(f, shdLib, vs, glslVersion)
+        for fs in shdLib.fragmentShaders.values() :
+            writeFragmentShaderSource(f, shdLib, fs, glslVersion)
+    for bundle in shdLib.bundles.values() :
+        writeBundleSource(f, shdLib, bundle)            
+    writeSourceBottom(f, shdLib)  
     f.close()
 
 #-------------------------------------------------------------------------------
