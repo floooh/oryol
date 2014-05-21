@@ -8,6 +8,7 @@
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -36,55 +37,8 @@ private:
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
-    static const int32 Texture = 1;
 };
 OryolMain(SimpleRenderTargetApp);
-
-// vertex shader for rendering to render target
-static const char* rtVsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, normal);\n"
-"VS_OUTPUT(vec4, nrm);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  nrm = normal;\n"
-"}\n";
-
-// fragment shader for rendering to render target
-static const char* rtFsSource =
-"FS_INPUT(vec4, nrm);\n"
-"void main() {\n"
-"  FragmentColor = nrm * 0.5 + 0.5;\n"
-"}\n";
-
-// vertex shader for rendering to display
-static const char* dispVsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, normal);\n"
-"VS_INPUT(vec2, texcoord0);\n"
-"VS_OUTPUT(vec4, nrm);\n"
-"VS_OUTPUT(vec2, uv);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  uv = texcoord0;\n"
-"  nrm = normalize(mvp * normal);\n"
-"}\n";
-
-// fragment shader for rendering to display
-static const char* dispFsSource =
-"uniform sampler2D tex;\n"
-"FS_INPUT(vec2, uv);\n"
-"FS_INPUT(vec4, nrm);\n"
-"void main() {\n"
-"  vec4 c = TEXTURE2D(tex, uv * vec2(20.0, 10.0));\n"
-"  float l = clamp(dot(nrm.xyz, normalize(vec3(1.0, 1.0, -1.0))), 0.0, 1.0) * 2.0;\n"
-"  FragmentColor = c * (l + 0.25);\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -121,18 +75,9 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.Build();
     this->sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
 
-    // build shader for rendering to render-target
-    ProgramBundleSetup rtProgSetup("rtProg");
-    rtProgSetup.AddProgramFromSources(0, rtVsSource, rtFsSource);
-    rtProgSetup.AddUniform("mvp", ModelViewProjection);
-    this->rtProg = this->render->CreateResource(rtProgSetup);
-    
-    // build shader for rendering to display
-    ProgramBundleSetup dispProgSetup("dispProg");
-    dispProgSetup.AddProgramFromSources(0, dispVsSource, dispFsSource);
-    dispProgSetup.AddUniform("mvp", ModelViewProjection);
-    dispProgSetup.AddTextureUniform("tex", Texture);
-    this->dispProg = this->render->CreateResource(dispProgSetup);
+    // create shaders
+    this->rtProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
+    this->dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // constant state
     StateBlockSetup stateSetup("state");
@@ -179,7 +124,7 @@ SimpleRenderTargetApp::OnRunning() {
         this->render->ApplyMesh(this->torus);
         this->render->ApplyProgram(this->rtProg, 0);
         glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-        this->render->ApplyVariable(ModelViewProjection, donutMVP);
+        this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
         this->render->Draw(0);
         
         // render sphere to display, with offscreen render target as texture
@@ -188,8 +133,8 @@ SimpleRenderTargetApp::OnRunning() {
         this->render->ApplyMesh(this->sphere);
         this->render->ApplyProgram(this->dispProg, 0);
         glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-        this->render->ApplyVariable(ModelViewProjection, sphereMVP);
-        this->render->ApplyVariable(Texture, this->renderTarget);
+        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
+        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
         this->render->Draw(0);
         this->render->EndFrame();
     }

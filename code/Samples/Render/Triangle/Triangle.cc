@@ -6,6 +6,7 @@
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/MeshBuilder.h"
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -25,23 +26,6 @@ private:
     Resource::Id progId;
 };
 OryolMain(TriangleApp);
-
-// the vertex shader
-static const char* vsSource =
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, color0);\n"
-"VS_OUTPUT(vec4, color);\n"
-"void main() {\n"
-"  gl_Position = position;\n"
-"  color = color0;\n"
-"}\n";
-
-// the pixel shader
-static const char* fsSource =
-"FS_INPUT(vec4, color);\n"
-"void main() {\n"
-"  FragmentColor = color;\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -70,10 +54,8 @@ TriangleApp::OnInit() {
     meshBuilder.End();
     this->meshId = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
     
-    // build a shader program (shortcut without precompiled vertex/fragment shaders)
-    ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    this->progId = this->render->CreateResource(progSetup);
+    // setup shader program from generated shader source (see shaders.shd)
+    this->progId = this->render->CreateResource(Shaders::Triangle::CreateSetup());
     
     return App::OnInit();
 }

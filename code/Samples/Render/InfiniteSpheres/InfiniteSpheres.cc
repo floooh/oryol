@@ -9,6 +9,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -36,36 +37,8 @@ private:
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
     int32 frameIndex = 0;
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
-    static const int32 Texture = 2;
 };
 OryolMain(InfiniteSpheresApp);
-
-// vertex shader for rendering to render target
-static const char* vsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, normal);\n"
-"VS_INPUT(vec2, texcoord0);\n"
-"VS_OUTPUT(vec4, nrm);\n"
-"VS_OUTPUT(vec2, uv);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  nrm = normal;\n"
-"  uv  = texcoord0;\n"
-"}\n";
-
-// fragment shader for rendering to render target
-static const char* fsSource =
-"uniform sampler2D tex;\n"
-"FS_INPUT(vec4, nrm);\n"
-"FS_INPUT(vec2, uv);\n"
-"void main() {\n"
-"  vec4 texColor = TEXTURE2D(tex, uv * vec2(5.0, 3.0));"
-"  FragmentColor = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -96,11 +69,7 @@ InfiniteSpheresApp::OnInit() {
     this->sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
 
     // build shader for rendering to render-target
-    ProgramBundleSetup progSetup("rtProg");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    progSetup.AddUniform("mvp", ModelViewProjection);
-    progSetup.AddTextureUniform("tex", Texture);
-    this->prog = this->render->CreateResource(progSetup);
+    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup static depth render states
     StateBlockSetup depthStateSetup("depthState");
@@ -158,8 +127,8 @@ InfiniteSpheresApp::OnRunning() {
         this->render->ApplyProgram(this->prog, 0);
         glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
-        this->render->ApplyVariable(ModelViewProjection, mvp);
-        this->render->ApplyVariable(Texture, this->renderTargets[index1]);
+        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
         this->render->Draw(0);
         
         // ...and again to display
@@ -168,8 +137,8 @@ InfiniteSpheresApp::OnRunning() {
         this->render->Clear(true, true, true);
         model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         mvp = this->computeMVP(this->displayProj, model);
-        this->render->ApplyVariable(ModelViewProjection, mvp);
-        this->render->ApplyVariable(Texture, this->renderTargets[index0]);
+        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
         this->render->Draw(0);
         
         this->render->EndFrame();

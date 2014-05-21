@@ -8,6 +8,7 @@
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -32,29 +33,8 @@ private:
     glm::mat4 proj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
 };
 OryolMain(ShapeApp);
-
-// the vertex shader
-static const char* vsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, color0);\n"
-"VS_OUTPUT(vec4, color);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  color = color0;\n"
-"}\n";
-
-// the pixel shader
-static const char* fsSource =
-"FS_INPUT(vec4, color);\n"
-"void main() {\n"
-"  FragmentColor = color;\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -79,10 +59,7 @@ ShapeApp::OnInit() {
     this->meshId = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
 
     // build a shader program from vs/fs sources
-    ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    progSetup.AddUniform("mvp", ModelViewProjection);
-    this->progId = this->render->CreateResource(progSetup);
+    this->progId = this->render->CreateResource(Shaders::Shapes::CreateSetup());
 
     // build a state block with the static depth state
     StateBlockSetup stateSetup("state");
@@ -126,15 +103,15 @@ ShapeApp::OnRunning() {
         this->render->ApplyMesh(this->meshId);
         
         // render shape primitive groups
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
         this->render->Draw(0);
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
         this->render->Draw(2);
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
         this->render->Draw(3);
-        this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
         this->render->Draw(4);
         
         this->render->EndFrame();

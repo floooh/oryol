@@ -12,6 +12,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <array>
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -40,31 +41,8 @@ private:
     glm::mat4 proj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
-    static const int32 Texture = 1;
 };
 OryolMain(DDSCubeMapApp);
-
-// the vertex shader
-static const char* vsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec3, normal);\n"
-"VS_OUTPUT(vec3, nrm);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  nrm = normal;\n"
-"}\n";
-
-// the pixel shader
-static const char* fsSource =
-"uniform samplerCube tex;\n"
-"FS_INPUT(vec3, nrm);\n"
-"void main() {\n"
-"  FragmentColor = TEXTURECUBE(tex, nrm);\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -101,11 +79,7 @@ DDSCubeMapApp::OnInit() {
     this->meshId = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
 
     // build a shader program from a vertex- and fragment shader
-    ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    progSetup.AddUniform("mvp", ModelViewProjection);
-    progSetup.AddTextureUniform("tex", Texture);
-    this->progId = this->render->CreateResource(progSetup);
+    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup static state block object
     StateBlockSetup stateSetup("state");
@@ -150,8 +124,8 @@ DDSCubeMapApp::OnRunning() {
         
         const auto resState = this->render->QueryResourceState(this->texId);
         if (resState == Resource::State::Valid) {
-            this->render->ApplyVariable(ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            this->render->ApplyVariable(Texture, this->texId);
+            this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
+            this->render->ApplyVariable(Shaders::Main::Texture, this->texId);
             this->render->Draw(0);
         }
         else if (resState == Resource::State::Failed) {

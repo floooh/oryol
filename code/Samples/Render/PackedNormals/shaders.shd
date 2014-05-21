@@ -1,0 +1,26 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//  Annotated GLSL shaders for PackedNormals sample
+//------------------------------------------------------------------------------
+
+@vs vs
+@uniform mat4 mvp ModelViewProjection
+@in vec4 position
+@in vec4 normal
+@out vec4 nrm
+void main() {
+    $position = mvp * position;
+    nrm = normal;
+}
+@end
+
+@fs fs
+@in vec4 nrm
+void main() {
+    $color = nrm * 0.5 + 0.5;
+}
+@end
+
+@bundle PackedNormals
+@program vs fs
+@end

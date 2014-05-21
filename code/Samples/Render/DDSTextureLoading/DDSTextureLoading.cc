@@ -12,6 +12,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <array>
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -39,31 +40,8 @@ private:
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
-    static const int32 Texture = 1;
 };
 OryolMain(DDSTextureLoadingApp);
-
-// the vertex shader
-static const char* vsSource =
-"uniform mat4 mvp;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec2, texcoord0);\n"
-"VS_OUTPUT(vec2, uv);\n"
-"void main() {\n"
-"  gl_Position = mvp * position;\n"
-"  uv = texcoord0;\n"
-"}\n";
-
-// the pixel shader
-static const char* fsSource =
-"uniform sampler2D tex;\n"
-"FS_INPUT(vec2, uv);\n"
-"void main() {\n"
-"  FragmentColor = TEXTURE2D(tex, uv);\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -112,11 +90,7 @@ DDSTextureLoadingApp::OnInit() {
     this->meshId = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
 
     // build a shader program from a vertex- and fragment shader
-    ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    progSetup.AddUniform("mvp", ModelViewProjection);
-    progSetup.AddTextureUniform("tex", Texture);
-    this->progId = this->render->CreateResource(progSetup);
+    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup static render states
     StateBlockSetup stateSetup("state");
@@ -181,8 +155,8 @@ DDSTextureLoadingApp::OnRunning() {
                 const auto resState = this->render->QueryResourceState(tex);
                 if (resState == Resource::State::Valid) {
                     glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-                    this->render->ApplyVariable(ModelViewProjection, this->computeMVP(p));
-                    this->render->ApplyVariable(Texture, tex);
+                    this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
+                    this->render->ApplyVariable(Shaders::Main::Texture, tex);
                     this->render->Draw(0);
                 }
                 else if (resState == Resource::State::Failed) {

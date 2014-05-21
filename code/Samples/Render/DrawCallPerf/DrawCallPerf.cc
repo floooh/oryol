@@ -10,6 +10,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
 #include <chrono>
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -44,31 +45,8 @@ private:
         glm::vec4 pos;
         glm::vec4 vec;
     } particles[MaxNumParticles];
-    
-    // shader slots
-    static const int32 ModelViewProjection = 0;
-    static const int32 ParticleTranslate = 1;
 };
 OryolMain(DrawCallPerfApp);
-
-// the vertex shader
-static const char* vsSource =
-"uniform mat4 mvp;\n"
-"uniform vec4 particleTranslate;\n"
-"VS_INPUT(vec4, position);\n"
-"VS_INPUT(vec4, color0);\n"
-"VS_OUTPUT(vec4, color);\n"
-"void main() {\n"
-"  gl_Position = mvp * (position + particleTranslate);\n"
-"  color = color0;\n"
-"}\n";
-
-// the pixel shader
-static const char* fsSource =
-"FS_INPUT(vec4, color);\n"
-"void main() {\n"
-"  FragmentColor = color;\n"
-"}\n";
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -87,11 +65,7 @@ DrawCallPerfApp::OnInit() {
     this->meshId = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
 
     // build a shader program from vs/fs sources
-    ProgramBundleSetup progSetup("prog");
-    progSetup.AddProgramFromSources(0, vsSource, fsSource);
-    progSetup.AddUniform("mvp", ModelViewProjection);
-    progSetup.AddUniform("particleTranslate", ParticleTranslate);
-    this->progId = this->render->CreateResource(progSetup);
+    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup state block object
     StateBlockSetup stateSetup("state");
@@ -175,11 +149,11 @@ DrawCallPerfApp::OnRunning() {
         this->render->Clear(true, true, true);
         this->render->ApplyMesh(this->meshId);
         this->render->ApplyProgram(this->progId, 0);
-        this->render->ApplyVariable(ModelViewProjection, this->modelViewProj);
+        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
 
         auto drawStart = chrono::high_resolution_clock::now();
         for (int32 i = 0; i < this->curNumParticles; i++) {
-            this->render->ApplyVariable(ParticleTranslate, this->particles[i].pos);
+            this->render->ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
             this->render->Draw(0);
         }
         drawTime = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - drawStart);

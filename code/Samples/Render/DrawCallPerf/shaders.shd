@@ -1,0 +1,26 @@
+//------------------------------------------------------------------------------
+//  DrawCallPerf sample shaders
+//------------------------------------------------------------------------------
+
+@vs vs
+@uniform mat4 mvp ModelViewProjection
+@uniform vec4 particleTranslate ParticleTranslate
+@in vec4 position
+@in vec4 color0
+@out vec4 color
+void main() {
+    $position = mvp * (position + particleTranslate);
+    color = color0;
+}
+@end
+
+@fs fs
+@in vec4 color
+void main() {
+    $color = color;
+}
+@end
+
+@bundle Main
+@program vs fs
+@end

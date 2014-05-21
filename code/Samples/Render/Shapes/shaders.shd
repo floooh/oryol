@@ -1,0 +1,26 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//  Annotated GLSL shaders for Shapes sample
+//------------------------------------------------------------------------------
+
+@vs vs
+@uniform mat4 mvp ModelViewProjection
+@in vec4 position
+@in vec4 color0
+@out vec4 color
+void main() {
+    $position = mvp * position;
+    color = color0;
+}
+@end
+
+@fs fs
+@in vec4 color
+void main() {
+    $color = color;
+}
+@end
+
+@bundle Shapes
+@program vs fs
+@end
