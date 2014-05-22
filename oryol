@@ -102,14 +102,14 @@ def testCMake() :
     try:
         out = subprocess.check_output(["cmake", "--version"])
         ver = out.split()[2].split('.')
-        if (int(ver[0]) >= 2) and (int(ver[1]) >= 8) and (int(ver[2]) >= 11) :
+        if (int(ver[0]) >= 2) and (int(ver[1]) >= 8) :
             print "cmake: found"
             return True
         else :
-            error("cmake must be at least version 2.8.11 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
+            error("cmake must be at least version 2.8 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
 
     except OSError:
-        error("cmake NOT FOUND (at least cmake 2.8.11 required)")
+        error("cmake NOT FOUND (at least cmake 2.8 required)")
 
 # check whether ccmake config tool exists
 def testCCMake() :
