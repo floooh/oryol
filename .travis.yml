@@ -1,0 +1,9 @@
+language: cpp
+compiler: 
+    - clang
+os:
+    - linux
+script:
+    - python oryol select linux-make-unittests-debug
+    - python oryol rebuild
+    
