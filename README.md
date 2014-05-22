@@ -1,9 +1,11 @@
 oryol
 =====
- 
+
 Experimental C++11 multi-platform 3D engine.
 
 Live sample demos are here: http://floooh.github.io/oryol/
+
+[![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)
 
 ### Cloning
 
