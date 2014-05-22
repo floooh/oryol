@@ -285,7 +285,8 @@ def runCMake(config) :
             os.makedirs(buildPath)
 
         # change to build path and execute the cmake command
-        subprocess.call(args=cmdLine, cwd=buildPath)
+        if subprocess.call(args=cmdLine, cwd=buildPath) != 0 :
+            error("Cmake run failed.")
 
     else :
         error("Build requirements not met!")
@@ -321,7 +322,8 @@ def runBuild(config, target) :
                 args.extend(['--config', 'Release'])
             else :
                 args.extend(['--config', 'Debug'])
-        subprocess.call(args=args, cwd=buildPath)
+        if subprocess.call(args=args, cwd=buildPath) != 0 :
+            error("Build failed.")
 
 # do a command line build, build all if target is None
 def runRebuild(config, target) :
@@ -330,18 +332,21 @@ def runRebuild(config, target) :
         generator = config['target']['generator']
         buildType = config['target']['build-type']
         buildPath = "build/{}".format(name)
+        exitCode = 0
         if 'Xcode' in generator :
             # run the Xcode command line tool
-            subprocess.call(args=['xcodebuild', 'clean'], cwd=buildPath)
+            exitCode = subprocess.call(args=['xcodebuild', 'clean'], cwd=buildPath)
         elif 'Makefiles' in generator :
             # run make
-            subprocess.call(args=['make', 'clean'], cwd=buildPath)
+            exitCode = subprocess.call(args=['make', 'clean'], cwd=buildPath)
         elif 'Ninja' in generator :
             # run ninja
-            subprocess.call(args=['ninja', 'clean'], cwd=buildPath)
+            exitCode = subprocess.call(args=['ninja', 'clean'], cwd=buildPath)
         else :
             # generic invokation of cmake --build
-            subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
+            exitCode = subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
+        if exitCode != 0 :
+            error("Clean failed.")
         runBuild(config, target)
 
 # deploy a target executable to a connected mobile device (for Android and iOS development)
