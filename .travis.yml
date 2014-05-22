@@ -3,13 +3,13 @@ compiler: gcc
 os:
     - linux
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
 
 install:
   # install g++ 4.8, if tests are run with g++
-  - sudo apt-get install -qq g++-4.8; fi
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
+  - sudo apt-get install -qq g++-4.8
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
 
 script:
     - python oryol select linux-make-unittests-debug
