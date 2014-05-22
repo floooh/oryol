@@ -1,11 +1,16 @@
 language: cpp
-compiler: clang
+compiler: gcc
 os:
     - linux
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - sudo apt-get update -qq
+
 install:
-    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-    - sudo apt-get -qq update
-    - sudo apt-get -qq install libstdc++-4.8-dev
+  # install g++ 4.8, if tests are run with g++
+  - sudo apt-get install -qq g++-4.8; fi
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
+
 script:
     - python oryol select linux-make-unittests-debug
     - python oryol rebuild
