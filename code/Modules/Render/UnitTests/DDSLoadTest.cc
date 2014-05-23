@@ -17,7 +17,7 @@ using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 
 TEST(DDSLoadTest) {
-#if !ORYOL_EMSCRIPTEN
+#if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOFacade* ioFacade = IOFacade::CreateSingle();
     ioFacade->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
