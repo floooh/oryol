@@ -2,19 +2,21 @@ language: cpp
 compiler: gcc
 os:
     - linux
+    - osx
 
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq; fi
 
 install:
   # install g++ 4.8, if tests are run with g++
-  - sudo apt-get install -qq g++-4.8
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
-  - sudo apt-get install -qq
-  - sudo apt-get install libglu1-mesa-dev
-  - sudo apt-get install xorg-dev
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo apt-get install -qq g++-4.8; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo apt-get install -qq; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo apt-get install libglu1-mesa-dev; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo apt-get install xorg-dev; fi
 
 script:
-    - python oryol select linux-make-unittests-debug
+    - if [ "$TRAVIS_OS_NAME" == "linux" ]; python oryol select linux-make-unittests-debug; fi
+    - if [ "$TRAVIS_OS_NAME" == "osx"]; python oryol select osx-xcode-unittests-debug; fi
     - python oryol rebuild
