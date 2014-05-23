@@ -4,24 +4,40 @@ os:
   - osx
   - linux
 
-# before_install:
-  # - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  # - sudo apt-get update -qq
+before_install:
+  - echo $TRAVIS_OS_NAME
+  # LINUX
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq; fi
 
-# install:
-  # - sudo apt-get install -qq g++-4.8
-  # - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
-  # - sudo apt-get install -qq
-  # - sudo apt-get install libglu1-mesa-dev
-  # - sudo apt-get install xorg-dev
+install:
+  - echo $TRAVIS_OS_NAME
+  # LINUX
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install libglu1-mesa-dev; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install xorg-dev; fi
+  # OSX
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install cmake; fi
 
 script:
-    - echo $TRAVIS_OS_NAME
-    # - python oryol select linux-make-unittests-debug
-    - python oryol update
-    # - cd build/linux-make-unittests-debug
-    # - cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..
-    # - cd ../..
-    - python oryol rebuild
-    # - python oryol make test
+  - echo $TRAVIS_OS_NAME
 
+  # LINUX
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python oryol select linux-make-unittests-debug; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python oryol update; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd build/linux-make-unittests-debug; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd ../..; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python oryol rebuild; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python oryol make test; fi
+
+  # OSX
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python oryol select osx-xcode-unittests-debug; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python oryol update; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd build/osx-xcode-unittests-debug; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd ../..; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python oryol rebuild; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python oryol make RUN_TESTS; fi
