@@ -16,6 +16,9 @@ install:
 
 script:
     - python oryol select linux-make-unittests-debug
+    - cd build/linux-make-unittests-debug
+    - cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..
+    - cd ../..
     - python oryol rebuild
     - python oryol make RUN_TESTS
 
