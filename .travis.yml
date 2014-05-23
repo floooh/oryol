@@ -20,5 +20,5 @@ script:
     - cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..
     - cd ../..
     - python oryol rebuild
-    - python oryol make RUN_TESTS
+    - python oryol make test
 
