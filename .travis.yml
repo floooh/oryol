@@ -1,26 +1,26 @@
 language: cpp
 compiler: gcc
-os: linux
+os: 
+  - osx
 
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-  - echo $TRAVIS_OS_NAME
+# before_install:
+  # - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  # - sudo apt-get update -qq
 
-install:
-  # install g++ 4.8, if tests are run with g++
-  - sudo apt-get install -qq g++-4.8
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
-  - sudo apt-get install -qq
-  - sudo apt-get install libglu1-mesa-dev
-  - sudo apt-get install xorg-dev
+# install:
+  # - sudo apt-get install -qq g++-4.8
+  # - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
+  # - sudo apt-get install -qq
+  # - sudo apt-get install libglu1-mesa-dev
+  # - sudo apt-get install xorg-dev
 
 script:
-    - python oryol select linux-make-unittests-debug
+    - echo $TRAVIS_OS_NAME
+    # - python oryol select linux-make-unittests-debug
     - python oryol update
-    - cd build/linux-make-unittests-debug
-    - cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..
-    - cd ../..
+    # - cd build/linux-make-unittests-debug
+    # - cmake -DORYOL_UNITTESTS_HEADLESS=ON ../..
+    # - cd ../..
     - python oryol rebuild
-    - python oryol make test
+    # - python oryol make test
 
