@@ -17,6 +17,7 @@ using namespace Oryol::Render;
 
 TEST(RenderTargetCreationTest) {
 
+    #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
     auto renderSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
     displayMgr displayManager;
@@ -114,5 +115,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex2.GetState() == Resource::State::Setup);
     factory.Discard();
     displayManager.DiscardDisplay();
+    #endif
 }
 

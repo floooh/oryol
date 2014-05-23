@@ -24,6 +24,7 @@ using namespace Oryol::Resource;
 // to initialize a mesh!
 TEST(MeshFactoryTest) {
     
+    #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
     auto renderSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
     displayMgr displayManager;
@@ -133,4 +134,6 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.GetNumPrimitiveGroups() == 0);
     factory.Discard();
     displayManager.DiscardDisplay();
+    
+    #endif
 }

@@ -23,6 +23,7 @@ using namespace Oryol::Resource;
 
 //------------------------------------------------------------------------------
 TEST(ShapeBuilderTest) {
+    #if !ORYOL_UNITTESTS_HEADLESS
     
     // setup a GL context
     auto renderSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
@@ -92,4 +93,6 @@ TEST(ShapeBuilderTest) {
 
     factory.Discard();
     displayManager.DiscardDisplay();
+    
+    #endif
 }

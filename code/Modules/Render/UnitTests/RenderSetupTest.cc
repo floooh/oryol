@@ -11,6 +11,7 @@ using namespace Oryol::Render;
 //------------------------------------------------------------------------------
 TEST(RenderSetupTest) {
 
+    #if !ORYOL_UNITTESTS_HEADLESS
     RenderFacade* f = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Test"));
     
     CHECK(f->GetRenderSetup().GetWindowWidth() == 400);
@@ -36,5 +37,6 @@ TEST(RenderSetupTest) {
     CHECK(f->GetDisplayAttrs().IsFullscreen() == false);
     
     RenderFacade::DestroySingle();
+    #endif
 }
 
