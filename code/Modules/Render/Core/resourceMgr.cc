@@ -302,5 +302,18 @@ resourceMgr::QueryResourceState(const Id& resId) {
     return Resource::State::InvalidState;
 }
 
+//------------------------------------------------------------------------------
+void
+resourceMgr::createFullscreenQuadMesh(mesh& mesh) {
+    this->meshFactory.createFullscreenQuad(mesh);
+}
+
+//------------------------------------------------------------------------------
+void
+resourceMgr::discardFullscreenQuadMesh(mesh& mesh) {
+    this->meshFactory.DestroyResource(mesh);
+    mesh.setState(Resource::State::Initial);
+}
+
 } // namespace Render
 } // namespace Oryol

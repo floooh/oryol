@@ -262,5 +262,47 @@ glMeshFactory::glSetupVertexAttrs(mesh& mesh) {
     }
 }
 
+//------------------------------------------------------------------------------
+void
+glMeshFactory::createFullscreenQuad(mesh& mesh) {
+    
+    // vertices
+    float32 vertices[] = {
+        -1.0f, +1.0f, 0.0f, 0.0f, 1.0f,     // top-left corner
+        +1.0f, +1.0f, 0.0f, 1.0f, 1.0f,     // top-right corner
+        +1.0f, -1.0f, 0.0f, 1.0f, 0.0f,     // bottom-right corner
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,     // bottom-left corner
+    };
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.setNumVertices(4);
+    vbAttrs.setUsage(Usage::Immutable);
+    VertexLayout layout;
+    layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    vbAttrs.setVertexLayout(layout);
+    mesh.setVertexBufferAttrs(vbAttrs);
+    
+    // indices
+    IndexBufferAttrs ibAttrs;
+    uint16 indices[] = {
+        0, 2, 1,            // topleft -> bottomright -> topright
+        0, 3, 2,            // topleft -> bottomleft -> bottomright
+    };
+    ibAttrs.setNumIndices(6);
+    ibAttrs.setIndexType(IndexType::Index16);
+    ibAttrs.setUsage(Usage::Immutable);
+    mesh.setIndexBufferAttrs(ibAttrs);
+    
+    // primitive grous
+    mesh.setNumPrimitiveGroups(1);
+    mesh.setPrimitiveGroup(0, PrimitiveGroup(PrimitiveType::Triangles, 0, 6));
+    
+    this->createVertexBuffer(vertices, sizeof(vertices), mesh);
+    this->createIndexBuffer(indices, sizeof(indices), mesh);
+    this->createVertexLayout(mesh);
+    
+    mesh.setState(Resource::State::Valid);
+}
+
 } // namespace Render
 } // namespace Oryol

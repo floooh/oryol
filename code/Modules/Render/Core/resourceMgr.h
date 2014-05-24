@@ -64,6 +64,11 @@ public:
     /// lookup stateblock object
     stateBlock* LookupStateBlock(const Resource::Id& resId);
 
+    /// create fullscreen quad mesh
+    void createFullscreenQuadMesh(mesh& mesh);
+    /// discard fullscreen quad mesh
+    void discardFullscreenQuadMesh(mesh& mesh);
+    
 private:
     bool isValid;
     class stateWrapper* stateWrapper;

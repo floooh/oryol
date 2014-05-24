@@ -36,6 +36,8 @@ public:
     void createIndexBuffer(const void* indexData, uint32 indexDataSize, mesh& outMesh);
     /// helper method to create platform-specific vertex layout
     void createVertexLayout(mesh& outMesh);
+    /// helper method to setup a mesh object as fullscreen quad
+    void createFullscreenQuad(mesh& mesh);
     
 private:
     /// setup a Mesh's GL vertex attributes

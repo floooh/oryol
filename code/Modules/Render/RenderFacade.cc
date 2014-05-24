@@ -38,12 +38,14 @@ RenderFacade::setup(const RenderSetup& setup) {
     this->stateWrapper.Setup();
     this->resourceManager.Setup(setup, &this->stateWrapper, &this->displayManager);
     this->renderManager.Setup(&this->stateWrapper, &this->displayManager);
+    this->resourceManager.createFullscreenQuadMesh(this->fullscreenQuadMesh);
 }
 
 //------------------------------------------------------------------------------
 void
 RenderFacade::discard() {
     o_assert_dbg(this->valid);
+    this->resourceManager.discardFullscreenQuadMesh(this->fullscreenQuadMesh);
     this->renderManager.Discard();
     this->resourceManager.Discard();
     this->stateWrapper.Discard();
@@ -198,6 +200,14 @@ void
 RenderFacade::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     this->renderManager.Draw(primGroup);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::DrawFullscreenQuad() {
+    o_assert_dbg(this->valid);
+    this->renderManager.ApplyMesh(&this->fullscreenQuadMesh);
+    this->renderManager.Draw(0);
 }
 
 } // namespace Render

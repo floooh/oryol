@@ -107,6 +107,7 @@ private:
     renderMgr renderManager;
     class stateWrapper stateWrapper;
     resourceMgr resourceManager;
+    mesh fullscreenQuadMesh;
 };
 
 //------------------------------------------------------------------------------
