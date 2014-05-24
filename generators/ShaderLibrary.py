@@ -441,6 +441,8 @@ class Parser :
         if tagStartIndex != -1 :
             if tagStartIndex > 0 :
                 util.fmtError("only whitespace allowed in front of tag")
+            if line.find(';') != -1 :
+                util.fmtError("no semicolons allowed in tag lines")
 
             tagAndArgs = line[tagStartIndex+1 :].split()
             tag = tagAndArgs[0]
