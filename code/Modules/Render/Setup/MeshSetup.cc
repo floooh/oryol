@@ -33,11 +33,29 @@ MeshSetup::FromFile(const Locator& loc, int32 ioLane, Usage::Code vbUsage, Usage
 
 //------------------------------------------------------------------------------
 MeshSetup
+MeshSetup::FromFile(const Locator& loc, const MeshSetup& blueprint) {
+    MeshSetup setup(blueprint);
+    setup.locator = loc;
+    setup.setupFromFile = true;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+MeshSetup
 MeshSetup::FromData(const Locator& loc, Usage::Code vbUsage, Usage::Code ibUsage) {
     MeshSetup setup;
     setup.locator = loc;
     setup.vertexUsage = vbUsage;
     setup.indexUsage = ibUsage;
+    setup.setupFromData = true;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+MeshSetup
+MeshSetup::FromData(const Locator& loc, const MeshSetup& blueprint) {
+    MeshSetup setup(blueprint);
+    setup.locator = loc;
     setup.setupFromData = true;
     return setup;
 }
@@ -61,15 +79,33 @@ MeshSetup::GetLocator() const {
 }
 
 //------------------------------------------------------------------------------
+void
+MeshSetup::SetVertexUsage(Usage::Code usg) {
+    this->vertexUsage = usg;
+}
+
+//------------------------------------------------------------------------------
 Usage::Code
 MeshSetup::GetVertexUsage() const {
     return this->vertexUsage;
 }
 
 //------------------------------------------------------------------------------
+void
+MeshSetup::SetIndexUsage(Usage::Code usg) {
+    this->indexUsage = usg;
+}
+
+//------------------------------------------------------------------------------
 Usage::Code
 MeshSetup::GetIndexUsage() const {
     return this->indexUsage;
+}
+
+//------------------------------------------------------------------------------
+void
+MeshSetup::SetIOLane(int32 lane) {
+    this->ioLane = lane;
 }
 
 //------------------------------------------------------------------------------

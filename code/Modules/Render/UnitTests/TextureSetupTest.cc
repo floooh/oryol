@@ -10,8 +10,6 @@ using namespace Oryol::Render;
 
 TEST(TextureSetupTest) {
     
-    #if !ORYOL_UNITTESTS_HEADLESS
-    
     // setup as absolute-size render target, no depth buffer
     auto rt = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::R8G8B8);
     CHECK(!rt.ShouldSetupFromFile());
@@ -123,7 +121,5 @@ TEST(TextureSetupTest) {
     CHECK(rt.GetWrapW() == TextureWrapMode::InvalidTextureWrapMode);
     CHECK(rt.GetMagFilter() == TextureFilterMode::Nearest);
     CHECK(rt.GetMinFilter() == TextureFilterMode::Nearest);
-    
-    #endif
 }
 
