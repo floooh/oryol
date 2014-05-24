@@ -7,4 +7,5 @@ oryol_add_subdirectory(InfiniteSpheres)
 oryol_add_subdirectory(DDSTextureLoading)
 oryol_add_subdirectory(DDSCubeMap)
 oryol_add_subdirectory(DrawCallPerf)
+oryol_add_subdirectory(FullscreenQuad)
 
