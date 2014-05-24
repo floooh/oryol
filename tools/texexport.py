@@ -44,7 +44,7 @@ def ensureDstDirectory() :
         os.makedirs(TexDstDirectory)
 
 #-------------------------------------------------------------------------------
-def toDDS(srcFilename, dstFilename, fmt, rgbFmt=None) :
+def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     '''
     Convert a file to DDS format
     '''
@@ -57,12 +57,14 @@ def toDDS(srcFilename, dstFilename, fmt, rgbFmt=None) :
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
         cmdLine.append(rgbFmt)
+    if linearGamma :
+        cmdLine.append('-tolineargamma')
     cmdLine.append(srcPath)
     cmdLine.append(dstPath)
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
-def toCubeDDS(srcDir, srcExt, dstFilename, fmt, rgbFmt=None) :
+def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     '''
     Generate a cube map and convert to dds.
     '''
@@ -87,26 +89,46 @@ def toCubeDDS(srcDir, srcExt, dstFilename, fmt, rgbFmt=None) :
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
         cmdLine.append(rgbFmt)
+    if linearGamma :
+        cmdLine.append('-tolineargamma')        
     cmdLine.append(dstPath)
     cmdLine.append(dstPath)
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
 def exportSampleTextures() :
-    toDDS('lok256.jpg', 'lok_dxt1.dds', 'bc1')
-    toDDS('lok256.jpg', 'lok_dxt3.dds', 'bc2')
-    toDDS('lok256.jpg', 'lok_dxt5.dds', 'bc3')
-    toDDS('lok256.jpg', 'lok_bgra8.dds', 'rgb', 'bgra8')
-    toDDS('lok256.jpg', 'lok_rgba8.dds', 'rgb', 'rgba8')
-    toDDS('lok256.jpg', 'lok_bgr8.dds', 'rgb', 'bgr8')
-    toDDS('lok256.jpg', 'lok_rgb8.dds', 'rgb', 'rgb8')
-    toDDS('lok256.jpg', 'lok_argb4.dds', 'rgb', 'argb4')
-    toDDS('lok256.jpg', 'lok_abgr4.dds', 'rgb', 'abgr4')
-    toDDS('lok256.jpg', 'lok_rgb565.dds', 'rgb', 'rgb565')
-    toDDS('lok256.jpg', 'lok_bgr565.dds', 'rgb', 'bgr565')
-    toDDS('lok256.jpg', 'lok_argb1555.dds', 'rgb', 'argb1555')
-    toDDS('lok256.jpg', 'lok_abgr1555.dds', 'rgb', 'abgr1555')
-    toCubeDDS('RomeChurch', 'jpg', 'romechurch_dxt1.dds', 'bc1')
+    # default gamma 2.2
+    toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
+    toDDS('lok256.jpg', 'lok_dxt3.dds', False, 'bc2')
+    toDDS('lok256.jpg', 'lok_dxt5.dds', False, 'bc3')
+    toDDS('lok256.jpg', 'lok_bgra8.dds', False, 'rgb', 'bgra8')
+    toDDS('lok256.jpg', 'lok_rgba8.dds', False, 'rgb', 'rgba8')
+    toDDS('lok256.jpg', 'lok_bgr8.dds', False, 'rgb', 'bgr8')
+    toDDS('lok256.jpg', 'lok_rgb8.dds', False, 'rgb', 'rgb8')
+    toDDS('lok256.jpg', 'lok_argb4.dds', False, 'rgb', 'argb4')
+    toDDS('lok256.jpg', 'lok_abgr4.dds', False, 'rgb', 'abgr4')
+    toDDS('lok256.jpg', 'lok_rgb565.dds', False, 'rgb', 'rgb565')
+    toDDS('lok256.jpg', 'lok_bgr565.dds', False, 'rgb', 'bgr565')
+    toDDS('lok256.jpg', 'lok_argb1555.dds', False, 'rgb', 'argb1555')
+    toDDS('lok256.jpg', 'lok_abgr1555.dds', False, 'rgb', 'abgr1555')
+    toCubeDDS('RomeChurch', 'jpg', 'romechurch_dxt1.dds', False, 'bc1')
+
+    # linear gamma
+    toDDS('lok256.jpg', 'lok_linear_dxt1.dds', True, 'bc1')
+    toDDS('lok256.jpg', 'lok_linear_dxt3.dds', True, 'bc2')
+    toDDS('lok256.jpg', 'lok_linear_dxt5.dds', True, 'bc3')
+    toDDS('lok256.jpg', 'lok_linear_bgra8.dds', True, 'rgb', 'bgra8')
+    toDDS('lok256.jpg', 'lok_linear_rgba8.dds', True, 'rgb', 'rgba8')
+    toDDS('lok256.jpg', 'lok_linear_bgr8.dds', True, 'rgb', 'bgr8')
+    toDDS('lok256.jpg', 'lok_linear_rgb8.dds', True, 'rgb', 'rgb8')
+    toDDS('lok256.jpg', 'lok_linear_argb4.dds', True, 'rgb', 'argb4')
+    toDDS('lok256.jpg', 'lok_linear_abgr4.dds', True, 'rgb', 'abgr4')
+    toDDS('lok256.jpg', 'lok_linear_rgb565.dds', True, 'rgb', 'rgb565')
+    toDDS('lok256.jpg', 'lok_linear_bgr565.dds', True, 'rgb', 'bgr565')
+    toDDS('lok256.jpg', 'lok_linear_argb1555.dds', True, 'rgb', 'argb1555')
+    toDDS('lok256.jpg', 'lok_linear_abgr1555.dds', True, 'rgb', 'abgr1555')
+    toCubeDDS('RomeChurch', 'jpg', 'romechurch_linear_dxt1.dds', True, 'bc1')
+
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
