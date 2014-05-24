@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta charset="utf-8"></meta>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
+  <title>Oryol/PNaCl</title>
+</head>
+<body>
+<div class="page">
+  <div class="pnacl_status">
+    <code id="statusField">NO-STATUS</code>
+  </div>
+  <div class="pnacl_border">
+    <embed src="FullscreenQuad.nmf" class="pnacl" id="pnacl_module" name="pnacl_module" width="800" height="452" type="application/x-pnacl"/>
+  </div>
+  <textarea class="pnacl" id="output" rows="20" cols="80"></textarea>
+  <script type="text/javascript">
+    var progressCount = 0;
+    function updateStatus(text) {
+      document.getElementById('statusField').innerHTML = text;
+    }
+    function handleLoadStart() {
+      updateStatus('LOAD START...');
+    }
+    function handleProgress(event) {
+      var loadPercent = 0.0;
+      var loadPercentString;
+      if (event.lengthComputable && event.total > 0) {
+        loadPercent = (event.loaded / event.total) * 100.0;
+        loadPercentString = 'Downloading & Preparing (' + loadPercent.toFixed(2) + '%)';
+      } else {
+        loadPercent = -1.0;
+        progressCount++;
+        loadPercentString = 'Downloading... (count=' + progressCount + ')';
+      }
+      updateStatus(loadPercentString);
+    }
+    function handleLoad() {
+      updateStatus('RUNNING...');
+    }
+    function handleError() {
+      updateStatus('ERROR: ' + document.getElementById('pnacl_module').lastError);
+    }
+    function handleCrash() {
+      updateStatus('CRASHED!!!');
+    }
+    function handleMessage(msg) {
+      var element = document.getElementById('output');
+      element.value += msg.data;
+      element.scrollTop = 99999;
+    }
+    var naclModule = document.getElementById('pnacl_module');
+    naclModule.addEventListener('loadstart', handleLoadStart, true);
+    naclModule.addEventListener('progress', handleProgress, true);
+    naclModule.addEventListener('load', handleLoad, true);
+    naclModule.addEventListener('error', handleError, true);
+    naclModule.addEventListener('crash', handleCrash, true);
+    naclModule.addEventListener('message', handleMessage, true);
+    updateStatus('LOADING...');
+  </script>
+</div>
+</body>
+</html>
