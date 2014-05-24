@@ -101,7 +101,7 @@ float dScene(vec3 p) {
     // infinite spheres
     float c = 0.25;
     vec3 q = mod(p, c) - 0.5*c;
-    return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0)), 0.1));
+    return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0)), 0.2));
 }
 
 
@@ -109,7 +109,7 @@ float dScene(vec3 p) {
 //  normal estimation function
 //
 vec3 normal(vec3 p) {
-    const float eps = 0.0001;
+    const float eps = 0.01;
     float x = dScene(p + vec3(eps, 0, 0)) - dScene(p - vec3(eps, 0, 0));
     float y = dScene(p + vec3(0, eps, 0)) - dScene(p - vec3(0, eps, 0));
     float z = dScene(p + vec3(0, 0, eps)) - dScene(p - vec3(0, 0, eps));
