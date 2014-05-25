@@ -167,9 +167,9 @@ DrawCallPerfApp::OnRunning() {
     if (0 == (this->curNumParticles % 200)) {
         Log::Info("%d draws: upd=%lld draw=%lld, frame=%lld microseconds\n",
                   this->curNumParticles,
-                  updTime.count(),
-                  drawTime.count(),
-                  frameTime.count());
+                  (long long int)updTime.count(),
+                  (long long int)drawTime.count(),
+                  (long long int)frameTime.count());
     }
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
