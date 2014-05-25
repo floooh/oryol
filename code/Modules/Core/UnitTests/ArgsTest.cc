@@ -22,7 +22,7 @@ TEST(Args) {
     CHECK(args.HasArg("6.1"));
     CHECK(args.GetString("-name") == "John Shaftoe");
     CHECK(args.GetInt("-age") == 30);
-    CHECK(args.GetFloat("-height") == 6.1f);
+    CHECK_CLOSE(args.GetFloat("-height"), 6.1f, 0.001f);
     
     // construct from WideString
     Args argsw(L"-name \"John Shaftoe\" -age 30 -male -height 6.1");
@@ -35,7 +35,7 @@ TEST(Args) {
     CHECK(argsw.HasArg("6.1"));
     CHECK(argsw.GetString("-name") == "John Shaftoe");
     CHECK(argsw.GetInt("-age") == 30);
-    CHECK(argsw.GetFloat("-height") == 6.1f);
+    CHECK_CLOSE(argsw.GetFloat("-height"), 6.1f, 0.001f);
 
     // construct from argc and argv
     const char* argv[] = { "-name", "John Shaftoe", "-age", "30", "-male", "-height", "6.1" };
@@ -50,5 +50,5 @@ TEST(Args) {
     CHECK(argsCStyle.HasArg("6.1"));
     CHECK(argsCStyle.GetString("-name") == "John Shaftoe");
     CHECK(argsCStyle.GetInt("-age") == 30);
-    CHECK(argsCStyle.GetFloat("-height") == 6.1f);
+    CHECK_CLOSE(argsCStyle.GetFloat("-height"), 6.1f, 0.001f);
 }

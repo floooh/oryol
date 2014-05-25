@@ -112,7 +112,9 @@ TEST(PixelFormatChannelBitsTest) {
 TEST(TextureTypeTest) {
     CHECK(TextureType::NumTextureTypes == 3);
     CHECK(TextureType::Texture2D == GL_TEXTURE_2D);
+    #if !ORYOL_OPENGLES2
     CHECK(TextureType::Texture3D == GL_TEXTURE_3D);
+    #endif
     CHECK(TextureType::TextureCube == GL_TEXTURE_CUBE_MAP);
 }
 
