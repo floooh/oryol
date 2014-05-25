@@ -336,7 +336,7 @@ oryol/bin/ios
 
 Note that configurations for the same target platform will currently overwrite each other's executable!
 
-#### Open config in IDEs ####
+#### Building with IDEs ####
 
 Use 'oryol open' to open the currently selected config in an IDE. Currently this only works for Xcode and VStudio projects:
 
@@ -352,6 +352,8 @@ Opening 'osx-xcode-debug' in Xcode...
 > ./oryol open osx-xcode-unittests-debug
 Opening 'osx-xcode-unittests-debug' in Xcode...
 ```
+
+For other IDEs this is currently not supported. You must start the IDE manually and find the generated project file in the **build/[config-name]** subdirectory.
 
 #### Building Specific Targets ####
 
