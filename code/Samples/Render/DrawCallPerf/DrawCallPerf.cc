@@ -6,16 +6,17 @@
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
+#include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
-#include <chrono>
 #include "shaders.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
+using namespace Oryol::Time;
 
 // derived application class
 class DrawCallPerfApp : public App {
@@ -39,7 +40,7 @@ private:
     glm::mat4 modelViewProj;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
-    std::chrono::time_point<std::chrono::high_resolution_clock> lastFrameTimePoint;
+    TimePoint lastFrameTimePoint;
     static const int32 MaxNumParticles = 1<<16;
     struct {
         glm::vec4 pos;
@@ -128,21 +129,16 @@ DrawCallPerfApp::updateParticles() {
 AppState::Code
 DrawCallPerfApp::OnRunning() {
     
-    // FIXME: that chrono code is ugly, create our own wrapper Time module?
-    
-    using namespace std;
-    
-    chrono::microseconds updTime;
-    chrono::microseconds drawTime;
+    Duration updTime, drawTime;
     this->frameCount++;
     if (this->render->BeginFrame()) {
         
         // update block
-        auto updStart = chrono::high_resolution_clock::now();
+        TimePoint updStart = Clock::Now();
         this->updateCamera();
         this->emitParticles();
         this->updateParticles();
-        updTime = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - updStart);
+        updTime = Clock::Since(updStart);
         
         // render block
         this->render->ApplyStateBlock(this->stateId);
@@ -151,25 +147,25 @@ DrawCallPerfApp::OnRunning() {
         this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
 
-        auto drawStart = chrono::high_resolution_clock::now();
+        TimePoint drawStart = Clock::Now();
         for (int32 i = 0; i < this->curNumParticles; i++) {
             this->render->ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
             this->render->Draw(0);
         }
-        drawTime = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - drawStart);
+        drawTime = Clock::Since(drawStart);
         this->render->EndFrame();
     }
     
-    auto curTime = chrono::high_resolution_clock::now();
-    auto frameTime = chrono::duration_cast<chrono::microseconds>(curTime - this->lastFrameTimePoint);
+    TimePoint curTime = Clock::Now();
+    Duration frameTime = curTime - this->lastFrameTimePoint;
     this->lastFrameTimePoint = curTime;
     
     if (0 == (this->curNumParticles % 200)) {
-        Log::Info("%d draws: upd=%lld draw=%lld, frame=%lld microseconds\n",
+        Log::Info("%d draws: upd=%f draw=%f, frame=%f ms\n",
                   this->curNumParticles,
-                  (long long int)updTime.count(),
-                  (long long int)drawTime.count(),
-                  (long long int)frameTime.count());
+                  updTime.AsMilliSeconds(),
+                  drawTime.AsMilliSeconds(),
+                  frameTime.AsMilliSeconds());
     }
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
