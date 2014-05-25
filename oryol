@@ -575,7 +575,7 @@ else :
             subprocess.call(['open', 'build/{}/oryol.xcodeproj'.format(config['name'])])
         elif 'Visual Studio' in config['target']['generator'] :
             print "Opening '{}' in Visual Studio...".format(config['name'])
-            subprocess.call(['start', 'build/{}/oryol.sln'.format(config['name'])])
+            subprocess.call(['cmd', '/c', 'start', 'build\{}\oryol.sln'.format(config['name'])])
         else :
             error('open is currently only supported for Xcode and VStudio projects')
 
