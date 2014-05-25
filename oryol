@@ -463,6 +463,8 @@ if len(sys.argv) == 1 :
     print '  set the active config (omit config-name to select the default config for the platform'
     print 'oryol update [config-name, partial-config-name or all]'
     print '  do a cmake run on the selected or provided config (required after adding sources)'
+    print 'oryol open [config-name]'
+    print '  start IDE and open project (only works for Xcode and VStudio currently'
     print 'oryol build [config-name, partial-config-name or all]'
     print '  build selected or provided config'
     print 'oryol rebuild [config-name, partial-config-name or all]'
@@ -561,6 +563,21 @@ else :
         else :
             for config in configs: 
                 runCMake(config)
+
+    elif cmd == 'open' :
+        # open project in IDE
+        if len(sys.argv) < 3 :
+            config = getActiveConfig()
+        else :
+            config = loadConfig(sys.argv[2])
+        if 'Xcode' in config['target']['generator'] :
+            print "Opening '{}' in Xcode...".format(config['name'])
+            subprocess.call(['open', 'build/{}/oryol.xcodeproj'.format(config['name'])])
+        elif 'Visual Studio' in config['target']['generator'] :
+            print "Opening '{}' in Visual Studio...".format(config['name'])
+            subprocess.call(['start', 'build/{}/oryol.sln'.format(config['name'])])
+        else :
+            error('open is currently only supported for Xcode and VStudio projects')
 
     elif cmd == 'clean' :
         # delete the build files for configs
