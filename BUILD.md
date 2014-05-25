@@ -336,6 +336,23 @@ oryol/bin/ios
 
 Note that configurations for the same target platform will currently overwrite each other's executable!
 
+#### Open config in IDEs ####
+
+Use 'oryol open' to open the currently selected config in an IDE. Currently this only works for Xcode and VStudio projects:
+
+```
+> ./oryol open
+selected config is 'osx-xcode-debug'
+Opening 'osx-xcode-debug' in Xcode...
+```
+
+...or you can open a specific config by appending the config name:
+
+```
+> ./oryol open osx-xcode-unittests-debug
+Opening 'osx-xcode-unittests-debug' in Xcode...
+```
+
 #### Building Specific Targets ####
 
 Use the **make** arg if you only want to compile one executable, or generally want to evaluate a specific build target.
