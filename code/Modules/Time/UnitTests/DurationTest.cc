@@ -42,10 +42,10 @@ TEST(DurationTest) {
     CHECK(d4 >= d3);
     CHECK(d4 <= d3);
     
-    CHECK(d4.AsSeconds() == 0.000002);
-    CHECK(d4.AsMilliSeconds() == 0.002);
-    CHECK(d4.AsMicroSeconds() == 2.0);
-    CHECK(d4.AsNanoSeconds() == 2000.0);
+    CHECK_CLOSE(d4.AsSeconds(), 0.000002, 0.00000001);
+    CHECK_CLOSE(d4.AsMilliSeconds(), 0.002, 0.00000001);
+    CHECK_CLOSE(d4.AsMicroSeconds(), 2.0, 0.00000001);
+    CHECK_CLOSE(d4.AsNanoSeconds(), 2000.0, 0.00000001);
     CHECK(d4.AsTicks() == 2000);
 }
 

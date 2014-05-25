@@ -27,5 +27,4 @@ TEST(ClockTest) {
     Log::Info("duration (ms): %f\n", d0.AsMilliSeconds());
     Log::Info("duration (us): %f\n", d0.AsMicroSeconds());
     Log::Info("duration (ns): %f\n", d0.AsNanoSeconds());
-    Log::Info("ticks: %lld\n", d0.AsTicks());
 }
