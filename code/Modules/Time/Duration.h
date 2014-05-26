@@ -59,13 +59,6 @@ public:
     int64 getRaw() const;
 
 private:
-    constexpr static const int64 NanoSecI        = 1000000000;
-    constexpr static const float64 NanoSecF      = 1000000000.0;
-    constexpr static const int64 NanoMilliSecI   = 1000000;
-    constexpr static const float64 NanoMilliSecF = 1000000.0;
-    constexpr static const int64 NanoMicroSecI   = 1000;
-    constexpr static const float64 NanoMicroSecF = 1000.0;
-
     friend class TimePoint;
     int64 val;
 };
@@ -179,19 +172,19 @@ Duration::getRaw() const {
 //------------------------------------------------------------------------------
 inline float64
 Duration::AsSeconds() const {
-    return ((float64)this->val) / NanoSecF;
+    return ((float64)this->val) / 1000000000.0;
 }
 
 //------------------------------------------------------------------------------
 inline float64
 Duration::AsMilliSeconds() const {
-    return ((float64)this->val) / NanoMilliSecF;
+    return ((float64)this->val) / 1000000.0;
 }
 
 //------------------------------------------------------------------------------
 inline float64
 Duration::AsMicroSeconds() const {
-    return ((float64)this->val) / NanoMicroSecF;
+    return ((float64)this->val) / 1000.0;
 }
 
 //------------------------------------------------------------------------------
