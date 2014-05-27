@@ -2,6 +2,7 @@
 //  shaders.shd
 //  Annotated GLSL shaders for PBR sample.
 // http://blog.selfshadow.com/publications/s2013-shading-course/hoffman/s2013_pbs_physics_math_notes.pdf
+// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
 //------------------------------------------------------------------------------
 
 @vs vs
@@ -30,15 +31,79 @@ vec4 gamma(vec4 c) {
 //  BRDF functions
 //
 @block BRDF
-vec3 Fschlick(vec3 F0, vec3 l, vec3 h) {
-    return F0 + (vec3(1.0) - F0) * pow(1.0 - dot(l, h), 5.0);
+
+//------------------------------------------------------------------------------
+//  D(h)
+//  Trowbridge-Reitz
+//
+const float PI = 3.14159265358979323846;
+const float c = 0.4;   // roughness
+
+float square(float x) {
+    return x * x;
 }
 
-float normalizedBlinnPhong(float specPower, float n_dot_h) {
-    float normTerm = (specPower + 2.0) / 2.0 * 3.1415926;
-    float blinnPhong = pow(n_dot_h, specPower);
-    return normTerm * blinnPhong;
+float TrowbridgeReitz(float c, float n_dot_h) {
+    float cSquared = c * c;
+    return square(cSquared / (n_dot_h*n_dot_h*(cSquared - 1.0) + 1.0));
 }
+
+vec3
+D_TrowbridgeReitz(vec3 L, vec3 V, vec3 N) {
+    vec3 H = normalize(L + V);
+    float D = TrowbridgeReitz(c, dot(N, H));
+    // normalize
+    D *= 1.0 / (c*c*PI);
+    return vec3(D);
+}
+
+//------------------------------------------------------------------------------
+//  D(h)
+//  GGX
+//
+float GGX(float c, float cosThetaM) {
+    float cosSquared = cosThetaM * cosThetaM;
+    float tanSquared = (1.0 - cosSquared) / cosSquared;
+    return (1.0 / PI) * square(c / (cosSquared * (c * c + tanSquared)));
+}
+
+vec3 D_GGX(vec3 L, vec3 V, vec3 N) {
+    vec3 H = normalize(L + V);
+    float D = GGX(c, dot(N, H));
+    return vec3(D);
+}
+
+//------------------------------------------------------------------------------
+//  G(l,v,h)
+//  Schlick
+//
+const float m = 0.25;
+
+float Gsch(float v, float m) {
+    float k = sqrt(2.0 * m * m / PI);
+    return v > 0.0 ? v / (v - k * v + k) : 0.0;
+}
+vec3
+G_Schlick(vec3 L, vec3 V, vec3 N) {
+    float n_dot_l = dot(N, L);
+    float n_dot_v = dot(N, V);
+    float G = Gsch(n_dot_l, m) * Gsch(n_dot_v, m);
+    return vec3(G);
+}
+
+float Gue4(float v, float k) {
+    // hmm this is the same as Gsch except for how k is derived
+    return v > 0.0 ? v / (v * (1.0 - k) + k) : 0.0;
+}
+vec3
+G_UE4(vec3 L, vec3 V, vec3 N) {
+    float k = ((c + 1.0) * (c + 1.0)) / 8.0;
+    float n_dot_l = dot(N, L);
+    float n_dot_v = dot(N, V);
+    float G = Gue4(n_dot_l, k) * Gue4(n_dot_v, k);
+    return vec3(G);
+}
+
 @end
 
 @fs fs
@@ -47,22 +112,22 @@ float normalizedBlinnPhong(float specPower, float n_dot_h) {
 @in vec3 viewSpacePos
 @in vec3 viewSpaceNormal
 void main() {
-    const float specPower = 256.0;
-    const vec3 spec = vec3(0.01,0.01,0.01);
     const vec3 eyePos = vec3(0.0, 0.0, 0.0);    // in view space, eye pos is at origin
-    vec3 n = normalize(viewSpaceNormal);        // surface normal
-    vec3 v = normalize(eyePos - viewSpacePos);  // view vector
-    vec3 l = lightVec.xyz;                      // light vector
-    vec3 h = normalize(l + v);
-    float n_dot_l = clamp(dot(n, l), 0.0, 1.0);
-    float n_dot_h = clamp(dot(n, h), 0.0, 1.0);
-    
-    vec3 diffuse = vec3(n_dot_l);
-    
-    float specularTerm = normalizedBlinnPhong(specPower, n_dot_h);
-    vec3 fresnelTerm = Fschlick(spec, l, h);
-    
-    vec3 c = diffuse + vec3(specularTerm * n_dot_l);
+    vec3 N = normalize(viewSpaceNormal);        // surface normal
+    vec3 V = normalize(eyePos - viewSpacePos);  // view vector
+    vec3 L = lightVec.xyz;                      // light vector
+
+    float n_dot_l = dot(N, L);
+    float n_dot_v = dot(N, V);
+
+//    vec3 D = D_TrowbridgeReitz(L, V, N);
+    vec3 D = D_GGX(L, V, N);
+//    vec3 G = G_Schlick(L, V, N);
+    vec3 G = G_UE4(L, V, N);
+
+    vec3 spec = D * G;
+
+    vec3 c = spec;// + clamp(n_dot_l, 0.0, 1.0) * vec3(0.2, 0.1, 0.1);
     $color = gamma(vec4(c, 1.0));
 }
 @end
