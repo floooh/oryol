@@ -628,29 +628,58 @@ StringBuilder::Tokenize(const char* delims, char fence, Array<String>& outTokens
 
 //------------------------------------------------------------------------------
 bool
-StringBuilder::Format(int32 maxLength, const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    
-    bool retval = true;
-    this->Clear();
+StringBuilder::format(int32 maxLength, bool append, const char* fmt, va_list args) {
+    if (!append) {
+        this->Clear();
+    }
     this->ensureRoom(maxLength);
-    #if ORYOL_ANDROID
-    int res = vsnprintf(this->buffer, maxLength, fmt, args);
-    #else
-    int res = std::vsnprintf(this->buffer, maxLength, fmt, args);
-    #endif
+#if ORYOL_ANDROID
+    int res = vsnprintf(&(this->buffer[this->size]), maxLength, fmt, args);
+#else
+    int res = std::vsnprintf(&(this->buffer[this->size]), maxLength, fmt, args);
+#endif
     if ((res < 0) || (res >= (maxLength-1))) {
         // error or string was truncated
-        this->Clear();
-        retval = false;
+        this->buffer[this->size] = 0;
+        return false;
     }
     else {
         // all ok, need to adjust length
-        this->size = res;
+        this->size += res;
+        return true;
     }
+}
+
+//------------------------------------------------------------------------------
+bool
+StringBuilder::Format(int32 maxLength, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    bool retval = this->format(maxLength, false, fmt, args);
     va_end(args);
     return retval;
+}
+
+//------------------------------------------------------------------------------
+bool
+StringBuilder::Format(int32 maxLength, const char* fmt, va_list args) {
+    return this->format(maxLength, false, fmt, args);
+}
+
+//------------------------------------------------------------------------------
+bool
+StringBuilder::AppendFormat(int32 maxLength, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    bool retval = this->format(maxLength, true, fmt, args);
+    va_end(args);
+    return retval;
+}
+
+//------------------------------------------------------------------------------
+bool
+StringBuilder::AppendFormat(int32 maxLength, const char* fmt, va_list args) {
+    return this->format(maxLength, true, fmt, args);
 }
 
 } // namespace Core

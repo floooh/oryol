@@ -181,5 +181,9 @@ TEST(StringBuilderTest) {
     CHECK(builder.GetString() == "");
     CHECK(builder.Format(256, "One: %d, Two: %d, Three: %d", 1, 2, 3));
     CHECK(builder.GetString() == "One: 1, Two: 2, Three: 3");
+    CHECK(builder.AppendFormat(256, " Bla: %d", 46));
+    CHECK(builder.GetString() == "One: 1, Two: 2, Three: 3 Bla: 46");
+    CHECK(!builder.AppendFormat(4, " BLUB: %s", "bla"));
+    CHECK(builder.GetString() == "One: 1, Two: 2, Three: 3 Bla: 46");
 }
 
