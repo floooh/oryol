@@ -782,7 +782,7 @@ const char *kc85_4_Font =
     
     //-- 4D: M
     "XX---XX-"
-    "XXX--XX-"
+    "XXX-XXX-"
     "XXXXXXX-"
     "XX-X-XX-"
     "XX---XX-"
