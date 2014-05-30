@@ -29,6 +29,8 @@ public:
     void Draw(int32 primGroupIndex);
     /// submit a draw call with overridden primitive group
     void Draw(const PrimitiveGroup& primGroup);
+    /// update vertex data
+    void UpdateVertices(mesh* msh, int32 numBytes, const void* data);
 };
 
 } // namespace Render

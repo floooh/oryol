@@ -330,5 +330,30 @@ glRenderMgr::Draw(int32 primGroupIndex) {
     this->Draw(primGroup);
 }
 
+//------------------------------------------------------------------------------
+void
+glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(nullptr != msh);
+    
+    const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
+    const int32 vbByteSize = attrs.GetByteSize();
+    const Usage::Code vbUsage = attrs.GetUsage();
+    o_assert_dbg((numBytes > 0) && (numBytes < vbByteSize));
+    o_assert_dbg((vbUsage == Usage::DynamicStream) || (vbUsage == Usage::DynamicWrite));
+    this->stateWrapper->InvalidateMeshState();
+    
+    // only buffer orphaning is supported, the old buffer is 'unlinked',
+    // new buffer is created and filled
+    GLuint vb = msh->glGetVertexBuffer();
+    ::glBindBuffer(GL_ARRAY_BUFFER, vb);
+    ORYOL_GL_CHECK_ERROR();
+    ::glBufferData(GL_ARRAY_BUFFER, vbByteSize, nullptr, vbUsage);
+    ORYOL_GL_CHECK_ERROR();
+    ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+
 } // namespace Render
 } // namespace Oryol

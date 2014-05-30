@@ -183,6 +183,14 @@ RenderFacade::EndFrame() {
 
 //------------------------------------------------------------------------------
 void
+RenderFacade::UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data) {
+    o_assert_dbg(this->valid);
+    mesh* msh = this->resourceManager.LookupMesh(resId);
+    this->renderManager.UpdateVertices(msh, numBytes, data);
+}
+
+//------------------------------------------------------------------------------
+void
 RenderFacade::Clear(bool color, bool depth, bool stencil) {
     o_assert_dbg(this->valid);
     this->renderManager.Clear(color, depth, stencil);

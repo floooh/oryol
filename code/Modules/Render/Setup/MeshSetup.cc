@@ -14,8 +14,13 @@ MeshSetup::MeshSetup() :
 vertexUsage(Usage::InvalidUsage),
 indexUsage(Usage::InvalidUsage),
 ioLane(0),
+numVertices(0),
+numIndices(0),
+indexType(IndexType::None),
+numPrimGroups(0),
 setupFromFile(false),
-setupFromData(false) {
+setupFromData(false),
+setupEmpty(false) {
     // empty
 }
 
@@ -61,6 +66,30 @@ MeshSetup::FromData(const Locator& loc, const MeshSetup& blueprint) {
 }
 
 //------------------------------------------------------------------------------
+MeshSetup
+MeshSetup::CreateEmpty(const Locator& loc,
+                       const VertexLayout& layout,
+                       int32 numVertices,
+                       Usage::Code vertexUsage,
+                       IndexType::Code indexType,
+                       int32 numIndices,
+                       Usage::Code indexUsage) {
+    
+    o_assert(numVertices > 0);
+    
+    MeshSetup setup;
+    setup.locator = loc;
+    setup.setupEmpty = true;
+    setup.vertexUsage = vertexUsage;
+    setup.indexUsage = indexUsage;
+    setup.numVertices = numVertices;
+    setup.numIndices = numIndices;
+    setup.indexType = indexType;
+    setup.vertexLayout = layout;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
 bool
 MeshSetup::ShouldSetupFromFile() const {
     return this->setupFromFile;
@@ -73,15 +102,15 @@ MeshSetup::ShouldSetupFromData() const {
 }
 
 //------------------------------------------------------------------------------
-const Locator&
-MeshSetup::GetLocator() const {
-    return this->locator;
+bool
+MeshSetup::ShouldSetupEmpty() const {
+    return this->setupEmpty;
 }
 
 //------------------------------------------------------------------------------
-void
-MeshSetup::SetVertexUsage(Usage::Code usg) {
-    this->vertexUsage = usg;
+const Locator&
+MeshSetup::GetLocator() const {
+    return this->locator;
 }
 
 //------------------------------------------------------------------------------
@@ -91,27 +120,60 @@ MeshSetup::GetVertexUsage() const {
 }
 
 //------------------------------------------------------------------------------
-void
-MeshSetup::SetIndexUsage(Usage::Code usg) {
-    this->indexUsage = usg;
-}
-
-//------------------------------------------------------------------------------
 Usage::Code
 MeshSetup::GetIndexUsage() const {
     return this->indexUsage;
 }
 
 //------------------------------------------------------------------------------
-void
-MeshSetup::SetIOLane(int32 lane) {
-    this->ioLane = lane;
+int32
+MeshSetup::GetIOLane() const {
+    return this->ioLane;
 }
 
 //------------------------------------------------------------------------------
 int32
-MeshSetup::GetIOLane() const {
-    return this->ioLane;
+MeshSetup::GetNumVertices() const {
+    return this->numVertices;
+}
+
+//------------------------------------------------------------------------------
+int32
+MeshSetup::GetNumIndices() const {
+    return this->numIndices;
+}
+
+//------------------------------------------------------------------------------
+const VertexLayout&
+MeshSetup::GetVertexLayout() const {
+    return this->vertexLayout;
+}
+
+//------------------------------------------------------------------------------
+IndexType::Code
+MeshSetup::GetIndexType() const {
+    return this->indexType;
+}
+
+//------------------------------------------------------------------------------
+void
+MeshSetup::AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
+    o_assert(this->setupEmpty);
+    o_assert(this->numPrimGroups < MaxNumPrimGroups);
+    this->primGroups[this->numPrimGroups++] = primGroup;
+}
+
+//------------------------------------------------------------------------------
+int32
+MeshSetup::GetNumPrimitiveGroups() const {
+    return this->numPrimGroups;
+}
+
+//------------------------------------------------------------------------------
+const PrimitiveGroup&
+MeshSetup::GetPrimitiveGroup(int32 index) const {
+    o_assert_range(index, MaxNumPrimGroups);
+    return this->primGroups[index];
 }
 
 } // namespace Render

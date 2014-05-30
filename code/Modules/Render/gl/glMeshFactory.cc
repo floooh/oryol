@@ -13,6 +13,9 @@
 namespace Oryol {
 namespace Render {
 
+using namespace Core;
+using namespace IO;
+
 //------------------------------------------------------------------------------
 glMeshFactory::glMeshFactory() :
 glStateWrapper(nullptr),
@@ -46,6 +49,30 @@ glMeshFactory::Discard() {
 bool
 glMeshFactory::IsValid() const {
     return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+void
+glMeshFactory::SetupResource(mesh& msh) {
+    o_assert(this->isValid);
+    o_assert((msh.GetState() == Resource::State::Setup) || (msh.GetState() == Resource::State::Pending));
+    
+    // decide whether a loader needs to take over, or whether we handle this right here
+    if (msh.GetSetup().ShouldSetupEmpty()) {
+        this->createEmptyMesh(msh);
+        o_assert((msh.GetState() == Resource::State::Valid) || (msh.GetState() == Resource::State::Failed));
+    }
+    else {
+        // let a loader take over, parent class will take care of this
+        o_assert(msh.GetSetup().ShouldSetupFromFile());
+        Resource::loaderFactory<mesh, meshLoaderBase>::SetupResource(msh);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
+    Resource::loaderFactory<mesh, meshLoaderBase>::SetupResource(msh, data);
 }
 
 //------------------------------------------------------------------------------
@@ -299,6 +326,50 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     
     this->createVertexBuffer(vertices, sizeof(vertices), mesh);
     this->createIndexBuffer(indices, sizeof(indices), mesh);
+    this->createVertexLayout(mesh);
+    
+    mesh.setState(Resource::State::Valid);
+}
+
+//------------------------------------------------------------------------------
+void
+glMeshFactory::createEmptyMesh(mesh& mesh) {
+    
+    const MeshSetup& setup = mesh.GetSetup();
+    o_assert(setup.GetNumVertices() > 0);
+    
+    const int32 numVertices = setup.GetNumVertices();
+    const VertexLayout& layout = setup.GetVertexLayout();
+    const int32 vbSize = numVertices * layout.GetByteSize();
+    
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.setNumVertices(numVertices);
+    vbAttrs.setVertexLayout(layout);
+    vbAttrs.setUsage(setup.GetVertexUsage());
+    mesh.setVertexBufferAttrs(vbAttrs);
+    
+    const int32 numIndices = setup.GetNumIndices();
+    const IndexType::Code indexType = setup.GetIndexType();
+    const int32 ibSize = numIndices * IndexType::ByteSize(indexType);
+    
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.setNumIndices(setup.GetNumIndices());
+    ibAttrs.setIndexType(setup.GetIndexType());
+    ibAttrs.setUsage(setup.GetIndexUsage());
+    mesh.setIndexBufferAttrs(ibAttrs);
+    
+    const int32 numPrimGroups = setup.GetNumPrimitiveGroups();
+    if (numPrimGroups > 0) {
+        mesh.setNumPrimitiveGroups(numPrimGroups);
+        for (int32 i = 0; i < numPrimGroups; i++) {
+            mesh.setPrimitiveGroup(i, setup.GetPrimitiveGroup(i));
+        }
+    }
+    
+    this->createVertexBuffer(nullptr, vbSize, mesh);
+    if (indexType != IndexType::None) {
+        this->createIndexBuffer(nullptr, ibSize, mesh);
+    }
     this->createVertexLayout(mesh);
     
     mesh.setState(Resource::State::Valid);

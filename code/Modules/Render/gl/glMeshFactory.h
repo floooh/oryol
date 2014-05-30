@@ -27,6 +27,11 @@ public:
     void Discard();
     /// return true if the object has been setup
     bool IsValid() const;
+
+    /// setup resource, continue calling until res state is not Pending
+    void SetupResource(mesh& mesh);
+    /// setup with input data, continue calling until res state is not Pending
+    void SetupResource(mesh& mesh, const Core::Ptr<IO::Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
@@ -38,6 +43,8 @@ public:
     void createVertexLayout(mesh& outMesh);
     /// helper method to setup a mesh object as fullscreen quad
     void createFullscreenQuad(mesh& mesh);
+    /// helper method to create empty mesh
+    void createEmptyMesh(mesh& mesh);
     
 private:
     /// setup a Mesh's GL vertex attributes

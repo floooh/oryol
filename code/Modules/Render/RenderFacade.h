@@ -57,7 +57,7 @@ public:
     void DiscardResource(const Resource::Id& resId);
     /// get the loading state of a resource
     Resource::State::Code QueryResourceState(const Resource::Id& resId);
-
+    
     /// begin frame rendering
     bool BeginFrame();
     /// end frame rendering
@@ -79,6 +79,11 @@ public:
     template<class T> void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
     template<class T> void ApplyVariableArray(int32 index, const T* values, int32 numValues);
+    
+    /// update dynamic vertex data (only complete replace possible at the moment)
+    void UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data);
+    /// update dynamic index data (only complete replace possible at the moment)
+    void UpdateIndices(const Resource::Id& resId, int32 numBytes, const void* data);
     
     /// clear the currently assigned render target
     void Clear(bool color, bool depth, bool stencil);
@@ -154,8 +159,20 @@ RenderFacade::ApplyState(State::Code state, bool b) {
 
 //------------------------------------------------------------------------------
 template<> inline void
+RenderFacade::ApplyState(State::Code state, bool b0, bool b1, bool b2, bool b3) {
+    this->stateWrapper.ApplyState(state, b0, b1, b2, b3);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
 RenderFacade::ApplyState(State::Code state, State::Value val) {
     this->stateWrapper.ApplyState(state, val);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, State::Value v0, State::Value v1) {
+    this->stateWrapper.ApplyState(state, v0, v1);
 }
 
 //------------------------------------------------------------------------------
