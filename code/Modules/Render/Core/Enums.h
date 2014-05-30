@@ -145,6 +145,30 @@ public:
                 return false;
         }
     }
+    /// get byte size of pixel format
+    static int32 ByteSize(Code c) {
+        switch (c) {
+            case R8G8B8A8:
+                return 4;
+            case R8G8B8:
+                return 3;
+            case R5G6B5:
+            case R5G5B5A1:
+            case R4G4B4A4:
+                return 2;
+            case L8:
+                return 1;
+            case D16:
+                return 2;
+            case D32:
+            case D24S8:
+            case R32F:
+                return 4;
+            default:
+                o_error("PixelFormat::ByteSize(): cannot get byte size for compressed format!\n");
+                return 0;
+        }
+    }
     /// get number of bits in a pixel format channel (only for non-compressed formats!)
     static int8 NumBits(Code pixelFormat, Channel channel) {
         switch (pixelFormat) {
