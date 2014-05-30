@@ -166,11 +166,11 @@ DrawCallPerfApp::OnRunning() {
     Duration frameTime = curTime - this->lastFrameTimePoint;
     this->lastFrameTimePoint = curTime;
     
-    this->debug->Text("\n %d draws: upd=%.3f draw=%.3f, frame=%.3f ms\n",
-                      this->curNumParticles,
-                      updTime.AsMilliSeconds(),
-                      drawTime.AsMilliSeconds(),
-                      frameTime.AsMilliSeconds());
+    this->debug->PrintF("\n %d draws: upd=%.3f draw=%.3f, frame=%.3f ms\n",
+                        this->curNumParticles,
+                        updTime.AsMilliSeconds(),
+                        drawTime.AsMilliSeconds(),
+                        frameTime.AsMilliSeconds());
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
