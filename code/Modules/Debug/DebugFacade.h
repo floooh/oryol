@@ -20,17 +20,19 @@ public:
     /// destructor
     ~DebugFacade();
     
-    /// set text scale factor (default is 1.0f, 1.0f)
+    /// set global text scale factor (default is 1.0f, 1.0f)
     void SetTextScale(const glm::vec2& scale);
-    /// get text scale
+    /// get global text scale
     const glm::vec2& GetTextScale() const;
-    /// set text color (default is yellow)
-    void SetTextColor(const glm::vec4& color);
-    /// get text color
-    const glm::vec4& GetTextColor() const;
     
+    /// add debug text (7-bit ASCII)
+    void Print(const char* text);
     /// add debug text (7-bit ASCII only)
-    void Text(const char* text, ...) __attribute__((format(printf, 2, 3)));
+    void PrintF(const char* text, ...) __attribute__((format(printf, 2, 3)));
+    /// add cursor positioning tag
+    void CursorPos(uint8 x, uint8 y);
+    /// add color tag
+    void TextColor(const glm::vec4& color);
     /// draw the debug text buffer (call one per frame)
     void DrawTextBuffer();
     

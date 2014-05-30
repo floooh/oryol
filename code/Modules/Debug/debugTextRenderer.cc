@@ -19,10 +19,10 @@ extern const char *kc85_4_Font;
 //------------------------------------------------------------------------------
 debugTextRenderer::debugTextRenderer() :
 textScale(1.0f, 1.0f),
-textColor(1.0f, 1.0f, 0.0f, 1.0f),
 valid(false) {
     // NOTE: text rendering will be setup lazily when the text rendering
     // method is called first
+    this->stringBuilder.Reserve(MaxNumChars * 2);
 }
 
 //------------------------------------------------------------------------------
@@ -42,18 +42,6 @@ debugTextRenderer::setTextScale(const glm::vec2& s) {
 const glm::vec2&
 debugTextRenderer::getTextScale() const {
     return this->textScale;
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setTextColor(const glm::vec4& c) {
-    this->textColor = c;
-}
-
-//------------------------------------------------------------------------------
-const glm::vec4&
-debugTextRenderer::getTextColor() const {
-    return this->textColor;
 }
 
 //------------------------------------------------------------------------------
@@ -89,18 +77,52 @@ debugTextRenderer::isValid() const {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::text(const char* text, std::va_list args) {
+debugTextRenderer::print(const char* txt) {
     this->rwLock.LockWrite();
-    if (!this->valid) {
-        this->setup();
-    }
-    this->stringBuilder.Format(1024, text, args);
+    this->stringBuilder.Append(txt);
+    this->rwLock.UnlockWrite();
+}
+
+//------------------------------------------------------------------------------
+void
+debugTextRenderer::printf(const char* text, std::va_list args) {
+    this->rwLock.LockWrite();
+    this->stringBuilder.AppendFormat(1024, text, args);
+    this->rwLock.UnlockWrite();
+}
+
+//------------------------------------------------------------------------------
+void
+debugTextRenderer::cursorPos(uint8 x, uint8 y) {
+    this->rwLock.LockWrite();
+    this->stringBuilder.Append((char) 0x1B);   // start ESC control sequence
+    this->stringBuilder.Append((char) 0x01);   // set cursor
+    this->stringBuilder.Append((char)x);
+    this->stringBuilder.Append((char)y);
+    this->rwLock.UnlockWrite();
+}
+
+//------------------------------------------------------------------------------
+void
+debugTextRenderer::textColor(const glm::vec4& color) {
+    this->rwLock.LockWrite();
+    this->stringBuilder.Append(0x1B);   // start ESC control sequence
+    this->stringBuilder.Append(0x02);   // set color
+    this->stringBuilder.Append((char) (color.x * 255.0f));
+    this->stringBuilder.Append((char) (color.y * 255.0f));
+    this->stringBuilder.Append((char) (color.z * 255.0f));
+    this->stringBuilder.Append((char) (color.w * 255.0f));
     this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::drawTextBuffer() {
+    
+    // one-time setup
+    if (!this->valid) {
+        this->setup();
+    }
     
     // get the currently accumulated string
     this->rwLock.LockWrite();
@@ -129,7 +151,6 @@ debugTextRenderer::drawTextBuffer() {
         renderFacade->ApplyMesh(this->textMesh);
         renderFacade->ApplyProgram(this->textShader, 0);
         renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
-        renderFacade->ApplyVariable(DebugShaders::TextShader::TextColor, this->textColor);
         renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
         
         renderFacade->ApplyState(State::ColorMask, true, true, true, true);
@@ -199,6 +220,7 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     int32 maxNumVerts = MaxNumChars * 6;
     this->vertexLayout.Add(VertexAttr::Position, VertexFormat::Short2);
     this->vertexLayout.Add(VertexAttr::TexCoord0, VertexFormat::Short2);
+    this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.GetByteSize());
     MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", this->vertexLayout, maxNumVerts, Usage::DynamicStream);
     this->textMesh = renderFacade->CreateResource(setup);
@@ -216,11 +238,13 @@ debugTextRenderer::setupTextShader(RenderFacade* renderFacade) {
 
 //------------------------------------------------------------------------------
 int32
-debugTextRenderer::writeVertex(int32 index, short x, short y, short u, short v) {
+debugTextRenderer::writeVertex(int32 index, short x, short y, short u, short v, uint32 rgba) {
     this->vertexData[index][0] = x;
     this->vertexData[index][1] = y;
     this->vertexData[index][2] = u;
     this->vertexData[index][3] = v;
+    this->vertexData[index][4] = (short) rgba & 0xFFFF;
+    this->vertexData[index][5] = (short) ((rgba >> 16) & 0xFFFF);
     return index + 1;
 }
 
@@ -233,11 +257,12 @@ debugTextRenderer::convertStringToVertices(const String& str) {
     const int32 cursorMaxX = MaxNumColumns - 1;
     const int32 cursorMaxY = MaxNumLines - 1;
     int32 vIndex = 0;
+    uint32 rgba = 0xFF00FFFF;
     
     const int32 numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
     const char* ptr = str.AsCStr();
     for (int32 charIndex = 0; charIndex < numChars; charIndex++) {
-        char c = ptr[charIndex];
+        uchar c = (uchar) ptr[charIndex];
         
         // control character?
         if (c < 0x20) {
@@ -254,6 +279,31 @@ debugTextRenderer::convertStringToVertices(const String& str) {
                     cursorX = 0; break;
                 case 0x10: // home
                     cursorX = 0; cursorY = 0; break;
+                case 0x1B: // handle escape sequence (position cursor or change text color)
+                    {
+                        o_assert((charIndex + 1) < numChars);
+                        char escCode = ptr[charIndex + 1];
+                        if (escCode == 1) {
+                            // reposition cursor
+                            o_assert((charIndex + 3) < numChars);
+                            cursorX = ptr[charIndex + 2];
+                            cursorY = ptr[charIndex + 3];
+                            charIndex += 3;
+                        }
+                        else if (escCode == 2) {
+                            // change color
+                            o_assert((charIndex + 5) < numChars);
+                            uchar r = (uchar) ptr[charIndex + 2];
+                            uchar g = (uchar) ptr[charIndex + 3];
+                            uchar b = (uchar) ptr[charIndex + 4];
+                            uchar a = (uchar) ptr[charIndex + 5];
+                            charIndex += 5;
+                            rgba = (a<<24) | (b << 16) | (g << 8) | (r);
+                        }
+                        else {
+                            o_error("Invalid escape code '%d'\n", escCode);
+                        }
+                    }
                 default: break;
             }
         }
@@ -265,12 +315,12 @@ debugTextRenderer::convertStringToVertices(const String& str) {
                 c &= 0x7F;
                 
                 // write 6 vertices
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY, c+1, 0);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1);
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1);
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY+1, c, 1);
+                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0, rgba);
+                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY, c+1, 0, rgba);
+                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1, rgba);
+                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0, rgba);
+                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1, rgba);
+                vIndex = this->writeVertex(vIndex, cursorX, cursorY+1, c, 1, rgba);
                 
                 // advance horizontal cursor position
                 cursorX++;

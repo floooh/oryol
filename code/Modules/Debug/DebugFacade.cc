@@ -24,18 +24,6 @@ DebugFacade::~DebugFacade() {
 
 //------------------------------------------------------------------------------
 void
-DebugFacade::SetTextColor(const glm::vec4& c) {
-    this->debugTextRenderer.setTextColor(c);
-}
-
-//------------------------------------------------------------------------------
-const glm::vec4&
-DebugFacade::GetTextColor() const {
-    return this->debugTextRenderer.getTextColor();
-}
-
-//------------------------------------------------------------------------------
-void
 DebugFacade::SetTextScale(const glm::vec2& s) {
     this->debugTextRenderer.setTextScale(s);
 }
@@ -48,11 +36,29 @@ DebugFacade::GetTextScale() const {
 
 //------------------------------------------------------------------------------
 void
-DebugFacade::Text(const char* text, ...) {
+DebugFacade::Print(const char* text) {
+    this->debugTextRenderer.print(text);
+}
+
+//------------------------------------------------------------------------------
+void
+DebugFacade::PrintF(const char* text, ...) {
     std::va_list args;
     va_start(args, text);
-    this->debugTextRenderer.text(text, args);
+    this->debugTextRenderer.printf(text, args);
     va_end(args);
+}
+
+//------------------------------------------------------------------------------
+void
+DebugFacade::CursorPos(uint8 x, uint8 y) {
+    this->debugTextRenderer.cursorPos(x, y);
+}
+
+//------------------------------------------------------------------------------
+void
+DebugFacade::TextColor(const glm::vec4& c) {
+    this->debugTextRenderer.textColor(c);
 }
 
 //------------------------------------------------------------------------------

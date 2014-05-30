@@ -10,7 +10,6 @@ namespace DebugShaders {
     public:
         static const int32 GlyphSize = 0;
         static const int32 Texture = 1;
-        static const int32 TextColor = 2;
         static Render::ProgramBundleSetup CreateSetup();
     };
 }

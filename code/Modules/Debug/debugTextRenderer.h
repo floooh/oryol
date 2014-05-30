@@ -33,17 +33,19 @@ public:
     /// return true if the object has been setup
     bool isValid() const;
     
-    /// set text scale
+    /// set global text scale
     void setTextScale(const glm::vec2& s);
-    /// get text scale
+    /// get global text scale
     const glm::vec2& getTextScale() const;
-    /// set text color
-    void setTextColor(const glm::vec4& c);
-    /// get text color
-    const glm::vec4& getTextColor() const;
     
-    /// draw text at position (only adds to list)
-    void text(const char* text, std::va_list args);
+    /// draw text (only adds to internal buffer)
+    void print(const char* text);
+    /// draw text (only adds to internal buffer)
+    void printf(const char* text, std::va_list args);
+    /// reposition the cursor
+    void cursorPos(uint8 x, uint8 y);
+    /// change text color
+    void textColor(const glm::vec4& color);
     /// draw the accumulated text
     void drawTextBuffer();
     
@@ -60,7 +62,7 @@ private:
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const Core::String& str);
     /// write one glyph vertex, returns next vertex index
-    int32 writeVertex(int32 vertexIndex, short x, short y, short u, short v);
+    int32 writeVertex(int32 vertexIndex, short x, short y, short u, short v, uint32 rgba);
     
     static const int32 MaxNumColumns = 120;
     static const int32 MaxNumLines = 80;
@@ -68,7 +70,6 @@ private:
     static const int32 MaxNumVertices = MaxNumChars * 6;
     
     glm::vec2 textScale;
-    glm::vec4 textColor;
     Render::VertexLayout vertexLayout;
     Core::RWLock rwLock;
     Resource::Id fontTexture;
@@ -77,8 +78,8 @@ private:
     Core::StringBuilder stringBuilder;
     bool valid;
     
-    // at most 6 vertices per character, 4 shorts per vertex (2 pos, 2 uv)
-    short vertexData[MaxNumVertices][4];
+    // at most 6 vertices per character, 6 shorts per vertex (2 pos, 2 uv, 4 bytes color)
+    short vertexData[MaxNumVertices][6];
 };
 
 } // namespace Debug

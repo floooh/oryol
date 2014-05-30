@@ -15,13 +15,16 @@
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display
 @in vec2 position
 @in vec2 texcoord0
+@in vec4 color0
 @out vec2 uv
+@out vec4 color
 void main() {
     vec2 screenPos = position * glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
     $position = vec4(screenPos, 0.0, 1.0);
     uv = texcoord0 * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
+    color = color0;
 }
 @end
 
@@ -30,10 +33,10 @@ void main() {
 //
 @fs fsText
 @uniform sampler2D tex Texture
-@uniform vec4 textColor TextColor
 @in vec2 uv
+@in vec4 color
 void main() {
-    $color = $texture2D(tex, uv).xxxx * textColor;
+    $color = $texture2D(tex, uv).xxxx * color;
 }
 @end
 
