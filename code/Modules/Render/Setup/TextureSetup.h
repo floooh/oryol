@@ -14,8 +14,12 @@ namespace Render {
     
 class TextureSetup {
 public:
-    /// setup a texture from a file URL
+    /// setup a texture from an image file URL
     static TextureSetup FromFile(const Resource::Locator& loc, TextureSetup blueprint=TextureSetup());
+    /// setup a texture from a image file data in stream
+    static TextureSetup FromImageFileData(const Resource::Locator& loc, TextureSetup blueprint=TextureSetup());
+    /// setup texture from raw pixel data
+    static TextureSetup FromPixelData(const Resource::Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt);
     /// setup as absolute-size render target
     static TextureSetup AsRenderTarget(const Resource::Locator& loc, int32 w, int32 h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt=PixelFormat::InvalidPixelFormat);
     /// setup as render target with size relative to current display size
@@ -27,8 +31,10 @@ public:
     TextureSetup();
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
-    /// return true if texture should be setup from data stream
-    bool ShouldSetupFromData() const;
+    /// return true if texture should be setup from image file data in stream
+    bool ShouldSetupFromImageFileData() const;
+    /// return true if texture should be setup from raw pixel data
+    bool ShouldSetupFromPixelData() const;
     /// return true if texture should be setup as render target
     bool ShouldSetupAsRenderTarget() const;
     /// return true if rel-size render target
@@ -56,6 +62,8 @@ public:
     PixelFormat::Code GetDepthFormat() const;
     /// get resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
     const Resource::Id& GetDepthRenderTarget() const;
+    /// return true if texture should be generated with mipmaps (only when created from raw pixel data)
+    bool HasMipMaps() const;
     
     /// set texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
     void SetWrapU(TextureWrapMode::Code wrapU);
@@ -81,10 +89,12 @@ public:
     
 private:
     bool shouldSetupFromFile : 1;
-    bool shouldSetupFromData : 1;
+    bool shouldSetupFromImageFileData : 1;
+    bool shouldSetupFromPixelData : 1;
     bool shouldSetupAsRenderTarget : 1;
     bool isRelSizeRenderTarget : 1;
     bool hasSharedDepth : 1;
+    bool hasMipMaps : 1;
     
     Resource::Locator locator;
     int32 ioLane;

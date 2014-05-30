@@ -12,10 +12,12 @@ using namespace Resource;
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
 shouldSetupFromFile(false),
-shouldSetupFromData(false),
+shouldSetupFromImageFileData(false),
+shouldSetupFromPixelData(false),
 shouldSetupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
+hasMipMaps(false),
 ioLane(0),
 width(0),
 height(0),
@@ -57,6 +59,33 @@ TextureSetup::FromFile(const Locator& loc, TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
     setup.shouldSetupFromFile = true;
     setup.locator = loc;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromImageFileData(const Locator& loc, TextureSetup bluePrint) {
+    TextureSetup setup(bluePrint);
+    setup.shouldSetupFromImageFileData = true;
+    setup.locator = loc;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromPixelData(const Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt) {
+    o_assert(w > 0);
+    o_assert(h > 0);
+    o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert(!PixelFormat::IsCompressedFormat(fmt));
+    
+    TextureSetup setup;
+    setup.shouldSetupFromPixelData = true;
+    setup.locator = loc;
+    setup.width = w;
+    setup.height = h;
+    setup.hasMipMaps = hasMipMaps;
+    setup.colorFormat = fmt;
     return setup;
 }
 
@@ -112,8 +141,14 @@ TextureSetup::ShouldSetupFromFile() const {
 
 //------------------------------------------------------------------------------
 bool
-TextureSetup::ShouldSetupFromData() const {
-    return this->shouldSetupFromData;
+TextureSetup::ShouldSetupFromImageFileData() const {
+    return this->shouldSetupFromImageFileData;
+}
+
+//------------------------------------------------------------------------------
+bool
+TextureSetup::ShouldSetupFromPixelData() const {
+    return this->shouldSetupFromPixelData;
 }
 
 //------------------------------------------------------------------------------
@@ -138,6 +173,12 @@ TextureSetup::HasDepth() const {
 bool
 TextureSetup::HasSharedDepth() const {
     return this->hasSharedDepth;
+}
+
+//------------------------------------------------------------------------------
+bool
+TextureSetup::HasMipMaps() const {
+    return this->hasMipMaps;
 }
 
 //------------------------------------------------------------------------------

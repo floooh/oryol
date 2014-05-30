@@ -43,6 +43,8 @@ public:
 private:
     /// create a render target
     void createRenderTarget(texture& tex);
+    /// create texture from raw pixel data
+    void createFromPixelData(texture& tex, const Core::Ptr<IO::Stream>& data);
 
     stateWrapper* glStateWrapper;
     displayMgr* displayManager;

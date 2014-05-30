@@ -65,6 +65,7 @@ void
 glTextureFactory::SetupResource(texture& tex) {
     o_assert(this->isValid);
     o_assert((tex.GetState() == Resource::State::Setup) || (tex.GetState() == Resource::State::Pending));
+    o_assert(!tex.GetSetup().ShouldSetupFromPixelData());
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (tex.GetSetup().ShouldSetupAsRenderTarget()) {
@@ -73,6 +74,7 @@ glTextureFactory::SetupResource(texture& tex) {
     }
     else {
         // let a loader take over, parent class will take care of this
+        o_assert(tex.GetSetup().ShouldSetupFromFile());
         Resource::loaderFactory<texture, textureLoaderBase>::SetupResource(tex);
     }
 }
@@ -82,7 +84,17 @@ void
 glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     o_assert(this->isValid);
     o_assert(tex.GetState() == Resource::State::Setup);
-    Resource::loaderFactory<texture, textureLoaderBase>::SetupResource(tex, data);
+    o_assert(!tex.GetSetup().ShouldSetupAsRenderTarget());
+    o_assert(!tex.GetSetup().ShouldSetupFromFile());
+    
+    if (tex.GetSetup().ShouldSetupFromPixelData()) {
+        this->createFromPixelData(tex, data);
+        o_assert(tex.GetState() == Resource::State::Valid);
+    }
+    else {
+        o_assert(tex.GetSetup().ShouldSetupFromImageFileData());
+        Resource::loaderFactory<texture, textureLoaderBase>::SetupResource(tex, data);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -257,6 +269,75 @@ glTextureFactory::createRenderTarget(texture& tex) {
     // bind the default frame buffer
     ::glBindFramebuffer(GL_FRAMEBUFFER, glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
+    o_assert(tex.GetState() == Resource::State::Setup);
+
+    const TextureSetup& setup = tex.GetSetup();
+    const int32 width = setup.GetWidth();
+    const int32 height = setup.GetHeight();
+    
+    // create a texture object
+    const GLuint glTex = this->glGenAndBindTexture(GL_TEXTURE_2D);
+    
+    // setup texture params
+    GLenum glMinFilter = setup.GetMinFilter();
+    GLenum glMagFilter = setup.GetMagFilter();
+    if (!setup.HasMipMaps()) {
+        if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
+            glMinFilter = GL_NEAREST;
+        }
+        else if ((glMinFilter == GL_LINEAR_MIPMAP_NEAREST) || (glMinFilter == GL_LINEAR_MIPMAP_LINEAR)) {
+            glMinFilter = GL_LINEAR;
+        }
+    }
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.GetWrapU());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.GetWrapV());
+    ORYOL_GL_CHECK_ERROR();
+    
+    // get pointer to image data
+    data->Open(OpenMode::ReadOnly);
+    const uint8* endPtr = nullptr;
+    const uint8* srcPtr = data->MapRead(&endPtr);
+    o_assert(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.GetColorFormat()));
+    
+    // setup the image data in the texture
+    o_assert2(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
+    GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.GetColorFormat());
+    GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.GetColorFormat());
+    ::glTexImage2D(GL_TEXTURE_2D,
+                   0,
+                   glTexImageFormat,
+                   width,
+                   height,
+                   0,
+                   glTexImageFormat,
+                   glTexImageType,
+                   srcPtr);
+    ORYOL_GL_CHECK_ERROR();
+    data->UnmapRead();
+    data->Close();
+    
+    // setup texture attributes
+    TextureAttrs attrs;
+    attrs.setLocator(setup.GetLocator());
+    attrs.setType(TextureType::Texture2D);
+    attrs.setColorFormat(setup.GetColorFormat());
+    attrs.setUsage(Usage::Immutable);
+    attrs.setWidth(width);
+    attrs.setHeight(height);
+    attrs.setMipmapsFlag(setup.HasMipMaps());
+    
+    // setup texture
+    tex.setTextureAttrs(attrs);
+    tex.glSetTexture(glTex);
+    tex.glSetTarget(GL_TEXTURE_2D);
+    tex.setState(Resource::State::Valid);
 }
 
 //------------------------------------------------------------------------------

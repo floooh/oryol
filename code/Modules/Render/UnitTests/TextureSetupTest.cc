@@ -13,7 +13,8 @@ TEST(TextureSetupTest) {
     // setup as absolute-size render target, no depth buffer
     auto rt = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::R8G8B8);
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromData());
+    CHECK(!rt.ShouldSetupFromImageFileData());
+    CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
@@ -35,7 +36,8 @@ TEST(TextureSetupTest) {
     // setup as absolute-size render target, with depth buffer
     rt = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::R8G8B8A8, PixelFormat::D24S8);
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromData());
+    CHECK(!rt.ShouldSetupFromImageFileData());
+    CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
@@ -57,7 +59,8 @@ TEST(TextureSetupTest) {
     // setup as relative-size render target, no depth buffer
     rt = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f, PixelFormat::R5G6B5);
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromData());
+    CHECK(!rt.ShouldSetupFromImageFileData());
+    CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
@@ -79,7 +82,8 @@ TEST(TextureSetupTest) {
     // setup as relative-size render target, with depth buffer
     rt = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f, PixelFormat::R4G4B4A4, PixelFormat::D16);
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromData());
+    CHECK(!rt.ShouldSetupFromImageFileData());
+    CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(rt.IsRelSizeRenderTarget());
     CHECK(!rt.HasSharedDepth());
@@ -101,7 +105,8 @@ TEST(TextureSetupTest) {
     // setup as shared-depth render target
     rt = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", PixelFormat::R32F, Resource::Id(1, 2, 3));
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromData());
+    CHECK(!rt.ShouldSetupFromImageFileData());
+    CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
     CHECK(rt.HasSharedDepth());
