@@ -6,6 +6,7 @@
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
+#include "Debug/DebugFacade.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -17,6 +18,7 @@ using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Time;
+using namespace Oryol::Debug;
 
 // derived application class
 class DrawCallPerfApp : public App {
@@ -31,6 +33,7 @@ private:
     void updateParticles();
 
     RenderFacade* render = nullptr;
+    DebugFacade* debug = nullptr;
     Resource::Id meshId;
     Resource::Id progId;
     Resource::Id stateId;
@@ -55,6 +58,7 @@ DrawCallPerfApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol DrawCallPerf Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
+    this->debug = DebugFacade::CreateSingle();
 
     // create a small cube shape
     ShapeBuilder shapeBuilder;
@@ -153,6 +157,8 @@ DrawCallPerfApp::OnRunning() {
             this->render->Draw(0);
         }
         drawTime = Clock::Since(drawStart);
+        
+        this->debug->DrawTextBuffer();
         this->render->EndFrame();
     }
     
@@ -160,13 +166,11 @@ DrawCallPerfApp::OnRunning() {
     Duration frameTime = curTime - this->lastFrameTimePoint;
     this->lastFrameTimePoint = curTime;
     
-    if (0 == (this->curNumParticles % 200)) {
-        Log::Info("%d draws: upd=%f draw=%f, frame=%f ms\n",
-                  this->curNumParticles,
-                  updTime.AsMilliSeconds(),
-                  drawTime.AsMilliSeconds(),
-                  frameTime.AsMilliSeconds());
-    }
+    this->debug->Text("\n %d draws: upd=%.3f draw=%.3f, frame=%.3f ms\n",
+                      this->curNumParticles,
+                      updTime.AsMilliSeconds(),
+                      drawTime.AsMilliSeconds(),
+                      frameTime.AsMilliSeconds());
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
@@ -179,6 +183,8 @@ DrawCallPerfApp::OnCleanup() {
     this->render->DiscardResource(this->progId);
     this->render->DiscardResource(this->meshId);
     this->render = nullptr;
+    this->debug = nullptr;
+    DebugFacade::DestroySingle();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
