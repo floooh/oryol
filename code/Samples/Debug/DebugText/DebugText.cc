@@ -55,7 +55,7 @@ DebugTextApp::OnInit() {
 //
 void
 DebugTextApp::dropChar() {
-    int chr = (int) glm::linearRand(33.0f, 127.0f);
+    int chr = (int) glm::linearRand(33.0f, 255.0f);
     int col = (int) glm::linearRand(0.0f, float(this->width));
     this->buffer[col] = chr;
 }
