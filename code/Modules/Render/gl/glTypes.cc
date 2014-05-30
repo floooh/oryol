@@ -22,6 +22,13 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
         case PixelFormat::R5G6B5:
             return GL_RGB;
             
+        case PixelFormat::L8:
+            #if ORYOL_OPENGLES2
+                return GL_LUMINANCE;
+            #else
+                return GL_RED;
+            #endif
+            
         case PixelFormat::D16:
         case PixelFormat::D32:
             return GL_DEPTH_COMPONENT;
@@ -88,6 +95,7 @@ glTypes::AsGLTexImageType(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::R8G8B8A8:
         case PixelFormat::R8G8B8:
+        case PixelFormat::L8:
             return GL_UNSIGNED_BYTE;
             
         case PixelFormat::R5G5B5A1:
