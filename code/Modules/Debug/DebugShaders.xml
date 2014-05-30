@@ -1,0 +1,4 @@
+<!-- debug text rendering shaders -->
+<Generator type="ShaderLibrary" name="DebugShaders" >
+    <AddDir path="."/>
+</Generator>

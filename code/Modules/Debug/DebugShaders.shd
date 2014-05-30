@@ -1,0 +1,42 @@
+//------------------------------------------------------------------------------
+//  Debug module shaders
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//  text vertex shader
+//
+//  The vertex position is 2 shorts, the cursor X and Y position on
+//  a raster with one cell per character.
+//
+//  The vertex texcoord0 is 2 shorts, where u is the X index into the
+//  font texture and Y is either 1 (top) or 0 (bottom).
+//
+@vs vsText
+@uniform vec2 glyphSize GlyphSize   // glyph size on current display
+@in vec2 position
+@in vec2 texcoord0
+@out vec2 uv
+void main() {
+    vec2 screenPos = position * glyphSize;
+    screenPos.x -= 1.0;
+    screenPos.y = 1.0 - screenPos.y;
+    $position = vec4(screenPos, 0.0, 1.0);
+    uv = texcoord0 * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
+}
+@end
+
+//------------------------------------------------------------------------------
+//  text fragment shader
+//
+@fs fsText
+@uniform sampler2D tex Texture
+@uniform vec4 textColor TextColor
+@in vec2 uv
+void main() {
+    $color = $texture2D(tex, uv).xxxx * textColor;
+}
+@end
+
+@bundle TextShader
+@program vsText fsText
+@end

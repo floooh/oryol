@@ -1,0 +1,7 @@
+oryol_begin_app(DebugText windowed)
+    oryol_sources(.)
+    oryol_deps(Core Render Debug)
+    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" emscripten)
+    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" pnacl)
+    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" android)
+oryol_end_app()
