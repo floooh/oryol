@@ -109,6 +109,20 @@ TEST(PixelFormatChannelBitsTest) {
 }
 
 //------------------------------------------------------------------------------
+TEST(PixelFormatByteSizeTest) {
+    CHECK(PixelFormat::ByteSize(PixelFormat::R8G8B8A8) == 4);
+    CHECK(PixelFormat::ByteSize(PixelFormat::R8G8B8) == 3);
+    CHECK(PixelFormat::ByteSize(PixelFormat::R5G6B5) == 2);
+    CHECK(PixelFormat::ByteSize(PixelFormat::R5G5B5A1) == 2);
+    CHECK(PixelFormat::ByteSize(PixelFormat::R4G4B4A4) == 2);
+    CHECK(PixelFormat::ByteSize(PixelFormat::L8) == 1);
+    CHECK(PixelFormat::ByteSize(PixelFormat::D16) == 2);
+    CHECK(PixelFormat::ByteSize(PixelFormat::D32) == 4);
+    CHECK(PixelFormat::ByteSize(PixelFormat::D24S8) == 4);
+    CHECK(PixelFormat::ByteSize(PixelFormat::R32F) == 4);
+}
+
+//------------------------------------------------------------------------------
 TEST(TextureTypeTest) {
     CHECK(TextureType::NumTextureTypes == 3);
     CHECK(TextureType::Texture2D == GL_TEXTURE_2D);
