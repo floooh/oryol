@@ -59,10 +59,12 @@ private:
     void setupTextMesh(Render::RenderFacade* renderFacade);
     /// setup the text shader
     void setupTextShader(Render::RenderFacade* renderFacade);
+    /// setup the text state block
+    void setupTextStateBlock(Render::RenderFacade* renderFacade);
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const Core::String& str);
     /// write one glyph vertex, returns next vertex index
-    int32 writeVertex(int32 vertexIndex, short x, short y, short u, short v, uint32 rgba);
+    int32 writeVertex(int32 vertexIndex, uint8 x, uint8 y, uint8 u, uint8 v, uint32 rgba);
     
     static const int32 MaxNumColumns = 120;
     static const int32 MaxNumLines = 80;
@@ -75,11 +77,12 @@ private:
     Resource::Id fontTexture;
     Resource::Id textMesh;
     Resource::Id textShader;
+    Resource::Id textStateBlock;
     Core::StringBuilder stringBuilder;
     bool valid;
     
-    // at most 6 vertices per character, 6 shorts per vertex (2 pos, 2 uv, 4 bytes color)
-    short vertexData[MaxNumVertices][6];
+    // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)
+    uint32 vertexData[MaxNumVertices][2];
 };
 
 } // namespace Debug

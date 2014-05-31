@@ -52,6 +52,7 @@ debugTextRenderer::setup() {
     this->setupFontTexture(renderFacade);
     this->setupTextMesh(renderFacade);
     this->setupTextShader(renderFacade);
+    this->setupTextStateBlock(renderFacade);
     this->valid = true;
 }
 
@@ -61,9 +62,11 @@ debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
     RenderFacade* renderFacade = RenderFacade::Instance();
+    renderFacade->DiscardResource(this->textStateBlock);
     renderFacade->DiscardResource(this->textShader);
     renderFacade->DiscardResource(this->textMesh);
     renderFacade->DiscardResource(this->fontTexture);
+    this->textStateBlock.Invalidate();
     this->textShader.Invalidate();
     this->textMesh.Invalidate();
     this->fontTexture.Invalidate();
@@ -148,16 +151,11 @@ debugTextRenderer::drawTextBuffer() {
     
         renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.GetByteSize(), this->vertexData);
         
+        renderFacade->ApplyStateBlock(this->textStateBlock);
         renderFacade->ApplyMesh(this->textMesh);
         renderFacade->ApplyProgram(this->textShader, 0);
         renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
         renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
-        
-        renderFacade->ApplyState(State::ColorMask, true, true, true, true);
-        renderFacade->ApplyState(State::DepthMask, false);
-        renderFacade->ApplyState(State::DepthTestEnabled, false);
-        renderFacade->ApplyState(State::BlendEnabled, true);
-        renderFacade->ApplyState(State::BlendFunc, State::SrcAlpha, State::InvSrcAlpha);
         renderFacade->Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
         renderFacade->ApplyState(State::BlendEnabled, false);
     }
@@ -218,8 +216,7 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     
     // setup an empty mesh, only vertices
     int32 maxNumVerts = MaxNumChars * 6;
-    this->vertexLayout.Add(VertexAttr::Position, VertexFormat::Short2);
-    this->vertexLayout.Add(VertexAttr::TexCoord0, VertexFormat::Short2);
+    this->vertexLayout.Add(VertexAttr::Position, VertexFormat::UByte4);
     this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.GetByteSize());
     MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", this->vertexLayout, maxNumVerts, Usage::DynamicStream);
@@ -237,14 +234,27 @@ debugTextRenderer::setupTextShader(RenderFacade* renderFacade) {
 }
 
 //------------------------------------------------------------------------------
+void
+debugTextRenderer::setupTextStateBlock(RenderFacade* renderFacade) {
+    o_assert(nullptr != renderFacade);
+    o_assert(!this->textStateBlock.IsValid());
+    
+    StateBlockSetup sbSetup("_dbgStateBlock");
+    sbSetup.AddState(State::ColorMask, true, true, true, true);
+    sbSetup.AddState(State::DepthMask, false);
+    sbSetup.AddState(State::DepthTestEnabled, false);
+    sbSetup.AddState(State::BlendEnabled, true);
+    sbSetup.AddState(State::BlendFunc, State::SrcAlpha, State::InvSrcAlpha);
+    this->textStateBlock = renderFacade->CreateResource(sbSetup);
+    o_assert(this->textStateBlock.IsValid());
+    o_assert(renderFacade->QueryResourceState(this->textStateBlock) == Resource::State::Valid);
+}
+
+//------------------------------------------------------------------------------
 int32
-debugTextRenderer::writeVertex(int32 index, short x, short y, short u, short v, uint32 rgba) {
-    this->vertexData[index][0] = x;
-    this->vertexData[index][1] = y;
-    this->vertexData[index][2] = u;
-    this->vertexData[index][3] = v;
-    this->vertexData[index][4] = (short) rgba & 0xFFFF;
-    this->vertexData[index][5] = (short) ((rgba >> 16) & 0xFFFF);
+debugTextRenderer::writeVertex(int32 index, uint8 x, uint8 y, uint8 u, uint8 v, uint32 rgba) {
+    this->vertexData[index][0] = (v << 24) | (u << 16) | (y << 8) | x;
+    this->vertexData[index][1] = rgba;
     return index + 1;
 }
 

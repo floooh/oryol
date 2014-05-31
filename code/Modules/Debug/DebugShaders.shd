@@ -13,17 +13,16 @@
 //
 @vs vsText
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display
-@in vec2 position
-@in vec2 texcoord0
+@in vec4 position   // x: cursorX, y: cursorY, z: fontX, w: fontY
 @in vec4 color0
 @out vec2 uv
 @out vec4 color
 void main() {
-    vec2 screenPos = position * glyphSize;
+    vec2 screenPos = position.xy * glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
     $position = vec4(screenPos, 0.0, 1.0);
-    uv = texcoord0 * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
+    uv = position.zw * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
     color = color0;
 }
 @end
