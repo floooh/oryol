@@ -107,7 +107,12 @@ WideString::WideString(WideString&& rhs) {
     rhs.data = 0;
     rhs.strPtr = 0;
 }
-    
+
+//------------------------------------------------------------------------------
+WideString::~WideString() {
+    this->release();
+}
+
 //------------------------------------------------------------------------------
 void
 WideString::operator=(const wchar_t* str) {

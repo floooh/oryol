@@ -39,6 +39,9 @@ public:
     /// move constructor (does not allocate)
     WideString(WideString&& rhs);
     
+    /// destructor
+    ~WideString();
+    
     /// assign from wchar_t string (allocates!)
     void operator=(const wchar_t* cstr);
     /// assign from std::wstring (allocates!)

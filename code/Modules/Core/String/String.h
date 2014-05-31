@@ -53,6 +53,9 @@ public:
     /// move constructor (does not allocate)
     String(String&& rhs);
     
+    /// destructor
+    ~String();
+    
     /// assign from C string (allocates!)
     void operator=(const char* cstr);
     /// assign from std::string (allocates!)
