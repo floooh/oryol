@@ -5,12 +5,6 @@
 //------------------------------------------------------------------------------
 //  text vertex shader
 //
-//  The vertex position is 2 shorts, the cursor X and Y position on
-//  a raster with one cell per character.
-//
-//  The vertex texcoord0 is 2 shorts, where u is the X index into the
-//  font texture and Y is either 1 (top) or 0 (bottom).
-//
 @vs vsText
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display
 @in vec4 position   // x: cursorX, y: cursorY, z: fontX, w: fontY
