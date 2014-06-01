@@ -242,6 +242,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         Log::Warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
     }
+    this->glStateWrapper->InvalidateTextureState();
     
     // setup texture attrs and set on texture
     TextureAttrs attrs;
