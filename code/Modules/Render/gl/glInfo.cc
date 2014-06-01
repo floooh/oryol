@@ -30,16 +30,22 @@ glInfo::PrintInfo() {
 void
 glInfo::PrintString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLine) {
     o_assert(name);
-    String str = (const char*) ::glGetString(glEnum);
+    const char* rawStr = (const char*) ::glGetString(glEnum);
     ORYOL_GL_CHECK_ERROR();
-    if (replaceSpaceWithNewLine) {
-        StringBuilder strBuilder;
-        strBuilder.Append(" ");
-        strBuilder.Append(str);
-        strBuilder.SubstituteAll(" ", "\n");
-        str = strBuilder.GetString();
+    if (rawStr) {
+        String str(rawStr);
+        if (replaceSpaceWithNewLine) {
+            StringBuilder strBuilder;
+            strBuilder.Append(" ");
+            strBuilder.Append(str);
+            strBuilder.SubstituteAll(" ", "\n");
+            str = strBuilder.GetString();
+        }
+        Log::Info("%s: %s\n", name, str.AsCStr());
     }
-    Log::Info("%s: %s\n", name, str.AsCStr());
+    else {
+        Log::Warn("::glGetString() returned nullptr!\n");
+    }
 }
 
 //------------------------------------------------------------------------------
