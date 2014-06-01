@@ -14,6 +14,7 @@ using namespace Core;
 
 bool glExt::isValid = false;
 bool glExt::extensions[NumExtensions] = { false };
+GLint glExt::maxVertexAttribs = 0;
     
 //------------------------------------------------------------------------------
 void
@@ -35,7 +36,7 @@ glExt::Setup() {
     // to be an error
     extensions[VertexArrayObject] = true;
     #elif ORYOL_PNACL
-    // vertex array objects isn't actually supported on NaCl even though the 
+    // PNaCl: vertex array objects isn't actually supported on NaCl even though the
     // extension is listed in the returned extensions string
     extensions[VertexArrayObject] = false;
     #else
@@ -43,12 +44,23 @@ glExt::Setup() {
     ORYOL_GL_CHECK_ERROR();
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     #endif
+    
+    #if ORYOL_USE_GLGETATTRIBLOCATION
+    // If forced to use GetAttribLocation, VertexArrayObject must be disabled as
+    // well since VertexArrayObject code path depends on BindAttribLocation
+    extensions[VertexArrayObject] = false;
+    #endif
 
     // put warnings to the console for extensions that we expect but are not
     // provides
     if (!extensions[VertexArrayObject]) {
         Log::Warn("glExt::Setup(): vertex_array_object extension not found!\n");
     }
+    
+    // get implementation-specific values
+    ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+    o_assert(maxVertexAttribs > 0);
+    Log::Info("GL_MAX_VERTEX_ATTRIBS is: %d\n", maxVertexAttribs);
 }
 
 //------------------------------------------------------------------------------

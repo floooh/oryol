@@ -8,6 +8,7 @@
 #include "Render/Core/shaderPool.h"
 #include "Render/Core/shaderFactory.h"
 #include "Render/gl/gl_impl.h"
+#include "Render/gl/glExt.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
@@ -68,7 +69,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
 
     #if ORYOL_OPENGLES2
     const ShaderLang::Code slang = ShaderLang::GLSL100;
-    #elif ORYOL_OSX
+    #elif ORYOL_MACOS
     const ShaderLang::Code slang = ShaderLang::GLSL150;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
@@ -122,10 +123,13 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // bind vertex attribute locations
         /// @todo: would be good to optimize this to only bind
         /// attributes which exist in the shader (may be with more shader source generation)
+        #if !ORYOL_USE_GLGETATTRIBLOCATION
+        o_assert(VertexAttr::NumVertexAttrs <= glExt::GetMaxVertexAttribs());
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
         }
         ORYOL_GL_CHECK_ERROR();
+        #endif
         
         // link the program
         ::glLinkProgram(glProg);
@@ -181,7 +185,16 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
                 ::glUniform1i(glLocation, samplerIndex++);
             }
         }
+        
+        #if ORYOL_USE_GLGETATTRIBLOCATION
+        // resolve attrib locations
+        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+            GLint loc = ::glGetAttribLocation(glProg, VertexAttr::ToString((VertexAttr::Code)i));
+            progBundle.bindAttribLocation(progIndex, (VertexAttr::Code)i, loc);
+        }
+        #endif
     }
+    this->glStateWrapper->InvalidateProgramState();
     
     // at this point the whole programBundle object has been successfully setup
     progBundle.setState(Resource::State::Valid);

@@ -13,8 +13,6 @@ class glRenderMgr : public renderMgrBase {
 public:
     /// apply the current render target
     void ApplyRenderTarget(texture* rt);
-    /// apply the current mesh object
-    void ApplyMesh(mesh* mesh);
     /// apply the current program object
     void ApplyProgram(programBundle* progBundle, uint32 selectionMask);
     /// apply a texture sampler variable (special case)

@@ -1,6 +1,29 @@
 #-------------------------------------------------------------------------------
 #   oryol Render module
 #-------------------------------------------------------------------------------
+
+# 
+# This option forces the use of glGetAttribLocation() instead of
+# glBindAttribLocation() to bind vertex components to shader 
+# vertex attributes. This must be used on platforms where
+# GL_MAX_VERTEX_ATTRS is less then 16 (the only platform with this
+# restriction so far seems to be the Raspberry Pi). This option
+# is mutually exclusive with vertex array objects.
+#
+option(ORYOL_USE_GLGETATTRIBLOCATION "Use glGetAttribLocation instead of glBindAttribLocation" OFF)
+
+# on MacOS, GLGETATTRIBLOCATION must always be false because the
+# OpenGL3 Core Profile is used
+if (ORYOL_MACOS)
+    message("=> Forcing ORYOL_USE_GLGETATTRIBLOCATION to off on MacOS")
+    set(ORYOL_USE_GLGETATTRIBLOCATION OFF CACHE BOOL "Use glGetAttribLocation instead of glBindAttribLocation" FORCE)
+endif()    
+if (ORYOL_USE_GLGETATTRIBLOCATION)
+    add_definitions(-DORYOL_USE_GLGETATTRIBLOCATION=1)
+else()
+    add_definitions(-DORYOL_USE_GLGETATTRIBLOCATION=0)    
+endif()
+
 oryol_begin_module(Render)
 oryol_sources(. Attrs Core Setup Types Util base gl)
 oryol_sources_emscripten(egl)

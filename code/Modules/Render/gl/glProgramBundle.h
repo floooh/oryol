@@ -27,6 +27,10 @@ public:
     void bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
     void bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
+    #if ORYOL_USE_GLGETATTRIBLOCATION
+    /// bind a vertex attribute location
+    void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
+    #endif
     
     /// select program in the bundle
     bool selectProgram(uint32 mask);
@@ -38,6 +42,10 @@ public:
     GLint getUniformLocation(int32 slotIndex) const;
     /// get sampler location by slot index in currently selected program (-1 if not exists)
     int32 getSamplerIndex(int32 slotIndex) const;
+    #if ORYOL_USE_GLGETATTRIBLOCATION
+    /// get a vertex attribute location
+    GLint getAttribLocation(VertexAttr::Code attrib) const;
+    #endif
     
     /// get number of programs
     int32 getNumPrograms() const;
@@ -53,6 +61,9 @@ private:
         GLuint program;
         GLint uniformMapping[MaxNumUniforms];
         int32 samplerMapping[MaxNumUniforms];
+        #if ORYOL_USE_GLGETATTRIBLOCATION
+        GLint attribMapping[VertexAttr::NumVertexAttrs];
+        #endif
     };
     uint32 selMask;
     int32 selIndex;
@@ -101,6 +112,15 @@ glProgramBundle::getSamplerIndex(int32 slotIndex) const {
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
     return this->programEntries[this->selIndex].samplerMapping[slotIndex];
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_USE_GLGETATTRIBLOCATION
+inline GLint
+glProgramBundle::getAttribLocation(VertexAttr::Code attrib) const {
+    o_assert_range_dbg(attrib, VertexAttr::NumVertexAttrs);
+    return this->programEntries[this->selIndex].attribMapping[attrib];
+}
+#endif
     
 } // namespace Render
 } // namespace Oryol

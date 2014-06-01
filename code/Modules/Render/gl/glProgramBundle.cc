@@ -36,6 +36,11 @@ glProgramBundle::clear() {
             entry.uniformMapping[i] = -1;
             entry.samplerMapping[i] = -1;
         }
+        #if ORYOL_USE_GLGETATTRIBLOCATION
+        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+            entry.attribMapping[i] = -1;
+        }
+        #endif
     }
 }
 
@@ -71,6 +76,15 @@ glProgramBundle::bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUn
     this->programEntries[progIndex].samplerMapping[slotIndex] = samplerIndex;
 }
 
+//------------------------------------------------------------------------------
+#if ORYOL_USE_GLGETATTRIBLOCATION
+void
+glProgramBundle::bindAttribLocation(int32 progIndex, VertexAttr::Code attr, GLint location) {
+    o_assert_range(progIndex, this->numProgramEntries);
+    o_assert_range(attr, VertexAttr::NumVertexAttrs);
+    this->programEntries[progIndex].attribMapping[attr] = location;
+}
+#endif
 
 //------------------------------------------------------------------------------
 int32

@@ -62,7 +62,7 @@ glShaderFactory::SetupResource(shader& shd) {
     
     #if ORYOL_OPENGLES2
     const ShaderLang::Code slang = ShaderLang::GLSL100;
-    #elif ORYOL_OSX 
+    #elif ORYOL_MACOS
     const ShaderLang::Code slang = ShaderLang::GLSL150;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;

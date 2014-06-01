@@ -34,13 +34,6 @@ glRenderMgr::ApplyRenderTarget(texture* rt) {
 
 //------------------------------------------------------------------------------
 void
-glRenderMgr::ApplyMesh(mesh* msh) {
-    renderMgrBase::ApplyMesh(msh);
-    this->stateWrapper->BindMesh(msh);
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderMgr::ApplyProgram(programBundle* progBundle, uint32 selMask) {
     renderMgrBase::ApplyProgram(progBundle, selMask);
     this->stateWrapper->BindProgram(progBundle);
@@ -297,6 +290,9 @@ void
 glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->curMesh);
+    
+    // bind mesh and program, this will be filtered if redundant
+    this->stateWrapper->BindMesh(this->curMesh, this->curProgramBundle);
     
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();

@@ -76,8 +76,6 @@ public:
     void BindIndexBuffer(GLuint ib);
     /// bind vertex array object
     void BindVertexArrayObject(GLuint vao);
-    /// bind complete mesh object
-    void BindMesh(const mesh* msh);
     
     /// invalidate program state
     void InvalidateProgramState();
@@ -90,6 +88,9 @@ public:
     void InvalidateTextureState();
     /// bind a texture to a sampler index
     void BindTexture(int32 samplerIndex, GLenum target, GLuint tex);
+
+    /// bind mesh, program may be needed for vertex attrib binding
+    void BindMesh(const mesh* msh, const programBundle* progBundle);
     
 private:
     
