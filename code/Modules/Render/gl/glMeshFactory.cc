@@ -119,6 +119,7 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetVertexBuffer(vb);
+    this->glStateWrapper->InvalidateMeshState();
 }
 
 //------------------------------------------------------------------------------
@@ -143,6 +144,7 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, me
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glUsage);
     ORYOL_GL_CHECK_ERROR();
     outMesh.glSetIndexBuffer(ib);
+    this->glStateWrapper->InvalidateMeshState();    
 }
 
 //------------------------------------------------------------------------------
@@ -196,8 +198,9 @@ glMeshFactory::glSetupVertexAttrs(mesh& mesh) {
 
     // first disable all attrs
     for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        mesh.glAttr(i).enabled = GL_FALSE;
-        mesh.glAttr(i).index = i;
+        glVertexAttr& glAttr = mesh.glAttr(i);
+        glAttr.enabled = GL_FALSE;
+        glAttr.index = i;
     }
     
     // now go through the vertex layout attributes and setup GL values
