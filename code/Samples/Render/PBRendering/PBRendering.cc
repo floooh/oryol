@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
+#include "Debug/DebugFacade.h"
 #include "Render/RenderFacade.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/RawMeshLoader.h"
@@ -11,6 +12,7 @@
 
 using namespace Oryol;
 using namespace Oryol::Core;
+using namespace Oryol::Debug;
 using namespace Oryol::Render;
 
 // derived application class
@@ -25,6 +27,7 @@ private:
     void applyDirLight() const;
 
     RenderFacade* render;
+    DebugFacade* debug;
     Resource::Id meshId;
     Resource::Id stateId;
     Resource::Id progId;
@@ -36,6 +39,7 @@ OryolMain(PBRenderingApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnInit() {
+    this->debug  = DebugFacade::CreateSingle();
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(1024, 600, "Oryol PBR Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
     
@@ -91,6 +95,9 @@ PBRenderingApp::applyTransforms(const glm::vec3& pos) const {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnRunning() {
+    
+    this->debug->Print("\n Work in progress!");
+    
     // render one frame
     if (this->render->BeginFrame()) {
     
@@ -105,6 +112,7 @@ PBRenderingApp::OnRunning() {
         this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
         this->render->Draw(1);
         
+        this->debug->DrawTextBuffer();
         this->render->EndFrame();
     }
     
@@ -119,6 +127,8 @@ PBRenderingApp::OnCleanup() {
     this->render->DiscardResource(this->meshId);
     this->render->DiscardResource(this->progId);
     this->render = nullptr;
+    this->debug  = nullptr;
+    DebugFacade::DestroySingle();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
