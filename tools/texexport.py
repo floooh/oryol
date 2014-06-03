@@ -10,6 +10,7 @@ import subprocess
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 TexSrcDirectory = ProjectDirectory + '/data'
 TexDstDirectory = ProjectDirectory + '/build/webpage'
+PVRToolPath = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/texturetool'
 
 #-------------------------------------------------------------------------------
 def error(msg) :
@@ -24,6 +25,19 @@ def configure(projDir, texSrcDir, texDstDir) :
     ProjectDirectory = projDir
     TexSrcDirectory = projDir + '/' + texSrcDir
     TexDstDirectory = projDir + '/' + texDstDir
+
+#-------------------------------------------------------------------------------
+def testPvrTool() :
+    '''
+    Checks whether the OSX PowerVR texturetool is available.
+    '''
+    try:
+        out = subprocess.check_output([PVRToolPath, '-h'])
+        print 'iOS SDK texturetool found'
+        return True
+    except OSError:
+        print 'iOS SDK texturetool: NOT FOUND'
+        return False
 
 #-------------------------------------------------------------------------------
 def getToolsBinPath() :
@@ -96,6 +110,18 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
+def toPVR(srcFilename, dstFilename, bitsPerPixel) :
+    '''
+    Convert a file to DDS format
+    '''
+    ensureDstDirectory()
+    srcPath = TexSrcDirectory + '/' + srcFilename
+    dstPath = TexDstDirectory + '/' + dstFilename
+    print '=== toPVR: {} => {}:'.format(srcPath, dstPath)
+    cmdLine = [PVRToolPath, '-m', '-e', 'PVRTC', '--bits-per-pixel-' + bitsPerPixel, '-f', 'PVR', '-o', dstPath, srcPath]
+    subprocess.call(args=cmdLine)
+
+#-------------------------------------------------------------------------------
 def exportSampleTextures() :
     # default gamma 2.2
     toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
@@ -129,6 +155,10 @@ def exportSampleTextures() :
     toDDS('lok256.jpg', 'lok_linear_abgr1555.dds', True, 'rgb', 'abgr1555')
     toCubeDDS('RomeChurch', 'jpg', 'romechurch_linear_dxt1.dds', True, 'bc1')
 
+    # PVRTC
+    if testPvrTool():
+        toPVR('lok256.jpg', 'lok_bpp2.pvr', "2")
+        toPVR('lok256.jpg', 'lok_bpp4.pvr', "4")
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
