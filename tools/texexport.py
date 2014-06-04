@@ -10,7 +10,9 @@ import subprocess
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 TexSrcDirectory = ProjectDirectory + '/data'
 TexDstDirectory = ProjectDirectory + '/build/webpage'
-PVRToolPath = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/texturetool'
+
+# NOTE: PVRTexTools supports a lot more formats!
+PVRFormats = ['PVRTC1_2', 'PVRTC1_4', 'PVRTC1_2_RGB', 'PVRTC1_4_RGB', 'PVRTC2_2', 'PVRTC2_4']
 
 #-------------------------------------------------------------------------------
 def error(msg) :
@@ -25,19 +27,6 @@ def configure(projDir, texSrcDir, texDstDir) :
     ProjectDirectory = projDir
     TexSrcDirectory = projDir + '/' + texSrcDir
     TexDstDirectory = projDir + '/' + texDstDir
-
-#-------------------------------------------------------------------------------
-def testPvrTool() :
-    '''
-    Checks whether the OSX PowerVR texturetool is available.
-    '''
-    try:
-        out = subprocess.check_output([PVRToolPath, '-h'])
-        print 'iOS SDK texturetool found'
-        return True
-    except OSError:
-        print 'iOS SDK texturetool: NOT FOUND'
-        return False
 
 #-------------------------------------------------------------------------------
 def getToolsBinPath() :
@@ -63,11 +52,11 @@ def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     Convert a file to DDS format
     '''
     ensureDstDirectory()
-    nvcompress = getToolsBinPath() + 'nvcompress'
+    ddsTool = getToolsBinPath() + 'nvcompress'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
     print '=== toDDS: {} => {}:'.format(srcPath, dstPath)
-    cmdLine = [nvcompress, '-'+fmt]
+    cmdLine = [ddsTool, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
         cmdLine.append(rgbFmt)
@@ -84,7 +73,7 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     '''
     ensureDstDirectory()
     nvassemble = getToolsBinPath() + 'nvassemble'
-    nvcompress = getToolsBinPath() + 'nvcompress'
+    ddsTool = getToolsBinPath() + 'nvcompress'
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
     dstPath  = TexDstDirectory + '/' + dstFilename
 
@@ -99,7 +88,7 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     subprocess.call(args=cmdLine)
 
     # ...and compress/convert to the desired format
-    cmdLine = [nvcompress, '-'+fmt]
+    cmdLine = [ddsTool, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
         cmdLine.append(rgbFmt)
@@ -110,19 +99,57 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
-def toPVR(srcFilename, dstFilename, bitsPerPixel) :
+def toPVR(srcFilename, dstFilename, format) :
     '''
-    Convert a file to DDS format
+    Convert a file to PVR format
     '''
+    if format not in PVRFormats :
+        error('invalid PVR texture format {}!'.format(format))
+
     ensureDstDirectory()
+    pvrTool = getToolsBinPath() + 'PVRTexToolCLI'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
     print '=== toPVR: {} => {}:'.format(srcPath, dstPath)
-    cmdLine = [PVRToolPath, '-m', '-e', 'PVRTC', '--bits-per-pixel-' + bitsPerPixel, '-f', 'PVR', '-o', dstPath, srcPath]
+    cmdLine = [pvrTool, '-i', srcPath, '-o', dstPath, '-square', '+', '-pot', '+', '-m', '-mfilter', 'cubic', '-f', format ]
+    subprocess.call(args=cmdLine)
+
+#-------------------------------------------------------------------------------
+def toCubePVR(srcDir, srcExt, dstFilename, format) :
+    '''
+    Generate a cube map and convert to PVR
+    '''
+    if format not in PVRFormats :
+        error('invalid PVR texture format {}!'.format(format))
+
+    ensureDstDirectory()
+    pvrTool = getToolsBinPath() + 'PVRTexToolCLI'
+    srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
+    dstPath  = TexDstDirectory + '/' + dstFilename
+
+    print '=== toCubePVR: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+
+    cmdLine = [pvrTool, '-i']
+    inputFiles = ''
+    for src in srcFiles :
+        inputFiles += TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt + ','
+    inputFiles = inputFiles[:-1]
+    cmdLine.append(inputFiles)
+    cmdLine.append('-o')
+    cmdLine.append(dstPath)
+    cmdLine.append('-cube')
+    # cmdLine.append('+X,-X,+Y,-Y,+Z,-Z')
+    cmdLine.append('-m')
+    cmdLine.append('-mfilter')
+    cmdLine.append('cubic')
+    cmdLine.append('-f')
+    cmdLine.append(format)
+    print cmdLine
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
 def exportSampleTextures() :
+    '''
     # default gamma 2.2
     toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
     toDDS('lok256.jpg', 'lok_dxt3.dds', False, 'bc2')
@@ -156,9 +183,10 @@ def exportSampleTextures() :
     toCubeDDS('RomeChurch', 'jpg', 'romechurch_linear_dxt1.dds', True, 'bc1')
 
     # PVRTC
-    if testPvrTool():
-        toPVR('lok256.jpg', 'lok_bpp2.pvr', "2")
-        toPVR('lok256.jpg', 'lok_bpp4.pvr', "4")
+    toPVR('lok256.jpg', 'lok_bpp2.pvr', 'PVRTC1_2')
+    toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
+    '''
+    toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
