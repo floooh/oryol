@@ -18,6 +18,9 @@ public:
     /// extension enums
     enum Code {
         VertexArrayObject = 0,
+        TextureCompressionDXT = 1,
+        TextureCompressionPVR = 2,
+        TextureCompressionATC = 3,
 
         NumExtensions,
         InvalidExtension,
