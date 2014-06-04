@@ -31,6 +31,12 @@ glExt::Setup() {
         extensions[i] = false;
     }
     
+    #if !ORYOL_MACOS
+    Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
+    ORYOL_GL_CHECK_ERROR();
+    
+    #endif
+    
     #if ORYOL_MACOS
     // on OSX we're using the Core Profile where getting the extensions string seems
     // to be an error
@@ -40,12 +46,11 @@ glExt::Setup() {
     // PNaCl: vertex array objects isn't actually supported on NaCl even though the
     // extension is listed in the returned extensions string
     extensions[VertexArrayObject] = false;
+    #else
+    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     #endif
     
     #if !ORYOL_MACOS
-    Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
-    ORYOL_GL_CHECK_ERROR();
-    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     extensions[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                         strBuilder.Contains("_compressed_texture_s3tc");
     extensions[TextureCompressionPVR] = strBuilder.Contains("_texture_compression_pvrtc") ||
