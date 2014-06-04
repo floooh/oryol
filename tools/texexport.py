@@ -138,18 +138,15 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
     cmdLine.append('-o')
     cmdLine.append(dstPath)
     cmdLine.append('-cube')
-    # cmdLine.append('+X,-X,+Y,-Y,+Z,-Z')
     cmdLine.append('-m')
     cmdLine.append('-mfilter')
     cmdLine.append('cubic')
     cmdLine.append('-f')
     cmdLine.append(format)
-    print cmdLine
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
 def exportSampleTextures() :
-    '''
     # default gamma 2.2
     toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
     toDDS('lok256.jpg', 'lok_dxt3.dds', False, 'bc2')
@@ -185,7 +182,6 @@ def exportSampleTextures() :
     # PVRTC
     toPVR('lok256.jpg', 'lok_bpp2.pvr', 'PVRTC1_2')
     toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
-    '''
     toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
 
 #-------------------------------------------------------------------------------
