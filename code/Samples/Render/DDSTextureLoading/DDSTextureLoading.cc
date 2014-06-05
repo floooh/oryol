@@ -100,7 +100,7 @@ DDSTextureLoadingApp::OnInit() {
     stateSetup.AddState(Render::State::DepthTestEnabled, true);
     stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
     stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
+    stateSetup.AddState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 0.0f);
     this->state = this->render->CreateResource(stateSetup);
     
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
