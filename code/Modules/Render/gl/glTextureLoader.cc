@@ -139,7 +139,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
         {
             // PowerVR compressed format
             if (!glExt::HasExtension(glExt::TextureCompressionPVR)) {
-                Log::Warn("PVR texture format not supported for (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
+                Log::Warn("PVR texture format not supported (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
                 return false;
             }
         }
