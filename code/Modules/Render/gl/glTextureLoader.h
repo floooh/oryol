@@ -29,7 +29,7 @@ public:
     virtual void Load(texture& tex, const Core::Ptr<IO::Stream>& data) const override;
 private:
     /// create GL texture from gliml::context
-    void glCreateTexture(texture& tex, const gliml::context& ctx) const;
+    bool glCreateTexture(texture& tex, const gliml::context& ctx) const;
 };
 
 } // namespace Render

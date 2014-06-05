@@ -10,6 +10,7 @@
 #include "gliml/gliml.h"
 #include "IO/IOFacade.h"
 #include "Render/gl/glTypes.h"
+#include "Render/gl/glExt.h"
 #include "Render/Core/textureFactory.h"
 
 namespace Oryol {
@@ -25,13 +26,14 @@ bool
 glTextureLoader::Accepts(const texture& tex) const {
     o_assert(tex.GetState() == Resource::State::Setup);
 
-    // test the file extension
+    // test the file extension, we will accept and load anything, whether
+    // the compressed texture can actually be loaded is another question
     const char* loc = tex.GetSetup().GetLocator().Location().AsCStr();
-    if (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) {
+    if ((InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) ||
+        (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".pvr"))) {
         return true;
     }
     else {
-        /// @todo: add more compressed texture formats depending of target platform
         return false;
     }
 }
@@ -45,7 +47,11 @@ glTextureLoader::Accepts(const texture& tex, const Ptr<Stream>& data) const {
     // need to look at magic number
     if (data->Open(OpenMode::ReadOnly)) {
         const void* dataPtr = data->MapRead(nullptr);
-        if (gliml::is_dds(dataPtr, data->Size())) {
+        const int32 dataSize = data->Size();
+        if (gliml::is_dds(dataPtr, dataSize)) {
+            accepted = true;
+        }
+        else if (gliml::is_pvr(dataPtr, dataSize)) {
             accepted = true;
         }
         data->UnmapRead();
@@ -73,7 +79,7 @@ glTextureLoader::Load(texture& tex) const {
             if (tex.GetIORequest()->GetStatus() == IOStatus::OK) {
                 // forward to load-with-data method
                 this->Load(tex, tex.GetIORequest()->GetStream());
-                o_assert(tex.GetState() == Resource::State::Valid);
+                o_assert((tex.GetState() == Resource::State::Valid) || (tex.GetState() == Resource::State::Failed));
             }
             else {
                 // hmm loading the image data failed
@@ -95,18 +101,16 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
         const void* dataPtr = data->MapRead(nullptr);
         const int32 dataSize = data->Size();
         gliml::context ctx;
-        if (gliml::is_dds(dataPtr, dataSize)) {
-            if (ctx.load_dds(dataPtr, dataSize)) {
-                this->glCreateTexture(tex, ctx);
+        if (ctx.load(dataPtr, dataSize)) {
+            if (this->glCreateTexture(tex, ctx)) {
                 tex.setState(Resource::State::Valid);
             }
             else {
-                Log::Warn("glTextureLoader: failed to load DDS texture '%s'!\n", tex.GetSetup().GetLocator().Location().AsCStr());
                 tex.setState(Resource::State::Failed);
             }
         }
         else {
-            Log::Warn("glTextureLoader: unknown texture file format for '%s'!\n", tex.GetSetup().GetLocator().Location().AsCStr());
+            Log::Warn("glTextureLoader: failed to load texture '%s'!\n", tex.GetSetup().GetLocator().Location().AsCStr());
             tex.setState(Resource::State::Failed);
         }
         data->UnmapRead();
@@ -118,11 +122,43 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const {
     o_assert(this->texFactory);
     const TextureSetup& setup = tex.GetSetup();
     const GLenum glTexTarget = ctx.texture_target();
+    
+    // first check if the image is in a compressed format, and whether the
+    // matching compressed texture extension is supported
+    if (ctx.is_compressed()) {
+        const GLint glImageFormat = ctx.image_internal_format();
+        if ((glImageFormat == GLIML_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG) ||
+            (glImageFormat == GLIML_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG) ||
+            (glImageFormat == GLIML_GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG) ||
+            (glImageFormat == GLIML_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG))
+        {
+            // PowerVR compressed format
+            if (!glExt::HasExtension(glExt::TextureCompressionPVR)) {
+                Log::Warn("PVR texture format not supported for (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
+                return false;
+            }
+        }
+        else if ((glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ||
+                 (glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT) ||
+                 (glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT))
+        {
+            // DXT compressed format
+            if (!glExt::HasExtension(glExt::TextureCompressionDXT)) {
+                Log::Warn("DXT texture format not supported (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
+                return false;
+            }
+        }
+        else {
+            // unknown compressed format
+            Log::Warn("Unsupported compressed format (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
+            return false;
+        }
+    }
     
     // create a texture object
     GLuint glTex = this->texFactory->glGenAndBindTexture(glTexTarget);
@@ -150,9 +186,8 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
         #endif
     }
     ORYOL_GL_CHECK_ERROR();
-    
+
     // setup the image data in the texture
-    // FIXME: check for compressed texture extensions
     for (int32 faceIndex = 0; faceIndex < ctx.num_faces(); faceIndex++) {
         for (int32 mipIndex = 0; mipIndex < ctx.num_mipmaps(faceIndex); mipIndex++) {
             if (ctx.is_compressed()) {
@@ -250,6 +285,8 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     tex.glSetTexture(glTex);
     tex.glSetTarget(ctx.texture_target());
     tex.setState(Resource::State::Valid);
+    
+    return true;
 }
 
 } // namespace Render
