@@ -24,7 +24,7 @@ const char* fs_100_src =
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = vec4(_TEXTURE2D(tex, uv).xyz, 1.0);\n"
 "}\n"
 ;
 const char* vs_120_src = 
@@ -46,7 +46,7 @@ const char* fs_120_src =
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = vec4(_TEXTURE2D(tex, uv).xyz, 1.0);\n"
 "}\n"
 ;
 const char* vs_150_src = 
@@ -69,7 +69,7 @@ const char* fs_150_src =
 "in vec2 uv;\n"
 "out vec4 _FragColor;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = vec4(_TEXTURE2D(tex, uv).xyz, 1.0);\n"
 "}\n"
 ;
 Render::ProgramBundleSetup Main::CreateSetup() {

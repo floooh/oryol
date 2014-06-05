@@ -17,7 +17,7 @@ void main() {
 @uniform sampler2D tex Texture
 @in vec2 uv
 void main() {
-    $color = $texture2D(tex, uv);
+    $color = vec4($texture2D(tex, uv).xyz, 1.0);
 }
 @end
 

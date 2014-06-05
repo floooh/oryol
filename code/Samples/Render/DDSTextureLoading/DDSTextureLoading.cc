@@ -36,7 +36,7 @@ private:
     Resource::Id meshId;
     Resource::Id progId;
     Resource::Id state;
-    static const int32 NumTextures = 13;
+    static const int32 NumTextures = 15;
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
@@ -68,16 +68,18 @@ DDSTextureLoadingApp::OnInit() {
     this->texId[0]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
     this->texId[1]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
     this->texId[2]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
-    this->texId[3]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
-    this->texId[4]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
-    this->texId[5]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
-    this->texId[6]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
-    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
-    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
-    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
-    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
-    this->texId[11] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
-    this->texId[12] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
+    this->texId[3]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bpp2.pvr", texBluePrint));
+    this->texId[4]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bpp4.pvr", texBluePrint));
+    this->texId[5]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
+    this->texId[6]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
+    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
+    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
+    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
+    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
+    this->texId[11] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
+    this->texId[12] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
+    this->texId[13] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
+    this->texId[14] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
     // create a shape with uvs
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -131,9 +133,13 @@ DDSTextureLoadingApp::OnRunning() {
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {
             // dxt1, dxt3, dxt5
+            glm::vec3(-2.2f, +1.1f, 0.0f),
             glm::vec3(-1.1f, +1.1f, 0.0f),
             glm::vec3( 0.0f, +1.1f, 0.0f),
+            
+            // pvr2bpp pvr4bpp
             glm::vec3(+1.1f, +1.1f, 0.0f),
+            glm::vec3(+2.2f, +1.1f, 0.0f),
             
             // rgba8, bgra8, rgb8, bgr8
             glm::vec3(-1.65f, 0.0f, 0.0f),
@@ -158,9 +164,6 @@ DDSTextureLoadingApp::OnRunning() {
                     this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
                     this->render->ApplyVariable(Shaders::Main::Texture, tex);
                     this->render->Draw(0);
-                }
-                else if (resState == Resource::State::Failed) {
-                    Log::Warn("Failed to load texture resource!\n");
                 }
             }
         }

@@ -128,9 +128,6 @@ DDSCubeMapApp::OnRunning() {
             this->render->ApplyVariable(Shaders::Main::Texture, this->texId);
             this->render->Draw(0);
         }
-        else if (resState == Resource::State::Failed) {
-            Log::Warn("Failed to load texture resource!\n");
-        }
         this->render->EndFrame();
     }
     
