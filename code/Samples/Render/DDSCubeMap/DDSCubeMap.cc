@@ -66,7 +66,12 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.SetMagFilter(TextureFilterMode::Linear);
     texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
     texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
-    this->texId = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
+    if (this->render->Supports(Feature::TextureCompressionPVR)) {
+        this->texId = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));        
+    }
+    else {
+        this->texId = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
+    }
 
     // create a shape with normals
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
