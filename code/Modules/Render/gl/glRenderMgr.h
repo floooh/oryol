@@ -11,6 +11,8 @@ namespace Render {
     
 class glRenderMgr : public renderMgrBase {
 public:
+    /// test if an optional feature is supported
+    bool Supports(Feature::Code feat) const;
     /// apply the current render target
     void ApplyRenderTarget(texture* rt);
     /// apply the current program object

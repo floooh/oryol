@@ -7,6 +7,7 @@
 #include "Render/Core/stateWrapper.h"
 #include "Render/gl/glTypes.h"
 #include "Render/gl/gl_impl.h"
+#include "Render/gl/glExt.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -17,6 +18,21 @@
 
 namespace Oryol {
 namespace Render {
+
+//------------------------------------------------------------------------------
+bool
+glRenderMgr::Supports(Feature::Code feat) const {
+    switch (feat) {
+        case Feature::TextureCompressionDXT:
+            return glExt::HasExtension(glExt::TextureCompressionDXT);
+        case Feature::TextureCompressionPVR:
+            return glExt::HasExtension(glExt::TextureCompressionPVR);
+        case Feature::TextureCompressionATC:
+            return glExt::HasExtension(glExt::TextureCompressionATC);
+        default:
+            return false;
+    }
+}
 
 //------------------------------------------------------------------------------
 void

@@ -46,6 +46,8 @@ public:
     const RenderSetup& GetRenderSetup() const;
     /// get the current actual display attributes (can be different from setup)
     const DisplayAttrs& GetDisplayAttrs() const;
+    /// test if an optional feature is supported
+    bool Supports(Feature::Code feat) const;
         
     /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
@@ -191,6 +193,12 @@ RenderFacade::ApplyState(State::Code state, float32 v0, float32 v1, float32 v2, 
 template<class T> inline void
 RenderFacade::AttachLoader(Core::Ptr<T> loader) {
     this->resourceManager.AttachLoader(loader.get());
+}
+
+//------------------------------------------------------------------------------
+inline bool
+RenderFacade::Supports(Feature::Code feat) const {
+    return this->renderManager.Supports(feat);
 }
 
 } // namespace Render

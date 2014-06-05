@@ -549,6 +549,23 @@ public:
         InvalidShaderLang
     };
 };
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::Feature
+    @brief optional rendering features
+*/
+class Feature {
+public:
+    enum Code {
+        TextureCompressionDXT,      ///< GPU supports DXT compressed textures
+        TextureCompressionPVR,      ///< GPU supports PVR compressed textures
+        TextureCompressionATC,      ///< GPU supports ATC compressed textures
+        
+        NumFeatures,
+        InvalidFeature
+    };
+};
     
 } // namespace Render
 } // namespace Oryol
