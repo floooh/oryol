@@ -566,6 +566,68 @@ public:
         InvalidFeature
     };
 };
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::Face
+    @brief polygon face side (front, back, both)
+*/
+class Face {
+public:
+    enum Code {
+        Front = 0,
+        Back,
+        Both,
+        
+        NumSides = 2,
+        InvalidFace = -1
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::CompareFunc
+    @brief comparison modes for depth and stencil state
+*/
+class CompareFunc {
+public:
+    enum Code {
+        Never = 0,
+        Less,
+        Equal,
+        LessEqual,
+        Greater,
+        NotEqual,
+        GreaterEqual,
+        Always,
+        
+        NumCompareFunc,
+        InvalidCompareFunc,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::StencilOperation
+    @brief stencil operations
+*/
+class StencilOp {
+public:
+    enum Code {
+        Keep,
+        Zero,
+        Replace,
+        IncrClamp,
+        DecrClamp,
+        Invert,
+        IncrWrap,
+        DecrWrap,
+        
+        NumStencilOperations,
+        InvalidStencilOperation,
+    };
+};
+
     
 } // namespace Render
 } // namespace Oryol

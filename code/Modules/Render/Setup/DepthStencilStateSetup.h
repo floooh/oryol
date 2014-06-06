@@ -5,6 +5,7 @@
     @brief setup object for DepthStencilState resources
 */
 #include "Resource/Locator.h"
+#include "Render/Core/Enums.h"
 
 namespace Oryol {
 namespace Render {
@@ -19,28 +20,32 @@ public:
     /// set depth compare function
     void SetDepthCompareFunc(CompareFunc::Code f);
     /// get depth compare function
-    DepthFunc::Code GetDepthCompareFunc() const;
+    CompareFunc::Code GetDepthCompareFunc() const;
     /// enable/disable depth write
     void SetDepthWriteEnabled(bool b);
     /// get depth write enabled/disabed
     bool GetDepthWriteEnabled() const;
     
+    /// set stencil test enabled/disabled
+    void SetStencilTestEnabled(Face::Code sides, bool b);
+    /// get stencil test enabled/disabled
+    bool GetStencilTestEnabled(Face::Code side) const;
     /// set stencil fail stencil operation
-    void SetStencilFailOp(Face::Code sides, StencilOperation::Code op);
+    void SetStencilFailOp(Face::Code sides, StencilOp::Code op);
     /// get stencil failure stencil operation
-    StencilOperation::Code GetStencilFailOp(Face::Code side) const;
+    StencilOp::Code GetStencilFailOp(Face::Code side) const;
     /// set depth fail stencil operation
-    void SetDepthFailOp(Face::Code sides, StencilOperation::Code op);
+    void SetDepthFailOp(Face::Code sides, StencilOp::Code op);
     /// get depth fail stencil operation
-    StencilOperation::Code GetDepthFailOp(Face::Code side) const;
+    StencilOp::Code GetDepthFailOp(Face::Code side) const;
     /// set depth/stencil pass stencil operation
-    void SetDepthStencilPassOp(Face:Code sides, StencilOperation::Code op);
+    void SetDepthStencilPassOp(Face::Code sides, StencilOp::Code op);
     /// get depth/stencil pass stencil operation
-    StencilOperation::Code GetDepthStencilPassOp(Face::Code side) const;
+    StencilOp::Code GetDepthStencilPassOp(Face::Code side) const;
     /// set stencil compare function
-    void SetStencilCompareFunc(Face::Code side, CompareFunc::Code f);
+    void SetStencilCompareFunc(Face::Code sides, CompareFunc::Code f);
     /// get stencil compare function
-    CompareFunc::Code GetStencilCompareFunc() const;
+    CompareFunc::Code GetStencilCompareFunc(Face::Code side) const;
     /// set stencil read mask
     void SetStencilReadMask(Face::Code sides, uint32 mask);
     /// get stencil read mask
@@ -55,14 +60,76 @@ private:
     CompareFunc::Code depthCompareFunc;
     bool depthWriteEnabled;
     struct {
-        StencilOperation::Code stencilFailOp;
-        StencilOperation::Code depthFailOp;
-        StencilOperation::Code depthStencilPassOp;
+        bool stencilTestEnabled;
+        StencilOp::Code stencilFailOp;
+        StencilOp::Code depthFailOp;
+        StencilOp::Code depthStencilPassOp;
         CompareFunc::Code stencilCompareFunc;
         uint32 stencilReadMask;
         uint32 stencilWriteMask;
     } stencilState[Face::NumSides];
 };
+
+//------------------------------------------------------------------------------
+inline CompareFunc::Code
+DepthStencilStateSetup::GetDepthCompareFunc() const {
+    return this->depthCompareFunc;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+DepthStencilStateSetup::GetDepthWriteEnabled() const {
+    return this->depthWriteEnabled;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+DepthStencilStateSetup::GetStencilTestEnabled(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilTestEnabled;;
+}
+
+//------------------------------------------------------------------------------
+inline StencilOp::Code
+DepthStencilStateSetup::GetStencilFailOp(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilFailOp;
+}
+
+//------------------------------------------------------------------------------
+inline StencilOp::Code
+DepthStencilStateSetup::GetDepthFailOp(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].depthFailOp;
+}
+
+//------------------------------------------------------------------------------
+inline StencilOp::Code
+DepthStencilStateSetup::GetDepthStencilPassOp(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].depthStencilPassOp;
+}
+
+//------------------------------------------------------------------------------
+inline CompareFunc::Code
+DepthStencilStateSetup::GetStencilCompareFunc(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilCompareFunc;
+}
+
+//------------------------------------------------------------------------------
+inline uint32
+DepthStencilStateSetup::GetStencilReadMask(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilReadMask;
+}
+
+//------------------------------------------------------------------------------
+inline uint32
+DepthStencilStateSetup::GetStencilWriteMask(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilWriteMask;
+}
     
 } // namespace Render
 } // namespace Oryol
