@@ -11,6 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
+#include "Render/Core/DepthStencilState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 #include "Render/Core/programBundle.h"
@@ -35,6 +36,8 @@ public:
     /// return true if the state wrapper has been setup
     bool IsValid() const;
     
+    /// apply depth-stencil state
+    void ApplyDepthStencilState(depthStencilState* dss);
     /// apply state block
     void ApplyStateBlock(stateBlock* sb);
     /// apply state
@@ -109,6 +112,8 @@ private:
     
     /// setup the jump table
     void setupJumpTable();
+    /// setup the initial depth-stencil-state
+    void setupDepthStencilState();
     /// FontFace state function
     void onFrontFace(const State::Vector& input);
     /// CullFaceEnabled state function
@@ -173,6 +178,20 @@ private:
     bool isValid;
 
     Function funcs[State::NumStateCodes];
+    
+    struct {
+        CompareFunc::Code depthCompareFunc;
+        bool depthWriteEnabled;
+        bool stencilTestEnabled;
+        struct {
+            StencilOp::Code stencilFailOp;
+            StencilOp::Code depthFailOp;
+            StencilOp::Code depthStencilPassOp;
+            CompareFunc::Code stencilCompareFunc;
+            uint32 stencilReadMask;
+            uint32 stencilWriteMask;
+        } stencilState[Face::NumSides];
+    } curDepthStencilState;
     
     GLenum curFrontFaceMode;
     bool curCullFaceEnabled;

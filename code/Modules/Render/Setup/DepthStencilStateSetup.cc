@@ -10,9 +10,9 @@ namespace Render {
 //------------------------------------------------------------------------------
 DepthStencilStateSetup::DepthStencilStateSetup() :
 depthCompareFunc(CompareFunc::Always),
-depthWriteEnabled(false) {
+depthWriteEnabled(false),
+stencilTestEnabled(false) {
     for (int32 i = 0; i < Face::NumSides; i++) {
-        this->stencilState[i].stencilTestEnabled    = false;
         this->stencilState[i].stencilFailOp         = StencilOp::Keep;
         this->stencilState[i].depthFailOp           = StencilOp::Keep;
         this->stencilState[i].depthStencilPassOp    = StencilOp::Keep;
@@ -35,6 +35,12 @@ DepthStencilStateSetup::SetDepthWriteEnabled(bool b) {
 }
 
 //------------------------------------------------------------------------------
+void
+DepthStencilStateSetup::SetStencilTestEnabled(bool b) {
+    this->stencilTestEnabled = b;
+}
+
+//------------------------------------------------------------------------------
 #define __SET_STENCIL_STATE(sides, state, val) \
     if (sides > Face::Both) {\
         this->stencilState[Face::Front].state = val; \
@@ -46,18 +52,11 @@ DepthStencilStateSetup::SetDepthWriteEnabled(bool b) {
 
 //------------------------------------------------------------------------------
 void
-DepthStencilStateSetup::SetStencilTestEnabled(Face::Code sides, bool b) {
-    o_assert_dbg(sides >= 0);
-    __SET_STENCIL_STATE(sides, stencilTestEnabled, b);
-}
-
-//------------------------------------------------------------------------------
-void
 DepthStencilStateSetup::SetStencilFailOp(Face::Code sides, StencilOp::Code op) {
     o_assert_dbg(sides >= 0);
     __SET_STENCIL_STATE(sides, stencilFailOp, op);
 }
-
+    
 //------------------------------------------------------------------------------
 void
 DepthStencilStateSetup::SetDepthFailOp(Face::Code sides, StencilOp::Code op) {

@@ -25,11 +25,11 @@ public:
     void SetDepthWriteEnabled(bool b);
     /// get depth write enabled/disabed
     bool GetDepthWriteEnabled() const;
-    
     /// set stencil test enabled/disabled
-    void SetStencilTestEnabled(Face::Code sides, bool b);
+    void SetStencilTestEnabled(bool b);
     /// get stencil test enabled/disabled
-    bool GetStencilTestEnabled(Face::Code side) const;
+    bool GetStencilTestEnabled() const;
+    
     /// set stencil fail stencil operation
     void SetStencilFailOp(Face::Code sides, StencilOp::Code op);
     /// get stencil failure stencil operation
@@ -59,8 +59,8 @@ private:
     Resource::Locator loc;
     CompareFunc::Code depthCompareFunc;
     bool depthWriteEnabled;
+    bool stencilTestEnabled;
     struct {
-        bool stencilTestEnabled;
         StencilOp::Code stencilFailOp;
         StencilOp::Code depthFailOp;
         StencilOp::Code depthStencilPassOp;
@@ -84,9 +84,8 @@ DepthStencilStateSetup::GetDepthWriteEnabled() const {
 
 //------------------------------------------------------------------------------
 inline bool
-DepthStencilStateSetup::GetStencilTestEnabled(Face::Code side) const {
-    o_assert_range_dbg(side, Face::NumSides);
-    return this->stencilState[side].stencilTestEnabled;;
+DepthStencilStateSetup::GetStencilTestEnabled() const {
+    return this->stencilTestEnabled;
 }
 
 //------------------------------------------------------------------------------

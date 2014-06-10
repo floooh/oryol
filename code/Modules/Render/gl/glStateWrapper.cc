@@ -29,8 +29,8 @@ curScissorBottom(0),
 curScissorWidth(-1),
 curScissorHeight(-1),
 curStencilTestEnabled(false),
-curDepthTestEnabled(false),
-curDepthFunc(GL_LESS),
+curDepthTestEnabled(true),
+curDepthFunc(GL_ALWAYS),
 curBlendEnabled(false),
 curBlendEquationRGB(GL_FUNC_ADD),
 curBlendEquationAlpha(GL_FUNC_ADD),
@@ -47,7 +47,7 @@ curColorMaskR(true),
 curColorMaskG(true),
 curColorMaskB(true),
 curColorMaskA(true),
-curDepthMask(true),
+curDepthMask(false),
 curClearColorR(0.0f),
 curClearColorG(0.0f),
 curClearColorB(0.0f),
@@ -94,7 +94,7 @@ glStateWrapper::Setup() {
     Log::Warn("glStateWrapper: ORYOL_USE_GLGETATTRIBLOCATION is ON\n");
     #endif
 
-    /// @todo: this must initialize GL to the default state
+    this->setupDepthStencilState();
 }
 
 //------------------------------------------------------------------------------
@@ -108,6 +108,30 @@ glStateWrapper::Discard() {
 bool
 glStateWrapper::IsValid() const {
     return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::setupDepthStencilState() {
+    this->curDepthStencilState.depthCompareFunc = CompareFunc::Always;
+    this->curDepthStencilState.depthWriteEnabled = false;
+    this->curDepthStencilState.stencilTestEnabled = false;
+    for (int32 i = 0; i < Face::NumSides; i++) {
+        this->curDepthStencilState.stencilState[i].stencilFailOp      = StencilOp::Keep;
+        this->curDepthStencilState.stencilState[i].depthFailOp        = StencilOp::Keep;
+        this->curDepthStencilState.stencilState[i].depthStencilPassOp = StencilOp::Keep;
+        this->curDepthStencilState.stencilState[i].stencilCompareFunc = CompareFunc::Always;
+        this->curDepthStencilState.stencilState[i].stencilReadMask    = 0xFFFFFFFF;
+        this->curDepthStencilState.stencilState[i].stencilWriteMask   = 0xFFFFFFFF;
+    }
+    ::glEnable(GL_DEPTH_TEST);
+    ::glDepthFunc(GL_ALWAYS);
+    ::glDepthMask(GL_FALSE);
+    ::glDisable(GL_STENCIL_TEST);
+    ::glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+    ::glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    ::glStencilMask(0xFFFFFFFF);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
