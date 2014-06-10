@@ -11,7 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
-#include "Render/Core/DepthStencilState.h"
+#include "Render/Core/depthStencilState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 #include "Render/Core/programBundle.h"
