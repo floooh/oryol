@@ -54,6 +54,9 @@ public:
     void SetStencilWriteMask(Face::Code sides, uint32 mask);
     /// get stencil write mask
     uint32 GetStencilWriteMask(Face::Code side) const;
+
+    /// get the resource locator
+    const Resource::Locator& GetLocator() const;
     
 private:
     Resource::Locator loc;
@@ -69,6 +72,12 @@ private:
         uint32 stencilWriteMask;
     } stencilState[Face::NumSides];
 };
+
+//------------------------------------------------------------------------------
+inline const Resource::Locator&
+DepthStencilStateSetup::GetLocator() const {
+    return this->loc;
+}
 
 //------------------------------------------------------------------------------
 inline CompareFunc::Code

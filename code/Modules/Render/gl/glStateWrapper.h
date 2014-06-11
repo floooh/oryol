@@ -37,9 +37,9 @@ public:
     bool IsValid() const;
     
     /// apply depth-stencil state
-    void ApplyDepthStencilState(depthStencilState* dss);
+    void ApplyDepthStencilState(const depthStencilState* dss);
     /// apply state block
-    void ApplyStateBlock(stateBlock* sb);
+    void ApplyStateBlock(const stateBlock* sb);
     /// apply state
     void ApplyState(State::Code state, bool b0);
     /// apply state
@@ -175,6 +175,9 @@ private:
     /// DepthRange state function
     void onDepthRange(const State::Vector& input);
     
+    /// apply front/back side stencil state
+    void applyStencilState(const depthStencilState* dds, Face::Code face, GLenum glFace);
+
     bool isValid;
 
     Function funcs[State::NumStateCodes];
@@ -192,6 +195,9 @@ private:
             uint32 stencilWriteMask;
         } stencilState[Face::NumSides];
     } curDepthStencilState;
+    
+    static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
+    static GLenum mapStencilOp[StencilOp::NumStencilOperations];
     
     GLenum curFrontFaceMode;
     bool curCullFaceEnabled;

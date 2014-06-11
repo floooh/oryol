@@ -58,6 +58,8 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
     this->stateBlockFactory.Setup();
     this->stateBlockPool.Setup(&this->stateBlockFactory, setup.GetPoolSize(ResourceType::StateBlock), 0, 'SBLK');
+    this->depthStencilStateFactory.Setup();
+    this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
 }
@@ -68,6 +70,8 @@ resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     this->resourceRegistry.Discard();
+    this->depthStencilStatePool.Discard();
+    this->depthStencilStateFactory.Discard();
     this->stateBlockPool.Discard();
     this->stateBlockFactory.Discard();
     this->texturePool.Discard();
@@ -236,6 +240,24 @@ resourceMgr::CreateResource(const StateBlockSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
+template<> Id
+resourceMgr::CreateResource(const DepthStencilStateSetup& setup) {
+    o_assert(this->isValid);
+    const Locator& loc = setup.GetLocator();
+    Id resId = this->resourceRegistry.LookupResource(loc);
+    if (resId.IsValid()) {
+        o_assert(resId.Type() == ResourceType::DepthStencilState);
+        return resId;
+    }
+    else {
+        resId = this->depthStencilStatePool.AllocId();
+        this->resourceRegistry.AddResource(loc, resId);
+        this->depthStencilStatePool.Assign(resId, setup);
+        return resId;
+    }
+}
+
+//------------------------------------------------------------------------------
 Id
 resourceMgr::LookupResource(const Locator& loc) {
     o_assert(this->isValid);
@@ -268,6 +290,9 @@ resourceMgr::DiscardResource(const Id& resId) {
                 case ResourceType::ConstantBlock:
                     o_assert2(false, "FIXME!!!\n");
                     break;
+                case ResourceType::DepthStencilState:
+                    this->depthStencilStatePool.Unassign(removeId);
+                    break;
                 default:
                     o_assert(false);
                     break;
@@ -291,10 +316,11 @@ resourceMgr::QueryResourceState(const Id& resId) {
             return this->programBundlePool.QueryState(resId);
         case ResourceType::StateBlock:
             return this->stateBlockPool.QueryState(resId);
-            break;
         case ResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
             break;
+        case ResourceType::DepthStencilState:
+            return this->depthStencilStatePool.QueryState(resId);
         default:
             o_assert(false);
             break;

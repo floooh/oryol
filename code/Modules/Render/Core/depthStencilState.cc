@@ -1,17 +1,17 @@
 //------------------------------------------------------------------------------
-//  stateBlock.cc
+//  depthStencilState.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "stateBlock.h"
+#include "depthStencilState.h"
 
 namespace Oryol {
 namespace Render {
-    
+
 //------------------------------------------------------------------------------
 void
-stateBlock::clear() {
+depthStencilState::clear() {
     // empty
 }
-   
+
 } // namespace Render
 } // namespace Oryol

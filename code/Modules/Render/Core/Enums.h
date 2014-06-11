@@ -266,6 +266,7 @@ public:
         ProgramBundle,      ///< shader program bundle
         StateBlock,         ///< block of render states
         ConstantBlock,      ///< block constant shader uniforms
+        DepthStencilState,  ///< depth-stencil state block
         
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,
@@ -601,7 +602,7 @@ public:
         GreaterEqual,
         Always,
         
-        NumCompareFunc,
+        NumCompareFuncs,
         InvalidCompareFunc,
     };
 };

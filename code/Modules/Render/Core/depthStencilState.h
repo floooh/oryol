@@ -11,7 +11,9 @@ namespace Oryol {
 namespace Render {
     
 class depthStencilState : public Resource::resourceBase<DepthStencilStateSetup> {
-    // empty
+public:
+    /// clear the object
+    void clear();
 };
     
 } // namespace Render
