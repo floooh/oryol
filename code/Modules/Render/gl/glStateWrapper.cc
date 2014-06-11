@@ -14,7 +14,7 @@ namespace Render {
 
 using namespace Core;
 
-GLenum mapCompareFunc[CompareFunc::NumCompareFuncs] = {
+GLenum glStateWrapper::mapCompareFunc[CompareFunc::NumCompareFuncs] = {
     GL_NEVER,
     GL_LESS,
     GL_EQUAL,
@@ -25,7 +25,7 @@ GLenum mapCompareFunc[CompareFunc::NumCompareFuncs] = {
     GL_ALWAYS
 };
 
-GLenum mapStencilOp[StencilOp::NumStencilOperations] = {
+GLenum glStateWrapper::mapStencilOp[StencilOp::NumStencilOperations] = {
     GL_KEEP,
     GL_ZERO,
     GL_REPLACE,
