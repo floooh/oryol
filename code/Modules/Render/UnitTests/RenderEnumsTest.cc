@@ -221,11 +221,6 @@ TEST(VertexAttrTest) {
 }
 
 //------------------------------------------------------------------------------
-TEST(RenderResourceTypeTest) {
-    CHECK(ResourceType::NumResourceTypes == 6);
-}
-
-//------------------------------------------------------------------------------
 TEST(ShaderTypeTest) {
     CHECK(ShaderType::NumShaderTypes == 2);
     CHECK(ShaderType::VertexShader == GL_VERTEX_SHADER);
