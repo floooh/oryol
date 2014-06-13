@@ -303,15 +303,6 @@ public:
         ScissorTestEnabled,     ///< enable/disable scissor test (True, False)
         ScissorRect,            ///< the scissor rectangle (int left, int bottom, int left, int right)
         
-        StencilTestEnabled,     ///< whether stencil testing is enabled (True, False)
-        StencilFunc,            ///< the stencil func (func=Never/Always/Less/LessEqual/GreaterEqual/Greater/NotEqual, int ref, uint mask)
-        StencilFuncSeparate,    ///< separate stencil funcs for front/back (face=Front/Back/FrontAndBack, func=Never/Always/Less/LessEqual/GreaterEqual/Greater/NotEqual,int ref, uint mask)
-        StencilOp,              ///< stencil operation (sfail,dpfail,dppass=Keep/Zero/Replace/Incr/Decr/Invert/IncrWrap/DecrWrap)
-        StencilOpSeparate,      ///< separate stencil operations (face=Front/Back/FrontAndBack, sfail,dpfail,dppass=Keep/Zero/Replace/Incr/Decr/Invert/IncrWrap/DecrWrap)
-        
-        DepthTestEnabled,       ///< whether depth test is enabled (True, False)
-        DepthFunc,              ///< depth test function (Never/Always/Less/LessEqual/GreaterEqual/Greater/NotEqual)
-        
         BlendEnabled,           ///< whether alpha blending is enabled (True, False)
         BlendEquation,          ///< combined RGB/A blend mode (Add, Subtract, ReverseSubtract)
         BlendEquationSeparate,  ///< separate RGBA + A blend mode (rgb=Add/Subtract/ReverseSubtract, a=Add/Subtract/ReverseSubtract)
@@ -321,9 +312,6 @@ public:
         
         DitherEnabled,          ///< whether dithering is on (True, False)
         ColorMask,              ///< color channel write mask (4x True|False)
-        DepthMask,              ///< whether depth writes are enabled (True, False)
-        StencilMask,            ///< stencil write bit mask (uint)
-        StencilMaskSeparate,    ///< stencil write bit masks for polygon-side (face=Front|Back|FrontAndBack, uint mask)
         
         ClearColor,             ///< the clear color values (4x float)
         ClearDepth,             ///< the clear depth value (float)

@@ -26,17 +26,6 @@ static void check(const State::Object* stateObj) {
     CHECK(stateObj[3].vec.val[1].i == 2);
     CHECK(stateObj[3].vec.val[2].i == 3);
     CHECK(stateObj[3].vec.val[3].i == 4);
-    CHECK(stateObj[4].state == State::StencilFunc);
-    CHECK(stateObj[4].sig == State::V0_I0_I1);
-    CHECK(stateObj[4].vec.val[0].v == State::Never);
-    CHECK(stateObj[4].vec.val[1].i == 255);
-    CHECK(stateObj[4].vec.val[2].i == 255);
-    CHECK(stateObj[5].state == State::StencilFuncSeparate);
-    CHECK(stateObj[5].sig == State::V0_V1_I0_I1);
-    CHECK(stateObj[5].vec.val[0].v == State::Front);
-    CHECK(stateObj[5].vec.val[1].v == State::Always);
-    CHECK(stateObj[5].vec.val[2].i == 127);
-    CHECK(stateObj[5].vec.val[3].i == 127);
     CHECK(stateObj[6].state == State::ColorMask);
     CHECK(stateObj[6].sig == State::B0_B1_B2_B3);
     CHECK(stateObj[6].vec.val[0].b == true);
@@ -61,8 +50,6 @@ TEST(StateBlockFactoryTest) {
     sbSetup.AddState(State::CullFaceEnabled, true);
     sbSetup.AddState(State::DepthOffset, 0.1f, 0.2f);
     sbSetup.AddState(State::ScissorRect, 1, 2, 3, 4);
-    sbSetup.AddState(State::StencilFunc, State::Never, 255, 255);
-    sbSetup.AddState(State::StencilFuncSeparate, State::Front, State::Always, 127, 127);
     sbSetup.AddState(State::ColorMask, true, false, true, false);
     sbSetup.AddState(State::BlendColor, 0.1f, 0.2f, 0.3f, 0.4f);
     CHECK(sbSetup.GetNumStates() == 8);

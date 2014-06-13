@@ -160,6 +160,13 @@ RenderFacade::ApplyProgram(const Id& resId, uint32 selMask) {
 
 //------------------------------------------------------------------------------
 void
+RenderFacade::ApplyDepthStencilState(const Id& resId) {
+    o_assert_dbg(this->valid);
+    this->stateWrapper.ApplyDepthStencilState(this->resourceManager.LookupDepthStencilState(resId));
+}
+
+//------------------------------------------------------------------------------
+void
 RenderFacade::ApplyStateBlock(const Id& resId) {
     o_assert_dbg(this->valid);
     this->stateWrapper.ApplyStateBlock(this->resourceManager.LookupStateBlock(resId));

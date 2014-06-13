@@ -33,10 +33,10 @@ private:
     
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id meshId;
-    Resource::Id progId;
-    Resource::Id texId;
-    Resource::Id stateId;
+    Resource::Id mesh;
+    Resource::Id prog;
+    Resource::Id tex;
+    Resource::Id depthStencilState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -67,10 +67,10 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
     texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
     if (this->render->Supports(Feature::TextureCompressionPVR)) {
-        this->texId = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));        
+        this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
     }
     else {
-        this->texId = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
+        this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
     }
 
     // create a shape with normals
@@ -81,19 +81,16 @@ DDSCubeMapApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.AddSphere(1.0f, 36, 20);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    this->mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
 
     // build a shader program from a vertex- and fragment shader
-    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup static state block object
-    StateBlockSetup stateSetup("state");
-    stateSetup.AddState(Render::State::DepthMask, true);
-    stateSetup.AddState(Render::State::DepthTestEnabled, true);
-    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
-    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
-    this->stateId = this->render->CreateResource(stateSetup);
+    DepthStencilStateSetup dssSetup("depthStencilState");
+    dssSetup.SetDepthWriteEnabled(true);
+    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->depthStencilState = this->render->CreateResource(dssSetup);
     
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -122,15 +119,17 @@ DDSCubeMapApp::OnRunning() {
         this->angleX += 0.01f;
         
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyProgram(this->progId, 0);
-        this->render->ApplyMesh(this->meshId);
-        this->render->ApplyStateBlock(this->stateId);
+        this->render->ApplyProgram(this->prog, 0);
+        this->render->ApplyMesh(this->mesh);
+        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
         this->render->Clear(true, true, true);
         
-        const auto resState = this->render->QueryResourceState(this->texId);
+        const auto resState = this->render->QueryResourceState(this->tex);
         if (resState == Resource::State::Valid) {
             this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            this->render->ApplyVariable(Shaders::Main::Texture, this->texId);
+            this->render->ApplyVariable(Shaders::Main::Texture, this->tex);
             this->render->Draw(0);
         }
         this->render->EndFrame();
@@ -144,10 +143,10 @@ DDSCubeMapApp::OnRunning() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->stateId);
-    this->render->DiscardResource(this->texId);
-    this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->DiscardResource(this->depthStencilState);
+    this->render->DiscardResource(this->tex);
+    this->render->DiscardResource(this->prog);
+    this->render->DiscardResource(this->mesh);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     this->io = nullptr;

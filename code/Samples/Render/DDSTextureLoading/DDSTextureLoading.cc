@@ -33,9 +33,9 @@ private:
     float32 distVal = 0.0f;
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id meshId;
-    Resource::Id progId;
-    Resource::Id state;
+    Resource::Id mesh;
+    Resource::Id prog;
+    Resource::Id depthStencilState;
     static const int32 NumTextures = 15;
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
@@ -89,19 +89,16 @@ DDSTextureLoadingApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddPlane(1.0f, 1.0f, 4);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    this->mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
 
     // build a shader program from a vertex- and fragment shader
-    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup static render states
-    StateBlockSetup stateSetup("state");
-    stateSetup.AddState(Render::State::DepthMask, true);
-    stateSetup.AddState(Render::State::DepthTestEnabled, true);
-    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
-    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 0.0f);
-    this->state = this->render->CreateResource(stateSetup);
+    DepthStencilStateSetup dssSetup("depthStencilState");
+    dssSetup.SetDepthWriteEnabled(true);
+    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->depthStencilState = this->render->CreateResource(dssSetup);
     
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -125,9 +122,11 @@ DDSTextureLoadingApp::OnRunning() {
         this->distVal += 0.01f;
         
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyStateBlock(this->state);
-        this->render->ApplyProgram(this->progId, 0);
-        this->render->ApplyMesh(this->meshId);
+        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 0.0f);
+        this->render->ApplyProgram(this->prog, 0);
+        this->render->ApplyMesh(this->mesh);
         this->render->Clear(true, true, true);
         
         // only render when texture is loaded (until texture placeholder are implemented)
@@ -183,9 +182,9 @@ DDSTextureLoadingApp::OnCleanup() {
             this->render->DiscardResource(tex);
         }
     }
-    this->render->DiscardResource(this->state);
-    this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->DiscardResource(this->depthStencilState);
+    this->render->DiscardResource(this->prog);
+    this->render->DiscardResource(this->mesh);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     this->io = nullptr;

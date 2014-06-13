@@ -54,6 +54,10 @@ public:
     void SetStencilWriteMask(Face::Code sides, uint32 mask);
     /// get stencil write mask
     uint32 GetStencilWriteMask(Face::Code side) const;
+    /// set the stencil reference value
+    void SetStencilRef(Face::Code sides, int32 ref);
+    /// get the stencil reference value
+    int32 GetStencilRef(Face::Code side) const;
 
     /// get the resource locator
     const Resource::Locator& GetLocator() const;
@@ -70,6 +74,7 @@ private:
         CompareFunc::Code stencilCompareFunc;
         uint32 stencilReadMask;
         uint32 stencilWriteMask;
+        int32 stencilRef;
     } stencilState[Face::NumSides];
 };
 
@@ -138,6 +143,13 @@ DepthStencilStateSetup::GetStencilWriteMask(Face::Code side) const {
     o_assert_range_dbg(side, Face::NumSides);
     return this->stencilState[side].stencilWriteMask;
 }
-    
+
+//------------------------------------------------------------------------------
+inline int32
+DepthStencilStateSetup::GetStencilRef(Face::Code side) const {
+    o_assert_range_dbg(side, Face::NumSides);
+    return this->stencilState[side].stencilRef;
+}
+
 } // namespace Render
 } // namespace Oryol

@@ -60,7 +60,7 @@ private:
     /// setup the text shader
     void setupTextShader(Render::RenderFacade* renderFacade);
     /// setup the text state block
-    void setupTextStateBlock(Render::RenderFacade* renderFacade);
+    void setupTextState(Render::RenderFacade* renderFacade);
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const Core::String& str);
     /// write one glyph vertex, returns next vertex index
@@ -77,6 +77,7 @@ private:
     Resource::Id fontTexture;
     Resource::Id textMesh;
     Resource::Id textShader;
+    Resource::Id textDepthStencilState;
     Resource::Id textStateBlock;
     Core::StringBuilder stringBuilder;
     bool valid;

@@ -28,9 +28,9 @@ private:
 
     RenderFacade* render;
     DebugFacade* debug;
-    Resource::Id meshId;
-    Resource::Id stateId;
-    Resource::Id progId;
+    Resource::Id mesh;
+    Resource::Id depthStencilState;
+    Resource::Id prog;
     glm::mat4 proj;
     glm::mat4 view;
 };
@@ -50,19 +50,16 @@ PBRenderingApp::OnInit() {
     shapeBuilder.AddSphere(0.5f, 36, 20, true);
     shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    this->mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
     
     // build a state block with the static depth state
-    StateBlockSetup stateSetup("state");
-    stateSetup.AddState(Render::State::DepthMask, true);
-    stateSetup.AddState(Render::State::DepthTestEnabled, true);
-    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
-    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.3f, 0.3f, 0.3f, 0.0f);
-    this->stateId = this->render->CreateResource(stateSetup);
+    DepthStencilStateSetup dssSetup("depthStencilState");
+    dssSetup.SetDepthWriteEnabled(true);
+    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->depthStencilState = this->render->CreateResource(dssSetup);
     
     // setup shaders
-    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // setup projection and view matrices
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
@@ -101,11 +98,13 @@ PBRenderingApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
     
-        this->render->ApplyStateBlock(this->stateId);
+        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyState(Render::State::ClearColor, 0.3f, 0.3f, 0.3f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->meshId);
+        this->render->ApplyMesh(this->mesh);
         
-        this->render->ApplyProgram(this->progId, 0);
+        this->render->ApplyProgram(this->prog, 0);
         this->applyDirLight();
         this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
         this->render->Draw(0);
@@ -123,9 +122,9 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnCleanup() {
-    this->render->DiscardResource(this->stateId);
-    this->render->DiscardResource(this->meshId);
-    this->render->DiscardResource(this->progId);
+    this->render->DiscardResource(this->depthStencilState);
+    this->render->DiscardResource(this->mesh);
+    this->render->DiscardResource(this->prog);
     this->render = nullptr;
     this->debug  = nullptr;
     DebugFacade::DestroySingle();

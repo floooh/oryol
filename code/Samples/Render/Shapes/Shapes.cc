@@ -26,9 +26,9 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     RenderFacade* render = nullptr;
-    Resource::Id meshId;
-    Resource::Id progId;
-    Resource::Id stateId;
+    Resource::Id mesh;
+    Resource::Id prog;
+    Resource::Id depthStencilState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -56,19 +56,16 @@ ShapeApp::OnInit() {
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.AddPlane(1.5f, 1.5f, 10);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    this->mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
 
     // build a shader program from vs/fs sources
-    this->progId = this->render->CreateResource(Shaders::Shapes::CreateSetup());
+    this->prog = this->render->CreateResource(Shaders::Shapes::CreateSetup());
 
     // build a state block with the static depth state
-    StateBlockSetup stateSetup("state");
-    stateSetup.AddState(Render::State::DepthMask, true);
-    stateSetup.AddState(Render::State::DepthTestEnabled, true);
-    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
-    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-    this->stateId = this->render->CreateResource(stateSetup);
+    DepthStencilStateSetup dssSetup("depthStencilState");
+    dssSetup.SetDepthWriteEnabled(true);
+    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->depthStencilState = this->render->CreateResource(dssSetup);
         
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -97,10 +94,12 @@ ShapeApp::OnRunning() {
         this->angleX += 0.02f;
 
         // clear, apply mesh and shader program, and draw
-        this->render->ApplyStateBlock(this->stateId);
+        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyProgram(this->progId, 0);
-        this->render->ApplyMesh(this->meshId);
+        this->render->ApplyProgram(this->prog, 0);
+        this->render->ApplyMesh(this->mesh);
         
         // render shape primitive groups
         this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
@@ -125,9 +124,9 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->stateId);
-    this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->DiscardResource(this->depthStencilState);
+    this->render->DiscardResource(this->prog);
+    this->render->DiscardResource(this->mesh);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();

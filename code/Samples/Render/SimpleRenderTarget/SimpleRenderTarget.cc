@@ -31,7 +31,7 @@ private:
     Resource::Id torus;
     Resource::Id rtProg;
     Resource::Id dispProg;
-    Resource::Id state;
+    Resource::Id depthStencilState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -80,13 +80,10 @@ SimpleRenderTargetApp::OnInit() {
     this->dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // constant state
-    StateBlockSetup stateSetup("state");
-    stateSetup.AddState(Render::State::DepthMask, true);
-    stateSetup.AddState(Render::State::DepthTestEnabled, true);
-    stateSetup.AddState(Render::State::DepthFunc, Render::State::LessEqual);
-    stateSetup.AddState(Render::State::ClearDepth, 1.0f);
-    stateSetup.AddState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
-    this->state = this->render->CreateResource(stateSetup);
+    DepthStencilStateSetup dssSetup("depthStencilState");
+    dssSetup.SetDepthWriteEnabled(true);
+    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->depthStencilState = this->render->CreateResource(dssSetup);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
@@ -116,7 +113,9 @@ SimpleRenderTargetApp::OnRunning() {
         this->angleX += 0.02f;
         
         // apply general states
-        this->render->ApplyStateBlock(this->state);
+        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+        this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
         
         // render donut to offscreen render target
         this->render->ApplyRenderTarget(this->renderTarget);
@@ -147,7 +146,7 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->state);
+    this->render->DiscardResource(this->depthStencilState);
     this->render->DiscardResource(this->rtProg);
     this->render->DiscardResource(this->dispProg);
     this->render->DiscardResource(this->sphere);

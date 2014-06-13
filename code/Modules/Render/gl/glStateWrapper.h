@@ -128,20 +128,6 @@ private:
     void onScissorTestEnabled(const State::Vector& input);
     /// ScissorRect state function
     void onScissorRect(const State::Vector& input);
-    /// StencilTestEnabled state function
-    void onStencilTestEnabled(const State::Vector& input);
-    /// StencilFunc state function
-    void onStencilFunc(const State::Vector& input);
-    /// StencilFuncSeparate state function
-    void onStencilFuncSeparate(const State::Vector& input);
-    /// StencilOp state function
-    void onStencilOp(const State::Vector& input);
-    /// StencilOpSeparate state function
-    void onStencilOpSeparate(const State::Vector& input);
-    /// DepthTestEnabled state function
-    void onDepthTestEnabled(const State::Vector& input);
-    /// DepthFunc state function
-    void onDepthFunc(const State::Vector& input);
     /// BlendEnabled state function
     void onBlendEnabled(const State::Vector& input);
     /// BlendEquation state function
@@ -158,12 +144,6 @@ private:
     void onDitherEnabled(const State::Vector& input);
     /// ColorMask state function
     void onColorMask(const State::Vector& input);
-    /// DepthMask state function
-    void onDepthMask(const State::Vector& input);
-    /// StencilMask state function
-    void onStencilMask(const State::Vector& input);
-    /// StencilMaskSeparate state function
-    void onStencilMaskSeparate(const State::Vector& input);
     /// ClearColor state function
     void onClearColor(const State::Vector& input);
     /// ClearDepth state function
@@ -172,8 +152,6 @@ private:
     void onClearStencil(const State::Vector& input);
     /// ViewPort state function
     void onViewPort(const State::Vector& input);
-    /// DepthRange state function
-    void onDepthRange(const State::Vector& input);
     
     /// apply front/back side stencil state
     void applyStencilState(const depthStencilState* dds, Face::Code face, GLenum glFace);
@@ -193,6 +171,7 @@ private:
             CompareFunc::Code stencilCompareFunc;
             uint32 stencilReadMask;
             uint32 stencilWriteMask;
+            int32 stencilRef;
         } stencilState[Face::NumSides];
     } curDepthStencilState;
     
@@ -213,17 +192,6 @@ private:
     GLsizei curScissorWidth;
     GLsizei curScissorHeight;
     
-    bool curStencilTestEnabled;
-    GLenum curStencilFunc[2];
-    GLint curStencilFuncRef[2];
-    GLuint curStencilFuncMask[2];
-    GLenum curStencilOpSFail[2];
-    GLenum curStencilOpDpFail[2];
-    GLenum curStencilOpDpPass[2];
-    
-    bool curDepthTestEnabled;
-    GLenum curDepthFunc;
-    
     bool curBlendEnabled;
     GLenum curBlendEquationRGB;
     GLenum curBlendEquationAlpha;
@@ -241,8 +209,6 @@ private:
     bool curColorMaskG;
     bool curColorMaskB;
     bool curColorMaskA;
-    bool curDepthMask;
-    GLuint curStencilMask[2];
     GLclampf curClearColorR;
     GLclampf curClearColorG;
     GLclampf curClearColorB;
@@ -253,8 +219,6 @@ private:
     GLint curViewPortY;
     GLsizei curViewPortWidth;
     GLsizei curViewPortHeight;
-    GLfloat curDepthRangeNear;
-    GLfloat curDepthRangeFar;
     
     GLuint curVertexBuffer;
     GLuint curIndexBuffer;

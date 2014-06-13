@@ -52,7 +52,7 @@ debugTextRenderer::setup() {
     this->setupFontTexture(renderFacade);
     this->setupTextMesh(renderFacade);
     this->setupTextShader(renderFacade);
-    this->setupTextStateBlock(renderFacade);
+    this->setupTextState(renderFacade);
     this->valid = true;
 }
 
@@ -62,10 +62,12 @@ debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
     RenderFacade* renderFacade = RenderFacade::Instance();
+    renderFacade->DiscardResource(this->textDepthStencilState);
     renderFacade->DiscardResource(this->textStateBlock);
     renderFacade->DiscardResource(this->textShader);
     renderFacade->DiscardResource(this->textMesh);
     renderFacade->DiscardResource(this->fontTexture);
+    this->textDepthStencilState.Invalidate();
     this->textStateBlock.Invalidate();
     this->textShader.Invalidate();
     this->textMesh.Invalidate();
@@ -151,6 +153,7 @@ debugTextRenderer::drawTextBuffer() {
     
         renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.GetByteSize(), this->vertexData);
         
+        renderFacade->ApplyDepthStencilState(this->textDepthStencilState);
         renderFacade->ApplyStateBlock(this->textStateBlock);
         renderFacade->ApplyMesh(this->textMesh);
         renderFacade->ApplyProgram(this->textShader, 0);
@@ -235,14 +238,17 @@ debugTextRenderer::setupTextShader(RenderFacade* renderFacade) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextStateBlock(RenderFacade* renderFacade) {
+debugTextRenderer::setupTextState(RenderFacade* renderFacade) {
     o_assert(nullptr != renderFacade);
     o_assert(!this->textStateBlock.IsValid());
     
+    DepthStencilStateSetup dssSetup("_dbgDepthStencilState");
+    dssSetup.SetDepthWriteEnabled(false);
+    dssSetup.SetDepthCompareFunc(CompareFunc::Always);
+    this->textDepthStencilState = renderFacade->CreateResource(dssSetup);
+    
     StateBlockSetup sbSetup("_dbgStateBlock");
     sbSetup.AddState(State::ColorMask, true, true, true, true);
-    sbSetup.AddState(State::DepthMask, false);
-    sbSetup.AddState(State::DepthTestEnabled, false);
     sbSetup.AddState(State::BlendEnabled, true);
     sbSetup.AddState(State::BlendFunc, State::SrcAlpha, State::InvSrcAlpha);
     this->textStateBlock = renderFacade->CreateResource(sbSetup);

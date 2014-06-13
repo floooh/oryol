@@ -142,8 +142,6 @@ public:
     /// these are the render state values
     enum Value {
         Undefined = -1,         ///< state is not set
-        Zero = 0,               ///< GL_ZERO, stencil func / blend factor: zero, or replace with zero
-        One = 1,                ///< GL_ONE, blend factor: set to one
         
         CW = 0x0900,            ///< GL_CW, for FrontFace state
         CCW = 0x0901,           ///< GL_CCW, for FrontFace state
@@ -152,26 +150,8 @@ public:
         Back = 0x0405,          ///< GL_BACK, polygon back side
         FrontAndBack = 0x0408,  ///< GL_FRONT_AND_BACK, polygon front and back
         
-        Never = 0x0200,         ///< GL_NEVER, stencil/depth func: never pass
-        Always = 0x0207,        ///< GL_ALWAYS, stencil/depth func: always pass
-        Less = 0x0201,          ///< GL_LESS, stencil/depth func: pass if less-then
-        LessEqual = 0x0203,     ///< GL_LEQUAL, stencil/depth func: pass if less-or-equal
-        GreaterEqual = 0x0206,  ///< GL_GEQUAL, stencil/depth func: pass if greater-or-equal
-        Greater = 0x0204,       ///< GL_GREATER, stencil/depth func: pass if greater
-        Equal = 0x0202,         ///< GL_EQUAL, stencil/depth func: pass if equal
-        NotEqual = 0x0205,      ///< GL_NOTEQUAL, stencil/depth func: pass if not equal
-        
-        Keep = 0x1E00,          ///< GL_KEEP, stencil func: keep value
-        // Zero,                ///< GL_ZERO, stencil func: set value to zero
-        Replace = 0x1E01,       ///< GL_REPLACE, stencil func: replace with reference value
-        Incr = 0x1E02,          ///< GL_INCR, stencil func: incremenet with saturation
-        Decr = 0x1E03,          ///< GL_DECR, stencil func: decrement with saturation
-        Invert = 0x150A,        ///< GL_INVERT, stencil func: bitwise invert
-        IncrWrap = 0x8507,      ///< GL_INCR_WRAP, stencil func: increment with wrap-around
-        DecrWrap = 0x8508,      ///< GL_DECR_WRAP, stencil func: decrement with wrap-around
-        
-        // Zero                     ///< GL_ZERO, blend factor: zero
-        // One                      ///< GL_ONE, blend factor: one
+        Zero = 0,                   ///< GL_ZERO, blend factor: zero
+        One = 1,                    ///< GL_ONE, blend factor: set to one
         SrcColor = 0x0300,          ///< GL_SRC_COLOR, blend factor: src-color
         InvSrcColor = 0x0301,       ///< GL_ONE_MINUS_SRC_COLOR, blend factor: one-minus-src-color
         DstColor = 0x0306,          ///< GL_DST_COLOR, blend factor: dst-color

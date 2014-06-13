@@ -50,9 +50,6 @@ curScissorLeft(0),
 curScissorBottom(0),
 curScissorWidth(-1),
 curScissorHeight(-1),
-curStencilTestEnabled(false),
-curDepthTestEnabled(true),
-curDepthFunc(GL_ALWAYS),
 curBlendEnabled(false),
 curBlendEquationRGB(GL_FUNC_ADD),
 curBlendEquationAlpha(GL_FUNC_ADD),
@@ -69,7 +66,6 @@ curColorMaskR(true),
 curColorMaskG(true),
 curColorMaskB(true),
 curColorMaskA(true),
-curDepthMask(false),
 curClearColorR(0.0f),
 curClearColorG(0.0f),
 curClearColorB(0.0f),
@@ -85,15 +81,6 @@ curIndexBuffer(0),
 curVertexArrayObject(0),
 curProgram(0)
 {
-    for (int32 i = 0; i < 2; i++) {
-        this->curStencilFunc[i] = GL_ALWAYS;
-        this->curStencilFuncRef[i] = 0;
-        this->curStencilFuncMask[i] = 0xFFFFFFFF;
-        this->curStencilOpSFail[i] = GL_KEEP;
-        this->curStencilOpDpFail[i] = GL_KEEP;
-        this->curStencilOpDpPass[i] = GL_KEEP;
-        this->curStencilMask[i] = 0xFFFFFFFF;
-    }
     for (int32 i = 0; i < MaxTextureSamplers; i++) {
         this->samplers2D[i] = 0;
         this->samplersCube[i] = 0;
@@ -145,12 +132,13 @@ glStateWrapper::setupDepthStencilState() {
         this->curDepthStencilState.stencilState[i].stencilCompareFunc = CompareFunc::Always;
         this->curDepthStencilState.stencilState[i].stencilReadMask    = 0xFFFFFFFF;
         this->curDepthStencilState.stencilState[i].stencilWriteMask   = 0xFFFFFFFF;
+        this->curDepthStencilState.stencilState[i].stencilRef         = 0;
     }
     ::glEnable(GL_DEPTH_TEST);
     ::glDepthFunc(GL_ALWAYS);
     ::glDepthMask(GL_FALSE);
     ::glDisable(GL_STENCIL_TEST);
-    ::glStencilFunc(GL_ALWAYS, this->curStencilFuncRef[Face::Front], 0xFFFFFFFF);
+    ::glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
     ::glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     ::glStencilMask(0xFFFFFFFF);
     ORYOL_GL_CHECK_ERROR();
@@ -165,12 +153,15 @@ glStateWrapper::applyStencilState(const depthStencilState* dds, Face::Code face,
     const CompareFunc::Code cmpFunc = setup.GetStencilCompareFunc(face);
     o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
     const uint32 readMask = setup.GetStencilReadMask(face);
+    const int32 stencilRef = setup.GetStencilRef(face);
     if ((cmpFunc != this->curDepthStencilState.stencilState[face].stencilCompareFunc) ||
-        (readMask != this->curDepthStencilState.stencilState[face].stencilReadMask))
+        (readMask != this->curDepthStencilState.stencilState[face].stencilReadMask) ||
+        (stencilRef != this->curDepthStencilState.stencilState[face].stencilRef))
     {
         this->curDepthStencilState.stencilState[face].stencilCompareFunc = cmpFunc;
         this->curDepthStencilState.stencilState[face].stencilReadMask = readMask;
-        ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], this->curStencilFuncRef[face], readMask);
+        this->curDepthStencilState.stencilState[face].stencilRef = stencilRef;
+        ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
     
     const StencilOp::Code sFailOp = setup.GetStencilFailOp(face);
@@ -328,114 +319,6 @@ glStateWrapper::onScissorRect(const State::Vector& input) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onStencilTestEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curStencilTestEnabled) {
-        this->curStencilTestEnabled = b0;
-        if (b0) {
-            ::glEnable(GL_STENCIL_TEST);
-        }
-        else {
-            ::glDisable(GL_STENCIL_TEST);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilFunc(const State::Vector& input) {
-    const GLenum func = input.val[0].v;
-    const GLint ref = input.val[1].i;
-    const GLuint mask = (GLuint) input.val[2].i;
-    if ((func != this->curStencilFunc[0]) || (func != this->curStencilFunc[1]) ||
-        (ref != this->curStencilFuncRef[0]) || (ref != this->curStencilFuncRef[1]) ||
-        (mask != this->curStencilFuncMask[0]) || (mask != this->curStencilFuncMask[1])) {
-        for (int32 i = 0; i < 2; i++) {
-            this->curStencilFunc[i] = func;
-            this->curStencilFuncRef[i]  = ref;
-            this->curStencilFuncMask[i] = mask;
-        }
-        ::glStencilFunc(func, ref, mask);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilFuncSeparate(const State::Vector& input) {
-    const GLenum face = input.val[0].v;
-    const GLenum func = input.val[1].v;
-    const GLint ref = input.val[2].i;
-    const GLuint mask = (GLuint) input.val[3].i;
-    int32 i = (GL_FRONT == face) ? 0 : 1;
-    if ((func != this->curStencilFunc[i]) || (ref != this->curStencilFuncRef[i]) || (mask != this->curStencilFuncMask[i])) {
-        this->curStencilFunc[i] = func;
-        this->curStencilFuncRef[i] = ref;
-        this->curStencilFuncMask[i] = mask;
-        ::glStencilFuncSeparate(face, func, ref, mask);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilOp(const State::Vector& input) {
-    const GLenum sfail = input.val[0].v;
-    const GLenum dpfail = input.val[1].v;
-    const GLenum dppass = input.val[2].v;
-    if ((sfail != this->curStencilOpSFail[0]) || (sfail != this->curStencilOpSFail[1]) ||
-        (dpfail != this->curStencilOpDpFail[0]) || (dpfail != this->curStencilOpDpFail[1]) ||
-        (dppass != this->curStencilOpDpPass[0]) || (dppass != this->curStencilOpDpPass[1])) {
-        for (int32 i = 0; i < 2; i++) {
-            this->curStencilOpSFail[i] = sfail;
-            this->curStencilOpDpFail[i] = dpfail;
-            this->curStencilOpDpPass[i] = dppass;
-        }
-        ::glStencilOp(sfail, dpfail, dppass);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilOpSeparate(const State::Vector& input) {
-    const GLenum face = input.val[0].v;
-    const GLenum sfail = input.val[1].v;
-    const GLenum dpfail = input.val[2].v;
-    const GLenum dppass = input.val[3].v;
-    int32 i = (GL_FRONT == face) ? 0 : 1;
-    if ((sfail != this->curStencilOpSFail[i]) || (dpfail != this->curStencilOpDpFail[i]) || (dppass != this->curStencilOpDpPass[i])) {
-        this->curStencilOpSFail[i] = sfail;
-        this->curStencilOpDpFail[i] = dpfail;
-        this->curStencilOpDpPass[i] = dppass;
-        ::glStencilOpSeparate(face, sfail, dpfail, dppass);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onDepthTestEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curDepthTestEnabled) {
-        this->curDepthTestEnabled = b0;
-        if (b0) {
-            ::glEnable(GL_DEPTH_TEST);
-        }
-        else {
-            ::glDisable(GL_DEPTH_TEST);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onDepthFunc(const State::Vector& input) {
-    const GLenum depthFunc = input.val[0].v;
-    if (depthFunc != this->curDepthFunc) {
-        this->curDepthFunc = depthFunc;
-        ::glDepthFunc(depthFunc);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glStateWrapper::onBlendEnabled(const State::Vector& input) {
     const bool b0 = input.val[0].b;
     if (b0 != this->curBlendEnabled) {
@@ -551,40 +434,6 @@ glStateWrapper::onColorMask(const State::Vector& input) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onDepthMask(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curDepthMask) {
-        this->curDepthMask = b0;
-        ::glDepthMask(b0);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilMask(const State::Vector& input) {
-    const GLuint mask = (GLuint) input.val[0].i;
-    if ((mask != this->curStencilMask[0]) || (mask != this->curStencilMask[1])) {
-        this->curStencilMask[0] = mask;
-        this->curStencilMask[1] = mask;
-        ::glStencilMask(mask);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onStencilMaskSeparate(const State::Vector& input) {
-    const GLenum face = input.val[0].v;
-    const GLuint mask = input.val[1].i;
-    int32 i = (face == GL_FRONT) ? 0 : 1;
-    if (mask != this->curStencilMask[i]) {
-        this->curStencilMask[i] = mask;
-        ::glStencilMaskSeparate(face, mask);
-    }
-    
-}
-
-//------------------------------------------------------------------------------
-void
 glStateWrapper::onClearColor(const State::Vector& input) {
     const GLclampf r = input.val[0].f;
     const GLclampf g = input.val[1].f;
@@ -644,22 +493,6 @@ glStateWrapper::onViewPort(const State::Vector& input) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onDepthRange(const State::Vector& input) {
-    const GLfloat nearVal = input.val[0].f;
-    const GLfloat farVal = input.val[1].f;
-    if ((nearVal != this->curDepthRangeNear) || (farVal != this->curDepthRangeFar)) {
-        this->curDepthRangeNear = nearVal;
-        this->curDepthRangeFar = farVal;
-        #if ORYOL_OPENGLES2
-        ::glDepthRangef(nearVal, farVal);
-        #else
-        ::glDepthRange(nearVal, farVal);
-        #endif
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glStateWrapper::setupJumpTable() {
     
     // glFrontFace(GLenum dir)
@@ -689,34 +522,6 @@ glStateWrapper::setupJumpTable() {
     // glScissor(GLint, GLint, GLint, GLint)
     this->funcs[State::ScissorRect].cb = &glStateWrapper::onScissorRect;
     this->funcs[State::ScissorRect].sig = State::I0_I1_I2_I3;
-    
-    // glEnable(GL_STENCIL_TEST)
-    this->funcs[State::StencilTestEnabled].cb = &glStateWrapper::onStencilTestEnabled;
-    this->funcs[State::StencilTestEnabled].sig = State::B0;
-    
-    // glStencilFunc(GLenum, int, uint)
-    this->funcs[State::StencilFunc].cb = &glStateWrapper::onStencilFunc;
-    this->funcs[State::StencilFunc].sig  = State::V0_I0_I1;
-    
-    // glStencilFuncSeparate(GLenum, GLenum, int, uint)
-    this->funcs[State::StencilFuncSeparate].cb = &glStateWrapper::onStencilFuncSeparate;
-    this->funcs[State::StencilFuncSeparate].sig = State::V0_V1_I0_I1;
-    
-    // glStencilOp(GLenum, GLenum, GLenum)
-    this->funcs[State::StencilOp].cb = &glStateWrapper::onStencilOp;
-    this->funcs[State::StencilOp].sig = State::V0_V1_V2;
-    
-    // glStencilOpSeparate(GLenum, GLenum, GLenum, GLenum)
-    this->funcs[State::StencilOpSeparate].cb = &glStateWrapper::onStencilOpSeparate;
-    this->funcs[State::StencilOpSeparate].sig = State::V0_V1_V2_V3;
-
-    // glEnable(DEPTH_TEST)
-    this->funcs[State::DepthTestEnabled].cb = &glStateWrapper::onDepthTestEnabled;
-    this->funcs[State::DepthTestEnabled].sig = State::B0;
-    
-    // glDepthFunc(GLenum)
-    this->funcs[State::DepthFunc].cb = &glStateWrapper::onDepthFunc;
-    this->funcs[State::DepthFunc].sig = State::V0;
     
     // glEnable(GL_BLEND)
     this->funcs[State::BlendEnabled].cb = &glStateWrapper::onBlendEnabled;
@@ -750,18 +555,6 @@ glStateWrapper::setupJumpTable() {
     this->funcs[State::ColorMask].cb = &glStateWrapper::onColorMask;
     this->funcs[State::ColorMask].sig = State::B0_B1_B2_B3;
     
-    // glDepthMask(GLenum)
-    this->funcs[State::DepthMask].cb = &glStateWrapper::onDepthMask;
-    this->funcs[State::DepthMask].sig = State::B0;
-    
-    // glStencilMask(GLuint)
-    this->funcs[State::StencilMask].cb = &glStateWrapper::onStencilMask;
-    this->funcs[State::StencilMask].sig = State::I0;
-    
-    // glStencilMaskSeparate(GLenum, GLuint)
-    this->funcs[State::StencilMaskSeparate].cb = &glStateWrapper::onStencilMaskSeparate;
-    this->funcs[State::StencilMaskSeparate].sig = State::V0_I0;
-    
     // glClearColor(GLclampf, GLclampf, GLclampf, GLclampf)
     this->funcs[State::ClearColor].cb = &glStateWrapper::onClearColor;
     this->funcs[State::ClearColor].sig = State::F0_F1_F2_F3;
@@ -777,10 +570,6 @@ glStateWrapper::setupJumpTable() {
     // glViewPort(GLint, GLint, GLsizei w, GLsizei h)
     this->funcs[State::ViewPort].cb = &glStateWrapper::onViewPort;
     this->funcs[State::ViewPort].sig = State::I0_I1_I2_I3;
-    
-    // glDepthRange(GLclampf, GLclampf)
-    this->funcs[State::DepthRange].cb = &glStateWrapper::onDepthRange;
-    this->funcs[State::DepthRange].sig = State::F0_F1;
 }
 
 //------------------------------------------------------------------------------

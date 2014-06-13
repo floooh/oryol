@@ -19,7 +19,14 @@ stencilTestEnabled(false) {
         this->stencilState[i].stencilCompareFunc    = CompareFunc::Always;
         this->stencilState[i].stencilReadMask       = 0xFFFFFFFF;
         this->stencilState[i].stencilWriteMask      = 0xFFFFFFFF;
+        this->stencilState[i].stencilRef            = 0;
     }
+}
+
+//------------------------------------------------------------------------------
+DepthStencilStateSetup::DepthStencilStateSetup(const Resource::Locator& loc_) :
+DepthStencilStateSetup() {
+    this->loc = loc_;
 }
 
 //------------------------------------------------------------------------------
@@ -90,6 +97,13 @@ void
 DepthStencilStateSetup::SetStencilWriteMask(Face::Code sides, uint32 mask) {
     o_assert_dbg(sides >= 0);
     __SET_STENCIL_STATE(sides, stencilWriteMask, mask);
+}
+
+//------------------------------------------------------------------------------
+void
+DepthStencilStateSetup::SetStencilRef(Face::Code sides, int32 ref) {
+    o_assert_dbg(sides >= 0);
+    __SET_STENCIL_STATE(sides, stencilRef, ref);
 }
 
 } // namespace Render

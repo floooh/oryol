@@ -71,6 +71,8 @@ public:
     void ApplyMesh(const Resource::Id& resId);
     /// apply program to use for rendering
     void ApplyProgram(const Resource::Id& resId, uint32 selectionMask=0);
+    /// apply a depth stencil state block
+    void ApplyDepthStencilState(const Resource::Id& resId);
     /// apply a render state block
     void ApplyStateBlock(const Resource::Id& resId);
     /// apply a shader constant block

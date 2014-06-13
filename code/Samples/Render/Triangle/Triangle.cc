@@ -22,8 +22,8 @@ public:
     
 private:
     RenderFacade* render;
-    Resource::Id meshId;
-    Resource::Id progId;
+    Resource::Id mesh;
+    Resource::Id prog;
 };
 OryolMain(TriangleApp);
 
@@ -52,10 +52,10 @@ TriangleApp::OnInit() {
     meshBuilder.Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f);
     meshBuilder.Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
     meshBuilder.End();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
+    this->mesh = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
     
     // setup shader program from generated shader source (see shaders.shd)
-    this->progId = this->render->CreateResource(Shaders::Triangle::CreateSetup());
+    this->prog = this->render->CreateResource(Shaders::Triangle::CreateSetup());
     
     return App::OnInit();
 }
@@ -69,8 +69,8 @@ TriangleApp::OnRunning() {
         // clear, apply mesh and shader program, and draw
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, false, false);
-        this->render->ApplyMesh(this->meshId);
-        this->render->ApplyProgram(this->progId, 0);
+        this->render->ApplyMesh(this->mesh);
+        this->render->ApplyProgram(this->prog, 0);
         this->render->Draw(0);
         
         this->render->EndFrame();
@@ -84,8 +84,8 @@ TriangleApp::OnRunning() {
 AppState::Code
 TriangleApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->DiscardResource(this->prog);
+    this->render->DiscardResource(this->mesh);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();
