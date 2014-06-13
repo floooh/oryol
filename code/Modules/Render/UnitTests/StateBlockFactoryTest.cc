@@ -26,18 +26,18 @@ static void check(const State::Object* stateObj) {
     CHECK(stateObj[3].vec.val[1].i == 2);
     CHECK(stateObj[3].vec.val[2].i == 3);
     CHECK(stateObj[3].vec.val[3].i == 4);
-    CHECK(stateObj[6].state == State::ColorMask);
-    CHECK(stateObj[6].sig == State::B0_B1_B2_B3);
-    CHECK(stateObj[6].vec.val[0].b == true);
-    CHECK(stateObj[6].vec.val[1].b == false);
-    CHECK(stateObj[6].vec.val[2].b == true);
-    CHECK(stateObj[6].vec.val[3].b == false);
-    CHECK(stateObj[7].state == State::BlendColor);
-    CHECK(stateObj[7].sig == State::F0_F1_F2_F3);
-    CHECK_CLOSE(0.1f, stateObj[7].vec.val[0].f, 0.0001f);
-    CHECK_CLOSE(0.2f, stateObj[7].vec.val[1].f, 0.0001f);
-    CHECK_CLOSE(0.3f, stateObj[7].vec.val[2].f, 0.0001f);
-    CHECK_CLOSE(0.4f, stateObj[7].vec.val[3].f, 0.0001f);
+    CHECK(stateObj[4].state == State::ColorMask);
+    CHECK(stateObj[4].sig == State::B0_B1_B2_B3);
+    CHECK(stateObj[4].vec.val[0].b == true);
+    CHECK(stateObj[4].vec.val[1].b == false);
+    CHECK(stateObj[4].vec.val[2].b == true);
+    CHECK(stateObj[4].vec.val[3].b == false);
+    CHECK(stateObj[5].state == State::BlendColor);
+    CHECK(stateObj[5].sig == State::F0_F1_F2_F3);
+    CHECK_CLOSE(0.1f, stateObj[5].vec.val[0].f, 0.0001f);
+    CHECK_CLOSE(0.2f, stateObj[5].vec.val[1].f, 0.0001f);
+    CHECK_CLOSE(0.3f, stateObj[5].vec.val[2].f, 0.0001f);
+    CHECK_CLOSE(0.4f, stateObj[5].vec.val[3].f, 0.0001f);
 }
 
 TEST(StateBlockFactoryTest) {
@@ -52,14 +52,14 @@ TEST(StateBlockFactoryTest) {
     sbSetup.AddState(State::ScissorRect, 1, 2, 3, 4);
     sbSetup.AddState(State::ColorMask, true, false, true, false);
     sbSetup.AddState(State::BlendColor, 0.1f, 0.2f, 0.3f, 0.4f);
-    CHECK(sbSetup.GetNumStates() == 8);
+    CHECK(sbSetup.GetNumStates() == 6);
     check(sbSetup.GetStates());
     
     stateBlock sb;
     sb.setSetup(sbSetup);
     sbFactory.SetupResource(sb);
     CHECK(sb.GetState() == Resource::State::Valid);
-    CHECK(sb.GetNumStates() == 8);
+    CHECK(sb.GetNumStates() == 6);
     check(sb.GetStates());
     sbFactory.DestroyResource(sb);
     CHECK(sb.GetState() == Resource::State::Setup);
