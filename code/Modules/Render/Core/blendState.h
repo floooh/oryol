@@ -1,16 +1,16 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::depthStencilState
-    @brief resource class to encapsulate depth-stencil state
+    @class Oryol::Render::blendState
+    @brief resource class to encapsulate blend state
 */
 #include "Resource/resourceBase.h"
-#include "Render/Setup/DepthStencilStateSetup.h"
+#include "Render/Setup/BlendStateSetup.h"
 
 namespace Oryol {
 namespace Render {
     
-class depthStencilState : public Resource::resourceBase<DepthStencilStateSetup> {
+class blendState : public Resource::resourceBase<BlendStateSetup> {
 public:
     /// clear the object
     void clear();

@@ -267,6 +267,7 @@ public:
         StateBlock,         ///< block of render states
         ConstantBlock,      ///< block constant shader uniforms
         DepthStencilState,  ///< depth-stencil state block
+        BlendState,         ///< blending state block
         
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,
@@ -303,15 +304,9 @@ public:
         ScissorTestEnabled,     ///< enable/disable scissor test (True, False)
         ScissorRect,            ///< the scissor rectangle (int left, int bottom, int left, int right)
         
-        BlendEnabled,           ///< whether alpha blending is enabled (True, False)
-        BlendEquation,          ///< combined RGB/A blend mode (Add, Subtract, ReverseSubtract)
-        BlendEquationSeparate,  ///< separate RGBA + A blend mode (rgb=Add/Subtract/ReverseSubtract, a=Add/Subtract/ReverseSubtract)
-        BlendFunc,              ///< RGBA blend function (src,dst=Zero/One/SrcColor/InvSrcColor/DstColor/InvDstColor/SrcAlpha/InvSrcAlpha/DstAlpha/InvDstAlpha/ConstColor/InvConstColor/ConstAlpha/InvConstAlpha)
-        BlendFuncSeparate,      ///< separate RGB+A blend func, (srcRGB,dstRGB,srcA,dstA, see above)
         BlendColor,             ///< color for ConstColor/ConstAlpha (4x float)
         
         DitherEnabled,          ///< whether dithering is on (True, False)
-        ColorMask,              ///< color channel write mask (4x True|False)
         
         ClearColor,             ///< the clear color values (4x float)
         ClearDepth,             ///< the clear depth value (float)
@@ -617,6 +612,84 @@ public:
     };
 };
 
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::BlendFactor
+    @brief blending factors
+*/
+class BlendFactor {
+public:
+    enum Code {
+        Zero = 0,
+        One,
+        SrcColor,
+        OneMinusSrcColor,
+        SrcAlpha,
+        OneMinusSrcAlpha,
+        DstColor,
+        OneMinusDstColor,
+        DstAlpha,
+        OneMinusDstAlpha,
+        SrcAlphaSaturated,
+        BlendColor,
+        OneMinusBlendColor,
+        BlendAlpha,
+        OneMinusBlendAlpha,
+        
+        NumBlendFactors,
+        InvalidBlendFactor,
+    };
+};
+ 
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::BlendOperation
+    @brief blending operations
+*/
+class BlendOperation {
+public:
+    enum Code {
+        Add = 0,
+        Subtract,
+        ReverseSubtract,
+        
+        NumBlendOperations,
+        InvalidBlendOperation,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Render::ColorWriteMask
+    @brief color write masking for blend state
+*/
+class ColorWriteMask {
+public:
+    enum Code {
+        None    = 0,
+        
+        R   = (1<<3),
+        G   = (1<<2),
+        B   = (1<<1),
+        A   = (1<<0),
+        
+        RG  = R|G,
+        GB  = G|B,
+        RB  = R|B,
+        RGB = R|G|B,
+        
+        RA = R|A,
+        GA = G|A,
+        BA = B|A,
+        
+        RGA = R|G|A,
+        GBA = G|B|A,
+        RBA = R|B|A,
+        
+        All  = R|G|B|A,
+        RGBA = R|G|B|A
+    };
+};
     
 } // namespace Render
 } // namespace Oryol

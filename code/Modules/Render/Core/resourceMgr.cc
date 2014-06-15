@@ -60,6 +60,8 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->stateBlockPool.Setup(&this->stateBlockFactory, setup.GetPoolSize(ResourceType::StateBlock), 0, 'SBLK');
     this->depthStencilStateFactory.Setup();
     this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
+    this->blendStateFactory.Setup();
+    this->blendStatePool.Setup(&this->blendStateFactory, setup.GetPoolSize(ResourceType::BlendState), 0, 'BLST');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
 }
@@ -70,6 +72,8 @@ resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     this->resourceRegistry.Discard();
+    this->blendStatePool.Discard();
+    this->blendStateFactory.Discard();
     this->depthStencilStatePool.Discard();
     this->depthStencilStateFactory.Discard();
     this->stateBlockPool.Discard();
@@ -258,6 +262,24 @@ resourceMgr::CreateResource(const DepthStencilStateSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
+template<> Id
+resourceMgr::CreateResource(const BlendStateSetup& setup) {
+    o_assert(this->isValid);
+    const Locator& loc = setup.GetLocator();
+    Id resId = this->resourceRegistry.LookupResource(loc);
+    if (resId.IsValid()) {
+        o_assert(resId.Type() == ResourceType::BlendState);
+        return resId;
+    }
+    else {
+        resId = this->blendStatePool.AllocId();
+        this->resourceRegistry.AddResource(loc, resId);
+        this->blendStatePool.Assign(resId, setup);
+        return resId;
+    }
+}
+    
+//------------------------------------------------------------------------------
 Id
 resourceMgr::LookupResource(const Locator& loc) {
     o_assert(this->isValid);
@@ -293,6 +315,9 @@ resourceMgr::DiscardResource(const Id& resId) {
                 case ResourceType::DepthStencilState:
                     this->depthStencilStatePool.Unassign(removeId);
                     break;
+                case ResourceType::BlendState:
+                    this->blendStatePool.Unassign(removeId);
+                    break;
                 default:
                     o_assert(false);
                     break;
@@ -321,6 +346,8 @@ resourceMgr::QueryResourceState(const Id& resId) {
             break;
         case ResourceType::DepthStencilState:
             return this->depthStencilStatePool.QueryState(resId);
+        case ResourceType::BlendState:
+            return this->blendStatePool.QueryState(resId);
         default:
             o_assert(false);
             break;

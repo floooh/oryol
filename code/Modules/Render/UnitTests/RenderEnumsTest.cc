@@ -230,26 +230,11 @@ TEST(ShaderTypeTest) {
 //------------------------------------------------------------------------------
 TEST(StateTest) {
     CHECK(State::Undefined == -1);
-    CHECK(State::Zero == GL_ZERO);
-    CHECK(State::One == GL_ONE);
     CHECK(State::CW == GL_CW);
     CHECK(State::CCW == GL_CCW);
     CHECK(State::Front == GL_FRONT);
     CHECK(State::Back == GL_BACK);
     CHECK(State::FrontAndBack == GL_FRONT_AND_BACK);
-    CHECK(State::SrcColor == GL_SRC_COLOR);
-    CHECK(State::InvSrcColor == GL_ONE_MINUS_SRC_COLOR);
-    CHECK(State::DstColor == GL_DST_COLOR);
-    CHECK(State::InvDstColor == GL_ONE_MINUS_DST_COLOR);
-    CHECK(State::SrcAlpha == GL_SRC_ALPHA);
-    CHECK(State::InvSrcAlpha == GL_ONE_MINUS_SRC_ALPHA);
-    CHECK(State::DstAlpha == GL_DST_ALPHA);
-    CHECK(State::InvDstAlpha == GL_ONE_MINUS_DST_ALPHA);
-    CHECK(State::ConstColor == GL_CONSTANT_COLOR);
-    CHECK(State::InvConstColor == GL_ONE_MINUS_CONSTANT_COLOR);
-    CHECK(State::ConstAlpha == GL_CONSTANT_ALPHA);
-    CHECK(State::InvConstAlpha == GL_ONE_MINUS_CONSTANT_ALPHA);
-    CHECK(State::SrcAlphaSaturate == GL_SRC_ALPHA_SATURATE);
     CHECK(State::InvalidStateValue == 0xFFFFFFFF);
 }
 

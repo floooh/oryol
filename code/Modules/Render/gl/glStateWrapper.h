@@ -11,16 +11,17 @@
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
-#include "Render/Core/depthStencilState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
-#include "Render/Core/programBundle.h"
 
 namespace Oryol {
 namespace Render {
 
 class mesh;
 class stateBlock;
+class blendState;
+class programBundle;
+class depthStencilState;
     
 class glStateWrapper {
 public:
@@ -38,6 +39,8 @@ public:
     
     /// apply depth-stencil state
     void ApplyDepthStencilState(const depthStencilState* dss);
+    /// apply blend state
+    void ApplyBlendState(const blendState* bs);
     /// apply state block
     void ApplyStateBlock(const stateBlock* sb);
     /// apply state
@@ -114,6 +117,8 @@ private:
     void setupJumpTable();
     /// setup the initial depth-stencil-state
     void setupDepthStencilState();
+    /// setup the initial blend-state
+    void setupBlendState();
     /// FontFace state function
     void onFrontFace(const State::Vector& input);
     /// CullFaceEnabled state function
@@ -128,22 +133,10 @@ private:
     void onScissorTestEnabled(const State::Vector& input);
     /// ScissorRect state function
     void onScissorRect(const State::Vector& input);
-    /// BlendEnabled state function
-    void onBlendEnabled(const State::Vector& input);
-    /// BlendEquation state function
-    void onBlendEquation(const State::Vector& input);
-    /// BlendEquationSeparate state function
-    void onBlendEquationSeparate(const State::Vector& input);
-    /// BlendFunc state function
-    void onBlendFunc(const State::Vector& input);
-    /// BlendFuncSeparate state function
-    void onBlendFuncSeparate(const State::Vector& input);
     /// BlendColor state function
     void onBlendColor(const State::Vector& input);
     /// DitherEnabled state function
     void onDitherEnabled(const State::Vector& input);
-    /// ColorMask state function
-    void onColorMask(const State::Vector& input);
     /// ClearColor state function
     void onClearColor(const State::Vector& input);
     /// ClearDepth state function
@@ -175,8 +168,21 @@ private:
         } stencilState[Face::NumSides];
     } curDepthStencilState;
     
+    struct {
+        bool blendingEnabled;
+        BlendFactor::Code rgbSrcFactor;
+        BlendFactor::Code rgbDstFactor;
+        BlendOperation::Code rgbBlendOperation;
+        BlendFactor::Code alphaSrcFactor;
+        BlendFactor::Code alphaDstFactor;
+        BlendOperation::Code alphaBlendOperation;
+        ColorWriteMask::Code colorWriteMask;
+    } curBlendState;
+    
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];
+    static GLenum mapBlendFactor[BlendFactor::NumBlendFactors];
+    static GLenum mapBlendOp[BlendOperation::NumBlendOperations];
     
     GLenum curFrontFaceMode;
     bool curCullFaceEnabled;
@@ -192,23 +198,12 @@ private:
     GLsizei curScissorWidth;
     GLsizei curScissorHeight;
     
-    bool curBlendEnabled;
-    GLenum curBlendEquationRGB;
-    GLenum curBlendEquationAlpha;
-    GLenum curBlendFuncSrcRGB;
-    GLenum curBlendFuncSrcAlpha;
-    GLenum curBlendFuncDstRGB;
-    GLenum curBlendFuncDstAlpha;
     GLclampf curBlendColorR;
     GLclampf curBlendColorG;
     GLclampf curBlendColorB;
     GLclampf curBlendColorA;
     
     bool curDitherEnabled;
-    bool curColorMaskR;
-    bool curColorMaskG;
-    bool curColorMaskB;
-    bool curColorMaskA;
     GLclampf curClearColorR;
     GLclampf curClearColorG;
     GLclampf curClearColorB;

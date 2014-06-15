@@ -150,22 +150,6 @@ public:
         Back = 0x0405,          ///< GL_BACK, polygon back side
         FrontAndBack = 0x0408,  ///< GL_FRONT_AND_BACK, polygon front and back
         
-        Zero = 0,                   ///< GL_ZERO, blend factor: zero
-        One = 1,                    ///< GL_ONE, blend factor: set to one
-        SrcColor = 0x0300,          ///< GL_SRC_COLOR, blend factor: src-color
-        InvSrcColor = 0x0301,       ///< GL_ONE_MINUS_SRC_COLOR, blend factor: one-minus-src-color
-        DstColor = 0x0306,          ///< GL_DST_COLOR, blend factor: dst-color
-        InvDstColor = 0x0307,       ///< GL_ONE_MINUS_DST_COLOR, blend factor: one-minus-dst-color
-        SrcAlpha = 0x0302,          ///< GL_SRC_ALPHA, blend factor: src-alpha
-        InvSrcAlpha = 0x0303,       ///< GL_ONE_MINUS_SRC_ALPHA, blend factor: one-minus-src-alpha
-        DstAlpha = 0x0304,          ///< GL_DST_ALPHA, blend factor: dst-alpha
-        InvDstAlpha = 0x0305,       ///< GL_ONE_MINUS_DST_ALPHA, blend factor: one-minus-dst-alpha
-        ConstColor = 0x8001,        ///< GL_CONSTANT_COLOR, blend factor: constant-color
-        InvConstColor = 0x8002,     ///< GL_ONE_MINUS_CONSTANT_COLOR, blend factor: one-minus-constant-color
-        ConstAlpha = 0x8003,        ///< GL_CONSTANT_ALPHA, blend factor: constant-alpha
-        InvConstAlpha = 0x8004,     ///< GL_ONE_MINUS_CONSTANT_ALPHA, blend factor: one-minus-constant-alpha
-        SrcAlphaSaturate = 0x0308,  ///< GL_SRC_ALPHA_SATURATE, blend factor: (f,f,f), f=min(As,1-Ad)
-        
         InvalidStateValue = 0xFFFFFFFF
     };
 };

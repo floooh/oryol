@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Render::DepthStencilStateSetup
-    @brief setup object for DepthStencilState resources
+    @brief setup object for depthStencilState resources
 */
 #include "Resource/Locator.h"
 #include "Render/Core/Enums.h"

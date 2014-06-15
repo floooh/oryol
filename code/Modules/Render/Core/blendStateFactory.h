@@ -1,21 +1,21 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::depthStencilStateFactory
-    @brief private: resource factory for depthStencilState objects
+    @class Oryol::Render::blendStateFactory
+    @brief factory class for blendState resource
 */
 #include "Resource/simpleFactory.h"
-#include "Render/Core/depthStencilState.h"
+#include "Render/Core/blendState.h"
 
 namespace Oryol {
 namespace Render {
-    
-class depthStencilStateFactory : public Resource::simpleFactory<depthStencilState> {
+
+class blendStateFactory : public Resource::simpleFactory<blendState> {
 public:
     /// constructor
-    depthStencilStateFactory();
+    blendStateFactory();
     /// destructor
-    ~depthStencilStateFactory();
+    ~blendStateFactory();
     
     /// get the resource type this factory produces
     uint16 GetResourceType() const;
@@ -28,13 +28,13 @@ public:
     bool IsValid() const;
     
     /// setup shader resource
-    void SetupResource(depthStencilState& dds);
+    void SetupResource(blendState& bs);
     /// destroy the shader
-    void DestroyResource(depthStencilState& dds);
+    void DestroyResource(blendState& bs);
     
 private:
     bool isValid;
 };
-    
+
 } // namespace Render
 } // namespace Oryol

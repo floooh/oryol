@@ -8,6 +8,9 @@
 #include "Core/Memory/Memory.h"
 #include "Render/Core/mesh.h"
 #include "Render/Core/stateBlock.h"
+#include "Render/Core/programBundle.h"
+#include "Render/Core/depthStencilState.h"
+#include "Render/Core/blendState.h"
 
 namespace Oryol {
 namespace Render {
@@ -36,6 +39,30 @@ GLenum glStateWrapper::mapStencilOp[StencilOp::NumStencilOperations] = {
     GL_DECR_WRAP
 };
 
+GLenum glStateWrapper::mapBlendFactor[BlendFactor::NumBlendFactors] = {
+    GL_ZERO,
+    GL_ONE,
+    GL_SRC_COLOR,
+    GL_ONE_MINUS_SRC_COLOR,
+    GL_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_DST_COLOR,
+    GL_ONE_MINUS_DST_COLOR,
+    GL_DST_ALPHA,
+    GL_ONE_MINUS_DST_ALPHA,
+    GL_SRC_ALPHA_SATURATE,
+    GL_CONSTANT_COLOR,
+    GL_ONE_MINUS_CONSTANT_COLOR,
+    GL_CONSTANT_ALPHA,
+    GL_ONE_MINUS_CONSTANT_ALPHA,
+};
+
+GLenum glStateWrapper::mapBlendOp[BlendOperation::NumBlendOperations] = {
+    GL_FUNC_ADD,
+    GL_FUNC_SUBTRACT,
+    GL_FUNC_REVERSE_SUBTRACT,
+};
+
 //------------------------------------------------------------------------------
 glStateWrapper::glStateWrapper() :
 isValid(false),
@@ -50,22 +77,11 @@ curScissorLeft(0),
 curScissorBottom(0),
 curScissorWidth(-1),
 curScissorHeight(-1),
-curBlendEnabled(false),
-curBlendEquationRGB(GL_FUNC_ADD),
-curBlendEquationAlpha(GL_FUNC_ADD),
-curBlendFuncSrcRGB(GL_ONE),
-curBlendFuncSrcAlpha(GL_ONE),
-curBlendFuncDstRGB(GL_ZERO),
-curBlendFuncDstAlpha(GL_ZERO),
 curBlendColorR(0.0f),
 curBlendColorG(0.0f),
 curBlendColorB(0.0f),
 curBlendColorA(0.0f),
 curDitherEnabled(false),
-curColorMaskR(true),
-curColorMaskG(true),
-curColorMaskB(true),
-curColorMaskA(true),
 curClearColorR(0.0f),
 curClearColorG(0.0f),
 curClearColorB(0.0f),
@@ -104,6 +120,7 @@ glStateWrapper::Setup() {
     #endif
 
     this->setupDepthStencilState();
+    this->setupBlendState();
 }
 
 //------------------------------------------------------------------------------
@@ -162,6 +179,7 @@ glStateWrapper::applyStencilState(const depthStencilState* dds, Face::Code face,
         this->curDepthStencilState.stencilState[face].stencilReadMask = readMask;
         this->curDepthStencilState.stencilState[face].stencilRef = stencilRef;
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
+        ORYOL_GL_CHECK_ERROR();
     }
     
     const StencilOp::Code sFailOp = setup.GetStencilFailOp(face);
@@ -178,15 +196,15 @@ glStateWrapper::applyStencilState(const depthStencilState* dds, Face::Code face,
         this->curDepthStencilState.stencilState[face].depthFailOp = sFailOp;
         this->curDepthStencilState.stencilState[face].depthStencilPassOp = passOp;
         ::glStencilOpSeparate(GL_FRONT, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
+        ORYOL_GL_CHECK_ERROR();
     }
     
     const uint32 writeMask = setup.GetStencilWriteMask(face);
     if (writeMask != this->curDepthStencilState.stencilState[face].stencilWriteMask) {
         this->curDepthStencilState.stencilState[face].stencilWriteMask = writeMask;
         ::glStencilMask(writeMask);
+        ORYOL_GL_CHECK_ERROR();
     }
-    
-    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -200,12 +218,14 @@ glStateWrapper::ApplyDepthStencilState(const depthStencilState* dds) {
     if (depthCmpFunc != this->curDepthStencilState.depthCompareFunc) {
         this->curDepthStencilState.depthCompareFunc = depthCmpFunc;
         ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
+        ORYOL_GL_CHECK_ERROR();
     }
 
     const bool depthWriteEnabled = setup.GetDepthWriteEnabled();
     if (depthWriteEnabled != this->curDepthStencilState.depthWriteEnabled) {
         this->curDepthStencilState.depthWriteEnabled = depthWriteEnabled;
         ::glDepthMask(depthWriteEnabled);
+        ORYOL_GL_CHECK_ERROR();
     }
     
     const bool stencilTestEnabled = setup.GetStencilTestEnabled();
@@ -217,10 +237,89 @@ glStateWrapper::ApplyDepthStencilState(const depthStencilState* dds) {
         else {
             ::glDisable(GL_STENCIL_TEST);
         }
+        ORYOL_GL_CHECK_ERROR();
     }
     
     this->applyStencilState(dds, Face::Front, GL_FRONT);
     this->applyStencilState(dds, Face::Back, GL_BACK);
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::setupBlendState() {
+    this->curBlendState.blendingEnabled = false;
+    this->curBlendState.rgbSrcFactor = BlendFactor::One;
+    this->curBlendState.rgbDstFactor = BlendFactor::Zero;
+    this->curBlendState.rgbBlendOperation = BlendOperation::Add;
+    this->curBlendState.alphaSrcFactor = BlendFactor::One;
+    this->curBlendState.alphaDstFactor = BlendFactor::Zero;
+    this->curBlendState.alphaBlendOperation = BlendOperation::Add;
+    this->curBlendState.colorWriteMask = ColorWriteMask::All;
+    
+    ::glDisable(GL_BLEND);
+    ::glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+    ::glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyBlendState(const blendState* bs) {
+    o_assert_dbg((nullptr != bs) && (bs->GetState() == Resource::State::Valid));
+    const BlendStateSetup& setup = bs->GetSetup();
+    
+    const bool enabled = setup.GetBlendingEnabled();
+    if (enabled != this->curBlendState.blendingEnabled) {
+        this->curBlendState.blendingEnabled = enabled;
+        if (enabled) {
+            ::glEnable(GL_BLEND);
+        }
+        else {
+            ::glDisable(GL_BLEND);
+        }
+        ORYOL_GL_CHECK_ERROR();
+    }
+    const BlendFactor::Code srcRgbFactor = setup.GetSrcFactorRGB();
+    const BlendFactor::Code dstRgbFactor = setup.GetDstFactorRGB();
+    const BlendFactor::Code srcAlphaFactor = setup.GetSrcFactorAlpha();
+    const BlendFactor::Code dstAlphaFactor = setup.GetDstFactorAlpha();
+    if ((srcRgbFactor != this->curBlendState.rgbSrcFactor) ||
+        (dstRgbFactor != this->curBlendState.rgbDstFactor) ||
+        (srcAlphaFactor != this->curBlendState.alphaSrcFactor) ||
+        (dstAlphaFactor != this->curBlendState.alphaDstFactor)) {
+        
+        this->curBlendState.rgbSrcFactor = srcRgbFactor;
+        this->curBlendState.rgbDstFactor = dstRgbFactor;
+        this->curBlendState.alphaSrcFactor = srcAlphaFactor;
+        this->curBlendState.alphaDstFactor = dstAlphaFactor;
+        
+        ::glBlendFuncSeparate(mapBlendFactor[srcRgbFactor],
+                              mapBlendFactor[dstRgbFactor],
+                              mapBlendFactor[srcAlphaFactor],
+                              mapBlendFactor[dstAlphaFactor]);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    const BlendOperation::Code rgbOp = setup.GetOpRGB();
+    const BlendOperation::Code alphaOp = setup.GetOpAlpha();
+    if ((rgbOp != this->curBlendState.rgbBlendOperation) ||
+        (alphaOp != this->curBlendState.alphaBlendOperation)) {
+        
+        this->curBlendState.rgbBlendOperation = rgbOp;
+        this->curBlendState.alphaBlendOperation = alphaOp;
+        
+        ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    
+    const ColorWriteMask::Code colorMask = setup.GetColorWriteMask();
+    if (colorMask != this->curBlendState.colorWriteMask) {
+        ::glColorMask((colorMask & ColorWriteMask::R) != 0,
+                      (colorMask & ColorWriteMask::G) != 0,
+                      (colorMask & ColorWriteMask::B) != 0,
+                      (colorMask & ColorWriteMask::A) != 0);
+        ORYOL_GL_CHECK_ERROR();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -319,74 +418,6 @@ glStateWrapper::onScissorRect(const State::Vector& input) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onBlendEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curBlendEnabled) {
-        this->curBlendEnabled = b0;
-        if (b0) {
-            ::glEnable(GL_BLEND);
-        }
-        else {
-            ::glDisable(GL_BLEND);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onBlendEquation(const State::Vector& input) {
-    const GLenum mode = input.val[0].v;
-    if ((mode != this->curBlendEquationRGB) || (mode != this->curBlendEquationAlpha)) {
-        this->curBlendEquationRGB = mode;
-        this->curBlendEquationAlpha = mode;
-        ::glBlendEquation(mode);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onBlendEquationSeparate(const State::Vector& input) {
-    const GLenum modeRGB = input.val[0].v;
-    const GLenum modeAlpha = input.val[1].v;
-    if ((modeRGB != this->curBlendEquationRGB) || (modeAlpha != this->curBlendEquationAlpha)) {
-        this->curBlendEquationRGB = modeRGB;
-        this->curBlendEquationAlpha = modeAlpha;
-        ::glBlendEquationSeparate(modeRGB, modeAlpha);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onBlendFunc(const State::Vector& input) {
-    const GLenum src = input.val[0].v;
-    const GLenum dst = input.val[1].v;
-    if ((src != this->curBlendFuncSrcRGB) || (src != this->curBlendFuncSrcAlpha) ||
-        (dst != this->curBlendFuncDstRGB) || (dst != this->curBlendFuncDstAlpha)) {
-        this->curBlendFuncSrcRGB = this->curBlendFuncSrcAlpha = src;
-        this->curBlendFuncDstRGB = this->curBlendFuncDstAlpha = dst;
-        ::glBlendFunc(src, dst);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onBlendFuncSeparate(const State::Vector& input) {
-    const GLenum srcRGB = input.val[0].v;
-    const GLenum dstRGB = input.val[1].v;
-    const GLenum srcAlpha = input.val[2].v;
-    const GLenum dstAlpha = input.val[3].v;
-    if ((srcRGB != this->curBlendFuncSrcRGB) || (srcAlpha != this->curBlendFuncSrcAlpha) ||
-        (dstRGB != this->curBlendFuncDstRGB) || (dstAlpha != this->curBlendFuncDstAlpha)) {
-        this->curBlendFuncSrcRGB = srcRGB;
-        this->curBlendFuncSrcAlpha = srcAlpha;
-        this->curBlendFuncDstRGB = dstRGB;
-        this->curBlendFuncDstAlpha = dstAlpha;
-        ::glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glStateWrapper::onBlendColor(const State::Vector& input) {
     const GLclampf r = input.val[0].f;
     const GLclampf g = input.val[1].f;
@@ -413,22 +444,6 @@ glStateWrapper::onDitherEnabled(const State::Vector& input) {
         else {
             ::glDisable(GL_DITHER);
         }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onColorMask(const State::Vector& input) {
-    const bool br = input.val[0].b;
-    const bool bg = input.val[1].b;
-    const bool bb = input.val[2].b;
-    const bool ba = input.val[3].b;
-    if ((br != this->curColorMaskR) || (bg != this->curColorMaskG) || (bb != this->curColorMaskB) || (ba != this->curColorMaskA)) {
-        this->curColorMaskR = br;
-        this->curColorMaskG = bg;
-        this->curColorMaskB = bb;
-        this->curColorMaskA = ba;
-        ::glColorMask(br, bg, bb, ba);
     }
 }
 
@@ -523,26 +538,6 @@ glStateWrapper::setupJumpTable() {
     this->funcs[State::ScissorRect].cb = &glStateWrapper::onScissorRect;
     this->funcs[State::ScissorRect].sig = State::I0_I1_I2_I3;
     
-    // glEnable(GL_BLEND)
-    this->funcs[State::BlendEnabled].cb = &glStateWrapper::onBlendEnabled;
-    this->funcs[State::BlendEnabled].sig = State::B0;
-    
-    // glBlendEquation(GLenum)
-    this->funcs[State::BlendEquation].cb = &glStateWrapper::onBlendEquation;
-    this->funcs[State::BlendEquation].sig = State::V0;
-    
-    // glBlendEquationSeparate(GLenum, GLenum)
-    this->funcs[State::BlendEquationSeparate].cb = &glStateWrapper::onBlendEquationSeparate;
-    this->funcs[State::BlendEquationSeparate].sig = State::V0_V1;
-    
-    // glBlendFunc(GLenum, GLenum)
-    this->funcs[State::BlendFunc].cb = &glStateWrapper::onBlendFunc;
-    this->funcs[State::BlendFunc].sig = State::V0_V1;
-    
-    // glBlendFuncSeparate(GLenum, GLenum, GLenum, GLenum)
-    this->funcs[State::BlendFuncSeparate].cb = &glStateWrapper::onBlendFuncSeparate;
-    this->funcs[State::BlendFuncSeparate].sig = State::V0_V1_V2_V3;
-    
     // glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf)
     this->funcs[State::BlendColor].cb = &glStateWrapper::onBlendColor;
     this->funcs[State::BlendColor].sig = State::F0_F1_F2_F3;
@@ -550,10 +545,6 @@ glStateWrapper::setupJumpTable() {
     // glEnable(GL_DITHER)
     this->funcs[State::DitherEnabled].cb = &glStateWrapper::onDitherEnabled;
     this->funcs[State::DitherEnabled].sig = State::B0;
-    
-    // glColorMask(GLenum, GLenum, GLenum, GLenum)
-    this->funcs[State::ColorMask].cb = &glStateWrapper::onColorMask;
-    this->funcs[State::ColorMask].sig = State::B0_B1_B2_B3;
     
     // glClearColor(GLclampf, GLclampf, GLclampf, GLclampf)
     this->funcs[State::ClearColor].cb = &glStateWrapper::onClearColor;

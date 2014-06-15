@@ -167,6 +167,13 @@ RenderFacade::ApplyDepthStencilState(const Id& resId) {
 
 //------------------------------------------------------------------------------
 void
+RenderFacade::ApplyBlendState(const Id& resId) {
+    o_assert_dbg(this->valid);
+    this->stateWrapper.ApplyBlendState(this->resourceManager.LookupBlendState(resId));
+}
+
+//------------------------------------------------------------------------------
+void
 RenderFacade::ApplyStateBlock(const Id& resId) {
     o_assert_dbg(this->valid);
     this->stateWrapper.ApplyStateBlock(this->resourceManager.LookupStateBlock(resId));

@@ -78,7 +78,8 @@ private:
     Resource::Id textMesh;
     Resource::Id textShader;
     Resource::Id textDepthStencilState;
-    Resource::Id textStateBlock;
+    Resource::Id textBlendState;
+    Resource::Id defaultBlendState;
     Core::StringBuilder stringBuilder;
     bool valid;
     

@@ -63,12 +63,14 @@ debugTextRenderer::discard() {
     this->valid = false;
     RenderFacade* renderFacade = RenderFacade::Instance();
     renderFacade->DiscardResource(this->textDepthStencilState);
-    renderFacade->DiscardResource(this->textStateBlock);
+    renderFacade->DiscardResource(this->textBlendState);
+    renderFacade->DiscardResource(this->defaultBlendState);
     renderFacade->DiscardResource(this->textShader);
     renderFacade->DiscardResource(this->textMesh);
     renderFacade->DiscardResource(this->fontTexture);
     this->textDepthStencilState.Invalidate();
-    this->textStateBlock.Invalidate();
+    this->textBlendState.Invalidate();
+    this->defaultBlendState.Invalidate();
     this->textShader.Invalidate();
     this->textMesh.Invalidate();
     this->fontTexture.Invalidate();
@@ -154,13 +156,13 @@ debugTextRenderer::drawTextBuffer() {
         renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.GetByteSize(), this->vertexData);
         
         renderFacade->ApplyDepthStencilState(this->textDepthStencilState);
-        renderFacade->ApplyStateBlock(this->textStateBlock);
+        renderFacade->ApplyBlendState(this->textBlendState);
         renderFacade->ApplyMesh(this->textMesh);
         renderFacade->ApplyProgram(this->textShader, 0);
         renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
         renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
         renderFacade->Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
-        renderFacade->ApplyState(State::BlendEnabled, false);
+        renderFacade->ApplyBlendState(this->defaultBlendState);
     }
 }
 
@@ -240,20 +242,28 @@ debugTextRenderer::setupTextShader(RenderFacade* renderFacade) {
 void
 debugTextRenderer::setupTextState(RenderFacade* renderFacade) {
     o_assert(nullptr != renderFacade);
-    o_assert(!this->textStateBlock.IsValid());
+    o_assert(!this->textBlendState.IsValid());
+    o_assert(!this->textDepthStencilState.IsValid());
     
     DepthStencilStateSetup dssSetup("_dbgDepthStencilState");
     dssSetup.SetDepthWriteEnabled(false);
     dssSetup.SetDepthCompareFunc(CompareFunc::Always);
     this->textDepthStencilState = renderFacade->CreateResource(dssSetup);
+    o_assert(this->textDepthStencilState.IsValid());
+    o_assert(renderFacade->QueryResourceState(this->textDepthStencilState) == Resource::State::Valid);
     
-    StateBlockSetup sbSetup("_dbgStateBlock");
-    sbSetup.AddState(State::ColorMask, true, true, true, true);
-    sbSetup.AddState(State::BlendEnabled, true);
-    sbSetup.AddState(State::BlendFunc, State::SrcAlpha, State::InvSrcAlpha);
-    this->textStateBlock = renderFacade->CreateResource(sbSetup);
-    o_assert(this->textStateBlock.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->textStateBlock) == Resource::State::Valid);
+    BlendStateSetup bsSetup("_dbgBlendState");
+    bsSetup.SetBlendingEnabled(true);
+    bsSetup.SetColorWriteMask(ColorWriteMask::RGBA);
+    bsSetup.SetSrcFactorRGB(BlendFactor::SrcAlpha);
+    bsSetup.SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
+    this->textBlendState = renderFacade->CreateResource(bsSetup);
+    o_assert(this->textBlendState.IsValid());
+    o_assert(renderFacade->QueryResourceState(this->textBlendState) == Resource::State::Valid);
+    
+    this->defaultBlendState = renderFacade->CreateResource(BlendStateSetup("_defaultBlendState"));
+    o_assert(this->defaultBlendState.IsValid());
+    o_assert(renderFacade->QueryResourceState(this->defaultBlendState) == Resource::State::Valid);
 }
 
 //------------------------------------------------------------------------------
