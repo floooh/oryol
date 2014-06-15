@@ -43,15 +43,7 @@ public:
     /// apply state
     void ApplyState(State::Code state, bool b0);
     /// apply state
-    void ApplyState(State::Code state, bool b0, bool b1, bool b2, bool b3);
-    /// apply state
     void ApplyState(State::Code state, State::Value v0);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, State::Value v1);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, State::Value v1, State::Value v2);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, State::Value v1, State::Value v2, State::Value v3);
     /// apply state
     void ApplyState(State::Code state, float32 f0);
     /// apply state
@@ -61,15 +53,7 @@ public:
     /// apply state
     void ApplyState(State::Code state, int32 i0);
     /// apply state
-    void ApplyState(State::Code state, int32 i0, int32 i1);
-    /// apply state
     void ApplyState(State::Code state, int32 i0, int32 i1, int32 i2, int32 i3);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, int32 i0);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, int32 i0, int32 i1);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0, State::Value v1, int32 i0, int32 i1);
     
     /// invalidate bound mesh state
     void InvalidateMeshState();
@@ -234,60 +218,11 @@ glStateWrapper::ApplyState(State::Code c, bool b0) {
 
 //------------------------------------------------------------------------------
 inline void
-glStateWrapper::ApplyState(State::Code c, bool b0, bool b1, bool b2, bool b3) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::B0_B1_B2_B3 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].b = b0;
-    values.val[1].b = b1;
-    values.val[2].b = b2;
-    values.val[3].b = b3;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
 glStateWrapper::ApplyState(State::Code c, State::Value v0) {
     o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
     o_assert_dbg(State::V0 == this->funcs[c].sig);
     State::Vector values;
     values.val[0].v = v0;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, State::Value v1) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_V1 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].v = v1;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, State::Value v1, State::Value v2) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_V1_V2 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].v = v1;
-    values.val[2].v = v2;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, State::Value v1, State::Value v2, State::Value v3) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_V1_V2_V3 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].v = v1;
-    values.val[2].v = v2;
-    values.val[3].v = v3;
     (this->*funcs[c].cb)(values);
 }
 
@@ -337,17 +272,6 @@ glStateWrapper::ApplyState(State::Code c, int32 i0) {
     
 //------------------------------------------------------------------------------
 inline void
-glStateWrapper::ApplyState(State::Code c, int32 i0, int32 i1) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::I0_I1 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].i = i0;
-    values.val[1].i = i1;
-    (this->*funcs[c].cb)(values);
-}
-    
-//------------------------------------------------------------------------------
-inline void
 glStateWrapper::ApplyState(State::Code c, int32 i0, int32 i1, int32 i2, int32 i3) {
     o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
     o_assert_dbg(State::I0_I1_I2_I3 == this->funcs[c].sig);
@@ -356,42 +280,6 @@ glStateWrapper::ApplyState(State::Code c, int32 i0, int32 i1, int32 i2, int32 i3
     values.val[1].i = i1;
     values.val[2].i = i2;
     values.val[3].i = i3;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, int32 i0) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_I0 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].i = i0;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, int32 i0, int32 i1) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_I0_I1 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].i = i0;
-    values.val[2].i = i1;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0, State::Value v1, int32 i0, int32 i1) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0_V1_I0_I1 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    values.val[1].v = v1;
-    values.val[2].i = i0;
-    values.val[3].i = i1;
     (this->*funcs[c].cb)(values);
 }
 

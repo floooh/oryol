@@ -163,32 +163,38 @@ RenderFacade::ApplyState(State::Code state, bool b) {
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyState(State::Code state, bool b0, bool b1, bool b2, bool b3) {
-    this->stateWrapper.ApplyState(state, b0, b1, b2, b3);
-}
-
-//------------------------------------------------------------------------------
-template<> inline void
 RenderFacade::ApplyState(State::Code state, State::Value val) {
     this->stateWrapper.ApplyState(state, val);
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyState(State::Code state, State::Value v0, State::Value v1) {
-    this->stateWrapper.ApplyState(state, v0, v1);
+RenderFacade::ApplyState(State::Code state, float32 f0) {
+    this->stateWrapper.ApplyState(state, f0);
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyState(State::Code state, float32 v0) {
-    this->stateWrapper.ApplyState(state, v0);
+RenderFacade::ApplyState(State::Code state, float32 f0, float32 f1) {
+    this->stateWrapper.ApplyState(state, f0, f1);
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyState(State::Code state, float32 v0, float32 v1, float32 v2, float32 v3) {
-    this->stateWrapper.ApplyState(state, v0, v1, v2, v3);
+RenderFacade::ApplyState(State::Code state, float32 f0, float32 f1, float32 f2, float32 f3) {
+    this->stateWrapper.ApplyState(state, f0, f1, f2, f3);
+}
+
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, int32 i0) {
+    this->stateWrapper.ApplyState(state, i0);
+}
+    
+//------------------------------------------------------------------------------
+template<> inline void
+RenderFacade::ApplyState(State::Code state, int32 i0, int32 i1, int32 i2, int32 i3) {
+    this->stateWrapper.ApplyState(state, i0, i1, i2, i3);
 }
 
 //------------------------------------------------------------------------------
