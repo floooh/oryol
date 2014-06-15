@@ -75,8 +75,6 @@ public:
     void ApplyDepthStencilState(const Resource::Id& resId);
     /// apply a blend state block
     void ApplyBlendState(const Resource::Id& resId);
-    /// apply a render state block
-    void ApplyStateBlock(const Resource::Id& resId);
     /// apply a shader constant block
     void ApplyConstantBlock(const Resource::Id& resId);
     /// apply state with 1..4 arguments

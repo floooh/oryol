@@ -7,7 +7,6 @@
 #include "Render/gl/glExt.h"
 #include "Core/Memory/Memory.h"
 #include "Render/Core/mesh.h"
-#include "Render/Core/stateBlock.h"
 #include "Render/Core/programBundle.h"
 #include "Render/Core/depthStencilState.h"
 #include "Render/Core/blendState.h"
@@ -736,20 +735,6 @@ glStateWrapper::BindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
         ORYOL_GL_CHECK_ERROR();
         ::glBindTexture(target, tex);
         ORYOL_GL_CHECK_ERROR();
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::ApplyStateBlock(const stateBlock* sb) {
-    o_assert_dbg((nullptr != sb) && (sb->GetState() == Resource::State::Valid));
-    int32 numStates = sb->GetNumStates();
-    const State::Object* states = sb->GetStates();
-    for (int32 i = 0; i < numStates; i++) {
-        const State::Object& curState = states[i];
-        o_assert_dbg((curState.state >= 0) && (curState.state < State::NumStateCodes));
-        o_assert_dbg(curState.sig == this->funcs[curState.state].sig);
-        (this->*funcs[curState.state].cb)(curState.vec);
     }
 }
 

@@ -18,7 +18,6 @@ namespace Oryol {
 namespace Render {
 
 class mesh;
-class stateBlock;
 class blendState;
 class programBundle;
 class depthStencilState;
@@ -41,8 +40,6 @@ public:
     void ApplyDepthStencilState(const depthStencilState* dss);
     /// apply blend state
     void ApplyBlendState(const blendState* bs);
-    /// apply state block
-    void ApplyStateBlock(const stateBlock* sb);
     /// apply state
     void ApplyState(State::Code state, bool b0);
     /// apply state

@@ -56,8 +56,6 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
-    this->stateBlockFactory.Setup();
-    this->stateBlockPool.Setup(&this->stateBlockFactory, setup.GetPoolSize(ResourceType::StateBlock), 0, 'SBLK');
     this->depthStencilStateFactory.Setup();
     this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
     this->blendStateFactory.Setup();
@@ -76,8 +74,6 @@ resourceMgr::Discard() {
     this->blendStateFactory.Discard();
     this->depthStencilStatePool.Discard();
     this->depthStencilStateFactory.Discard();
-    this->stateBlockPool.Discard();
-    this->stateBlockFactory.Discard();
     this->texturePool.Discard();
     this->textureFactory.Discard();
     this->programBundlePool.Discard();
@@ -227,24 +223,6 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> Id
-resourceMgr::CreateResource(const StateBlockSetup& setup) {
-    o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
-    if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::StateBlock);
-        return resId;
-    }
-    else {
-        resId = this->stateBlockPool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
-        this->stateBlockPool.Assign(resId, setup);
-        return resId;
-    }
-}
-
-//------------------------------------------------------------------------------
-template<> Id
 resourceMgr::CreateResource(const DepthStencilStateSetup& setup) {
     o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
@@ -306,9 +284,6 @@ resourceMgr::DiscardResource(const Id& resId) {
                 case ResourceType::ProgramBundle:
                     this->programBundlePool.Unassign(removeId);
                     break;
-                case ResourceType::StateBlock:
-                    this->stateBlockPool.Unassign(removeId);
-                    break;
                 case ResourceType::ConstantBlock:
                     o_assert2(false, "FIXME!!!\n");
                     break;
@@ -339,8 +314,6 @@ resourceMgr::QueryResourceState(const Id& resId) {
             return this->shaderPool.QueryState(resId);
         case ResourceType::ProgramBundle:
             return this->programBundlePool.QueryState(resId);
-        case ResourceType::StateBlock:
-            return this->stateBlockPool.QueryState(resId);
         case ResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
             break;

@@ -173,13 +173,6 @@ RenderFacade::ApplyBlendState(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-void
-RenderFacade::ApplyStateBlock(const Id& resId) {
-    o_assert_dbg(this->valid);
-    this->stateWrapper.ApplyStateBlock(this->resourceManager.LookupStateBlock(resId));
-}
-
-//------------------------------------------------------------------------------
 bool
 RenderFacade::BeginFrame() {
     this->resourceManager.Update();

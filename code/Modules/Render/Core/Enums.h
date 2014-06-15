@@ -264,7 +264,6 @@ public:
         Mesh,               ///< a mesh
         Shader,             ///< a vertex shader
         ProgramBundle,      ///< shader program bundle
-        StateBlock,         ///< block of render states
         ConstantBlock,      ///< block constant shader uniforms
         DepthStencilState,  ///< depth-stencil state block
         BlendState,         ///< blending state block
