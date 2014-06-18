@@ -101,6 +101,8 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
         const void* dataPtr = data->MapRead(nullptr);
         const int32 dataSize = data->Size();
         gliml::context ctx;
+        ctx.enable_dxt(glExt::HasExtension(glExt::TextureCompressionDXT));
+        ctx.enable_pvr(glExt::HasExtension(glExt::TextureCompressionPVR));
         if (ctx.load(dataPtr, dataSize)) {
             if (this->glCreateTexture(tex, ctx)) {
                 tex.setState(Resource::State::Valid);
@@ -127,38 +129,6 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     o_assert(this->texFactory);
     const TextureSetup& setup = tex.GetSetup();
     const GLenum glTexTarget = ctx.texture_target();
-    
-    // first check if the image is in a compressed format, and whether the
-    // matching compressed texture extension is supported
-    if (ctx.is_compressed()) {
-        const GLint glImageFormat = ctx.image_internal_format();
-        if ((glImageFormat == GLIML_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG) ||
-            (glImageFormat == GLIML_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG) ||
-            (glImageFormat == GLIML_GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG) ||
-            (glImageFormat == GLIML_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG))
-        {
-            // PowerVR compressed format
-            if (!glExt::HasExtension(glExt::TextureCompressionPVR)) {
-                Log::Warn("PVR texture format not supported (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
-                return false;
-            }
-        }
-        else if ((glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ||
-                 (glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT) ||
-                 (glImageFormat == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT))
-        {
-            // DXT compressed format
-            if (!glExt::HasExtension(glExt::TextureCompressionDXT)) {
-                Log::Warn("DXT texture format not supported (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
-                return false;
-            }
-        }
-        else {
-            // unknown compressed format
-            Log::Warn("Unsupported compressed format (%s)\n", tex.GetSetup().GetLocator().Location().AsCStr());
-            return false;
-        }
-    }
     
     // create a texture object
     GLuint glTex = this->texFactory->glGenAndBindTexture(glTexTarget);
