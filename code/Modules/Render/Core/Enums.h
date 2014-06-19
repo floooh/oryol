@@ -542,7 +542,7 @@ class Feature {
 public:
     enum Code {
         TextureCompressionDXT,      ///< GPU supports DXT compressed textures
-        TextureCompressionPVR,      ///< GPU supports PVR compressed textures
+        TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
         TextureCompressionATC,      ///< GPU supports ATC compressed textures
         
         NumFeatures,

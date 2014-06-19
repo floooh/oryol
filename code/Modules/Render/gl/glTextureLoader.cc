@@ -102,7 +102,7 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
         const int32 dataSize = data->Size();
         gliml::context ctx;
         ctx.enable_dxt(glExt::HasExtension(glExt::TextureCompressionDXT));
-        ctx.enable_pvr(glExt::HasExtension(glExt::TextureCompressionPVR));
+        ctx.enable_pvrtc(glExt::HasExtension(glExt::TextureCompressionPVRTC));
         if (ctx.load(dataPtr, dataSize)) {
             if (this->glCreateTexture(tex, ctx)) {
                 tex.setState(Resource::State::Valid);

@@ -66,7 +66,7 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.SetMagFilter(TextureFilterMode::Linear);
     texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
     texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
-    if (this->render->Supports(Feature::TextureCompressionPVR)) {
+    if (this->render->Supports(Feature::TextureCompressionPVRTC)) {
         this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
     }
     else {

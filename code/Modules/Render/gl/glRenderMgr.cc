@@ -25,8 +25,8 @@ glRenderMgr::Supports(Feature::Code feat) const {
     switch (feat) {
         case Feature::TextureCompressionDXT:
             return glExt::HasExtension(glExt::TextureCompressionDXT);
-        case Feature::TextureCompressionPVR:
-            return glExt::HasExtension(glExt::TextureCompressionPVR);
+        case Feature::TextureCompressionPVRTC:
+            return glExt::HasExtension(glExt::TextureCompressionPVRTC);
         case Feature::TextureCompressionATC:
             return glExt::HasExtension(glExt::TextureCompressionATC);
         default:

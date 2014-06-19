@@ -54,8 +54,8 @@ glExt::Setup() {
     extensions[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                         strBuilder.Contains("_compressed_texture_s3tc") ||
                                         strBuilder.Contains("_texture_compression_dxt1");
-    extensions[TextureCompressionPVR] = strBuilder.Contains("_texture_compression_pvrtc") ||
-                                        strBuilder.Contains("_compressed_texture_pvrtc");
+    extensions[TextureCompressionPVRTC] = strBuilder.Contains("_texture_compression_pvrtc") ||
+                                          strBuilder.Contains("_compressed_texture_pvrtc");
     extensions[TextureCompressionATC] = strBuilder.Contains("_compressed_ATC_texture") ||
                                         strBuilder.Contains("_compressed_texture_atc");
     #endif
