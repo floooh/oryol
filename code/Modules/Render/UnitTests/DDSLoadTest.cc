@@ -38,6 +38,7 @@ TEST(DDSLoadTest) {
         const void* data = stream->MapRead(nullptr);
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
+        ctx.enable_dxt(true);
         CHECK(ctx.load_dds(data, size));
         CHECK(ctx.error() == GLIML_SUCCESS);
         CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
@@ -77,6 +78,7 @@ TEST(DDSLoadTest) {
         const void* data = stream->MapRead(nullptr);
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
+        ctx.enable_dxt(true);
         CHECK(ctx.load_dds(data, size));
         CHECK(ctx.error() == GLIML_SUCCESS);
         CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
@@ -116,6 +118,7 @@ TEST(DDSLoadTest) {
         const void* data = stream->MapRead(nullptr);
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
+        ctx.enable_dxt(true);
         CHECK(ctx.load_dds(data, size));
         CHECK(ctx.error() == GLIML_SUCCESS);
         CHECK(ctx.texture_target() == GLIML_GL_TEXTURE_2D);
