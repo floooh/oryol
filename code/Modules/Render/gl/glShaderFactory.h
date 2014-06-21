@@ -4,7 +4,7 @@
     @class Oryol::Render::glShaderFactory
     @brief private: GL implementation of class shaderFactory
 */
-#include "Resource/simpleFactory.h"
+#include "Render/base/simpleFactory.h"
 #include "Render/Core/mesh.h"
 #include "Render/Core/Enums.h"
 
@@ -13,7 +13,7 @@ namespace Render {
     
 class shader;
     
-class glShaderFactory : public Resource::simpleFactory<shader> {
+class glShaderFactory : public simpleFactory<shader, ResourceType::Shader> {
 public:
     /// constructor
     glShaderFactory();

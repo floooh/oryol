@@ -4,7 +4,7 @@
     @class Oryol::Render::glProgramBundleFactory
     @brief private: GL implementation of programBundleFactory
 */
-#include "Resource/simpleFactory.h"
+#include "Render/base/simpleFactory.h"
 #include "Render/Core/programBundle.h"
 
 namespace Oryol {
@@ -14,7 +14,7 @@ class stateWrapper;
 class shaderPool;
 class shaderFactory;
     
-class glProgramBundleFactory : public Resource::simpleFactory<programBundle> {
+class glProgramBundleFactory : public simpleFactory<programBundle, ResourceType::ProgramBundle> {
 public:
     /// constructor
     glProgramBundleFactory();

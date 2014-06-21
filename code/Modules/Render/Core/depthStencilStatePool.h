@@ -11,8 +11,6 @@
 
 namespace Oryol {
 namespace Render {
-
 class depthStencilStatePool : public Resource::Pool<depthStencilState, DepthStencilStateSetup, depthStencilStateFactory> { };
-
 } // namespace Render
 } // namespace Oryol

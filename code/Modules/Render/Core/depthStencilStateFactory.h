@@ -4,37 +4,11 @@
     @class Oryol::Render::depthStencilStateFactory
     @brief private: resource factory for depthStencilState objects
 */
-#include "Resource/simpleFactory.h"
+#include "Render/base/simpleFactory.h"
 #include "Render/Core/depthStencilState.h"
 
 namespace Oryol {
 namespace Render {
-    
-class depthStencilStateFactory : public Resource::simpleFactory<depthStencilState> {
-public:
-    /// constructor
-    depthStencilStateFactory();
-    /// destructor
-    ~depthStencilStateFactory();
-    
-    /// get the resource type this factory produces
-    uint16 GetResourceType() const;
-    
-    /// setup the factory
-    void Setup();
-    /// discard the factory
-    void Discard();
-    /// return true if factory is valid
-    bool IsValid() const;
-    
-    /// setup shader resource
-    void SetupResource(depthStencilState& dds);
-    /// destroy the shader
-    void DestroyResource(depthStencilState& dds);
-    
-private:
-    bool isValid;
-};
-    
+class depthStencilStateFactory : public simpleFactory<depthStencilState, ResourceType::DepthStencilState> { };
 } // namespace Render
 } // namespace Oryol

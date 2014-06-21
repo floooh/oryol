@@ -5,24 +5,27 @@
     @brief private: resource factory to texture objects
     @todo describe texture factory
 */
+#include "Render/base/textureLoaderBase.h"
 #if ORYOL_OPENGL
 #include "Render/gl/glTextureFactory.h"
 namespace Oryol {
-namespace Render {
-    
+namespace Render {    
 class textureFactory : public glTextureFactory {
 public:
-    /// get the resource type this factory produces
-    uint16 GetResourceType() const;
-    /// attach a resource loader
+    /// attach a loader
     void AttachLoader(const Core::Ptr<textureLoaderBase>& loader);
-    /// determine whether asynchronous loading has finished
-    bool NeedsSetupResource(const texture& tex) const;
-    /// destroy the resource
-    void DestroyResource(texture& tex);
 };
-} // namespace Render
-} // namespace Oryol
 #else
 #error "Platform not supported yet!"
 #endif
+
+//------------------------------------------------------------------------------
+inline void
+textureFactory::AttachLoader(const Core::Ptr<textureLoaderBase>& loader) {
+    o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
+    loader->onAttachToFactory(this);
+    this->loaders.AddBack(loader);
+}
+
+} // namespace Render
+} // namespace Oryol

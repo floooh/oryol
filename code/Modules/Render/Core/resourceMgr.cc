@@ -56,9 +56,7 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
-    this->depthStencilStateFactory.Setup();
     this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
-    this->blendStateFactory.Setup();
     this->blendStatePool.Setup(&this->blendStateFactory, setup.GetPoolSize(ResourceType::BlendState), 0, 'BLST');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
@@ -71,9 +69,7 @@ resourceMgr::Discard() {
     this->isValid = false;
     this->resourceRegistry.Discard();
     this->blendStatePool.Discard();
-    this->blendStateFactory.Discard();
     this->depthStencilStatePool.Discard();
-    this->depthStencilStateFactory.Discard();
     this->texturePool.Discard();
     this->textureFactory.Discard();
     this->programBundlePool.Discard();

@@ -11,8 +11,6 @@
 
 namespace Oryol {
 namespace Render {
-    
 class blendStatePool : public Resource::Pool<blendState, BlendStateSetup, blendStateFactory> { };
-    
 } // namespace Render
 } // namespace Oryol

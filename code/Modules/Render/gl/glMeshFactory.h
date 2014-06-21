@@ -4,7 +4,7 @@
     @class Oryol::Render::glMeshFactory
     @brief GL implementation of MeshFactory
 */
-#include "Resource/loaderFactory.h"
+#include "Render/base/loaderFactory.h"
 #include "Render/Core/mesh.h"
 
 namespace Oryol {
@@ -14,7 +14,7 @@ class stateWrapper;
 class mesh;
 class meshLoaderBase;
 
-class glMeshFactory : public Resource::loaderFactory<mesh, meshLoaderBase> {
+class glMeshFactory : public loaderFactory<mesh, meshLoaderBase, ResourceType::Mesh> {
 public:
     /// constructor
     glMeshFactory();

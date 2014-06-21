@@ -9,12 +9,6 @@
 
 namespace Oryol {
 namespace Render {
-    
-class blendState : public Resource::resourceBase<BlendStateSetup> {
-public:
-    /// clear the object
-    void clear();
-};
-    
+class blendState : public Resource::resourceBase<BlendStateSetup> { };
 } // namespace Render
 } // namespace Oryol

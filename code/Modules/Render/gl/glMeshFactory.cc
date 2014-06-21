@@ -79,6 +79,9 @@ glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
     o_assert(nullptr != this->glStateWrapper);
+    
+    loaderFactory::DestroyResource(mesh);
+    
     this->glStateWrapper->InvalidateMeshState();
     
     GLuint vb = mesh.glGetVertexBuffer();

@@ -101,6 +101,9 @@ glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
 void
 glTextureFactory::DestroyResource(texture& tex) {
     o_assert(this->isValid);
+    
+    loaderFactory::DestroyResource(tex);
+    
     this->glStateWrapper->InvalidateTextureState();
 
     GLuint glFb = tex.glGetFramebuffer();

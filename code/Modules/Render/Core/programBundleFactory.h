@@ -8,13 +8,7 @@
 #include "Render/gl/glProgramBundleFactory.h"
 namespace Oryol {
 namespace Render {
-    
-class programBundleFactory : public glProgramBundleFactory {
-public:
-    /// get the resource type this factory produces
-    uint16 GetResourceType() const;
-};
-    
+class programBundleFactory : public glProgramBundleFactory { };
 } // namespace Render
 } // namespace Oryol
 #else

@@ -8,13 +8,7 @@
 #include "Render/gl/glShaderFactory.h"
 namespace Oryol {
 namespace Render {
-    
-class shaderFactory : public glShaderFactory {
-public:
-    /// get the resource type this factory produces
-    uint16 GetResourceType() const;
-};
-
+class shaderFactory : public glShaderFactory { };
 } // namespace Render
 } // namespace Oryol
 #else
