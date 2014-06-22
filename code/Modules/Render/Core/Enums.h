@@ -267,6 +267,7 @@ public:
         ConstantBlock,      ///< block constant shader uniforms
         DepthStencilState,  ///< depth-stencil state block
         BlendState,         ///< blending state block
+        DrawState,          ///< draw state resource
         
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,

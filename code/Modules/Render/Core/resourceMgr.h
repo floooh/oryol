@@ -14,6 +14,7 @@
 #include "Render/Core/texturePool.h"
 #include "Render/Core/depthStencilStatePool.h"
 #include "Render/Core/blendStatePool.h"
+#include "Render/Core/drawStatePool.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
 
@@ -66,6 +67,8 @@ public:
     depthStencilState* LookupDepthStencilState(const Resource::Id& resId);
     /// lookup blend-state object
     blendState* LookupBlendState(const Resource::Id& resId);
+    /// lookup draw-state object
+    drawState* LookupDrawState(const Resource::Id& resId);
 
     /// create fullscreen quad mesh
     void createFullscreenQuadMesh(mesh& mesh);
@@ -84,12 +87,14 @@ private:
     class textureFactory textureFactory;
     class depthStencilStateFactory depthStencilStateFactory;
     class blendStateFactory blendStateFactory;
+    class drawStateFactory drawStateFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class programBundlePool programBundlePool;
     class texturePool texturePool;
     class depthStencilStatePool depthStencilStatePool;
     class blendStatePool blendStatePool;
+    class drawStatePool drawStatePool;
 };
 
 //------------------------------------------------------------------------------
@@ -125,6 +130,13 @@ inline blendState*
 resourceMgr::LookupBlendState(const Resource::Id& resId) {
     o_assert_dbg(this->isValid);
     return this->blendStatePool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline drawState*
+resourceMgr::LookupDrawState(const Resource::Id& resId) {
+    o_assert_dbg(this->isValid);
+    return this->drawStatePool.Lookup(resId);
 }
 
 } // namespace Render
