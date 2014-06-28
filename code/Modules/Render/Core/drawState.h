@@ -43,34 +43,34 @@ public:
     programBundle* getProgramBundle() const;
     
 private:
-    class blendState* blendState;
-    class depthStencilState* depthStencilState;
-    class mesh* mesh;
-    class programBundle* programBundle;
+    blendState* blendState_;
+    depthStencilState* depthStencilState_;
+    mesh* mesh_;
+    programBundle* programBundle_;
 };
 
 //------------------------------------------------------------------------------
 inline blendState*
 drawState::getBlendState() const {
-    return this->blendState;
+    return this->blendState_;
 }
 
 //------------------------------------------------------------------------------
 inline depthStencilState*
 drawState::getDepthStencilState() const {
-    return this->depthStencilState;
+    return this->depthStencilState_;
 }
 
 //------------------------------------------------------------------------------
 inline mesh*
 drawState::getMesh() const {
-    return this->mesh;
+    return this->mesh_;
 }
 
 //------------------------------------------------------------------------------
 inline programBundle*
 drawState::getProgramBundle() const {
-    return this->programBundle;
+    return this->programBundle_;
 }
 
 } // namespace Render
