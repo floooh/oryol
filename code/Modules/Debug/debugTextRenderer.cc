@@ -13,6 +13,7 @@ namespace Debug {
 using namespace Core;
 using namespace IO;
 using namespace Render;
+using namespace Resource;
 
 extern const char *kc85_4_Font;
 
@@ -51,8 +52,7 @@ debugTextRenderer::setup() {
     RenderFacade* renderFacade = RenderFacade::Instance();
     this->setupFontTexture(renderFacade);
     this->setupTextMesh(renderFacade);
-    this->setupTextShader(renderFacade);
-    this->setupTextState(renderFacade);
+    this->setupTextDrawState(renderFacade);
     this->valid = true;
 }
 
@@ -62,17 +62,10 @@ debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
     RenderFacade* renderFacade = RenderFacade::Instance();
-    renderFacade->DiscardResource(this->textDepthStencilState);
-    renderFacade->DiscardResource(this->textBlendState);
-    renderFacade->DiscardResource(this->defaultBlendState);
-    renderFacade->DiscardResource(this->textShader);
-    renderFacade->DiscardResource(this->textMesh);
-    renderFacade->DiscardResource(this->fontTexture);
-    this->textDepthStencilState.Invalidate();
-    this->textBlendState.Invalidate();
-    this->defaultBlendState.Invalidate();
-    this->textShader.Invalidate();
-    this->textMesh.Invalidate();
+    renderFacade->ReleaseResource(this->textMesh);
+    renderFacade->ReleaseResource(this->textDrawState);
+    renderFacade->ReleaseResource(this->fontTexture);
+    this->textDrawState.Invalidate();
     this->fontTexture.Invalidate();
 }
 
@@ -154,15 +147,10 @@ debugTextRenderer::drawTextBuffer() {
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
         renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.GetByteSize(), this->vertexData);
-        
-        renderFacade->ApplyDepthStencilState(this->textDepthStencilState);
-        renderFacade->ApplyBlendState(this->textBlendState);
-        renderFacade->ApplyMesh(this->textMesh);
-        renderFacade->ApplyProgram(this->textShader, 0);
+        renderFacade->ApplyDrawState(this->textDrawState);
         renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
         renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
         renderFacade->Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
-        renderFacade->ApplyBlendState(this->defaultBlendState);
     }
 }
 
@@ -232,38 +220,35 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextShader(RenderFacade* renderFacade) {
+debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
     o_assert(nullptr != renderFacade);
-    o_assert(!this->textShader.IsValid());
-    this->textShader = renderFacade->CreateResource(DebugShaders::TextShader::CreateSetup());
-}
+    o_assert(!this->textDrawState.IsValid());
+    o_assert(this->textMesh.IsValid());
 
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setupTextState(RenderFacade* renderFacade) {
-    o_assert(nullptr != renderFacade);
-    o_assert(!this->textBlendState.IsValid());
-    o_assert(!this->textDepthStencilState.IsValid());
+    // shader
+    Id prog = renderFacade->CreateResource(DebugShaders::TextShader::CreateSetup());
     
+    // depth stencil state
     DepthStencilStateSetup dssSetup("_dbgDepthStencilState");
     dssSetup.SetDepthWriteEnabled(false);
     dssSetup.SetDepthCompareFunc(CompareFunc::Always);
-    this->textDepthStencilState = renderFacade->CreateResource(dssSetup);
-    o_assert(this->textDepthStencilState.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->textDepthStencilState) == Resource::State::Valid);
-    
+    Id dss = renderFacade->CreateResource(dssSetup);
+
+    // blend state
     BlendStateSetup bsSetup("_dbgBlendState");
     bsSetup.SetBlendingEnabled(true);
     bsSetup.SetColorWriteMask(ColorWriteMask::RGBA);
     bsSetup.SetSrcFactorRGB(BlendFactor::SrcAlpha);
     bsSetup.SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
-    this->textBlendState = renderFacade->CreateResource(bsSetup);
-    o_assert(this->textBlendState.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->textBlendState) == Resource::State::Valid);
+    Id bs = renderFacade->CreateResource(bsSetup);
+
+    // finally create draw state
+    this->textDrawState = renderFacade->CreateResource(DrawStateSetup("_dbgDrawState", dss, bs, this->textMesh, prog, 0));
     
-    this->defaultBlendState = renderFacade->CreateResource(BlendStateSetup("_defaultBlendState"));
-    o_assert(this->defaultBlendState.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->defaultBlendState) == Resource::State::Valid);
+    // fix resource use counts
+    renderFacade->ReleaseResource(prog);
+    renderFacade->ReleaseResource(dss);
+    renderFacade->ReleaseResource(bs);
 }
 
 //------------------------------------------------------------------------------

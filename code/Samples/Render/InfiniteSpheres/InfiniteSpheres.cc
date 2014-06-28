@@ -28,9 +28,7 @@ private:
 
     RenderFacade* render = nullptr;
     Resource::Id renderTargets[2];
-    Resource::Id sphere;
-    Resource::Id prog;
-    Resource::Id depthStencilState;
+    Resource::Id drawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -49,7 +47,7 @@ InfiniteSpheresApp::OnInit() {
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
-    // create 2 offscreen render targets
+    // create resources
     for (int32 i = 0; i < 2; i++) {
         auto rtSetup = TextureSetup::AsRenderTarget(Locator::NonShared(), 512, 512, PixelFormat::R8G8B8, PixelFormat::D16);
         rtSetup.SetMinFilter(TextureFilterMode::Linear);
@@ -58,24 +56,25 @@ InfiniteSpheresApp::OnInit() {
         rtSetup.SetWrapV(TextureWrapMode::Repeat);
         this->renderTargets[i] = this->render->CreateResource(rtSetup);
     }
-    
-    // create a sphere mesh with normals and uv coords
     ShapeBuilder shapeBuilder;
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.75f, 72.0f, 40.0f);
     shapeBuilder.Build();
-    this->sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
-
-    // build shader for rendering to render-target
-    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    
-    // setup static depth render states
+    Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilState = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, sphere, prog, 0));
+    
+    this->render->ReleaseResource(sphere);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
@@ -115,15 +114,13 @@ InfiniteSpheresApp::OnRunning() {
         
         // general render states
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyDrawState(this->drawState);
         
         // render sphere to offscreen render target, using the other render target as
         // source texture
         this->render->ApplyRenderTarget(this->renderTargets[index0]);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->sphere);
-        this->render->ApplyProgram(this->prog, 0);
         glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
@@ -151,11 +148,9 @@ InfiniteSpheresApp::OnRunning() {
 AppState::Code
 InfiniteSpheresApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->depthStencilState);
-    this->render->DiscardResource(this->prog);
-    this->render->DiscardResource(this->sphere);
+    this->render->ReleaseResource(this->drawState);
     for (int32 i = 0; i < 2; i++) {
-        this->render->DiscardResource(this->renderTargets[i]);
+        this->render->ReleaseResource(this->renderTargets[i]);
     }
     this->render = nullptr;
     RenderFacade::DestroySingle();

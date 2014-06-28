@@ -57,10 +57,8 @@ private:
     void setupFontTexture(Render::RenderFacade* renderFacade);
     /// setup the text dynamic mesh
     void setupTextMesh(Render::RenderFacade* renderFacade);
-    /// setup the text shader
-    void setupTextShader(Render::RenderFacade* renderFacade);
-    /// setup the text state block
-    void setupTextState(Render::RenderFacade* renderFacade);
+    /// setup the text draw state
+    void  setupTextDrawState(Render::RenderFacade* renderFacade);
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const Core::String& str);
     /// write one glyph vertex, returns next vertex index
@@ -76,10 +74,7 @@ private:
     Core::RWLock rwLock;
     Resource::Id fontTexture;
     Resource::Id textMesh;
-    Resource::Id textShader;
-    Resource::Id textDepthStencilState;
-    Resource::Id textBlendState;
-    Resource::Id defaultBlendState;
+    Resource::Id textDrawState;
     Core::StringBuilder stringBuilder;
     bool valid;
     

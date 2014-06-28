@@ -58,9 +58,14 @@ glMeshFactory::SetupResource(mesh& msh) {
     o_assert((msh.GetState() == Resource::State::Setup) || (msh.GetState() == Resource::State::Pending));
     
     // decide whether a loader needs to take over, or whether we handle this right here
-    if (msh.GetSetup().ShouldSetupEmpty()) {
+    const MeshSetup& setup = msh.GetSetup();
+    if (setup.ShouldSetupEmpty()) {
         this->createEmptyMesh(msh);
         o_assert((msh.GetState() == Resource::State::Valid) || (msh.GetState() == Resource::State::Failed));
+    }
+    else if (setup.ShouldSetupFullScreenQuad()) {
+        this->createFullscreenQuad(msh);
+        o_assert(msh.GetState() == Resource::State::Valid);
     }
     else {
         // let a loader take over, parent class will take care of this

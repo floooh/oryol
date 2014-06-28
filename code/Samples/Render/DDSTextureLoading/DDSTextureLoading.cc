@@ -33,9 +33,7 @@ private:
     float32 distVal = 0.0f;
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id mesh;
-    Resource::Id prog;
-    Resource::Id depthStencilState;
+    Resource::Id drawState;
     static const int32 NumTextures = 15;
     std::array<Resource::Id, NumTextures> texId;
     glm::mat4 view;
@@ -59,7 +57,7 @@ DDSTextureLoadingApp::OnInit() {
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
-    // start loading textures
+    // setup resources
     TextureSetup texBluePrint;
     texBluePrint.SetMinFilter(TextureFilterMode::LinearMipmapLinear);
     texBluePrint.SetMagFilter(TextureFilterMode::Linear);
@@ -81,7 +79,6 @@ DDSTextureLoadingApp::OnInit() {
     this->texId[13] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
     this->texId[14] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
-    // create a shape with uvs
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetTransform(rot90);
@@ -89,16 +86,19 @@ DDSTextureLoadingApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddPlane(1.0f, 1.0f, 4);
     shapeBuilder.Build();
-    this->mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
-
-    // build a shader program from a vertex- and fragment shader
-    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    
-    // setup static render states
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilState = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -121,12 +121,9 @@ DDSTextureLoadingApp::OnRunning() {
     
         this->distVal += 0.01f;
         
-        // clear, apply mesh and shader program, and draw
-        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 0.0f);
-        this->render->ApplyProgram(this->prog, 0);
-        this->render->ApplyMesh(this->mesh);
         this->render->Clear(true, true, true);
         
         // only render when texture is loaded (until texture placeholder are implemented)
@@ -179,12 +176,10 @@ DDSTextureLoadingApp::OnCleanup() {
     // cleanup everything
     for (auto tex : this->texId) {
         if (tex.IsValid()) {
-            this->render->DiscardResource(tex);
+            this->render->ReleaseResource(tex);
         }
     }
-    this->render->DiscardResource(this->depthStencilState);
-    this->render->DiscardResource(this->prog);
-    this->render->DiscardResource(this->mesh);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     this->io = nullptr;

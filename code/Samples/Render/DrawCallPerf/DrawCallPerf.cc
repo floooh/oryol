@@ -34,9 +34,7 @@ private:
 
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
-    Resource::Id meshId;
-    Resource::Id progId;
-    Resource::Id depthStencilStateId;
+    Resource::Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -60,23 +58,26 @@ DrawCallPerfApp::OnInit() {
     this->render->AttachLoader(RawMeshLoader::Create());
     this->debug = DebugFacade::CreateSingle();
 
-    // create a small cube shape
+    // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
     shapeBuilder.Build();
-    this->meshId = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
-
-    // build a shader program from vs/fs sources
-    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
-    
-    // setup state block object
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilStateId = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     
     // setup projection and view matrices
     const float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
@@ -142,12 +143,10 @@ DrawCallPerfApp::OnRunning() {
         updTime = Clock::Since(updStart);
         
         // render block
-        this->render->ApplyDepthStencilState(this->depthStencilStateId);
+        this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->meshId);
-        this->render->ApplyProgram(this->progId, 0);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
 
         TimePoint drawStart = Clock::Now();
@@ -178,9 +177,7 @@ DrawCallPerfApp::OnRunning() {
 AppState::Code
 DrawCallPerfApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->depthStencilStateId);
-    this->render->DiscardResource(this->progId);
-    this->render->DiscardResource(this->meshId);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     this->debug = nullptr;
     DebugFacade::DestroySingle();

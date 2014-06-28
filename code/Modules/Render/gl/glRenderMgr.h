@@ -15,8 +15,8 @@ public:
     bool Supports(Feature::Code feat) const;
     /// apply the current render target
     void ApplyRenderTarget(texture* rt);
-    /// apply the current program object
-    void ApplyProgram(programBundle* progBundle, uint32 selectionMask);
+    /// apply draw state to use for rendering
+    void ApplyDrawState(drawState* ds);
     /// apply a texture sampler variable (special case)
     void ApplyTexture(int32 index, const texture* tex);
     /// apply a shader variable

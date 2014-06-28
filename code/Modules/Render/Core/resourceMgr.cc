@@ -58,6 +58,7 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
     this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
     this->blendStatePool.Setup(&this->blendStateFactory, setup.GetPoolSize(ResourceType::BlendState), 0, 'BLST');
+    this->drawStateFactory.Setup(&this->blendStatePool, &this->depthStencilStatePool, &this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(&this->drawStateFactory, setup.GetPoolSize(ResourceType::DrawState), 0, 'DRWS');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
@@ -70,6 +71,7 @@ resourceMgr::Discard() {
     this->isValid = false;
     this->resourceRegistry.Discard();
     this->drawStatePool.Discard();
+    this->drawStateFactory.Discard();
     this->blendStatePool.Discard();
     this->depthStencilStatePool.Discard();
     this->texturePool.Discard();
@@ -288,7 +290,7 @@ resourceMgr::LookupResource(const Locator& loc) {
 
 //------------------------------------------------------------------------------
 void
-resourceMgr::DiscardResource(const Id& resId) {
+resourceMgr::ReleaseResource(const Id& resId) {
     o_assert(this->isValid);
     if (this->resourceRegistry.ReleaseResource(resId, this->removedIds) > 0) {
         // removedIds now has the resources which need to be destroyed
@@ -353,19 +355,6 @@ resourceMgr::QueryResourceState(const Id& resId) {
             break;
     }
     return Resource::State::InvalidState;
-}
-
-//------------------------------------------------------------------------------
-void
-resourceMgr::createFullscreenQuadMesh(mesh& mesh) {
-    this->meshFactory.createFullscreenQuad(mesh);
-}
-
-//------------------------------------------------------------------------------
-void
-resourceMgr::discardFullscreenQuadMesh(mesh& mesh) {
-    this->meshFactory.DestroyResource(mesh);
-    mesh.setState(Resource::State::Initial);
 }
 
 } // namespace Render

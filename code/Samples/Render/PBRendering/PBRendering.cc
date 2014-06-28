@@ -14,6 +14,7 @@ using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::Debug;
 using namespace Oryol::Render;
+using namespace Oryol::Resource;
 
 // derived application class
 class PBRenderingApp : public App {
@@ -28,9 +29,7 @@ private:
 
     RenderFacade* render;
     DebugFacade* debug;
-    Resource::Id mesh;
-    Resource::Id depthStencilState;
-    Resource::Id prog;
+    Id drawState;
     glm::mat4 proj;
     glm::mat4 view;
 };
@@ -43,23 +42,26 @@ PBRenderingApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(1024, 600, "Oryol PBR Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
     
-    // create shapes in separate primitive groups
+    // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.AddSphere(0.5f, 36, 20, true);
     shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
     shapeBuilder.Build();
-    this->mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
-    
-    // build a state block with the static depth state
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilState = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
     
-    // setup shaders
-    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
+    this->render->ReleaseResource(prog);
     
     // setup projection and view matrices
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
@@ -98,13 +100,11 @@ PBRenderingApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
     
-        this->render->ApplyDepthStencilState(this->depthStencilState);
+        this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.3f, 0.3f, 0.3f, 0.0f);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->mesh);
         
-        this->render->ApplyProgram(this->prog, 0);
         this->applyDirLight();
         this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
         this->render->Draw(0);
@@ -122,9 +122,7 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnCleanup() {
-    this->render->DiscardResource(this->depthStencilState);
-    this->render->DiscardResource(this->mesh);
-    this->render->DiscardResource(this->prog);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     this->debug  = nullptr;
     DebugFacade::DestroySingle();

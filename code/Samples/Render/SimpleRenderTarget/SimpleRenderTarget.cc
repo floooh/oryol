@@ -27,11 +27,8 @@ private:
 
     RenderFacade* render = nullptr;
     Resource::Id renderTarget;
-    Resource::Id sphere;
-    Resource::Id torus;
-    Resource::Id rtProg;
-    Resource::Id dispProg;
-    Resource::Id depthStencilState;
+    Resource::Id offscreenDrawState;
+    Resource::Id displayDrawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -64,7 +61,7 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.Build();
-    this->torus = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    Id torus = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -73,17 +70,29 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.5f, 72.0f, 40.0f);
     shapeBuilder.Build();
-    this->sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
+    Id sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
 
     // create shaders
-    this->rtProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
-    this->dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id offScreenProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
+    Id dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
     
     // constant state
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilState = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs  = this->render->CreateResource(BlendStateSetup("bs"));
+    
+    // create one draw state for offscreen rendering, and one draw state for main target rendering
+    this->offscreenDrawState = this->render->CreateResource(DrawStateSetup("offds", dss, bs, torus, offScreenProg, 0));
+    this->displayDrawState   = this->render->CreateResource(DrawStateSetup("dispds", dss, bs, sphere, dispProg, 0));
+    
+    this->render->ReleaseResource(torus);
+    this->render->ReleaseResource(sphere);
+    this->render->ReleaseResource(offScreenProg);
+    this->render->ReleaseResource(dispProg);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
@@ -113,15 +122,13 @@ SimpleRenderTargetApp::OnRunning() {
         this->angleX += 0.02f;
         
         // apply general states
-        this->render->ApplyDepthStencilState(this->depthStencilState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
         
         // render donut to offscreen render target
         this->render->ApplyRenderTarget(this->renderTarget);
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->torus);
-        this->render->ApplyProgram(this->rtProg, 0);
+        this->render->ApplyDrawState(this->offscreenDrawState);
         glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
         this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
         this->render->Draw(0);
@@ -129,8 +136,7 @@ SimpleRenderTargetApp::OnRunning() {
         // render sphere to display, with offscreen render target as texture
         this->render->ApplyRenderTarget(Resource::Id());
         this->render->Clear(true, true, true);
-        this->render->ApplyMesh(this->sphere);
-        this->render->ApplyProgram(this->dispProg, 0);
+        this->render->ApplyDrawState(this->displayDrawState);
         glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
         this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
@@ -146,12 +152,9 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->depthStencilState);
-    this->render->DiscardResource(this->rtProg);
-    this->render->DiscardResource(this->dispProg);
-    this->render->DiscardResource(this->sphere);
-    this->render->DiscardResource(this->torus);
-    this->render->DiscardResource(this->renderTarget);
+    this->render->ReleaseResource(this->offscreenDrawState);
+    this->render->ReleaseResource(this->displayDrawState);
+    this->render->ReleaseResource(this->renderTarget);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();

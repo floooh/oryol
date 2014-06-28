@@ -24,6 +24,8 @@ public:
     static MeshSetup FromData(const Resource::Locator& loc, const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
     static MeshSetup CreateEmpty(const Resource::Locator& loc, const VertexLayout& vertexLayout, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
+    /// setup a fullscreen quad mesh
+    static MeshSetup CreateFullScreenQuad(const Resource::Locator& loc);
     
     /// default constructor
     MeshSetup();
@@ -33,6 +35,8 @@ public:
     bool ShouldSetupFromData() const;
     /// check if should setup empty mesh
     bool ShouldSetupEmpty() const;
+    /// check if should setup fullscreen quad mesh
+    bool ShouldSetupFullScreenQuad() const;
     
     /// get the resource locator
     const Resource::Locator& GetLocator() const;
@@ -75,6 +79,7 @@ private:
     bool setupFromFile : 1;
     bool setupFromData : 1;
     bool setupEmpty : 1;
+    bool setupFullScreenQuad : 1;
 };
     
 } // namespace Render

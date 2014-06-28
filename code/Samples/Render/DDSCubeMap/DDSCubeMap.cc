@@ -33,10 +33,8 @@ private:
     
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id mesh;
-    Resource::Id prog;
+    Resource::Id drawState;
     Resource::Id tex;
-    Resource::Id depthStencilState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -60,7 +58,7 @@ DDSCubeMapApp::OnInit() {
     float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
     float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
 
-    // start loading textures
+    // create resources
     TextureSetup texBluePrint;
     texBluePrint.SetMinFilter(TextureFilterMode::LinearMipmapLinear);
     texBluePrint.SetMagFilter(TextureFilterMode::Linear);
@@ -72,8 +70,6 @@ DDSCubeMapApp::OnInit() {
     else {
         this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
     }
-
-    // create a shape with normals
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetTransform(rot90);
@@ -81,16 +77,19 @@ DDSCubeMapApp::OnInit() {
     shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.AddSphere(1.0f, 36, 20);
     shapeBuilder.Build();
-    this->mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
-
-    // build a shader program from a vertex- and fragment shader
-    this->prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    
-    // setup static state block object
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DepthStencilStateSetup dssSetup("depthStencilState");
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    this->depthStencilState = this->render->CreateResource(dssSetup);
+    Id dss = this->render->CreateResource(dssSetup);
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -118,10 +117,8 @@ DDSCubeMapApp::OnRunning() {
         this->angleY += 0.02f;
         this->angleX += 0.01f;
         
-        // clear, apply mesh and shader program, and draw
-        this->render->ApplyProgram(this->prog, 0);
-        this->render->ApplyMesh(this->mesh);
-        this->render->ApplyDepthStencilState(this->depthStencilState);
+        // apply state and draw
+        this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
         this->render->Clear(true, true, true);
@@ -143,10 +140,8 @@ DDSCubeMapApp::OnRunning() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->depthStencilState);
-    this->render->DiscardResource(this->tex);
-    this->render->DiscardResource(this->prog);
-    this->render->DiscardResource(this->mesh);
+    this->render->ReleaseResource(this->tex);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     this->io = nullptr;

@@ -9,6 +9,7 @@
 using namespace Oryol;
 using namespace Oryol::Core;
 using namespace Oryol::Render;
+using namespace Oryol::Resource;
 
 // derived application class
 class FullscreenQuadApp : public App {
@@ -19,7 +20,7 @@ public:
     
 private:
     RenderFacade* render;
-    Resource::Id progId;
+    Id drawState;
     float time = 0.0f;
 };
 OryolMain(FullscreenQuadApp);
@@ -28,7 +29,15 @@ OryolMain(FullscreenQuadApp);
 AppState::Code
 FullscreenQuadApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 600, "Oryol Fullscreen Quad Sample"));
-    this->progId = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id dss = this->render->CreateResource(DepthStencilStateSetup("dss"));
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(dss);
+    this->render->ReleaseResource(bs);
     return App::OnInit();
 }
 
@@ -38,9 +47,9 @@ FullscreenQuadApp::OnRunning() {
     // render one frame
     this->time += 1.0f / 60.0f;
     if (this->render->BeginFrame()) {
-        this->render->ApplyProgram(this->progId, 0);
+        this->render->ApplyDrawState(this->drawState);
         this->render->ApplyVariable(Shaders::Main::Time, this->time);
-        this->render->DrawFullscreenQuad();
+        this->render->Draw(0);
         this->render->EndFrame();
     }
     
@@ -51,7 +60,7 @@ FullscreenQuadApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnCleanup() {
-    this->render->DiscardResource(this->progId);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();

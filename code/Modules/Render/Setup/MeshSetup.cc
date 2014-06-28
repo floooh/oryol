@@ -20,7 +20,8 @@ indexType(IndexType::None),
 numPrimGroups(0),
 setupFromFile(false),
 setupFromData(false),
-setupEmpty(false) {
+setupEmpty(false),
+setupFullScreenQuad(false) {
     // empty
 }
 
@@ -90,6 +91,15 @@ MeshSetup::CreateEmpty(const Locator& loc,
 }
 
 //------------------------------------------------------------------------------
+MeshSetup
+MeshSetup::CreateFullScreenQuad(const Locator& loc) {
+    MeshSetup setup;
+    setup.locator = loc;
+    setup.setupFullScreenQuad = true;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
 bool
 MeshSetup::ShouldSetupFromFile() const {
     return this->setupFromFile;
@@ -105,6 +115,12 @@ MeshSetup::ShouldSetupFromData() const {
 bool
 MeshSetup::ShouldSetupEmpty() const {
     return this->setupEmpty;
+}
+
+//------------------------------------------------------------------------------
+bool
+MeshSetup::ShouldSetupFullScreenQuad() const {
+    return this->setupFullScreenQuad;
 }
 
 //------------------------------------------------------------------------------

@@ -21,6 +21,7 @@ class mesh;
 class blendState;
 class programBundle;
 class depthStencilState;
+class drawState;
     
 class glStateWrapper {
 public:
@@ -36,10 +37,9 @@ public:
     /// return true if the state wrapper has been setup
     bool IsValid() const;
     
-    /// apply depth-stencil state
-    void ApplyDepthStencilState(const depthStencilState* dss);
-    /// apply blend state
-    void ApplyBlendState(const blendState* bs);
+    /// apply draw state
+    void ApplyDrawState(const drawState* ds);
+
     /// apply state
     void ApplyState(State::Code state, bool b0);
     /// apply state
@@ -68,16 +68,11 @@ public:
     void InvalidateProgramState();
     /// invoke glUseProgram (if changed)
     void UseProgram(GLuint prog);
-    /// bind currently selected program in program bundle
-    void BindProgram(const programBundle* progBundle);
 
     /// invalidate texture state
     void InvalidateTextureState();
     /// bind a texture to a sampler index
     void BindTexture(int32 samplerIndex, GLenum target, GLuint tex);
-
-    /// bind mesh, program may be needed for vertex attrib binding
-    void BindMesh(const mesh* msh, const programBundle* progBundle);
     
 private:
     
@@ -100,6 +95,15 @@ private:
     void setupDepthStencilState();
     /// setup the initial blend-state
     void setupBlendState();
+    /// apply depth-stencil state to use for rendering
+    void applyDepthStencilState(const depthStencilState* dss);
+    /// apply blend state to use for rendering
+    void applyBlendState(const blendState* bs);
+    /// apply program to use for rendering
+    void applyProgram(programBundle* progBundle, uint32 progSelMask);
+    /// apply mesh to use for rendering
+    void applyMesh(const mesh* msh, const programBundle* progBundle);
+
     /// FontFace state function
     void onFrontFace(const State::Vector& input);
     /// CullFaceEnabled state function

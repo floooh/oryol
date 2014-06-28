@@ -22,8 +22,7 @@ public:
     
 private:
     RenderFacade* render;
-    Resource::Id mesh;
-    Resource::Id prog;
+    Resource::Id drawState;
 };
 OryolMain(TriangleApp);
 
@@ -52,11 +51,16 @@ TriangleApp::OnInit() {
     meshBuilder.Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f);
     meshBuilder.Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
     meshBuilder.End();
-    this->mesh = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
-    
-    // setup shader program from generated shader source (see shaders.shd)
-    this->prog = this->render->CreateResource(Shaders::Triangle::CreateSetup());
-    
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Triangle::CreateSetup());
+    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
+    Id dss = this->render->CreateResource(DepthStencilStateSetup("dss"));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    this->render->ReleaseResource(bs);
+    this->render->ReleaseResource(dss);
     return App::OnInit();
 }
 
@@ -69,8 +73,7 @@ TriangleApp::OnRunning() {
         // clear, apply mesh and shader program, and draw
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, false, false);
-        this->render->ApplyMesh(this->mesh);
-        this->render->ApplyProgram(this->prog, 0);
+        this->render->ApplyDrawState(this->drawState);
         this->render->Draw(0);
         
         this->render->EndFrame();
@@ -84,8 +87,7 @@ TriangleApp::OnRunning() {
 AppState::Code
 TriangleApp::OnCleanup() {
     // cleanup everything
-    this->render->DiscardResource(this->prog);
-    this->render->DiscardResource(this->mesh);
+    this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();

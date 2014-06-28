@@ -5,6 +5,7 @@
 #include "renderMgrBase.h"
 #include "Render/Core/displayMgr.h"
 #include "Render/Core/stateWrapper.h"
+#include "Render/Core/drawState.h"
 
 namespace Oryol {
 namespace Render {
@@ -48,6 +49,22 @@ renderMgrBase::Discard() {
     this->curMesh = nullptr;
     this->curProgramBundle = nullptr;
     this->isValid = false;
+}
+
+//------------------------------------------------------------------------------
+void
+renderMgrBase::ApplyRenderTarget(texture* rt) {
+    o_assert_dbg(this->isValid);
+    this->curRenderTarget = rt;
+}
+    
+//------------------------------------------------------------------------------
+void
+renderMgrBase::ApplyDrawState(drawState* ds) {
+    o_assert_dbg(this->isValid);
+    this->curDrawState = ds;
+    this->curProgramBundle = ds->getProgramBundle();
+    this->curMesh = ds->getMesh();
 }
     
 } // namespace Render

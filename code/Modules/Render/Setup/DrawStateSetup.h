@@ -39,8 +39,8 @@ public:
     void SetProgram(const Resource::Id& prog, uint32 selectionMask);
     /// get the program object
     const Resource::Id& GetProgram() const;
-    /// get the program object and selection mask
-    const Resource::Id& GetProgramAndSelMask(uint32& outSelMask) const;
+    /// get the program selection mask
+    uint32 GetProgSelMask() const;
     
     /// get the resource locator
     const Resource::Locator& GetLocator() const;
@@ -85,10 +85,9 @@ DrawStateSetup::GetProgram() const {
 }
 
 //------------------------------------------------------------------------------
-inline const Resource::Id&
-DrawStateSetup::GetProgramAndSelMask(uint32& outSelMask) const {
-    outSelMask = this->progSelMask;
-    return this->prog;
+inline uint32
+DrawStateSetup::GetProgSelMask() const {
+    return this->progSelMask;
 }
 
 } // namespace Render

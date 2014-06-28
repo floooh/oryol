@@ -52,8 +52,8 @@ public:
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
-    /// discard a resource (decrement use-count, free resource if use-count is 0)
-    void DiscardResource(const Resource::Id& resId);
+    /// release a resource (decrement use-count, free resource if use-count is 0)
+    void ReleaseResource(const Resource::Id& resId);
     /// get the loading state of a resource
     Resource::State::Code QueryResourceState(const Resource::Id& resId);
     
@@ -70,11 +70,6 @@ public:
     /// lookup draw-state object
     drawState* LookupDrawState(const Resource::Id& resId);
 
-    /// create fullscreen quad mesh
-    void createFullscreenQuadMesh(mesh& mesh);
-    /// discard fullscreen quad mesh
-    void discardFullscreenQuadMesh(mesh& mesh);
-    
 private:
     bool isValid;
     class stateWrapper* stateWrapper;

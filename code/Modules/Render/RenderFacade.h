@@ -55,8 +55,8 @@ public:
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
-    /// discard a resource (decrement use-count, free resource if use-count is 0)
-    void DiscardResource(const Resource::Id& resId);
+    /// release a resource (decrement use-count, free resource if use-count is 0)
+    void ReleaseResource(const Resource::Id& resId);
     /// get the loading state of a resource
     Resource::State::Code QueryResourceState(const Resource::Id& resId);
     
@@ -65,16 +65,10 @@ public:
     /// end frame rendering
     void EndFrame();
 
-    /// apply a render target to use
+    /// apply a render target to render to
     void ApplyRenderTarget(const Resource::Id& resId);
-    /// apply mesh to use for rendering
-    void ApplyMesh(const Resource::Id& resId);
-    /// apply program to use for rendering
-    void ApplyProgram(const Resource::Id& resId, uint32 selectionMask=0);
-    /// apply a depth stencil state block
-    void ApplyDepthStencilState(const Resource::Id& resId);
-    /// apply a blend state block
-    void ApplyBlendState(const Resource::Id& resId);
+    /// apply draw state to use for rendering
+    void ApplyDrawState(const Resource::Id& resId);
     /// apply a shader constant block
     void ApplyConstantBlock(const Resource::Id& resId);
     /// apply state with 1..4 arguments
@@ -99,8 +93,6 @@ public:
     void Draw(int32 primGroupIndex, const glm::mat4* instanceTransforms, int32 numInstances);
     /// draw multiple instances with primitive group override
     void Draw(const PrimitiveGroup& primGroup, const glm::mat4* instanceTransforms, int32 numInstances);
-    /// draw a fullscreen quad
-    void DrawFullscreenQuad();
 
 private:
     /// setup the RenderFacade, initialize rendering system
@@ -116,7 +108,6 @@ private:
     renderMgr renderManager;
     class stateWrapper stateWrapper;
     resourceMgr resourceManager;
-    mesh fullscreenQuadMesh;
 };
 
 //------------------------------------------------------------------------------
