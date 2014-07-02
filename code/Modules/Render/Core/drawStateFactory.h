@@ -10,7 +10,6 @@
 namespace Oryol {
 namespace Render {
 
-class blendStatePool;
 class depthStencilStatePool;
 class meshPool;
 class programBundlePool;
@@ -22,7 +21,7 @@ public:
     /// destructor
     ~drawStateFactory();
     /// setup the factory
-    void Setup(blendStatePool* bsPool, depthStencilStatePool* dssPool, meshPool* mshPool, programBundlePool* pbPool);
+    void Setup(depthStencilStatePool* dssPool, meshPool* mshPool, programBundlePool* pbPool);
     /// discard the factory
     void Discard();
     /// setup shader resource
@@ -31,7 +30,6 @@ public:
     void DestroyResource(drawState& ds);
     
 private:
-    class blendStatePool* blendStatePool;
     class depthStencilStatePool* depthStencilStatePool;
     class meshPool* meshPool;
     class programBundlePool* programBundlePool;

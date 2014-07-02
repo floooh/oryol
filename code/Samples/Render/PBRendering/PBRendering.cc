@@ -54,13 +54,11 @@ PBRenderingApp::OnInit() {
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
     Id dss = this->render->CreateResource(dssSetup);
-    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(dss);
-    this->render->ReleaseResource(bs);
     this->render->ReleaseResource(prog);
     
     // setup projection and view matrices

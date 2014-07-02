@@ -53,13 +53,11 @@ TriangleApp::OnInit() {
     meshBuilder.End();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Triangle::CreateSetup());
-    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
     Id dss = this->render->CreateResource(DepthStencilStateSetup("dss"));
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
 
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
-    this->render->ReleaseResource(bs);
     this->render->ReleaseResource(dss);
     return App::OnInit();
 }

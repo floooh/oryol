@@ -232,23 +232,18 @@ debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
     DepthStencilStateSetup dssSetup("_dbgDepthStencilState");
     dssSetup.SetDepthWriteEnabled(false);
     dssSetup.SetDepthCompareFunc(CompareFunc::Always);
-    Id dss = renderFacade->CreateResource(dssSetup);
-
-    // blend state
-    BlendStateSetup bsSetup("_dbgBlendState");
-    bsSetup.SetBlendingEnabled(true);
-    bsSetup.SetColorWriteMask(ColorWriteMask::RGBA);
-    bsSetup.SetSrcFactorRGB(BlendFactor::SrcAlpha);
-    bsSetup.SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
-    Id bs = renderFacade->CreateResource(bsSetup);
+    Id depthStencilState = renderFacade->CreateResource(dssSetup);
 
     // finally create draw state
-    this->textDrawState = renderFacade->CreateResource(DrawStateSetup("_dbgDrawState", dss, bs, this->textMesh, prog, 0));
+    DrawStateSetup dss("_dbgDrawState", depthStencilState, this->textMesh, prog, 0);
+    dss.BlendState().SetBlendingEnabled(true);
+    dss.BlendState().SetSrcFactorRGB(BlendFactor::SrcAlpha);
+    dss.BlendState().SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
+    this->textDrawState = renderFacade->CreateResource(dss);
     
     // fix resource use counts
     renderFacade->ReleaseResource(prog);
-    renderFacade->ReleaseResource(dss);
-    renderFacade->ReleaseResource(bs);
+    renderFacade->ReleaseResource(depthStencilState);
 }
 
 //------------------------------------------------------------------------------

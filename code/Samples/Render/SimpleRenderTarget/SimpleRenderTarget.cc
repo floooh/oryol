@@ -81,18 +81,16 @@ SimpleRenderTargetApp::OnInit() {
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
     Id dss = this->render->CreateResource(dssSetup);
-    Id bs  = this->render->CreateResource(BlendStateSetup("bs"));
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
-    this->offscreenDrawState = this->render->CreateResource(DrawStateSetup("offds", dss, bs, torus, offScreenProg, 0));
-    this->displayDrawState   = this->render->CreateResource(DrawStateSetup("dispds", dss, bs, sphere, dispProg, 0));
+    this->offscreenDrawState = this->render->CreateResource(DrawStateSetup("offds", dss, torus, offScreenProg, 0));
+    this->displayDrawState   = this->render->CreateResource(DrawStateSetup("dispds", dss, sphere, dispProg, 0));
     
     this->render->ReleaseResource(torus);
     this->render->ReleaseResource(sphere);
     this->render->ReleaseResource(offScreenProg);
     this->render->ReleaseResource(dispProg);
     this->render->ReleaseResource(dss);
-    this->render->ReleaseResource(bs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);

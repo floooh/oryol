@@ -11,6 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
+#include "Render/Core/BlendState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 
@@ -18,7 +19,6 @@ namespace Oryol {
 namespace Render {
 
 class mesh;
-class blendState;
 class programBundle;
 class depthStencilState;
 class drawState;
@@ -98,7 +98,7 @@ private:
     /// apply depth-stencil state to use for rendering
     void applyDepthStencilState(const depthStencilState* dss);
     /// apply blend state to use for rendering
-    void applyBlendState(const blendState* bs);
+    void applyBlendState(const BlendState& bs);
     /// apply program to use for rendering
     void applyProgram(programBundle* progBundle, uint32 progSelMask);
     /// apply mesh to use for rendering
@@ -153,16 +153,7 @@ private:
         } stencilState[Face::NumSides];
     } curDepthStencilState;
     
-    struct {
-        bool blendingEnabled;
-        BlendFactor::Code rgbSrcFactor;
-        BlendFactor::Code rgbDstFactor;
-        BlendOperation::Code rgbBlendOperation;
-        BlendFactor::Code alphaSrcFactor;
-        BlendFactor::Code alphaDstFactor;
-        BlendOperation::Code alphaBlendOperation;
-        ColorWriteMask::Code colorWriteMask;
-    } curBlendState;
+    BlendState curBlendState;
     
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];

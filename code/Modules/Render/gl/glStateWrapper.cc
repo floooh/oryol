@@ -9,7 +9,6 @@
 #include "Render/Core/mesh.h"
 #include "Render/Core/programBundle.h"
 #include "Render/Core/depthStencilState.h"
-#include "Render/Core/blendState.h"
 #include "Render/Core/drawState.h"
 
 namespace Oryol {
@@ -140,10 +139,11 @@ glStateWrapper::IsValid() const {
 void
 glStateWrapper::ApplyDrawState(const drawState* ds) {
     o_assert_dbg(nullptr != ds);
+    const DrawStateSetup& setup = ds->GetSetup();
     this->applyDepthStencilState(ds->getDepthStencilState());
-    this->applyBlendState(ds->getBlendState());
+    this->applyBlendState(setup.BlendState());
     programBundle* pb = ds->getProgramBundle();
-    uint32 progSelMask = ds->GetSetup().GetProgSelMask();
+    uint32 progSelMask = setup.GetProgSelMask();
     this->applyProgram(pb, progSelMask);
     this->applyMesh(ds->getMesh(), pb);
 }
@@ -343,15 +343,7 @@ glStateWrapper::applyDepthStencilState(const depthStencilState* dds) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::setupBlendState() {
-    this->curBlendState.blendingEnabled = false;
-    this->curBlendState.rgbSrcFactor = BlendFactor::One;
-    this->curBlendState.rgbDstFactor = BlendFactor::Zero;
-    this->curBlendState.rgbBlendOperation = BlendOperation::Add;
-    this->curBlendState.alphaSrcFactor = BlendFactor::One;
-    this->curBlendState.alphaDstFactor = BlendFactor::Zero;
-    this->curBlendState.alphaBlendOperation = BlendOperation::Add;
-    this->curBlendState.colorWriteMask = ColorWriteMask::All;
-    
+    this->curBlendState = BlendState();
     ::glDisable(GL_BLEND);
     ::glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
     ::glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -361,59 +353,52 @@ glStateWrapper::setupBlendState() {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::applyBlendState(const blendState* bs) {
-    o_assert_dbg((nullptr != bs) && (bs->GetState() == Resource::State::Valid));
-    const BlendStateSetup& setup = bs->GetSetup();
+glStateWrapper::applyBlendState(const BlendState& bs) {
+
+    if (bs.GetHash() != this->curBlendState.GetHash()) {
     
-    const bool enabled = setup.GetBlendingEnabled();
-    if (enabled != this->curBlendState.blendingEnabled) {
-        this->curBlendState.blendingEnabled = enabled;
-        if (enabled) {
-            ::glEnable(GL_BLEND);
+        const bool blendEnabled = bs.GetBlendingEnabled();
+        if (blendEnabled != this->curBlendState.GetBlendingEnabled()) {
+            if (blendEnabled) {
+                ::glEnable(GL_BLEND);
+            }
+            else {
+                ::glDisable(GL_BLEND);
+            }
         }
-        else {
-            ::glDisable(GL_BLEND);
+        
+        const BlendFactor::Code srcRgb = bs.GetSrcFactorRGB();
+        const BlendFactor::Code dstRgb = bs.GetDstFactorRGB();
+        const BlendFactor::Code srcAlpha = bs.GetSrcFactorAlpha();
+        const BlendFactor::Code dstAlpha = bs.GetDstFactorAlpha();
+        if ((srcRgb != this->curBlendState.GetSrcFactorRGB()) ||
+            (dstRgb != this->curBlendState.GetDstFactorRGB()) ||
+            (srcAlpha != this->curBlendState.GetSrcFactorAlpha()) ||
+            (dstAlpha != this->curBlendState.GetDstFactorAlpha())) {
+            
+            ::glBlendFuncSeparate(mapBlendFactor[srcRgb],
+                                  mapBlendFactor[dstRgb],
+                                  mapBlendFactor[srcAlpha],
+                                  mapBlendFactor[dstAlpha]);
         }
-        ORYOL_GL_CHECK_ERROR();
-    }
-    const BlendFactor::Code srcRgbFactor = setup.GetSrcFactorRGB();
-    const BlendFactor::Code dstRgbFactor = setup.GetDstFactorRGB();
-    const BlendFactor::Code srcAlphaFactor = setup.GetSrcFactorAlpha();
-    const BlendFactor::Code dstAlphaFactor = setup.GetDstFactorAlpha();
-    if ((srcRgbFactor != this->curBlendState.rgbSrcFactor) ||
-        (dstRgbFactor != this->curBlendState.rgbDstFactor) ||
-        (srcAlphaFactor != this->curBlendState.alphaSrcFactor) ||
-        (dstAlphaFactor != this->curBlendState.alphaDstFactor)) {
+
+        const BlendOperation::Code rgbOp = bs.GetOpRGB();
+        const BlendOperation::Code alphaOp = bs.GetOpAlpha();
+        if ((rgbOp != this->curBlendState.GetOpRGB()) ||
+            (alphaOp != this->curBlendState.GetOpAlpha())) {
+
+            ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
+        }
+
+        const ColorWriteMask::Code colorMask = bs.GetColorWriteMask();
+        if (colorMask != this->curBlendState.GetColorWriteMask()) {
+            ::glColorMask((colorMask & ColorWriteMask::R) != 0,
+                          (colorMask & ColorWriteMask::G) != 0,
+                          (colorMask & ColorWriteMask::B) != 0,
+                          (colorMask & ColorWriteMask::A) != 0);
+        }
         
-        this->curBlendState.rgbSrcFactor = srcRgbFactor;
-        this->curBlendState.rgbDstFactor = dstRgbFactor;
-        this->curBlendState.alphaSrcFactor = srcAlphaFactor;
-        this->curBlendState.alphaDstFactor = dstAlphaFactor;
-        
-        ::glBlendFuncSeparate(mapBlendFactor[srcRgbFactor],
-                              mapBlendFactor[dstRgbFactor],
-                              mapBlendFactor[srcAlphaFactor],
-                              mapBlendFactor[dstAlphaFactor]);
-        ORYOL_GL_CHECK_ERROR();
-    }
-    const BlendOperation::Code rgbOp = setup.GetOpRGB();
-    const BlendOperation::Code alphaOp = setup.GetOpAlpha();
-    if ((rgbOp != this->curBlendState.rgbBlendOperation) ||
-        (alphaOp != this->curBlendState.alphaBlendOperation)) {
-        
-        this->curBlendState.rgbBlendOperation = rgbOp;
-        this->curBlendState.alphaBlendOperation = alphaOp;
-        
-        ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
-        ORYOL_GL_CHECK_ERROR();
-    }
-    
-    const ColorWriteMask::Code colorMask = setup.GetColorWriteMask();
-    if (colorMask != this->curBlendState.colorWriteMask) {
-        ::glColorMask((colorMask & ColorWriteMask::R) != 0,
-                      (colorMask & ColorWriteMask::G) != 0,
-                      (colorMask & ColorWriteMask::B) != 0,
-                      (colorMask & ColorWriteMask::A) != 0);
+        this->curBlendState = bs;
         ORYOL_GL_CHECK_ERROR();
     }
 }

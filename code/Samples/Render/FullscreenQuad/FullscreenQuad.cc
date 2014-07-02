@@ -32,12 +32,10 @@ FullscreenQuadApp::OnInit() {
     Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     Id dss = this->render->CreateResource(DepthStencilStateSetup("dss"));
-    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     this->render->ReleaseResource(dss);
-    this->render->ReleaseResource(bs);
     return App::OnInit();
 }
 

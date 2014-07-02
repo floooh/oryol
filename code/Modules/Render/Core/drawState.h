@@ -10,7 +10,6 @@
 namespace Oryol {
 namespace Render {
 
-class blendState;
 class depthStencilState;
 class mesh;
 class programBundle;
@@ -25,10 +24,6 @@ public:
     /// clear the object
     void clear();
     
-    /// set blend state pointer
-    void setBlendState(blendState* bs);
-    /// get blend state pointer
-    blendState* getBlendState() const;
     /// set depthStencilState pointer
     void setDepthStencilState(depthStencilState* dss);
     /// get depthStencilState pointer
@@ -43,17 +38,10 @@ public:
     programBundle* getProgramBundle() const;
     
 private:
-    blendState* blendState_;
     depthStencilState* depthStencilState_;
     mesh* mesh_;
     programBundle* programBundle_;
 };
-
-//------------------------------------------------------------------------------
-inline blendState*
-drawState::getBlendState() const {
-    return this->blendState_;
-}
 
 //------------------------------------------------------------------------------
 inline depthStencilState*

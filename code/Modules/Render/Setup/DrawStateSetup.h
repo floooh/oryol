@@ -6,6 +6,7 @@
 */
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
+#include "Render/Core/BlendState.h"
 
 namespace Oryol {
 namespace Render {
@@ -19,18 +20,17 @@ public:
     /// construct with locator and resources
     DrawStateSetup(const Resource::Locator& loc,
                    const Resource::Id& depthStencilState,
-                   const Resource::Id& blendState,
                    const Resource::Id& mesh,
                    const Resource::Id& prog, uint32 progSelMask);
     
+    /// read/write access to embedded blend state
+    BlendState& BlendState();
+    /// read-only access to embedded blend state
+    const class BlendState& BlendState() const;
     /// set the depth-stencil state
     void SetDepthStencilState(const Resource::Id& depthStencilState);
     /// get the depth-stencil state
     const Resource::Id& GetDepthStencilState() const;
-    /// set the blend state
-    void SetBlendState(const Resource::Id& blendState);
-    /// get the blend state
-    const Resource::Id& GetBlendState() const;
     /// set mesh resource
     void SetMesh(const Resource::Id& mesh);
     /// get mesh resource
@@ -47,8 +47,8 @@ public:
     
 private:
     Resource::Locator loc;
+    class BlendState blendState;
     Resource::Id depthStencilState;
-    Resource::Id blendState;
     Resource::Id mesh;
     Resource::Id prog;
     uint32 progSelMask;
@@ -67,8 +67,14 @@ DrawStateSetup::GetDepthStencilState() const {
 }
 
 //------------------------------------------------------------------------------
-inline const Resource::Id&
-DrawStateSetup::GetBlendState() const {
+inline BlendState&
+DrawStateSetup::BlendState() {
+    return this->blendState;
+}
+
+//------------------------------------------------------------------------------
+inline const BlendState&
+DrawStateSetup::BlendState() const {
     return this->blendState;
 }
 

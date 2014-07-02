@@ -83,13 +83,11 @@ DDSCubeMapApp::OnInit() {
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
     Id dss = this->render->CreateResource(dssSetup);
-    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, mesh, prog, 0));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     this->render->ReleaseResource(dss);
-    this->render->ReleaseResource(bs);
     
     // setup projection and view matrices
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

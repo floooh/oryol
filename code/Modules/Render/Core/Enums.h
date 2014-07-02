@@ -266,7 +266,6 @@ public:
         ProgramBundle,      ///< shader program bundle
         ConstantBlock,      ///< block constant shader uniforms
         DepthStencilState,  ///< depth-stencil state block
-        BlendState,         ///< blending state block
         DrawState,          ///< draw state resource
         
         NumResourceTypes,

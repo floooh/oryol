@@ -68,13 +68,11 @@ InfiniteSpheresApp::OnInit() {
     dssSetup.SetDepthWriteEnabled(true);
     dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
     Id dss = this->render->CreateResource(dssSetup);
-    Id bs = this->render->CreateResource(BlendStateSetup("bs"));
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, bs, sphere, prog, 0));
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, sphere, prog, 0));
     
     this->render->ReleaseResource(sphere);
     this->render->ReleaseResource(prog);
     this->render->ReleaseResource(dss);
-    this->render->ReleaseResource(bs);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
