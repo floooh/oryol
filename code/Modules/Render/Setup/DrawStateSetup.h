@@ -24,7 +24,7 @@ public:
                    const Resource::Id& prog, uint32 progSelMask);
     
     /// read/write access to embedded blend state
-    BlendState& BlendState();
+    class BlendState& BlendState();
     /// read-only access to embedded blend state
     const class BlendState& BlendState() const;
     /// set the depth-stencil state
