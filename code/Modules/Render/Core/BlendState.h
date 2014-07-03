@@ -16,9 +16,9 @@ public:
     BlendState();
     
     /// enable/disable blending (default is false)
-    void SetBlendingEnabled(bool b);
+    void SetEnabled(bool b);
     /// get enabled/disable blending flag
-    bool GetBlendingEnabled() const;
+    bool GetEnabled() const;
     
     /// set source RGB blend factor
     void SetSrcFactorRGB(BlendFactor::Code srcFactorRGB);
@@ -57,7 +57,7 @@ public:
 private:
     union {
         struct {
-             bool blendEnabled : 1;
+             bool enabled : 1;
              unsigned int srcFactorRGB : 4;
              unsigned int dstFactorRGB : 4;
              unsigned int opRGB : 2;
@@ -74,7 +74,7 @@ private:
 inline
 BlendState::BlendState() {
     this->hash = 0;
-    this->bits.blendEnabled = false;
+    this->bits.enabled = false;
     this->bits.srcFactorRGB = BlendFactor::One;
     this->bits.dstFactorRGB = BlendFactor::Zero;
     this->bits.opRGB = BlendOperation::Add;
@@ -86,14 +86,14 @@ BlendState::BlendState() {
 
 //------------------------------------------------------------------------------
 inline void
-BlendState::SetBlendingEnabled(bool b) {
-    this->bits.blendEnabled = b;
+BlendState::SetEnabled(bool b) {
+    this->bits.enabled = b;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-BlendState::GetBlendingEnabled() const {
-    return this->bits.blendEnabled;
+BlendState::GetEnabled() const {
+    return this->bits.enabled;
 }
 
 //------------------------------------------------------------------------------

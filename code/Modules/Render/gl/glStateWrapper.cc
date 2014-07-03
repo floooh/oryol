@@ -8,7 +8,6 @@
 #include "Core/Memory/Memory.h"
 #include "Render/Core/mesh.h"
 #include "Render/Core/programBundle.h"
-#include "Render/Core/depthStencilState.h"
 #include "Render/Core/drawState.h"
 
 namespace Oryol {
@@ -140,7 +139,7 @@ void
 glStateWrapper::ApplyDrawState(const drawState* ds) {
     o_assert_dbg(nullptr != ds);
     const DrawStateSetup& setup = ds->GetSetup();
-    this->applyDepthStencilState(ds->getDepthStencilState());
+    this->applyDepthStencilState(setup.DepthStencilState());
     this->applyBlendState(setup.BlendState());
     programBundle* pb = ds->getProgramBundle();
     uint32 progSelMask = setup.GetProgSelMask();
@@ -235,18 +234,9 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::setupDepthStencilState() {
-    this->curDepthStencilState.depthCompareFunc = CompareFunc::Always;
-    this->curDepthStencilState.depthWriteEnabled = false;
-    this->curDepthStencilState.stencilTestEnabled = false;
-    for (int32 i = 0; i < Face::NumSides; i++) {
-        this->curDepthStencilState.stencilState[i].stencilFailOp      = StencilOp::Keep;
-        this->curDepthStencilState.stencilState[i].depthFailOp        = StencilOp::Keep;
-        this->curDepthStencilState.stencilState[i].depthStencilPassOp = StencilOp::Keep;
-        this->curDepthStencilState.stencilState[i].stencilCompareFunc = CompareFunc::Always;
-        this->curDepthStencilState.stencilState[i].stencilReadMask    = 0xFFFFFFFF;
-        this->curDepthStencilState.stencilState[i].stencilWriteMask   = 0xFFFFFFFF;
-        this->curDepthStencilState.stencilState[i].stencilRef         = 0;
-    }
+    
+    this->curDepthStencilState = DepthStencilState();
+
     ::glEnable(GL_DEPTH_TEST);
     ::glDepthFunc(GL_ALWAYS);
     ::glDepthMask(GL_FALSE);
@@ -259,85 +249,78 @@ glStateWrapper::setupDepthStencilState() {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::applyStencilState(const depthStencilState* dds, Face::Code face, GLenum glFace) {
+glStateWrapper::applyStencilState(const StencilState& newState, const StencilState& curState, GLenum glFace) {
 
-    const DepthStencilStateSetup& setup = dds->GetSetup();
-
-    const CompareFunc::Code cmpFunc = setup.GetStencilCompareFunc(face);
-    o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
-    const uint32 readMask = setup.GetStencilReadMask(face);
-    const int32 stencilRef = setup.GetStencilRef(face);
-    if ((cmpFunc != this->curDepthStencilState.stencilState[face].stencilCompareFunc) ||
-        (readMask != this->curDepthStencilState.stencilState[face].stencilReadMask) ||
-        (stencilRef != this->curDepthStencilState.stencilState[face].stencilRef))
-    {
-        this->curDepthStencilState.stencilState[face].stencilCompareFunc = cmpFunc;
-        this->curDepthStencilState.stencilState[face].stencilReadMask = readMask;
-        this->curDepthStencilState.stencilState[face].stencilRef = stencilRef;
+    const CompareFunc::Code cmpFunc = newState.GetCompareFunc();
+    const uint32 readMask = newState.GetReadMask();
+    const int32 stencilRef = newState.GetRef();
+    if ((cmpFunc != curState.GetCompareFunc()) || (readMask != curState.GetReadMask()) || (stencilRef != curState.GetRef())) {
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
-        ORYOL_GL_CHECK_ERROR();
     }
     
-    const StencilOp::Code sFailOp = setup.GetStencilFailOp(face);
-    o_assert_range_dbg(sFailOp, StencilOp::NumStencilOperations);
-    const StencilOp::Code dFailOp = setup.GetDepthFailOp(face);
-    o_assert_range_dbg(dFailOp, StencilOp::NumStencilOperations);
-    const StencilOp::Code passOp = setup.GetDepthStencilPassOp(face);
-    o_assert_range_dbg(passOp, StencilOp::NumStencilOperations);
-    if ((sFailOp != this->curDepthStencilState.stencilState[face].stencilFailOp) ||
-        (dFailOp != this->curDepthStencilState.stencilState[face].depthFailOp) ||
-        (passOp  != this->curDepthStencilState.stencilState[face].depthStencilPassOp)) {
-        
-        this->curDepthStencilState.stencilState[face].stencilFailOp = sFailOp;
-        this->curDepthStencilState.stencilState[face].depthFailOp = sFailOp;
-        this->curDepthStencilState.stencilState[face].depthStencilPassOp = passOp;
-        ::glStencilOpSeparate(GL_FRONT, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
-        ORYOL_GL_CHECK_ERROR();
+    const StencilOp::Code sFailOp = newState.GetStencilFailOp();
+    const StencilOp::Code dFailOp = newState.GetDepthFailOp();
+    const StencilOp::Code passOp = newState.GetDepthStencilPassOp();
+    if ((sFailOp != curState.GetStencilFailOp()) || (dFailOp != curState.GetDepthFailOp()) || (passOp  != curState.GetDepthStencilPassOp())) {
+        ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
-    const uint32 writeMask = setup.GetStencilWriteMask(face);
-    if (writeMask != this->curDepthStencilState.stencilState[face].stencilWriteMask) {
-        this->curDepthStencilState.stencilState[face].stencilWriteMask = writeMask;
+    const uint32 writeMask = newState.GetWriteMask();
+    if (writeMask != curState.GetWriteMask()) {
         ::glStencilMask(writeMask);
-        ORYOL_GL_CHECK_ERROR();
     }
 }
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::applyDepthStencilState(const depthStencilState* dds) {
-    o_assert_dbg((nullptr != dds) && (dds->GetState() == Resource::State::Valid));
-    const DepthStencilStateSetup& setup = dds->GetSetup();
+glStateWrapper::applyDepthStencilState(const DepthStencilState& newState) {
 
-    const CompareFunc::Code depthCmpFunc = setup.GetDepthCompareFunc();
-    o_assert_range_dbg(depthCmpFunc, CompareFunc::NumCompareFuncs);
-    if (depthCmpFunc != this->curDepthStencilState.depthCompareFunc) {
-        this->curDepthStencilState.depthCompareFunc = depthCmpFunc;
-        ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
-        ORYOL_GL_CHECK_ERROR();
-    }
+    const DepthStencilState& curState = this->curDepthStencilState;
 
-    const bool depthWriteEnabled = setup.GetDepthWriteEnabled();
-    if (depthWriteEnabled != this->curDepthStencilState.depthWriteEnabled) {
-        this->curDepthStencilState.depthWriteEnabled = depthWriteEnabled;
-        ::glDepthMask(depthWriteEnabled);
-        ORYOL_GL_CHECK_ERROR();
+    // apply depth state if changed
+    bool depthChanged = false;
+    if (curState.GetDepthStateHash() != newState.GetDepthStateHash()) {
+        const CompareFunc::Code depthCmpFunc = newState.GetDepthCompareFunc();
+        const bool depthWriteEnabled = newState.GetDepthWriteEnabled();
+        if (depthCmpFunc != curState.GetDepthCompareFunc()) {
+            ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
+        }
+        if (depthWriteEnabled != curState.GetDepthWriteEnabled()) {
+            ::glDepthMask(depthWriteEnabled);
+        }
+        depthChanged = true;
     }
     
-    const bool stencilTestEnabled = setup.GetStencilTestEnabled();
-    if (stencilTestEnabled != this->curDepthStencilState.stencilTestEnabled) {
-        this->curDepthStencilState.stencilTestEnabled = stencilTestEnabled;
-        if (stencilTestEnabled) {
+    // apply front and back stencil state
+    bool frontChanged = false;
+    const StencilState& newFront = newState.StencilState(Face::Front);
+    const StencilState& curFront = curState.StencilState(Face::Front);
+    if (curFront.GetHash() != newFront.GetHash()) {
+        frontChanged = true;
+        this->applyStencilState(newFront, curFront, GL_FRONT);
+    }
+    bool backChanged = false;
+    const StencilState& newBack = newState.StencilState(Face::Back);
+    const StencilState& curBack = curState.StencilState(Face::Back);
+    if (curBack.GetHash() != newBack.GetHash()) {
+        backChanged = true;
+        this->applyStencilState(newBack, curBack, GL_BACK);
+    }
+    
+    // enable/disable stencil state?
+    if (frontChanged || backChanged) {
+        if (newFront.GetEnabled() || newBack.GetEnabled()) {
             ::glEnable(GL_STENCIL_TEST);
         }
         else {
             ::glDisable(GL_STENCIL_TEST);
         }
-        ORYOL_GL_CHECK_ERROR();
     }
     
-    this->applyStencilState(dds, Face::Front, GL_FRONT);
-    this->applyStencilState(dds, Face::Back, GL_BACK);
+    // update state cache
+    if (depthChanged || frontChanged || backChanged) {
+        this->curDepthStencilState = newState;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -357,8 +340,8 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
 
     if (bs.GetHash() != this->curBlendState.GetHash()) {
     
-        const bool blendEnabled = bs.GetBlendingEnabled();
-        if (blendEnabled != this->curBlendState.GetBlendingEnabled()) {
+        const bool blendEnabled = bs.GetEnabled();
+        if (blendEnabled != this->curBlendState.GetEnabled()) {
             if (blendEnabled) {
                 ::glEnable(GL_BLEND);
             }

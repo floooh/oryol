@@ -64,15 +64,13 @@ InfiniteSpheresApp::OnInit() {
     shapeBuilder.Build();
     Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    DepthStencilStateSetup dssSetup("depthStencilState");
-    dssSetup.SetDepthWriteEnabled(true);
-    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    Id dss = this->render->CreateResource(dssSetup);
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, sphere, prog, 0));
+    DrawStateSetup dsSetup("ds", sphere, prog, 0);
+    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(sphere);
     this->render->ReleaseResource(prog);
-    this->render->ReleaseResource(dss);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);

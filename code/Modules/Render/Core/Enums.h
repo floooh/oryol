@@ -265,7 +265,6 @@ public:
         Shader,             ///< a vertex shader
         ProgramBundle,      ///< shader program bundle
         ConstantBlock,      ///< block constant shader uniforms
-        DepthStencilState,  ///< depth-stencil state block
         DrawState,          ///< draw state resource
         
         NumResourceTypes,

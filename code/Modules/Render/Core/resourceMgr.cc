@@ -56,8 +56,7 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
-    this->depthStencilStatePool.Setup(&this->depthStencilStateFactory, setup.GetPoolSize(ResourceType::DepthStencilState), 0, 'DDST');
-    this->drawStateFactory.Setup(&this->depthStencilStatePool, &this->meshPool, &this->programBundlePool);
+    this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(&this->drawStateFactory, setup.GetPoolSize(ResourceType::DrawState), 0, 'DRWS');
     
     this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
@@ -71,7 +70,6 @@ resourceMgr::Discard() {
     this->resourceRegistry.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
-    this->depthStencilStatePool.Discard();
     this->texturePool.Discard();
     this->textureFactory.Discard();
     this->programBundlePool.Discard();
@@ -221,24 +219,6 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> Id
-resourceMgr::CreateResource(const DepthStencilStateSetup& setup) {
-    o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
-    if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::DepthStencilState);
-        return resId;
-    }
-    else {
-        resId = this->depthStencilStatePool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
-        this->depthStencilStatePool.Assign(resId, setup);
-        return resId;
-    }
-}
-
-//------------------------------------------------------------------------------
-template<> Id
 resourceMgr::CreateResource(const DrawStateSetup& setup) {
     o_assert(this->isValid);
     const Locator& loc = setup.GetLocator();
@@ -251,7 +231,6 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         // add dependent resources
         Array<Id> deps;
-        deps.AddBack(setup.GetDepthStencilState());
         deps.AddBack(setup.GetProgram());
         deps.AddBack(setup.GetMesh());
         this->resourceRegistry.AddResource(loc, resId, deps);
@@ -290,9 +269,6 @@ resourceMgr::ReleaseResource(const Id& resId) {
                 case ResourceType::ConstantBlock:
                     o_assert2(false, "FIXME!!!\n");
                     break;
-                case ResourceType::DepthStencilState:
-                    this->depthStencilStatePool.Unassign(removeId);
-                    break;
                 case ResourceType::DrawState:
                     this->drawStatePool.Unassign(removeId);
                     break;
@@ -320,8 +296,6 @@ resourceMgr::QueryResourceState(const Id& resId) {
         case ResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
             break;
-        case ResourceType::DepthStencilState:
-            return this->depthStencilStatePool.QueryState(resId);
         case ResourceType::DrawState:
             return this->drawStatePool.QueryState(resId);
         default:

@@ -7,6 +7,7 @@
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Render/Core/BlendState.h"
+#include "Render/Core/DepthStencilState.h"
 
 namespace Oryol {
 namespace Render {
@@ -19,7 +20,6 @@ public:
     DrawStateSetup(const Resource::Locator& loc);
     /// construct with locator and resources
     DrawStateSetup(const Resource::Locator& loc,
-                   const Resource::Id& depthStencilState,
                    const Resource::Id& mesh,
                    const Resource::Id& prog, uint32 progSelMask);
     
@@ -27,10 +27,10 @@ public:
     class BlendState& BlendState();
     /// read-only access to embedded blend state
     const class BlendState& BlendState() const;
-    /// set the depth-stencil state
-    void SetDepthStencilState(const Resource::Id& depthStencilState);
-    /// get the depth-stencil state
-    const Resource::Id& GetDepthStencilState() const;
+    /// read/write acess to embedded depth-stencil state
+    class DepthStencilState& DepthStencilState();
+    /// read-only access to embedded depth-stencil satte
+    const class DepthStencilState& DepthStencilState() const;
     /// set mesh resource
     void SetMesh(const Resource::Id& mesh);
     /// get mesh resource
@@ -48,7 +48,7 @@ public:
 private:
     Resource::Locator loc;
     class BlendState blendState;
-    Resource::Id depthStencilState;
+    class DepthStencilState depthStencilState;
     Resource::Id mesh;
     Resource::Id prog;
     uint32 progSelMask;
@@ -61,12 +61,6 @@ DrawStateSetup::GetLocator() const {
 }
     
 //------------------------------------------------------------------------------
-inline const Resource::Id&
-DrawStateSetup::GetDepthStencilState() const {
-    return this->depthStencilState;
-}
-
-//------------------------------------------------------------------------------
 inline BlendState&
 DrawStateSetup::BlendState() {
     return this->blendState;
@@ -76,6 +70,18 @@ DrawStateSetup::BlendState() {
 inline const BlendState&
 DrawStateSetup::BlendState() const {
     return this->blendState;
+}
+
+//------------------------------------------------------------------------------
+inline DepthStencilState&
+DrawStateSetup::DepthStencilState() {
+    return this->depthStencilState;
+}
+
+//------------------------------------------------------------------------------
+inline const DepthStencilState&
+DrawStateSetup::DepthStencilState() const {
+    return this->depthStencilState;
 }
 
 //------------------------------------------------------------------------------

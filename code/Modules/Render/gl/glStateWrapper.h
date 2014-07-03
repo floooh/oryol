@@ -12,6 +12,7 @@
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
 #include "Render/Core/BlendState.h"
+#include "Render/Core/DepthStencilState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 
@@ -20,7 +21,6 @@ namespace Render {
 
 class mesh;
 class programBundle;
-class depthStencilState;
 class drawState;
     
 class glStateWrapper {
@@ -96,7 +96,9 @@ private:
     /// setup the initial blend-state
     void setupBlendState();
     /// apply depth-stencil state to use for rendering
-    void applyDepthStencilState(const depthStencilState* dss);
+    void applyDepthStencilState(const DepthStencilState& dss);
+    /// apply front/back side stencil state
+    void applyStencilState(const StencilState& state, const StencilState& curState, GLenum glFace);
     /// apply blend state to use for rendering
     void applyBlendState(const BlendState& bs);
     /// apply program to use for rendering
@@ -131,29 +133,12 @@ private:
     /// ViewPort state function
     void onViewPort(const State::Vector& input);
     
-    /// apply front/back side stencil state
-    void applyStencilState(const depthStencilState* dds, Face::Code face, GLenum glFace);
-
     bool isValid;
 
     Function funcs[State::NumStateCodes];
     
-    struct {
-        CompareFunc::Code depthCompareFunc;
-        bool depthWriteEnabled;
-        bool stencilTestEnabled;
-        struct {
-            StencilOp::Code stencilFailOp;
-            StencilOp::Code depthFailOp;
-            StencilOp::Code depthStencilPassOp;
-            CompareFunc::Code stencilCompareFunc;
-            uint32 stencilReadMask;
-            uint32 stencilWriteMask;
-            int32 stencilRef;
-        } stencilState[Face::NumSides];
-    } curDepthStencilState;
-    
     BlendState curBlendState;
+    DepthStencilState curDepthStencilState;
     
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];

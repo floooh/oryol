@@ -9,7 +9,6 @@ namespace Render {
 
 //------------------------------------------------------------------------------
 drawState::drawState() :
-depthStencilState_(nullptr),
 mesh_(nullptr),
 programBundle_(nullptr) {
     // empty
@@ -17,7 +16,6 @@ programBundle_(nullptr) {
 
 //------------------------------------------------------------------------------
 drawState::~drawState() {
-    o_assert(nullptr == this->depthStencilState_);
     o_assert(nullptr == this->mesh_);
     o_assert(nullptr == this->programBundle_);
 }
@@ -25,16 +23,8 @@ drawState::~drawState() {
 //------------------------------------------------------------------------------
 void
 drawState::clear() {
-    this->depthStencilState_ = nullptr;
     this->mesh_ = nullptr;
     this->programBundle_ = nullptr;
-}
-
-//------------------------------------------------------------------------------
-void
-drawState::setDepthStencilState(depthStencilState* dss) {
-    o_assert(nullptr != dss);
-    this->depthStencilState_ = dss;
 }
 
 //------------------------------------------------------------------------------

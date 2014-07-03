@@ -12,7 +12,6 @@
 #include "Render/Core/shaderPool.h"
 #include "Render/Core/programBundlePool.h"
 #include "Render/Core/texturePool.h"
-#include "Render/Core/depthStencilStatePool.h"
 #include "Render/Core/drawStatePool.h"
 #include "Resource/Registry.h"
 #include "Resource/Pool.h"
@@ -62,8 +61,6 @@ public:
     programBundle* LookupProgramBundle(const Resource::Id& resId);
     /// lookup texture object
     texture* LookupTexture(const Resource::Id& resId);
-    /// lookup depth-stencil-state object
-    depthStencilState* LookupDepthStencilState(const Resource::Id& resId);
     /// lookup draw-state object
     drawState* LookupDrawState(const Resource::Id& resId);
 
@@ -77,13 +74,11 @@ private:
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
     class textureFactory textureFactory;
-    class depthStencilStateFactory depthStencilStateFactory;
     class drawStateFactory drawStateFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class programBundlePool programBundlePool;
     class texturePool texturePool;
-    class depthStencilStatePool depthStencilStatePool;
     class drawStatePool drawStatePool;
 };
 
@@ -106,13 +101,6 @@ inline texture*
 resourceMgr::LookupTexture(const Resource::Id& resId) {
     o_assert_dbg(this->isValid);
     return this->texturePool.Lookup(resId);
-}
-
-//------------------------------------------------------------------------------
-inline depthStencilState*
-resourceMgr::LookupDepthStencilState(const Resource::Id& resId) {
-    o_assert_dbg(this->isValid);
-    return this->depthStencilStatePool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------

@@ -67,15 +67,13 @@ DrawCallPerfApp::OnInit() {
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    DepthStencilStateSetup dssSetup("depthStencilState");
-    dssSetup.SetDepthWriteEnabled(true);
-    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    Id dss = this->render->CreateResource(dssSetup);
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
+    DrawStateSetup dsSetup("ds", mesh, prog, 0);
+    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
-    this->render->ReleaseResource(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();

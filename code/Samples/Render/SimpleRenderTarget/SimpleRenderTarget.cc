@@ -76,21 +76,20 @@ SimpleRenderTargetApp::OnInit() {
     Id offScreenProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
     Id dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
     
-    // constant state
-    DepthStencilStateSetup dssSetup("depthStencilState");
-    dssSetup.SetDepthWriteEnabled(true);
-    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    Id dss = this->render->CreateResource(dssSetup);
-    
     // create one draw state for offscreen rendering, and one draw state for main target rendering
-    this->offscreenDrawState = this->render->CreateResource(DrawStateSetup("offds", dss, torus, offScreenProg, 0));
-    this->displayDrawState   = this->render->CreateResource(DrawStateSetup("dispds", dss, sphere, dispProg, 0));
+    DrawStateSetup offdsSetup("offds", torus, offScreenProg, 0);
+    offdsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    offdsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->offscreenDrawState = this->render->CreateResource(offdsSetup);
+    DrawStateSetup dispdsSetup("dispds", sphere, dispProg, 0);
+    dispdsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    dispdsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->displayDrawState = this->render->CreateResource(dispdsSetup);
     
     this->render->ReleaseResource(torus);
     this->render->ReleaseResource(sphere);
     this->render->ReleaseResource(offScreenProg);
     this->render->ReleaseResource(dispProg);
-    this->render->ReleaseResource(dss);
     
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);

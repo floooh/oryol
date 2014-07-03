@@ -88,15 +88,13 @@ DDSTextureLoadingApp::OnInit() {
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    DepthStencilStateSetup dssSetup("depthStencilState");
-    dssSetup.SetDepthWriteEnabled(true);
-    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    Id dss = this->render->CreateResource(dssSetup);
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
+    DrawStateSetup dsSetup("ds", mesh, prog, 0);
+    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
-    this->render->ReleaseResource(dss);
     
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();

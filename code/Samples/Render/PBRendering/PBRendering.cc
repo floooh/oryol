@@ -50,15 +50,13 @@ PBRenderingApp::OnInit() {
     shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
-    DepthStencilStateSetup dssSetup("depthStencilState");
-    dssSetup.SetDepthWriteEnabled(true);
-    dssSetup.SetDepthCompareFunc(CompareFunc::LessEqual);
-    Id dss = this->render->CreateResource(dssSetup);
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", dss, mesh, prog, 0));
+    DrawStateSetup dsSetup("ds", mesh, prog, 0);
+    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(dss);
     this->render->ReleaseResource(prog);
     
     // setup projection and view matrices
