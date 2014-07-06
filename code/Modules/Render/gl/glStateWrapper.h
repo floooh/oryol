@@ -13,6 +13,7 @@
 #include "Render/Core/Enums.h"
 #include "Render/Core/BlendState.h"
 #include "Render/Core/DepthStencilState.h"
+#include "Render/Core/FixedFunctionState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 
@@ -40,10 +41,6 @@ public:
     /// apply draw state
     void ApplyDrawState(const drawState* ds);
 
-    /// apply state
-    void ApplyState(State::Code state, bool b0);
-    /// apply state
-    void ApplyState(State::Code state, State::Value v0);
     /// apply state
     void ApplyState(State::Code state, float32 f0);
     /// apply state
@@ -95,35 +92,27 @@ private:
     void setupDepthStencilState();
     /// setup the initial blend-state
     void setupBlendState();
+    /// setup fixed function state
+    void setupFixedFunctionState();
     /// apply depth-stencil state to use for rendering
     void applyDepthStencilState(const DepthStencilState& dss);
     /// apply front/back side stencil state
     void applyStencilState(const StencilState& state, const StencilState& curState, GLenum glFace);
     /// apply blend state to use for rendering
     void applyBlendState(const BlendState& bs);
+    /// apply fixed function state
+    void applyFixedFunctionState(const FixedFunctionState& ffs);
     /// apply program to use for rendering
     void applyProgram(programBundle* progBundle, uint32 progSelMask);
     /// apply mesh to use for rendering
     void applyMesh(const mesh* msh, const programBundle* progBundle);
 
-    /// FontFace state function
-    void onFrontFace(const State::Vector& input);
-    /// CullFaceEnabled state function
-    void onCullFaceEnabled(const State::Vector& input);
-    /// CullFace state function
-    void onCullFace(const State::Vector& input);
-    /// DepthOffsetEnabled state function
-    void onDepthOffsetEnabled(const State::Vector& input);
     /// DepthOffset state function
     void onDepthOffset(const State::Vector& input);
-    /// ScissorTestEnabled state function
-    void onScissorTestEnabled(const State::Vector& input);
     /// ScissorRect state function
     void onScissorRect(const State::Vector& input);
     /// BlendColor state function
     void onBlendColor(const State::Vector& input);
-    /// DitherEnabled state function
-    void onDitherEnabled(const State::Vector& input);
     /// ClearColor state function
     void onClearColor(const State::Vector& input);
     /// ClearDepth state function
@@ -139,21 +128,17 @@ private:
     
     BlendState curBlendState;
     DepthStencilState curDepthStencilState;
+    FixedFunctionState curFixedFunctionState;
     
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];
     static GLenum mapBlendFactor[BlendFactor::NumBlendFactors];
     static GLenum mapBlendOp[BlendOperation::NumBlendOperations];
+    static GLenum mapCullFace[Face::NumFaceCodes];
     
-    GLenum curFrontFaceMode;
-    bool curCullFaceEnabled;
-    GLenum curCullFaceMode;
-    
-    bool curDepthOffsetEnabled;
     GLfloat curDepthOffsetFactor;
     GLfloat curDepthOffsetUnits;
     
-    bool curScissorTestEnabled;
     GLint curScissorLeft;
     GLint curScissorBottom;
     GLsizei curScissorWidth;
@@ -164,7 +149,6 @@ private:
     GLclampf curBlendColorB;
     GLclampf curBlendColorA;
     
-    bool curDitherEnabled;
     GLclampf curClearColorR;
     GLclampf curClearColorG;
     GLclampf curClearColorB;
@@ -185,26 +169,6 @@ private:
     GLuint samplers2D[MaxTextureSamplers];
     GLuint samplersCube[MaxTextureSamplers];
 };
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, bool b0) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::B0 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].b = b0;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, State::Value v0) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::V0 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].v = v0;
-    (this->*funcs[c].cb)(values);
-}
 
 //------------------------------------------------------------------------------
 inline void

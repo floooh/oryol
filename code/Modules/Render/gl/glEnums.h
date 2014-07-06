@@ -133,26 +133,5 @@ public:
     };
 };
 
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::Render::glState
-*/
-class glState {
-public:
-    /// these are the render state values
-    enum Value {
-        Undefined = -1,         ///< state is not set
-        
-        CW = 0x0900,            ///< GL_CW, for FrontFace state
-        CCW = 0x0901,           ///< GL_CCW, for FrontFace state
-        
-        Front = 0x0404,         ///< GL_FRONT, polygon front side
-        Back = 0x0405,          ///< GL_BACK, polygon back side
-        FrontAndBack = 0x0408,  ///< GL_FRONT_AND_BACK, polygon front and back
-        
-        InvalidStateValue = 0xFFFFFFFF
-    };
-};
-
 } // namespace Render
 } // namespace Oryol

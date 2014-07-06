@@ -14,6 +14,11 @@ class DepthStencilState {
 public:
     /// constructor
     DepthStencilState();
+
+    /// equality
+    bool operator==(const DepthStencilState& rhs) const;
+    /// inequality
+    bool operator!=(const DepthStencilState& rhs) const;
     
     /// set depth compare function
     void SetDepthCompareFunc(CompareFunc::Code f);
@@ -49,6 +54,22 @@ DepthStencilState::DepthStencilState() {
     this->hash = 0;
     this->bits.depthCompareFunc = CompareFunc::Always;
     this->bits.depthWriteEnabled = false;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+DepthStencilState::operator==(const DepthStencilState& rhs) const {
+    return (this->hash == rhs.hash) &&
+           (this->stencilState[Face::Front] == rhs.stencilState[Face::Front]) &&
+           (this->stencilState[Face::Back] == rhs.stencilState[Face::Back]);
+}
+
+//------------------------------------------------------------------------------
+inline bool
+DepthStencilState::operator!=(const DepthStencilState& rhs) const {
+    return (this->hash != rhs.hash) ||
+           (this->stencilState[Face::Front] != rhs.stencilState[Face::Front]) ||
+           (this->stencilState[Face::Back] != rhs.stencilState[Face::Back]);
 }
 
 //------------------------------------------------------------------------------

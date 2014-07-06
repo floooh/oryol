@@ -15,6 +15,11 @@ public:
     /// constructor
     StencilState();
     
+    /// equality
+    bool operator==(const StencilState& rhs) const;
+    /// inequality
+    bool operator!=(const StencilState& rhs) const;
+    
     /// enable/disable stencil test
     void SetEnabled(bool b);
     /// get stencil test enabled flag
@@ -80,6 +85,18 @@ StencilState::StencilState() {
     this->bits.readMask = 0xFF;
     this->bits.writeMask = 0xFF;
     this->bits.ref = 0;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+StencilState::operator==(const StencilState& rhs) const {
+    return this->hash == rhs.hash;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+StencilState::operator!=(const StencilState& rhs) const {
+    return this->hash != rhs.hash;
 }
 
 //------------------------------------------------------------------------------

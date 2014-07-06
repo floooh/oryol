@@ -15,6 +15,11 @@ public:
     /// constructor
     BlendState();
     
+    /// equality
+    bool operator==(const BlendState& rhs) const;
+    /// inequality
+    bool operator!=(const BlendState& rhs) const;
+    
     /// enable/disable blending (default is false)
     void SetEnabled(bool b);
     /// get enabled/disable blending flag
@@ -53,7 +58,7 @@ public:
     
     /// get 32-bit hash code
     uint32 GetHash() const;
-
+    
 private:
     union {
         struct {
@@ -82,6 +87,18 @@ BlendState::BlendState() {
     this->bits.dstFactorAlpha = BlendFactor::Zero;
     this->bits.opAlpha = BlendOperation::Add;
     this->bits.colorWriteMask = ColorWriteMask::All;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+BlendState::operator==(const BlendState& rhs) const {
+    return this->hash == rhs.hash;
+}
+
+//------------------------------------------------------------------------------
+inline bool
+BlendState::operator!=(const BlendState& rhs) const {
+    return this->hash != rhs.hash;
 }
 
 //------------------------------------------------------------------------------

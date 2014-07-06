@@ -61,16 +61,17 @@ GLenum glStateWrapper::mapBlendOp[BlendOperation::NumBlendOperations] = {
     GL_FUNC_REVERSE_SUBTRACT,
 };
 
+GLenum glStateWrapper::mapCullFace[Face::NumFaceCodes] = {
+    GL_FRONT,
+    GL_BACK,
+    GL_FRONT_AND_BACK,
+};
+
 //------------------------------------------------------------------------------
 glStateWrapper::glStateWrapper() :
 isValid(false),
-curFrontFaceMode(GL_CCW),
-curCullFaceEnabled(false),
-curCullFaceMode(GL_BACK),
-curDepthOffsetEnabled(false),
 curDepthOffsetFactor(0.0f),
 curDepthOffsetUnits(0.0f),
-curScissorTestEnabled(false),
 curScissorLeft(0),
 curScissorBottom(0),
 curScissorWidth(-1),
@@ -79,7 +80,6 @@ curBlendColorR(0.0f),
 curBlendColorG(0.0f),
 curBlendColorB(0.0f),
 curBlendColorA(0.0f),
-curDitherEnabled(false),
 curClearColorR(0.0f),
 curClearColorG(0.0f),
 curClearColorB(0.0f),
@@ -119,6 +119,7 @@ glStateWrapper::Setup() {
 
     this->setupDepthStencilState();
     this->setupBlendState();
+    this->setupFixedFunctionState();
 }
 
 //------------------------------------------------------------------------------
@@ -139,8 +140,15 @@ void
 glStateWrapper::ApplyDrawState(const drawState* ds) {
     o_assert_dbg(nullptr != ds);
     const DrawStateSetup& setup = ds->GetSetup();
-    this->applyDepthStencilState(setup.DepthStencilState());
-    this->applyBlendState(setup.BlendState());
+    if (setup.DepthStencilState() != this->curDepthStencilState) {
+        this->applyDepthStencilState(setup.DepthStencilState());
+    }
+    if (setup.BlendState() != this->curBlendState) {
+        this->applyBlendState(setup.BlendState());
+    }
+    if (setup.FixedFunctionState() != this->curFixedFunctionState) {
+        this->applyFixedFunctionState(setup.FixedFunctionState());
+    }
     programBundle* pb = ds->getProgramBundle();
     uint32 progSelMask = setup.GetProgSelMask();
     this->applyProgram(pb, progSelMask);
@@ -338,104 +346,115 @@ glStateWrapper::setupBlendState() {
 void
 glStateWrapper::applyBlendState(const BlendState& bs) {
 
-    if (bs.GetHash() != this->curBlendState.GetHash()) {
+    const bool blendEnabled = bs.GetEnabled();
+    if (blendEnabled != this->curBlendState.GetEnabled()) {
+        if (blendEnabled) {
+            ::glEnable(GL_BLEND);
+        }
+        else {
+            ::glDisable(GL_BLEND);
+        }
+    }
     
-        const bool blendEnabled = bs.GetEnabled();
-        if (blendEnabled != this->curBlendState.GetEnabled()) {
-            if (blendEnabled) {
-                ::glEnable(GL_BLEND);
-            }
-            else {
-                ::glDisable(GL_BLEND);
-            }
-        }
+    const BlendFactor::Code srcRgb = bs.GetSrcFactorRGB();
+    const BlendFactor::Code dstRgb = bs.GetDstFactorRGB();
+    const BlendFactor::Code srcAlpha = bs.GetSrcFactorAlpha();
+    const BlendFactor::Code dstAlpha = bs.GetDstFactorAlpha();
+    if ((srcRgb != this->curBlendState.GetSrcFactorRGB()) ||
+        (dstRgb != this->curBlendState.GetDstFactorRGB()) ||
+        (srcAlpha != this->curBlendState.GetSrcFactorAlpha()) ||
+        (dstAlpha != this->curBlendState.GetDstFactorAlpha())) {
         
-        const BlendFactor::Code srcRgb = bs.GetSrcFactorRGB();
-        const BlendFactor::Code dstRgb = bs.GetDstFactorRGB();
-        const BlendFactor::Code srcAlpha = bs.GetSrcFactorAlpha();
-        const BlendFactor::Code dstAlpha = bs.GetDstFactorAlpha();
-        if ((srcRgb != this->curBlendState.GetSrcFactorRGB()) ||
-            (dstRgb != this->curBlendState.GetDstFactorRGB()) ||
-            (srcAlpha != this->curBlendState.GetSrcFactorAlpha()) ||
-            (dstAlpha != this->curBlendState.GetDstFactorAlpha())) {
-            
-            ::glBlendFuncSeparate(mapBlendFactor[srcRgb],
-                                  mapBlendFactor[dstRgb],
-                                  mapBlendFactor[srcAlpha],
-                                  mapBlendFactor[dstAlpha]);
-        }
-
-        const BlendOperation::Code rgbOp = bs.GetOpRGB();
-        const BlendOperation::Code alphaOp = bs.GetOpAlpha();
-        if ((rgbOp != this->curBlendState.GetOpRGB()) ||
-            (alphaOp != this->curBlendState.GetOpAlpha())) {
-
-            ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
-        }
-
-        const ColorWriteMask::Code colorMask = bs.GetColorWriteMask();
-        if (colorMask != this->curBlendState.GetColorWriteMask()) {
-            ::glColorMask((colorMask & ColorWriteMask::R) != 0,
-                          (colorMask & ColorWriteMask::G) != 0,
-                          (colorMask & ColorWriteMask::B) != 0,
-                          (colorMask & ColorWriteMask::A) != 0);
-        }
-        
-        this->curBlendState = bs;
-        ORYOL_GL_CHECK_ERROR();
+        ::glBlendFuncSeparate(mapBlendFactor[srcRgb],
+                              mapBlendFactor[dstRgb],
+                              mapBlendFactor[srcAlpha],
+                              mapBlendFactor[dstAlpha]);
     }
+
+    const BlendOperation::Code rgbOp = bs.GetOpRGB();
+    const BlendOperation::Code alphaOp = bs.GetOpAlpha();
+    if ((rgbOp != this->curBlendState.GetOpRGB()) ||
+        (alphaOp != this->curBlendState.GetOpAlpha())) {
+
+        ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
+    }
+
+    const ColorWriteMask::Code colorMask = bs.GetColorWriteMask();
+    if (colorMask != this->curBlendState.GetColorWriteMask()) {
+        ::glColorMask((colorMask & ColorWriteMask::R) != 0,
+                      (colorMask & ColorWriteMask::G) != 0,
+                      (colorMask & ColorWriteMask::B) != 0,
+                      (colorMask & ColorWriteMask::A) != 0);
+    }
+    
+    this->curBlendState = bs;
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onFrontFace(const State::Vector& input) {
-    const GLenum frontFaceMode = input.val[0].v;
-    if (frontFaceMode != this->curFrontFaceMode) {
-        this->curFrontFaceMode = frontFaceMode;
-        ::glFrontFace(frontFaceMode);
-    }
+glStateWrapper::setupFixedFunctionState() {
+    
+    this->curFixedFunctionState = FixedFunctionState();
+    
+    ::glDisable(GL_CULL_FACE);
+    ::glFrontFace(GL_CW);
+    ::glCullFace(GL_BACK);
+    ::glDisable(GL_POLYGON_OFFSET_FILL);
+    ::glDisable(GL_SCISSOR_TEST);
+    ::glDisable(GL_DITHER);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onCullFaceEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curCullFaceEnabled) {
-        this->curCullFaceEnabled = b0;
-        if (b0) {
+glStateWrapper::applyFixedFunctionState(const FixedFunctionState& newState) {
+    const FixedFunctionState& curState = this->curFixedFunctionState;
+
+    const bool cullFaceEnabled = newState.GetCullFaceEnabled();
+    if (cullFaceEnabled != curState.GetCullFaceEnabled()) {
+        if (cullFaceEnabled) {
             ::glEnable(GL_CULL_FACE);
         }
         else {
             ::glDisable(GL_CULL_FACE);
         }
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onCullFace(const State::Vector& input) {
-    const GLenum cullFaceMode = input.val[0].v;
-    if (cullFaceMode != this->curCullFaceMode) {
-        this->curCullFaceMode = cullFaceMode;
-        ::glCullFace(cullFaceMode);
+    const Face::Code cullFace = newState.GetCullFace();
+    if (cullFace != curState.GetCullFace()) {
+        ::glCullFace(mapCullFace[cullFace]);
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onDepthOffsetEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curDepthOffsetEnabled) {
-        this->curDepthOffsetEnabled = b0;
-        if (b0) {
+    const bool depthOffsetEnabled = newState.GetDepthOffsetEnabled();
+    if (depthOffsetEnabled != curState.GetDepthOffsetEnabled()) {
+        if (depthOffsetEnabled) {
             ::glEnable(GL_POLYGON_OFFSET_FILL);
         }
         else {
             ::glDisable(GL_POLYGON_OFFSET_FILL);
         }
     }
+    const bool scissorTestEnabled = newState.GetScissorTestEnabled();
+    if (scissorTestEnabled != curState.GetScissorTestEnabled()) {
+        if (scissorTestEnabled) {
+            ::glEnable(GL_SCISSOR_TEST);
+        }
+        else {
+            ::glDisable(GL_SCISSOR_TEST);
+        }
+    }
+    const bool ditherEnabled = newState.GetDitherEnabled();
+    if (ditherEnabled != curState.GetDitherEnabled()) {
+        if (ditherEnabled) {
+            ::glEnable(GL_DITHER);
+        }
+        else {
+            ::glDisable(GL_DITHER);
+        }
+    }
+    this->curFixedFunctionState = newState;
+    ORYOL_GL_CHECK_ERROR();        
 }
-    
+
 //------------------------------------------------------------------------------
 void
 glStateWrapper::onDepthOffset(const State::Vector& input) {
@@ -445,21 +464,6 @@ glStateWrapper::onDepthOffset(const State::Vector& input) {
         this->curDepthOffsetFactor = factor;
         this->curDepthOffsetUnits = units;
         ::glPolygonOffset(factor, units);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onScissorTestEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curScissorTestEnabled) {
-        this->curScissorTestEnabled = b0;
-        if (b0) {
-            ::glEnable(GL_SCISSOR_TEST);
-        }
-        else {
-            ::glDisable(GL_SCISSOR_TEST);
-        }
     }
 }
 
@@ -493,21 +497,6 @@ glStateWrapper::onBlendColor(const State::Vector& input) {
         this->curBlendColorB = b;
         this->curBlendColorA = a;
         ::glBlendColor(r, g, b, a);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onDitherEnabled(const State::Vector& input) {
-    const bool b0 = input.val[0].b;
-    if (b0 != this->curDitherEnabled) {
-        this->curDitherEnabled = b0;
-        if (b0) {
-            ::glEnable(GL_DITHER);
-        }
-        else {
-            ::glDisable(GL_DITHER);
-        }
     }
 }
 
@@ -574,29 +563,9 @@ glStateWrapper::onViewPort(const State::Vector& input) {
 void
 glStateWrapper::setupJumpTable() {
     
-    // glFrontFace(GLenum dir)
-    this->funcs[State::FrontFace].cb  = &glStateWrapper::onFrontFace;
-    this->funcs[State::FrontFace].sig = State::V0;
-    
-    // glEnable(GL_CULL_FACE)
-    this->funcs[State::CullFaceEnabled].cb = &glStateWrapper::onCullFaceEnabled;
-    this->funcs[State::CullFaceEnabled].sig = State::B0;
-    
-    // glCullFace(GLenum mode)
-    this->funcs[State::CullFace].cb = &glStateWrapper::onCullFace;
-    this->funcs[State::CullFace].sig = State::V0;
-    
-    // glEnable(GL_POLYGON_OFFSET_FILL)
-    this->funcs[State::DepthOffsetEnabled].cb = &glStateWrapper::onDepthOffsetEnabled;
-    this->funcs[State::DepthOffsetEnabled].sig = State::B0;
-    
     // glPolygonOffset(GLfloat, GLfloat)
     this->funcs[State::DepthOffset].cb = &glStateWrapper::onDepthOffset;
     this->funcs[State::DepthOffset].sig = State::F0_F1;
-    
-    // glEnable(GL_SCISSOR_TEST)
-    this->funcs[State::ScissorTestEnabled].cb = &glStateWrapper::onScissorTestEnabled;
-    this->funcs[State::ScissorTestEnabled].sig = State::B0;
     
     // glScissor(GLint, GLint, GLint, GLint)
     this->funcs[State::ScissorRect].cb = &glStateWrapper::onScissorRect;
@@ -606,10 +575,6 @@ glStateWrapper::setupJumpTable() {
     this->funcs[State::BlendColor].cb = &glStateWrapper::onBlendColor;
     this->funcs[State::BlendColor].sig = State::F0_F1_F2_F3;
 
-    // glEnable(GL_DITHER)
-    this->funcs[State::DitherEnabled].cb = &glStateWrapper::onDitherEnabled;
-    this->funcs[State::DitherEnabled].sig = State::B0;
-    
     // glClearColor(GLclampf, GLclampf, GLclampf, GLclampf)
     this->funcs[State::ClearColor].cb = &glStateWrapper::onClearColor;
     this->funcs[State::ClearColor].sig = State::F0_F1_F2_F3;

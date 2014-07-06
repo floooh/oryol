@@ -8,6 +8,7 @@
 #include "Resource/Id.h"
 #include "Render/Core/BlendState.h"
 #include "Render/Core/DepthStencilState.h"
+#include "Render/Core/FixedFunctionState.h"
 
 namespace Oryol {
 namespace Render {
@@ -31,6 +32,10 @@ public:
     class DepthStencilState& DepthStencilState();
     /// read-only access to embedded depth-stencil satte
     const class DepthStencilState& DepthStencilState() const;
+    /// read/write access to fixed-function-state
+    class FixedFunctionState& FixedFunctionState();
+    /// read-only access to fixed-function-state
+    const class FixedFunctionState& FixedFunctionState() const;
     /// set mesh resource
     void SetMesh(const Resource::Id& mesh);
     /// get mesh resource
@@ -49,6 +54,7 @@ private:
     Resource::Locator loc;
     class BlendState blendState;
     class DepthStencilState depthStencilState;
+    class FixedFunctionState fixedFunctionState;
     Resource::Id mesh;
     Resource::Id prog;
     uint32 progSelMask;
@@ -82,6 +88,18 @@ DrawStateSetup::DepthStencilState() {
 inline const DepthStencilState&
 DrawStateSetup::DepthStencilState() const {
     return this->depthStencilState;
+}
+
+//------------------------------------------------------------------------------
+inline FixedFunctionState&
+DrawStateSetup::FixedFunctionState() {
+    return this->fixedFunctionState;
+}
+
+//------------------------------------------------------------------------------
+inline const FixedFunctionState&
+DrawStateSetup::FixedFunctionState() const {
+    return this->fixedFunctionState;
 }
 
 //------------------------------------------------------------------------------
