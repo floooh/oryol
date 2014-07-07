@@ -119,7 +119,7 @@ glStateWrapper::Setup() {
 
     this->setupDepthStencilState();
     this->setupBlendState();
-    this->setupFixedFunctionState();
+    this->setupRasterizerState();
 }
 
 //------------------------------------------------------------------------------
@@ -146,8 +146,8 @@ glStateWrapper::ApplyDrawState(const drawState* ds) {
     if (setup.BlendState() != this->curBlendState) {
         this->applyBlendState(setup.BlendState());
     }
-    if (setup.FixedFunctionState() != this->curFixedFunctionState) {
-        this->applyFixedFunctionState(setup.FixedFunctionState());
+    if (setup.RasterizerState() != this->curRasterizerState) {
+        this->applyRasterizerState(setup.RasterizerState());
     }
     programBundle* pb = ds->getProgramBundle();
     uint32 progSelMask = setup.GetProgSelMask();
@@ -393,9 +393,9 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::setupFixedFunctionState() {
+glStateWrapper::setupRasterizerState() {
     
-    this->curFixedFunctionState = FixedFunctionState();
+    this->curRasterizerState = RasterizerState();
     
     ::glDisable(GL_CULL_FACE);
     ::glFrontFace(GL_CW);
@@ -408,8 +408,8 @@ glStateWrapper::setupFixedFunctionState() {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::applyFixedFunctionState(const FixedFunctionState& newState) {
-    const FixedFunctionState& curState = this->curFixedFunctionState;
+glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
+    const RasterizerState& curState = this->curRasterizerState;
 
     const bool cullFaceEnabled = newState.GetCullFaceEnabled();
     if (cullFaceEnabled != curState.GetCullFaceEnabled()) {
@@ -451,7 +451,7 @@ glStateWrapper::applyFixedFunctionState(const FixedFunctionState& newState) {
             ::glDisable(GL_DITHER);
         }
     }
-    this->curFixedFunctionState = newState;
+    this->curRasterizerState = newState;
     ORYOL_GL_CHECK_ERROR();        
 }
 

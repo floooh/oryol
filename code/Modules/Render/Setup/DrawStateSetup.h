@@ -8,7 +8,7 @@
 #include "Resource/Id.h"
 #include "Render/Core/BlendState.h"
 #include "Render/Core/DepthStencilState.h"
-#include "Render/Core/FixedFunctionState.h"
+#include "Render/Core/RasterizerState.h"
 
 namespace Oryol {
 namespace Render {
@@ -32,10 +32,10 @@ public:
     class DepthStencilState& DepthStencilState();
     /// read-only access to embedded depth-stencil satte
     const class DepthStencilState& DepthStencilState() const;
-    /// read/write access to fixed-function-state
-    class FixedFunctionState& FixedFunctionState();
-    /// read-only access to fixed-function-state
-    const class FixedFunctionState& FixedFunctionState() const;
+    /// read/write access to rasterizer state
+    class RasterizerState& RasterizerState();
+    /// read-only access to rasterizer state
+    const class RasterizerState& RasterizerState() const;
     /// set mesh resource
     void SetMesh(const Resource::Id& mesh);
     /// get mesh resource
@@ -54,7 +54,7 @@ private:
     Resource::Locator loc;
     class BlendState blendState;
     class DepthStencilState depthStencilState;
-    class FixedFunctionState fixedFunctionState;
+    class RasterizerState rasterizerState;
     Resource::Id mesh;
     Resource::Id prog;
     uint32 progSelMask;
@@ -91,15 +91,15 @@ DrawStateSetup::DepthStencilState() const {
 }
 
 //------------------------------------------------------------------------------
-inline FixedFunctionState&
-DrawStateSetup::FixedFunctionState() {
-    return this->fixedFunctionState;
+inline RasterizerState&
+DrawStateSetup::RasterizerState() {
+    return this->rasterizerState;
 }
 
 //------------------------------------------------------------------------------
-inline const FixedFunctionState&
-DrawStateSetup::FixedFunctionState() const {
-    return this->fixedFunctionState;
+inline const RasterizerState&
+DrawStateSetup::RasterizerState() const {
+    return this->rasterizerState;
 }
 
 //------------------------------------------------------------------------------

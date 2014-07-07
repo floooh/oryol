@@ -13,7 +13,7 @@
 #include "Render/Core/Enums.h"
 #include "Render/Core/BlendState.h"
 #include "Render/Core/DepthStencilState.h"
-#include "Render/Core/FixedFunctionState.h"
+#include "Render/Core/RasterizerState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
 
@@ -92,8 +92,8 @@ private:
     void setupDepthStencilState();
     /// setup the initial blend-state
     void setupBlendState();
-    /// setup fixed function state
-    void setupFixedFunctionState();
+    /// setup rasterizer state
+    void setupRasterizerState();
     /// apply depth-stencil state to use for rendering
     void applyDepthStencilState(const DepthStencilState& dss);
     /// apply front/back side stencil state
@@ -101,7 +101,7 @@ private:
     /// apply blend state to use for rendering
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state
-    void applyFixedFunctionState(const FixedFunctionState& ffs);
+    void applyRasterizerState(const RasterizerState& rs);
     /// apply program to use for rendering
     void applyProgram(programBundle* progBundle, uint32 progSelMask);
     /// apply mesh to use for rendering
@@ -128,7 +128,7 @@ private:
     
     BlendState curBlendState;
     DepthStencilState curDepthStencilState;
-    FixedFunctionState curFixedFunctionState;
+    RasterizerState curRasterizerState;
     
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];

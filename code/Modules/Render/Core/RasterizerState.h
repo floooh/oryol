@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::FixedFunctionState
-    @brief fixed function pipeline state flags
+    @class Oryol::Render::RasterizerState
+    @brief rasterizer state flags
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
@@ -10,15 +10,15 @@
 namespace Oryol {
 namespace Render {
     
-class FixedFunctionState {
+class RasterizerState {
 public:
     /// constructor
-    FixedFunctionState();
+    RasterizerState();
     
     /// equality
-    bool operator==(const FixedFunctionState& rhs) const;
+    bool operator==(const RasterizerState& rhs) const;
     /// inequality
-    bool operator!=(const FixedFunctionState& rhs) const;
+    bool operator!=(const RasterizerState& rhs) const;
     
     /// enable/disable face culling
     void SetCullFaceEnabled(bool b);
@@ -58,7 +58,7 @@ public:
 
 //------------------------------------------------------------------------------
 inline
-FixedFunctionState::FixedFunctionState() {
+RasterizerState::RasterizerState() {
     this->hash = 0;
     this->bits.cullFaceEnabled = false;
     this->bits.depthOffsetEnabled = false;
@@ -69,79 +69,79 @@ FixedFunctionState::FixedFunctionState() {
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::operator==(const FixedFunctionState& rhs) const {
+RasterizerState::operator==(const RasterizerState& rhs) const {
     return this->hash == rhs.hash;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::operator!=(const FixedFunctionState& rhs) const {
+RasterizerState::operator!=(const RasterizerState& rhs) const {
     return this->hash != rhs.hash;
 }
 
 //------------------------------------------------------------------------------
 inline void
-FixedFunctionState::SetCullFaceEnabled(bool b) {
+RasterizerState::SetCullFaceEnabled(bool b) {
     this->bits.cullFaceEnabled = b;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::GetCullFaceEnabled() const {
+RasterizerState::GetCullFaceEnabled() const {
     return this->bits.cullFaceEnabled;
 }
 
 //------------------------------------------------------------------------------
 inline void
-FixedFunctionState::SetCullFace(Face::Code f) {
+RasterizerState::SetCullFace(Face::Code f) {
     this->bits.cullFace = f;
 }
 
 //------------------------------------------------------------------------------
 inline Face::Code
-FixedFunctionState::GetCullFace() const {
+RasterizerState::GetCullFace() const {
     return (Face::Code) this->bits.cullFace;
 }
 
 //------------------------------------------------------------------------------
 inline void
-FixedFunctionState::SetDepthOffsetEnabled(bool b) {
+RasterizerState::SetDepthOffsetEnabled(bool b) {
     this->bits.depthOffsetEnabled = b;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::GetDepthOffsetEnabled() const {
+RasterizerState::GetDepthOffsetEnabled() const {
     return this->bits.depthOffsetEnabled;
 }
 
 //------------------------------------------------------------------------------
 inline void
-FixedFunctionState::SetScissorTestEnabled(bool b) {
+RasterizerState::SetScissorTestEnabled(bool b) {
     this->bits.scissorTestEnabled = b;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::GetScissorTestEnabled() const {
+RasterizerState::GetScissorTestEnabled() const {
     return this->bits.scissorTestEnabled;
 }
 
 //------------------------------------------------------------------------------
 inline void
-FixedFunctionState::SetDitherEnabled(bool b) {
+RasterizerState::SetDitherEnabled(bool b) {
     this->bits.ditherEnabled = b;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-FixedFunctionState::GetDitherEnabled() const {
+RasterizerState::GetDitherEnabled() const {
     return this->bits.ditherEnabled;
 }
 
 //------------------------------------------------------------------------------
 inline uint8
-FixedFunctionState::GetHash() const {
+RasterizerState::GetHash() const {
     return this->hash;
 }
 
