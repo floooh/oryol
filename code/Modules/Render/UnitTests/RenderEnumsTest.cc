@@ -227,14 +227,3 @@ TEST(ShaderTypeTest) {
     CHECK(ShaderType::FragmentShader == GL_FRAGMENT_SHADER);
 }
 
-//------------------------------------------------------------------------------
-TEST(StateTest) {
-    CHECK(State::Undefined == -1);
-    CHECK(State::CW == GL_CW);
-    CHECK(State::CCW == GL_CCW);
-    CHECK(State::Front == GL_FRONT);
-    CHECK(State::Back == GL_BACK);
-    CHECK(State::FrontAndBack == GL_FRONT_AND_BACK);
-    CHECK(State::InvalidStateValue == 0xFFFFFFFF);
-}
-
