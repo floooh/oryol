@@ -214,10 +214,10 @@ TEST(VertexAttrTest) {
     CHECK(String(VertexAttr::ToString(VertexAttr::Indices)) == "indices");
     CHECK(String(VertexAttr::ToString(VertexAttr::Color0)) == "color0");
     CHECK(String(VertexAttr::ToString(VertexAttr::Color1)) == "color1");
-    CHECK(String(VertexAttr::ToString(VertexAttr::Custom0)) == "custom0");
-    CHECK(String(VertexAttr::ToString(VertexAttr::Custom1)) == "custom1");
-    CHECK(String(VertexAttr::ToString(VertexAttr::Custom2)) == "custom2");
-    CHECK(String(VertexAttr::ToString(VertexAttr::Custom3)) == "custom3");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Instance0)) == "instance0");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Instance1)) == "instance1");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Instance2)) == "instance2");
+    CHECK(String(VertexAttr::ToString(VertexAttr::Instance3)) == "instance3");
 }
 
 //------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/meshFactory.h"
+#include "Render/Core/meshPool.h"
 #include "Render/Setup/RenderSetup.h"
 #include "Render/Core/displayMgr.h"
 #include "Render/Util/MeshBuilder.h"
@@ -32,8 +33,9 @@ TEST(MeshFactoryTest) {
     
     // setup a meshFactory object
     stateWrapper stWrapper;
+    meshPool meshPool;
     meshFactory factory;
-    factory.Setup(&stWrapper);
+    factory.Setup(&stWrapper, &meshPool);
     factory.AttachLoader(RawMeshLoader::Create());
     
     // setup a MeshBuilder and create mesh geometry

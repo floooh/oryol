@@ -6,6 +6,7 @@
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/meshFactory.h"
+#include "Render/Core/meshPool.h"
 #include "Render/Setup/RenderSetup.h"
 #include "Render/Core/displayMgr.h"
 #include "Render/Util/RawMeshLoader.h"
@@ -32,8 +33,9 @@ TEST(ShapeBuilderTest) {
     
     // setup a meshFactory object
     stateWrapper stWrapper;
+    meshPool meshPool;
     meshFactory factory;
-    factory.Setup(&stWrapper);
+    factory.Setup(&stWrapper, &meshPool);
     factory.AttachLoader(RawMeshLoader::Create());
     
     // the state builder
