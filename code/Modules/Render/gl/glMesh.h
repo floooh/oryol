@@ -26,6 +26,10 @@ public:
     void glSetVertexBuffer(GLuint vb);
     /// get GL vertex buffer
     GLuint glGetVertexBuffer() const;
+    /// set optional GL instance data vertex buffer
+    void glSetInstanceBuffer(GLuint ivb);
+    /// get optional GL instance data vertex buffer (0 if not set)
+    GLuint glGetInstanceBuffer() const;
     /// set GL index buffer
     void glSetIndexBuffer(GLuint ib);
     /// get GL index buffer (can be 0)
@@ -43,6 +47,7 @@ public:
     
 protected:
     GLuint glVertexBuffer;
+    GLuint glInstanceBuffer;
     GLuint glIndexBuffer;
     GLuint glVertexArrayObject;
     class glVertexAttr glAttrs[VertexAttr::NumVertexAttrs];
@@ -52,6 +57,12 @@ protected:
 inline GLuint
 glMesh::glGetVertexBuffer() const {
     return this->glVertexBuffer;
+}
+
+//------------------------------------------------------------------------------
+inline GLuint
+glMesh::glGetInstanceBuffer() const {
+    return this->glInstanceBuffer;
 }
 
 //------------------------------------------------------------------------------

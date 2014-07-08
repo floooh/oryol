@@ -400,10 +400,10 @@ public:
         Indices,        ///> "indices" (skin indices)
         Color0,         ///> "color0"
         Color1,         ///> "color1"
-        Custom0,        ///> "custom0"
-        Custom1,        ///> "custom1"
-        Custom2,        ///> "custom2"
-        Custom3,        ///> "custom3"
+        Instance0,      ///> "instance0"
+        Instance1,      ///> "instance1"
+        Instance2,      ///> "instance2"
+        Instance3,      ///> "instance3"
         
         NumVertexAttrs,
         InvalidVertexAttr,
@@ -424,10 +424,10 @@ public:
             case Indices:   return "indices";
             case Color0:    return "color0";
             case Color1:    return "color1";
-            case Custom0:   return "custom0";
-            case Custom1:   return "custom1";
-            case Custom2:   return "custom2";
-            case Custom3:   return "custom3";
+            case Instance0: return "instance0";
+            case Instance1: return "instance1";
+            case Instance2: return "instance2";
+            case Instance3: return "instance3";
             default:
                 o_error("VertexAttr::ToString(): invalid value!\n");
                 return 0;

@@ -192,5 +192,18 @@ MeshSetup::GetPrimitiveGroup(int32 index) const {
     return this->primGroups[index];
 }
 
+//------------------------------------------------------------------------------
+void
+MeshSetup::SetInstanceMesh(const Resource::Id& msh) {
+    o_assert(msh.IsValid());
+    this->instMesh = msh;
+}
+
+//------------------------------------------------------------------------------
+const Resource::Id&
+MeshSetup::GetInstanceMesh() const {
+    return this->instMesh;
+}
+
 } // namespace Render
 } // namespace Oryol

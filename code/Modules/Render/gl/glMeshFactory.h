@@ -11,6 +11,7 @@ namespace Oryol {
 namespace Render {
 
 class stateWrapper;
+class meshPool;
 class mesh;
 class meshLoaderBase;
 
@@ -22,7 +23,7 @@ public:
     ~glMeshFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(stateWrapper* stWrapper);
+    void Setup(stateWrapper* stWrapper, meshPool* mshPool);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -39,6 +40,8 @@ public:
     void createVertexBuffer(const void* vertexData, uint32 vertexDataSize, mesh& outMesh);
     /// helper method to create index buffer in mesh
     void createIndexBuffer(const void* indexData, uint32 indexDataSize, mesh& outMesh);
+    /// lookup and attach instance buffer to mesh
+    void attachInstanceBuffer(mesh& mesh);
     /// helper method to create platform-specific vertex layout
     void createVertexLayout(mesh& outMesh);
     /// helper method to setup a mesh object as fullscreen quad
@@ -50,7 +53,8 @@ private:
     /// setup a Mesh's GL vertex attributes
     void glSetupVertexAttrs(mesh& mesh);
 
-    stateWrapper* glStateWrapper;
+    class stateWrapper* stateWrapper;
+    class meshPool* meshPool;
     bool isValid;
 };
     

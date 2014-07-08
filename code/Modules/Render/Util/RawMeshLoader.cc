@@ -88,17 +88,14 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
             mesh.setPrimitiveGroup(i, primGroup);
         }
         
-        // setup vertex data
+        // setup the mesh object
         uint8* vertices = (uint8*) prim;
         this->mshFactory->createVertexBuffer(vertices, hdr->verticesByteSize, mesh);
-        
-        // setup index data
         if (hdr->indexType != IndexType::None) {
             uint8* indices = vertices + hdr->verticesByteSize;
             this->mshFactory->createIndexBuffer(indices, hdr->indicesByteSize, mesh);
         }
-        
-        // finally setup the vertex layout
+        this->mshFactory->attachInstanceBuffer(mesh);
         this->mshFactory->createVertexLayout(mesh);
         
         // set mesh to valid, and return

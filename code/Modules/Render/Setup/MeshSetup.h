@@ -5,6 +5,7 @@
     @brief setup attributes for meshes
 */
 #include "Resource/Locator.h"
+#include "Resource/Id.h"
 #include "Render/Core/Enums.h"
 #include "Render/Core/VertexLayout.h"
 #include "Render/Core/PrimitiveGroup.h"
@@ -62,11 +63,17 @@ public:
     int32 GetNumPrimitiveGroups() const;
     /// get primitive group at index
     const PrimitiveGroup& GetPrimitiveGroup(int32 index) const;
+    
+    /// set optional instance data mesh
+    void SetInstanceMesh(const Resource::Id& instMesh);
+    /// get optional instance data mesh
+    const Resource::Id& GetInstanceMesh() const;
 
 private:
     static const int32 MaxNumPrimGroups = 8;
 
     Resource::Locator locator;
+    Resource::Id instMesh;
     Usage::Code vertexUsage;
     Usage::Code indexUsage;
     int32 ioLane;

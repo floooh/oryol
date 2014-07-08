@@ -10,6 +10,7 @@ namespace Render {
 //------------------------------------------------------------------------------
 glMesh::glMesh() :
 glVertexBuffer(0),
+glInstanceBuffer(0),
 glIndexBuffer(0),
 glVertexArrayObject(0) {
     // empty
@@ -18,6 +19,7 @@ glVertexArrayObject(0) {
 //------------------------------------------------------------------------------
 glMesh::~glMesh() {
     o_assert(0 == this->glVertexBuffer);
+    o_assert(0 == this->glInstanceBuffer);
     o_assert(0 == this->glIndexBuffer);
     o_assert(0 == this->glVertexArrayObject);
 }
@@ -26,6 +28,7 @@ glMesh::~glMesh() {
 void
 glMesh::clear() {
     this->glVertexBuffer = 0;
+    this->glInstanceBuffer = 0;
     this->glIndexBuffer = 0;
     this->glVertexArrayObject = 0;
     for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
@@ -39,6 +42,13 @@ void
 glMesh::glSetVertexBuffer(GLuint vb) {
     o_assert(0 == this->glVertexBuffer);
     this->glVertexBuffer = vb;
+}
+
+//------------------------------------------------------------------------------
+void
+glMesh::glSetInstanceBuffer(GLuint ivb) {
+    o_assert(0 == this->glInstanceBuffer);
+    this->glInstanceBuffer = ivb;
 }
 
 //------------------------------------------------------------------------------

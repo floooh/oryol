@@ -48,7 +48,7 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->stateWrapper = stWrapper;
     this->displayMgr = dspMgr;
 
-    this->meshFactory.Setup(this->stateWrapper);
+    this->meshFactory.Setup(this->stateWrapper, &this->meshPool);
     this->meshPool.Setup(&this->meshFactory, setup.GetPoolSize(ResourceType::Mesh), setup.GetThrottling(ResourceType::Mesh), 'MESH');
     this->shaderFactory.Setup();
     this->shaderPool.Setup(&this->shaderFactory, setup.GetPoolSize(ResourceType::Shader), 0, 'SHDR');
@@ -109,7 +109,11 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
     }
     else {
         resId = this->meshPool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
+        Array<Id> deps;
+        if (setup.GetInstanceMesh().IsValid()) {
+            deps.AddBack(setup.GetInstanceMesh());
+        }
+        this->resourceRegistry.AddResource(loc, resId, deps);
         this->meshPool.Assign(resId, setup);
         return resId;
     }
@@ -127,7 +131,11 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data)
     }
     else {
         resId = this->meshPool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
+        Array<Id> deps;
+        if (setup.GetInstanceMesh().IsValid()) {
+            deps.AddBack(setup.GetInstanceMesh());
+        }
+        this->resourceRegistry.AddResource(loc, resId, deps);
         this->meshPool.Assign(resId, setup, data);
         return resId;
     }

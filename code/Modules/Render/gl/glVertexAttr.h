@@ -20,7 +20,8 @@ public:
     offset(0),
     type(0),
     enabled(0),
-    normalized(0) {
+    normalized(0),
+    vertexBuffer(0) {
         // empty
     };
     
@@ -31,6 +32,7 @@ public:
     GLenum type;
     GLboolean enabled;
     GLboolean normalized;
+    GLuint vertexBuffer;
 };
     
 } // namespace Render

@@ -173,38 +173,41 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
         this->InvalidateMeshState();
     }
     else {
+        // FIXME: record and compare against a 'current mesh pointer' whether
+        // mesh state must be reapplied
+    
 #if ORYOL_USE_GLGETATTRIBLOCATION
         // This is the code path which uses glGetAttribLocation instead of
         // glBindAttribLocation, which must be used if GL_MAX_VERTEX_ATTRIBS is smaller
         // then VertexAttr::NumVertexAttrs. The only currently known platform
         // where this applies is the Raspberry Pi where GL_MAX_VERTEX_ATTRIBS==8
         o_assert_dbg(progBundle->getProgram() == this->curProgram);
-        const GLuint vb = msh->glGetVertexBuffer();
         const GLuint ib = msh->glGetIndexBuffer();
+        GLuint vb = 0;
         this->BindIndexBuffer(ib);
-        if (vb != this->curVertexBuffer) {
-            this->curVertexBuffer = vb;
-            ::glBindBuffer(GL_ARRAY_BUFFER, vb);
-            ORYOL_GL_CHECK_ERROR();
-            int32 maxUsedAttrib = 0;
-            for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-                const glVertexAttr& attr = msh->glAttr(i);
-                const GLint glAttribIndex = progBundle->getAttribLocation((VertexAttr::Code)i);
-                if (-1 != glAttribIndex) {
-                    ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                    ORYOL_GL_CHECK_ERROR();
-                    ::glEnableVertexAttribArray(glAttribIndex);
-                    ORYOL_GL_CHECK_ERROR();
-                    maxUsedAttrib++;
-                }
+        int32 maxUsedAttrib = 0;
+        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+            const glVertexAttr& attr = msh->glAttr(i);
+            if (attr.vertexBuffer != vb) {
+                vb = attr.vertexAttr;
+                this->BindVertexBuffer(vb);
+                ORYOL_GL_CHECK_ERROR();
             }
-            int32 maxAttribs = glExt::GetMaxVertexAttribs();
-            if (VertexAttr::NumVertexAttrs < maxAttribs) {
-                maxAttribs = VertexAttr::NumVertexAttrs;
+            const GLint glAttribIndex = progBundle->getAttribLocation((VertexAttr::Code)i);
+            if (-1 != glAttribIndex) {
+                ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                ORYOL_GL_CHECK_ERROR();
+                ::glEnableVertexAttribArray(glAttribIndex);
+                ORYOL_GL_CHECK_ERROR();
+                maxUsedAttrib++;
             }
-            for (int32 i = maxUsedAttrib; i < maxAttribs; i++) {
-                ::glDisableVertexAttribArray(i);
-            }
+        }
+        int32 maxAttribs = glExt::GetMaxVertexAttribs();
+        if (VertexAttr::NumVertexAttrs < maxAttribs) {
+            maxAttribs = VertexAttr::NumVertexAttrs;
+        }
+        for (int32 i = maxUsedAttrib; i < maxAttribs; i++) {
+            ::glDisableVertexAttribArray(i);
         }
 #else
         if (glExt::HasExtension(glExt::VertexArrayObject)) {
@@ -213,25 +216,26 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
             this->BindVertexArrayObject(vao);
         }
         else {
-            const GLuint vb = msh->glGetVertexBuffer();
+            GLuint vb = 0;
             const GLuint ib = msh->glGetIndexBuffer();
             this->BindIndexBuffer(ib);
-            if (vb != this->curVertexBuffer) {
-                this->curVertexBuffer = vb;
-                ::glBindBuffer(GL_ARRAY_BUFFER, vb);
-                ORYOL_GL_CHECK_ERROR();
-                for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-                    const glVertexAttr& attr = msh->glAttr(i);
-                    if (attr.enabled) {
-                        ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                        ORYOL_GL_CHECK_ERROR();
-                        ::glEnableVertexAttribArray(attr.index);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                    else {
-                        ::glDisableVertexAttribArray(attr.index);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
+            ORYOL_GL_CHECK_ERROR();
+            for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+                const glVertexAttr& attr = msh->glAttr(i);
+                if (attr.vertexBuffer != vb) {
+                    vb = attr.vertexBuffer;
+                    this->BindVertexBuffer(vb);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+                if (attr.enabled) {
+                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                    ORYOL_GL_CHECK_ERROR();
+                    ::glEnableVertexAttribArray(attr.index);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+                else {
+                    ::glDisableVertexAttribArray(attr.index);
+                    ORYOL_GL_CHECK_ERROR();
                 }
             }
         }
