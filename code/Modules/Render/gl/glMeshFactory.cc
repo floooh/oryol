@@ -174,8 +174,8 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         o_assert(0 == instMesh->glGetInstanceBuffer());
         
         // verify that there are no colliding vertex components
-        const VertexLayout& mshLayout = msh.GetSetup().GetVertexLayout();
-        const VertexLayout& instLayout = instMesh->GetSetup().GetVertexLayout();
+        const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().GetVertexLayout();
+        const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().GetVertexLayout();
         for (int32 i = 0; i < mshLayout.GetNumComponents(); i++) {
             o_assert(!instLayout.Contains(mshLayout.GetComponent(i).GetAttr()));
         }
