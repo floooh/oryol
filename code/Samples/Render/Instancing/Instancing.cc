@@ -43,11 +43,9 @@ private:
     int32 frameCount = 0;
     int32 curNumParticles = 0;
     TimePoint lastFrameTimePoint;
-    static const int32 MaxNumParticles = 1<<16;
-    struct {
-        glm::vec4 pos;
-        glm::vec4 vec;
-    } particles[MaxNumParticles];
+    static const int32 MaxNumParticles = 1<<20;
+    glm::vec4 positions[MaxNumParticles];
+    glm::vec4 vectors[MaxNumParticles];
 };
 OryolMain(InstancingApp);
 
@@ -58,6 +56,11 @@ InstancingApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol Instancing Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
     this->debug = DebugFacade::CreateSingle();
+    
+    // check instancing extension
+    if (!this->render->Supports(Feature::Instancing)) {
+        o_error("ERROR: instanced_arrays extension required!\n");
+    }
 
     // create dynamic instance data mesh
     VertexLayout instanceLayout;
@@ -107,12 +110,14 @@ InstancingApp::updateCamera() {
 //------------------------------------------------------------------------------
 void
 InstancingApp::emitParticles() {
-    if (this->curNumParticles < MaxNumParticles) {
-        this->particles[this->curNumParticles].pos = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-        glm::vec3 rnd = glm::ballRand(0.5f);
-        rnd.y += 2.0f;
-        this->particles[this->curNumParticles].vec = glm::vec4(rnd, 0.0f);
-        this->curNumParticles++;
+    for (int32 i = 0; i < 10; i++) {
+        if (this->curNumParticles < MaxNumParticles) {
+            this->positions[this->curNumParticles] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+            glm::vec3 rnd = glm::ballRand(0.5f);
+            rnd.y += 2.0f;
+            this->vectors[this->curNumParticles] = glm::vec4(rnd, 0.0f);
+            this->curNumParticles++;
+        }
     }
 }
 
@@ -121,13 +126,14 @@ void
 InstancingApp::updateParticles() {
     const float32 frameTime = 1.0f / 60.0f;
     for (int32 i = 0; i < this->curNumParticles; i++) {
-        auto& curParticle = this->particles[i];
-        curParticle.vec.y -= 1.0f * frameTime;
-        curParticle.pos += curParticle.vec * frameTime;
-        if (curParticle.pos.y < -2.0f) {
-            curParticle.pos.y = -1.8f;
-            curParticle.vec.y = -curParticle.vec.y;
-            curParticle.vec *= 0.8f;
+        auto& pos = this->positions[i];
+        auto& vec = this->vectors[i];
+        vec.y -= 1.0f * frameTime;
+        pos += vec * frameTime;
+        if (pos.y < -2.0f) {
+            pos.y = -1.8f;
+            vec.y = -vec.y;
+            vec *= 0.8f;
         }
     }
 }
@@ -147,6 +153,9 @@ InstancingApp::OnRunning() {
         this->updateParticles();
         updTime = Clock::Since(updStart);
         
+        // hmm... need to update vertices before DrawState...
+        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
+        
         // render block
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
@@ -155,10 +164,7 @@ InstancingApp::OnRunning() {
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
 
         TimePoint drawStart = Clock::Now();
-        for (int32 i = 0; i < this->curNumParticles; i++) {
-            this->render->ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
-            this->render->Draw(0);
-        }
+        this->render->DrawInstanced(0, this->curNumParticles);
         drawTime = Clock::Since(drawStart);
         
         this->debug->DrawTextBuffer();
@@ -169,7 +175,7 @@ InstancingApp::OnRunning() {
     Duration frameTime = curTime - this->lastFrameTimePoint;
     this->lastFrameTimePoint = curTime;
     
-    this->debug->PrintF("\n %d draws: upd=%.3f draw=%.3f, frame=%.3f ms\n",
+    this->debug->PrintF("\n %d instances: upd=%.3f draw=%.3f, frame=%.3f ms\n",
                         this->curNumParticles,
                         updTime.AsMilliSeconds(),
                         drawTime.AsMilliSeconds(),

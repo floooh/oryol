@@ -197,6 +197,8 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
             if (-1 != glAttribIndex) {
                 ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
                 ORYOL_GL_CHECK_ERROR();
+                glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                ORYOL_GL_CHECK_ERROR();
                 ::glEnableVertexAttribArray(glAttribIndex);
                 ORYOL_GL_CHECK_ERROR();
                 maxUsedAttrib++;
@@ -230,6 +232,8 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
                 if (attr.enabled) {
                     ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
                     ORYOL_GL_CHECK_ERROR();
+                    glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                    ORYOL_GL_CHECK_ERROR();                    
                     ::glEnableVertexAttribArray(attr.index);
                     ORYOL_GL_CHECK_ERROR();
                 }

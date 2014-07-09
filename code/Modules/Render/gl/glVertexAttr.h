@@ -21,7 +21,8 @@ public:
     type(0),
     enabled(0),
     normalized(0),
-    vertexBuffer(0) {
+    vertexBuffer(0),
+    divisor(0) {
         // empty
     };
     
@@ -33,6 +34,7 @@ public:
     GLboolean enabled;
     GLboolean normalized;
     GLuint vertexBuffer;
+    GLuint divisor;
 };
     
 } // namespace Render

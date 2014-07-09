@@ -4,12 +4,12 @@
 
 @vs vs
 @uniform mat4 mvp ModelViewProjection
-@uniform vec4 particleTranslate ParticleTranslate
 @in vec4 position
 @in vec4 color0
+@in vec4 instance0
 @out vec4 color
 void main() {
-    $position = mvp * (position + particleTranslate);
+    $position = mvp * (position + instance0); 
     color = color0;
 }
 @end

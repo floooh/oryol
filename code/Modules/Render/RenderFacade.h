@@ -87,12 +87,12 @@ public:
     void Clear(bool color, bool depth, bool stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
-    /// submit a draw call with overridden primitive group
+    /// submit a draw call with direct primitive group
     void Draw(const PrimitiveGroup& primGroup);
-    /// draw multiple instances
-    void Draw(int32 primGroupIndex, const glm::mat4* instanceTransforms, int32 numInstances);
-    /// draw multiple instances with primitive group override
-    void Draw(const PrimitiveGroup& primGroup, const glm::mat4* instanceTransforms, int32 numInstances);
+    /// submit a draw call for instanced rendering
+    void DrawInstanced(int32 primGroupIndex, int32 numInstances);
+    /// submit a draw call for instanced rendering with direct primitive group
+    void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
 
 private:
     /// setup the RenderFacade, initialize rendering system

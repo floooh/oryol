@@ -194,5 +194,19 @@ RenderFacade::Draw(const PrimitiveGroup& primGroup) {
     this->renderManager.Draw(primGroup);
 }
 
+//------------------------------------------------------------------------------
+void
+RenderFacade::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
+    o_assert_dbg(this->valid);
+    this->renderManager.DrawInstanced(primGroupIndex, numInstances);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+    o_assert_dbg(this->valid);
+    this->renderManager.DrawInstanced(primGroup, numInstances);
+}
+
 } // namespace Render
 } // namespace Oryol

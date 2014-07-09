@@ -518,6 +518,7 @@ public:
         TextureCompressionDXT,      ///< GPU supports DXT compressed textures
         TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
         TextureCompressionATC,      ///< GPU supports ATC compressed textures
+        Instancing,                 ///< supports hardware-instanced rendering
         
         NumFeatures,
         InvalidFeature

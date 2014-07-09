@@ -21,6 +21,7 @@ public:
         TextureCompressionDXT = 1,
         TextureCompressionPVRTC = 2,
         TextureCompressionATC = 3,
+        InstancedArrays = 4,
 
         NumExtensions,
         InvalidExtension,
@@ -43,6 +44,13 @@ public:
     static void DeleteVertexArrays(GLsizei n, const GLuint* arrays);
     /// glBindVertexArray
     static void BindVertexArray(GLuint array);
+    
+    /// glVertexAttribDivisor
+    static void VertexAttribDivisor(GLuint index, GLuint divisor);
+    /// glDrawArraysInstanced
+    static void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
+    /// glDrawElementsInstanced
+    static void DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void* indices, GLsizei primcount);
 
 private:
     static bool extensions[NumExtensions];

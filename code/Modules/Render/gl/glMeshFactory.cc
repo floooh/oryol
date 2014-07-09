@@ -10,6 +10,7 @@
 #include "Render/gl/glTypes.h"
 #include "Render/gl/glExt.h"
 #include "Resource/State.h"
+#include <array>
 
 namespace Oryol {
 namespace Render {
@@ -190,8 +191,6 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
     o_assert(0 != outMesh.glGetVertexBuffer());
     o_assert(0 == outMesh.glGetVertexArrayObject());
     
-    o_assert2(!outMesh.GetSetup().GetInstanceMesh().IsValid(), "FIXME: implement instancing in glMeshFactory::createVertexLayout");
-    
     // first convert the vertex layout to GL vertex attributes
     this->glSetupVertexAttrs(outMesh);
     
@@ -220,6 +219,8 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
                                         glAttr.stride,
                                         (const GLvoid*) (GLintptr) glAttr.offset);
                 ORYOL_GL_CHECK_ERROR();
+                glExt::VertexAttribDivisor(glAttr.index, glAttr.divisor);
+                ORYOL_GL_CHECK_ERROR();
                 ::glEnableVertexAttribArray(glAttr.index);
                 ORYOL_GL_CHECK_ERROR();
             }
@@ -235,104 +236,127 @@ glMeshFactory::createVertexLayout(mesh& outMesh) {
 
 //------------------------------------------------------------------------------
 void
-glMeshFactory::glSetupVertexAttrs(mesh& mesh) {
-
-    o_assert2(!mesh.GetSetup().GetInstanceMesh().IsValid(), "FIXME: implement instancing in glMeshFactory::createVertexLayout");
+glMeshFactory::glSetupVertexAttrs(mesh& msh) {
+    
+    // check if mesh needs instancing, and host supports instancing
+    // and lookup the optional instancing mesh
+    const Resource::Id& instMeshId = msh.GetSetup().GetInstanceMesh();
+    mesh* instMesh = nullptr;
+    if (instMeshId.IsValid()) {
+        o_assert(glExt::HasExtension(glExt::InstancedArrays));
+        o_assert(this->meshPool->QueryState(instMeshId) == Resource::State::Valid);
+        instMesh = this->meshPool->Lookup(instMeshId);
+        o_assert(instMesh->glGetVertexBuffer() == msh.glGetInstanceBuffer());
+    }
 
     // first disable all attrs
     for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        glVertexAttr& glAttr = mesh.glAttr(i);
+        glVertexAttr& glAttr = msh.glAttr(i);
         glAttr.enabled = GL_FALSE;
         glAttr.index = i;
+        glAttr.vertexBuffer = 0;
+        glAttr.divisor = 0;
     }
     
-    // now go through the vertex layout attributes and setup GL values
-    const VertexLayout& layout = mesh.GetVertexBufferAttrs().GetVertexLayout();
-    const int32 numComps = layout.GetNumComponents();
-    for (int i = 0; i < numComps; i++) {
-        const VertexComponent& comp = layout.GetComponent(i);
-        glVertexAttr& glAttr = mesh.glAttr(comp.GetAttr());
-        glAttr.enabled = GL_TRUE;
-        glAttr.vertexBuffer = mesh.glGetVertexBuffer();
-        switch (comp.GetFormat()) {
-            case VertexFormat::Float:
-                glAttr.size = 1;
-                glAttr.type = GL_FLOAT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Float2:
-                glAttr.size = 2;
-                glAttr.type = GL_FLOAT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Float3:
-                glAttr.size = 3;
-                glAttr.type = GL_FLOAT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Float4:
-                glAttr.size = 4;
-                glAttr.type = GL_FLOAT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Byte4:
-                glAttr.size = 4;
-                glAttr.type = GL_BYTE;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Byte4N:
-                glAttr.size = 4;
-                glAttr.type = GL_BYTE;
-                glAttr.normalized = GL_TRUE;
-                break;
-                
-            case VertexFormat::UByte4:
-                glAttr.size = 4;
-                glAttr.type = GL_UNSIGNED_BYTE;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::UByte4N:
-                glAttr.size = 4;
-                glAttr.type = GL_UNSIGNED_BYTE;
-                glAttr.normalized = GL_TRUE;
-                break;
-                
-            case VertexFormat::Short2:
-                glAttr.size = 2;
-                glAttr.type = GL_SHORT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Short2N:
-                glAttr.size = 2;
-                glAttr.type = GL_SHORT;
-                glAttr.normalized = GL_TRUE;
-                break;
-                
-            case VertexFormat::Short4:
-                glAttr.size = 4;
-                glAttr.type = GL_SHORT;
-                glAttr.normalized = GL_FALSE;
-                break;
-                
-            case VertexFormat::Short4N:
-                glAttr.size = 4;
-                glAttr.type = GL_SHORT;
-                glAttr.normalized = GL_TRUE;
-                break;
-                
-            default:
-                o_error("glMeshFactory::glSetupVertexAttrs(): invalid vertex format!\n");
-                break;
+    // setup glVertexAttr array
+    const std::array<mesh*, 2> meshes{ { &msh, instMesh } };
+    for (const mesh* curMesh : meshes) {
+        if (nullptr != curMesh) {
+            const VertexLayout& layout = curMesh->GetVertexBufferAttrs().GetVertexLayout();
+            const int32 numComps = layout.GetNumComponents();
+            for (int i = 0; i < numComps; i++) {
+                const VertexComponent& comp = layout.GetComponent(i);
+                glVertexAttr& glAttr = msh.glAttr(comp.GetAttr());  // msh is not a bug
+                glAttr.enabled = GL_TRUE;
+                if (curMesh == &msh) {
+                    glAttr.vertexBuffer = msh.glGetVertexBuffer();
+                    glAttr.divisor = 0;
+                }
+                else {
+                    glAttr.vertexBuffer = msh.glGetInstanceBuffer();
+                    glAttr.divisor = 1;
+                }
+                switch (comp.GetFormat()) {
+                    case VertexFormat::Float:
+                        glAttr.size = 1;
+                        glAttr.type = GL_FLOAT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Float2:
+                        glAttr.size = 2;
+                        glAttr.type = GL_FLOAT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Float3:
+                        glAttr.size = 3;
+                        glAttr.type = GL_FLOAT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Float4:
+                        glAttr.size = 4;
+                        glAttr.type = GL_FLOAT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Byte4:
+                        glAttr.size = 4;
+                        glAttr.type = GL_BYTE;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Byte4N:
+                        glAttr.size = 4;
+                        glAttr.type = GL_BYTE;
+                        glAttr.normalized = GL_TRUE;
+                        break;
+                        
+                    case VertexFormat::UByte4:
+                        glAttr.size = 4;
+                        glAttr.type = GL_UNSIGNED_BYTE;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::UByte4N:
+                        glAttr.size = 4;
+                        glAttr.type = GL_UNSIGNED_BYTE;
+                        glAttr.normalized = GL_TRUE;
+                        break;
+                        
+                    case VertexFormat::Short2:
+                        glAttr.size = 2;
+                        glAttr.type = GL_SHORT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Short2N:
+                        glAttr.size = 2;
+                        glAttr.type = GL_SHORT;
+                        glAttr.normalized = GL_TRUE;
+                        break;
+                        
+                    case VertexFormat::Short4:
+                        glAttr.size = 4;
+                        glAttr.type = GL_SHORT;
+                        glAttr.normalized = GL_FALSE;
+                        break;
+                        
+                    case VertexFormat::Short4N:
+                        glAttr.size = 4;
+                        glAttr.type = GL_SHORT;
+                        glAttr.normalized = GL_TRUE;
+                        break;
+                        
+                    default:
+                        o_error("glMeshFactory::glSetupVertexAttrs(): invalid vertex format!\n");
+                        break;
+                }
+                glAttr.stride = layout.GetByteSize();
+                glAttr.offset = layout.GetComponentByteOffset(i);
+            }
         }
-        glAttr.stride = layout.GetByteSize();
-        glAttr.offset = layout.GetComponentByteOffset(i);
     }
 }
 

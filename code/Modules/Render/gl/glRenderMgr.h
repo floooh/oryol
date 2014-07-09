@@ -27,8 +27,12 @@ public:
     void Clear(bool color, bool depth, bool stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
-    /// submit a draw call with overridden primitive group
+    /// submit a draw call with direct primitive group
     void Draw(const PrimitiveGroup& primGroup);
+    /// submit a draw call for instanced rendering with primitive group index in current mesh
+    void DrawInstanced(int32 primGroupIndex, int32 numInstances);
+    /// submit a draw call for instanced rendering with direct primitive group
+    void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
     /// update vertex data
     void UpdateVertices(mesh* msh, int32 numBytes, const void* data);
 };

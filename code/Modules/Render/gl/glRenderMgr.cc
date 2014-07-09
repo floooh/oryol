@@ -31,6 +31,8 @@ glRenderMgr::Supports(Feature::Code feat) const {
             return glExt::HasExtension(glExt::TextureCompressionPVRTC);
         case Feature::TextureCompressionATC:
             return glExt::HasExtension(glExt::TextureCompressionATC);
+        case Feature::Instancing:
+            return glExt::HasExtension(glExt::InstancedArrays);
         default:
             return false;
     }
@@ -280,6 +282,7 @@ void
 glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
+    ORYOL_GL_CHECK_ERROR();
 
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
@@ -287,14 +290,14 @@ glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
-        ::glDrawElements(primType, primGroup.GetNumElements(), indexType, indices);
-        ORYOL_GL_CHECK_ERROR();
+        const int32 numElms = primGroup.GetNumElements();
+        ::glDrawElements(primType, numElms, indexType, indices);
     }
     else {
         // non-indexed geometry
         ::glDrawArrays(primType, primGroup.GetBaseElement(), primGroup.GetNumElements());
-        ORYOL_GL_CHECK_ERROR();
     }
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -315,6 +318,46 @@ glRenderMgr::Draw(int32 primGroupIndex) {
 
 //------------------------------------------------------------------------------
 void
+glRenderMgr::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(nullptr != this->curMesh);
+    
+    const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
+    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
+    if (indexType != IndexType::None) {
+        // indexed geometry
+        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
+        const int32 numElms = primGroup.GetNumElements();
+        glExt::DrawElementsInstanced(primType, numElms, indexType, indices, numInstances);
+    }
+    else {
+        // non-indexed geometry
+        const int32 baseElm = primGroup.GetBaseElement();
+        const int32 numElms = primGroup.GetNumElements();
+        glExt::DrawArraysInstanced(primType, baseElm, numElms, numInstances);
+    }
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderMgr::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(nullptr != this->curMesh);
+    
+    if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curMesh->GetPrimitiveGroup(primGroupIndex);
+    this->DrawInstanced(primGroup, numInstances);
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != msh);
@@ -322,7 +365,7 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
     const int32 vbByteSize = attrs.GetByteSize();
     const Usage::Code vbUsage = attrs.GetUsage();
-    o_assert_dbg((numBytes > 0) && (numBytes < vbByteSize));
+    o_assert_dbg((numBytes > 0) && (numBytes <= vbByteSize));
     o_assert_dbg((vbUsage == Usage::DynamicStream) || (vbUsage == Usage::DynamicWrite));
     this->stateWrapper->InvalidateMeshState();
     
@@ -339,3 +382,4 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
 
 } // namespace Render
 } // namespace Oryol
+

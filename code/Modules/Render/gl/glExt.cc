@@ -34,7 +34,6 @@ glExt::Setup() {
     #if !ORYOL_MACOS
     Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     ORYOL_GL_CHECK_ERROR();
-    
     #endif
     
     #if ORYOL_MACOS
@@ -42,6 +41,7 @@ glExt::Setup() {
     // to be an error
     extensions[VertexArrayObject] = true;
     extensions[TextureCompressionDXT] = true;
+    extensions[InstancedArrays] = true;
     #elif ORYOL_PNACL
     // PNaCl: vertex array objects isn't actually supported on NaCl even though the
     // extension is listed in the returned extensions string
@@ -58,6 +58,7 @@ glExt::Setup() {
                                           strBuilder.Contains("_compressed_texture_pvrtc");
     extensions[TextureCompressionATC] = strBuilder.Contains("_compressed_ATC_texture") ||
                                         strBuilder.Contains("_compressed_texture_atc");
+    extensions[InstancedArrays] = strBuilder.Contains("_instanced_arrays");
     #endif
     
     #if ORYOL_USE_GLGETATTRIBLOCATION
@@ -69,6 +70,9 @@ glExt::Setup() {
     // put warnings to the console for extensions that we expect but are not provided
     if (!extensions[VertexArrayObject]) {
         Log::Warn("glExt::Setup(): vertex_array_object extension not found!\n");
+    }
+    if (!extensions[InstancedArrays]) {
+        Log::Warn("glExt::Setup(): instanced_arrays extension not found!\n");
     }
     
     // get implementation-specific values
@@ -93,7 +97,9 @@ glExt::IsValid() {
 //------------------------------------------------------------------------------
 void
 glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
-    #if ORYOL_OPENGLES2
+    #if ORYOL_EMSCRIPTEN
+        ::glGenVertexArrays(n, arrays);
+    #elif ORYOL_OPENGLES2
         #if !ORYOL_PNACL
         ::glGenVertexArraysOES(n, arrays);
         #else
@@ -109,7 +115,9 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
 //------------------------------------------------------------------------------
 void
 glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
-    #if ORYOL_OPENGLES2
+    #if ORYOL_EMSCRIPTEN
+        ::glDeleteVertexArrays(n, arrays);
+    #elif ORYOL_OPENGLES2
         #if !ORYOL_PNACL
         ::glDeleteVertexArraysOES(n, arrays);
         #else
@@ -125,7 +133,9 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
 //------------------------------------------------------------------------------
 void
 glExt::BindVertexArray(GLuint array) {
-    #if ORYOL_OPENGLES2
+    #if ORYOL_EMSCRIPTEN
+        ::glBindVertexArray(array);
+    #elif ORYOL_OPENGLES2
         #if !ORYOL_PNACL
         ::glBindVertexArrayOES(array);
         #else
@@ -133,6 +143,54 @@ glExt::BindVertexArray(GLuint array) {
         #endif
     #elif ORYOL_OPENGL
         ::glBindVertexArray(array);
+    #else
+    #error "Not an OpenGL platform!"
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
+glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
+    #if ORYOL_ANDROID
+    // Android GLES2 headers don't have instancing function prototypes
+    #elif ORYOL_EMSCRIPTEN
+    ::glVertexAttribDivisor(index, divisor);
+    #elif ORYOL_OPENGLES2
+    ::glVertexAttribDivisorANGLE(index, divisor);
+    #elif ORYOL_OPENGL
+    ::glVertexAttribDivisor(index, divisor);
+    #else
+    #error "Not an OpenGL platform!"
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
+glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
+    #if ORYOL_ANDROID
+    // Android GLES2 headers don't have instancing function prototypes
+    #elif ORYOL_EMSCRIPTEN
+    ::glDrawArraysInstanced(mode, first, count, primcount);
+    #elif ORYOL_OPENGLES2
+    ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
+    #elif ORYOL_OPENGL
+    ::glDrawArraysInstanced(mode, first, count, primcount);
+    #else
+    #error "Not an OpenGL platform!"
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
+glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount) {
+    #if ORYOL_ANDROID
+    // Android GLES2 headers don't have instancing function prototypes
+    #elif ORYOL_EMSCRIPTEN
+    ::glDrawElementsInstanced(mode, count, type, indices, primcount);    
+    #elif ORYOL_OPENGLES2
+    ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+    #elif ORYOL_OPENGL
+    ::glDrawElementsInstanced(mode, count, type, indices, primcount);
     #else
     #error "Not an OpenGL platform!"
     #endif
