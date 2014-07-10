@@ -151,49 +151,55 @@ glExt::BindVertexArray(GLuint array) {
 //------------------------------------------------------------------------------
 void
 glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
-    #if ORYOL_ANDROID
-    // Android GLES2 headers don't have instancing function prototypes
-    #elif ORYOL_EMSCRIPTEN
-    ::glVertexAttribDivisor(index, divisor);
-    #elif ORYOL_OPENGLES2
-    ::glVertexAttribDivisorANGLE(index, divisor);
-    #elif ORYOL_OPENGL
-    ::glVertexAttribDivisor(index, divisor);
-    #else
-    #error "Not an OpenGL platform!"
-    #endif
+    if (extensions[InstancedArrays]) {
+        #if ORYOL_ANDROID
+        // Android GLES2 headers don't have instancing function prototypes
+        #elif ORYOL_EMSCRIPTEN
+        ::glVertexAttribDivisor(index, divisor);
+        #elif ORYOL_OPENGLES2
+        ::glVertexAttribDivisorANGLE(index, divisor);
+        #elif ORYOL_OPENGL
+        ::glVertexAttribDivisor(index, divisor);
+        #else
+        #error "Not an OpenGL platform!"
+        #endif
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
-    #if ORYOL_ANDROID
-    // Android GLES2 headers don't have instancing function prototypes
-    #elif ORYOL_EMSCRIPTEN
-    ::glDrawArraysInstanced(mode, first, count, primcount);
-    #elif ORYOL_OPENGLES2
-    ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
-    #elif ORYOL_OPENGL
-    ::glDrawArraysInstanced(mode, first, count, primcount);
-    #else
-    #error "Not an OpenGL platform!"
-    #endif
+    if (extensions[InstancedArrays]) {
+        #if ORYOL_ANDROID
+        // Android GLES2 headers don't have instancing function prototypes
+        #elif ORYOL_EMSCRIPTEN
+        ::glDrawArraysInstanced(mode, first, count, primcount);
+        #elif ORYOL_OPENGLES2
+        ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
+        #elif ORYOL_OPENGL
+        ::glDrawArraysInstanced(mode, first, count, primcount);
+        #else
+        #error "Not an OpenGL platform!"
+        #endif
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount) {
-    #if ORYOL_ANDROID
-    // Android GLES2 headers don't have instancing function prototypes
-    #elif ORYOL_EMSCRIPTEN
-    ::glDrawElementsInstanced(mode, count, type, indices, primcount);    
-    #elif ORYOL_OPENGLES2
-    ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
-    #elif ORYOL_OPENGL
-    ::glDrawElementsInstanced(mode, count, type, indices, primcount);
-    #else
-    #error "Not an OpenGL platform!"
-    #endif
+    if (extensions[InstancedArrays]) {    
+        #if ORYOL_ANDROID
+        // Android GLES2 headers don't have instancing function prototypes
+        #elif ORYOL_EMSCRIPTEN
+        ::glDrawElementsInstanced(mode, count, type, indices, primcount);    
+        #elif ORYOL_OPENGLES2
+        ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+        #elif ORYOL_OPENGL
+        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
+        #else
+        #error "Not an OpenGL platform!"
+        #endif
+    }
 }
 
 } // namespace Render
