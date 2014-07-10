@@ -151,19 +151,16 @@ InstancingApp::OnRunning() {
         this->updateCamera();
         this->emitParticles();
         this->updateParticles();
+        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
         updTime = Clock::Since(updStart);
         
-        // hmm... need to update vertices before DrawState...
-        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
-        
         // render block
+        TimePoint drawStart = Clock::Now();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-
-        TimePoint drawStart = Clock::Now();
         this->render->DrawInstanced(0, this->curNumParticles);
         drawTime = Clock::Since(drawStart);
         
