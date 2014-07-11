@@ -17,15 +17,15 @@ public:
     /// constructor
     VertexComponent(VertexAttr::Code attr, VertexFormat::Code format);
     /// return true if valid (name and format set)
-    bool IsValid() const;
+    bool Valid() const;
     /// clear/invalidate the vertex component
     void Clear();
     /// get vertex attribute
-    VertexAttr::Code GetAttr() const;
+    VertexAttr::Code Attr() const;
     /// get vertex format
-    VertexFormat::Code GetFormat() const;
+    VertexFormat::Code Format() const;
     /// get byte size of component
-    int32 GetByteSize() const;
+    int32 ByteSize() const;
     
 private:
     VertexAttr::Code attr;
@@ -34,25 +34,25 @@ private:
 
 //------------------------------------------------------------------------------
 inline bool
-VertexComponent::IsValid() const {
+VertexComponent::Valid() const {
     return (VertexAttr::InvalidVertexAttr != this->attr) && (VertexFormat::InvalidVertexFormat != this->format);
 }
 
 //------------------------------------------------------------------------------
 inline VertexAttr::Code
-VertexComponent::GetAttr() const {
+VertexComponent::Attr() const {
     return this->attr;
 }
 
 //------------------------------------------------------------------------------
 inline VertexFormat::Code
-VertexComponent::GetFormat() const {
+VertexComponent::Format() const {
     return this->format;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-VertexComponent::GetByteSize() const {
+VertexComponent::ByteSize() const {
     return VertexFormat::ByteSize(this->format);
 }
 

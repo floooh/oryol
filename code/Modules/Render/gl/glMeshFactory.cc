@@ -177,8 +177,8 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         // verify that there are no colliding vertex components
         const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().GetVertexLayout();
         const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().GetVertexLayout();
-        for (int32 i = 0; i < mshLayout.GetNumComponents(); i++) {
-            o_assert(!instLayout.Contains(mshLayout.GetComponent(i).GetAttr()));
+        for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
+            o_assert(!instLayout.Contains(mshLayout.Component(i).Attr()));
         }
     }
 }
@@ -263,10 +263,10 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
     for (const mesh* curMesh : meshes) {
         if (nullptr != curMesh) {
             const VertexLayout& layout = curMesh->GetVertexBufferAttrs().GetVertexLayout();
-            const int32 numComps = layout.GetNumComponents();
+            const int32 numComps = layout.NumComponents();
             for (int i = 0; i < numComps; i++) {
-                const VertexComponent& comp = layout.GetComponent(i);
-                glVertexAttr& glAttr = msh.glAttr(comp.GetAttr());  // msh is not a bug
+                const VertexComponent& comp = layout.Component(i);
+                glVertexAttr& glAttr = msh.glAttr(comp.Attr());  // msh is not a bug
                 glAttr.enabled = GL_TRUE;
                 if (curMesh == &msh) {
                     glAttr.vertexBuffer = msh.glGetVertexBuffer();
@@ -276,7 +276,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                     glAttr.vertexBuffer = msh.glGetInstanceBuffer();
                     glAttr.divisor = 1;
                 }
-                switch (comp.GetFormat()) {
+                switch (comp.Format()) {
                     case VertexFormat::Float:
                         glAttr.size = 1;
                         glAttr.type = GL_FLOAT;
@@ -353,8 +353,8 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                         o_error("glMeshFactory::glSetupVertexAttrs(): invalid vertex format!\n");
                         break;
                 }
-                glAttr.stride = layout.GetByteSize();
-                glAttr.offset = layout.GetComponentByteOffset(i);
+                glAttr.stride = layout.ByteSize();
+                glAttr.offset = layout.ComponentByteOffset(i);
             }
         }
     }
@@ -412,8 +412,8 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     o_assert(setup.GetNumVertices() > 0);
     
     const int32 numVertices = setup.GetNumVertices();
-    const VertexLayout& layout = setup.GetVertexLayout();
-    const int32 vbSize = numVertices * layout.GetByteSize();
+    const VertexLayout& layout = setup.VertexLayout();
+    const int32 vbSize = numVertices * layout.ByteSize();
     
     VertexBufferAttrs vbAttrs;
     vbAttrs.setNumVertices(numVertices);

@@ -24,7 +24,7 @@ public:
     /// setup from data with blueprint
     static MeshSetup FromData(const Resource::Locator& loc, const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup CreateEmpty(const Resource::Locator& loc, const VertexLayout& vertexLayout, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
+    static MeshSetup CreateEmpty(const Resource::Locator& loc, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
     static MeshSetup CreateFullScreenQuad(const Resource::Locator& loc);
     
@@ -48,12 +48,15 @@ public:
     /// get ioLane index
     int32 GetIOLane() const;
     
+    /// read/write access to vertex layout (only used in CreateEmpty)
+    class VertexLayout& VertexLayout();
+    /// read-only access to vertex layout (only used in CreateEmpty)
+    const class VertexLayout& VertexLayout() const;
+    
     /// get number of vertices (only CreateEmpty)
     int32 GetNumVertices() const;
     /// get number of indices (only CreateEmpty)
     int32 GetNumIndices() const;
-    /// get VertexLayout (only CreateEmpty)
-    const VertexLayout& GetVertexLayout() const;
     /// get IndexType (only CreateEmpty)
     IndexType::Code GetIndexType() const;
     
@@ -80,7 +83,7 @@ private:
     int32 numVertices;
     int32 numIndices;
     IndexType::Code indexType;
-    VertexLayout vertexLayout;
+    class VertexLayout vertexLayout;
     int32 numPrimGroups;
     PrimitiveGroup primGroups[MaxNumPrimGroups];
     bool setupFromFile : 1;

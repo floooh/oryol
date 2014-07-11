@@ -70,20 +70,6 @@ MeshBuilder::SetIndexType(IndexType::Code t) {
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::AddComponent(const VertexComponent& comp) {
-    o_assert(!this->inBegin);
-    this->layout.Add(comp);
-}
-
-//------------------------------------------------------------------------------
-void
-MeshBuilder::AddComponent(VertexAttr::Code attr, VertexFormat::Code format) {
-    o_assert(!this->inBegin);
-    this->layout.Add(attr, format);
-}
-
-//------------------------------------------------------------------------------
-void
 MeshBuilder::AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
     o_assert(!this->inBegin);
     this->primGroups.AddBack(primGroup);
@@ -108,9 +94,9 @@ MeshBuilder::Begin() {
     
     // compute the required stream size
     int32 hdrSize = sizeof(Header);
-    hdrSize      += sizeof(HeaderVertexComponent) * this->layout.GetNumComponents();
+    hdrSize      += sizeof(HeaderVertexComponent) * this->layout.NumComponents();
     hdrSize      += sizeof(HeaderPrimitiveGroup) * this->primGroups.Size();
-    int32 vbSize  = Memory::RoundUp(this->numVertices * this->layout.GetByteSize(), 4);
+    int32 vbSize  = Memory::RoundUp(this->numVertices * this->layout.ByteSize(), 4);
     int32 ibSize  = this->numIndices * IndexType::ByteSize(this->indexType);
     int32 allSize = hdrSize + vbSize + ibSize;
     
@@ -129,16 +115,16 @@ MeshBuilder::Begin() {
     header->numVertices = this->numVertices;
     header->numIndices  = this->numIndices;
     header->indexType   = (int32) this->indexType;
-    header->numVertexComponents = this->layout.GetNumComponents();
+    header->numVertexComponents = this->layout.NumComponents();
     header->numPrimitiveGroups  = this->primGroups.Size();
     header->verticesByteSize = vbSize;
     header->indicesByteSize  = ibSize;
     
     HeaderVertexComponent* hdrComp = (HeaderVertexComponent*) (this->headerPointer + sizeof(Header));
-    for (int32 i = 0; i < this->layout.GetNumComponents(); i++, hdrComp++) {
-        const VertexComponent& src = this->layout.GetComponent(i);
-        hdrComp->attr   = src.GetAttr();
-        hdrComp->format = src.GetFormat();
+    for (int32 i = 0; i < this->layout.NumComponents(); i++, hdrComp++) {
+        const VertexComponent& src = this->layout.Component(i);
+        hdrComp->attr   = src.Attr();
+        hdrComp->format = src.Format();
     }
     
     HeaderPrimitiveGroup* hdrPrimGroup = (HeaderPrimitiveGroup*) hdrComp;
@@ -174,12 +160,6 @@ MeshBuilder::End() {
 const Ptr<Stream>&
 MeshBuilder::GetStream() const {
     return this->stream;
-}
-
-//------------------------------------------------------------------------------
-const VertexLayout&
-MeshBuilder::GetVertexLayout() const {
-    return this->layout;
 }
 
 } // namespace Render

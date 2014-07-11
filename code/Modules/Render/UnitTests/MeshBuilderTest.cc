@@ -19,8 +19,8 @@ TEST(MeshBuilderTest) {
     mb.SetNumVertices(4);
     mb.SetNumIndices(6);
     mb.SetIndexType(IndexType::Index16);
-    mb.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    mb.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
+    mb.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    mb.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
     mb.Begin();
     

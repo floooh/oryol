@@ -44,8 +44,8 @@ PBRenderingApp::OnInit() {
     
     // create resources
     ShapeBuilder shapeBuilder;
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.AddSphere(0.5f, 36, 20, true);
     shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
     shapeBuilder.Build();

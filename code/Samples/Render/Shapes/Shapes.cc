@@ -46,8 +46,8 @@ ShapeApp::OnInit() {
     // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
     shapeBuilder.AddSphere(0.75f, 36, 20);
     shapeBuilder.AddCylinder(0.5f, 1.5f, 36, 10);

@@ -35,15 +35,15 @@ ShapeBuilder::Clear() {
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddComponent(const VertexComponent& comp) {
-    this->meshBuilder.AddComponent(comp);
+class VertexLayout&
+ShapeBuilder::VertexLayout() {
+    return this->meshBuilder.VertexLayout();
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddComponent(VertexAttr::Code attr, VertexFormat::Code format) {
-    this->meshBuilder.AddComponent(attr, format);
+const class VertexLayout&
+ShapeBuilder::VertexLayout() const {
+    return this->meshBuilder.VertexLayout();
 }
 
 //------------------------------------------------------------------------------
@@ -309,7 +309,7 @@ ShapeBuilder::Build() {
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) {
-    o_assert(this->meshBuilder.GetVertexLayout().Contains(VertexAttr::Color0));
+    o_assert(this->meshBuilder.VertexLayout().Contains(VertexAttr::Color0));
     if (this->randomColors) {
         const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
         const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
@@ -332,7 +332,7 @@ ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) 
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    const auto& vertexLayout = this->meshBuilder.VertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     
     const int32 startVertexIndex = curVertexIndex;
@@ -482,7 +482,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
 */
 void
 ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    const auto& vertexLayout = this->meshBuilder.VertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     const int32 numSlices = shape.i0;
@@ -580,7 +580,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
 */
 void
 ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    const auto& vertexLayout = this->meshBuilder.VertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     const int32 numSlices = shape.i0;
@@ -727,7 +727,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
 */
 void
 ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    const auto& vertexLayout = this->meshBuilder.VertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     static const float32 ringRadius = shape.f0;
@@ -818,7 +818,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
 */
 void
 ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const VertexLayout& vertexLayout = this->meshBuilder.GetVertexLayout();
+    const auto& vertexLayout = this->meshBuilder.VertexLayout();
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
 

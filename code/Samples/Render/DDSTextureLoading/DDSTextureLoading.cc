@@ -82,8 +82,8 @@ DDSTextureLoadingApp::OnInit() {
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetTransform(rot90);
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddPlane(1.0f, 1.0f, 4);
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());

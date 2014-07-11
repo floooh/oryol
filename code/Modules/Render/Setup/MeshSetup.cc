@@ -69,7 +69,6 @@ MeshSetup::FromData(const Locator& loc, const MeshSetup& blueprint) {
 //------------------------------------------------------------------------------
 MeshSetup
 MeshSetup::CreateEmpty(const Locator& loc,
-                       const VertexLayout& layout,
                        int32 numVertices,
                        Usage::Code vertexUsage,
                        IndexType::Code indexType,
@@ -86,7 +85,6 @@ MeshSetup::CreateEmpty(const Locator& loc,
     setup.numVertices = numVertices;
     setup.numIndices = numIndices;
     setup.indexType = indexType;
-    setup.vertexLayout = layout;
     return setup;
 }
 
@@ -160,8 +158,14 @@ MeshSetup::GetNumIndices() const {
 }
 
 //------------------------------------------------------------------------------
+VertexLayout&
+MeshSetup::VertexLayout() {
+    return this->vertexLayout;
+}
+
+//------------------------------------------------------------------------------
 const VertexLayout&
-MeshSetup::GetVertexLayout() const {
+MeshSetup::VertexLayout() const {
     return this->vertexLayout;
 }
 

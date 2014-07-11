@@ -57,7 +57,7 @@ VertexBufferAttrs::GetUsage() const {
 //------------------------------------------------------------------------------
 inline int32
 VertexBufferAttrs::GetByteSize() const {
-    return this->numVertices * this->vertexLayout.GetByteSize();
+    return this->numVertices * this->vertexLayout.ByteSize();
 }
 
 } // namespace Render

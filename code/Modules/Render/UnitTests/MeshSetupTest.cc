@@ -20,7 +20,7 @@ TEST(MeshSetupTest) {
     CHECK(s0.GetIOLane() == 0);
     CHECK(s0.GetNumVertices() == 0);
     CHECK(s0.GetNumIndices() == 0);
-    CHECK(s0.GetVertexLayout().Empty());
+    CHECK(s0.VertexLayout().Empty());
     CHECK(s0.GetIndexType() == IndexType::None);
     
     MeshSetup s1 = MeshSetup::FromFile("s1", 1, Usage::DynamicStream, Usage::DynamicWrite);
@@ -68,10 +68,9 @@ TEST(MeshSetupTest) {
     CHECK(s5.GetIndexUsage() == Usage::DynamicWrite);
     CHECK(s5.GetIOLane() == 0);
     
-    VertexLayout layout;
-    layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    MeshSetup s6 = MeshSetup::CreateEmpty("s6", layout, 128, Usage::DynamicStream);
+    MeshSetup s6 = MeshSetup::CreateEmpty("s6", 128, Usage::DynamicStream);
+    s6.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    s6.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     CHECK(!s6.ShouldSetupFromFile());
     CHECK(!s6.ShouldSetupFromData());
     CHECK(s6.ShouldSetupEmpty());
@@ -82,13 +81,15 @@ TEST(MeshSetupTest) {
     CHECK(s6.GetNumVertices() == 128);
     CHECK(s6.GetNumIndices() == 0);
     CHECK(s6.GetIndexType() == IndexType::None);
-    CHECK(s6.GetVertexLayout().GetNumComponents() == 2);
-    CHECK(s6.GetVertexLayout().GetComponent(0).GetAttr() == VertexAttr::Position);
-    CHECK(s6.GetVertexLayout().GetComponent(0).GetFormat() == VertexFormat::Float3);
-    CHECK(s6.GetVertexLayout().GetComponent(1).GetAttr() == VertexAttr::TexCoord0);
-    CHECK(s6.GetVertexLayout().GetComponent(1).GetFormat() == VertexFormat::Float2);
+    CHECK(s6.VertexLayout().NumComponents() == 2);
+    CHECK(s6.VertexLayout().Component(0).Attr() == VertexAttr::Position);
+    CHECK(s6.VertexLayout().Component(0).Format() == VertexFormat::Float3);
+    CHECK(s6.VertexLayout().Component(1).Attr() == VertexAttr::TexCoord0);
+    CHECK(s6.VertexLayout().Component(1).Format() == VertexFormat::Float2);
     
-    MeshSetup s7 = MeshSetup::CreateEmpty("s7", layout, 256, Usage::DynamicWrite, IndexType::Index16, 512, Usage::DynamicStream);
+    MeshSetup s7 = MeshSetup::CreateEmpty("s7", 256, Usage::DynamicWrite, IndexType::Index16, 512, Usage::DynamicStream);
+    s7.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    s7.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     s7.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, 64));
     CHECK(!s7.ShouldSetupFromFile());
     CHECK(!s7.ShouldSetupFromData());
@@ -100,7 +101,7 @@ TEST(MeshSetupTest) {
     CHECK(s7.GetNumVertices() == 256);
     CHECK(s7.GetNumIndices() == 512);
     CHECK(s7.GetIndexType() == IndexType::Index16);
-    CHECK(s7.GetVertexLayout().GetNumComponents() == 2);
+    CHECK(s7.VertexLayout().NumComponents() == 2);
     CHECK(s7.GetNumPrimitiveGroups() == 1);
     CHECK(s7.GetPrimitiveGroup(0).GetPrimitiveType() == PrimitiveType::Triangles);
     CHECK(s7.GetPrimitiveGroup(0).GetBaseElement() == 0);

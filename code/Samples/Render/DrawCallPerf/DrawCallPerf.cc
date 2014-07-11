@@ -61,8 +61,8 @@ DrawCallPerfApp::OnInit() {
     // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());

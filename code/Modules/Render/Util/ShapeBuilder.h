@@ -17,11 +17,11 @@ class ShapeBuilder {
 public:
     /// constructor
     ShapeBuilder();
-
-    /// add vertex component
-    void AddComponent(const VertexComponent& comp);
-    /// add vertex component
-    void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
+    
+    /// read/write access to vertex layout
+    class VertexLayout& VertexLayout();
+    /// read-only access to vertex layout
+    const class VertexLayout& VertexLayout() const;
     
     /// set current transform
     void SetTransform(const glm::mat4& transform);

@@ -57,9 +57,9 @@ InfiniteSpheresApp::OnInit() {
         this->renderTargets[i] = this->render->CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.75f, 72.0f, 40.0f);
     shapeBuilder.Build();
     Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());

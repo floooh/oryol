@@ -42,7 +42,7 @@ TEST(ShapeBuilderTest) {
     ShapeBuilder shapeBuilder;
     
     // build a simple cube
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Build();
     
@@ -52,12 +52,12 @@ TEST(ShapeBuilderTest) {
     simpleCube.setState(Resource::State::Setup);
     factory.SetupResource(simpleCube, shapeBuilder.GetStream());
     CHECK(simpleCube.GetVertexBufferAttrs().GetNumVertices() == 24);
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetNumComponents() == 1);
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetByteSize() == 12);
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetComponent(0).IsValid());
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetComponent(0).GetAttr() == VertexAttr::Position);
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetComponent(0).GetFormat() == VertexFormat::Float3);
-    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().GetComponent(0).GetByteSize() == 12);
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().NumComponents() == 1);
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().ByteSize() == 12);
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().Component(0).Valid());
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().Component(0).Attr() == VertexAttr::Position);
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().Component(0).Format() == VertexFormat::Float3);
+    CHECK(simpleCube.GetVertexBufferAttrs().GetVertexLayout().Component(0).ByteSize() == 12);
     CHECK(simpleCube.GetIndexBufferAttrs().GetNumIndices() == 36);
     CHECK(simpleCube.GetIndexBufferAttrs().GetIndexType() == IndexType::Index16);
     CHECK(simpleCube.GetIndexBufferAttrs().GetUsage() == Usage::Immutable);

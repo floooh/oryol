@@ -57,17 +57,17 @@ SimpleRenderTargetApp::OnInit() {
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.Build();
     Id torus = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.AddComponent(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.5f, 72.0f, 40.0f);
     shapeBuilder.Build();
     Id sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());

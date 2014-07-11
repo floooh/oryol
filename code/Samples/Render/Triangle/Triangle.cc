@@ -37,8 +37,8 @@ TriangleApp::OnInit() {
     MeshBuilder meshBuilder;
     meshBuilder.SetNumVertices(3);
     meshBuilder.SetIndexType(IndexType::None);
-    meshBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    meshBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    meshBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    meshBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
     meshBuilder.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 3);
     meshBuilder.Begin();
     // first vertex pos and color

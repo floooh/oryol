@@ -146,7 +146,7 @@ debugTextRenderer::drawTextBuffer() {
         const float h = 8.0f / dispAttrs.GetFramebufferHeight();  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
-        renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.GetByteSize(), this->vertexData);
+        renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
         renderFacade->ApplyDrawState(this->textDrawState);
         renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
         renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
@@ -211,8 +211,9 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     int32 maxNumVerts = MaxNumChars * 6;
     this->vertexLayout.Add(VertexAttr::Position, VertexFormat::UByte4);
     this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
-    o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.GetByteSize());
-    MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", this->vertexLayout, maxNumVerts, Usage::DynamicStream);
+    o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
+    MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::DynamicStream);
+    setup.VertexLayout() = this->vertexLayout;
     this->textMesh = renderFacade->CreateResource(setup);
     o_assert(this->textMesh.IsValid());
     o_assert(renderFacade->QueryResourceState(this->textMesh) == Resource::State::Valid);

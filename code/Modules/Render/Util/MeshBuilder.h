@@ -71,10 +71,10 @@ public:
     void SetNumIndices(uint32 numIndices);
     /// set the index type (default is 16-bit indices)
     void SetIndexType(IndexType::Code indexType);
-    /// add vertex component
-    void AddComponent(const VertexComponent& comp);
-    /// add vertex component
-    void AddComponent(VertexAttr::Code attr, VertexFormat::Code format);
+    /// read/write access to vertex layout
+    class VertexLayout& VertexLayout();
+    /// read-only access to vertex layout
+    const class VertexLayout& VertexLayout() const;
     /// add a primitive group (at least one needed!)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// add a primitive group (at least one needed!)
@@ -105,8 +105,6 @@ public:
     void Clear();
     /// get the resulting data stream with vertex and index data
     const Core::Ptr<IO::Stream>& GetStream() const;
-    /// get the included vertex layout object
-    const VertexLayout& GetVertexLayout() const;
     
     /// the mesh data header
     struct Header {
@@ -140,7 +138,7 @@ private:
     uint32 numVertices;
     uint32 numIndices;
     IndexType::Code indexType;
-    VertexLayout layout;
+    class VertexLayout layout;
     Core::Array<PrimitiveGroup> primGroups;
     Core::Ptr<IO::MemoryStream> stream;
     MeshSetup meshSetup;
@@ -152,6 +150,18 @@ private:
     uint8* indexPointer;
     uint8* endPointer;
 };
+
+//------------------------------------------------------------------------------
+inline class VertexLayout&
+MeshBuilder::VertexLayout() {
+    return this->layout;
+}
+
+//------------------------------------------------------------------------------
+inline const class VertexLayout&
+MeshBuilder::VertexLayout() const {
+    return this->layout;
+}
 
 //------------------------------------------------------------------------------
 inline void
@@ -192,43 +202,43 @@ inline uint32
 MeshBuilder::vertexByteOffset(uint32 vertexIndex, int32 compIndex) const {
     o_assert_dbg(vertexIndex < this->numVertices);
     o_assert_dbg(InvalidIndex != compIndex);
-    return vertexIndex * this->layout.GetByteSize() + this->layout.GetComponentByteOffset(compIndex);
+    return vertexIndex * this->layout.ByteSize() + this->layout.ComponentByteOffset(compIndex);
 }
     
 //------------------------------------------------------------------------------
 inline void
 MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x) {
     o_assert_dbg(this->inBegin);
-    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
+    const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x);
 }
     
 //------------------------------------------------------------------------------
 inline void
 MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y) {
     o_assert_dbg(this->inBegin);
-    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
+    const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y);
 }
     
 //------------------------------------------------------------------------------
 inline void
 MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y, float z) {
     o_assert_dbg(this->inBegin);
-    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
+    const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y, z);
 }
 
 //------------------------------------------------------------------------------
 inline void
 MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y, float z, float w) {
     o_assert_dbg(this->inBegin);
-    const int32 compIndex = this->layout.GetComponentIndexByVertexAttr(attr);
+    const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.GetComponent(compIndex).GetFormat(), x, y, z, w);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y, z, w);
 }
 
 } // namespace Render

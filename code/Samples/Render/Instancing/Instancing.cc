@@ -63,16 +63,15 @@ InstancingApp::OnInit() {
     }
 
     // create dynamic instance data mesh
-    VertexLayout instanceLayout;
-    instanceLayout.Add(VertexAttr::Instance0, VertexFormat::Float4);
-    MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", instanceLayout, MaxNumParticles, Usage::DynamicStream);
+    MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::DynamicStream);
+    instanceMeshSetup.VertexLayout().Add(VertexAttr::Instance0, VertexFormat::Float4);
     this->instanceMesh = render->CreateResource(instanceMeshSetup);
     
     // setup static draw state
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.AddComponent(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddComponent(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
     shapeBuilder.Build();
     MeshSetup staticMeshSetup = MeshSetup::FromData("box");
@@ -151,11 +150,11 @@ InstancingApp::OnRunning() {
         this->updateCamera();
         this->emitParticles();
         this->updateParticles();
-        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
         updTime = Clock::Since(updStart);
         
         // render block
         TimePoint drawStart = Clock::Now();
+        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
