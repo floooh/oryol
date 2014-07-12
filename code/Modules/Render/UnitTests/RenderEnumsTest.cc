@@ -148,8 +148,8 @@ TEST(PrimitiveTypeTest) {
 TEST(UsageTest) {
     CHECK(Usage::NumUsages == 3);
     CHECK(Usage::Immutable == GL_STATIC_DRAW);
-    CHECK(Usage::DynamicWrite == GL_DYNAMIC_DRAW);
-    CHECK(Usage::DynamicStream == GL_STREAM_DRAW);
+    CHECK(Usage::Dynamic == GL_DYNAMIC_DRAW);
+    CHECK(Usage::Stream == GL_STREAM_DRAW);
 }
 
 //------------------------------------------------------------------------------
