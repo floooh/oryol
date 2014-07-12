@@ -180,7 +180,7 @@ glMesh::glAttr(uint8 vaoSlotIndex, uint8 attrIndex) const {
 }
 
 //------------------------------------------------------------------------------
-const glMesh*
+inline const glMesh*
 glMesh::getInstanceMesh() const {
     return this->instanceMesh;
 }
