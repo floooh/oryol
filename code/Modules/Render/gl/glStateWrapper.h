@@ -123,7 +123,11 @@ private:
     void onViewPort(const State::Vector& input);
     
     bool isValid;
+    
+    // global VAO for core profile platforms
+    #if ORYOL_MACOS
     GLuint globalVAO;
+    #endif
 
     Function funcs[State::NumStateCodes];
     

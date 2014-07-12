@@ -70,7 +70,9 @@ GLenum glStateWrapper::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glStateWrapper::glStateWrapper() :
 isValid(false),
+#if ORYOL_MACOS
 globalVAO(0),
+#endif
 curDepthOffsetFactor(0.0f),
 curDepthOffsetUnits(0.0f),
 curScissorLeft(0),

@@ -90,11 +90,11 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.GetPrimitiveGroup(0).GetBaseElement() == 0);
     CHECK(mesh.GetPrimitiveGroup(0).GetNumElements() == 6);
     #if ORYOL_OPENGL
-    CHECK(mesh.glGetVertexBuffer() != 0);
+    CHECK(mesh.glGetVertexBuffer(0) != 0);
     CHECK(mesh.glGetIndexBuffer() != 0);
-    CHECK(mesh.glGetVertexArrayObject() != 0);
+    CHECK(mesh.glGetVAO(0) != 0);
     for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = mesh.glAttr(i);
+        const glVertexAttr& glAttr = mesh.glAttr(0, i);
         CHECK(glAttr.index == i);
         if (VertexAttr::Position == i) {
             CHECK(glAttr.enabled == GL_TRUE);

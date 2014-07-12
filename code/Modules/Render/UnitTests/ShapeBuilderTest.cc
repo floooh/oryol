@@ -66,11 +66,11 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.GetPrimitiveGroup(0).GetBaseElement() == 0);
     CHECK(simpleCube.GetPrimitiveGroup(0).GetNumElements() == 36);
     #if ORYOL_OPENGL
-    CHECK(simpleCube.glGetVertexBuffer() != 0);
+    CHECK(simpleCube.glGetVertexBuffer(0) != 0);
     CHECK(simpleCube.glGetIndexBuffer() != 0);
-    CHECK(simpleCube.glGetVertexArrayObject() != 0);
+    CHECK(simpleCube.glGetVAO(0) != 0);
     for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = simpleCube.glAttr(i);
+        const glVertexAttr& glAttr = simpleCube.glAttr(0, i);
         CHECK(glAttr.index == i);
         if (VertexAttr::Position == i) {
             CHECK(glAttr.enabled == GL_TRUE);
