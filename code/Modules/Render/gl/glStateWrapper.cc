@@ -617,6 +617,14 @@ glStateWrapper::setupJumpTable() {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateMeshState() {
+    if (glExt::HasExtension(glExt::VertexArrayObject)) {
+        // NOTE: it is essential that the current vertex array object
+        // is unbound before modifying the GL_ELEMENT_ARRAY_BUFFER as this
+        // would bind the next index buffer to the previous VAO!
+        glExt::BindVertexArray(0);
+    }
+    ::glBindBuffer(GL_ARRAY_BUFFER, 0);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->curVertexArrayObject = 0;
     this->curVertexBuffer = 0;
     this->curIndexBuffer = 0;

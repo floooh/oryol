@@ -148,11 +148,11 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
     o_assert(nullptr != this->stateWrapper);
     o_assert(indexDataSize > 0);
     
-    this->stateWrapper->InvalidateMeshState();
     GLuint ib = 0;
     ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != ib);
+    this->stateWrapper->InvalidateMeshState();  // IMPORTANT to unlink current VAO
     this->stateWrapper->BindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, usage);
     ORYOL_GL_CHECK_ERROR();
