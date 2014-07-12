@@ -90,13 +90,13 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
         
         // setup the mesh object
         uint8* vertices = (uint8*) prim;
-        this->mshFactory->createVertexBuffer(vertices, hdr->verticesByteSize, mesh);
+        mesh.glSetVertexBuffer(0, this->mshFactory->createVertexBuffer(vertices, hdr->verticesByteSize, vbAttrs.GetUsage()));
         if (hdr->indexType != IndexType::None) {
             uint8* indices = vertices + hdr->verticesByteSize;
-            this->mshFactory->createIndexBuffer(indices, hdr->indicesByteSize, mesh);
+            mesh.glSetIndexBuffer(this->mshFactory->createIndexBuffer(indices, hdr->indicesByteSize, ibAttrs.GetUsage()));
         }
         this->mshFactory->attachInstanceBuffer(mesh);
-        this->mshFactory->createVertexLayout(mesh);
+        this->mshFactory->setupVertexLayout(mesh);
         
         // set mesh to valid, and return
         mesh.setState(Resource::State::Valid);

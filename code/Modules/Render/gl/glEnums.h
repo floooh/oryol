@@ -124,9 +124,9 @@ class glUsage {
 public:
     /// usage enum
     enum Code {
-        Immutable = 0x88E4,         // GL_STATIC_DRAW
-        DynamicWrite = 0x88E8,      // GL_DYNAMIC_DRAW
-        DynamicStream = 0x88E0,     // GL_STREAM_DRAW
+        Immutable = 0x88E4,     // GL_STATIC_DRAW
+        Dynamic = 0x88E8,       // GL_DYNAMIC_DRAW
+        Stream = 0x88E0,        // GL_STREAM_DRAW
         
         NumUsages = 3,
         InvalidUsage = 0xFFFFFFFF,

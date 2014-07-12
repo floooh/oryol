@@ -37,13 +37,13 @@ public:
     void DestroyResource(mesh& mesh);
     
     /// helper method to create vertex buffer in mesh
-    void createVertexBuffer(const void* vertexData, uint32 vertexDataSize, mesh& outMesh);
+    GLuint createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage);
     /// helper method to create index buffer in mesh
-    void createIndexBuffer(const void* indexData, uint32 indexDataSize, mesh& outMesh);
+    GLuint createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage);
     /// lookup and attach instance buffer to mesh
     void attachInstanceBuffer(mesh& mesh);
     /// helper method to create platform-specific vertex layout
-    void createVertexLayout(mesh& outMesh);
+    void setupVertexLayout(mesh& mesh);
     /// helper method to setup a mesh object as fullscreen quad
     void createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh

@@ -70,6 +70,7 @@ GLenum glStateWrapper::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glStateWrapper::glStateWrapper() :
 isValid(false),
+globalVAO(0),
 curDepthOffsetFactor(0.0f),
 curDepthOffsetUnits(0.0f),
 curScissorLeft(0),
@@ -116,6 +117,12 @@ glStateWrapper::Setup() {
     #if ORYOL_USE_GLGETATTRIBLOCATION
     Log::Warn("glStateWrapper: ORYOL_USE_GLGETATTRIBLOCATION is ON\n");
     #endif
+    
+    // in case we are on a Core Profile, create a global Vertex Array Object
+    #if ORYOL_MACOS
+    ::glGenVertexArrays(1, &this->globalVAO);
+    ::glBindVertexArray(this->globalVAO);
+    #endif
 
     this->setupDepthStencilState();
     this->setupBlendState();
@@ -126,6 +133,10 @@ glStateWrapper::Setup() {
 void
 glStateWrapper::Discard() {
     o_assert(this->isValid);
+    #if ORYOL_MACOS
+    ::glDeleteVertexArrays(1, &this->globalVAO);
+    this->globalVAO = 0;
+    #endif
     this->isValid = false;
 }
 
@@ -175,8 +186,10 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
     else {
         // FIXME: record and compare against a 'current mesh pointer' whether
         // mesh state must be reapplied
+        const uint8 vaoIndex = msh->getActiveVAOSlot();
     
 #if ORYOL_USE_GLGETATTRIBLOCATION
+        // FIXME: UNTESTED
         // This is the code path which uses glGetAttribLocation instead of
         // glBindAttribLocation, which must be used if GL_MAX_VERTEX_ATTRIBS is smaller
         // then VertexAttr::NumVertexAttrs. The only currently known platform
@@ -186,8 +199,8 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
         GLuint vb = 0;
         this->BindIndexBuffer(ib);
         int32 maxUsedAttrib = 0;
-        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-            const glVertexAttr& attr = msh->glAttr(i);
+        for (int8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+            const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
             if (attr.vertexBuffer != vb) {
                 vb = attr.vertexAttr;
                 this->BindVertexBuffer(vb);
@@ -213,7 +226,7 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
         }
 #else
         if (glExt::HasExtension(glExt::VertexArrayObject)) {
-            GLuint vao = msh->glGetVertexArrayObject();
+            GLuint vao = msh->glGetVAO(vaoIndex);
             o_assert_dbg(0 != vao);
             this->BindVertexArrayObject(vao);
         }
@@ -222,18 +235,17 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
             const GLuint ib = msh->glGetIndexBuffer();
             this->BindIndexBuffer(ib);
             ORYOL_GL_CHECK_ERROR();
-            for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-                const glVertexAttr& attr = msh->glAttr(i);
-                if (attr.vertexBuffer != vb) {
-                    vb = attr.vertexBuffer;
-                    this->BindVertexBuffer(vb);
-                    ORYOL_GL_CHECK_ERROR();
-                }
+            for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+                const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
                 if (attr.enabled) {
+                    if (attr.vertexBuffer != vb) {
+                        vb = attr.vertexBuffer;
+                        this->BindVertexBuffer(vb);
+                    }
                     ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
                     ORYOL_GL_CHECK_ERROR();
                     glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                    ORYOL_GL_CHECK_ERROR();                    
+                    ORYOL_GL_CHECK_ERROR();
                     ::glEnableVertexAttribArray(attr.index);
                     ORYOL_GL_CHECK_ERROR();
                 }
@@ -603,11 +615,6 @@ glStateWrapper::setupJumpTable() {
 //------------------------------------------------------------------------------
 void
 glStateWrapper::InvalidateMeshState() {
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        glExt::BindVertexArray(0);
-    }
-    ::glBindBuffer(GL_ARRAY_BUFFER, 0);
-    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->curVertexArrayObject = 0;
     this->curVertexBuffer = 0;
     this->curIndexBuffer = 0;
@@ -628,6 +635,7 @@ glStateWrapper::BindVertexBuffer(GLuint vb) {
 void
 glStateWrapper::BindIndexBuffer(GLuint ib) {
     if (ib != this->curIndexBuffer) {
+        this->curVertexArrayObject = 0;
         this->curIndexBuffer = ib;
         ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
         ORYOL_GL_CHECK_ERROR();
@@ -639,6 +647,7 @@ void
 glStateWrapper::BindVertexArrayObject(GLuint vao) {
     if (vao != this->curVertexArrayObject) {
         this->curVertexBuffer = 0;
+        this->curIndexBuffer = 0;
         this->curVertexArrayObject = vao;
         glExt::BindVertexArray(vao);
         ORYOL_GL_CHECK_ERROR();

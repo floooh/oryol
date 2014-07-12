@@ -22,49 +22,141 @@ public:
     /// clear the object
     void clear();
     
-    /// set GL vertex buffer
-    void glSetVertexBuffer(GLuint vb);
+    /// set number of vertex buffer slots
+    void setNumVertexBufferSlots(uint8 num);
+    /// get number of vertex buffer slots
+    uint8 getNumVertexBufferSlots() const;
+    /// set active vertex buffer slot
+    void setActiveVertexBufferSlot(uint8 index);
+    /// get active vertex buffer slot
+    uint8 getActiveVertexBufferSlot() const;
+    /// set vertex buffer at slot index
+    void glSetVertexBuffer(uint8 index, GLuint vb);
     /// get GL vertex buffer
-    GLuint glGetVertexBuffer() const;
-    /// set optional GL instance data vertex buffer
-    void glSetInstanceBuffer(GLuint ivb);
-    /// get optional GL instance data vertex buffer (0 if not set)
-    GLuint glGetInstanceBuffer() const;
-    /// set GL index buffer
+    GLuint glGetVertexBuffer(uint8 index) const;
+    
+    /// set number of vertex array object slots
+    void setNumVAOSlots(uint8 num);
+    /// get number of vertex array object slots
+    uint8 getNumVAOSlots() const;
+    /// set active vertex array object slot
+    void setActiveVAOSlot(uint8 index);
+    /// get active vertex array object slot
+    uint8 getActiveVAOSlot() const;
+    /// set GL vertex array object at slot
+    void glSetVAO(uint8 index, GLuint vao);
+    /// get GL vertex array object at slot (can be 0
+    GLuint glGetVAO(uint8 index) const;
+
+    /// set optional GL index buffer
     void glSetIndexBuffer(GLuint ib);
-    /// get GL index buffer (can be 0)
+    /// get optional GL index buffer
     GLuint glGetIndexBuffer() const;
-    /// set GL vertex array object
-    void glSetVertexArrayObject(GLuint vao);
-    /// get GL vertex array object (0 if not supported)
-    GLuint glGetVertexArrayObject() const;
+    
     /// set glVertexAttr object at index
-    void glSetAttr(int32 index, const glVertexAttr& attr);
+    void glSetAttr(uint8 vaoSlotIndex, uint8 attrIndex, const glVertexAttr& attr);
     /// get glVertexAttr object at index (read/write)
-    glVertexAttr& glAttr(int32 index);
+    glVertexAttr& glAttr(uint8 vaoSlotIndex, uint8 attrIndex);
     /// get glVertexAttr object (read only)
-    const glVertexAttr& glAttr(int32 index) const;
+    const glVertexAttr& glAttr(uint8 vaoSlotIndex, uint8 attrIndex) const;
+
+    /// set the optional instance data mesh
+    void setInstanceMesh(const glMesh* msh);
+    /// get the optional instance data mesh
+    const glMesh* getInstanceMesh() const;
     
 protected:
-    GLuint glVertexBuffer;
-    GLuint glInstanceBuffer;
+    static const int32 MaxNumSlots = 4;
+    
+    uint8 numVertexBufferSlots;
+    uint8 activeVertexBufferSlot;
+    uint8 numVAOSlots;
+    uint8 activeVAOSlot;
+    GLuint glVertexBuffer[MaxNumSlots];
+    GLuint glVAO[MaxNumSlots];
     GLuint glIndexBuffer;
-    GLuint glVertexArrayObject;
-    class glVertexAttr glAttrs[VertexAttr::NumVertexAttrs];
+    const glMesh* instanceMesh;
+    class glVertexAttr glAttrs[MaxNumSlots][VertexAttr::NumVertexAttrs];
 };
 
 //------------------------------------------------------------------------------
-inline GLuint
-glMesh::glGetVertexBuffer() const {
-    return this->glVertexBuffer;
+inline void
+glMesh::setNumVertexBufferSlots(uint8 num) {
+    o_assert_dbg(num <= MaxNumSlots);
+    this->numVertexBufferSlots = num;
+}
+
+//------------------------------------------------------------------------------
+inline uint8
+glMesh::getNumVertexBufferSlots() const {
+    return this->numVertexBufferSlots;
+}
+
+//------------------------------------------------------------------------------
+inline void
+glMesh::setActiveVertexBufferSlot(uint8 index) {
+    o_assert_dbg(index < MaxNumSlots);
+    this->activeVertexBufferSlot = index;
+}
+
+//------------------------------------------------------------------------------
+inline uint8
+glMesh::getActiveVertexBufferSlot() const {
+    return this->activeVertexBufferSlot;
+}
+
+//------------------------------------------------------------------------------
+inline void
+glMesh::setNumVAOSlots(uint8 num) {
+    o_assert_dbg(num <= MaxNumSlots);
+    this->numVAOSlots = num;
+}
+
+//------------------------------------------------------------------------------
+inline uint8
+glMesh::getNumVAOSlots() const {
+    return this->numVAOSlots;
+}
+
+//------------------------------------------------------------------------------
+inline void
+glMesh::setActiveVAOSlot(uint8 index) {
+    // if this is the geometry mesh of an instancing mesh pair,
+    // then our vertex-array-object slot is always the
+    // active vertex-buffer slot of the instance data mesh
+    o_assert_dbg(nullptr == this->instanceMesh);
+    o_assert_dbg(index < MaxNumSlots);
+    this->activeVAOSlot = index;
+}
+
+//------------------------------------------------------------------------------
+inline uint8
+glMesh::getActiveVAOSlot() const {
+    // if this is the geometry mesh of an instancing mesh pair,
+    // then our vertex-array-object slot is always the
+    // active vertex-buffer slot of the instance data mesh
+    if (this->instanceMesh) {
+        return this->instanceMesh->getActiveVertexBufferSlot();
+    }
+    else {
+        return this->activeVAOSlot;
+    }
 }
 
 //------------------------------------------------------------------------------
 inline GLuint
-glMesh::glGetInstanceBuffer() const {
-    return this->glInstanceBuffer;
+glMesh::glGetVertexBuffer(uint8 index) const {
+    o_assert_dbg(index < MaxNumSlots);
+    return this->glVertexBuffer[index];
 }
 
+//------------------------------------------------------------------------------
+inline GLuint
+glMesh::glGetVAO(uint8 index) const {
+    o_assert_dbg(index < MaxNumSlots);
+    return this->glVAO[index];
+}
+    
 //------------------------------------------------------------------------------
 inline GLuint
 glMesh::glGetIndexBuffer() const {
@@ -72,23 +164,25 @@ glMesh::glGetIndexBuffer() const {
 }
 
 //------------------------------------------------------------------------------
-inline GLuint
-glMesh::glGetVertexArrayObject() const {
-    return this->glVertexArrayObject;
-}
-
-//------------------------------------------------------------------------------
 inline glVertexAttr&
-glMesh::glAttr(int32 index) {
-    o_assert_range_dbg(index, VertexAttr::NumVertexAttrs);
-    return this->glAttrs[index];
+glMesh::glAttr(uint8 vaoSlotIndex, uint8 attrIndex) {
+    o_assert_dbg(vaoSlotIndex < MaxNumSlots);
+    o_assert_dbg(attrIndex < VertexAttr::NumVertexAttrs);
+    return this->glAttrs[vaoSlotIndex][attrIndex];
 }
 
 //------------------------------------------------------------------------------
 inline const glVertexAttr&
-glMesh::glAttr(int32 index) const {
-    o_assert_range_dbg(index, VertexAttr::NumVertexAttrs);
-    return this->glAttrs[index];
+glMesh::glAttr(uint8 vaoSlotIndex, uint8 attrIndex) const {
+    o_assert_dbg(vaoSlotIndex < MaxNumSlots);
+    o_assert_dbg(attrIndex < VertexAttr::NumVertexAttrs);
+    return this->glAttrs[vaoSlotIndex][attrIndex];
+}
+
+//------------------------------------------------------------------------------
+const glMesh*
+glMesh::getInstanceMesh() const {
+    return this->instanceMesh;
 }
 
 } // namespace Oryol

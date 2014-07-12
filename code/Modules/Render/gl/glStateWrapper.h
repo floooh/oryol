@@ -123,6 +123,7 @@ private:
     void onViewPort(const State::Vector& input);
     
     bool isValid;
+    GLuint globalVAO;
 
     Function funcs[State::NumStateCodes];
     

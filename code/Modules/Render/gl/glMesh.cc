@@ -9,67 +9,83 @@ namespace Render {
     
 //------------------------------------------------------------------------------
 glMesh::glMesh() :
-glVertexBuffer(0),
-glInstanceBuffer(0),
+numVertexBufferSlots(1),
+activeVertexBufferSlot(0),
+numVAOSlots(1),
+activeVAOSlot(0),
 glIndexBuffer(0),
-glVertexArrayObject(0) {
-    // empty
+instanceMesh(nullptr) {
+    for (uint32 i = 0; i < MaxNumSlots; i++) {
+        this->glVertexBuffer[i] = 0;
+        this->glVAO[i] = 0;
+    }
 }
 
 //------------------------------------------------------------------------------
 glMesh::~glMesh() {
-    o_assert(0 == this->glVertexBuffer);
-    o_assert(0 == this->glInstanceBuffer);
-    o_assert(0 == this->glIndexBuffer);
-    o_assert(0 == this->glVertexArrayObject);
+    o_assert_dbg(0 == this->glIndexBuffer);
+    o_assert_dbg(nullptr == this->instanceMesh);
+    for (uint32 i = 0; i < MaxNumSlots; i++) {
+        o_assert_dbg(0 == this->glVertexBuffer[i]);
+        o_assert_dbg(0 == this->glVAO[i]);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 glMesh::clear() {
-    this->glVertexBuffer = 0;
-    this->glInstanceBuffer = 0;
+    this->numVertexBufferSlots = 1;
+    this->activeVertexBufferSlot = 0;
+    this->numVAOSlots = 1;
+    this->activeVAOSlot = 0;
+    for (uint32 i = 0; i < MaxNumSlots; i++) {
+        this->glVertexBuffer[i] = 0;
+        this->glVAO[i] = 0;
+    }
     this->glIndexBuffer = 0;
-    this->glVertexArrayObject = 0;
-    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        this->glAttrs[i] = glVertexAttr();
+    this->instanceMesh = nullptr;
+    for (int32 slotIndex = 0; slotIndex < MaxNumSlots; slotIndex++) {
+        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+            this->glAttrs[slotIndex][i] = glVertexAttr();
+        }
     }
     meshBase::clear();
 }
 
 //------------------------------------------------------------------------------
 void
-glMesh::glSetVertexBuffer(GLuint vb) {
-    o_assert(0 == this->glVertexBuffer);
-    this->glVertexBuffer = vb;
+glMesh::glSetVertexBuffer(uint8 index, GLuint vb) {
+    o_assert_dbg((index < MaxNumSlots) && (0 == this->glVertexBuffer[index]));
+    this->glVertexBuffer[index] = vb;
 }
 
 //------------------------------------------------------------------------------
 void
-glMesh::glSetInstanceBuffer(GLuint ivb) {
-    o_assert(0 == this->glInstanceBuffer);
-    this->glInstanceBuffer = ivb;
+glMesh::glSetVAO(uint8 index, GLuint vao) {
+    o_assert_dbg((index < MaxNumSlots) && (0 == this->glVAO[index]));
+    this->glVAO[index] = vao;
 }
 
 //------------------------------------------------------------------------------
 void
 glMesh::glSetIndexBuffer(GLuint ib) {
-    o_assert(0 == this->glIndexBuffer);
+    o_assert_dbg(0 == this->glIndexBuffer);
     this->glIndexBuffer = ib;
 }
 
 //------------------------------------------------------------------------------
 void
-glMesh::glSetVertexArrayObject(GLuint vao) {
-    o_assert(0 == this->glVertexArrayObject);
-    this->glVertexArrayObject = vao;
+glMesh::glSetAttr(uint8 vaoSlotIndex, uint8 attrIndex, const glVertexAttr& attr) {
+    o_assert_dbg(vaoSlotIndex < MaxNumSlots);
+    o_assert_dbg(attrIndex < VertexAttr::NumVertexAttrs);
+    this->glAttrs[vaoSlotIndex][attrIndex] = attr;
 }
 
 //------------------------------------------------------------------------------
 void
-glMesh::glSetAttr(int32 index, const glVertexAttr& attr) {
-    o_assert_range(index, VertexAttr::NumVertexAttrs);
-    this->glAttrs[index] = attr;
+glMesh::setInstanceMesh(const glMesh* msh) {
+    o_assert_dbg((nullptr != msh) && (nullptr == this->instanceMesh));
+    this->instanceMesh = msh;
 }
 
 } // namespace Render

@@ -321,7 +321,8 @@ void
 glRenderMgr::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
-    
+
+    ORYOL_GL_CHECK_ERROR();    
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
     if (indexType != IndexType::None) {
@@ -364,19 +365,24 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert(numBytes > 0);
     
     const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
-    const int32 vbByteSize = attrs.GetByteSize();
     const Usage::Code vbUsage = attrs.GetUsage();
-    o_assert_dbg((numBytes > 0) && (numBytes <= vbByteSize));
-    o_assert_dbg((vbUsage == Usage::DynamicStream) || (vbUsage == Usage::DynamicWrite));
-    this->stateWrapper->InvalidateMeshState();
+    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.GetByteSize()));
+    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic));
     
-    // only buffer orphaning is supported, the old buffer is 'unlinked',
-    // new buffer is created and filled
-    GLuint vb = msh->glGetVertexBuffer();
-    ::glBindBuffer(GL_ARRAY_BUFFER, vb);
-    ORYOL_GL_CHECK_ERROR();
-    ::glBufferData(GL_ARRAY_BUFFER, vbByteSize, nullptr, vbUsage);
-    ORYOL_GL_CHECK_ERROR();
+    uint8 slotIndex = msh->getActiveVertexBufferSlot();
+    if (Usage::Dynamic == vbUsage) {
+        // if usage if dynamic, rotate slot index to next dynamic vertex buffer
+        // to implement double/multi-buffering
+        slotIndex++;
+        if (slotIndex >= msh->getNumVertexBufferSlots()) {
+            slotIndex = 0;
+        }
+        msh->setActiveVertexBufferSlot(slotIndex);
+        msh->setActiveVAOSlot(slotIndex);
+    }
+    
+    GLuint vb = msh->glGetVertexBuffer(slotIndex);
+    this->stateWrapper->BindVertexBuffer(vb);
     ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
     ORYOL_GL_CHECK_ERROR();
 }

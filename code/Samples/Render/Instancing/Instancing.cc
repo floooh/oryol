@@ -63,7 +63,7 @@ InstancingApp::OnInit() {
     }
 
     // create dynamic instance data mesh
-    MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::DynamicStream);
+    MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::Dynamic);
     instanceMeshSetup.VertexLayout().Add(VertexAttr::Instance0, VertexFormat::Float4);
     this->instanceMesh = render->CreateResource(instanceMeshSetup);
     
