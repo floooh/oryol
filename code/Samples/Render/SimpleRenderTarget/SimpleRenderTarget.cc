@@ -61,7 +61,7 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.Build();
-    Id torus = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    Id torus = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -70,7 +70,7 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.5f, 72.0f, 40.0f);
     shapeBuilder.Build();
-    Id sphere = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
+    Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
 
     // create shaders
     Id offScreenProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
@@ -138,6 +138,7 @@ SimpleRenderTargetApp::OnRunning() {
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
         this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
         this->render->Draw(0);
+
         this->render->EndFrame();
     }
     
