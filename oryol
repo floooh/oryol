@@ -101,13 +101,16 @@ def loadMatchingConfigs(partialConfigName) :
 def testCMake() :
     try:
         out = subprocess.check_output(["cmake", "--version"])
+        # split into major and minor version number
         ver = out.split()[2].split('.')
-        if (int(ver[0]) >= 2) and (int(ver[1]) >= 8) :
+        if int(ver[0]) > 2 :
             print "cmake: found"
-            return True
-        else :
-            error("cmake must be at least version 2.8 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
-
+            return
+        elif int(ver[0]) == 2 :
+            if int(ver[1] >= 8) :
+                print "cmake: found"
+                return
+        error("cmake must be at least version 2.8 (found: '{}.{}.{}')".format(ver[0], ver[1], ver[2]))
     except OSError:
         error("cmake NOT FOUND (at least cmake 2.8 required)")
 
