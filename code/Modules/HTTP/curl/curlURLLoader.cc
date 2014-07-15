@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "curlURLLoader.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 #include "curl/curl.h"
 
 #if LIBCURL_VERSION_NUM != 0x072400

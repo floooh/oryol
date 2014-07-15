@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "winURLLoader.h"
 #include "Core/String/StringConverter.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
 #include <Windows.h>

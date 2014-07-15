@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "emscURLLoader.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 #include <emscripten/emscripten.h>
 
 namespace Oryol {

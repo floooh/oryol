@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "pnaclURLLoader.h"
 #include "Core/pnacl/pnaclInstance.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 #include <ppapi/cpp/module.h>
 #include <ppapi/cpp/completion_callback.h>
 #include <ppapi/cpp/url_request_info.h>
