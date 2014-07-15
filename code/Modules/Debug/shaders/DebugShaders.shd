@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-//  text vertex shader
+//  text vertex shader 
 //
 @vs vsText
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display

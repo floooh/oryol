@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "ioLane.h"
 #include "Messaging/Dispatcher.h"
-#include "IO/schemeRegistry.h"
+#include "IO/Core/schemeRegistry.h"
 
 namespace Oryol {
 namespace IO {

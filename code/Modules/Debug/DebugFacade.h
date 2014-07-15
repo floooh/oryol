@@ -6,7 +6,7 @@
 */
 #include "Core/Config.h"
 #include "Core/Macros.h"
-#include "Debug/debugTextRenderer.h"
+#include "Debug/text/debugTextRenderer.h"
 #include "glm/fwd.hpp"
 
 namespace Oryol {

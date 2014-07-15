@@ -6,7 +6,7 @@
 */
 #include "Core/RefCounted.h"
 #include "Render/Core/mesh.h"
-#include "IO/Stream.h"
+#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace Render {

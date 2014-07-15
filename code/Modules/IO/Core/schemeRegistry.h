@@ -10,7 +10,7 @@
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"
 #include "Core/Creator.h"
-#include "IO/FileSystem.h"
+#include "IO/FS/FileSystem.h"
 #include <functional>
 #include <type_traits>
 

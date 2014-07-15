@@ -7,12 +7,12 @@
 #include "Messaging/Message.h"
 #include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"
-#include "IO/URL.h"
+#include "IO/Core/URL.h"
 #include "HTTP/HTTPMethod.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
-#include "IO/Stream.h"
-#include "IO/IOStatus.h"
+#include "IO/Stream/Stream.h"
+#include "IO/Core/IOStatus.h"
 
 namespace Oryol {
 namespace HTTP {

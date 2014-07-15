@@ -8,7 +8,7 @@
 */
 #include "Core/Macros.h"
 #include "Render/Core/displayMgr.h"
-#include "IO/Stream.h"
+#include "IO/Stream/Stream.h"
 #include "Resource/Id.h"
 #include "Resource/State.h"
 #include "Resource/Locator.h"

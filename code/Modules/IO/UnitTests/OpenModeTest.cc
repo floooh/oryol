@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/OpenMode.h"
+#include "IO/Core/OpenMode.h"
 #include "Core/String/String.h"
 
 using namespace Oryol::Core;

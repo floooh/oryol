@@ -55,7 +55,7 @@
 #include "Render/Core/PrimitiveGroup.h"
 #include "Render/Setup/MeshSetup.h"
 #include "Render/Util/VertexWriter.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
 namespace Render {

@@ -5,7 +5,7 @@
     @brief a slot in a Resource::Pool
 */
 #include "Resource/Id.h"
-#include "IO/Stream.h"
+#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace Resource {

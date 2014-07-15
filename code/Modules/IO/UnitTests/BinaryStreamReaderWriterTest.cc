@@ -4,9 +4,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/BinaryStreamWriter.h"
-#include "IO/BinaryStreamReader.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/BinaryStreamWriter.h"
+#include "IO/Stream/BinaryStreamReader.h"
+#include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
 using namespace Oryol::IO;

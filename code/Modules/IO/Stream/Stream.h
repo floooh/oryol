@@ -9,9 +9,9 @@
     they maintain a separate read- and write-cursor position.
 */
 #include "Core/RefCounted.h"
-#include "IO/URL.h"
-#include "IO/OpenMode.h"
-#include "IO/ContentType.h"
+#include "IO/Core/URL.h"
+#include "IO/Core/OpenMode.h"
+#include "IO/Core/ContentType.h"
 
 namespace Oryol {
 namespace IO {

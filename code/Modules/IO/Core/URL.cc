@@ -5,7 +5,7 @@
 #include "URL.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Log.h"
-#include "IO/assignRegistry.h"
+#include "IO/Core/assignRegistry.h"
 
 namespace Oryol {
 namespace IO {

@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/FileSystem.h"
-#include "IO/schemeRegistry.h"
+#include "IO/FS/FileSystem.h"
+#include "IO/Core/schemeRegistry.h"
 
 using namespace Oryol;
 using namespace Oryol::Core;

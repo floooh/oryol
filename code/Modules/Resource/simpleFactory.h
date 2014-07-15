@@ -5,7 +5,7 @@
     @brief base class for factories that don't support loaders
     @see loaderFactory
 */
-#include "IO/Stream.h"
+#include "IO/Stream/Stream.h"
 #include "Resource/State.h"
 
 namespace Oryol {

@@ -8,7 +8,7 @@
 */
 #include "Core/Config.h"
 #include "Messaging/Port.h"
-#include "IO/ioLane.h"
+#include "IO/FS/ioLane.h"
 
 namespace Oryol {
 namespace IO {

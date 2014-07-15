@@ -2,7 +2,7 @@
 #   oryol IO module
 #-------------------------------------------------------------------------------
 oryol_begin_module(IO)
-oryol_sources(.)
+oryol_sources(. Core FS Stream)
 oryol_deps(Messaging Core)
 oryol_end_module()
 

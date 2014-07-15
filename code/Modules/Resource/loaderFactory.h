@@ -31,7 +31,7 @@
 */
 #include "Core/Containers/Array.h"
 #include "Core/Log.h"
-#include "IO/Stream.h"
+#include "IO/Stream/Stream.h"
 #include "Resource/State.h"
 
 namespace Oryol {

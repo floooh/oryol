@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "osxURLLoader.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 #include <Foundation/Foundation.h>
 
 namespace Oryol {

@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/MemoryStream.h"
+#include "IO/Stream/MemoryStream.h"
 
 #include <cstring>
 

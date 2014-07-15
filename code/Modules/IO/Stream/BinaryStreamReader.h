@@ -9,8 +9,8 @@
     low-level types are already handled by the default Serializer
     implementation).
 */
-#include "IO/StreamReader.h"
-#include "IO/Stream.h"
+#include "IO/Stream/StreamReader.h"
+#include "IO/Stream/Stream.h"
 #include "Messaging/Serializer.h"
 
 namespace Oryol {

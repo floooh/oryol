@@ -10,9 +10,9 @@
 #include "Core/Macros.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
-#include "IO/schemeRegistry.h"
+#include "IO/Core/schemeRegistry.h"
 #include "IO/IOProtocol.h"
-#include "IO/ioRequestRouter.h"
+#include "IO/FS/ioRequestRouter.h"
 #include <thread>
 
 namespace Oryol {

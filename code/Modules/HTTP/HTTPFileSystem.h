@@ -7,7 +7,7 @@
     
     @todo: HTTPFileSystem description
 */
-#include "IO/FileSystem.h"
+#include "IO/FS/FileSystem.h"
 #include "HTTP/HTTPProtocol.h"
 #include "HTTP/HTTPClient.h"
 #include "Core/String/StringBuilder.h"

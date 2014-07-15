@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOFacade.h"
-#include "IO/assignRegistry.h"
+#include "IO/Core/assignRegistry.h"
 #include "Core/CoreFacade.h"
 
 namespace Oryol {

@@ -8,9 +8,9 @@
 #include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"
 #include "Core/Ptr.h"
-#include "IO/URL.h"
-#include "IO/IOStatus.h"
-#include "IO/MemoryStream.h"
+#include "IO/Core/URL.h"
+#include "IO/Core/IOStatus.h"
+#include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
 namespace IO {

@@ -4,8 +4,8 @@
 #include "Pre.h"
 #include "debugTextRenderer.h"
 #include "Render/RenderFacade.h"
-#include "IO/MemoryStream.h"
-#include "DebugShaders.h"
+#include "IO/Stream/MemoryStream.h"
+#include "Debug/shaders/DebugShaders.h"
 
 namespace Oryol {
 namespace Debug {

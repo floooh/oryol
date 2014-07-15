@@ -10,7 +10,7 @@
 #include "Core/Containers/Map.h"
 #include "Core/String/StringAtom.h"
 #include "IO/IOProtocol.h"
-#include "IO/FileSystem.h"
+#include "IO/FS/FileSystem.h"
 
 namespace Oryol {
 namespace IO {
