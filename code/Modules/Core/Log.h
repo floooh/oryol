@@ -12,6 +12,7 @@
 */
 #include <cstdarg>
 #include "Core/Types.h"
+#include "Core/Config.h"
 
 namespace Oryol {
 namespace Core {

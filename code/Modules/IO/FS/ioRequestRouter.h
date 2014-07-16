@@ -6,7 +6,7 @@
     
     @todo: ioRequestRouter description
 */
-#include "Core/Config.h"
+#include "IO/Core/IOConfig.h"
 #include "Messaging/Port.h"
 #include "IO/FS/ioLane.h"
 

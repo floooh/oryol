@@ -8,7 +8,7 @@
     memory buffer. The MemoryStream object will keep its contents until
     destroyed or the DiscardContent method is called. 
 */
-#include "IO/Core/Config.h"
+#include "IO/Core/IOConfig.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {
