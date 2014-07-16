@@ -7,7 +7,7 @@
     @todo: IOFacade description
 */
 #include "Core/RefCounted.h"
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/schemeRegistry.h"

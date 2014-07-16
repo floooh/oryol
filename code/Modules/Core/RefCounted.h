@@ -12,7 +12,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Ptr.h"
-#include "Core/Macros.h"
+#include "Core/Class.h"
 #include "Core/Memory/poolAllocator.h"
 
 namespace Oryol {

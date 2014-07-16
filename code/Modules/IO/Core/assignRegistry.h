@@ -7,6 +7,7 @@
     path aliases (google for AmigaOS assign).
 */
 #include "Core/RefCounted.h"
+#include "Core/Singleton.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
 #include "Core/Threading/RWLock.h"

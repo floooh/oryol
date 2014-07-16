@@ -6,7 +6,7 @@
     
     @todo: describe RenderFacade
 */
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Render/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
 #include "Resource/Id.h"

@@ -7,7 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/String/stringAtomBuffer.h"
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Core/Containers/HashSet.h"
 
 namespace Oryol {

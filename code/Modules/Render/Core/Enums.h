@@ -5,7 +5,7 @@
     @brief Render module enums
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
+#include "Core/Assert.h"
 #if ORYOL_OPENGL
 #include "Render/gl/glEnums.h"
 #endif

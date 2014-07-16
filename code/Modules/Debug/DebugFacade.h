@@ -5,7 +5,7 @@
     @brief various runtime debugging and debug visualization services
 */
 #include "Core/Config.h"
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Debug/text/debugTextRenderer.h"
 #include "glm/fwd.hpp"
 

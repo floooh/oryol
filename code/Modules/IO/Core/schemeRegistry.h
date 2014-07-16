@@ -5,7 +5,7 @@
     @brief: private: associates URL schemes with FileSystem implementation
 */
 #include "Core/RefCounted.h"
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"

@@ -7,7 +7,7 @@
     @todo: CoreFacade description
 */
 #include "Core/RefCounted.h"
-#include "Core/Macros.h"
+#include "Core/Singleton.h"
 #include "Core/RunLoop.h"
 #include <thread>
 

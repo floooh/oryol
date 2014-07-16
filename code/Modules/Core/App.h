@@ -32,7 +32,6 @@
     ```
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 #include "Core/Args.h"
 #include "Core/AppState.h"
 #include "Core/String/WideString.h"
