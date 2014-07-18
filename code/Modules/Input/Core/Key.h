@@ -10,6 +10,7 @@ namespace Oryol {
 namespace Input {
     
 class Key {
+public:
     /// key code enum, these are ripped from the GLFW header
     enum Code {
         InvalidKey = 0,
