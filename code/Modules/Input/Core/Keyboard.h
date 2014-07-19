@@ -6,6 +6,7 @@
 */
 #include "Input/Core/Key.h"
 #include "Core/Assert.h"
+#include <bitset>
 
 namespace Oryol {
 namespace Input {
@@ -39,13 +40,9 @@ public:
     void reset();
     
 private:
-    enum {
-        keyDown = (1<<0),
-        keyUp = (1<<1),
-        keyPressed = (1<<2),
-    };
-    
-    uint8 keyState[Key::NumKeys];
+    std::bitset<Key::NumKeys> down;
+    std::bitset<Key::NumKeys> up;
+    std::bitset<Key::NumKeys> pressed;
     static const int32 MaxNumChars = 64;
     int32 charIndex;
     wchar_t chars[MaxNumChars + 1];
@@ -62,21 +59,21 @@ Keyboard::Attached() const {
 inline bool
 Keyboard::Pressed(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
-    return 0 != (this->keyState[key] & keyPressed);
+    return this->pressed[key];
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Keyboard::Down(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
-    return 0 != (this->keyState[key] & keyDown);
+    return this->down[key];
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Keyboard::Up(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
-    return 0 != (this->keyState[key] & keyUp);
+    return this->up[key];
 }
 
 //------------------------------------------------------------------------------

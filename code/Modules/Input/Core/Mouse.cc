@@ -10,7 +10,9 @@ namespace Input {
 //------------------------------------------------------------------------------
 Mouse::Mouse() :
 pos(0.0f, 0.0f),
-attached(false) {
+attached(false),
+wheelForward(false),
+wheelBackward(false) {
     for (int32 i = 0; i < Button::NumButtons; i++) {
         this->buttonState[i] = 0;
     }
@@ -24,16 +26,16 @@ Mouse::setAttached(bool b) {
 
 //------------------------------------------------------------------------------
 void
-Mouse::onButtonDown(Button::Code btn) {
-    o_assert_range_dbg(btn, Button::NumButtons);
+Mouse::onButtonDown(Button btn) {
+    o_assert_range_dbg(btn, NumButtons);
     this->buttonState[btn] |= (btnDown | btnPressed);
 }
 
 //------------------------------------------------------------------------------
 void
-Mouse::onButtonUp(Button::Code btn) {
-    o_assert_range_dbg(btn, Button::NumButtons);
-    this->buttonState[btn] &= ~(btnDown | btnPressed);
+Mouse::onButtonUp(Button btn) {
+    o_assert_range_dbg(btn, NumButtons);
+    this->buttonState[btn] &= ~btnPressed;
     this->buttonState[btn] |= btnUp;
 }
 
@@ -45,10 +47,24 @@ Mouse::onPos(const glm::vec2& p) {
 
 //------------------------------------------------------------------------------
 void
+Mouse::onWheelForward() {
+    this->wheelForward = true;
+}
+
+//------------------------------------------------------------------------------
+void
+Mouse::onWheelBackward() {
+    this->wheelBackward = true;
+}
+
+//------------------------------------------------------------------------------
+void
 Mouse::reset() {
-    for (int32 i = 0; i < Button::NumButtons; i++) {
+    for (int32 i = 0; i < NumButtons; i++) {
         this->buttonState[i] &= ~(btnDown | btnUp);
     }
+    this->wheelForward = false;
+    this->wheelBackward = false;
 }
 
 } // namespace Input

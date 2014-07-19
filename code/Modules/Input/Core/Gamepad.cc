@@ -1,61 +1,56 @@
 //------------------------------------------------------------------------------
-//  Keyboard.cc
+//  Gamepad.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Keyboard.h"
-#include "Core/Memory/Memory.h"
+#include "Gamepad.h"
 
 namespace Oryol {
 namespace Input {
-
-using namespace Core;
     
 //------------------------------------------------------------------------------
-Keyboard::Keyboard() :
-charIndex(0),
+Gamepad::Gamepad() :
+down(0),
+up(0),
+pressed(0),
 attached(false) {
-    Memory::Clear(&this->chars, sizeof(this->chars));
+    // empty
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::setAttached(bool b) {
-    this->attached = b;
+Gamepad::onButtonDown(Element btn) {
+    o_assert_range_dbg(btn, NumElements);
+    this->down |= (1<<btn);
+    this->pressed |= (1<<btn);
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::onKeyDown(Key::Code key) {
-    o_assert_range_dbg(key, Key::NumKeys);
-    this->down[key] = true;
-    this->pressed[key] = true;
+Gamepad::onButtonUp(Element btn) {
+    o_assert_range_dbg(btn, NumElements);
+    this->up |= (1<<btn);
+    this->pressed &= ~(1<<btn);
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::onKeyUp(Key::Code key) {
-    o_assert_range_dbg(key, Key::NumKeys);
-    this->up[key] = true;
-    this->pressed[key] = false;
+Gamepad::onTriggerValue(Element trigger, float32 value) {
+    o_assert_range_dbg(trigger, NumElements);
+    this->values[trigger].x = value;
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::onChar(wchar_t c) {
-    if (this->charIndex < MaxNumChars) {
-        this->chars[charIndex++] = c;
-        this->chars[charIndex] = 0;
-    }
+Gamepad::onStickPos(Element stick, const glm::vec2& pos) {
+    o_assert_range_dbg(stick, NumElements);
+    this->values[stick] = pos;
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::reset() {
-    this->charIndex = 0;
-    this->chars[0] = 0;
-    this->down.reset();
-    this->up.reset();
-    this->pressed.reset();
+Gamepad::reset() {
+    this->down = 0;
+    this->up = 0;
 }
 
 } // namespace Input
