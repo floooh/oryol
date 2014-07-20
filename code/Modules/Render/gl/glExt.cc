@@ -42,10 +42,6 @@ glExt::Setup() {
     extensions[VertexArrayObject] = true;
     extensions[TextureCompressionDXT] = true;
     extensions[InstancedArrays] = true;
-    #elif ORYOL_PNACL
-    // PNaCl: vertex array objects isn't actually supported on NaCl even though the
-    // extension is listed in the returned extensions string
-    extensions[VertexArrayObject] = false;
     #else
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     #endif
@@ -100,11 +96,7 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_EMSCRIPTEN
         ::glGenVertexArrays(n, arrays);
     #elif ORYOL_OPENGLES2
-        #if !ORYOL_PNACL
         ::glGenVertexArraysOES(n, arrays);
-        #else
-        o_error("glGenVertexArrays not implemented in NaCl\n");
-        #endif
     #elif ORYOL_OPENGL
         ::glGenVertexArrays(n, arrays);
     #else
@@ -118,11 +110,7 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
     #if ORYOL_EMSCRIPTEN
         ::glDeleteVertexArrays(n, arrays);
     #elif ORYOL_OPENGLES2
-        #if !ORYOL_PNACL
         ::glDeleteVertexArraysOES(n, arrays);
-        #else
-        o_error("glDeleteVertexArrays not implemented in NaCl\n");
-        #endif        
     #elif ORYOL_OPENGL
         ::glDeleteVertexArrays(n, arrays);
     #else
@@ -136,11 +124,7 @@ glExt::BindVertexArray(GLuint array) {
     #if ORYOL_EMSCRIPTEN
         ::glBindVertexArray(array);
     #elif ORYOL_OPENGLES2
-        #if !ORYOL_PNACL
         ::glBindVertexArrayOES(array);
-        #else
-        o_error("glBindVertexArray not implemented in NaCl!\n");
-        #endif
     #elif ORYOL_OPENGL
         ::glBindVertexArray(array);
     #else
