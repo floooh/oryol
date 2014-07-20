@@ -140,6 +140,7 @@ DrawCallPerfApp::OnRunning() {
         
         // render block
         TimePoint drawStart = Clock::Now();
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);

@@ -43,6 +43,7 @@ FullscreenQuadApp::OnRunning() {
     // render one frame
     this->time += 1.0f / 60.0f;
     if (this->render->BeginFrame()) {
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyVariable(Shaders::Main::Time, this->time);
         this->render->Draw(0);

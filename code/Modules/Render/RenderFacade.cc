@@ -116,30 +116,20 @@ RenderFacade::QueryResourceState(const Id& resId) {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::ApplyRenderTarget(const Id& resId) {
+RenderFacade::ApplyDefaultRenderTarget() {
     o_assert_dbg(this->valid);
-    int32 width, height;
-    if (!resId.IsValid()) {
-        // apply default framebuffer
-        this->renderManager.ApplyRenderTarget(nullptr);
-        
-        // update viewport
-        const DisplayAttrs& attrs = this->displayManager.GetDisplayAttrs();
-        width = attrs.GetFramebufferWidth();
-        height = attrs.GetFramebufferHeight();
-    }
-    else {
-        texture* renderTarget = this->resourceManager.LookupTexture(resId);
-        o_assert_dbg(nullptr != renderTarget);
-        this->renderManager.ApplyRenderTarget(renderTarget);
-        
-        // update viewport
-        const TextureAttrs& attrs = renderTarget->GetTextureAttrs();
-        width = attrs.GetWidth();
-        height = attrs.GetHeight();
-    }
-    // update viewport to cover full render target
-    this->stateWrapper.ApplyState(State::ViewPort, 0, 0, width, height);
+    this->renderManager.ApplyRenderTarget(nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyOffscreenRenderTarget(const Id& resId) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(resId.IsValid());
+
+    texture* renderTarget = this->resourceManager.LookupTexture(resId);
+    o_assert_dbg(nullptr != renderTarget);
+    this->renderManager.ApplyRenderTarget(renderTarget);
 }
 
 //------------------------------------------------------------------------------
@@ -154,6 +144,7 @@ bool
 RenderFacade::BeginFrame() {
     this->resourceManager.Update();
     this->displayManager.ProcessSystemEvents();
+    this->renderManager.BeginFrame();
     
     /// @todo: check and return whether rendering is possible / necessary
     return true;
@@ -162,6 +153,7 @@ RenderFacade::BeginFrame() {
 //------------------------------------------------------------------------------
 void
 RenderFacade::EndFrame() {
+    this->renderManager.EndFrame();
     this->displayManager.Present();
 }
 

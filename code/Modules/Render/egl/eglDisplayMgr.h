@@ -7,6 +7,9 @@
 #include "Render/base/displayMgrBase.h"
 #include "Render/gl/gl_decl.h"
 #include <EGL/egl.h>
+#if ORYOL_EMSCRIPTEN
+#include <emscripten/html5.h>
+#endif
 
 namespace Oryol {
 namespace Render {
@@ -28,7 +31,15 @@ public:
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
     
-private:
+private:    
+    #if ORYOL_EMSCRIPTEN
+    /// emscripten callback for switching fullscreen mode
+    static EM_BOOL emscFullscreenChanged(int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData);
+
+    int storedCanvasWidth;
+    int storedCanvasHeight;
+    #endif
+
     EGLDisplay eglDisplay;
     EGLConfig eglConfig;
     EGLSurface eglSurface;

@@ -5,6 +5,7 @@
 #include "Render/gl/gl_impl.h"
 #include "Render/gl/glInfo.h"
 #include "Render/gl/glExt.h"
+#include "Render/RenderProtocol.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #if ORYOL_MACOS
@@ -15,16 +16,13 @@
 namespace Oryol {
 namespace Render {
     
-//------------------------------------------------------------------------------
-void
-glfwDisplayMgr::glfwErrorCallback(int error, const char* desc) {
-    Core::Log::Error("GLFW error: '%d', '%s'\n", error, desc);
-}
-
+glfwDisplayMgr* glfwDisplayMgr::self = nullptr;
+    
 //------------------------------------------------------------------------------
 glfwDisplayMgr::glfwDisplayMgr() :
 glfwWindow(nullptr) {
-    // empty
+    o_assert(nullptr == self);
+    self = this;
 }
 
 //------------------------------------------------------------------------------
@@ -32,6 +30,8 @@ glfwDisplayMgr::~glfwDisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
+    o_assert(nullptr != self);
+    self = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -101,6 +101,9 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     this->displayAttrs.SetWindowPosY(posY);
     this->displayAttrs.SetWindowWidth(width);
     this->displayAttrs.SetWindowHeight(height);
+    
+    // set framebuffer size changed callback
+    glfwSetFramebufferSizeCallback(this->glfwWindow, glwfFramebufferSizeChanged);
 }
 
 //------------------------------------------------------------------------------
@@ -146,6 +149,28 @@ void
 glfwDisplayMgr::glBindDefaultFramebuffer() {
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glfwDisplayMgr::glfwErrorCallback(int error, const char* desc) {
+    Core::Log::Error("GLFW error: '%d', '%s'\n", error, desc);
+}
+
+//------------------------------------------------------------------------------
+void
+glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height) {
+
+    // update display attributes
+    self->displayAttrs.SetFramebufferWidth(width);
+    self->displayAttrs.SetFramebufferHeight(height);
+    int winWidth, winHeight;
+    glfwGetWindowSize(self->glfwWindow, &winWidth, &winHeight);
+    self->displayAttrs.SetWindowWidth(winWidth);
+    self->displayAttrs.SetWindowHeight(winHeight);
+    
+    // notify event handlers
+    self->notifyEventHandlers(RenderProtocol::DisplayModified::Create());
 }
 
 } // namespace Render

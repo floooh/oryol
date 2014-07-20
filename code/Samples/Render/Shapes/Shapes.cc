@@ -92,6 +92,7 @@ ShapeApp::OnRunning() {
         this->angleX += 0.02f;
 
         // apply state and render
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);

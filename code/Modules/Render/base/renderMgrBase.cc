@@ -6,6 +6,7 @@
 #include "Render/Core/displayMgr.h"
 #include "Render/Core/stateWrapper.h"
 #include "Render/Core/drawState.h"
+#include "Render/Core/texture.h"
 
 namespace Oryol {
 namespace Render {
@@ -13,6 +14,8 @@ namespace Render {
 //------------------------------------------------------------------------------
 renderMgrBase::renderMgrBase() :
 isValid(false),
+renderTargetValid(false),
+inFrame(false),
 displayManager(nullptr),
 stateWrapper(nullptr),
 curRenderTarget(nullptr),
@@ -53,15 +56,54 @@ renderMgrBase::Discard() {
 
 //------------------------------------------------------------------------------
 void
+renderMgrBase::BeginFrame() {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(!this->inFrame);
+    
+    this->inFrame = true;
+    this->renderTargetValid = false;
+}
+
+//------------------------------------------------------------------------------
+void
+renderMgrBase::EndFrame() {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->inFrame);
+    
+    this->inFrame = false;
+    this->renderTargetValid = false;
+}
+
+//------------------------------------------------------------------------------
+void
 renderMgrBase::ApplyRenderTarget(texture* rt) {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(nullptr != this->displayManager);
+    o_assert_dbg(nullptr != this->stateWrapper);
+    
     this->curRenderTarget = rt;
+    this->renderTargetValid = true;
+    
+    // also update view port to cover full render target
+    int32 width, height;
+    if (nullptr == rt) {
+        const DisplayAttrs& attrs = this->displayManager->GetDisplayAttrs();
+        width = attrs.GetFramebufferWidth();
+        height = attrs.GetFramebufferHeight();
+    }
+    else {
+        const TextureAttrs& attrs = rt->GetTextureAttrs();
+        width = attrs.GetWidth();
+        height = attrs.GetHeight();
+    }
+    this->stateWrapper->ApplyState(State::ViewPort, 0, 0, width, height);
 }
     
 //------------------------------------------------------------------------------
 void
 renderMgrBase::ApplyDrawState(drawState* ds) {
     o_assert_dbg(this->isValid);
+    
     this->curDrawState = ds;
     this->curProgramBundle = ds->getProgramBundle();
     this->curMesh = ds->getMesh();

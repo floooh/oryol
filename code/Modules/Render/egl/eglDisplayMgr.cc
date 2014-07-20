@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "eglDisplayMgr.h"
+#include "Render/RenderProtocol.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
@@ -26,6 +27,10 @@ using namespace Core;
     
 //------------------------------------------------------------------------------
 eglDisplayMgr::eglDisplayMgr() :
+#if ORYOL_EMSCRIPTEN
+storedCanvasWidth(0),
+storedCanvasHeight(0),
+#endif
 eglDisplay(nullptr),
 eglConfig(nullptr),
 eglSurface(nullptr),
@@ -142,6 +147,12 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     this->displayAttrs.SetFramebufferHeight(actualHeight);
     this->displayAttrs.SetWindowWidth(actualWidth);
     this->displayAttrs.SetWindowHeight(actualHeight);
+
+    // register display-changed callback for emscripten    
+    #if ORYOL_EMSCRIPTEN
+    EMSCRIPTEN_RESULT res = emscripten_set_fullscreenchange_callback(0, this, 1, emscFullscreenChanged);
+    o_assert(EMSCRIPTEN_RESULT_SUCCESS == res);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -175,6 +186,48 @@ eglDisplayMgr::glBindDefaultFramebuffer() {
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ORYOL_GL_CHECK_ERROR();
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_EMSCRIPTEN
+EM_BOOL
+eglDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData) {
+    eglDisplayMgr* self = (eglDisplayMgr*) userData;
+    o_assert(nullptr != self);
+
+    // NOTE: there's currently a bug that the reported element size is wrong, so use 
+    // the fullscreen size instead
+    Log::Info("emscFullscreenChanged: isFullscreen=%s, fullscreenEnabled=%s, ew=%d, eh=%d, sw=%d, sh=%d\n",
+        e->isFullscreen ? "yes":"no", 
+        e->fullscreenEnabled ? "yes":"no", 
+        e->elementWidth, 
+        e->elementHeight,
+        e->screenWidth,
+        e->screenHeight);
+
+    int newWidth, newHeight;
+    if (e->isFullscreen) {
+        // switch to fullscreen
+        newWidth = e->screenWidth;
+        newHeight = e->screenHeight;
+        self->storedCanvasWidth = self->displayAttrs.GetFramebufferWidth();
+        self->storedCanvasHeight = self->displayAttrs.GetFramebufferHeight();
+    }
+    else {
+        // switch back from fullscreen
+        newWidth = self->storedCanvasWidth;
+        newHeight = self->storedCanvasHeight;
+    }
+    emscripten_set_canvas_size(newWidth, newHeight);
+    self->displayAttrs.SetFramebufferWidth(newWidth);
+    self->displayAttrs.SetFramebufferHeight(newHeight);
+    Log::Info("emscFullscreenChanged: new canvas size (w=%d, h=%d)\n", newWidth, newHeight);
+
+    // notify event handlers
+    self->notifyEventHandlers(RenderProtocol::DisplayModified::Create());
+
+    return true;
+}
+#endif
 
 } // namespace Render
 } // namespace Oryol

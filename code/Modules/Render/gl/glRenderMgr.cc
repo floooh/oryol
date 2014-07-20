@@ -41,15 +41,17 @@ glRenderMgr::Supports(Feature::Code feat) const {
 //------------------------------------------------------------------------------
 void
 glRenderMgr::ApplyRenderTarget(texture* rt) {
+    if (rt != this->curRenderTarget) {
+        if (nullptr == rt) {
+            // bind default render target
+            this->displayManager->glBindDefaultFramebuffer();
+        }
+        else {
+            ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glGetFramebuffer());
+            ORYOL_GL_CHECK_ERROR();
+        }
+    }
     renderMgrBase::ApplyRenderTarget(rt);
-    if (nullptr == rt) {
-        // bind default render target
-        this->displayManager->glBindDefaultFramebuffer();
-    }
-    else {
-        ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glGetFramebuffer());
-        ORYOL_GL_CHECK_ERROR();
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -262,6 +264,7 @@ glRenderMgr::ApplyVariableArray(int32 index, const glm::mat2* values, int32 numV
 void
 glRenderMgr::Clear(bool color, bool depth, bool stencil) {
     o_assert_dbg(this->isValid);
+    o_assert2_dbg(this->renderTargetValid, "No render target set!");
 
     GLbitfield clearMask = 0;
     if (color) {
@@ -282,6 +285,7 @@ void
 glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
+    o_assert2_dbg(this->renderTargetValid, "No render target set!");
     ORYOL_GL_CHECK_ERROR();
 
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
@@ -305,6 +309,7 @@ void
 glRenderMgr::Draw(int32 primGroupIndex) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
+    o_assert2_dbg(this->renderTargetValid, "No render target set!");
     
     if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
         // this may happen if trying to render a placeholder which doesn't
@@ -321,6 +326,7 @@ void
 glRenderMgr::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
+    o_assert2_dbg(this->renderTargetValid, "No render target set!");
 
     ORYOL_GL_CHECK_ERROR();    
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
@@ -346,6 +352,7 @@ void
 glRenderMgr::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nullptr != this->curMesh);
+    o_assert2_dbg(this->renderTargetValid, "No render target set!");    
     
     if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
         // this may happen if trying to render a placeholder which doesn't

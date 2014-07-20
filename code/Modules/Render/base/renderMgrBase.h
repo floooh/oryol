@@ -31,6 +31,10 @@ public:
     /// return true if the renderer has been setup
     bool IsValid() const;
     
+    /// called at begin of frame
+    void BeginFrame();
+    /// called at end of frame
+    void EndFrame();
     /// apply the current render target (can be 0)
     void ApplyRenderTarget(texture* rt);
     /// apply the current draw state
@@ -38,6 +42,8 @@ public:
     
 protected:
     bool isValid;
+    bool renderTargetValid;
+    bool inFrame;
     displayMgr* displayManager;
     class stateWrapper* stateWrapper;
     texture* curRenderTarget;

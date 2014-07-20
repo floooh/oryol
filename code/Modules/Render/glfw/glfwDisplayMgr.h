@@ -40,7 +40,10 @@ public:
 private:
     /// error callback for GLFW
     static void glfwErrorCallback(int error, const char* desc);
+    /// framebuffer size changed callback for GLFW
+    static void glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height);
 
+    static glfwDisplayMgr* self;
     GLFWwindow* glfwWindow;
 };
     

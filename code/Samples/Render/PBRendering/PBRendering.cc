@@ -96,6 +96,7 @@ PBRenderingApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
     
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.3f, 0.3f, 0.3f, 0.0f);

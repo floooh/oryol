@@ -114,6 +114,7 @@ DDSCubeMapApp::OnRunning() {
         this->angleX += 0.01f;
         
         // apply state and draw
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyState(Render::State::ClearDepth, 1.0f);
         this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);

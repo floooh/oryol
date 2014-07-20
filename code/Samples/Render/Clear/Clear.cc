@@ -35,6 +35,7 @@ AppState::Code
 ClearApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyState(Render::State::ClearColor, this->red, this->green, this->blue, 1.0f);
         this->render->Clear(true, false, false);
         this->render->EndFrame();

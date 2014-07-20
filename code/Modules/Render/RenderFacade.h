@@ -65,8 +65,10 @@ public:
     /// end frame rendering
     void EndFrame();
 
-    /// apply a render target to render to
-    void ApplyRenderTarget(const Resource::Id& resId);
+    /// make the default render target (backbuffer) current
+    void ApplyDefaultRenderTarget();
+    /// apply an offscreen render target
+    void ApplyOffscreenRenderTarget(const Resource::Id& resId);
     /// apply draw state to use for rendering
     void ApplyDrawState(const Resource::Id& resId);
     /// apply a shader constant block

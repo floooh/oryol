@@ -114,7 +114,7 @@ InfiniteSpheresApp::OnRunning() {
         
         // render sphere to offscreen render target, using the other render target as
         // source texture
-        this->render->ApplyRenderTarget(this->renderTargets[index0]);
+        this->render->ApplyOffscreenRenderTarget(this->renderTargets[index0]);
         this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         this->render->Clear(true, true, true);
         glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
@@ -124,7 +124,7 @@ InfiniteSpheresApp::OnRunning() {
         this->render->Draw(0);
         
         // ...and again to display
-        this->render->ApplyRenderTarget(Resource::Id());
+        this->render->ApplyDefaultRenderTarget();
         this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
         this->render->Clear(true, true, true);
         model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
