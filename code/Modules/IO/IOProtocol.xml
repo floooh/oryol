@@ -1,9 +1,9 @@
 <Generator type="MessageProtocol" ns="IO" name="IOProtocol" id="IOPT" >
 
     <Header path="Core/Ptr.h" />
-    <Header path="IO/URL.h" />
-    <Header path="IO/IOStatus.h" />
-    <Header path="IO/MemoryStream.h" />
+    <Header path="IO/Core/URL.h" />
+    <Header path="IO/Core/IOStatus.h" />
+    <Header path="IO/Stream/MemoryStream.h" />
 
     <!-- a generic IORequest message -->
     <Message name="Request" serialize="false" >
