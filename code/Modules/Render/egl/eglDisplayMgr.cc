@@ -57,7 +57,7 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
 
     // this is the window-system specific part
     #if ORYOL_EMSCRIPTEN
-        emscripten_set_canvas_size(renderSetup.GetWindowWidth(), renderSetup.GetWindowHeight());
+        emscripten_set_canvas_size(renderSetup.WindowWidth, renderSetup.WindowHeight);
     #elif ORYOL_ANDROID
         // nothing to do here
     #else
@@ -74,8 +74,8 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     }
 
     // choose EGL config
-    PixelFormat::Code colorPixelFormat = renderSetup.GetColorPixelFormat();
-    PixelFormat::Code depthPixelFormat = renderSetup.GetDepthPixelFormat();
+    PixelFormat::Code colorPixelFormat = renderSetup.ColorPixelFormat;
+    PixelFormat::Code depthPixelFormat = renderSetup.DepthPixelFormat;
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_RED_SIZE, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Red),
@@ -143,10 +143,10 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_WIDTH, &actualWidth);
     eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_HEIGHT, &actualHeight);
     Log::Info("eglDisplayMgr: actual framebuffer size w=%d, h=%d\n", actualWidth, actualHeight);
-    this->displayAttrs.SetFramebufferWidth(actualWidth);
-    this->displayAttrs.SetFramebufferHeight(actualHeight);
-    this->displayAttrs.SetWindowWidth(actualWidth);
-    this->displayAttrs.SetWindowHeight(actualHeight);
+    this->displayAttrs.FramebufferWidth = actualWidth;
+    this->displayAttrs.FramebufferHeight = actualHeight;
+    this->displayAttrs.WindowWidth = actualWidth;
+    this->displayAttrs.WindowHeight = actualHeight;
 
     // register display-changed callback for emscripten    
     #if ORYOL_EMSCRIPTEN
@@ -209,8 +209,8 @@ eglDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenCh
         // switch to fullscreen
         newWidth = e->screenWidth;
         newHeight = e->screenHeight;
-        self->storedCanvasWidth = self->displayAttrs.GetFramebufferWidth();
-        self->storedCanvasHeight = self->displayAttrs.GetFramebufferHeight();
+        self->storedCanvasWidth = self->displayAttrs.FramebufferWidth;
+        self->storedCanvasHeight = self->displayAttrs.FramebufferHeight;
     }
     else {
         // switch back from fullscreen
@@ -218,8 +218,8 @@ eglDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenCh
         newHeight = self->storedCanvasHeight;
     }
     emscripten_set_canvas_size(newWidth, newHeight);
-    self->displayAttrs.SetFramebufferWidth(newWidth);
-    self->displayAttrs.SetFramebufferHeight(newHeight);
+    self->displayAttrs.FramebufferWidth = newWidth;
+    self->displayAttrs.FramebufferHeight = newHeight;
     Log::Info("emscFullscreenChanged: new canvas size (w=%d, h=%d)\n", newWidth, newHeight);
 
     // notify event handlers

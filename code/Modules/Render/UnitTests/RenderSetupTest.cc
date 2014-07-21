@@ -14,27 +14,27 @@ TEST(RenderSetupTest) {
     #if !ORYOL_UNITTESTS_HEADLESS
     RenderFacade* f = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Test"));
     
-    CHECK(f->GetRenderSetup().GetWindowWidth() == 400);
-    CHECK(f->GetRenderSetup().GetWindowHeight() == 300);
-    CHECK(f->GetRenderSetup().GetWindowPosX() == 0);
-    CHECK(f->GetRenderSetup().GetWindowPosY() == 0);
-    CHECK(f->GetRenderSetup().GetColorPixelFormat() == PixelFormat::R8G8B8);
-    CHECK(f->GetRenderSetup().GetDepthPixelFormat() == PixelFormat::D24S8);
-    CHECK(f->GetRenderSetup().GetSwapInterval() == 1);
-    CHECK(f->GetRenderSetup().GetWindowTitle() == "Oryol Test");
-    CHECK(f->GetRenderSetup().IsFullscreen() == false);
+    CHECK(f->GetRenderSetup().WindowWidth == 400);
+    CHECK(f->GetRenderSetup().WindowHeight == 300);
+    CHECK(f->GetRenderSetup().WindowPosX == 0);
+    CHECK(f->GetRenderSetup().WindowPosY == 0);
+    CHECK(f->GetRenderSetup().ColorPixelFormat == PixelFormat::R8G8B8);
+    CHECK(f->GetRenderSetup().DepthPixelFormat == PixelFormat::D24S8);
+    CHECK(f->GetRenderSetup().SwapInterval == 1);
+    CHECK(f->GetRenderSetup().WindowTitle == "Oryol Test");
+    CHECK(f->GetRenderSetup().IsFullscreen == false);
     
-    CHECK(f->GetDisplayAttrs().GetWindowWidth() >= 400);
-    CHECK(f->GetDisplayAttrs().GetWindowHeight() >= 300);
-    CHECK(f->GetDisplayAttrs().GetWindowPosX() >= 0);
-    CHECK(f->GetDisplayAttrs().GetWindowPosY() >= 0);
-    CHECK(f->GetDisplayAttrs().GetFramebufferWidth() >= 400);
-    CHECK(f->GetDisplayAttrs().GetFramebufferHeight() >= 300);
-    CHECK(f->GetDisplayAttrs().GetColorPixelFormat() == PixelFormat::R8G8B8);
-    CHECK(f->GetDisplayAttrs().GetDepthPixelFormat() == PixelFormat::D24S8);
-    CHECK(f->GetDisplayAttrs().GetSwapInterval() == 1);
-    CHECK(f->GetDisplayAttrs().GetWindowTitle() == "Oryol Test");
-    CHECK(f->GetDisplayAttrs().IsFullscreen() == false);
+    CHECK(f->GetDisplayAttrs().WindowWidth >= 400);
+    CHECK(f->GetDisplayAttrs().WindowHeight >= 300);
+    CHECK(f->GetDisplayAttrs().WindowPosX >= 0);
+    CHECK(f->GetDisplayAttrs().WindowPosY >= 0);
+    CHECK(f->GetDisplayAttrs().FramebufferWidth >= 400);
+    CHECK(f->GetDisplayAttrs().FramebufferHeight >= 300);
+    CHECK(f->GetDisplayAttrs().ColorPixelFormat == PixelFormat::R8G8B8);
+    CHECK(f->GetDisplayAttrs().DepthPixelFormat == PixelFormat::D24S8);
+    CHECK(f->GetDisplayAttrs().SwapInterval == 1);
+    CHECK(f->GetDisplayAttrs().WindowTitle == "Oryol Test");
+    CHECK(f->GetDisplayAttrs().IsFullscreen == false);
     
     RenderFacade::DestroySingle();
     #endif

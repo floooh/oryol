@@ -40,8 +40,8 @@ PackedNormalsApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -56,8 +56,8 @@ PackedNormalsApp::OnInit() {
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::PackedNormals::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->drawState = this->render->CreateResource(dsSetup);
 
     this->render->ReleaseResource(mesh);

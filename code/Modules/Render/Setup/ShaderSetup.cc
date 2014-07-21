@@ -12,27 +12,15 @@ using namespace Resource;
 
 //------------------------------------------------------------------------------
 ShaderSetup::ShaderSetup() :
-type(ShaderType::InvalidShaderType) {
+Type(ShaderType::InvalidShaderType) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-ShaderSetup::ShaderSetup(const Locator& l, ShaderType::Code t) :
-loc(l),
-type(t) {
+ShaderSetup::ShaderSetup(const class Locator& l, ShaderType::Code t) :
+Locator(l),
+Type(t) {
     // empty
-}
-
-//------------------------------------------------------------------------------
-const Locator&
-ShaderSetup::GetLocator() const {
-    return this->loc;
-}
-
-//------------------------------------------------------------------------------
-ShaderType::Code
-ShaderSetup::GetType() const {
-    return this->type;
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +32,7 @@ ShaderSetup::AddSource(ShaderLang::Code slang, const String& source) {
 
 //------------------------------------------------------------------------------
 const String&
-ShaderSetup::GetSource(ShaderLang::Code slang) const {
+ShaderSetup::Source(ShaderLang::Code slang) const {
     o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->sources[slang];
 }

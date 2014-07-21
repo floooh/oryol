@@ -43,49 +43,40 @@ public:
     bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
-    /// get ioLane index
-    int32 GetIOLane() const;
-    
-    /// get the resource locator
-    const Resource::Locator& GetLocator() const;
-    /// get the width in pixels (only if absolute-size render target)
-    int32 GetWidth() const;
-    /// get the height in pixels (only if absolute-size render target)
-    int32 GetHeight() const;
-    /// get display-relative width (only if screen render target)
-    float32 GetRelWidth() const;
-    /// get display-relative height (only if screen render target)
-    float32 GetRelHeight() const;
-    /// get the color pixel format (only if render target)
-    PixelFormat::Code GetColorFormat() const;
-    /// get the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
-    PixelFormat::Code GetDepthFormat() const;
-    /// get resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
-    const Resource::Id& GetDepthRenderTarget() const;
     /// return true if texture should be generated with mipmaps (only when created from raw pixel data)
     bool HasMipMaps() const;
     
-    /// set texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
-    void SetWrapU(TextureWrapMode::Code wrapU);
-    /// get texture wrap mode for u dimension
-    TextureWrapMode::Code GetWrapU() const;
-    /// set texture wrap mode for v dimension
-    void SetWrapV(TextureWrapMode::Code wrapV);
-    /// get texture wrap mode for v dimension
-    TextureWrapMode::Code GetWrapV() const;
-    /// set texture wrap mode for w dimension
-    void SetWrapW(TextureWrapMode::Code wrapW);
-    /// get texture wrap mode for w dimension
-    TextureWrapMode::Code GetWrapW() const;
+    /// IOLane index
+    int32 IOLane;
     
-    /// set magnification sample filter
-    void SetMagFilter(TextureFilterMode::Code magFiler);
-    /// get magnification sample filter
-    TextureFilterMode::Code GetMagFilter() const;
-    /// set minification sample filter
-    void SetMinFilter(TextureFilterMode::Code minFilter);
-    /// get minification sample filter
-    TextureFilterMode::Code GetMinFilter() const;
+    /// the resource locator
+    class Resource::Locator Locator;
+    /// the width in pixels (only if absolute-size render target)
+    int32 Width;
+    /// the height in pixels (only if absolute-size render target)
+    int32 Height;
+    /// display-relative width (only if screen render target)
+    float32 RelWidth;
+    /// display-relative height (only if screen render target)
+    float32 RelHeight;
+    /// the color pixel format (only if render target)
+    PixelFormat::Code ColorFormat;
+    /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
+    PixelFormat::Code DepthFormat;
+    /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
+    Resource::Id DepthRenderTarget;
+    
+    /// texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
+    TextureWrapMode::Code WrapU;
+    /// texture wrap mode for v dimension
+    TextureWrapMode::Code WrapV;
+    /// texture wrap mode for w dimension
+    TextureWrapMode::Code WrapW;
+    
+    /// magnification sample filter
+    TextureFilterMode::Code MagFilter;
+    /// minification sample filter
+    TextureFilterMode::Code MinFilter;
     
 private:
     bool shouldSetupFromFile : 1;
@@ -95,21 +86,6 @@ private:
     bool isRelSizeRenderTarget : 1;
     bool hasSharedDepth : 1;
     bool hasMipMaps : 1;
-    
-    Resource::Locator locator;
-    int32 ioLane;
-    int32 width;
-    int32 height;
-    float32 relWidth;
-    float32 relHeight;
-    PixelFormat::Code colorFormat;
-    PixelFormat::Code depthFormat;
-    Resource::Id depthRenderTarget;
-    TextureWrapMode::Code wrapU;
-    TextureWrapMode::Code wrapV;
-    TextureWrapMode::Code wrapW;
-    TextureFilterMode::Code magFilter;
-    TextureFilterMode::Code minFilter;
 };
     
 } // namespace Render

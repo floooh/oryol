@@ -88,13 +88,13 @@ renderMgrBase::ApplyRenderTarget(texture* rt) {
     int32 width, height;
     if (nullptr == rt) {
         const DisplayAttrs& attrs = this->displayManager->GetDisplayAttrs();
-        width = attrs.GetFramebufferWidth();
-        height = attrs.GetFramebufferHeight();
+        width = attrs.FramebufferWidth;
+        height = attrs.FramebufferHeight;
     }
     else {
         const TextureAttrs& attrs = rt->GetTextureAttrs();
-        width = attrs.GetWidth();
-        height = attrs.GetHeight();
+        width = attrs.Width();
+        height = attrs.Height();
     }
     this->stateWrapper->ApplyState(State::ViewPort, 0, 0, width, height);
 }

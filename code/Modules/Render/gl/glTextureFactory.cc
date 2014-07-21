@@ -160,20 +160,20 @@ glTextureFactory::createRenderTarget(texture& tex) {
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
         const DisplayAttrs& dispAttrs = this->displayManager->GetDisplayAttrs();
-        width = int32(dispAttrs.GetFramebufferWidth() * setup.GetRelWidth());
-        height = int32(dispAttrs.GetFramebufferHeight() * setup.GetRelHeight());
+        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.GetDepthRenderTarget());
+        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
         o_assert(nullptr != sharedDepthProvider);
-        width = sharedDepthProvider->GetTextureAttrs().GetWidth();
-        height = sharedDepthProvider->GetTextureAttrs().GetHeight();
+        width = sharedDepthProvider->GetTextureAttrs().Width();
+        height = sharedDepthProvider->GetTextureAttrs().Height();
     }
     else {
-        width = setup.GetWidth();
-        height = setup.GetHeight();
+        width = setup.Width;
+        height = setup.Height;
     }
     o_assert((width > 0) && (height > 0));
     
@@ -186,17 +186,17 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ORYOL_GL_CHECK_ERROR();
     
     // create render target texture
-    GLint glColorFormat = glTypes::AsGLTexImageFormat(setup.GetColorFormat());
-    GLenum glColorType = glTypes::AsGLTexImageType(setup.GetColorFormat());
+    GLint glColorFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    GLenum glColorType = glTypes::AsGLTexImageType(setup.ColorFormat);
     GLuint glColorRenderTexture = 0;
     ::glGenTextures(1, &glColorRenderTexture);
     ::glActiveTexture(GL_TEXTURE0);
     ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ORYOL_GL_CHECK_ERROR();
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setup.GetMinFilter());
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.GetMagFilter());
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.GetWrapU());
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.GetWrapV());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setup.MinFilter);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.MagFilter);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
     ORYOL_GL_CHECK_ERROR();
     ::glTexImage2D(GL_TEXTURE_2D, 0, glColorFormat, width, height, 0, glColorFormat, glColorType, NULL);
     ORYOL_GL_CHECK_ERROR();
@@ -210,19 +210,19 @@ glTextureFactory::createRenderTarget(texture& tex) {
     if (setup.HasDepth()) {
         if (!setup.HasSharedDepth()) {
             // FIXME: optionally create a depth texture instead of a render buffer here...
-            o_assert(PixelFormat::InvalidPixelFormat != setup.GetDepthFormat());
+            o_assert(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
             
             ::glGenRenderbuffers(1, &glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
             o_assert(0 != glDepthRenderBuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
-            GLint glDepthFormat = glTypes::AsGLRenderbufferFormat(setup.GetDepthFormat());
+            GLint glDepthFormat = glTypes::AsGLRenderbufferFormat(setup.DepthFormat);
             ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
             ORYOL_GL_CHECK_ERROR();
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
-            if (PixelFormat::IsDepthStencilFormat(setup.GetDepthFormat())) {
+            if (PixelFormat::IsDepthStencilFormat(setup.DepthFormat)) {
                 ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
                 ORYOL_GL_CHECK_ERROR();
             }
@@ -234,7 +234,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
             o_assert(0 != glSharedDepthBuffer);
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
             ORYOL_GL_CHECK_ERROR();
-            if (PixelFormat::IsDepthStencilFormat(sharedDepthProvider->GetSetup().GetDepthFormat())) {
+            if (PixelFormat::IsDepthStencilFormat(sharedDepthProvider->GetSetup().DepthFormat)) {
                 ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
                 ORYOL_GL_CHECK_ERROR();
             }
@@ -249,10 +249,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // setup texture attrs and set on texture
     TextureAttrs attrs;
-    attrs.setLocator(setup.GetLocator());
+    attrs.setLocator(setup.Locator);
     attrs.setType(TextureType::Texture2D);
-    attrs.setColorFormat(setup.GetColorFormat());
-    attrs.setDepthFormat(setup.GetDepthFormat());
+    attrs.setColorFormat(setup.ColorFormat);
+    attrs.setDepthFormat(setup.DepthFormat);
     attrs.setUsage(Usage::Immutable);
     attrs.setWidth(width);
     attrs.setHeight(height);
@@ -281,15 +281,15 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     o_assert(tex.GetState() == Resource::State::Setup);
 
     const TextureSetup& setup = tex.GetSetup();
-    const int32 width = setup.GetWidth();
-    const int32 height = setup.GetHeight();
+    const int32 width = setup.Width;
+    const int32 height = setup.Height;
     
     // create a texture object
     const GLuint glTex = this->glGenAndBindTexture(GL_TEXTURE_2D);
     
     // setup texture params
-    GLenum glMinFilter = setup.GetMinFilter();
-    GLenum glMagFilter = setup.GetMagFilter();
+    GLenum glMinFilter = setup.MinFilter;
+    GLenum glMagFilter = setup.MagFilter;
     if (!setup.HasMipMaps()) {
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
             glMinFilter = GL_NEAREST;
@@ -300,20 +300,20 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     }
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.GetWrapU());
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.GetWrapV());
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
     ORYOL_GL_CHECK_ERROR();
     
     // get pointer to image data
     data->Open(OpenMode::ReadOnly);
     const uint8* endPtr = nullptr;
     const uint8* srcPtr = data->MapRead(&endPtr);
-    o_assert(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.GetColorFormat()));
+    o_assert(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.ColorFormat));
     
     // setup the image data in the texture
     o_assert2(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
-    GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.GetColorFormat());
-    GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.GetColorFormat());
+    GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.ColorFormat);
     ::glTexImage2D(GL_TEXTURE_2D,
                    0,
                    glTexImageFormat,
@@ -329,9 +329,9 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     
     // setup texture attributes
     TextureAttrs attrs;
-    attrs.setLocator(setup.GetLocator());
+    attrs.setLocator(setup.Locator);
     attrs.setType(TextureType::Texture2D);
-    attrs.setColorFormat(setup.GetColorFormat());
+    attrs.setColorFormat(setup.ColorFormat);
     attrs.setUsage(Usage::Immutable);
     attrs.setWidth(width);
     attrs.setHeight(height);

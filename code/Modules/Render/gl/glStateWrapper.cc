@@ -153,18 +153,17 @@ void
 glStateWrapper::ApplyDrawState(const drawState* ds) {
     o_assert_dbg(nullptr != ds);
     const DrawStateSetup& setup = ds->GetSetup();
-    if (setup.DepthStencilState() != this->curDepthStencilState) {
-        this->applyDepthStencilState(setup.DepthStencilState());
+    if (setup.DepthStencilState != this->curDepthStencilState) {
+        this->applyDepthStencilState(setup.DepthStencilState);
     }
-    if (setup.BlendState() != this->curBlendState) {
-        this->applyBlendState(setup.BlendState());
+    if (setup.BlendState != this->curBlendState) {
+        this->applyBlendState(setup.BlendState);
     }
-    if (setup.RasterizerState() != this->curRasterizerState) {
-        this->applyRasterizerState(setup.RasterizerState());
+    if (setup.RasterizerState != this->curRasterizerState) {
+        this->applyRasterizerState(setup.RasterizerState);
     }
     programBundle* pb = ds->getProgramBundle();
-    uint32 progSelMask = setup.GetProgSelMask();
-    this->applyProgram(pb, progSelMask);
+    this->applyProgram(pb, setup.ProgramSelectionMask);
     this->applyMesh(ds->getMesh(), pb);
 }
 

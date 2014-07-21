@@ -49,17 +49,17 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->displayMgr = dspMgr;
 
     this->meshFactory.Setup(this->stateWrapper, &this->meshPool);
-    this->meshPool.Setup(&this->meshFactory, setup.GetPoolSize(ResourceType::Mesh), setup.GetThrottling(ResourceType::Mesh), 'MESH');
+    this->meshPool.Setup(&this->meshFactory, setup.PoolSize(ResourceType::Mesh), setup.Throttling(ResourceType::Mesh), 'MESH');
     this->shaderFactory.Setup();
-    this->shaderPool.Setup(&this->shaderFactory, setup.GetPoolSize(ResourceType::Shader), 0, 'SHDR');
+    this->shaderPool.Setup(&this->shaderFactory, setup.PoolSize(ResourceType::Shader), 0, 'SHDR');
     this->programBundleFactory.Setup(this->stateWrapper, &this->shaderPool, &this->shaderFactory);
-    this->programBundlePool.Setup(&this->programBundleFactory, setup.GetPoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
+    this->programBundlePool.Setup(&this->programBundleFactory, setup.PoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
     this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
-    this->texturePool.Setup(&this->textureFactory, setup.GetPoolSize(ResourceType::Texture), setup.GetThrottling(ResourceType::Texture), 'TXTR');
+    this->texturePool.Setup(&this->textureFactory, setup.PoolSize(ResourceType::Texture), setup.Throttling(ResourceType::Texture), 'TXTR');
     this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
-    this->drawStatePool.Setup(&this->drawStateFactory, setup.GetPoolSize(ResourceType::DrawState), 0, 'DRWS');
+    this->drawStatePool.Setup(&this->drawStateFactory, setup.PoolSize(ResourceType::DrawState), 0, 'DRWS');
     
-    this->resourceRegistry.Setup(setup.GetResourceRegistryCapacity());
+    this->resourceRegistry.Setup(setup.ResourceRegistryCapacity());
 }
 
 //------------------------------------------------------------------------------
@@ -101,8 +101,7 @@ resourceMgr::Update() {
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
+    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Mesh);
         return resId;
@@ -110,10 +109,10 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
     else {
         resId = this->meshPool.AllocId();
         Array<Id> deps;
-        if (setup.GetInstanceMesh().IsValid()) {
-            deps.AddBack(setup.GetInstanceMesh());
+        if (setup.InstanceMesh.IsValid()) {
+            deps.AddBack(setup.InstanceMesh);
         }
-        this->resourceRegistry.AddResource(loc, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup);
         return resId;
     }
@@ -123,8 +122,7 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
+    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Mesh);
         return resId;
@@ -132,10 +130,10 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data)
     else {
         resId = this->meshPool.AllocId();
         Array<Id> deps;
-        if (setup.GetInstanceMesh().IsValid()) {
-            deps.AddBack(setup.GetInstanceMesh());
+        if (setup.InstanceMesh.IsValid()) {
+            deps.AddBack(setup.InstanceMesh);
         }
-        this->resourceRegistry.AddResource(loc, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup, data);
         return resId;
     }
@@ -145,7 +143,7 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data)
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
+    const Locator& loc = setup.Locator;
     Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Texture);
@@ -163,7 +161,7 @@ resourceMgr::CreateResource(const TextureSetup& setup) {
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<IO::Stream>& data) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
+    const Locator& loc = setup.Locator;
     Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Texture);
@@ -181,15 +179,14 @@ resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<IO::Stream>& da
 template<> Id
 resourceMgr::CreateResource(const ShaderSetup& setup) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
+    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::Shader);
         return resId;
     }
     else {
         resId = this->shaderPool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
+        this->resourceRegistry.AddResource(setup.Locator, resId);
         this->shaderPool.Assign(resId, setup);
         return resId;
     }
@@ -199,8 +196,7 @@ resourceMgr::CreateResource(const ShaderSetup& setup) {
 template<> Id
 resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
+    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::ProgramBundle);
         return resId;
@@ -209,17 +205,17 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
         resId = this->programBundlePool.AllocId();
         // add vertex/fragment shaders as dependencies
         Array<Id> deps;
-        const int32 numProgs = setup.GetNumPrograms();
+        const int32 numProgs = setup.NumPrograms();
         deps.Reserve(numProgs * 2);
-        for (int32 i = 0; i < setup.GetNumPrograms(); i++) {
-            if (setup.GetVertexShader(i).IsValid()) {
-                deps.AddBack(setup.GetVertexShader(i));
+        for (int32 i = 0; i < numProgs; i++) {
+            if (setup.VertexShader(i).IsValid()) {
+                deps.AddBack(setup.VertexShader(i));
             }
-            if (setup.GetFragmentShader(i).IsValid()) {
-                deps.AddBack(setup.GetFragmentShader(i));
+            if (setup.FragmentShader(i).IsValid()) {
+                deps.AddBack(setup.FragmentShader(i));
             }
         }
-        this->resourceRegistry.AddResource(loc, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->programBundlePool.Assign(resId, setup);
         return resId;
     }
@@ -229,8 +225,7 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
 template<> Id
 resourceMgr::CreateResource(const DrawStateSetup& setup) {
     o_assert(this->isValid);
-    const Locator& loc = setup.GetLocator();
-    Id resId = this->resourceRegistry.LookupResource(loc);
+    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
         o_assert(resId.Type() == ResourceType::ProgramBundle);
         return resId;
@@ -239,9 +234,9 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         // add dependent resources
         Array<Id> deps;
-        deps.AddBack(setup.GetProgram());
-        deps.AddBack(setup.GetMesh());
-        this->resourceRegistry.AddResource(loc, resId, deps);
+        deps.AddBack(setup.Program);
+        deps.AddBack(setup.Mesh);
+        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->drawStatePool.Assign(resId, setup);
         return resId;
     }

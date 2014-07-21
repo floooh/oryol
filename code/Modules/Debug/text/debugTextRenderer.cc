@@ -142,8 +142,8 @@ debugTextRenderer::drawTextBuffer() {
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
         const DisplayAttrs& dispAttrs = renderFacade->GetDisplayAttrs();
-        const float w = 8.0f / dispAttrs.GetFramebufferWidth();   // glyph is 8 pixels wide
-        const float h = 8.0f / dispAttrs.GetFramebufferHeight();  // glyph is 8 pixel tall
+        const float w = 8.0f / dispAttrs.FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / dispAttrs.FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
         renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
@@ -191,10 +191,10 @@ debugTextRenderer::setupFontTexture(RenderFacade* renderFacade) {
     
     // setup texture, pixel format is 8bpp uncompressed
     TextureSetup setup = TextureSetup::FromPixelData("_kc854font", imgWidth, imgHeight, false, PixelFormat::L8);
-    setup.SetMinFilter(TextureFilterMode::Nearest);
-    setup.SetMagFilter(TextureFilterMode::Nearest);
-    setup.SetWrapU(TextureWrapMode::ClampToEdge);
-    setup.SetWrapV(TextureWrapMode::ClampToEdge);
+    setup.MinFilter = TextureFilterMode::Nearest;
+    setup.MagFilter = TextureFilterMode::Nearest;
+    setup.WrapU = TextureWrapMode::ClampToEdge;
+    setup.WrapV = TextureWrapMode::ClampToEdge;
     this->fontTexture = renderFacade->CreateResource(setup, data);
     o_assert(this->fontTexture.IsValid());
     o_assert(renderFacade->QueryResourceState(this->fontTexture) == Resource::State::Valid);
@@ -213,7 +213,7 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::Dynamic);
-    setup.VertexLayout() = this->vertexLayout;
+    setup.Layout = this->vertexLayout;
     this->textMesh = renderFacade->CreateResource(setup);
     o_assert(this->textMesh.IsValid());
     o_assert(renderFacade->QueryResourceState(this->textMesh) == Resource::State::Valid);
@@ -231,11 +231,11 @@ debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
     
     // finally create draw state
     DrawStateSetup dss("_dbgDrawState", this->textMesh, prog, 0);
-    dss.DepthStencilState().SetDepthWriteEnabled(false);
-    dss.DepthStencilState().SetDepthCompareFunc(CompareFunc::Always);
-    dss.BlendState().SetEnabled(true);
-    dss.BlendState().SetSrcFactorRGB(BlendFactor::SrcAlpha);
-    dss.BlendState().SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
+    dss.DepthStencilState.SetDepthWriteEnabled(false);
+    dss.DepthStencilState.SetDepthCompareFunc(CompareFunc::Always);
+    dss.BlendState.SetEnabled(true);
+    dss.BlendState.SetSrcFactorRGB(BlendFactor::SrcAlpha);
+    dss.BlendState.SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
     this->textDrawState = renderFacade->CreateResource(dss);
     
     // fix resource use counts

@@ -55,15 +55,15 @@ DDSCubeMapApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol DXT Cube Map Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
     this->render->AttachLoader(TextureLoader::Create());
-    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // create resources
     TextureSetup texBluePrint;
-    texBluePrint.SetMinFilter(TextureFilterMode::LinearMipmapLinear);
-    texBluePrint.SetMagFilter(TextureFilterMode::Linear);
-    texBluePrint.SetWrapU(TextureWrapMode::ClampToEdge);
-    texBluePrint.SetWrapV(TextureWrapMode::ClampToEdge);
+    texBluePrint.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    texBluePrint.MagFilter = TextureFilterMode::Linear;
+    texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
+    texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
     if (this->render->Supports(Feature::TextureCompressionPVRTC)) {
         this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
     }
@@ -80,8 +80,8 @@ DDSCubeMapApp::OnInit() {
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);

@@ -28,7 +28,7 @@ glTextureLoader::Accepts(const texture& tex) const {
 
     // test the file extension, we will accept and load anything, whether
     // the compressed texture can actually be loaded is another question
-    const char* loc = tex.GetSetup().GetLocator().Location().AsCStr();
+    const char* loc = tex.GetSetup().Locator.Location().AsCStr();
     if ((InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) ||
         (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".pvr"))) {
         return true;
@@ -69,7 +69,7 @@ glTextureLoader::Load(texture& tex) const {
     
     if (state == Resource::State::Setup) {
         // start loading the resource
-        tex.setIORequest(IOFacade::Instance()->LoadFile(setup.GetLocator().Location(), setup.GetIOLane()));
+        tex.setIORequest(IOFacade::Instance()->LoadFile(setup.Locator.Location(), setup.IOLane));
         tex.setState(Resource::State::Pending);
         return;
     }
@@ -112,7 +112,7 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
             }
         }
         else {
-            Log::Warn("glTextureLoader: failed to load texture '%s'!\n", tex.GetSetup().GetLocator().Location().AsCStr());
+            Log::Warn("glTextureLoader: failed to load texture '%s'!\n", tex.GetSetup().Locator.Location().AsCStr());
             tex.setState(Resource::State::Failed);
         }
         data->UnmapRead();
@@ -134,8 +134,8 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     GLuint glTex = this->texFactory->glGenAndBindTexture(glTexTarget);
     
     // setup texture params
-    GLenum glMinFilter = setup.GetMinFilter();
-    GLenum glMagFilter = setup.GetMagFilter();
+    GLenum glMinFilter = setup.MinFilter;
+    GLenum glMagFilter = setup.MagFilter;
     if (1 == ctx.num_mipmaps(0)) {
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
             glMinFilter = GL_NEAREST;
@@ -146,13 +146,13 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     }
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, setup.GetWrapU());
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, setup.GetWrapV());
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, setup.WrapU);
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, setup.WrapV);
     if (ctx.is_3d()) {
         #if ORYOL_OPENGLES2
         o_error("glTextureLoader: 3D texture not supported on OpenGLES2!\n");
         #else
-        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, setup.GetWrapW());
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, setup.WrapW);
         #endif
     }
     ORYOL_GL_CHECK_ERROR();
@@ -233,7 +233,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     
     // setup texture attributes
     TextureAttrs attrs;
-    attrs.setLocator(setup.GetLocator());
+    attrs.setLocator(setup.Locator);
     if (ctx.is_2d()) {
         if (ctx.num_faces() > 1) {
             attrs.setType(TextureType::TextureCube);
@@ -245,8 +245,8 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     else if (ctx.is_3d()) {
         attrs.setType(TextureType::Texture3D);
     }
-    attrs.setColorFormat(setup.GetColorFormat());
-    attrs.setDepthFormat(setup.GetDepthFormat());
+    attrs.setColorFormat(setup.ColorFormat);
+    attrs.setDepthFormat(setup.DepthFormat);
     attrs.setUsage(Usage::Immutable);
     attrs.setWidth(ctx.image_width(0, 0));
     attrs.setHeight(ctx.image_height(0, 0));

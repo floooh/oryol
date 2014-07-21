@@ -50,8 +50,8 @@ void
 drawStateFactory::SetupResource(drawState& ds) {
     o_assert(ds.GetState() == Resource::State::Setup);
     const DrawStateSetup& setup = ds.GetSetup();
-    ds.setMesh(this->meshPool->Lookup(setup.GetMesh()));
-    ds.setProgramBundle(this->programBundlePool->Lookup(setup.GetProgram()));
+    ds.setMesh(this->meshPool->Lookup(setup.Mesh));
+    ds.setProgramBundle(this->programBundlePool->Lookup(setup.Program));
     ds.setState(Resource::State::Valid);
 }
 

@@ -43,16 +43,16 @@ SimpleRenderTargetApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Simple Render Target Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // create an offscreen render target, we explicitely want repeat texture wrap mode
     // and linear blending...
     auto rtSetup = TextureSetup::AsRenderTarget("rt", 128, 128, PixelFormat::R8G8B8, PixelFormat::D16);
-    rtSetup.SetWrapU(TextureWrapMode::Repeat);
-    rtSetup.SetWrapV(TextureWrapMode::Repeat);
-    rtSetup.SetMagFilter(TextureFilterMode::Linear);
-    rtSetup.SetMinFilter(TextureFilterMode::Linear);
+    rtSetup.WrapU = TextureWrapMode::Repeat;
+    rtSetup.WrapV = TextureWrapMode::Repeat;
+    rtSetup.MagFilter = TextureFilterMode::Linear;
+    rtSetup.MinFilter = TextureFilterMode::Linear;
     this->renderTarget = this->render->CreateResource(rtSetup);
     
     // create a donut (this will be rendered into the offscreen render target)
@@ -78,12 +78,12 @@ SimpleRenderTargetApp::OnInit() {
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     DrawStateSetup offdsSetup("offds", torus, offScreenProg, 0);
-    offdsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    offdsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    offdsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    offdsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->offscreenDrawState = this->render->CreateResource(offdsSetup);
     DrawStateSetup dispdsSetup("dispds", sphere, dispProg, 0);
-    dispdsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dispdsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dispdsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dispdsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->displayDrawState = this->render->CreateResource(dispdsSetup);
     
     this->render->ReleaseResource(torus);

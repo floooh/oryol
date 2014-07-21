@@ -19,8 +19,8 @@ numUniformEntries(0) {
 }
 
 //------------------------------------------------------------------------------
-ProgramBundleSetup::ProgramBundleSetup(const Locator& locator) :
-loc(locator),
+ProgramBundleSetup::ProgramBundleSetup(const class Locator& locator) :
+Locator(locator),
 numProgramEntries(0),
 numUniformEntries(0) {
     // empty
@@ -90,41 +90,35 @@ ProgramBundleSetup::AddTextureUniform(const String& uniformName, int16 slotIndex
 }
 
 //------------------------------------------------------------------------------
-const Locator&
-ProgramBundleSetup::GetLocator() const {
-    return this->loc;
-}
-
-//------------------------------------------------------------------------------
 int32
-ProgramBundleSetup::GetNumPrograms() const {
+ProgramBundleSetup::NumPrograms() const {
     return this->numProgramEntries;
 }
 
 //------------------------------------------------------------------------------
 uint32
-ProgramBundleSetup::GetMask(int32 progIndex) const {
+ProgramBundleSetup::Mask(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].mask;
 }
 
 //------------------------------------------------------------------------------
 const Id&
-ProgramBundleSetup::GetVertexShader(int32 progIndex) const {
+ProgramBundleSetup::VertexShader(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].vertexShader;
 }
 
 //------------------------------------------------------------------------------
 const Id&
-ProgramBundleSetup::GetFragmentShader(int32 progIndex) const {
+ProgramBundleSetup::FragmentShader(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].fragmentShader;
 }
 
 //------------------------------------------------------------------------------
 const String&
-ProgramBundleSetup::GetVertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
+ProgramBundleSetup::VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
     o_assert_range(progIndex, this->numProgramEntries);
     o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->programEntries[progIndex].vsSources[slang];
@@ -132,7 +126,7 @@ ProgramBundleSetup::GetVertexShaderSource(int32 progIndex, ShaderLang::Code slan
 
 //------------------------------------------------------------------------------
 const String&
-ProgramBundleSetup::GetFragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const {
+ProgramBundleSetup::FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const {
     o_assert_range(progIndex, this->numProgramEntries);
     o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->programEntries[progIndex].fsSources[slang];
@@ -140,20 +134,20 @@ ProgramBundleSetup::GetFragmentShaderSource(int32 progIndex, ShaderLang::Code sl
 
 //------------------------------------------------------------------------------
 int32
-ProgramBundleSetup::GetNumUniforms() const {
+ProgramBundleSetup::NumUniforms() const {
     return this->numUniformEntries;
 }
 
 //------------------------------------------------------------------------------
 const String&
-ProgramBundleSetup::GetUniformName(int32 uniformIndex) const {
+ProgramBundleSetup::UniformName(int32 uniformIndex) const {
     o_assert_range(uniformIndex, this->numUniformEntries);
     return this->uniformEntries[uniformIndex].uniformName;
 }
 
 //------------------------------------------------------------------------------
 int16
-ProgramBundleSetup::GetUniformSlot(int32 uniformIndex) const {
+ProgramBundleSetup::UniformSlot(int32 uniformIndex) const {
     o_assert_range(uniformIndex, this->numUniformEntries);
     return this->uniformEntries[uniformIndex].slotIndex;
 }

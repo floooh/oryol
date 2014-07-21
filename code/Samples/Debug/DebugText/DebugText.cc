@@ -40,8 +40,8 @@ DebugTextApp::OnInit() {
     this->debug  = DebugFacade::CreateSingle();
     this->debug->SetTextScale(glm::vec2(2.0f, 2.0f));
     
-    this->width = this->render->GetDisplayAttrs().GetFramebufferWidth() / 16;
-    this->height = this->render->GetDisplayAttrs().GetFramebufferHeight() / 16;
+    this->width = this->render->GetDisplayAttrs().FramebufferWidth / 16;
+    this->height = this->render->GetDisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
     

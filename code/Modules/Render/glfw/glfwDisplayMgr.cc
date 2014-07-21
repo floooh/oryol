@@ -49,8 +49,8 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW window
-    PixelFormat::Code colorPixelFormat = setup.GetColorPixelFormat();
-    PixelFormat::Code depthPixelFormat = setup.GetDepthPixelFormat();
+    PixelFormat::Code colorPixelFormat = setup.ColorPixelFormat;
+    PixelFormat::Code depthPixelFormat = setup.DepthPixelFormat;
     glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Red));
     glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Green));
     glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Blue));
@@ -66,21 +66,21 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
-    if (setup.IsFullscreen()) {
+    if (setup.IsFullscreen) {
         glfwMonitor = glfwGetPrimaryMonitor();
     }
     
     // now actually create the window
-    this->glfwWindow = glfwCreateWindow(setup.GetWindowWidth(),
-                                        setup.GetWindowHeight(),
-                                        setup.GetWindowTitle().AsCStr(),
+    this->glfwWindow = glfwCreateWindow(setup.WindowWidth,
+                                        setup.WindowHeight,
+                                        setup.WindowTitle.AsCStr(),
                                         glfwMonitor,
                                         0);
     o_assert(nullptr != this->glfwWindow);
     
     // and make the window's GL context current
     glfwMakeContextCurrent(this->glfwWindow);
-    glfwSwapInterval(setup.GetSwapInterval());
+    glfwSwapInterval(setup.SwapInterval);
 
     // dump GL information
     glInfo::PrintInfo();
@@ -95,12 +95,12 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwGetFramebufferSize(this->glfwWindow, &fbWidth, &fbHeight);
     glfwGetWindowPos(this->glfwWindow, &posX, &posY);
     glfwGetWindowSize(this->glfwWindow, &width, &height);
-    this->displayAttrs.SetFramebufferWidth(fbWidth);
-    this->displayAttrs.SetFramebufferHeight(fbHeight);
-    this->displayAttrs.SetWindowPosX(posX);
-    this->displayAttrs.SetWindowPosY(posY);
-    this->displayAttrs.SetWindowWidth(width);
-    this->displayAttrs.SetWindowHeight(height);
+    this->displayAttrs.FramebufferWidth  = fbWidth;
+    this->displayAttrs.FramebufferHeight = fbHeight;
+    this->displayAttrs.WindowPosX        = posX;
+    this->displayAttrs.WindowPosY        = posY;
+    this->displayAttrs.WindowWidth       = width;
+    this->displayAttrs.WindowHeight      = height;
     
     // set framebuffer size changed callback
     glfwSetFramebufferSizeCallback(this->glfwWindow, glwfFramebufferSizeChanged);
@@ -162,12 +162,12 @@ void
 glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height) {
 
     // update display attributes
-    self->displayAttrs.SetFramebufferWidth(width);
-    self->displayAttrs.SetFramebufferHeight(height);
+    self->displayAttrs.FramebufferWidth = width;
+    self->displayAttrs.FramebufferHeight = height;
     int winWidth, winHeight;
     glfwGetWindowSize(self->glfwWindow, &winWidth, &winHeight);
-    self->displayAttrs.SetWindowWidth(winWidth);
-    self->displayAttrs.SetWindowHeight(winHeight);
+    self->displayAttrs.WindowWidth = winWidth;
+    self->displayAttrs.WindowHeight = winHeight;
     
     // notify event handlers
     self->notifyEventHandlers(RenderProtocol::DisplayModified::Create());

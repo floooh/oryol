@@ -45,10 +45,10 @@ pnaclDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     this->glFramebufferWidth = pnaclInstance::Instance()->GetFramebufferWidth();
     this->glFramebufferHeight = pnaclInstance::Instance()->GetFramebufferHeight();
     Log::Info("pnaclDisplayMgr: actual framebuffer size w=%d, h=%d\n", this->glFramebufferWidth, this->glFramebufferHeight);
-    this->displayAttrs.SetFramebufferWidth(this->glFramebufferWidth);
-    this->displayAttrs.SetFramebufferHeight(this->glFramebufferHeight);
-    this->displayAttrs.SetWindowWidth(this->glFramebufferWidth);
-    this->displayAttrs.SetWindowHeight(this->glFramebufferHeight);
+    this->displayAttrs.FramebufferWidth = this->glFramebufferWidth;
+    this->displayAttrs.FramebufferHeight = this->glFramebufferHeight;
+    this->displayAttrs.WindowWidth = this->glFramebufferWidth;
+    this->displayAttrs.WindowHeight = this->glFramebufferHeight;
 }
 
 //------------------------------------------------------------------------------

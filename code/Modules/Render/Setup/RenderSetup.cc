@@ -25,14 +25,14 @@ RenderSetup::Windowed(int32 w, int32 h, String title, PixelFormat::Code colorFmt
     o_assert((w > 0) && (h > 0));
 
     RenderSetup setup;
-    setup.windowWidth = w;
-    setup.windowHeight = h;
-    setup.framebufferWidth = w;
-    setup.framebufferHeight = h;
-    setup.colorPixelFormat = colorFmt;
-    setup.depthPixelFormat = depthFmt;
-    setup.fullscreen = false;
-    setup.windowTitle = title;
+    setup.WindowWidth       = w;
+    setup.WindowHeight      = h;
+    setup.FramebufferWidth  = w;
+    setup.FramebufferHeight = h;
+    setup.ColorPixelFormat  = colorFmt;
+    setup.DepthPixelFormat  = depthFmt;
+    setup.IsFullscreen      = false;
+    setup.WindowTitle       = title;
     return setup;
 }
 
@@ -42,14 +42,14 @@ RenderSetup::Fullscreen(int32 w, int32 h, String title, PixelFormat::Code colorF
     o_assert((w > 0) && (h > 0));
     
     RenderSetup setup;
-    setup.windowWidth = w;
-    setup.windowHeight = h;
-    setup.framebufferWidth = w;
-    setup.framebufferHeight = h;
-    setup.colorPixelFormat = colorFmt;
-    setup.depthPixelFormat = depthFmt;
-    setup.fullscreen = true;
-    setup.windowTitle = title;
+    setup.WindowWidth       = w;
+    setup.WindowHeight      = h;
+    setup.FramebufferWidth  = w;
+    setup.FramebufferHeight = h;
+    setup.ColorPixelFormat  = colorFmt;
+    setup.DepthPixelFormat  = depthFmt;
+    setup.IsFullscreen      = true;
+    setup.WindowTitle       = title;
     return setup;
 }
 
@@ -57,17 +57,17 @@ RenderSetup::Fullscreen(int32 w, int32 h, String title, PixelFormat::Code colorF
 DisplayAttrs
 RenderSetup::GetDisplayAttrs() const {
     DisplayAttrs attrs;
-    attrs.SetWindowWidth(this->windowWidth);
-    attrs.SetWindowHeight(this->windowHeight);
-    attrs.SetWindowPosX(this->windowPosX);
-    attrs.SetWindowPosY(this->windowPosY);
-    attrs.SetFramebufferWidth(this->framebufferWidth);
-    attrs.SetFramebufferHeight(this->framebufferHeight);
-    attrs.SetColorPixelFormat(this->colorPixelFormat);
-    attrs.SetDepthPixelFormat(this->depthPixelFormat);
-    attrs.SetFullscreen(this->fullscreen);
-    attrs.SetWindowTitle(this->windowTitle);
-    attrs.SetSwapInterval(this->swapInterval);
+    attrs.WindowWidth       = this->WindowWidth;
+    attrs.WindowHeight      = this->WindowHeight;
+    attrs.WindowPosX        = this->WindowPosX;
+    attrs.WindowPosY        = this->WindowPosY;
+    attrs.FramebufferWidth  = this->FramebufferWidth;
+    attrs.FramebufferHeight = this->FramebufferHeight;
+    attrs.ColorPixelFormat  = this->ColorPixelFormat;
+    attrs.DepthPixelFormat  = this->DepthPixelFormat;
+    attrs.IsFullscreen      = this->IsFullscreen;
+    attrs.WindowTitle       = this->WindowTitle;
+    attrs.SwapInterval      = this->SwapInterval;
     return attrs;
 }
 
@@ -81,7 +81,7 @@ RenderSetup::SetPoolSize(ResourceType::Code type, int32 size) {
     
 //------------------------------------------------------------------------------
 int32
-RenderSetup::GetPoolSize(ResourceType::Code type) const {
+RenderSetup::PoolSize(ResourceType::Code type) const {
     o_assert_range(type, ResourceType::NumResourceTypes);
     return this->poolSizes[type];
 }
@@ -95,7 +95,7 @@ RenderSetup::SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame) {
     
 //------------------------------------------------------------------------------
 int32
-RenderSetup::GetThrottling(ResourceType::Code type) const {
+RenderSetup::Throttling(ResourceType::Code type) const {
     o_assert_range(type, ResourceType::NumResourceTypes);
     return this->throttling[type];
 }
@@ -109,7 +109,7 @@ RenderSetup::SetResourceRegistryCapacity(int32 capacity) {
     
 //------------------------------------------------------------------------------
 int32
-RenderSetup::GetResourceRegistryCapacity() const {
+RenderSetup::ResourceRegistryCapacity() const {
     return this->registryCapacity;
 }
 

@@ -289,7 +289,7 @@ glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     ORYOL_GL_CHECK_ERROR();
 
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
-    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
+    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -330,7 +330,7 @@ glRenderMgr::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
 
     ORYOL_GL_CHECK_ERROR();    
     const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
-    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().GetIndexType();
+    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -372,8 +372,8 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert(numBytes > 0);
     
     const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
-    const Usage::Code vbUsage = attrs.GetUsage();
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.GetByteSize()));
+    const Usage::Code vbUsage = attrs.BufferUsage;
+    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
     o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic));
     
     uint8 slotIndex = msh->getActiveVertexBufferSlot();

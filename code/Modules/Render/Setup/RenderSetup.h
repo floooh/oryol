@@ -30,15 +30,15 @@ public:
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
     /// get resource pool size for a rendering resource type
-    int32 GetPoolSize(ResourceType::Code type) const;
+    int32 PoolSize(ResourceType::Code type) const;
     /// tweak resource throttling value for a resource type, 0 means unthrottled
     void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
     /// get resource throttling value
-    int32 GetThrottling(ResourceType::Code type) const;
+    int32 Throttling(ResourceType::Code type) const;
     /// tweak the resource registry initial capacity (this can reduce memory re-allocations)
     void SetResourceRegistryCapacity(int32 capacity);
     /// get the resource registry initial capacity
-    int32 GetResourceRegistryCapacity() const;
+    int32 ResourceRegistryCapacity() const;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;

@@ -55,7 +55,7 @@ glShaderFactory::SetupResource(shader& shd) {
     o_assert(shd.GetState() == Resource::State::Setup);
     ORYOL_GL_CHECK_ERROR();
     
-    Log::Info("glShaderFactory: compiling shader '%s'\n", shd.GetSetup().GetLocator().Location().AsCStr());
+    Log::Info("glShaderFactory: compiling shader '%s'\n", shd.GetSetup().Locator.Location().AsCStr());
     
     // create a shader object
     const ShaderSetup& setup = shd.GetSetup();
@@ -67,17 +67,17 @@ glShaderFactory::SetupResource(shader& shd) {
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
-    GLuint glShader = this->compileShader(setup.GetType(), setup.GetSource(slang));
+    GLuint glShader = this->compileShader(setup.Type, setup.Source(slang));
     
     // if compilation has failed, stop the program
     if (0 == glShader) {
-        o_error("Failed to compile shader '%s'\n", setup.GetLocator().Location().AsCStr());
+        o_error("Failed to compile shader '%s'\n", setup.Locator.Location().AsCStr());
         shd.setState(Resource::State::Failed);
         return;
     }
     
     // all ok, shader has been successfully compiled
-    shd.setShaderType(setup.GetType());
+    shd.setShaderType(setup.Type);
     shd.glSetShader(glShader);
     shd.setState(Resource::State::Valid);
 }

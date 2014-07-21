@@ -52,16 +52,16 @@ PBRenderingApp::OnInit() {
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     
     // setup projection and view matrices
-    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     

@@ -9,6 +9,7 @@
 #include "Render/Core/Enums.h"
 #include "Render/Core/VertexLayout.h"
 #include "Render/Core/PrimitiveGroup.h"
+#include <limits>
 
 namespace Oryol {
 namespace Render {
@@ -39,53 +40,40 @@ public:
     /// check if should setup fullscreen quad mesh
     bool ShouldSetupFullScreenQuad() const;
     
-    /// get the resource locator
-    const Resource::Locator& GetLocator() const;
+    /// resource locator
+    Resource::Locator Locator;
     /// get vertex-data usage
-    Usage::Code GetVertexUsage() const;
+    Usage::Code VertexUsage{Usage::InvalidUsage};
     /// get index-data usage
-    Usage::Code GetIndexUsage() const;
+    Usage::Code IndexUsage{Usage::InvalidUsage};
     /// get ioLane index
-    int32 GetIOLane() const;
+    int32 IOLane;
+
+    /// vertex layout
+    VertexLayout Layout;
     
-    /// read/write access to vertex layout (only used in CreateEmpty)
-    class VertexLayout& VertexLayout();
-    /// read-only access to vertex layout (only used in CreateEmpty)
-    const class VertexLayout& VertexLayout() const;
-    
-    /// get number of vertices (only CreateEmpty)
-    int32 GetNumVertices() const;
-    /// get number of indices (only CreateEmpty)
-    int32 GetNumIndices() const;
-    /// get IndexType (only CreateEmpty)
-    IndexType::Code GetIndexType() const;
+    /// number of vertices (only CreateEmpty)
+    int32 NumVertices;
+    /// number of indices (only CreateEmpty)
+    int32 NumIndices;
+    /// index type (only CreateEmpty)
+    IndexType::Code IndicesType{IndexType::InvalidIndexType};
     
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups
-    int32 GetNumPrimitiveGroups() const;
+    int32 NumPrimitiveGroups() const;
     /// get primitive group at index
-    const PrimitiveGroup& GetPrimitiveGroup(int32 index) const;
+    const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
     
-    /// set optional instance data mesh
-    void SetInstanceMesh(const Resource::Id& instMesh);
-    /// get optional instance data mesh
-    const Resource::Id& GetInstanceMesh() const;
-
+    /// optional instance data mesh
+    Resource::Id InstanceMesh;
+    
 private:
     static const int32 MaxNumPrimGroups = 8;
 
-    Resource::Locator locator;
-    Resource::Id instMesh;
-    Usage::Code vertexUsage;
-    Usage::Code indexUsage;
-    int32 ioLane;
-    int32 numVertices;
-    int32 numIndices;
-    IndexType::Code indexType;
-    class VertexLayout vertexLayout;
     int32 numPrimGroups;
-    PrimitiveGroup primGroups[MaxNumPrimGroups];
+    class PrimitiveGroup primGroups[MaxNumPrimGroups];
     bool setupFromFile : 1;
     bool setupFromData : 1;
     bool setupEmpty : 1;

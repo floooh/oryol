@@ -44,16 +44,16 @@ InfiniteSpheresApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Infinite Spheres Sample"));
     this->render->AttachLoader(RawMeshLoader::Create());
-    float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // create resources
     for (int32 i = 0; i < 2; i++) {
         auto rtSetup = TextureSetup::AsRenderTarget(Locator::NonShared(), 512, 512, PixelFormat::R8G8B8, PixelFormat::D16);
-        rtSetup.SetMinFilter(TextureFilterMode::Linear);
-        rtSetup.SetMagFilter(TextureFilterMode::Linear);
-        rtSetup.SetWrapU(TextureWrapMode::Repeat);
-        rtSetup.SetWrapV(TextureWrapMode::Repeat);
+        rtSetup.MinFilter = TextureFilterMode::Linear;
+        rtSetup.MagFilter = TextureFilterMode::Linear;
+        rtSetup.WrapU = TextureWrapMode::Repeat;
+        rtSetup.WrapV = TextureWrapMode::Repeat;
         this->renderTargets[i] = this->render->CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
@@ -65,8 +65,8 @@ InfiniteSpheresApp::OnInit() {
     Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", sphere, prog, 0);
-    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(sphere);

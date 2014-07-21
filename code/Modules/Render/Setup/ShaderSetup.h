@@ -18,18 +18,16 @@ public:
     ShaderSetup();
     /// construct with locator and shader type
     ShaderSetup(const Resource::Locator& loc, ShaderType::Code type);
-    /// get locator
-    const Resource::Locator& GetLocator() const;
-    /// get the shader type
-    ShaderType::Code GetType() const;
+    /// resource locator
+    Resource::Locator Locator;
+    /// shader type
+    ShaderType::Code Type;
     /// add a source code of a shader language syntax
     void AddSource(ShaderLang::Code slang, const Core::String& source);
     /// get the shader sources by shader language version (may return empty string)
-    const Core::String& GetSource(ShaderLang::Code slang) const;
+    const Core::String& Source(ShaderLang::Code slang) const;
     
 private:
-    Resource::Locator loc;
-    ShaderType::Code type;
     Core::String sources[ShaderLang::NumShaderLangs];
 };
     

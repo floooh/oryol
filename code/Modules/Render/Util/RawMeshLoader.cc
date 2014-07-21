@@ -63,21 +63,21 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
         
         // setup vertex buffer attrs
         VertexBufferAttrs vbAttrs;
-        vbAttrs.setNumVertices(hdr->numVertices);
-        vbAttrs.setUsage(mesh.GetSetup().GetVertexUsage());
+        vbAttrs.NumVertices = hdr->numVertices;
+        vbAttrs.BufferUsage = mesh.GetSetup().VertexUsage;
         VertexLayout layout;
         const MeshBuilder::HeaderVertexComponent* comp = (const MeshBuilder::HeaderVertexComponent*) &(hdr[1]);
         for (uint32 i = 0; i < hdr->numVertexComponents; i++, comp++) {
             layout.Add((VertexAttr::Code) comp->attr, (VertexFormat::Code) comp->format);
         }
-        vbAttrs.setVertexLayout(layout);
+        vbAttrs.Layout = layout;
         mesh.setVertexBufferAttrs(vbAttrs);
         
         // setup index buffer attrs
         IndexBufferAttrs ibAttrs;
-        ibAttrs.setNumIndices(hdr->numIndices);
-        ibAttrs.setIndexType((IndexType::Code)hdr->indexType);
-        ibAttrs.setUsage(mesh.GetSetup().GetIndexUsage());
+        ibAttrs.NumIndices = hdr->numIndices;
+        ibAttrs.Type = (IndexType::Code) hdr->indexType;
+        ibAttrs.BufferUsage = mesh.GetSetup().IndexUsage;
         mesh.setIndexBufferAttrs(ibAttrs);
         
         // setup primitive groups
@@ -90,10 +90,10 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
         
         // setup the mesh object
         uint8* vertices = (uint8*) prim;
-        mesh.glSetVertexBuffer(0, this->mshFactory->createVertexBuffer(vertices, hdr->verticesByteSize, vbAttrs.GetUsage()));
+        mesh.glSetVertexBuffer(0, this->mshFactory->createVertexBuffer(vertices, hdr->verticesByteSize, vbAttrs.BufferUsage));
         if (hdr->indexType != IndexType::None) {
             uint8* indices = vertices + hdr->verticesByteSize;
-            mesh.glSetIndexBuffer(this->mshFactory->createIndexBuffer(indices, hdr->indicesByteSize, ibAttrs.GetUsage()));
+            mesh.glSetIndexBuffer(this->mshFactory->createIndexBuffer(indices, hdr->indicesByteSize, ibAttrs.BufferUsage));
         }
         this->mshFactory->attachInstanceBuffer(mesh);
         this->mshFactory->setupVertexLayout(mesh);

@@ -64,7 +64,7 @@ InstancingApp::OnInit() {
 
     // create dynamic instance data mesh
     MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::Dynamic);
-    instanceMeshSetup.VertexLayout().Add(VertexAttr::Instance0, VertexFormat::Float4);
+    instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
     this->instanceMesh = render->CreateResource(instanceMeshSetup);
     
     // setup static draw state
@@ -75,20 +75,20 @@ InstancingApp::OnInit() {
     shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
     shapeBuilder.Build();
     MeshSetup staticMeshSetup = MeshSetup::FromData("box");
-    staticMeshSetup.SetInstanceMesh(this->instanceMesh);
+    staticMeshSetup.InstanceMesh = this->instanceMesh;
     Id mesh = this->render->CreateResource(staticMeshSetup, shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState().SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState().SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
+    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
     this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().GetFramebufferWidth();
-    const float32 fbHeight = this->render->GetDisplayAttrs().GetFramebufferHeight();
+    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();

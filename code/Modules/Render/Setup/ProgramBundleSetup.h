@@ -19,6 +19,9 @@ public:
     ProgramBundleSetup();
     /// construct with resource locator
     ProgramBundleSetup(const Resource::Locator& loc);
+
+    /// the resource locator
+    class Resource::Locator Locator;
     
     /// add a program consisting of precompiled vertex and fragment shader
     void AddProgram(uint32 mask, const Resource::Id& vertexShader, const Resource::Id& fragmentShader);
@@ -29,30 +32,27 @@ public:
     /// bind a shader uniform name to a texture variable slot
     void AddTextureUniform(const Core::String& uniformName, int16 slotIndex);
     
-    /// get the resource locator
-    const Resource::Locator& GetLocator() const;
-    
     /// get number of programs
-    int32 GetNumPrograms() const;
+    int32 NumPrograms() const;
     /// get program mask by index
-    uint32 GetMask(int32 progIndex) const;
+    uint32 Mask(int32 progIndex) const;
     /// get program vertex shader (only valid if setup from precompiled shaders)
-    const Resource::Id& GetVertexShader(int32 progIndex) const;
+    const Resource::Id& VertexShader(int32 progIndex) const;
     /// get program fragment shader (only valid if setup from precompiled shaders)
-    const Resource::Id& GetFragmentShader(int32 progIndex) const;
+    const Resource::Id& FragmentShader(int32 progIndex) const;
     /// get program vertex shader source (only valid if setup from sources)
-    const Core::String& GetVertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const Core::String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
-    const Core::String& GetFragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const Core::String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     
     /// get number of uniforms
-    int32 GetNumUniforms() const;
+    int32 NumUniforms() const;
     /// get uniform name at index
-    const Core::String& GetUniformName(int32 uniformIndex) const;
+    const Core::String& UniformName(int32 uniformIndex) const;
     /// return true if uniform is a texture
     bool IsTextureUniform(int32 uniformIndex) const;
     /// get uniform slot index
-    int16 GetUniformSlot(int32 uniformIndex) const;
+    int16 UniformSlot(int32 uniformIndex) const;
     
 private:
     static const int32 MaxNumProgramEntries = 8;
@@ -77,7 +77,6 @@ private:
         int16 slotIndex;
     };
     
-    Resource::Locator loc;
     int32 numProgramEntries;
     int32 numUniformEntries;
     programEntry programEntries[MaxNumProgramEntries];

@@ -77,21 +77,21 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
 
     // for each program in the bundle...
     const ProgramBundleSetup& setup = progBundle.GetSetup();
-    const int32 numProgs = setup.GetNumPrograms();
+    const int32 numProgs = setup.NumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         
         // lookup or compile vertex shader
         Map<String,String> noDefines;
         GLuint glVertexShader = 0;
         bool deleteVertexShader = false;
-        if (setup.GetVertexShaderSource(progIndex, slang).IsValid()) {
+        if (setup.VertexShaderSource(progIndex, slang).IsValid()) {
             // compile the vertex shader from source
-            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.GetVertexShaderSource(progIndex, slang));
+            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.VertexShaderSource(progIndex, slang));
             deleteVertexShader = true;
         }
         else {
             // vertex shader is precompiled
-            const shader* vertexShader = this->shdPool->Lookup(setup.GetVertexShader(progIndex));
+            const shader* vertexShader = this->shdPool->Lookup(setup.VertexShader(progIndex));
             o_assert(nullptr != vertexShader);
             glVertexShader = vertexShader->glGetShader();
         }
@@ -100,14 +100,14 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // lookup or compile fragment shader
         GLuint glFragmentShader = 0;
         bool deleteFragmentShader = false;
-        if (setup.GetFragmentShaderSource(progIndex, slang).IsValid()) {
+        if (setup.FragmentShaderSource(progIndex, slang).IsValid()) {
             // compile the fragment shader from source
-            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.GetFragmentShaderSource(progIndex, slang));
+            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.FragmentShaderSource(progIndex, slang));
             deleteFragmentShader = true;
         }
         else {
             // fragment shader is precompiled
-            const shader* fragmentShader = this->shdPool->Lookup(setup.GetFragmentShader(progIndex));
+            const shader* fragmentShader = this->shdPool->Lookup(setup.FragmentShader(progIndex));
             o_assert(nullptr != fragmentShader);
             glFragmentShader = fragmentShader->glGetShader();
         }
@@ -159,21 +159,21 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         
         // if linking failed, stop the app
         if (!linkStatus) {
-            o_error("Failed to link program '%d' -> '%s'\n", progIndex, setup.GetLocator().Location().AsCStr());
+            o_error("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
             progBundle.setState(Resource::State::Failed);
             return;
         }
         
         // linking succeeded, store GL program
-        progBundle.addProgram(setup.GetMask(progIndex), glProg);
+        progBundle.addProgram(setup.Mask(progIndex), glProg);
         
         // resolve user uniform locations
         this->glStateWrapper->UseProgram(glProg);
         int32 samplerIndex = 0;
-        const int32 numUniforms = setup.GetNumUniforms();
+        const int32 numUniforms = setup.NumUniforms();
         for (int32 i = 0; i < numUniforms; i++) {
-            const String& name = setup.GetUniformName(i);
-            const int16 slotIndex = setup.GetUniformSlot(i);
+            const String& name = setup.UniformName(i);
+            const int16 slotIndex = setup.UniformSlot(i);
             const GLint glLocation = ::glGetUniformLocation(glProg, name.AsCStr());
             progBundle.bindUniform(progIndex, slotIndex, glLocation);
             

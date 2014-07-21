@@ -70,7 +70,7 @@ glMeshFactory::SetupResource(mesh& msh) {
         o_assert((msh.GetState() == Resource::State::Valid) || (msh.GetState() == Resource::State::Failed));
     }
     else if (setup.ShouldSetupFullScreenQuad()) {
-        o_assert(!setup.GetInstanceMesh().IsValid());
+        o_assert(!setup.InstanceMesh.IsValid());
         this->createFullscreenQuad(msh);
         o_assert(msh.GetState() == Resource::State::Valid);
     }
@@ -163,15 +163,15 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
 //------------------------------------------------------------------------------
 void
 glMeshFactory::attachInstanceBuffer(mesh& msh) {
-    const Resource::Id& instMeshId = msh.GetSetup().GetInstanceMesh();
+    const Resource::Id& instMeshId = msh.GetSetup().InstanceMesh;
     if (instMeshId.IsValid()) {
         o_assert(this->meshPool->QueryState(instMeshId) == Resource::State::Valid);
         const mesh* instMesh = this->meshPool->Lookup(instMeshId);
         msh.setInstanceMesh(instMesh);
         
         // verify that there are no colliding vertex components
-        const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().GetVertexLayout();
-        const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().GetVertexLayout();
+        const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().Layout;
+        const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
             o_assert(!instLayout.Contains(mshLayout.Component(i).Attr()));
         }
@@ -272,7 +272,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
         const std::array<const glMesh*, 2> meshes{ { &msh, instMesh } };
         for (const glMesh* curMesh : meshes) {
             if (nullptr != curMesh) {
-                const VertexLayout& layout = curMesh->GetVertexBufferAttrs().GetVertexLayout();
+                const VertexLayout& layout = curMesh->GetVertexBufferAttrs().Layout;
                 const int32 numComps = layout.NumComponents();
                 for (int i = 0; i < numComps; i++) {
                     const VertexComponent& comp = layout.Component(i);
@@ -382,7 +382,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
-    o_assert(!mesh.GetSetup().GetInstanceMesh().IsValid());
+    o_assert(!mesh.GetSetup().InstanceMesh.IsValid());
     
     // vertices
     float32 vertices[] = {
@@ -392,12 +392,12 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
         -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,     // bottom-left corner
     };
     VertexBufferAttrs vbAttrs;
-    vbAttrs.setNumVertices(4);
-    vbAttrs.setUsage(Usage::Immutable);
+    vbAttrs.NumVertices = 4;
+    vbAttrs.BufferUsage = Usage::Immutable;
     VertexLayout layout;
     layout.Add(VertexAttr::Position, VertexFormat::Float3);
     layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    vbAttrs.setVertexLayout(layout);
+    vbAttrs.Layout = layout;
     mesh.setVertexBufferAttrs(vbAttrs);
     
     // indices
@@ -406,16 +406,16 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
         0, 2, 1,            // topleft -> bottomright -> topright
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
-    ibAttrs.setNumIndices(6);
-    ibAttrs.setIndexType(IndexType::Index16);
-    ibAttrs.setUsage(Usage::Immutable);
+    ibAttrs.NumIndices = 6;
+    ibAttrs.Type = IndexType::Index16;
+    ibAttrs.BufferUsage = Usage::Immutable;
     mesh.setIndexBufferAttrs(ibAttrs);
     
     // primitive grous
     mesh.setNumPrimitiveGroups(1);
     mesh.setPrimitiveGroup(0, PrimitiveGroup(PrimitiveType::Triangles, 0, 6));
-    mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, sizeof(vertices), mesh.GetVertexBufferAttrs().GetUsage()));
-    mesh.glSetIndexBuffer(this->createIndexBuffer(indices, sizeof(indices), mesh.GetIndexBufferAttrs().GetUsage()));
+    mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, sizeof(vertices), mesh.GetVertexBufferAttrs().BufferUsage));
+    mesh.glSetIndexBuffer(this->createIndexBuffer(indices, sizeof(indices), mesh.GetIndexBufferAttrs().BufferUsage));
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
@@ -427,51 +427,51 @@ void
 glMeshFactory::createEmptyMesh(mesh& mesh) {
     
     const MeshSetup& setup = mesh.GetSetup();
-    o_assert(setup.GetNumVertices() > 0);
+    o_assert(setup.NumVertices > 0);
     
-    const int32 numVertices = setup.GetNumVertices();
-    const VertexLayout& layout = setup.VertexLayout();
+    const int32 numVertices = setup.NumVertices;
+    const VertexLayout& layout = setup.Layout;
     const int32 vbSize = numVertices * layout.ByteSize();
     
     VertexBufferAttrs vbAttrs;
-    vbAttrs.setNumVertices(numVertices);
-    vbAttrs.setVertexLayout(layout);
-    vbAttrs.setUsage(setup.GetVertexUsage());
+    vbAttrs.NumVertices = numVertices;
+    vbAttrs.Layout = layout;
+    vbAttrs.BufferUsage = setup.VertexUsage;
     mesh.setVertexBufferAttrs(vbAttrs);
     
-    const int32 numIndices = setup.GetNumIndices();
-    const IndexType::Code indexType = setup.GetIndexType();
+    const int32 numIndices = setup.NumIndices;
+    const IndexType::Code indexType = setup.IndicesType;
     const int32 ibSize = numIndices * IndexType::ByteSize(indexType);
     
     IndexBufferAttrs ibAttrs;
-    ibAttrs.setNumIndices(setup.GetNumIndices());
-    ibAttrs.setIndexType(setup.GetIndexType());
-    ibAttrs.setUsage(setup.GetIndexUsage());
+    ibAttrs.NumIndices = setup.NumIndices;
+    ibAttrs.Type = setup.IndicesType;
+    ibAttrs.BufferUsage = setup.IndexUsage;
     mesh.setIndexBufferAttrs(ibAttrs);
     
-    const int32 numPrimGroups = setup.GetNumPrimitiveGroups();
+    const int32 numPrimGroups = setup.NumPrimitiveGroups();
     if (numPrimGroups > 0) {
         mesh.setNumPrimitiveGroups(numPrimGroups);
         for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.setPrimitiveGroup(i, setup.GetPrimitiveGroup(i));
+            mesh.setPrimitiveGroup(i, setup.PrimitiveGroup(i));
         }
     }
     
     // if this is a dynamic mesh, we actually create 2 vertex buffers for double-buffered updated
-    if (Usage::Dynamic == vbAttrs.GetUsage()) {
+    if (Usage::Dynamic == vbAttrs.BufferUsage) {
         const uint8 numSlots = 2;
         mesh.setNumVertexBufferSlots(numSlots);
         mesh.setNumVAOSlots(numSlots);
         for (uint8 slotIndex = 0; slotIndex < numSlots; slotIndex++) {
-            mesh.glSetVertexBuffer(slotIndex, this->createVertexBuffer(nullptr, vbSize, vbAttrs.GetUsage()));
+            mesh.glSetVertexBuffer(slotIndex, this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage));
         }
     }
     else {
         // normal static or stream-dynamic mesh, no double-buffering
-        mesh.glSetVertexBuffer(0, this->createVertexBuffer(nullptr, vbSize, vbAttrs.GetUsage()));
+        mesh.glSetVertexBuffer(0, this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage));
     }
     if (indexType != IndexType::None) {
-        mesh.glSetIndexBuffer(this->createIndexBuffer(nullptr, ibSize, ibAttrs.GetUsage()));
+        mesh.glSetIndexBuffer(this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage));
     }
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);

@@ -22,20 +22,20 @@ public:
     const Resource::Locator& GetLocator() const;
     
     /// get texture type
-    TextureType::Code GetType() const;
+    TextureType::Code Type() const;
     /// get color pixel format
-    PixelFormat::Code GetColorFormat() const;
+    PixelFormat::Code ColorFormat() const;
     /// get depth pixel format
-    PixelFormat::Code GetDepthFormat() const;
+    PixelFormat::Code DepthFormat() const;
     /// get usage
     Usage::Code GetUsage() const;
     
     /// get width
-    int32 GetWidth() const;
+    int32 Width() const;
     /// get height
-    int32 GetHeight() const;
+    int32 Height() const;
     /// get depth
-    int32 GetDepth() const;
+    int32 Depth() const;
     
     /// return true if the texture has a mipmap chain
     bool HasMipmaps() const;
@@ -99,19 +99,19 @@ TextureAttrs::GetLocator() const {
 
 //------------------------------------------------------------------------------
 inline TextureType::Code
-TextureAttrs::GetType() const {
+TextureAttrs::Type() const {
     return this->type;
 }
 
 //------------------------------------------------------------------------------
 inline PixelFormat::Code
-TextureAttrs::GetColorFormat() const {
+TextureAttrs::ColorFormat() const {
     return this->colorFormat;
 }
 
 //------------------------------------------------------------------------------
 inline PixelFormat::Code
-TextureAttrs::GetDepthFormat() const {
+TextureAttrs::DepthFormat() const {
     return this->depthFormat;
 }
 
@@ -123,19 +123,19 @@ TextureAttrs::GetUsage() const {
 
 //------------------------------------------------------------------------------
 inline int32
-TextureAttrs::GetWidth() const {
+TextureAttrs::Width() const {
     return this->width;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-TextureAttrs::GetHeight() const {
+TextureAttrs::Height() const {
     return this->height;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-TextureAttrs::GetDepth() const {
+TextureAttrs::Depth() const {
     return this->depth;
 }
 
