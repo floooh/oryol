@@ -13,6 +13,10 @@ Use **'git clone --recursive https://github.com/floooh/oryol.git oryol'** to clo
 
 If you have cloned without the submodules, use **'git submodule update --init --recursive'** to fetch the submodules.
 
+### Warning
+
+The Module APIs are currently extremely in flux, so don't use Oryol yet for anything serious!
+
 ### Goals
 
 1. github-centric distributed development model, this is only an idea at the moment:
