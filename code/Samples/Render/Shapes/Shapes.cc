@@ -58,8 +58,8 @@ ShapeApp::OnInit() {
     Id prog = this->render->CreateResource(Shaders::Shapes::CreateSetup());
     
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.DepthWriteEnabled = true;
+    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = this->render->CreateResource(dsSetup);
 
     this->render->ReleaseResource(mesh);

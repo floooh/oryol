@@ -231,11 +231,11 @@ debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
     
     // finally create draw state
     DrawStateSetup dss("_dbgDrawState", this->textMesh, prog, 0);
-    dss.DepthStencilState.SetDepthWriteEnabled(false);
-    dss.DepthStencilState.SetDepthCompareFunc(CompareFunc::Always);
-    dss.BlendState.SetEnabled(true);
-    dss.BlendState.SetSrcFactorRGB(BlendFactor::SrcAlpha);
-    dss.BlendState.SetDstFactorRGB(BlendFactor::OneMinusSrcAlpha);
+    dss.DepthStencilState.DepthWriteEnabled = false;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    dss.BlendState.BlendEnabled = true;
+    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
     this->textDrawState = renderFacade->CreateResource(dss);
     
     // fix resource use counts

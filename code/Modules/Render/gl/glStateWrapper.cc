@@ -280,22 +280,22 @@ glStateWrapper::setupDepthStencilState() {
 void
 glStateWrapper::applyStencilState(const StencilState& newState, const StencilState& curState, GLenum glFace) {
 
-    const CompareFunc::Code cmpFunc = newState.GetCompareFunc();
-    const uint32 readMask = newState.GetReadMask();
-    const int32 stencilRef = newState.GetRef();
-    if ((cmpFunc != curState.GetCompareFunc()) || (readMask != curState.GetReadMask()) || (stencilRef != curState.GetRef())) {
+    const CompareFunc::Code cmpFunc = newState.StencilCmpFunc;
+    const uint32 readMask = newState.StencilReadMask;
+    const int32 stencilRef = newState.StencilRef;
+    if ((cmpFunc != curState.StencilCmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
     
-    const StencilOp::Code sFailOp = newState.GetStencilFailOp();
-    const StencilOp::Code dFailOp = newState.GetDepthFailOp();
-    const StencilOp::Code passOp = newState.GetDepthStencilPassOp();
-    if ((sFailOp != curState.GetStencilFailOp()) || (dFailOp != curState.GetDepthFailOp()) || (passOp  != curState.GetDepthStencilPassOp())) {
+    const StencilOp::Code sFailOp = newState.StencilFailOp;
+    const StencilOp::Code dFailOp = newState.DepthFailOp;
+    const StencilOp::Code passOp = newState.DepthStencilPassOp;
+    if ((sFailOp != curState.StencilFailOp) || (dFailOp != curState.DepthFailOp) || (passOp  != curState.DepthStencilPassOp)) {
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
-    const uint32 writeMask = newState.GetWriteMask();
-    if (writeMask != curState.GetWriteMask()) {
+    const uint32 writeMask = newState.StencilWriteMask;
+    if (writeMask != curState.StencilWriteMask) {
         ::glStencilMask(writeMask);
     }
 }
@@ -308,13 +308,13 @@ glStateWrapper::applyDepthStencilState(const DepthStencilState& newState) {
 
     // apply depth state if changed
     bool depthChanged = false;
-    if (curState.GetDepthStateHash() != newState.GetDepthStateHash()) {
-        const CompareFunc::Code depthCmpFunc = newState.GetDepthCompareFunc();
-        const bool depthWriteEnabled = newState.GetDepthWriteEnabled();
-        if (depthCmpFunc != curState.GetDepthCompareFunc()) {
+    if (curState.DepthStateHash != newState.DepthStateHash) {
+        const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
+        const bool depthWriteEnabled = newState.DepthWriteEnabled;
+        if (depthCmpFunc != curState.DepthCmpFunc) {
             ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
         }
-        if (depthWriteEnabled != curState.GetDepthWriteEnabled()) {
+        if (depthWriteEnabled != curState.DepthWriteEnabled) {
             ::glDepthMask(depthWriteEnabled);
         }
         depthChanged = true;
@@ -322,23 +322,23 @@ glStateWrapper::applyDepthStencilState(const DepthStencilState& newState) {
     
     // apply front and back stencil state
     bool frontChanged = false;
-    const StencilState& newFront = newState.StencilState(Face::Front);
-    const StencilState& curFront = curState.StencilState(Face::Front);
-    if (curFront.GetHash() != newFront.GetHash()) {
+    const StencilState& newFront = newState.StencilFront;
+    const StencilState& curFront = curState.StencilFront;
+    if (curFront.Hash != newFront.Hash) {
         frontChanged = true;
         this->applyStencilState(newFront, curFront, GL_FRONT);
     }
     bool backChanged = false;
-    const StencilState& newBack = newState.StencilState(Face::Back);
-    const StencilState& curBack = curState.StencilState(Face::Back);
-    if (curBack.GetHash() != newBack.GetHash()) {
+    const StencilState& newBack = newState.StencilBack;
+    const StencilState& curBack = curState.StencilBack;
+    if (curBack.Hash != newBack.Hash) {
         backChanged = true;
         this->applyStencilState(newBack, curBack, GL_BACK);
     }
     
     // enable/disable stencil state?
     if (frontChanged || backChanged) {
-        if (newFront.GetEnabled() || newBack.GetEnabled()) {
+        if (newFront.StencilEnabled || newBack.StencilEnabled) {
             ::glEnable(GL_STENCIL_TEST);
         }
         else {
@@ -367,9 +367,8 @@ glStateWrapper::setupBlendState() {
 void
 glStateWrapper::applyBlendState(const BlendState& bs) {
 
-    const bool blendEnabled = bs.GetEnabled();
-    if (blendEnabled != this->curBlendState.GetEnabled()) {
-        if (blendEnabled) {
+    if (bs.BlendEnabled != this->curBlendState.BlendEnabled) {
+        if (bs.BlendEnabled) {
             ::glEnable(GL_BLEND);
         }
         else {
@@ -377,35 +376,27 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
         }
     }
     
-    const BlendFactor::Code srcRgb = bs.GetSrcFactorRGB();
-    const BlendFactor::Code dstRgb = bs.GetDstFactorRGB();
-    const BlendFactor::Code srcAlpha = bs.GetSrcFactorAlpha();
-    const BlendFactor::Code dstAlpha = bs.GetDstFactorAlpha();
-    if ((srcRgb != this->curBlendState.GetSrcFactorRGB()) ||
-        (dstRgb != this->curBlendState.GetDstFactorRGB()) ||
-        (srcAlpha != this->curBlendState.GetSrcFactorAlpha()) ||
-        (dstAlpha != this->curBlendState.GetDstFactorAlpha())) {
+    if ((bs.SrcFactorRGB != this->curBlendState.SrcFactorRGB) ||
+        (bs.DstFactorRGB != this->curBlendState.DstFactorRGB) ||
+        (bs.SrcFactorAlpha != this->curBlendState.SrcFactorAlpha) ||
+        (bs.DstFactorAlpha != this->curBlendState.DstFactorAlpha)) {
         
-        ::glBlendFuncSeparate(mapBlendFactor[srcRgb],
-                              mapBlendFactor[dstRgb],
-                              mapBlendFactor[srcAlpha],
-                              mapBlendFactor[dstAlpha]);
+        ::glBlendFuncSeparate(mapBlendFactor[bs.SrcFactorRGB],
+                              mapBlendFactor[bs.DstFactorRGB],
+                              mapBlendFactor[bs.SrcFactorAlpha],
+                              mapBlendFactor[bs.DstFactorAlpha]);
+    }
+    if ((bs.OpRGB != this->curBlendState.OpRGB) ||
+        (bs.OpAlpha != this->curBlendState.OpAlpha)) {
+
+        ::glBlendEquationSeparate(mapBlendOp[bs.OpRGB], mapBlendOp[bs.OpAlpha]);
     }
 
-    const BlendOperation::Code rgbOp = bs.GetOpRGB();
-    const BlendOperation::Code alphaOp = bs.GetOpAlpha();
-    if ((rgbOp != this->curBlendState.GetOpRGB()) ||
-        (alphaOp != this->curBlendState.GetOpAlpha())) {
-
-        ::glBlendEquationSeparate(mapBlendOp[rgbOp], mapBlendOp[alphaOp]);
-    }
-
-    const ColorWriteMask::Code colorMask = bs.GetColorWriteMask();
-    if (colorMask != this->curBlendState.GetColorWriteMask()) {
-        ::glColorMask((colorMask & ColorWriteMask::R) != 0,
-                      (colorMask & ColorWriteMask::G) != 0,
-                      (colorMask & ColorWriteMask::B) != 0,
-                      (colorMask & ColorWriteMask::A) != 0);
+    if (bs.WriteMask != this->curBlendState.WriteMask) {
+        ::glColorMask((bs.WriteMask & ColorWriteMask::R) != 0,
+                      (bs.WriteMask & ColorWriteMask::G) != 0,
+                      (bs.WriteMask & ColorWriteMask::B) != 0,
+                      (bs.WriteMask & ColorWriteMask::A) != 0);
     }
     
     this->curBlendState = bs;

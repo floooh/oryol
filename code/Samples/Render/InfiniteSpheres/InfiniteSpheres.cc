@@ -65,8 +65,8 @@ InfiniteSpheresApp::OnInit() {
     Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", sphere, prog, 0);
-    dsSetup.DepthStencilState.SetDepthWriteEnabled(true);
-    dsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
+    dsSetup.DepthStencilState.DepthWriteEnabled = true;
+    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = this->render->CreateResource(dsSetup);
     
     this->render->ReleaseResource(sphere);

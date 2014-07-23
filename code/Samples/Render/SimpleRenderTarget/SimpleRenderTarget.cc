@@ -78,12 +78,12 @@ SimpleRenderTargetApp::OnInit() {
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     DrawStateSetup offdsSetup("offds", torus, offScreenProg, 0);
-    offdsSetup.DepthStencilState.SetDepthWriteEnabled(true);
-    offdsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
+    offdsSetup.DepthStencilState.DepthWriteEnabled = true;
+    offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->offscreenDrawState = this->render->CreateResource(offdsSetup);
     DrawStateSetup dispdsSetup("dispds", sphere, dispProg, 0);
-    dispdsSetup.DepthStencilState.SetDepthWriteEnabled(true);
-    dispdsSetup.DepthStencilState.SetDepthCompareFunc(CompareFunc::LessEqual);
+    dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
+    dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->displayDrawState = this->render->CreateResource(dispdsSetup);
     
     this->render->ReleaseResource(torus);
