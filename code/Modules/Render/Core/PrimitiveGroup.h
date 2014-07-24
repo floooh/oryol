@@ -17,47 +17,25 @@ namespace Render {
 
 class PrimitiveGroup {
 public:
+    PrimitiveType::Code PrimType;
+    int32 BaseElement;
+    int32 NumElements;
+
     /// default constructor
-    PrimitiveGroup();
+    PrimitiveGroup() :
+        PrimType(PrimitiveType::InvalidPrimitiveType),
+        BaseElement(0),
+        NumElements(0) {
+        // empty
+    }
     /// construct for indexed or non-indexed
-    PrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements);
-    
-    /// set the primitive type
-    void SetPrimitiveType(PrimitiveType::Code type);
-    /// get the primitive type
-    PrimitiveType::Code GetPrimitiveType() const;
-    /// set the base element index (either a vertex-index, or an index-index)
-    void SetBaseElement(int32 index);
-    /// get the base element
-    int32 GetBaseElement() const;
-    /// set num elements in primitive group
-    void SetNumElements(int32 num);
-    /// get num elements
-    int32 GetNumElements() const;
-    
-private:
-    PrimitiveType::Code type;
-    int32 baseElement;
-    int32 numElements;
+    PrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements) :
+        PrimType(type),
+        BaseElement(baseElement),
+        NumElements(numElements) {
+        // empty
+    }
 };
-
-//------------------------------------------------------------------------------
-inline PrimitiveType::Code
-PrimitiveGroup::GetPrimitiveType() const {
-    return this->type;
-}
-
-//------------------------------------------------------------------------------
-inline int32
-PrimitiveGroup::GetBaseElement() const {
-    return this->baseElement;
-}
-
-//------------------------------------------------------------------------------
-inline int32
-PrimitiveGroup::GetNumElements() const {
-    return this->numElements;
-}
 
 } // namespace Render
 } // namespace Oryol

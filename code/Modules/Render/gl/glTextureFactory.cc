@@ -168,8 +168,8 @@ glTextureFactory::createRenderTarget(texture& tex) {
         // from the original render target
         texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
         o_assert(nullptr != sharedDepthProvider);
-        width = sharedDepthProvider->GetTextureAttrs().Width();
-        height = sharedDepthProvider->GetTextureAttrs().Height();
+        width = sharedDepthProvider->GetTextureAttrs().Width;
+        height = sharedDepthProvider->GetTextureAttrs().Height;
     }
     else {
         width = setup.Width;
@@ -249,18 +249,18 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // setup texture attrs and set on texture
     TextureAttrs attrs;
-    attrs.setLocator(setup.Locator);
-    attrs.setType(TextureType::Texture2D);
-    attrs.setColorFormat(setup.ColorFormat);
-    attrs.setDepthFormat(setup.DepthFormat);
-    attrs.setUsage(Usage::Immutable);
-    attrs.setWidth(width);
-    attrs.setHeight(height);
-    attrs.setMipmapsFlag(false);
-    attrs.setRenderTargetFlag(true);
-    attrs.setDepthBufferFlag(setup.HasDepth());
-    attrs.setSharedDepthBufferFlag(setup.HasSharedDepth());
-    attrs.setDepthTextureFlag(false);
+    attrs.Locator = setup.Locator;
+    attrs.Type = TextureType::Texture2D;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.DepthFormat = setup.DepthFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = width;
+    attrs.Height = height;
+    attrs.HasMipmaps = false;
+    attrs.IsRenderTarget = true;
+    attrs.HasDepthBuffer = setup.HasDepth();
+    attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
+    attrs.IsDepthTexture = false;
     
     // setup the texture object
     tex.setTextureAttrs(attrs);
@@ -329,13 +329,13 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     
     // setup texture attributes
     TextureAttrs attrs;
-    attrs.setLocator(setup.Locator);
-    attrs.setType(TextureType::Texture2D);
-    attrs.setColorFormat(setup.ColorFormat);
-    attrs.setUsage(Usage::Immutable);
-    attrs.setWidth(width);
-    attrs.setHeight(height);
-    attrs.setMipmapsFlag(setup.HasMipMaps());
+    attrs.Locator = setup.Locator;
+    attrs.Type = TextureType::Texture2D;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = width;
+    attrs.Height = height;
+    attrs.HasMipmaps = setup.HasMipMaps();
     
     // setup texture
     tex.setTextureAttrs(attrs);

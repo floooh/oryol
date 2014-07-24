@@ -93,8 +93,8 @@ renderMgrBase::ApplyRenderTarget(texture* rt) {
     }
     else {
         const TextureAttrs& attrs = rt->GetTextureAttrs();
-        width = attrs.Width();
-        height = attrs.Height();
+        width = attrs.Width;
+        height = attrs.Height;
     }
     this->stateWrapper->ApplyState(State::ViewPort, 0, 0, width, height);
 }

@@ -31,7 +31,7 @@ void
 VertexLayout::Add(const VertexComponent& comp) {
     o_assert(this->numComps < MaxNumVertexComponents);
     this->comps[this->numComps] = comp;
-    this->attrCompIndices[comp.Attr()] = this->numComps;
+    this->attrCompIndices[comp.Attr] = this->numComps;
     this->byteOffsets[this->numComps] = this->byteSize;
     this->byteSize += comp.ByteSize();
     this->numComps++;

@@ -211,7 +211,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x) {
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format, x);
 }
     
 //------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y)
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format, x, y);
 }
     
 //------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y,
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y, z);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format, x, y, z);
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y,
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format(), x, y, z, w);
+    VertexWriter::Write(ptr, this->layout.Component(compIndex).Format, x, y, z, w);
 }
 
 } // namespace Render

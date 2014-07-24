@@ -82,10 +82,10 @@ TEST(MeshSetupTest) {
     CHECK(s6.NumIndices == 0);
     CHECK(s6.IndicesType == IndexType::None);
     CHECK(s6.Layout.NumComponents() == 2);
-    CHECK(s6.Layout.Component(0).Attr() == VertexAttr::Position);
-    CHECK(s6.Layout.Component(0).Format() == VertexFormat::Float3);
-    CHECK(s6.Layout.Component(1).Attr() == VertexAttr::TexCoord0);
-    CHECK(s6.Layout.Component(1).Format() == VertexFormat::Float2);
+    CHECK(s6.Layout.Component(0).Attr == VertexAttr::Position);
+    CHECK(s6.Layout.Component(0).Format == VertexFormat::Float3);
+    CHECK(s6.Layout.Component(1).Attr == VertexAttr::TexCoord0);
+    CHECK(s6.Layout.Component(1).Format == VertexFormat::Float2);
     
     MeshSetup s7 = MeshSetup::CreateEmpty("s7", 256, Usage::Dynamic, IndexType::Index16, 512, Usage::Stream);
     s7.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
@@ -103,8 +103,8 @@ TEST(MeshSetupTest) {
     CHECK(s7.IndicesType == IndexType::Index16);
     CHECK(s7.Layout.NumComponents() == 2);
     CHECK(s7.NumPrimitiveGroups() == 1);
-    CHECK(s7.PrimitiveGroup(0).GetPrimitiveType() == PrimitiveType::Triangles);
-    CHECK(s7.PrimitiveGroup(0).GetBaseElement() == 0);
-    CHECK(s7.PrimitiveGroup(0).GetNumElements() == 64);
+    CHECK(s7.PrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
+    CHECK(s7.PrimitiveGroup(0).BaseElement == 0);
+    CHECK(s7.PrimitiveGroup(0).NumElements == 64);
 }
 

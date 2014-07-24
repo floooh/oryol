@@ -123,16 +123,16 @@ MeshBuilder::Begin() {
     HeaderVertexComponent* hdrComp = (HeaderVertexComponent*) (this->headerPointer + sizeof(Header));
     for (int32 i = 0; i < this->layout.NumComponents(); i++, hdrComp++) {
         const VertexComponent& src = this->layout.Component(i);
-        hdrComp->attr   = src.Attr();
-        hdrComp->format = src.Format();
+        hdrComp->attr   = src.Attr;
+        hdrComp->format = src.Format;
     }
     
     HeaderPrimitiveGroup* hdrPrimGroup = (HeaderPrimitiveGroup*) hdrComp;
     for (int32 i = 0; i < this->primGroups.Size(); i++, hdrPrimGroup++) {
         const PrimitiveGroup& src = this->primGroups[i];
-        hdrPrimGroup->type = (uint32) src.GetPrimitiveType();
-        hdrPrimGroup->baseElement = src.GetBaseElement();
-        hdrPrimGroup->numElements = src.GetNumElements();
+        hdrPrimGroup->type = (uint32) src.PrimType;
+        hdrPrimGroup->baseElement = src.BaseElement;
+        hdrPrimGroup->numElements = src.NumElements;
     }
     o_assert((uint8*)hdrPrimGroup == this->vertexPointer);
 }

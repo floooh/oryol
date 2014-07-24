@@ -423,8 +423,8 @@ void
 glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
     const RasterizerState& curState = this->curRasterizerState;
 
-    const bool cullFaceEnabled = newState.GetCullFaceEnabled();
-    if (cullFaceEnabled != curState.GetCullFaceEnabled()) {
+    const bool cullFaceEnabled = newState.CullFaceEnabled;
+    if (cullFaceEnabled != curState.CullFaceEnabled) {
         if (cullFaceEnabled) {
             ::glEnable(GL_CULL_FACE);
         }
@@ -432,12 +432,12 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_CULL_FACE);
         }
     }
-    const Face::Code cullFace = newState.GetCullFace();
-    if (cullFace != curState.GetCullFace()) {
+    const Face::Code cullFace = newState.CullFace;
+    if (cullFace != curState.CullFace) {
         ::glCullFace(mapCullFace[cullFace]);
     }
-    const bool depthOffsetEnabled = newState.GetDepthOffsetEnabled();
-    if (depthOffsetEnabled != curState.GetDepthOffsetEnabled()) {
+    const bool depthOffsetEnabled = newState.DepthOffsetEnabled;
+    if (depthOffsetEnabled != curState.DepthOffsetEnabled) {
         if (depthOffsetEnabled) {
             ::glEnable(GL_POLYGON_OFFSET_FILL);
         }
@@ -445,8 +445,8 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_POLYGON_OFFSET_FILL);
         }
     }
-    const bool scissorTestEnabled = newState.GetScissorTestEnabled();
-    if (scissorTestEnabled != curState.GetScissorTestEnabled()) {
+    const bool scissorTestEnabled = newState.ScissorTestEnabled;
+    if (scissorTestEnabled != curState.ScissorTestEnabled) {
         if (scissorTestEnabled) {
             ::glEnable(GL_SCISSOR_TEST);
         }
@@ -454,8 +454,8 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_SCISSOR_TEST);
         }
     }
-    const bool ditherEnabled = newState.GetDitherEnabled();
-    if (ditherEnabled != curState.GetDitherEnabled()) {
+    const bool ditherEnabled = newState.DitherEnabled;
+    if (ditherEnabled != curState.DitherEnabled) {
         if (ditherEnabled) {
             ::glEnable(GL_DITHER);
         }

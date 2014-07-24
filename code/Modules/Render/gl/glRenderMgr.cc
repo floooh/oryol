@@ -288,18 +288,16 @@ glRenderMgr::Draw(const PrimitiveGroup& primGroup) {
     o_assert2_dbg(this->renderTargetValid, "No render target set!");
     ORYOL_GL_CHECK_ERROR();
 
-    const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
-        const int32 numElms = primGroup.GetNumElements();
-        ::glDrawElements(primType, numElms, indexType, indices);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+        ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
     }
     else {
         // non-indexed geometry
-        ::glDrawArrays(primType, primGroup.GetBaseElement(), primGroup.GetNumElements());
+        ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -329,20 +327,16 @@ glRenderMgr::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     o_assert2_dbg(this->renderTargetValid, "No render target set!");
 
     ORYOL_GL_CHECK_ERROR();    
-    const PrimitiveType::Code primType = primGroup.GetPrimitiveType();
     const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.GetBaseElement() * indexByteSize);
-        const int32 numElms = primGroup.GetNumElements();
-        glExt::DrawElementsInstanced(primType, numElms, indexType, indices, numInstances);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+        glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
     }
     else {
         // non-indexed geometry
-        const int32 baseElm = primGroup.GetBaseElement();
-        const int32 numElms = primGroup.GetNumElements();
-        glExt::DrawArraysInstanced(primType, baseElm, numElms, numInstances);
+        glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
     }
     ORYOL_GL_CHECK_ERROR();
 }

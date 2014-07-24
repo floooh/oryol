@@ -173,7 +173,7 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().Layout;
         const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
-            o_assert(!instLayout.Contains(mshLayout.Component(i).Attr()));
+            o_assert(!instLayout.Contains(mshLayout.Component(i).Attr));
         }
     }
 }
@@ -276,7 +276,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                 const int32 numComps = layout.NumComponents();
                 for (int i = 0; i < numComps; i++) {
                     const VertexComponent& comp = layout.Component(i);
-                    glVertexAttr& glAttr = msh.glAttr(vaoSlotIndex, comp.Attr());  // msh is not a bug
+                    glVertexAttr& glAttr = msh.glAttr(vaoSlotIndex, comp.Attr);  // msh is not a bug
                     glAttr.enabled = GL_TRUE;
                     if (curMesh == &msh) {
                         if (instMesh) {
@@ -294,7 +294,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                         glAttr.vertexBuffer = instMesh->glGetVertexBuffer(vaoSlotIndex);
                         glAttr.divisor = 1;
                     }
-                    switch (comp.Format()) {
+                    switch (comp.Format) {
                         case VertexFormat::Float:
                             glAttr.size = 1;
                             glAttr.type = GL_FLOAT;

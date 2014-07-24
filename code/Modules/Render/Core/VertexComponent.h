@@ -17,43 +17,47 @@ public:
     /// constructor
     VertexComponent(VertexAttr::Code attr, VertexFormat::Code format);
     /// return true if valid (name and format set)
-    bool Valid() const;
+    bool IsValid() const;
     /// clear/invalidate the vertex component
     void Clear();
-    /// get vertex attribute
-    VertexAttr::Code Attr() const;
-    /// get vertex format
-    VertexFormat::Code Format() const;
     /// get byte size of component
     int32 ByteSize() const;
     
-private:
-    VertexAttr::Code attr;
-    VertexFormat::Code format;
+    VertexAttr::Code Attr;
+    VertexFormat::Code Format;
 };
 
 //------------------------------------------------------------------------------
+inline VertexComponent::VertexComponent() :
+Attr(VertexAttr::InvalidVertexAttr),
+Format(VertexFormat::InvalidVertexFormat) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+inline VertexComponent::VertexComponent(VertexAttr::Code att, VertexFormat::Code fmt) :
+Attr(att),
+Format(fmt) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+inline void
+VertexComponent::Clear() {
+    this->Attr = VertexAttr::InvalidVertexAttr;
+    this->Format = VertexFormat::InvalidVertexFormat;
+}
+    
+//------------------------------------------------------------------------------
 inline bool
-VertexComponent::Valid() const {
-    return (VertexAttr::InvalidVertexAttr != this->attr) && (VertexFormat::InvalidVertexFormat != this->format);
-}
-
-//------------------------------------------------------------------------------
-inline VertexAttr::Code
-VertexComponent::Attr() const {
-    return this->attr;
-}
-
-//------------------------------------------------------------------------------
-inline VertexFormat::Code
-VertexComponent::Format() const {
-    return this->format;
+VertexComponent::IsValid() const {
+    return (VertexAttr::InvalidVertexAttr != this->Attr) && (VertexFormat::InvalidVertexFormat != this->Format);
 }
 
 //------------------------------------------------------------------------------
 inline int32
 VertexComponent::ByteSize() const {
-    return VertexFormat::ByteSize(this->format);
+    return VertexFormat::ByteSize(this->Format);
 }
 
 } // namespace Render

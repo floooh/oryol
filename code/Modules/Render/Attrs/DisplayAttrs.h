@@ -14,8 +14,7 @@
 namespace Oryol {
 namespace Render {
 
-class DisplayAttrs {
-public:
+struct DisplayAttrs {
     int32 WindowWidth{0};
     int32 WindowHeight{0};
     int32 WindowPosX{0};

@@ -54,17 +54,17 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.GetVertexBufferAttrs().NumVertices == 24);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.NumComponents() == 1);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.ByteSize() == 12);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Valid());
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Attr() == VertexAttr::Position);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Format() == VertexFormat::Float3);
+    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).IsValid());
+    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Attr == VertexAttr::Position);
+    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Format == VertexFormat::Float3);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).ByteSize() == 12);
     CHECK(simpleCube.GetIndexBufferAttrs().NumIndices == 36);
     CHECK(simpleCube.GetIndexBufferAttrs().Type == IndexType::Index16);
     CHECK(simpleCube.GetIndexBufferAttrs().BufferUsage == Usage::Immutable);
     CHECK(simpleCube.GetNumPrimitiveGroups() == 1);
-    CHECK(simpleCube.GetPrimitiveGroup(0).GetPrimitiveType() == PrimitiveType::Triangles);
-    CHECK(simpleCube.GetPrimitiveGroup(0).GetBaseElement() == 0);
-    CHECK(simpleCube.GetPrimitiveGroup(0).GetNumElements() == 36);
+    CHECK(simpleCube.GetPrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
+    CHECK(simpleCube.GetPrimitiveGroup(0).BaseElement == 0);
+    CHECK(simpleCube.GetPrimitiveGroup(0).NumElements == 36);
     #if ORYOL_OPENGL
     CHECK(simpleCube.glGetVertexBuffer(0) != 0);
     CHECK(simpleCube.glGetIndexBuffer() != 0);

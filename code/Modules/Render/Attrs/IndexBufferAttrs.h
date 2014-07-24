@@ -9,15 +9,10 @@
 namespace Oryol {
 namespace Render {
 
-class IndexBufferAttrs {
-public:
-    /// number of indices
+struct IndexBufferAttrs {
     int32 NumIndices{0};
-    /// index type
     IndexType::Code Type{IndexType::InvalidIndexType};
-    /// usage
     Usage::Code BufferUsage{Usage::InvalidUsage};
-    /// get byte size (computed)
     int32 ByteSize() const {
         return NumIndices * IndexType::ByteSize(Type);
     };

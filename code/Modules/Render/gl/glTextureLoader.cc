@@ -233,25 +233,25 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     
     // setup texture attributes
     TextureAttrs attrs;
-    attrs.setLocator(setup.Locator);
+    attrs.Locator = setup.Locator;
     if (ctx.is_2d()) {
         if (ctx.num_faces() > 1) {
-            attrs.setType(TextureType::TextureCube);
+            attrs.Type = TextureType::TextureCube;
         }
         else {
-            attrs.setType(TextureType::Texture2D);
+            attrs.Type = TextureType::Texture2D;
         }
     }
     else if (ctx.is_3d()) {
-        attrs.setType(TextureType::Texture3D);
+        attrs.Type = TextureType::Texture3D;
     }
-    attrs.setColorFormat(setup.ColorFormat);
-    attrs.setDepthFormat(setup.DepthFormat);
-    attrs.setUsage(Usage::Immutable);
-    attrs.setWidth(ctx.image_width(0, 0));
-    attrs.setHeight(ctx.image_height(0, 0));
-    attrs.setDepth(ctx.image_depth(0, 0));
-    attrs.setMipmapsFlag(ctx.num_mipmaps(0) > 1);
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.DepthFormat = setup.DepthFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = ctx.image_width(0, 0);
+    attrs.Height = ctx.image_height(0, 0);
+    attrs.Depth = ctx.image_depth(0, 0);
+    attrs.HasMipmaps = ctx.num_mipmaps(0) > 1;
     
     // setup texture
     tex.setTextureAttrs(attrs);
