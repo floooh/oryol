@@ -56,7 +56,7 @@ TextureFloatApp::OnInit() {
     
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
-    auto rtSetup = TextureSetup::AsRelSizeRenderTarget("rt", 1.0f, 1.0f, PixelFormat::RGBA32F, PixelFormat::D16);
+    auto rtSetup = TextureSetup::AsRelSizeRenderTarget("rt", 1.0f, 1.0f, PixelFormat::RGBA32F, PixelFormat::None);
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     this->renderTarget = this->render->CreateResource(rtSetup);
@@ -101,10 +101,6 @@ TextureFloatApp::OnRunning() {
     if (this->render->BeginFrame()) {
         
         this->time += 1.0f / 60.0f;
-        
-        // apply general states
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
         
         // render shapes to offscreen render target
         this->render->ApplyOffscreenRenderTarget(this->renderTarget);
