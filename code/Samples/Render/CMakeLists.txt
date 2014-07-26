@@ -11,3 +11,5 @@ oryol_add_subdirectory(FullscreenQuad)
 oryol_add_subdirectory(PBRendering)
 oryol_add_subdirectory(Instancing)
 oryol_add_subdirectory(TextureFloat)
+oryol_add_subdirectory(VertexTexture)
+
