@@ -360,13 +360,18 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     glm::vec4 pos(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 norm;
     for (int32 topBottom = 0; topBottom < 2; topBottom++) {
-        pos.y = (topBottom == 0) ? y0 : y1;
+        pos.y = (0 == topBottom) ? y0 : y1;
         if (hasNormals) {
             norm = (topBottom == 0) ? glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) : glm::vec4(0.0f, +1.0f, 0.0f, 0.0f);
             norm = shape.transform * norm;
         }
         for (int32 ix = 0; ix <= numTiles; ix++) {
-            pos.x = x0 + dx * ix;
+            if (0 == topBottom) {
+                pos.x = x0 + dx * ix;
+            }
+            else {
+                pos.x = x1 - dx * ix;
+            }
             for (int32 iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
@@ -384,13 +389,18 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     
     // left/right plane vertices
     for (int32 leftRight = 0; leftRight < 2; leftRight++) {
-        pos.x = (leftRight == 0) ? x0 : x1;
+        pos.x = (0 == leftRight) ? x0 : x1;
         if (hasNormals) {
             norm = (leftRight == 0) ? glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) : glm::vec4(+1.0f, 0.0f, 0.0f, 0.0f);
             norm = shape.transform * norm;
         }
         for (int32 iy = 0; iy <= numTiles; iy++) {
-            pos.y = y0 + dy * iy;
+            if (0 == leftRight) {
+                pos.y = y1 - dy * iy;
+            }
+            else {
+                pos.y = y0 + dy * iy;
+            }
             for (int32 iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
@@ -408,13 +418,18 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
     
     // front/back plane vertices
     for (int32 frontBack = 0; frontBack < 2; frontBack++) {
-        pos.z = (frontBack == 0) ? z0 : z1;
+        pos.z = (0 == frontBack) ? z0 : z1;
         if (hasNormals) {
             norm = (frontBack == 0) ? glm::vec4(0.0, 0.0f, -1.0f, 0.0f) : glm::vec4(0.0f, 0.0f, +1.0f, 0.0f);
             norm = shape.transform * norm;
         }
         for (int32 ix = 0; ix <= numTiles; ix++) {
-            pos.x = x0 + dx * ix;
+            if (0 == frontBack) {
+                pos.x = x1 - dx * ix;
+            }
+            else {
+                pos.x = x0 + dx * ix;
+            }
             for (int32 iy = 0; iy <= numTiles; iy++) {
                 pos.y = y0 + dy * iy;
                 glm::vec4 tpos = shape.transform * pos;
@@ -826,9 +841,9 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     const float32 w = shape.f0;
     const float32 d = shape.f1;
     const float32 x0 = -w * 0.5f;
-    const float32 z0 = -d * 0.5f;
+    const float32 z0 = d * 0.5f;
     const float32 dx = w / numTiles;
-    const float32 dz = d / numTiles;
+    const float32 dz = -d / numTiles;
     const float32 duv = 1.0f / numTiles;
     
     const bool hasNormal = vertexLayout.Contains(VertexAttr::Normal);
