@@ -80,7 +80,7 @@ float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-@vs plam
+@vs offscreenVS
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv

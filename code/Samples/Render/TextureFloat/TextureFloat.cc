@@ -105,16 +105,14 @@ TextureFloatApp::OnRunning() {
         // render plasma to offscreen render target
         this->render->ApplyOffscreenRenderTarget(this->renderTarget);
         this->render->ApplyDrawState(this->offscreenDrawState);
-        this->render->ApplyVariable(Shaders::Plasma::Time, this->time);
+        this->render->ApplyVariable(Shaders::Offscreen::Time, this->time);
         this->render->Draw(0);
         
         // copy fullscreen quad
-        /*
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->copyDrawState);
         this->render->ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
         this->render->Draw(0);
-        */
         
         this->debug->DrawTextBuffer();
         this->render->EndFrame();
