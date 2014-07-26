@@ -102,7 +102,7 @@ TextureFloatApp::OnRunning() {
         
         this->time += 1.0f / 60.0f;
         
-        // render shapes to offscreen render target
+        // render plasma to offscreen render target
         this->render->ApplyOffscreenRenderTarget(this->renderTarget);
         this->render->ApplyDrawState(this->offscreenDrawState);
         this->render->ApplyVariable(Shaders::Offscreen::Time, this->time);
