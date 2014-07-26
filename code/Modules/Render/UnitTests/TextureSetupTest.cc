@@ -11,7 +11,7 @@ using namespace Oryol::Render;
 TEST(TextureSetupTest) {
     
     // setup as absolute-size render target, no depth buffer
-    const auto rt = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::R8G8B8);
+    const auto rt = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::RGB8);
     CHECK(!rt.ShouldSetupFromFile());
     CHECK(!rt.ShouldSetupFromImageFileData());
     CHECK(!rt.ShouldSetupFromPixelData());
@@ -24,7 +24,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.Height == 256);
     CHECK(rt.RelWidth == 0.0f);
     CHECK(rt.RelHeight == 0.0f);
-    CHECK(rt.ColorFormat == PixelFormat::R8G8B8);
+    CHECK(rt.ColorFormat == PixelFormat::RGB8);
     CHECK(rt.DepthFormat == PixelFormat::InvalidPixelFormat);
     CHECK(!rt.DepthRenderTarget.IsValid());
     CHECK(rt.WrapU == TextureWrapMode::ClampToEdge);
@@ -34,7 +34,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.MinFilter == TextureFilterMode::Nearest);
     
     // setup as absolute-size render target, with depth buffer
-    const auto rt0 = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::R8G8B8A8, PixelFormat::D24S8);
+    const auto rt0 = TextureSetup::AsRenderTarget("absSize", 320, 256, PixelFormat::RGBA8, PixelFormat::D24S8);
     CHECK(!rt0.ShouldSetupFromFile());
     CHECK(!rt0.ShouldSetupFromImageFileData());
     CHECK(!rt0.ShouldSetupFromPixelData());
@@ -47,7 +47,7 @@ TEST(TextureSetupTest) {
     CHECK(rt0.Height == 256);
     CHECK(rt0.RelWidth == 0.0f);
     CHECK(rt0.RelHeight == 0.0f);
-    CHECK(rt0.ColorFormat == PixelFormat::R8G8B8A8);
+    CHECK(rt0.ColorFormat == PixelFormat::RGBA8);
     CHECK(rt0.DepthFormat == PixelFormat::D24S8);
     CHECK(!rt0.DepthRenderTarget.IsValid());
     CHECK(rt0.WrapU == TextureWrapMode::ClampToEdge);
@@ -80,7 +80,7 @@ TEST(TextureSetupTest) {
     CHECK(rt1.MinFilter == TextureFilterMode::Nearest);
     
     // setup as relative-size render target, with depth buffer
-    const auto rt2 = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f, PixelFormat::R4G4B4A4, PixelFormat::D16);
+    const auto rt2 = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f, PixelFormat::RGBA4, PixelFormat::D16);
     CHECK(!rt2.ShouldSetupFromFile());
     CHECK(!rt2.ShouldSetupFromImageFileData());
     CHECK(!rt2.ShouldSetupFromPixelData());
@@ -93,7 +93,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.Height == 0);
     CHECK(rt2.RelWidth == 0.5f);
     CHECK(rt2.RelHeight == 0.25f);
-    CHECK(rt2.ColorFormat == PixelFormat::R4G4B4A4);
+    CHECK(rt2.ColorFormat == PixelFormat::RGBA4);
     CHECK(rt2.DepthFormat == PixelFormat::D16);
     CHECK(!rt2.DepthRenderTarget.IsValid());
     CHECK(rt2.WrapU == TextureWrapMode::ClampToEdge);
@@ -103,7 +103,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.MinFilter == TextureFilterMode::Nearest);
     
     // setup as shared-depth render target
-    const auto rt3 = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", PixelFormat::R32F, Resource::Id(1, 2, 3));
+    const auto rt3 = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", PixelFormat::RGBA32F, Resource::Id(1, 2, 3));
     CHECK(!rt3.ShouldSetupFromFile());
     CHECK(!rt3.ShouldSetupFromImageFileData());
     CHECK(!rt3.ShouldSetupFromPixelData());
@@ -116,7 +116,7 @@ TEST(TextureSetupTest) {
     CHECK(rt3.Height == 0);
     CHECK(rt3.RelWidth == 0.0f);
     CHECK(rt3.RelHeight == 0.0f);
-    CHECK(rt3.ColorFormat == PixelFormat::R32F);
+    CHECK(rt3.ColorFormat == PixelFormat::RGBA32F);
     CHECK(rt3.DepthFormat == PixelFormat::InvalidPixelFormat);
     CHECK(rt3.DepthRenderTarget.SlotIndex() == 2);
     CHECK(rt3.DepthRenderTarget.Type() == 3);

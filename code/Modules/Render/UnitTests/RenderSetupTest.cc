@@ -18,7 +18,7 @@ TEST(RenderSetupTest) {
     CHECK(f->GetRenderSetup().WindowHeight == 300);
     CHECK(f->GetRenderSetup().WindowPosX == 0);
     CHECK(f->GetRenderSetup().WindowPosY == 0);
-    CHECK(f->GetRenderSetup().ColorPixelFormat == PixelFormat::R8G8B8);
+    CHECK(f->GetRenderSetup().ColorPixelFormat == PixelFormat::RGB8);
     CHECK(f->GetRenderSetup().DepthPixelFormat == PixelFormat::D24S8);
     CHECK(f->GetRenderSetup().SwapInterval == 1);
     CHECK(f->GetRenderSetup().WindowTitle == "Oryol Test");
@@ -30,7 +30,7 @@ TEST(RenderSetupTest) {
     CHECK(f->GetDisplayAttrs().WindowPosY >= 0);
     CHECK(f->GetDisplayAttrs().FramebufferWidth >= 400);
     CHECK(f->GetDisplayAttrs().FramebufferHeight >= 300);
-    CHECK(f->GetDisplayAttrs().ColorPixelFormat == PixelFormat::R8G8B8);
+    CHECK(f->GetDisplayAttrs().ColorPixelFormat == PixelFormat::RGB8);
     CHECK(f->GetDisplayAttrs().DepthPixelFormat == PixelFormat::D24S8);
     CHECK(f->GetDisplayAttrs().SwapInterval == 1);
     CHECK(f->GetDisplayAttrs().WindowTitle == "Oryol Test");

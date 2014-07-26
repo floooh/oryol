@@ -31,7 +31,7 @@ TEST(RenderTargetCreationTest) {
     
     // create a render target (no depth buffer)
     texture tex0;
-    tex0.setSetup(TextureSetup::AsRenderTarget("tex0", 320, 256, PixelFormat::R8G8B8A8));
+    tex0.setSetup(TextureSetup::AsRenderTarget("tex0", 320, 256, PixelFormat::RGBA8));
     factory.SetupResource(tex0);
     CHECK(tex0.GetState() == Resource::State::Valid);
     CHECK(tex0.glGetTexture() != 0);
@@ -41,7 +41,7 @@ TEST(RenderTargetCreationTest) {
     const TextureAttrs& attrs0 = tex0.GetTextureAttrs();
     CHECK(attrs0.Locator.Location() == "tex0");
     CHECK(attrs0.Type == TextureType::Texture2D);
-    CHECK(attrs0.ColorFormat == PixelFormat::R8G8B8A8);
+    CHECK(attrs0.ColorFormat == PixelFormat::RGBA8);
     CHECK(attrs0.DepthFormat == PixelFormat::InvalidPixelFormat);
     CHECK(attrs0.TextureUsage == Usage::Immutable);
     CHECK(attrs0.Width == 320);
@@ -55,7 +55,7 @@ TEST(RenderTargetCreationTest) {
     
     // create a render target with depth buffer
     texture tex1;
-    tex1.setSetup(TextureSetup::AsRenderTarget("tex1", 640, 480, PixelFormat::R8G8B8A8, PixelFormat::D24S8));
+    tex1.setSetup(TextureSetup::AsRenderTarget("tex1", 640, 480, PixelFormat::RGBA8, PixelFormat::D24S8));
     factory.SetupResource(tex1);
     CHECK(tex1.GetState() == Resource::State::Valid);
     CHECK(tex1.glGetTexture() != 0);
@@ -65,7 +65,7 @@ TEST(RenderTargetCreationTest) {
     const TextureAttrs& attrs1 = tex1.GetTextureAttrs();
     CHECK(attrs1.Locator.Location() == "tex1");
     CHECK(attrs1.Type == TextureType::Texture2D);
-    CHECK(attrs1.ColorFormat == PixelFormat::R8G8B8A8);
+    CHECK(attrs1.ColorFormat == PixelFormat::RGBA8);
     CHECK(attrs1.DepthFormat == PixelFormat::D24S8);
     CHECK(attrs1.TextureUsage == Usage::Immutable);
     CHECK(attrs1.Width == 640);
