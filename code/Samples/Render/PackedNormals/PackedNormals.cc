@@ -58,6 +58,7 @@ PackedNormalsApp::OnInit() {
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dsSetup.RasterizerState.CullFaceEnabled = true;
     this->drawState = this->render->CreateResource(dsSetup);
 
     this->render->ReleaseResource(mesh);

@@ -35,10 +35,8 @@ pnaclDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     // FIXME: create a new Graphics3D context with the actually 
     // requested setup attributes
 
-    // dump GL information
-    glInfo::PrintInfo();
-
-    // setup extensions
+    // setup platform constants and extensions
+    glInfo::Setup();
     glExt::Setup();
     
     // update the displayAttrs with the actual frame buffer size
@@ -57,6 +55,8 @@ pnaclDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     this->glFramebufferWidth = 0;
     this->glFramebufferHeight = 0;
+    glExt::Discard();
+    glInfo::Discard();
     displayMgrBase::DiscardDisplay();
 }
 

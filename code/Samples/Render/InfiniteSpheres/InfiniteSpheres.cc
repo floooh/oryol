@@ -49,7 +49,7 @@ InfiniteSpheresApp::OnInit() {
 
     // create resources
     for (int32 i = 0; i < 2; i++) {
-        auto rtSetup = TextureSetup::AsRenderTarget(Locator::NonShared(), 512, 512, PixelFormat::R8G8B8, PixelFormat::D16);
+        auto rtSetup = TextureSetup::AsRenderTarget(Locator::NonShared(), 512, 512, PixelFormat::RGB8, PixelFormat::D16);
         rtSetup.MinFilter = TextureFilterMode::Linear;
         rtSetup.MagFilter = TextureFilterMode::Linear;
         rtSetup.WrapU = TextureWrapMode::Repeat;

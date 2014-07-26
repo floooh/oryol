@@ -31,6 +31,10 @@ glRenderMgr::Supports(Feature::Code feat) const {
             return glExt::HasExtension(glExt::TextureCompressionPVRTC);
         case Feature::TextureCompressionATC:
             return glExt::HasExtension(glExt::TextureCompressionATC);
+        case Feature::TextureFloat:
+            return glExt::HasExtension(glExt::TextureFloat);
+        case Feature::TextureHalfFloat:
+            return glExt::HasExtension(glExt::TextureHalfFloat);
         case Feature::Instancing:
             return glExt::HasExtension(glExt::InstancedArrays);
         default:

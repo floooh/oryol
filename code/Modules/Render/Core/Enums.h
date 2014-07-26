@@ -44,11 +44,13 @@ class PixelFormat {
 public:
     /// pixel format enum
     enum Code {
-        R8G8B8A8,       ///< 32-bit wide, 4 channels @ 8-bit
-        R8G8B8,         ///< 24-bit wide, 3 channels @ 8-bit
+        RGBA8,          ///< 32-bit wide, 4 channels @ 8-bit
+        RGB8,           ///< 24-bit wide, 3 channels @ 8-bit
+        RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
         R5G6B5,         ///< 16-bit wide, 3 channels @ 5/6/5 bits
         R5G5B5A1,       ///< 16-bit wide, 4 channels @ 1-bit alpha, 5-bit rgb
-        R4G4B4A4,       ///< 16-bit wide, 4 channels @ 4-bit
+        RGBA32F,        ///< 128-bit wide, 4 channel @ 32-bit float
+        RGBA16F,        ///< 64-bit wide, 4 channel @ 16-bit float
         L8,             ///< 8-bit wide, single channel
         DXT1,           ///< DXT1 compressed format
         DXT3,           ///< DXT3 compressed format
@@ -56,7 +58,6 @@ public:
         D16,            ///< 16-bit depth
         D32,            ///< 32-bit depth
         D24S8,          ///< 24-bit depth, 8-bit stencil
-        R32F,           ///< 32-bit wide, 1 channel @ 32-bit float
         PVRTC2,         ///< PVRTC2 compressed format
         PVRTC4,         ///< PVRTC4 compressed format
         
@@ -81,11 +82,13 @@ public:
     /// return true for valid render target color formats
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
-            case R8G8B8A8:
-            case R8G8B8:
+            case RGBA8:
+            case RGB8:
+            case RGBA4:
             case R5G6B5:
             case R5G5B5A1:
-            case R4G4B4A4:
+            case RGBA32F:
+            case RGBA16F:
                 return true;
             default:
                 return false;
@@ -148,13 +151,17 @@ public:
     /// get byte size of pixel format
     static int32 ByteSize(Code c) {
         switch (c) {
-            case R8G8B8A8:
+            case RGBA32F:
+                return 16;
+            case RGBA16F:
+                return 8;
+            case RGBA8:
                 return 4;
-            case R8G8B8:
+            case RGB8:
                 return 3;
             case R5G6B5:
             case R5G5B5A1:
-            case R4G4B4A4:
+            case RGBA4:
                 return 2;
             case L8:
                 return 1;
@@ -162,7 +169,6 @@ public:
                 return 2;
             case D32:
             case D24S8:
-            case R32F:
                 return 4;
             default:
                 o_error("PixelFormat::ByteSize(): cannot get byte size for compressed format!\n");
@@ -172,12 +178,22 @@ public:
     /// get number of bits in a pixel format channel (only for non-compressed formats!)
     static int8 NumBits(Code pixelFormat, Channel channel) {
         switch (pixelFormat) {
-            case R8G8B8A8:
+            case RGBA32F:
+                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                    return 32;
+                }
+                break;
+            case RGBA16F:
+                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                    return 16;
+                }
+                break;
+            case RGBA8:
                 if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
                     return 8;
                 }
                 break;
-            case R8G8B8:
+            case RGB8:
                 if ((Red == channel) || (Green == channel) || (Blue == channel)) {
                     return 8;
                 }
@@ -198,7 +214,7 @@ public:
                     return 1;
                 }
                 break;
-            case R4G4B4A4:
+            case RGBA4:
                 if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
                     return 4;
                 }
@@ -224,11 +240,6 @@ public:
                 }
                 else if (Stencil == channel) {
                     return 8;
-                }
-                break;
-            case R32F:
-                if (Red == channel) {
-                    return 32;
                 }
                 break;
             default:
@@ -518,6 +529,8 @@ public:
         TextureCompressionDXT,      ///< GPU supports DXT compressed textures
         TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
         TextureCompressionATC,      ///< GPU supports ATC compressed textures
+        TextureFloat,               ///< support for float textures
+        TextureHalfFloat,           ///< support for half-float textures
         Instancing,                 ///< supports hardware-instanced rendering
         
         NumFeatures,

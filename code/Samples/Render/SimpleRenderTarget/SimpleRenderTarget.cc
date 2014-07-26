@@ -48,7 +48,7 @@ SimpleRenderTargetApp::OnInit() {
 
     // create an offscreen render target, we explicitely want repeat texture wrap mode
     // and linear blending...
-    auto rtSetup = TextureSetup::AsRenderTarget("rt", 128, 128, PixelFormat::R8G8B8, PixelFormat::D16);
+    auto rtSetup = TextureSetup::AsRenderTarget("rt", 128, 128, PixelFormat::RGB8, PixelFormat::D16);
     rtSetup.WrapU = TextureWrapMode::Repeat;
     rtSetup.WrapV = TextureWrapMode::Repeat;
     rtSetup.MagFilter = TextureFilterMode::Linear;

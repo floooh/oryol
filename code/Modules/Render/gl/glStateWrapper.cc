@@ -218,7 +218,7 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
                 maxUsedAttrib++;
             }
         }
-        int32 maxAttribs = glExt::GetMaxVertexAttribs();
+        int32 maxAttribs = glInfo::Int(MaxVertexAttribs);
         if (VertexAttr::NumVertexAttrs < maxAttribs) {
             maxAttribs = VertexAttr::NumVertexAttrs;
         }

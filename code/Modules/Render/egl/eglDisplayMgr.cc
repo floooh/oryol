@@ -132,10 +132,8 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
         return;
     }
 
-    // dump GL information
-    glInfo::PrintInfo();
-
-    // setup extensions
+    // setup platform constants and extensions
+    glInfo::Setup();
     glExt::Setup();
 
     // query actual display size and set in DisplayAttrs
@@ -168,6 +166,7 @@ eglDisplayMgr::DiscardDisplay() {
     this->eglConfig = nullptr;
     this->eglDisplay = nullptr;
     glExt::Discard();
+    glInfo::Discard();
 
     displayMgrBase::DiscardDisplay();
 }

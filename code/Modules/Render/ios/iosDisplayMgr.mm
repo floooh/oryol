@@ -83,10 +83,8 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             break;
     }
     
-    // dump GL information
-    glInfo::PrintInfo();
-
-    // setup extensions
+    // setup platform constants and extensions
+    glInfo::Setup();
     glExt::Setup();
     
     // update the displayAttrs with the actual frame buffer size
@@ -106,6 +104,8 @@ iosDisplayMgr::DiscardDisplay() {
     this->glDefaultFramebuffer = 0;
     this->glFramebufferWidth = 0;
     this->glFramebufferHeight = 0;
+    glExt::Discard();
+    glInfo::Discard();
     displayMgrBase::DiscardDisplay();
 }
 

@@ -20,9 +20,9 @@ namespace Render {
 class RenderSetup : public DisplayAttrs {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Windowed(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::R8G8B8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
+    static RenderSetup Windowed(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::RGB8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Fullscreen(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::R8G8B8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
+    static RenderSetup Fullscreen(int32 width, int32 height, Core::String windowTitle="Oryol", PixelFormat::Code colorFmt=PixelFormat::RGB8, PixelFormat::Code depthFmt=PixelFormat::D24S8);
     
     /// default constructor
     RenderSetup();

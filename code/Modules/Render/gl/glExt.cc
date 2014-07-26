@@ -14,7 +14,6 @@ using namespace Core;
 
 bool glExt::isValid = false;
 bool glExt::extensions[NumExtensions] = { false };
-GLint glExt::maxVertexAttribs = 0;
     
 //------------------------------------------------------------------------------
 void
@@ -37,16 +36,15 @@ glExt::Setup() {
     #endif
     
     #if ORYOL_MACOS
-    // on OSX we're using the Core Profile where getting the extensions string seems
-    // to be an error
+    // FIXME: this is actually GL 3.2 Core Profile
     extensions[VertexArrayObject] = true;
     extensions[TextureCompressionDXT] = true;
     extensions[InstancedArrays] = true;
-    #else
-    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
+    extensions[TextureFloat] = true;
     #endif
     
     #if !ORYOL_MACOS
+    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     extensions[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                         strBuilder.Contains("_compressed_texture_s3tc") ||
                                         strBuilder.Contains("_texture_compression_dxt1");
@@ -54,7 +52,15 @@ glExt::Setup() {
                                           strBuilder.Contains("_compressed_texture_pvrtc");
     extensions[TextureCompressionATC] = strBuilder.Contains("_compressed_ATC_texture") ||
                                         strBuilder.Contains("_compressed_texture_atc");
+    extensions[TextureFloat] = strBuilder.Contains("_texture_float");
     extensions[InstancedArrays] = strBuilder.Contains("_instanced_arrays");
+    #endif
+    
+    #if ORYOL_OPENGLES2
+    extensions[TextureHalfFloat] = strBuilder.Contains("_texture_half_float");
+    #else
+    // half-float-formats are included in the desktop GL extensions
+    extensions[TextureHalfFloat] = extensions[TextureFloat];
     #endif
     
     #if ORYOL_USE_GLGETATTRIBLOCATION
@@ -70,11 +76,6 @@ glExt::Setup() {
     if (!extensions[InstancedArrays]) {
         Log::Warn("glExt::Setup(): instanced_arrays extension not found!\n");
     }
-    
-    // get implementation-specific values
-    ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
-    o_assert(maxVertexAttribs > 0);
-    Log::Info("GL_MAX_VERTEX_ATTRIBS is: %d\n", maxVertexAttribs);
 }
 
 //------------------------------------------------------------------------------

@@ -8,7 +8,7 @@
 #include "Render/Core/shaderPool.h"
 #include "Render/Core/shaderFactory.h"
 #include "Render/gl/gl_impl.h"
-#include "Render/gl/glExt.h"
+#include "Render/gl/glInfo.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
@@ -124,7 +124,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         /// @todo: would be good to optimize this to only bind
         /// attributes which exist in the shader (may be with more shader source generation)
         #if !ORYOL_USE_GLGETATTRIBLOCATION
-        o_assert(VertexAttr::NumVertexAttrs <= glExt::GetMaxVertexAttribs());
+        o_assert(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
         }

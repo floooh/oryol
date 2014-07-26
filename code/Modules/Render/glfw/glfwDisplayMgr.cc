@@ -82,10 +82,8 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwMakeContextCurrent(this->glfwWindow);
     glfwSwapInterval(setup.SwapInterval);
 
-    // dump GL information
-    glInfo::PrintInfo();
-
-    // setup extensions
+    // setup extensions and platform-dependent constants
+    glInfo::Setup();
     glExt::Setup();
     
     // now set the actual display attributes
@@ -116,6 +114,7 @@ glfwDisplayMgr::DiscardDisplay() {
     this->glfwWindow = nullptr;
     glfwTerminate();
     glExt::Discard();
+    glInfo::Discard();
     
     displayMgrBase::DiscardDisplay();
 }

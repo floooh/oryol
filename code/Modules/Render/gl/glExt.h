@@ -18,10 +18,12 @@ public:
     /// extension enums
     enum Code {
         VertexArrayObject = 0,
-        TextureCompressionDXT = 1,
-        TextureCompressionPVRTC = 2,
-        TextureCompressionATC = 3,
-        InstancedArrays = 4,
+        TextureCompressionDXT,
+        TextureCompressionPVRTC,
+        TextureCompressionATC,
+        TextureFloat,
+        TextureHalfFloat,
+        InstancedArrays,
 
         NumExtensions,
         InvalidExtension,
@@ -35,8 +37,6 @@ public:
     static bool IsValid();
     /// test if an extension is supported
     static bool HasExtension(Code c);
-    /// get MAX_VERTEX_ATTRS
-    static GLint GetMaxVertexAttribs();
 
     /// glGenVertexArrays
     static void GenVertexArrays(GLsizei n, GLuint* arrays);
@@ -55,7 +55,6 @@ public:
 private:
     static bool extensions[NumExtensions];
     static bool isValid;
-    static GLint maxVertexAttribs;
 };
 
 //------------------------------------------------------------------------------
@@ -63,12 +62,6 @@ inline bool
 glExt::HasExtension(Code c) {
     o_assert_dbg(c < NumExtensions);
     return extensions[c];
-}
-
-//------------------------------------------------------------------------------
-inline GLint
-glExt::GetMaxVertexAttribs() {
-    return maxVertexAttribs;
 }
 
 } // namespace Render
