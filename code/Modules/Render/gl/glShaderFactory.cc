@@ -90,7 +90,7 @@ glShaderFactory::DestroyResource(shader& shd) {
 
     GLuint glShader = shd.glGetShader();
     o_assert(0 != glShader);
-    glDeleteShader(glShader);
+    ::glDeleteShader(glShader);
     ORYOL_GL_CHECK_ERROR();
     
     shd.clear();
@@ -109,7 +109,7 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
     // attach source to shader object
     const GLchar* sourceString = src.AsCStr();
     const int sourceLength = src.Length();
-    glShaderSource(glShader, 1, &sourceString, &sourceLength);
+    ::glShaderSource(glShader, 1, &sourceString, &sourceLength);
     ORYOL_GL_CHECK_ERROR();
     
     // compile the shader
@@ -118,12 +118,12 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
     
     // compilation failed?
     GLint compileStatus = 0;
-    glGetShaderiv(glShader, GL_COMPILE_STATUS, &compileStatus);
+    ::glGetShaderiv(glShader, GL_COMPILE_STATUS, &compileStatus);
     ORYOL_GL_CHECK_ERROR();
     
     #if ORYOL_DEBUG
         GLint logLength = 0;
-        glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
+        ::glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
         ORYOL_GL_CHECK_ERROR();
         if (logLength > 0) {
             
@@ -132,7 +132,7 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
             
             // now print the info log
             GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
-            glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
+            ::glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
             ORYOL_GL_CHECK_ERROR();
             Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
             Memory::Free(shdLogBuf);
@@ -141,7 +141,7 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
     
     if (!compileStatus) {
         // compiling failed
-        glDeleteShader(glShader);
+        ::glDeleteShader(glShader);
         ORYOL_GL_CHECK_ERROR();
         glShader = 0;
     }

@@ -137,10 +137,10 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         
         // can discard shaders now if we compiled them ourselves
         if (deleteVertexShader) {
-            glDeleteShader(glVertexShader);
+            ::glDeleteShader(glVertexShader);
         }
         if (deleteFragmentShader) {
-            glDeleteShader(glFragmentShader);
+            ::glDeleteShader(glFragmentShader);
         }
         
         // linking successful?
