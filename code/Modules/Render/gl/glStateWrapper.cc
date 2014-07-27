@@ -643,7 +643,7 @@ glStateWrapper::Clear(Channel::Mask channels, const glm::vec4& color, float32 de
 
     GLbitfield clearMask = 0;
 
-    // check if color write mask must be updated
+    // update GL state
     if ((channels & Channel::RGBA) != 0) {
         
         clearMask |= GL_COLOR_BUFFER_BIT;
