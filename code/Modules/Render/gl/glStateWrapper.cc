@@ -9,6 +9,7 @@
 #include "Render/Core/mesh.h"
 #include "Render/Core/programBundle.h"
 #include "Render/Core/drawState.h"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -83,12 +84,6 @@ curBlendColorR(0.0f),
 curBlendColorG(0.0f),
 curBlendColorB(0.0f),
 curBlendColorA(0.0f),
-curClearColorR(0.0f),
-curClearColorG(0.0f),
-curClearColorB(0.0f),
-curClearColorA(0.0f),
-curClearDepth(1.0f),
-curClearStencil(0),
 curViewPortX(0),
 curViewPortY(0),
 curViewPortWidth(-1),
@@ -296,7 +291,7 @@ glStateWrapper::applyStencilState(const StencilState& newState, const StencilSta
     
     const uint32 writeMask = newState.StencilWriteMask;
     if (writeMask != curState.StencilWriteMask) {
-        ::glStencilMask(writeMask);
+        ::glStencilMaskSeparate(glFace, writeMask);
     }
 }
 
@@ -392,11 +387,11 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
         ::glBlendEquationSeparate(mapBlendOp[bs.OpRGB], mapBlendOp[bs.OpAlpha]);
     }
 
-    if (bs.WriteMask != this->curBlendState.WriteMask) {
-        ::glColorMask((bs.WriteMask & ColorWriteMask::R) != 0,
-                      (bs.WriteMask & ColorWriteMask::G) != 0,
-                      (bs.WriteMask & ColorWriteMask::B) != 0,
-                      (bs.WriteMask & ColorWriteMask::A) != 0);
+    if (bs.ColorWriteMask != this->curBlendState.ColorWriteMask) {
+        ::glColorMask((bs.ColorWriteMask & Channel::R) != 0,
+                      (bs.ColorWriteMask & Channel::G) != 0,
+                      (bs.ColorWriteMask & Channel::B) != 0,
+                      (bs.ColorWriteMask & Channel::A) != 0);
     }
     
     this->curBlendState = bs;
@@ -514,48 +509,6 @@ glStateWrapper::onBlendColor(const State::Vector& input) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::onClearColor(const State::Vector& input) {
-    const GLclampf r = input.val[0].f;
-    const GLclampf g = input.val[1].f;
-    const GLclampf b = input.val[2].f;
-    const GLclampf a = input.val[3].f;
-    if ((r != this->curClearColorR) || (g != this->curClearColorG) ||
-        (b != this->curClearColorB) || (a != this->curClearColorA)) {
-        this->curClearColorR = r;
-        this->curClearColorG = g;
-        this->curClearColorB = b;
-        this->curClearColorA = a;
-        ::glClearColor(r, g, b, a);
-        ORYOL_GL_CHECK_ERROR();
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onClearDepth(const State::Vector& input) {
-    const GLclampf f = input.val[0].f;
-    if (f != this->curClearDepth) {
-        this->curClearDepth = f;
-        #if ORYOL_OPENGLES2
-        ::glClearDepthf(f);
-        #else
-        ::glClearDepth(f);
-        #endif
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onClearStencil(const State::Vector& input) {
-    const GLint s = input.val[0].i;
-    if (s != this->curClearStencil) {
-        this->curClearStencil = s;
-        ::glClearStencil(s);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glStateWrapper::onViewPort(const State::Vector& input) {
     const GLint x        = input.val[0].i;
     const GLint y        = input.val[1].i;
@@ -587,18 +540,6 @@ glStateWrapper::setupJumpTable() {
     this->funcs[State::BlendColor].cb = &glStateWrapper::onBlendColor;
     this->funcs[State::BlendColor].sig = State::F0_F1_F2_F3;
 
-    // glClearColor(GLclampf, GLclampf, GLclampf, GLclampf)
-    this->funcs[State::ClearColor].cb = &glStateWrapper::onClearColor;
-    this->funcs[State::ClearColor].sig = State::F0_F1_F2_F3;
-
-    // glClearDepth(GLclampf)
-    this->funcs[State::ClearDepth].cb = &glStateWrapper::onClearDepth;
-    this->funcs[State::ClearDepth].sig = State::F0;
-    
-    // glClearStencil(GLint)
-    this->funcs[State::ClearStencil].cb = &glStateWrapper::onClearStencil;
-    this->funcs[State::ClearStencil].sig = State::I0;
-    
     // glViewPort(GLint, GLint, GLsizei w, GLsizei h)
     this->funcs[State::ViewPort].cb = &glStateWrapper::onViewPort;
     this->funcs[State::ViewPort].sig = State::I0_I1_I2_I3;
@@ -694,6 +635,59 @@ glStateWrapper::BindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
         ::glBindTexture(target, tex);
         ORYOL_GL_CHECK_ERROR();
     }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+
+    GLbitfield clearMask = 0;
+
+    // check if color write mask must be updated
+    if ((channels & Channel::RGBA) != 0) {
+        
+        clearMask |= GL_COLOR_BUFFER_BIT;
+        ::glClearColor(color.x, color.y, color.z, color.w);
+        
+        if ((channels & Channel::RGBA) != this->curBlendState.ColorWriteMask) {
+            this->curBlendState.ColorWriteMask = channels & Channel::RGBA;
+            ::glColorMask((channels & Channel::R) != 0,
+                          (channels & Channel::G) != 0,
+                          (channels & Channel::B) != 0,
+                          (channels & Channel::A) != 0);
+        }
+    }
+    if ((channels & Channel::Depth) != 0) {
+    
+        clearMask |= GL_DEPTH_BUFFER_BIT;
+        #if ORYOL_OPENGLES2
+        ::glClearDepthf(depth);
+        #else
+        ::glClearDepth(depth);
+        #endif
+
+        if (!this->curDepthStencilState.DepthWriteEnabled) {
+            this->curDepthStencilState.DepthWriteEnabled = true;
+            ::glDepthMask(GL_TRUE);
+        }
+    }
+    if ((channels & Channel::Stencil) != 0) {
+    
+        clearMask |= GL_STENCIL_BUFFER_BIT;
+        ::glClearStencil(stencil);
+        
+        if ((this->curDepthStencilState.StencilFront.StencilWriteMask != 0xFF) ||
+            (this->curDepthStencilState.StencilBack.StencilWriteMask != 0xFF)) {
+            
+            this->curDepthStencilState.StencilFront.StencilWriteMask = 0xFF;
+            this->curDepthStencilState.StencilBack.StencilWriteMask = 0xFF;
+            ::glStencilMask(0xFF);
+        }
+    }
+    
+    // finally do the actual clear
+    ::glClear(clearMask);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 } // namespace Render

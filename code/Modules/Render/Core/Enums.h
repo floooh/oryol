@@ -67,6 +67,7 @@ public:
     };
 
     /// a pixel format channel
+    // FIXME: this is now redundant with Channel type!
     enum Channel {
         Red,            ///< red bits
         Green,          ///< green bits
@@ -306,9 +307,6 @@ public:
         DepthOffset,            ///< depth offset values (float factor, float unit)
         ScissorRect,            ///< the scissor rectangle (int left, int bottom, int left, int right)
         BlendColor,             ///< color for ConstColor/ConstAlpha (4x float)
-        ClearColor,             ///< the clear color values (4x float)
-        ClearDepth,             ///< the clear depth value (float)
-        ClearStencil,           ///< the clear stencil value (int)
         ViewPort,               ///< the current viewport (int x, int y, int w, int h)
         DepthRange,             ///< the current depth range (float n, float f)
         
@@ -333,10 +331,8 @@ public:
     
     enum Signature {
         Void = 0,
-        F0 = F,                             ///< 1 float32
         F0_F1 = F|F<<3,                     ///< 2 float32
         F0_F1_F2_F3 = F|F<<3|F<<6|F<<9,     ///< 4 float32
-        I0 = I,                             ///< 1 int32
         I0_I1 = I|I<<3,                     ///< 2 int32
         I0_I1_I2_I3 = I|I<<3|I<<6|I<<9,     ///< 4 int32
     };
@@ -648,18 +644,31 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ColorWriteMask
-    @brief color write masking for blend state
+    @class Oryol::Render::Channel
+    @brief RGBA/Depth/Stencil channel bits and cominations
 */
-class ColorWriteMask {
+class Channel {
 public:
-    enum Code {
+    typedef uint32 Mask;
+    enum Bits {
         None    = 0,
         
-        R   = (1<<3),
-        G   = (1<<2),
-        B   = (1<<1),
-        A   = (1<<0),
+        Stencil = (1<<5),
+        Depth   = (1<<4),
+        Red     = (1<<3),
+        Green   = (1<<2),
+        Blue    = (1<<1),
+        Alpha   = (1<<0),
+        
+        DepthStencil = Depth|Stencil,
+        DS = DepthStencil,
+        
+        D = Depth,
+        S = Stencil,
+        R = Red,
+        G = Green,
+        B = Blue,
+        A = Alpha,
         
         RG  = R|G,
         GB  = G|B,
@@ -674,8 +683,8 @@ public:
         GBA = G|B|A,
         RBA = R|B|A,
         
-        All  = R|G|B|A,
-        RGBA = R|G|B|A
+        RGBA = R|G|B|A,
+        All = R|G|B|A|D|S,
     };
 };
 

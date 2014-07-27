@@ -16,6 +16,7 @@
 #include "Render/Core/RasterizerState.h"
 #include "Render/gl/gl_decl.h"
 #include "Core/Assert.h"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -71,8 +72,10 @@ public:
     /// bind a texture to a sampler index
     void BindTexture(int32 samplerIndex, GLenum target, GLuint tex);
     
-private:
+    /// clear current render target
+    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     
+private:    
     /// state update callback function
     typedef void (glStateWrapper::*Callback)(const State::Vector& input);
     
@@ -113,12 +116,6 @@ private:
     void onScissorRect(const State::Vector& input);
     /// BlendColor state function
     void onBlendColor(const State::Vector& input);
-    /// ClearColor state function
-    void onClearColor(const State::Vector& input);
-    /// ClearDepth state function
-    void onClearDepth(const State::Vector& input);
-    /// ClearStencil state function
-    void onClearStencil(const State::Vector& input);
     /// ViewPort state function
     void onViewPort(const State::Vector& input);
     
@@ -154,12 +151,6 @@ private:
     GLclampf curBlendColorB;
     GLclampf curBlendColorA;
     
-    GLclampf curClearColorR;
-    GLclampf curClearColorG;
-    GLclampf curClearColorB;
-    GLclampf curClearColorA;
-    GLclampf curClearDepth;
-    GLint curClearStencil;
     GLint curViewPortX;
     GLint curViewPortY;
     GLsizei curViewPortWidth;
@@ -174,16 +165,6 @@ private:
     GLuint samplers2D[MaxTextureSamplers];
     GLuint samplersCube[MaxTextureSamplers];
 };
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, float32 f0) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::F0 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].f = f0;
-    (this->*funcs[c].cb)(values);
-}
 
 //------------------------------------------------------------------------------
 inline void
@@ -209,16 +190,6 @@ glStateWrapper::ApplyState(State::Code c, float32 f0, float32 f1, float32 f2, fl
     (this->*funcs[c].cb)(values);
 }
 
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, int32 i0) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::I0 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].i = i0;
-    (this->*funcs[c].cb)(values);
-}
-    
 //------------------------------------------------------------------------------
 inline void
 glStateWrapper::ApplyState(State::Code c, int32 i0, int32 i1, int32 i2, int32 i3) {

@@ -118,13 +118,9 @@ SimpleRenderTargetApp::OnRunning() {
         this->angleY += 0.01f;
         this->angleX += 0.02f;
         
-        // apply general states
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
-        
         // render donut to offscreen render target
         this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
         this->render->ApplyDrawState(this->offscreenDrawState);
         glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
         this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
@@ -132,7 +128,7 @@ SimpleRenderTargetApp::OnRunning() {
         
         // render sphere to display, with offscreen render target as texture
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
         this->render->ApplyDrawState(this->displayDrawState);
         glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);

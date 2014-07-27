@@ -17,7 +17,7 @@ public:
     
 private:
     RenderFacade* render;
-    float red, green, blue;
+    glm::vec4 clearColor;
 };
 OryolMain(ClearApp);
 
@@ -26,7 +26,7 @@ AppState::Code
 ClearApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
-    this->red = this->green = this->blue = 0.0f;
+    
     return App::OnInit();
 }
 
@@ -35,13 +35,21 @@ AppState::Code
 ClearApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
+        
         this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyState(Render::State::ClearColor, this->red, this->green, this->blue, 1.0f);
-        this->render->Clear(true, false, false);
+        this->render->Clear(Channel::RGBA, this->clearColor, 1.0f, 0);
         this->render->EndFrame();
-        if ((this->red += 0.01f) > 1.0f) this->red = 0.0f;
-        if ((this->green += 0.005f) > 1.0f) this->green = 0.0f;
-        if ((this->blue += 0.0025f) > 1.0f) this->blue = 0.0f;
+        
+        this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
+        if (this->clearColor.x > 1.0f) {
+            this->clearColor.x = 0.0f;
+        }
+        if (this->clearColor.y > 1.0f) {
+            this->clearColor.y = 0.0f;
+        }
+        if (this->clearColor.z > 1.0f) {
+            this->clearColor.z = 0.0f;
+        }
     }
     
     // continue running or quit?

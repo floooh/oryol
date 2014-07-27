@@ -141,10 +141,8 @@ DrawCallPerfApp::OnRunning() {
         // render block
         TimePoint drawStart = Clock::Now();
         this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->Clear(true, true, true);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
         for (int32 i = 0; i < this->curNumParticles; i++) {
             this->render->ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);

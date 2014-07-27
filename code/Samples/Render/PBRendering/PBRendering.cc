@@ -98,9 +98,7 @@ PBRenderingApp::OnRunning() {
     
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.3f, 0.3f, 0.3f, 0.0f);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
         
         this->applyDirLight();
         this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));

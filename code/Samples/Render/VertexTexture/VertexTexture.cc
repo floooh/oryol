@@ -114,13 +114,8 @@ VertexTextureApp::OnRunning() {
         
         // render displacement mapped plane shape
         this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->planeDrawState);
-        
-        // FIXME: HMM FOR SOME REASON THIS Clear() MUST BE BEHIND THE ApplyDrawState...
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->Clear(true, true, true);
-        
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->planeDrawState);        
         const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
         this->render->ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
         this->render->ApplyVariable(Shaders::Plane::Texture, this->renderTarget);

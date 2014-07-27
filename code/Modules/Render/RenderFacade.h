@@ -19,7 +19,7 @@
 #include "Render/Core/resourceMgr.h"
 #include "Render/Core/renderMgr.h"
 #include "Render/Setup/MeshSetup.h"
-#include "glm/fwd.hpp"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -86,7 +86,7 @@ public:
     void UpdateIndices(const Resource::Id& resId, int32 numBytes, const void* data);
     
     /// clear the currently assigned render target
-    void Clear(bool color, bool depth, bool stencil);
+    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

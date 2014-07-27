@@ -266,22 +266,10 @@ glRenderMgr::ApplyVariableArray(int32 index, const glm::mat2* values, int32 numV
 
 //------------------------------------------------------------------------------
 void
-glRenderMgr::Clear(bool color, bool depth, bool stencil) {
+glRenderMgr::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->isValid);
     o_assert2_dbg(this->renderTargetValid, "No render target set!");
-
-    GLbitfield clearMask = 0;
-    if (color) {
-        clearMask |= GL_COLOR_BUFFER_BIT;
-    }
-    if (depth) {
-        clearMask |= GL_DEPTH_BUFFER_BIT;
-    }
-    if (stencil) {
-        clearMask |= GL_STENCIL_BUFFER_BIT;
-    }
-    ::glClear(clearMask);
-    ORYOL_GL_CHECK_ERROR();
+    this->stateWrapper->Clear(channels, color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------

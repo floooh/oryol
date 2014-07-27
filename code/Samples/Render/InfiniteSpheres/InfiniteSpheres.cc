@@ -107,16 +107,14 @@ InfiniteSpheresApp::OnRunning() {
         this->frameIndex++;
         const int32 index0 = this->frameIndex % 2;
         const int32 index1 = (this->frameIndex + 1) % 2;
-        
-        // general render states
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
+
+        // generall state
         this->render->ApplyDrawState(this->drawState);
         
         // render sphere to offscreen render target, using the other render target as
         // source texture
         this->render->ApplyOffscreenRenderTarget(this->renderTargets[index0]);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
@@ -125,8 +123,7 @@ InfiniteSpheresApp::OnRunning() {
         
         // ...and again to display
         this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyState(Render::State::ClearColor, 0.25f, 0.25f, 0.25f, 0.0f);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
         model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         mvp = this->computeMVP(this->displayProj, model);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);

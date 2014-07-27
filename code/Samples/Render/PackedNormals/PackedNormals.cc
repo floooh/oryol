@@ -93,9 +93,7 @@ PackedNormalsApp::OnRunning() {
         // apply state and render
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // draw shape primitive groups
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));

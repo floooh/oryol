@@ -5,6 +5,7 @@
     @brief GL implementation of renderer class
 */
 #include "Render/base/renderMgrBase.h"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 namespace Render {
@@ -24,7 +25,7 @@ public:
     /// apply a shader variable array
     template<class T> void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     /// clear the currently assigned render target
-    void Clear(bool color, bool depth, bool stencil);
+    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

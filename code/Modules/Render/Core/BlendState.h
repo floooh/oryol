@@ -21,7 +21,7 @@ public:
             BlendFactor::Code SrcFactorAlpha:4;
             BlendFactor::Code DstFactorAlpha:4;
             BlendOperation::Code OpAlpha:2;
-            ColorWriteMask::Code WriteMask:4;
+            Channel::Mask ColorWriteMask:4;
         };
         /// hash code from merged state
         uint32 Hash;
@@ -37,7 +37,7 @@ public:
         this->SrcFactorAlpha = BlendFactor::One;
         this->DstFactorAlpha = BlendFactor::Zero;
         this->OpAlpha = BlendOperation::Add;
-        this->WriteMask = ColorWriteMask::All;
+        this->ColorWriteMask = Channel::RGBA;
     };
     
     /// equality

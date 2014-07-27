@@ -63,11 +63,11 @@ TriangleApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 TriangleApp::OnRunning() {
+
     // render one frame
     if (this->render->BeginFrame()) {
         this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyState(Render::State::ClearColor, 0.0f, 0.0f, 0.0f, 0.0f);
-        this->render->Clear(true, false, false);
+        this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
         this->render->Draw(0);
         this->render->EndFrame();

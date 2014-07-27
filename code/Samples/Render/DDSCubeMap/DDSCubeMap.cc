@@ -115,10 +115,8 @@ DDSCubeMapApp::OnRunning() {
         
         // apply state and draw
         this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 1.0f);
-        this->render->Clear(true, true, true);
         
         const auto resState = this->render->QueryResourceState(this->tex);
         if (resState == Resource::State::Valid) {

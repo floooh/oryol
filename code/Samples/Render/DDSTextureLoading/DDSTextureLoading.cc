@@ -79,7 +79,7 @@ DDSTextureLoadingApp::OnInit() {
     this->texId[13] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
     this->texId[14] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
-    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetTransform(rot90);
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
@@ -119,9 +119,7 @@ DDSTextureLoadingApp::OnRunning() {
         
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyState(Render::State::ClearDepth, 1.0f);
-        this->render->ApplyState(Render::State::ClearColor, 0.5f, 0.5f, 0.5f, 0.0f);
-        this->render->Clear(true, true, true);
+        this->render->Clear(Channel::All, glm::vec4(0.5f), 1.0f, 0);
         
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {

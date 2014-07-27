@@ -167,9 +167,9 @@ RenderFacade::UpdateVertices(const Resource::Id& resId, int32 numBytes, const vo
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::Clear(bool color, bool depth, bool stencil) {
+RenderFacade::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
-    this->renderManager.Clear(color, depth, stencil);
+    this->renderManager.Clear(channels, color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------
