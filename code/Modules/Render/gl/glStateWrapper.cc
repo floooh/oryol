@@ -279,6 +279,7 @@ glStateWrapper::applyStencilState(const StencilState& newState, const StencilSta
     const uint32 readMask = newState.StencilReadMask;
     const int32 stencilRef = newState.StencilRef;
     if ((cmpFunc != curState.StencilCmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
+        o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
     
@@ -286,6 +287,9 @@ glStateWrapper::applyStencilState(const StencilState& newState, const StencilSta
     const StencilOp::Code dFailOp = newState.DepthFailOp;
     const StencilOp::Code passOp = newState.DepthStencilPassOp;
     if ((sFailOp != curState.StencilFailOp) || (dFailOp != curState.DepthFailOp) || (passOp  != curState.DepthStencilPassOp)) {
+        o_assert_range_dbg(sFailOp, StencilOp::NumStencilOperations);
+        o_assert_range_dbg(dFailOp, StencilOp::NumStencilOperations);
+        o_assert_range_dbg(passOp, StencilOp::NumStencilOperations);
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
@@ -307,6 +311,7 @@ glStateWrapper::applyDepthStencilState(const DepthStencilState& newState) {
         const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
         const bool depthWriteEnabled = newState.DepthWriteEnabled;
         if (depthCmpFunc != curState.DepthCmpFunc) {
+            o_assert_range_dbg(depthCmpFunc, CompareFunc::NumCompareFuncs);
             ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
         }
         if (depthWriteEnabled != curState.DepthWriteEnabled) {
@@ -376,6 +381,11 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
         (bs.SrcFactorAlpha != this->curBlendState.SrcFactorAlpha) ||
         (bs.DstFactorAlpha != this->curBlendState.DstFactorAlpha)) {
         
+        o_assert_range_dbg(bs.SrcFactorRGB, BlendFactor::NumBlendFactors);
+        o_assert_range_dbg(bs.DstFactorRGB, BlendFactor::NumBlendFactors);
+        o_assert_range_dbg(bs.SrcFactorAlpha, BlendFactor::NumBlendFactors);
+        o_assert_range_dbg(bs.DstFactorAlpha, BlendFactor::NumBlendFactors);
+
         ::glBlendFuncSeparate(mapBlendFactor[bs.SrcFactorRGB],
                               mapBlendFactor[bs.DstFactorRGB],
                               mapBlendFactor[bs.SrcFactorAlpha],
@@ -383,6 +393,9 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
     }
     if ((bs.OpRGB != this->curBlendState.OpRGB) ||
         (bs.OpAlpha != this->curBlendState.OpAlpha)) {
+
+        o_assert_range_dbg(bs.OpRGB, BlendOperation::NumBlendOperations);
+        o_assert_range_dbg(bs.OpAlpha, BlendOperation::NumBlendOperations);
 
         ::glBlendEquationSeparate(mapBlendOp[bs.OpRGB], mapBlendOp[bs.OpAlpha]);
     }
@@ -429,6 +442,7 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
     }
     const Face::Code cullFace = newState.CullFace;
     if (cullFace != curState.CullFace) {
+        o_assert_range_dbg(cullFace, Face::NumFaceCodes);
         ::glCullFace(mapCullFace[cullFace]);
     }
     const bool depthOffsetEnabled = newState.DepthOffsetEnabled;

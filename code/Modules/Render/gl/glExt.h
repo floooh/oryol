@@ -24,6 +24,7 @@ public:
         TextureFloat,
         TextureHalfFloat,
         InstancedArrays,
+        DebugOutput,
 
         NumExtensions,
         InvalidExtension,

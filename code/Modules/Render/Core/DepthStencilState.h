@@ -20,7 +20,7 @@ public:
     union {
         struct {
             /// depth compare-function
-            CompareFunc::Code DepthCmpFunc:3;
+            CompareFunc::Code DepthCmpFunc:5;
             /// depth write enabled flag
             bool DepthWriteEnabled:1;
         };

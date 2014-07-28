@@ -16,10 +16,10 @@ public:
     union {
         struct {
             bool StencilEnabled : 1;
-            StencilOp::Code StencilFailOp : 3;
-            StencilOp::Code DepthFailOp : 3;
-            StencilOp::Code DepthStencilPassOp : 3;
-            CompareFunc::Code StencilCmpFunc : 3;
+            StencilOp::Code StencilFailOp : 4;
+            StencilOp::Code DepthFailOp : 4;
+            StencilOp::Code DepthStencilPassOp : 4;
+            CompareFunc::Code StencilCmpFunc : 4;
             unsigned int StencilReadMask : 8;
             unsigned int StencilWriteMask : 8;
             unsigned int StencilRef : 8;
