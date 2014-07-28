@@ -6,7 +6,7 @@
     
     An immutable, shared UTF-8 String class. Memory is only allocated
     when creating or assigning from non-String objects (const char*,
-    StringAtoms or std::string). When assigning from another string,
+    StringAtoms). When assigning from another string,
     only a pointer to the original string data is copied, and a 
     refcount is maintained. The last String pointing to the string
     data frees the string data.
@@ -24,7 +24,6 @@
     @see StringBuilder, StringAtom
 */
 #include <atomic>
-#include <string>
 #include "Core/Types.h"
 #include "Core/Assert.h"
 
@@ -43,8 +42,6 @@ public:
     String(const char* ptr, int32 startIndex, int32 endIndex);
     /// construct from substring of other string, endIndex can be EndOfString
     String(const String& rhs, int32 startIndex, int32 endIndex);
-    /// construct from std::string (allocates!)
-    String(const std::string& str);
     /// construct from StringAtom (allocates!)
     String(const StringAtom& str);
     
@@ -58,8 +55,6 @@ public:
     
     /// assign from C string (allocates!)
     void operator=(const char* cstr);
-    /// assign from std::string (allocates!)
-    void operator=(const std::string& str);
     /// assign from StringAtom (allocates!)
     void operator=(const StringAtom& str);
     /// copy-assign from other String (does not allocate)
@@ -86,8 +81,6 @@ public:
     void Assign(const String& rhs, int32 startIndex, int32 endIndex);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const char* AsCStr() const;
-    /// get as std::string (slow)
-    std::string AsStdString() const;
     /// get as StringAtom (slow)
     StringAtom AsStringAtom() const;
     /// get the last character in the string
@@ -146,18 +139,6 @@ bool operator<(const char* s0, const String& s1);
 bool operator>(const char* s0, const String& s1);
 bool operator<=(const char* s0, const String& s1);
 bool operator>=(const char* s0, const String& s1);
-bool operator==(const String& s0, const std::string& s1);
-bool operator!=(const String& s0, const std::string& s1);
-bool operator<(const String& s0, const std::string& s1);
-bool operator>(const String& s0, const std::string& s1);
-bool operator<=(const String& s0, const std::string& s1);
-bool operator>=(const String& s0, const std::string& s1);
-bool operator==(const std::string& s0, const String& s1);
-bool operator!=(const std::string& s0, const String& s1);
-bool operator<(const std::string& s0, const String& s1);
-bool operator>(const std::string& s0, const String& s1);
-bool operator<=(const std::string& s0, const String& s1);
-bool operator>=(const std::string& s0, const String& s1);
 bool operator==(const String& s0, const StringAtom& s1);
 bool operator!=(const String& s0, const StringAtom& s1);
 bool operator<(const String& s0, const StringAtom& s1);

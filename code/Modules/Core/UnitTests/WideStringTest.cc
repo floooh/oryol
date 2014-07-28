@@ -45,14 +45,11 @@ TEST(WideStringTest) {
     CHECK(str0 != str2);
     CHECK(str2 == str2);
     
-    std::wstring blub(L"Blub");
-    WideString str3(blub);
+    WideString str3(L"Blub");
     CHECK(str3.IsValid());
     CHECK(!str3.Empty());
     CHECK(str3.Length() == 4);
     CHECK(str3.RefCount() == 1);
-    CHECK(std::wcscmp(str3.AsCStr(), blub.c_str()) == 0);
-    CHECK(str3 == blub);
     CHECK(str3 == L"Blub");
     
     // copy-assignment
@@ -88,19 +85,6 @@ TEST(WideStringTest) {
     CHECK(bla == str2);
     CHECK(str0 != str2);
     CHECK(str2 == str2);
-    
-    // std::string assignment
-    str3 = blub;
-    CHECK(str3.IsValid());
-    CHECK(!str3.Empty());
-    CHECK(str3.Length() == 4);
-    CHECK(str3.RefCount() == 1);
-    CHECK(std::wcscmp(str3.AsCStr(), blub.c_str()) == 0);
-    CHECK(str3 == blub);
-    CHECK(str3 == L"Blub");
-    
-    // getters
-    CHECK(str3.AsStdWString() == blub);
     
     // test range-assignment
     const wchar_t* hello = L"Hello World!";

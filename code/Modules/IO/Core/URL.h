@@ -34,7 +34,7 @@ public:
     URL(const char* rhs);
     /// construct from StringAtom
     URL(const Core::StringAtom& rhs);
-    /// construct from std::string
+    /// construct from String
     URL(const Core::String& rhs);
     
     /// assignment from other URL
@@ -45,7 +45,7 @@ public:
     void operator=(const char* rhs);
     /// assignment from StringAtom
     void operator=(const Core::StringAtom& rhs);
-    /// assignment from std::string
+    /// assignment from String
     void operator=(const Core::String& rhs);
     
     /// equality

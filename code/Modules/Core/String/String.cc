@@ -173,11 +173,6 @@ String::Assign(const String& rhs, int32 startIndex, int32 endIndex) {
 }
     
 //------------------------------------------------------------------------------
-String::String(const std::string& str) {
-    this->create(str.c_str(), str.length());
-}
-
-//------------------------------------------------------------------------------
 String::String(const String& rhs) {
     this->data = rhs.data;
     this->strPtr = rhs.strPtr;
@@ -206,13 +201,6 @@ String::operator=(const char* str) {
     if (nullptr != str) {
         this->create(str, std::strlen(str));
     }
-}
-
-//------------------------------------------------------------------------------
-void
-String::operator=(const std::string& str) {
-    this->release();
-    this->create(str.c_str(), str.length());
 }
 
 //------------------------------------------------------------------------------
@@ -324,12 +312,6 @@ String::AsCStr() const {
     else {
         return this->strPtr;
     }
-}
-
-//------------------------------------------------------------------------------
-std::string
-String::AsStdString() const {
-    return std::string(this->AsCStr());
 }
 
 //------------------------------------------------------------------------------
@@ -513,66 +495,6 @@ bool operator<=(const char* s0, const String& s1) {
 bool operator>=(const char* s0, const String& s1) {
     o_assert(0 != s0);
     return std::strcmp(s0, s1.AsCStr()) >= 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator==(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) == 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator!=(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) != 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator<(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) < 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator>(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) > 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator<=(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) <= 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator>=(const String& s0, const std::string& s1) {
-    return std::strcmp(s0.AsCStr(), s1.c_str()) >= 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator==(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) == 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator!=(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) == 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator<(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) < 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator>(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) > 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator<=(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) <= 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator>=(const std::string& s0, const String& s1) {
-    return std::strcmp(s0.c_str(), s1.AsCStr()) >= 0;
 }
 
 } // namespace Core

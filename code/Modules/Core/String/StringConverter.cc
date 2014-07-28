@@ -7,6 +7,7 @@
 #include "Ext/ConvertUTF/ConvertUTF.h"
 #include <cstdlib>
 #include <cstring>
+#include <cwchar>
 
 namespace Oryol {
 namespace Core {

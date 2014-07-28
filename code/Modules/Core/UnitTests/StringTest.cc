@@ -48,14 +48,11 @@ TEST(StringTest) {
     CHECK(str0 != str2);
     CHECK(str2 == str2);
     
-    std::string blub("Blub");
-    String str3(blub);
+    String str3("Blub");
     CHECK(str3.IsValid());
     CHECK(!str3.Empty());
     CHECK(str3.Length() == 4);
     CHECK(str3.RefCount() == 1);
-    CHECK(std::strcmp(str3.AsCStr(), blub.c_str()) == 0);
-    CHECK(str3 == blub);
     CHECK(str3 == "Blub");
     
     StringAtom blob("Blob");
@@ -102,16 +99,6 @@ TEST(StringTest) {
     CHECK(str0 != str2);
     CHECK(str2 == str2);
 
-    // std::string assignment
-    str3 = blub;
-    CHECK(str3.IsValid());
-    CHECK(!str3.Empty());
-    CHECK(str3.Length() == 4);
-    CHECK(str3.RefCount() == 1);
-    CHECK(std::strcmp(str3.AsCStr(), blub.c_str()) == 0);
-    CHECK(str3 == blub);
-    CHECK(str3 == "Blub");
-
     // StringAtom assignment
     str4 = blob;
     CHECK(str4.IsValid());
@@ -123,7 +110,6 @@ TEST(StringTest) {
     CHECK(str4 == "Blob");
     
     // getters
-    CHECK(str3.AsStdString() == blub);
     CHECK(str4.AsStringAtom() == blob);
     
     // test range-assignment

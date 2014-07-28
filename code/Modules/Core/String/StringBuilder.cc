@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include <cstring>
+#include <cstdio>
 #include "StringBuilder.h"
 #include "Core/Memory/Memory.h"
 

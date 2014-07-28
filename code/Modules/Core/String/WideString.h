@@ -14,7 +14,6 @@
     convert between UTF encodings.
 */
 #include <atomic>
-#include <string>
 #include "Core/Types.h"
 #include "Core/Assert.h"
 
@@ -31,8 +30,6 @@ public:
     WideString(const wchar_t* str);
     /// construct from raw wchar_t sequence
     WideString(const wchar_t* ptr, int32 numChars);
-    /// construct from std::wstring (allocates!)
-    WideString(const std::wstring& str);
     
     /// copy constructor (does not allocate)
     WideString(const WideString& rhs);
@@ -44,8 +41,6 @@ public:
     
     /// assign from wchar_t string (allocates!)
     void operator=(const wchar_t* cstr);
-    /// assign from std::wstring (allocates!)
-    void operator=(const std::wstring& str);
     /// copy-assign from other WideString (does not allocate)
     void operator=(const WideString& rhs);
     /// move-assign from other WideString (does not allocate)
@@ -68,8 +63,6 @@ public:
     void Assign(const wchar_t* ptr, int32 numChars);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const wchar_t* AsCStr() const;
-    /// get as std::wstring (slow)
-    std::wstring AsStdWString() const;
     
     /// get string length in number of wchar_t
     int32 Length() const;
@@ -122,18 +115,6 @@ bool operator<(const wchar_t* s0, const WideString& s1);
 bool operator>(const wchar_t* s0, const WideString& s1);
 bool operator<=(const wchar_t* s0, const WideString& s1);
 bool operator>=(const wchar_t* s0, const WideString& s1);
-bool operator==(const WideString& s0, const std::wstring& s1);
-bool operator!=(const WideString& s0, const std::wstring& s1);
-bool operator<(const WideString& s0, const std::wstring& s1);
-bool operator>(const WideString& s0, const std::wstring& s1);
-bool operator<=(const WideString& s0, const std::wstring& s1);
-bool operator>=(const WideString& s0, const std::wstring& s1);
-bool operator==(const std::wstring& s0, const WideString& s1);
-bool operator!=(const std::wstring& s0, const WideString& s1);
-bool operator<(const std::wstring& s0, const WideString& s1);
-bool operator>(const std::wstring& s0, const WideString& s1);
-bool operator<=(const std::wstring& s0, const WideString& s1);
-bool operator>=(const std::wstring& s0, const WideString& s1);
 
 } // namespace Core
 } // namespace Oryol

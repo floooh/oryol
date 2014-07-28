@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include <cwchar>
+#include <new>
 #include "WideString.h"
 #include "Core/Memory/Memory.h"
 
@@ -89,11 +90,6 @@ WideString::WideString(const wchar_t* ptr, int32 numCharacters) {
 }
     
 //------------------------------------------------------------------------------
-WideString::WideString(const std::wstring& str) {
-    this->create(str.c_str(), str.length());
-}
-    
-//------------------------------------------------------------------------------
 WideString::WideString(const WideString& rhs) {
     this->data = rhs.data;
     this->strPtr = rhs.strPtr;
@@ -119,13 +115,6 @@ WideString::operator=(const wchar_t* str) {
     o_assert(0 != str);
     this->release();
     this->create(str, std::wcslen(str));
-}
-    
-//------------------------------------------------------------------------------
-void
-WideString::operator=(const std::wstring& str) {
-    this->release();
-    this->create(str.c_str(), str.length());
 }
     
 //------------------------------------------------------------------------------
@@ -251,12 +240,6 @@ WideString::AsCStr() const {
 }
     
 //------------------------------------------------------------------------------
-std::wstring
-WideString::AsStdWString() const {
-    return std::wstring(this->AsCStr());
-}
-    
-//------------------------------------------------------------------------------
 bool
 WideString::IsValid() const {
     return this->AsCStr()[0] != 0;
@@ -366,66 +349,6 @@ bool operator<=(const wchar_t* s0, const WideString& s1) {
 bool operator>=(const wchar_t* s0, const WideString& s1) {
     o_assert(0 != s0);
     return std::wcscmp(s0, s1.AsCStr()) >= 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator==(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) == 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator!=(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) != 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator<(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) < 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator>(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) > 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator<=(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) <= 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator>=(const WideString& s0, const std::wstring& s1) {
-    return std::wcscmp(s0.AsCStr(), s1.c_str()) >= 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator==(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) == 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator!=(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) == 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator<(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) < 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator>(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) > 0;
-}
-    
-//------------------------------------------------------------------------------
-bool operator<=(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) <= 0;
-}
-
-//------------------------------------------------------------------------------
-bool operator>=(const std::wstring& s0, const WideString& s1) {
-    return std::wcscmp(s0.c_str(), s1.AsCStr()) >= 0;
 }
     
 } // namespace Core
