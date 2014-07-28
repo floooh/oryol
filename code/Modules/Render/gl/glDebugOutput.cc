@@ -57,15 +57,15 @@ glDebugOutput::Enable(Severity s) {
             case Medium:    glSeverity = GL_DEBUG_SEVERITY_MEDIUM_ARB; break;
             case Low:       glSeverity = GL_DEBUG_SEVERITY_LOW_ARB; break;
         }
-        ::glDebugMessageControl(GL_DONT_CARE,        // source
-                                GL_DONT_CARE,        // type
-                                glSeverity,            // severity
-                                0,                   // count
-                                nullptr,             // ids
-                                GL_TRUE);            // enabled
+        ::glDebugMessageControlARB(GL_DONT_CARE,        // source
+                                   GL_DONT_CARE,        // type
+                                   glSeverity,            // severity
+                                   0,                   // count
+                                   nullptr,             // ids
+                                   GL_TRUE);            // enabled
         if (!isEnabled) {
             ::glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-            ::glDebugMessageCallback(debugOutputCallback, nullptr);
+            ::glDebugMessageCallbackARB(debugOutputCallback, nullptr);
             isEnabled = true;
         }
     }
