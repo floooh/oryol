@@ -62,7 +62,6 @@ glInfo::Int(Code c) {
 void
 glInfo::printInfo() {
     glInfo::printString(GL_VERSION, "GL_VERSION", false);
-    glInfo::printString(GL_SHADING_LANGUAGE_VERSION, "GL_SHADING_LANGUAGE_VERSION", false);
     glInfo::printString(GL_VENDOR, "GL_VENDOR", false);
     glInfo::printString(GL_RENDERER, "GL_RENDERER", false);
     glInfo::printString(GL_SHADING_LANGUAGE_VERSION, "GL_SHADING_LANGUAGE_VERSION", false);
