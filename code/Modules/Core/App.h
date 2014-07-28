@@ -120,8 +120,9 @@ Oryol::Core::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
     Oryol::Core::WideString cmdLine = ::GetCommandLineW(); \
     OryolArgs = Oryol::Core::Args(cmdLine); \
-    clazz app; \
-    app.StartMainLoop(); \
+    clazz* app = new clazz(); \
+    app->StartMainLoop(); \
+    delete(app); \
     return 0; \
 }
 #elif ORYOL_ANDROID
