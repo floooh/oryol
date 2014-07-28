@@ -15,12 +15,12 @@ public:
     union {
         struct {
             bool BlendEnabled:1;
-            BlendFactor::Code SrcFactorRGB:4;
-            BlendFactor::Code DstFactorRGB:4;
-            BlendOperation::Code OpRGB:2;
-            BlendFactor::Code SrcFactorAlpha:4;
-            BlendFactor::Code DstFactorAlpha:4;
-            BlendOperation::Code OpAlpha:2;
+            BlendFactor::Code SrcFactorRGB:5;
+            BlendFactor::Code DstFactorRGB:5;
+            BlendOperation::Code OpRGB:3;
+            BlendFactor::Code SrcFactorAlpha:5;
+            BlendFactor::Code DstFactorAlpha:5;
+            BlendOperation::Code OpAlpha:3;
             Channel::Mask ColorWriteMask:4;
         };
         /// hash code from merged state
