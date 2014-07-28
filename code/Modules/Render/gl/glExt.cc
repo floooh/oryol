@@ -54,6 +54,7 @@ glExt::Setup() {
                                         strBuilder.Contains("_compressed_texture_atc");
     extensions[TextureFloat] = strBuilder.Contains("_texture_float");
     extensions[InstancedArrays] = strBuilder.Contains("_instanced_arrays");
+    extensions[DebugOutput] = strBuilder.Contains("_debug_output");
     #endif
     
     #if ORYOL_OPENGLES2

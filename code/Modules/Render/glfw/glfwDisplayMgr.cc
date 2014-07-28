@@ -5,6 +5,7 @@
 #include "Render/gl/gl_impl.h"
 #include "Render/gl/glInfo.h"
 #include "Render/gl/glExt.h"
+#include "Render/gl/glDebugOutput.h"
 #include "Render/RenderProtocol.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
@@ -57,6 +58,9 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Alpha));
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(depthPixelFormat, PixelFormat::Depth));
     glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(colorPixelFormat, PixelFormat::Stencil));
+    #if ORYOL_DEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    #endif
     #if ORYOL_MACOS
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -85,6 +89,9 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     // setup extensions and platform-dependent constants
     glInfo::Setup();
     glExt::Setup();
+    #if ORYOL_DEBUG
+    glDebugOutput::Enable(glDebugOutput::Medium);
+    #endif
     
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;
