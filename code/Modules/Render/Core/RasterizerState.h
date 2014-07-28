@@ -18,7 +18,7 @@ public:
             bool DepthOffsetEnabled : 1;
             bool ScissorTestEnabled : 1;
             bool DitherEnabled : 1;
-            Face::Code CullFace : 2;
+            Face::Code CullFace : 3;
         };
         uint8 Hash;
     };
