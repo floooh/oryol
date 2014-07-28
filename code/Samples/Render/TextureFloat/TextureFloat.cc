@@ -26,8 +26,6 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    glm::mat4 computeMVP(const glm::vec2& angles);
-
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
     Resource::Id renderTarget;
@@ -86,15 +84,6 @@ TextureFloatApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-TextureFloatApp::computeMVP(const glm::vec2& angles) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-    modelTform = glm::rotate(modelTform, angles.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, angles.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 TextureFloatApp::OnRunning() {
     // render one frame
@@ -118,10 +107,7 @@ TextureFloatApp::OnRunning() {
         this->render->EndFrame();
     }
     
-    TimePoint curTime = Clock::Now();
-    Duration frameTime = curTime - this->lastFrameTimePoint;
-    this->lastFrameTimePoint = curTime;
-    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?

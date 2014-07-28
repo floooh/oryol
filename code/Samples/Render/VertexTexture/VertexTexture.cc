@@ -125,10 +125,7 @@ VertexTextureApp::OnRunning() {
         this->render->EndFrame();
     }
     
-    TimePoint curTime = Clock::Now();
-    Duration frameTime = curTime - this->lastFrameTimePoint;
-    this->lastFrameTimePoint = curTime;
-    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
 
     // continue running or quit?

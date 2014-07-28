@@ -166,10 +166,7 @@ InstancingApp::OnRunning() {
         this->render->EndFrame();
     }
     
-    TimePoint curTime = Clock::Now();
-    Duration frameTime = curTime - this->lastFrameTimePoint;
-    this->lastFrameTimePoint = curTime;
-    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     this->debug->PrintF("\n %d instances\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms",
                         this->curNumParticles,
                         updTime.AsMilliSeconds(),

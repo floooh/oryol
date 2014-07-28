@@ -20,6 +20,8 @@ public:
     static TimePoint Now();
     /// get duration between Now and another TimePoint
     static Duration Since(const TimePoint& t);
+    /// get duration between Now and TimePoint in the past, and set TimePoint to Now
+    static Duration LapTime(TimePoint& inOutTimepoint);
 };
 
 //------------------------------------------------------------------------------
@@ -27,6 +29,15 @@ inline Duration
 Clock::Since(const TimePoint& t) {
     return Now().Since(t);
 }
-    
+
+//------------------------------------------------------------------------------
+inline Duration
+Clock::LapTime(TimePoint& inOutTimepoint) {
+    TimePoint now = Clock::Now();
+    Duration dur = now.Since(inOutTimepoint);
+    inOutTimepoint = now;
+    return dur;
+}
+
 } // namespace Time
 } // namespace Oryol
