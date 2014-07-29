@@ -212,7 +212,7 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     this->vertexLayout.Add(VertexAttr::Position, VertexFormat::UByte4);
     this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
-    MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::Dynamic);
+    MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
     this->textMesh = renderFacade->CreateResource(setup);
     o_assert(this->textMesh.IsValid());
