@@ -198,7 +198,9 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.MagFilter);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    #if !ORYOL_OPENGLES2
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
+    #endif
     ORYOL_GL_CHECK_ERROR();
     ::glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, glColorType, NULL);
     ORYOL_GL_CHECK_ERROR();
@@ -293,7 +295,9 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     GLenum glMinFilter = setup.MinFilter;
     GLenum glMagFilter = setup.MagFilter;
     if (!setup.HasMipMaps()) {
+        #if !ORYOL_OPENGLES2
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
+        #endif
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
             glMinFilter = GL_NEAREST;
         }
