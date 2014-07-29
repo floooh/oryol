@@ -23,12 +23,12 @@ glslSlangTypes = {
 macroKeywords = {
     '$position': '_POSITION',
     '$color': '_COLOR',
-    '$texture2D': '_TEXTURE2D',
+    '$texture2DProjLod': '_TEXTURE2DPROJLOD',
     '$texture2DProj': '_TEXTURE2DPROJ',
     '$texture2DLod': '_TEXTURE2DLOD',
-    '$texture2DProjLod': '_TEXTURE2DPROJLOD',
+    '$textureCubeLod': '_TEXTURECUBELOD',
     '$textureCube': '_TEXTURECUBE',
-    '$textureCubeLod': '_TEXTURECUBELOD'
+    '$texture2D': '_TEXTURE2D'
 }
 
 glsl100Macros = {
@@ -47,7 +47,7 @@ glsl130Macros = {
     '_COLOR': '_FragColor', 
     '_TEXTURE2D': 'texture',
     '_TEXTURE2DPROJ': 'textureProj',
-    '_TEXTURE2DLOD': 'texture',
+    '_TEXTURE2DLOD': 'textureLod',
     '_TEXTURE2DPROJLOD': 'textureProj',
     '_TEXTURECUBE': 'texture',
     '_TEXTURECUBELOD': 'texture'
