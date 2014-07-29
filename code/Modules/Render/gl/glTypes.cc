@@ -51,6 +51,43 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
 
 //------------------------------------------------------------------------------
 GLenum
+glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
+    #if ORYOL_OPENGLES2
+    return glTypes::AsGLTexImageFormat(c);
+    #else
+    switch (c) {
+        case PixelFormat::RGBA8:
+            return GL_RGBA8;
+        case PixelFormat::R5G5B5A1:
+            return GL_RGB5_A1;
+        case PixelFormat::RGBA4:
+            return GL_RGBA4;
+        case PixelFormat::RGBA32F:
+            return GL_RGBA32F;
+        case PixelFormat::RGBA16F:
+            return GL_RGBA16F;
+        case PixelFormat::RGB8:
+            return GL_RGB8;
+        case PixelFormat::L8:
+            return GL_R8;
+        case PixelFormat::D16:
+            return GL_DEPTH_COMPONENT16;
+        case PixelFormat::D32:
+            return GL_DEPTH_COMPONENT32F;
+        case PixelFormat::D24S8:
+            return GL_DEPTH24_STENCIL8;
+        case PixelFormat::R5G6B5:
+            // ???
+        default:
+            // FIXME: add missing values
+            o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
+            return 0;
+    }
+    #endif
+}
+
+//------------------------------------------------------------------------------
+GLenum
 glTypes::AsGLTexImageType(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::RGBA32F:

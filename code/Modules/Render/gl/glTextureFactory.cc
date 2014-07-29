@@ -187,6 +187,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // create render target texture
     GLint glColorFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    GLint glColorInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
     GLenum glColorType = glTypes::AsGLTexImageType(setup.ColorFormat);
     GLuint glColorRenderTexture = 0;
     ::glGenTextures(1, &glColorRenderTexture);
@@ -197,8 +198,9 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.MagFilter);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
     ORYOL_GL_CHECK_ERROR();
-    ::glTexImage2D(GL_TEXTURE_2D, 0, glColorFormat, width, height, 0, glColorFormat, glColorType, NULL);
+    ::glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, glColorType, NULL);
     ORYOL_GL_CHECK_ERROR();
     
     // attach color render texture to framebuffer
@@ -291,6 +293,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     GLenum glMinFilter = setup.MinFilter;
     GLenum glMagFilter = setup.MagFilter;
     if (!setup.HasMipMaps()) {
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
             glMinFilter = GL_NEAREST;
         }
@@ -313,10 +316,11 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     // setup the image data in the texture
     o_assert2(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
     GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    GLenum glTexImageInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
     GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.ColorFormat);
     ::glTexImage2D(GL_TEXTURE_2D,
                    0,
-                   glTexImageFormat,
+                   glTexImageInternalFormat,
                    width,
                    height,
                    0,

@@ -13,8 +13,10 @@ namespace Render {
     
 class glTypes {
 public:
-    /// convert Oryol pixel format to glTexImage format (or internalFormat)
+    /// convert Oryol pixel format to glTexImage format
     static GLenum AsGLTexImageFormat(PixelFormat::Code c);
+    /// convert Oryol pixel format to glTexImage format, this is == TexImageFormat on GLES but may be different on desktop GL
+    static GLenum AsGLTexImageInternalFormat(PixelFormat::Code c);
     /// convert Oryol pixel format to glTexImage type
     static GLenum AsGLTexImageType(PixelFormat::Code c);
     /// convert Oryol pixel format to renderbuffer format
