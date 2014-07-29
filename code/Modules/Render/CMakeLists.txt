@@ -26,7 +26,7 @@ endif()
 
 oryol_begin_module(Render)
 oryol_sources(. Attrs Core Setup Types Util base gl)
-oryol_sources_emscripten(egl)
+oryol_sources_emscripten(emsc)
 oryol_sources_android(egl)
 oryol_sources_ios(ios)
 oryol_sources_pnacl(pnacl)
