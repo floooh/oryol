@@ -1,0 +1,74 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//  Annotated GLSL shaders for GPUParticles sample
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+@vs emitVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+void main() {
+    $position = position;
+    uv = texcoord0;
+}
+@end
+
+@fs emitFS
+@uniform float time Time
+@in vec2 uv
+void main() {
+    $color = vec4(1.0, 0.0, 0.0, 1.0);
+}
+@end
+
+@bundle EmitParticles
+@program emitVS emitFS
+@end
+
+//------------------------------------------------------------------------------
+@vs updateVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+void main() {
+    $position = position;
+    uv = texcoord0;
+}
+@end
+
+@fs updateFS
+@in vec2 uv
+void main() {
+    $color = vec4(0.0, 1.0, 0.0, 1.0);
+}
+@end
+
+@bundle UpdateParticles
+@program updateVS updateFS
+@end
+
+//------------------------------------------------------------------------------
+@vs drawVS
+@uniform mat4 mvp ModelViewProjection
+@in vec4 position
+@in vec4 color0
+@in float instance0
+@out vec4 color
+void main() {
+    $position = mvp * position;
+    color = color0;
+}
+@end
+
+
+@fs drawFS
+@in vec4 color
+void main() {
+    $color = color;
+}
+@end
+
+@bundle DrawParticles
+@program drawVS drawFS
+@end

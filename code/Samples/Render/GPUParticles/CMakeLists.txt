@@ -1,0 +1,7 @@
+oryol_begin_app(GPUParticles windowed)
+    oryol_sources(.)
+    oryol_deps(Render Time Debug)
+    # oryol_add_web_sample(GPUParticles "Fully GPU driven particle system" emscripten)
+    # oryol_add_web_sample(GPUParticles "Fully GPU driven particle system" android)
+    # oryol_add_web_sample(GPUParticles "Fully GPU driven particle system" pnacl)
+oryol_end_app()
