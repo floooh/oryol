@@ -360,7 +360,7 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
     const Usage::Code vbUsage = attrs.BufferUsage;
     o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic));
+    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
     
     uint8 slotIndex = msh->getActiveVertexBufferSlot();
     if (Usage::Dynamic == vbUsage) {

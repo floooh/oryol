@@ -125,10 +125,11 @@ public:
     /// usage enum
     enum Code {
         Immutable = 0x88E4,     // GL_STATIC_DRAW
+        Static = 0x88E4,        // GL_STATIC_DRAW
         Dynamic = 0x88E8,       // GL_DYNAMIC_DRAW
         Stream = 0x88E0,        // GL_STREAM_DRAW
         
-        NumUsages = 3,
+        NumUsages = 4,
         InvalidUsage = 0xFFFFFFFF,
     };
 };
