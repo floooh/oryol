@@ -152,7 +152,7 @@ GPUParticlesApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
+    this->debug->PrintF("WORK IN PROGRESS!!! %.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
