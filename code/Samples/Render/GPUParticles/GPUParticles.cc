@@ -19,6 +19,11 @@ using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
+const int32 NumParticleBuffers = 2;
+const int32 MaxNumParticles = 128 * 128;
+const int32 ParticleBufferWidth = 2 * 128;
+const int32 ParticleBufferHeight = 128;
+
 class GPUParticlesApp : public App {
 public:
     virtual AppState::Code OnInit();
@@ -28,11 +33,6 @@ public:
 private:
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
-    
-    static const int32 NumParticleBuffers = 2;
-    static const int32 MaxNumParticles = 1024 * 1024;
-    static const int32 ParticleBufferWidth = 1024;
-    static const int32 ParticleBufferHeight = 2 * 1024;
     
     Resource::Id particleBuffer[NumParticleBuffers];
     Resource::Id particleIdMesh;
@@ -64,18 +64,19 @@ GPUParticlesApp::OnInit() {
         o_error("ERROR: instances_arrays extension required!\n");
     }
     
-    // how it works:
-    // - particle state consists of a point and vector, point.w is 1 if particle is alive
-    // - particle state is kept in 2 ping/pong RGBA32 render targets
-    // - an update render pass reads previous particle state from ping texture
-    //   and 'renders' the new particle state to pong texture
-    // - an particle emission render pass adds new live particles to pong texture
-    // - a static particle id vertex buffer feeds particle indices via instanced rendering
-    //   (this wouldn't be needed if an InstanceId would be available with the ANGLE_instanced_array ext)
-    // - the pong particle-state texture is used as vertex shader texture to fetch
-    //   particle positions during instanced rendering
+    // what we need:
+    // - 2 ping/pong particle state float textures which keep track of the persistent particle state (pos and velocity)
+    // - an emitter shader which renders new particle state
+    // - an update shader which reads previous particle state from ping texture and
+    //   render new particle state to pong texture
+    // - a static vertex buffer with per-instance particleIDs
+    // - a static vertex buffer with the particle shape
+    // - a particle-rendering draw state which uses instanced rendering
+    // - 2 fullscreen-quad draw-states for emitting and updating particles
+    // - 1 particle-rendering draw state
 
     // create 2 ping/pong render target textures to hold particle state
+    // after creation, fill the state render targets with all zeros
     auto particleBufferSetup = TextureSetup::AsRenderTarget("ping", ParticleBufferWidth, ParticleBufferHeight, PixelFormat::RGBA32F);
     particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
     particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
@@ -131,6 +132,19 @@ GPUParticlesApp::OnInit() {
     const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
+    
+    // initialize particle state
+    const glm::vec2 particleBufferDims(ParticleBufferWidth, ParticleBufferHeight);
+    this->render->ApplyOffscreenRenderTarget(this->particleBuffer[0]);
+    this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
+    this->render->ApplyDrawState(this->emitParticles);
+    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, particleBufferDims);
+    this->render->Draw(0);
+    this->render->ApplyOffscreenRenderTarget(this->particleBuffer[1]);
+    this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
+    this->render->ApplyDrawState(this->emitParticles);
+    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, particleBufferDims);
+    this->render->Draw(0);
     
     return App::OnInit();
 }

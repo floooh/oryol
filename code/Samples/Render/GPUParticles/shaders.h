@@ -13,7 +13,8 @@ namespace Shaders {
     };
     class EmitParticles {
     public:
-        static const int32 Time = 0;
+        static const int32 BufferDims = 0;
+        static const int32 Time = 1;
         static Render::ProgramBundleSetup CreateSetup();
     };
     class UpdateParticles {
