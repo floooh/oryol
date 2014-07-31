@@ -20,8 +20,8 @@ using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
 const int32 NumParticleBuffers = 2;
-const int32 NumParticlesX = 1024;
-const int32 NumParticlesY = 1024;
+const int32 NumParticlesX = 256;
+const int32 NumParticlesY = 256;
 const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
 const int32 ParticleBufferWidth = 2 * NumParticlesX;
 const int32 ParticleBufferHeight = NumParticlesY;
@@ -108,7 +108,7 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddSphere(0.05f, 3, 2);
+    shapeBuilder.AddSphere(0.01f, 3, 2);
     shapeBuilder.Build();
     MeshSetup meshSetup = MeshSetup::FromData("box");
     meshSetup.InstanceMesh = this->particleIdMesh;

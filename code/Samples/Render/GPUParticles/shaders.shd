@@ -173,6 +173,7 @@ void main() {
 //------------------------------------------------------------------------------
 @vs drawVS
 @use Util
+@use Noise
 @uniform mat4 mvp ModelViewProjection
 @uniform vec2 bufDims BufferDims
 @uniform sampler2D particleTex ParticleState
@@ -188,7 +189,7 @@ void main() {
     // lookup the particle position
     vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
 
-    $position = mvp * (position + particlePos);
+    $position = mvp * (position + particlePos * 1.5);
     color = color0;
 }
 @end
