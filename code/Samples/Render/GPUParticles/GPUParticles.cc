@@ -20,9 +20,11 @@ using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
 const int32 NumParticleBuffers = 2;
-const int32 MaxNumParticles = 128 * 128;
-const int32 ParticleBufferWidth = 2 * 128;
-const int32 ParticleBufferHeight = 128;
+const int32 NumParticlesX = 1024;
+const int32 NumParticlesY = 1024;
+const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
+const int32 ParticleBufferWidth = 2 * NumParticlesX;
+const int32 ParticleBufferHeight = NumParticlesY;
 
 class GPUParticlesApp : public App {
 public:
@@ -31,6 +33,8 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
+    void updateCamera();
+
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
     
@@ -41,9 +45,12 @@ private:
     Resource::Id updateParticles;
     Resource::Id drawParticles;
     
+    glm::vec2 particleBufferDims{ ParticleBufferWidth, ParticleBufferHeight };
     glm::mat4 view;
     glm::mat4 proj;
-    float32 time = 0.0f;
+    glm::mat4 model;
+    glm::mat4 modelViewProj;
+    int32 frameCount = 0;
     Time::TimePoint lastFrameTimePoint;
 };
 OryolMain(GPUParticlesApp);
@@ -85,12 +92,12 @@ GPUParticlesApp::OnInit() {
     this->particleBuffer[1] = this->render->CreateResource(particleBufferSetup);
     
     // create a particleId buffer which is used as instance data buffer with particleIds from 0..MaxNumParticles
-    const int32 particleIdSize = MaxNumParticles * sizeof(uint32);
+    const int32 particleIdSize = MaxNumParticles * sizeof(float32);
     float32* particleIdData = (float32*) Memory::Alloc(particleIdSize);
     for (int32 i = 0; i < MaxNumParticles; i++) {
         particleIdData[i] = (float32) i;
     }
-    auto particleIdSetup = MeshSetup::CreateEmpty("particleId", MaxNumParticles, Usage::Dynamic); // FIXME, should be 'Usage::Static'
+    auto particleIdSetup = MeshSetup::CreateEmpty("particleId", MaxNumParticles, Usage::Static);
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
     this->particleIdMesh = this->render->CreateResource(particleIdSetup);
     this->render->UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
@@ -101,7 +108,7 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
+    shapeBuilder.AddSphere(0.05f, 3, 2);
     shapeBuilder.Build();
     MeshSetup meshSetup = MeshSetup::FromData("box");
     meshSetup.InstanceMesh = this->particleIdMesh;
@@ -124,29 +131,40 @@ GPUParticlesApp::OnInit() {
     // create particle rendering draw state
     Id drawProg = this->render->CreateResource(Shaders::DrawParticles::CreateSetup());
     DrawStateSetup drawSetup("draw", this->shapeMesh, drawProg, 0);
+    drawSetup.DepthStencilState.DepthWriteEnabled = true;
+    drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = this->render->CreateResource(drawSetup);
     this->render->ReleaseResource(drawProg);
     
     // setup static transform matrices
     const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
-    this->view = glm::mat4();
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
+    this->view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 5.0f));
+    this->model = glm::mat4();
     
     // initialize particle state
-    const glm::vec2 particleBufferDims(ParticleBufferWidth, ParticleBufferHeight);
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[0]);
     this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
     this->render->ApplyDrawState(this->emitParticles);
-    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, particleBufferDims);
+    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[1]);
     this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
     this->render->ApplyDrawState(this->emitParticles);
-    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, particleBufferDims);
+    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+void
+GPUParticlesApp::updateCamera() {
+    float32 angle = this->frameCount * 0.01f;
+    glm::vec3 pos(glm::sin(angle) * 5.0f, 0.0f, glm::cos(angle) * 5.0f);
+    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->modelViewProj = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
@@ -155,11 +173,17 @@ GPUParticlesApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
         
-        this->time += 1.0f / 60.0f;
+        this->frameCount++;
+        this->updateCamera();
         
-        // FIXME
+        // render particles through instanced rendering
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(Channel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->drawParticles);
+        this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
+        this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
+        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[0]);
+        this->render->DrawInstanced(0, MaxNumParticles);
         
         this->debug->DrawTextBuffer();
         this->render->EndFrame();

@@ -7,15 +7,25 @@
 @block Util
 
 // get particleId from current fragment coord
-float getParticleId(float bufferWidth) {
-    vec2 xy = floor(gl_FragCoord.xy);
+float getParticleId(float bufferWidth, vec2 fragCoord) {
+    vec2 xy = floor(fragCoord);
     return (xy.y * bufferWidth * 0.5) + (xy.x * 0.5);
 }
 
 // check if currently 'rendering' position or velocity particle state
-bool atPosition() {
+bool atPosition(vec2 fragCoord) {
     // this should be either 0.0 or 1.0, but avoid an exact comparison
-    return mod(floor(gl_FragCoord.x), 2.0) < 0.5;
+    return mod(floor(fragCoord.x), 2.0) < 0.5;
+}
+
+// compute particle position uv coord from particleId
+vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
+    float numParticlesAlongX = bufferDims.x * 0.5;
+    float f = particleId / numParticlesAlongX;
+    float fragCoordX = (fract(f) * numParticlesAlongX * 2.0) + 0.25;
+    float fragCoordY = floor(f) + 0.25;
+    vec2 posUV = vec2(fragCoordX, fragCoordY) / bufferDims;
+    return posUV;
 }
 @end
 
@@ -119,8 +129,8 @@ void main() {
     // all particles start at position 0.0,0.0,0.0, but have
     // a random start velocity
     // the position w component 1.0 indicates that this particle is now live
-    float particleId = getParticleId(bufDims.x);
-    if (atPosition()) {
+    float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
+    if (atPosition(gl_FragCoord.xy)) {
         // FIXME: pos should be all 0
         $color = vec4(snoise(vec2(particleId, 0.0)),
                       snoise(vec2(0.0, particleId * 0.1)),
@@ -162,13 +172,23 @@ void main() {
 
 //------------------------------------------------------------------------------
 @vs drawVS
+@use Util
 @uniform mat4 mvp ModelViewProjection
+@uniform vec2 bufDims BufferDims
+@uniform sampler2D particleTex ParticleState
 @in vec4 position
 @in vec4 color0
 @in float instance0
 @out vec4 color
 void main() {
-    $position = mvp * position;
+    // instance0 is the particleId (0..N), compute texture coordinate from that
+    float particleId = instance0;
+    vec2 posUv = posUvFromParticleId(particleId, bufDims);
+
+    // lookup the particle position
+    vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
+
+    $position = mvp * (position + particlePos);
     color = color0;
 }
 @end
