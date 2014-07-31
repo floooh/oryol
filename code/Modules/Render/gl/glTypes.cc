@@ -77,7 +77,7 @@ glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
         case PixelFormat::D24S8:
             return GL_DEPTH24_STENCIL8;
         case PixelFormat::R5G6B5:
-            // ???
+            return GL_RGB5;
         default:
             // FIXME: add missing values
             o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
