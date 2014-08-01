@@ -165,19 +165,19 @@ RenderFacade::Supports(Feature::Code feat) const {
 }
 
 //------------------------------------------------------------------------------
-void
+inline void
 RenderFacade::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
     this->stateWrapper.ApplyViewPort(x, y, width, height);
 }
 
 //------------------------------------------------------------------------------
-void
+inline void
 RenderFacade::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
     this->stateWrapper.ApplyScissorRect(x, y, width, height);
 }
 
 //------------------------------------------------------------------------------
-void
+inline void
 RenderFacade::ApplyBlendColor(const glm::vec4& blendColor) {
     this->stateWrapper.ApplyBlendColor(blendColor.x, blendColor.y, blendColor.z, blendColor.w);
 }
