@@ -23,6 +23,7 @@ namespace Shaders {
     public:
         static const int32 BufferDims = 0;
         static const int32 PrevState = 1;
+        static const int32 NumParticles = 2;
         static Render::ProgramBundleSetup CreateSetup();
     };
 }

@@ -158,18 +158,19 @@ void main() {
 void main() {
     // all particles start at position 0.0,0.0,0.0, but have
     // a random start velocity
-    // the position w component 1.0 indicates that this particle is now live
     float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
-        $color = vec4(0.0, 0.0, 0.0, 1.0);
+        $color = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
-        // select a pseudo random velocity vector
-        $color = vec4(snoise(vec2(particleId, 0.0)),
-                      snoise(vec2(0.0, particleId * 0.1)),
-                      snoise(vec2(particleId * 0.1, particleId * 0.01)),
-                      0.0);
+        // select a pseudo random velocity vector, skewed along positive Y
+        vec3 rnd = vec3(snoise(vec2(particleId, 0.0)),
+                        snoise(vec2(0.0, particleId * 0.1)),
+                        snoise(vec2(particleId * 0.1, particleId * 0.01)));
+        rnd *= 0.5;
+        rnd.y += 2.0;
+        $color = vec4(rnd, 0.0);
     }
 }
 @end
@@ -179,6 +180,9 @@ void main() {
 @end
 
 //------------------------------------------------------------------------------
+//  Fullscreen-quad shader to update particle positions and velocity
+//  via ping-ponging.
+//
 @vs updateVS
 @in vec4 position
 @in vec2 texcoord0
@@ -193,21 +197,37 @@ void main() {
 @use FSUtil
 @uniform vec2 bufDims BufferDims
 @uniform sampler2D prevState PrevState
+@uniform float numParticles NumParticles
 @in vec2 uv
 void main() {
+    const float frameTime = 1.0 / 60.0;
+
+    // get particleId and check if this is actually an active particle
+    float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
+    if (particleId >= numParticles) {
+        discard;
+    }
+
     // load previous position and velocity
     vec2 posUv = getParticlePosUv(bufDims.xy, gl_FragCoord.xy);
     vec2 velUv = getParticleVelUv(bufDims.xy, gl_FragCoord.xy);
+    vec4 pos = $texture2D(prevState, posUv);
+    vec4 vel = $texture2D(prevState, velUv);
     if (atPosition(gl_FragCoord.xy)) {
         // update position
-        vec4 pos = $texture2D(prevState, posUv);
-        vec4 vel = $texture2D(prevState, velUv);
-        pos += vel * (1.0/60.0);
+        pos += vel * frameTime;
         $color = pos;
     }
     else {
         // update velocity
         vec4 vel = $texture2D(prevState, velUv);
+        vel.y -= 1.0 * frameTime;
+        
+        // check for collision
+        if ((pos.y < -1.0) && (vel.y < 0.0)) {
+            vel.y = -vel.y;
+            vel *= 0.8;
+        }
         $color = vel;
     }
 }
