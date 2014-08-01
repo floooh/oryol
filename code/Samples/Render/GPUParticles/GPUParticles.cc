@@ -20,6 +20,7 @@ using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
 const int32 NumParticleBuffers = 2;
+const int32 NumParticlesEmittedPerFrame = 16;
 const int32 NumParticlesX = 256;
 const int32 NumParticlesY = 256;
 const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
@@ -52,6 +53,7 @@ private:
     glm::mat4 modelViewProj;
     int32 frameCount = 0;
     Time::TimePoint lastFrameTimePoint;
+    int32 curNumParticles = 0;
 };
 OryolMain(GPUParticlesApp);
 
@@ -108,7 +110,7 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddSphere(0.01f, 3, 2);
+    shapeBuilder.AddSphere(0.05f, 3, 2);
     shapeBuilder.Build();
     MeshSetup meshSetup = MeshSetup::FromData("box");
     meshSetup.InstanceMesh = this->particleIdMesh;
@@ -161,7 +163,8 @@ GPUParticlesApp::OnInit() {
 //------------------------------------------------------------------------------
 void
 GPUParticlesApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
+//    const float32 angle = this->frameCount * 0.01f;
+const float32 angle = 0.0f;
     glm::vec3 pos(glm::sin(angle) * 5.0f, 0.0f, glm::cos(angle) * 5.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->modelViewProj = this->proj * this->view * this->model;
@@ -174,7 +177,20 @@ GPUParticlesApp::OnRunning() {
     if (this->render->BeginFrame()) {
         
         this->frameCount++;
+        const int32 curStateBufferIndex = (this->frameCount + 1) % NumParticleBuffers;
+        const int32 prevStateBufferIndex = this->frameCount % NumParticleBuffers;
+        this->curNumParticles += NumParticlesEmittedPerFrame;
+        if (this->curNumParticles > MaxNumParticles) {
+            this->curNumParticles = MaxNumParticles;
+        }
         this->updateCamera();
+        
+        // update particle state (fullscreen-quad with ping/pong texture)
+        this->render->ApplyOffscreenRenderTarget(this->particleBuffer[curStateBufferIndex]);
+        this->render->ApplyDrawState(this->updateParticles);
+        this->render->ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
+        this->render->ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[prevStateBufferIndex]);
+        this->render->Draw(0);
         
         // render particles through instanced rendering
         this->render->ApplyDefaultRenderTarget();
@@ -182,8 +198,8 @@ GPUParticlesApp::OnRunning() {
         this->render->ApplyDrawState(this->drawParticles);
         this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
         this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
-        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[0]);
-        this->render->DrawInstanced(0, MaxNumParticles);
+        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[curStateBufferIndex]);
+        this->render->DrawInstanced(0, this->curNumParticles);
         
         this->debug->DrawTextBuffer();
         this->render->EndFrame();

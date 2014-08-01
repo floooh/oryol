@@ -21,6 +21,8 @@ namespace Shaders {
     };
     class UpdateParticles {
     public:
+        static const int32 BufferDims = 0;
+        static const int32 PrevState = 1;
         static Render::ProgramBundleSetup CreateSetup();
     };
 }

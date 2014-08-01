@@ -4,8 +4,9 @@
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-@block Util
-
+//  Fragment shader util functions
+//
+@block FSUtil
 // get particleId from current fragment coord
 float getParticleId(float bufferWidth, vec2 fragCoord) {
     vec2 xy = floor(fragCoord);
@@ -18,6 +19,35 @@ bool atPosition(vec2 fragCoord) {
     return mod(floor(fragCoord.x), 2.0) < 0.5;
 }
 
+// sample previous particle position
+vec2 getParticlePosUv(vec2 bufDims, vec2 fragCoord) {
+    vec2 posUv;
+    if (atPosition(fragCoord)) {
+        posUv = (fragCoord + vec2(0.25, 0.25)) / bufDims;
+    }
+    else {
+        posUv = (fragCoord + vec2(-0.75, 0.25)) / bufDims;
+    }
+    return posUv;
+}
+
+// sample previous particle velocity
+vec2 getParticleVelUv(vec2 bufDims, vec2 fragCoord) {
+    vec2 velUv;
+    if (atPosition(fragCoord)) {
+        velUv = (fragCoord + vec2(1.25, 0.25)) / bufDims;
+    }
+    else {
+        velUv = (fragCoord + vec2(0.25, 0.25)) / bufDims;
+    }
+    return velUv;
+}
+@end
+
+//------------------------------------------------------------------------------
+//  Vertex shader util functions
+//
+@block VSUtil
 // compute particle position uv coord from particleId
 vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
     float numParticlesAlongX = bufferDims.x * 0.5;
@@ -121,7 +151,7 @@ void main() {
 
 @fs emitFS
 @use Noise
-@use Util
+@use FSUtil
 @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @uniform float time Time
 @in vec2 uv
@@ -131,15 +161,15 @@ void main() {
     // the position w component 1.0 indicates that this particle is now live
     float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
     if (atPosition(gl_FragCoord.xy)) {
-        // FIXME: pos should be all 0
+        // position starts always at 0
+        $color = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+    else {
+        // select a pseudo random velocity vector
         $color = vec4(snoise(vec2(particleId, 0.0)),
                       snoise(vec2(0.0, particleId * 0.1)),
                       snoise(vec2(particleId * 0.1, particleId * 0.01)),
-                      1.0);
-    }
-    else {
-        // FIXME: make this a proper pseudo random velocity vector
-        $color = vec4(0.0);
+                      0.0);
     }
 }
 @end
@@ -160,9 +190,26 @@ void main() {
 @end
 
 @fs updateFS
+@use FSUtil
+@uniform vec2 bufDims BufferDims
+@uniform sampler2D prevState PrevState
 @in vec2 uv
 void main() {
-    $color = vec4(0.0, 1.0, 0.0, 1.0);
+    // load previous position and velocity
+    vec2 posUv = getParticlePosUv(bufDims.xy, gl_FragCoord.xy);
+    vec2 velUv = getParticleVelUv(bufDims.xy, gl_FragCoord.xy);
+    if (atPosition(gl_FragCoord.xy)) {
+        // update position
+        vec4 pos = $texture2D(prevState, posUv);
+        vec4 vel = $texture2D(prevState, velUv);
+        pos += vel * (1.0/60.0);
+        $color = pos;
+    }
+    else {
+        // update velocity
+        vec4 vel = $texture2D(prevState, velUv);
+        $color = vel;
+    }
 }
 @end
 
@@ -172,7 +219,7 @@ void main() {
 
 //------------------------------------------------------------------------------
 @vs drawVS
-@use Util
+@use VSUtil
 @use Noise
 @uniform mat4 mvp ModelViewProjection
 @uniform vec2 bufDims BufferDims
@@ -189,7 +236,7 @@ void main() {
     // lookup the particle position
     vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
 
-    $position = mvp * (position + particlePos * 1.5);
+    $position = mvp * (position + particlePos);
     color = color0;
 }
 @end
