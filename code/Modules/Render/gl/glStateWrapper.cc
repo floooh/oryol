@@ -74,10 +74,8 @@ isValid(false),
 #if ORYOL_MACOS
 globalVAO(0),
 #endif
-curDepthOffsetFactor(0.0f),
-curDepthOffsetUnits(0.0f),
-curScissorLeft(0),
-curScissorBottom(0),
+curScissorX(0),
+curScissorY(0),
 curScissorWidth(-1),
 curScissorHeight(-1),
 curBlendColorR(0.0f),
@@ -97,7 +95,6 @@ curProgram(0)
         this->samplers2D[i] = 0;
         this->samplersCube[i] = 0;
     }
-    this->setupJumpTable();
 }
 
 //------------------------------------------------------------------------------
@@ -141,6 +138,68 @@ glStateWrapper::Discard() {
 bool
 glStateWrapper::IsValid() const {
     return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
+    if ((x != this->curScissorX) ||
+        (y != this->curScissorY) ||
+        (width != this->curScissorWidth) ||
+        (height != this->curScissorHeight)) {
+        
+        this->curScissorX = x;
+        this->curScissorY = y;
+        this->curScissorWidth = width;
+        this->curScissorHeight = height;
+        ::glScissor(x, y, width, height);
+    }
+}
+    
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyBlendColor(float32 r, float32 g, float32 b, float32 a) {
+    if ((r != this->curBlendColorR) ||
+        (g != this->curBlendColorG) ||
+        (b != this->curBlendColorB) ||
+        (a != this->curBlendColorA)) {
+        
+        this->curBlendColorR = r;
+        this->curBlendColorG = g;
+        this->curBlendColorB = b;
+        this->curBlendColorA = a;
+        ::glBlendColor(r, g, b, a);
+    }
+}
+    
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
+    if ((x != this->curViewPortX) ||
+        (y != this->curViewPortY) ||
+        (width != this->curViewPortWidth) ||
+        (height != this->curViewPortHeight)) {
+        
+        this->curViewPortX = x;
+        this->curViewPortY = y;
+        this->curViewPortWidth = width;
+        this->curViewPortHeight = height;
+        ::glViewport(x, y, width, height);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glStateWrapper::ApplyRenderTargetState(int32 rtWidth, int32 rtHeight) {
+    
+    // set viewport to cover whole screen
+    this->ApplyViewPort(0, 0, rtWidth, rtHeight);
+    
+    // disable scissor test
+    if (this->curRasterizerState.ScissorTestEnabled) {
+        this->curRasterizerState.ScissorTestEnabled = false;
+        ::glDisable(GL_SCISSOR_TEST);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -474,89 +533,6 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
     }
     this->curRasterizerState = newState;
     ORYOL_GL_CHECK_ERROR();        
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onDepthOffset(const State::Vector& input) {
-    const GLfloat factor = input.val[0].f;
-    const GLfloat units  = input.val[1].f;
-    if ((factor != this->curDepthOffsetFactor) || (units != this->curDepthOffsetUnits)) {
-        this->curDepthOffsetFactor = factor;
-        this->curDepthOffsetUnits = units;
-        ::glPolygonOffset(factor, units);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onScissorRect(const State::Vector& input) {
-    const GLint left = input.val[0].i;
-    const GLint bottom = input.val[1].i;
-    const GLsizei width = input.val[2].i;
-    const GLsizei height = input.val[3].i;
-    if ((left != this->curScissorLeft) || (bottom != this->curScissorBottom) ||
-        (width != this->curScissorWidth) || (height != this->curScissorHeight)) {
-        this->curScissorLeft = left;
-        this->curScissorBottom = bottom;
-        this->curScissorWidth = width;
-        this->curScissorHeight = height;
-        ::glScissor(left, bottom, width, height);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onBlendColor(const State::Vector& input) {
-    const GLclampf r = input.val[0].f;
-    const GLclampf g = input.val[1].f;
-    const GLclampf b = input.val[2].f;
-    const GLclampf a = input.val[3].f;
-    if ((r != this->curBlendColorR) || (g != this->curBlendColorG) || (b != this->curBlendColorB) || (a != this->curBlendColorA)) {
-        this->curBlendColorR = r;
-        this->curBlendColorG = g;
-        this->curBlendColorB = b;
-        this->curBlendColorA = a;
-        ::glBlendColor(r, g, b, a);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::onViewPort(const State::Vector& input) {
-    const GLint x        = input.val[0].i;
-    const GLint y        = input.val[1].i;
-    const GLsizei width  = input.val[2].i;
-    const GLsizei height = input.val[3].i;
-    if ((x != this->curViewPortX) || (y != this->curViewPortY) ||
-        (width != this->curViewPortWidth) || (height != this->curViewPortHeight)) {
-        this->curViewPortX = x;
-        this->curViewPortY = y;
-        this->curViewPortWidth = width;
-        this->curViewPortHeight = height;
-        ::glViewport(x, y, width, height);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glStateWrapper::setupJumpTable() {
-    
-    // glPolygonOffset(GLfloat, GLfloat)
-    this->funcs[State::DepthOffset].cb = &glStateWrapper::onDepthOffset;
-    this->funcs[State::DepthOffset].sig = State::F0_F1;
-    
-    // glScissor(GLint, GLint, GLint, GLint)
-    this->funcs[State::ScissorRect].cb = &glStateWrapper::onScissorRect;
-    this->funcs[State::ScissorRect].sig = State::I0_I1_I2_I3;
-    
-    // glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf)
-    this->funcs[State::BlendColor].cb = &glStateWrapper::onBlendColor;
-    this->funcs[State::BlendColor].sig = State::F0_F1_F2_F3;
-
-    // glViewPort(GLint, GLint, GLsizei w, GLsizei h)
-    this->funcs[State::ViewPort].cb = &glStateWrapper::onViewPort;
-    this->funcs[State::ViewPort].sig = State::I0_I1_I2_I3;
 }
 
 //------------------------------------------------------------------------------

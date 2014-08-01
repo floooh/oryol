@@ -96,7 +96,7 @@ renderMgrBase::ApplyRenderTarget(texture* rt) {
         width = attrs.Width;
         height = attrs.Height;
     }
-    this->stateWrapper->ApplyState(State::ViewPort, 0, 0, width, height);
+    this->stateWrapper->ApplyRenderTargetState(width, height);
 }
     
 //------------------------------------------------------------------------------

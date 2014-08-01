@@ -69,12 +69,16 @@ public:
     void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
     void ApplyOffscreenRenderTarget(const Resource::Id& resId);
+    /// apply view port
+    void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
+    /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
+    void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height);
+    /// apply blend color (see DrawState.BlendState)
+    void ApplyBlendColor(const glm::vec4& blendColor);
     /// apply draw state to use for rendering
     void ApplyDrawState(const Resource::Id& resId);
     /// apply a shader constant block
     void ApplyConstantBlock(const Resource::Id& resId);
-    /// apply state with 1..4 arguments
-    template<typename... ARGS> void ApplyState(State::Code state, ARGS... args);
     /// apply a shader variable
     template<class T> void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
@@ -149,36 +153,6 @@ RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) 
 }
 
 //------------------------------------------------------------------------------
-template<> inline void
-RenderFacade::ApplyState(State::Code state, float32 f0) {
-    this->stateWrapper.ApplyState(state, f0);
-}
-
-//------------------------------------------------------------------------------
-template<> inline void
-RenderFacade::ApplyState(State::Code state, float32 f0, float32 f1) {
-    this->stateWrapper.ApplyState(state, f0, f1);
-}
-
-//------------------------------------------------------------------------------
-template<> inline void
-RenderFacade::ApplyState(State::Code state, float32 f0, float32 f1, float32 f2, float32 f3) {
-    this->stateWrapper.ApplyState(state, f0, f1, f2, f3);
-}
-
-//------------------------------------------------------------------------------
-template<> inline void
-RenderFacade::ApplyState(State::Code state, int32 i0) {
-    this->stateWrapper.ApplyState(state, i0);
-}
-    
-//------------------------------------------------------------------------------
-template<> inline void
-RenderFacade::ApplyState(State::Code state, int32 i0, int32 i1, int32 i2, int32 i3) {
-    this->stateWrapper.ApplyState(state, i0, i1, i2, i3);
-}
-
-//------------------------------------------------------------------------------
 template<class T> inline void
 RenderFacade::AttachLoader(Core::Ptr<T> loader) {
     this->resourceManager.AttachLoader(loader.get());
@@ -188,6 +162,24 @@ RenderFacade::AttachLoader(Core::Ptr<T> loader) {
 inline bool
 RenderFacade::Supports(Feature::Code feat) const {
     return this->renderManager.Supports(feat);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
+    this->stateWrapper.ApplyViewPort(x, y, width, height);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
+    this->stateWrapper.ApplyScissorRect(x, y, width, height);
+}
+
+//------------------------------------------------------------------------------
+void
+RenderFacade::ApplyBlendColor(const glm::vec4& blendColor) {
+    this->stateWrapper.ApplyBlendColor(blendColor.x, blendColor.y, blendColor.z, blendColor.w);
 }
 
 } // namespace Render

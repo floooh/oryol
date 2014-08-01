@@ -3,11 +3,6 @@
 /**
     @class Oryol::Render::glStateWrapper
     @brief translate State changes into GL state changes
-    
-    The glStateWrapper offers a simplified interface to the GL state,
-    and filters redundant state changes. There's only a limited combination
-    of state parameter types in GL, which is handled by a handful of 
-    ApplyState method overrides.
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
@@ -41,18 +36,15 @@ public:
     
     /// apply draw state
     void ApplyDrawState(const drawState* ds);
+    /// apply state after setting a new render target
+    void ApplyRenderTargetState(int32 rtWidth, int32 rtHeight);
+    /// apply view port rectangle
+    void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
+    /// apply scissor rectangle
+    void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height);
+    /// apply blend color
+    void ApplyBlendColor(float32 r, float32 g, float32 b, float32 a);
 
-    /// apply state
-    void ApplyState(State::Code state, float32 f0);
-    /// apply state
-    void ApplyState(State::Code state, float32 f0, float32 f1);
-    /// apply state
-    void ApplyState(State::Code state, float32 f0, float32 f1, float32 f2, float32 f3);
-    /// apply state
-    void ApplyState(State::Code state, int32 i0);
-    /// apply state
-    void ApplyState(State::Code state, int32 i0, int32 i1, int32 i2, int32 i3);
-    
     /// invalidate bound mesh state
     void InvalidateMeshState();
     /// bind vertex buffer
@@ -76,21 +68,6 @@ public:
     void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     
 private:    
-    /// state update callback function
-    typedef void (glStateWrapper::*Callback)(const State::Vector& input);
-    
-    /// a state table entry
-    struct Function {
-    public:
-        /// constructor
-        Function() : cb(0), sig(State::Void) {};
-        
-        Callback cb;
-        State::Signature sig;
-    };
-    
-    /// setup the jump table
-    void setupJumpTable();
     /// setup the initial depth-stencil-state
     void setupDepthStencilState();
     /// setup the initial blend-state
@@ -110,15 +87,6 @@ private:
     /// apply mesh to use for rendering
     void applyMesh(const mesh* msh, const programBundle* progBundle);
 
-    /// DepthOffset state function
-    void onDepthOffset(const State::Vector& input);
-    /// ScissorRect state function
-    void onScissorRect(const State::Vector& input);
-    /// BlendColor state function
-    void onBlendColor(const State::Vector& input);
-    /// ViewPort state function
-    void onViewPort(const State::Vector& input);
-    
     bool isValid;
     
     // global VAO for core profile platforms
@@ -126,8 +94,6 @@ private:
     GLuint globalVAO;
     #endif
 
-    Function funcs[State::NumStateCodes];
-    
     BlendState curBlendState;
     DepthStencilState curDepthStencilState;
     RasterizerState curRasterizerState;
@@ -138,11 +104,8 @@ private:
     static GLenum mapBlendOp[BlendOperation::NumBlendOperations];
     static GLenum mapCullFace[Face::NumFaceCodes];
     
-    GLfloat curDepthOffsetFactor;
-    GLfloat curDepthOffsetUnits;
-    
-    GLint curScissorLeft;
-    GLint curScissorBottom;
+    GLint curScissorX;
+    GLint curScissorY;
     GLsizei curScissorWidth;
     GLsizei curScissorHeight;
     
@@ -165,43 +128,6 @@ private:
     GLuint samplers2D[MaxTextureSamplers];
     GLuint samplersCube[MaxTextureSamplers];
 };
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, float32 f0, float32 f1) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::F0_F1 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].f = f0;
-    values.val[1].f = f1;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, float32 f0, float32 f1, float32 f2, float32 f3) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::F0_F1_F2_F3 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].f = f0;
-    values.val[1].f = f1;
-    values.val[2].f = f2;
-    values.val[3].f = f3;
-    (this->*funcs[c].cb)(values);
-}
-
-//------------------------------------------------------------------------------
-inline void
-glStateWrapper::ApplyState(State::Code c, int32 i0, int32 i1, int32 i2, int32 i3) {
-    o_assert_dbg((c >= 0) && (c < State::NumStateCodes));
-    o_assert_dbg(State::I0_I1_I2_I3 == this->funcs[c].sig);
-    State::Vector values;
-    values.val[0].i = i0;
-    values.val[1].i = i1;
-    values.val[2].i = i2;
-    values.val[3].i = i3;
-    (this->*funcs[c].cb)(values);
-}
 
 } // namespace Render
 } // namespace Oryol

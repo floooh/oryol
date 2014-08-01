@@ -295,57 +295,6 @@ class ShaderType : public glShaderType { };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::State
-    @brief render states
-*/
-#if ORYOL_OPENGL
-class State {
-#endif
-public:
-    /// these are the render state codes (keys)
-    enum Code {
-        DepthOffset,            ///< depth offset values (float factor, float unit)
-        ScissorRect,            ///< the scissor rectangle (int left, int bottom, int left, int right)
-        BlendColor,             ///< color for ConstColor/ConstAlpha (4x float)
-        ViewPort,               ///< the current viewport (int x, int y, int w, int h)
-        DepthRange,             ///< the current depth range (float n, float f)
-        
-        NumStateCodes,
-        InvalidStateCode
-    };
-    
-    struct Variant {
-        Variant() : i(0) {};
-        union {
-            int32 i;
-            float32 f;
-        };
-    };
-    struct Vector {
-        Variant val[4];
-    };
-    
-    static const uint32 U = 0; // undefined
-    static const uint32 F = 2; // float32
-    static const uint32 I = 3; // int32
-    
-    enum Signature {
-        Void = 0,
-        F0_F1 = F|F<<3,                     ///< 2 float32
-        F0_F1_F2_F3 = F|F<<3|F<<6|F<<9,     ///< 4 float32
-        I0_I1 = I|I<<3,                     ///< 2 int32
-        I0_I1_I2_I3 = I|I<<3|I<<6|I<<9,     ///< 4 int32
-    };
-    
-    struct Object {
-        Code state;
-        Signature sig;
-        Vector vec;
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::Render::TextureFilterMode
     @brief texture sampling filter mode
 */
