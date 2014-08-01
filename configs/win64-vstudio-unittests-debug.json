@@ -3,6 +3,9 @@
     "target": {
         "platform": "win64", 
         "generator": "Visual Studio 12 Win64", 
-        "build-type": "unittests-debug"
+        "build-type": "debug",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

@@ -3,6 +3,9 @@
     "target": {
         "platform": "win32", 
         "generator": "Visual Studio 12", 
-        "build-type": "unittests-release"
+        "build-type": "release",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

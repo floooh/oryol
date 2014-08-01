@@ -3,6 +3,9 @@
     "target": {
         "platform": "emscripten", 
         "generator": "Unix Makefiles", 
-        "build-type": "unittests-debug"
+        "build-type": "Debug",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

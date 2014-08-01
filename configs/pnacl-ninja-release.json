@@ -1,8 +1,0 @@
-{
-    "name": "pnacl-ninja-release", 
-    "target": {
-        "platform": "pnacl", 
-        "generator": "Ninja", 
-        "build-type": "release"
-    }
-}

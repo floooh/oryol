@@ -1,8 +1,0 @@
-{
-    "name": "emscripten-ninja-unittests-debug", 
-    "target": {
-        "platform": "emscripten", 
-        "generator": "Ninja", 
-        "build-type": "unittests-debug"
-    }
-}

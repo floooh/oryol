@@ -1,8 +1,0 @@
-{
-    "name": "android-ninja-release", 
-    "target": {
-        "platform": "android", 
-        "generator": "Ninja", 
-        "build-type": "release"
-    }
-}

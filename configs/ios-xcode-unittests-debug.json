@@ -3,6 +3,9 @@
     "target": {
         "platform": "ios", 
         "generator": "Xcode", 
-        "build-type": "unittests-debug"
+        "build-type": "debug",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

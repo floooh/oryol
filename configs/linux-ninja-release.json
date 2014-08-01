@@ -1,8 +1,0 @@
-{
-    "name": "linux-ninja-release", 
-    "target": {
-        "platform": "linux", 
-        "generator": "Ninja", 
-        "build-type": "release"
-    }
-}

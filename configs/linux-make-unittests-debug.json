@@ -3,6 +3,9 @@
     "target": {
         "platform": "linux", 
         "generator": "Unix Makefiles", 
-        "build-type": "unittests-debug"
+        "build-type": "debug",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

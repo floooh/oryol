@@ -2,6 +2,10 @@
 '''
 Oryol build system control script.
 '''
+
+# when enabled, this dumps a lot of information during CMake runs
+verbose = False
+
 import sys
 import json
 import os
@@ -17,7 +21,6 @@ from tools import sdksetup_emscripten as SDKSetupEmsc
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
-buildTypes = ['release', 'debug', 'unittests-debug', 'unittests-release']
 
 # valid target platforms for a given host platforms
 validTargetPlatforms = { 
@@ -252,27 +255,28 @@ def runCMake(config) :
         name = config['name']
         generator = config['target']['generator']
         targetPlatform = config['target']['platform']
-        buildType = config['target']['build-type']
         if not targetPlatform in platforms :
             error("Invalid platform '{}' in config '{}'!".format(targetPlatform, name))
-        if not buildType in buildTypes :
-            error("Invalid build-type '{}' in config '{}'!".format(targetPlatform, name))
+        buildType = config['target']['build-type']
+        if not buildType :
+            error("No 'build-type' in config '{}'!".format(name))
 
         # build the cmake cmd line
         cmdLine = []
         cmdLine.append('cmake')
         cmdLine.append('-G')
         cmdLine.append(generator)
-        if 'release' in buildType :
-            cmdLine.append('-DCMAKE_BUILD_TYPE=Release')
+        cmdLine.append('-DCMAKE_BUILD_TYPE={}'.format(buildType))
+        if 'defs' in config['target'] :
+            defs = config['target']['defs']
+            for key in defs :
+                cmdLine.append('-D{}={}'.format(key, defs[key]))
+
+        # verbose?
+        if verbose :
+            cmdLine.append('-DORYOL_CMAKE_VERBOSE=ON')
         else :
-            cmdLine.append('-DCMAKE_BUILD_TYPE=Debug')
-        if 'unittests' in buildType :
-            cmdLine.append('-DORYOL_UNITTESTS=ON')
-            cmdLine.append('-DORYOL_EXCEPTIONS=ON')
-        else :
-            cmdLine.append('-DORYOL_UNITTESTS=OFF')
-            cmdLine.append('-DORYOL_EXCEPTIONS=OFF')
+            cmdLine.append('-DORYOL_CMAKE_VERBOSE=OFF')
 
         # toolchain file required?
         if isValidCrossPlatform(targetPlatform) :
@@ -304,10 +308,14 @@ def runBuild(config, target) :
         if 'Xcode' in generator :
             # run the Xcode command line tool
             args = ['xcodebuild', '-jobs', '3']
-            if 'release' in buildType :
+            if 'release' == buildType :
                 args.extend(['-configuration', 'Release'])
-            else :
+            elif 'profiling' == buildType :
+                args.extend(['-configuration', 'Profiling'])
+            elif 'debug' == buildType :
                 args.extend(['-configuration', 'Debug'])
+            else :
+                error("Invalid build type '{}'!".format(buildType))
             if target != None :
                 args.extend(['-target', target])
         elif 'Makefiles' in generator :
@@ -320,11 +328,7 @@ def runBuild(config, target) :
                 args.append(target)
         else :
             # generic invokation of cmake --build
-            args = ['cmake', '--build', '.']
-            if 'release' in buildType :
-                args.extend(['--config', 'Release'])
-            else :
-                args.extend(['--config', 'Debug'])
+            args = ['cmake', '--build', '.', '--config', buildType]
         if subprocess.call(args=args, cwd=buildPath) != 0 :
             error("Build failed.")
 
@@ -529,10 +533,6 @@ else :
             print "VALID PLATFORMS:"
             for p in platforms :
                 print "  {}".format(p)
-        if len(sys.argv) < 3 or sys.argv[2] == 'build-types' :
-            print "VALID BUILD-TYPES:"
-            for t in buildTypes :
-                print "  {}".format(t)
 
     elif cmd == 'select' :
         # set the given config as active

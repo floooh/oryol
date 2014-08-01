@@ -3,6 +3,9 @@
     "target": {
         "platform": "ios", 
         "generator": "Xcode", 
-        "build-type": "unittests-release"
+        "build-type": "release",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
     }
 }

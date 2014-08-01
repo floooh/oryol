@@ -26,7 +26,9 @@ macro(oryol_end_unittest)
     
     if (ORYOL_UNITTESTS)
 
-        message("Oryol Unit Test: name=" ${CurAppName})
+        if (ORYOL_CMAKE_VERBOSE)
+            message("Oryol Unit Test: name=" ${CurAppName})
+        endif()
     
         # add unittestpp lib dependency
         oryol_deps(unittestpp)

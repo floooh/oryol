@@ -1,8 +1,0 @@
-{
-    "name": "linux-ninja-debug", 
-    "target": {
-        "platform": "linux", 
-        "generator": "Ninja", 
-        "build-type": "debug"
-    }
-}
