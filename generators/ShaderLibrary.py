@@ -230,9 +230,11 @@ class Program() :
     '''
     A shader program, made of vertex/fragment shader and uniforms
     '''
-    def __init__(self, vs, fs) :
+    def __init__(self, vs, fs, filePath, lineNumber) :
         self.vs = vs
         self.fs = fs
+        self.filePath = filePath
+        self.lineNumber = lineNumber        
 
     def getTag(self) :
         return 'program'
@@ -414,7 +416,7 @@ class Parser :
             util.fmtError("@program must have 2 args (vs fs)")
         vs = args[0]
         fs = args[1]
-        self.current.programs.append(Program(vs, fs))
+        self.current.programs.append(Program(vs, fs, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onUse(self, args) :
@@ -723,8 +725,15 @@ class ShaderLibrary :
         Gathers all uniforms from all shaders in the bundle.
         '''
         for program in bundle.programs :
+            if program.vs not in self.vertexShaders :
+                util.setErrorLocation(program.filePath, program.lineNumber)
+                util.fmtError("unknown vertex shader '{}'".format(program.vs))
             for uniform in self.vertexShaders[program.vs].uniforms :
                 self.checkAddUniform(uniform, bundle.uniforms)
+
+            if program.fs not in self.fragmentShaders :
+                util.setErrorLocation(program.filePath, program.lineNumber)
+                util.fmtError("unknown fragment shader '{}'".format(program.fs))
             for uniform in self.fragmentShaders[program.fs].uniforms :
                 self.checkAddUniform(uniform, bundle.uniforms)
 
