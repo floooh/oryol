@@ -19,7 +19,7 @@ bool atPosition(vec2 fragCoord) {
     return mod(floor(fragCoord.x), 2.0) < 0.5;
 }
 
-// sample previous particle position
+// obtain uv coords for particle position and velocity
 void getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCoord, out vec2 posUv, out vec2 velUv) {
     if (atPos) {
         posUv = fragCoord / bufDims;
