@@ -37,26 +37,26 @@ protected:
 };
 
 //------------------------------------------------------------------------------
-const class Keyboard&
+inline const class Keyboard&
 inputMgrBase::Keyboard() const {
     return this->keyboard;
 }
 
 //------------------------------------------------------------------------------
-const class Mouse&
+inline const class Mouse&
 inputMgrBase::Mouse() const {
     return this->mouse;
 }
 
 //------------------------------------------------------------------------------
-const class Gamepad&
+inline const class Gamepad&
 inputMgrBase::Gamepad(int32 index) const {
     o_assert_range(index, MaxNumGamepads);
     return this->gamepads[index];
 }
 
 //------------------------------------------------------------------------------
-const class Touchpad&
+inline const class Touchpad&
 inputMgrBase::Touchpad() const {
     return this->touchpad;
 }
