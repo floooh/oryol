@@ -4,6 +4,8 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/constants.hpp"
 
 using namespace Oryol;
 using namespace Oryol::Core;
@@ -23,15 +25,6 @@ OryolMain(ClearApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-ClearApp::OnInit() {
-    // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
-    
-    return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 ClearApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
@@ -41,15 +34,7 @@ ClearApp::OnRunning() {
         this->render->EndFrame();
         
         this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
-        if (this->clearColor.x > 1.0f) {
-            this->clearColor.x = 0.0f;
-        }
-        if (this->clearColor.y > 1.0f) {
-            this->clearColor.y = 0.0f;
-        }
-        if (this->clearColor.z > 1.0f) {
-            this->clearColor.z = 0.0f;
-        }
+        this->clearColor = glm::mod(this->clearColor, glm::vec4(1.0f));
     }
     
     // continue running or quit?
@@ -58,8 +43,14 @@ ClearApp::OnRunning() {
 
 //------------------------------------------------------------------------------
 AppState::Code
+ClearApp::OnInit() {
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 ClearApp::OnCleanup() {
-    // cleanup everything
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();
