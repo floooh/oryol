@@ -229,7 +229,6 @@ void main() {
 //
 @vs drawVS
 @use VSUtil
-@use Noise
 @uniform mat4 mvp ModelViewProjection
 @uniform vec2 bufDims BufferDims
 @uniform sampler2D particleTex ParticleState
