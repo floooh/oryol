@@ -83,7 +83,7 @@ GPUParticlesApp::OnRunning() {
         // - we use a scissor rect around the currently active particles to make this update
         //   a bit more efficient
         this->render->ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
-        const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 2;
+        const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
         this->render->ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
         this->render->ApplyDrawState(this->updateParticles);
         this->render->ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
