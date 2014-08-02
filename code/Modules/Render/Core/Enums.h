@@ -37,6 +37,52 @@ public:
 
 //------------------------------------------------------------------------------
 /**
+ @class Oryol::Render::Channel
+ @brief RGBA/Depth/Stencil channel bits and cominations
+ */
+class Channel {
+public:
+    typedef uint32 Mask;
+    enum Bits {
+        None    = 0,
+        
+        Stencil = (1<<5),
+        Depth   = (1<<4),
+        Red     = (1<<3),
+        Green   = (1<<2),
+        Blue    = (1<<1),
+        Alpha   = (1<<0),
+        
+        DepthStencil = Depth|Stencil,
+        DS = DepthStencil,
+        
+        D = Depth,
+        S = Stencil,
+        R = Red,
+        G = Green,
+        B = Blue,
+        A = Alpha,
+        
+        RG  = R|G,
+        GB  = G|B,
+        RB  = R|B,
+        RGB = R|G|B,
+        
+        RA = R|A,
+        GA = G|A,
+        BA = B|A,
+        
+        RGA = R|G|A,
+        GBA = G|B|A,
+        RBA = R|B|A,
+        
+        RGBA = R|G|B|A,
+        All = R|G|B|A|D|S,
+    };
+};
+    
+//------------------------------------------------------------------------------
+/**
     @class Oryol::Render::PixelFormat
     @brief enum of pixel formats
 */
@@ -64,20 +110,6 @@ public:
         NumPixelFormats,            ///< number of pixel formats
         InvalidPixelFormat,         ///< invalid pixel format value
         None = InvalidPixelFormat,  ///< special "none" type
-    };
-
-    /// a pixel format channel
-    // FIXME: this is now redundant with Channel type!
-    enum Channel {
-        Red,            ///< red bits
-        Green,          ///< green bits
-        Blue,           ///< blue bits
-        Alpha,          ///< alpha bits
-        Depth,          ///< depth bits
-        Stencil,        ///< stencil bits
-        
-        NumChannels,    ///< number of channels
-        InvalidChannel, ///< invalid channel value
     };
 
     /// return true for valid render target color formats
@@ -177,69 +209,69 @@ public:
         }
     }
     /// get number of bits in a pixel format channel (only for non-compressed formats!)
-    static int8 NumBits(Code pixelFormat, Channel channel) {
+    static int8 NumBits(Code pixelFormat, Channel::Bits channel) {
         switch (pixelFormat) {
             case RGBA32F:
-                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
                     return 32;
                 }
                 break;
             case RGBA16F:
-                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
                     return 16;
                 }
                 break;
             case RGBA8:
-                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
                     return 8;
                 }
                 break;
             case RGB8:
-                if ((Red == channel) || (Green == channel) || (Blue == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel)) {
                     return 8;
                 }
                 break;
             case R5G6B5:
-                if ((Red == channel) || (Blue == channel)) {
+                if ((Channel::Red == channel) || (Channel::Blue == channel)) {
                     return 5;
                 }
-                else if (Green == channel) {
+                else if (Channel::Green == channel) {
                     return 6;
                 }
                 break;
             case R5G5B5A1:
-                if ((Red == channel) || (Green == channel) || (Blue == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel)) {
                     return 5;
                 }
-                else if (Alpha == channel) {
+                else if (Channel::Alpha == channel) {
                     return 1;
                 }
                 break;
             case RGBA4:
-                if ((Red == channel) || (Green == channel) || (Blue == channel) || (Alpha == channel)) {
+                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
                     return 4;
                 }
                 break;
             case L8:
-                if (Red == channel) {
+                if (Channel::Red == channel) {
                     return 8;
                 }
                 break;
             case D16:
-                if (Depth == channel) {
+                if (Channel::Depth == channel) {
                     return 16;
                 }
                 break;
             case D32:
-                if (Depth == channel) {
+                if (Channel::Depth == channel) {
                     return 32;
                 }
                 break;
             case D24S8:
-                if (Depth == channel) {
+                if (Channel::Depth == channel) {
                     return 24;
                 }
-                else if (Stencil == channel) {
+                else if (Channel::Stencil == channel) {
                     return 8;
                 }
                 break;
@@ -588,52 +620,6 @@ public:
         
         NumBlendOperations,
         InvalidBlendOperation,
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::Render::Channel
-    @brief RGBA/Depth/Stencil channel bits and cominations
-*/
-class Channel {
-public:
-    typedef uint32 Mask;
-    enum Bits {
-        None    = 0,
-        
-        Stencil = (1<<5),
-        Depth   = (1<<4),
-        Red     = (1<<3),
-        Green   = (1<<2),
-        Blue    = (1<<1),
-        Alpha   = (1<<0),
-        
-        DepthStencil = Depth|Stencil,
-        DS = DepthStencil,
-        
-        D = Depth,
-        S = Stencil,
-        R = Red,
-        G = Green,
-        B = Blue,
-        A = Alpha,
-        
-        RG  = R|G,
-        GB  = G|B,
-        RB  = R|B,
-        RGB = R|G|B,
-        
-        RA = R|A,
-        GA = G|A,
-        BA = B|A,
-        
-        RGA = R|G|A,
-        GBA = G|B|A,
-        RBA = R|B|A,
-        
-        RGBA = R|G|B|A,
-        All = R|G|B|A|D|S,
     };
 };
 
