@@ -42,86 +42,14 @@ private:
     int32 frameCount = 0;
     int32 curNumParticles = 0;
     TimePoint lastFrameTimePoint;
-    static const int32 MaxNumParticles = 1<<16;
+    static const int32 NumParticlesEmittedPerFrame = 100;
+    static const int32 MaxNumParticles = 1024 * 1024;
     struct {
         glm::vec4 pos;
         glm::vec4 vec;
     } particles[MaxNumParticles];
 };
 OryolMain(DrawCallPerfApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-DrawCallPerfApp::OnInit() {
-    // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol DrawCallPerf Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
-    this->debug = DebugFacade::CreateSingle();
-
-    // create resources
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddBox(0.05f, 0.05f, 0.05f, 1);
-    shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
-    
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
-    
-    // setup projection and view matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->model = glm::mat4();
-    this->modelViewProj = this->proj * this->view * this->model;
-    
-    return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-void
-DrawCallPerfApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
-    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->modelViewProj = this->proj * this->view * this->model;
-}
-
-//------------------------------------------------------------------------------
-void
-DrawCallPerfApp::emitParticles() {
-    if (this->curNumParticles < MaxNumParticles) {
-        this->particles[this->curNumParticles].pos = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-        glm::vec3 rnd = glm::ballRand(0.5f);
-        rnd.y += 2.0f;
-        this->particles[this->curNumParticles].vec = glm::vec4(rnd, 0.0f);
-        this->curNumParticles++;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-DrawCallPerfApp::updateParticles() {
-    const float32 frameTime = 1.0f / 60.0f;
-    for (int32 i = 0; i < this->curNumParticles; i++) {
-        auto& curParticle = this->particles[i];
-        curParticle.vec.y -= 1.0f * frameTime;
-        curParticle.pos += curParticle.vec * frameTime;
-        if (curParticle.pos.y < -2.0f) {
-            curParticle.pos.y = -1.8f;
-            curParticle.vec.y = -curParticle.vec.y;
-            curParticle.vec *= 0.8f;
-        }
-    }
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -155,13 +83,93 @@ DrawCallPerfApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms",
+    this->debug->TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    this->debug->PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
                         this->curNumParticles,
                         updTime.AsMilliSeconds(),
                         drawTime.AsMilliSeconds(),
                         frameTime.AsMilliSeconds());
+    this->debug->TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    this->debug->PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+void
+DrawCallPerfApp::updateCamera() {
+    float32 angle = this->frameCount * 0.01f;
+    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
+    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->modelViewProj = this->proj * this->view * this->model;
+}
+
+//------------------------------------------------------------------------------
+void
+DrawCallPerfApp::emitParticles() {
+    for (int32 i = 0; i < NumParticlesEmittedPerFrame; i++) {
+        if (this->curNumParticles < MaxNumParticles) {
+            this->particles[this->curNumParticles].pos = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+            glm::vec3 rnd = glm::ballRand(0.5f);
+            rnd.y += 2.0f;
+            this->particles[this->curNumParticles].vec = glm::vec4(rnd, 0.0f);
+            this->curNumParticles++;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+DrawCallPerfApp::updateParticles() {
+    const float32 frameTime = 1.0f / 60.0f;
+    for (int32 i = 0; i < this->curNumParticles; i++) {
+        auto& curParticle = this->particles[i];
+        curParticle.vec.y -= 1.0f * frameTime;
+        curParticle.pos += curParticle.vec * frameTime;
+        if (curParticle.pos.y < -2.0f) {
+            curParticle.pos.y = -1.8f;
+            curParticle.vec.y = -curParticle.vec.y;
+            curParticle.vec *= 0.8f;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DrawCallPerfApp::OnInit() {
+    // setup rendering system
+    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol DrawCallPerf Sample"));
+    this->render->AttachLoader(RawMeshLoader::Create());
+    this->debug = DebugFacade::CreateSingle();
+
+    // create resources
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.SetRandomColorsFlag(true);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    shapeBuilder.AddSphere(0.05f, 3, 2);
+    shapeBuilder.Build();
+    Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    DrawStateSetup dsSetup("ds", mesh, prog, 0);
+    dsSetup.RasterizerState.CullFaceEnabled = true;
+    dsSetup.DepthStencilState.DepthWriteEnabled = true;
+    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = this->render->CreateResource(dsSetup);
+    
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    
+    // setup projection and view matrices
+    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->model = glm::mat4();
+    this->modelViewProj = this->proj * this->view * this->model;
+    
+    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------

@@ -20,9 +20,9 @@ using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
 const int32 NumParticleBuffers = 2;
-const int32 NumParticlesEmittedPerFrame = 16;
-const int32 NumParticlesX = 512;
-const int32 NumParticlesY = 512;
+const int32 NumParticlesEmittedPerFrame = 100;
+const int32 NumParticlesX = 1024;
+const int32 NumParticlesY = 1024;
 const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
 const int32 ParticleBufferWidth = 2 * NumParticlesX;
 const int32 ParticleBufferHeight = NumParticlesY;
@@ -59,6 +59,73 @@ OryolMain(GPUParticlesApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+GPUParticlesApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        // increment frame count, update camera position
+        this->frameCount++;
+        this->updateCamera();
+        
+        // bump number of active particles
+        this->curNumParticles += NumParticlesEmittedPerFrame;
+        if (this->curNumParticles > MaxNumParticles) {
+            this->curNumParticles = MaxNumParticles;
+        }
+        
+        // ping and pong particle state buffer indices
+        const int32 readIndex = (this->frameCount + 1) % NumParticleBuffers;
+        const int32 drawIndex = this->frameCount % NumParticleBuffers;
+        
+        // update particle state texture by rendering a fullscreen-quad:
+        // - the previous and next particle state are stored in separate float textures
+        // - the particle update shader reads the previous state and draw the next state
+        // - we use a scissor rect around the currently active particles to make this update
+        //   a bit more efficient
+        this->render->ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
+        const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 2;
+        this->render->ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
+        this->render->ApplyDrawState(this->updateParticles);
+        this->render->ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
+        this->render->ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
+        this->render->ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
+        this->render->Draw(0);
+        
+        // now the actual particle shape rendering:
+        // - the new particle state texture is sampled in the vertex shader to obtain particle positions
+        // - draw 'curNumParticles' instanes of the basic particle shape through hardware-instancing
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->drawParticles);
+        this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
+        this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
+        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
+        this->render->DrawInstanced(0, this->curNumParticles);
+        
+        this->debug->DrawTextBuffer();
+        this->render->EndFrame();
+    }
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    this->debug->PrintF("\n %d instances\n\r frame=%.3fms",
+                        this->curNumParticles,
+                        frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+void
+GPUParticlesApp::updateCamera() {
+    float32 angle = this->frameCount * 0.01f;
+    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
+    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->modelViewProj = this->proj * this->view * this->model;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol GPU Particles Sample"));
@@ -75,7 +142,7 @@ GPUParticlesApp::OnInit() {
     
     // what we need:
     // - 2 ping/pong particle state float textures which keep track of the persistent particle state (pos and velocity)
-    // - an emitter shader which renders new particle state
+    // - an particle-init shader which renders initial particle positions and velocity
     // - an update shader which reads previous particle state from ping texture and
     //   render new particle state to pong texture
     // - a static vertex buffer with per-instance particleIDs
@@ -83,9 +150,8 @@ GPUParticlesApp::OnInit() {
     // - a particle-rendering draw state which uses instanced rendering
     // - 2 fullscreen-quad draw-states for emitting and updating particles
     // - 1 particle-rendering draw state
-
-    // create 2 ping/pong render target textures to hold particle state
-    // after creation, fill the state render targets with all zeros
+    
+    // the 2 ping/pong particle state textures
     auto particleBufferSetup = TextureSetup::AsRenderTarget("ping", ParticleBufferWidth, ParticleBufferHeight, PixelFormat::RGBA32F);
     particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
     particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
@@ -93,7 +159,23 @@ GPUParticlesApp::OnInit() {
     particleBufferSetup.Locator = "pong";
     this->particleBuffer[1] = this->render->CreateResource(particleBufferSetup);
     
-    // create a particleId buffer which is used as instance data buffer with particleIds from 0..MaxNumParticles
+    // a fullscreen mesh for the particle init- and update-shaders
+    Id fullscreenMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    
+    // particle initialization and update draw states
+    Id emitProg = this->render->CreateResource(Shaders::InitParticles::CreateSetup());
+    DrawStateSetup emitterSetup("emit", fullscreenMesh, emitProg, 0);
+    this->emitParticles = this->render->CreateResource(emitterSetup);
+    Id updateProg = this->render->CreateResource(Shaders::UpdateParticles::CreateSetup());
+    DrawStateSetup updateSetup("update", fullscreenMesh, updateProg, 0);
+    updateSetup.RasterizerState.ScissorTestEnabled = true;
+    this->updateParticles = this->render->CreateResource(updateSetup);
+    this->render->ReleaseResource(fullscreenMesh);
+    this->render->ReleaseResource(emitProg);
+    this->render->ReleaseResource(updateProg);
+    
+    // a vertex buffer with the particleIds, this would not be needed if
+    // ANGLE_instanced_arrays would support gl_InstanceID
     const int32 particleIdSize = MaxNumParticles * sizeof(float32);
     float32* particleIdData = (float32*) Memory::Alloc(particleIdSize);
     for (int32 i = 0; i < MaxNumParticles; i++) {
@@ -105,121 +187,43 @@ GPUParticlesApp::OnInit() {
     this->render->UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
     Memory::Free(particleIdData);
     
-    // create geometry mesh with particleId mesh providing the instancing data
+    // the geometry of a single particle
     ShapeBuilder shapeBuilder;
     shapeBuilder.SetRandomColorsFlag(true);
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddSphere(0.075f, 3, 2);
+    shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+    shapeBuilder.AddSphere(0.05f, 3, 2);
     shapeBuilder.Build();
     MeshSetup meshSetup = MeshSetup::FromData("box");
     meshSetup.InstanceMesh = this->particleIdMesh;
     this->shapeMesh = this->render->CreateResource(meshSetup, shapeBuilder.GetStream());
     
-    // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
-    
-    // create particle emission and update draw states
-    Id emitProg = this->render->CreateResource(Shaders::EmitParticles::CreateSetup());
-    DrawStateSetup emitterSetup("emit", fullscreenMesh, emitProg, 0);
-    this->emitParticles = this->render->CreateResource(emitterSetup);
-    Id updateProg = this->render->CreateResource(Shaders::UpdateParticles::CreateSetup());
-    DrawStateSetup updateSetup("update", fullscreenMesh, updateProg, 0);
-    updateSetup.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = this->render->CreateResource(updateSetup);
-    this->render->ReleaseResource(fullscreenMesh);
-    this->render->ReleaseResource(emitProg);
-    this->render->ReleaseResource(updateProg);
-    
-    // create particle rendering draw state
+    // particle rendering draw state
     Id drawProg = this->render->CreateResource(Shaders::DrawParticles::CreateSetup());
     DrawStateSetup drawSetup("draw", this->shapeMesh, drawProg, 0);
+    drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = this->render->CreateResource(drawSetup);
     this->render->ReleaseResource(drawProg);
     
-    // setup static transform matrices
+    // the static projection matrix
     const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
-    this->view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 5.0f));
-    this->model = glm::mat4();
     
-    // initialize particle state
+    // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[0]);
-    this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
     this->render->ApplyDrawState(this->emitParticles);
-    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, this->particleBufferDims);
+    this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[1]);
-    this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
     this->render->ApplyDrawState(this->emitParticles);
-    this->render->ApplyVariable(Shaders::EmitParticles::BufferDims, this->particleBufferDims);
+    this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     
     return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-void
-GPUParticlesApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
-    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->modelViewProj = this->proj * this->view * this->model;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-GPUParticlesApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-        
-        this->frameCount++;
-        const int32 curStateBufferIndex = (this->frameCount + 1) % NumParticleBuffers;
-        const int32 prevStateBufferIndex = this->frameCount % NumParticleBuffers;
-        this->curNumParticles += NumParticlesEmittedPerFrame;
-        if (this->curNumParticles > MaxNumParticles) {
-            this->curNumParticles = MaxNumParticles;
-        }
-        this->updateCamera();
-
-        // update particle state (fullscreen-quad with ping/pong texture)
-        this->render->ApplyOffscreenRenderTarget(this->particleBuffer[curStateBufferIndex]);
-
-        // scissor rect to enclose the number of active particles to save some fillrate
-        const int32 scissorWidth = ParticleBufferWidth;
-        const int32 scissorHeight = (this->curNumParticles / ParticleBufferWidth) + 1;
-        this->render->ApplyScissorRect(0, 0, scissorWidth, scissorHeight);
-        
-        // update particle state by rendering a (scissored) fullscreen quad
-        this->render->ApplyDrawState(this->updateParticles);
-        this->render->ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
-        this->render->ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
-        this->render->ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[prevStateBufferIndex]);
-        this->render->Draw(0);
-        
-        // render particles through instanced rendering
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawParticles);
-        this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
-        this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
-        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[curStateBufferIndex]);
-        this->render->DrawInstanced(0, this->curNumParticles);
-        
-        this->debug->DrawTextBuffer();
-        this->render->EndFrame();
-    }
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("\n %d instances\n\r frame=%.3fms",
-                        this->curNumParticles,
-                        frameTime.AsMilliSeconds());
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

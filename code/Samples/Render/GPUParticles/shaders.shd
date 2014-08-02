@@ -13,34 +13,22 @@ float getParticleId(float bufferWidth, vec2 fragCoord) {
     return (xy.y * bufferWidth * 0.5) + (xy.x * 0.5);
 }
 
-// check if currently 'rendering' position or velocity particle state
+// check if current fragment is a position or velocity
 bool atPosition(vec2 fragCoord) {
     // this should be either 0.0 or 1.0, but avoid an exact comparison
     return mod(floor(fragCoord.x), 2.0) < 0.5;
 }
 
 // sample previous particle position
-vec2 getParticlePosUv(vec2 bufDims, vec2 fragCoord) {
-    vec2 posUv;
-    if (atPosition(fragCoord)) {
-        posUv = (fragCoord + vec2(0.25, 0.25)) / bufDims;
+void getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCoord, out vec2 posUv, out vec2 velUv) {
+    if (atPos) {
+        posUv = fragCoord / bufDims;
+        velUv = (fragCoord + vec2(1.0, 0.0)) / bufDims;
     }
     else {
-        posUv = (fragCoord + vec2(-0.75, 0.25)) / bufDims;
+        posUv = (fragCoord + vec2(-1.0, 0.0)) / bufDims;
+        velUv = fragCoord / bufDims;
     }
-    return posUv;
-}
-
-// sample previous particle velocity
-vec2 getParticleVelUv(vec2 bufDims, vec2 fragCoord) {
-    vec2 velUv;
-    if (atPosition(fragCoord)) {
-        velUv = (fragCoord + vec2(1.25, 0.25)) / bufDims;
-    }
-    else {
-        velUv = (fragCoord + vec2(0.25, 0.25)) / bufDims;
-    }
-    return velUv;
 }
 @end
 
@@ -52,14 +40,17 @@ vec2 getParticleVelUv(vec2 bufDims, vec2 fragCoord) {
 vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
     float numParticlesAlongX = bufferDims.x * 0.5;
     float f = particleId / numParticlesAlongX;
-    float fragCoordX = (fract(f) * numParticlesAlongX * 2.0) + 0.25;
-    float fragCoordY = floor(f) + 0.25;
+    float fragCoordX = fract(f) * numParticlesAlongX * 2.0;
+    float fragCoordY = floor(f);
     vec2 posUV = vec2(fragCoordX, fragCoordY) / bufferDims;
     return posUV;
 }
 @end
 
 //------------------------------------------------------------------------------
+//
+// The simplex noise function is used for getting pseudo-random particle
+// velocity vectors.
 //
 // Description : Array and textureless GLSL 2D simplex noise function.
 //      Author : Ian McEwan, Ashima Arts.
@@ -133,66 +124,54 @@ float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-//  A fullscreen-quad shader to emit new particles.
+//  A generic fullscreen-quad vertex shader.
 //
-//  ParticleBufferLayout:
-//
-//  p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
-//  p3.pos | p3.vec | ...
-@vs emitVS
+@vs fsqVS
 @in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
 void main() {
     $position = position;
-    uv = texcoord0;
 }
 @end
 
-@fs emitFS
+//------------------------------------------------------------------------------
+//  Fullscreen-quad fragment shader to initialize a particle state texture
+//  with particle positions and velocity.
+//
+//  ParticleBufferLayout:
+//
+//  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
+//  | p3.pos | p3.vec | ...    | ...
+@fs initFS
 @use Noise
 @use FSUtil
 @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @uniform float time Time
-@in vec2 uv
 void main() {
-    // all particles start at position 0.0,0.0,0.0, but have
-    // a random start velocity
-    float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
         $color = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
+        float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
         vec3 rnd = vec3(snoise(vec2(particleId, 0.0)),
                         snoise(vec2(0.0, particleId * 0.1)),
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
         rnd *= 0.5;
-        rnd.y += 2.0;
+        rnd.y += 2.0; // skew velocity upwards
         $color = vec4(rnd, 0.0);
     }
 }
 @end
 
-@bundle EmitParticles
-@program emitVS emitFS
+@bundle InitParticles
+@program fsqVS initFS
 @end
 
 //------------------------------------------------------------------------------
 //  Fullscreen-quad shader to update particle positions and velocity
 //  via ping-ponging.
 //
-@vs updateVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
-void main() {
-    $position = position;
-    uv = texcoord0;
-}
-@end
-
 @fs updateFS
 @use FSUtil
 @uniform vec2 bufDims BufferDims
@@ -207,13 +186,16 @@ void main() {
     if (particleId >= numParticles) {
         discard;
     }
+    
+    // current fragment a position or velocity?
+    bool atPos = atPosition(gl_FragCoord.xy);
 
     // load previous position and velocity
-    vec2 posUv = getParticlePosUv(bufDims.xy, gl_FragCoord.xy);
-    vec2 velUv = getParticleVelUv(bufDims.xy, gl_FragCoord.xy);
+    vec2 posUv, velUv;
+    getParticleStateUvs(atPos, bufDims.xy, gl_FragCoord.xy, posUv, velUv);
     vec4 pos = $texture2D(prevState, posUv);
     vec4 vel = $texture2D(prevState, velUv);
-    if (atPosition(gl_FragCoord.xy)) {
+    if (atPos) {
         // update position
         pos += vel * frameTime;
         $color = pos;
@@ -234,10 +216,17 @@ void main() {
 @end
 
 @bundle UpdateParticles
-@program updateVS updateFS
+@program fsqVS updateFS
 @end
 
 //------------------------------------------------------------------------------
+//  This is the actual particle drawing shader. The vertex shader gets the
+//  current particleId from the instance0 vertex attribute (this is generated
+//  using instanced rendering, and unfortunately the ANGLE_instanced_array
+//  extension cannot provide an auto-generated gl_InstanceID. With this
+//  particleID, the particle's position is fetched from the particle state
+//  texture.
+//
 @vs drawVS
 @use VSUtil
 @use Noise
@@ -249,11 +238,8 @@ void main() {
 @in float instance0
 @out vec4 color
 void main() {
-    // instance0 is the particleId (0..N), compute texture coordinate from that
     float particleId = instance0;
     vec2 posUv = posUvFromParticleId(particleId, bufDims);
-
-    // lookup the particle position
     vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
 
     $position = mvp * (position + particlePos);
