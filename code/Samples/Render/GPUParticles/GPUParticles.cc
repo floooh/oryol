@@ -93,7 +93,7 @@ GPUParticlesApp::OnRunning() {
         
         // now the actual particle shape rendering:
         // - the new particle state texture is sampled in the vertex shader to obtain particle positions
-        // - draw 'curNumParticles' instanes of the basic particle shape through hardware-instancing
+        // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawParticles);
