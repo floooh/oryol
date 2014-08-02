@@ -42,7 +42,7 @@ private:
     Resource::Id particleBuffer[NumParticleBuffers];
     Resource::Id particleIdMesh;
     Resource::Id shapeMesh;
-    Resource::Id emitParticles;
+    Resource::Id initParticles;
     Resource::Id updateParticles;
     Resource::Id drawParticles;
     
@@ -163,15 +163,15 @@ GPUParticlesApp::OnInit() {
     Id fullscreenMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
     
     // particle initialization and update draw states
-    Id emitProg = this->render->CreateResource(Shaders::InitParticles::CreateSetup());
-    DrawStateSetup emitterSetup("emit", fullscreenMesh, emitProg, 0);
-    this->emitParticles = this->render->CreateResource(emitterSetup);
+    Id initProg = this->render->CreateResource(Shaders::InitParticles::CreateSetup());
+    DrawStateSetup initSetup("init", fullscreenMesh, initProg, 0);
+    this->initParticles = this->render->CreateResource(initSetup);
     Id updateProg = this->render->CreateResource(Shaders::UpdateParticles::CreateSetup());
     DrawStateSetup updateSetup("update", fullscreenMesh, updateProg, 0);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = this->render->CreateResource(updateSetup);
     this->render->ReleaseResource(fullscreenMesh);
-    this->render->ReleaseResource(emitProg);
+    this->render->ReleaseResource(initProg);
     this->render->ReleaseResource(updateProg);
     
     // a vertex buffer with the particleIds, this would not be needed if
@@ -215,11 +215,11 @@ GPUParticlesApp::OnInit() {
     
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[0]);
-    this->render->ApplyDrawState(this->emitParticles);
+    this->render->ApplyDrawState(this->initParticles);
     this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     this->render->ApplyOffscreenRenderTarget(this->particleBuffer[1]);
-    this->render->ApplyDrawState(this->emitParticles);
+    this->render->ApplyDrawState(this->initParticles);
     this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
     this->render->Draw(0);
     
@@ -234,7 +234,7 @@ GPUParticlesApp::OnCleanup() {
     this->render->ReleaseResource(this->particleBuffer[1]);
     this->render->ReleaseResource(this->particleIdMesh);
     this->render->ReleaseResource(this->shapeMesh);
-    this->render->ReleaseResource(this->emitParticles);
+    this->render->ReleaseResource(this->initParticles);
     this->render->ReleaseResource(this->updateParticles);
     this->render->ReleaseResource(this->drawParticles);
     this->render = nullptr;
