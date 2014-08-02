@@ -18,11 +18,12 @@ namespace Oryol {
 namespace Render {
     
 glfwDisplayMgr* glfwDisplayMgr::self = nullptr;
+GLFWwindow* glfwDisplayMgr::glfwWindow = nullptr;
     
 //------------------------------------------------------------------------------
-glfwDisplayMgr::glfwDisplayMgr() :
-glfwWindow(nullptr) {
+glfwDisplayMgr::glfwDisplayMgr() {
     o_assert(nullptr == self);
+    o_assert(nullptr == glfwWindow);
     self = this;
 }
 
@@ -31,15 +32,22 @@ glfwDisplayMgr::~glfwDisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
+    o_assert(nullptr == glfwWindow);
     o_assert(nullptr != self);
     self = nullptr;
+}
+
+//------------------------------------------------------------------------------
+GLFWwindow*
+glfwDisplayMgr::getGlfwWindow() {
+    return glfwWindow;
 }
 
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     o_assert(!this->IsDisplayValid());
-    o_assert(nullptr == this->glfwWindow);
+    o_assert(nullptr == glfwWindow);
     
     displayMgrBase::SetupDisplay(setup);
     
@@ -75,15 +83,15 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     }
     
     // now actually create the window
-    this->glfwWindow = glfwCreateWindow(setup.WindowWidth,
-                                        setup.WindowHeight,
-                                        setup.WindowTitle.AsCStr(),
-                                        glfwMonitor,
-                                        0);
-    o_assert(nullptr != this->glfwWindow);
+    glfwWindow = glfwCreateWindow(setup.WindowWidth,
+                                  setup.WindowHeight,
+                                  setup.WindowTitle.AsCStr(),
+                                  glfwMonitor,
+                                  0);
+    o_assert(nullptr != glfwWindow);
     
     // and make the window's GL context current
-    glfwMakeContextCurrent(this->glfwWindow);
+    glfwMakeContextCurrent(glfwWindow);
     glfwSwapInterval(setup.SwapInterval);
 
     // setup extensions and platform-dependent constants
@@ -97,9 +105,9 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     int fbWidth = 0, fbHeight = 0;
     int posX = 0, posY = 0;
     int width = 0, height = 0;
-    glfwGetFramebufferSize(this->glfwWindow, &fbWidth, &fbHeight);
-    glfwGetWindowPos(this->glfwWindow, &posX, &posY);
-    glfwGetWindowSize(this->glfwWindow, &width, &height);
+    glfwGetFramebufferSize(glfwWindow, &fbWidth, &fbHeight);
+    glfwGetWindowPos(glfwWindow, &posX, &posY);
+    glfwGetWindowSize(glfwWindow, &width, &height);
     this->displayAttrs.FramebufferWidth  = fbWidth;
     this->displayAttrs.FramebufferHeight = fbHeight;
     this->displayAttrs.WindowPosX        = posX;
@@ -108,17 +116,17 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     this->displayAttrs.WindowHeight      = height;
     
     // set framebuffer size changed callback
-    glfwSetFramebufferSizeCallback(this->glfwWindow, glwfFramebufferSizeChanged);
+    glfwSetFramebufferSizeCallback(glfwWindow, glwfFramebufferSizeChanged);
 }
 
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
-    o_assert(nullptr != this->glfwWindow);
+    o_assert(nullptr != glfwWindow);
     
-    glfwDestroyWindow(this->glfwWindow);
-    this->glfwWindow = nullptr;
+    glfwDestroyWindow(glfwWindow);
+    glfwWindow = nullptr;
     glfwTerminate();
     glExt::Discard();
     glInfo::Discard();
@@ -129,14 +137,14 @@ glfwDisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 bool
 glfwDisplayMgr::QuitRequested() const {
-    o_assert(nullptr != this->glfwWindow);
-    return glfwWindowShouldClose(this->glfwWindow);
+    o_assert(nullptr != glfwWindow);
+    return glfwWindowShouldClose(glfwWindow);
 }
 
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::ProcessSystemEvents() {
-    o_assert(nullptr != this->glfwWindow);
+    o_assert(nullptr != glfwWindow);
     glfwPollEvents();
     displayMgrBase::ProcessSystemEvents();
 }
@@ -145,8 +153,8 @@ glfwDisplayMgr::ProcessSystemEvents() {
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::Present() {
-    o_assert(nullptr != this->glfwWindow);
-    glfwSwapBuffers(this->glfwWindow);
+    o_assert(nullptr != glfwWindow);
+    glfwSwapBuffers(glfwWindow);
     displayMgrBase::Present();
 }
 
@@ -171,7 +179,7 @@ glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int heigh
     self->displayAttrs.FramebufferWidth = width;
     self->displayAttrs.FramebufferHeight = height;
     int winWidth, winHeight;
-    glfwGetWindowSize(self->glfwWindow, &winWidth, &winHeight);
+    glfwGetWindowSize(glfwWindow, &winWidth, &winHeight);
     self->displayAttrs.WindowWidth = winWidth;
     self->displayAttrs.WindowHeight = winHeight;
     

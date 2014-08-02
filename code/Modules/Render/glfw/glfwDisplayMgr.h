@@ -37,6 +37,9 @@ public:
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
     
+    /// private: get glfwWindow handle
+    static GLFWwindow* getGlfwWindow();
+    
 private:
     /// error callback for GLFW
     static void glfwErrorCallback(int error, const char* desc);
@@ -44,7 +47,7 @@ private:
     static void glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height);
 
     static glfwDisplayMgr* self;
-    GLFWwindow* glfwWindow;
+    static GLFWwindow* glfwWindow;
 };
     
 } // namespace Render

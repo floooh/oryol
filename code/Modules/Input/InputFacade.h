@@ -9,10 +9,7 @@
     to query touch gestures.
 */
 #include "Core/Singleton.h"
-#include "Input/Core/Keyboard.h"
-#include "Input/Core/Mouse.h"
-#include "Input/Core/Gamepad.h"
-#include "Input/Core/Touchpad.h"
+#include "Input/Core/inputMgr.h"
 
 namespace Oryol {
 namespace Input {
@@ -35,13 +32,8 @@ public:
     const class Touchpad& Touchpad() const;
     
 private:
-    static const int32 MaxNumGamepads = 4;
-
-    class Keyboard keyboard;
-    class Mouse mouse;
-    class Gamepad gamepads[MaxNumGamepads];
-    class Touchpad touchpad;
+    inputMgr inputManager;
 };
-    
+
 } // namespace Input
 } // namespace Oryol
