@@ -10,7 +10,6 @@
 #include "Render/gl/glTypes.h"
 #include "Render/gl/glExt.h"
 #include "Resource/State.h"
-#include <array>
 
 namespace Oryol {
 namespace Render {
@@ -269,8 +268,9 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
     
     // setup glVertexAttr arrays
     for (uint8 vaoSlotIndex = 0; vaoSlotIndex < numVAOSlots; vaoSlotIndex++) {
-        const std::array<const glMesh*, 2> meshes{ { &msh, instMesh } };
-        for (const glMesh* curMesh : meshes) {
+        const glMesh* meshes[2] = { &msh, instMesh };
+        for (int32 i = 0; i < 2; i++) {
+            const glMesh* curMesh = meshes[i];
             if (nullptr != curMesh) {
                 const VertexLayout& layout = curMesh->GetVertexBufferAttrs().Layout;
                 const int32 numComps = layout.NumComponents();

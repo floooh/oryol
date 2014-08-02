@@ -6,8 +6,6 @@
 */
 #include "Core/Assert.h"
 #include "glm/vec2.hpp"
-#include <bitset>
-#include <array>
 
 namespace Oryol {
 namespace Input {
@@ -72,7 +70,7 @@ private:
     uint32 down;
     uint32 up;
     uint32 pressed;
-    std::array<glm::vec2, NumElements> values;
+    glm::vec2 values[NumElements];
     bool attached;
 };
 
