@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:1# machine generated, do not edit!
+// #version:2# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -41,7 +41,6 @@ const char* fsqVS_100_src =
 ;
 const char* initFS_100_src = 
 "precision mediump float;\n"
-"#define _COLOR gl_FragColor\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
 "uniform float time;\n"
@@ -116,9 +115,6 @@ const char* initFS_100_src =
 ;
 const char* updateFS_100_src = 
 "precision mediump float;\n"
-"#define _TEXTURE2D texture2D\n"
-"#define _TEXTURE2D texture2D\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
@@ -214,7 +210,6 @@ const char* fsqVS_120_src =
 const char* initFS_120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
-"#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
 "uniform float time;\n"
 "float getParticleId(float bufferWidth, vec2 fragCoord) {\n"
@@ -288,9 +283,6 @@ const char* initFS_120_src =
 ;
 const char* updateFS_120_src = 
 "#version 120\n"
-"#define _TEXTURE2D texture2D\n"
-"#define _TEXTURE2D texture2D\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
@@ -386,7 +378,6 @@ const char* fsqVS_150_src =
 const char* initFS_150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
-"#define _COLOR _FragColor\n"
 "uniform vec2 bufDims;\n"
 "uniform float time;\n"
 "out vec4 _FragColor;\n"
@@ -461,9 +452,6 @@ const char* initFS_150_src =
 ;
 const char* updateFS_150_src = 
 "#version 150\n"
-"#define _TEXTURE2D texture\n"
-"#define _TEXTURE2D texture\n"
-"#define _COLOR _FragColor\n"
 "#define _TEXTURE2D texture\n"
 "#define _COLOR _FragColor\n"
 "uniform vec2 bufDims;\n"

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:1# machine generated, do not edit!
+// #version:2# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "DebugShaders.h"
@@ -24,8 +24,8 @@ const char* vsText_100_src =
 ;
 const char* fsText_100_src = 
 "precision mediump float;\n"
-"#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
+"#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
@@ -52,8 +52,8 @@ const char* vsText_120_src =
 ;
 const char* fsText_120_src = 
 "#version 120\n"
-"#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
+"#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
@@ -80,8 +80,8 @@ const char* vsText_150_src =
 ;
 const char* fsText_150_src = 
 "#version 150\n"
-"#define _TEXTURE2D texture\n"
 "#define _COLOR _FragColor\n"
+"#define _TEXTURE2D texture\n"
 "uniform sampler2D tex;\n"
 "in vec2 uv;\n"
 "in vec4 color;\n"

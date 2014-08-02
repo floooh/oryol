@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:1#
+/*  #version:2#
     machine generated, do not edit!
 */
 #include "Render/Setup/ProgramBundleSetup.h"

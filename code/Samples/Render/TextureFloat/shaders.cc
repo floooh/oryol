@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:1# machine generated, do not edit!
+// #version:2# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -28,8 +28,8 @@ const char* offscreenVS_100_src =
 ;
 const char* copyFS_100_src = 
 "precision mediump float;\n"
-"#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
+"#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
@@ -121,8 +121,8 @@ const char* offscreenVS_120_src =
 ;
 const char* copyFS_120_src = 
 "#version 120\n"
-"#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
+"#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
@@ -214,8 +214,8 @@ const char* offscreenVS_150_src =
 ;
 const char* copyFS_150_src = 
 "#version 150\n"
-"#define _TEXTURE2D texture\n"
 "#define _COLOR _FragColor\n"
+"#define _TEXTURE2D texture\n"
 "uniform sampler2D tex;\n"
 "in vec2 uv;\n"
 "out vec4 _FragColor;\n"
