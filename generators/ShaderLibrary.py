@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 1
+Version = 2
 
 import os
 import sys
@@ -479,10 +479,10 @@ class Parser :
             if startIndex != -1 :
                 if self.current is not None:
                     line = line.replace(macro, macroKeywords[macro])
-                    if macro not in self.current.macros :
+                    if macroKeywords[macro] not in self.current.macros :
                         self.current.macros.append(macroKeywords[macro])
-                    else :
-                        util.fmtError('$ tag must come after @block, @vs, @fs and before @end')
+                else :
+                    util.fmtError('$ tag must come after @block, @vs, @fs and before @end')
 
         # if there are still $ characters in the line, it must be an 
         # unrecognized macro keyword (typo?)
