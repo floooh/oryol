@@ -79,7 +79,7 @@ GPUParticlesApp::OnRunning() {
         
         // update particle state texture by rendering a fullscreen-quad:
         // - the previous and next particle state are stored in separate float textures
-        // - the particle update shader reads the previous state and draw the next state
+        // - the particle update shader reads the previous state and draws the next state
         // - we use a scissor rect around the currently active particles to make this update
         //   a bit more efficient
         this->render->ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
