@@ -55,6 +55,8 @@ public:
     /// get stick position (-1.0 .. +1.0)
     const glm::vec2& StickPos(Element stick) const;
     
+    /// set keyboard attached state
+    void setAttached(bool b);
     /// FIXME??? called when button is pressed-down
     void onButtonDown(Element btn);
     /// FIXME??? called when button is released

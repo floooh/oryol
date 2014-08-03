@@ -13,6 +13,8 @@ class Key {
 public:
     /// key code enum, these are ripped from the GLFW header
     enum Code {
+        // NOTE: don't change order or add keys without also
+        // updating the string mapping table in Key.cc!
         InvalidKey = 0,
     
         Space,
@@ -138,6 +140,12 @@ public:
 
         NumKeys,
     };
+    
+    /// convert to string
+    static const char* ToString(Key::Code key);
+    
+private:
+    static const char* keyTable[NumKeys];
 };
     
 } // namespace Input

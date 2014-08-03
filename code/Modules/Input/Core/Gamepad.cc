@@ -18,6 +18,12 @@ attached(false) {
 
 //------------------------------------------------------------------------------
 void
+Gamepad::setAttached(bool b) {
+    this->attached = b;
+}
+
+//------------------------------------------------------------------------------
+void
 Gamepad::onButtonDown(Element btn) {
     o_assert_range_dbg(btn, NumElements);
     this->down |= (1<<btn);

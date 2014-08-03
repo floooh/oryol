@@ -20,6 +20,30 @@ InputFacade::~InputFacade() {
 }
 
 //------------------------------------------------------------------------------
+void
+InputFacade::SetCursorMode(CursorMode::Code mode) {
+    this->inputManager.setCursorMode(mode);
+}
+
+//------------------------------------------------------------------------------
+CursorMode::Code
+InputFacade::GetCursorMode() const {
+    return this->inputManager.getCursorMode();
+}
+
+//------------------------------------------------------------------------------
+void
+InputFacade::BeginCaptureText() {
+    this->inputManager.beginCaptureText();
+}
+
+//------------------------------------------------------------------------------
+void
+InputFacade::EndCaptureText() {
+    return this->inputManager.endCaptureText();
+}
+
+//------------------------------------------------------------------------------
 const class Keyboard&
 InputFacade::Keyboard() const {
     return this->inputManager.Keyboard();

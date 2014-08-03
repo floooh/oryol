@@ -19,14 +19,16 @@ public:
     /// return true if keyboard is valid/attached
     bool Attached() const;
     /// test if key is currently pressed
-    bool Pressed(Key::Code key) const;
+    bool KeyPressed(Key::Code key) const;
     /// test if key was pressed down last frame
-    bool Down(Key::Code key) const;
+    bool KeyDown(Key::Code key) const;
     /// test if key was released last frame
-    bool Up(Key::Code key) const;
+    bool KeyUp(Key::Code key) const;
     
-    /// get the last frame's text input (will return valid ptr to 0-terminated string)
-    const wchar_t* Text(uint8& outNumChars) const;
+    /// return true if text capturing is active
+    bool IsCapturingText() const;
+    /// get current captured text
+    const wchar_t* CapturedText() const;
     
     /// set keyboard attached state
     void setAttached(bool b);
@@ -38,15 +40,20 @@ public:
     void onChar(wchar_t c);
     /// reset the keyboard state
     void reset();
+    /// begin text capturing
+    void beginCaptureText();
+    /// end text capturing
+    void endCaptureText();
     
 private:
     std::bitset<Key::NumKeys> down;
     std::bitset<Key::NumKeys> up;
     std::bitset<Key::NumKeys> pressed;
-    static const int32 MaxNumChars = 64;
+    static const int32 MaxNumChars = 128;
     int32 charIndex;
     wchar_t chars[MaxNumChars + 1];
     bool attached;
+    bool textCapturing;
 };
 
 //------------------------------------------------------------------------------
@@ -57,29 +64,34 @@ Keyboard::Attached() const {
 
 //------------------------------------------------------------------------------
 inline bool
-Keyboard::Pressed(Key::Code key) const {
+Keyboard::KeyPressed(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
     return this->pressed[key];
 }
 
 //------------------------------------------------------------------------------
 inline bool
-Keyboard::Down(Key::Code key) const {
+Keyboard::KeyDown(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
     return this->down[key];
 }
 
 //------------------------------------------------------------------------------
 inline bool
-Keyboard::Up(Key::Code key) const {
+Keyboard::KeyUp(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
     return this->up[key];
 }
 
 //------------------------------------------------------------------------------
+inline bool
+Keyboard::IsCapturingText() const {
+    return this->textCapturing;
+}
+
+//------------------------------------------------------------------------------
 inline const wchar_t*
-Keyboard::Text(uint8& outNumChars) const {
-    outNumChars = this->charIndex;
+Keyboard::CapturedText() const {
     return this->chars;
 }
     

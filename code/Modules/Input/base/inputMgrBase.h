@@ -27,7 +27,12 @@ public:
     const class Gamepad& Gamepad(int32 index) const;
     /// get touchpad state (for touch/multitouch gestures)
     const class Touchpad& Touchpad() const;
-
+    
+    /// begin text capturing
+    void beginCaptureText();
+    /// end text capturing
+    void endCaptureText();
+    
 protected:
     static const int32 MaxNumGamepads = 4;
     class Keyboard keyboard;

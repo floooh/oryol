@@ -31,6 +31,15 @@ public:
     /// get touchpad state (for touch/multitouch gestures)
     const class Touchpad& Touchpad() const;
     
+    /// set mouse cursor mode
+    void SetCursorMode(CursorMode::Code mode);
+    /// get current mouse cursor mode
+    CursorMode::Code GetCursorMode() const;
+    /// begin text capturing
+    void BeginCaptureText();
+    /// end text capturing
+    void EndCaptureText();
+    
 private:
     inputMgr inputManager;
 };

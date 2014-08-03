@@ -10,9 +10,9 @@ namespace Input {
 //------------------------------------------------------------------------------
 Mouse::Mouse() :
 pos(0.0f, 0.0f),
-attached(false),
-wheelForward(false),
-wheelBackward(false) {
+dist(0.0f, 0.0f),
+scroll(0.0f, 0.0f),
+attached(false) {
     for (int32 i = 0; i < Button::NumButtons; i++) {
         this->buttonState[i] = 0;
     }
@@ -42,19 +42,14 @@ Mouse::onButtonUp(Button btn) {
 //------------------------------------------------------------------------------
 void
 Mouse::onPos(const glm::vec2& p) {
+    this->dist = p - this->pos;
     this->pos = p;
 }
 
 //------------------------------------------------------------------------------
 void
-Mouse::onWheelForward() {
-    this->wheelForward = true;
-}
-
-//------------------------------------------------------------------------------
-void
-Mouse::onWheelBackward() {
-    this->wheelBackward = true;
+Mouse::onScroll(const glm::vec2& p) {
+    this->scroll = p;
 }
 
 //------------------------------------------------------------------------------
@@ -63,8 +58,8 @@ Mouse::reset() {
     for (int32 i = 0; i < NumButtons; i++) {
         this->buttonState[i] &= ~(btnDown | btnUp);
     }
-    this->wheelForward = false;
-    this->wheelBackward = false;
+    this->dist = glm::vec2(0.0f, 0.0f);
+    this->scroll = glm::vec2(0.0f, 0.0f);
 }
 
 } // namespace Input

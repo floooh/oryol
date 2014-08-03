@@ -17,29 +17,28 @@ public:
     
     /// mouse buttons
     enum Button {
-        InvalidButton = 0,
-        
-        LMB,
+        LMB = 0,
         MMB,
         RMB,
         
         NumButtons,
+        InvalidButton,
     };
     
     /// return true if mouse is valid/attached
     bool Attached() const;
     /// test if mouse button is pressed
-    bool Pressed(Button btn) const;
+    bool ButtonPressed(Button btn) const;
     /// test if mouse button was pressed down last frame
-    bool Down(Button btn) const;
+    bool ButtonDown(Button btn) const;
     /// test if mouse button was release last frame
-    bool Up(Button btn) const;
-    /// test if wheel forward was triggered
-    bool WheelForward() const;
-    /// test if wheel backward was triggered
-    bool WheelBackward() const;
-    /// get mouse position (0.0 .. 1.0)
-    const glm::vec2& Pos() const;
+    bool ButtonUp(Button btn) const;
+    /// get mouse position (unbounded pixel coords)
+    const glm::vec2& Position() const;
+    /// get mouse movement since last frame
+    const glm::vec2& Movement() const;
+    /// get scroll movement (usually provided by mouse wheel)
+    const glm::vec2& Scroll() const;
     
     /// set mouse attached state
     void setAttached(bool b);
@@ -47,12 +46,10 @@ public:
     void onButtonDown(Button btn);
     /// call when mouse button up event happens
     void onButtonUp(Button btn);
-    /// call when wheel-forward was triggered
-    void onWheelForward();
-    /// call when wheel-backward was triggered
-    void onWheelBackward();
-    /// set mouse position (0.0 .. 1.0)
+    /// set mouse position (unbounded pixel coords)
     void onPos(const glm::vec2& p);
+    /// set scroll position
+    void onScroll(const glm::vec2& p);
     /// reset the mouse state
     void reset();
     
@@ -65,9 +62,9 @@ private:
     
     uint8 buttonState[Button::NumButtons];
     glm::vec2 pos;
+    glm::vec2 dist;
+    glm::vec2 scroll;
     bool attached;
-    bool wheelForward;
-    bool wheelBackward;
 };
 
 //------------------------------------------------------------------------------
@@ -78,41 +75,41 @@ Mouse::Attached() const {
 
 //------------------------------------------------------------------------------
 inline bool
-Mouse::Pressed(Button btn) const {
+Mouse::ButtonPressed(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
     return this->buttonState[btn] & btnPressed;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-Mouse::Down(Button btn) const {
+Mouse::ButtonDown(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
     return this->buttonState[btn] & btnDown;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-Mouse::Up(Button btn) const {
+Mouse::ButtonUp(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
     return this->buttonState[btn] & btnUp;
 }
 
 //------------------------------------------------------------------------------
 inline const glm::vec2&
-Mouse::Pos() const {
+Mouse::Position() const {
     return this->pos;
 }
 
 //------------------------------------------------------------------------------
-inline bool
-Mouse::WheelForward() const {
-    return this->wheelForward;
+inline const glm::vec2&
+Mouse::Movement() const {
+    return this->dist;
 }
 
 //------------------------------------------------------------------------------
-inline bool
-Mouse::WheelBackward() const {
-    return this->wheelBackward;
+inline const glm::vec2&
+Mouse::Scroll() const {
+    return this->scroll;
 }
 
 } // namespace Input

@@ -13,7 +13,8 @@ using namespace Core;
 //------------------------------------------------------------------------------
 Keyboard::Keyboard() :
 charIndex(0),
-attached(false) {
+attached(false),
+textCapturing(false) {
     Memory::Clear(&this->chars, sizeof(this->chars));
 }
 
@@ -43,19 +44,32 @@ Keyboard::onKeyUp(Key::Code key) {
 void
 Keyboard::onChar(wchar_t c) {
     if (this->charIndex < MaxNumChars) {
-        this->chars[charIndex++] = c;
-        this->chars[charIndex] = 0;
+        this->chars[this->charIndex++] = c;
+        this->chars[this->charIndex] = 0;
     }
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::reset() {
-    this->charIndex = 0;
+Keyboard::beginCaptureText() {
+    o_assert(!this->textCapturing);
+    this->textCapturing = true;
     this->chars[0] = 0;
+    this->charIndex = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+Keyboard::endCaptureText() {
+    o_assert(this->textCapturing);
+    this->textCapturing = false;
+}
+
+//------------------------------------------------------------------------------
+void
+Keyboard::reset() {
     this->down.reset();
     this->up.reset();
-    this->pressed.reset();
 }
 
 } // namespace Input
