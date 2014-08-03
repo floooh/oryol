@@ -29,7 +29,7 @@ public:
     /// convert raw wide string range to raw UTF8 string
     static int32 WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes);
     /// convert raw wide string range to UTF-8 string object
-    static String  WideToUTF8(const wchar_t* wide, int32 numWideChars);
+    static String WideToUTF8(const wchar_t* wide, int32 numWideChars);
     /// convert raw null-terminated wide-string to string object
     static String WideToUTF8(const wchar_t* wide);
     /// convert WideString object to UTF8 string object
