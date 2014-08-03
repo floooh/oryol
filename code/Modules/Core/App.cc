@@ -126,9 +126,6 @@ App::onFrame() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     else {
-        // trigger central runloop
-        this->coreFacade->RunLoop()->Run();
-
         // call current state handler function
         switch (this->curState) {
             case AppState::Construct:
@@ -157,6 +154,12 @@ App::onFrame() {
                 Log::Warn("App::onFrame(): UNHANDLED APP STATE '%s'!\n", AppState::ToString(this->curState));
                 break;
         }  
+
+        // trigger central runloop
+        // IMPORTANT: ideally we'd want separate 'before frame' and 
+        // 'after frame' runloops, currently the emscripten input
+        // handler code depends that this is executed 'after'
+        this->coreFacade->RunLoop()->Run();
     }  
 }
 
