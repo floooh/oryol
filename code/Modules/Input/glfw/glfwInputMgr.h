@@ -5,7 +5,6 @@
     @brief provide input on platforms using GLFW
 */
 #include "Input/base/inputMgrBase.h"
-#include "Input/Core/CursorMode.h"
 
 struct GLFWwindow;
 
@@ -21,8 +20,6 @@ public:
     
     /// set mouse cursor mode
     void setCursorMode(CursorMode::Code mode);
-    /// get mouse cursor mode
-    CursorMode::Code getCursorMode() const;
     
 private:
     /// per-frame callback to reset input state at start of frame
@@ -31,11 +28,11 @@ private:
     /// setup the key mapping table
     void setupKeyTable();
     /// setup glfw input callbacks
-    void setupGlfwCallbacks(GLFWwindow* glfwWindow);
+    void setupCallbacks(GLFWwindow* glfwWindow);
     /// discard glfw input callbacks
-    void discardGlfwCallbacks();
+    void discardCallbacks(GLFWwindow* glfwWindow);
     /// map GLFW key code to Oryol key code
-    Key::Code mapKey(int glfwKey);
+    Key::Code mapKey(int glfwKey) const;
     
     /// GLFW key callback
     static void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods);
@@ -51,7 +48,6 @@ private:
     static void scrollCallback(GLFWwindow* win, double xOffset, double yOffset);
     
     static glfwInputMgr* self;
-    CursorMode::Code cursorMode;
 };
 
 } // namespace Input

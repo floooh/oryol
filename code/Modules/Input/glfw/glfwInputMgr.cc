@@ -30,12 +30,12 @@ glfwInputMgr::glfwInputMgr() {
         return;
     }
     this->setupKeyTable();
-    this->setupGlfwCallbacks(glfwWindow);
+    this->setupCallbacks(glfwWindow);
     this->setCursorMode(CursorMode::Normal);
 
     // attach our reset callback to the global runloop
     CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Add(RunLoop::Callback("inputMgrBase", 0, std::function<void()>(std::bind(&glfwInputMgr::reset, this))));
+    core->RunLoop()->Add(RunLoop::Callback("glfwInputMgr", 0, std::function<void()>(std::bind(&glfwInputMgr::reset, this))));
 }
 
 //------------------------------------------------------------------------------
@@ -43,18 +43,20 @@ glfwInputMgr::~glfwInputMgr() {
     o_assert(nullptr != self);
 
     // remove glfw input callbacks
-    this->discardGlfwCallbacks();
+    GLFWwindow* glfwWindow = Render::glfwDisplayMgr::getGlfwWindow();
+    o_assert(nullptr != glfwWindow);    
+    this->discardCallbacks(glfwWindow);
 
-    // detach our reset callback
+    // detach our reset callback from runloop
     CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Remove("inputMgrBase");
+    core->RunLoop()->Remove("glfwInputMgr");
     
     self = nullptr;
 }
 
 //------------------------------------------------------------------------------
 void
-glfwInputMgr::setupGlfwCallbacks(GLFWwindow* glfwWindow) {
+glfwInputMgr::setupCallbacks(GLFWwindow* glfwWindow) {
     glfwSetKeyCallback(glfwWindow, keyCallback);
     glfwSetCharCallback(glfwWindow, charCallback);
     glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
@@ -65,10 +67,7 @@ glfwInputMgr::setupGlfwCallbacks(GLFWwindow* glfwWindow) {
 
 //------------------------------------------------------------------------------
 void
-glfwInputMgr::discardGlfwCallbacks() {
-    GLFWwindow* glfwWindow = Render::glfwDisplayMgr::getGlfwWindow();
-    o_assert(nullptr != glfwWindow);
-    
+glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {    
     glfwSetKeyCallback(glfwWindow, nullptr);
     glfwSetCharCallback(glfwWindow, nullptr);
     glfwSetMouseButtonCallback(glfwWindow, nullptr);
@@ -81,9 +80,8 @@ glfwInputMgr::discardGlfwCallbacks() {
 void
 glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
     if (newMode != this->cursorMode) {
-        this->cursorMode = newMode;
         int glfwInputMode;
-        switch (this->cursorMode) {
+        switch (newMode) {
             case CursorMode::Normal:    glfwInputMode = GLFW_CURSOR_NORMAL; break;
             case CursorMode::Hidden:    glfwInputMode = GLFW_CURSOR_HIDDEN; break;
             default:                    glfwInputMode = GLFW_CURSOR_DISABLED; break;
@@ -92,12 +90,7 @@ glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
         o_assert(nullptr != glfwWindow);
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, glfwInputMode);
     }
-}
-
-//------------------------------------------------------------------------------
-CursorMode::Code
-glfwInputMgr::getCursorMode() const {
-    return this->cursorMode;
+    inputMgrBase::setCursorMode(newMode);
 }
 
 //------------------------------------------------------------------------------
@@ -199,7 +192,7 @@ glfwInputMgr::cursorEnterCallback(GLFWwindow* win, int entered) {
 
 //------------------------------------------------------------------------------
 Key::Code
-glfwInputMgr::mapKey(int glfwKey) {
+glfwInputMgr::mapKey(int glfwKey) const {
     if ((glfwKey >= 0) && (glfwKey <= GLFW_KEY_LAST)) {
         return keyTable[glfwKey];
     }

@@ -8,6 +8,7 @@
 #include "Input/Core/Mouse.h"
 #include "Input/Core/Gamepad.h"
 #include "Input/Core/Touchpad.h"
+#include "Input/Core/CursorMode.h"
 
 namespace Oryol {
 namespace Input {
@@ -28,6 +29,11 @@ public:
     /// get touchpad state (for touch/multitouch gestures)
     const class Touchpad& Touchpad() const;
     
+    /// set mouse cursor mode
+    void setCursorMode(CursorMode::Code mode);
+    /// get mouse cursor mode
+    CursorMode::Code getCursorMode() const;
+
     /// begin text capturing
     void beginCaptureText();
     /// end text capturing
@@ -39,6 +45,7 @@ protected:
     class Mouse mouse;
     class Gamepad gamepads[MaxNumGamepads];
     class Touchpad touchpad;
+    CursorMode::Code cursorMode;    
 };
 
 //------------------------------------------------------------------------------
@@ -64,6 +71,12 @@ inputMgrBase::Gamepad(int32 index) const {
 inline const class Touchpad&
 inputMgrBase::Touchpad() const {
     return this->touchpad;
+}
+
+//------------------------------------------------------------------------------
+inline CursorMode::Code
+inputMgrBase::getCursorMode() const {
+    return this->cursorMode;
 }
 
 } // namespace Input
