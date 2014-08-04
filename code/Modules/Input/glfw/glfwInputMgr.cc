@@ -178,11 +178,10 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
 void
 glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)glfwX, (float32)glfwY);
-        self->mouse.onScroll(pos);
+        const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
+        self->mouse.onScroll(scroll);
     }
 }
-    
 
 //------------------------------------------------------------------------------
 void

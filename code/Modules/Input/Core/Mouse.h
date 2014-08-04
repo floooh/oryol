@@ -46,8 +46,10 @@ public:
     void onButtonDown(Button btn);
     /// call when mouse button up event happens
     void onButtonUp(Button btn);
-    /// set mouse position (unbounded pixel coords)
+    /// set mouse position (unbounded pixel coords), also updates movement
     void onPos(const glm::vec2& p);
+    /// directly set movement
+    void onMove(const glm::vec2& m);
     /// set scroll position
     void onScroll(const glm::vec2& p);
     /// reset the mouse state
@@ -62,7 +64,7 @@ private:
     
     uint8 buttonState[Button::NumButtons];
     glm::vec2 pos;
-    glm::vec2 dist;
+    glm::vec2 move;
     glm::vec2 scroll;
     bool attached;
 };
@@ -103,7 +105,7 @@ Mouse::Position() const {
 //------------------------------------------------------------------------------
 inline const glm::vec2&
 Mouse::Movement() const {
-    return this->dist;
+    return this->move;
 }
 
 //------------------------------------------------------------------------------

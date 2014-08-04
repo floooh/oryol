@@ -10,7 +10,7 @@ namespace Input {
 //------------------------------------------------------------------------------
 Mouse::Mouse() :
 pos(0.0f, 0.0f),
-dist(0.0f, 0.0f),
+move(0.0f, 0.0f),
 scroll(0.0f, 0.0f),
 attached(false) {
     for (int32 i = 0; i < Button::NumButtons; i++) {
@@ -42,8 +42,14 @@ Mouse::onButtonUp(Button btn) {
 //------------------------------------------------------------------------------
 void
 Mouse::onPos(const glm::vec2& p) {
-    this->dist = p - this->pos;
+    this->move = p - this->pos;
     this->pos = p;
+}
+
+//------------------------------------------------------------------------------
+void
+Mouse::onMove(const glm::vec2& m) {
+    this->move = m;
 }
 
 //------------------------------------------------------------------------------
@@ -58,7 +64,7 @@ Mouse::reset() {
     for (int32 i = 0; i < NumButtons; i++) {
         this->buttonState[i] &= ~(btnDown | btnUp);
     }
-    this->dist = glm::vec2(0.0f, 0.0f);
+    this->move = glm::vec2(0.0f, 0.0f);
     this->scroll = glm::vec2(0.0f, 0.0f);
 }
 

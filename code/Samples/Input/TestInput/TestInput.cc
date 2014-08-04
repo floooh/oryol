@@ -88,16 +88,10 @@ TestInputApp::OnRunning() {
         const Keyboard& keyboard = this->input->Keyboard();
         const Mouse& mouse = this->input->Mouse();
         
-        const glm::vec4 down(1.0f, 0.0f, 0.0f, 1.0f);
-        const glm::vec4 up(0.0f, 0.0f, 1.0f, 1.0f);
-        const glm::vec4 pressed(0.0f, 1.0f, 0.0f, 1.0f);
-        const glm::vec4 def(1.0f, 1.0f, 1.0f, 0.5f);
-        glm::vec4 color(1.0f, 1.0f, 1.0f, 0.5f);
-        
         // mouse status
         if (mouse.Attached()) {
             this->debug->TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            this->debug->Print("\n MOUSE STATUS:\n\n\r");
+            this->debug->Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
         
             this->testMouseButton(mouse, Mouse::LMB, "LMB");
             this->testMouseButton(mouse, Mouse::MMB, "MMB");
@@ -113,8 +107,14 @@ TestInputApp::OnRunning() {
         // keyboard status
         if (keyboard.Attached()) {
             this->debug->TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-            this->debug->Print("\n\n\r KEYBOARD STATUS (press Enter to capture text):\n\n\r");
+            this->debug->Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
             if (keyboard.KeyDown(Key::Enter)) {
+                if (CursorMode::Disabled != this->input->GetCursorMode()) {
+                    this->input->SetCursorMode(CursorMode::Disabled);
+                }
+                else {
+                    this->input->SetCursorMode(CursorMode::Normal);
+                }
                 if (!keyboard.IsCapturingText()) {
                     this->input->BeginCaptureText();
                 }

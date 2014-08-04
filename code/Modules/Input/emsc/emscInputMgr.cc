@@ -28,8 +28,13 @@ emscInputMgr::~emscInputMgr() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setCursorMode(CursorMode::Code mode) {
-    // FIXME
-    inputMgrBase::setCursorMode(mode);
+    if (CursorMode::Disabled == mode) {
+        emscripten_request_pointerlock(0, true);
+    }
+    else {
+        emscripten_exit_pointerlock();
+    }
+    // NOTE: base class setCursorMode will be called from the pointerlock event callback 
 }
 
 //------------------------------------------------------------------------------
@@ -57,6 +62,11 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_keydown_callback(0, this, true, emscKeyDown);
     emscripten_set_keyup_callback(0, this, true, emscKeyUp);
     emscripten_set_keypress_callback(0, this, true, emscKeyPress);
+    emscripten_set_mousedown_callback(0, this, true, emscMouseDown);
+    emscripten_set_mouseup_callback(0, this, true, emscMouseUp);
+    emscripten_set_mousemove_callback(0, this, true, emscMouseMove);
+    emscripten_set_wheel_callback(0, this, true, emscWheel);
+    emscripten_set_pointerlockchange_callback(0, this, true, emscPointerLockChange);
 }
 
 //------------------------------------------------------------------------------
@@ -65,14 +75,19 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_keydown_callback(0, 0, true, 0);
     emscripten_set_keyup_callback(0, 0, true, 0);    
     emscripten_set_keypress_callback(0, 0, true, 0);
+    emscripten_set_mousedown_callback(0, 0, true, 0);
+    emscripten_set_mouseup_callback(0, 0, true, 0);
+    emscripten_set_mousemove_callback(0, 0, true, 0);
+    emscripten_set_wheel_callback(0, 0, true, 0);
+    emscripten_set_pointerlockchange_callback(0, this, true, 0);
 }
 
 //------------------------------------------------------------------------------
 EM_BOOL
 emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
-    o_assert(self);
-    Key::Code key = self->mapKey(e->keyCode);
+    o_assert_dbg(self);
+    const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         if (!e->repeat) {
             self->keyboard.onKeyDown(key);
@@ -103,21 +118,99 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
 EM_BOOL
 emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
-    o_assert(self);
-    Key::Code key = self->mapKey(e->keyCode);
+    o_assert_dbg(self);
+    const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
-//        return true;
+        return true;
     }
-    return true;
+    return false;
 }
 
 //------------------------------------------------------------------------------
 EM_BOOL
 emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
-    o_assert(self);
+    o_assert_dbg(self);
     self->keyboard.onChar((wchar_t)e->charCode);    
+    return true;
+}
+
+//------------------------------------------------------------------------------
+Mouse::Button
+emscInputMgr::mapMouseButton(unsigned short html5Btn) const {
+    switch (html5Btn) {
+        case 0:  return Mouse::LMB;
+        case 1:  return Mouse::MMB;
+        case 2:  return Mouse::RMB;
+        default: return Mouse::InvalidButton;
+    }
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    o_assert_dbg(self);
+    const Mouse::Button btn = self->mapMouseButton(e->button);
+    if (Mouse::InvalidButton != btn) {
+        self->mouse.onButtonDown(btn);
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    o_assert_dbg(self);
+    const Mouse::Button btn = self->mapMouseButton(e->button);
+    if (Mouse::InvalidButton != btn) {
+        self->mouse.onButtonUp(btn);
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    o_assert_dbg(self);
+
+    // check if pointerlock is active, if yes directly obtain movement
+    if (self->getCursorMode() == CursorMode::Disabled) {
+        const glm::vec2 mov((float32)e->movementX, (float32)e->movementY);
+        self->mouse.onMove(mov);
+    }
+    else {
+        const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
+        self->mouse.onPos(pos);        
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    o_assert_dbg(self);
+    const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
+    self->mouse.onScroll(scroll);
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    if (e->isActive) {
+        ((inputMgrBase*)self)->setCursorMode(CursorMode::Disabled);
+    }
+    else {
+        ((inputMgrBase*)self)->setCursorMode(CursorMode::Normal);
+    }
     return true;
 }
 
