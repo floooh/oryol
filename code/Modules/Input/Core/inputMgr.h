@@ -16,6 +16,12 @@ namespace Oryol {
 namespace Input {
 class inputMgr : public emscInputMgr { };
 } }
+#elif ORYOL_PNACL
+#include "Input/pnacl/pnaclInputMgr.h"
+namespace Oryol {
+namespace Input {
+class inputMgr : public pnaclInputMgr { };
+} }
 #else
 #include "Input/base/inputMgrBase.h"
 namespace Oryol {

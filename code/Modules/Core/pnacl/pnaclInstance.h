@@ -50,6 +50,11 @@ public:
     /// put a message to the web page
     void putMsg(const char* str);
 
+    /// enable input (called by Input module if present)
+    void enableInput(std::function<bool(const pp::InputEvent&)> handlerFunc);
+    /// disable input (called by Input module)
+    void disableInput();
+
 private:
     /// initialize the GL context
     bool initGL();
@@ -66,6 +71,8 @@ private:
     App* app;
     RWLock msgLock;
     Queue<pp::Var> msgQueue;
+    static const int32 MaxQueuedEvents = 64;
+    std::function<bool(const pp::InputEvent&)> inputEventFunc;
 };
 
 } // namespace Core

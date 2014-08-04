@@ -26,9 +26,6 @@ height(0),
 app(nullptr) {
     o_assert(nullptr == self);
     self = this;
-    this->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
-                             PP_INPUTEVENT_CLASS_WHEEL |
-                             PP_INPUTEVENT_CLASS_KEYBOARD);
 }
 
 //------------------------------------------------------------------------------
@@ -89,8 +86,12 @@ pnaclInstance::DidChangeFocus(bool hasFocus) {
 //------------------------------------------------------------------------------
 bool
 pnaclInstance::HandleInputEvent(const pp::InputEvent& event) {
-    // FIXME!
-    return pp::Instance::HandleInputEvent(event);
+    if (this->inputEventFunc) {
+        return this->inputEventFunc(event);
+    }
+    else {
+        return pp::Instance::HandleInputEvent(event);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -188,6 +189,28 @@ pnaclInstance::flushMessages() {
         o_assert(var.is_string());
         this->PostMessage(var);
     }
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInstance::enableInput(std::function<bool(const pp::InputEvent&)> func) {
+    // This method is called by the Input module (if present)
+    // once at startup to request input events from NaCl.
+    // NaCl input events will arrive in the HandleInputEvent method,
+    // which will enqueue the events on the internal input event queue.
+    // Once per frame, the Input module will dequeue events via the
+    // dequeueEvent method.
+    this->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
+                             PP_INPUTEVENT_CLASS_WHEEL |
+                             PP_INPUTEVENT_CLASS_KEYBOARD);
+    this->inputEventFunc = func;
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInstance::disableInput() {
+    this->RequestInputEvents(0);
+    this->inputEventFunc = nullptr;
 }
 
 } // namespace Core
