@@ -77,8 +77,25 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
         if (!e->repeat) {
             self->keyboard.onKeyDown(key);
         }
+        if (self->keyboard.IsCapturingText()) {
+            // returning false enables keypress events, but also lets the
+            // browser react to Tab, Backspace, etc... thus we need to 
+            // filter these out
+            if ((Key::Tab == key) || (Key::BackSpace == key) || (Key::Enter == key)) {
+                // enable keypresses, but disable browser handling for Tab, BS, Enter
+                return true;
+            }
+            else {
+                // pass-thru event
+                return false;
+            }
+        }
+        else {
+            // returning true disables keypress events, but also
+            // suppresses the browser from handling Tab, Backspace...
+            return true;
+        }
     }
-    // always return false, otherwise keyPress events aren't generated
     return false;
 }
 
@@ -90,11 +107,9 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
-        return true;
+//        return true;
     }
-    else {
-        return false;
-    }
+    return true;
 }
 
 //------------------------------------------------------------------------------
