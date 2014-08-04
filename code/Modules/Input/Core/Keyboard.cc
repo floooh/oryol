@@ -43,9 +43,11 @@ Keyboard::onKeyUp(Key::Code key) {
 //------------------------------------------------------------------------------
 void
 Keyboard::onChar(wchar_t c) {
-    if (this->charIndex < MaxNumChars) {
-        this->chars[this->charIndex++] = c;
-        this->chars[this->charIndex] = 0;
+    if (this->textCapturing) {
+        if (this->charIndex < MaxNumChars) {
+            this->chars[this->charIndex++] = c;
+            this->chars[this->charIndex] = 0;
+        }
     }
 }
 
