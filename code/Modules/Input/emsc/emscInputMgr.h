@@ -36,6 +36,8 @@ private:
     static EM_BOOL emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void* userData);
     /// key up callback
     static EM_BOOL emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* userData);
+    /// key press callback
+    static EM_BOOL emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void* userData);
 
     static const int32 MaxNumKeys = 256;
     Key::Code keyTable[MaxNumKeys];

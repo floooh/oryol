@@ -56,6 +56,7 @@ void
 emscInputMgr::setupCallbacks() {
     emscripten_set_keydown_callback(0, this, true, emscKeyDown);
     emscripten_set_keyup_callback(0, this, true, emscKeyUp);
+    emscripten_set_keypress_callback(0, this, true, emscKeyPress);
 }
 
 //------------------------------------------------------------------------------
@@ -63,6 +64,7 @@ void
 emscInputMgr::discardCallbacks() {
     emscripten_set_keydown_callback(0, 0, true, 0);
     emscripten_set_keyup_callback(0, 0, true, 0);    
+    emscripten_set_keypress_callback(0, 0, true, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -75,11 +77,9 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
         if (!e->repeat) {
             self->keyboard.onKeyDown(key);
         }
-        return true;
     }
-    else {
-        return false;
-    }
+    // always return false, otherwise keyPress events aren't generated
+    return false;
 }
 
 //------------------------------------------------------------------------------
@@ -95,6 +95,15 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     else {
         return false;
     }
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    o_assert(self);
+    self->keyboard.onChar((wchar_t)e->charCode);    
+    return true;
 }
 
 //------------------------------------------------------------------------------
