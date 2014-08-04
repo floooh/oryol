@@ -194,12 +194,6 @@ pnaclInstance::flushMessages() {
 //------------------------------------------------------------------------------
 void
 pnaclInstance::enableInput(std::function<bool(const pp::InputEvent&)> func) {
-    // This method is called by the Input module (if present)
-    // once at startup to request input events from NaCl.
-    // NaCl input events will arrive in the HandleInputEvent method,
-    // which will enqueue the events on the internal input event queue.
-    // Once per frame, the Input module will dequeue events via the
-    // dequeueEvent method.
     this->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
                              PP_INPUTEVENT_CLASS_WHEEL |
                              PP_INPUTEVENT_CLASS_KEYBOARD);
