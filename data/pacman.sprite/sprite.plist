@@ -98,7 +98,7 @@
 	<key>colorMode</key>
 	<integer>1</integer>
 	<key>columns</key>
-	<integer>8</integer>
+	<integer>4</integer>
 	<key>frameHeight</key>
 	<integer>16</integer>
 	<key>frameSpacing</key>
@@ -114,11 +114,11 @@
 	<key>openGL</key>
 	<false/>
 	<key>rows</key>
-	<integer>16</integer>
+	<integer>12</integer>
 	<key>sheetHeight</key>
-	<integer>256</integer>
+	<integer>192</integer>
 	<key>sheetWidth</key>
-	<integer>128</integer>
+	<integer>64</integer>
 	<key>showGrid</key>
 	<true/>
 	<key>version</key>

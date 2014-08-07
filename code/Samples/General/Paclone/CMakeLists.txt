@@ -1,0 +1,5 @@
+oryol_begin_app(Paclone windowed)
+    oryol_sources(.)
+    oryol_deps(Core)
+#    oryol_add_web_sample(Paclone "Simple Pacman clone (no sound yet)" emscripten)
+oryol_end_app()

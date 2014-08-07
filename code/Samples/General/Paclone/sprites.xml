@@ -1,0 +1,23 @@
+<Generator type="SpriteSheet" name="Paclone" >
+
+    <Sheet file="sprites.png" spriteWidth="16" spriteHeight="16" clampWidth="64" clampHeight="192">
+        <Sprite name="PacRight" x="0" y="0" frames="4" anim="pingpong" />
+        <Sprite name="PacDown" x="0" y="1" frames="4" anim="pingpong" />
+        <Sprite name="PacLeft" x="0" y="2" frames="4" anim="pingpong" />
+        <Sprite name="PacUp" x="0" y="3" frames="4" anim="pingpong" />
+        <Sprite name="Pinky" x="0" y="4" />
+        <Sprite name="Blinky" x="0" y="5" />
+        <Sprite name="Clyde" x="0" y="6" />
+        <Sprite name="Inky" x="0" y="7" />
+        <Sprite name="Wall_000_111_000" x="0" y="8" />
+        <Sprite name="Wall_010_010_010" x="1" y="8" />
+        <Sprite name="Wall_000_110_000" x="2" y="8" />
+        <Sprite name="Wall_000_011_000" x="3" y="8" />
+        <Sprite name="Wall_000_010_010" x="0" y="9" />
+        <Sprite name="Wall_010_010_000" x="1" y="9" />
+        <Sprite name="Wall_010_111_010" x="2" y="9" />
+        <Sprite name="Wall_000_010_000" x="3" y="9" />
+        <Sprite name="Pill" x="0" y="10" />
+    </Sheet>
+
+</Generator>
