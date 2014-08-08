@@ -1,4 +1,4 @@
-<Generator type="SpriteSheet" name="Paclone" >
+<Generator type="SpriteSheet" namespace="Paclone" >
 
     <Sheet file="sprites.png" spriteWidth="16" spriteHeight="16" clampWidth="64" clampHeight="192">
         <Sprite name="PacRight" x="0" y="0" frames="4" anim="pingpong" />
@@ -9,14 +9,14 @@
         <Sprite name="Blinky" x="0" y="5" />
         <Sprite name="Clyde" x="0" y="6" />
         <Sprite name="Inky" x="0" y="7" />
-        <Sprite name="Wall_000_111_000" x="0" y="8" />
-        <Sprite name="Wall_010_010_010" x="1" y="8" />
-        <Sprite name="Wall_000_110_000" x="2" y="8" />
-        <Sprite name="Wall_000_011_000" x="3" y="8" />
-        <Sprite name="Wall_000_010_010" x="0" y="9" />
-        <Sprite name="Wall_010_010_000" x="1" y="9" />
-        <Sprite name="Wall_010_111_010" x="2" y="9" />
-        <Sprite name="Wall_000_010_000" x="3" y="9" />
+        <Sprite name="Wall_0_111_0" x="0" y="8" bitmask="01110"/>
+        <Sprite name="Wall_1_010_1" x="1" y="8" bitmask="10101"/>
+        <Sprite name="Wall_0_110_0" x="2" y="8" bitmask="01100"/>
+        <Sprite name="Wall_0_011_0" x="3" y="8" bitmask="00110"/>
+        <Sprite name="Wall_0_010_1" x="0" y="9" bitmask="00101"/>
+        <Sprite name="Wall_1_010_0" x="1" y="9" bitmask="10100"/>
+        <Sprite name="Wall_1_111_1" x="2" y="9" bitmask="11111"/>
+        <Sprite name="Wall_0_010_0" x="3" y="9" bitmask="00100"/>
         <Sprite name="Pill" x="0" y="10" />
     </Sheet>
 

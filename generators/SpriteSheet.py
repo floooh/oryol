@@ -16,6 +16,7 @@ class Sprite :
         self.y = 0
         self.w = 0
         self.h = 0
+        self.mask = 0
         self.frames = 1
         self.anim = ''
 
@@ -24,7 +25,7 @@ class SpriteSheet :
     def __init__(self, xmlTree, absXmlPath) :
         self.xmlPath = absXmlPath
         self.xmlRoot = xmlTree.getroot()
-        self.name = ''
+        self.namespace = ''
         self.imagePath = ''
         self.imageWidth = 0
         self.imageHeight = 0
@@ -37,7 +38,7 @@ class SpriteSheet :
         self.sprites = []
 
     def parseXml(self) :
-        self.name = self.xmlRoot.get('name')
+        self.namespace = self.xmlRoot.get('namespace')
         xmlSheet = self.xmlRoot.find('Sheet')
         if xmlSheet is not None :
             self.imagePath = os.path.dirname(self.xmlPath) + '/' + xmlSheet.get('file')
@@ -54,6 +55,7 @@ class SpriteSheet :
                 sprite.h = int(xmlSprite.get('h', self.defSpriteHeight))
                 sprite.frames = int(xmlSprite.get('frames', 1))
                 sprite.anim = xmlSprite.get('anim', 'none')
+                sprite.mask = int(xmlSprite.get('bitmask', '0'), 2)
                 self.sprites.append(sprite)
         else :
             util.error('No Sheet element in sprite sheet XML file!')
@@ -85,7 +87,7 @@ def writeHeaderTop(f, spriteSheet) :
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
     f.write('#include "Core/Types.h"\n')
-    f.write('namespace Oryol {\n')
+    f.write('namespace ' + spriteSheet.namespace + ' {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, spriteSheet) :
@@ -94,11 +96,11 @@ def writeHeaderBottom(f, spriteSheet) :
 
 #-------------------------------------------------------------------------------
 def writeSpriteSheet(f, spriteSheet) :
-    f.write('struct ' + spriteSheet.name + ' {\n')
-    f.write('    static const uint32 Width;\n')
-    f.write('    static const uint32 Height;\n')
-    f.write('    static const uint32 Pixels[{}];\n'.format(spriteSheet.imageWidth * spriteSheet.imageHeight))
-    f.write('    enum Sprite {\n')
+    f.write('struct Sheet {\n')
+    f.write('    static const Oryol::int32 Width{' + str(spriteSheet.imageWidth) + '};\n')
+    f.write('    static const Oryol::int32 Height{' + str(spriteSheet.imageHeight) + '};\n')
+    f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(spriteSheet.imageWidth * spriteSheet.imageHeight))
+    f.write('    enum SpriteId {\n')
     for sprite in spriteSheet.sprites :
         f.write('        ' + sprite.name + ',\n')
     f.write('\n')
@@ -114,14 +116,15 @@ def writeSpriteSheet(f, spriteSheet) :
     f.write('            Clamp,\n')
     f.write('        };\n')
     f.write('    };\n')
-    f.write('    static const struct {\n')
-    f.write('        int32 X;\n')
-    f.write('        int32 Y;\n')
-    f.write('        int32 W;\n')
-    f.write('        int32 H;\n')
-    f.write('        int32 NumFrames;\n')
+    f.write('    static const struct sprite {\n')
+    f.write('        Oryol::int32 X;\n')
+    f.write('        Oryol::int32 Y;\n')
+    f.write('        Oryol::int32 W;\n')
+    f.write('        Oryol::int32 H;\n')
+    f.write('        Oryol::int32 NumFrames;\n')
     f.write('        Anim::Code AnimType;\n')
-    f.write('    } Sprites[NumSprites];\n')
+    f.write('        Oryol::uint32 Mask;\n')
+    f.write('    } Sprite[NumSprites];\n')
     f.write('};\n')
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, spriteSheet) :
@@ -142,16 +145,14 @@ def writeSourceTop(f, absSourcePath, spriteSheet) :
     f.write('#include "Pre.h"\n')
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
-    f.write('namespace Oryol {\n')
+    f.write('namespace ' + spriteSheet.namespace + ' {\n')
 
 #-------------------------------------------------------------------------------
 def writeImageData(f, spriteSheet) :
     width = spriteSheet.imageWidth
     height = spriteSheet.imageHeight
     numPixels = width * height
-    f.write('const uint32 ' + spriteSheet.name + '::Width = ' + str(width) + ';\n')
-    f.write('const uint32 ' + spriteSheet.name + '::Height = ' + str(height) + ';\n')    
-    f.write('const uint32 ' + spriteSheet.name + '::Pixels[' + str(numPixels) + '] = {\n')
+    f.write('const Oryol::uint32 Sheet::Pixels[' + str(numPixels) + '] = {\n')
     for y,row in enumerate(spriteSheet.imagePixels) :
         if y < spriteSheet.imageHeight :
             f.write('    ')
@@ -166,6 +167,28 @@ def writeImageData(f, spriteSheet) :
     f.write('};\n')
 
 #-------------------------------------------------------------------------------
+def writeSpriteData(f, spriteSheet) :
+    mapAnimType = {
+        '':         'None',
+        'none':     'None',
+        'loop':     'Loop',
+        'pingpong': 'PingPong',
+        'clamp':    'Clamp'
+    }
+
+    f.write('const Sheet::sprite Sheet::Sprite[Sheet::NumSprites] = {\n')
+    for sprite in spriteSheet.sprites :
+        x = str(sprite.x)
+        y = str(sprite.y)
+        w = str(sprite.w)
+        h = str(sprite.h)
+        frs = str(sprite.frames)
+        anm = 'Sheet::Anim::' + mapAnimType[sprite.anim]
+        mask = str(sprite.mask)
+        f.write('    { '+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+' },\n')
+    f.write('};\n')
+
+#-------------------------------------------------------------------------------
 def writeSourceBottom(f, spriteSheet) :
     f.write('}\n')
     f.write('\n')
@@ -175,6 +198,7 @@ def generateSource(absSourcePath, spriteSheet) :
     f = open(absSourcePath, 'w')
     writeSourceTop(f, absSourcePath, spriteSheet)
     writeImageData(f, spriteSheet)
+    writeSpriteData(f, spriteSheet)
     writeSourceBottom(f, spriteSheet)
     f.close()
 

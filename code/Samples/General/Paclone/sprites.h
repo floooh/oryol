@@ -4,12 +4,12 @@
     machine generated, do not edit!
 */
 #include "Core/Types.h"
-namespace Oryol {
-struct Paclone {
-    static const uint32 Width;
-    static const uint32 Height;
-    static const uint32 Pixels[12288];
-    enum Sprite {
+namespace Paclone {
+struct Sheet {
+    static const Oryol::int32 Width{64};
+    static const Oryol::int32 Height{192};
+    static const Oryol::uint32 Pixels[12288];
+    enum SpriteId {
         PacRight,
         PacDown,
         PacLeft,
@@ -18,14 +18,14 @@ struct Paclone {
         Blinky,
         Clyde,
         Inky,
-        Wall_000_111_000,
-        Wall_010_010_010,
-        Wall_000_110_000,
-        Wall_000_011_000,
-        Wall_000_010_010,
-        Wall_010_010_000,
-        Wall_010_111_010,
-        Wall_000_010_000,
+        Wall_0_111_0,
+        Wall_1_010_1,
+        Wall_0_110_0,
+        Wall_0_011_0,
+        Wall_0_010_1,
+        Wall_1_010_0,
+        Wall_1_111_1,
+        Wall_0_010_0,
         Pill,
 
         NumSprites,
@@ -40,14 +40,15 @@ struct Paclone {
             Clamp,
         };
     };
-    static const struct {
-        int32 X;
-        int32 Y;
-        int32 W;
-        int32 H;
-        int32 NumFrames;
+    static const struct sprite {
+        Oryol::int32 X;
+        Oryol::int32 Y;
+        Oryol::int32 W;
+        Oryol::int32 H;
+        Oryol::int32 NumFrames;
         Anim::Code AnimType;
-    } Sprites[NumSprites];
+        Oryol::uint32 Mask;
+    } Sprite[NumSprites];
 };
 }
 
