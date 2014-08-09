@@ -18,6 +18,7 @@ macro(oryol_reset target)
     set(CurLibraryName)
     set(CurAppName)
     set(CurAppType)
+    set(CurImgFiles)
 endmacro()
 
 #-------------------------------------------------------------------------------
