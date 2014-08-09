@@ -96,10 +96,13 @@ def writeHeaderBottom(f, spriteSheet) :
 
 #-------------------------------------------------------------------------------
 def writeSpriteSheet(f, spriteSheet) :
+    numPixels = spriteSheet.imageWidth * spriteSheet.imageHeight
+    numBytes = numPixels * 4
     f.write('struct Sheet {\n')
     f.write('    static const Oryol::int32 Width{' + str(spriteSheet.imageWidth) + '};\n')
     f.write('    static const Oryol::int32 Height{' + str(spriteSheet.imageHeight) + '};\n')
-    f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(spriteSheet.imageWidth * spriteSheet.imageHeight))
+    f.write('    static const Oryol::int32 NumBytes{' + str(numBytes) + '};\n')
+    f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(numPixels))
     f.write('    enum SpriteId {\n')
     for sprite in spriteSheet.sprites :
         f.write('        ' + sprite.name + ',\n')
@@ -117,6 +120,7 @@ def writeSpriteSheet(f, spriteSheet) :
     f.write('        };\n')
     f.write('    };\n')
     f.write('    static const struct sprite {\n')
+    f.write('        SpriteId id;\n')
     f.write('        Oryol::int32 X;\n')
     f.write('        Oryol::int32 Y;\n')
     f.write('        Oryol::int32 W;\n')
@@ -162,7 +166,7 @@ def writeImageData(f, spriteSheet) :
                 g = row[offset + 1]
                 b = row[offset + 2]
                 a = row[offset + 3]
-                f.write('0x{:02x}{:02x}{:02x}{:02x},'.format(a, r, g, b))
+                f.write('0x{:02x}{:02x}{:02x}{:02x},'.format(a, b, g, r))
             f.write('\n')
     f.write('};\n')
 
@@ -178,6 +182,7 @@ def writeSpriteData(f, spriteSheet) :
 
     f.write('const Sheet::sprite Sheet::Sprite[Sheet::NumSprites] = {\n')
     for sprite in spriteSheet.sprites :
+        name = str(sprite.name)
         x = str(sprite.x)
         y = str(sprite.y)
         w = str(sprite.w)
@@ -185,7 +190,7 @@ def writeSpriteData(f, spriteSheet) :
         frs = str(sprite.frames)
         anm = 'Sheet::Anim::' + mapAnimType[sprite.anim]
         mask = str(sprite.mask)
-        f.write('    { '+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+' },\n')
+        f.write('    { '+name+','+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+' },\n')
     f.write('};\n')
 
 #-------------------------------------------------------------------------------
