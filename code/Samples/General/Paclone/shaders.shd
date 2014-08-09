@@ -1,0 +1,26 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//------------------------------------------------------------------------------
+
+@vs vs
+@in vec2 position
+@in vec2 texcoord0
+@out vec2 uv
+void main() {
+    $position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
+    $position.y = -$position.y;
+    uv = texcoord0;
+}
+@end
+
+@fs fs
+@in vec2 uv
+@uniform sampler2D tex Texture
+void main() {
+    $color = $texture2D(tex, uv);
+}
+@end
+
+@bundle Main
+@program vs fs
+@end
