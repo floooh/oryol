@@ -144,10 +144,6 @@ canvas::Height() const {
 //------------------------------------------------------------------------------
 void
 canvas::Update() {
-    o_assert(this->isValid);
-    int32 numBytes = 0;
-    const void* data = this->updateVertices(numBytes);
-    RenderFacade::Instance()->UpdateVertices(this->mesh, numBytes, data);
 }
 
 //------------------------------------------------------------------------------
@@ -155,6 +151,9 @@ void
 canvas::Render() {
     o_assert(this->isValid);
     RenderFacade* render = RenderFacade::Instance();
+    int32 numBytes = 0;
+    const void* data = this->updateVertices(numBytes);
+    render->UpdateVertices(this->mesh, numBytes, data);
     render->ApplyDrawState(this->drawState);
     render->ApplyVariable(Shaders::Main::Texture, this->texture);
     render->Draw(0);
