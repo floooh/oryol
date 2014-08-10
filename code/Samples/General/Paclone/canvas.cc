@@ -14,60 +14,33 @@ using namespace Oryol::Render;
 
 namespace Paclone {
 
-const Sheet::SpriteId canvas::wallMergeMap[NumWallPieces] = {
-    Sheet::InvalidSprite,   // Sheet::Wall_0_000_0
-    Sheet::InvalidSprite,   // Sheet::Wall_0_000_1
-    Sheet::InvalidSprite,   // Sheet::Wall_0_001_0
-    Sheet::InvalidSprite,   // Sheet::Wall_0_001_1
-    Sheet::Wall_0_010_0,
-    Sheet::Wall_0_010_1,
-    Sheet::Wall_0_011_0,
-    Sheet::Wall_0_011_1,
-    Sheet::InvalidSprite,   // Sheet::Wall_0_100_0
-    Sheet::InvalidSprite,   // Sheet::Wall_0_100_1
-    Sheet::InvalidSprite,   // Sheet::Wall_0_101_0
-    Sheet::InvalidSprite,   // Sheet::Wall_0_101_1
-    Sheet::Wall_0_110_0,
-    Sheet::Wall_0_110_1,
-    Sheet::Wall_0_111_0,
-    Sheet::Wall_0_111_1,
-    Sheet::InvalidSprite,   // Sheet::Wall_1_000_0
-    Sheet::InvalidSprite,   // Sheet::Wall_1_000_1
-    Sheet::InvalidSprite,   // Sheet::Wall_1_001_0
-    Sheet::InvalidSprite,   // Sheet::Wall_1_001_1
-    Sheet::Wall_1_010_0,
-    Sheet::Wall_1_010_1,
-    Sheet::Wall_1_011_0,
-    Sheet::Wall_1_011_1,
-    Sheet::InvalidSprite,   // Sheet::Wall_1_100_0
-    Sheet::InvalidSprite,   // Sheet::Wall_1_100_1
-    Sheet::InvalidSprite,   // Sheet::Wall_1_101_0
-    Sheet::InvalidSprite,   // Sheet::Wall_1_101_1
-    Sheet::Wall_1_110_0,
-    Sheet::Wall_1_110_1,
-    Sheet::Wall_1_111_0,
-    Sheet::Wall_1_111_1,
-};
-
 //------------------------------------------------------------------------------
 canvas::canvas() :
 isValid(false),
-width(0),
-height(0),
+numTilesX(0),
+numTilesY(0),
+tileWidth(0),
+tileHeight(0),
 numVertices(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-canvas::Setup(int w, int h) {
+canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     o_assert(!this->isValid);
-    o_assert((w > 0) && (w <= MaxWidth) && (h > 0) && (h <= MaxHeight));
+    o_assert((tilesX > 0) && (tilesX <= MaxWidth) && (tilesY > 0) && (tilesY <= MaxHeight));
+    o_assert(numSpr < MaxNumSprites);
     
     this->isValid = true;
-    this->width = w;
-    this->height = h;
-    this->numVertices = this->width * this->height * 6;
+    this->numTilesX = tilesX;
+    this->numTilesY = tilesY;
+    this->tileWidth = tileW;
+    this->tileHeight = tileH;
+    this->canvasWidth = this->numTilesX * this->tileWidth;
+    this->canvasHeight = this->numTilesY * this->tileHeight;
+    this->numSprites = numSpr;
+    this->numVertices = (this->numTilesX * this->numTilesY + this->numSprites) * 6;
     
     // setup draw state with dynamic mesh
     RenderFacade* render = RenderFacade::Instance();
@@ -98,9 +71,9 @@ canvas::Setup(int w, int h) {
     this->texture = render->CreateResource(texSetup, pixelData);
     
     // initialize the tile map
-    for (int y = 0; y < this->height; y++) {
-        for (int x = 0; x < this->width; x++) {
-            this->tiles[y * this->width + x] = Sheet::InvalidSprite;
+    for (int y = 0; y < this->numTilesY; y++) {
+        for (int x = 0; x < this->numTilesX; x++) {
+            this->tiles[y * this->numTilesX + x] = Sheet::InvalidSprite;
         }
     }
     
@@ -127,23 +100,6 @@ canvas::Discard() {
 bool
 canvas::IsValid() const {
     return this->isValid;
-}
-
-//------------------------------------------------------------------------------
-int
-canvas::Width() const {
-    return this->width;
-}
-
-//------------------------------------------------------------------------------
-int
-canvas::Height() const {
-    return this->height;
-}
-    
-//------------------------------------------------------------------------------
-void
-canvas::Update() {
 }
 
 //------------------------------------------------------------------------------
@@ -174,21 +130,22 @@ const void*
 canvas::updateVertices(int32& outNumBytes) {
 
     // write the tile map
-    const float dx = 1.0f / this->width;
-    const float dy = 1.0f / this->height;
+    const float dx = 1.0f / this->numTilesX;
+    const float dy = 1.0f / this->numTilesY;
     const float sheetWidth = float(Sheet::Width);
     const float sheetHeight = float(Sheet::Height);
-    for (int y = 0; y < this->height; y++) {
+    int vIndex = 0;
+    for (int y = 0; y < this->numTilesY; y++) {
         const float y0 = dy * y;
         const float y1 = y0 + dy;
-        for (int x = 0; x < this->width; x++) {
+        for (int x = 0; x < this->numTilesX; x++) {
             
             // positions
             const float x0 = dx * x;
             const float x1 = x0 + dx;
             
             // uvs
-            Sheet::SpriteId id = this->tiles[y * this->width + x];
+            Sheet::SpriteId id = this->tiles[y * this->numTilesX + x];
             const auto& sprite = Sheet::Sprite[id];
             const float u0 = float(sprite.X) / sheetWidth;
             const float v0 = float(sprite.Y) / sheetHeight;
@@ -196,144 +153,105 @@ canvas::updateVertices(int32& outNumBytes) {
             const float v1 = v0 + float(sprite.H) / sheetHeight;
             
             // write vertex data (2 triangles)
-            int vi = (y * this->width + x) * 6;
-            o_assert_dbg((vi + 6) <= this->numVertices);
-            vi = this->writeVertex(vi, x0, y0, u0, v0);
-            vi = this->writeVertex(vi, x1, y0, u1, v0);
-            vi = this->writeVertex(vi, x1, y1, u1, v1);
-            vi = this->writeVertex(vi, x0, y0, u0, v0);
-            vi = this->writeVertex(vi, x1, y1, u1, v1);
-            vi = this->writeVertex(vi, x0, y1, u0, v1);
+            o_assert_dbg((vIndex + 6) <= this->numVertices);
+            vIndex = this->writeVertex(vIndex, x0, y0, u0, v0);
+            vIndex = this->writeVertex(vIndex, x1, y0, u1, v0);
+            vIndex = this->writeVertex(vIndex, x1, y1, u1, v1);
+            vIndex = this->writeVertex(vIndex, x0, y0, u0, v0);
+            vIndex = this->writeVertex(vIndex, x1, y1, u1, v1);
+            vIndex = this->writeVertex(vIndex, x0, y1, u0, v1);
         }
     }
     
-    outNumBytes = this->width * this->height * 6 * sizeof(vertex);
+    // write sprites
+    const float canWidth = float(this->canvasWidth);
+    const float canHeight = float(this->canvasHeight);
+    for (int i = 0; i < this->numSprites; i++) {
+        const sprite& sprite = this->sprites[i];
+        float x0 = 0.0f;
+        float y0 = 0.0f;
+        float x1 = 0.0f;
+        float y1 = 0.0f;
+        float u0 = 0.0f;
+        float u1 = 0.0f;
+        float v0 = 0.0f;
+        float v1 = 0.0f;
+        if (Sheet::InvalidSprite != sprite.id) {
+            x0 = float(sprite.x) / canWidth;
+            y0 = float(sprite.y) / canHeight;
+            x1 = x0 + float(sprite.w) / canWidth;
+            y1 = y0 + float(sprite.h) / canHeight;
+            u0 = float(Sheet::Sprite[sprite.id].X) / sheetWidth;
+            v0 = float(Sheet::Sprite[sprite.id].Y) / sheetWidth;
+            u1 = u0 + float(Sheet::Sprite[sprite.id].W) / sheetWidth;
+            v1 = v0 + float(Sheet::Sprite[sprite.id].H) / sheetWidth;
+        }
+        // write vertex data (2 triangles)
+        o_assert_dbg((vIndex + 6) <= this->numVertices);
+        vIndex = this->writeVertex(vIndex, x0, y0, u0, v0);
+        vIndex = this->writeVertex(vIndex, x1, y0, u1, v0);
+        vIndex = this->writeVertex(vIndex, x1, y1, u1, v1);
+        vIndex = this->writeVertex(vIndex, x0, y0, u0, v0);
+        vIndex = this->writeVertex(vIndex, x1, y1, u1, v1);
+        vIndex = this->writeVertex(vIndex, x0, y1, u0, v1);
+    }
+    o_assert(vIndex == this->numVertices);
+    outNumBytes = this->numVertices * sizeof(vertex);
     return this->vertexBuffer;
 }
 
 //------------------------------------------------------------------------------
 void
-canvas::FillRect(int x, int y, int w, int h, Sheet::SpriteId sprite) {
-    int x0 = this->ClampX(x);
-    int y0 = this->ClampY(y);
-    int x1 = this->ClampX(x + w);
-    int y1 = this->ClampY(y + h);
-    for (y = y0; y <= y1; y++) {
-        for (x = x0; x <= x1; x++) {
-            this->tiles[y * this->width + x] = sprite;
+canvas::CopyCharMap(int tileX, int tileY, int tileW, int tileH, const char* charMap) {
+    const int x0 = this->ClampX(tileX);
+    const int y0 = this->ClampY(tileY);
+    const int x1 = this->ClampX(tileX + tileW);
+    const int y1 = this->ClampY(tileY + tileH);
+    for (int y = y0; y <= y1; y++) {
+        for (int x = x0; x <= x1; x++) {
+            const unsigned char c = *charMap++;
+            o_assert_dbg(0 != c);
+            Sheet::SpriteId sprite = Sheet::CharMap[c];
+            if (sprite != Sheet::InvalidSprite) {
+                this->tiles[y * this->numTilesX + x] = sprite;
+            }
         }
-    }
-}
-    
-//------------------------------------------------------------------------------
-void
-canvas::HoriWall(int x, int y, int w) {
-    int x0 = this->ClampX(x);
-    int x1 = this->ClampX(x + w);
-    y = this->ClampY(y);
-    for (x = x0; x <= x1; x++) {
-        Sheet::SpriteId spriteId;
-        if (x == x0) {
-            // start piece
-            spriteId = Sheet::Wall_0_011_0;
-        }
-        else if (x == x1) {
-            // end piece
-            spriteId = Sheet::Wall_0_110_0;
-        }
-        else if (x0 == x1) {
-            // just a dot
-            spriteId = Sheet::Wall_0_010_0;
-        }
-        else {
-            // middle piece
-            spriteId = Sheet::Wall_0_111_0;
-        }
-        int tileIndex = y * this->width + x;
-        this->tiles[tileIndex] = this->MergeWallPiece(spriteId, this->tiles[tileIndex]);
-    }
-}
-    
-//------------------------------------------------------------------------------
-void
-canvas::VertWall(int x, int y, int h) {
-    int y0 = this->ClampY(y);
-    int y1 = this->ClampY(y + h);
-    x = this->ClampX(x);
-    for (y = y0; y <= y1; y++) {
-        Sheet::SpriteId spriteId;
-        if (y == y0) {
-            // start piece
-            spriteId = Sheet::Wall_0_010_1;
-        }
-        else if (y == y1) {
-            // end piece
-            spriteId = Sheet::Wall_1_010_0;
-        }
-        else if (y0 == y1) {
-            // just a dot
-            spriteId = Sheet::Wall_0_010_0;
-        }
-        else {
-            // middle piece
-            spriteId = Sheet::Wall_1_010_1;
-        }
-        int tileIndex = y * this->width + x;
-        this->tiles[tileIndex] = this->MergeWallPiece(spriteId, this->tiles[tileIndex]);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-canvas::RectWall(int x, int y, int w, int h) {
-    this->HoriWall(x, y, w);
-    this->VertWall(x, y, h);
-    this->HoriWall(x, y + h, w);
-    this->VertWall(x + w, y, h);
+canvas::SetTile(Sheet::SpriteId sprite, int tileX, int tileY) {
+    const int x = this->ClampX(tileX);
+    const int y = this->ClampY(tileY);
+    this->tiles[y * this->numTilesX + x] = sprite;
 }
-    
-//------------------------------------------------------------------------------
-Sheet::SpriteId
-canvas::MergeWallPiece(Sheet::SpriteId piece0, Sheet::SpriteId piece1) const {
-    o_assert_range(piece0, Sheet::NumSprites);
-    o_assert_range(piece1, Sheet::NumSprites);
-    const uint32 mask0 = Sheet::Sprite[piece0].Mask;
-    const uint32 mask1 = Sheet::Sprite[piece1].Mask;
-    o_assert(mask0 < NumWallPieces);
-    o_assert(mask1 < NumWallPieces);
-    Sheet::SpriteId mergedPiece = this->wallMergeMap[mask0 | mask1];
-    return mergedPiece;
-}
-    
+
 //------------------------------------------------------------------------------
 void
-canvas::Set(int x, int y, Sheet::SpriteId sprite) {
-    x = this->ClampX(x);
-    y = this->ClampY(y);
-    this->tiles[y * this->width + x] = sprite;
-}
-    
-//------------------------------------------------------------------------------
-Sheet::SpriteId
-canvas::Get(int x, int y) const {
-    o_assert((x < this->width) && (y < this->height));
-    return this->tiles[y * this->width + x];
-}
-    
-//------------------------------------------------------------------------------
-int
-canvas::ClampX(int x) const {
-    if (x < 0) return 0;
-    else if (x >= this->width) return this->width - 1;
-    else return x;
+canvas::SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH) {
+    o_assert(index < this->numSprites);
+    this->sprites[index].id = sprite;
+    this->sprites[index].x = pixX;
+    this->sprites[index].y = pixY;
+    this->sprites[index].w = pixW;
+    this->sprites[index].h = pixH;
 }
 
 //------------------------------------------------------------------------------
 int
-canvas::ClampY(int y) const {
-    if (y < 0) return 0;
-    else if (y >= this->height) return this->height - 1;
-    else return y;
+canvas::ClampX(int tileX) const {
+    if (tileX < 0) return 0;
+    else if (tileX >= this->numTilesX) return this->numTilesX - 1;
+    else return tileX;
+}
+
+//------------------------------------------------------------------------------
+int
+canvas::ClampY(int tileY) const {
+    if (tileY < 0) return 0;
+    else if (tileY >= this->numTilesY) return this->numTilesY - 1;
+    else return tileY;
 }
 
 } // namespace Paclone

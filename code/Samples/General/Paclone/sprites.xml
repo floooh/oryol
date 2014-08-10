@@ -1,39 +1,15 @@
 <Generator type="SpriteSheet" namespace="Paclone" >
 
-    <Sheet file="data/sprites.png" spriteWidth="16" spriteHeight="16" clampWidth="64" clampHeight="256">
+    <Sheet file="data/sprites.png" spriteWidth="8" spriteHeight="8">
 
-        <Sprite name="PacRight" x="0" y="0" frames="4" anim="pingpong" />
-        <Sprite name="PacDown" x="0" y="16" frames="4" anim="pingpong" />
-        <Sprite name="PacLeft" x="0" y="32" frames="4" anim="pingpong" />
-        <Sprite name="PacUp" x="0" y="48" frames="4" anim="pingpong" />
-
-        <Sprite name="Pinky" x="0" y="64" />
-        <Sprite name="Blinky" x="0" y="80" />
-        <Sprite name="Clyde" x="0" y="96" />
-        <Sprite name="Inky" x="0" y="112" />
-
-        <Sprite name="Wall_0_111_0" x="0" y="128" bitmask="01110"/>
-        <Sprite name="Wall_1_010_1" x="16" y="128" bitmask="10101"/>
-        <Sprite name="Wall_0_110_0" x="32" y="128" bitmask="01100"/>
-        <Sprite name="Wall_0_011_0" x="48" y="128" bitmask="00110"/>
-
-        <Sprite name="Wall_0_010_1" x="0" y="144" bitmask="00101"/>
-        <Sprite name="Wall_1_010_0" x="16" y="144" bitmask="10100"/>
-        <Sprite name="Wall_1_111_1" x="32" y="144" bitmask="11111"/>
-        <Sprite name="Wall_0_010_0" x="48" y="144" bitmask="00100"/>
-
-        <Sprite name="Wall_1_011_1" x="0" y="160" bitmask="10111"/>
-        <Sprite name="Wall_1_110_1" x="16" y="160" bitmask="11101"/>
-        <Sprite name="Wall_1_111_0" x="32" y="160" bitmask="11110"/>
-        <Sprite name="Wall_0_111_1" x="48" y="160" bitmask="01111"/>
-
-        <Sprite name="Wall_0_011_1" x="0" y="176" bitmask="00111"/>
-        <Sprite name="Wall_0_110_1" x="16" y="176" bitmask="01101"/>
-        <Sprite name="Wall_1_011_0" x="32" y="176" bitmask="10110"/>
-        <Sprite name="Wall_1_110_0" x="48" y="176" bitmask="11100"/>
-
-        <Sprite name="Pill" x="0" y="192" />
-        <Sprite name="Energizer" x="16" y="192" />
+        <Sprite name="Space"      x="120" y="0" char=" " />
+        <Sprite name="TestWall"   x="112" y="8" char="#" />
+        <Sprite name="TestPill"   x="112" y="0" char="." />
+        <Sprite name="TestPacman" x="0" y="16" w="16" h="16" char="P" />
+        <Sprite name="TestGhost0" x="0" y="32" w="16" h="16" char="0" />
+        <Sprite name="TestGhost1" x="0" y="48" w="16" h="16" char="1" />
+        <Sprite name="TestGhost2" x="0" y="64" w="16" h="16" char="2" />
+        <Sprite name="TestGhost3" x="0" y="80" w="16" h="16" char="3" />
 
     </Sheet>
 

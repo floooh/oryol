@@ -15,39 +15,24 @@ public:
     canvas();
     
     /// setup the canvas
-    void Setup(int width, int height);
+    void Setup(int numTilesX, int numTilesY, int tileWidth, int tileHeight, int numSprites);
     /// discard the cancas
     void Discard();
     /// return true if canvas has been setup
     bool IsValid() const;
-    /// update the canvas
-    void Update();
     /// render the canvas
     void Render();
     
-    /// get width of canvas (in number of sprites)
-    int Width() const;
-    /// get height of canvas (in number of sprites)
-    int Height() const;
-
-    // fill a rectangle with a sprite id
-    void FillRect(int x, int y, int w, int h, Sheet::SpriteId sprite);
-    // draw a horizontal wall
-    void HoriWall(int x, int y, int w);
-    // draw a vertical wall
-    void VertWall(int x, int y, int h);
-    /// draw a wall rectangle
-    void RectWall(int x, int y, int w, int h);
-    // merge 2 wall pieces
-    Sheet::SpriteId MergeWallPiece(Sheet::SpriteId piece0, Sheet::SpriteId piece1) const;
-    // set sprite id at position
-    void Set(int x, int y, Sheet::SpriteId sprite);
-    // get sprite id at position
-    Sheet::SpriteId Get(int x, int y) const;
-    // clamp x-coordinate to valid area
-    int ClampX(int x) const;
-    // clamp y-coordinate to valid area
-    int ClampY(int y) const;
+    /// copy a character map (use Sheet::CharMap to convert chars to sprite ids)
+    void CopyCharMap(int tileX, int tileY, int tileW, int tileH, const char* charMap);
+    /// clamp x-coordinate to valid area
+    int ClampX(int tileX) const;
+    /// clamp y-coordinate to valid area
+    int ClampY(int tileY) const;
+    /// set a dynamic sprite
+    void SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH);
+    /// set a static tile
+    void SetTile(Sheet::SpriteId sprite, int tileX, int tileY);
 
 private:
     /// write a vertex
@@ -56,21 +41,32 @@ private:
     const void* updateVertices(Oryol::int32& outNumBytes);
     
     bool isValid;
-    int width;
-    int height;
+    int numTilesX;
+    int numTilesY;
+    int tileWidth;
+    int tileHeight;
+    int canvasWidth;
+    int canvasHeight;
+    int numSprites;
     int numVertices;
     Oryol::Resource::Id mesh;
     Oryol::Resource::Id prog;
     Oryol::Resource::Id drawState;
     Oryol::Resource::Id texture;
 
-    static const int MaxWidth = 32;
-    static const int MaxHeight = 32;
+    static const int MaxWidth = 64;
+    static const int MaxHeight = 64;
     Sheet::SpriteId tiles[MaxWidth * MaxHeight];
     
-    static const int NumWallPieces = 32;
-    static const Sheet::SpriteId wallMergeMap[NumWallPieces];
-
+    static const int MaxNumSprites = 8;
+    struct sprite {
+        Sheet::SpriteId id = Sheet::InvalidSprite;
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+    } sprites[MaxNumSprites];
+    
     struct vertex {
         float x, y, u, v;
     };
