@@ -19,6 +19,7 @@ class Sprite :
         self.mask = 0
         self.frames = 1
         self.anim = ''
+        self.char = None
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
@@ -55,6 +56,7 @@ class SpriteSheet :
                 sprite.h = int(xmlSprite.get('h', self.defSpriteHeight))
                 sprite.frames = int(xmlSprite.get('frames', 1))
                 sprite.anim = xmlSprite.get('anim', 'none')
+                sprite.char = xmlSprite.get('char', None)
                 sprite.mask = int(xmlSprite.get('bitmask', '0'), 2)
                 self.sprites.append(sprite)
         else :
@@ -78,6 +80,15 @@ class SpriteSheet :
         self.imagePixels = img[2]
         self.imageInfo = img[3]
         print 'w={} h={} pixels={} info={}'.format(self.imageWidth, self.imageHeight, self.imagePixels, self.imageInfo)
+
+    def buildCharMap(self) :
+        charMap = [None] * 256
+        for sprite in self.sprites :
+            if sprite.char is not None:
+                ascii = ord(sprite.char[0])
+                if ascii < 256 :
+                    charMap[ascii] = sprite
+        return charMap
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, spriteSheet) :
@@ -119,6 +130,7 @@ def writeSpriteSheet(f, spriteSheet) :
     f.write('            Clamp,\n')
     f.write('        };\n')
     f.write('    };\n')
+    f.write('    static const SpriteId CharMap[256];\n')
     f.write('    static const struct sprite {\n')
     f.write('        SpriteId id;\n')
     f.write('        Oryol::int32 X;\n')
@@ -128,6 +140,7 @@ def writeSpriteSheet(f, spriteSheet) :
     f.write('        Oryol::int32 NumFrames;\n')
     f.write('        Anim::Code AnimType;\n')
     f.write('        Oryol::uint32 Mask;\n')
+    f.write('        Oryol::uint8 Char;\n')
     f.write('    } Sprite[NumSprites];\n')
     f.write('};\n')
 #-------------------------------------------------------------------------------
@@ -190,7 +203,22 @@ def writeSpriteData(f, spriteSheet) :
         frs = str(sprite.frames)
         anm = 'Sheet::Anim::' + mapAnimType[sprite.anim]
         mask = str(sprite.mask)
-        f.write('    { '+name+','+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+' },\n')
+        char = 0
+        if sprite.char is not None :
+            char = ord(sprite.char[0])
+        char = str(char)
+        f.write('    { '+name+','+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+','+char+' },\n')
+    f.write('};\n')
+
+#-------------------------------------------------------------------------------
+def writeSpriteCharMap(f, spriteSheet) :
+    f.write('const Sheet::SpriteId Sheet::CharMap[256] = {\n')
+    charMap = spriteSheet.buildCharMap()
+    for sprite in charMap :
+        if sprite is None :
+            f.write('    Sheet::InvalidSprite,\n')
+        else :
+            f.write('    Sheet::' + sprite.name + ',\n')
     f.write('};\n')
 
 #-------------------------------------------------------------------------------
@@ -204,6 +232,7 @@ def generateSource(absSourcePath, spriteSheet) :
     writeSourceTop(f, absSourcePath, spriteSheet)
     writeImageData(f, spriteSheet)
     writeSpriteData(f, spriteSheet)
+    writeSpriteCharMap(f, spriteSheet)
     writeSourceBottom(f, spriteSheet)
     f.close()
 
