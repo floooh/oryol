@@ -155,9 +155,8 @@ emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* 
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonDown(btn);
-        return true;
     }
-    return false;
+    return self->getCursorMode() == CursorMode::Disabled;
 }
 
 //------------------------------------------------------------------------------
@@ -168,9 +167,8 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonUp(btn);
-        return true;
     }
-    return false;
+    return self->getCursorMode() == CursorMode::Disabled;
 }
 
 //------------------------------------------------------------------------------
@@ -188,7 +186,7 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
         self->mouse.onPos(pos);        
     }
-    return true;
+    return self->getCursorMode() == CursorMode::Disabled;    
 }
 
 //------------------------------------------------------------------------------
@@ -198,7 +196,7 @@ emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* user
     o_assert_dbg(self);
     const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
     self->mouse.onScroll(scroll);
-    return true;
+    return self->getCursorMode() == CursorMode::Disabled;
 }
 
 //------------------------------------------------------------------------------
