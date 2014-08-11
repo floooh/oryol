@@ -127,10 +127,10 @@ game::setupActors() {
 
 //------------------------------------------------------------------------------
 void
-game::setupActor(ActorType type, int x, int y, Direction dir) {
+game::setupActor(ActorType type, int tileX, int tileY, Direction dir) {
     o_assert_range(type, NumActorTypes);
-    o_assert((x >= 0) && (x < Width));
-    o_assert((y >= 0) && (y < Height));
+    o_assert((tileX >= 0) && (tileX < Width));
+    o_assert((tileY >= 0) && (tileY < Height));
     Actor& actor = this->actors[type];
     switch (type) {
         case Pacman: actor.spriteId = Sheet::TestPacman; break;
@@ -141,10 +141,9 @@ game::setupActor(ActorType type, int x, int y, Direction dir) {
         default: actor.spriteId = Sheet::InvalidSprite; break;
     }
     actor.dir = dir;
-    actor.x = x;
-    actor.y = y;
-    actor.subX = 4;
-    actor.subY = 0;
+    actor.pixelX = tileX * TileSize + TileMidX + TileSize/2;
+    actor.pixelY = tileY * TileSize + TileMidY;
+    this->commitPosition(actor);
 }
 
 //------------------------------------------------------------------------------
@@ -165,8 +164,8 @@ game::drawActor(ActorType type, canvas* canvas) {
     
     const Actor& actor = this->actors[type];
     if (actor.spriteId != Sheet::InvalidSprite) {
-        const int pixX = (actor.x * 8 + actor.subX) - 4;
-        const int pixY = (actor.y * 8 + actor.subY) - 4;
+        const int pixX = actor.pixelX - TileMidX - TileSize/2;
+        const int pixY = actor.pixelY - TileMidY - TileSize/2;
         const int pixW = 2 * 8;
         const int pixH = 2 * 8;
         canvas->SetSprite(type, actor.spriteId, pixX, pixY, pixW, pixH);
@@ -191,39 +190,51 @@ game::updatePacman(Direction input) {
 //------------------------------------------------------------------------------
 void
 game::move(Actor& actor) {
-    actor.subX += actor.dx;
-    actor.subY += actor.dy;
-    if (actor.subX < 0) {
-        actor.x--;
-        actor.subX = 7;
+    if (actor.dirX != 0) {
+        actor.pixelX += actor.dirX;
+        
+        // cornering
+        if (actor.distToMidY < 0) {
+            actor.pixelY--;
+        }
+        else if (actor.distToMidY > 0) {
+            actor.pixelY++;
+        }
     }
-    else if (actor.subX > 7) {
-        actor.x++;
-        actor.subX = 0;
-    }
-    if (actor.subY < 0) {
-        actor.y--;
-        actor.subY = 7;
-    }
-    else if (actor.subY > 7) {
-        actor.y++;
-        actor.subY = 0;
-    }
-    if (actor.x < 0) {
-        // wraparound!
-        actor.x = Width - 1;
-    }
-    else if (actor.x >= Width) {
-        // wraparound!
-        actor.x = 0;
-    }
-    if (actor.y < 0) {
-        actor.y = 0;
-    }
-    else if (actor.y >= Height) {
-        actor.y = Height - 1;
+    else if (actor.dirY != 0) {
+        actor.pixelY += actor.dirY;
+        
+        // cornering
+        if (actor.distToMidX < 0) {
+            actor.pixelX--;
+        }
+        else if (actor.distToMidX > 0) {
+            actor.pixelX++;
+        }
+        
     }
     
+    // teleport (not 100% right I think)
+    if (actor.pixelX < 0) {
+        actor.pixelX = Width * TileSize - 1;
+    }
+    else if (actor.pixelX > Width * TileSize) {
+        actor.pixelX = 0;
+    }
+    
+    this->commitPosition(actor);
+}
+
+//------------------------------------------------------------------------------
+/**
+ Update tile coord and distToMid from pixel coordinate.
+*/
+void
+game::commitPosition(Actor& actor) {
+    actor.tileX = actor.pixelX / TileSize;
+    actor.tileY = actor.pixelY / TileSize;
+    actor.distToMidX = TileMidX - actor.pixelX % TileSize;
+    actor.distToMidY = TileMidY - actor.pixelY % TileSize;
 }
 
 //------------------------------------------------------------------------------
@@ -234,22 +245,22 @@ game::move(Actor& actor) {
 bool
 game::canMove(const Actor& actor, Direction dir) {
     if (Up == dir) {
-        if ((0 != actor.subX) || ((0 == actor.subY) && (Wall == this->tile(actor.x, actor.y - 1)))) {
+        if ((0 == actor.distToMidY) && (Wall == this->tile(actor.tileX, actor.tileY - 1))) {
             return false;
         }
     }
     else if (Down == dir) {
-        if ((0 != actor.subX) || ((0 == actor.subY) && (Wall == this->tile(actor.x, actor.y + 1)))) {
+        if ((0 == actor.distToMidY) && (Wall == this->tile(actor.tileX, actor.tileY + 1))) {
             return false;
         }
     }
     else if (Left == dir) {
-        if ((0 != actor.subY) || ((0 == actor.subX) && (Wall == this->tile(actor.x - 1, actor.y)))) {
+        if ((0 == actor.distToMidX) && (Wall == this->tile(actor.tileX - 1, actor.tileY))) {
             return false;
         }
     }
     else if (Right == dir) {
-        if ((0 != actor.subY) || ((0 == actor.subX) && (Wall == this->tile(actor.x + 1, actor.y)))) {
+        if ((0 == actor.distToMidX) && (Wall == this->tile(actor.tileX + 1, actor.tileY))) {
             return false;
         }
     }
@@ -271,11 +282,11 @@ game::computeMove(Actor& actor, Direction dir) {
         // and movement vector
         actor.dir = dir;
         switch (actor.dir) {
-            case Left:  actor.dx = -1; actor.dy = 0; break;
-            case Right: actor.dx = +1; actor.dy = 0; break;
-            case Up:    actor.dx = 0; actor.dy = -1; break;
-            case Down:  actor.dx = 0; actor.dy = +1; break;
-            default:    actor.dx = 0; actor.dy = 0; break;
+            case Left:  actor.dirX = -1; actor.dirY = 0; break;
+            case Right: actor.dirX = +1; actor.dirY = 0; break;
+            case Up:    actor.dirX = 0; actor.dirY = -1; break;
+            case Down:  actor.dirX = 0; actor.dirY = +1; break;
+            default:    actor.dirX = 0; actor.dirY = 0; break;
         }
     }
     else {
@@ -283,8 +294,8 @@ game::computeMove(Actor& actor, Direction dir) {
         // whether movement in current direction is possible
         if (!this->canMove(actor, actor.dir)) {
             // nope, emergency stop
-            actor.dx = 0;
-            actor.dy = 0;
+            actor.dirX = 0;
+            actor.dirY = 0;
         }
     }
 }
@@ -296,7 +307,7 @@ game::computeMove(Actor& actor, Direction dir) {
 */
 void
 game::checkOverlaps(canvas* canvas) {
-    switch (this->tile(this->actors[Pacman].x, this->actors[Pacman].y)) {
+    switch (this->tile(this->actors[Pacman].tileX, this->actors[Pacman].tileY)) {
         case Pill:
             // pacman eats a pill
             this->eatPill(canvas);
@@ -317,8 +328,8 @@ game::checkOverlaps(canvas* canvas) {
 //------------------------------------------------------------------------------
 void
 game::eatPill(canvas* canvas) {
-    int x = this->actors[Pacman].x;
-    int y = this->actors[Pacman].y;
+    int x = this->actors[Pacman].tileX;
+    int y = this->actors[Pacman].tileY;
     this->setTile(x, y, Empty);
     canvas->SetTile(Sheet::Space, x, y);
 }

@@ -2,6 +2,11 @@
 //------------------------------------------------------------------------------
 /**
     Implement the pacman game loop.
+    
+    Cudos to:
+    http://home.comcast.net/~jpittman2/pacman/pacmandossier.html
+    And (especially for the cornering stuff!):
+    http://pacman.shaunew.com/
 */
 #include "Core/Types.h"
 #include "canvas.h"
@@ -55,15 +60,21 @@ public:
     void Cleanup();
     
 private:
+    static const int TileSize = 8;
+    static const int TileMidX = 3;
+    static const int TileMidY = 4;
+
     struct Actor {
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
         Direction dir = NoDirection;
-        Oryol::int16 x = 0;     // tile coord
-        Oryol::int16 y = 0;     // tile coord
-        Oryol::int16 subX = 0;  // inside tile coord [0..7]
-        Oryol::int16 subY = 0;  // inside tile coord [0..7]
-        Oryol::int16 dx = 0; // movement x
-        Oryol::int16 dy = 0; // movement y
+        Oryol::int16 pixelX = 0;
+        Oryol::int16 pixelY = 0;
+        Oryol::int16 tileX  = 0;
+        Oryol::int16 tileY  = 0;
+        Oryol::int16 distToMidX = 0;
+        Oryol::int16 distToMidY = 0;
+        Oryol::int16 dirX = 0;
+        Oryol::int16 dirY = 0;
     } actors[NumActorTypes];
     
     TileType tile(int x, int y) const;
@@ -81,6 +92,7 @@ private:
     void checkOverlaps(canvas* canvas);
     void eatPill(canvas* canvas);
     void eatEnergizer(canvas* canvas);
+    void commitPosition(Actor& actor);
 
     TileType tileMap[Height][Width]{ {Empty} };
 };
