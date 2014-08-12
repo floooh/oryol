@@ -65,6 +65,7 @@ private:
     static const int TileMidY = 4;
 
     struct Actor {
+        ActorType actorType;
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
         Direction dir = NoDirection;
         Oryol::int16 pixelX = 0;
@@ -86,7 +87,7 @@ private:
     void updatePacman(Direction input);
     void drawActors(canvas* canvas);
     void drawActor(ActorType type, canvas* canvas);
-    bool canMove(const Actor& actor, Direction dir);
+    bool canMove(const Actor& actor, Direction dir, bool allowCornering);
     void computeMove(Actor& actor, Direction dir);
     void move(Actor& actor);
     void checkOverlaps(canvas* canvas);

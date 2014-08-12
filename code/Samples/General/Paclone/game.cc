@@ -132,6 +132,7 @@ game::setupActor(ActorType type, int tileX, int tileY, Direction dir) {
     o_assert((tileX >= 0) && (tileX < Width));
     o_assert((tileY >= 0) && (tileY < Height));
     Actor& actor = this->actors[type];
+    actor.actorType = type;
     switch (type) {
         case Pacman: actor.spriteId = Sheet::TestPacman; break;
         case Ghost0: actor.spriteId = Sheet::TestGhost0; break;
@@ -190,37 +191,22 @@ game::updatePacman(Direction input) {
 //------------------------------------------------------------------------------
 void
 game::move(Actor& actor) {
+    actor.pixelX += actor.dirX;
+    actor.pixelY += actor.dirY;
+
+    // cornering
     if (actor.dirX != 0) {
-        actor.pixelX += actor.dirX;
-        
-        // cornering
-        if (actor.distToMidY < 0) {
-            actor.pixelY--;
-        }
-        else if (actor.distToMidY > 0) {
-            actor.pixelY++;
-        }
+        if (actor.distToMidY < 0)       actor.pixelY--;
+        else if (actor.distToMidY > 0)  actor.pixelY++;
     }
     else if (actor.dirY != 0) {
-        actor.pixelY += actor.dirY;
-        
-        // cornering
-        if (actor.distToMidX < 0) {
-            actor.pixelX--;
-        }
-        else if (actor.distToMidX > 0) {
-            actor.pixelX++;
-        }
-        
+        if (actor.distToMidX < 0)       actor.pixelX--;
+        else if (actor.distToMidX > 0)  actor.pixelX++;
     }
     
-    // teleport (not 100% right I think)
-    if (actor.pixelX < 0) {
-        actor.pixelX = Width * TileSize - 1;
-    }
-    else if (actor.pixelX > Width * TileSize) {
-        actor.pixelX = 0;
-    }
+    // wrap around X for teleport (not 100% right I think)
+    if (actor.pixelX < 0) actor.pixelX = Width * TileSize - 1;
+    else if (actor.pixelX > Width * TileSize) actor.pixelX = 0;
     
     this->commitPosition(actor);
 }
@@ -243,26 +229,28 @@ game::commitPosition(Actor& actor) {
  FIXME: take cornering into account.
 */
 bool
-game::canMove(const Actor& actor, Direction dir) {
-    if (Up == dir) {
-        if ((0 == actor.distToMidY) && (Wall == this->tile(actor.tileX, actor.tileY - 1))) {
-            return false;
-        }
+game::canMove(const Actor& actor, Direction dir, bool allowCornering) {
+    int distToMid0 = 0;
+    int distToMid1 = 0;
+    int dirX = 0;
+    int dirY = 0;
+    if (Up == dir) dirY = -1;
+    else if (Down == dir) dirY = +1;
+    else if (Left == dir) dirX = -1;
+    else if (Right == dir) dirX = +1;
+    if (dirY != 0) {
+        distToMid0 = actor.distToMidX;
+        distToMid1 = actor.distToMidY;
     }
-    else if (Down == dir) {
-        if ((0 == actor.distToMidY) && (Wall == this->tile(actor.tileX, actor.tileY + 1))) {
-            return false;
-        }
+    else {
+        distToMid0 = actor.distToMidY;
+        distToMid1 = actor.distToMidX;
     }
-    else if (Left == dir) {
-        if ((0 == actor.distToMidX) && (Wall == this->tile(actor.tileX - 1, actor.tileY))) {
-            return false;
-        }
-    }
-    else if (Right == dir) {
-        if ((0 == actor.distToMidX) && (Wall == this->tile(actor.tileX + 1, actor.tileY))) {
-            return false;
-        }
+    
+    bool isWall = Wall == this->tile(actor.tileX + dirX, actor.tileY + dirY);
+    if ((!allowCornering && 0 != distToMid0) || (0 == distToMid1 && isWall)) {
+        // way is blocked
+        return false;
     }
     return true;
 }
@@ -277,9 +265,9 @@ game::computeMove(Actor& actor, Direction dir) {
 
     // dir is the direction the actor *wants* to move,
     // which might not be possible
-    if ((NoDirection != dir) && this->canMove(actor, dir)) {
-        // can move in intended direction, update actor direction
-        // and movement vector
+    const bool allowCornering = (Pacman == actor.actorType);
+    if ((NoDirection != dir) && this->canMove(actor, dir, allowCornering)) {
+        // can move in intended direction, update actor direction and movement vector
         actor.dir = dir;
         switch (actor.dir) {
             case Left:  actor.dirX = -1; actor.dirY = 0; break;
@@ -292,7 +280,7 @@ game::computeMove(Actor& actor, Direction dir) {
     else {
         // movement into intended direction is not possible, check
         // whether movement in current direction is possible
-        if (!this->canMove(actor, actor.dir)) {
+        if (!this->canMove(actor, actor.dir, allowCornering)) {
             // nope, emergency stop
             actor.dirX = 0;
             actor.dirY = 0;
