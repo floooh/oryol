@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "game.h"
 #include <cstring>
+#include <cstdlib>
 
 using namespace Oryol;
 
@@ -239,8 +240,8 @@ game::computeScatterTarget(Actor& ghost) {
 //------------------------------------------------------------------------------
 int
 game::targetDist(const Actor& ghost, int x, int y) {
-    int dx = abs(x - ghost.targetX );
-    int dy = abs(y - ghost.targetY);
+    int dx = std::abs(x - ghost.targetX );
+    int dy = std::abs(y - ghost.targetY);
     return dx + dy;
 }
 
