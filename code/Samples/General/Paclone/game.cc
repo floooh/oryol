@@ -27,9 +27,9 @@ const char* charMap =
     "######.##### ## #####.######" // 13
     "######.##          ##.######" // 14
     "######.## ######## ##.######" // 15
-    "######.## ######## ##.######" // 16
-    "      .   ########   .      " // 17
-    "######.## ######## ##.######" // 18
+    "######.## #      # ##.######" // 16
+    "      .   #      #   .      " // 17
+    "######.## #      # ##.######" // 18
     "######.## ######## ##.######" // 19
     "######.##          ##.######" // 20
     "######.## ######## ##.######" // 21
@@ -119,10 +119,10 @@ game::setupTiles() {
 void
 game::setupActors() {
     this->setupActor(Pacman, 13, 26, NoDirection);
-    this->setupActor(Ghost0, 13, 14, Left);
-    this->setupActor(Ghost1, 11, 17, Up);
-    this->setupActor(Ghost2, 13, 17, Down);
-    this->setupActor(Ghost3, 15, 17, Up);
+    this->setupActor(Blinky, 13, 14, NoDirection);
+    this->setupActor(Pinky, 13, 14, NoDirection);
+    this->setupActor(Inky, 13, 14, NoDirection);
+    this->setupActor(Clyde, 13, 14, NoDirection);
 }
 
 //------------------------------------------------------------------------------
@@ -135,15 +135,17 @@ game::setupActor(ActorType type, int tileX, int tileY, Direction dir) {
     actor.actorType = type;
     switch (type) {
         case Pacman: actor.spriteId = Sheet::TestPacman; break;
-        case Ghost0: actor.spriteId = Sheet::TestGhost0; break;
-        case Ghost1: actor.spriteId = Sheet::TestGhost1; break;
-        case Ghost2: actor.spriteId = Sheet::TestGhost2; break;
-        case Ghost3: actor.spriteId = Sheet::TestGhost3; break;
-        default: actor.spriteId = Sheet::InvalidSprite; break;
+        case Blinky: actor.spriteId = Sheet::TestGhost0; break;
+        case Pinky:  actor.spriteId = Sheet::TestGhost1; break;
+        case Inky:   actor.spriteId = Sheet::TestGhost2; break;
+        case Clyde:  actor.spriteId = Sheet::TestGhost3; break;
+        default:     actor.spriteId = Sheet::InvalidSprite; break;
     }
     actor.dir = dir;
+    actor.nextDir = dir;
     actor.pixelX = tileX * TileSize + TileMidX + TileSize/2;
     actor.pixelY = tileY * TileSize + TileMidY;
+    actor.ghostMode = Scatter;
     this->commitPosition(actor);
 }
 
@@ -151,10 +153,10 @@ game::setupActor(ActorType type, int tileX, int tileY, Direction dir) {
 void
 game::drawActors(canvas* canvas) {
     this->drawActor(Pacman, canvas);
-    this->drawActor(Ghost0, canvas);
-    this->drawActor(Ghost1, canvas);
-    this->drawActor(Ghost2, canvas);
-    this->drawActor(Ghost3, canvas);    
+    this->drawActor(Blinky, canvas);
+    this->drawActor(Pinky, canvas);
+    this->drawActor(Inky, canvas);
+    this->drawActor(Clyde, canvas);
 }
 
 //------------------------------------------------------------------------------
@@ -177,6 +179,10 @@ game::drawActor(ActorType type, canvas* canvas) {
 void
 game::updateActors(Direction input) {
     this->updatePacman(input);
+    this->updateGhost(this->actors[Blinky]);
+    this->updateGhost(this->actors[Pinky]);
+    this->updateGhost(this->actors[Inky]);
+    this->updateGhost(this->actors[Clyde]);
 }
 
 //------------------------------------------------------------------------------
@@ -186,6 +192,111 @@ game::updatePacman(Direction input) {
     Actor& pacman = this->actors[Pacman];
     this->computeMove(pacman, input);
     this->move(pacman);
+}
+
+//------------------------------------------------------------------------------
+void
+game::updateGhost(Actor& ghost) {
+    if (Scatter == ghost.ghostMode) {
+        this->computeScatterTarget(ghost);
+    }
+    this->chooseDirection(ghost);
+    this->computeMove(ghost, ghost.dir);
+    this->move(ghost);
+}
+
+//------------------------------------------------------------------------------
+void
+game::computeScatterTarget(Actor& ghost) {
+    switch (ghost.actorType) {
+        case Blinky:
+            ghost.targetX = 25;
+            ghost.targetY = 0;
+            break;
+            
+        case Pinky:
+            ghost.targetX = 2;
+            ghost.targetY = 0;
+            break;
+            
+        case Inky:
+            ghost.targetX = 27;
+            ghost.targetY = 34;
+            break;
+        
+        case Clyde:
+            ghost.targetX = 0;
+            ghost.targetY = 34;
+            break;
+            
+        default:
+            ghost.targetX = 0;
+            ghost.targetY = 0;
+            break;
+    }
+}
+
+//------------------------------------------------------------------------------
+int
+game::targetDist(const Actor& ghost, int x, int y) {
+    int dx = abs(x - ghost.targetX );
+    int dy = abs(y - ghost.targetY);
+    return dx + dy;
+}
+
+//------------------------------------------------------------------------------
+void
+game::chooseDirection(Actor& ghost) {
+    if (((ghost.distToMidX == 0) && (ghost.distToMidY == 0)) || (NoDirection == ghost.dir)) {
+        if (NoDirection != ghost.nextDir) {
+            ghost.dir = ghost.nextDir;
+        }
+        
+        // look ahead one tile to find next direction
+        int16 x = ghost.tileX;
+        int16 y = ghost.tileY;
+        if (Wall != this->tile(x, y)) {
+            switch (ghost.dir) {
+                case Left:  x--; break;
+                case Right: x++; break;
+                case Up:    y--; break;
+                case Down:  y++; break;
+                default: break;
+            }
+        }
+        
+        // now test distance of each possible target tile
+        // note: directions have a preference in case of a tie:
+        // UP -> LEFT -> DOWN -> RIGHT
+        Direction bestDirection = NoDirection;
+        int minDist = 1000;
+        int dist;
+        if ((Down != ghost.dir) && (Wall != this->tile(x, y - 1))) {
+            if ((dist = this->targetDist(ghost, x, y - 1)) < minDist) {
+                bestDirection = Up;
+                minDist = dist;
+            }
+        }
+        if ((Right != ghost.dir) && (Wall != this->tile(x - 1, y))) {
+            if ((dist = this->targetDist(ghost, x - 1, y)) < minDist) {
+                bestDirection = Left;
+                minDist = dist;
+            }
+        }
+        if ((Up != ghost.dir) && (Wall != this->tile(x, y + 1))) {
+            if ((dist = this->targetDist(ghost, x, y + 1)) < minDist) {
+                bestDirection = Down;
+                minDist = dist;
+            }
+        }
+        if ((Left != ghost.dir) && (Wall != this->tile(x + 1, y))) {
+            if ((dist = this->targetDist(ghost, x + 1, y)) < minDist) {
+                bestDirection = Right;
+                minDist = dist;
+            }
+        }
+        ghost.nextDir = bestDirection;
+    }
 }
 
 //------------------------------------------------------------------------------

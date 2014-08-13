@@ -28,22 +28,29 @@ public:
     enum ActorType {
         InvalidActorType = 0,
         Pacman,
-        Ghost0,
-        Ghost1,
-        Ghost2,
-        Ghost3,
+        Blinky,
+        Pinky,
+        Inky,
+        Clyde,
         
         NumActorTypes,
     };
     /// directions
     enum Direction {
-        NoDirection,
+        NoDirection = 0,
         Left,
         Right,
         Up,
         Down,
+        
+        NumDirections,
     };
-    
+    /// ghost modes
+    enum GhostMode {
+        Chase,
+        Scatter,
+        Frightened,
+    };
     
     /// playfield size in 8x8 elements
     static const int Width = 28;
@@ -68,6 +75,7 @@ private:
         ActorType actorType;
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
         Direction dir = NoDirection;
+        Direction nextDir = NoDirection;
         Oryol::int16 pixelX = 0;
         Oryol::int16 pixelY = 0;
         Oryol::int16 tileX  = 0;
@@ -76,6 +84,9 @@ private:
         Oryol::int16 distToMidY = 0;
         Oryol::int16 dirX = 0;
         Oryol::int16 dirY = 0;
+        Oryol::int16 targetX = 0;
+        Oryol::int16 targetY = 0;
+        GhostMode ghostMode = Scatter;
     } actors[NumActorTypes];
     
     TileType tile(int x, int y) const;
@@ -85,6 +96,7 @@ private:
     void setupActor(ActorType type, int x, int y, Direction dir);
     void updateActors(Direction input);
     void updatePacman(Direction input);
+    void updateGhost(Actor& ghost);
     void drawActors(canvas* canvas);
     void drawActor(ActorType type, canvas* canvas);
     bool canMove(const Actor& actor, Direction dir, bool allowCornering);
@@ -94,6 +106,10 @@ private:
     void eatPill(canvas* canvas);
     void eatEnergizer(canvas* canvas);
     void commitPosition(Actor& actor);
+    void computeScatterTarget(Actor& ghost);
+    void chooseDirection(Actor& ghost);
+    int targetDist(const Actor& ghost, int x, int y);
+
 
     TileType tileMap[Height][Width]{ {Empty} };
 };
