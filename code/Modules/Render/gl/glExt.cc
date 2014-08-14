@@ -142,6 +142,8 @@ glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
         // Android GLES2 headers don't have instancing function prototypes
         #elif ORYOL_EMSCRIPTEN
         ::glVertexAttribDivisor(index, divisor);
+        #elif ORYOL_IOS
+        ::glVertexAttribDivisorEXT(index, divisor);
         #elif ORYOL_OPENGLES2
         ::glVertexAttribDivisorANGLE(index, divisor);
         #elif ORYOL_OPENGL
@@ -160,6 +162,8 @@ glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei prim
         // Android GLES2 headers don't have instancing function prototypes
         #elif ORYOL_EMSCRIPTEN
         ::glDrawArraysInstanced(mode, first, count, primcount);
+        #elif ORYOL_IOS
+        ::glDrawArraysInstancedEXT(mode, first, count, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
         #elif ORYOL_OPENGL
@@ -177,7 +181,9 @@ glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void
         #if ORYOL_ANDROID
         // Android GLES2 headers don't have instancing function prototypes
         #elif ORYOL_EMSCRIPTEN
-        ::glDrawElementsInstanced(mode, count, type, indices, primcount);    
+        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
+        #elif ORYOL_IOS
+        ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
         #elif ORYOL_OPENGL

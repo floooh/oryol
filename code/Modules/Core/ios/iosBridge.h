@@ -6,6 +6,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
+#include "Core/Singleton.h"
 
 #if defined(__OBJC__)
 static_assert(sizeof(void*) == sizeof(id), "sizeof(void*) doesn't match sizeof(id)!");

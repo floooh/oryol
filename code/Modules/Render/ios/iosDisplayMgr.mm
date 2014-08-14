@@ -43,15 +43,15 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     
     // modify the color/depth/stencil format of the GLKView
     GLKView* glkView = iosBridge::Instance()->iosGetGLKView();
-    PixelFormat::Code colorFmt = renderSetup.GetDisplayAttrs().GetColorPixelFormat();
-    PixelFormat::Code depthFmt = renderSetup.GetDisplayAttrs().GetDepthPixelFormat();
+    PixelFormat::Code colorFmt = renderSetup.GetDisplayAttrs().ColorPixelFormat;
+    PixelFormat::Code depthFmt = renderSetup.GetDisplayAttrs().DepthPixelFormat;
     switch (colorFmt) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
             
-        case PixelFormat::R8G8B8:
-        case PixelFormat::R8G8B8A8:
+        case PixelFormat::RGB8:
+        case PixelFormat::RGBA8:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGBA8888;
             break;
             
@@ -91,10 +91,10 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     this->glFramebufferWidth = glkView.drawableWidth;
     this->glFramebufferHeight = glkView.drawableHeight;
     Log::Info("iosDisplayMgr: actual framebuffer size w=%d, h=%d\n", this->glFramebufferWidth, this->glFramebufferHeight);
-    this->displayAttrs.SetFramebufferWidth(this->glFramebufferWidth);
-    this->displayAttrs.SetFramebufferHeight(this->glFramebufferHeight);
-    this->displayAttrs.SetWindowWidth(this->glFramebufferWidth);
-    this->displayAttrs.SetWindowHeight(this->glFramebufferHeight);
+    this->displayAttrs.FramebufferWidth = this->glFramebufferWidth;
+    this->displayAttrs.FramebufferHeight = this->glFramebufferHeight;
+    this->displayAttrs.WindowWidth = this->glFramebufferWidth;
+    this->displayAttrs.WindowHeight = this->glFramebufferHeight;
 }
 
 //------------------------------------------------------------------------------

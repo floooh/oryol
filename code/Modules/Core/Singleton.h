@@ -10,6 +10,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Assert.h"
+#include <utility>
 
 /// global singleton declaration macros (visible in all threads, located in class declaration)
 #define OryolGlobalSingletonDecl(TYPE) \
