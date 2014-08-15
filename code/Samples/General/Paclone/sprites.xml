@@ -5,11 +5,16 @@
         <Sprite name="Space"      x="120" y="0" char=" " />
         <Sprite name="TestWall"   x="112" y="8" char="#" />
         <Sprite name="TestPill"   x="112" y="0" char="." />
-        <Sprite name="TestPacman" x="0" y="16" w="16" h="16" char="P" />
-        <Sprite name="TestGhost0" x="0" y="32" w="16" h="16" char="0" />
-        <Sprite name="TestGhost1" x="0" y="48" w="16" h="16" char="1" />
-        <Sprite name="TestGhost2" x="0" y="64" w="16" h="16" char="2" />
-        <Sprite name="TestGhost3" x="0" y="80" w="16" h="16" char="3" />
+
+        <Sprite name="PacmanRight" x="0"  y="16" w="16" h="16" frames="4" anim="pingpong" />
+        <Sprite name="PacmanLeft"  x="64" y="16" w="16" h="16" frames="4" anim="pingpong" />
+        <Sprite name="PacmanDown"  x="0"  y="32" w="16" h="16" frames="4" anim="pingpong" />
+        <Sprite name="PacmanUp"    x="64" y="32" w="16" h="16" frames="4" anim="pingpong" />
+
+        <Sprite name="Blinky" x="0" y="48" w="16" h="16" frames="1" anim="loop" />
+        <Sprite name="Pinky"  x="0" y="64" w="16" h="16" frames="1" anim="loop" />
+        <Sprite name="Inky"   x="0" y="80" w="16" h="16" frames="1" anim="loop" />
+        <Sprite name="Clyde"  x="0" y="96" w="16" h="16" frames="1" anim="loop" />
 
     </Sheet>
 

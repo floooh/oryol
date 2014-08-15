@@ -30,11 +30,13 @@ public:
     /// clamp y-coordinate to valid area
     int ClampY(int tileY) const;
     /// set a dynamic sprite
-    void SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH);
+    void SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH, int animTick);
     /// set a static tile
     void SetTile(Sheet::SpriteId sprite, int tileX, int tileY);
 
 private:
+    /// compute anim frame for a sprite
+    int animate(Sheet::SpriteId sprite, int animTick) const;
     /// write a vertex
     int writeVertex(int index, float x, float y, float u, float v);
     /// update vertices, returns pointer to and size of vertex data
@@ -65,6 +67,7 @@ private:
         int y = 0;
         int w = 0;
         int h = 0;
+        int frame = 0;
     } sprites[MaxNumSprites];
     
     struct vertex {

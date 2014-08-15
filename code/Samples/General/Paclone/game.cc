@@ -76,6 +76,7 @@ game::Update(int tick, canvas* canvas, Direction input) {
     this->updateActors(input);
     this->checkOverlaps(canvas);
     this->drawActors(canvas);
+    this->ghostModeTick++;
 }
 
 //------------------------------------------------------------------------------
@@ -134,14 +135,6 @@ game::setupActor(ActorType type, int tileX, int tileY, Direction dir) {
     o_assert((tileY >= 0) && (tileY < Height));
     Actor& actor = this->actors[type];
     actor.actorType = type;
-    switch (type) {
-        case Pacman: actor.spriteId = Sheet::TestPacman; break;
-        case Blinky: actor.spriteId = Sheet::TestGhost0; break;
-        case Pinky:  actor.spriteId = Sheet::TestGhost1; break;
-        case Inky:   actor.spriteId = Sheet::TestGhost2; break;
-        case Clyde:  actor.spriteId = Sheet::TestGhost3; break;
-        default:     actor.spriteId = Sheet::InvalidSprite; break;
-    }
     actor.dir = dir;
     actor.nextDir = dir;
     actor.pixelX = tileX * TileSize + TileMidX + TileSize/2;
@@ -167,12 +160,31 @@ game::drawActor(ActorType type, canvas* canvas) {
     o_assert_dbg(canvas);
     
     const Actor& actor = this->actors[type];
-    if (actor.spriteId != Sheet::InvalidSprite) {
+    Sheet::SpriteId spriteId = Sheet::InvalidSprite;
+    if (actor.actorType == Pacman) {
+        if (actor.dir == Left) spriteId = Sheet::PacmanLeft;
+        else if (actor.dir == Right) spriteId = Sheet::PacmanRight;
+        else if (actor.dir == Up) spriteId = Sheet::PacmanUp;
+        else spriteId = Sheet::PacmanDown;
+    }
+    else if (actor.actorType == Blinky) {
+        spriteId = Sheet::Blinky;
+    }
+    else if (actor.actorType == Pinky) {
+        spriteId = Sheet::Pinky;
+    }
+    else if (actor.actorType == Inky) {
+        spriteId = Sheet::Inky;
+    }
+    else if (actor.actorType == Clyde) {
+        spriteId = Sheet::Clyde;
+    }
+    if (Sheet::InvalidSprite != spriteId) {
         const int pixX = actor.pixelX - TileMidX - TileSize/2;
         const int pixY = actor.pixelY - TileMidY - TileSize/2;
         const int pixW = 2 * 8;
         const int pixH = 2 * 8;
-        canvas->SetSprite(type, actor.spriteId, pixX, pixY, pixW, pixH);
+        canvas->SetSprite(type, spriteId, pixX, pixY, pixW, pixH, actor.moveTick);
     }
 }
 
@@ -180,6 +192,7 @@ game::drawActor(ActorType type, canvas* canvas) {
 void
 game::updateActors(Direction input) {
     this->updatePacman(input);
+    this->selectGhostMode();
     this->updateGhost(this->actors[Blinky]);
     this->updateGhost(this->actors[Pinky]);
     this->updateGhost(this->actors[Inky]);
@@ -201,9 +214,44 @@ game::updateGhost(Actor& ghost) {
     if (Scatter == ghost.ghostMode) {
         this->computeScatterTarget(ghost);
     }
+    else if (Chase == ghost.ghostMode) {
+        this->computeChaseTarget(ghost);
+    }
     this->chooseDirection(ghost);
     this->computeMove(ghost, ghost.dir);
     this->move(ghost);
+}
+
+//------------------------------------------------------------------------------
+game::Direction
+game::reverseDir(Direction dir) {
+    switch (dir) {
+        case Left: return Right;
+        case Right: return Left;
+        case Up: return Down;
+        case Down: return Up;
+        default: return NoDirection;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::selectGhostMode() {
+
+    const int scatterFrames = 7 * 60;
+    const int chaseFrames = 20 * 60;
+    int tick = this->ghostModeTick % (scatterFrames + chaseFrames);
+    GhostMode mode = Scatter;
+    if (tick >= scatterFrames) {
+        mode = Chase;
+    }
+    for (int i = Blinky; i <= Clyde; i++) {
+        if (this->actors[i].ghostMode != mode) {
+            // invert current direction
+            this->actors[i].nextDir = this->reverseDir(this->actors[i].dir);
+        }
+        this->actors[i].ghostMode = mode;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -234,6 +282,79 @@ game::computeScatterTarget(Actor& ghost) {
             ghost.targetX = 0;
             ghost.targetY = 0;
             break;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::computeChaseTarget(Actor& ghost) {
+    const Actor& pacman = this->actors[Pacman];
+    if (Blinky == ghost.actorType) {
+        // directly target pacman
+        ghost.targetX = pacman.tileX;
+        ghost.targetY = pacman.tileY;
+    }
+    else if (Pinky == ghost.actorType) {
+        // target 4 tiles ahead of pacman, with exception of 'up'
+        ghost.targetX = pacman.tileX;
+        ghost.targetX = pacman.tileX;
+        switch (pacman.dir) {
+            case Left:
+                ghost.targetX = pacman.tileX - 4;
+                break;
+            case Right:
+                ghost.targetX = pacman.tileX + 4;
+                break;
+            case Up:
+                // overflow bug
+                ghost.targetX = pacman.tileX - 4;
+                ghost.targetY = pacman.tileY - 4;
+                break;
+            case Down:
+                ghost.targetY = pacman.tileY + 4;
+                break;
+            default:
+                break;
+        }
+    }
+    else if (Inky == ghost.actorType) {
+        int mx = pacman.tileX;
+        int my = pacman.tileY;
+        switch (pacman.dir) {
+            case Left:
+                mx = pacman.tileX - 2;
+                break;
+            case Right:
+                mx = pacman.tileX + 2;
+                break;
+            case Up:
+                // overflow bug
+                mx = pacman.tileX - 2;
+                my = pacman.tileY - 2;
+                break;
+            case Down:
+                my = pacman.tileY + 2;
+                break;
+            default:
+                break;
+        }
+        const Actor& blinky = this->actors[Blinky];
+        int dx = mx - blinky.tileX;
+        int dy = my - blinky.tileY;
+        ghost.targetX = blinky.tileX + 2 * dx;
+        ghost.targetY = blinky.tileY + 2 * dy;
+    }
+    else if (Clyde == ghost.actorType) {
+        int dx = ghost.tileX - pacman.tileX;
+        int dy = ghost.tileY - pacman.tileY;
+        if ((dx*dx + dy*dy) > 64) {
+            ghost.targetX = pacman.tileX;
+            ghost.targetY = pacman.tileY;
+        }
+        else {
+            ghost.targetX = 0;
+            ghost.targetY = 34;
+        }
     }
 }
 
@@ -305,6 +426,9 @@ void
 game::move(Actor& actor) {
     actor.pixelX += actor.dirX;
     actor.pixelY += actor.dirY;
+    if (actor.dir != NoDirection) {
+        actor.moveTick++;
+    }
 
     // cornering
     if (actor.dirX != 0) {

@@ -71,11 +71,12 @@ private:
     static const int TileMidX = 3;
     static const int TileMidY = 4;
 
+    int ghostModeTick = 0;
     struct Actor {
         ActorType actorType;
-        Sheet::SpriteId spriteId = Sheet::InvalidSprite;
         Direction dir = NoDirection;
         Direction nextDir = NoDirection;
+        Oryol::int32 moveTick = 0;
         Oryol::int16 pixelX = 0;
         Oryol::int16 pixelY = 0;
         Oryol::int16 tileX  = 0;
@@ -107,8 +108,11 @@ private:
     void eatEnergizer(canvas* canvas);
     void commitPosition(Actor& actor);
     void computeScatterTarget(Actor& ghost);
+    void computeChaseTarget(Actor& ghost);
     void chooseDirection(Actor& ghost);
     int targetDist(const Actor& ghost, int x, int y);
+    void selectGhostMode();
+    Direction reverseDir(Direction dir);
 
 
     TileType tileMap[Height][Width]{ {Empty} };

@@ -177,14 +177,15 @@ canvas::updateVertices(int32& outNumBytes) {
         float v0 = 0.0f;
         float v1 = 0.0f;
         if (Sheet::InvalidSprite != sprite.id) {
+            const Sheet::sprite& s = Sheet::Sprite[sprite.id];
             x0 = float(sprite.x) / canWidth;
             y0 = float(sprite.y) / canHeight;
             x1 = x0 + float(sprite.w) / canWidth;
             y1 = y0 + float(sprite.h) / canHeight;
-            u0 = float(Sheet::Sprite[sprite.id].X) / sheetWidth;
-            v0 = float(Sheet::Sprite[sprite.id].Y) / sheetWidth;
-            u1 = u0 + float(Sheet::Sprite[sprite.id].W) / sheetWidth;
-            v1 = v0 + float(Sheet::Sprite[sprite.id].H) / sheetWidth;
+            u0 = float(s.X + s.W * sprite.frame) / sheetWidth;
+            v0 = float(s.Y) / sheetWidth;
+            u1 = u0 + float(s.W) / sheetWidth;
+            v1 = v0 + float(s.H) / sheetWidth;
         }
         // write vertex data (2 triangles)
         o_assert_dbg((vIndex + 6) <= this->numVertices);
@@ -228,14 +229,43 @@ canvas::SetTile(Sheet::SpriteId sprite, int tileX, int tileY) {
 }
 
 //------------------------------------------------------------------------------
+int
+canvas::animate(Sheet::SpriteId spriteId, int animTick) const {
+    o_assert(animTick >= 0);
+    const auto& s = Sheet::Sprite[spriteId];
+    o_assert(s.NumFrames > 0);
+    int frame;
+    if (s.AnimType == Sheet::Anim::None) {
+        frame = 0;
+    }
+    else if (s.AnimType == Sheet::Anim::Loop) {
+        frame = animTick % s.NumFrames;
+    }
+    else if (s.AnimType == Sheet::Anim::Clamp) {
+        frame = animTick < s.NumFrames ? animTick : s.NumFrames - 1;
+    }
+    else {
+        // ping-pong
+        int frame2 = animTick % (s.NumFrames * 2);
+        frame  = animTick % s.NumFrames;
+        if (frame2 >= s.NumFrames) {
+            frame = (s.NumFrames - 1) - frame;
+        }
+    }
+    o_assert((frame >= 0) && (frame < s.NumFrames));
+    return frame;
+}
+
+//------------------------------------------------------------------------------
 void
-canvas::SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH) {
+canvas::SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH, int animTick) {
     o_assert(index < this->numSprites);
     this->sprites[index].id = sprite;
     this->sprites[index].x = pixX;
     this->sprites[index].y = pixY;
     this->sprites[index].w = pixW;
     this->sprites[index].h = pixH;
+    this->sprites[index].frame = this->animate(sprite, animTick);
 }
 
 //------------------------------------------------------------------------------
