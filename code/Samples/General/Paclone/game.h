@@ -3,7 +3,7 @@
 /**
     Implement the pacman game loop.
     
-    Cudos to:
+    Kudos to:
     http://home.comcast.net/~jpittman2/pacman/pacmandossier.html
     And (especially for the cornering stuff!):
     http://pacman.shaunew.com/
