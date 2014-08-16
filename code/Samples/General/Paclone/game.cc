@@ -287,7 +287,7 @@ game::chooseChaseTarget(Actor& ghost) const {
         // target 4 tiles ahead of pacman
         // this does not reproduce the 'diagonal up' overflow
         ghost.targetX = pacman.tileX + 4 * game::dirVec[pacman.dir][0];
-        ghost.targetX = pacman.tileX + 4 * game::dirVec[pacman.dir][1];
+        ghost.targetY = pacman.tileY + 4 * game::dirVec[pacman.dir][1];
     }
     else if (Inky == ghost.type) {
         const int16 mx = pacman.tileX + 2 * game::dirVec[pacman.dir][0];
