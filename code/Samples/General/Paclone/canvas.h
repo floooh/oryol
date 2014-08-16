@@ -31,6 +31,8 @@ public:
     int ClampY(int tileY) const;
     /// set a dynamic sprite
     void SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH, int animTick);
+    /// clear sprite at index
+    void ClearSprite(int index);
     /// set a static tile
     void SetTile(Sheet::SpriteId sprite, int tileX, int tileY);
 
@@ -60,7 +62,7 @@ private:
     static const int MaxHeight = 64;
     Sheet::SpriteId tiles[MaxWidth * MaxHeight];
     
-    static const int MaxNumSprites = 8;
+    static const int MaxNumSprites = 12;
     struct sprite {
         Sheet::SpriteId id = Sheet::InvalidSprite;
         int x = 0;

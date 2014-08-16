@@ -136,12 +136,12 @@ canvas::updateVertices(int32& outNumBytes) {
     const float sheetHeight = float(Sheet::Height);
     int vIndex = 0;
     for (int y = 0; y < this->numTilesY; y++) {
-        const float y0 = dy * y;
+        const float y0 = y * dy;
         const float y1 = y0 + dy;
         for (int x = 0; x < this->numTilesX; x++) {
             
             // positions
-            const float x0 = dx * x;
+            const float x0 = x * dx;
             const float x1 = x0 + dx;
             
             // uvs
@@ -258,14 +258,22 @@ canvas::animate(Sheet::SpriteId spriteId, int animTick) const {
 
 //------------------------------------------------------------------------------
 void
-canvas::SetSprite(int index, Sheet::SpriteId sprite, int pixX, int pixY, int pixW, int pixH, int animTick) {
-    o_assert(index < this->numSprites);
-    this->sprites[index].id = sprite;
+canvas::SetSprite(int index, Sheet::SpriteId spriteId, int pixX, int pixY, int pixW, int pixH, int animTick) {
+    o_assert_range(index, this->numSprites);
+    o_assert(spriteId < Sheet::NumSprites);
+    this->sprites[index].id = spriteId;
     this->sprites[index].x = pixX;
     this->sprites[index].y = pixY;
     this->sprites[index].w = pixW;
     this->sprites[index].h = pixH;
-    this->sprites[index].frame = this->animate(sprite, animTick);
+    this->sprites[index].frame = this->animate(spriteId, animTick);
+}
+
+//------------------------------------------------------------------------------
+void
+canvas::ClearSprite(int index) {
+    o_assert_range(index, this->numSprites);
+    this->sprites[index].id = Sheet::InvalidSprite;
 }
 
 //------------------------------------------------------------------------------

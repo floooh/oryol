@@ -19,19 +19,17 @@ public:
     enum TileType {
         Empty = 0,
         Pill,
-        Energizer,
         Wall,
         
         NumTileTypes,
     };
     /// dynamic game elements
     enum ActorType {
-        InvalidActorType = 0,
-        Pacman,
-        Blinky,
+        Blinky = 0,
         Pinky,
         Inky,
         Clyde,
+        Pacman,
         
         NumActorTypes,
     };
@@ -45,17 +43,20 @@ public:
         
         NumDirections,
     };
-    /// ghost modes
-    enum GhostMode {
+    /// ghost states
+    enum GhostState {
+        None,
         Chase,
         Scatter,
         Frightened,
+        Hollow,
     };
-    
-    /// playfield size in 8x8 elements
+
     static const int Width = 28;
     static const int Height = 36;
-
+    static const int NumEnergizers = 4;
+    static const int NumSprites = NumEnergizers + NumActorTypes;
+    
     /// constructor
     game();
     
@@ -71,9 +72,11 @@ private:
     static const int TileMidX = 3;
     static const int TileMidY = 4;
 
-    int ghostModeTick = 0;
+    int gameTick = 0;
+    
     struct Actor {
-        ActorType actorType;
+        ActorType type;
+        int spriteIndex = 0;
         Direction dir = NoDirection;
         Direction nextDir = NoDirection;
         Oryol::int32 moveTick = 0;
@@ -83,39 +86,81 @@ private:
         Oryol::int16 tileY  = 0;
         Oryol::int16 distToMidX = 0;
         Oryol::int16 distToMidY = 0;
-        Oryol::int16 dirX = 0;
-        Oryol::int16 dirY = 0;
         Oryol::int16 targetX = 0;
         Oryol::int16 targetY = 0;
-        GhostMode ghostMode = Scatter;
+        GhostState state = Scatter;
+        int frightenedTick;
     } actors[NumActorTypes];
     
-    TileType tile(int x, int y) const;
-    void setTile(int x, int y, TileType type);
+    struct Energizer {
+        Oryol::int16 tileX = 0;
+        Oryol::int16 tileY = 0;
+        int spriteIndex = 0;
+        bool active = false;
+    } energizers[NumEnergizers];
+
+    static Oryol::int16 clampX(Oryol::int16 x) {
+        if (x < 0) return 0;
+        else if (x >= Width) return Width - 1;
+        else return x;
+    };
+    static Oryol::int16 clampY(Oryol::int16 y) {
+        if (y < 0) return 0;
+        else if (y >= Height) return Height - 1;
+        else return y;
+    };
+    void setTile(Oryol::int16 x, Oryol::int16 y, TileType type) {
+        this->tileMap[clampY(y)][clampX(x)] = type;
+    };
+    TileType tile(Oryol::int16 x, Oryol::int16 y) const {
+        return this->tileMap[clampY(y)][clampX(x)];
+    };
+    static Oryol::int32 targetDistSq(Oryol::int16 x, Oryol::int16 y, Oryol::int16 targetX, Oryol::int16 targetY) {
+        Oryol::int16 dx = x - targetX;
+        Oryol::int16 dy = y - targetY;
+        return dx * dx + dy * dy;
+    };
+    static void commitPosition(Actor& actor) {
+        actor.tileX = actor.pixelX / TileSize;
+        actor.tileY = actor.pixelY / TileSize;
+        actor.distToMidX = TileMidX - actor.pixelX % TileSize;
+        actor.distToMidY = TileMidY - actor.pixelY % TileSize;
+    };
+
     void setupTiles();
     void setupActors();
-    void setupActor(ActorType type, int x, int y, Direction dir);
+    void setupEnergizers();
     void updateActors(Direction input);
-    void updatePacman(Direction input);
-    void updateGhost(Actor& ghost);
-    void drawActors(canvas* canvas);
-    void drawActor(ActorType type, canvas* canvas);
-    bool canMove(const Actor& actor, Direction dir, bool allowCornering);
-    void computeMove(Actor& actor, Direction dir);
-    void move(Actor& actor);
-    void checkOverlaps(canvas* canvas);
+    void drawActors(canvas* canvas) const;
+    void drawEnergizers(canvas* canvas) const;
+    bool canMove(const Actor& actor, Direction dir, bool allowCornering) const;
+    void computeMove(Actor& actor, Direction dir) const;
+    void move(Actor& actor) const;
+    void handleCollide(canvas* canvas);
     void eatPill(canvas* canvas);
-    void eatEnergizer(canvas* canvas);
-    void commitPosition(Actor& actor);
-    void computeScatterTarget(Actor& ghost);
-    void computeChaseTarget(Actor& ghost);
-    void chooseDirection(Actor& ghost);
-    int targetDist(const Actor& ghost, int x, int y);
-    void selectGhostMode();
-    Direction reverseDir(Direction dir);
-
+    void eatEnergizer(Energizer& energizer);
+    void killPacman();
+    void killGhost(Actor& ghost);
+    void chooseScatterTarget(Actor& ghost) const;
+    void chooseChaseTarget(Actor& ghost) const;
+    void chooseFrightenedTarget(Actor& ghost) const;
+    void chooseHollowTarget(Actor& ghost) const;
+    void updateDirection(Actor& ghost) const;
+    void updateGhostState(Actor& ghost);
 
     TileType tileMap[Height][Width]{ {Empty} };
+    Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections] {
+        { Sheet::BlinkyNoDir, Sheet::BlinkyLeft,  Sheet::BlinkyRight, Sheet::BlinkyUp, Sheet::BlinkyDown },
+        { Sheet::PinkyNoDir,  Sheet::PinkyLeft,   Sheet::PinkyRight,  Sheet::PinkyUp,  Sheet::PinkyDown  },
+        { Sheet::InkyNoDir,   Sheet::InkyLeft,    Sheet::InkyRight,   Sheet::InkyUp,   Sheet::InkyDown   },
+        { Sheet::ClydeNoDir,  Sheet::ClydeLeft,   Sheet::ClydeRight,  Sheet::ClydeUp,  Sheet::ClydeDown  },
+        { Sheet::PacmanNoDir, Sheet::PacmanLeft,  Sheet::PacmanRight, Sheet::PacmanUp, Sheet::PacmanDown },
+    };
+    Sheet::SpriteId hollowSpriteMap[NumDirections] {
+        Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
+    };
+    static const Direction reverseDir[NumDirections];
+    static const Oryol::int16 dirVec[NumDirections][2];
 };
     
 } // namespace Paclone

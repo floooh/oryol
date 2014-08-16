@@ -41,7 +41,7 @@ PacloneApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(displayWidth, displayHeight, "Oryol Pacman Clone Sample"));
     this->input = InputFacade::CreateSingle();
     
-    this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumActorTypes);
+    this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
     this->gameState.Init(&this->spriteCanvas);
     
     return App::OnInit();
