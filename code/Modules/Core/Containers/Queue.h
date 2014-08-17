@@ -6,6 +6,7 @@
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
+#include <algorithm>
 
 namespace Oryol {
 namespace Core {
