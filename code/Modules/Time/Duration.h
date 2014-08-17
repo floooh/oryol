@@ -57,12 +57,20 @@ public:
     
     /// get duration from seconds
     static Duration FromSeconds(float64 s);
+    /// get duration from seconds
+    static Duration FromSeconds(float32 s);
     /// get duration from milliseconds
     static Duration FromMilliSeconds(float64 ms);
+    /// get duration from milliseconds
+    static Duration FromMilliSeconds(float32 ms);
     /// get duration from microseconds
     static Duration FromMicroSeconds(float64 us);
+    /// get duration from microseconds
+    static Duration FromMicroSeconds(float32 us);
     /// get duration from nanoseconds
     static Duration FromNanoSeconds(float64 ns);
+    /// get duration from nanoseconds
+    static Duration FromNanoSeconds(float32 ns);
     
     /// get the raw value
     int64 getRaw() const;
@@ -191,6 +199,12 @@ Duration::FromSeconds(float64 s) {
 }
 
 //------------------------------------------------------------------------------
+inline Duration
+Duration::FromSeconds(float32 s) {
+    return Duration(int64(s * 1000000000.0f));
+}
+
+//------------------------------------------------------------------------------
 inline float64
 Duration::AsMilliSeconds() const {
     return ((float64)this->val) / 1000000.0;
@@ -200,6 +214,12 @@ Duration::AsMilliSeconds() const {
 inline Duration
 Duration::FromMilliSeconds(float64 ms) {
     return Duration(int64(ms * 1000000.0));
+}
+
+//------------------------------------------------------------------------------
+inline Duration
+Duration::FromMilliSeconds(float32 ms) {
+    return Duration(int64(ms * 1000000.0f));
 }
 
 //------------------------------------------------------------------------------
@@ -215,6 +235,12 @@ Duration::FromMicroSeconds(float64 us) {
 }
 
 //------------------------------------------------------------------------------
+inline Duration
+Duration::FromMicroSeconds(float32 us) {
+    return Duration(int64(us * 1000.0f));
+}
+
+//------------------------------------------------------------------------------
 inline float64
 Duration::AsNanoSeconds() const {
     return (float64)this->val;
@@ -223,6 +249,12 @@ Duration::AsNanoSeconds() const {
 //------------------------------------------------------------------------------
 inline Duration
 Duration::FromNanoSeconds(float64 ns) {
+    return Duration(int64(ns));
+}
+
+//------------------------------------------------------------------------------
+inline Duration
+Duration::FromNanoSeconds(float32 ns) {
     return Duration(int64(ns));
 }
 
