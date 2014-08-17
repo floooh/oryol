@@ -41,7 +41,7 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
         return;
     }
     this->alcContext = alcCreateContext(this->alcDevice, NULL);
-    if (NULL == this->alcDevice) {
+    if (NULL == this->alcContext) {
         Log::Warn("alcCreateContext() failed!\n");
         return;
     }
