@@ -47,7 +47,7 @@ endif()
 if (ORYOL_ANDROID)
     oryol_deps(GLESv3 EGL)
 endif()
-oryol_deps(Resource HTTP Messaging IO Core)
+oryol_deps(Resource Messaging IO Core)
 oryol_end_module()
 
 oryol_begin_unittest(Render)
