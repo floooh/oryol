@@ -54,12 +54,15 @@ public:
     void Enqueue(TYPE&& elm);
     /// construct-enqueue an element
     template<class... ARGS> void Emplace(ARGS&&... args);
+
+    /// sorted-insert an element
+    void Insert(const TYPE& elm);
     
     /// dequeue an element
     TYPE Dequeue();
     /// dequeue into existing element
     void Dequeue(TYPE& outElm);
-
+    
 private:
     /// destroy contained resource
     void destroy();
@@ -297,6 +300,15 @@ template<class TYPE> template<class... ARGS> void
 Queue<TYPE>::Emplace(ARGS&&... args) {
     this->checkEnqueue();
     this->buffer.emplaceBack(std::forward<ARGS>(args)...);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+Queue<TYPE>::Insert(const TYPE& elm) {
+    this->checkEnqueue();
+    const TYPE* ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, elm);
+    int32 index = ptr - this->buffer.elmStart;
+    this->buffer.insert(index, elm);
 }
 
 //------------------------------------------------------------------------------
