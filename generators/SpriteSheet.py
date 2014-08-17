@@ -4,7 +4,6 @@ Code generator for sprite sheets.
 import util
 import png
 import os
-from pprint import pprint
 
 Version = 2
 
@@ -61,9 +60,6 @@ class SpriteSheet :
                 self.sprites.append(sprite)
         else :
             util.error('No Sheet element in sprite sheet XML file!')
-        pprint(vars(self))
-        for s in self.sprites :
-            pprint(vars(s))
 
     def loadImage(self) :
         pngReader = png.Reader(self.imagePath)
@@ -79,7 +75,6 @@ class SpriteSheet :
 
         self.imagePixels = img[2]
         self.imageInfo = img[3]
-        print 'w={} h={} pixels={} info={}'.format(self.imageWidth, self.imageHeight, self.imagePixels, self.imageInfo)
 
     def buildCharMap(self) :
         charMap = [None] * 256
@@ -238,6 +233,8 @@ def generateSource(absSourcePath, spriteSheet) :
 
 #-------------------------------------------------------------------------------
 def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
+    # FIXME: need to parse XML for all image files, and check their 
+    # modified date!
     return True
     # return util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version)
 
