@@ -47,5 +47,14 @@ TEST(DurationTest) {
     CHECK_CLOSE(d4.AsMicroSeconds(), 2.0, 0.00000001);
     CHECK_CLOSE(d4.AsNanoSeconds(), 2000.0, 0.00000001);
     CHECK(d4.AsTicks() == 2000);
+    
+    CHECK_CLOSE(Duration::FromSeconds(1.0).AsSeconds(), 1.0, 0.0000001);
+    CHECK_CLOSE(Duration::FromMilliSeconds(1.0).AsMilliSeconds(), 1.0, 0.0000001);
+    CHECK_CLOSE(Duration::FromMicroSeconds(1.0).AsMicroSeconds(), 1.0, 0.0000001);
+    CHECK_CLOSE(Duration::FromNanoSeconds(1.0).AsNanoSeconds(), 1.0, 0.0000001);
+    
+    CHECK_CLOSE(Duration::FromSeconds(1.0).AsMilliSeconds(), 1000.0, 0.0000001);
+    CHECK_CLOSE(Duration::FromSeconds(1.0).AsMicroSeconds(), 1000000.0, 0.0000001);
+    CHECK_CLOSE(Duration::FromSeconds(1.0).AsNanoSeconds(), 1000000000.0, 0.0000001);
 }
 
