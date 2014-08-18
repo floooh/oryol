@@ -4,7 +4,7 @@
     @class Oryol::Synth::soundMgr
     @brief internal sound manager wrapper class
 */
-#if ORYOL_OSX
+#if (ORYOL_OSX || ORYOL_EMSCRIPTEN)
 #include "Synth/al/alSoundMgr.h"
 namespace Oryol {
 namespace Synth {

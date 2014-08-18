@@ -5,8 +5,7 @@
     @brief OpenAL sound system wrapper
 */
 #include "Synth/base/soundMgrBase.h"
-#include "OpenAL/al.h"
-#include "OpenAL/alc.h"
+#include "Synth/al/al.h"
 
 namespace Oryol {
 namespace Synth {

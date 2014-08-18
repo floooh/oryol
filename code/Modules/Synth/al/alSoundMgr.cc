@@ -51,15 +51,33 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
     }
     
     // output some information about this OpenAL implementation
-    const ALCchar* str = alcGetString(this->alcDevice, ALC_DEVICE_SPECIFIER);
-    if (str) {
-        Log::Info("ALC_DEVICE_SPECIFIER: %s\n", str);
+    const ALCchar* alcStr = alcGetString(this->alcDevice, ALC_DEVICE_SPECIFIER);
+    if (alcStr) {
+        Log::Info("ALC_DEVICE_SPECIFIER: %s\n", alcStr);
     }
-    str = alcGetString(this->alcDevice, ALC_EXTENSIONS);
-    if (str) {
-        StringBuilder strBuilder(str);
+    alcStr = alcGetString(this->alcDevice, ALC_EXTENSIONS);
+    if (alcStr) {
+        StringBuilder strBuilder(alcStr);
         strBuilder.SubstituteAll(" ", "\n");
         Log::Info("ALC_EXTENSIONS:\n%s\n", strBuilder.AsCStr());
+    }
+    const ALchar* alStr = alGetString(AL_VERSION);
+    if (alStr) {
+        Log::Info("AL_VERSION: %s\n", alStr);
+    }
+    alStr = alGetString(AL_RENDERER);
+    if (alStr) {
+        Log::Info("AL_RENDERER: %s\n", alStr);
+    }
+    alStr = alGetString(AL_VENDOR);
+    if (alStr) {
+        Log::Info("AL_VENDOR: %s\n", alStr);
+    }
+    alStr = alGetString(AL_EXTENSIONS);
+    if (alStr) {
+        StringBuilder strBuilder(alStr);
+        strBuilder.SubstituteAll(" ", "\n");
+        Log::Info("AL_EXTENSIONS:\n%s\n", strBuilder.AsCStr());
     }
 }
 
