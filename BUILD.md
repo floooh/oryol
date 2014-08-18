@@ -6,7 +6,7 @@ CMake to manage build configurations for the supported host and target platforms
 ### You need: ###
 - python 2.7.x
 - cmake 2.8.11 or better
-- for **OSX:** Xcode 5.x
+- for **OSX:** Xcode 5.x (Xcode 6 Beta works as well)
 - for **Windows:** VStudio 2013 (Express should work fine)
 - for **emscripten:** 'node' must be in the path, and a JRE must be installed
 - for **Android:** the 'ant' Java build tool must be in the path
