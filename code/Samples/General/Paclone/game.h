@@ -148,17 +148,9 @@ private:
     void updateDirection(Actor& ghost) const;
     void updateGhostState(Actor& ghost);
 
-    TileType tileMap[Height][Width]{ {Empty} };
-    Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections] {
-        { Sheet::BlinkyNoDir, Sheet::BlinkyLeft,  Sheet::BlinkyRight, Sheet::BlinkyUp, Sheet::BlinkyDown },
-        { Sheet::PinkyNoDir,  Sheet::PinkyLeft,   Sheet::PinkyRight,  Sheet::PinkyUp,  Sheet::PinkyDown  },
-        { Sheet::InkyNoDir,   Sheet::InkyLeft,    Sheet::InkyRight,   Sheet::InkyUp,   Sheet::InkyDown   },
-        { Sheet::ClydeNoDir,  Sheet::ClydeLeft,   Sheet::ClydeRight,  Sheet::ClydeUp,  Sheet::ClydeDown  },
-        { Sheet::PacmanNoDir, Sheet::PacmanLeft,  Sheet::PacmanRight, Sheet::PacmanUp, Sheet::PacmanDown },
-    };
-    Sheet::SpriteId hollowSpriteMap[NumDirections] {
-        Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
-    };
+    static TileType tileMap[Height][Width];
+    static const Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections];
+    static const Sheet::SpriteId hollowSpriteMap[NumDirections];
     static const Direction reverseDir[NumDirections];
     static const Oryol::int16 dirVec[NumDirections][2];
 };

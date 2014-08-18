@@ -53,8 +53,22 @@ const game::Direction game::reverseDir[NumDirections] = {
     NoDirection, Right, Left, Down, Up,
 };
 
+const Sheet::SpriteId game::hollowSpriteMap[NumDirections] = {
+    Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
+};
+
 const Oryol::int16 game::dirVec[NumDirections][2] = {
     { 0, 0 }, { -1, 0 }, { +1, 0 }, { 0, -1 }, { 0, +1 }
+};
+
+game::TileType game::tileMap[Height][Width] = { {Empty} };
+
+const Sheet::SpriteId game::defaultSpriteMap[NumActorTypes][NumDirections] = {
+        { Sheet::BlinkyNoDir, Sheet::BlinkyLeft, Sheet::BlinkyRight, Sheet::BlinkyUp, Sheet::BlinkyDown },
+        { Sheet::PinkyNoDir, Sheet::PinkyLeft, Sheet::PinkyRight, Sheet::PinkyUp, Sheet::PinkyDown },
+        { Sheet::InkyNoDir, Sheet::InkyLeft, Sheet::InkyRight, Sheet::InkyUp, Sheet::InkyDown },
+        { Sheet::ClydeNoDir, Sheet::ClydeLeft, Sheet::ClydeRight, Sheet::ClydeUp, Sheet::ClydeDown },
+        { Sheet::PacmanNoDir, Sheet::PacmanLeft, Sheet::PacmanRight, Sheet::PacmanUp, Sheet::PacmanDown },
 };
 
 //------------------------------------------------------------------------------
