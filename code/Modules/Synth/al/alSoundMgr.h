@@ -6,6 +6,7 @@
 */
 #include "Synth/base/soundMgrBase.h"
 #include "Synth/al/al.h"
+#include "Synth/al/alBufferStreamer.h"
 
 namespace Oryol {
 namespace Synth {
@@ -21,10 +22,16 @@ public:
     void Setup(const SynthSetup& setupAttrs);
     /// discard the sound system
     void Discard();
-
+    /// update the sound system
+    void Update(Time::Duration timeDiff);
+    
 private:
+    /// print AL implementation info
+    void PrintALInfo();
+    
     ALCdevice* alcDevice;
     ALCcontext* alcContext;
+    alBufferStreamer streamer;
 };
     
 } // namespace Synth

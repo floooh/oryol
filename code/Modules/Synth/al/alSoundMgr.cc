@@ -49,8 +49,33 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
         Log::Warn("alcMakeContextCurrent() failed!\n");
         return;
     }
+    this->PrintALInfo();
     
-    // output some information about this OpenAL implementation
+    // setup the buffer streamer
+    this->streamer.Setup(setupAttrs);
+}
+
+//------------------------------------------------------------------------------
+void
+alSoundMgr::Discard() {
+    o_assert_dbg(this->isValid);
+    
+    this->streamer.Discard();
+    if (nullptr != this->alcContext) {
+        alcDestroyContext(this->alcContext);
+        this->alcContext = nullptr;
+    }
+    if (nullptr != this->alcDevice) {
+        alcCloseDevice(this->alcDevice);
+        this->alcDevice = nullptr;
+    }
+    
+    soundMgrBase::Discard();
+}
+
+//------------------------------------------------------------------------------
+void
+alSoundMgr::PrintALInfo() {
     const ALCchar* alcStr = alcGetString(this->alcDevice, ALC_DEVICE_SPECIFIER);
     if (alcStr) {
         Log::Info("ALC_DEVICE_SPECIFIER: %s\n", alcStr);
@@ -83,19 +108,23 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
 
 //------------------------------------------------------------------------------
 void
-alSoundMgr::Discard() {
-    o_assert_dbg(this->isValid);
-    
-    if (nullptr != this->alcContext) {
-        alcDestroyContext(this->alcContext);
-        this->alcContext = nullptr;
+alSoundMgr::Update(Time::Duration timeDiff) {
+    soundMgrBase::Update(timeDiff);
+    if (this->streamer.Update()) {
+        // FIXME: NEED TO PROVIDE A NEW BLOCK OF SAMPLE DATA HERE!
+        int16 samples[alBufferStreamer::BufferNumSamples];
+        for (int i = 0; i < alBufferStreamer::BufferNumSamples; i++) {
+            int16 noise;
+            if ((i >> 6) & 1) {
+                noise = 20000;
+            }
+            else {
+                noise = -20000;
+            }
+            samples[i] = noise;
+        }
+        this->streamer.Enqueue(samples, sizeof(samples));
     }
-    if (nullptr != this->alcDevice) {
-        alcCloseDevice(this->alcDevice);
-        this->alcDevice = nullptr;
-    }
-    
-    soundMgrBase::Discard();
 }
 
 } // namespace Synth

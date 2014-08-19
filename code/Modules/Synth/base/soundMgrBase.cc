@@ -44,6 +44,7 @@ soundMgrBase::IsValid() const {
 //------------------------------------------------------------------------------
 void
 soundMgrBase::Update(Time::Duration timeDiff) {
+    o_assert_dbg(this->isValid);
     this->curTime += timeDiff.AsSeconds();
     // FIXME: process sound queue
 }
@@ -51,6 +52,7 @@ soundMgrBase::Update(Time::Duration timeDiff) {
 //------------------------------------------------------------------------------
 void
 soundMgrBase::PushItem(item item) {
+    o_assert_dbg(this->isValid);
     item.absStartTime = this->curTime + item.timeOffset;
     item.absEndTime = item.absStartTime + item.sound.Duration();
     this->soundQueue.Insert(item);
