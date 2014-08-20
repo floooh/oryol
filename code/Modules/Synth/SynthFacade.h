@@ -21,11 +21,9 @@ public:
 
     /// update the sound system, call once per frame, advances tick
     void Update();
-    /// get the current audio tick
-    int32 CurrentTick() const;
 
     /// push a sound effect onto a voice's queue
-    void Play(uint32 voice, const Sound& sound, float32 freq, float32 vol, float32 timeOffset);
+    void Play(uint32 voice, const Sound& sound, float32 pitch, float32 vol, float32 timeOffset);
     /// stop a voices
     void Stop(uint32 voice, int32 tickOffset=0);
     /// pause a voice

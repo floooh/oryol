@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "soundMgrBase.h"
 #include "Core/Assert.h"
+#include "Time/Clock.h"
 
 namespace Oryol {
 namespace Synth {
@@ -25,6 +26,7 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
     o_assert(!this->isValid);
     this->isValid = true;
     this->setup = setupParams;
+    this->waveGenerator.Setup(setupParams);
 }
 
 //------------------------------------------------------------------------------
@@ -33,6 +35,7 @@ soundMgrBase::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     this->setup = SynthSetup();
+    this->waveGenerator.Discard();
 }
 
 //------------------------------------------------------------------------------
@@ -43,19 +46,34 @@ soundMgrBase::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
-soundMgrBase::Update(Time::Duration timeDiff) {
+soundMgrBase::Update() {
     o_assert_dbg(this->isValid);
-    this->curTime += timeDiff.AsSeconds();
-    // FIXME: process sound queue
+    this->curTime = Clock::Now();
+    if (this->firstFrame) {
+        this->firstFrame = false;
+        this->startTime = this->curTime;
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-soundMgrBase::PushItem(item item) {
+soundMgrBase::Play(uint32 voice, const Sound& snd, float32 pitch, float32 volume, float32 timeOffset) {
+
+    this->
+    item sndItem;
+    sndItem.sound = snd;
+    sndItem.pitch = pitch;
+    sndItem.volume = volume;
+    sndItem.timeOffset = timeOffset;
+    sndItem.absStartTick = synth::TimeToTicks(this->curTime.
+    
+}
+
+//------------------------------------------------------------------------------
+void
+soundMgrBase::pushItem(item item) {
     o_assert_dbg(this->isValid);
-    item.absStartTime = this->curTime + item.timeOffset;
-    item.absEndTime = item.absStartTime + item.sound.Duration();
-    this->soundQueue.Insert(item);
+    // FIXME FIXME FIXME
 }
 
 } // namespace Synth

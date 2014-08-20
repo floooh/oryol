@@ -23,7 +23,7 @@ public:
     /// discard the sound system
     void Discard();
     /// update the sound system
-    void Update(Time::Duration timeDiff);
+    void Update();
     
 private:
     /// print AL implementation info

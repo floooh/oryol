@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "SynthFacade.h"
+#include "Synth/Core/item.h"
 
 namespace Oryol {
 namespace Synth {
@@ -10,8 +11,7 @@ namespace Synth {
 OryolLocalSingletonImpl(SynthFacade);
 
 //------------------------------------------------------------------------------
-SynthFacade::SynthFacade(const SynthSetup& setupAttrs) :
-curTick(0) {
+SynthFacade::SynthFacade(const SynthSetup& setupAttrs) {
     this->soundManager.Setup(setupAttrs);
 }
 
@@ -23,14 +23,13 @@ SynthFacade::~SynthFacade() {
 //------------------------------------------------------------------------------
 void
 SynthFacade::Update() {
-    this->soundManager.Update(this->curTick);
-    this->curTick++;
+    this->soundManager.Update();
 }
 
 //------------------------------------------------------------------------------
-int32
-SynthFacade::CurrentTick() const {
-    return this->curTick;
+void
+SynthFacade::Play(uint32 voice, const Sound& sound, float32 pitch, float32 volume, float32 timeOffset) {
+    this->soundManager.Play(void, sound, pitch, volume, timeOffset);
 }
 
 } // namespace Synth

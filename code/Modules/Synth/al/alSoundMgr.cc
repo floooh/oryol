@@ -108,8 +108,8 @@ alSoundMgr::PrintALInfo() {
 
 //------------------------------------------------------------------------------
 void
-alSoundMgr::Update(Time::Duration timeDiff) {
-    soundMgrBase::Update(timeDiff);
+alSoundMgr::Update() {
+    soundMgrBase::Update();
     if (this->streamer.Update()) {
         // FIXME: NEED TO PROVIDE A NEW BLOCK OF SAMPLE DATA HERE!
         int16 samples[alBufferStreamer::BufferNumSamples];

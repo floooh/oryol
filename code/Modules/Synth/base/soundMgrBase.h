@@ -6,8 +6,8 @@
 */
 #include "Synth/Core/SynthSetup.h"
 #include "Synth/Core/item.h"
+#include "Synth/Core/generator.h"
 #include "Time/TimePoint.h"
-#include "Time/Duration.h"
 #include "Core/Containers/Queue.h"
 
 namespace Oryol {
@@ -28,16 +28,19 @@ public:
     bool IsValid() const;
     
     /// update the sound system
-    void Update(Time::Duration timeDiff);
+    void Update();
     
-    /// push an item onto the sound queue
-    void PushItem(item item);
+    /// start playing a new sound
+    void Play(uint32 voice, const Sound& snd, float32 pitch, float32 volume, float32 timeOffset);    
     
 protected:
+    /// push an item onto the sound queue
+    void pushItem(item item);
+
     bool isValid;
     SynthSetup setup;
-    float64 curTime;
-    Core::Queue<item> soundQueue;
+    Time::TimePoint curTime;
+    generator waveGenerator;
 };
     
 } // namespace Synth
