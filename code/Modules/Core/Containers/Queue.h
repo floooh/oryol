@@ -58,6 +58,8 @@ public:
 
     /// sorted-insert an element
     void Insert(const TYPE& elm);
+    /// peek at an element without removing it
+    const TYPE& Peek(int32 index) const;
     
     /// dequeue an element
     TYPE Dequeue();
@@ -310,6 +312,12 @@ Queue<TYPE>::Insert(const TYPE& elm) {
     const TYPE* ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, elm);
     int32 index = ptr - this->buffer.elmStart;
     this->buffer.insert(index, elm);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+Queue<TYPE>::Peek(int32 index) const {
+    return this->buffer[index];
 }
 
 //------------------------------------------------------------------------------
