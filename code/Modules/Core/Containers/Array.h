@@ -113,13 +113,13 @@ public:
     /// find element index with slow linear search
     int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) const;
     
-    /// C++ conform begin
+    /// std conform begin
     TYPE* begin();
-    /// C++ conform begin
+    /// std conform begin
     const TYPE* begin() const;
-    /// C++ conform end
+    /// std conform end
     TYPE* end();
-    /// C++ conform end
+    /// std conform end
     const TYPE* end() const;
     
 private:

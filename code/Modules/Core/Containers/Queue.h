@@ -66,6 +66,15 @@ public:
     /// dequeue into existing element
     void Dequeue(TYPE& outElm);
     
+    /// std conform begin
+    TYPE* begin();
+    /// std conform begin
+    const TYPE* begin() const;
+    /// std conform end
+    TYPE* end();
+    /// std conform end
+    const TYPE* end() const;
+    
 private:
     /// destroy contained resource
     void destroy();
@@ -332,6 +341,30 @@ template<class TYPE> void
 Queue<TYPE>::Dequeue(TYPE& outElm) {
     o_assert(this->buffer.size() > 0);
     outElm = std::move(this->buffer.popFront());
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE*
+Queue<TYPE>::begin() {
+    return this->buffer.elmStart;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE*
+Queue<TYPE>::begin() const {
+    return this->buffer.elmStart;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE*
+Queue<TYPE>::end() {
+    return this->buffer.elmEnd;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE*
+Queue<TYPE>::end() const {
+    return this->buffer.elmEnd;
 }
 
 } // namespace Core
