@@ -17,11 +17,8 @@ struct item {
     };
     
     Sound sound;
-    float32 pitch = 1.0f;
-    float32 volume = 1.0f;
     float32 timeOffset = 0.0f;
     int32 absStartTick = 0;
-    int32 absEndTick = 0;
 };
     
 } // namespace Synth

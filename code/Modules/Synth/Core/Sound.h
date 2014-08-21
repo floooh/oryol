@@ -2,7 +2,15 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Synth::Sound
-    @brief a sound effect with Waveform and envelope curve
+    @brief a set of sound parameters
+    
+    These sound parameters roughly mimic the SID register set for 
+    one voice but converted to more convenient float32 units in Hz and 
+    seconds. To manipulate sound output, enqueue Sound objects at
+    specific points in time.
+    
+    See here for details:
+    http://www.waitingforfriday.com/index.php/Commodore_SID_6581_Datasheet
 */
 #include "Core/Types.h"
 #include "Synth/Core/WaveForm.h"
@@ -12,55 +20,42 @@ namespace Synth {
     
 class Sound {
 public:
-    /// the wave form
-    WaveForm::Code Wave = WaveForm::Sine;
+    enum Trigger {
+        On,
+        Off,
+        Hold,
+    };
 
-    /// attack duration
-    float32 AttackDuration = 0.0f;
-    /// attack amplitude
-    float32 AttackAmplitude = 0.0f;
-    /// decay duration
-    float32 DecayDuration = 0.0f;
-    /// decay amplitude
-    float32 DecayAmplitude = 0.0f;
-    /// sustain duration
-    float32 SustainDuration = 0.0f;
-    /// sustain amplitude
-    float32 SustainAmplitude = 0.0f;
-    /// release duration
-    float32 ReleaseDuration = 0.0f;
-    /// release amplitude
-    float32 ReleaseAmplitude = 0.0f;
-
-    /// set attack duration and amplitude
-    void Attack(float32 duration, float32 amplitude) {
-        this->AttackDuration = duration;
-        this->AttackAmplitude = amplitude;
-    };
-    /// set decay duration and amplitude
-    void Decay(float32 duration, float32 amplitude) {
-        this->DecayDuration = duration;
-        this->DecayAmplitude = amplitude;
-    };
-    /// set sustain duration and amplitude
-    void Sustain(float32 duration, float32 amplitude) {
-        this->SustainDuration = duration;
-        this->SustainAmplitude = amplitude;
-    };
-    /// set release duration and amplitude
-    void Release(float32 duration, float32 amplitude) {
-        this->ReleaseDuration = duration;
-        this->ReleaseAmplitude = amplitude;
-    };
+    /// volume (0.0 to 1.0)
+    float32 Volume = 1.0f;
+    /// oscillator frequency in Hz (Freq = Fout = Fn * 0.0596)
+    float32 Freq = 1000.0f;
+    /// relative pulse width for pulse waveform (0.0 .. 1.0)
+    float32 PulseWidth = 0.5f;
+    /// attack duration in seconds
+    float32 Attack = 0.0f;
+    /// decay duration in seconds
+    float32 Decay = 0.0f;
+    /// release duration in seconds
+    float32 Release = 0.0f;
+    /// sustain level (0.0 to 1.0)
+    float32 SustainLevel = 0.5f;
+    /// the Gate bit which controls the Envelop Generator
+    Trigger Gate = Hold;
+    /// the Sync bit (not implemented yet)
+    bool Sync = false;
+    /// the RingMod bit (not implemented yet)
+    bool RingMod = false;
+    /// generate Triangle wave if set
+    bool Triangle = false;
+    /// generate Sawtooth wave if set
+    bool Sawtooth = false;
+    /// generate Square wave if set (controlled by PulseWidth)
+    bool Square = false;
+    /// generate Noise wave if set
+    bool Noise = false;
     
-
-    /// get duration of the entire envelope
-    float32 Duration() const {
-        return this->AttackDuration +
-               this->DecayDuration +
-               this->SustainDuration +
-               this->ReleaseDuration;
-    };
+    /// FIXME: FILTER BITS
 };
     
 } // namespace Synth

@@ -18,15 +18,13 @@ namespace Synth {
 class synth {
 public:
     /// standard sample rate
-    static const int32 SampleRate = 220050;
+    static const int32 SampleRate = 22050;
     /// byte size of a single sample
     static const int32 SampleSize = 2;
     /// number of samples in one streaming buffer
-    static const int32 BufferNumSamples = 2048;
+    static const int32 BufferNumSamples = 1 * 1024;
     /// byte size of one streaming buffer
     static const int32 BufferSize = SampleSize * BufferNumSamples;
-    /// duration of one waveform interval in seconds
-    static const int32 WaveFormDuration = 0.0058f;
     
     /// convert time in seconds to sample ticks
     static int32 TimeToTicks(float32 seconds, int32 freq);
@@ -41,7 +39,7 @@ public:
     /// get a saw-tooth wave sample (t is 0..1), return value between -1 and 1
     static float32 Sawtooth(float32 t);
     /// get a square wave sample (t is 0..1), return value between -1 and 1
-    static float32 Square(float32 t);
+    static float32 Square(float32 t, float32 pulseWidth);
     /// get a noise wave sample (t is 0..1), return value between -1 and 1
     static float32 Noise(float32 t);
 };
@@ -72,15 +70,13 @@ synth::Sine(float32 t) {
 
 //------------------------------------------------------------------------------
 inline float32
-synth::Square(float32 t) {
-    t = t - std::floorf(t);
-    return t < 0.5f ? -1.0f : 1.0f;
+synth::Square(float32 t, float32 pulseWidth) {
+    return t <= pulseWidth ? +1.0f : -1.0f;
 }
 
 //------------------------------------------------------------------------------
 inline float32
 synth::Triangle(float32 t) {
-    t = t - std::floorf(t);
     if (t < 0.5f) {
         // t: 0.0 -> 0.5,  ascending
         return (t - 0.25f) * 4.0f;
@@ -94,13 +90,14 @@ synth::Triangle(float32 t) {
 //------------------------------------------------------------------------------
 inline float32
 synth::Sawtooth(float32 t) {
-    t = t - std::floorf(t);
     return 1.0f - (t * 2.0f);
 }
 
 //------------------------------------------------------------------------------
 inline float32
 synth::Noise(float32 t) {
+    // FIXME: this is not correct, it use perlin noise with
+    // t as position instead!
     return float32((std::rand() & 0xFFFF) - 0x7FFF) / float32(0x8000);
 }
 

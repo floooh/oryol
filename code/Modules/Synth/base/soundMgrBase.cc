@@ -11,8 +11,9 @@ namespace Synth {
     
 //------------------------------------------------------------------------------
 soundMgrBase::soundMgrBase() :
-isValid(false) {
-    
+isValid(false),
+curTick(0) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -26,6 +27,7 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
     o_assert(!this->isValid);
     this->isValid = true;
     this->setup = setupParams;
+    this->curTick = 0;
     this->waveGenerator.Setup(setupParams);
 }
 
@@ -48,32 +50,16 @@ soundMgrBase::IsValid() const {
 void
 soundMgrBase::Update() {
     o_assert_dbg(this->isValid);
-    this->curTime = Clock::Now();
-    if (this->firstFrame) {
-        this->firstFrame = false;
-        this->startTime = this->curTime;
-    }
 }
 
 //------------------------------------------------------------------------------
 void
-soundMgrBase::Play(uint32 voice, const Sound& snd, float32 pitch, float32 volume, float32 timeOffset) {
-
-    this->
-    item sndItem;
-    sndItem.sound = snd;
-    sndItem.pitch = pitch;
-    sndItem.volume = volume;
-    sndItem.timeOffset = timeOffset;
-    sndItem.absStartTick = synth::TimeToTicks(this->curTime.
-    
-}
-
-//------------------------------------------------------------------------------
-void
-soundMgrBase::pushItem(item item) {
-    o_assert_dbg(this->isValid);
-    // FIXME FIXME FIXME
+soundMgrBase::Play(uint32 voice, const Sound& snd, float32 timeOffset) {
+    item soundItem;
+    soundItem.sound = snd;
+    soundItem.timeOffset = timeOffset;
+    soundItem.absStartTick = this->curTick + synth::TimeToTicks(timeOffset, synth::SampleRate);
+    this->waveGenerator.PushItem(soundItem);
 }
 
 } // namespace Synth

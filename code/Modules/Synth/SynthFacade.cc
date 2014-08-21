@@ -28,8 +28,8 @@ SynthFacade::Update() {
 
 //------------------------------------------------------------------------------
 void
-SynthFacade::Play(uint32 voice, const Sound& sound, float32 pitch, float32 volume, float32 timeOffset) {
-    this->soundManager.Play(void, sound, pitch, volume, timeOffset);
+SynthFacade::Play(uint32 voice, const Sound& sound, float32 timeOffset) {
+    this->soundManager.Play(voice, sound, timeOffset);
 }
 
 } // namespace Synth

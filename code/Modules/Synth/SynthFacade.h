@@ -23,18 +23,9 @@ public:
     void Update();
 
     /// push a sound effect onto a voice's queue
-    void Play(uint32 voice, const Sound& sound, float32 pitch, float32 vol, float32 timeOffset);
-    /// stop a voices
-    void Stop(uint32 voice, int32 tickOffset=0);
-    /// pause a voice
-    void Pause(uint32 voice, int32 tickOffset=0);
-    /// continue a voice
-    void Continue(uint32 voiceMask, int32 tickOffset=0);
-    /// volume fade for one or more voices
-    void VolumeFade(uint32 voiceMask, float32 targetVolume);
+    void Play(uint32 voice, const Sound& sound, float32 timeOffset = 0.0f);
     
 private:
-    int32 curTick;
     soundMgr soundManager;
 };
     

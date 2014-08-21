@@ -30,21 +30,19 @@ public:
     bool IsValid() const;
     
     /// enqueue a sound item
-    void EnqueueItem(int32 curTick, const item& item);
+    void PushItem(const item& item);
     /// generate a buffer worth of data
     void Generate(int32 startTick, void* buffer, int32 bufNumBytes);
 
-    /// set voice volume (0..1)
-    void SetVolume(float32 v);
-    /// get global volume
-    float32 Volume() const;
-    
 private:
-    /// generate samples for a single item
-    void generateItemSamples(int32 startTick, int32 endTick, const item& item);
+    /// generate sample through the waveform oscillator
+    float32 oscillator();
 
     bool isValid;
-    float32 volume;
+    int32 gateTick;         // the tick when the gate bit was switch on or off
+    Sound curSound;         // the current sound state
+    float32 oscillatorPos;  // 'position' of the oscillator
+    float32 oscillatorStep; // current step rate of the oscillator
     Core::Queue<item> itemQueue;
 };
 

@@ -111,19 +111,10 @@ void
 alSoundMgr::Update() {
     soundMgrBase::Update();
     if (this->streamer.Update()) {
-        // FIXME: NEED TO PROVIDE A NEW BLOCK OF SAMPLE DATA HERE!
-        int16 samples[alBufferStreamer::BufferNumSamples];
-        for (int i = 0; i < alBufferStreamer::BufferNumSamples; i++) {
-            int16 noise;
-            if ((i >> 6) & 1) {
-                noise = 20000;
-            }
-            else {
-                noise = -20000;
-            }
-            samples[i] = noise;
-        }
+        int16 samples[synth::BufferNumSamples];
+        this->waveGenerator.Generate(this->curTick, samples, sizeof(samples));
         this->streamer.Enqueue(samples, sizeof(samples));
+        this->curTick += synth::BufferNumSamples;
     }
 }
 

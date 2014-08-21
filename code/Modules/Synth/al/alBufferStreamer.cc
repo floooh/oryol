@@ -47,7 +47,7 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
     alGenSources(1, &this->source);
     ORYOL_AL_CHECK_ERROR();
     // FIXME FIXME FIXME
-    alSourcef(this->source, AL_GAIN, 0.05f);
+    alSourcef(this->source, AL_GAIN, 0.25f);
 }
 
 //------------------------------------------------------------------------------
