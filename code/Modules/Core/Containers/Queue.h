@@ -58,9 +58,12 @@ public:
 
     /// sorted-insert an element
     void Insert(const TYPE& elm);
-    /// peek at an element without removing it
+    /// peek at front (dequeue-end) an element without removing it
     const TYPE& Peek(int32 index) const;
-    
+    /// get front element (dequeue end) without removing it
+    const TYPE& Front() const;
+    /// get back element (enqueue end) without removing it
+    const TYPE& Back() const;
     /// dequeue an element
     TYPE Dequeue();
     /// dequeue into existing element
@@ -327,6 +330,18 @@ Queue<TYPE>::Insert(const TYPE& elm) {
 template<class TYPE> const TYPE&
 Queue<TYPE>::Peek(int32 index) const {
     return this->buffer[index];
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+Queue<TYPE>::Front() const {
+    return this->buffer.front();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+Queue<TYPE>::Back() const {
+    return this->buffer.back();
 }
 
 //------------------------------------------------------------------------------

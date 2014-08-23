@@ -88,6 +88,8 @@ TEST(QueueTest) {
     intQueue.Insert(3);
     intQueue.Insert(2);
     CHECK(intQueue.Size() == 5);
+    CHECK(intQueue.Front() == 2);
+    CHECK(intQueue.Back() == 10);
     CHECK(intQueue.Peek(0) == 2);
     CHECK(intQueue.Peek(1) == 3);
     CHECK(intQueue.Peek(2) == 3);
