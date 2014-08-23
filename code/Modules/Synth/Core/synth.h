@@ -25,6 +25,10 @@ public:
     static const int32 BufferNumSamples = 1 * 1024;
     /// byte size of one streaming buffer
     static const int32 BufferSize = SampleSize * BufferNumSamples;
+    /// number of voices
+    static const int32 NumVoices = 4;
+    /// number of tracks per voice
+    static const int32 NumTracks = 4;
     
     /// convert time in seconds to sample ticks
     static int32 TimeToTicks(float32 seconds, int32 freq);

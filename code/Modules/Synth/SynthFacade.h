@@ -6,7 +6,7 @@
 */
 #include "Core/Singleton.h"
 #include "Synth/Core/soundMgr.h"
-#include "Synth/Core/Sound.h"
+#include "Synth/Core/Op.h"
 
 namespace Oryol {
 namespace Synth {
@@ -22,8 +22,8 @@ public:
     /// update the sound system, call once per frame, advances tick
     void Update();
 
-    /// push a sound effect onto a voice's queue
-    void Play(uint32 voice, const Sound& sound, float32 timeOffset = 0.0f);
+    /// add a sound synthesis Op
+    void AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset = 0.0f);
     
 private:
     soundMgr soundManager;

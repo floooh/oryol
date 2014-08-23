@@ -5,10 +5,8 @@
     @brief sound manager base class
 */
 #include "Synth/Core/SynthSetup.h"
-#include "Synth/Core/item.h"
-#include "Synth/Core/generator.h"
-#include "Time/TimePoint.h"
-#include "Core/Containers/Queue.h"
+#include "Synth/Core/Op.h"
+#include "Synth/Core/voice.h"
 
 namespace Oryol {
 namespace Synth {
@@ -30,14 +28,14 @@ public:
     /// update the sound system
     void Update();
     
-    /// start playing a new sound
-    void Play(uint32 voice, const Sound& snd, float32 timeOffset);    
+    /// add an op to a voice track
+    void AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset);
     
 protected:
     bool isValid;
     SynthSetup setup;
     int32 curTick;
-    generator waveGenerator;
+    voice voices[synth::NumVoices];
 };
     
 } // namespace Synth

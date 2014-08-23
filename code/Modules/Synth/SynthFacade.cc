@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "SynthFacade.h"
-#include "Synth/Core/item.h"
 
 namespace Oryol {
 namespace Synth {
@@ -28,8 +27,8 @@ SynthFacade::Update() {
 
 //------------------------------------------------------------------------------
 void
-SynthFacade::Play(uint32 voice, const Sound& sound, float32 timeOffset) {
-    this->soundManager.Play(voice, sound, timeOffset);
+SynthFacade::AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset) {
+    this->soundManager.AddOp(voice, track, op, timeOffset);
 }
 
 } // namespace Synth

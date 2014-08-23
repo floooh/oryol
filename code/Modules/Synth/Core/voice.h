@@ -1,26 +1,24 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::generator
-    @brief wave form generator
-    
-    Converts sound items into actual in chunk-sized blocks of waveform data.
+    @class Oryol::Synth::voice
+    @brief synthesize samples for a single voice made of multiple op-tracks
 */
 #include "Core/Types.h"
 #include "Synth/Core/SynthSetup.h"
-#include "Synth/Core/item.h"
+#include "Synth/Core/Op.h"
 #include "Synth/Core/synth.h"
 #include "Core/Containers/Queue.h"
 
 namespace Oryol {
 namespace Synth {
     
-class generator {
+class voice {
 public:
     /// constructor
-    generator();
+    voice();
     /// destructor
-    ~generator();
+    ~voice();
     
     /// setup the synthesizer object
     void Setup(const SynthSetup& setupAttrs);
@@ -29,26 +27,26 @@ public:
     /// return true if object has been setup
     bool IsValid() const;
     
-    /// enqueue a sound item
-    void PushItem(const item& item);
-    /// generate a buffer worth of data
-    void Generate(int32 startTick, void* buffer, int32 bufNumBytes);
+    /// add new op to end of track
+    void AddOp(int32 track, const Op& op);
+    /// synthesize samples into memory buffer
+    void Synthesize(int32 startTick, void* buffer, int32 bufNumBytes);
 
 private:
-    /// generate sample through the waveform oscillator
-    float32 oscillator();
+    /// generate a single sample
+    float32 sample(int32 curTick, const Op* op);
 
     bool isValid;
-    int32 gateTick;         // the tick when the gate bit was switch on or off
-    Sound curSound;         // the current sound state
     float32 oscillatorPos;  // 'position' of the oscillator
     float32 oscillatorStep; // current step rate of the oscillator
-    Core::Queue<item> itemQueue;
+    Core::Queue<Op> tracks[synth::NumTracks];
+    int32 curOpIndex[synth::NumTracks];
+    int32 prvOpIndex[synth::NumTracks];
 };
 
 //------------------------------------------------------------------------------
 inline bool
-generator::IsValid() const {
+voice::IsValid() const {
     return this->isValid;
 }
 

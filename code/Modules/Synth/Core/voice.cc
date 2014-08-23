@@ -1,123 +1,160 @@
 //------------------------------------------------------------------------------
-//  generator.cc
+//  voice.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "generator.h"
+#include "voice.h"
 #include "Core/Assert.h"
+#include "Synth/Core/synth.h"
 
 namespace Oryol {
 namespace Synth {
     
 //------------------------------------------------------------------------------
-generator::generator() :
+voice::voice() :
 isValid(false),
-gateTick(0),
 oscillatorPos(0.0f),
 oscillatorStep(0.0f) {
-    this->itemQueue.Reserve(32);
+    for (auto& queue : this->tracks) {
+        queue.Reserve(32);
+    }
+    for (int i = 0; i < synth::NumTracks; i++) {
+        this->curOpIndex[i] = InvalidIndex;
+        this->prvOpIndex[i] = InvalidIndex;
+    }
 }
 
 //------------------------------------------------------------------------------
-generator::~generator() {
+voice::~voice() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-generator::Setup(const SynthSetup& setupAttrs) {
+voice::Setup(const SynthSetup& setupAttrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(this->itemQueue.Empty());
     
     this->isValid = true;
-    this->gateTick = 0;
     this->oscillatorPos = 0.0f;
     this->oscillatorStep = 0.0f;
 }
 
 //------------------------------------------------------------------------------
 void
-generator::Discard() {
+voice::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    this->itemQueue.Clear();
+    for (auto& queue : this->tracks) {
+        queue.Clear();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-generator::PushItem(const item& item) {
+voice::AddOp(int32 track, const Op& op) {
     o_assert_dbg(this->isValid);
-    this->itemQueue.Insert(item);
+    o_assert_range_dbg(track, synth::NumTracks);
+    this->tracks[track].Insert(op);
 }
 
 //------------------------------------------------------------------------------
 void
-generator::Generate(int32 startTick, void* buffer, int32 bufNumBytes) {
+voice::Synthesize(int32 startTick, void* buffer, int32 bufNumBytes) {
     o_assert_dbg(this->isValid);
     o_assert(synth::BufferSize == bufNumBytes);
+    
+    // first discard any ops that are no longer needed
+    for (auto& track : this->tracks) {
+        while ((track.Size() > 1) && (startTick > (track.Peek(1).startTick + track.Peek(1).FadeInTicks))) {
+            track.Dequeue();
+        }
+    }
     
     // the sample tick range covered by the buffer
     const int32 endTick = startTick + synth::BufferNumSamples;
     int16* samplePtr = (int16*) buffer;
     
-    // for each tick / sample
-    const item* curItem = this->itemQueue.begin();
-    const item* onePastLastItem = this->itemQueue.end();
+    // for each sample...
     for (int32 curTick = startTick; curTick < endTick; curTick++) {
-        
-        // check if new item must be pulled
-        if ((curItem != onePastLastItem) && (curItem->absStartTick <= curTick)) {
-            if (curItem->sound.Gate != Sound::Hold) {
-                this->gateTick = curItem->absStartTick;
+        float32 sample = 1.0f;
+        for (const auto& track : this->tracks) {
+            const Op* opBegin = track.begin();
+            const Op* opEnd   = track.end();
+            for (const Op* op = opBegin; op < opEnd; op++) {
+                if (((op + 1) == opEnd) || ((op < (opEnd - 1)) && (op[1].startTick > curTick))) {
+                    o_assert_dbg(op->startTick <= curTick);
+                
+                    // sample current op
+                    float32 s0 = this->sample(curTick, op);
+                    
+                    // cross-fade with previous op?
+                    if ((op > opBegin) && (curTick < (op->startTick + op->FadeInTicks))) {
+                        float32 t = float32(curTick - op->startTick) / float32(op->FadeInTicks);
+                        float32 s1 = this->sample(curTick, op-1);
+                        s0 = (s0 * t) + (s1 * (1.0f-t));
+                    }
+                    
+                    // modulate sample from previous track
+                    sample *= s0;
+                    
+                    // break out of loop
+                    break;
+                }
             }
-            this->curSound = curItem->sound;
-            this->oscillatorStep = this->curSound.Freq / synth::SampleRate;
-            curItem++;
         }
-        
-        // get wave form sample
-        float32 sample = this->oscillator();
-        
-        // FIXME: amplitude modulation
-        
-        // FIXME: filtering
-        
-        // convert to int16 and write to buffer
+
+        // convert resulting sample to 16 bit and write to buffer
         int16 intSample = (sample * 0x7FFF);
         *samplePtr++ = intSample;
-    }
-    
-    // discard items behind the play cursor
-    while (!this->itemQueue.Empty() && this->itemQueue.Peek(0).absStartTick < endTick) {
-        this->itemQueue.Dequeue();
     }
 }
 
 //------------------------------------------------------------------------------
 float32
-generator::oscillator() {
+voice::sample(int32 curTick, const Op* op) {
     
-    float32 sample = 0.0f;
-    float32 t = this->oscillatorPos;
-    if (this->curSound.Triangle) {
-        sample = synth::Triangle(t);
+    // shortcut for const output
+    if (Op::Const == op->Code) {
+        return op->Amplitude + op->Bias;
     }
-    else if (this->curSound.Sawtooth) {
-        sample = synth::Sawtooth(t);
+    else if (Op::Nop == op->Code) {
+        return 0.0f;
     }
-    else if (this->curSound.Square) {
-        sample = synth::Square(t, this->curSound.PulseWidth);
+    
+    // generate wave form
+    int32 tick = (curTick - op->startTick) % op->freqLoopTicks;
+    float32 t = float32(tick) / float32(op->freqLoopTicks); // t now 0..1 position in wave form
+    if (Op::Sine == op->Code) {
+        // sine wave
+        return (std::sinf(t * M_PI * 2.0f) * op->Amplitude) + op->Bias;
     }
-    else if (this->curSound.Sawtooth) {
-        sample = synth::Sawtooth(t);
+    else if (Op::Square == op->Code) {
+        // square wave with Pulse as pulse with
+        if (t <= op->Pulse) {
+            return op->Amplitude + op->Bias;
+        }
+        else {
+            return -op->Amplitude + op->Bias;
+        }
+    } else if (Op::Triangle == op->Code) {
+        // triangle with shifted triangle top position
+        // Pulse == 0.0: sawtooth
+        // Pulse == 0.5: classic triangle
+        // Pulse == 1.0: inverse sawtooth
+        float32 s;
+        if (t < op->Pulse) {
+            s = t / op->Pulse;
+        }
+        else {
+            s = 1.0f - ((t - op->Pulse) / (1.0f - op->Pulse));
+        }
+        return (((s * 2.0f) - 1.0f) * op->Amplitude) + op->Bias;
     }
-    else if (this->curSound.Noise) {
-        sample = synth::Noise(t);
+    else {
+        // noise
+        // FIXME: replace with perlin or simplex noise
+        // in order to get frequency output
+        return float32((std::rand() & 0xFFFF) - 0x7FFF) / float32(0x8000);
     }
-    this->oscillatorPos += this->oscillatorStep;
-    if (this->oscillatorPos >= 1.0f) {
-        this->oscillatorPos -= 1.0f;
-    }
-    return sample;
 }
 
 } // namespace Synth
