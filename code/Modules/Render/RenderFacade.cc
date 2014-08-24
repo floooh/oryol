@@ -167,6 +167,13 @@ RenderFacade::UpdateVertices(const Resource::Id& resId, int32 numBytes, const vo
 
 //------------------------------------------------------------------------------
 void
+RenderFacade::ReadPixels(void* buf, int32 bufNumBytes) {
+    o_assert_dbg(this->valid);
+    this->renderManager.ReadPixels(buf, bufNumBytes);
+}
+
+//------------------------------------------------------------------------------
+void
 RenderFacade::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
     this->renderManager.Clear(channels, color, depth, stencil);

@@ -36,6 +36,8 @@ public:
     void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
     /// update vertex data
     void UpdateVertices(mesh* msh, int32 numBytes, const void* data);
+    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
+    void ReadPixels(void* buf, int32 bufNumBytes);
 };
 
 } // namespace Render

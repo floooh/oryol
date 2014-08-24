@@ -380,6 +380,36 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     ORYOL_GL_CHECK_ERROR();
 }
 
+//------------------------------------------------------------------------------
+void
+glRenderMgr::ReadPixels(void* buf, int32 bufNumBytes) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg((nullptr != buf) && (bufNumBytes > 0));
+    
+    GLsizei width, height;
+    GLenum format, type;
+    if (nullptr == this->curRenderTarget) {
+        const DisplayAttrs& attrs = this->displayManager->GetDisplayAttrs();
+        width  = attrs.FramebufferWidth;
+        height = attrs.FramebufferHeight;
+        format = glTypes::AsGLTexImageFormat(attrs.ColorPixelFormat);
+        type   = glTypes::AsGLTexImageType(attrs.ColorPixelFormat);
+        o_assert((width & 3) == 0);
+        o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorPixelFormat)));
+    }
+    else {
+        const TextureAttrs& attrs = this->curRenderTarget->GetTextureAttrs();
+        width  = attrs.Width;
+        height = attrs.Height;
+        format = glTypes::AsGLTexImageFormat(attrs.ColorFormat);
+        type   = glTypes::AsGLTexImageType(attrs.ColorFormat);
+        o_assert((width & 3) == 0);
+        o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorFormat)));
+    }
+    ::glReadPixels(0, 0, width, height, format, type, buf);
+    ORYOL_GL_CHECK_ERROR();
+}
+
 } // namespace Render
 } // namespace Oryol
 
