@@ -60,10 +60,14 @@ public:
     void Insert(const TYPE& elm);
     /// peek at front (dequeue-end) an element without removing it
     const TYPE& Peek(int32 index) const;
-    /// get front element (dequeue end) without removing it
+    /// read-only access to front element (dequeue end)
     const TYPE& Front() const;
-    /// get back element (enqueue end) without removing it
+    /// read-write access to front element (dequeue end)
+    TYPE& Front();
+    /// read-only access to back element (enqueue end)
     const TYPE& Back() const;
+    /// read-write access to back element (enqueue end)
+    TYPE& Back();
     /// dequeue an element
     TYPE Dequeue();
     /// dequeue into existing element
@@ -339,8 +343,20 @@ Queue<TYPE>::Front() const {
 }
 
 //------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+Queue<TYPE>::Front() {
+    return this->buffer.front();
+}
+
+//------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 Queue<TYPE>::Back() const {
+    return this->buffer.back();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+Queue<TYPE>::Back() {
     return this->buffer.back();
 }
 
