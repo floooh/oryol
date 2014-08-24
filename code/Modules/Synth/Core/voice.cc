@@ -111,7 +111,7 @@ voice::sample(int32 curTick, const Op* op) {
     float32 t = float32(tick) / float32(op->freqLoopTicks); // t now 0..1 position in wave form
     if (Op::Sine == op->Code) {
         // sine wave
-        #if ORYOL_ANDROID
+        #if ORYOL_ANDROID || ORYOL_LINUX
         return (std::sin(t * M_PI * 2.0f) * op->Amplitude) + op->Bias;
         #else
         return (std::sinf(t * M_PI * 2.0f) * op->Amplitude) + op->Bias;
