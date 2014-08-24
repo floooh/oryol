@@ -43,7 +43,7 @@ SynthTestApp::OnInit() {
     this->synth  = SynthFacade::CreateSingle(SynthSetup());
     
     this->op.Code = Op::Square;
-    this->op.FadeIn = 0.1f;
+    this->op.FadeIn = 0.05f;
     this->op.Frequency = 660;
     
     return App::OnInit();
@@ -152,14 +152,14 @@ SynthTestApp::OnRunning() {
             this->synth->AddOp(0, 1, attack);
             Op decay;
             decay.Code = Op::Const;
-            decay.FadeIn = 0.1f;
+            decay.FadeIn = 0.2f;
             decay.Amplitude = 0.2f;
             this->synth->AddOp(0, 1, decay, 0.01f);
             Op release;
             release.Code = Op::Const;
-            release.FadeIn = 0.5f;
+            release.FadeIn = 0.8f;
             release.Amplitude = 0.0f;
-            this->synth->AddOp(0, 1, release, 0.15f);
+            this->synth->AddOp(0, 1, release, 0.3f);
             this->synth->AddOp(0, 0, this->op);
         }
     

@@ -47,6 +47,8 @@ public:
     };
     /// start tick (private, computed)
     int32 startTick = 0;
+    /// end tick (private, computed)
+    int32 endTick = (1<<30);
     /// less-then operator for sorting by StartTick
     bool operator<(const Op& rhs) const {
         return this->startTick < rhs.startTick;

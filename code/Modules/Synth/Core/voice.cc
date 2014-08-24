@@ -13,15 +13,10 @@ namespace Synth {
     
 //------------------------------------------------------------------------------
 voice::voice() :
-isValid(false),
-oscillatorPos(0.0f),
-oscillatorStep(0.0f) {
-    for (auto& queue : this->tracks) {
-        queue.Reserve(32);
-    }
+isValid(false) {
     for (int i = 0; i < synth::NumTracks; i++) {
-        this->curOpIndex[i] = InvalidIndex;
-        this->prvOpIndex[i] = InvalidIndex;
+        this->trackOpBegin[i] = nullptr;
+        this->trackOpEnd[i] = nullptr;
     }
 }
 
@@ -33,11 +28,8 @@ voice::~voice() {
 //------------------------------------------------------------------------------
 void
 voice::Setup(const SynthSetup& setupAttrs) {
-    o_assert_dbg(!this->isValid);
-    
+    o_assert_dbg(!this->isValid);    
     this->isValid = true;
-    this->oscillatorPos = 0.0f;
-    this->oscillatorStep = 0.0f;
 }
 
 //------------------------------------------------------------------------------
@@ -45,8 +37,8 @@ void
 voice::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    for (auto& queue : this->tracks) {
-        queue.Clear();
+    for (auto& track : this->tracks) {
+        track.DiscardAllOps();
     }
 }
 
@@ -55,7 +47,7 @@ void
 voice::AddOp(int32 track, const Op& op) {
     o_assert_dbg(this->isValid);
     o_assert_range_dbg(track, synth::NumTracks);
-    this->tracks[track].Insert(op);
+    this->tracks[track].AddOp(op);
 }
 
 //------------------------------------------------------------------------------
@@ -64,49 +56,41 @@ voice::Synthesize(int32 startTick, void* buffer, int32 bufNumBytes) {
     o_assert_dbg(this->isValid);
     o_assert(synth::BufferSize == bufNumBytes);
     
-    // first discard any ops that are no longer needed
-    for (auto& track : this->tracks) {
-        while ((track.Size() > 1) && (startTick > (track.Peek(1).startTick + track.Peek(1).FadeInTicks))) {
-            track.Dequeue();
-        }
-    }
-    
-    // the sample tick range covered by the buffer
+    // get all ops overlapping the current buffer range
     const int32 endTick = startTick + synth::BufferNumSamples;
+    for (int i = 0; i < synth::NumTracks; i++) {
+        this->tracks[i].GatherOps(startTick, endTick, this->trackOpBegin[i], this->trackOpEnd[i]);
+    }
+
+    // the sample tick range covered by the buffer
     int16* samplePtr = (int16*) buffer;
     
     // for each sample...
     for (int32 curTick = startTick; curTick < endTick; curTick++) {
-        float32 sample = 1.0f;
-        for (const auto& track : this->tracks) {
-            const Op* opBegin = track.begin();
-            const Op* opEnd   = track.end();
+        float32 voiceSample = 1.0f;
+        for (int trackIndex = 0; trackIndex < synth::NumTracks; trackIndex++) {
+            const Op* opBegin = this->trackOpBegin[trackIndex];
+            const Op* opEnd   = this->trackOpEnd[trackIndex];
+            float32 trackSample = 1.0f;
             for (const Op* op = opBegin; op < opEnd; op++) {
-                if (((op + 1) == opEnd) || ((op < (opEnd - 1)) && (op[1].startTick > curTick))) {
-                    o_assert_dbg(op->startTick <= curTick);
+                if ((curTick >= op->startTick) && (curTick < op->endTick)) {
                 
-                    // sample current op
-                    float32 s0 = this->sample(curTick, op);
+                    // compute current sample
+                    float32 s = this->sample(curTick, op);
                     
-                    // cross-fade with previous op?
-                    if ((op > opBegin) && (curTick < (op->startTick + op->FadeInTicks))) {
+                    // cross-fade with previous sample?
+                    if (curTick < (op->startTick + op->FadeInTicks)) {
                         float32 t = float32(curTick - op->startTick) / float32(op->FadeInTicks);
-                        float32 s1 = this->sample(curTick, op-1);
-                        s0 = (s0 * t) + (s1 * (1.0f-t));
+                        trackSample = (s * t) + (trackSample * (1.0f - t));
                     }
-                    
-                    // modulate sample from previous track
-                    sample *= s0;
-                    
-                    // break out of loop
-                    break;
+                    else {
+                        trackSample = s;
+                    }
                 }
             }
+            voiceSample *= trackSample;
         }
-
-        // convert resulting sample to 16 bit and write to buffer
-        int16 intSample = (sample * 0x7FFF);
-        *samplePtr++ = intSample;
+        *samplePtr++ = int16(voiceSample * 32767.0f);
     }
 }
 

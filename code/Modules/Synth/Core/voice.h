@@ -8,7 +8,7 @@
 #include "Synth/Core/SynthSetup.h"
 #include "Synth/Core/Op.h"
 #include "Synth/Core/synth.h"
-#include "Core/Containers/Queue.h"
+#include "Synth/Core/voiceTrack.h"
 
 namespace Oryol {
 namespace Synth {
@@ -37,11 +37,9 @@ private:
     float32 sample(int32 curTick, const Op* op);
 
     bool isValid;
-    float32 oscillatorPos;  // 'position' of the oscillator
-    float32 oscillatorStep; // current step rate of the oscillator
-    Core::Queue<Op> tracks[synth::NumTracks];
-    int32 curOpIndex[synth::NumTracks];
-    int32 prvOpIndex[synth::NumTracks];
+    voiceTrack tracks[synth::NumTracks];
+    Op* trackOpBegin[synth::NumTracks];
+    Op* trackOpEnd[synth::NumTracks];
 };
 
 //------------------------------------------------------------------------------

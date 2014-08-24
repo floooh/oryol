@@ -112,6 +112,7 @@ alSoundMgr::Update() {
     soundMgrBase::Update();
     if (this->streamer.Update()) {
         int16 samples[synth::BufferNumSamples];
+        // FIXME: try this out on GPU, even if pipeline stall...
         this->voices[0].Synthesize(this->curTick, samples, sizeof(samples));
         this->streamer.Enqueue(samples, sizeof(samples));
         this->curTick += synth::BufferNumSamples;
