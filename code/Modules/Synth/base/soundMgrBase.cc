@@ -28,9 +28,19 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
     this->isValid = true;
     this->setup = setupParams;
     this->curTick = 0;
-    for (voice& voice : this->voices) {
-        voice.Setup(setupParams);
+    for (int i = 0; i < synth::NumVoices; i++) {
+        this->voices[i].Setup(i, setupParams);
     }
+    
+    // add an initial NOP operation to first track of each voice,
+    // this will generate all 0.0 samples instead of 1.0s
+    Op nop;
+    for (int i = 0; i < synth::NumVoices; i++) {
+        this->AddOp(i, 0, nop, 0.0f);
+    }
+    
+    // setup the GPU synthesizer
+    this->gpuSynth.Setup(setupParams);
 }
 
 //------------------------------------------------------------------------------
@@ -42,6 +52,7 @@ soundMgrBase::Discard() {
     for (voice& voice : this->voices) {
         voice.Discard();
     }
+    this->gpuSynth.Discard();
 }
 
 //------------------------------------------------------------------------------

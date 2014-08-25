@@ -111,11 +111,26 @@ void
 alSoundMgr::Update() {
     soundMgrBase::Update();
     if (this->streamer.Update()) {
-        int16 samples[synth::BufferNumSamples];
-        // FIXME: try this out on GPU, even if pipeline stall...
-        this->voices[0].Synthesize(this->curTick, samples, sizeof(samples));
-        this->streamer.Enqueue(samples, sizeof(samples));
+    
+        // need to 'render' new buffers
+        static int16 samples[synth::NumVoices][synth::BufferNumSamples];
+        const int32 startTick = this->curTick;
+        const int32 endTick   = startTick + synth::BufferNumSamples;
+        opBundle bundle;
+        for (int voiceIndex = 0; voiceIndex < synth::NumVoices; voiceIndex++) {
+            bundle.StartTick[voiceIndex] = startTick;
+            bundle.EndTick[voiceIndex] = endTick;
+            bundle.Buffer[voiceIndex] = samples[voiceIndex];
+            bundle.BufferNumBytes = synth::BufferSize;
+            this->voices[voiceIndex].GatherOps(startTick, endTick, bundle);
+        }
+        
+        // FIXME: select between cpuSynth and gpuSynth here!
+        this->cpuSynth.Synthesize(bundle);
         this->curTick += synth::BufferNumSamples;
+        
+        // FIXME: only one voice handled at the moment!
+        this->streamer.Enqueue(samples[0], sizeof(samples[0]));
     }
 }
 

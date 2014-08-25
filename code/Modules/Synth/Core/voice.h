@@ -9,6 +9,7 @@
 #include "Synth/Core/Op.h"
 #include "Synth/Core/synth.h"
 #include "Synth/Core/voiceTrack.h"
+#include "Synth/Core/opBundle.h"
 
 namespace Oryol {
 namespace Synth {
@@ -21,7 +22,7 @@ public:
     ~voice();
     
     /// setup the synthesizer object
-    void Setup(const SynthSetup& setupAttrs);
+    void Setup(int32 voiceIndex, const SynthSetup& setupAttrs);
     /// discard the synthesizer object
     void Discard();
     /// return true if object has been setup
@@ -29,17 +30,13 @@ public:
     
     /// add new op to end of track
     void AddOp(int32 track, const Op& op);
-    /// synthesize samples into memory buffer
-    void Synthesize(int32 startTick, void* buffer, int32 bufNumBytes);
+    /// gather ops in tick range into opBundle
+    void GatherOps(int32 startTick, int32 endTick, opBundle& inOutBundle);
 
 private:
-    /// generate a single sample
-    float32 sample(int32 curTick, const Op* op);
-
     bool isValid;
+    int32 voiceIndex;
     voiceTrack tracks[synth::NumTracks];
-    Op* trackOpBegin[synth::NumTracks];
-    Op* trackOpEnd[synth::NumTracks];
 };
 
 //------------------------------------------------------------------------------

@@ -7,6 +7,8 @@
 #include "Synth/Core/SynthSetup.h"
 #include "Synth/Core/Op.h"
 #include "Synth/Core/voice.h"
+#include "Synth/Core/cpuSynthesizer.h"
+#include "Synth/Core/gpuSynthesizer.h"
 
 namespace Oryol {
 namespace Synth {
@@ -36,6 +38,8 @@ protected:
     SynthSetup setup;
     int32 curTick;
     voice voices[synth::NumVoices];
+    cpuSynthesizer cpuSynth;
+    gpuSynthesizer gpuSynth;
 };
     
 } // namespace Synth

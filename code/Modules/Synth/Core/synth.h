@@ -24,7 +24,7 @@ public:
     /// byte size of one streaming buffer
     static const int32 BufferSize = SampleSize * BufferNumSamples;
     /// number of voices
-    static const int32 NumVoices = 4;
+    static const int32 NumVoices = 1;
     /// number of tracks per voice
     static const int32 NumTracks = 4;
     
