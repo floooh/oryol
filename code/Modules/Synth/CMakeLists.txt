@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 
 oryol_begin_module(Synth)
-oryol_sources(. Core base)
+oryol_sources(. Core base shaders)
 oryol_sources_osx(al)
 oryol_sources_emscripten(al)
 oryol_deps(Resource Core)

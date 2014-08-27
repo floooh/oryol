@@ -1,0 +1,47 @@
+//------------------------------------------------------------------------------
+//  Synth module audio rendering shaders
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//  simple fullscreen vertex shader
+//
+@vs vsSynth
+@in vec4 position
+void main() {
+    $position = position;
+}
+@end
+
+//------------------------------------------------------------------------------
+@block SynthUtil
+
+//-- encode a sample value (-1.0 .. +1.0) into a vec2 so that
+//-- the RG/BA pairs are actually int16's in memory
+/*
+vec2 encode(float s) {
+    float v = (s >= 0.0) ? (s * 0.5) : (1.0 + s * 0.5);
+    vec2 enc = vec2(1.0, 255.0) * v;
+    enc = fract(enc);
+    enc -= enc.yy * vec2(1.0/255.0, 0.0);
+    return enc;
+}
+*/
+@end
+
+
+//------------------------------------------------------------------------------
+//  the sample-rendering shader
+//
+@fs fsSynth
+@use SynthUtil
+@in vec2 uv
+void main() {
+    vec2 s0 = vec2(1.0 - 1.0/32767.0, 0.5 - 1.0/32767.0);   // this is int16=32767
+    vec2 s1 = vec2(0.0, 0.5);   // this is int16=-32768
+    $color = vec4(s0, s1);
+}
+@end
+
+@bundle Synth
+@program vsSynth fsSynth
+@end

@@ -40,7 +40,9 @@ SynthTestApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(640, 400, "Oryol Synth Test Sample"));
     this->debug  = DebugFacade::CreateSingle();
     this->input  = InputFacade::CreateSingle();
-    this->synth  = SynthFacade::CreateSingle(SynthSetup());
+    SynthSetup synthSetup;
+    synthSetup.UseGPUSynthesizer = false;
+    this->synth = SynthFacade::CreateSingle(synthSetup);
     
     this->op.Code = Op::Square;
     this->op.FadeIn = 0.05f;

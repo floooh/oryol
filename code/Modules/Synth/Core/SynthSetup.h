@@ -11,6 +11,8 @@ namespace Synth {
     
 class SynthSetup {
 public:
+    /// use GPU audio rendering
+    bool UseGPUSynthesizer = false;
     /// number of voices
     int32 NumVoices = 4;
     /// number of samples in waveforms (default: 32)

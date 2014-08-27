@@ -12,6 +12,7 @@ namespace Synth {
 //------------------------------------------------------------------------------
 soundMgrBase::soundMgrBase() :
 isValid(false),
+useGpuSynth(false),
 curTick(0) {
     // empty
 }
@@ -26,6 +27,7 @@ void
 soundMgrBase::Setup(const SynthSetup& setupParams) {
     o_assert(!this->isValid);
     this->isValid = true;
+    this->useGpuSynth = setupParams.UseGPUSynthesizer;
     this->setup = setupParams;
     this->curTick = 0;
     for (int i = 0; i < synth::NumVoices; i++) {

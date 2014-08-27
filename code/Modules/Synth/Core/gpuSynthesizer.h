@@ -8,6 +8,7 @@
 */
 #include "Synth/Core/opBundle.h"
 #include "Synth/Core/SynthSetup.h"
+#include "Resource/Id.h"
 
 namespace Oryol {
 namespace Synth {
@@ -31,6 +32,8 @@ public:
     
 private:
     bool isValid;
+    Resource::Id renderTarget;
+    Resource::Id drawState;
 };
     
 } // namespace Synth

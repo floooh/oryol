@@ -125,8 +125,13 @@ alSoundMgr::Update() {
             this->voices[voiceIndex].GatherOps(startTick, endTick, bundle);
         }
         
-        // FIXME: select between cpuSynth and gpuSynth here!
-        this->cpuSynth.Synthesize(bundle);
+        // select between cpuSynth and gpuSynth here!
+        if (this->useGpuSynth) {
+            this->gpuSynth.Synthesize(bundle);
+        }
+        else {
+            this->cpuSynth.Synthesize(bundle);
+        }
         this->curTick += synth::BufferNumSamples;
         
         // FIXME: only one voice handled at the moment!

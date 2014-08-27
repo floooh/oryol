@@ -36,6 +36,7 @@ public:
 protected:
     bool isValid;
     SynthSetup setup;
+    bool useGpuSynth;
     int32 curTick;
     voice voices[synth::NumVoices];
     cpuSynthesizer cpuSynth;
