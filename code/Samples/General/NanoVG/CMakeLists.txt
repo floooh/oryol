@@ -1,0 +1,6 @@
+oryol_begin_app(NanoVG windowed)
+    oryol_sources(.)
+    oryol_deps(Core Render Input Time nanovg)
+    oryol_add_web_sample(NanoVG "NanoVG integration" emscripten)
+    oryol_add_web_sample(NanoVG "NanoVG integration" pnacl)
+oryol_end_app()
