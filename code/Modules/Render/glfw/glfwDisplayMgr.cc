@@ -65,7 +65,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Blue));
     glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Alpha));
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(depthPixelFormat, Channel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Stencil));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(depthPixelFormat, Channel::Stencil));
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
