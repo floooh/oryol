@@ -96,7 +96,7 @@ NanoVGApp::OnCleanup() {
     #elif ORYOL_OSX
     nvgDeleteGL3(this->vg);
     #else
-    nvgCreateGL2(this->vg);
+    nvgDeleteGL2(this->vg);
     #endif
     
     this->input = nullptr;
