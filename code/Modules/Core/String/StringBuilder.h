@@ -110,7 +110,9 @@ public:
     /// find substring index, endIndex can be EndOfString, return EndOfString if not found
     static int32 FindSubString(const char* str, int32 startIndex, int32 endIndex, const char* subString);
     /// test if contains a substring
-    bool Contains(const char* str);
+    bool Contains(const char* str) const;
+    /// test if string contains substring
+    static bool Contains(const char* str, const char* subStr);
 
     /// tokenize content with a set of single characters as delimiters, this will clear the string builder content
     int32 Tokenize(const char* delims, Array<String>& outTokens);

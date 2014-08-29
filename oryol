@@ -446,7 +446,7 @@ def buildWebPage() :
     exportSampleAssets()
 
     # copy data files over
-    for dataFile in glob.glob('data/dst/*.txt') :
+    for dataFile in glob.glob('data/nanovg/*') :
         shutil.copy(dataFile, 'build/webpage')
 
     print 'Generated Samples web page under build/webpage!'

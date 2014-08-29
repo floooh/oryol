@@ -1,5 +1,5 @@
 #pragma once
-#include "nanovg/nanovg.h"
+#include "NanoVG/NanoVG.h"
 
 struct DemoData {
 	int fontNormal, fontBold, fontIcons; 
@@ -7,7 +7,7 @@ struct DemoData {
 };
 typedef struct DemoData DemoData;
 
-int loadDemoData(NVGcontext* vg, DemoData* data);
+//int loadDemoData(NVGcontext* vg, DemoData* data);
 void freeDemoData(NVGcontext* vg, DemoData* data);
 void renderDemo(NVGcontext* vg, float mx, float my, float width, float height, float t, int blowup, DemoData* data);
 

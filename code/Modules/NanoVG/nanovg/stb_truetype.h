@@ -392,7 +392,7 @@ int main(int arg, char **argv)
    #endif
 
    #ifndef STBTT_memcpy
-   #include <memory.h>
+   #include <string.h>
    #define STBTT_memcpy       memcpy
    #define STBTT_memset       memset
    #endif

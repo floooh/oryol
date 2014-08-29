@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "nanovg/nanovg.h"
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -556,49 +555,51 @@ void drawThumbnails(NVGcontext* vg, float x, float y, float w, float h, const in
 	dv = 1.0f / (float)(nimages-1);
 
 	for (i = 0; i < nimages; i++) {
-		float tx, ty, v, a;
-		tx = x+10;
-		ty = y+10;
-		tx += (i%2) * (thumb+10);
-		ty += (i/2) * (thumb+10);
-		nvgImageSize(vg, images[i], &imgw, &imgh);
-		if (imgw < imgh) {
-			iw = thumb;
-			ih = iw * (float)imgh/(float)imgw;
-			ix = 0;
-			iy = -(ih-thumb)*0.5f;
-		} else {
-			ih = thumb;
-			iw = ih * (float)imgw/(float)imgh;
-			ix = -(iw-thumb)*0.5f;
-			iy = 0;
-		}
+        if (images[i] != 0) {
+            float tx, ty, v, a;
+            tx = x+10;
+            ty = y+10;
+            tx += (i%2) * (thumb+10);
+            ty += (i/2) * (thumb+10);
+            nvgImageSize(vg, images[i], &imgw, &imgh);
+            if (imgw < imgh) {
+                iw = thumb;
+                ih = iw * (float)imgh/(float)imgw;
+                ix = 0;
+                iy = -(ih-thumb)*0.5f;
+            } else {
+                ih = thumb;
+                iw = ih * (float)imgw/(float)imgh;
+                ix = -(iw-thumb)*0.5f;
+                iy = 0;
+            }
 
-		v = i * dv;
-		a = clampf((u2-v) / dv, 0, 1);
+            v = i * dv;
+            a = clampf((u2-v) / dv, 0, 1);
 
-		if (a < 1.0f)
-			drawSpinner(vg, tx+thumb/2,ty+thumb/2, thumb*0.25f, t);
+            if (a < 1.0f)
+                drawSpinner(vg, tx+thumb/2,ty+thumb/2, thumb*0.25f, t);
 
-		imgPaint = nvgImagePattern(vg, tx+ix, ty+iy, iw,ih, 0.0f/180.0f*NVG_PI, images[i], NVG_NOREPEAT, a);
-		nvgBeginPath(vg);
-		nvgRoundedRect(vg, tx,ty, thumb,thumb, 5);
-		nvgFillPaint(vg, imgPaint);
-		nvgFill(vg);
+            imgPaint = nvgImagePattern(vg, tx+ix, ty+iy, iw,ih, 0.0f/180.0f*NVG_PI, images[i], NVG_NOREPEAT, a);
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg, tx,ty, thumb,thumb, 5);
+            nvgFillPaint(vg, imgPaint);
+            nvgFill(vg);
 
-		shadowPaint = nvgBoxGradient(vg, tx-1,ty, thumb+2,thumb+2, 5, 3, nvgRGBA(0,0,0,128), nvgRGBA(0,0,0,0));
-		nvgBeginPath(vg);
-		nvgRect(vg, tx-5,ty-5, thumb+10,thumb+10);
-		nvgRoundedRect(vg, tx,ty, thumb,thumb, 6);
-		nvgPathWinding(vg, NVG_HOLE);
-		nvgFillPaint(vg, shadowPaint);
-		nvgFill(vg);
+            shadowPaint = nvgBoxGradient(vg, tx-1,ty, thumb+2,thumb+2, 5, 3, nvgRGBA(0,0,0,128), nvgRGBA(0,0,0,0));
+            nvgBeginPath(vg);
+            nvgRect(vg, tx-5,ty-5, thumb+10,thumb+10);
+            nvgRoundedRect(vg, tx,ty, thumb,thumb, 6);
+            nvgPathWinding(vg, NVG_HOLE);
+            nvgFillPaint(vg, shadowPaint);
+            nvgFill(vg);
 
-		nvgBeginPath(vg);
-		nvgRoundedRect(vg, tx+0.5f,ty+0.5f, thumb-1,thumb-1, 4-0.5f);
-		nvgStrokeWidth(vg,1.0f);
-		nvgStrokeColor(vg, nvgRGBA(255,255,255,192));
-		nvgStroke(vg);
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg, tx+0.5f,ty+0.5f, thumb-1,thumb-1, 4-0.5f);
+            nvgStrokeWidth(vg,1.0f);
+            nvgStrokeColor(vg, nvgRGBA(255,255,255,192));
+            nvgStroke(vg);
+        }
 	}
 	nvgRestore(vg);
 
@@ -793,6 +794,7 @@ void drawLines(NVGcontext* vg, float x, float y, float w, float h, float t)
 	nvgRestore(vg);
 }
 
+/*
 int loadDemoData(NVGcontext* vg, DemoData* data)
 {
 	int i;
@@ -828,6 +830,7 @@ int loadDemoData(NVGcontext* vg, DemoData* data)
 
 	return 0;
 }
+*/
 
 void freeDemoData(NVGcontext* vg, DemoData* data)
 {
@@ -1106,91 +1109,3 @@ void renderDemo(NVGcontext* vg, float mx, float my, float width, float height,
 
 	nvgRestore(vg);
 }
-
-static int mini(int a, int b) { return a < b ? a : b; }
-
-static void unpremultiplyAlpha(unsigned char* image, int w, int h, int stride)
-{
-	int x,y;
-
-	// Unpremultiply
-	for (y = 0; y < h; y++) {
-		unsigned char *row = &image[y*stride];
-		for (x = 0; x < w; x++) {
-			int r = row[0], g = row[1], b = row[2], a = row[3];
-			if (a != 0) {
-				row[0] = (int)mini(r*255/a, 255);
-				row[1] = (int)mini(g*255/a, 255);
-				row[2] = (int)mini(b*255/a, 255);
-			}
-			row += 4;
-		}
-	}
-
-	// Defringe
-	for (y = 0; y < h; y++) {
-		unsigned char *row = &image[y*stride];
-		for (x = 0; x < w; x++) {
-			int r = 0, g = 0, b = 0, a = row[3], n = 0;
-			if (a == 0) {
-				if (x-1 > 0 && row[-1] != 0) {
-					r += row[-4];
-					g += row[-3];
-					b += row[-2];
-					n++;
-				}
-				if (x+1 < w && row[7] != 0) {
-					r += row[4];
-					g += row[5];
-					b += row[6];
-					n++;
-				}
-				if (y-1 > 0 && row[-stride+3] != 0) {
-					r += row[-stride];
-					g += row[-stride+1];
-					b += row[-stride+2];
-					n++;
-				}
-				if (y+1 < h && row[stride+3] != 0) {
-					r += row[stride];
-					g += row[stride+1];
-					b += row[stride+2];
-					n++;
-				}
-				if (n > 0) {
-					row[0] = r/n;
-					row[1] = g/n;
-					row[2] = b/n;
-				}
-			}
-			row += 4;
-		}
-	}
-}
-
-static void setAlpha(unsigned char* image, int w, int h, int stride, unsigned char a)
-{
-	int x, y;
-	for (y = 0; y < h; y++) {
-		unsigned char* row = &image[y*stride];
-		for (x = 0; x < w; x++)
-			row[x*4+3] = a;
-	}
-}
-
-static void flipHorizontal(unsigned char* image, int w, int h, int stride)
-{
-	int i = 0, j = h-1, k;
-	while (i < j) {
-		unsigned char* ri = &image[i * stride];		
-		unsigned char* rj = &image[j * stride];		
-		for (k = 0; k < w*4; k++) {
-			unsigned char t = ri[k];
-			ri[k] = rj[k];
-			rj[k] = t;
-		}
-		i++;
-		j--;
-	}
-}
-

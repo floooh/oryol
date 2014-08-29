@@ -159,6 +159,12 @@ RenderFacade::EndFrame() {
 
 //------------------------------------------------------------------------------
 void
+RenderFacade::ResetStateCache() {
+    this->stateWrapper.ResetStateCache();
+}
+
+//------------------------------------------------------------------------------
+void
 RenderFacade::UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data) {
     o_assert_dbg(this->valid);
     mesh* msh = this->resourceManager.LookupMesh(resId);

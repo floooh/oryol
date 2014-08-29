@@ -142,6 +142,17 @@ glStateWrapper::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
+glStateWrapper::ResetStateCache() {
+    this->setupDepthStencilState();
+    this->setupBlendState();
+    this->setupRasterizerState();
+    this->InvalidateMeshState();
+    this->InvalidateProgramState();
+    this->InvalidateTextureState();
+}
+
+//------------------------------------------------------------------------------
+void
 glStateWrapper::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
     if ((x != this->curScissorX) ||
         (y != this->curScissorY) ||

@@ -175,6 +175,8 @@ TEST(StringBuilderTest) {
     CHECK(builder.FindSubString(0, EndOfString, "://") == 4);
     CHECK(builder.Contains("bla.blob"));
     CHECK(!builder.Contains("blub"));
+    CHECK(StringBuilder::Contains("http://bla.blob.com:8000", "bla.blob"));
+    CHECK(!StringBuilder::Contains("http://bla/blob.com:8000", "blub"));
     
     // test Format
     CHECK(!builder.Format(4, "One: %d, Two: %d, Three: %d", 1, 2, 3));   // this should fail because of no room

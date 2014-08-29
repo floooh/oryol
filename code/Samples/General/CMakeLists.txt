@@ -1,3 +1,3 @@
 oryol_add_subdirectory(Paclone)
-oryol_add_subdirectory(NanoVG)
+oryol_add_subdirectory(TestNanoVG)
 

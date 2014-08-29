@@ -554,9 +554,16 @@ StringBuilder::FindSubString(int32 startIndex, int32 endIndex, const char* subSt
 
 //------------------------------------------------------------------------------
 bool
-StringBuilder::Contains(const char* str) {
+StringBuilder::Contains(const char* str) const {
     o_assert(str);
     return this->FindSubString(0, EndOfString, str) != InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+bool
+StringBuilder::Contains(const char* str, const char* subStr) {
+    o_assert(str && subStr);
+    return StringBuilder::FindSubString(str, 0, EndOfString, subStr);
 }
 
 //------------------------------------------------------------------------------

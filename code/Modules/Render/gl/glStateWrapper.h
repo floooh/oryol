@@ -34,6 +34,9 @@ public:
     /// return true if the state wrapper has been setup
     bool IsValid() const;
     
+    /// reset the internal state cache
+    void ResetStateCache();
+    
     /// apply draw state
     void ApplyDrawState(const drawState* ds);
     /// apply state after setting a new render target

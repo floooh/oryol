@@ -64,6 +64,8 @@ public:
     bool BeginFrame();
     /// end frame rendering
     void EndFrame();
+    /// reset internal state (must be called when directly rendering through GL; FIXME: better name?)
+    void ResetStateCache();
 
     /// make the default render target (backbuffer) current
     void ApplyDefaultRenderTarget();
