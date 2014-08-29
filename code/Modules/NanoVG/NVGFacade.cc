@@ -60,7 +60,7 @@ NVGFacade::DeleteContext(NVGcontext* ctx) {
     #elif ORYOL_OSX
     nvgDeleteGL3(ctx);
     #else
-    nvgCreateGL2(ctx);
+    nvgDeleteGL2(ctx);
     #endif
 }
 
