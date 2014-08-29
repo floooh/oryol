@@ -563,7 +563,7 @@ StringBuilder::Contains(const char* str) const {
 bool
 StringBuilder::Contains(const char* str, const char* subStr) {
     o_assert(str && subStr);
-    return StringBuilder::FindSubString(str, 0, EndOfString, subStr);
+    return StringBuilder::FindSubString(str, 0, EndOfString, subStr) != InvalidIndex;
 }
 
 //------------------------------------------------------------------------------
