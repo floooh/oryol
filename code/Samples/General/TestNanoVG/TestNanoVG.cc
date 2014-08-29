@@ -142,7 +142,7 @@ NanoVGApp::updateLoading() {
                     this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans", ioReq->GetStream());
                 }
                 if (urlPath == "Roboto-Bold.ttf") {
-                    this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans-normal", ioReq->GetStream());
+                    this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans-bold", ioReq->GetStream());
                 }
             }
             else {
