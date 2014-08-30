@@ -18,14 +18,18 @@
 
 #include <stdio.h>
 #include <math.h>
+#ifdef NVG_NO_STB_ASSERTS
+#define STBI_ASSERT(x) ((void)0)
+#define STBTT_assert(x) ((void)0)
+#endif
 #include "nanovg.h"
 #define FONTSTASH_IMPLEMENTATION
-#ifdef NANOVG_NO_STDIO
+#ifdef NVG_NO_STDIO
 #define FONTSTASH_NO_STDIO
 #endif
 #include "fontstash.h"
 #define STB_IMAGE_IMPLEMENTATION
-#ifdef NANOVG_NO_STDIO
+#ifdef NVG_NO_STDIO
 #define STBI_NO_STDIO
 #endif
 #include "stb_image.h"
@@ -704,7 +708,7 @@ void nvgFillPaint(NVGcontext* ctx, NVGpaint paint)
 	nvgTransformMultiply(state->fill.xform, state->xform);
 }
 
-#ifndef NANOVG_NO_STDIO
+#ifndef NVG_NO_STDIO
 int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags)
 {
 	int w, h, n, image;
@@ -2158,7 +2162,7 @@ void nvgStroke(NVGcontext* ctx)
 }
 
 // Add fonts
-#ifndef NANOVG_NO_STDIO
+#ifndef NVG_NO_STDIO
 int nvgCreateFont(NVGcontext* ctx, const char* name, const char* path)
 {
 	return fonsAddFont(ctx->fs, name, path);

@@ -312,7 +312,7 @@ float nvgRadToDeg(float rad);
 
 // Creates image by loading it from the disk from specified file name.
 // Returns handle to the image.
-#ifndef NANOVG_NO_STDIO
+#ifndef NVG_NO_STDIO
 int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 #endif
 
@@ -487,7 +487,7 @@ void nvgStroke(NVGcontext* ctx);
 
 // Creates font by loading it from the disk from specified file name.
 // Returns handle to the font.
-#ifndef NANOVG_NO_STDIO
+#ifndef NVG_NO_STDIO
 int nvgCreateFont(NVGcontext* ctx, const char* name, const char* filename);
 #endif
 
