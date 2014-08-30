@@ -52,7 +52,6 @@ extern "C" {
 #if defined NANOVG_GL2_IMPLEMENTATION
 #  define NANOVG_GL2 1
 #  define NANOVG_GL_IMPLEMENTATION 1
-#  define NANOVG_GL_USE_UNIFORMBUFFER 1
 #elif defined NANOVG_GL3_IMPLEMENTATION
 #  define NANOVG_GL3 1
 #  define NANOVG_GL_IMPLEMENTATION 1
@@ -132,11 +131,7 @@ enum GLNVGuniformLoc {
 #if NANOVG_GL_USE_UNIFORMBUFFER
 	GLNVG_LOC_FRAG,
 #elif NANOVG_GL_USE_UNIFORMARRAY
-    GLNVG_LOC_SCISSORMAT,
-    GLNVG_LOC_PAINTMAT,
-    GLNVG_LOC_VALUES,
-    GLNVG_LOC_TEXTYPE,
-    GLNVG_LOC_TYPE,
+    GLNVG_LOC_PACKEDVALUES,
 #else
 	GLNVG_LOC_SCISSORMAT,
 	GLNVG_LOC_SCISSOREXT,
@@ -213,25 +208,28 @@ struct GLNVGpath {
 typedef struct GLNVGpath GLNVGpath;
 
 struct GLNVGfragUniforms {
-	float scissorMat[12]; // matrices are actually 3 vec4s
-	float paintMat[12];
     #if NANOVG_GL_USE_UNIFORMARRAY
     union {
         struct {
+            float scissorMat[12]; // matrices are actually 3 vec4s
+            float paintMat[12];
             struct NVGcolor innerCol;
             struct NVGcolor outerCol;
             float scissorExt[2];
             float scissorScale[2];
             float extent[2];
-            float pad[2];
             float radius;
             float feather;
             float strokeMult;
             float strokeThr;
+            float texType;
+            float type;
         };
-        float values[5][4];
+        float packedValues[11][4];
     };
     #else
+        float scissorMat[12]; // matrices are actually 3 vec4s
+        float paintMat[12];
         struct NVGcolor innerCol;
         struct NVGcolor outerCol;
         float scissorExt[2];
@@ -241,9 +239,9 @@ struct GLNVGfragUniforms {
         float feather;
         float strokeMult;
         float strokeThr;
+        int texType;
+        int type;
     #endif
-	int texType;
-	int type;
 };
 typedef struct GLNVGfragUniforms GLNVGfragUniforms;
 
@@ -438,11 +436,7 @@ static void glnvg__getUniforms(GLNVGshader* shader)
 #if NANOVG_GL_USE_UNIFORMBUFFER
 	shader->loc[GLNVG_LOC_FRAG] = glGetUniformBlockIndex(shader->prog, "frag");
 #elif NANOVG_GL_USE_UNIFORMARRAY
-    shader->loc[GLNVG_LOC_SCISSORMAT] = glGetUniformLocation(shader->prog, "scissorMat");
-    shader->loc[GLNVG_LOC_PAINTMAT] = glGetUniformLocation(shader->prog, "paintMat");
-    shader->loc[GLNVG_LOC_VALUES] = glGetUniformLocation(shader->prog, "values");
-    shader->loc[GLNVG_LOC_TEXTYPE] = glGetUniformLocation(shader->prog, "texType");
-    shader->loc[GLNVG_LOC_TYPE] = glGetUniformLocation(shader->prog, "type");
+    shader->loc[GLNVG_LOC_PACKEDVALUES] = glGetUniformLocation(shader->prog, "packedValues");
 #else
 	shader->loc[GLNVG_LOC_SCISSORMAT] = glGetUniformLocation(shader->prog, "scissorMat");
 	shader->loc[GLNVG_LOC_SCISSOREXT] = glGetUniformLocation(shader->prog, "scissorExt");
@@ -469,25 +463,21 @@ static int glnvg__renderCreate(void* uptr)
 	// see the following discussion: https://github.com/memononen/nanovg/issues/46
 	static const char* shaderHeader =
 #if defined NANOVG_GL2
-		"#define NANOVG_GL2 1\n"
+		"#define NANOVG_GL2 1\n";
 #elif defined NANOVG_GL3
 		"#version 150 core\n"
 #if NANOVG_GL_USE_UNIFORMBUFFER
 		"#define USE_UNIFORMBUFFER 1\n"
+#elif NANOVG_GL_USE_UNIFORMARRAY
+        "#define USE_UNIFORMARRAY 1\n"
 #endif
-		"#define NANOVG_GL3 1\n"
+		"#define NANOVG_GL3 1\n";
 #elif defined NANOVG_GLES2
 		"#version 100\n"
-		"#define NANOVG_GL2 1\n"
+		"#define NANOVG_GL2 1\n";
 #elif defined NANOVG_GLES3
 		"#version 300 es\n"
-		"#define NANOVG_GL3 1\n"
-#endif
-
-#if defined NANOVG_GL_USE_UNIFORMARRAY
-        "#define USE_UNIFORMARRAY 1\n";
-#else
-        "\n";
+		"#define NANOVG_GL3 1\n";
 #endif
 
 	static const char* fillVertShader =
@@ -535,21 +525,21 @@ static int glnvg__renderCreate(void* uptr)
 		"		int texType;\n"
 		"		int type;\n"
 		"	};\n"
-        "#elif USE_UNIFORMARRAY\n"
-        "	uniform mat3 scissorMat;\n"
-        "	uniform mat3 paintMat;\n"
-        "   uniform vec4 values[5];\n"
-        "   #define innerCol values[0]\n"
-        "   #define outerCol values[1]\n"
-        "   #define scissorExt values[2].xy\n"
-        "   #define scissorScale values[2].zw\n"
-        "   #define extent values[3].xy\n"
-        "   #define radius values[4].x\n"
-        "   #define feather values[4].y\n"
-        "   #define strokeMult values[4].z\n"
-        "   #define strokeThr values[4].w\n"
-        "	uniform int texType;\n"
-        "	uniform int type;\n"
+        "#elif defined(USE_UNIFORMARRAY)\n"
+        "   uniform vec4 packedValues[11];\n"
+        "   #define scissorMat mat3(packedValues[0].xyz, packedValues[1].xyz, packedValues[2].xyz)\n"
+        "   #define paintMat mat3(packedValues[3].xyz, packedValues[4].xyz, packedValues[5].xyz)\n"
+        "   #define innerCol packedValues[6]\n"
+        "   #define outerCol packedValues[7]\n"
+        "   #define scissorExt packedValues[8].xy\n"
+        "   #define scissorScale packedValues[8].zw\n"
+        "   #define extent packedValues[9].xy\n"
+        "   #define radius packedValues[9].z\n"
+        "   #define feather packedValues[9].w\n"
+        "   #define strokeMult packedValues[10].x\n"
+        "   #define strokeThr packedValues[10].y\n"
+        "	#define texType int(packedValues[10].z)\n"
+        "	#define type int(packedValues[10].w)\n"
 		"#else\n"
 		"	uniform mat3 scissorMat;\n"
 		"	uniform mat3 paintMat;\n"
@@ -569,21 +559,21 @@ static int glnvg__renderCreate(void* uptr)
 		"	in vec2 ftcoord;\n"
 		"	in vec2 fpos;\n"
 		"	out vec4 outColor;\n"
-        "#elif USE_UNIFORMARRAY\n"
-        "	uniform mat3 scissorMat;\n"
-        "	uniform mat3 paintMat;\n"
-        "   uniform vec4 values[5];\n"
-        "   #define innerCol values[0]\n"
-        "   #define outerCol values[1]\n"
-        "   #define scissorExt values[2].xy\n"
-        "   #define scissorScale values[2].zw\n"
-        "   #define extent values[3].xy\n"
-        "   #define radius values[4].x\n"
-        "   #define feather values[4].y\n"
-        "   #define strokeMult values[4].z\n"
-        "   #define strokeThr values[4].w\n"
-        "	uniform int texType;\n"
-        "	uniform int type;\n"
+        "#elif defined(USE_UNIFORMARRAY)\n"
+        "   uniform vec4 packedValues[11];\n"
+        "   #define scissorMat mat3(packedValues[0].xyz, packedValues[1].xyz, packedValues[2].xyz)\n"
+        "   #define paintMat mat3(packedValues[3].xyz, packedValues[4].xyz, packedValues[5].xyz)\n"
+        "   #define innerCol packedValues[6]\n"
+        "   #define outerCol packedValues[7]\n"
+        "   #define scissorExt packedValues[8].xy\n"
+        "   #define scissorScale packedValues[8].zw\n"
+        "   #define extent packedValues[9].xy\n"
+        "   #define radius packedValues[9].z\n"
+        "   #define feather packedValues[9].w\n"
+        "   #define strokeMult packedValues[10].x\n"
+        "   #define strokeThr packedValues[10].y\n"
+        "	#define texType int(packedValues[10].z)\n"
+        "	#define type int(packedValues[10].w)\n"
         "	uniform sampler2D tex;\n"
         "	varying vec2 ftcoord;\n"
         "	varying vec2 fpos;\n"
@@ -932,20 +922,20 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 
 static GLNVGfragUniforms* nvg__fragUniformPtr(GLNVGcontext* gl, int i);
 
-#if !NANOVG_GL_USE_UNIFORMBUFFER
+#if !NANOVG_GL_USE_UNIFORMBUFFER && !NANOVG_GL_USE_UNIFORMARRAY
 static void glnvg__mat3(float* dst, float* src)
 {
-	dst[0] = src[0];
-	dst[1] = src[1];
-	dst[2] = src[2];
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
 
-	dst[3] = src[4];
-	dst[4] = src[5];
-	dst[5] = src[6];
+    dst[3] = src[4];
+    dst[4] = src[5];
+    dst[5] = src[6];
 
-	dst[6] = src[8];
-	dst[7] = src[9];
-	dst[8] = src[10];
+    dst[6] = src[8];
+    dst[7] = src[9];
+    dst[8] = src[10];
 }
 #endif
 
@@ -955,14 +945,7 @@ static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, int image)
 	glBindBufferRange(GL_UNIFORM_BUFFER, GLNVG_FRAG_BINDING, gl->fragBuf, uniformOffset, sizeof(GLNVGfragUniforms));
 #elif NANOVG_GL_USE_UNIFORMARRAY
     GLNVGfragUniforms* frag = nvg__fragUniformPtr(gl, uniformOffset);
-    float tmp[9]; // Maybe there's a way to get rid of this...
-    glnvg__mat3(tmp, frag->scissorMat);
-    glUniformMatrix3fv(gl->shader.loc[GLNVG_LOC_SCISSORMAT], 1, GL_FALSE, tmp);
-    glnvg__mat3(tmp, frag->paintMat);
-    glUniformMatrix3fv(gl->shader.loc[GLNVG_LOC_PAINTMAT], 1, GL_FALSE, tmp);
-    glUniform4fv(gl->shader.loc[GLNVG_LOC_VALUES], 5, &(frag->values[0][0]));
-    glUniform1i(gl->shader.loc[GLNVG_LOC_TEXTYPE], frag->texType);
-    glUniform1i(gl->shader.loc[GLNVG_LOC_TYPE], frag->type);
+    glUniform4fv(gl->shader.loc[GLNVG_LOC_PACKEDVALUES], 11, &(frag->packedValues[0][0]));
 #else
 	GLNVGfragUniforms* frag = nvg__fragUniformPtr(gl, uniformOffset);
 	float tmp[9]; // Maybe there's a way to get rid of this...
