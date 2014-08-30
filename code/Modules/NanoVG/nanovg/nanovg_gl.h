@@ -355,15 +355,19 @@ static void glnvg__dumpProgramError(GLuint prog, const char* name)
 #if NVG_GL_DO_ERRORCHECK
 static int glnvg__checkError(const char* str)
 {
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR) {
-		printf("Error %08x after %s\n", err, str);
-		return 1;
-	}
-	return 0;
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        printf("Error %08x after %s\n", err, str);
+        return 1;
+    }
+    return 0;
 }
 #else
-#define glnvg__checkError(str) (0)
+static int glnvg__checkError(const char* str)
+{
+    (void)(str); // silence unused warning
+    return 0;
+}
 #endif
 
 static int glnvg__createShader(GLNVGshader* shader, const char* name, const char* header, const char* opts, const char* vshader, const char* fshader)
