@@ -8,8 +8,8 @@
     are set and the right OpenGL headers are included.
 */
 #include "Render/gl/gl_impl.h"
-#ifndef NANOVG_NO_STDIO
-#define NANOVG_NO_STDIO
+#ifndef NVG_NO_STDIO
+#define NVG_NO_STDIO
 #endif
 #include "NanoVG/nanovg/nanovg.h"
 #if ORYOL_OPENGLES2
