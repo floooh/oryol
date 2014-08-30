@@ -467,22 +467,24 @@ static int glnvg__renderCreate(void* uptr)
 	// see the following discussion: https://github.com/memononen/nanovg/issues/46
 	static const char* shaderHeader =
 #if defined NANOVG_GL2
-		"#define NANOVG_GL2 1\n";
+		"#define NANOVG_GL2 1\n"
 #elif defined NANOVG_GL3
 		"#version 150 core\n"
-#if NANOVG_GL_USE_UNIFORMBUFFER
-		"#define USE_UNIFORMBUFFER 1\n"
-#elif NANOVG_GL_USE_UNIFORMARRAY
-        "#define USE_UNIFORMARRAY 1\n"
-#endif
-		"#define NANOVG_GL3 1\n";
+		"#define NANOVG_GL3 1\n"
 #elif defined NANOVG_GLES2
 		"#version 100\n"
-		"#define NANOVG_GL2 1\n";
+		"#define NANOVG_GL2 1\n"
 #elif defined NANOVG_GLES3
 		"#version 300 es\n"
-		"#define NANOVG_GL3 1\n";
+		"#define NANOVG_GL3 1\n"
 #endif
+
+#if NANOVG_GL_USE_UNIFORMBUFFER
+    "#define USE_UNIFORMBUFFER 1\n"
+#elif NANOVG_GL_USE_UNIFORMARRAY
+    "#define USE_UNIFORMARRAY 1\n"
+#endif
+    "\n";
 
 	static const char* fillVertShader =
 		"#ifdef NANOVG_GL3\n"
