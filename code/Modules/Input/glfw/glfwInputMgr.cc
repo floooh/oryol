@@ -34,8 +34,7 @@ glfwInputMgr::glfwInputMgr() {
     this->setCursorMode(CursorMode::Normal);
 
     // attach our reset callback to the global runloop
-    CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Add(RunLoop::Callback("glfwInputMgr", 0, std::function<void()>(std::bind(&glfwInputMgr::reset, this))));
+    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
@@ -48,8 +47,7 @@ glfwInputMgr::~glfwInputMgr() {
     this->discardCallbacks(glfwWindow);
 
     // detach our reset callback from runloop
-    CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Remove("glfwInputMgr");
+    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
     
     self = nullptr;
 }

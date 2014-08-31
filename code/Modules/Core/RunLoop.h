@@ -33,29 +33,12 @@ namespace Core {
 class RunLoop : public RefCounted {
     OryolClassDecl(RunLoop);
 public:
-    /// callback object
-    class Callback {
-    public:
-        /// default constructor
-        Callback() : pri(0), valid(false) { };
-        /// constructor with name, priority and function
-        Callback(const StringAtom& name_, int32 pri_, std::function<void()> func_) : name(name_), pri(pri_), func(func_), valid(false) { };
-        /// get name
-        const StringAtom& Name() const { return this->name; };
-        /// get priority
-        int32 Priority() const { return this->pri; };
-        /// get function pointer
-        const std::function<void()>& Func() const { return this->func; };
-        /// set valid flag
-        void SetValid(bool b) { this->valid = b; };
-        /// get valid flag
-        bool IsValid() const { return this->valid; };
-    private:
-        StringAtom name;
-        int32 pri;
-        std::function<void()> func;
-        bool valid;
-    };
+    /// runloop Id
+    typedef int32 Id;
+    /// invalid runloop Id const
+    static const Id InvalidId = 0;
+    /// runloop function typedef
+    typedef std::function<void()> Func;
 
     /// constructor
     RunLoop();
@@ -66,25 +49,27 @@ public:
     void Run();
     
     /// add a callback to the run loop, higher priorities run earlier, slow!
-    void Add(const Callback& callback);
+    Id Add(Func func);
     /// remove a callback, slow!
-    void Remove(const StringAtom& name);
+    void Remove(Id);
     /// test if a callback has been attached, slow!
-    bool HasCallback(const StringAtom& name) const;
-    /// get the callbacks map, key is priority, value is Callback object
-    const Map<int32, Callback>& Callbacks() const;
+    bool HasCallback(Id) const;
     
 private:
-    /// find callback index by name
-    int32 FindCallback(const StringAtom& name) const;
     /// add new callbacks that have been added (called at beginning of Run())
-    void AddCallbacks();
+    void addCallbacks();
     /// remove callbacks that have been removed (called at end of Run())
-    void RemoveCallbacks();
+    void remCallbacks();
     
-    Map<int32, Callback> callbacks;
-    Map<StringAtom, Callback> toAdd;
-    Set<StringAtom> toRemove;
+    struct item {
+        Func func;
+        bool valid;
+    };
+    
+    Id curId;
+    Map<Id, item> callbacks;
+    Map<Id, item> toAdd;
+    Set<Id> toRemove;
 };
     
 } // namespace Core

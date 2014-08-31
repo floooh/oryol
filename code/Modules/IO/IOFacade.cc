@@ -23,13 +23,13 @@ IOFacade::IOFacade() {
     assignRegistry::CreateSingle();
     schemeRegistry::CreateSingle();
     this->requestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
-    CoreFacade::Instance()->RunLoop()->Add(RunLoop::Callback("IO::IOFacade", 0, std::bind(&IOFacade::doWork, this)));
+    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->doWork(); });
 }
 
 //------------------------------------------------------------------------------
 IOFacade::~IOFacade() {
     o_assert(this->isMainThread());
-    CoreFacade::Instance()->RunLoop()->Remove("IO::IOFacade");
+    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
     this->requestRouter = 0;
     schemeRegistry::DestroySingle();
     assignRegistry::DestroySingle();
@@ -117,29 +117,10 @@ IOFacade::LoadFile(const URL& url, int32 ioLane) {
 }
 
 //------------------------------------------------------------------------------
-Ptr<IOProtocol::GetRange>
-IOFacade::LoadFileRange(const URL& url, int32 startOffset, int32 endOffset, int32 ioLane) {
-    Ptr<IOProtocol::GetRange> ioReq = IOProtocol::GetRange::Create();
-    ioReq->SetURL(url);
-    ioReq->SetLane(ioLane);
-    ioReq->SetStartOffset(startOffset);
-    ioReq->SetEndOffset(endOffset);
-    this->requestRouter->Put(ioReq);
-    return ioReq;
-}
-
-//------------------------------------------------------------------------------
 void
-IOFacade::AddPreloadFile(const URL& url, int32 ioLane) {
-    /// @todo: implement AddPreloadFile()
+IOFacade::Put(const Ptr<IOProtocol::Request>& ioReq) {
+    this->requestRouter->Put(ioReq);
 }
 
-//------------------------------------------------------------------------------
-bool
-IOFacade::IsPreloadingFinished() const {
-    /// @todo: implement IsPreloadingFinished()
-    return false;
-}
-    
 } // namespace IO
 } // namespace Oryol

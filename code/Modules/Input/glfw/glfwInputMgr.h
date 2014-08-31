@@ -5,6 +5,7 @@
     @brief provide input on platforms using GLFW
 */
 #include "Input/base/inputMgrBase.h"
+#include "Core/RunLoop.h"
 
 struct GLFWwindow;
 
@@ -48,6 +49,7 @@ private:
     static void scrollCallback(GLFWwindow* win, double xOffset, double yOffset);
     
     static glfwInputMgr* self;
+    Core::RunLoop::Id runLoopId;
 };
 
 } // namespace Input

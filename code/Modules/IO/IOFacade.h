@@ -8,6 +8,7 @@
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"
+#include "Core/RunLoop.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/schemeRegistry.h"
@@ -42,14 +43,10 @@ public:
     /// test if a filesystem has been registered
     bool IsFileSystemRegistered(const Core::StringAtom& scheme) const;
     
-    /// asynchronously load a file, returns IORequest object
-    Core::Ptr<IOProtocol::Get> LoadFile(const IO::URL& url, int32 ioLane = 0);
-    /// asynchronously load a file, return IORequest object
-    Core::Ptr<IOProtocol::GetRange> LoadFileRange(const IO::URL& url, int32 startOffset, int32 endOffset, int32 ioLane = 0);
-    /// add a preload file
-    void AddPreloadFile(const IO::URL& url, int32 ioLane = 0);
-    /// return true if preloading is finished
-    bool IsPreloadingFinished() const;
+    /// start async loading of file from URL (also see IOQueue!)
+    Core::Ptr<IO::IOProtocol::Get> LoadFile(const URL& url, int32 ioLane=0);
+    /// push a generic asynchronous IO request
+    void Put(const Core::Ptr<IO::IOProtocol::Request>& ioReq);
     
 private:
     /// test if we are on the main thread
@@ -57,6 +54,7 @@ private:
     /// the per-frame update method (attached to the main-thread runloop)
     void doWork();
 
+    Core::RunLoop::Id runLoopId;
     std::thread::id mainThreadId;
     Core::Ptr<ioRequestRouter> requestRouter;
     static const int32 numIOLanes;

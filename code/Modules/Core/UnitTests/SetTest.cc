@@ -71,4 +71,8 @@ TEST(SetTest) {
     CHECK(set.begin() == &set.ValueAtIndex(0));
     CHECK(set.end() == &set.ValueAtIndex(7) + 1);
     
+    // test clear
+    set.Clear();
+    CHECK(set.Size() == 0);
+    CHECK(set.Empty());
 }

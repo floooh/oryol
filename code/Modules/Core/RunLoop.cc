@@ -10,105 +10,79 @@ namespace Core {
 OryolClassImpl(RunLoop);
 
 //------------------------------------------------------------------------------
-RunLoop::RunLoop()
+RunLoop::RunLoop() :
+curId(InvalidId)
 {
     // empty
 }
 
 //------------------------------------------------------------------------------
 RunLoop::~RunLoop() {
-    this->callbacks.Clear();
+    // empty
 }
 
 //------------------------------------------------------------------------------
 void
 RunLoop::Run() {
-    this->AddCallbacks();
+    this->remCallbacks();
+    this->addCallbacks();
     for (const auto& entry : this->callbacks) {
-        const Callback& cb = entry.Value();
-        if (cb.IsValid()) {
-            cb.Func()();
+        if (entry.Value().valid) {
+            entry.Value().func();
         }
     }
-    this->RemoveCallbacks();
+    this->remCallbacks();
+    this->addCallbacks();
 }
 
 //------------------------------------------------------------------------------
 bool
-RunLoop::HasCallback(const StringAtom& name) const {
-    return this->FindCallback(name);
-}
-
-//------------------------------------------------------------------------------
-int32
-RunLoop::FindCallback(const StringAtom& name) const {
-    const int32 num = this->callbacks.Size();
-    for (int32 i = 0; i < num; i++) {
-        if (this->callbacks[i].Name() == name) {
-            return i;
-        }
-    }
-    return InvalidIndex;
+RunLoop::HasCallback(Id id) const {
+    return this->callbacks.Contains(id) || this->toAdd.Contains(id);
 }
 
 //------------------------------------------------------------------------------
 /**
- Add a new callback to the runloop. Callbacks with smaller priority
- values are called earlier in the frame. The callback name must be unique.
- NOTE that the callback will not be added immediately, but only at the 
- beginning of the next Run() call.
+ NOTE: the callback function will not be added immediately, but at the
+ start or end of the Run function.
 */
-void
-RunLoop::Add(const Callback& callback) {
-    o_assert(!this->toAdd.Contains(callback.Name()));
-    o_assert(InvalidIndex == this->FindCallback(callback.Name()));
-    
-    this->toAdd.Insert(callback.Name(), callback);
+RunLoop::Id
+RunLoop::Add(Func func) {
+    Id newId = ++this->curId;
+    this->toAdd.Insert(newId, item{func, false});
+    return newId;
 }
 
 //------------------------------------------------------------------------------
 /**
- Returns a callback from the RunLoop. NOTE that the callback will not be removed
- immediately, but at the end of the current or next Run() call (it will not
- however called after Remove is called).
+ NOTE: the callback function not be removed immediately, but at the 
+ start or end of the Run function.
 */
 void
-RunLoop::Remove(const StringAtom& name) {
-    o_assert(!this->toRemove.Contains(name));
-    
-    int32 index = this->FindCallback(name);
-    o_assert(InvalidIndex != index);
-    this->callbacks[index].SetValid(false);
-    this->toRemove.Insert(name);
+RunLoop::Remove(Id id) {
+    o_assert_dbg(!this->toRemove.Contains(id));
+    o_assert_dbg(this->callbacks.Contains(id));
+    this->toRemove.Insert(id);
 }
 
 //------------------------------------------------------------------------------
 void
-RunLoop::AddCallbacks() {
+RunLoop::addCallbacks() {
     for (auto& entry : this->toAdd) {
-        Callback& cb = entry.Value();
-        cb.SetValid(true);
-        this->callbacks.Insert(cb.Priority(), cb);
+        item& item = entry.Value();
+        item.valid = true;
+        this->callbacks.Insert(entry.Key(), item);
     }
     this->toAdd.Clear();
 }
 
 //------------------------------------------------------------------------------
 void
-RunLoop::RemoveCallbacks() {
-    for (const StringAtom& name : this->toRemove) {
-        int32 index = this->FindCallback(name);
-        if (InvalidIndex != index) {
-            o_assert(!this->callbacks[index].IsValid());
-            this->callbacks.EraseIndex(index);
-        }
+RunLoop::remCallbacks() {
+    for (Id id : this->toRemove) {
+        this->callbacks.Erase(id);
     }
-}
-
-//------------------------------------------------------------------------------
-const Map<int32, RunLoop::Callback>&
-RunLoop::Callbacks() const {
-    return this->callbacks;
+    this->toRemove.Clear();
 }
 
 } // namespace Core
