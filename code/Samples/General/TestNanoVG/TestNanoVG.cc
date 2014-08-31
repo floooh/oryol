@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "IO/IOFacade.h"
+#include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Render/RenderFacade.h"
 #include "Input/InputFacade.h"
@@ -29,8 +30,7 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    void startLoading();
-    void updateLoading();
+    void loadAssets();
 
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
@@ -38,15 +38,16 @@ private:
     NVGFacade* nvg = nullptr;
     NVGcontext* ctx = nullptr;
     DemoData data;
-    Array<Ptr<IOProtocol::Get>> ioQueue;
+    IOQueue ioQueue;
 };
 OryolMain(NanoVGApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 NanoVGApp::OnRunning() {
+    
+    this->ioQueue.Update();
 
-    this->updateLoading();
     const DisplayAttrs& attrs = this->render->GetDisplayAttrs();
     const int32 w = attrs.FramebufferWidth;
     const int32 h = attrs.FramebufferHeight;
@@ -82,7 +83,24 @@ NanoVGApp::OnInit() {
     this->input  = InputFacade::CreateSingle();
     this->nvg    = NVGFacade::CreateSingle();
     this->ctx    = this->nvg->CreateContext(NVG_STENCIL_STROKES | NVG_ANTIALIAS);
-    this->startLoading();
+    
+    // start loading assets asynchronously
+    StringBuilder str;
+    for (int i = 0; i < 12; i++) {
+        str.Format(128, "res:image%d.jpg", i+1);
+        this->ioQueue.Add(str.GetString(), 0, [this, i](const Ptr<Stream>& stream) {
+            this->data.images[i] = this->nvg->CreateImage(this->ctx, stream, 0);
+        });
+    }
+    this->ioQueue.Add("res:entypo.ttf", 0, [this](const Ptr<Stream>& stream) {
+        this->data.fontIcons = this->nvg->CreateFont(this->ctx, "icons", stream);
+    });
+    this->ioQueue.Add("res:Roboto-Regular.ttf", 0, [this](const Ptr<Stream>& stream) {
+        this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans", stream);
+    });
+    this->ioQueue.Add("res:Roboto-Bold.ttf", 0, [this](const Ptr<Stream>& stream) {
+        this->data.fontBold = this->nvg->CreateFont(this->ctx, "sans-bold", stream);
+    });
     
     return App::OnInit();
 }
@@ -101,54 +119,4 @@ NanoVGApp::OnCleanup() {
     InputFacade::DestroySingle();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
-}
-
-//------------------------------------------------------------------------------
-void
-NanoVGApp::startLoading() {
-
-    // FIXME: really need a better way for async preload, lambdas?
-    StringBuilder str;
-    for (int i = 0; i < 12; i++) {
-        str.Format(128, "res:image%d.jpg", i+1);
-        this->ioQueue.AddBack(this->io->LoadFile(str.GetString()));
-    }
-    this->ioQueue.AddBack(this->io->LoadFile("res:entypo.ttf"));
-    this->ioQueue.AddBack(this->io->LoadFile("res:Roboto-Regular.ttf"));
-    this->ioQueue.AddBack(this->io->LoadFile("res:Roboto-Bold.ttf"));
-}
-
-//------------------------------------------------------------------------------
-void
-NanoVGApp::updateLoading() {
-
-    // this kinda sucks, need to fix async file loading
-    StringBuilder str;
-    for (int i = this->ioQueue.Size() - 1; i >= 0; i--) {
-        const auto& ioReq = this->ioQueue[i];
-        const String urlPath = ioReq->GetURL().Path();
-        if (ioReq->Handled()) {
-            if (ioReq->GetStatus() == IOStatus::OK) {
-                for (int i = 0; i < 12; i++) {
-                    str.Format(128, "image%d.jpg", i+1);
-                    if (urlPath == str.GetString()) {
-                        this->data.images[i] = this->nvg->CreateImage(this->ctx, ioReq->GetStream(), 0);
-                    }
-                }
-                if (urlPath == "entypo.ttf") {
-                    this->data.fontIcons = this->nvg->CreateFont(this->ctx, "icons", ioReq->GetStream());
-                }
-                if (urlPath == "Roboto-Regular.ttf") {
-                    this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans", ioReq->GetStream());
-                }
-                if (urlPath == "Roboto-Bold.ttf") {
-                    this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans-bold", ioReq->GetStream());
-                }
-            }
-            else {
-                Log::Warn("Failed to load file '%s'!\n", urlPath.AsCStr());
-            }
-            this->ioQueue.Erase(i);
-        }
-    }
 }
