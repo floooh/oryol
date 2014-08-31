@@ -185,6 +185,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
                     // extract body data
                     Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
+                    responseBodyStream->SetURL(req->GetURL());
                     responseBodyStream->Open(OpenMode::WriteOnly);
                     DWORD bytesToRead = 0;
                     do {

@@ -58,6 +58,7 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
 
     // create a MemoryStream object and fill it with the received data
     Ptr<MemoryStream> responseBody = MemoryStream::Create();
+    responseBody->SetURL(req->GetURL());
     responseBody->Open(OpenMode::WriteOnly);
     responseBody->Write(buffer, size);
     responseBody->Close();

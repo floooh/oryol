@@ -188,6 +188,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     // prepare the HTTPResponse and the response-body stream
     Ptr<HTTPProtocol::HTTPResponse> httpResponse = HTTPProtocol::HTTPResponse::Create();
     Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
+    responseBodyStream->SetURL(req->GetURL());
     responseBodyStream->Open(OpenMode::WriteOnly);
     curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, responseBodyStream.get());
 

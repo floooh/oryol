@@ -1,0 +1,6 @@
+oryol_begin_app(IOQueueSample windowed)
+    oryol_sources(.)
+    oryol_deps(IO HTTP)
+    oryol_add_web_sample(IOQueueSample "Asynchronous file loading with IOQueue" emscripten)
+    oryol_add_web_sample(IOQueueSample "Asynchronous file loading with IOQueue" pnacl)
+oryol_end_app()

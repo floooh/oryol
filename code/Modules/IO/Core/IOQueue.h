@@ -2,11 +2,12 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::IO::IOQueue
-    @brief local async IO queue with success and fail callback
-  
-    TODO: documentation
-    FIXME: should optionally add itself to global runloop, for
-    scenarios where no on-frame function is available
+    @brief simplify asynchronous loading of multiple files
+
+    IOQueues are used to load one or more files asynchronously, and associate
+    a success (and optional failure) callback with an IO request.
+    
+    See the IOQueue sample application to see how it works :)
 */
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"

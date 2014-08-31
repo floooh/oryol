@@ -115,6 +115,7 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
     auto httpResponse = HTTPProtocol::HTTPResponse::Create();
     req->httpRequest->SetResponse(httpResponse);
     Ptr<MemoryStream> httpResponseBody = MemoryStream::Create();
+    httpResponseBody->SetURL(req->httpRequest->GetURL());
     httpResponse->SetBody(httpResponseBody);
 
     // translate response

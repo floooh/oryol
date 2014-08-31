@@ -104,6 +104,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             const int responseLength = [responseData length];
             if (responseLength > 0) {
                 Ptr<MemoryStream> responseBody = MemoryStream::Create();
+                responseBody->SetURL(req->GetURL());
                 responseBody->Open(OpenMode::WriteOnly);
                 responseBody->Write(responseBytes, responseLength);
                 responseBody->Close();

@@ -5,4 +5,5 @@ oryol_add_subdirectory(Debug)
 oryol_add_subdirectory(Input)
 oryol_add_subdirectory(General)
 oryol_add_subdirectory(Synth)
+oryol_add_subdirectory(IO)
 
