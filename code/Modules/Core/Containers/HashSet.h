@@ -164,7 +164,7 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Insert(const VALUETYPE& val) {
 //------------------------------------------------------------------------------
 template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Erase(const VALUETYPE& val) {
-    o_assert(this->size > 0);
+    o_assert_dbg(this->size > 0);
     this->size--;
     auto& bucket = this->findBucket(val);
     bucket.Erase(val);

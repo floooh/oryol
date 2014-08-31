@@ -150,12 +150,12 @@ public:
     };
     /// operator*
     T& operator*() const {
-        o_assert(nullptr != p);
+        o_assert_dbg(nullptr != p);
         return *p;
     };
     /// operator->
     T* operator->() const {
-        o_assert(nullptr != p);
+        o_assert_dbg(nullptr != p);
         return p;
     };
     
@@ -170,7 +170,7 @@ public:
 
     /// get (assert that returned pointer is not nullptr)
     T* get() const {
-        o_assert(nullptr != p);
+        o_assert_dbg(nullptr != p);
         return p;
     };
 

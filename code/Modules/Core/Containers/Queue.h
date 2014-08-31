@@ -129,7 +129,7 @@ Queue<TYPE>::grow() {
     else if (growBy > maxGrow) {
         growBy = maxGrow;
     }
-    o_assert(growBy > 0);
+    o_assert_dbg(growBy > 0);
     int32 newCapacity = curCapacity + growBy;
     this->adjustCapacity(newCapacity);
 }
@@ -139,7 +139,7 @@ template<class TYPE> void
 Queue<TYPE>::moveToFront() {
     const int32 num = this->buffer.size();
     if (num > 0) {
-        o_assert(this->buffer.elmStart);
+        o_assert_dbg(this->buffer.elmStart);
         const TYPE* from = this->buffer.elmStart;
         TYPE* to = this->buffer.bufStart;
         for (int32 i = 0; i < num; i++) {
@@ -323,14 +323,14 @@ Queue<TYPE>::Peek(int32 index) const {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 Queue<TYPE>::Dequeue() {
-    o_assert(this->buffer.size() > 0);
+    o_assert_dbg(this->buffer.size() > 0);
     return std::move(this->buffer.popFront());
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Queue<TYPE>::Dequeue(TYPE& outElm) {
-    o_assert(this->buffer.size() > 0);
+    o_assert_dbg(this->buffer.size() > 0);
     outElm = std::move(this->buffer.popFront());
 }
 

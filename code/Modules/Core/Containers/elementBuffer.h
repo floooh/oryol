@@ -239,54 +239,54 @@ elementBuffer<TYPE>::capacity() const {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::operator[](int32 index) {
-    o_assert((index >= 0) && (index < this->size()));
+    o_assert_dbg((index >= 0) && (index < this->size()));
     return this->elmStart[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::operator[](int32 index) const {
-    o_assert((index >= 0) && (index < this->size()));
+    o_assert_dbg((index >= 0) && (index < this->size()));
     return this->elmStart[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::front() {
-    o_assert(nullptr != this->elmStart);
+    o_assert_dbg(nullptr != this->elmStart);
     return *this->elmStart;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::front() const {
-    o_assert(nullptr != this->elmStart);
+    o_assert_dbg(nullptr != this->elmStart);
     return *this->elmStart;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::back() {
-    o_assert(nullptr != this->elmEnd);
+    o_assert_dbg(nullptr != this->elmEnd);
     return *(this->elmEnd - 1);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::back() const {
-    o_assert(nullptr != this->elmEnd);
+    o_assert_dbg(nullptr != this->elmEnd);
     return *(this->elmEnd - 1);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::alloc(int32 newCapacity, int32 newFrontSpare) {
-    o_assert(newCapacity > 0);
+    o_assert_dbg(newCapacity > 0);
     if (this->capacity() == newCapacity) {
         return;
     }
     const int32 curSize = this->size();
-    o_assert((newFrontSpare + curSize) <= newCapacity);
+    o_assert_dbg((newFrontSpare + curSize) <= newCapacity);
 
     // allocate new buffer
     const int32 newBufSize = newCapacity * sizeof(TYPE);
@@ -365,7 +365,7 @@ elementBuffer<TYPE>::overlaps(const TYPE* from, const TYPE* to, int32 num) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int32 num) {
-    o_assert(!overlaps(from, to, num));
+    o_assert_dbg(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         new(to++) TYPE(*from++);
     }
@@ -374,7 +374,7 @@ elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int32 num) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::copyAssign(const TYPE* from, TYPE* to, int32 num) {
-    o_assert(!overlaps(from, to, num));
+    o_assert_dbg(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         *to++ = *from++;
     }
@@ -385,7 +385,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushBack(const TYPE& elm) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
+    o_assert_dbg((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(elm);
 }
 
@@ -394,7 +394,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushBack(TYPE&& elm) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
+    o_assert_dbg((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(std::move(elm));
 }
 
@@ -403,7 +403,7 @@ template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceBack(ARGS&&... args) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
+    o_assert_dbg((nullptr != this->elmEnd) && (this->elmEnd < this->bufEnd));
     new(this->elmEnd++) TYPE(std::forward<ARGS>(args)...);
 }
 
@@ -412,7 +412,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushFront(const TYPE& elm) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
+    o_assert_dbg((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(elm);
 }
 
@@ -421,7 +421,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushFront(TYPE&& elm) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
+    o_assert_dbg((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(std::move(elm));
 }
 
@@ -430,7 +430,7 @@ template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceFront(ARGS&&... args) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
+    o_assert_dbg((nullptr != this->elmStart) && (this->elmStart > this->bufStart));
     new(--this->elmStart) TYPE(std::forward<ARGS>(args)...);
 }
 
@@ -440,8 +440,8 @@ elementBuffer<TYPE>::moveInsertFront(int32 index) {
     // free a slot for insertion by moving the elements
     // at and before it towards the front
     // the freed slot will NOT be deconstructed!
-    o_assert(this->elmStart > this->bufStart);
-    o_assert((index >= 0) && (index <= this->size()));
+    o_assert_dbg(this->elmStart > this->bufStart);
+    o_assert_dbg((index >= 0) && (index <= this->size()));
     
     new(this->elmStart - 1) TYPE(std::move(*this->elmStart));
     for (TYPE* ptr = this->elmStart; ptr < this->elmStart + index - 1; ptr++) {
@@ -457,8 +457,8 @@ elementBuffer<TYPE>::moveInsertBack(int32 index) {
     // free a slot for insertion by moving the elements
     // after it towards the back
     // the freed slot will NOT be deconstructed!
-    o_assert(this->elmEnd < this->bufEnd);
-    o_assert((index >= 0) && (index < this->size()));
+    o_assert_dbg(this->elmEnd < this->bufEnd);
+    o_assert_dbg((index >= 0) && (index < this->size()));
     
     new(this->elmEnd) TYPE(std::move(*(this->elmEnd-1)));
     for (TYPE* ptr = this->elmEnd - 1; ptr > (this->elmStart+index); ptr--) {
@@ -472,7 +472,7 @@ elementBuffer<TYPE>::moveInsertBack(int32 index) {
 template<class TYPE> void
 elementBuffer<TYPE>::moveEraseFront(int32 index) {
     // erase a slot by moving elements from the front
-    o_assert((index >= 0) && (index < this->size()));
+    o_assert_dbg((index >= 0) && (index < this->size()));
     for (TYPE* ptr = this->elmStart + index; ptr > this->elmStart; ptr--) {
         *ptr = std::move(*(ptr - 1));
     }
@@ -485,7 +485,7 @@ elementBuffer<TYPE>::moveEraseFront(int32 index) {
 template<class TYPE> void
 elementBuffer<TYPE>::moveEraseBack(int32 index) {
     // erase a slot by moving elements from the back
-    o_assert((index >= 0) && (index < this->size()));
+    o_assert_dbg((index >= 0) && (index < this->size()));
     for (TYPE* ptr = this->elmStart + index; ptr < (this->elmEnd - 1); ptr++) {
         *ptr = std::move(*(ptr + 1));
     }
@@ -539,7 +539,7 @@ elementBuffer<TYPE>::prepareInsert(int32 index, bool& outSlotConstructed) {
             }
             else {
                 // must move towards end
-                o_assert(this->elmEnd < this->bufEnd);
+                o_assert_dbg(this->elmEnd < this->bufEnd);
                 return this->moveInsertBack(index);
             }
         }
@@ -551,7 +551,7 @@ elementBuffer<TYPE>::prepareInsert(int32 index, bool& outSlotConstructed) {
             }
             else {
                 // must move towards front
-                o_assert(this->elmStart > this->bufStart);
+                o_assert_dbg(this->elmStart > this->bufStart);
                 return this->moveInsertFront(index);
             }
         }
@@ -591,7 +591,7 @@ elementBuffer<TYPE>::insert(int32 index, TYPE&& elm) {
 template<class TYPE> void
 elementBuffer<TYPE>::erase(int32 index) {
     const int32 size = this->size();
-    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    o_assert_dbg((index >= 0) && (index < size) && (0 != this->elmStart));
     
     if (0 == index) {
         // special case: first element
@@ -620,7 +620,7 @@ elementBuffer<TYPE>::erase(int32 index) {
 template<class TYPE> void
 elementBuffer<TYPE>::eraseSwap(int32 index) {
     const int32 size = this->size();
-    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    o_assert_dbg((index >= 0) && (index < size) && (0 != this->elmStart));
     
     if (0 == index) {
         // special case: first element
@@ -653,7 +653,7 @@ elementBuffer<TYPE>::eraseSwap(int32 index) {
 template<class TYPE> void
 elementBuffer<TYPE>::eraseSwapBack(int32 index) {
     const int32 size = this->size();
-    o_assert((index >= 0) && (index < size) && (0 != this->elmStart));
+    o_assert_dbg((index >= 0) && (index < size) && (0 != this->elmStart));
     if (index == (size - 1)) {
         // special case: last element
         this->elmEnd--;
@@ -670,7 +670,7 @@ elementBuffer<TYPE>::eraseSwapBack(int32 index) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 elementBuffer<TYPE>::eraseSwapFront(int32 index) {
-    o_assert((index >= 0) && (index < this->size()) && (0 != this->elmStart));
+    o_assert_dbg((index >= 0) && (index < this->size()) && (0 != this->elmStart));
     
     if (0 == index) {
         // special case: first element
@@ -689,7 +689,7 @@ elementBuffer<TYPE>::eraseSwapFront(int32 index) {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 elementBuffer<TYPE>::popBack() {
-    o_assert(this->elmEnd > this->elmStart);
+    o_assert_dbg(this->elmEnd > this->elmStart);
     TYPE val(std::move(*--this->elmEnd));
     this->elmEnd->~TYPE();
     return val;
@@ -698,14 +698,12 @@ elementBuffer<TYPE>::popBack() {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 elementBuffer<TYPE>::popFront() {
-    o_assert(this->elmStart < this->elmEnd);
+    o_assert_dbg(this->elmStart < this->elmEnd);
     TYPE val(std::move(*this->elmStart));
     this->elmStart->~TYPE();
     this->elmStart++;
     return val;
 }
-
-
 
 } // namespace Core
 } // namespace Oryol

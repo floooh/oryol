@@ -373,14 +373,14 @@ template<class TYPE> int32
 Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) const {
     const int32 size = this->buffer.size();
     if (size > 0) {
-        o_assert(startIndex < size);
+        o_assert_dbg(startIndex < size);
         if (InvalidIndex == endIndex) {
             endIndex = size;
         }
         else {
-            o_assert(endIndex <= size);
+            o_assert_dbg(endIndex <= size);
         }
-        o_assert(startIndex <= endIndex);
+        o_assert_dbg(startIndex <= endIndex);
         for (int32 i = startIndex; i < endIndex; i++) {
             TYPE* ptr = this->buffer.elmStart + i;
             if (elm == *ptr) {
@@ -458,7 +458,7 @@ Array<TYPE>::grow() {
     else if (growBy > maxGrow) {
         growBy = maxGrow;
     }
-    o_assert(growBy > 0);
+    o_assert_dbg(growBy > 0);
     int32 newCapacity = curCapacity + growBy;
     this->adjustCapacity(newCapacity);
 }

@@ -234,14 +234,15 @@ Map<KEY, VALUE>::Capacity() const {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
 Map<KEY, VALUE>::Contains(const KEY& key) const {
-    o_assert(!this->inBulkMode);
+    o_assert_dbg(!this->inBulkMode);
     return std::binary_search(this->buffer.elmStart, this->buffer.elmEnd, key);
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) {
-    o_assert(!this->inBulkMode);
+    o_assert_dbg(!this->inBulkMode);
+    o_assert_dbg(this->buffer.elmStart);
     auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
     o_assert((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
@@ -250,9 +251,10 @@ Map<KEY, VALUE>::operator[](const KEY& key) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) const {
-    o_assert(!this->inBulkMode);
+    o_assert_dbg(!this->inBulkMode);
+    o_assert_dbg(this->buffer.elmStart);
     auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    o_assert((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
+    o_assert_dbg((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
 }
     
@@ -283,7 +285,7 @@ Map<KEY, VALUE>::Clear() {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Insert(const KeyValuePair<KEY, VALUE>& kvp) {
-    o_assert(!this->inBulkMode);
+    o_assert_dbg(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
     }
@@ -295,7 +297,7 @@ Map<KEY, VALUE>::Insert(const KeyValuePair<KEY, VALUE>& kvp) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Insert(KeyValuePair<KEY, VALUE>&& kvp) {
-    o_assert(!this->inBulkMode);
+    o_assert_dbg(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
     }
@@ -517,7 +519,7 @@ Map<KEY, VALUE>::copy(const Map& rhs) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::move(Map&& rhs) {
-    o_assert(!rhs.inBulkMode);
+    o_assert_dbg(!rhs.inBulkMode);
     this->minGrow    = rhs.minGrow;
     this->maxGrow    = rhs.maxGrow;
     this->inBulkMode = rhs.inBulkMode;
@@ -530,7 +532,7 @@ template<class KEY, class VALUE> void
 Map<KEY, VALUE>::adjustCapacity(int32 newCapacity) {
     // have a balanced front and back spare
     int32 frontSpare = (newCapacity - this->buffer.size()) >> 1;
-    o_assert(frontSpare >= 0);
+    o_assert_dbg(frontSpare >= 0);
     this->buffer.alloc(newCapacity, frontSpare);
 }
 
@@ -545,7 +547,7 @@ Map<KEY, VALUE>::grow() {
     else if (growBy > maxGrow) {
         growBy = maxGrow;
     }
-    o_assert(growBy > 0);
+    o_assert_dbg(growBy > 0);
     int newCapacity = curCapacity + growBy;
     this->adjustCapacity(newCapacity);
 }

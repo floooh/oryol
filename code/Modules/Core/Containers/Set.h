@@ -41,6 +41,8 @@ public:
     bool Empty() const;
     /// get capacity of array
     int32 Capacity() const;
+    /// clear the array (deletes elements, keeps capacity)
+    void Clear();
     /// test if an element exists
     bool Contains(const VALUE& val) const;
     /// find element
@@ -135,6 +137,12 @@ Set<VALUE>::Empty() const {
 template<class VALUE> int32
 Set<VALUE>::Capacity() const {
     return this->valueArray.Capacity();
+}
+
+//------------------------------------------------------------------------------
+template<class VALUE> void
+Set<VALUE>::Clear() {
+    this->valueArray.Clear();
 }
 
 //------------------------------------------------------------------------------
