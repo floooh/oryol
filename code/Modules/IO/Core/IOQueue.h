@@ -12,7 +12,6 @@
 #include "Core/String/StringAtom.h"
 #include "IO/IOProtocol.h"
 #include "Core/Containers/Array.h"
-#include "Core/RunLoop.h"
 #include <functional>
 
 namespace Oryol {
@@ -47,7 +46,7 @@ private:
     void update();
     
     bool isStarted;
-    Core::RunLoop::Id runLoopId;
+    int32 runLoopId;
     struct item {
         Core::Ptr<IO::IOProtocol::Get> ioRequest;
         SuccessFunc successFunc;

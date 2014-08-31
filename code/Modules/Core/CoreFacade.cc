@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "CoreFacade.h"
+#include "Core/RunLoop.h"
 #include "Core/Ptr.h"
 
 namespace Oryol {

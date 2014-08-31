@@ -8,7 +8,6 @@
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"
-#include "Core/RunLoop.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/schemeRegistry.h"
@@ -54,7 +53,7 @@ private:
     /// the per-frame update method (attached to the main-thread runloop)
     void doWork();
 
-    Core::RunLoop::Id runLoopId;
+    int32 runLoopId;
     std::thread::id mainThreadId;
     Core::Ptr<ioRequestRouter> requestRouter;
     static const int32 numIOLanes;

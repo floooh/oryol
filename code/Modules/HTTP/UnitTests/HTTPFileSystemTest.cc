@@ -5,6 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "IO/IOFacade.h"
 

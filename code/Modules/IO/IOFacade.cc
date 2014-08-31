@@ -5,6 +5,7 @@
 #include "IOFacade.h"
 #include "IO/Core/assignRegistry.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 
 namespace Oryol {
 namespace IO {

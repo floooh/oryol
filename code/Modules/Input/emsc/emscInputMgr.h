@@ -5,6 +5,7 @@
     @brief provide input on emscripten platform
 */
 #include "Input/base/inputMgrBase.h"
+#include "Core/RunLoop.h"
 #include <emscripten/html5.h>
 
 namespace Oryol {
@@ -52,6 +53,7 @@ private:
     static EM_BOOL emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData);
 
     static const int32 MaxNumKeys = 256;
+    Core::RunLoop::Id runLoopId;
     Key::Code keyTable[MaxNumKeys];
 };
 

@@ -8,11 +8,12 @@
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"
-#include "Core/RunLoop.h"
 #include <thread>
 
 namespace Oryol {
 namespace Core {
+
+class RunLoop;
 
 class CoreFacade {
     OryolGlobalSingletonDecl(CoreFacade);

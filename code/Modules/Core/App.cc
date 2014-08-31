@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "App.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif

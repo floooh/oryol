@@ -5,6 +5,7 @@
 #include "glfwInputMgr.h"
 #include "Render/glfw/glfwDisplayMgr.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 #include "Render/RenderFacade.h"
 #include "GLFW/glfw3.h"
 

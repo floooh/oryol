@@ -6,6 +6,7 @@
 */
 #include "Input/base/inputMgrBase.h"
 #include "ppapi/cpp/input_event.h"
+#include "Core/RunLoop.h"
 
 namespace Oryol {
 namespace Input {
@@ -48,6 +49,7 @@ private:
     bool onChar(const pp::KeyboardInputEvent& ie);
 
     static const int32 MaxNumKeys = 256;
+    Core::RunLoop::Id runLoopId;    
     Key::Code keyTable[MaxNumKeys];    
 };
 

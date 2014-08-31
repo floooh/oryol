@@ -21,14 +21,13 @@ pnaclInputMgr::pnaclInputMgr() {
     pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
 
     // register our pre-frame reset method with the runloop
-    CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Add(RunLoop::Callback("pnaclInputMgr", 0, std::function<void()>(std::bind(&pnaclInputMgr::reset, this))));
+    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 pnaclInputMgr::~pnaclInputMgr() {
     // unregister reset method from runloop
-    CoreFacade::Instance()->RunLoop()->Remove("pnaclInputMgr");
+    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------

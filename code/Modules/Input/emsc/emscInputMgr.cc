@@ -14,15 +14,13 @@ using namespace Core;
 emscInputMgr::emscInputMgr() {
     this->setupKeyTable();
     this->setupCallbacks();
-    CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Add(RunLoop::Callback("emscInputMgr", 0, std::function<void()>(std::bind(&emscInputMgr::reset, this))));
+    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 emscInputMgr::~emscInputMgr() {
     this->discardCallbacks();
-    CoreFacade* core = CoreFacade::Instance();
-    core->RunLoop()->Remove("emscInputMgr");
+    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------

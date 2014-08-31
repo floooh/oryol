@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/IOFacade.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 #include "IO/Stream/BinaryStreamReader.h"
 #include "IO/Stream/BinaryStreamWriter.h"
 #include "IO/Stream/MemoryStream.h"

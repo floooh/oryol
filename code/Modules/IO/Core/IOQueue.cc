@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "IOQueue.h"
 #include "Core/CoreFacade.h"
+#include "Core/RunLoop.h"
 #include "IO/IOFacade.h"
 
 namespace Oryol {
