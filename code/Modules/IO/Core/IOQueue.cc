@@ -3,10 +3,48 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOQueue.h"
+#include "Core/CoreFacade.h"
 #include "IO/IOFacade.h"
 
 namespace Oryol {
 namespace IO {
+
+using namespace Core;
+
+//------------------------------------------------------------------------------
+IOQueue::IOQueue() :
+isStarted(false),
+runLoopId(RunLoop::InvalidId) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+IOQueue::~IOQueue() {
+    o_assert_dbg(!this->isStarted);
+}
+
+//------------------------------------------------------------------------------
+void
+IOQueue::Start() {
+    o_assert_dbg(!this->isStarted);
+    this->isStarted = true;
+    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->update(); });
+}
+
+//------------------------------------------------------------------------------
+void
+IOQueue::Stop() {
+    o_assert(this->isStarted);
+    this->isStarted = false;
+    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
+    this->ioRequests.Clear();
+}
+
+//------------------------------------------------------------------------------
+bool
+IOQueue::IsStarted() const {
+    return this->isStarted;
+}
 
 //------------------------------------------------------------------------------
 bool
@@ -16,20 +54,24 @@ IOQueue::Empty() const {
 
 //------------------------------------------------------------------------------
 void
-IOQueue::Add(const URL& url, int32 ioLane, SuccessFunc onSuccess, FailFunc onFail) {
+IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     o_assert(onSuccess);
 
-    // use global fail callback if no local provided
-    if (!onFail) {
-        onFail = this->OnFail;
-    }
-    auto req = IOFacade::Instance()->LoadFile(url, 0);
-    this->ioRequests.AddBack(item{ req, onSuccess, onFail });
+    // create IO request and push into IO facade
+    Ptr<IOProtocol::Get> ioReq = IOProtocol::Get::Create();
+    ioReq->SetURL(url);
+    IOFacade::Instance()->Put(ioReq);
+    
+    // add to our queue if pending requests
+    this->ioRequests.AddBack(item{ ioReq, onSuccess, onFail });
 }
 
 //------------------------------------------------------------------------------
+/**
+    This is called per frame from the thread-local run-loop.
+*/
 void
-IOQueue::Update() {
+IOQueue::update() {
     for (int32 i = this->ioRequests.Size() - 1; i >= 0; --i) {
         const auto& cur = this->ioRequests[i];
         const auto& req = cur.ioRequest;

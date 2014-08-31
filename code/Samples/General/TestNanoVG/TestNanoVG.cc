@@ -46,8 +46,6 @@ OryolMain(NanoVGApp);
 AppState::Code
 NanoVGApp::OnRunning() {
     
-    this->ioQueue.Update();
-
     const DisplayAttrs& attrs = this->render->GetDisplayAttrs();
     const int32 w = attrs.FramebufferWidth;
     const int32 h = attrs.FramebufferHeight;
@@ -85,20 +83,21 @@ NanoVGApp::OnInit() {
     this->ctx    = this->nvg->CreateContext(NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     
     // start loading assets asynchronously
+    this->ioQueue.Start();
     StringBuilder str;
     for (int i = 0; i < 12; i++) {
         str.Format(128, "res:image%d.jpg", i+1);
-        this->ioQueue.Add(str.GetString(), 0, [this, i](const Ptr<Stream>& stream) {
+        this->ioQueue.Add(str.GetString(), [this, i](const Ptr<Stream>& stream) {
             this->data.images[i] = this->nvg->CreateImage(this->ctx, stream, 0);
         });
     }
-    this->ioQueue.Add("res:entypo.ttf", 0, [this](const Ptr<Stream>& stream) {
+    this->ioQueue.Add("res:entypo.ttf", [this](const Ptr<Stream>& stream) {
         this->data.fontIcons = this->nvg->CreateFont(this->ctx, "icons", stream);
     });
-    this->ioQueue.Add("res:Roboto-Regular.ttf", 0, [this](const Ptr<Stream>& stream) {
+    this->ioQueue.Add("res:Roboto-Regular.ttf", [this](const Ptr<Stream>& stream) {
         this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans", stream);
     });
-    this->ioQueue.Add("res:Roboto-Bold.ttf", 0, [this](const Ptr<Stream>& stream) {
+    this->ioQueue.Add("res:Roboto-Bold.ttf", [this](const Ptr<Stream>& stream) {
         this->data.fontBold = this->nvg->CreateFont(this->ctx, "sans-bold", stream);
     });
     
@@ -109,6 +108,7 @@ NanoVGApp::OnInit() {
 AppState::Code
 NanoVGApp::OnCleanup() {
     // cleanup everything
+    this->ioQueue.Stop();
     freeDemoData(this->ctx, &this->data);
     this->nvg->DeleteContext(this->ctx);
     this->ctx = nullptr;
