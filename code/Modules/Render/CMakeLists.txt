@@ -52,6 +52,6 @@ oryol_end_module()
 
 oryol_begin_unittest(Render)
 oryol_sources(UnitTests UnitTests/shd)
-oryol_deps(Render)
+oryol_deps(HTTP Render)
 oryol_end_unittest()
 
