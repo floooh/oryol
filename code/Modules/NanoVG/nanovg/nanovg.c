@@ -18,20 +18,10 @@
 
 #include <stdio.h>
 #include <math.h>
-#ifdef NVG_NO_STB_ASSERTS
-#define STBI_ASSERT(x) ((void)0)
-#define STBTT_assert(x) ((void)0)
-#endif
 #include "nanovg.h"
 #define FONTSTASH_IMPLEMENTATION
-#ifdef NVG_NO_STDIO
-#define FONTSTASH_NO_STDIO
-#endif
 #include "fontstash.h"
 #define STB_IMAGE_IMPLEMENTATION
-#ifdef NVG_NO_STDIO
-#define STBI_NO_STDIO
-#endif
 #include "stb_image.h"
 
 #ifdef _MSC_VER
@@ -708,7 +698,6 @@ void nvgFillPaint(NVGcontext* ctx, NVGpaint paint)
 	nvgTransformMultiply(state->fill.xform, state->xform);
 }
 
-#ifndef NVG_NO_STDIO
 int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags)
 {
 	int w, h, n, image;
@@ -724,7 +713,6 @@ int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags)
 	stbi_image_free(img);
 	return image;
 }
-#endif
 
 int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata)
 {
@@ -855,7 +843,7 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx,
 
 NVGpaint nvgImagePattern(NVGcontext* ctx,
 								float cx, float cy, float w, float h, float angle,
-								int image, int repeat, float alpha)
+								int image, float alpha)
 {
 	NVGpaint p;
 	NVG_NOTUSED(ctx);
@@ -869,7 +857,6 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 	p.extent[1] = h;
 
 	p.image = image;
-	p.repeat = repeat;
 
 	p.innerColor = p.outerColor = nvgRGBAf(1,1,1,alpha);
 
@@ -2162,12 +2149,10 @@ void nvgStroke(NVGcontext* ctx)
 }
 
 // Add fonts
-#ifndef NVG_NO_STDIO
 int nvgCreateFont(NVGcontext* ctx, const char* name, const char* path)
 {
 	return fonsAddFont(ctx->fs, name, path);
 }
-#endif
 
 int nvgCreateFontMem(NVGcontext* ctx, const char* name, unsigned char* data, int ndata, int freeData)
 {

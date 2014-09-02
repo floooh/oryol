@@ -50,7 +50,6 @@ struct NVGpaint {
 	NVGcolor innerColor;
 	NVGcolor outerColor;
 	int image;
-	int repeat;
 };
 typedef struct NVGpaint NVGpaint;
 
@@ -70,12 +69,6 @@ enum NVGlineCap {
 	NVG_SQUARE,
 	NVG_BEVEL,
 	NVG_MITER,
-};
-
-enum NVGpatternRepeat {
-	NVG_NOREPEAT = 0,
-	NVG_REPEATX = 0x01,		// Repeat image pattern in X direction
-	NVG_REPEATY = 0x02,		// Repeat image pattern in Y direction
 };
 
 enum NVGalign {
@@ -106,8 +99,12 @@ struct NVGtextRow {
 };
 typedef struct NVGtextRow NVGtextRow;
 
-enum NVGimage {
-    NVG_IMAGE_GENERATE_MIPMAPS = 1 << 0     // Generate mipmaps during creation of the image.
+enum NVGimageFlags {
+    NVG_IMAGE_GENERATE_MIPMAPS	= 1<<0,     // Generate mipmaps during creation of the image.
+	NVG_IMAGE_REPEATX			= 1<<1,		// Repeat image in X direction.
+	NVG_IMAGE_REPEATY			= 1<<2,		// Repeat image in Y direction.
+	NVG_IMAGE_FLIPY				= 1<<3,		// Flips (inverses) image in Y direction when rendered.
+	NVG_IMAGE_PREMULTIPLIED		= 1<<4,		// Image data has premultiplied alpha.
 };
 
 // Begin drawing a new frame
@@ -309,12 +306,11 @@ float nvgRadToDeg(float rad);
 //
 // NanoVG allows you to load jpg, png, psd, tga, pic and gif files to be used for rendering.
 // In addition you can upload your own image. The image loading is provided by stb_image.
+// The parameter imageFlags is combination of flags defined in NVGimageFlags.
 
 // Creates image by loading it from the disk from specified file name.
 // Returns handle to the image.
-#ifndef NVG_NO_STDIO
 int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
-#endif
 
 // Creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
@@ -360,11 +356,10 @@ NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float
 						   NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
-// (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render,
-// and repeat is combination of NVG_REPEATX and NVG_REPEATY which tells if the image should be repeated across x or y.
+// (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
-						 float angle, int image, int repeat, float alpha);
+						 float angle, int image, float alpha);
 
 //
 // Scissoring
@@ -487,9 +482,7 @@ void nvgStroke(NVGcontext* ctx);
 
 // Creates font by loading it from the disk from specified file name.
 // Returns handle to the font.
-#ifndef NVG_NO_STDIO
 int nvgCreateFont(NVGcontext* ctx, const char* name, const char* filename);
-#endif
 
 // Creates image by loading it from the specified memory chunk.
 // Returns handle to the font.
