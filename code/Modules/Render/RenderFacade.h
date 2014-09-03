@@ -90,6 +90,8 @@ public:
     void UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data);
     /// update dynamic index data (only complete replace possible at the moment)
     void UpdateIndices(const Resource::Id& resId, int32 numBytes, const void* data);
+    /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
+    void ReadPixels(void* ptr, int32 numBytes);
     
     /// clear the currently assigned render target
     void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);

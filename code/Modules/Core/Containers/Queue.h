@@ -49,6 +49,15 @@ public:
     /// clear the queue
     void Clear();
     
+    /// read/write access to first element
+    TYPE& Front();
+    /// read-only access to first element
+    const TYPE& Front() const;
+    /// read/write access to last element
+    TYPE& Back();
+    /// read-only access to first element
+    const TYPE& Back() const;
+    
     /// copy-enqueue an element
     void Enqueue(const TYPE& elm);
     /// move-enqueue an element
@@ -332,6 +341,30 @@ template<class TYPE> void
 Queue<TYPE>::Dequeue(TYPE& outElm) {
     o_assert_dbg(this->buffer.size() > 0);
     outElm = std::move(this->buffer.popFront());
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+Queue<TYPE>::Front() {
+    return this->buffer.front();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+Queue<TYPE>::Front() const {
+    return this->buffer.front();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+Queue<TYPE>::Back() {
+    return this->buffer.back();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+Queue<TYPE>::Back() const {
+    return this->buffer.back();
 }
 
 } // namespace Core

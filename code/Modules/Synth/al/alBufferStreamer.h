@@ -24,15 +24,13 @@
 #include "Core/Containers/Queue.h"
 #include "Synth/Core/SynthSetup.h"
 #include "Synth/al/al.h"
+#include "Synth/Core/synth.h"
 
 namespace Oryol {
 namespace Synth {
     
 class alBufferStreamer {
 public:
-    static const int32 BufferNumSamples = 2048;
-    static const int32 SampleRate = 22050;
-
     /// constructor
     alBufferStreamer();
     /// destructor

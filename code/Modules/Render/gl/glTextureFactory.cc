@@ -186,7 +186,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ORYOL_GL_CHECK_ERROR();
     
     // create render target texture
-    GLint glColorFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    GLenum glColorFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
     GLint glColorInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
     GLenum glColorType = glTypes::AsGLTexImageType(setup.ColorFormat);
     GLuint glColorRenderTexture = 0;

@@ -10,8 +10,7 @@ namespace Synth {
 OryolLocalSingletonImpl(SynthFacade);
 
 //------------------------------------------------------------------------------
-SynthFacade::SynthFacade(const SynthSetup& setupAttrs) :
-curTick(0) {
+SynthFacade::SynthFacade(const SynthSetup& setupAttrs) {
     this->soundManager.Setup(setupAttrs);
 }
 
@@ -23,14 +22,13 @@ SynthFacade::~SynthFacade() {
 //------------------------------------------------------------------------------
 void
 SynthFacade::Update() {
-    this->soundManager.Update(this->curTick);
-    this->curTick++;
+    this->soundManager.Update();
 }
 
 //------------------------------------------------------------------------------
-int32
-SynthFacade::CurrentTick() const {
-    return this->curTick;
+void
+SynthFacade::AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset) {
+    this->soundManager.AddOp(voice, track, op, timeOffset);
 }
 
 } // namespace Synth

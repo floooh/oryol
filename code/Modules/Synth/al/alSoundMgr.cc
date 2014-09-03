@@ -108,22 +108,34 @@ alSoundMgr::PrintALInfo() {
 
 //------------------------------------------------------------------------------
 void
-alSoundMgr::Update(Time::Duration timeDiff) {
-    soundMgrBase::Update(timeDiff);
+alSoundMgr::Update() {
+    soundMgrBase::Update();
     if (this->streamer.Update()) {
-        // FIXME: NEED TO PROVIDE A NEW BLOCK OF SAMPLE DATA HERE!
-        int16 samples[alBufferStreamer::BufferNumSamples];
-        for (int i = 0; i < alBufferStreamer::BufferNumSamples; i++) {
-            int16 noise;
-            if ((i >> 6) & 1) {
-                noise = 20000;
-            }
-            else {
-                noise = -20000;
-            }
-            samples[i] = noise;
+    
+        // need to 'render' new buffers
+        static int16 samples[synth::NumVoices][synth::BufferNumSamples];
+        const int32 startTick = this->curTick;
+        const int32 endTick   = startTick + synth::BufferNumSamples;
+        opBundle bundle;
+        for (int voiceIndex = 0; voiceIndex < synth::NumVoices; voiceIndex++) {
+            bundle.StartTick[voiceIndex] = startTick;
+            bundle.EndTick[voiceIndex] = endTick;
+            bundle.Buffer[voiceIndex] = samples[voiceIndex];
+            bundle.BufferNumBytes = synth::BufferSize;
+            this->voices[voiceIndex].GatherOps(startTick, endTick, bundle);
         }
-        this->streamer.Enqueue(samples, sizeof(samples));
+        
+        // select between cpuSynth and gpuSynth here!
+        if (this->useGpuSynth) {
+            this->gpuSynth.Synthesize(bundle);
+        }
+        else {
+            this->cpuSynth.Synthesize(bundle);
+        }
+        this->curTick += synth::BufferNumSamples;
+        
+        // FIXME: only one voice handled at the moment!
+        this->streamer.Enqueue(samples[0], sizeof(samples[0]));
     }
 }
 

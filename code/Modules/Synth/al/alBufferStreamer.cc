@@ -31,12 +31,13 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
     // FIXME: actually use attrs from SynthSetup!
     
     // generate buffers, initially fill buffer with 0
-    int16 silence[BufferNumSamples] = { 0 };
+    int16 silence[synth::BufferNumSamples] = { 0 };
+    o_assert_dbg(sizeof(silence) == synth::BufferSize);
     for (int i = 0; i < MaxNumBuffers; i++) {
         ALuint buf = 0;
         alGenBuffers(1, &buf);
         ORYOL_AL_CHECK_ERROR();
-        alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), SampleRate);
+        alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), synth::SampleRate);
         ORYOL_AL_CHECK_ERROR();
         this->allBuffers.AddBack(buf);
         this->freeBuffers.Enqueue(buf);
@@ -45,8 +46,6 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
     // generate a single playback source
     alGenSources(1, &this->source);
     ORYOL_AL_CHECK_ERROR();
-    // FIXME FIXME FIXME
-    alSourcef(this->source, AL_GAIN, 0.05f);
 }
 
 //------------------------------------------------------------------------------
@@ -111,12 +110,12 @@ alBufferStreamer::Update() {
 void
 alBufferStreamer::Enqueue(const void* ptr, int32 numBytes) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((BufferNumSamples * sizeof(uint16)) == numBytes);
+    o_assert_dbg(synth::BufferSize == numBytes);
     
     ALuint buf = this->freeBuffers.Dequeue();
     this->queuedBuffers.Enqueue(buf);
 
-    alBufferData(buf, AL_FORMAT_MONO16, ptr, numBytes, SampleRate);
+    alBufferData(buf, AL_FORMAT_MONO16, ptr, numBytes, synth::SampleRate);
     ORYOL_AL_CHECK_ERROR();
     alSourceQueueBuffers(this->source, 1, &buf);
     ORYOL_AL_CHECK_ERROR();

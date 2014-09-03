@@ -5,10 +5,10 @@
     @brief sound manager base class
 */
 #include "Synth/Core/SynthSetup.h"
-#include "Synth/Core/item.h"
-#include "Time/TimePoint.h"
-#include "Time/Duration.h"
-#include "Core/Containers/Queue.h"
+#include "Synth/Core/Op.h"
+#include "Synth/Core/voice.h"
+#include "Synth/Core/cpuSynthesizer.h"
+#include "Synth/Core/gpuSynthesizer.h"
 
 namespace Oryol {
 namespace Synth {
@@ -28,16 +28,19 @@ public:
     bool IsValid() const;
     
     /// update the sound system
-    void Update(Time::Duration timeDiff);
+    void Update();
     
-    /// push an item onto the sound queue
-    void PushItem(item item);
+    /// add an op to a voice track
+    void AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset);
     
 protected:
     bool isValid;
     SynthSetup setup;
-    float64 curTime;
-    Core::Queue<item> soundQueue;
+    bool useGpuSynth;
+    int32 curTick;
+    voice voices[synth::NumVoices];
+    cpuSynthesizer cpuSynth;
+    gpuSynthesizer gpuSynth;
 };
     
 } // namespace Synth
