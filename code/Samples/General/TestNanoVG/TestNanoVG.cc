@@ -80,7 +80,7 @@ NanoVGApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(1024, 600, "Oryol NanoVG Sample", PixelFormat::RGB8, PixelFormat::D24S8));
     this->input  = InputFacade::CreateSingle();
     this->nvg    = NVGFacade::CreateSingle();
-    this->ctx    = this->nvg->CreateContext(NVG_STENCIL_STROKES | NVG_ANTIALIAS);
+    this->ctx    = this->nvg->CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     
     // start loading assets asynchronously
     this->ioQueue.Start();
