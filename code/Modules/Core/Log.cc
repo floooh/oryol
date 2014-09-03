@@ -9,7 +9,7 @@
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
-#include "Windows.h"
+#include <Windows.h>
 #endif
 #if ORYOL_ANDROID
 #include <android/log.h>

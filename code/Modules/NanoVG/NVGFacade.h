@@ -10,6 +10,11 @@
 #include "IO/Stream/Stream.h"
 #include "Core/Containers/Map.h"
 
+// Windows.h workaround
+#ifdef CreateFont
+#undef CreateFont
+#endif
+
 struct NVGcontext;
 
 namespace Oryol {
