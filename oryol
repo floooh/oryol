@@ -18,6 +18,8 @@ from tools import texexport as TexExport
 from tools import sdksetup_android as SDKSetupAndroid
 from tools import sdksetup_nacl as SDKSetupNacl
 from tools import sdksetup_emscripten as SDKSetupEmsc
+import SimpleHTTPServer
+import SocketServer
 
 # supported platforms
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
@@ -385,8 +387,12 @@ def runConfigure(config) :
 
 # export the sample assets to build/webpage
 def exportSampleAssets() :
+    if not os.path.exists('build/webpage') :
+        os.makedirs('build/webpage')
     TexExport.configure(os.path.abspath(os.path.dirname(__file__)), 'data', 'build/webpage')
     TexExport.exportSampleTextures()
+    for dataFile in glob.glob('data/nanovg/*') :
+        shutil.copy(dataFile, 'build/webpage')
 
 # build a web page under /build/webpage
 def buildWebPage() :
@@ -445,11 +451,15 @@ def buildWebPage() :
     # export the sample assets
     exportSampleAssets()
 
-    # copy data files over
-    for dataFile in glob.glob('data/nanovg/*') :
-        shutil.copy(dataFile, 'build/webpage')
-
     print 'Generated Samples web page under build/webpage!'
+
+# start a simple HTTP server
+def startHttpServer() :
+    print 'Serving HTTP on localhost:8000...'
+    os.chdir('build/webpage')
+    handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+    httpd = SocketServer.TCPServer(('localhost', 8000), handler)
+    httpd.serve_forever()    
 
 #===============================================================================
 if len(sys.argv) == 1 :
@@ -487,6 +497,8 @@ if len(sys.argv) == 1 :
     print '  build web samples and create web page from it'
     print 'oryol setup [android | nacl | emscripten]'
     print '  setup a local Android, Google Native Client, or Emscripten SDK'
+    print 'oryol assets [export|serve]'
+    print '  export or HTTP-serve asset files'
 
 else :
     cmd = sys.argv[1]
@@ -686,6 +698,16 @@ else :
         runCMake(config)
         runRebuild(config, None)
         buildWebPage()
+
+    elif cmd == 'assets' :
+        if len(sys.argv) < 3 :
+            error("'export' or 'serve' expected as second parameter!")
+        if sys.argv[2] == 'export' :
+            exportSampleAssets()
+        elif sys.argv[2] == 'serve' :
+            startHttpServer()
+        else :
+            error("unknown subcommand '{}', expected 'export' or 'serve'!".format(sys.argv[2]))
 
     elif cmd == 'setup' :
         if len(sys.argv) < 3 :
