@@ -63,8 +63,6 @@ public:
     PixelFormat::Code ColorFormat;
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
     PixelFormat::Code DepthFormat;
-    /// number of MSAA samples (only if render target, default is 0, no multisampling)
-    int32 Samples;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
     Resource::Id DepthRenderTarget;
     
