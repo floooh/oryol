@@ -227,7 +227,7 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
     o_assert(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::ProgramBundle);
+        o_assert(resId.Type() == ResourceType::DrawState);
         return resId;
     }
     else {
