@@ -38,7 +38,9 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol Shapes Sample"));
+    auto renderSetup = RenderSetup::Windowed(600, 400, "Oryol Shapes Sample");
+    renderSetup.Samples = 4; // MSAA4 antialiasing
+    this->render = RenderFacade::CreateSingle(renderSetup);
     this->render->AttachLoader(RawMeshLoader::Create());
     float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;

@@ -56,16 +56,15 @@ eglDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
         return;
     }
 
-    PixelFormat::Code colorPixelFormat = renderSetup.ColorPixelFormat;
-    PixelFormat::Code depthPixelFormat = renderSetup.DepthPixelFormat;
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RED_SIZE, PixelFormat::NumBits(colorPixelFormat, Channel::Red),
-        EGL_GREEN_SIZE, PixelFormat::NumBits(colorPixelFormat, Channel::Green),
-        EGL_BLUE_SIZE, PixelFormat::NumBits(colorPixelFormat, Channel::Blue),
-        EGL_ALPHA_SIZE, PixelFormat::NumBits(colorPixelFormat, Channel::Alpha),
-        EGL_DEPTH_SIZE, PixelFormat::NumBits(depthPixelFormat, Channel::Depth),
-        EGL_STENCIL_SIZE, PixelFormat::NumBits(depthPixelFormat, Channel::Stencil),
+        EGL_SAMPLES, renderSetup.Samples,
+        EGL_RED_SIZE, PixelFormat::NumBits(renderSetup.ColorPixelFormat, Channel::Red),
+        EGL_GREEN_SIZE, PixelFormat::NumBits(renderSetup.ColorPixelFormat, Channel::Green),
+        EGL_BLUE_SIZE, PixelFormat::NumBits(renderSetup.ColorPixelFormat, Channel::Blue),
+        EGL_ALPHA_SIZE, PixelFormat::NumBits(renderSetup.ColorPixelFormat, Channel::Alpha),
+        EGL_DEPTH_SIZE, PixelFormat::NumBits(renderSetup.DepthPixelFormat, Channel::Depth),
+        EGL_STENCIL_SIZE, PixelFormat::NumBits(renderSetup.DepthPixelFormat, Channel::Stencil),
         EGL_NONE
     };
     EGLint numConfigs = 0;

@@ -45,7 +45,9 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Vertex Texture Sample"));
+    auto renderSetup = RenderSetup::Windowed(800, 600, "Oryol Vertex Texture Sample");
+    renderSetup.Samples = 4;
+    this->render = RenderFacade::CreateSingle(renderSetup);
     this->render->AttachLoader(RawMeshLoader::Create());
     this->debug = DebugFacade::CreateSingle();
     

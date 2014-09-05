@@ -58,14 +58,13 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW window
-    PixelFormat::Code colorPixelFormat = setup.ColorPixelFormat;
-    PixelFormat::Code depthPixelFormat = setup.DepthPixelFormat;
-    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Red));
-    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Green));
-    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Blue));
-    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(colorPixelFormat, Channel::Alpha));
-    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(depthPixelFormat, Channel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(depthPixelFormat, Channel::Stencil));
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Alpha));
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthPixelFormat, Channel::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthPixelFormat, Channel::Stencil));
+    glfwWindowHint(GLFW_SAMPLES, setup.Samples);
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif

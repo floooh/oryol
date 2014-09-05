@@ -43,9 +43,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     
     // modify the color/depth/stencil format of the GLKView
     GLKView* glkView = iosBridge::Instance()->iosGetGLKView();
-    PixelFormat::Code colorFmt = renderSetup.GetDisplayAttrs().ColorPixelFormat;
-    PixelFormat::Code depthFmt = renderSetup.GetDisplayAttrs().DepthPixelFormat;
-    switch (colorFmt) {
+    switch (renderSetup.ColorPixelFormat) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
@@ -60,7 +58,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
     }
-    switch (depthFmt) {
+    switch (renderSetup.DepthPixelFormat) {
         case PixelFormat::None:
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormatNone;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
@@ -81,6 +79,12 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormat16;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
+    }
+    if (renderSetup.Samples > 0) {
+        glkView.drawableMultisample = GLKViewDrawableMultisample4X;
+    }
+    else {
+        glkView.drawableMultisample = GLKViewDrawableMultisampleNone;
     }
     
     // setup platform constants and extensions
