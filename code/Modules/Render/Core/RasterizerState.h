@@ -18,6 +18,7 @@ public:
             bool DepthOffsetEnabled : 1;
             bool ScissorTestEnabled : 1;
             bool DitherEnabled : 1;
+            bool MultisampleEnabled : 1;
             Face::Code CullFace : 3;
         };
         uint8 Hash;
@@ -29,7 +30,8 @@ public:
         this->CullFaceEnabled = false;
         this->DepthOffsetEnabled = false;
         this->ScissorTestEnabled = false;
-        this->DitherEnabled = false;
+        this->DitherEnabled = true;
+        this->MultisampleEnabled = true;
         this->CullFace = Face::Back;
     }
     /// equality

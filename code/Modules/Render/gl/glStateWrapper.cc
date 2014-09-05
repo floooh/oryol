@@ -492,7 +492,8 @@ glStateWrapper::setupRasterizerState() {
     ::glCullFace(GL_BACK);
     ::glDisable(GL_POLYGON_OFFSET_FILL);
     ::glDisable(GL_SCISSOR_TEST);
-    ::glDisable(GL_DITHER);
+    ::glEnable(GL_DITHER);
+    ::glEnable(GL_MULTISAMPLE);
     ORYOL_GL_CHECK_ERROR();
 }
 
@@ -540,6 +541,15 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
         }
         else {
             ::glDisable(GL_DITHER);
+        }
+    }
+    const bool msaaEnabled = newState.MultisampleEnabled;
+    if (msaaEnabled != curState.MultisampleEnabled) {
+        if (msaaEnabled) {
+            ::glEnable(GL_MULTISAMPLE);
+        }
+        else {
+            ::glDisable(GL_MULTISAMPLE);
         }
     }
     this->curRasterizerState = newState;
