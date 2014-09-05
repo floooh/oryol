@@ -54,7 +54,8 @@ VertexTextureApp::OnInit() {
     // FIXME: need a way to check number of vertex texture units
     
     // create RGBA offscreen render target which holds the plasma
-    auto rtSetup = TextureSetup::AsRenderTarget("rt", 256, 256, PixelFormat::RGBA8, PixelFormat::None);
+    auto rtSetup = TextureSetup::AsRenderTarget("rt", 256, 256);
+    rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     this->renderTarget = this->render->CreateResource(rtSetup);

@@ -16,8 +16,9 @@ Width(0),
 Height(0),
 RelWidth(0.0f),
 RelHeight(0.0f),
-ColorFormat(PixelFormat::InvalidPixelFormat),
-DepthFormat(PixelFormat::InvalidPixelFormat),
+ColorFormat(PixelFormat::RGBA8),
+DepthFormat(PixelFormat::None),
+Samples(0),
 WrapU(TextureWrapMode::Repeat),
 WrapV(TextureWrapMode::Repeat),
 WrapW(TextureWrapMode::Repeat),
@@ -35,18 +36,15 @@ hasMipMaps(false) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsRenderTarget(const class Locator& loc, int32 w, int32 h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup::AsRenderTarget(const class Locator& loc, int32 w, int32 h) {
     o_assert(w > 0);
     o_assert(h > 0);
-    o_assert(colorFmt != PixelFormat::InvalidPixelFormat);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
     setup.Locator = loc;
     setup.Width = w;
     setup.Height = h;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
     setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
@@ -91,10 +89,9 @@ TextureSetup::FromPixelData(const class Locator& loc, int32 w, int32 h, bool has
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, float32 relHeight, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, float32 relHeight) {
     o_assert(relWidth > 0.0f);
     o_assert(relHeight > 0.0f);
-    o_assert(colorFmt != PixelFormat::InvalidPixelFormat);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
@@ -102,8 +99,6 @@ TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, 
     setup.Locator = loc;
     setup.RelWidth = relWidth;
     setup.RelHeight = relHeight;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
     setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
@@ -112,14 +107,13 @@ TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, 
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsSharedDepthRenderTarget(const class Locator& loc, PixelFormat::Code colorFmt, const Id& depthRenderTarget) {
-    o_assert(colorFmt != PixelFormat::InvalidPixelFormat);
+TextureSetup::AsSharedDepthRenderTarget(const class Locator& loc, const Id& depthRenderTarget) {
+    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == ResourceType::Texture);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
     setup.Locator = loc;
     setup.hasSharedDepth = true;
-    setup.ColorFormat = colorFmt;
     setup.DepthRenderTarget = depthRenderTarget;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;

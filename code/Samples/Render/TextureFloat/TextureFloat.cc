@@ -54,7 +54,8 @@ TextureFloatApp::OnInit() {
     
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
-    auto rtSetup = TextureSetup::AsRelSizeRenderTarget("rt", 1.0f, 1.0f, PixelFormat::RGBA32F, PixelFormat::None);
+    auto rtSetup = TextureSetup::AsRelSizeRenderTarget("rt", 1.0f, 1.0f);
+    rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     this->renderTarget = this->render->CreateResource(rtSetup);

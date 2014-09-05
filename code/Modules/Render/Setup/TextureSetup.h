@@ -21,11 +21,11 @@ public:
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(const Resource::Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt);
     /// setup as absolute-size render target
-    static TextureSetup AsRenderTarget(const Resource::Locator& loc, int32 w, int32 h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt=PixelFormat::InvalidPixelFormat);
+    static TextureSetup AsRenderTarget(const Resource::Locator& loc, int32 w, int32 h);
     /// setup as render target with size relative to current display size
-    static TextureSetup AsRelSizeRenderTarget(const Resource::Locator& loc, float32 relWidth, float32 relHeight, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt=PixelFormat::InvalidPixelFormat);
+    static TextureSetup AsRelSizeRenderTarget(const Resource::Locator& loc, float32 relWidth, float32 relHeight);
     /// create render target with shared depth buffer
-    static TextureSetup AsSharedDepthRenderTarget(const Resource::Locator& loc, PixelFormat::Code colorFmt, const Resource::Id& depthRenderTarget);
+    static TextureSetup AsSharedDepthRenderTarget(const Resource::Locator& loc, const Resource::Id& depthRenderTarget);
 
     /// default constructor
     TextureSetup();
@@ -63,6 +63,8 @@ public:
     PixelFormat::Code ColorFormat;
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
     PixelFormat::Code DepthFormat;
+    /// number of MSAA samples (only if render target, default is 0, no multisampling)
+    int32 Samples;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
     Resource::Id DepthRenderTarget;
     

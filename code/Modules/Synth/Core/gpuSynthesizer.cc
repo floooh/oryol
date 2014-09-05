@@ -35,7 +35,10 @@ gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     // setup a rendering resources
     const int32 rtWidth  = (synth::BufferNumSamples / 2) / 8;
     const int32 rtHeight = 8;
-    this->renderTarget = render->CreateResource(TextureSetup::AsRenderTarget("_synthRT", rtWidth, rtHeight, PixelFormat::RGBA8));
+    auto rtSetup = TextureSetup::AsRenderTarget("_synthRT", rtWidth, rtHeight);
+    rtSetup.ColorFormat = PixelFormat::RGBA8;
+    this->renderTarget = render->CreateResource(rtSetup);
+    
     Id fsqMesh = render->CreateResource(MeshSetup::CreateFullScreenQuad("_synthFSQMesh"));
     Id prog = render->CreateResource(Shaders::Synth::CreateSetup());
     this->drawState = render->CreateResource(DrawStateSetup("_synthDS", fsqMesh, prog, 0));

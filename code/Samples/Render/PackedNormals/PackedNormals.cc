@@ -26,7 +26,8 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     RenderFacade* render = nullptr;
-    Resource::Id drawState;
+    Resource::Id msaaDrawState;
+    Resource::Id noMsaaDrawState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -46,6 +47,7 @@ PackedNormalsApp::OnInit() {
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // create resources
+    // NOTE: we draw some shapes with MSAA, some without
     ShapeBuilder shapeBuilder;
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
@@ -57,11 +59,15 @@ PackedNormalsApp::OnInit() {
     shapeBuilder.Build();
     Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
     Id prog = this->render->CreateResource(Shaders::PackedNormals::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
+    DrawStateSetup dsSetup("dsmsaa", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsSetup.RasterizerState.CullFaceEnabled = true;
-    this->drawState = this->render->CreateResource(dsSetup);
+    dsSetup.RasterizerState.MultisampleEnabled = true;
+    this->msaaDrawState = this->render->CreateResource(dsSetup);
+    dsSetup.Locator = "dsnomsaa";
+    dsSetup.RasterizerState.MultisampleEnabled = false;
+    this->noMsaaDrawState = this->render->CreateResource(dsSetup);
 
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
@@ -94,18 +100,22 @@ PackedNormalsApp::OnRunning() {
         
         // apply state and render
         this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
+        this->render->ApplyDrawState(this->msaaDrawState);
         this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // draw shape primitive groups
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
         this->render->Draw(0);
+        this->render->ApplyDrawState(this->noMsaaDrawState);
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
         this->render->Draw(1);
+        this->render->ApplyDrawState(this->msaaDrawState);
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
         this->render->Draw(2);
+        this->render->ApplyDrawState(this->noMsaaDrawState);
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
         this->render->Draw(3);
+        this->render->ApplyDrawState(this->msaaDrawState);
         this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
         this->render->Draw(4);
         
@@ -120,7 +130,8 @@ PackedNormalsApp::OnRunning() {
 AppState::Code
 PackedNormalsApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->drawState);
+    this->render->ReleaseResource(this->msaaDrawState);
+    this->render->ReleaseResource(this->noMsaaDrawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();
