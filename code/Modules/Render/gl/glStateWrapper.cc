@@ -493,7 +493,9 @@ glStateWrapper::setupRasterizerState() {
     ::glDisable(GL_POLYGON_OFFSET_FILL);
     ::glDisable(GL_SCISSOR_TEST);
     ::glEnable(GL_DITHER);
+    #if !ORYOL_OPENGLES2
     ::glEnable(GL_MULTISAMPLE);
+    #endif
     ORYOL_GL_CHECK_ERROR();
 }
 
@@ -543,6 +545,7 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_DITHER);
         }
     }
+    #if !ORYOL_OPENGLES2
     const bool msaaEnabled = newState.MultisampleEnabled;
     if (msaaEnabled != curState.MultisampleEnabled) {
         if (msaaEnabled) {
@@ -552,6 +555,7 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_MULTISAMPLE);
         }
     }
+    #endif
     this->curRasterizerState = newState;
     ORYOL_GL_CHECK_ERROR();        
 }
