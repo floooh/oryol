@@ -30,8 +30,10 @@ TEST(RenderTargetCreationTest) {
     factory.Setup(&stWrapper, &displayManager, &texPool);
     
     // create a render target (no depth buffer)
+    auto texSetup = TextureSetup::AsRenderTarget("tex0", 320, 256);
+    texSetup.ColorFormat = PixelFormat::RGBA8;
     texture tex0;
-    tex0.setSetup(TextureSetup::AsRenderTarget("tex0", 320, 256, PixelFormat::RGBA8));
+    tex0.setSetup(texSetup);
     factory.SetupResource(tex0);
     CHECK(tex0.GetState() == Resource::State::Valid);
     CHECK(tex0.glGetTexture() != 0);
@@ -54,8 +56,11 @@ TEST(RenderTargetCreationTest) {
     CHECK(!attrs0.IsDepthTexture);
     
     // create a render target with depth buffer
+    auto rtSetup = TextureSetup::AsRenderTarget("tex1", 640, 480);
+    rtSetup.ColorFormat = PixelFormat::RGBA8;
+    rtSetup.DepthFormat = PixelFormat::D24S8;
     texture tex1;
-    tex1.setSetup(TextureSetup::AsRenderTarget("tex1", 640, 480, PixelFormat::RGBA8, PixelFormat::D24S8));
+    tex1.setSetup(rtSetup);
     factory.SetupResource(tex1);
     CHECK(tex1.GetState() == Resource::State::Valid);
     CHECK(tex1.glGetTexture() != 0);
@@ -78,8 +83,11 @@ TEST(RenderTargetCreationTest) {
     CHECK(!attrs1.IsDepthTexture);
     
     // create relative-size render target with depth buffer
+    rtSetup = TextureSetup::AsRelSizeRenderTarget("tex2", 1.0f, 1.0f);
+    rtSetup.ColorFormat = PixelFormat::R5G6B5;
+    rtSetup.DepthFormat = PixelFormat::D16;
     texture tex2;
-    tex2.setSetup(TextureSetup::AsRelSizeRenderTarget("tex2", 1.0f, 1.0f, PixelFormat::R5G6B5, PixelFormat::D16));
+    tex2.setSetup(rtSetup);
     factory.SetupResource(tex2);
     CHECK(tex2.GetState() == Resource::State::Valid);
     CHECK(tex2.glGetTexture() != 0);
