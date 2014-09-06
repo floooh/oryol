@@ -1,7 +1,5 @@
 oryol_begin_app(SimpleRenderTarget windowed)
     oryol_sources(.)
     oryol_deps(Render)
-    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" emscripten)    
-    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" android)    
-    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" pnacl)
+    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" "emscripten,android,pnacl" SimpleRenderTarget.png)
 oryol_end_app()

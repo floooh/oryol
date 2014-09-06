@@ -1,7 +1,5 @@
 oryol_begin_app(PBRendering windowed)
     oryol_sources(.)
     oryol_deps(Render Debug)
-    oryol_add_web_sample(PBRendering "Physically based rendering sample" emscripten)
-    oryol_add_web_sample(PBRendering "Physically based rendering sample" pnacl)
-    oryol_add_web_sample(PBRendering "Physically based rendering sample" android)
+    oryol_add_web_sample(PBRendering "Physically based rendering sample" "emscripten,pnacl,android" PBRendering.png)
 oryol_end_app()

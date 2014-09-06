@@ -1,7 +1,5 @@
 oryol_begin_app(Instancing windowed)
     oryol_sources(.)
     oryol_deps(Render Time Debug)
-    oryol_add_web_sample(Instancing "Instanced rendering" emscripten)    
-    oryol_add_web_sample(Instancing "Instanced rendering" pnacl)    
-    # oryol_add_web_sample(Instancing "Instanced rendering" android)
+    oryol_add_web_sample(Instancing "Instanced rendering" "emscripten,pnacl" Instancing.png)    
 oryol_end_app()

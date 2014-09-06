@@ -1,0 +1,147 @@
+/** Oryol sample page css **/
+
+/** global settings **/
+body {
+    margin: 0;
+    background-color: #19A3FF;
+}
+/** header styling **/
+#title {    
+    text-align: center;
+    text-shadow: 3px 2px #BAE3FF;
+    font-family: 'Racing Sans One';
+    font-size: 80px;
+    background-color: white;
+    min-width: 500px;
+    margin-top: 0px;
+}
+#cr {
+    position: relative;
+    top: -33px;
+    left: 3px;
+    font-size: 30px;
+}
+#rainbow {
+    margin-top: -10px;
+    height: 14px;
+    background: linear-gradient(red,orange,yellow,green,blue);
+}
+
+/** navigation bar **/
+#navbar {
+    margin-top: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 300px;
+    height: auto;
+    background-color: white;
+    outline: black solid thin;
+}
+.navlist {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0px; 
+    margin-bottom: 0px;
+    list-style-type: none;
+    padding: 0px;
+}
+.navitem {
+    display: inline;
+    float: left;
+}
+a.navlink:link, a.navlink:visited {
+    font-family: 'Racing Sans One';
+    font-size: 22px;    
+    display: block;
+    width: 100px;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+}
+a.navlink:hover, a.navlink:active {
+    background-color: #CCCCCC;
+}
+
+/* this breaks the float after the navbar */
+.break {
+    clear: both;
+}
+
+/** thumbnail gallery **/
+#gallery {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    height: auto;
+}
+.thumb {
+    width: 240px;
+    height: 220px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 15px;
+    padding: 1px;
+    float: left;
+    background: white;
+    outline: rgb(0, 0, 0) solid thin;
+}
+.thumbtitle {
+    text-align: center;
+    font-family: 'Racing Sans One';
+    font-size: 20px;        
+}
+.imgframe {
+    margin: 2px;
+    width: auto;
+    height: 165px;
+}
+.image {
+    display: block;
+    height: 165px;
+    width: auto;
+    max-width: 236px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 3px;
+}
+.thumbbar {
+    padding: 0;
+    width: 240px;
+    background-color: red;
+    vertical-align: bottom;
+}
+.thumblist {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+.thumbitem {
+    display: inline;
+    float: left;
+}
+a.thumblink:link, a.thumblink:visited {
+    font-family: 'Racing Sans One';
+    font-size: 16px;    
+    display: block;
+    width: 80px;
+    color: black;
+    background-color: white;
+    text-align: center;
+    text-decoration: none;
+}
+
+a.thumblink:hover, a.thumblink:active {
+    background-color: rgb(220, 220, 220);
+}
+
+#gallery_bottom {
+    height: 1px;
+    clear: both;
+}
+
+/** bottom elements **/
+#bottom {
+    height: 20px;
+}
+
+

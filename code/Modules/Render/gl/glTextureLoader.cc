@@ -129,6 +129,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     o_assert(this->texFactory);
     const TextureSetup& setup = tex.GetSetup();
     const GLenum glTexTarget = ctx.texture_target();
+    ORYOL_GL_CHECK_ERROR();
     
     // create a texture object
     GLuint glTex = this->texFactory->glGenAndBindTexture(glTexTarget);
@@ -146,8 +147,15 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     }
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, setup.WrapU);
-    ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, setup.WrapV);
+    ORYOL_GL_CHECK_ERROR();
+    if (ctx.num_faces() > 0) {
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    else {
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, setup.WrapU);
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, setup.WrapV);
+    }
     if (ctx.is_3d()) {
         #if ORYOL_OPENGLES2
         o_error("glTextureLoader: 3D texture not supported on OpenGLES2!\n");

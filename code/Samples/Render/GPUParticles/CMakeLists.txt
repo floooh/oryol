@@ -1,7 +1,5 @@
 oryol_begin_app(GPUParticles windowed)
     oryol_sources(.)
     oryol_deps(Render Time Debug)
-    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" emscripten)
-    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particle" android)
-    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particle" pnacl)
+    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" "emscripten,android,pnacl" GPUParticles.png)
 oryol_end_app()

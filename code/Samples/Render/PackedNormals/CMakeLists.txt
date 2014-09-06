@@ -1,7 +1,5 @@
 oryol_begin_app(PackedNormals windowed)
     oryol_sources(.)
     oryol_deps(Render)
-    oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" emscripten)    
-    oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" android)    
-    oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" pnacl)    
+    oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" "emscripten,android,pnacl" PackedNormals.png)    
 oryol_end_app()

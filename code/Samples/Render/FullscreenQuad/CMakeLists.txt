@@ -1,6 +1,5 @@
 oryol_begin_app(FullscreenQuad windowed)
     oryol_sources(.)
     oryol_deps(Render)
-    oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" emscripten)    
-    oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" pnacl)
+    oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" "emscripten,pnacl" FullscreenQuad.png)    
 oryol_end_app()

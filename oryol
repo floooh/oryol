@@ -396,10 +396,8 @@ def exportSampleAssets() :
 
 # build a web page under /build/webpage
 def buildWebPage() :
-    # first clean up previous page
-    if os.path.isdir('build/webpage') :
-        shutil.rmtree('build/webpage')
-    os.makedirs('build/webpage')
+    if not os.path.exists('build/webpage') :
+        os.makedirs('build/webpage')
 
     # load the websamples.json file, should have been created during the last build
     f = open('build/websamples.json')
@@ -407,49 +405,77 @@ def buildWebPage() :
     f.close
 
     # load the samples html template
-    f = open('web/samples.template.html')
+    f = open('web/index.html')
     templ = Template(f.read())
     f.close
 
-    # build the html link list
-    emscriptenContent = ''
-    pnaclContent = ''
-    androidContent = ''
+    # build the thumbnail gallery
+    content = ''
     for sample in samples['samples'] :
         if sample['name'] != '__end__' :
-            if sample['type'] == 'emscripten' :
-                emscriptenContent += '<li><a href="{}.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
-            elif sample['type'] == 'pnacl' :
-                pnaclContent += '<li><a href="{}_pnacl.html">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
-            elif sample['type'] == 'android' :
-                androidContent += '<li><a href="{}-debug.apk">{}</a>: {}</li>\n'.format(sample['name'], sample['name'], sample['desc'])
+            name    = sample['name']
+            imgPath = sample['image']
+            types   = sample['type'] 
+            desc    = sample['desc']
+            head, tail = os.path.split(imgPath)
+            if tail == 'none' :
+                imgFileName = 'dummy.png'
+            else :
+                imgFileName = tail
+            content += '<div class="thumb">\n'
+            content += '  <div class="thumbtitle">{}</div>\n'.format(name)
+            content += '  <div class="imgframe"><a href="{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
+            content += '  <div class="thumbbar">\n'
+            content += '    <ul class="thumblist">\n'
+            if 'emscripten' in types :
+                content += '      <li class="thumbitem"><a class="thumblink" href="{}.html">emsc</a></li>\n'.format(name)
+            if 'pnacl' in types :
+                content += '      <li class="thumbitem"><a class="thumblink" href="{}_pnacl.html">pnacl</a></li>\n'.format(name)
+            if 'android' in types :
+                content += '      <li class="thumbitem"><a class="thumblink" href="{}-debug.apk">apk</a></li>\n'.format(name)
+            content += '    </ul>\n'
+            content += '  </div>\n'
+            content += '</div>\n'
 
     # populate the html template, and write to the build directory
-    html = templ.safe_substitute(emscripten_samples=emscriptenContent, pnacl_samples=pnaclContent, android_samples=androidContent)
+    html = templ.safe_substitute(samples=content)
     f = open('build/webpage/index.html', 'w')
     f.write(html)
     f.close()
 
+    # copy the css and dummy.png files
+    shutil.copy('web/style.css', 'build/webpage/style.css')
+    shutil.copy('web/dummy.png', 'build/webpage/dummy.png')
+
+    # copy the screenshots
+    for sample in samples['samples'] :
+        if sample['name'] != '__end__' :
+            imgPath = sample['image']
+            head, tail = os.path.split(imgPath)
+            if tail != 'none' :
+                print '> copy screenshot: {}'.format(tail)
+                shutil.copy(imgPath, 'build/webpage/' + tail)
+
     # copy the HTML sample files over
     for sample in samples['samples'] :
-        if sample['name'] != '__end__' and sample['type'] == 'emscripten' :
+        if sample['name'] != '__end__' and 'emscripten' in sample['type'] :
+            print '> copy emscripten sample files: {}'.format(sample['name'])
             for ext in ['html', 'js', 'html.mem'] :
                 shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
     # copy the PNaCl sample files over
     for sample in samples['samples'] :
-        if sample['name'] != '__end__' and sample['type'] == 'pnacl' :
+        if sample['name'] != '__end__' and 'pnacl' in sample['type'] :
             shutil.copy('bin/pnacl/{}_pnacl.html'.format(sample['name']), 'build/webpage')
+            print '> copy pnacl sample files: {}'.format(sample['name'])
             for ext in ['nmf', 'pexe'] :
                 shutil.copy('bin/pnacl/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
     # copy the Android sample files over
     for sample in samples['samples'] :
-        if sample['name'] != '__end__' and sample['type'] == 'android' :
+        if sample['name'] != '__end__' and 'android' in sample['type'] :
+            print '> copy android sample files: {}'.format(sample['name'])
             shutil.copy('bin/android/{}-debug.apk'.format(sample['name']), 'build/webpage')
-
-    # export the sample assets
-    exportSampleAssets()
 
     print 'Generated Samples web page under build/webpage!'
 
@@ -493,7 +519,7 @@ if len(sys.argv) == 1 :
     print '  make and deploy a target executable to mobile device'
     print 'oryol config [config-name]'
     print '  call cmake-gui or ccmake for selected or specific config'
-    print 'oryol webpage'
+    print 'oryol webpage [norebuild]'
     print '  build web samples and create web page from it'
     print 'oryol setup [android | nacl | emscripten]'
     print '  setup a local Android, Google Native Client, or Emscripten SDK'
@@ -688,15 +714,19 @@ else :
         runConfigure(config)            
 
     elif cmd == 'webpage' :
-        config = loadConfig("emscripten-make-release")
-        runCMake(config)
-        runRebuild(config, None)
-        config = loadConfig("pnacl-make-release")
-        runCMake(config)
-        runRebuild(config, None)
-        config = loadConfig("android-make-release")
-        runCMake(config)
-        runRebuild(config, None)
+        if not (len(sys.argv) > 2 and sys.argv[2] == 'norebuild') :
+            if os.path.isdir('build/webpage') :
+                shutil.rmtree('build/webpage')
+            config = loadConfig("emscripten-make-release")
+            runCMake(config)
+            runRebuild(config, None)
+            config = loadConfig("pnacl-make-release")
+            runCMake(config)
+            runRebuild(config, None)
+            config = loadConfig("android-make-release")
+            runCMake(config)
+            runRebuild(config, None)
+            exportSampleAssets()
         buildWebPage()
 
     elif cmd == 'assets' :

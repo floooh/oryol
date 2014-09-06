@@ -1,7 +1,5 @@
 oryol_begin_app(VertexTexture windowed)
     oryol_sources(.)
     oryol_deps(Render Time Debug)
-    oryol_add_web_sample(VertexTexture "Vertex texture fetch from offscreen render target" emscripten)
-    oryol_add_web_sample(VertexTexture "Vertex texture fetch from offscreen render target" android)
-    oryol_add_web_sample(VertexTexture "Vertex texture fetch from offscreen render target" pnacl)
+    oryol_add_web_sample(VertexTexture "Vertex texture fetch from offscreen render target" "emscripten,android,pnacl" VertexTexture.png)
 oryol_end_app()
