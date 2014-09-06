@@ -1,89 +1,266 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-    <head>
-        <title>Oryol Web Samples</title>
-    </head>
-    <body>
-        <h3>Oryol Emscripten Samples</h3>
-        <p>
-        <a href="https://github.com/floooh/oryol" target="_blank">Oryol on Github</a>
-        </p>
-        <p>
-        Please note that these samples may be using bleeding edge features, thus they
-        may not work even in the latest public/stable browser version but may require
-        the bleeding edge versions like Firefox Nightly or Chrome Canary!
-        </p>
-        <p>
-        These should run in any WebGL-enabled web browser:
-        </p>
-        <li><a href="Clear.html">Clear</a>: Just call glClear in a loop</li>
-<li><a href="Triangle.html">Triangle</a>: The canonical triangle demo</li>
-<li><a href="Shapes.html">Shapes</a>: Shapes with random vertex colors, created with ShapeBuilder class</li>
-<li><a href="PackedNormals.html">PackedNormals</a>: Shapes with packed vertex normals</li>
-<li><a href="SimpleRenderTarget.html">SimpleRenderTarget</a>: Demonstrate simple offscreen rendering</li>
-<li><a href="InfiniteSpheres.html">InfiniteSpheres</a>: Infinite recursive spheres</li>
-<li><a href="DDSTextureLoading.html">DDSTextureLoading</a>: Load and render various DDS texture formats</li>
-<li><a href="DDSCubeMap.html">DDSCubeMap</a>: Load and display DDS DXT1 cube map</li>
-<li><a href="DrawCallPerf.html">DrawCallPerf</a>: Measure draw call performance</li>
-<li><a href="FullscreenQuad.html">FullscreenQuad</a>: Fullscreen quad with some distance field ray-marching</li>
-<li><a href="PBRendering.html">PBRendering</a>: Physically based rendering sample</li>
-<li><a href="Instancing.html">Instancing</a>: Instanced rendering</li>
-<li><a href="TextureFloat.html">TextureFloat</a>: RGB plasma using float render texture</li>
-<li><a href="VertexTexture.html">VertexTexture</a>: Vertex texture fetch from offscreen render target</li>
-<li><a href="GPUParticles.html">GPUParticles</a>: Fully GPU driven 3D particles</li>
-<li><a href="HTTPClientSample.html">HTTPClientSample</a>: Low-level HTTP loading sample</li>
-<li><a href="CoreHello.html">CoreHello</a>: Low-level hello world sample</li>
-<li><a href="DebugText.html">DebugText</a>: Demonstrate debug text rendering</li>
-<li><a href="TestInput.html">TestInput</a>: Test Input module functionality</li>
-<li><a href="Paclone.html">Paclone</a>: Simple Pacman clone (work in progress!</li>
-<li><a href="TestNanoVG.html">TestNanoVG</a>: NanoVG integration</li>
-<li><a href="SynthTest.html">SynthTest</a>: Most simple Synth audio sample</li>
-<li><a href="IOQueueSample.html">IOQueueSample</a>: Asynchronous file loading with IOQueue</li>
+<head>
+<meta charset="UTF-8"/>
+<title>Oryol Samples</title>
+<link href='http://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'></head>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<body>
+<div id="header">
+    <div id="title">ORYOL 2000<span id="cr">&#0169;</span></div>
+    <div id="rainbow"></div>
+</div>
+<div id="navbar">
+    <ul class="navlist">
+        <li class="navitem"><a class="navlink" href="http://github.com/floooh/oryol">github</a></li>
+        <li class="navitem"><a class="navlink" href="https://twitter.com/FlohOfWoe">twitter</a></li>
+        <li class="navitem"><a class="navlink" href="http://www.flohofwoe.net">über</a></li>
+        <div class="break"></div>
+    </ul>
+</div>
+<div id="gallery">
+    <div class="thumb">
+  <div class="thumbtitle">Clear</div>
+  <div class="imgframe"><a href="Clear.html"><img class="image" src="Clear.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="Clear.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Clear_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Clear-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">Triangle</div>
+  <div class="imgframe"><a href="Triangle.html"><img class="image" src="Triangle.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="Triangle.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Triangle_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Triangle-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">Shapes</div>
+  <div class="imgframe"><a href="Shapes.html"><img class="image" src="Shapes.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="Shapes.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Shapes_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">PackedNormals</div>
+  <div class="imgframe"><a href="PackedNormals.html"><img class="image" src="PackedNormals.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="PackedNormals.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="PackedNormals_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="PackedNormals-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">SimpleRenderTarget</div>
+  <div class="imgframe"><a href="SimpleRenderTarget.html"><img class="image" src="SimpleRenderTarget.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="SimpleRenderTarget.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="SimpleRenderTarget_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="SimpleRenderTarget-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">InfiniteSpheres</div>
+  <div class="imgframe"><a href="InfiniteSpheres.html"><img class="image" src="InfiniteSpheres.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="InfiniteSpheres.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="InfiniteSpheres_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="InfiniteSpheres-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">DDSTextureLoading</div>
+  <div class="imgframe"><a href="DDSTextureLoading.html"><img class="image" src="DDSTextureLoading.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="DDSTextureLoading.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DDSTextureLoading_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">DDSCubeMap</div>
+  <div class="imgframe"><a href="DDSCubeMap.html"><img class="image" src="DDSCubeMap.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="DDSCubeMap.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DDSCubeMap_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">DrawCallPerf</div>
+  <div class="imgframe"><a href="DrawCallPerf.html"><img class="image" src="DrawCallPerf.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="DrawCallPerf.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DrawCallPerf_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DrawCallPerf-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">FullscreenQuad</div>
+  <div class="imgframe"><a href="FullscreenQuad.html"><img class="image" src="FullscreenQuad.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="FullscreenQuad.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="FullscreenQuad_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">PBRendering</div>
+  <div class="imgframe"><a href="PBRendering.html"><img class="image" src="PBRendering.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="PBRendering.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="PBRendering_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="PBRendering-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">Instancing</div>
+  <div class="imgframe"><a href="Instancing.html"><img class="image" src="Instancing.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="Instancing.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Instancing_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">TextureFloat</div>
+  <div class="imgframe"><a href="TextureFloat.html"><img class="image" src="TextureFloat.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="TextureFloat.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="TextureFloat_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="TextureFloat-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">VertexTexture</div>
+  <div class="imgframe"><a href="VertexTexture.html"><img class="image" src="VertexTexture.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="VertexTexture.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="VertexTexture_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="VertexTexture-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">GPUParticles</div>
+  <div class="imgframe"><a href="GPUParticles.html"><img class="image" src="GPUParticles.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="GPUParticles.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="GPUParticles_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="GPUParticles-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">HTTPClientSample</div>
+  <div class="imgframe"><a href="HTTPClientSample.html"><img class="image" src="dummy.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="HTTPClientSample.html">emsc</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">CoreHello</div>
+  <div class="imgframe"><a href="CoreHello.html"><img class="image" src="dummy.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="CoreHello.html">emsc</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">DebugText</div>
+  <div class="imgframe"><a href="DebugText.html"><img class="image" src="DebugText.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="DebugText.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DebugText_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="DebugText-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">TestInput</div>
+  <div class="imgframe"><a href="TestInput.html"><img class="image" src="TestInput.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="TestInput.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="TestInput_pnacl.html">pnacl</a></li>
+      <li class="thumbitem"><a class="thumblink" href="TestInput-debug.apk">apk</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">Paclone</div>
+  <div class="imgframe"><a href="Paclone.html"><img class="image" src="Paclone.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="Paclone.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="Paclone_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">TestNanoVG</div>
+  <div class="imgframe"><a href="TestNanoVG.html"><img class="image" src="TestNanoVG.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="TestNanoVG.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="TestNanoVG_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">SynthTest</div>
+  <div class="imgframe"><a href="SynthTest.html"><img class="image" src="SynthTest.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="SynthTest.html">emsc</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumbtitle">IOQueueSample</div>
+  <div class="imgframe"><a href="IOQueueSample.html"><img class="image" src="dummy.png"></img></a></div>
+  <div class="thumbbar">
+    <ul class="thumblist">
+      <li class="thumbitem"><a class="thumblink" href="IOQueueSample.html">emsc</a></li>
+      <li class="thumbitem"><a class="thumblink" href="IOQueueSample_pnacl.html">pnacl</a></li>
+    </ul>
+  </div>
+</div>
 
-        <h3>Oryol Google PNaCl Samples</h3>
-        <p>
-        These samples run in an uptodate Google Chrome browser:
-        </p>
-        <li><a href="Clear_pnacl.html">Clear</a>: Just call glClear in a loop</li>
-<li><a href="Triangle_pnacl.html">Triangle</a>: The canonical triangle demo</li>
-<li><a href="Shapes_pnacl.html">Shapes</a>: Shapes with random vertex colors, created with ShapeBuilder class</li>
-<li><a href="PackedNormals_pnacl.html">PackedNormals</a>: Shapes with packed vertex normals</li>
-<li><a href="SimpleRenderTarget_pnacl.html">SimpleRenderTarget</a>: Demonstrate simple offscreen rendering</li>
-<li><a href="InfiniteSpheres_pnacl.html">InfiniteSpheres</a>: Infinite recursive spheres</li>
-<li><a href="DDSTextureLoading_pnacl.html">DDSTextureLoading</a>: Load and render various DDS texture formats</li>
-<li><a href="DDSCubeMap_pnacl.html">DDSCubeMap</a>: Load and display DDS DXT1 cube map</li>
-<li><a href="DrawCallPerf_pnacl.html">DrawCallPerf</a>: Measure draw call performance</li>
-<li><a href="FullscreenQuad_pnacl.html">FullscreenQuad</a>: Fullscreen quad with some distance field ray-marching</li>
-<li><a href="PBRendering_pnacl.html">PBRendering</a>: Physically based rendering sample</li>
-<li><a href="Instancing_pnacl.html">Instancing</a>: Instanced rendering</li>
-<li><a href="TextureFloat_pnacl.html">TextureFloat</a>: RGB plasma using float render texture</li>
-<li><a href="VertexTexture_pnacl.html">VertexTexture</a>: Vertex texture fetch from offscreen render target</li>
-<li><a href="GPUParticles_pnacl.html">GPUParticles</a>: Fully GPU driven 3D particle</li>
-<li><a href="DebugText_pnacl.html">DebugText</a>: Demonstrate debug text rendering</li>
-<li><a href="TestInput_pnacl.html">TestInput</a>: Test Input module functionality</li>
-<li><a href="Paclone_pnacl.html">Paclone</a>: Simple Pacman clone (work in progress!</li>
-<li><a href="TestNanoVG_pnacl.html">TestNanoVG</a>: NanoVG integration</li>
-<li><a href="IOQueueSample_pnacl.html">IOQueueSample</a>: Asynchronous file loading with IOQueue</li>
-
-        <h3> Oryol Android Samples</h3>    
-        <p>
-        You need to enable 'Settings =&gt; Security =&gt; Unknown Sources' and manually
-        install after downloading these APKs <b>AT YOUR OWN PERIL.</b> The samples
-        are currently ARM only, and are only tested on a Nexus7. Feel free to provide
-        feedback here: <a href="https://github.com/floooh/oryol/issues/31" target="_blank">https://github.com/floooh/oryol/issues/31</a>
-        </p>    
-        <li><a href="Clear-debug.apk">Clear</a>: Just call glClear in a loop</li>
-<li><a href="Triangle-debug.apk">Triangle</a>: The canonical triangle demo</li>
-<li><a href="PackedNormals-debug.apk">PackedNormals</a>: Shapes with packed vertex normals</li>
-<li><a href="SimpleRenderTarget-debug.apk">SimpleRenderTarget</a>: Demonstrate simple offscreen rendering</li>
-<li><a href="InfiniteSpheres-debug.apk">InfiniteSpheres</a>: Infinite recursive spheres</li>
-<li><a href="DrawCallPerf-debug.apk">DrawCallPerf</a>: Measure draw call performance</li>
-<li><a href="PBRendering-debug.apk">PBRendering</a>: Physically based rendering sample</li>
-<li><a href="TextureFloat-debug.apk">TextureFloat</a>: RGB plasma using float render texture</li>
-<li><a href="VertexTexture-debug.apk">VertexTexture</a>: Vertex texture fetch from offscreen render target</li>
-<li><a href="GPUParticles-debug.apk">GPUParticles</a>: Fully GPU driven 3D particle</li>
-<li><a href="DebugText-debug.apk">DebugText</a>: Demonstrate debug text rendering</li>
-<li><a href="TestInput-debug.apk">TestInput</a>: Test Input module functionality</li>
-
-    </body>
+    <div class="break"></div>
+</div>
+<div id="bottom"></div>
+</body>
 </html>
