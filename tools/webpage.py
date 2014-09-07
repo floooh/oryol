@@ -61,8 +61,9 @@ def build() :
     shutil.copy('web/style.css', 'build/webpage/style.css')
     shutil.copy('web/dummy.jpg', 'build/webpage/dummy.jpg')
     shutil.copy('web/emsc.js', 'build/webpage/emsc.js')
+    shutil.copy('web/pnacl.js', 'build/webpage/pnacl.js')
 
-    # generate emscripten game pages
+    # generate emscripten HTML pages
     for sample in samples['samples'] :
         name = sample['name']
         if name != '__end__' and 'emscripten' in sample['type'] :
@@ -78,6 +79,22 @@ def build() :
             f.write(html)
             f.close()
 
+    # copy PNaCl HTML pages
+    for sample in samples['samples'] :
+        name = sample['name']
+        if name != '__end__' and 'pnacl' in sample['type'] :
+            print '> generate PNaCl HTML page: {}'.format(name)
+            for ext in ['nmf', 'pexe'] :
+                shutil.copy('bin/pnacl/{}.{}'.format(name, ext), 'build/webpage')
+            f = open('web/pnacl.html')
+            templ = Template(f.read())
+            f.close()
+            srcUrl = GitHubSamplesURL + sample['src'];
+            html = templ.safe_substitute(name=name, source=srcUrl)
+            f = open('build/webpage/{}_pnacl.html'.format(name), 'w')
+            f.write(html)
+            f.close()
+
     # copy the screenshots
     for sample in samples['samples'] :
         if sample['name'] != '__end__' :
@@ -86,14 +103,6 @@ def build() :
             if tail != 'none' :
                 print '> copy screenshot: {}'.format(tail)
                 shutil.copy(imgPath, 'build/webpage/' + tail)
-
-    # copy the PNaCl sample files over
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' and 'pnacl' in sample['type'] :
-            shutil.copy('bin/pnacl/{}_pnacl.html'.format(sample['name']), 'build/webpage')
-            print '> copy pnacl sample files: {}'.format(sample['name'])
-            for ext in ['nmf', 'pexe'] :
-                shutil.copy('bin/pnacl/{}.{}'.format(sample['name'], ext), 'build/webpage')
 
     # copy the Android sample files over
     for sample in samples['samples'] :
