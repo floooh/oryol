@@ -1,5 +1,5 @@
 oryol_begin_app(DebugText windowed)
     oryol_sources(.)
     oryol_deps(Core Render Debug)
-    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" "emscripten,pnacl,android" DebugText.png "Debug/DebugText")
+    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" "emscripten,pnacl,android" DebugText.jpg "Debug/DebugText")
 oryol_end_app()

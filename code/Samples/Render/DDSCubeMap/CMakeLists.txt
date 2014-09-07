@@ -1,5 +1,5 @@
 oryol_begin_app(DDSCubeMap windowed)
     oryol_sources(.)
     oryol_deps(Render HTTP)
-    oryol_add_web_sample(DDSCubeMap "Load and display DDS DXT1 cube map" "emscripten,pnacl" DDSCubeMap.png "Render/DDSCubeMap")    
+    oryol_add_web_sample(DDSCubeMap "Load and display DDS DXT1 cube map" "emscripten,pnacl" DDSCubeMap.jpg "Render/DDSCubeMap")    
 oryol_end_app()

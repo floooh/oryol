@@ -30,7 +30,7 @@ def build() :
             desc    = sample['desc']
             head, tail = os.path.split(imgPath)
             if tail == 'none' :
-                imgFileName = 'dummy.png'
+                imgFileName = 'dummy.jpg'
             else :
                 imgFileName = tail
             content += '<div class="thumb">\n'
@@ -59,7 +59,7 @@ def build() :
 
     # copy other required files
     shutil.copy('web/style.css', 'build/webpage/style.css')
-    shutil.copy('web/dummy.png', 'build/webpage/dummy.png')
+    shutil.copy('web/dummy.jpg', 'build/webpage/dummy.jpg')
     shutil.copy('web/emsc.js', 'build/webpage/emsc.js')
 
     # generate emscripten game pages
