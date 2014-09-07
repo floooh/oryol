@@ -2,9 +2,15 @@
 
 var progressCount = 0;
 function updateProgress(percent) {
-    progress = document.getElementById('progress');
+    var progress = document.getElementById('progress');
     progress.style.width = percent + '%';
 }
+function putText(text) {
+  var element = document.getElementById('output');
+  element.value += text;
+  element.scrollTop = element.scrollHeight;
+}
+
 function handleProgress(event) {
   var loadPercent = 0.0;
   var loadPercentString;
@@ -19,15 +25,17 @@ function handleLoad() {
   updateProgress(100);
 }
 function handleError() {
-  console.log('PNACL ERROR: ' + document.getElementById('pnacl-module').lastError); 
+  var msg = 'PNACL ERROR: ' + document.getElementById('pnacl-module').lastError;
+  console.log(msg); 
+  putText(msg);
 }
 function handleCrash() {
-  console.log('PNACL APPLICATION CRASHED!'); 
+  var msg = 'PNACL APPLICATION CRASHED!';
+  console.log(msg); 
+  putText(msg);
 }
 function handleMessage(msg) {
-  var element = document.getElementById('output');
-  element.value += msg.data;
-  element.scrollTop = element.scrollHeight;
+  putText(msg.data);
 }
 var naclModule = document.getElementById('pnacl-module');
 naclModule.addEventListener('progress', handleProgress, true);

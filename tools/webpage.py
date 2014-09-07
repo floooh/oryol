@@ -62,6 +62,7 @@ def build() :
     shutil.copy('web/dummy.jpg', 'build/webpage/dummy.jpg')
     shutil.copy('web/emsc.js', 'build/webpage/emsc.js')
     shutil.copy('web/pnacl.js', 'build/webpage/pnacl.js')
+    shutil.copy('web/about.html', 'build/webpage/about.html')    
 
     # generate emscripten HTML pages
     for sample in samples['samples'] :

@@ -69,7 +69,8 @@ a.nav-link:hover, a.nav-link:active {
 .gallery {
     margin-left: auto;
     margin-right: auto;
-    width: 90%;
+    display: block;
+    width: 790px;
     height: auto;
 }
 .thumb {
@@ -187,5 +188,28 @@ a.thumb-link:hover, a.thumb-link:active {
     margin-right: auto;
     display: none;
     border: 0px none;
+}
+
+/* styling for the about page */
+.about-textbox {
+    text-align: center;
+    font-family: 'courier';
+    font-size: 20px;    
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    width: 700px;
+    height: auto;
+    background-color: white;
+    outline: black solid thin;
+}
+a.about-link:link, a.about-link:visited {
+    color: #19A3FF;
+    text-decoration: none;
+}
+
+a.about-link:hover, a.about-link:active {
+    color: #0C5280;
 }
 
