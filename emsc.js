@@ -1,6 +1,6 @@
 /** emscripten wrapper page Javascript functions **/
 
-loaded = false;
+var loaded = false;
 var Module = {
     preRun: [],
     postRun: [],
@@ -47,41 +47,45 @@ window.onerror = function(event) {
     console.log("onerror: " + event);
 };
 
-spinnerAngle = 0.0;
+var spinnerFrameCount = 0;
 function drawSpinner() {
 
-    var ctx = document.getElementById('canvas2d').getContext("2d");
-    midx = 50.5;
-    midy = 50.5;
+    // only draw spinner after half a second
+    spinnerFrameCount++;
+    if (spinnerFrameCount > 30) {
+        var spinnerAngle = spinnerFrameCount * 0.2;
+        var ctx = document.getElementById('canvas2d').getContext("2d");
+        var midx = 50.5;
+        var midy = 50.5;
 
-    ctx.setTransform(1, 0, 0, 1, midx, midy);
-    ctx.clearRect(-50, -50, 100, 100);
-    ctx.rotate(spinnerAngle);
-    spinnerAngle += 0.2;
-    ctx.beginPath();
-    colors = ['#ff0000', 
-              '#ff3F00',
-              '#ff7f00', 
-              '#ffbf00',
-              '#ffff00',
-              '#7fff00',
-              '#00ff00',
-              '#007fff',
-              '#0000ff', 
-              '#7f00ff',
-              '#ff00ff',
-              '#ff007f' ];
-    numSteps = 12;
-    step = (2.0 * Math.PI) / numSteps;
-    for (i = 0; i < numSteps; i++) {
-        start = i * step; + 0.2;
-        end = start + step; - 0.2;
+        ctx.setTransform(1, 0, 0, 1, midx, midy);
+        ctx.clearRect(-50, -50, 100, 100);
+        ctx.rotate(spinnerAngle);
         ctx.beginPath();
-        ctx.fillStyle = colors[i];
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, 30, start, end); 
-        ctx.closePath();
-        ctx.fill();
+        colors = ['#ff0000', 
+                  '#ff3F00',
+                  '#ff7f00', 
+                  '#ffbf00',
+                  '#ffff00',
+                  '#7fff00',
+                  '#00ff00',
+                  '#007fff',
+                  '#0000ff', 
+                  '#7f00ff',
+                  '#ff00ff',
+                  '#ff007f' ];
+        var numSteps = 12;
+        var step = (2.0 * Math.PI) / numSteps;
+        for (i = 0; i < numSteps; i++) {
+            var start = i * step + 0.2;
+            var end = start + step - 0.2;
+            ctx.beginPath();
+            ctx.fillStyle = colors[i];
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, 30, start, end); 
+            ctx.closePath();
+            ctx.fill();
+        }
     }
 
     if (!loaded) {
