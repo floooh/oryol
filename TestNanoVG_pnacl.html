@@ -1,65 +1,29 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <meta charset="utf-8"></meta>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="-1">
-  <title>Oryol/PNaCl</title>
+  <meta charset="UTF-8"/>
+  <title>TestNanoVG</title>
+  <link href='http://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'></head>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
-<div class="page">
-  <div class="pnacl_status">
-    <code id="statusField">NO-STATUS</code>
+  <div class="game-title">TestNanoVG<span class="game-subtitle"><a class="game-sdk-link" href="https://developer.chrome.com/native-client">pnacl</a></span></div>
+  <div class="game-rainbow" id="progress"></div>
+
+  <div class="nav-bar" style="width:200px">
+    <ul class="nav-list">
+        <li class="nav-item"><a class="nav-link" style="width:100px" href="index.html">home</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:100px" href="https://github.com/floooh/oryol/tree/master/code/Samples/General/TestNanoVG">source</a></li>
+        <div class="break"></div>
+    </ul>
   </div>
-  <div class="pnacl_border">
-    <embed src="TestNanoVG.nmf" class="pnacl" id="pnacl_module" name="pnacl_module" width="800" height="452" type="application/x-pnacl"/>
+
+  <div class="game-border">
+    <embed src="TestNanoVG.nmf" class="game" id="pnacl-module" width="800" height="452" type="application/x-pnacl"></embed>
   </div>
-  <textarea class="pnacl" id="output" rows="20" cols="80"></textarea>
-  <script type="text/javascript">
-    var progressCount = 0;
-    function updateStatus(text) {
-      document.getElementById('statusField').innerHTML = text;
-    }
-    function handleLoadStart() {
-      updateStatus('LOAD START...');
-    }
-    function handleProgress(event) {
-      var loadPercent = 0.0;
-      var loadPercentString;
-      if (event.lengthComputable && event.total > 0) {
-        loadPercent = (event.loaded / event.total) * 100.0;
-        loadPercentString = 'Downloading & Preparing (' + loadPercent.toFixed(2) + '%)';
-      } else {
-        loadPercent = -1.0;
-        progressCount++;
-        loadPercentString = 'Downloading... (count=' + progressCount + ')';
-      }
-      updateStatus(loadPercentString);
-    }
-    function handleLoad() {
-      updateStatus('RUNNING...');
-    }
-    function handleError() {
-      updateStatus('ERROR: ' + document.getElementById('pnacl_module').lastError);
-    }
-    function handleCrash() {
-      updateStatus('CRASHED!!!');
-    }
-    function handleMessage(msg) {
-      var element = document.getElementById('output');
-      element.value += msg.data;
-      element.scrollTop = 99999;
-    }
-    var naclModule = document.getElementById('pnacl_module');
-    naclModule.addEventListener('loadstart', handleLoadStart, true);
-    naclModule.addEventListener('progress', handleProgress, true);
-    naclModule.addEventListener('load', handleLoad, true);
-    naclModule.addEventListener('error', handleError, true);
-    naclModule.addEventListener('crash', handleCrash, true);
-    naclModule.addEventListener('message', handleMessage, true);
-    updateStatus('LOADING...');
-  </script>
-</div>
+  <textarea class="game-output" id="output" readonly style="display:block" rows="8" cols="80"></textarea>
+  <div class="bottom"></div>
+
+  <script type="text/javascript" src="pnacl.js"></script>
 </body>
 </html>
