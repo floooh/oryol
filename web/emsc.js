@@ -76,7 +76,6 @@ function drawSpinner() {
     for (i = 0; i < numSteps; i++) {
         start = i * step; + 0.2;
         end = start + step; - 0.2;
-
         ctx.beginPath();
         ctx.fillStyle = colors[i];
         ctx.moveTo(0, 0);
@@ -84,11 +83,6 @@ function drawSpinner() {
         ctx.closePath();
         ctx.fill();
     }
-    ctx.beginPath();
-    ctx.strokeStyle = "black";
-    ctx.arc(0, 0, 30, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.stroke();
 
     if (!loaded) {
         requestAnimationFrame(drawSpinner);

@@ -117,7 +117,7 @@ a.nav-link:hover, a.nav-link:active {
     display: inline;
     float: left;
 }
-a.thumb-link:link, a.thumblink:visited {
+a.thumb-link:link, a.thumb-link:visited {
     font-family: 'Racing Sans One';
     font-size: 16px;    
     display: block;
@@ -128,7 +128,7 @@ a.thumb-link:link, a.thumblink:visited {
     text-decoration: none;
 }
 
-a.thumb-link:hover, a.thumblink:active {
+a.thumb-link:hover, a.thumb-link:active {
     background-color: rgb(220, 220, 220);
 }
 
