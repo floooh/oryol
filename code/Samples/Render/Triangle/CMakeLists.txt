@@ -1,5 +1,5 @@
 oryol_begin_app(Triangle windowed)
     oryol_sources(.)
     oryol_deps(Render)
-    oryol_add_web_sample(Triangle "The canonical triangle demo" "emscripten,android,pnacl" Triangle.png)    
+    oryol_add_web_sample(Triangle "The canonical triangle demo" "emscripten,android,pnacl" Triangle.png "Render/Triangle")    
 oryol_end_app()

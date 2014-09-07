@@ -154,8 +154,8 @@ endmacro()
 #-------------------------------------------------------------------------------
 #   Add a sample file to the web samples description file
 #
-macro(oryol_add_web_sample name desc type image)
-    file(APPEND ${CMAKE_SOURCE_DIR}/build/websamples.json "    { \"name\": \"${name}\", \"desc\": \"${desc}\", \"type\": \"${type}\", \"image\": \"${CMAKE_CURRENT_LIST_DIR}/${image}\" },\n")
+macro(oryol_add_web_sample name desc type image src)
+    file(APPEND ${CMAKE_SOURCE_DIR}/build/websamples.json "    { \"name\": \"${name}\", \"desc\": \"${desc}\", \"type\": \"${type}\", \"image\": \"${CMAKE_CURRENT_LIST_DIR}/${image}\", \"src\": \"${src}\" },\n")
 endmacro()
 
 #-------------------------------------------------------------------------------

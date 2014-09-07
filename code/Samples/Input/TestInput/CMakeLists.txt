@@ -1,5 +1,5 @@
 oryol_begin_app(TestInput windowed)
     oryol_sources(.)
     oryol_deps(Core Render Debug Input)
-    oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten,pnacl,android" TestInput.png)
+    oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten,pnacl,android" TestInput.png "Input/TestInput")
 oryol_end_app()

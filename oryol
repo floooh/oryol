@@ -18,6 +18,7 @@ from tools import texexport as TexExport
 from tools import sdksetup_android as SDKSetupAndroid
 from tools import sdksetup_nacl as SDKSetupNacl
 from tools import sdksetup_emscripten as SDKSetupEmsc
+from tools import webpage as WebPage
 import SimpleHTTPServer
 import SocketServer
 
@@ -394,91 +395,6 @@ def exportSampleAssets() :
     for dataFile in glob.glob('data/nanovg/*') :
         shutil.copy(dataFile, 'build/webpage')
 
-# build a web page under /build/webpage
-def buildWebPage() :
-    if not os.path.exists('build/webpage') :
-        os.makedirs('build/webpage')
-
-    # load the websamples.json file, should have been created during the last build
-    f = open('build/websamples.json')
-    samples = json.loads(f.read())
-    f.close
-
-    # load the samples html template
-    f = open('web/index.html')
-    templ = Template(f.read())
-    f.close
-
-    # build the thumbnail gallery
-    content = ''
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' :
-            name    = sample['name']
-            imgPath = sample['image']
-            types   = sample['type'] 
-            desc    = sample['desc']
-            head, tail = os.path.split(imgPath)
-            if tail == 'none' :
-                imgFileName = 'dummy.png'
-            else :
-                imgFileName = tail
-            content += '<div class="thumb">\n'
-            content += '  <div class="thumbtitle">{}</div>\n'.format(name)
-            content += '  <div class="imgframe"><a href="{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
-            content += '  <div class="thumbbar">\n'
-            content += '    <ul class="thumblist">\n'
-            if 'emscripten' in types :
-                content += '      <li class="thumbitem"><a class="thumblink" href="{}.html">emsc</a></li>\n'.format(name)
-            if 'pnacl' in types :
-                content += '      <li class="thumbitem"><a class="thumblink" href="{}_pnacl.html">pnacl</a></li>\n'.format(name)
-            if 'android' in types :
-                content += '      <li class="thumbitem"><a class="thumblink" href="{}-debug.apk">apk</a></li>\n'.format(name)
-            content += '    </ul>\n'
-            content += '  </div>\n'
-            content += '</div>\n'
-
-    # populate the html template, and write to the build directory
-    html = templ.safe_substitute(samples=content)
-    f = open('build/webpage/index.html', 'w')
-    f.write(html)
-    f.close()
-
-    # copy the css and dummy.png files
-    shutil.copy('web/style.css', 'build/webpage/style.css')
-    shutil.copy('web/dummy.png', 'build/webpage/dummy.png')
-
-    # copy the screenshots
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' :
-            imgPath = sample['image']
-            head, tail = os.path.split(imgPath)
-            if tail != 'none' :
-                print '> copy screenshot: {}'.format(tail)
-                shutil.copy(imgPath, 'build/webpage/' + tail)
-
-    # copy the HTML sample files over
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' and 'emscripten' in sample['type'] :
-            print '> copy emscripten sample files: {}'.format(sample['name'])
-            for ext in ['html', 'js', 'html.mem'] :
-                shutil.copy('bin/emsc/{}.{}'.format(sample['name'], ext), 'build/webpage')
-
-    # copy the PNaCl sample files over
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' and 'pnacl' in sample['type'] :
-            shutil.copy('bin/pnacl/{}_pnacl.html'.format(sample['name']), 'build/webpage')
-            print '> copy pnacl sample files: {}'.format(sample['name'])
-            for ext in ['nmf', 'pexe'] :
-                shutil.copy('bin/pnacl/{}.{}'.format(sample['name'], ext), 'build/webpage')
-
-    # copy the Android sample files over
-    for sample in samples['samples'] :
-        if sample['name'] != '__end__' and 'android' in sample['type'] :
-            print '> copy android sample files: {}'.format(sample['name'])
-            shutil.copy('bin/android/{}-debug.apk'.format(sample['name']), 'build/webpage')
-
-    print 'Generated Samples web page under build/webpage!'
-
 # start a simple HTTP server
 def startHttpServer() :
     print 'Serving HTTP on localhost:8000...'
@@ -727,7 +643,7 @@ else :
             runCMake(config)
             runRebuild(config, None)
             exportSampleAssets()
-        buildWebPage()
+        WebPage.build()
 
     elif cmd == 'assets' :
         if len(sys.argv) < 3 :

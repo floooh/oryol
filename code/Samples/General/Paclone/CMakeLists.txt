@@ -1,5 +1,5 @@
 oryol_begin_app(Paclone windowed)
     oryol_sources(. data)
     oryol_deps(Core Render Input)
-    oryol_add_web_sample(Paclone "Simple Pacman clone (work in progress!" "emscripten,pnacl" Paclone.png)
+    oryol_add_web_sample(Paclone "Simple Pacman clone (work in progress!" "emscripten,pnacl" Paclone.png "General/Paclone")
 oryol_end_app()

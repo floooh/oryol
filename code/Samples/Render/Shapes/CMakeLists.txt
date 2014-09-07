@@ -1,5 +1,5 @@
 oryol_begin_app(Shapes windowed)
     oryol_sources(.)
     oryol_deps(Render)
-    oryol_add_web_sample(Shapes "Shapes with random vertex colors, created with ShapeBuilder class" "emscripten,pnacl,android" Shapes.png)    
+    oryol_add_web_sample(Shapes "Shapes with random vertex colors, created with ShapeBuilder class" "emscripten,pnacl,android" Shapes.png "Render/Shapes")    
 oryol_end_app()

@@ -1,5 +1,5 @@
 oryol_begin_app(TextureFloat windowed)
     oryol_sources(.)
     oryol_deps(Render Time Debug)
-    oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten,android,pnacl" TextureFloat.png)
+    oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten,android,pnacl" TextureFloat.png "Render/TextureFloat")
 oryol_end_app()

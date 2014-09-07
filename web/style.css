@@ -1,12 +1,10 @@
-/** Oryol sample page css **/
-
-/** global settings **/
 body {
     margin: 0;
     background-color: #19A3FF;
 }
-/** header styling **/
-#title {    
+
+/** sample header styling **/
+.title {    
     text-align: center;
     text-shadow: 3px 2px #BAE3FF;
     font-family: 'Racing Sans One';
@@ -15,20 +13,20 @@ body {
     min-width: 500px;
     margin-top: 0px;
 }
-#cr {
+.cr {
     position: relative;
     top: -33px;
     left: 3px;
     font-size: 30px;
 }
-#rainbow {
+.rainbow {
     margin-top: -10px;
     height: 14px;
     background: linear-gradient(red,orange,yellow,green,blue);
 }
 
 /** navigation bar **/
-#navbar {
+.nav-bar {
     margin-top: 8px;
     margin-left: auto;
     margin-right: auto;
@@ -37,7 +35,7 @@ body {
     background-color: white;
     outline: black solid thin;
 }
-.navlist {
+.nav-list {
     margin-left: auto;
     margin-right: auto;
     margin-top: 0px; 
@@ -45,11 +43,11 @@ body {
     list-style-type: none;
     padding: 0px;
 }
-.navitem {
+.nav-item {
     display: inline;
     float: left;
 }
-a.navlink:link, a.navlink:visited {
+a.nav-link:link, a.nav-link:visited {
     font-family: 'Racing Sans One';
     font-size: 22px;    
     display: block;
@@ -58,7 +56,7 @@ a.navlink:link, a.navlink:visited {
     text-align: center;
     text-decoration: none;
 }
-a.navlink:hover, a.navlink:active {
+a.nav-link:hover, a.nav-link:active {
     background-color: #CCCCCC;
 }
 
@@ -68,7 +66,7 @@ a.navlink:hover, a.navlink:active {
 }
 
 /** thumbnail gallery **/
-#gallery {
+.gallery {
     margin-left: auto;
     margin-right: auto;
     width: 90%;
@@ -85,12 +83,12 @@ a.navlink:hover, a.navlink:active {
     background: white;
     outline: rgb(0, 0, 0) solid thin;
 }
-.thumbtitle {
+.thumb-title {
     text-align: center;
     font-family: 'Racing Sans One';
     font-size: 20px;        
 }
-.imgframe {
+.img-frame {
     margin: 2px;
     width: auto;
     height: 165px;
@@ -104,22 +102,22 @@ a.navlink:hover, a.navlink:active {
     margin-right: auto;
     border-radius: 3px;
 }
-.thumbbar {
+.thumb-bar {
     padding: 0;
     width: 240px;
     background-color: red;
     vertical-align: bottom;
 }
-.thumblist {
+.thumb-list {
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
-.thumbitem {
+.thumb-item {
     display: inline;
     float: left;
 }
-a.thumblink:link, a.thumblink:visited {
+a.thumb-link:link, a.thumblink:visited {
     font-family: 'Racing Sans One';
     font-size: 16px;    
     display: block;
@@ -130,18 +128,64 @@ a.thumblink:link, a.thumblink:visited {
     text-decoration: none;
 }
 
-a.thumblink:hover, a.thumblink:active {
+a.thumb-link:hover, a.thumblink:active {
     background-color: rgb(220, 220, 220);
 }
 
-#gallery_bottom {
+.gallery-bottom {
     height: 1px;
     clear: both;
 }
 
-/** bottom elements **/
-#bottom {
+.bottom {
     height: 20px;
 }
 
+/** game page styling **/
+.game-title {
+    text-align: center;
+    font-family: 'Racing Sans One';
+    font-size: 40px;
+    background-color: white;
+    min-width: 500px;
+    margin-top: 0px;
+    padding-left: 20px;
+}
+.game-subtitle {
+    font-size: 18px;
+    padding-left: 20px;
+}
+.game-sdk-link {
+    text-decoration: none;
+    color: black;
+}
+.game-rainbow {
+    margin-top: 0px;
+    height: 10px;
+    background: linear-gradient(red,orange,yellow,green,blue);
+}
+.game-border {
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+/* the emscripten canvas must not have any border or padding, or mouse coords will be wrong */
+.game {
+    padding: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 0px none;
+    display: block;
+}
+.game-output {
+    background-color: #BAE3FF;
+    font-family: courier;
+    font-size: 12px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+    border: 0px none;
+}
 
