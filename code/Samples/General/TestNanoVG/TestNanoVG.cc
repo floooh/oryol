@@ -74,15 +74,14 @@ NanoVGApp::OnRunning() {
 AppState::Code
 NanoVGApp::OnInit() {
     this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
+    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
     this->io->SetAssign("res:", "http://localhost:8000/");
     
-    auto renderSetup = RenderSetup::Windowed(1024, 600, "Oryol NanoVG Sample");
-    renderSetup.Samples = 4;
+    auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->input  = InputFacade::CreateSingle();
-    this->nvg    = NVGFacade::CreateSingle();
-    this->ctx    = this->nvg->CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
+    this->input = InputFacade::CreateSingle();
+    this->nvg = NVGFacade::CreateSingle();
+    this->ctx = this->nvg->CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     
     // start loading assets asynchronously
     this->ioQueue.Start();

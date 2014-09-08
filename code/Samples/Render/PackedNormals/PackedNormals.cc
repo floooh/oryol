@@ -39,10 +39,9 @@ OryolMain(PackedNormalsApp);
 AppState::Code
 PackedNormalsApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::Windowed(600, 400, "Oryol Packed Normals Sample");
-    renderSetup.Samples = 4;
+    auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Packed Normals Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->render->AttachLoader(RawMeshLoader::Create());
     float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 

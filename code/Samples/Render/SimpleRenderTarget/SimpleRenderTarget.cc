@@ -41,8 +41,9 @@ OryolMain(SimpleRenderTargetApp);
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol Simple Render Target Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
+    auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Simple Render Target Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    this->render = RenderFacade::CreateSingle(renderSetup);
     float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 

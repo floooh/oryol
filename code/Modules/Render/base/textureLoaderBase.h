@@ -4,8 +4,8 @@
     @class Oryol::Render::textureLoaderBase
     @brief private: base class for texture loaders
 */
-#include "Core/RefCounted.h"
-#include "Render/Core/mesh.h"
+#include "Render/base/loaderBase.h"
+#include "Render/Core/texture.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {
@@ -14,12 +14,17 @@ namespace Render {
 class texture;
 class textureFactory;
 
-class textureLoaderBase : public Core::RefCounted {
+class textureLoaderBase : public loaderBase {
 public:
     /// constructor
     textureLoaderBase();
     /// destructor
     virtual ~textureLoaderBase();
+    
+    /// resource type of this loader
+    ResourceType::Code resourceType() const {
+        return ResourceType::Texture;
+    };
     
     /// test if the loader accepts the resource
     virtual bool Accepts(const texture& resource) const = 0;

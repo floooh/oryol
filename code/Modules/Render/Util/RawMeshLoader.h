@@ -5,6 +5,7 @@
     @brief mesh loader for raw data created with MeshBuilder
 */
 #include "Render/base/meshLoaderBase.h"
+#include "Core/Creator.h"
 
 namespace Oryol {
 namespace Render {
@@ -13,6 +14,7 @@ class meshFactory;
     
 class RawMeshLoader : public meshLoaderBase {
     OryolClassDecl(RawMeshLoader);
+    OryolClassCreator(RawMeshLoader);
 public:
     /// test if the loader accepts the resource
     virtual bool Accepts(const mesh& mesh) const override;

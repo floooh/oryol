@@ -58,12 +58,12 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW window
-    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Red));
-    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Green));
-    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Blue));
-    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorPixelFormat, Channel::Alpha));
-    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthPixelFormat, Channel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthPixelFormat, Channel::Stencil));
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Alpha));
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, Channel::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, Channel::Stencil));
     glfwWindowHint(GLFW_SAMPLES, setup.Samples);
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
@@ -77,21 +77,17 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
-    if (setup.IsFullscreen) {
+    if (setup.Fullscreen) {
         glfwMonitor = glfwGetPrimaryMonitor();
     }
     
     // now actually create the window
-    glfwWindow = glfwCreateWindow(setup.WindowWidth,
-                                  setup.WindowHeight,
-                                  setup.WindowTitle.AsCStr(),
-                                  glfwMonitor,
-                                  0);
+    glfwWindow = glfwCreateWindow(setup.Width, setup.Height, setup.Title.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwWindow);
     
     // and make the window's GL context current
     glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(setup.SwapInterval);
+    glfwSwapInterval(1);
 
     // setup extensions and platform-dependent constants
     glInfo::Setup();

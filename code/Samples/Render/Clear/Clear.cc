@@ -44,7 +44,7 @@ ClearApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Clear Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(400, 300, false, "Oryol Clear Sample"));
     return App::OnInit();
 }
 

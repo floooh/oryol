@@ -133,8 +133,9 @@ InstancingApp::updateParticles() {
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol Instancing Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
+    auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol Instancing Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug = DebugFacade::CreateSingle();
     
     // check instancing extension

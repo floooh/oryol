@@ -12,7 +12,6 @@
 #include "Core/Creator.h"
 #include "IO/FS/FileSystem.h"
 #include <functional>
-#include <type_traits>
 
 namespace Oryol {
 namespace IO {
@@ -26,7 +25,7 @@ public:
     virtual ~schemeRegistry();
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const Core::StringAtom& scheme, Core::CreatorRef<FileSystem> fsCreator);
+    void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator);
     /// unregister a filesystem
     void UnregisterFileSystem(const Core::StringAtom& scheme);
     /// test if a filesystem has been registered
@@ -36,7 +35,7 @@ public:
     
 private:
     mutable Core::RWLock rwLock;
-    Core::Map<Core::StringAtom, Core::CreatorRef<FileSystem>> registry;
+    Core::Map<Core::StringAtom, std::function<Core::Ptr<IO::FileSystem>()>> registry;
 };
 
 } // namespace IO

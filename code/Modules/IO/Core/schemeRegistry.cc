@@ -24,7 +24,7 @@ schemeRegistry::~schemeRegistry() {
 
 //------------------------------------------------------------------------------
 void
-schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, Core::CreatorRef<FileSystem> fsCreator) {
+schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator) {
     this->rwLock.LockWrite();
     o_assert(!this->registry.Contains(scheme));
     this->registry.Insert(scheme, fsCreator);
@@ -54,7 +54,7 @@ Ptr<FileSystem>
 schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     this->rwLock.LockRead();
     o_assert(this->registry.Contains(scheme));
-    Ptr<FileSystem> fileSystem(this->registry[scheme]->New());
+    Ptr<FileSystem> fileSystem(this->registry[scheme]());
     this->rwLock.UnlockRead();
     return fileSystem;
 }

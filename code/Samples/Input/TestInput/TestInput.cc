@@ -39,7 +39,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(512, 256, "Oryol Input Test Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
     this->debug  = DebugFacade::CreateSingle();
     this->input  = InputFacade::CreateSingle();
     

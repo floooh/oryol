@@ -35,8 +35,6 @@ public:
     /// test if the window system wants the application to quit
     bool QuitRequested() const;
     
-    /// attach a resource loader
-    template<class T> void AttachLoader(Core::Ptr<T> loader);
     /// attach a display event handler
     void AttachEventHandler(const Core::Ptr<Messaging::Port>& handler);
     /// detach a display event handler
@@ -154,12 +152,6 @@ template<class T> inline void
 RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
     o_assert_dbg(this->valid);
     this->renderManager.ApplyVariableArray(index, values, numValues);
-}
-
-//------------------------------------------------------------------------------
-template<class T> inline void
-RenderFacade::AttachLoader(Core::Ptr<T> loader) {
-    this->resourceManager.AttachLoader(loader.get());
 }
 
 //------------------------------------------------------------------------------

@@ -30,9 +30,9 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::Windowed(400, 400, "Oryol Triangle Sample");
+    auto renderSetup = RenderSetup::AsWindow(400, 400, false, "Oryol Triangle Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->render->AttachLoader(RawMeshLoader::Create());
     
     // create a triangle mesh, with position and vertex color
     MeshBuilder meshBuilder;

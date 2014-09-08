@@ -28,7 +28,7 @@ OryolMain(FullscreenQuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 600, "Oryol Fullscreen Quad Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
     Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
     Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
     this->drawState = this->render->CreateResource(DrawStateSetup("ds", mesh, prog, 0));

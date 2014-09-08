@@ -138,8 +138,9 @@ DrawCallPerfApp::updateParticles() {
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 500, "Oryol DrawCallPerf Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
+    auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol DrawCallPerf Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug = DebugFacade::CreateSingle();
 
     // create resources

@@ -21,38 +21,48 @@ registryCapacity(1024) {
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::Windowed(int32 w, int32 h, String title) {
+RenderSetup::AsWindow(int32 w, int32 h, bool msaa, String title) {
     o_assert((w > 0) && (h > 0));
 
     RenderSetup setup;
-    setup.WindowWidth       = w;
-    setup.WindowHeight      = h;
-    setup.FramebufferWidth  = w;
-    setup.FramebufferHeight = h;
-    setup.IsFullscreen      = false;
-    setup.WindowTitle       = title;
+    setup.Width       = w;
+    setup.Height      = h;
+    setup.Samples     = msaa ? 4 : 0;
+    setup.Fullscreen  = false;
+    setup.Title       = title;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::Fullscreen(int32 w, int32 h, String title) {
+RenderSetup::AsFullscreen(int32 w, int32 h, bool msaa, String title) {
     o_assert((w > 0) && (h > 0));
     
     RenderSetup setup;
-    setup.WindowWidth       = w;
-    setup.WindowHeight      = h;
-    setup.FramebufferWidth  = w;
-    setup.FramebufferHeight = h;
-    setup.IsFullscreen      = true;
-    setup.WindowTitle       = title;
+    setup.Width       = w;
+    setup.Height      = h;
+    setup.Samples     = msaa ? 4 : 0;
+    setup.Fullscreen  = true;
+    setup.Title       = title;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 DisplayAttrs
 RenderSetup::GetDisplayAttrs() const {
-    return (DisplayAttrs) *this;
+    DisplayAttrs attrs;
+    attrs.WindowWidth       = this->Width;
+    attrs.WindowHeight      = this->Height;
+    attrs.WindowPosX        = 0;
+    attrs.WindowPosY        = 0;
+    attrs.FramebufferWidth  = this->Width;
+    attrs.FramebufferHeight = this->Height;
+    attrs.ColorPixelFormat  = this->ColorFormat;
+    attrs.DepthPixelFormat  = this->DepthFormat;
+    attrs.Samples           = this->Samples;
+    attrs.IsFullscreen      = this->Fullscreen;
+    attrs.WindowTitle       = this->Title;
+    return attrs;
 }
 
 //------------------------------------------------------------------------------

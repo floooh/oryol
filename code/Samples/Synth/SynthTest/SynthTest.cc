@@ -37,7 +37,7 @@ OryolMain(SynthTestApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(640, 400, "Oryol Synth Test Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
     this->debug  = DebugFacade::CreateSingle();
     this->input  = InputFacade::CreateSingle();
     SynthSetup synthSetup;

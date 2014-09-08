@@ -48,13 +48,14 @@ DDSCubeMapApp::OnInit() {
 
     // setup IO system
     this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
+    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
     this->io->SetAssign("tex:", "http://localhost:8000/");
 
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(600, 400, "Oryol DXT Cube Map Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
-    this->render->AttachLoader(TextureLoader::Create());
+    auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DXT Cube Map Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    renderSetup.Loaders.AddBack(TextureLoader::Creator());
+    this->render = RenderFacade::CreateSingle(renderSetup);
     float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 

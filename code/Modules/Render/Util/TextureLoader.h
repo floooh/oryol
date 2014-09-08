@@ -9,6 +9,7 @@
     compressed formats which can be direcly loaded without further conversion,
     such as DDS or PVR.
 */
+#include "Core/Creator.h"
 #if ORYOL_OPENGL
 #include "Render/gl/glTextureLoader.h"
 namespace Oryol {
@@ -16,6 +17,7 @@ namespace Render {
 
 class TextureLoader : public glTextureLoader {
     OryolClassDecl(TextureLoader);
+    OryolClassCreator(TextureLoader);
 };
     
 } // namespace Render

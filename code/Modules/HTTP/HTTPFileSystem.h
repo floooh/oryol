@@ -11,18 +11,20 @@
 #include "HTTP/HTTPProtocol.h"
 #include "HTTP/HTTPClient.h"
 #include "Core/String/StringBuilder.h"
+#include "Core/Creator.h"
 
 namespace Oryol {
 namespace HTTP {
     
 class HTTPFileSystem : public IO::FileSystem {
     OryolClassDecl(HTTPFileSystem);
+    OryolClassCreator(HTTPFileSystem);
 public:
     /// default constructor
     HTTPFileSystem();
     /// destructor
     virtual ~HTTPFileSystem();
-    
+
     /// per-frame update
     virtual void DoWork();
     /// called when the IOProtocol::Get message is received

@@ -4,7 +4,7 @@
     @class Oryol::Render::meshLoaderBase
     @brief private: base class for mesh loaders
 */
-#include "Core/RefCounted.h"
+#include "Render/base/loaderBase.h"
 #include "Render/Core/mesh.h"
 #include "IO/Stream/Stream.h"
 
@@ -13,12 +13,17 @@ namespace Render {
 
 class meshFactory;
 
-class meshLoaderBase : public Core::RefCounted {
+class meshLoaderBase : public loaderBase {
 public:
     /// constructor
     meshLoaderBase();
     /// destructor
     virtual ~meshLoaderBase();
+    
+    /// resource type of this loader
+    ResourceType::Code resourceType() const {
+        return ResourceType::Mesh;
+    };
     
     /// test if the loader accepts the resource
     virtual bool Accepts(const mesh& resource) const = 0;

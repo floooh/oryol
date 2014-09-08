@@ -32,7 +32,7 @@ IOQueueApp::OnInit() {
     // an IOFacade is required for IOQueue to work, and we want to
     // download files from a HTTP server, so setup an HTTPFileSystem
     this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
+    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
     
     // define a path alias, we'll default to localhost on port 8000
     // (e.g. run 'python -m SimpleHTTPServer')

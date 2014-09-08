@@ -36,7 +36,7 @@ OryolMain(DebugTextApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(800, 600, "Oryol DebugText Sample"));
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
     this->debug  = DebugFacade::CreateSingle();
     this->debug->SetTextScale(glm::vec2(2.0f, 2.0f));
     

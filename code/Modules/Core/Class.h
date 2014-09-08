@@ -36,8 +36,9 @@ virtual void destroy() {\
 public:\
 template<typename... ARGS> static Core::Ptr<TYPE> Create(ARGS&&... args) {\
     return Core::Ptr<TYPE>(new TYPE(std::forward<ARGS>(args)...));\
-};\
+};
 
 /// implementation-side macro for Oryol class without pool allocator (located in .cc source file)
 #define OryolClassImpl(TYPE)
+
 

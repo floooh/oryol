@@ -36,7 +36,7 @@ public:
     Core::String ResolveAssigns(const Core::String& str) const;
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const Core::StringAtom& scheme, Core::CreatorRef<FileSystem> fsCreator);
+    void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator);
     /// unregister a filesystem
     void UnregisterFileSystem(const Core::StringAtom& scheme);
     /// test if a filesystem has been registered

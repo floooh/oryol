@@ -77,7 +77,7 @@ IOFacade::ResolveAssigns(const String& str) const {
 
 //------------------------------------------------------------------------------
 void
-IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, CreatorRef<FileSystem> fsCreator) {
+IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator) {
     schemeRegistry* reg = schemeRegistry::Instance();
     bool newFileSystem = !reg->IsFileSystemRegistered(scheme);
     reg->RegisterFileSystem(scheme, fsCreator);

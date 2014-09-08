@@ -31,9 +31,7 @@ public:
     ~resourceMgr();
     
     /// attach mesh loader
-    void AttachLoader(meshLoaderBase* loader);
-    /// attach texture loader
-    void AttachLoader(textureLoaderBase* loader);
+    void AttachLoader(const Core::Ptr<loaderBase>& loader);
     
     /// setup the resource manager
     void Setup(const RenderSetup& setup, stateWrapper* stWrapper, displayMgr* dspMgr);

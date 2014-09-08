@@ -43,8 +43,9 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    this->render = RenderFacade::CreateSingle(RenderSetup::Windowed(512, 512, "Oryol Float Texture Sample"));
-    this->render->AttachLoader(RawMeshLoader::Create());
+    auto renderSetup = RenderSetup::AsWindow(512, 512, false, "Oryol Float Texture Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug = DebugFacade::CreateSingle();
 
     // check required extensions

@@ -27,16 +27,20 @@ resourceMgr::~resourceMgr() {
 
 //------------------------------------------------------------------------------
 void
-resourceMgr::AttachLoader(meshLoaderBase* loader) {
-    this->meshFactory.AttachLoader(loader);
+resourceMgr::AttachLoader(const Ptr<loaderBase>& loader) {
+    switch (loader->resourceType()) {
+        case ResourceType::Mesh:
+            this->meshFactory.AttachLoader(loader.dynamicCast<meshLoaderBase>());
+            break;
+        case ResourceType::Texture:
+            this->textureFactory.AttachLoader(loader.dynamicCast<textureLoaderBase>());
+            break;
+        default:
+            o_error("resourceMgr::AttachLoader(): invalid loader resource type!\n");
+            break;
+    }
 }
 
-//------------------------------------------------------------------------------
-void
-resourceMgr::AttachLoader(textureLoaderBase* loader) {
-    this->textureFactory.AttachLoader(loader);
-}
-    
 //------------------------------------------------------------------------------
 void
 resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, class displayMgr* dspMgr) {
@@ -60,6 +64,12 @@ resourceMgr::Setup(const RenderSetup& setup, class stateWrapper* stWrapper, clas
     this->drawStatePool.Setup(&this->drawStateFactory, setup.PoolSize(ResourceType::DrawState), 0, 'DRWS');
     
     this->resourceRegistry.Setup(setup.ResourceRegistryCapacity());
+    
+    // attach loaders
+    for (const auto& loaderCreator : setup.Loaders) {
+        Ptr<loaderBase> loader = loaderCreator();
+        this->AttachLoader(loader);
+    }
 }
 
 //------------------------------------------------------------------------------

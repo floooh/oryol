@@ -45,10 +45,9 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::Windowed(800, 600, "Oryol Vertex Texture Sample");
-    renderSetup.Samples = 4;
+    auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Vertex Texture Sample");
+    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->render->AttachLoader(RawMeshLoader::Create());
     this->debug = DebugFacade::CreateSingle();
     
     // FIXME: need a way to check number of vertex texture units

@@ -11,20 +11,39 @@
  
     @see RenderFacade, DisplayAttrs
 */
-#include "Render/Attrs/DisplayAttrs.h"
+#include "Core/Containers/Array.h"
 #include "Render/Core/Enums.h"
+#include "Render/Attrs/DisplayAttrs.h"
+#include "Render/base/loaderBase.h"
+#include <functional>
 
 namespace Oryol {
 namespace Render {
     
-class RenderSetup : public DisplayAttrs {
+class RenderSetup {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Windowed(int32 width, int32 height, Core::String windowTitle);
+    static RenderSetup AsWindow(int32 width, int32 height, bool msaa, Core::String windowTitle);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup Fullscreen(int32 width, int32 height, Core::String windowTitle);
-    /// default constructor
-    RenderSetup();
+    static RenderSetup AsFullscreen(int32 width, int32 height, bool msaa, Core::String windowTitle);
+    
+    /// canvas width
+    int32 Width = 640;
+    /// canvas height
+    int32 Height = 400;
+    /// color pixel format
+    PixelFormat::Code ColorFormat = PixelFormat::RGB8;
+    /// depth pixel format
+    PixelFormat::Code DepthFormat = PixelFormat::D24S8;
+    /// MSAA samples (2, 4, 8... no MSAA: 0)
+    int32 Samples = 0;
+    /// fullscreen vs windowed
+    bool Fullscreen = false;
+    /// window title
+    Core::String Title = "Oryol";
+    
+    /// resource loaders
+    Core::Array<std::function<Core::Ptr<loaderBase>()>> Loaders;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
@@ -41,6 +60,10 @@ public:
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
+
+    /// default constructor
+    RenderSetup();
+
 
 private:
     static const int32 DefaultPoolSize = 128;
