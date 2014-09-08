@@ -35,13 +35,13 @@ emscDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     o_assert(!this->IsDisplayValid());
     displayMgrBase::SetupDisplay(renderSetup);
 
-    emscripten_set_canvas_size(renderSetup.WindowWidth, renderSetup.WindowHeight);
+    emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
 
     EmscriptenWebGLContextAttributes ctxAttrs;
     emscripten_webgl_init_context_attributes(&ctxAttrs);
-    ctxAttrs.alpha = 0 < PixelFormat::NumBits(renderSetup.ColorPixelFormat, Channel::Alpha);
-    ctxAttrs.depth = 0 < PixelFormat::NumBits(renderSetup.DepthPixelFormat, Channel::Depth);
-    ctxAttrs.stencil = 0 < PixelFormat::NumBits(renderSetup.DepthPixelFormat, Channel::Stencil);
+    ctxAttrs.alpha = 0 < PixelFormat::NumBits(renderSetup.ColorFormat, Channel::Alpha);
+    ctxAttrs.depth = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, Channel::Depth);
+    ctxAttrs.stencil = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, Channel::Stencil);
     ctxAttrs.antialias = renderSetup.Samples > 0;
     ctxAttrs.premultipliedAlpha = false;
     this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
