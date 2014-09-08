@@ -13,7 +13,7 @@
 
 #define OryolClassCreator(TYPE) \
 public:\
-template<typename... ARGS> static std::function<Core::Ptr<TYPE>(ARGS...)> Creator(ARGS... args) {\
+template<typename... ARGS> static std::function<Core::Ptr<TYPE>()> Creator(ARGS... args) {\
   return [&, args...] { return Create(args...); };\
 };
 
