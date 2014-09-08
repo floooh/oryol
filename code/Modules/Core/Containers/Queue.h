@@ -65,11 +65,6 @@ public:
     /// construct-enqueue an element
     template<class... ARGS> void Emplace(ARGS&&... args);
 
-    /// sorted-insert an element
-    void Insert(const TYPE& elm);
-    /// peek at an element without removing it
-    const TYPE& Peek(int32 index) const;
-    
     /// dequeue an element
     TYPE Dequeue();
     /// dequeue into existing element
@@ -312,21 +307,6 @@ template<class TYPE> template<class... ARGS> void
 Queue<TYPE>::Emplace(ARGS&&... args) {
     this->checkEnqueue();
     this->buffer.emplaceBack(std::forward<ARGS>(args)...);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Queue<TYPE>::Insert(const TYPE& elm) {
-    this->checkEnqueue();
-    const TYPE* ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, elm);
-    int32 index = ptr - this->buffer.elmStart;
-    this->buffer.insert(index, elm);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> const TYPE&
-Queue<TYPE>::Peek(int32 index) const {
-    return this->buffer[index];
 }
 
 //------------------------------------------------------------------------------

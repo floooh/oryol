@@ -437,12 +437,12 @@ URL::Query() const {
                 // key and value
                 String key(builder.GetSubString(kvpStartIndex, keyEndIndex));
                 String value(builder.GetSubString(keyEndIndex + 1, kvpEndIndex));
-                query.Insert(key, value);
+                query.Add(key, value);
             }
             else {
                 // only key
                 String key(builder.GetSubString(kvpStartIndex, kvpEndIndex));
-                query.Insert(key, String());
+                query.Add(key, String());
             }
             kvpStartIndex = kvpEndIndex + 1;
         }

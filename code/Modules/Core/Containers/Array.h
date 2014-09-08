@@ -91,15 +91,15 @@ public:
     void Clear();
     
     /// copy-add element to back of array
-    void AddBack(const TYPE& elm);
+    void Add(const TYPE& elm);
     /// move-add element to back of array
-    void AddBack(TYPE&& elm);
+    void Add(TYPE&& elm);
     /// copy-insert element at index, keep array order
     void Insert(int32 index, const TYPE& elm);
     /// move-insert element at index, keep array order
     void Insert(int32 index, TYPE&& elm);
     /// emplace new element at back of array
-    template<class... ARGS> void EmplaceBack(ARGS&&... args);
+    template<class... ARGS> void Emplace(ARGS&&... args);
     
     /// erase element at index, keep element ordering
     void Erase(int32 index);
@@ -166,7 +166,7 @@ minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
     this->Reserve(l.size());
     for (const auto& elm : l) {
-        this->AddBack(elm);
+        this->Add(elm);
     }
 }
 
@@ -301,7 +301,7 @@ Array<TYPE>::Clear() {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::AddBack(const TYPE& elm) {
+Array<TYPE>::Add(const TYPE& elm) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }
@@ -310,7 +310,7 @@ Array<TYPE>::AddBack(const TYPE& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::AddBack(TYPE&& elm) {
+Array<TYPE>::Add(TYPE&& elm) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }
@@ -337,7 +337,7 @@ Array<TYPE>::Insert(int32 index, TYPE&& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> void
-Array<TYPE>::EmplaceBack(ARGS&&... args) {
+Array<TYPE>::Emplace(ARGS&&... args) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }

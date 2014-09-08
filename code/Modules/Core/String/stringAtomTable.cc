@@ -46,7 +46,7 @@ stringAtomTable::Add(int32 hash, const char* str) {
     o_assert(nullptr != newHeader);
     
     // add new entry to our lookup table
-    this->table.Insert(Entry(newHeader));
+    this->table.Add(Entry(newHeader));
     return newHeader;
 }
 

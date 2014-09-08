@@ -47,8 +47,8 @@ public:
     bool Contains(const VALUE& val) const;
     /// find element
     const VALUE* Find(const VALUE& val) const;
-    /// insert element
-    void Insert(const VALUE& val);
+    /// add element
+    void Add(const VALUE& val);
     /// erase element
     void Erase(const VALUE& val);
     /// get value at index
@@ -165,7 +165,7 @@ Set<VALUE>::Find(const VALUE& val) const {
 
 //------------------------------------------------------------------------------
 template<class VALUE> void
-Set<VALUE>::Insert(const VALUE& val) {
+Set<VALUE>::Add(const VALUE& val) {
     const VALUE* begin = this->valueArray.begin();
     const VALUE* end = this->valueArray.end();
     const VALUE* ptr = std::lower_bound(begin, end, val);

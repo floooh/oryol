@@ -92,7 +92,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             for (id key in headerFields) {
                 String keyString = [key UTF8String];
                 String valString = [[headerFields objectForKey:key] UTF8String];
-                fields.Insert(keyString, valString);
+                fields.Add(keyString, valString);
                 if (keyString == "Content-Type") {
                     responseContentType = valString;
                 }

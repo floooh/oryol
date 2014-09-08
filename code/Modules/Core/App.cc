@@ -88,7 +88,7 @@ App::staticOnFrame() {
 void
 App::addBlocker(AppState::Code blockedState) {
     if (!this->blockers.Contains(blockedState)) {
-        this->blockers.Insert(blockedState);
+        this->blockers.Add(blockedState);
     }
 }
 

@@ -36,7 +36,7 @@ assignRegistry::SetAssign(const String& assign, const String& path) {
         this->assigns[assign] = path;
     }
     else {
-        this->assigns.Insert(assign, path);
+        this->assigns.Add(assign, path);
     }
     this->rwLock.UnlockWrite();
 }

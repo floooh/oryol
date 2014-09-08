@@ -129,7 +129,7 @@ NVGFacade::CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& file
         
         // we need to keep the font memory chunk around until the font is
         // deleted, but it looks like nanovg has no way to delete a font(?)
-        this->fontStreams.InsertUnique(fontHandle, fileData);
+        this->fontStreams.AddUnique(fontHandle, fileData);
     }
     return fontHandle;
 }

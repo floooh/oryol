@@ -27,7 +27,7 @@ void
 schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator) {
     this->rwLock.LockWrite();
     o_assert(!this->registry.Contains(scheme));
-    this->registry.Insert(scheme, fsCreator);
+    this->registry.Add(scheme, fsCreator);
     this->rwLock.UnlockWrite();
 }
 

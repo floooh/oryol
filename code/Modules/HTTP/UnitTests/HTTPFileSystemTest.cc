@@ -19,7 +19,7 @@ TEST(HTTPFileSystemTest) {
     
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
-    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
     IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
     
     // asynchronously load the index.html file

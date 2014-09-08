@@ -82,29 +82,29 @@ public:
 
     /// test if an element exists
     bool Contains(const KEY& key) const;
-    /// insert new element
-    void Insert(const KeyValuePair<KEY, VALUE>& kvp);
-    /// insert new element
-    void Insert(KeyValuePair<KEY, VALUE>&& kvp);
-    /// insert new element
-    void Insert(const KEY& key, const VALUE& value);
-    /// insert new element, return false if element with key already existed
-    bool InsertUnique(const KeyValuePair<KEY, VALUE>& kvp);
-    /// insert new element with move-semantics, return false if element with key already existed
-    bool InsertUnique(KeyValuePair<KEY, VALUE>&& kvp);
-    /// insert new element, and check that it is unique
-    bool InsertUnique(const KEY& key, const VALUE& value);
+    /// add new element
+    void Add(const KeyValuePair<KEY, VALUE>& kvp);
+    /// add new element
+    void Add(KeyValuePair<KEY, VALUE>&& kvp);
+    /// add new element
+    void Add(const KEY& key, const VALUE& value);
+    /// add new element, return false if element with key already existed
+    bool AddUnique(const KeyValuePair<KEY, VALUE>& kvp);
+    /// add new element with move-semantics, return false if element with key already existed
+    bool AddUnique(KeyValuePair<KEY, VALUE>&& kvp);
+    /// add new element, and check that it is unique
+    bool AddUnique(const KEY& key, const VALUE& value);
     /// erase all elements matching key, does nothing if key not contained
     void Erase(const KEY& key);
     
     /// begin bulk-mode
     void BeginBulk();
-    /// insert element in bulk-mode (destroys sorting order)
-    void InsertBulk(const KeyValuePair<KEY, VALUE>& kvp);
-    /// insert element in bulk-mode (destroys sorting order)
-    void InsertBulk(KeyValuePair<KEY, VALUE>&& kvp);
-    /// insert element in bulk-mode (destroys sorting order)
-    void InsertBulk(const KEY& key, const VALUE& value);
+    /// add element in bulk-mode (destroys sorting order)
+    void AddBulk(const KeyValuePair<KEY, VALUE>& kvp);
+    /// add element in bulk-mode (destroys sorting order)
+    void AddBulk(KeyValuePair<KEY, VALUE>&& kvp);
+    /// add element in bulk-mode (destroys sorting order)
+    void AddBulk(const KEY& key, const VALUE& value);
     /// end bulk-mode (sorting happens here)
     void EndBulk();
     /// find the first duplicate element, or InvalidIndex if not found, this is O(N)!
@@ -284,7 +284,7 @@ Map<KEY, VALUE>::Clear() {
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::Insert(const KeyValuePair<KEY, VALUE>& kvp) {
+Map<KEY, VALUE>::Add(const KeyValuePair<KEY, VALUE>& kvp) {
     o_assert_dbg(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -296,7 +296,7 @@ Map<KEY, VALUE>::Insert(const KeyValuePair<KEY, VALUE>& kvp) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::Insert(KeyValuePair<KEY, VALUE>&& kvp) {
+Map<KEY, VALUE>::Add(KeyValuePair<KEY, VALUE>&& kvp) {
     o_assert_dbg(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -308,13 +308,13 @@ Map<KEY, VALUE>::Insert(KeyValuePair<KEY, VALUE>&& kvp) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::Insert(const KEY& key, const VALUE& value) {
-    this->Insert(KeyValuePair<KEY, VALUE>(key, value));
+Map<KEY, VALUE>::Add(const KEY& key, const VALUE& value) {
+    this->Add(KeyValuePair<KEY, VALUE>(key, value));
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
-Map<KEY, VALUE>::InsertUnique(const KeyValuePair<KEY, VALUE>& kvp) {
+Map<KEY, VALUE>::AddUnique(const KeyValuePair<KEY, VALUE>& kvp) {
     o_assert(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -332,7 +332,7 @@ Map<KEY, VALUE>::InsertUnique(const KeyValuePair<KEY, VALUE>& kvp) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
-Map<KEY, VALUE>::InsertUnique(KeyValuePair<KEY, VALUE>&& kvp) {
+Map<KEY, VALUE>::AddUnique(KeyValuePair<KEY, VALUE>&& kvp) {
     o_assert(!this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -350,8 +350,8 @@ Map<KEY, VALUE>::InsertUnique(KeyValuePair<KEY, VALUE>&& kvp) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
-Map<KEY, VALUE>::InsertUnique(const KEY& key, const VALUE& value) {
-    return this->InsertUnique(KeyValuePair<KEY, VALUE>(key, value));
+Map<KEY, VALUE>::AddUnique(const KEY& key, const VALUE& value) {
+    return this->AddUnique(KeyValuePair<KEY, VALUE>(key, value));
 }
 
 //------------------------------------------------------------------------------
@@ -375,7 +375,7 @@ Map<KEY, VALUE>::BeginBulk() {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::InsertBulk(const KeyValuePair<KEY, VALUE>& kvp) {
+Map<KEY, VALUE>::AddBulk(const KeyValuePair<KEY, VALUE>& kvp) {
     o_assert(this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -393,7 +393,7 @@ Map<KEY, VALUE>::InsertBulk(const KeyValuePair<KEY, VALUE>& kvp) {
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::InsertBulk(KeyValuePair<KEY, VALUE>&& kvp) {
+Map<KEY, VALUE>::AddBulk(KeyValuePair<KEY, VALUE>&& kvp) {
     o_assert(this->inBulkMode);
     if (this->buffer.spare() == 0) {
         this->grow();
@@ -411,7 +411,7 @@ Map<KEY, VALUE>::InsertBulk(KeyValuePair<KEY, VALUE>&& kvp) {
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::InsertBulk(const KEY& key, const VALUE& value) {
+Map<KEY, VALUE>::AddBulk(const KEY& key, const VALUE& value) {
     this->Insert(KeyValuePair<KEY, VALUE>(key, value));
 }
 

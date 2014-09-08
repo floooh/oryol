@@ -134,7 +134,7 @@ AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol Instancing Sample");
-    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug = DebugFacade::CreateSingle();
     

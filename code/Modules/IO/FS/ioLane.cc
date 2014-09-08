@@ -110,7 +110,7 @@ ioLane::onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& ms
     const StringAtom& urlScheme = msg->GetScheme();
     o_assert(!this->fileSystems.Contains(urlScheme));
     Ptr<FileSystem> newFileSystem = schemeRegistry::Instance()->CreateFileSystem(urlScheme);
-    this->fileSystems.Insert(urlScheme, newFileSystem);
+    this->fileSystems.Add(urlScheme, newFileSystem);
 }
 
 //------------------------------------------------------------------------------

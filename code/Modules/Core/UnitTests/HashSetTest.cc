@@ -25,14 +25,14 @@ TEST(HashSetTest) {
     CHECK(!hashSet.Contains(2));
     
     // Insert and Contains
-    hashSet.Insert(1);
-    hashSet.Insert(1024);
-    hashSet.Insert(12345);
-    hashSet.Insert(3);
-    hashSet.Insert(10);
-    hashSet.Insert(134);
-    hashSet.Insert(12346);
-    hashSet.Insert(-4);
+    hashSet.Add(1);
+    hashSet.Add(1024);
+    hashSet.Add(12345);
+    hashSet.Add(3);
+    hashSet.Add(10);
+    hashSet.Add(134);
+    hashSet.Add(12346);
+    hashSet.Add(-4);
     CHECK(hashSet.Size() == 8);
     CHECK(!hashSet.Empty());
     CHECK(hashSet.Contains(1));

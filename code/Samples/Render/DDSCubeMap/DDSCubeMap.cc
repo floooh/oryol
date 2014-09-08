@@ -48,14 +48,14 @@ DDSCubeMapApp::OnInit() {
 
     // setup IO system
     IOSetup ioSetup;
-    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Insert("tex:", "http://localhost:8000/");
+    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
+    ioSetup.Assigns.Add("tex:", "http://localhost:8000/");
     this->io = IOFacade::CreateSingle(ioSetup);
 
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DXT Cube Map Sample");
-    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
-    renderSetup.Loaders.AddBack(TextureLoader::Creator());
+    renderSetup.Loaders.Add(RawMeshLoader::Creator());
+    renderSetup.Loaders.Add(TextureLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
 
     // create resources

@@ -225,7 +225,7 @@ ContentType::Params() const {
             if (EndOfString != keyEndIndex) {
                 String key(builder.GetSubString(kvpStartIndex, keyEndIndex));
                 String value(builder.GetSubString(keyEndIndex + 1, kvpEndIndex));
-                query.Insert(key, value);
+                query.Add(key, value);
             }
             else {
                 // hmmm, a key without a value, this is now allowed, skip it

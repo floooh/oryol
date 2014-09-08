@@ -21,7 +21,7 @@ TEST(DDSLoadTest) {
 #if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
-    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
     IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
 
     // DXT1

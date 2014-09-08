@@ -115,7 +115,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 max
     
     // setup empty slots
     for (int32 i = 0; i < poolSize; i++) {
-        this->slots.EmplaceBack();
+        this->slots.Emplace();
     }
     
     // setup free slots queue
@@ -174,7 +174,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
     slot.Assign(this->factory, id, setup);
     if (slot.IsPending()) {
         // resource has started to load asynchronously
-        this->pendingSlots.AddBack(slotIndex);
+        this->pendingSlots.Add(slotIndex);
     }
 }
 
@@ -188,7 +188,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Cor
     slot.Assign(this->factory, id, setup, data);
     if (slot.IsPending()) {
         // resource has started to load asynchronously
-        this->pendingSlots.AddBack(slotIndex);
+        this->pendingSlots.Add(slotIndex);
     }
 }
 
@@ -250,7 +250,7 @@ template<class RESOURCE, class SETUP, class FACTORY> void
 Pool<RESOURCE,SETUP,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& id) {
     o_assert(this->isValid);
     o_assert(!this->placeholders.Contains(typeFourcc));
-    this->placeholders.Insert(typeFourcc, id);
+    this->placeholders.Add(typeFourcc, id);
 }
 
 //------------------------------------------------------------------------------

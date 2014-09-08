@@ -120,7 +120,7 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
         resId = this->meshPool.AllocId();
         Array<Id> deps;
         if (setup.InstanceMesh.IsValid()) {
-            deps.AddBack(setup.InstanceMesh);
+            deps.Add(setup.InstanceMesh);
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup);
@@ -141,7 +141,7 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data)
         resId = this->meshPool.AllocId();
         Array<Id> deps;
         if (setup.InstanceMesh.IsValid()) {
-            deps.AddBack(setup.InstanceMesh);
+            deps.Add(setup.InstanceMesh);
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup, data);
@@ -219,10 +219,10 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
         deps.Reserve(numProgs * 2);
         for (int32 i = 0; i < numProgs; i++) {
             if (setup.VertexShader(i).IsValid()) {
-                deps.AddBack(setup.VertexShader(i));
+                deps.Add(setup.VertexShader(i));
             }
             if (setup.FragmentShader(i).IsValid()) {
-                deps.AddBack(setup.FragmentShader(i));
+                deps.Add(setup.FragmentShader(i));
             }
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
@@ -244,8 +244,8 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         // add dependent resources
         Array<Id> deps;
-        deps.AddBack(setup.Program);
-        deps.AddBack(setup.Mesh);
+        deps.Add(setup.Program);
+        deps.Add(setup.Mesh);
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->drawStatePool.Assign(resId, setup);
         return resId;

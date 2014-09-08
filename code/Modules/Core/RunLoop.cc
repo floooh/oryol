@@ -49,7 +49,7 @@ RunLoop::HasCallback(Id id) const {
 RunLoop::Id
 RunLoop::Add(Func func) {
     Id newId = ++this->curId;
-    this->toAdd.Insert(newId, item{func, false});
+    this->toAdd.Add(newId, item{func, false});
     return newId;
 }
 
@@ -62,7 +62,7 @@ void
 RunLoop::Remove(Id id) {
     o_assert_dbg(!this->toRemove.Contains(id));
     o_assert_dbg(this->callbacks.Contains(id));
-    this->toRemove.Insert(id);
+    this->toRemove.Add(id);
 }
 
 //------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ RunLoop::addCallbacks() {
     for (auto& entry : this->toAdd) {
         item& item = entry.Value();
         item.valid = true;
-        this->callbacks.Insert(entry.Key(), item);
+        this->callbacks.Add(entry.Key(), item);
     }
     this->toAdd.Clear();
 }

@@ -39,7 +39,7 @@ OryolMain(PBRenderingApp);
 AppState::Code
 PBRenderingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol PBR Sample");
-    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug  = DebugFacade::CreateSingle();
     

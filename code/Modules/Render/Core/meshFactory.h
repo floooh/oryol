@@ -25,7 +25,7 @@ meshFactory::AttachLoader(const Core::Ptr<meshLoaderBase>& loader) {
     o_assert(loader.isValid());
     o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
     loader->onAttachToFactory(this);
-    this->loaders.AddBack(loader);
+    this->loaders.Add(loader);
 }
 
 } // namespace Render

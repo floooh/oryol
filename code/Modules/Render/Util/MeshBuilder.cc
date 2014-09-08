@@ -72,14 +72,14 @@ MeshBuilder::SetIndexType(IndexType::Code t) {
 void
 MeshBuilder::AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
     o_assert(!this->inBegin);
-    this->primGroups.AddBack(primGroup);
+    this->primGroups.Add(primGroup);
 }
 
 //------------------------------------------------------------------------------
 void
 MeshBuilder::AddPrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements) {
     o_assert(!this->inBegin);
-    this->primGroups.EmplaceBack(type, baseElement, numElements);
+    this->primGroups.Emplace(type, baseElement, numElements);
 }
 
 //------------------------------------------------------------------------------

@@ -64,7 +64,7 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     IOFacade::Instance()->Put(ioReq);
     
     // add to our queue if pending requests
-    this->ioRequests.AddBack(item{ ioReq, onSuccess, onFail });
+    this->ioRequests.Add(item{ ioReq, onSuccess, onFail });
 }
 
 //------------------------------------------------------------------------------

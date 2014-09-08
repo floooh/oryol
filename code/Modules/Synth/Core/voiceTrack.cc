@@ -37,7 +37,7 @@ voiceTrack::AddOp(const Op& op) {
         Op& prev = this->track.Back();
         prev.endTick = op.startTick + op.FadeInTicks;
     }
-    this->track.AddBack(op);
+    this->track.Add(op);
 }
 
 //------------------------------------------------------------------------------

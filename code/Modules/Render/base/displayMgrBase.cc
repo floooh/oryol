@@ -102,7 +102,7 @@ displayMgrBase::GetDisplayAttrs() const {
 void
 displayMgrBase::AttachDisplayEventHandler(const Ptr<Port>& handler) {
     o_assert(InvalidIndex == this->handlers.FindIndexLinear(handler));
-    this->handlers.AddBack(handler);
+    this->handlers.Add(handler);
 }
 
 //------------------------------------------------------------------------------

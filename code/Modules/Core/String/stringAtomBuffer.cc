@@ -24,7 +24,7 @@ stringAtomBuffer::~stringAtomBuffer() {
 void
 stringAtomBuffer::allocChunk() {
     int8* newChunk = (int8*) Memory::Alloc(this->chunkSize);
-    this->chunks.AddBack(newChunk);
+    this->chunks.Add(newChunk);
     this->curPointer = newChunk;
 }
 

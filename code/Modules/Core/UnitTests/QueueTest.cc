@@ -79,27 +79,5 @@ TEST(QueueTest) {
     CHECK(queue0.SpareDequeue() == 0);
     CHECK(queue0.Size() == 1);
     CHECK(queue0.Dequeue() == "Bla");
-    
-    // test sorted insert
-    Queue<int32> intQueue;
-    intQueue.Insert(5);
-    intQueue.Insert(3);
-    intQueue.Insert(10);
-    intQueue.Insert(3);
-    intQueue.Insert(2);
-    CHECK(intQueue.Size() == 5);
-    CHECK(intQueue.Front() == 2);
-    CHECK(intQueue.Back() == 10);
-    CHECK(intQueue.Peek(0) == 2);
-    CHECK(intQueue.Peek(1) == 3);
-    CHECK(intQueue.Peek(2) == 3);
-    CHECK(intQueue.Peek(3) == 5);
-    CHECK(intQueue.Peek(4) == 10);
-    CHECK(intQueue.Dequeue() == 2);
-    CHECK(intQueue.Dequeue() == 3);
-    CHECK(intQueue.Dequeue() == 3);
-    CHECK(intQueue.Dequeue() == 5);
-    CHECK(intQueue.Dequeue() == 10);
-    CHECK(intQueue.Empty());
 }
     

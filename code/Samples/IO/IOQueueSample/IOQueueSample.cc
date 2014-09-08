@@ -36,8 +36,8 @@ IOQueueApp::OnInit() {
     // when running as a deployed web app all files must be loaded
     // from the own domain, the host URL part is ignored then
     IOSetup ioSetup;
-    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Insert("res:", "http://localhost:8000/");
+    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
+    ioSetup.Assigns.Add("res:", "http://localhost:8000/");
     this->io = IOFacade::CreateSingle(ioSetup);
     
     // now the important part: add IO requests to the IOQueue,

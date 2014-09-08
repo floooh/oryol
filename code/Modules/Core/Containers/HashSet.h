@@ -43,8 +43,8 @@ public:
     bool Contains(const VALUETYPE& val) const;
     /// find element
     const VALUETYPE* Find(const VALUETYPE& val) const;
-    /// insert element
-    void Insert(const VALUETYPE& val);
+    /// add element
+    void Add(const VALUETYPE& val);
     /// erase element
     void Erase(const VALUETYPE& val);
     
@@ -155,10 +155,10 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Find(const VALUETYPE& val) const {
     
 //------------------------------------------------------------------------------
 template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
-HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Insert(const VALUETYPE& val) {
+HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Add(const VALUETYPE& val) {
     this->size++;
     auto& bucket = this->findBucket(val);
-    bucket.Insert(val);
+    bucket.Add(val);
 }
     
 //------------------------------------------------------------------------------

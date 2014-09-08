@@ -30,7 +30,7 @@ Args::Args(const WideString& wideStr) {
 //------------------------------------------------------------------------------
 Args::Args(int argc, const char** argv) {
     for (int32 i = 0; i < argc; i++) {
-        this->args.AddBack(argv[i]);
+        this->args.Add(argv[i]);
     }
 }
 

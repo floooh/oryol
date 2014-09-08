@@ -32,16 +32,16 @@ TEST(BinaryStreamReaderWriterTest) {
     CHECK(stream->GetWritePosition() == 8);
     Array<int32> i32Array;
     for (int i = 0; i < 16; i++) {
-        i32Array.AddBack(i);
+        i32Array.Add(i);
     }
     CHECK(writer->Write(i32Array));
     CHECK(stream->Size() == 76);
     CHECK(stream->GetWritePosition() == 76);
     
     Array<String> strArray;
-    strArray.AddBack("One");
-    strArray.AddBack("Two");
-    strArray.AddBack("Three");
+    strArray.Add("One");
+    strArray.Add("Two");
+    strArray.Add("Three");
     CHECK(writer->Write(strArray));
     CHECK(stream->Size() == 103);
     CHECK(stream->GetWritePosition() == 103);

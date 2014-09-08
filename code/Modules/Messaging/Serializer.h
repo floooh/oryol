@@ -206,7 +206,7 @@ Serializer::DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Core::Array<TY
                     outVals.Clear();
                     return nullptr;
                 }
-                outVals.AddBack(val);
+                outVals.Add(val);
             }
         }
         // success

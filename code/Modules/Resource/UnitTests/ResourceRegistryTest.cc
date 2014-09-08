@@ -57,8 +57,8 @@ TEST(ResourceRegistryTest) {
     
     // add a resource with dependent
     Array<Id> deps;
-    deps.AddBack(blaId);
-    deps.AddBack(blaSigId);
+    deps.Add(blaId);
+    deps.Add(blaSigId);
     reg.AddResource(blubLoc, blubId, deps);
     CHECK(reg.GetNumResources() == 3);
     CHECK(reg.GetIdByIndex(0) == blaId);

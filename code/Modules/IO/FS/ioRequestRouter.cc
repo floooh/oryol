@@ -19,7 +19,7 @@ numLanes(numLanes_) {
     for (int32 i = 0; i < this->numLanes; i++) {
         Ptr<ioLane> newLane = ioLane::Create();
         newLane->StartThread();
-        this->ioLanes.AddBack(newLane);
+        this->ioLanes.Add(newLane);
     }
 }
 

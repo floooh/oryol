@@ -36,7 +36,7 @@ void
 Log::AddLogger(const Ptr<Logger>& l) {
     if (l) {
         lock.LockWrite();
-        loggers.AddBack(l);
+        loggers.Add(l);
         lock.UnlockWrite();
     }
 }

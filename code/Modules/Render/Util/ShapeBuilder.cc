@@ -108,7 +108,7 @@ ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPri
     shape.i0 = tiles;
     shape.color = this->color;
     this->UpdateNumElements(shape);
-    this->shapes.AddBack(shape);
+    this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
@@ -128,7 +128,7 @@ ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPr
     shape.i1 = stacks;
     shape.color = this->color;
     this->UpdateNumElements(shape);
-    this->shapes.AddBack(shape);
+    this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
@@ -149,7 +149,7 @@ ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 st
     shape.i1 = stacks;
     shape.color = this->color;
     this->UpdateNumElements(shape);
-    this->shapes.AddBack(shape);
+    this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
@@ -170,7 +170,7 @@ ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 ri
     shape.i1 = rings;
     shape.color = this->color;
     this->UpdateNumElements(shape);
-    this->shapes.AddBack(shape);
+    this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
@@ -190,7 +190,7 @@ ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
     shape.i0 = tiles;
     shape.color = this->color;
     this->UpdateNumElements(shape);
-    this->shapes.AddBack(shape);
+    this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();

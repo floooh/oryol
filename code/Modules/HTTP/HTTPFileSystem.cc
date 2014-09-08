@@ -36,7 +36,7 @@ HTTPFileSystem::onGet(const Ptr<IOProtocol::Get>& msg) {
     pendingRequest pending;
     pending.ioRequest = msg;
     pending.httpRequest = httpReq;
-    this->pendingRequests.AddBack(pending);
+    this->pendingRequests.Add(pending);
 }
 
 //------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ HTTPFileSystem::onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
     // need to add a Range header
     this->stringBuilder.Format(64, "bytes=%d-%d", msg->GetStartOffset(), msg->GetEndOffset());
     Map<String,String> requestHeaders;
-    requestHeaders.Insert("Range", this->stringBuilder.GetString());
+    requestHeaders.Add("Range", this->stringBuilder.GetString());
     
     // convert the IO request into a HTTP request and push to HTTPClient
     Ptr<HTTPProtocol::HTTPRequest> httpReq = HTTPProtocol::HTTPRequest::Create();
@@ -59,7 +59,7 @@ HTTPFileSystem::onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
     pendingRequest pending;
     pending.ioRequest = msg;
     pending.httpRequest = httpReq;
-    this->pendingRequests.AddBack(pending);
+    this->pendingRequests.Add(pending);
 }
 
 //------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Infinite Spheres Sample");
-    renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
+    renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
     float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
     float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;

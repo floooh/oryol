@@ -57,8 +57,8 @@ TEST(URLBuilderTest) {
     
     // add a query
     Map<String, String> query;
-    query.Insert("key0", "value0");
-    query.Insert("key1", "value1");
+    query.Add("key0", "value0");
+    query.Add("key1", "value1");
     urlBuilder.SetQuery(query);
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh:pwd@www.flohofwoe.net:8080/demos.html?key0=value0&key1=value1#bla");

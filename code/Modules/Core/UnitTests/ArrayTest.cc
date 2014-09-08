@@ -42,9 +42,9 @@ TEST(ArrayTest) {
     
     // add some elements
     const int one = 1;
-    array0.AddBack(0);
-    array0.AddBack(one);
-    array0.AddBack(2);
+    array0.Add(0);
+    array0.Add(one);
+    array0.Add(2);
     CHECK(array0.Size() == 3);
     CHECK(array0.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(!array0.Empty());
@@ -93,7 +93,7 @@ TEST(ArrayTest) {
     CHECK(array2.Back() == 2);
     
     // test emplace-back
-    array2.EmplaceBack(3);
+    array2.Emplace(3);
     CHECK(array2.Size() == 4);
     CHECK(array2[0] == 0);
     CHECK(array2[1] == 1);
@@ -186,8 +186,8 @@ TEST(ArrayTest) {
     CHECK(array2[2] == 8);
     CHECK(array2[3] == 2);
     CHECK(array2[4] == 3);    
-    array2.AddBack(4);
-    array2.AddBack(5);
+    array2.Add(4);
+    array2.Add(5);
     CHECK(array2.Size() == 7);
     CHECK(array2.Capacity() == (5 + ORYOL_CONTAINER_DEFAULT_MIN_GROW));
     array2.Trim();
@@ -232,7 +232,7 @@ TEST(ArrayTest) {
     CHECK(array2.Capacity() == 7);
     CHECK(array2.begin() == array2.end());
     for (int i = 0; i < 16; i++) {
-        array2.AddBack(i);
+        array2.Add(i);
     }
     for (int* p = array2.begin(), i = 0; p != array2.end(); p++, i++) {
         CHECK(*p == i);
@@ -244,7 +244,7 @@ TEST(ArrayTest) {
     
     // check for for(:) works
     for (int i = 0; i < 16; i++) {
-        array2.AddBack(i);
+        array2.Add(i);
     }
     for (int x : array2) {
         CHECK(array2[x] == x);
@@ -252,12 +252,12 @@ TEST(ArrayTest) {
 
     // test some algorithms stuff
     array2.Clear();
-    array2.AddBack(1);
-    array2.AddBack(3);
-    array2.AddBack(5);
-    array2.AddBack(7);
-    array2.AddBack(9);
-    array2.AddBack(11);
+    array2.Add(1);
+    array2.Add(3);
+    array2.Add(5);
+    array2.Add(7);
+    array2.Add(9);
+    array2.Add(11);
     bool allOdd = std::all_of(array2.begin(), array2.end(), [](int i){ return i%2 == 1; });
     CHECK(allOdd);
     bool anyEven = std::any_of(array2.begin(), array2.end(), [](int i){ return i%2 == 0; });

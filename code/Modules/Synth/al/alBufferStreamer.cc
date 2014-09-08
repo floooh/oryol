@@ -39,7 +39,7 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
         ORYOL_AL_CHECK_ERROR();
         alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), synth::SampleRate);
         ORYOL_AL_CHECK_ERROR();
-        this->allBuffers.AddBack(buf);
+        this->allBuffers.Add(buf);
         this->freeBuffers.Enqueue(buf);
     }
 

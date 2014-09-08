@@ -580,7 +580,7 @@ StringBuilder::Tokenize(const char* delims, Array<String>& outTokens) {
         const char* token;
         char* contextPtr = 0;
         while (0 != (token = o_strtok(ptr, delims, &contextPtr))) {
-            outTokens.AddBack(token);
+            outTokens.Add(token);
             ptr = 0;
         }
     }
@@ -613,18 +613,18 @@ StringBuilder::Tokenize(const char* delims, char fence, Array<String>& outTokens
                 if ((fence == *ptr) && (0 != (c = std::strchr(++ptr, fence))))
                 {
                     *c++ = 0;
-                    outTokens.AddBack(ptr);
+                    outTokens.Add(ptr);
                     ptr = c;
                 }
                 else if (0 != (c = std::strpbrk(ptr, delims)))
                 {
                     *c++ = 0;
-                    outTokens.AddBack(ptr);
+                    outTokens.Add(ptr);
                     ptr = c;
                 }
                 else
                 {
-                    outTokens.AddBack(ptr);
+                    outTokens.Add(ptr);
                     break;
                 }
             }

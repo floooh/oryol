@@ -55,12 +55,12 @@ Registry::AddResource(const Locator& loc, const Id& id) {
     o_assert(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
     
-    this->entries.EmplaceBack(loc, id);
+    this->entries.Emplace(loc, id);
     if (loc.IsShared()) {
         o_assert(!this->locatorIndexMap.Contains(loc));
-        this->locatorIndexMap.Insert(loc, this->entries.Size() - 1);
+        this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
     }
-    this->idIndexMap.Insert(id, this->entries.Size() - 1);
+    this->idIndexMap.Add(id, this->entries.Size() - 1);
     
     this->incrUseCount(id);
 }
@@ -73,7 +73,7 @@ Registry::AddResource(const Locator& loc, const Id& id, const Array<Id>& deps) {
     o_assert(deps.Size() < MaxNumDependents);
     o_assert(!this->idIndexMap.Contains(id));
     
-    this->entries.EmplaceBack(loc, id);
+    this->entries.Emplace(loc, id);
     Entry& entry = this->entries.Back();
     for (const Id& depId : deps) {
         o_assert(depId.IsValid());
@@ -82,9 +82,9 @@ Registry::AddResource(const Locator& loc, const Id& id, const Array<Id>& deps) {
     }
     if (loc.IsShared()) {
         o_assert(!this->locatorIndexMap.Contains(loc));
-        this->locatorIndexMap.Insert(loc, this->entries.Size() - 1);
+        this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
     }
-    this->idIndexMap.Insert(id, this->entries.Size() - 1);
+    this->idIndexMap.Add(id, this->entries.Size() - 1);
     
     this->incrUseCount(id);
 }
@@ -207,7 +207,7 @@ Registry::decrUseCount(const Id& id, Array<Id>& outToRemove) {
     
     entry->useCount--;
     if (0 == entry->useCount) {
-        outToRemove.AddBack(id);
+        outToRemove.Add(id);
     }
     
     // recursively decrement use-count of dependents
@@ -250,7 +250,7 @@ Registry::GetDependents(const Id& id) const {
     Array<Id> result;
     result.Reserve(entry->numDeps);
     for (int32 i = 0; i < entry->numDeps; i++) {
-        result.AddBack(entry->deps[i]);
+        result.Add(entry->deps[i]);
     }
     return result;
 }

@@ -19,15 +19,15 @@ TEST(MapTest) {
     CHECK(map.Empty());
     CHECK(map.Capacity() == 0);
     CHECK(!map.Contains(1));
-    map.Insert(0, 0);
-    map.Insert(3, 3);
-    map.Insert(8, 8);
-    map.Insert(6, 6);
-    map.Insert(4, 4);
-    map.Insert(1, 1);
-    map.Insert(2, 2);
-    map.Insert(7, 7);
-    map.Insert(5, 5);
+    map.Add(0, 0);
+    map.Add(3, 3);
+    map.Add(8, 8);
+    map.Add(6, 6);
+    map.Add(4, 4);
+    map.Add(1, 1);
+    map.Add(2, 2);
+    map.Add(7, 7);
+    map.Add(5, 5);
     CHECK(map.Size() == 9);
     CHECK(map.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(!map.Empty());
@@ -103,8 +103,8 @@ TEST(MapTest) {
     
     // check FindDuplicate
     CHECK(InvalidIndex == map.FindDuplicate(0));
-    map.Insert(5, 10);
-    map.Insert(5, 11);
+    map.Add(5, 10);
+    map.Add(5, 11);
     CHECK(5 == map.FindDuplicate(0));
     // test erase (single and duplicates)
     CHECK(map.Contains(5));
@@ -127,7 +127,7 @@ TEST(MapTest) {
     map4.BeginBulk();
     for (int i = 31; i >= 0; i--) {
         KeyValuePair<int, int> kvp(i, i);
-        map4.InsertBulk(kvp);
+        map4.AddBulk(kvp);
     }
     map4.EndBulk();
     for (int i = 0; i < 32; i++) {
@@ -143,8 +143,8 @@ TEST(MapTest) {
     CHECK(map4.FindIndex(100) == InvalidIndex);
     
     // test InsertUnique
-    CHECK(map4.InsertUnique(32, 32));
-    CHECK(!map4.InsertUnique(32, 33));
+    CHECK(map4.AddUnique(32, 32));
+    CHECK(!map4.AddUnique(32, 33));
     CHECK(map4[32] == 32);
     int32 index = map4.FindIndex(32);
     CHECK(InvalidIndex == map4.FindDuplicate(index));

@@ -74,9 +74,9 @@ TEST(SerializerTest) {
     
     // test Array of int32
     Array<int32> int32ArrayWrite;
-    int32ArrayWrite.AddBack(1);
-    int32ArrayWrite.AddBack(2);
-    int32ArrayWrite.AddBack(3);
+    int32ArrayWrite.Add(1);
+    int32ArrayWrite.Add(2);
+    int32ArrayWrite.Add(3);
     Array<int32> int32ArrayRead;
     CHECK(Serializer::EncodedArraySize<int32>(int32ArrayWrite) == 16);
     CHECK(Serializer::EncodeArray<int32>(int32ArrayWrite, encodePtr, maxPtr) == space + 16);

@@ -74,10 +74,10 @@ public:
     /// clear the array (deletes elements, keeps capacity)
     void Clear();
     
-    /// insert-copy new element
-    void Insert(const KEY& key, const VALUE& value);
-    /// insert-move element
-    void Insert(KEY&& key, VALUE&& value);
+    /// add-copy new element
+    void Add(const KEY& key, const VALUE& value);
+    /// add-move element
+    void Add(KEY&& key, VALUE&& value);
     
     /// find value index
     int32 FindValueIndex(const KEY& key);
@@ -223,16 +223,16 @@ ArrayMap<KEY, VALUE>::Clear() {
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-ArrayMap<KEY, VALUE>::Insert(const KEY& key, const VALUE& value) {
-    this->valueArray.AddBack(value);
-    this->indexMap.Insert(key, this->valueArray.Size() - 1);
+ArrayMap<KEY, VALUE>::Add(const KEY& key, const VALUE& value) {
+    this->valueArray.Add(value);
+    this->indexMap.Add(key, this->valueArray.Size() - 1);
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-ArrayMap<KEY, VALUE>::Insert(KEY&& key, VALUE&& value) {
-    this->valueArray.AddBack(std::move(value));
-    this->indexMap.Insert(std::move(key), this->valueArray.Size() - 1);
+ArrayMap<KEY, VALUE>::Add(KEY&& key, VALUE&& value) {
+    this->valueArray.Add(std::move(value));
+    this->indexMap.Add(std::move(key), this->valueArray.Size() - 1);
 }
     
 //------------------------------------------------------------------------------
