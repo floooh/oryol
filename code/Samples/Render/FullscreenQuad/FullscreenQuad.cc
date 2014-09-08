@@ -27,18 +27,6 @@ OryolMain(FullscreenQuadApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-FullscreenQuadApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
-    Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", mesh, prog, 0));
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
-    return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
     this->time += 1.0f / 60.0f;
@@ -52,6 +40,18 @@ FullscreenQuadApp::OnRunning() {
     
     // continue running or quit?
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+FullscreenQuadApp::OnInit() {
+    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
+    Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
+    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    this->drawState = this->render->CreateResource(DrawStateSetup("ds", mesh, prog, 0));
+    this->render->ReleaseResource(mesh);
+    this->render->ReleaseResource(prog);
+    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------

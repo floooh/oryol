@@ -43,6 +43,62 @@ OryolMain(DDSTextureLoadingApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+DDSTextureLoadingApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        this->distVal += 0.01f;
+        
+        this->render->ApplyDefaultRenderTarget();
+        this->render->ApplyDrawState(this->drawState);
+        this->render->Clear(Channel::All, glm::vec4(0.5f), 1.0f, 0);
+        
+        // only render when texture is loaded (until texture placeholder are implemented)
+        static const std::array<glm::vec3, NumTextures> pos{ {
+            // dxt1, dxt3, dxt5
+            glm::vec3(-2.2f, +1.1f, 0.0f),
+            glm::vec3(-1.1f, +1.1f, 0.0f),
+            glm::vec3( 0.0f, +1.1f, 0.0f),
+            
+            // pvr2bpp pvr4bpp
+            glm::vec3(+1.1f, +1.1f, 0.0f),
+            glm::vec3(+2.2f, +1.1f, 0.0f),
+            
+            // rgba8, bgra8, rgb8, bgr8
+            glm::vec3(-1.65f, 0.0f, 0.0f),
+            glm::vec3(-0.55f, 0.0f, 0.0f),
+            glm::vec3(+0.55f, 0.0f, 0.0f),
+            glm::vec3(+1.65f, 0.0f, 0.0f),
+            
+            // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
+            glm::vec3(-2.75f, -1.1f, 0.0f),
+            glm::vec3(-1.65f, -1.1f, 0.0f),
+            glm::vec3(-0.55f, -1.1f, 0.0f),
+            glm::vec3(+0.55f, -1.1f, 0.0f),
+            glm::vec3(+1.65f, -1.1f, 0.0f),
+            glm::vec3(+2.75f, -1.1f, 0.0f)
+        } };
+        for (int32 i = 0; i < NumTextures; i++) {
+            const Id& tex = this->texId[i];
+            if (tex.IsValid()) {
+                const auto resState = this->render->QueryResourceState(tex);
+                if (resState == Resource::State::Valid) {
+                    glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
+                    this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
+                    this->render->ApplyVariable(Shaders::Main::Texture, tex);
+                    this->render->Draw(0);
+                }
+            }
+        }
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 DDSTextureLoadingApp::OnInit() {
 
     // setup IO system
@@ -105,69 +161,6 @@ DDSTextureLoadingApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-DDSTextureLoadingApp::computeMVP(const glm::vec3& pos) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    return this->proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-DDSTextureLoadingApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-    
-        this->distVal += 0.01f;
-        
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.5f), 1.0f, 0);
-        
-        // only render when texture is loaded (until texture placeholder are implemented)
-        static const std::array<glm::vec3, NumTextures> pos{ {
-            // dxt1, dxt3, dxt5
-            glm::vec3(-2.2f, +1.1f, 0.0f),
-            glm::vec3(-1.1f, +1.1f, 0.0f),
-            glm::vec3( 0.0f, +1.1f, 0.0f),
-            
-            // pvr2bpp pvr4bpp
-            glm::vec3(+1.1f, +1.1f, 0.0f),
-            glm::vec3(+2.2f, +1.1f, 0.0f),
-            
-            // rgba8, bgra8, rgb8, bgr8
-            glm::vec3(-1.65f, 0.0f, 0.0f),
-            glm::vec3(-0.55f, 0.0f, 0.0f),
-            glm::vec3(+0.55f, 0.0f, 0.0f),
-            glm::vec3(+1.65f, 0.0f, 0.0f),
-            
-            // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
-            glm::vec3(-2.75f, -1.1f, 0.0f),
-            glm::vec3(-1.65f, -1.1f, 0.0f),
-            glm::vec3(-0.55f, -1.1f, 0.0f),
-            glm::vec3(+0.55f, -1.1f, 0.0f),
-            glm::vec3(+1.65f, -1.1f, 0.0f),
-            glm::vec3(+2.75f, -1.1f, 0.0f)
-        } };
-        for (int32 i = 0; i < NumTextures; i++) {
-            const Id& tex = this->texId[i];
-            if (tex.IsValid()) {
-                const auto resState = this->render->QueryResourceState(tex);
-                if (resState == Resource::State::Valid) {
-                    glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-                    this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
-                    this->render->ApplyVariable(Shaders::Main::Texture, tex);
-                    this->render->Draw(0);
-                }
-            }
-        }
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 DDSTextureLoadingApp::OnCleanup() {
     // cleanup everything
@@ -184,3 +177,11 @@ DDSTextureLoadingApp::OnCleanup() {
     
     return App::OnCleanup();
 }
+
+//------------------------------------------------------------------------------
+glm::mat4
+DDSTextureLoadingApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
+    return this->proj * this->view * modelTform;
+}
+

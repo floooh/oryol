@@ -43,6 +43,40 @@ OryolMain(VertexTextureApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+VertexTextureApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        this->time += 1.0f / 60.0f;
+        
+        // render plasma to offscreen render target
+        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
+        this->render->ApplyDrawState(this->plasmaDrawState);
+        this->render->ApplyVariable(Shaders::Plasma::Time, this->time);
+        this->render->Draw(0);
+        
+        // render displacement mapped plane shape
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->planeDrawState);
+        const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
+        this->render->ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
+        this->render->ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
+        this->render->Draw(0);
+        
+        this->debug->DrawTextBuffer();
+        this->render->EndFrame();
+    }
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Vertex Texture Sample");
@@ -92,49 +126,6 @@ VertexTextureApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-VertexTextureApp::computeMVP(const glm::vec2& angles) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-    modelTform = glm::rotate(modelTform, angles.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, angles.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-VertexTextureApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-        
-        this->time += 1.0f / 60.0f;
-        
-        // render plasma to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->ApplyDrawState(this->plasmaDrawState);
-        this->render->ApplyVariable(Shaders::Plasma::Time, this->time);
-        this->render->Draw(0);
-        
-        // render displacement mapped plane shape
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->planeDrawState);        
-        const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
-        this->render->ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
-        this->render->ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
-        this->render->Draw(0);
-        
-        this->debug->DrawTextBuffer();
-        this->render->EndFrame();
-    }
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
-
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 VertexTextureApp::OnCleanup() {
     // cleanup everything
@@ -147,3 +138,13 @@ VertexTextureApp::OnCleanup() {
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
+
+//------------------------------------------------------------------------------
+glm::mat4
+VertexTextureApp::computeMVP(const glm::vec2& angles) {
+    glm::mat4 modelTform = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+    modelTform = glm::rotate(modelTform, angles.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelTform = glm::rotate(modelTform, angles.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    return this->proj * this->view * modelTform;
+}
+

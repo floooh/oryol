@@ -28,6 +28,23 @@ OryolMain(TriangleApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+TriangleApp::OnRunning() {
+    
+    // render one frame
+    if (this->render->BeginFrame()) {
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->drawState);
+        this->render->Draw(0);
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(400, 400, false, "Oryol Triangle Sample");
@@ -59,23 +76,6 @@ TriangleApp::OnInit() {
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-TriangleApp::OnRunning() {
-
-    // render one frame
-    if (this->render->BeginFrame()) {
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Draw(0);
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

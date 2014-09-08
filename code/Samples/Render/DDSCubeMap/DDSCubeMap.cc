@@ -44,6 +44,34 @@ OryolMain(DDSCubeMapApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+DDSCubeMapApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        // update rotation angles
+        this->angleY += 0.02f;
+        this->angleX += 0.01f;
+        
+        // apply state and draw
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
+        this->render->ApplyDrawState(this->drawState);
+        
+        const auto resState = this->render->QueryResourceState(this->tex);
+        if (resState == Resource::State::Valid) {
+            this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
+            this->render->ApplyVariable(Shaders::Main::Texture, this->tex);
+            this->render->Draw(0);
+        }
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 DDSCubeMapApp::OnInit() {
 
     // setup IO system
@@ -97,43 +125,6 @@ DDSCubeMapApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-DDSCubeMapApp::computeMVP(const glm::vec3& pos) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-DDSCubeMapApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-    
-        // update rotation angles
-        this->angleY += 0.02f;
-        this->angleX += 0.01f;
-        
-        // apply state and draw
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawState);
-        
-        const auto resState = this->render->QueryResourceState(this->tex);
-        if (resState == Resource::State::Valid) {
-            this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            this->render->ApplyVariable(Shaders::Main::Texture, this->tex);
-            this->render->Draw(0);
-        }
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
@@ -146,3 +137,13 @@ DDSCubeMapApp::OnCleanup() {
     
     return App::OnCleanup();
 }
+
+//------------------------------------------------------------------------------
+glm::mat4
+DDSCubeMapApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
+    modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
+    return this->proj * this->view * modelTform;
+}
+

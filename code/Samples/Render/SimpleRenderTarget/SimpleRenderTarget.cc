@@ -39,6 +39,40 @@ OryolMain(SimpleRenderTargetApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+SimpleRenderTargetApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        // update angles
+        this->angleY += 0.01f;
+        this->angleX += 0.02f;
+        
+        // render donut to offscreen render target
+        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
+        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
+        this->render->ApplyDrawState(this->offscreenDrawState);
+        glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
+        this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
+        this->render->Draw(0);
+        
+        // render sphere to display, with offscreen render target as texture
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
+        this->render->ApplyDrawState(this->displayDrawState);
+        glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
+        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
+        this->render->Draw(0);
+        
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Simple Render Target Sample");
@@ -103,49 +137,6 @@ SimpleRenderTargetApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-SimpleRenderTargetApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-        
-        // update angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-        
-        // render donut to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
-        this->render->ApplyDrawState(this->offscreenDrawState);
-        glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-        this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
-        this->render->Draw(0);
-        
-        // render sphere to display, with offscreen render target as texture
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.25f), 1.0f, 0);
-        this->render->ApplyDrawState(this->displayDrawState);
-        glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
-        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
-        this->render->Draw(0);
-
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
     // cleanup everything
@@ -155,4 +146,13 @@ SimpleRenderTargetApp::OnCleanup() {
     this->render = nullptr;
     RenderFacade::DestroySingle();
     return App::OnCleanup();
+}
+
+//------------------------------------------------------------------------------
+glm::mat4
+SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos) {
+    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
+    modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
+    return proj * this->view * modelTform;
 }

@@ -37,6 +37,33 @@ OryolMain(PBRenderingApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+PBRenderingApp::OnRunning() {
+    
+    this->debug->Print("\n Work in progress!");
+    
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        this->render->ApplyDefaultRenderTarget();
+        this->render->ApplyDrawState(this->drawState);
+        this->render->Clear(Channel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
+        
+        this->applyDirLight();
+        this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
+        this->render->Draw(0);
+        this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
+        this->render->Draw(1);
+        
+        this->debug->DrawTextBuffer();
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 PBRenderingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol PBR Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
@@ -70,6 +97,17 @@ PBRenderingApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
+AppState::Code
+PBRenderingApp::OnCleanup() {
+    this->render->ReleaseResource(this->drawState);
+    this->render = nullptr;
+    this->debug  = nullptr;
+    DebugFacade::DestroySingle();
+    RenderFacade::DestroySingle();
+    return App::OnCleanup();
+}
+
+//------------------------------------------------------------------------------
 void
 PBRenderingApp::applyDirLight() const {
     // compute directional light vector in view space (vector TOWARDS light)
@@ -86,42 +124,4 @@ PBRenderingApp::applyTransforms(const glm::vec3& pos) const {
     glm::mat4 modelViewProj = this->proj * this->view * modelTform;
     this->render->ApplyVariable(Shaders::Main::ModelViewProj, modelViewProj);
     this->render->ApplyVariable(Shaders::Main::ModelView, modelView);
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-PBRenderingApp::OnRunning() {
-    
-    this->debug->Print("\n Work in progress!");
-    
-    // render one frame
-    if (this->render->BeginFrame()) {
-    
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
-        
-        this->applyDirLight();
-        this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
-        this->render->Draw(0);
-        this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
-        this->render->Draw(1);
-        
-        this->debug->DrawTextBuffer();
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-PBRenderingApp::OnCleanup() {
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    this->debug  = nullptr;
-    DebugFacade::DestroySingle();
-    RenderFacade::DestroySingle();
-    return App::OnCleanup();
 }

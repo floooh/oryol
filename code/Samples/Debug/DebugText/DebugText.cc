@@ -35,6 +35,27 @@ OryolMain(DebugTextApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+DebugTextApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        this->dropChar();
+        this->moveChars();
+        this->drawText();
+        
+        this->render->ApplyDefaultRenderTarget();
+        this->render->Clear(Channel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        this->debug->DrawTextBuffer();
+        
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 DebugTextApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
     this->debug  = DebugFacade::CreateSingle();
@@ -48,6 +69,18 @@ DebugTextApp::OnInit() {
     this->strBuilder.Reserve(this->width * 2);
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DebugTextApp::OnCleanup() {
+    Memory::Free(this->buffer);
+    this->buffer = nullptr;
+    this->render = nullptr;
+    this->debug  = nullptr;
+    DebugFacade::DestroySingle();
+    RenderFacade::DestroySingle();
+    return App::OnCleanup();
 }
 
 //------------------------------------------------------------------------------
@@ -91,13 +124,13 @@ DebugTextApp::moveChars() {
 //
 void
 DebugTextApp::drawText() {
-
+    
     glm::vec4 color[3] = {
         glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
         glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
         glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
     };
-
+    
     for (int y = 0; y < this->height; y++) {
         this->strBuilder.Clear();
         int yOffset = y * this->width;
@@ -116,35 +149,3 @@ DebugTextApp::drawText() {
     }
 }
 
-//------------------------------------------------------------------------------
-AppState::Code
-DebugTextApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-    
-        this->dropChar();
-        this->moveChars();
-        this->drawText();
-
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        this->debug->DrawTextBuffer();
-        
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-DebugTextApp::OnCleanup() {
-    Memory::Free(this->buffer);
-    this->buffer = nullptr;
-    this->render = nullptr;
-    this->debug  = nullptr;
-    DebugFacade::DestroySingle();
-    RenderFacade::DestroySingle();
-    return App::OnCleanup();
-}

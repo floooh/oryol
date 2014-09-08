@@ -41,6 +41,37 @@ OryolMain(TextureFloatApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+TextureFloatApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        this->time += 1.0f / 60.0f;
+        
+        // render plasma to offscreen render target
+        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
+        this->render->ApplyDrawState(this->offscreenDrawState);
+        this->render->ApplyVariable(Shaders::Offscreen::Time, this->time);
+        this->render->Draw(0);
+        
+        // copy fullscreen quad
+        this->render->ApplyDefaultRenderTarget();
+        this->render->ApplyDrawState(this->copyDrawState);
+        this->render->ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
+        this->render->Draw(0);
+        
+        this->debug->DrawTextBuffer();
+        this->render->EndFrame();
+    }
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(512, 512, false, "Oryol Float Texture Sample");
@@ -83,37 +114,6 @@ TextureFloatApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-TextureFloatApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-        
-        this->time += 1.0f / 60.0f;
-        
-        // render plasma to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->ApplyDrawState(this->offscreenDrawState);
-        this->render->ApplyVariable(Shaders::Offscreen::Time, this->time);
-        this->render->Draw(0);
-        
-        // copy fullscreen quad
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->copyDrawState);
-        this->render->ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
-        this->render->Draw(0);
-        
-        this->debug->DrawTextBuffer();
-        this->render->EndFrame();
-    }
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

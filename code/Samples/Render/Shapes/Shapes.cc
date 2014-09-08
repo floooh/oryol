@@ -36,6 +36,40 @@ OryolMain(ShapeApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+ShapeApp::OnRunning() {
+    // render one frame
+    if (this->render->BeginFrame()) {
+        
+        // update rotation angles
+        this->angleY += 0.01f;
+        this->angleX += 0.02f;
+        
+        // apply state and render
+        this->render->ApplyDefaultRenderTarget();
+        this->render->ApplyDrawState(this->drawState);
+        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        
+        // render shape primitive groups
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
+        this->render->Draw(0);
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
+        this->render->Draw(1);
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
+        this->render->Draw(2);
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
+        this->render->Draw(3);
+        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
+        this->render->Draw(4);
+        
+        this->render->EndFrame();
+    }
+    
+    // continue running or quit?
+    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Shapes Sample");
@@ -74,49 +108,6 @@ ShapeApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
-glm::mat4
-ShapeApp::computeMVP(const glm::vec3& pos) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-ShapeApp::OnRunning() {
-    // render one frame
-    if (this->render->BeginFrame()) {
-        
-        // update rotation angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-
-        // apply state and render
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
-        
-        // render shape primitive groups
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
-        this->render->Draw(0);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
-        this->render->Draw(1);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
-        this->render->Draw(2);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
-        this->render->Draw(3);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
-        this->render->Draw(4);
-        
-        this->render->EndFrame();
-    }
-    
-    // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnCleanup() {
     // cleanup everything
@@ -125,3 +116,13 @@ ShapeApp::OnCleanup() {
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
+
+//------------------------------------------------------------------------------
+glm::mat4
+ShapeApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
+    modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
+    return this->proj * this->view * modelTform;
+}
+
