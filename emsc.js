@@ -11,10 +11,6 @@ var Module = {
             text = Array.prototype.slice.call(arguments).join(' ');
             console.log(text);
             if (element) {
-                // unhide text element, if still hidden
-                if (element.style.display != 'none') {
-                    element.style.display = 'block';
-                }
                 element.value += text + '\n';
                 element.scrollTop = element.scrollHeight;
             }
@@ -38,6 +34,7 @@ var Module = {
         if (0 == left) {
             document.getElementById('canvas').style.display = 'block';
             document.getElementById('canvas2d').style.display = 'none'; 
+            document.getElementById('output').style.display = 'block';
             loaded = true;
         }
     },
