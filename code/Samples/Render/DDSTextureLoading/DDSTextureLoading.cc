@@ -46,17 +46,16 @@ AppState::Code
 DDSTextureLoadingApp::OnInit() {
 
     // setup IO system
-    this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
-    this->io->SetAssign("tex:", "http://localhost:8000/");
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    ioSetup.Assigns.Insert("tex:", "http://localhost:8000/");
+    this->io = IOFacade::CreateSingle(ioSetup);
 
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DDS Loading Sample");
     renderSetup.Loaders.AddBack(RawMeshLoader::Creator());
     renderSetup.Loaders.AddBack(TextureLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
 
     // setup resources
     TextureSetup texBluePrint;
@@ -97,6 +96,8 @@ DDSTextureLoadingApp::OnInit() {
     this->render->ReleaseResource(mesh);
     this->render->ReleaseResource(prog);
     
+    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;    
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

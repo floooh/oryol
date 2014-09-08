@@ -73,9 +73,10 @@ NanoVGApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 NanoVGApp::OnInit() {
-    this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
-    this->io->SetAssign("res:", "http://localhost:8000/");
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    ioSetup.Assigns.Insert("res:", "http://localhost:8000/");
+    this->io = IOFacade::CreateSingle(ioSetup);
     
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
     this->render = RenderFacade::CreateSingle(renderSetup);

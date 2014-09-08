@@ -31,14 +31,14 @@ IOQueueApp::OnInit() {
 
     // an IOFacade is required for IOQueue to work, and we want to
     // download files from a HTTP server, so setup an HTTPFileSystem
-    this->io = IOFacade::CreateSingle();
-    this->io->RegisterFileSystem("http", HTTPFileSystem::Creator());
-    
     // define a path alias, we'll default to localhost on port 8000
     // (e.g. run 'python -m SimpleHTTPServer')
     // when running as a deployed web app all files must be loaded
     // from the own domain, the host URL part is ignored then
-    this->io->SetAssign("res:", "http://localhost:8000/");
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    ioSetup.Assigns.Insert("res:", "http://localhost:8000/");
+    this->io = IOFacade::CreateSingle(ioSetup);
     
     // now the important part: add IO requests to the IOQueue,
     // and directly define success-callbacks as lambdas (of course

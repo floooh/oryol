@@ -10,6 +10,7 @@
 #include "Core/Singleton.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
+#include "IO/Core/IOSetup.h"
 #include "IO/Core/schemeRegistry.h"
 #include "IO/IOProtocol.h"
 #include "IO/FS/ioRequestRouter.h"
@@ -22,7 +23,7 @@ class IOFacade {
     OryolGlobalSingletonDecl(IOFacade);
 public:
     /// constructor
-    IOFacade();
+    IOFacade(const IOSetup& setup);
     /// destructor
     ~IOFacade();
     

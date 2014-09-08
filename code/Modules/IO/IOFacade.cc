@@ -18,12 +18,23 @@ OryolGlobalSingletonImpl(IOFacade);
 const int32 IOFacade::numIOLanes = 4;
 
 //------------------------------------------------------------------------------
-IOFacade::IOFacade() {
+IOFacade::IOFacade(const IOSetup& setup) {
     this->SingletonEnsureUnique();
     this->mainThreadId = std::this_thread::get_id();
     assignRegistry::CreateSingle();
     schemeRegistry::CreateSingle();
     this->requestRouter = ioRequestRouter::Create(IOFacade::numIOLanes);
+    
+    // setup initial assigns
+    for (const auto& assign : setup.Assigns) {
+        this->SetAssign(assign.Key(), assign.Value());
+    }
+    
+    // setup initial filesystems
+    for (const auto& fs : setup.FileSystems) {
+        this->RegisterFileSystem(fs.Key(), fs.Value());
+    }
+    
     this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->doWork(); });
 }
 
