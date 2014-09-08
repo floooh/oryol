@@ -18,8 +18,9 @@ using namespace Oryol::HTTP;
 TEST(HTTPFileSystemTest) {
     
     // setup an IO facade, and associate http: with the HTTPFileSystem
-    IOFacade* ioFacade = IOFacade::CreateSingle();
-    ioFacade->RegisterFileSystem("http", Creator<HTTPFileSystem,FileSystem>());
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
     
     // asynchronously load the index.html file
     Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://www.flohofwoe.net/index.html");

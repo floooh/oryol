@@ -19,7 +19,7 @@ TEST(RenderTargetCreationTest) {
 
     #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
-    auto renderSetup = RenderSetup::Windowed(400, 300, "Oryol Test");
+    auto renderSetup = RenderSetup::AsWindow(400, 300, false, "Oryol Test");
     displayMgr displayManager;
     displayManager.SetupDisplay(renderSetup);
     

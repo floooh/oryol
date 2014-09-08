@@ -20,8 +20,9 @@ using namespace Oryol::HTTP;
 TEST(DDSLoadTest) {
 #if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
     // setup an IO facade, and associate http: with the HTTPFileSystem
-    IOFacade* ioFacade = IOFacade::CreateSingle();
-    ioFacade->RegisterFileSystem("http", Creator<HTTPFileSystem, FileSystem>());
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Insert("http", HTTPFileSystem::Creator());
+    IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
 
     // DXT1
     Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");

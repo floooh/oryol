@@ -19,6 +19,7 @@ std::atomic<int32> numGetRangeHandled{0};
 
 class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
+    OryolClassCreator(TestFileSystem);
 public:
     /// called when the IOProtocol::Get message is received
     virtual void onGet(const Core::Ptr<IOProtocol::Get>& msg) {
@@ -46,10 +47,10 @@ public:
 OryolClassImpl(TestFileSystem);
 
 TEST(IOFacadeTest) {
-    IOFacade* ioFacade = IOFacade::CreateSingle();
+    IOFacade* ioFacade = IOFacade::CreateSingle(IOSetup());
     
     // register our test file-system as URI scheme "test"
-    ioFacade->RegisterFileSystem("test", Creator<TestFileSystem,FileSystem>());
+    ioFacade->RegisterFileSystem("test", TestFileSystem::Creator());
     
     // setup an assign which resolves to the test file system
     ioFacade->SetAssign("bla:", "test://blub.com/");

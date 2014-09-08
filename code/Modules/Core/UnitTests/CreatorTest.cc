@@ -13,6 +13,7 @@ using namespace Oryol::Core;
 
 class CreatorTestClass : public RefCounted {
     OryolClassDecl(CreatorTestClass);
+    OryolClassCreator(CreatorTestClass);
 public:
     CreatorTestClass() : i0(0) {};
     CreatorTestClass(int i) : i0(i) {};
@@ -29,6 +30,7 @@ public:
 
 class CreatorDerivedClass : public CreatorTestClass {
     OryolClassDecl(CreatorDerivedClass);
+    OryolClassCreator(CreatorDerivedClass);
 public:
     CreatorDerivedClass() : v0(0) {};
     CreatorDerivedClass(int64 v0_) : v0(v0_) {};
@@ -39,21 +41,21 @@ public:
     int64 v0;
 };
 
-void TestFunc(CreatorRef<CreatorTestClass> bla) {
-    auto obj = bla->New();
+void TestFunc(std::function<Core::Ptr<CreatorTestClass>()> bla) {
+    auto obj = bla();
     CHECK(obj->Bla() == 1);
 }
 
 TEST(CreatorTest) {
-    auto creat0 = Creator<CreatorTestClass>();
-    auto creat1 = Creator<CreatorTestClass>(10);
-    auto creat2 = Creator<CreatorTestClass>(20, "Bla");
-    auto creat3 = Creator<CreatorTestClass>(30, "Blub", Array<int>( { 1, 2, 3, 4 } ));
+    auto creat0 = CreatorTestClass::Creator();
+    auto creat1 = CreatorTestClass::Creator(10);
+    auto creat2 = CreatorTestClass::Creator(20, "Bla");
+    auto creat3 = CreatorTestClass::Creator(30, "Blub", Array<int>( { 1, 2, 3, 4 } ));
     
-    const auto obj0 = creat0->New();
-    const auto obj1 = creat1->New();
-    const auto obj2 = creat2->New();
-    const auto obj3 = creat3->New();
+    const auto obj0 = creat0();
+    const auto obj1 = creat1();
+    const auto obj2 = creat2();
+    const auto obj3 = creat3();
     
     CHECK(obj0.isValid());
     CHECK(obj0->i0 == 0);
@@ -79,6 +81,6 @@ TEST(CreatorTest) {
     CHECK(obj3->array0[2] == 3);
     CHECK(obj3->array0[3] == 4);
     
-    TestFunc(Creator<CreatorDerivedClass, CreatorTestClass>(10));
+    TestFunc(CreatorDerivedClass::Creator(10));
 }
 

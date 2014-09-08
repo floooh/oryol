@@ -12,17 +12,14 @@ using namespace Oryol::Render;
 TEST(RenderSetupTest) {
 
     #if !ORYOL_UNITTESTS_HEADLESS
-    RenderFacade* f = RenderFacade::CreateSingle(RenderSetup::Windowed(400, 300, "Oryol Test"));
+    RenderFacade* f = RenderFacade::CreateSingle(RenderSetup::AsWindow(400, 300, false, "Oryol Test"));
     
-    CHECK(f->GetRenderSetup().WindowWidth == 400);
-    CHECK(f->GetRenderSetup().WindowHeight == 300);
-    CHECK(f->GetRenderSetup().WindowPosX == 0);
-    CHECK(f->GetRenderSetup().WindowPosY == 0);
-    CHECK(f->GetRenderSetup().ColorPixelFormat == PixelFormat::RGB8);
-    CHECK(f->GetRenderSetup().DepthPixelFormat == PixelFormat::D24S8);
-    CHECK(f->GetRenderSetup().SwapInterval == 1);
-    CHECK(f->GetRenderSetup().WindowTitle == "Oryol Test");
-    CHECK(f->GetRenderSetup().IsFullscreen == false);
+    CHECK(f->GetRenderSetup().Width == 400);
+    CHECK(f->GetRenderSetup().Height == 300);
+    CHECK(f->GetRenderSetup().ColorFormat == PixelFormat::RGB8);
+    CHECK(f->GetRenderSetup().DepthFormat == PixelFormat::D24S8);
+    CHECK(f->GetRenderSetup().Title == "Oryol Test");
+    CHECK(f->GetRenderSetup().Fullscreen == false);
     
     CHECK(f->GetDisplayAttrs().WindowWidth >= 400);
     CHECK(f->GetDisplayAttrs().WindowHeight >= 300);
