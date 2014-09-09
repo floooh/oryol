@@ -111,7 +111,7 @@ curlURLLoader::curlHeaderCallback(char* ptr, size_t size, size_t nmemb, void* us
             String key = self->stringBuilder.GetSubString(0, colonIndex);
             int32 endOfValueIndex = self->stringBuilder.FindFirstOf(colonIndex, EndOfString, "\r\n");
             String value = self->stringBuilder.GetSubString(colonIndex + 2, endOfValueIndex);
-            self->responseHeaders.Insert(key, value);
+            self->responseHeaders.Add(key, value);
         }
         return receivedBytes;
     }

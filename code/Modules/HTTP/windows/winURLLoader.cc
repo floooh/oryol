@@ -174,7 +174,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                             if (colonIndex != InvalidIndex) {
                                 String key(str.AsCStr(), 0, colonIndex);
                                 String value(str.AsCStr(), colonIndex+2, EndOfString);
-                                fields.Insert(key, value);
+                                fields.Add(key, value);
                             }
                         }
                         httpResponse->SetResponseHeaders(fields);
@@ -266,7 +266,7 @@ winURLLoader::obtainConnection(const URL& url) {
                                           0);                   // dwReserved
         if (NULL != con.hConnection) {
             con.timeStamp = std::chrono::steady_clock::now();
-            this->connections.Insert(hostAndPort, con);
+            this->connections.Add(hostAndPort, con);
             return con.hConnection;        
         }   
         else {
