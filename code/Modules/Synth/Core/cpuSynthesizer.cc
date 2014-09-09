@@ -4,6 +4,9 @@
 #include "Pre.h"
 #include "Core/Assert.h"
 #include "cpuSynthesizer.h"
+#if ORYOL_WINDOWS
+#define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 #include <cstdlib>
 
