@@ -615,7 +615,7 @@ else :
             if len(sys.argv) < 4 :
                 config = getActiveConfig()
             else :
-                configs = loadConfig(sys.argv[3])
+                config = loadConfig(sys.argv[3])
             runBuild(config, target)
             runDeploy(config, target)
 
