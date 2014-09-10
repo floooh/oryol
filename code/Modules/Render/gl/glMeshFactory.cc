@@ -457,8 +457,8 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
         }
     }
     
-    // if this is a dynamic mesh, we actually create 2 vertex buffers for double-buffered updated
-    if (Usage::Dynamic == vbAttrs.BufferUsage) {
+    // if this is a stream update mesh, we actually create 2 vertex buffers for double-buffered updated
+    if (Usage::Stream == vbAttrs.BufferUsage) {
         const uint8 numSlots = 2;
         mesh.setNumVertexBufferSlots(numSlots);
         mesh.setNumVAOSlots(numSlots);
@@ -467,7 +467,7 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
         }
     }
     else {
-        // normal static or stream-dynamic mesh, no double-buffering
+        // normal static or dynamic mesh, no double-buffering
         mesh.glSetVertexBuffer(0, this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage));
     }
     if (indexType != IndexType::None) {

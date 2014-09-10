@@ -44,7 +44,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     
     // setup draw state with dynamic mesh
     RenderFacade* render = RenderFacade::Instance();
-    MeshSetup meshSetup = MeshSetup::CreateEmpty("p_canvas", this->numVertices, Usage::Dynamic);
+    MeshSetup meshSetup = MeshSetup::CreateEmpty("p_canvas", this->numVertices, Usage::Stream);
     meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float2);
     meshSetup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));

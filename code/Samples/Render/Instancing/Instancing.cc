@@ -7,6 +7,7 @@
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Debug/DebugFacade.h"
+#include "Input/InputFacade.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -19,6 +20,7 @@ using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Time;
 using namespace Oryol::Debug;
+using namespace Oryol::Input;
 
 // derived application class
 class InstancingApp : public App {
@@ -34,12 +36,14 @@ private:
 
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
+    InputFacade* input = nullptr;
     Resource::Id instanceMesh;
     Resource::Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
     glm::mat4 modelViewProj;
+    bool updateEnabled = true;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
     TimePoint lastFrameTimePoint;
@@ -54,20 +58,25 @@ OryolMain(InstancingApp);
 AppState::Code
 InstancingApp::OnRunning() {
     
-    Duration updTime, drawTime;
+    Duration updTime, bufTime, drawTime;
     this->frameCount++;
     if (this->render->BeginFrame()) {
         
         // update block
-        TimePoint updStart = Clock::Now();
         this->updateCamera();
-        this->emitParticles();
-        this->updateParticles();
-        updTime = Clock::Since(updStart);
+        if (this->updateEnabled) {
+            TimePoint updStart = Clock::Now();
+            this->emitParticles();
+            this->updateParticles();
+            updTime = Clock::Since(updStart);
+
+            TimePoint bufStart = Clock::Now();
+            this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
+            bufTime = Clock::Since(bufStart);
+        }
         
-        // render block
+        // render block        
         TimePoint drawStart = Clock::Now();
-        this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
@@ -77,12 +86,20 @@ InstancingApp::OnRunning() {
         
         this->debug->DrawTextBuffer();
         this->render->EndFrame();
+        
+        // toggle particle update
+        const Mouse& mouse = this->input->Mouse();
+        if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
+            this->updateEnabled = !this->updateEnabled;
+        }
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("\n %d instances\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms",
+    this->debug->PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+                        " LMB/Tap: toggle particle updates",
                         this->curNumParticles,
                         updTime.AsMilliSeconds(),
+                        bufTime.AsMilliSeconds(),
                         drawTime.AsMilliSeconds(),
                         frameTime.AsMilliSeconds());
     
@@ -137,6 +154,7 @@ InstancingApp::OnInit() {
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
     this->debug = DebugFacade::CreateSingle();
+    this->input = InputFacade::CreateSingle();
     
     // check instancing extension
     if (!this->render->Supports(Feature::Instancing)) {
@@ -184,8 +202,10 @@ InstancingApp::OnCleanup() {
     // cleanup everything
     this->render->ReleaseResource(this->drawState);
     this->render->ReleaseResource(this->instanceMesh);
+    this->input = nullptr;
     this->render = nullptr;
     this->debug = nullptr;
+    InputFacade::DestroySingle();
     DebugFacade::DestroySingle();
     RenderFacade::DestroySingle();
     return App::OnCleanup();

@@ -363,8 +363,8 @@ glRenderMgr::UpdateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
     
     uint8 slotIndex = msh->getActiveVertexBufferSlot();
-    if (Usage::Dynamic == vbUsage) {
-        // if usage if dynamic, rotate slot index to next dynamic vertex buffer
+    if (Usage::Stream == vbUsage) {
+        // if usage is streaming, rotate slot index to next dynamic vertex buffer
         // to implement double/multi-buffering
         slotIndex++;
         if (slotIndex >= msh->getNumVertexBufferSlots()) {
