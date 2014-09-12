@@ -58,11 +58,9 @@ def build() :
     f.close()
 
     # copy other required files
-    shutil.copy('web/style.css', 'build/webpage/style.css')
-    shutil.copy('web/dummy.jpg', 'build/webpage/dummy.jpg')
-    shutil.copy('web/emsc.js', 'build/webpage/emsc.js')
-    shutil.copy('web/pnacl.js', 'build/webpage/pnacl.js')
-    shutil.copy('web/about.html', 'build/webpage/about.html')    
+    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'about.html', 'favicon.png'] :
+        print '> copy file: {}'.format(name)
+        shutil.copy('web/{}'.format(name), 'build/webpage/{}'.format(name))
 
     # generate emscripten HTML pages
     for sample in samples['samples'] :
