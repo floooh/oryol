@@ -27,7 +27,7 @@ Oryol Apps:
 
 - should be small and start fast
 - should never require a big upfront download.
-- should be a self-contained executable with no external dependencies
+- should be self-contained executables with no external dependencies
 - should not require installation (unless enforced by the host system)
 - should not require adminstration rights (unless enforced by the host system)
 - should be able to load required data from web servers (unless forbidden by the host system)
