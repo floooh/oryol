@@ -40,6 +40,9 @@ const char* vs_100_src =
 ;
 const char* fs_100_src = 
 "precision mediump float;\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"precision highp float;\n"
+"#endif\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec2 uv;\n"
 "varying vec3 eye;\n"

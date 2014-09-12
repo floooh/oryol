@@ -122,6 +122,7 @@ vec3 normal(vec3 p) {
 //
 @fs fs
 @use FSFuncs
+@highp float
 @in vec2 uv
 @in vec3 eye
 @in vec3 up
