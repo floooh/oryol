@@ -16,6 +16,8 @@ Oryol will at least provide the basic platform-wrapper services expected of a ga
 * input
 * audio
 
+Oryol is extensible through statically linked code modules.
+
 Oryol is a programmer's engine, not an artist's engine. But it can be the foundation of an artist's engine.
 
 
