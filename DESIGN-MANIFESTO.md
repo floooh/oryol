@@ -40,14 +40,14 @@ There will be a lot of change in Oryol, subsystems will be discarded and rewritt
 One important reason why Oryol exists is that I can try out radical ideas not possible in a production engine like Nebula.
 
 
-### MULTI-PLATFORM ###
+## MULTI-PLATFORM ##
 
 Oryol should be able to run on any platform with a CPU and GPU, but especially well on web- and mobile-platforms. Running well on many feature- and performance-limited devices is better then looking good on a small number of high-end devices.
 
 As such Oryol will always be limited by lower-end 3D APIs like OpenGL ES2. If a rendering technique is only possible with the latest desktop OpenGL or Direct3D version, it will very likely not be supported by Oryol.
 
 
-### C++11 ?? ###
+## C++11 ?? ##
 
 Why C++:
 * because Rust is not yet ready to replace C++
