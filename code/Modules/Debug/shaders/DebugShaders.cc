@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:2# machine generated, do not edit!
+// #version:3# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "DebugShaders.h"
@@ -8,6 +8,8 @@ namespace Oryol {
 namespace DebugShaders{
 const char* vsText_100_src = 
 "#define _POSITION gl_Position\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"#endif\n"
 "uniform vec2 glyphSize;\n"
 "attribute vec4 position;\n"
 "attribute vec4 color0;\n"
@@ -24,6 +26,8 @@ const char* vsText_100_src =
 ;
 const char* fsText_100_src = 
 "precision mediump float;\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"#endif\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"

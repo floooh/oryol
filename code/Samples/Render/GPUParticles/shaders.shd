@@ -142,6 +142,7 @@ void main() {
 //  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
 //  | p3.pos | p3.vec | ...    | ...
 @fs initFS
+@highp float
 @use Noise
 @use FSUtil
 @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
@@ -173,6 +174,7 @@ void main() {
 //  via ping-ponging.
 //
 @fs updateFS
+@highp float
 @use FSUtil
 @uniform vec2 bufDims BufferDims
 @uniform sampler2D prevState PrevState
@@ -228,6 +230,7 @@ void main() {
 //  texture.
 //
 @vs drawVS
+@highp sampler2D
 @use VSUtil
 @uniform mat4 mvp ModelViewProjection
 @uniform vec2 bufDims BufferDims

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:2# machine generated, do not edit!
+// #version:3# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -38,6 +38,9 @@ const char* copyFS_100_src =
 ;
 const char* offscreenFS_100_src = 
 "precision mediump float;\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"precision highp float;\n"
+"#endif\n"
 "#define _COLOR gl_FragColor\n"
 "uniform float time;\n"
 "varying vec2 uv;\n"

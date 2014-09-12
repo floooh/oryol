@@ -91,6 +91,7 @@ void main() {
 @end
 
 @fs offscreenFS
+@highp float
 @use NoiseUtil
 @uniform float time Time
 @in vec2 uv

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:2# machine generated, do not edit!
+// #version:3# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -9,6 +9,9 @@ namespace Shaders{
 const char* drawVS_100_src = 
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"precision highp sampler2D;\n"
+"#endif\n"
 "uniform mat4 mvp;\n"
 "uniform vec2 bufDims;\n"
 "uniform sampler2D particleTex;\n"
@@ -41,6 +44,9 @@ const char* fsqVS_100_src =
 ;
 const char* initFS_100_src = 
 "precision mediump float;\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"precision highp float;\n"
+"#endif\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
 "uniform float time;\n"
@@ -115,6 +121,9 @@ const char* initFS_100_src =
 ;
 const char* updateFS_100_src = 
 "precision mediump float;\n"
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+"precision highp float;\n"
+"#endif\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
