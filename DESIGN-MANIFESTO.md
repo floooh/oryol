@@ -42,7 +42,7 @@ One important reason why Oryol exists is that I can try out radical ideas not po
 
 ## MULTI-PLATFORM ##
 
-Oryol should be able to run on any platform with a CPU and GPU, but especially well on web- and mobile-platforms. Running well on a huge number of feature- and performance-limited devices is better then looking superb on a very small number of high-end devices.
+Oryol should be able to run on anything with a CPU and GPU, but especially well on web- and mobile-platforms. Running well on a huge number of feature- and performance-limited devices is better then looking superb on a very small number of high-end devices.
 
 As such Oryol will always be limited by lower-end 3D APIs like OpenGL ES2. If a rendering technique is only possible with the latest desktop OpenGL or Direct3D version, it will very likely not be supported by Oryol.
 
