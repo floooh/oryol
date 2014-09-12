@@ -47,7 +47,7 @@ Oryol should be able to run on any platform with a CPU and GPU, but especially w
 As such Oryol will always be limited by lower-end 3D APIs like OpenGL ES2. If a rendering technique is only possible with the latest desktop OpenGL or Direct3D version, it will very likely not be supported by Oryol.
 
 
-## C++11 ?? ##
+## C++11 ##
 
 Why C++:
 * because Rust is not yet ready to replace C++
