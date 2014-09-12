@@ -4,7 +4,7 @@
 
 Oryol aims to be a lean, experimental, multi-platform, C++11, 3D engine with focus on mobile- and web-platforms.
 
-There is no roadmap, no timeline and no feature list.
+There is no roadmap, no timeline and no feature set.
 
 ## SCOPE ##
 
