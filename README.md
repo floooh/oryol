@@ -22,4 +22,5 @@ If you have cloned without the submodules, use **'git submodule update --init --
 
 [How to build](BUILD.md)
 
-Enjoy!
+#### Enjoy! ####
+
