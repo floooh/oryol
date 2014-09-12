@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 2
+Version = 3
 
 import os
 import sys
@@ -179,6 +179,7 @@ class VertexShader(Snippet) :
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
+        self.highPrecision = []
         self.uniforms = []
         self.inputs = []
         self.outputs = []
@@ -208,6 +209,7 @@ class FragmentShader(Snippet) :
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
+        self.highPrecision = []
         self.uniforms = []
         self.inputs = []
         self.resolvedDeps = []        
@@ -396,6 +398,17 @@ class Parser :
         self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
+    def onPrecision(self, args) :
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@highp must come after @vs or @fs!")
+        if len(args) != 1:
+            util.fmtError("@highp must have 1 arg (type)")
+        type = args[0]
+        if checkListDup(type, self.current.highPrecision) :
+            util.fmtError("@highp type '{}' already defined in '{}'!".format(type, self.current.name))
+        self.current.highPrecision.append(type)
+
+    #---------------------------------------------------------------------------
     def onUniform(self, args) :
         if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
             util.fmtError("@uniform must come after @block, @vs or @fs tag!")
@@ -465,6 +478,8 @@ class Parser :
                 self.onOut(args)
             elif tag == 'uniform':
                 self.onUniform(args)
+            elif tag == 'highp' :
+                self.onPrecision(args)
             elif tag == 'program':
                 self.onProgram(args)
             elif tag == 'end':
@@ -548,6 +563,15 @@ class Generator :
         for macro in vs.macros :
             lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, glslVersion))))
 
+        # precision modifiers 
+        # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
+        if glslVersion == 100 :
+            if vs.highPrecision :
+                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                for type in vs.highPrecision :
+                    lines.append(Line('precision highp {};'.format(type)))
+                lines.append(Line('#endif'))
+
         # write uniforms
         for uniform in vs.uniforms :
             lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind), uniform.filePath, uniform.lineNumber))
@@ -584,6 +608,11 @@ class Generator :
         # precision modifiers
         if glslVersion == 100 :
             lines.append(Line('precision mediump float;'))
+            if fs.highPrecision :
+                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                for type in fs.highPrecision :
+                    lines.append(Line('precision highp {};'.format(type)))
+                lines.append(Line('#endif'))
 
         # write macros
         for macro in fs.macros :
