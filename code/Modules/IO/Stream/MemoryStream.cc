@@ -5,7 +5,6 @@
 #include "MemoryStream.h"
 
 namespace Oryol {
-namespace IO {
 
 OryolClassImpl(MemoryStream);
 
@@ -243,5 +242,4 @@ MemoryStream::MapRead(const uint8** outMaxValidPtr) {
     }
 }
 
-} // namespace IO
 } // namespace Oryol

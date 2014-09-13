@@ -41,7 +41,7 @@ public:
     /// assign a resource to a free slot
     void Assign(const Id& id, const SETUP& setup);
     /// assign a resource to a free slot,
-    void Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data);
+    void Assign(const Id& id, const SETUP& setup, const Ptr<Stream>& data);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder
@@ -180,7 +180,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
-Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data) {
+Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<Stream>& data) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();

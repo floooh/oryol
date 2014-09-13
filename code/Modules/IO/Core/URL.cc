@@ -8,7 +8,8 @@
 #include "IO/Core/assignRegistry.h"
 
 namespace Oryol {
-namespace IO {
+
+using namespace _priv;
 
 //------------------------------------------------------------------------------
 void
@@ -452,5 +453,4 @@ URL::Query() const {
     }
 }
 
-} // namespace IO
 } // namespace Oryol

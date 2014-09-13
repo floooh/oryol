@@ -196,7 +196,7 @@ ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
 }
 
 //------------------------------------------------------------------------------
-const Ptr<IO::Stream>&
+const Ptr<Stream>&
 ShapeBuilder::GetStream() const {
     return this->meshBuilder.GetStream();
 }

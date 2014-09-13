@@ -8,7 +8,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
-using namespace Oryol::IO;
 using namespace Oryol::Render;
 
 namespace Paclone {

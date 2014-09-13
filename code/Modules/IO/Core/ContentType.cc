@@ -6,7 +6,6 @@
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {
-namespace IO {
 
 //------------------------------------------------------------------------------
 void
@@ -271,5 +270,4 @@ ContentType::crack() {
     }
 }
 
-} // namespace IO
 } // namespace Oryol

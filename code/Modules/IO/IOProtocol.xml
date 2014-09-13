@@ -1,4 +1,4 @@
-<Generator type="MessageProtocol" ns="IO" name="IOProtocol" id="IOPT" >
+<Generator type="MessageProtocol" name="IOProtocol" id="IOPT" >
 
     <Header path="Core/Ptr.h" />
     <Header path="IO/Core/URL.h" />
@@ -7,7 +7,7 @@
 
     <!-- a generic IORequest message -->
     <Message name="Request" serialize="false" >
-        <Attr name="URL" type="IO::URL" />
+        <Attr name="URL" type="URL" />
         <Attr name="Lane" type="int32" />
         <Attr name="CacheReadEnabled" type="bool" />
         <Attr name="CacheWriteEnabled" type="bool" />
@@ -17,7 +17,7 @@
     
     <!-- fetch complete file -->
     <Message name="Get" parent="Request" serialize="false">
-        <Attr name="Stream" type="Ptr&lt;IO::MemoryStream&gt;" dir="out" />
+        <Attr name="Stream" type="Ptr&lt;MemoryStream&gt;" dir="out" />
     </Message>
 
     <!-- fetch a file range -->

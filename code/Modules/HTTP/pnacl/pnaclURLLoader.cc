@@ -15,7 +15,6 @@ namespace Oryol {
 namespace HTTP {
 
 using namespace _priv;
-using namespace IO;
 
 // a helper class to wrap all request-related data into a ref-counted object
 class pnaclRequestWrapper : public RefCounted {

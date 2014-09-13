@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class IO::IOSetup
+    @class Oryol::IOSetup
+    @ingroup IO
     @brief configure the IO system
 */
 #include "Core/String/String.h"
@@ -11,15 +12,13 @@
 #include <functional>
 
 namespace Oryol {
-namespace IO {
     
 class IOSetup {
 public:
     /// initial assigns
     Map<String, String> Assigns;
     /// initial file systems
-    Map<StringAtom, std::function<Ptr<IO::FileSystem>()>> FileSystems;
+    Map<StringAtom, std::function<Ptr<FileSystem>()>> FileSystems;
 };
     
-} // namespace IO
 } // namespace Oryol

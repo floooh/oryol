@@ -11,8 +11,6 @@ namespace Render {
 
 OryolClassImpl(RawMeshLoader);
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 bool
 RawMeshLoader::Accepts(const mesh& mesh) const {

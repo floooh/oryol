@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:3#
+/* #version:4#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -52,7 +52,7 @@ public:
     public:
         HTTPResponse() {
             this->msgId = MessageId::HTTPResponseId;
-            this->status = IO::IOStatus::InvalidIOStatus;
+            this->status = IOStatus::InvalidIOStatus;
         };
         static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
@@ -64,10 +64,10 @@ public:
             if (protId == 'HTPR') return true;
             else return Messaging::Message::IsMemberOf(protId);
         };
-        void SetStatus(const IO::IOStatus::Code& val) {
+        void SetStatus(const IOStatus::Code& val) {
             this->status = val;
         };
-        const IO::IOStatus::Code& GetStatus() const {
+        const IOStatus::Code& GetStatus() const {
             return this->status;
         };
         void SetResponseHeaders(const Map<String,String>& val) {
@@ -76,10 +76,10 @@ public:
         const Map<String,String>& GetResponseHeaders() const {
             return this->responseheaders;
         };
-        void SetBody(const Ptr<IO::Stream>& val) {
+        void SetBody(const Ptr<Stream>& val) {
             this->body = val;
         };
-        const Ptr<IO::Stream>& GetBody() const {
+        const Ptr<Stream>& GetBody() const {
             return this->body;
         };
         void SetErrorDesc(const String& val) {
@@ -89,9 +89,9 @@ public:
             return this->errordesc;
         };
 private:
-        IO::IOStatus::Code status;
+        IOStatus::Code status;
         Map<String,String> responseheaders;
-        Ptr<IO::Stream> body;
+        Ptr<Stream> body;
         String errordesc;
     };
     class HTTPRequest : public Messaging::Message {
@@ -117,10 +117,10 @@ private:
         const HTTP::HTTPMethod::Code& GetMethod() const {
             return this->method;
         };
-        void SetURL(const IO::URL& val) {
+        void SetURL(const URL& val) {
             this->url = val;
         };
-        const IO::URL& GetURL() const {
+        const URL& GetURL() const {
             return this->url;
         };
         void SetRequestHeaders(const Map<String,String>& val) {
@@ -129,10 +129,10 @@ private:
         const Map<String,String>& GetRequestHeaders() const {
             return this->requestheaders;
         };
-        void SetBody(const Ptr<IO::Stream>& val) {
+        void SetBody(const Ptr<Stream>& val) {
             this->body = val;
         };
-        const Ptr<IO::Stream>& GetBody() const {
+        const Ptr<Stream>& GetBody() const {
             return this->body;
         };
         void SetResponse(const Ptr<HTTPProtocol::HTTPResponse>& val) {
@@ -143,9 +143,9 @@ private:
         };
 private:
         HTTP::HTTPMethod::Code method;
-        IO::URL url;
+        URL url;
         Map<String,String> requestheaders;
-        Ptr<IO::Stream> body;
+        Ptr<Stream> body;
         Ptr<HTTPProtocol::HTTPResponse> response;
     };
 };

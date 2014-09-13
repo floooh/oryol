@@ -5,7 +5,6 @@
 #include "Stream.h"
 
 namespace Oryol {
-namespace IO {
 
 OryolClassImpl(Stream);
 
@@ -272,5 +271,4 @@ Stream::IsEndOfStream() const {
     return this->readPosition == this->size;
 }
 
-} // namespace IO
 } // namespace Oryol

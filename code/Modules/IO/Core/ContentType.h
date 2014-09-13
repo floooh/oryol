@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::ContentType
+    @class Oryol::ContentType
+    @ingroup IO
     @brief a stream content type, aka MIME type, aka MediaType
     @see Stream
  
@@ -16,7 +17,6 @@
 #include "Core/Containers/Map.h"
 
 namespace Oryol {
-namespace IO {
     
 class ContentType {
 public:
@@ -97,5 +97,4 @@ private:
     bool valid;
 };
     
-} // namespace IO
 } // namespace Oryol

@@ -1,7 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /*
-    private class, do not use
+    @class Oryol::_priv::assignRegistry
+    @ingroup _priv
+    @brief central registry for assign definitions
  
     Central registry for assign definitions. Assigns are
     path aliases (google for AmigaOS assign).
@@ -13,7 +15,7 @@
 #include "Core/Threading/RWLock.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 class assignRegistry : public RefCounted {
     OryolGlobalSingletonDecl(assignRegistry);
@@ -40,5 +42,5 @@ private:
     Map<String, String> assigns;
 };
     
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

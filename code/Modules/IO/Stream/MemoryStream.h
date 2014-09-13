@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::MemoryStream
+    @class Oryol::MemoryStream
+    @ingroup IO
     @brief a dynamic in-memory IO Stream
 
     A MemoryStream implements a Stream interface to a dynamic (growable)
@@ -12,7 +13,6 @@
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {
-namespace IO {
 
 class MemoryStream : public Stream {
     OryolClassDecl(MemoryStream);
@@ -68,5 +68,4 @@ private:
     uchar* buffer;
 };
     
-} // namespace IO
 } // namespace Oryol

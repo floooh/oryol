@@ -9,9 +9,9 @@
 
     <!-- a HTTPResponse -->
     <Message name="HTTPResponse" serialize="false">
-        <Attr name="Status" type="IO::IOStatus::Code" def="IO::IOStatus::InvalidIOStatus" />
+        <Attr name="Status" type="IOStatus::Code" def="IOStatus::InvalidIOStatus" />
         <Attr name="ResponseHeaders" type="Map&lt;String,String&gt;" />
-        <Attr name="Body" type="Ptr&lt;IO::Stream&gt;" />
+        <Attr name="Body" type="Ptr&lt;Stream&gt;" />
         <Attr name="ErrorDesc" type="String" />
     </Message>
 
@@ -19,9 +19,9 @@
     <Message name="HTTPRequest" serialize="false">
         <!-- input -->
         <Attr name="Method" type="HTTP::HTTPMethod::Code" def="HTTP::HTTPMethod::Get" />
-        <Attr name="URL" type="IO::URL" />
+        <Attr name="URL" type="URL" />
         <Attr name="RequestHeaders" type="Map&lt;String,String&gt;" />
-        <Attr name="Body" type="Ptr&lt;IO::Stream&gt;" />
+        <Attr name="Body" type="Ptr&lt;Stream&gt;" />
         
         <!-- output -->
         <Attr name="Response" type="Ptr&lt;HTTPProtocol::HTTPResponse&gt;" dir="out" />

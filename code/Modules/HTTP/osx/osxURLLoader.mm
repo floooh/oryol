@@ -9,8 +9,6 @@
 namespace Oryol {
 namespace HTTP {
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 void
 osxURLLoader::doWork() {

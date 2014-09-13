@@ -25,7 +25,7 @@ public:
     static const int32 MaxNumPrimitiveGroups = 16;
     
     /// get (optional) IORequest
-    const Ptr<IO::IOProtocol::Request>& GetIORequest() const;
+    const Ptr<IOProtocol::Request>& GetIORequest() const;
     /// get vertex buffer attributes
     const VertexBufferAttrs& GetVertexBufferAttrs() const;
     /// get the index buffer attributes
@@ -38,7 +38,7 @@ public:
     /// clear the object
     void clear();
     /// set IO request for asynchronous loading
-    void setIORequest(const Ptr<IO::IOProtocol::Request>& ioRequest);
+    void setIORequest(const Ptr<IOProtocol::Request>& ioRequest);
     /// set vertex buffer attrs
     void setVertexBufferAttrs(const VertexBufferAttrs& attrs);
     /// set index buffer attrs
@@ -49,7 +49,7 @@ public:
     void setPrimitiveGroup(int32 index, const PrimitiveGroup& group);
     
 protected:
-    Ptr<IO::IOProtocol::Request> ioRequest;
+    Ptr<IOProtocol::Request> ioRequest;
     VertexBufferAttrs vertexBufferAttrs;
     IndexBufferAttrs indexBufferAttrs;
     int numPrimitiveGroups;
@@ -57,7 +57,7 @@ protected:
 };
 
 //------------------------------------------------------------------------------
-inline const Ptr<IO::IOProtocol::Request>&
+inline const Ptr<IOProtocol::Request>&
 meshBase::GetIORequest() const {
     return this->ioRequest;
 }

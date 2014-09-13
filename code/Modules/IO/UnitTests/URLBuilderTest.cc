@@ -6,7 +6,6 @@
 #include "IO/Core/URLBuilder.h"
 
 using namespace Oryol;
-using namespace Oryol::IO;
 
 TEST(URLBuilderTest) {
     

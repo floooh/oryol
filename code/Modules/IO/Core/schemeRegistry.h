@@ -1,8 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::schemeRegistry
-    @brief: private: associates URL schemes with FileSystem implementation
+    @class Oryol::_priv::schemeRegistry
+    @ingroup _priv
+    @brief: associates URL schemes with FileSystem implementation
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"
@@ -14,7 +15,7 @@
 #include <functional>
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 class schemeRegistry : public RefCounted {
     OryolGlobalSingletonDecl(schemeRegistry);
@@ -25,7 +26,7 @@ public:
     virtual ~schemeRegistry();
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator);
+    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator);
     /// unregister a filesystem
     void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered
@@ -35,8 +36,8 @@ public:
     
 private:
     mutable RWLock rwLock;
-    Map<StringAtom, std::function<Ptr<IO::FileSystem>()>> registry;
+    Map<StringAtom, std::function<Ptr<FileSystem>()>> registry;
 };
 
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

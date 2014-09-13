@@ -6,7 +6,7 @@
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 OryolGlobalSingletonImpl(assignRegistry);
 
@@ -101,6 +101,5 @@ assignRegistry::setStandardAssigns() {
     /// which obtains the systemPaths in a platform-specific way
 }
 
-
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

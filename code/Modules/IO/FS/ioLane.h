@@ -1,8 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::ioLane
-    @brief private: controls one IO lane thread
+    @class Oryol::_priv::ioLane
+    @ingroup _priv
+    @brief controls one IO lane thread
     
     @todo: IO::ioLane description
 */
@@ -13,7 +14,7 @@
 #include "IO/FS/FileSystem.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 class ioLane : public Messaging::ThreadedQueue {
     OryolClassDecl(ioLane);
@@ -46,6 +47,6 @@ private:
     Map<StringAtom, Ptr<FileSystem>> fileSystems;
 };
     
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol
  

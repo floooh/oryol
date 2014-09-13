@@ -1,11 +1,10 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOProtocol.h"
 
 namespace Oryol {
-namespace IO {
 OryolClassPoolAllocImpl(IOProtocol::Request);
 OryolClassPoolAllocImpl(IOProtocol::Get);
 OryolClassPoolAllocImpl(IOProtocol::GetRange);
@@ -31,6 +30,5 @@ IOProtocol::Factory::Create(Messaging::MessageIdType id) {
         o_assert(id < IOProtocol::MessageId::NumMessageIds);
         return jumpTable[id - Messaging::Protocol::MessageId::NumMessageIds]();
     };
-}
 }
 }

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::IOQueue
+    @class Oryol::IOQueue
+    @ingroup IO
     @brief simplify asynchronous loading of multiple files
 
     IOQueues are used to load one or more files asynchronously, and associate
@@ -16,7 +17,6 @@
 #include <functional>
 
 namespace Oryol {
-namespace IO {
     
 class IOQueue {
 public:
@@ -26,9 +26,9 @@ public:
     ~IOQueue();
 
     /// callback function signature for success
-    typedef std::function<void(const Ptr<IO::Stream>&)> SuccessFunc;
+    typedef std::function<void(const Ptr<Stream>&)> SuccessFunc;
     /// callback function signature for failure
-    typedef std::function<void(const IO::URL& url, IOStatus::Code ioStatus)> FailFunc;
+    typedef std::function<void(const URL& url, IOStatus::Code ioStatus)> FailFunc;
 
     /// start queue processing
     void Start();
@@ -49,12 +49,11 @@ private:
     bool isStarted;
     int32 runLoopId;
     struct item {
-        Ptr<IO::IOProtocol::Get> ioRequest;
+        Ptr<IOProtocol::Get> ioRequest;
         SuccessFunc successFunc;
         FailFunc failFunc;
     };
     Array<item> ioRequests;
 };
     
-} // namespace IO
 } // namespace Oryol

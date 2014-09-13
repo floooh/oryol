@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:3#
+/* #version:4#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -13,7 +13,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
-namespace IO {
 class IOProtocol {
 public:
     static Messaging::ProtocolIdType GetProtocolId() {
@@ -80,10 +79,10 @@ public:
             if (protId == 'IOPT') return true;
             else return Messaging::Message::IsMemberOf(protId);
         };
-        void SetURL(const IO::URL& val) {
+        void SetURL(const URL& val) {
             this->url = val;
         };
-        const IO::URL& GetURL() const {
+        const URL& GetURL() const {
             return this->url;
         };
         void SetLane(int32 val) {
@@ -117,7 +116,7 @@ public:
             return this->errordesc;
         };
 private:
-        IO::URL url;
+        URL url;
         int32 lane;
         bool cachereadenabled;
         bool cachewriteenabled;
@@ -140,14 +139,14 @@ private:
             if (protId == 'IOPT') return true;
             else return Request::IsMemberOf(protId);
         };
-        void SetStream(const Ptr<IO::MemoryStream>& val) {
+        void SetStream(const Ptr<MemoryStream>& val) {
             this->stream = val;
         };
-        const Ptr<IO::MemoryStream>& GetStream() const {
+        const Ptr<MemoryStream>& GetStream() const {
             return this->stream;
         };
 private:
-        Ptr<IO::MemoryStream> stream;
+        Ptr<MemoryStream> stream;
     };
     class GetRange : public Get {
         OryolClassPoolAllocDecl(GetRange);
@@ -277,5 +276,4 @@ private:
         StringAtom scheme;
     };
 };
-}
 }

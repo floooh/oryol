@@ -45,7 +45,7 @@ public:
     /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<IO::Stream>& data);
+    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
     /// release a resource (decrement use-count, free resource if use-count is 0)

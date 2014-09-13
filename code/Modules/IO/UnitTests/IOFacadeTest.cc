@@ -11,7 +11,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
-using namespace Oryol::IO;
 
 std::atomic<int32> numGetHandled{0};
 std::atomic<int32> numGetRangeHandled{0};

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::FileSystem
+    @class Oryol::FileSystem
+    @ingroup IO
     @brief base-class for FileSystem handlers
 
     Subclasses of FileSystem provide a specific file-system implementation
@@ -13,7 +14,6 @@
 #include "IO/IOProtocol.h"
 
 namespace Oryol {
-namespace IO {
     
 class FileSystem : public RefCounted {
     OryolClassDecl(FileSystem);
@@ -31,5 +31,4 @@ public:
     virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg);
 };
     
-} // namespace IO
 } // namespace Oryol

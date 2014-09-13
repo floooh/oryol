@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::StreamWriter
+    @class Oryol::StreamWriter
+    @ingroup IO
     @brief base class for stream writers
     
     Stream writers provide a way to write structured/formatted data 
@@ -12,7 +13,6 @@
 #include "Core/RefCounted.h"
 
 namespace Oryol {
-namespace IO {
     
 class Stream;
 
@@ -37,6 +37,5 @@ protected:
     Ptr<Stream> stream;
 };
     
-} // namespace IO
 } // namespace Oryol
     

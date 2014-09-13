@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::BinaryStreamReader
+    @class Oryol::BinaryStreamReader
+    @ingroup IO
     @brief stream reader for reading binary-encoded data from a stream
     
     A StreamReader for reading typed data from a binary stream. For complex
@@ -14,7 +15,6 @@
 #include "Messaging/Serializer.h"
 
 namespace Oryol {
-namespace IO {
 
 class BinaryStreamReader : public StreamReader {
     OryolClassDecl(BinaryStreamReader);
@@ -75,5 +75,4 @@ BinaryStreamReader::Read(Array<TYPE>& val) {
     return retval;
 }
 
-} // namespace IO
 } // namespace Core

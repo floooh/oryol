@@ -32,7 +32,7 @@ loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::GetResourceType() const {
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE> bool
 loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::NeedsSetupResource(const RESOURCE& res) const {
     o_assert(res.GetState() == Resource::State::Pending);
-    const Ptr<IO::IOProtocol::Request>& ioRequest = res.GetIORequest();
+    const Ptr<IOProtocol::Request>& ioRequest = res.GetIORequest();
     if (ioRequest.isValid()) {
         return ioRequest->Handled();
     }
@@ -47,7 +47,7 @@ loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::DestroyResource(RESOURCE& res) {
     // We need to hook in here and check whether there's an asynchronous
     // IORequest in flight. If yes, cancel it so that it doesn't load data
     // which actually isn't needed anymore
-    const Ptr<IO::IOProtocol::Request>& ioRequest = res.GetIORequest();
+    const Ptr<IOProtocol::Request>& ioRequest = res.GetIORequest();
     if (ioRequest.isValid()) {
         ioRequest->SetCancelled();
     }

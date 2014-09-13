@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::URLBuilder
+    @class Oryol::URLBuilder
+    @ingroup IO
     @brief build and manipulate URLs
         
     This allows to build or rebuild a URL from its parts. Constructing
@@ -18,7 +19,6 @@
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {
-namespace IO {
     
 class URLBuilder {
 public:
@@ -174,5 +174,4 @@ URLBuilder::GetFragment() const {
     return this->fragment;
 }
 
-} // namespace IO
 } // namespace Oryol

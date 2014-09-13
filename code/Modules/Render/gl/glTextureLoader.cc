@@ -18,8 +18,6 @@ namespace Render {
     
 OryolClassImpl(glTextureLoader);
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 bool
 glTextureLoader::Accepts(const texture& tex) const {

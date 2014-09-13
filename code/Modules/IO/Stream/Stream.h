@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::Stream
+    @class Oryol::Stream
+    @ingroup IO
     @brief Base class for IO streams
     
     IO streams are data sinks or data sources with a tradition
@@ -14,7 +15,6 @@
 #include "IO/Core/ContentType.h"
 
 namespace Oryol {
-namespace IO {
 
 class Stream : public RefCounted {
     OryolClassDecl(Stream);
@@ -95,5 +95,4 @@ protected:
     int32 readPosition;
 };
 
-} // namespace IO
 } // namespace Oryol

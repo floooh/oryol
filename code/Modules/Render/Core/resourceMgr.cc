@@ -129,7 +129,7 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> Id
-resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<IO::Stream>& data) {
+resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<Stream>& data) {
     o_assert(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
@@ -168,7 +168,7 @@ resourceMgr::CreateResource(const TextureSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> Id
-resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<IO::Stream>& data) {
+resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<Stream>& data) {
     o_assert(this->isValid);
     const Locator& loc = setup.Locator;
     Id resId = this->resourceRegistry.LookupResource(loc);

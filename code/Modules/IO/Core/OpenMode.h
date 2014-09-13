@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::OpenMode
+    @class Oryol::OpenMode
+    @ingroup IO
     @brief IO StreamBuffer open modes
 
     StreamBuffers can be opened as read-only, write-only, write-append, 
@@ -20,7 +21,6 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace IO {
 
 class OpenMode {
 public:
@@ -41,5 +41,4 @@ public:
     static OpenMode::Enum FromString(const char* str);
 };
 
-} // namespace IO
 } // namespace Oryol

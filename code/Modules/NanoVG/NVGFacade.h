@@ -33,11 +33,11 @@ public:
     /// destroy nanovg context
     void DeleteContext(NVGcontext* ctx);
     /// synchronously create nanovg image (image file must be preloaded into stream)
-    int CreateImage(NVGcontext* ctx, const Ptr<IO::Stream>& fileData, int imageFlags);
+    int CreateImage(NVGcontext* ctx, const Ptr<Stream>& fileData, int imageFlags);
     /// delete image
     void DeleteImage(NVGcontext* ctx, int imgHandle);
     /// synchronously create nanovg font (font file must be preloaded into stream)
-    int CreateFont(NVGcontext* ctx, const char* name, const Ptr<IO::Stream>& fileData);
+    int CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& fileData);
     /// delete font
     void DeleteFont(NVGcontext* ctx, int fontHandle);
 
@@ -47,7 +47,7 @@ public:
     void EndFrame(NVGcontext* ctx);
     
 private:
-    Map<int, Ptr<IO::Stream>> fontStreams;
+    Map<int, Ptr<Stream>> fontStreams;
 };
     
 } // namespace NanoVG

@@ -8,7 +8,6 @@
 #include <cstring>
 
 using namespace Oryol;
-using namespace Oryol::IO;
 
 TEST(ContentTypeTest) {
     

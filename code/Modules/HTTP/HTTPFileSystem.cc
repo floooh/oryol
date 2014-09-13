@@ -9,8 +9,6 @@ namespace HTTP {
     
 OryolClassImpl(HTTPFileSystem);
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 HTTPFileSystem::HTTPFileSystem() {
     this->httpClient = HTTPClient::Create();

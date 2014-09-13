@@ -16,7 +16,7 @@
 namespace Oryol {
 namespace HTTP {
     
-class HTTPFileSystem : public IO::FileSystem {
+class HTTPFileSystem : public FileSystem {
     OryolClassDecl(HTTPFileSystem);
     OryolClassCreator(HTTPFileSystem);
 public:
@@ -28,15 +28,15 @@ public:
     /// per-frame update
     virtual void DoWork();
     /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Ptr<IO::IOProtocol::Get>& msg);
+    virtual void onGet(const Ptr<IOProtocol::Get>& msg);
     /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Ptr<IO::IOProtocol::GetRange>& msg);
+    virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg);
 
 private:
     StringBuilder stringBuilder;
     Ptr<HTTPClient> httpClient;
     struct pendingRequest {
-        Ptr<IO::IOProtocol::Get> ioRequest;
+        Ptr<IOProtocol::Get> ioRequest;
         Ptr<HTTPProtocol::HTTPRequest> httpRequest;
     };
     Array<pendingRequest> pendingRequests;

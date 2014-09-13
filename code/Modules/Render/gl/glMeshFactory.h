@@ -32,7 +32,7 @@ public:
     /// setup resource, continue calling until res state is not Pending
     void SetupResource(mesh& mesh);
     /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(mesh& mesh, const Ptr<IO::Stream>& data);
+    void SetupResource(mesh& mesh, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     

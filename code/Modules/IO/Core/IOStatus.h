@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::IOStatus
+    @class Oryol::IOStatus
+    @ingroup IO
     @brief IO request status codes
     
     IO request status codes, these are simply HTTP status codes.
@@ -9,7 +10,6 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace IO {
 
 class IOStatus {
 public:
@@ -78,5 +78,4 @@ public:
     static Code FromString(const char* str);
 };
   
-} // namespace IO
 } // namepsace Oryol

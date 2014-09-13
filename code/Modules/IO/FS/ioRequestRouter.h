@@ -1,8 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::ioRequestRouter
-    @brief private: front end router port of the IO system
+    @class Oryol::_priv::ioRequestRouter
+    @ingroup _priv
+    @brief front end router port of the IO system
     
     @todo: ioRequestRouter description
 */
@@ -11,7 +12,7 @@
 #include "IO/FS/ioLane.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 class ioRequestRouter : public Messaging::Port {
     OryolClassDecl(ioRequestRouter);
@@ -28,7 +29,7 @@ public:
     
 private:
     int32 numLanes;
-    Array<Ptr<IO::ioLane>> ioLanes;
+    Array<Ptr<ioLane>> ioLanes;
 };
     
 } // namespace IO

@@ -15,8 +15,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace IO;
-    
 //------------------------------------------------------------------------------
 glTextureFactory::glTextureFactory() :
 glStateWrapper(nullptr),

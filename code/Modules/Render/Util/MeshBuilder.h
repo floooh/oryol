@@ -104,7 +104,7 @@ public:
     /// clear the mesh builder
     void Clear();
     /// get the resulting data stream with vertex and index data
-    const Ptr<IO::Stream>& GetStream() const;
+    const Ptr<Stream>& GetStream() const;
     
     /// the mesh data header
     struct Header {
@@ -140,7 +140,7 @@ private:
     IndexType::Code indexType;
     class VertexLayout layout;
     Array<PrimitiveGroup> primGroups;
-    Ptr<IO::MemoryStream> stream;
+    Ptr<MemoryStream> stream;
     MeshSetup meshSetup;
     bool inBegin;
     bool resultValid;

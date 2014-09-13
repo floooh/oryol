@@ -10,7 +10,6 @@
 namespace Oryol {
 namespace Debug {
 
-using namespace IO;
 using namespace Render;
 using namespace Resource;
 

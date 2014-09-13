@@ -8,7 +8,6 @@
 #include "Core/String/String.h"
 
 using namespace Oryol;
-using namespace Oryol::IO;
 
 TEST(OpenModeTest) {
     

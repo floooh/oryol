@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::URL
+    @class Oryol::URL
+    @ingroup IO
     @brief Oryol's URL class
     
     All resource paths in Oryol are expressed as URLs. 
@@ -19,7 +20,6 @@
 #include "Core/String/String.h"
 
 namespace Oryol {
-namespace IO {
 
 class URL
 {
@@ -133,5 +133,4 @@ private:
     bool valid;
 };
    
-} // namespace IO
 } // namespace Oryol

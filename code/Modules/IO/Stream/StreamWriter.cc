@@ -6,7 +6,6 @@
 #include "Stream.h"
 
 namespace Oryol {
-namespace IO {
 
 OryolClassImpl(StreamWriter);
 
@@ -55,5 +54,4 @@ StreamWriter::GetStream() const {
     return this->stream;
 }
 
-} // namespace IO
 } // namespace Oryol

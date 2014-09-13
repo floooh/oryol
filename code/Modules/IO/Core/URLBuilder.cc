@@ -5,7 +5,6 @@
 #include "URLBuilder.h"
 
 namespace Oryol {
-namespace IO {
 
 //------------------------------------------------------------------------------
 URLBuilder::URLBuilder() {
@@ -77,5 +76,4 @@ URLBuilder::BuildURL() {
     return URL(this->stringBuilder.GetString());
 }
 
-} // namespace IO
 } // namespace Oryol

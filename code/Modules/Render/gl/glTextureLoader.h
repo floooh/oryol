@@ -22,11 +22,11 @@ public:
     /// test if the loader accepts the resource
     virtual bool Accepts(const texture& tex) const override;
     /// test if the loader accepts the resource (with stream data)
-    virtual bool Accepts(const texture& tex, const Ptr<IO::Stream>& data) const override;
+    virtual bool Accepts(const texture& tex, const Ptr<Stream>& data) const override;
     /// setup the texture object
     virtual void Load(texture& tex) const override;
     /// setup the mesh object from data in stream
-    virtual void Load(texture& tex, const Ptr<IO::Stream>& data) const override;
+    virtual void Load(texture& tex, const Ptr<Stream>& data) const override;
 private:
     /// create GL texture from gliml::context
     bool glCreateTexture(texture& tex, const gliml::context& ctx) const;

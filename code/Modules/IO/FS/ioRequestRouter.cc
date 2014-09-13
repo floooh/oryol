@@ -5,7 +5,7 @@
 #include "ioRequestRouter.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 using namespace Messaging;
 
@@ -62,5 +62,5 @@ ioRequestRouter::DoWork() {
     }
 }
 
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

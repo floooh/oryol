@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::StreamReader
+    @class Oryol::StreamReader
+    @ingroup IO
     @brief base class for stream readers
  
     Stream readers provide a way to read structured/formatted data 
@@ -12,7 +13,6 @@
 #include "Core/RefCounted.h"
 
 namespace Oryol {
-namespace IO {
 
 class Stream;
     
@@ -37,5 +37,4 @@ protected:
     Ptr<Stream> stream;
 };
 
-} // namespace IO
 } // namespace Oryol

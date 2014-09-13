@@ -14,8 +14,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 glMeshFactory::glMeshFactory() :
 stateWrapper(nullptr),

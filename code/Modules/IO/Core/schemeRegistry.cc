@@ -6,7 +6,7 @@
 #include "IO/FS/FileSystem.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 OryolGlobalSingletonImpl(schemeRegistry);
 
@@ -22,7 +22,7 @@ schemeRegistry::~schemeRegistry() {
 
 //------------------------------------------------------------------------------
 void
-schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator) {
+schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
     this->rwLock.LockWrite();
     o_assert(!this->registry.Contains(scheme));
     this->registry.Add(scheme, fsCreator);
@@ -57,5 +57,5 @@ schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     return fileSystem;
 }
 
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

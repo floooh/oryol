@@ -9,7 +9,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
-using namespace Oryol::IO;
 
 TEST(BinaryStreamReaderWriterTest) {
 

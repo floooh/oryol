@@ -6,7 +6,6 @@
 #include "Core/Log.h"
 
 namespace Oryol {
-namespace IO {
 
 OryolClassImpl(FileSystem);
 
@@ -40,5 +39,4 @@ FileSystem::DoWork() {
     // implement in subclass!
 }
 
-} // namespace IO
 } // namespace Oryol

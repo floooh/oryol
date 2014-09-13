@@ -13,7 +13,6 @@
 #include <chrono>
 
 using namespace Oryol;
-using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 
 TEST(DDSLoadTest) {

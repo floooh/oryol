@@ -8,7 +8,6 @@
 #include "IO/IOFacade.h"
 
 namespace Oryol {
-namespace IO {
 
 //------------------------------------------------------------------------------
 IOQueue::IOQueue() :
@@ -96,5 +95,4 @@ IOQueue::update() {
     }
 }
 
-} // namespace IO
 } // namespace Oryol

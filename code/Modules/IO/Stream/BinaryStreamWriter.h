@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::BinaryStreamWriter
+    @class Oryol::BinaryStreamWriter
+    @ingroup IO
     @brief stream writer for writing binary-encoded data to a stream
     
     A StreamWriter for writing typed data to a binary stream. For complex
@@ -14,7 +15,6 @@
 #include "Messaging/Serializer.h"
 
 namespace Oryol {
-namespace IO {
     
 class BinaryStreamWriter : public StreamWriter {
     OryolClassDecl(BinaryStreamWriter);
@@ -68,5 +68,4 @@ BinaryStreamWriter::Write(const Array<TYPE>& vals) {
     return retval;
 }
 
-} // namespace BinaryStreamWriter
 } // namespace Oryol

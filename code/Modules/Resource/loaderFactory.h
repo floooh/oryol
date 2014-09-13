@@ -26,7 +26,7 @@
  
     virtual bool Accepts(const RESOURCE& res) const;
     virtual bool Setup(RESOURCE& res);
-    virtual bool SetupWithData(RESOURCE& res, const Ptr<IO::Stream>& data);
+    virtual bool SetupWithData(RESOURCE& res, const Ptr<Stream>& data);
  
 */
 #include "Core/Containers/Array.h"
@@ -49,7 +49,7 @@ public:
     /// setup resource, continue calling until res state is not Pending
     void SetupResource(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(RESOURCE& resource, const Ptr<IO::Stream>& data);
+    void SetupResource(RESOURCE& resource, const Ptr<Stream>& data);
     /// destroy the resource
     void DestroyResource(RESOURCE& resource);
 
@@ -139,7 +139,7 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
  from data in memory instead of loading the input data through the IO system.
 */
 template<class RESOURCE, class LOADER> void
-loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Ptr<IO::Stream>& data) {
+loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Ptr<Stream>& data) {
 
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {

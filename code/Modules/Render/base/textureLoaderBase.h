@@ -29,11 +29,11 @@ public:
     /// test if the loader accepts the resource
     virtual bool Accepts(const texture& resource) const = 0;
     /// test if the loader accepts the resource, with data stream
-    virtual bool Accepts(const texture& resource, const Ptr<IO::Stream>& data) const = 0;
+    virtual bool Accepts(const texture& resource, const Ptr<Stream>& data) const = 0;
     /// start to load, or continue loading
     virtual void Load(texture& resource) const = 0;
     /// start to load, or continue loading, with data stream
-    virtual void Load(texture& resource, const Ptr<IO::Stream>& data) const = 0;
+    virtual void Load(texture& resource, const Ptr<Stream>& data) const = 0;
     
     /// called when attached to factory
     void onAttachToFactory(textureFactory* factory);

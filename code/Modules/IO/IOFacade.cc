@@ -8,7 +8,8 @@
 #include "Core/RunLoop.h"
 
 namespace Oryol {
-namespace IO {
+
+using namespace _priv;
 
 OryolGlobalSingletonImpl(IOFacade);
 
@@ -86,7 +87,7 @@ IOFacade::ResolveAssigns(const String& str) const {
 
 //------------------------------------------------------------------------------
 void
-IOFacade::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator) {
+IOFacade::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
     schemeRegistry* reg = schemeRegistry::Instance();
     bool newFileSystem = !reg->IsFileSystemRegistered(scheme);
     reg->RegisterFileSystem(scheme, fsCreator);
@@ -132,5 +133,4 @@ IOFacade::Put(const Ptr<IOProtocol::Request>& ioReq) {
     this->requestRouter->Put(ioReq);
 }
 
-} // namespace IO
 } // namespace Oryol

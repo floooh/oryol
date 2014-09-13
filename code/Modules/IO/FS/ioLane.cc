@@ -7,7 +7,7 @@
 #include "IO/Core/schemeRegistry.h"
 
 namespace Oryol {
-namespace IO {
+namespace _priv {
 
 OryolClassImpl(ioLane);
 
@@ -129,5 +129,5 @@ ioLane::onNotifyFileSystemRemoved(const Ptr<IOProtocol::notifyFileSystemRemoved>
     this->fileSystems.Erase(urlScheme);
 }
 
-} // namespace IO
+} // namespace _priv
 } // namespace Oryol

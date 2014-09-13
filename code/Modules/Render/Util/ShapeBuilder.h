@@ -52,7 +52,7 @@ public:
     /// build geometry
     void Build();
     /// get the resulting data stream with vertex and index data
-    const Ptr<IO::Stream>& GetStream() const;
+    const Ptr<Stream>& GetStream() const;
     
 private:
     enum ShapeType {

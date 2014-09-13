@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @file IO/Config.h
+    @ingroup IO
     @brief Configuration defines for the Oryol IO module.
 */
 #include "Core/Config.h"

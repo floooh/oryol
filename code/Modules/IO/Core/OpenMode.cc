@@ -8,7 +8,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace IO {
 
 //------------------------------------------------------------------------------
 const char* OpenMode::ToString(OpenMode::Enum m) {
@@ -33,5 +32,4 @@ OpenMode::Enum OpenMode::FromString(const char* str) {
     return OpenMode::InvalidOpenMode;
 }
 
-} // namespace IO
 } // namespace Oryol

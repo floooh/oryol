@@ -8,7 +8,6 @@
 #include <cstring>
 
 namespace Oryol {
-namespace IO {
     
 //------------------------------------------------------------------------------
 const char*
@@ -109,5 +108,4 @@ IOStatus::FromString(const char* str) {
     return InvalidIOStatus;
 }
     
-} // namespace IO
 } // namespace Oryol

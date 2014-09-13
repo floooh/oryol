@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IO::IOFacade
+    @class Oryol::IOFacade
+    @ingroup IO
     @brief facade singleton of the IO module
  
     @todo: IOFacade description
@@ -17,7 +18,6 @@
 #include <thread>
 
 namespace Oryol {
-namespace IO {
 
 class IOFacade {
     OryolGlobalSingletonDecl(IOFacade);
@@ -37,16 +37,16 @@ public:
     String ResolveAssigns(const String& str) const;
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator);
+    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator);
     /// unregister a filesystem
     void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered
     bool IsFileSystemRegistered(const StringAtom& scheme) const;
     
     /// start async loading of file from URL (also see IOQueue!)
-    Ptr<IO::IOProtocol::Get> LoadFile(const URL& url, int32 ioLane=0);
+    Ptr<IOProtocol::Get> LoadFile(const URL& url, int32 ioLane=0);
     /// push a generic asynchronous IO request
-    void Put(const Ptr<IO::IOProtocol::Request>& ioReq);
+    void Put(const Ptr<IOProtocol::Request>& ioReq);
     
 private:
     /// test if we are on the main thread
@@ -56,9 +56,8 @@ private:
 
     int32 runLoopId;
     std::thread::id mainThreadId;
-    Ptr<ioRequestRouter> requestRouter;
+    Ptr<_priv::ioRequestRouter> requestRouter;
     static const int32 numIOLanes;
 };
 
-} // namespace IO
 } // namespace Oryol

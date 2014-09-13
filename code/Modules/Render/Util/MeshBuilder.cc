@@ -9,8 +9,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace IO;
-
 //------------------------------------------------------------------------------
 MeshBuilder::MeshBuilder() :
 numVertices(0),
