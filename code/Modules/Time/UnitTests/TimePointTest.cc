@@ -7,7 +7,6 @@
 #include "Time/Duration.h"
 
 using namespace Oryol;
-using namespace Oryol::Time;
 
 TEST(TimePointTest) {
     TimePoint t0;

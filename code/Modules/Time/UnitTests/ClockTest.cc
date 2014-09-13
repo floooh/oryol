@@ -8,7 +8,6 @@
 #include <cmath>
 
 using namespace Oryol;
-using namespace Oryol::Time;
 
 TEST(ClockTest) {
     TimePoint t0 = Clock::Now();

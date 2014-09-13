@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Time::Duration
+    @class Oryol::Duration
+    @brief Time
     @brief a duration (distance between two TimePoints)
     
     Durations are created by subtracting one TimePoint from another. Durations
@@ -12,7 +13,6 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Time {
     
 class Duration {
 public:
@@ -264,5 +264,4 @@ Duration::AsTicks() const {
     return this->val;
 }
 
-} // namespace Time
 } // namespace Oryol

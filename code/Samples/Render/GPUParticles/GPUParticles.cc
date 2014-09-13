@@ -14,7 +14,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Debug;
-using namespace Oryol::Time;
 
 const int32 NumParticleBuffers = 2;
 const int32 NumParticlesEmittedPerFrame = 100;
@@ -49,7 +48,7 @@ private:
     glm::mat4 model;
     glm::mat4 modelViewProj;
     int32 frameCount = 0;
-    Time::TimePoint lastFrameTimePoint;
+    TimePoint lastFrameTimePoint;
     int32 curNumParticles = 0;
 };
 OryolMain(GPUParticlesApp);

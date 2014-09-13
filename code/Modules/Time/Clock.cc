@@ -13,7 +13,6 @@
 #endif
 
 namespace Oryol {
-namespace Time {
     
 //------------------------------------------------------------------------------
 TimePoint
@@ -40,5 +39,4 @@ Clock::Now() {
     return TimePoint(t);
 }
 
-} // namespace Clock
 } // namespace Oryol

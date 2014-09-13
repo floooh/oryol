@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Time::Clock
+    @class Oryol::Clock
+    @ingroup Time
     @brief high-resolution time source
     
     The most important method of Clock is Now() which returns the 
@@ -12,7 +13,6 @@
 #include "Time/Duration.h"
 
 namespace Oryol {
-namespace Time {
     
 class Clock {
 public:
@@ -39,5 +39,4 @@ Clock::LapTime(TimePoint& inOutTimepoint) {
     return dur;
 }
 
-} // namespace Time
 } // namespace Oryol

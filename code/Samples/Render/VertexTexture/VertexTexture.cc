@@ -14,7 +14,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Debug;
-using namespace Oryol::Time;
 
 class VertexTextureApp : public App {
 public:
@@ -34,7 +33,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     float32 time = 0.0f;
-    Time::TimePoint lastFrameTimePoint;
+    TimePoint lastFrameTimePoint;
 };
 OryolMain(VertexTextureApp);
 

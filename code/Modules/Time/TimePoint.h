@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Time::TimePoint
+    @class Oryol::TimePoint
+    @ingroup Time
     @brief a point in time
     
     A TimePoint holds a specific point in time returned by the high-resolution
@@ -16,7 +17,6 @@
 #include "Time/Duration.h"
 
 namespace Oryol {
-namespace Time {
     
 class TimePoint {
 public:
@@ -165,5 +165,4 @@ TimePoint::getRaw() const {
     return this->val;
 }
 
-} // namespace TimePoint
 } // namespace Oryol

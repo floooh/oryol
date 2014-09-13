@@ -6,7 +6,6 @@
 #include "Time/Duration.h"
 
 using namespace Oryol;
-using namespace Oryol::Time;
 
 TEST(DurationTest) {
     Duration d0;
