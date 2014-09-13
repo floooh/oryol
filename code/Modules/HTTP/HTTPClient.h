@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::HTTPClient
+    @class Oryol::HTTPClient
+    @ingroup HTTP
     @brief message port which implements an HTTP client
     
     A HTTPClient accepts HTTPRequest messages in its Put() method 
@@ -20,7 +21,6 @@
 #include "HTTP/urlLoader.h"
 
 namespace Oryol {
-namespace HTTP {
 
 class HTTPClient : public Port {
     OryolClassDecl(HTTPClient);
@@ -36,10 +36,9 @@ public:
     virtual void DoWork() override;
     
 private:
-    urlLoader loader;
+    _priv::urlLoader loader;
 };
     
-} // namespace HTTP
 } // namespace Oryol
 
  

@@ -8,7 +8,6 @@
 #include "HTTP/HTTPFileSystem.h"
 
 using namespace Oryol;
-using namespace Oryol::HTTP;
 
 // derived application class
 class IOQueueApp : public App {

@@ -8,7 +8,6 @@
 #include <chrono>
 
 using namespace Oryol;
-using namespace Oryol::HTTP;
 
 // derived application class
 class HTTPClientApp : public App {

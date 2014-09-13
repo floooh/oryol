@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::baseURLLoader
+    @class Oryol::_priv::baseURLLoader
+    @ingroup _priv
     @brief private: base class for platform specific URL loaders
     @see urlLoader, HTTPClient
 */
@@ -10,7 +11,7 @@
 #include "HTTP/HTTPProtocol.h"
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 class baseURLLoader {
 public:
@@ -21,5 +22,5 @@ public:
 protected:
     Queue<Ptr<HTTPProtocol::HTTPRequest>> requestQueue;
 };
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

@@ -13,7 +13,6 @@
 #include <chrono>
 
 using namespace Oryol;
-using namespace Oryol::HTTP;
 
 TEST(DDSLoadTest) {
 #if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS

@@ -5,7 +5,6 @@
 #include "HTTPFileSystem.h"
 
 namespace Oryol {
-namespace HTTP {
     
 OryolClassImpl(HTTPFileSystem);
 
@@ -84,5 +83,4 @@ HTTPFileSystem::DoWork() {
     }
 }
     
-} // namespace HTTP
 } // namespace Oryol

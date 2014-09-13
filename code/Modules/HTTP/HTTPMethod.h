@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::HTTPMethod
+    @class Oryol::HTTPMethod
+    @ingroup HTTP
     @brief HTTP methods enum class (GET, PUT, POST, ...)
     
     See http://tools.ietf.org/html/rfc2616
@@ -9,7 +10,6 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace HTTP {
     
 class HTTPMethod {
 public:
@@ -36,5 +36,4 @@ public:
     static Code FromString(const char* str);
 };
     
-} // namespace HTTP
 } // namespace Oryol

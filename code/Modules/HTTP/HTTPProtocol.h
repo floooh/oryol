@@ -15,7 +15,6 @@
 #include "IO/Core/IOStatus.h"
 
 namespace Oryol {
-namespace HTTP {
 class HTTPProtocol {
 public:
     static ProtocolIdType GetProtocolId() {
@@ -99,7 +98,7 @@ private:
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;
-            this->method = HTTP::HTTPMethod::Get;
+            this->method = HTTPMethod::Get;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -111,10 +110,10 @@ private:
             if (protId == 'HTPR') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetMethod(const HTTP::HTTPMethod::Code& val) {
+        void SetMethod(const HTTPMethod::Code& val) {
             this->method = val;
         };
-        const HTTP::HTTPMethod::Code& GetMethod() const {
+        const HTTPMethod::Code& GetMethod() const {
             return this->method;
         };
         void SetURL(const URL& val) {
@@ -142,12 +141,11 @@ private:
             return this->response;
         };
 private:
-        HTTP::HTTPMethod::Code method;
+        HTTPMethod::Code method;
         URL url;
         Map<String,String> requestheaders;
         Ptr<Stream> body;
         Ptr<HTTPProtocol::HTTPResponse> response;
     };
 };
-}
 }

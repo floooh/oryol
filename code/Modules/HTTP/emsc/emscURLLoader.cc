@@ -7,7 +7,7 @@
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 void
@@ -84,5 +84,5 @@ emscURLLoader::onFailed(void* userData) {
     req->SetHandled();
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // naespace Oryol

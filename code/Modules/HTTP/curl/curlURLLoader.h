@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::curlURLLoader
+    @class Oryol::_priv::curlURLLoader
+    @ingroup _priv
     @brief urlLoader implementation on top of curl
     @see urlLoader
 */
@@ -11,7 +12,7 @@
 #include <mutex>
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 class curlURLLoader : public baseURLLoader {
 public:
@@ -43,5 +44,5 @@ private:
     Map<String,String> responseHeaders;
 };
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

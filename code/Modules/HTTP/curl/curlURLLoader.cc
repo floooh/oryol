@@ -11,9 +11,7 @@
 #endif
 
 namespace Oryol {
-namespace HTTP {
-
-using namespace IO;
+namespace _priv {
 
 bool curlURLLoader::curlInitCalled = false;
 std::mutex curlURLLoader::curlInitMutex;
@@ -236,5 +234,5 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     }
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

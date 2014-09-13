@@ -8,7 +8,6 @@
 #include <cstring>
 
 namespace Oryol {
-namespace HTTP {
 
 //------------------------------------------------------------------------------
 const char*
@@ -57,5 +56,4 @@ HTTPMethod::FromString(const char* str) {
     return InvalidHTTPMethod;
 }
 
-} // namespace HTTP
 } // namespace Oryol

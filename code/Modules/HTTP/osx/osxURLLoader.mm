@@ -7,7 +7,7 @@
 #include <Foundation/Foundation.h>
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 void
@@ -127,5 +127,5 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     }
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

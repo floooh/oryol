@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::HTTPFileSystem
+    @class Oryol::HTTPFileSystem
+    @ingroup HTTP
     @brief implements a simple HTTP-based filesystem
     @see HTTPClient, FileSystem
     
@@ -14,7 +15,6 @@
 #include "Core/Creator.h"
 
 namespace Oryol {
-namespace HTTP {
     
 class HTTPFileSystem : public FileSystem {
     OryolClassDecl(HTTPFileSystem);
@@ -42,6 +42,5 @@ private:
     Array<pendingRequest> pendingRequests;
 };
     
-} // namespace HTTP
 } // namespace Oryol
  

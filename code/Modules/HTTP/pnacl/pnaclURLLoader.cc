@@ -12,9 +12,7 @@
 #include <ppapi/cpp/url_loader.h>
 
 namespace Oryol {
-namespace HTTP {
-
-using namespace _priv;
+namespace _priv {
 
 // a helper class to wrap all request-related data into a ref-counted object
 class pnaclRequestWrapper : public RefCounted {
@@ -166,5 +164,5 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     }
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

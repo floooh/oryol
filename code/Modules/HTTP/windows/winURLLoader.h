@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::winURLLoader
+    @class Oryol::_priv::winURLLoader
+    @ingroup _priv
     @brief private: Windows implementation of URLLoader
     @see urlLoader HTTPClient
 
@@ -17,7 +18,7 @@
 typedef void* HINTERNET;
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
     
 class winURLLoader : public baseURLLoader {
 public:
@@ -47,5 +48,5 @@ private:
     StringBuilder stringBuilder;
 };
     
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

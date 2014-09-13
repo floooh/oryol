@@ -5,7 +5,7 @@
 #include "baseURLLoader.h"
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 void
@@ -18,8 +18,8 @@ baseURLLoader::putRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 void
 baseURLLoader::doWork() {
     // override this method in platform-specific subclass
-    o_error("HTTP::baseURLLoader::doWork() called!\n");
+    o_error("baseURLLoader::doWork() called!\n");
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

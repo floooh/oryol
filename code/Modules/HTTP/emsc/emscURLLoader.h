@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::emscURLLoader
+    @class Oryol::_priv::emscURLLoader
+    @ingroup _priv
     @brief private: emscripten implementation of URL loader
     @see URLLoader, HTTPClient
 
@@ -12,7 +13,7 @@
 #include "HTTP/base/baseURLLoader.h"
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
 
 class emscURLLoader : public baseURLLoader {
 public:
@@ -28,5 +29,5 @@ private:
     static void onFailed(void* userData);
 };
     
-} // namespace HTTP 
+} // namespace _priv 
 } // namespace Oryol

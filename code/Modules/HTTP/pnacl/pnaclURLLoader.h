@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::pnaclURLLoader
+    @class Oryol::_priv::pnaclURLLoader
+    @ingroup _priv
     @brief private: PNaCl implementation of URLLoader
     @see URLLoader, HTTPClient
 
@@ -10,7 +11,7 @@
 #include "HTTP/base/baseURLLoader.h"
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
     
 class pnaclURLLoader : public baseURLLoader {
 public:
@@ -29,5 +30,5 @@ private:
     void startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

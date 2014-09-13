@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::HTTP::osxURLLoader
+    @class Oryol::_priv::osxURLLoader
+    @ingroup _priv
     @brief private: OSX implementation of URLLoader
     @see urlLoader, HTTPClient
 */
 #include "HTTP/base/baseURLLoader.h"
 
 namespace Oryol {
-namespace HTTP {
+namespace _priv {
     
 class osxURLLoader : public baseURLLoader {
 public:
@@ -20,5 +21,5 @@ private:
     void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
     
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

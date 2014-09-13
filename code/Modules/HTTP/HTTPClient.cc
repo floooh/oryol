@@ -5,7 +5,6 @@
 #include "HTTPClient.h"
 
 namespace Oryol {
-namespace HTTP {
     
 OryolClassImpl(HTTPClient);
 
@@ -35,5 +34,4 @@ HTTPClient::DoWork() {
     this->loader.doWork();
 }
 
-} // namespace HTTP
 } // namespace Oryol

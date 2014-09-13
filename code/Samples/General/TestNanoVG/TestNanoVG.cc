@@ -14,7 +14,6 @@
 #include "demo.h"
 
 using namespace Oryol;
-using namespace Oryol::HTTP;
 using namespace Oryol::Render;
 using namespace Oryol::Time;
 using namespace Oryol::Input;

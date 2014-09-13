@@ -6,7 +6,6 @@
 #include "HTTP/HTTPClient.h"
 
 using namespace Oryol;
-using namespace Oryol::HTTP;
 
 #if !ORYOL_EMSCRIPTEN
 TEST(HTTPClientTest) {
