@@ -11,7 +11,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 
 // derived application class
 class PBRenderingApp : public App {

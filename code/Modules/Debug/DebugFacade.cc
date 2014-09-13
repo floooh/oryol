@@ -6,7 +6,6 @@
 #include <cstdarg>
 
 namespace Oryol {
-namespace Debug {
 
 OryolLocalSingletonImpl(DebugFacade);
     
@@ -67,5 +66,4 @@ DebugFacade::DrawTextBuffer() {
     this->debugTextRenderer.drawTextBuffer();
 }
 
-} // namespace Debug
 } // namespace Oryol

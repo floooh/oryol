@@ -8,7 +8,7 @@
 #include "Debug/shaders/DebugShaders.h"
 
 namespace Oryol {
-namespace Debug {
+namespace _priv {
 
 extern const char *kc85_4_Font;
 
@@ -331,5 +331,5 @@ debugTextRenderer::convertStringToVertices(const String& str) {
     return vIndex;
 }
 
-} // namespace Debug
+} // namespace _priv
 } // namespace Oryol

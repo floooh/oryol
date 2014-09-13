@@ -5,7 +5,7 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Debug {
+namespace _priv {
 
 // this is the KC85/4 system font
 // each character is made of an 8x8 matrix
@@ -1289,6 +1289,6 @@ const char *kc85_4_Font =
     "X------X"
     "X------X"
     "XXXXXXXX";
-    
-} // namespace Debug
+
+} // namespace _priv
 } // namespace Oryol

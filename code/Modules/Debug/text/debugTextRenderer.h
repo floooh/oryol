@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Debug::debugTextRenderer
+    @class Oryol::_priv::debugTextRenderer
+    @ingroup _priv
     @brief minimalistic 7-bit-ASCII text renderer
 */
 #include "Core/Types.h"
@@ -17,7 +18,7 @@ namespace Oryol {
 
 class RenderFacade;
 
-namespace Debug {
+namespace _priv {
 
 class debugTextRenderer {
 public:
@@ -80,5 +81,5 @@ private:
     uint32 vertexData[MaxNumVertices][2];
 };
 
-} // namespace Debug
+} // namespace _priv
 } // namespace Oryol

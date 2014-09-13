@@ -8,7 +8,6 @@
 #include "glm/gtc/random.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 
 // derived application class
 class DebugTextApp : public App {

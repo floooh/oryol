@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 using namespace Oryol::Input;
 
 // derived application class

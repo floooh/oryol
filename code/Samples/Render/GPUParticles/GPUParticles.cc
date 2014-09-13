@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 
 const int32 NumParticleBuffers = 2;
 const int32 NumParticlesEmittedPerFrame = 100;

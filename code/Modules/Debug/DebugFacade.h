@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Debug::DebugFacade
+    @class Oryol::DebugFacade
+    @ingroup Debug
     @brief various runtime debugging and debug visualization services
 */
 #include "Core/Config.h"
@@ -10,7 +11,6 @@
 #include "glm/fwd.hpp"
 
 namespace Oryol {
-namespace Debug {
     
 class DebugFacade {
     OryolLocalSingletonDecl(DebugFacade);
@@ -37,8 +37,7 @@ public:
     void DrawTextBuffer();
     
 private:
-    class debugTextRenderer debugTextRenderer;
+    class _priv::debugTextRenderer debugTextRenderer;
 };
     
-} // namespace Debug
 } // namespace Oryol

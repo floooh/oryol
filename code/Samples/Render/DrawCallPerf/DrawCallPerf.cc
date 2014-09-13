@@ -14,7 +14,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 
 // derived application class
 class DrawCallPerfApp : public App {

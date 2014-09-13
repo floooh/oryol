@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Debug;
 
 class VertexTextureApp : public App {
 public:
