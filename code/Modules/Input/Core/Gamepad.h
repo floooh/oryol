@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::Gamepad
+    @class Oryol::Gamepad
+    @ingroup Input
     @brief access to gamepad state
 */
 #include "Core/Assert.h"
 #include "glm/vec2.hpp"
 
 namespace Oryol {
-namespace Input {
     
 class Gamepad {
 public:
@@ -117,5 +117,4 @@ Gamepad::StickPos(Element stick) const {
     return this->values[stick];
 }
     
-} // namespace Input
 } // namespace Oryol

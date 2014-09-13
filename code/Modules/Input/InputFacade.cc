@@ -5,7 +5,6 @@
 #include "InputFacade.h"
 
 namespace Oryol {
-namespace Input {
     
 OryolLocalSingletonImpl(InputFacade);
 
@@ -68,4 +67,3 @@ InputFacade::Touchpad() const {
 }
 
 } // namespace Input
-} // namespace Oryol

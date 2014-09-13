@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::InputFacade
+    @class Oryol::InputFacade
+    @ingroup Input
     @brief facade singleton of the Oryol Input module
     
     The InputFacade singleton provides access to connected input devices,
@@ -12,7 +13,6 @@
 #include "Input/Core/inputMgr.h"
 
 namespace Oryol {
-namespace Input {
     
 class InputFacade {
     OryolLocalSingletonDecl(InputFacade);
@@ -41,8 +41,7 @@ public:
     void EndCaptureText();
     
 private:
-    inputMgr inputManager;
+    _priv::inputMgr inputManager;
 };
 
-} // namespace Input
 } // namespace Oryol

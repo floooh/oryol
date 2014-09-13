@@ -14,7 +14,6 @@
 #include "demo.h"
 
 using namespace Oryol;
-using namespace Oryol::Input;
 using namespace Oryol::NanoVG;
 
 // derived application class

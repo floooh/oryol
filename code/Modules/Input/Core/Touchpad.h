@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::Touchpad
+    @class Oryol::Touchpad
+    @ingroup Input
     @brief access to touchpad state
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Input {
     
 class Touchpad {
 public:
@@ -28,5 +28,4 @@ private:
     bool attached;
 };
     
-} // namespace Input
 } // namespace Oryol

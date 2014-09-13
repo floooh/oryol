@@ -5,7 +5,6 @@
 #include "Input/Core/Touchpad.h"
 
 namespace Oryol {
-namespace Input {
     
 //------------------------------------------------------------------------------
 Touchpad::Touchpad() :
@@ -31,5 +30,4 @@ Touchpad::reset() {
     // FIXME!
 }
 
-} // namespace Input
 } // namespace Oryol

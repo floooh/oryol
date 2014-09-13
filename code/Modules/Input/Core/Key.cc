@@ -6,7 +6,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Input {
     
 const char* Key::keyTable[Key::NumKeys] = {
     "InvalidKey",
@@ -139,5 +138,4 @@ Key::ToString(Key::Code k) {
     return keyTable[k];
 }
 
-} // namespace Input
 } // namespace Oryol

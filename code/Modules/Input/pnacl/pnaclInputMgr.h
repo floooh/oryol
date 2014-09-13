@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::pnaclInputMgr
+    @class Oryol::_priv::pnaclInputMgr
     @brief PNaCl platform input manager class
 */
 #include "Input/base/inputMgrBase.h"
@@ -9,7 +9,7 @@
 #include "Core/RunLoop.h"
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
 
 class pnaclInputMgr : public inputMgrBase {
 public:
@@ -53,5 +53,5 @@ private:
     Key::Code keyTable[MaxNumKeys];    
 };
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

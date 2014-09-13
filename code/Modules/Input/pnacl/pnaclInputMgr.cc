@@ -7,9 +7,7 @@
 #include "Core/pnacl/pnaclInstance.h"
 
 namespace Oryol {
-namespace Input {
-
-using namespace _priv;
+namespace _priv {
 
 //------------------------------------------------------------------------------
 pnaclInputMgr::pnaclInputMgr() {
@@ -302,5 +300,5 @@ pnaclInputMgr::setupKeyTable() {
     this->keyTable[224] = Key::LeftSuper;
 }
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

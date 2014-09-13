@@ -1,11 +1,11 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::CursorMode
+    @class Oryol::CursorMode
+    @ingroup Input
     @brief mouse cursor modes
 */
 namespace Oryol {
-namespace Input {
 
 class CursorMode {
 public:
@@ -19,5 +19,4 @@ public:
     };
 };
     
-} // namespace Input
 } // namespace Oryol

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::Keyboard
+    @class Oryol::Keyboard
+    @ingroup Input
     @brief access to keyboard state
 */
 #include "Input/Core/Key.h"
@@ -9,7 +10,6 @@
 #include <bitset>
 
 namespace Oryol {
-namespace Input {
 
 class Keyboard {
 public:
@@ -95,5 +95,5 @@ Keyboard::CapturedText() const {
     return this->chars;
 }
     
-} // namespace Input
 } // namespace Oryol
+

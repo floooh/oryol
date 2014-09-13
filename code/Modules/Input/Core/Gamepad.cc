@@ -5,7 +5,6 @@
 #include "Gamepad.h"
 
 namespace Oryol {
-namespace Input {
     
 //------------------------------------------------------------------------------
 Gamepad::Gamepad() :
@@ -59,5 +58,4 @@ Gamepad::reset() {
     this->up = 0;
 }
 
-} // namespace Input
 } // namespace Oryol

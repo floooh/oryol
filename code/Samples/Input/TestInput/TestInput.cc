@@ -9,7 +9,6 @@
 #include "Core/String/StringConverter.h"
 
 using namespace Oryol;
-using namespace Oryol::Input;
 
 // derived application class
 class TestInputApp : public App {

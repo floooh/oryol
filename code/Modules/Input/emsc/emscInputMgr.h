@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::emscInputMgr
+    @class Oryol::_priv::emscInputMgr
+    @ingroup _priv
     @brief provide input on emscripten platform
 */
 #include "Input/base/inputMgrBase.h"
@@ -9,7 +10,7 @@
 #include <emscripten/html5.h>
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
 
 class emscInputMgr : public inputMgrBase {
 public:
@@ -57,5 +58,5 @@ private:
     Key::Code keyTable[MaxNumKeys];
 };
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

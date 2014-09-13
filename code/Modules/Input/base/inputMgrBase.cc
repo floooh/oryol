@@ -5,7 +5,7 @@
 #include "inputMgrBase.h"
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 inputMgrBase::inputMgrBase() :
@@ -38,5 +38,5 @@ inputMgrBase::setCursorMode(CursorMode::Code mode) {
     this->cursorMode = mode;
 }
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

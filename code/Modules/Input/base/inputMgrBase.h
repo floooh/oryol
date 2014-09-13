@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Input::inputMgrBase
+    @class Oryol::_priv::inputMgrBase
+    @ingroup _priv
     @brief base class for platform-specific input managers
 */
 #include "Input/Core/Keyboard.h"
@@ -11,7 +12,7 @@
 #include "Input/Core/CursorMode.h"
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
     
 class inputMgrBase {
 public:
@@ -79,7 +80,7 @@ inputMgrBase::getCursorMode() const {
     return this->cursorMode;
 }
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol
 
 

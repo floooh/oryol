@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::Key
+    @class Oryol::Key
+    @ingroup Input
     @brief input key codes
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Input {
     
 class Key {
 public:
@@ -148,5 +148,4 @@ private:
     static const char* keyTable[NumKeys];
 };
     
-} // namespace Input
 } // namespace Oryol

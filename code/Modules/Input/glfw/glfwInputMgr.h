@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::glfwInputMgr
+    @class Oryol::_priv::glfwInputMgr
+    @ingroup _priv
     @brief provide input on platforms using GLFW
 */
 #include "Input/base/inputMgrBase.h"
@@ -9,7 +10,7 @@
 struct GLFWwindow;
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
 
 class glfwInputMgr : public inputMgrBase {
 public:
@@ -51,5 +52,5 @@ private:
     int32 runLoopId;
 };
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

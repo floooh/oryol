@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Input::Mouse
+    @class Oryol::Mouse
+    @ingroup Input
     @brief access to mouse state
 */
 #include "Core/Assert.h"
 #include "glm/vec2.hpp"
 
 namespace Oryol {
-namespace Input {
     
 class Mouse {
 public:
@@ -114,5 +114,4 @@ Mouse::Scroll() const {
     return this->scroll;
 }
 
-} // namespace Input
 } // namespace Oryol

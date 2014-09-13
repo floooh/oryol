@@ -6,7 +6,6 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Input {
 
 //------------------------------------------------------------------------------
 Keyboard::Keyboard() :
@@ -72,5 +71,4 @@ Keyboard::reset() {
     this->up.reset();
 }
 
-} // namespace Input
 } // namespace Oryol

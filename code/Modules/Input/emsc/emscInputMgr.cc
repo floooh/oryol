@@ -6,7 +6,7 @@
 #include "Core/CoreFacade.h"
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() {
@@ -325,5 +325,5 @@ emscInputMgr::setupKeyTable() {
     this->keyTable[224] = Key::LeftSuper;
 }
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

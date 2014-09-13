@@ -10,7 +10,7 @@
 #include "GLFW/glfw3.h"
 
 namespace Oryol {
-namespace Input {
+namespace _priv {
     
 glfwInputMgr* glfwInputMgr::self = nullptr;
 
@@ -326,5 +326,5 @@ glfwInputMgr::setupKeyTable() {
     keyTable[GLFW_KEY_MENU]           = Key::Menu;
 }
 
-} // namespace Input
+} // namespace _priv
 } // namespace Oryol

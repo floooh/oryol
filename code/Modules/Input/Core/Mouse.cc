@@ -5,7 +5,6 @@
 #include "Mouse.h"
 
 namespace Oryol {
-namespace Input {
     
 //------------------------------------------------------------------------------
 Mouse::Mouse() :
@@ -68,5 +67,4 @@ Mouse::reset() {
     this->scroll = glm::vec2(0.0f, 0.0f);
 }
 
-} // namespace Input
 } // namespace Oryol
