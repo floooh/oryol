@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::SynthFacade
+    @class Oryol::Synth
     @ingroup Synth
     @brief the Synth module implements a chip-tune audio system
 */
@@ -11,22 +11,24 @@
 
 namespace Oryol {
     
-class SynthFacade {
-    OryolLocalSingletonDecl(SynthFacade);
+class Synth {
 public:
-    /// constructor
-    SynthFacade(const SynthSetup& setupAttrs);
-    /// destructor
-    ~SynthFacade();
-
+    /// setup the Synth module
+    static void Setup(const SynthSetup& setup);
+    /// discard the Synth module
+    static void Discard();
+    /// check if Synth module is valid
+    static bool IsValid();
     /// update the sound system, call once per frame, advances tick
-    void Update();
-
+    static void Update();
     /// add a sound synthesis Op
-    void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset = 0.0f);
+    static void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset = 0.0f);
     
 private:
-    _priv::soundMgr soundManager;
+    struct _state {
+        _priv::soundMgr soundManager;
+    };
+    static _state* state;
 };
     
 } // namespace Oryol

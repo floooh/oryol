@@ -6,7 +6,7 @@
 #include "Render/RenderFacade.h"
 #include "Debug/Debug.h"
 #include "Input/Input.h"
-#include "Synth/SynthFacade.h"
+#include "Synth/Synth.h"
 
 using namespace Oryol;
 
@@ -19,7 +19,6 @@ public:
     
 private:
     RenderFacade* render;
-    SynthFacade* synth;
     int32 frameCount = 0;
     static const int NumTracks = 4;
     SynthOp op;
@@ -35,7 +34,7 @@ SynthTestApp::OnInit() {
     Input::Setup();
     SynthSetup synthSetup;
     synthSetup.UseGPUSynthesizer = false;
-    this->synth = SynthFacade::CreateSingle(synthSetup);
+    Synth::Setup(synthSetup);
     
     this->op.Code = SynthOp::Square;
     this->op.FadeIn = 0.05f;
@@ -56,44 +55,44 @@ SynthTestApp::OnRunning() {
             if (this->op.Pulse < 0.0f) {
                 this->op.Pulse = 0.0f;
             }
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::Right)) {
             this->op.Pulse += 0.05f;
             if (this->op.Pulse > 1.0f) {
                 this->op.Pulse = 1.0f;
             }
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::Up)) {
             this->op.Frequency += 110;
             if (this->op.Frequency > 4400) {
                 this->op.Frequency = 4400;
             }
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::Down)) {
             this->op.Frequency -= 110;
             if (this->op.Frequency < 110) {
                 this->op.Frequency = 110;
             }
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::T)) {
             this->op.Code = SynthOp::Triangle;
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::Q)) {
             this->op.Code = SynthOp::Square;
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::S)) {
             this->op.Code = SynthOp::Sine;
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::N)) {
             this->op.Code = SynthOp::Noise;
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 0, this->op);
         }
         
         // modulation
@@ -103,16 +102,16 @@ SynthTestApp::OnRunning() {
             mod.Code = SynthOp::Const;
             mod.FadeIn = 0.1f;
             mod.Amplitude = 0.0f;
-            this->synth->AddOp(0, 1, mod);
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 1, mod);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::N2)) {
             this->modType = "Constant One";
             SynthOp mod;
             mod.Code = SynthOp::Const;
             mod.FadeIn = 0.1f;
-            this->synth->AddOp(0, 1, mod);
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 1, mod);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::N3)) {
             this->modType = "LowFreq Sine";
@@ -122,8 +121,8 @@ SynthTestApp::OnRunning() {
             mod.Frequency = 5.0f;
             mod.Amplitude = 0.5f;
             mod.Bias = 0.5f;
-            this->synth->AddOp(0, 1, mod);
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 1, mod);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::N4)) {
             this->modType = "HiFreq Sawtooth";
@@ -134,8 +133,8 @@ SynthTestApp::OnRunning() {
             mod.Pulse = 0.0f;
             mod.Amplitude = 0.5f;
             mod.Bias = 0.5f;
-            this->synth->AddOp(0, 1, mod);
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 1, mod);
+            Synth::AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::N5)) {
             // ASDR modulation
@@ -144,21 +143,21 @@ SynthTestApp::OnRunning() {
             attack.Code = SynthOp::Const;
             attack.FadeIn = 0.01f;
             attack.Amplitude = 1.0f;
-            this->synth->AddOp(0, 1, attack);
+            Synth::AddOp(0, 1, attack);
             SynthOp decay;
             decay.Code = SynthOp::Const;
             decay.FadeIn = 0.2f;
             decay.Amplitude = 0.2f;
-            this->synth->AddOp(0, 1, decay, 0.01f);
+            Synth::AddOp(0, 1, decay, 0.01f);
             SynthOp release;
             release.Code = SynthOp::Const;
             release.FadeIn = 0.8f;
             release.Amplitude = 0.0f;
-            this->synth->AddOp(0, 1, release, 0.3f);
-            this->synth->AddOp(0, 0, this->op);
+            Synth::AddOp(0, 1, release, 0.3f);
+            Synth::AddOp(0, 0, this->op);
         }
     
-        this->synth->Update();
+        Synth::Update();
         Debug::Print("\n\n");
         Debug::PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
         Debug::PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
@@ -178,9 +177,8 @@ SynthTestApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnCleanup() {
-    this->synth  = nullptr;
     this->render = nullptr;
-    SynthFacade::DestroySingle();
+    Synth::Discard();
     Debug::Discard();
     Input::Discard();
     RenderFacade::DestroySingle();
