@@ -1,5 +1,5 @@
 #pragma once
-#include "NanoVG/NanoVG.h"
+#include "NanoVG/NanoVGWrapper.h"
 
 struct DemoData {
 	int fontNormal, fontBold, fontIcons; 

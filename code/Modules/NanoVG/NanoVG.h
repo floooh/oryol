@@ -1,28 +1,57 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file NanoVG/NanoVG.h
- 
-    Include this header instead of the original nanovg.h in source files
-    which call nanovg functions. It makes sure that the right defines
-    are set and the right OpenGL headers are included.
+    @class Oryol::NanoVG
+    @ingroup NanoVG
+    @brief nanovg initialization and resource management wrapper
 */
-#include "Render/gl/gl_impl.h"
-#ifndef NVG_NO_STDIO
-#define NVG_NO_STDIO
+#include "Core/Types.h"
+#include "Core/Singleton.h"
+#include "Core/Ptr.h"
+#include "IO/Stream/Stream.h"
+#include "Core/Containers/Map.h"
+
+// FIXME: Windows.h workaround
+#ifdef CreateFont
+#undef CreateFont
 #endif
-#include "NanoVG/nanovg/nanovg.h"
-#if ORYOL_OPENGLES2
-#ifndef NANOVG_GLES2_IMPLEMENTATION
-#define NANOVG_GLES2
-#endif
-#elif ORYOL_OSX
-#ifndef NANOVG_GL3_IMPLEMENTATION
-#define NANOVG_GL3
-#endif
-#else
-#ifndef NANOVG_GL2_IMPLEMENTATION
-#define NANOVG_GL2
-#endif
-#endif
-#include "NanoVG/nanovg/nanovg_gl.h"
+
+struct NVGcontext;
+
+namespace Oryol {
+    
+class NanoVG {
+public:
+    /// setup the NanoVG module
+    static void Setup();
+    /// discard the NanoVG module
+    static void Discard();
+    /// check if NanoVG module has been setup
+    static bool IsValid();
+    
+    /// create nanovg context
+    static NVGcontext* CreateContext(int flags);
+    /// destroy nanovg context
+    static void DeleteContext(NVGcontext* ctx);
+    /// synchronously create nanovg image (image file must be preloaded into stream)
+    static int CreateImage(NVGcontext* ctx, const Ptr<Stream>& fileData, int imageFlags);
+    /// delete image
+    static void DeleteImage(NVGcontext* ctx, int imgHandle);
+    /// synchronously create nanovg font (font file must be preloaded into stream)
+    static int CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& fileData);
+    /// delete font
+    static void DeleteFont(NVGcontext* ctx, int fontHandle);
+
+    /// begin nanovg rendering
+    static void BeginFrame(NVGcontext* ctx);
+    /// end nanovg rendering
+    static void EndFrame(NVGcontext* ctx);
+    
+private:
+    struct _state {
+        Map<int, Ptr<Stream>> fontStreams;
+    };
+    static _state *state;
+};
+    
+} // namespace Oryol

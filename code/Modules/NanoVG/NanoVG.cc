@@ -2,7 +2,7 @@
 //  NVGFacade.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "NVGFacade.h"
+#include "NanoVG.h"
 #if ORYOL_OPENGLES2
 #define NANOVG_GLES2_IMPLEMENTATION
 #elif ORYOL_OSX
@@ -10,31 +10,42 @@
 #else
 #define NANOVG_GL2_IMPLEMENTATION
 #endif
-#include "NanoVG.h"
+#include "NanoVGWrapper.h"
 #include "Render/RenderFacade.h"
 
 namespace Oryol {
 
-OryolLocalSingletonImpl(NVGFacade);
+NanoVG::_state* NanoVG::state = nullptr;
     
 //------------------------------------------------------------------------------
-NVGFacade::NVGFacade() {
-    this->SingletonEnsureUnique();
-
-    // make sure that a RenderFacade object exists
+void
+NanoVG::Setup() {
+    o_assert(!IsValid());
+    state = new _state();
     if (!RenderFacade::HasInstance()) {
         o_error("RenderFacade object must be created before NVGFacade!\n");
     }
 }
 
 //------------------------------------------------------------------------------
-NVGFacade::~NVGFacade() {
-    // empty
+void
+NanoVG::Discard() {
+    o_assert(IsValid());
+    delete state;
+    state = nullptr;
+}
+
+//------------------------------------------------------------------------------
+bool
+NanoVG::IsValid() {
+    return nullptr != state;
 }
 
 //------------------------------------------------------------------------------
 NVGcontext*
-NVGFacade::CreateContext(int flags) {
+NanoVG::CreateContext(int flags) {
+    o_assert_dbg(IsValid());
+
     NVGcontext* ctx = nullptr;
     #if ORYOL_OPENGLES2
     ctx = nvgCreateGLES2(flags);
@@ -48,8 +59,10 @@ NVGFacade::CreateContext(int flags) {
 
 //------------------------------------------------------------------------------
 void
-NVGFacade::DeleteContext(NVGcontext* ctx) {
+NanoVG::DeleteContext(NVGcontext* ctx) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
+    
     #if ORYOL_OPENGLES2
     nvgDeleteGLES2(ctx);
     #elif ORYOL_OSX
@@ -61,7 +74,8 @@ NVGFacade::DeleteContext(NVGcontext* ctx) {
 
 //------------------------------------------------------------------------------
 void
-NVGFacade::BeginFrame(NVGcontext* ctx) {
+NanoVG::BeginFrame(NVGcontext* ctx) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     
     const DisplayAttrs& dispAttrs = RenderFacade::Instance()->GetDisplayAttrs();
@@ -75,15 +89,18 @@ NVGFacade::BeginFrame(NVGcontext* ctx) {
 
 //------------------------------------------------------------------------------
 void
-NVGFacade::EndFrame(NVGcontext* ctx) {
+NanoVG::EndFrame(NVGcontext* ctx) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
+
     nvgEndFrame(ctx);
     RenderFacade::Instance()->ResetStateCache();
 }
 
 //------------------------------------------------------------------------------
 int
-NVGFacade::CreateImage(NVGcontext* ctx, const Ptr<Stream>& fileData, int flags) {
+NanoVG::CreateImage(NVGcontext* ctx, const Ptr<Stream>& fileData, int flags) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     o_assert_dbg(fileData.isValid() && (fileData->Size() > 0));
     
@@ -100,8 +117,10 @@ NVGFacade::CreateImage(NVGcontext* ctx, const Ptr<Stream>& fileData, int flags) 
 
 //------------------------------------------------------------------------------
 void
-NVGFacade::DeleteImage(NVGcontext* ctx, int imgHandle) {
+NanoVG::DeleteImage(NVGcontext* ctx, int imgHandle) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
+
     if (0 != imgHandle) {
         nvgDeleteImage(ctx, imgHandle);
     }
@@ -109,7 +128,8 @@ NVGFacade::DeleteImage(NVGcontext* ctx, int imgHandle) {
 
 //------------------------------------------------------------------------------
 int
-NVGFacade::CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& fileData) {
+NanoVG::CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& fileData) {
+    o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     o_assert_dbg(name);
     o_assert_dbg(fileData.isValid() && (fileData->Size() > 0));
@@ -124,7 +144,7 @@ NVGFacade::CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& file
         
         // we need to keep the font memory chunk around until the font is
         // deleted, but it looks like nanovg has no way to delete a font(?)
-        this->fontStreams.AddUnique(fontHandle, fileData);
+        state->fontStreams.AddUnique(fontHandle, fileData);
     }
     return fontHandle;
 }

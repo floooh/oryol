@@ -9,8 +9,8 @@
 #include "Render/RenderFacade.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
-#include "NanoVG/NVGFacade.h"
 #include "NanoVG/NanoVG.h"
+#include "NanoVG/NanoVGWrapper.h"
 #include "demo.h"
 
 using namespace Oryol;
@@ -26,7 +26,6 @@ private:
     void loadAssets();
 
     RenderFacade* render = nullptr;
-    NVGFacade* nvg = nullptr;
     NVGcontext* ctx = nullptr;
     DemoData data;
     IOQueue ioQueue;
@@ -50,9 +49,9 @@ NanoVGApp::OnRunning() {
         const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
         const float64 time = Clock::Now().Since(0).AsSeconds();
         
-        this->nvg->BeginFrame(this->ctx);
+        NanoVG::BeginFrame(this->ctx);
         renderDemo(this->ctx, mouseX, mouseY, w, h, time, blowup, &this->data);
-        this->nvg->EndFrame(this->ctx);
+        NanoVG::EndFrame(this->ctx);
 
         this->render->EndFrame();
     }
@@ -72,8 +71,8 @@ NanoVGApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
     this->render = RenderFacade::CreateSingle(renderSetup);
     Input::Setup();
-    this->nvg = NVGFacade::CreateSingle();
-    this->ctx = this->nvg->CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
+    NanoVG::Setup();
+    this->ctx = NanoVG::CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     
     // start loading assets asynchronously
     this->ioQueue.Start();
@@ -81,17 +80,17 @@ NanoVGApp::OnInit() {
     for (int i = 0; i < 12; i++) {
         str.Format(128, "res:image%d.jpg", i+1);
         this->ioQueue.Add(str.GetString(), [this, i](const Ptr<Stream>& stream) {
-            this->data.images[i] = this->nvg->CreateImage(this->ctx, stream, 0);
+            this->data.images[i] = NanoVG::CreateImage(this->ctx, stream, 0);
         });
     }
     this->ioQueue.Add("res:entypo.ttf", [this](const Ptr<Stream>& stream) {
-        this->data.fontIcons = this->nvg->CreateFont(this->ctx, "icons", stream);
+        this->data.fontIcons = NanoVG::CreateFont(this->ctx, "icons", stream);
     });
     this->ioQueue.Add("res:Roboto-Regular.ttf", [this](const Ptr<Stream>& stream) {
-        this->data.fontNormal = this->nvg->CreateFont(this->ctx, "sans", stream);
+        this->data.fontNormal = NanoVG::CreateFont(this->ctx, "sans", stream);
     });
     this->ioQueue.Add("res:Roboto-Bold.ttf", [this](const Ptr<Stream>& stream) {
-        this->data.fontBold = this->nvg->CreateFont(this->ctx, "sans-bold", stream);
+        this->data.fontBold = NanoVG::CreateFont(this->ctx, "sans-bold", stream);
     });
     
     return App::OnInit();
@@ -103,11 +102,10 @@ NanoVGApp::OnCleanup() {
     // cleanup everything
     this->ioQueue.Stop();
     freeDemoData(this->ctx, &this->data);
-    this->nvg->DeleteContext(this->ctx);
+    NanoVG::DeleteContext(this->ctx);
     this->ctx = nullptr;
-    this->nvg = nullptr;
     this->render = nullptr;
-    NVGFacade::DestroySingle();
+    NanoVG::Discard();
     Input::Discard();
     RenderFacade::DestroySingle();
     IO::Discard();
