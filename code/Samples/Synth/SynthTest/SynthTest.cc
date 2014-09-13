@@ -9,7 +9,6 @@
 #include "Synth/SynthFacade.h"
 
 using namespace Oryol;
-using namespace Oryol::Synth;
 
 // derived application class
 class SynthTestApp : public App {
@@ -25,7 +24,7 @@ private:
     SynthFacade* synth;
     int32 frameCount = 0;
     static const int NumTracks = 4;
-    Op op;
+    SynthOp op;
     const char* modType = "Silence";
 };
 OryolMain(SynthTestApp);
@@ -40,7 +39,7 @@ SynthTestApp::OnInit() {
     synthSetup.UseGPUSynthesizer = false;
     this->synth = SynthFacade::CreateSingle(synthSetup);
     
-    this->op.Code = Op::Square;
+    this->op.Code = SynthOp::Square;
     this->op.FadeIn = 0.05f;
     this->op.Frequency = 660;
     
@@ -83,27 +82,27 @@ SynthTestApp::OnRunning() {
             this->synth->AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::T)) {
-            this->op.Code = Op::Triangle;
+            this->op.Code = SynthOp::Triangle;
             this->synth->AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::Q)) {
-            this->op.Code = Op::Square;
+            this->op.Code = SynthOp::Square;
             this->synth->AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::S)) {
-            this->op.Code = Op::Sine;
+            this->op.Code = SynthOp::Sine;
             this->synth->AddOp(0, 0, this->op);
         }
         else if (kbd.KeyDown(Key::N)) {
-            this->op.Code = Op::Noise;
+            this->op.Code = SynthOp::Noise;
             this->synth->AddOp(0, 0, this->op);
         }
         
         // modulation
         if (kbd.KeyDown(Key::N1)) {
             this->modType = "Silence";
-            Op mod;
-            mod.Code = Op::Const;
+            SynthOp mod;
+            mod.Code = SynthOp::Const;
             mod.FadeIn = 0.1f;
             mod.Amplitude = 0.0f;
             this->synth->AddOp(0, 1, mod);
@@ -111,16 +110,16 @@ SynthTestApp::OnRunning() {
         }
         if (kbd.KeyDown(Key::N2)) {
             this->modType = "Constant One";
-            Op mod;
-            mod.Code = Op::Const;
+            SynthOp mod;
+            mod.Code = SynthOp::Const;
             mod.FadeIn = 0.1f;
             this->synth->AddOp(0, 1, mod);
             this->synth->AddOp(0, 0, this->op);
         }
         if (kbd.KeyDown(Key::N3)) {
             this->modType = "LowFreq Sine";
-            Op mod;
-            mod.Code = Op::Sine;
+            SynthOp mod;
+            mod.Code = SynthOp::Sine;
             mod.FadeIn = 0.1f;
             mod.Frequency = 5.0f;
             mod.Amplitude = 0.5f;
@@ -130,8 +129,8 @@ SynthTestApp::OnRunning() {
         }
         if (kbd.KeyDown(Key::N4)) {
             this->modType = "HiFreq Sawtooth";
-            Op mod;
-            mod.Code = Op::Triangle;
+            SynthOp mod;
+            mod.Code = SynthOp::Triangle;
             mod.FadeIn = 0.1f;
             mod.Frequency = 55.0f;
             mod.Pulse = 0.0f;
@@ -143,18 +142,18 @@ SynthTestApp::OnRunning() {
         if (kbd.KeyDown(Key::N5)) {
             // ASDR modulation
             this->modType = "ADSR";
-            Op attack;
-            attack.Code = Op::Const;
+            SynthOp attack;
+            attack.Code = SynthOp::Const;
             attack.FadeIn = 0.01f;
             attack.Amplitude = 1.0f;
             this->synth->AddOp(0, 1, attack);
-            Op decay;
-            decay.Code = Op::Const;
+            SynthOp decay;
+            decay.Code = SynthOp::Const;
             decay.FadeIn = 0.2f;
             decay.Amplitude = 0.2f;
             this->synth->AddOp(0, 1, decay, 0.01f);
-            Op release;
-            release.Code = Op::Const;
+            SynthOp release;
+            release.Code = SynthOp::Const;
             release.FadeIn = 0.8f;
             release.Amplitude = 0.0f;
             this->synth->AddOp(0, 1, release, 0.3f);
@@ -163,7 +162,7 @@ SynthTestApp::OnRunning() {
     
         this->synth->Update();
         this->debug->Print("\n\n");
-        this->debug->PrintF(" Waveform (T,S,Q,N): %s\n\r", Op::ToString(this->op.Code));
+        this->debug->PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
         this->debug->PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
         this->debug->PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
         this->debug->PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);

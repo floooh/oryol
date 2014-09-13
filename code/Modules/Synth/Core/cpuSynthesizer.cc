@@ -11,7 +11,7 @@
 #include <cstdlib>
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 void
@@ -34,10 +34,10 @@ cpuSynthesizer::synthesizeVoice(int32 voiceIndex, const opBundle& bundle) const 
     for (int32 curTick = bundle.StartTick[voiceIndex]; curTick < bundle.EndTick[voiceIndex]; curTick++) {
         float32 voiceSample = 1.0f;
         for (int trackIndex = 0; trackIndex < synth::NumTracks; trackIndex++) {
-            const Op* opBegin = bundle.Begin[voiceIndex][trackIndex];
-            const Op* opEnd   = bundle.End[voiceIndex][trackIndex];
+            const SynthOp* opBegin = bundle.Begin[voiceIndex][trackIndex];
+            const SynthOp* opEnd   = bundle.End[voiceIndex][trackIndex];
             float32 trackSample = 1.0f;
-            for (const Op* op = opBegin; op < opEnd; op++) {
+            for (const SynthOp* op = opBegin; op < opEnd; op++) {
                 if ((curTick >= op->startTick) && (curTick < op->endTick)) {
                     
                     // compute current sample
@@ -61,19 +61,19 @@ cpuSynthesizer::synthesizeVoice(int32 voiceIndex, const opBundle& bundle) const 
 
 //------------------------------------------------------------------------------
 float32
-cpuSynthesizer::sample(int32 curTick, const Op* op) const {
+cpuSynthesizer::sample(int32 curTick, const SynthOp* op) const {
     // shortcut for const output
-    if (Op::Const == op->Code) {
+    if (SynthOp::Const == op->Code) {
         return op->Amplitude + op->Bias;
     }
-    else if (Op::Nop == op->Code) {
+    else if (SynthOp::Nop == op->Code) {
         return 0.0f;
     }
     
     // generate wave form
     int32 tick = (curTick - op->startTick) % op->freqLoopTicks;
     float32 t = float32(tick) / float32(op->freqLoopTicks); // t now 0..1 position in wave form
-    if (Op::Sine == op->Code) {
+    if (SynthOp::Sine == op->Code) {
         // sine wave
         #if ORYOL_ANDROID || ORYOL_LINUX
         return (std::sin(t * M_PI * 2.0f) * op->Amplitude) + op->Bias;
@@ -81,7 +81,7 @@ cpuSynthesizer::sample(int32 curTick, const Op* op) const {
         return (std::sinf(t * M_PI * 2.0f) * op->Amplitude) + op->Bias;
         #endif
     }
-    else if (Op::Square == op->Code) {
+    else if (SynthOp::Square == op->Code) {
         // square wave with Pulse as pulse with
         if (t <= op->Pulse) {
             return op->Amplitude + op->Bias;
@@ -89,7 +89,7 @@ cpuSynthesizer::sample(int32 curTick, const Op* op) const {
         else {
             return -op->Amplitude + op->Bias;
         }
-    } else if (Op::Triangle == op->Code) {
+    } else if (SynthOp::Triangle == op->Code) {
         // triangle with shifted triangle top position
         // Pulse == 0.0: sawtooth
         // Pulse == 0.5: classic triangle
@@ -111,5 +111,5 @@ cpuSynthesizer::sample(int32 curTick, const Op* op) const {
     }
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

@@ -6,7 +6,7 @@
 #include <algorithm>
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 voiceTrack::voiceTrack() {
@@ -20,7 +20,7 @@ voiceTrack::~voiceTrack() {
 
 //------------------------------------------------------------------------------
 void
-voiceTrack::AddOp(const Op& op) {
+voiceTrack::AddOp(const SynthOp& op) {
 
     // find insertion position, and truncate the track (discard any ops after it)
     if (!this->track.Empty()) {
@@ -34,7 +34,7 @@ voiceTrack::AddOp(const Op& op) {
     
     // fix the end tick of the previous op
     if (!this->track.Empty()) {
-        Op& prev = this->track.Back();
+        SynthOp& prev = this->track.Back();
         prev.endTick = op.startTick + op.FadeInTicks;
     }
     this->track.Add(op);
@@ -56,7 +56,7 @@ voiceTrack::DiscardAllOps() {
 
 //------------------------------------------------------------------------------
 void
-voiceTrack::GatherOps(int32 startTick, int32 endTick, Op*& outOpBegin, Op*& outOpEnd) {
+voiceTrack::GatherOps(int32 startTick, int32 endTick, SynthOp*& outOpBegin, SynthOp*& outOpEnd) {
     outOpBegin = nullptr;
     outOpEnd = nullptr;
     
@@ -79,5 +79,5 @@ voiceTrack::GatherOps(int32 startTick, int32 endTick, Op*& outOpBegin, Op*& outO
     }
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

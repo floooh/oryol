@@ -7,7 +7,7 @@
 #include "Time/Clock.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 soundMgrBase::soundMgrBase() :
@@ -36,7 +36,7 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
     
     // add an initial NOP operation to first track of each voice,
     // this will generate all 0.0 samples instead of 1.0s
-    Op nop;
+    SynthOp nop;
     for (int i = 0; i < synth::NumVoices; i++) {
         this->AddOp(i, 0, nop, 0.0f);
     }
@@ -71,15 +71,15 @@ soundMgrBase::Update() {
 
 //------------------------------------------------------------------------------
 void
-soundMgrBase::AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset) {
+soundMgrBase::AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset) {
     o_assert_range_dbg(voice, synth::NumVoices);
 
-    Op addOp = op;
+    SynthOp addOp = op;
     addOp.startTick     = this->curTick + synth::TimeToTicks(timeOffset, synth::SampleRate);
     addOp.freqLoopTicks = float32(synth::SampleRate) / addOp.Frequency;
     addOp.FadeInTicks   = synth::TimeToTicks(addOp.FadeIn, synth::SampleRate);
     this->voices[voice].AddOp(track, addOp);
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

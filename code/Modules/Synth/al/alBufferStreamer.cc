@@ -5,7 +5,7 @@
 #include "alBufferStreamer.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 alBufferStreamer::alBufferStreamer() :
@@ -133,5 +133,5 @@ alBufferStreamer::Enqueue(const void* ptr, int32 numBytes) {
 }
 
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

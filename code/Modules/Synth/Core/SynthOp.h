@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::Op
+    @class Oryol::SynthOp
+    @ingroup Synth
     @brief a single wave synthesis 'instruction'
     
     Op objects are instructions for the waveform synthesizer. To create the
@@ -14,9 +15,8 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Synth {
     
-class Op {
+class SynthOp {
 public:
     /// the op-code
     enum Code {
@@ -50,7 +50,7 @@ public:
     /// end tick (private, computed)
     int32 endTick = (1<<30);
     /// less-then operator for sorting by StartTick
-    bool operator<(const Op& rhs) const {
+    bool operator<(const SynthOp& rhs) const {
         return this->startTick < rhs.startTick;
     };
     /// convert op-code to string
@@ -67,5 +67,4 @@ public:
     };
 };
     
-} // namespace Synth
 } // namespace Oryol

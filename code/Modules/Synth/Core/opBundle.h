@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::opBundle
+    @class Oryol::_priv::opBundle
+    @ingroup _priv
     @brief holds all info needed to fill a sample buffer
 */
-#include "Synth/Core/Op.h"
+#include "Synth/Core/SynthOp.h"
 #include "Synth/Core/synth.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class opBundle {
 public:
@@ -33,14 +34,14 @@ public:
     /// sample buffer end tick
     int32 EndTick[synth::NumVoices];
     /// pointers to start op
-    Op* Begin[synth::NumVoices][synth::NumTracks];
+    SynthOp* Begin[synth::NumVoices][synth::NumTracks];
     /// one-past-end-pointers to end op
-    Op* End[synth::NumVoices][synth::NumTracks];
+    SynthOp* End[synth::NumVoices][synth::NumTracks];
     /// sample buffer pointers
     void* Buffer[synth::NumVoices];
     /// sample buffer size in bytes
     int32 BufferNumBytes;
 };
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

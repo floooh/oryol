@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::SynthSetup
+    @class Oryol::SynthSetup
+    @ingroup Synth
     @brief setup parameters for the Synth subsystem
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Synth {
     
 class SynthSetup {
 public:
@@ -19,5 +19,4 @@ public:
     int32 WaveFormNumSamples = 32;
 };
     
-} // namespace Synth
 } // namespace Oryol

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::alSoundMgr
+    @class Oryol::_priv::alSoundMgr
+    @ingroup _priv
     @brief OpenAL sound system wrapper
 */
 #include "Synth/base/soundMgrBase.h"
@@ -9,7 +10,7 @@
 #include "Synth/al/alBufferStreamer.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class alSoundMgr : public soundMgrBase {
 public:
@@ -34,5 +35,5 @@ private:
     alBufferStreamer streamer;
 };
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

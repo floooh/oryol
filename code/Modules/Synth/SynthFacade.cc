@@ -5,7 +5,6 @@
 #include "SynthFacade.h"
 
 namespace Oryol {
-namespace Synth {
 
 OryolLocalSingletonImpl(SynthFacade);
 
@@ -27,9 +26,8 @@ SynthFacade::Update() {
 
 //------------------------------------------------------------------------------
 void
-SynthFacade::AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset) {
+SynthFacade::AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset) {
     this->soundManager.AddOp(voice, track, op, timeOffset);
 }
 
-} // namespace Synth
 } // namespace Oryol

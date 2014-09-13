@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::gpuSynthesizer
+    @class Oryol::_priv::gpuSynthesizer
+    @ingroup _priv
     @brief the GPU-driven synthesizer core
     
     This 'renders' sample buffers on the GPU.
@@ -11,7 +12,7 @@
 #include "Resource/Id.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class gpuSynthesizer {
 public:
@@ -36,5 +37,5 @@ private:
     Id drawState;
 };
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

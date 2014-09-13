@@ -7,7 +7,7 @@
 #include "Synth/Core/synth.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 voice::voice() :
@@ -43,7 +43,7 @@ voice::Discard() {
 
 //------------------------------------------------------------------------------
 void
-voice::AddOp(int32 track, const Op& op) {
+voice::AddOp(int32 track, const SynthOp& op) {
     o_assert_dbg(this->isValid);
     o_assert_range_dbg(track, synth::NumTracks);
     this->tracks[track].AddOp(op);
@@ -60,5 +60,5 @@ voice::GatherOps(int32 startTick, int32 endTick, opBundle& inOutBundle) {
     }
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

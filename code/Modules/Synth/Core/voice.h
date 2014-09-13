@@ -1,18 +1,19 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::voice
+    @class Oryol::_priv::voice
+    @ingroup _priv
     @brief synthesize samples for a single voice made of multiple op-tracks
 */
 #include "Core/Types.h"
 #include "Synth/Core/SynthSetup.h"
-#include "Synth/Core/Op.h"
+#include "Synth/Core/SynthOp.h"
 #include "Synth/Core/synth.h"
 #include "Synth/Core/voiceTrack.h"
 #include "Synth/Core/opBundle.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class voice {
 public:
@@ -29,7 +30,7 @@ public:
     bool IsValid() const;
     
     /// add new op to end of track
-    void AddOp(int32 track, const Op& op);
+    void AddOp(int32 track, const SynthOp& op);
     /// gather ops in tick range into opBundle
     void GatherOps(int32 startTick, int32 endTick, opBundle& inOutBundle);
 
@@ -45,5 +46,5 @@ voice::IsValid() const {
     return this->isValid;
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

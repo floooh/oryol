@@ -9,7 +9,7 @@
 #include "Core/Log.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 gpuSynthesizer::gpuSynthesizer() :
@@ -78,5 +78,5 @@ gpuSynthesizer::Synthesize(const opBundle& bundle) const {
     Log::Info("s0=%d, s1=%d\n", s0, s1);
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

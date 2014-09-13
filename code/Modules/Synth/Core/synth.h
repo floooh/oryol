@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::synth
+    @class Oryol::_priv::synth
+    @ingroup _priv
     @brief audio synthesizing utility functions
     
     FIXME: most of this stuff should eventually go onto the GPU,
@@ -11,7 +12,7 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class synth {
 public:
@@ -54,5 +55,5 @@ synth::SampleDuration(int32 freq) {
     return 1.0f / float32(freq);
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

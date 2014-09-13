@@ -8,7 +8,7 @@
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 alSoundMgr::alSoundMgr() :
@@ -137,5 +137,5 @@ alSoundMgr::Update() {
     }
 }
 
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

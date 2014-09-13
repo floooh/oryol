@@ -1,15 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::SynthFacade
+    @class Oryol::SynthFacade
+    @ingroup Synth
     @brief the Synth module implements a chip-tune audio system
 */
 #include "Core/Singleton.h"
 #include "Synth/Core/soundMgr.h"
-#include "Synth/Core/Op.h"
+#include "Synth/Core/SynthOp.h"
 
 namespace Oryol {
-namespace Synth {
     
 class SynthFacade {
     OryolLocalSingletonDecl(SynthFacade);
@@ -23,11 +23,10 @@ public:
     void Update();
 
     /// add a sound synthesis Op
-    void AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset = 0.0f);
+    void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset = 0.0f);
     
 private:
-    soundMgr soundManager;
+    _priv::soundMgr soundManager;
 };
     
-} // namespace Sound
 } // namespace Oryol

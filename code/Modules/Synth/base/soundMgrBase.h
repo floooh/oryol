@@ -1,17 +1,18 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::soundMgrBase
+    @class Oryol::_priv::soundMgrBase
+    @ingroup _priv
     @brief sound manager base class
 */
 #include "Synth/Core/SynthSetup.h"
-#include "Synth/Core/Op.h"
+#include "Synth/Core/SynthOp.h"
 #include "Synth/Core/voice.h"
 #include "Synth/Core/cpuSynthesizer.h"
 #include "Synth/Core/gpuSynthesizer.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class soundMgrBase {
 public:
@@ -31,7 +32,7 @@ public:
     void Update();
     
     /// add an op to a voice track
-    void AddOp(int32 voice, int32 track, const Op& op, float32 timeOffset);
+    void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset);
     
 protected:
     bool isValid;
@@ -43,5 +44,5 @@ protected:
     gpuSynthesizer gpuSynth;
 };
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol

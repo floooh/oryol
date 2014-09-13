@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Synth::alBufferStreamer.h
+    @class Oryol::_priv::alBufferStreamer.h
+    @ingroup _priv
     @brief manage buffer queueing and reuse
     
     This is the heart of the buffer streaming system. A number of small buffers
@@ -27,7 +28,7 @@
 #include "Synth/Core/synth.h"
 
 namespace Oryol {
-namespace Synth {
+namespace _priv {
     
 class alBufferStreamer {
 public:
@@ -58,7 +59,7 @@ private:
     Queue<ALuint> freeBuffers;
 };
     
-} // namespace Synth
+} // namespace _priv
 } // namespace Oryol
  
  
