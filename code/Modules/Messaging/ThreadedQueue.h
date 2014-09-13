@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::ThreadedQueue
+    @class Oryol::ThreadedQueue
+    @ingroup Messaging
     @brief a threaded message queue port
     
     A message Port which acts as a threaded message queue. Will create
@@ -31,7 +32,6 @@
 #endif
 
 namespace Oryol {
-namespace Messaging {
     
 class ThreadedQueue : public Port {
     OryolClassPoolAllocDecl(ThreadedQueue);
@@ -97,5 +97,4 @@ protected:
     bool threadStopped;
 };
     
-} // namespace Messaging
 } // namespace Oryol

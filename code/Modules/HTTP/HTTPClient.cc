@@ -9,8 +9,6 @@ namespace HTTP {
     
 OryolClassImpl(HTTPClient);
 
-using namespace Messaging;
-
 //------------------------------------------------------------------------------
 HTTPClient::HTTPClient() {
     // empty

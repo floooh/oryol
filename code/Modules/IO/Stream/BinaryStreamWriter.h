@@ -38,10 +38,10 @@ BinaryStreamWriter::Write(const TYPE& val) {
     // better to Map/Unmap only once and call Encode many times
     // (which is a case for a code generator)
     bool retval = false;
-    int32 neededSize = Messaging::Serializer::EncodedSize<TYPE>(val);
+    int32 neededSize = Serializer::EncodedSize<TYPE>(val);
     uint8* dstPtr = this->stream->MapWrite(neededSize);
     if (nullptr != dstPtr) {
-        const uint8* endPtr = Messaging::Serializer::Encode<TYPE>(val, dstPtr, dstPtr + neededSize);
+        const uint8* endPtr = Serializer::Encode<TYPE>(val, dstPtr, dstPtr + neededSize);
         if (nullptr != endPtr) {
             o_assert((endPtr - dstPtr) == neededSize);
             retval = true;
@@ -55,10 +55,10 @@ BinaryStreamWriter::Write(const TYPE& val) {
 template<typename TYPE> bool
 BinaryStreamWriter::Write(const Array<TYPE>& vals) {
     bool retval = false;
-    int32 neededSize = Messaging::Serializer::EncodedArraySize<TYPE>(vals);
+    int32 neededSize = Serializer::EncodedArraySize<TYPE>(vals);
     uint8* dstPtr = this->stream->MapWrite(neededSize);
     if (nullptr != dstPtr) {
-        const uint8* endPtr = Messaging::Serializer::EncodeArray<TYPE>(vals, dstPtr, dstPtr + neededSize);
+        const uint8* endPtr = Serializer::EncodeArray<TYPE>(vals, dstPtr, dstPtr + neededSize);
         if (nullptr != endPtr) {
             o_assert((endPtr - dstPtr) == neededSize);
             retval = true;

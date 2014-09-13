@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:4#
+/* #version:5#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -18,51 +18,51 @@ namespace Oryol {
 namespace HTTP {
 class HTTPProtocol {
 public:
-    static Messaging::ProtocolIdType GetProtocolId() {
+    static ProtocolIdType GetProtocolId() {
         return 'HTPR';
     };
     class MessageId {
     public:
         enum {
-            HTTPResponseId = Messaging::Protocol::MessageId::NumMessageIds, 
+            HTTPResponseId = Protocol::MessageId::NumMessageIds, 
             HTTPRequestId,
             NumMessageIds
         };
-        static const char* ToString(Messaging::MessageIdType c) {
+        static const char* ToString(MessageIdType c) {
             switch (c) {
                 case HTTPResponseId: return "HTTPResponseId";
                 case HTTPRequestId: return "HTTPRequestId";
                 default: return "InvalidMessageId";
             }
         };
-        static Messaging::MessageIdType FromString(const char* str) {
+        static MessageIdType FromString(const char* str) {
             if (std::strcmp("HTTPResponseId", str) == 0) return HTTPResponseId;
             if (std::strcmp("HTTPRequestId", str) == 0) return HTTPRequestId;
-            return Messaging::InvalidMessageId;
+            return InvalidMessageId;
         };
     };
-    typedef Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Message> (*CreateCallback)();
     static CreateCallback jumpTable[HTTPProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Message> Create(MessageIdType id);
     };
-    class HTTPResponse : public Messaging::Message {
+    class HTTPResponse : public Message {
         OryolClassPoolAllocDecl(HTTPResponse);
     public:
         HTTPResponse() {
             this->msgId = MessageId::HTTPResponseId;
             this->status = IOStatus::InvalidIOStatus;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::HTTPResponseId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'HTPR') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
         void SetStatus(const IOStatus::Code& val) {
             this->status = val;
@@ -94,22 +94,22 @@ private:
         Ptr<Stream> body;
         String errordesc;
     };
-    class HTTPRequest : public Messaging::Message {
+    class HTTPRequest : public Message {
         OryolClassPoolAllocDecl(HTTPRequest);
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;
             this->method = HTTP::HTTPMethod::Get;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::HTTPRequestId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'HTPR') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
         void SetMethod(const HTTP::HTTPMethod::Code& val) {
             this->method = val;

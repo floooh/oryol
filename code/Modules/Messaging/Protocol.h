@@ -1,16 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Protocol
-    
-    Base message protocol, all other protocols are derived from this.
+    @class Oryol::Protocol
+    @ingroup Messaging
+    @brief message protocol base class
 */
 #include "Core/Types.h"
 #include "Messaging/Types.h"
 #include "Messaging/Message.h"
 
 namespace Oryol {
-namespace Messaging {
 
 class Protocol {
 public:
@@ -27,23 +26,22 @@ public:
         };
         
         /// convert message id to string
-        static const char* ToString(Messaging::MessageIdType c) {
+        static const char* ToString(MessageIdType c) {
             return "InvalidMessageId";
         };
         /// convert string to message id
-        static Messaging::MessageIdType FromString(const char* str) {
-            return Messaging::InvalidMessageId;
+        static MessageIdType FromString(const char* str) {
+            return InvalidMessageId;
         };
     };
 
     /// factory class for the protocol
     class Factory {
     public:
-        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id) {
-            return Messaging::Message::Create();
+        static Ptr<Message> Create(MessageIdType id) {
+            return Message::Create();
         };
     };
 };
 
-} // namespace Messaging
 } // namespace Oryol

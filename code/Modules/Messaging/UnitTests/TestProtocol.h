@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:4#
+/* #version:5#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -11,21 +11,20 @@
 #include "Core/String/StringAtom.h"
 
 namespace Oryol {
-namespace Messaging {
 class TestProtocol {
 public:
-    static Messaging::ProtocolIdType GetProtocolId() {
+    static ProtocolIdType GetProtocolId() {
         return 'TSTP';
     };
     class MessageId {
     public:
         enum {
-            TestMsg1Id = Messaging::Protocol::MessageId::NumMessageIds, 
+            TestMsg1Id = Protocol::MessageId::NumMessageIds, 
             TestMsg2Id,
             TestArrayMsgId,
             NumMessageIds
         };
-        static const char* ToString(Messaging::MessageIdType c) {
+        static const char* ToString(MessageIdType c) {
             switch (c) {
                 case TestMsg1Id: return "TestMsg1Id";
                 case TestMsg2Id: return "TestMsg2Id";
@@ -33,20 +32,20 @@ public:
                 default: return "InvalidMessageId";
             }
         };
-        static Messaging::MessageIdType FromString(const char* str) {
+        static MessageIdType FromString(const char* str) {
             if (std::strcmp("TestMsg1Id", str) == 0) return TestMsg1Id;
             if (std::strcmp("TestMsg2Id", str) == 0) return TestMsg2Id;
             if (std::strcmp("TestArrayMsgId", str) == 0) return TestArrayMsgId;
-            return Messaging::InvalidMessageId;
+            return InvalidMessageId;
         };
     };
-    typedef Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Message> (*CreateCallback)();
     static CreateCallback jumpTable[TestProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Message> Create(MessageIdType id);
     };
-    class TestMsg1 : public Messaging::Message {
+    class TestMsg1 : public Message {
         OryolClassPoolAllocDecl(TestMsg1);
     public:
         TestMsg1() {
@@ -62,15 +61,15 @@ public:
             this->float32val = 123.0f;
             this->float64val = 12.0;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::TestMsg1Id;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'TSTP') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
         virtual int32 EncodedSize() const override;
         virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
@@ -154,13 +153,13 @@ private:
             this->msgId = MessageId::TestMsg2Id;
             this->stringval = "Test";
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::TestMsg2Id;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'TSTP') return true;
             else return TestMsg1::IsMemberOf(protId);
         };
@@ -183,21 +182,21 @@ private:
         String stringval;
         StringAtom stringatomval;
     };
-    class TestArrayMsg : public Messaging::Message {
+    class TestArrayMsg : public Message {
         OryolClassPoolAllocDecl(TestArrayMsg);
     public:
         TestArrayMsg() {
             this->msgId = MessageId::TestArrayMsgId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::TestArrayMsgId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'TSTP') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
         virtual int32 EncodedSize() const override;
         virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
@@ -219,5 +218,4 @@ private:
         Array<String> stringarrayval;
     };
 };
-}
 }

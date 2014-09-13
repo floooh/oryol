@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:4#
+/* #version:5#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -15,13 +15,13 @@
 namespace Oryol {
 class IOProtocol {
 public:
-    static Messaging::ProtocolIdType GetProtocolId() {
+    static ProtocolIdType GetProtocolId() {
         return 'IOPT';
     };
     class MessageId {
     public:
         enum {
-            RequestId = Messaging::Protocol::MessageId::NumMessageIds, 
+            RequestId = Protocol::MessageId::NumMessageIds, 
             GetId,
             GetRangeId,
             notifyLanesId,
@@ -30,7 +30,7 @@ public:
             notifyFileSystemAddedId,
             NumMessageIds
         };
-        static const char* ToString(Messaging::MessageIdType c) {
+        static const char* ToString(MessageIdType c) {
             switch (c) {
                 case RequestId: return "RequestId";
                 case GetId: return "GetId";
@@ -42,7 +42,7 @@ public:
                 default: return "InvalidMessageId";
             }
         };
-        static Messaging::MessageIdType FromString(const char* str) {
+        static MessageIdType FromString(const char* str) {
             if (std::strcmp("RequestId", str) == 0) return RequestId;
             if (std::strcmp("GetId", str) == 0) return GetId;
             if (std::strcmp("GetRangeId", str) == 0) return GetRangeId;
@@ -50,16 +50,16 @@ public:
             if (std::strcmp("notifyFileSystemRemovedId", str) == 0) return notifyFileSystemRemovedId;
             if (std::strcmp("notifyFileSystemReplacedId", str) == 0) return notifyFileSystemReplacedId;
             if (std::strcmp("notifyFileSystemAddedId", str) == 0) return notifyFileSystemAddedId;
-            return Messaging::InvalidMessageId;
+            return InvalidMessageId;
         };
     };
-    typedef Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Message> (*CreateCallback)();
     static CreateCallback jumpTable[IOProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Message> Create(MessageIdType id);
     };
-    class Request : public Messaging::Message {
+    class Request : public Message {
         OryolClassPoolAllocDecl(Request);
     public:
         Request() {
@@ -69,15 +69,15 @@ public:
             this->cachewriteenabled = false;
             this->status = IOStatus::InvalidIOStatus;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::RequestId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
         void SetURL(const URL& val) {
             this->url = val;
@@ -129,13 +129,13 @@ private:
         Get() {
             this->msgId = MessageId::GetId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::GetId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
             else return Request::IsMemberOf(protId);
         };
@@ -156,13 +156,13 @@ private:
             this->startoffset = 0;
             this->endoffset = 0;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::GetRangeId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
             else return Get::IsMemberOf(protId);
         };
@@ -182,21 +182,21 @@ private:
         int32 startoffset;
         int32 endoffset;
     };
-    class notifyLanes : public Messaging::Message {
+    class notifyLanes : public Message {
         OryolClassPoolAllocDecl(notifyLanes);
     public:
         notifyLanes() {
             this->msgId = MessageId::notifyLanesId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::notifyLanesId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
 private:
     };
@@ -206,13 +206,13 @@ private:
         notifyFileSystemRemoved() {
             this->msgId = MessageId::notifyFileSystemRemovedId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemRemovedId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
@@ -231,13 +231,13 @@ private:
         notifyFileSystemReplaced() {
             this->msgId = MessageId::notifyFileSystemReplacedId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemReplacedId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
@@ -256,13 +256,13 @@ private:
         notifyFileSystemAdded() {
             this->msgId = MessageId::notifyFileSystemAddedId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemAddedId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };

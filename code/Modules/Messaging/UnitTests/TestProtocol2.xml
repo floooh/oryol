@@ -1,11 +1,10 @@
 <Generator type="MessageProtocol"
-           ns="Messaging"
            name="TestProtocol2"
            id="TSP2"
-           parent="Messaging::TestProtocol"
+           parent="TestProtocol"
            parenthdr="Messaging/UnitTests/TestProtocol.h" >
 
-    <Message name="TestMsgEx" parent="Messaging::TestProtocol::TestMsg1">
+    <Message name="TestMsgEx" parent="TestProtocol::TestMsg1">
         <Attr name="ExVal2" type="int8" />
     </Message>
 

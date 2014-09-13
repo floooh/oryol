@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Port
+    @class Oryol::Port
+    @ingroup Messaging
     @brief base class for message ports
     
     A Port is a generic Message handler. It receives a Message in the
@@ -21,7 +22,6 @@
 #include "Messaging/Message.h"
 
 namespace Oryol {
-namespace Messaging {
 
 class Port : public RefCounted {
     OryolClassDecl(Port);
@@ -36,5 +36,4 @@ public:
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork();
 };
-} // namespace Messaging
 } // namespace Oryol

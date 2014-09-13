@@ -5,7 +5,6 @@
 #include "Message.h"
 
 namespace Oryol {
-namespace Messaging {
     
 OryolClassImpl(Message);
 
@@ -71,5 +70,4 @@ Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
     return srcPtr;
 }
     
-} // namespace Messaging
 } // namespace Oryol

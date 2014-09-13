@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Dispatcher
+    @class Oryol::Dispatcher
+    @ingroup Messaging
     @brief call message handler functions on incoming messages
     
     A Dispatcher is a Port where message handler functions for a specific
@@ -25,7 +26,6 @@
 #include "Messaging/Port.h"
 
 namespace Oryol {
-namespace Messaging {
 
 typedef std::function<void(const Ptr<Message>&)> HandlerFunc;
 
@@ -99,5 +99,4 @@ Dispatcher<PROTOCOL>::Unsubscribe() {
     this->jumpTable[classMsgId] = HandlerFunc();
 }
 
-} // namespace Messaging
 } // namespace Oryol

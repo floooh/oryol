@@ -5,7 +5,6 @@
 #include "Broadcaster.h"
 
 namespace Oryol {
-namespace Messaging {
     
 OryolClassPoolAllocImpl(Broadcaster);
 
@@ -58,5 +57,4 @@ Broadcaster::GetSubscribers() const {
     return this->subscribers;
 }
     
-} // namespace Broadcaster
 } // namespace Oryol

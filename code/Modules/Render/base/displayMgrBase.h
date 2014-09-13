@@ -40,17 +40,17 @@ public:
     const DisplayAttrs& GetDisplayAttrs() const;
     
     /// attach a display event handler
-    void AttachDisplayEventHandler(const Ptr<Messaging::Port>& handler);
+    void AttachDisplayEventHandler(const Ptr<Port>& handler);
     /// detach display event handler
-    void DetachDisplayEventHandler(const Ptr<Messaging::Port>& handler);
+    void DetachDisplayEventHandler(const Ptr<Port>& handler);
 
 protected:
     /// notify event handlers, all handlers get the same message object
-    void notifyEventHandlers(const Ptr<Messaging::Message>& msg);
+    void notifyEventHandlers(const Ptr<Message>& msg);
 
     RenderSetup renderSetup;
     DisplayAttrs displayAttrs;
-    Array<Ptr<Messaging::Port>> handlers;
+    Array<Ptr<Port>> handlers;
     bool displayValid;
 };
     

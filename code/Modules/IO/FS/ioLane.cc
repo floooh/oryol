@@ -11,8 +11,6 @@ namespace _priv {
 
 OryolClassImpl(ioLane);
 
-using namespace Messaging;
-
 //------------------------------------------------------------------------------
 ioLane::ioLane() {
     // let our thread wake up from time to time

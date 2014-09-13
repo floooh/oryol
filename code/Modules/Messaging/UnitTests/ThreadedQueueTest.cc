@@ -10,7 +10,6 @@
 #include <thread>
 
 using namespace Oryol;
-using namespace Oryol::Messaging;
 using namespace std::chrono;
 
 // message handling functions (these run in threads)

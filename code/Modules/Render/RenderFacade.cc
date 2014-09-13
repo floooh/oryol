@@ -10,7 +10,6 @@ namespace Render {
 OryolLocalSingletonImpl(RenderFacade);
 
 using namespace Resource;
-using namespace Messaging;
     
 //------------------------------------------------------------------------------
 RenderFacade::RenderFacade(const RenderSetup& setup) :

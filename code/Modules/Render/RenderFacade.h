@@ -36,9 +36,9 @@ public:
     bool QuitRequested() const;
     
     /// attach a display event handler
-    void AttachEventHandler(const Ptr<Messaging::Port>& handler);
+    void AttachEventHandler(const Ptr<Port>& handler);
     /// detach a display event handler
-    void DetachEventHandler(const Ptr<Messaging::Port>& handler);
+    void DetachEventHandler(const Ptr<Port>& handler);
     
     /// get the original render setup object
     const RenderSetup& GetRenderSetup() const;

@@ -9,7 +9,6 @@
 #include "TestProtocol2.h"
 
 using namespace Oryol;
-using namespace Oryol::Messaging;
 
 // a global message handler function
 static int32 val = 0;

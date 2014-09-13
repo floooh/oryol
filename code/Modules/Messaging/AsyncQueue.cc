@@ -5,7 +5,6 @@
 #include "AsyncQueue.h"
 
 namespace Oryol {
-namespace Messaging {
     
 OryolClassPoolAllocImpl(AsyncQueue);
 
@@ -64,5 +63,4 @@ AsyncQueue::GetNumQueuedMessages() const {
     return this->queue.Size();
 }
 
-} // namespace Messaging
 } // namespace Oryol

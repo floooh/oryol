@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief controls one IO lane thread
     
-    @todo: IO::ioLane description
+    @todo: ioLane description
 */
 #include "Messaging/ThreadedQueue.h"
 #include "Core/Containers/Map.h"
@@ -16,7 +16,7 @@
 namespace Oryol {
 namespace _priv {
 
-class ioLane : public Messaging::ThreadedQueue {
+class ioLane : public ThreadedQueue {
     OryolClassDecl(ioLane);
 public:
     /// constructor

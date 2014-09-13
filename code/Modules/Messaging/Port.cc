@@ -5,7 +5,6 @@
 #include "Port.h"
 
 namespace Oryol {
-namespace Messaging {
     
 OryolClassImpl(Port);
     
@@ -31,5 +30,4 @@ Port::DoWork() {
     // empty, override in subclass
 }
 
-} // namespace Messaging
 } // namespace Oryol

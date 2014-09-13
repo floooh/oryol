@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:4#
+/* #version:5#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -12,18 +12,18 @@ namespace Oryol {
 namespace Render {
 class RenderProtocol {
 public:
-    static Messaging::ProtocolIdType GetProtocolId() {
+    static ProtocolIdType GetProtocolId() {
         return 'RRPT';
     };
     class MessageId {
     public:
         enum {
-            DisplaySetupId = Messaging::Protocol::MessageId::NumMessageIds, 
+            DisplaySetupId = Protocol::MessageId::NumMessageIds, 
             DisplayDiscardedId,
             DisplayModifiedId,
             NumMessageIds
         };
-        static const char* ToString(Messaging::MessageIdType c) {
+        static const char* ToString(MessageIdType c) {
             switch (c) {
                 case DisplaySetupId: return "DisplaySetupId";
                 case DisplayDiscardedId: return "DisplayDiscardedId";
@@ -31,70 +31,70 @@ public:
                 default: return "InvalidMessageId";
             }
         };
-        static Messaging::MessageIdType FromString(const char* str) {
+        static MessageIdType FromString(const char* str) {
             if (std::strcmp("DisplaySetupId", str) == 0) return DisplaySetupId;
             if (std::strcmp("DisplayDiscardedId", str) == 0) return DisplayDiscardedId;
             if (std::strcmp("DisplayModifiedId", str) == 0) return DisplayModifiedId;
-            return Messaging::InvalidMessageId;
+            return InvalidMessageId;
         };
     };
-    typedef Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Message> (*CreateCallback)();
     static CreateCallback jumpTable[RenderProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Message> Create(MessageIdType id);
     };
-    class DisplaySetup : public Messaging::Message {
+    class DisplaySetup : public Message {
         OryolClassPoolAllocDecl(DisplaySetup);
     public:
         DisplaySetup() {
             this->msgId = MessageId::DisplaySetupId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::DisplaySetupId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'RRPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
 private:
     };
-    class DisplayDiscarded : public Messaging::Message {
+    class DisplayDiscarded : public Message {
         OryolClassPoolAllocDecl(DisplayDiscarded);
     public:
         DisplayDiscarded() {
             this->msgId = MessageId::DisplayDiscardedId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::DisplayDiscardedId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'RRPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
 private:
     };
-    class DisplayModified : public Messaging::Message {
+    class DisplayModified : public Message {
         OryolClassPoolAllocDecl(DisplayModified);
     public:
         DisplayModified() {
             this->msgId = MessageId::DisplayModifiedId;
         };
-        static Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Message> FactoryCreate() {
             return Create();
         };
-        static Messaging::MessageIdType ClassMessageId() {
+        static MessageIdType ClassMessageId() {
             return MessageId::DisplayModifiedId;
         };
-        virtual bool IsMemberOf(Messaging::ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
             if (protId == 'RRPT') return true;
-            else return Messaging::Message::IsMemberOf(protId);
+            else return Message::IsMemberOf(protId);
         };
 private:
     };

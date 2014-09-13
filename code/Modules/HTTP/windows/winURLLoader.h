@@ -32,7 +32,7 @@ private:
     /// process a single HTTP request
     void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// open connection, or get already open connection
-    HINTERNET obtainConnection(const IO::URL& url);
+    HINTERNET obtainConnection(const URL& url);
     /// garbage collect expired connections (called from doWork)
     void garbageCollectConnections();
 

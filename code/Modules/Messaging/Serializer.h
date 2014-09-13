@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Serializer
+    @class Oryol::Serializer
+    @ingroup Messaging
     @brief Serializer template class for a specific data type
     
     This is a simple template class which knows how to 
@@ -14,7 +15,6 @@
 #include "Core/String/StringAtom.h"
 
 namespace Oryol {
-namespace Messaging {
     
 class Serializer {
 public:
@@ -216,5 +216,4 @@ Serializer::DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Array<TYPE>& o
     return nullptr;
 }
 
-} // namespace Messagin
 } // namespace Oryol

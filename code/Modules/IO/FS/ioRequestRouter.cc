@@ -7,8 +7,6 @@
 namespace Oryol {
 namespace _priv {
 
-using namespace Messaging;
-
 //------------------------------------------------------------------------------
 ioRequestRouter::ioRequestRouter(int32 numLanes_) :
 numLanes(numLanes_) {

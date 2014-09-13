@@ -22,7 +22,7 @@
 namespace Oryol {
 namespace HTTP {
 
-class HTTPClient : public Messaging::Port {
+class HTTPClient : public Port {
     OryolClassDecl(HTTPClient);
 public:
     /// constructor
@@ -31,7 +31,7 @@ public:
     virtual ~HTTPClient();
     
     /// put a message into the port
-    virtual bool Put(const Ptr<Messaging::Message>& msg) override;
+    virtual bool Put(const Ptr<Message>& msg) override;
     /// perform work
     virtual void DoWork() override;
     

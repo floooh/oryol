@@ -8,7 +8,6 @@
 #include "Core/String/StringAtom.h"
 
 using namespace Oryol;
-using namespace Oryol::Messaging;
 
 // a POD struct
 struct podStruct {

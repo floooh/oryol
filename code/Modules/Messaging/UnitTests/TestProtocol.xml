@@ -1,4 +1,4 @@
-<Generator type="MessageProtocol" ns="Messaging" name="TestProtocol" id="TSTP" >
+<Generator type="MessageProtocol" name="TestProtocol" id="TSTP" >
 
     <Header path="Core/String/String.h"/>
     <Header path="Core/String/StringAtom.h"/>

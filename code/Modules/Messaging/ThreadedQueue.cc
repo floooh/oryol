@@ -6,7 +6,6 @@
 #include "Core/CoreFacade.h"
 
 namespace Oryol {
-namespace Messaging {
     
 OryolClassPoolAllocImpl(ThreadedQueue);
 
@@ -264,5 +263,4 @@ ThreadedQueue::onThreadLeave() {
     CoreFacade::LeaveThread();
 }
 
-} // namespace Messaging
 } // namespace Oryol

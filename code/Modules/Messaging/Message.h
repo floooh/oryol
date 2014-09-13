@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Message
+    @class Oryol::Message
+    @ingroup Messaging
     @brief base class for messages
 */
 #include "Core/Config.h"
@@ -9,7 +10,6 @@
 #include "Messaging/Types.h"
 
 namespace Oryol {
-namespace Messaging {
 
 class Message : public RefCounted {
     OryolClassDecl(Message);
@@ -68,5 +68,4 @@ Message::MessageId() const {
     return this->msgId;
 }
 
-} // namespace Messaging
 } // namespace Oryol

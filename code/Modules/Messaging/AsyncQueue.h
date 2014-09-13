@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::AsyncQueue
+    @class Oryol::AsyncQueue
+    @ingroup Messaging
     @brief single-threaded asynchronous message queue
     
     A Port which acts as a single-threaded, asynchronous, message queue.
@@ -12,7 +13,6 @@
 #include "Core/Containers/Queue.h"
 
 namespace Oryol {
-namespace Messaging {
     
 class AsyncQueue : public Port {
     OryolClassPoolAllocDecl(AsyncQueue);
@@ -41,5 +41,4 @@ protected:
     Ptr<Port> forwardingPort;
 };
 
-} // namespace Messaging
 } // namespace Oryol

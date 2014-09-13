@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Messaging::Broadcaster
+    @class Oryol::Broadcaster
+    @ingroup Messaging
     @brief broadcast incoming messages to subscriber ports
     
     A Messaging Port which sends an incoming message to any number
@@ -10,7 +11,6 @@
 #include "Messaging/Port.h"
 
 namespace Oryol {
-namespace Messaging {
     
 class Broadcaster : public Port {
     OryolClassPoolAllocDecl(Broadcaster);
@@ -36,5 +36,4 @@ protected:
     Array<Ptr<Port>> subscribers;
 };
     
-} // namespace Messaging
 } // namespace Oryol

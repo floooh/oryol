@@ -41,10 +41,10 @@ BinaryStreamReader::Read(TYPE& val) {
     const uint8* maxValidPtr = nullptr;
     const uint8* srcPtr = this->stream->MapRead(&maxValidPtr);
     if (srcPtr != nullptr) {
-        const uint8* endPtr = Messaging::Serializer::Decode<TYPE>(srcPtr, maxValidPtr, val);
+        const uint8* endPtr = Serializer::Decode<TYPE>(srcPtr, maxValidPtr, val);
         if (endPtr != nullptr) {
             const int32 numBytesDecoded = endPtr - srcPtr;
-            o_assert(numBytesDecoded == Messaging::Serializer::EncodedSize<TYPE>(val));
+            o_assert(numBytesDecoded == Serializer::EncodedSize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;
         }
@@ -63,10 +63,10 @@ BinaryStreamReader::Read(Array<TYPE>& val) {
     const uint8* maxValidPtr = nullptr;
     const uint8* srcPtr = this->stream->MapRead(&maxValidPtr);
     if (nullptr != srcPtr) {
-        const uint8* endPtr = Messaging::Serializer::DecodeArray<TYPE>(srcPtr, maxValidPtr, val);
+        const uint8* endPtr = Serializer::DecodeArray<TYPE>(srcPtr, maxValidPtr, val);
         if (nullptr != endPtr) {
             const int32 numBytesDecoded = endPtr - srcPtr;
-            o_assert(numBytesDecoded == Messaging::Serializer::EncodedArraySize<TYPE>(val));
+            o_assert(numBytesDecoded == Serializer::EncodedArraySize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;
         }

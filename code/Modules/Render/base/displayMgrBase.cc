@@ -9,8 +9,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Messaging;
-    
 //------------------------------------------------------------------------------
 displayMgrBase::displayMgrBase() :
 displayValid(false) {
