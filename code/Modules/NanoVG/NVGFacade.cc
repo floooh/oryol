@@ -14,7 +14,6 @@
 #include "Render/RenderFacade.h"
 
 namespace Oryol {
-namespace NanoVG {
 
 OryolLocalSingletonImpl(NVGFacade);
     
@@ -130,5 +129,4 @@ NVGFacade::CreateFont(NVGcontext* ctx, const char* name, const Ptr<Stream>& file
     return fontHandle;
 }
 
-} // namespace NanoVG
 } // namespace Oryol

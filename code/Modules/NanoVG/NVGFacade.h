@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::NanoVG::NVGFacade
+    @class Oryol::NVGFacade
+    @ingroup NanoVG
     @brief nanovg initialization and resource management wrapper
 */
 #include "Core/Types.h"
@@ -10,7 +11,7 @@
 #include "IO/Stream/Stream.h"
 #include "Core/Containers/Map.h"
 
-// Windows.h workaround
+// FIXME: Windows.h workaround
 #ifdef CreateFont
 #undef CreateFont
 #endif
@@ -18,7 +19,6 @@
 struct NVGcontext;
 
 namespace Oryol {
-namespace NanoVG {
     
 class NVGFacade {
     OryolLocalSingletonDecl(NVGFacade);
@@ -50,5 +50,4 @@ private:
     Map<int, Ptr<Stream>> fontStreams;
 };
     
-} // namespace NanoVG
 } // namespace Oryol
