@@ -7,7 +7,7 @@
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Render/RenderFacade.h"
-#include "Input/InputFacade.h"
+#include "Input/Input.h"
 #include "Time/Clock.h"
 #include "NanoVG/NVGFacade.h"
 #include "NanoVG/NanoVG.h"
@@ -27,7 +27,6 @@ private:
 
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    InputFacade* input = nullptr;
     NVGFacade* nvg = nullptr;
     NVGcontext* ctx = nullptr;
     DemoData data;
@@ -46,10 +45,10 @@ NanoVGApp::OnRunning() {
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
-        const Mouse& mouse = this->input->Mouse();
+        const Mouse& mouse = Input::Mouse();
         const int32 mouseX = mouse.Position().x;
         const int32 mouseY = mouse.Position().y;
-        const int32 blowup = this->input->Keyboard().KeyPressed(Key::Space) ? 1 : 0;
+        const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
         const float64 time = Clock::Now().Since(0).AsSeconds();
         
         this->nvg->BeginFrame(this->ctx);
@@ -73,7 +72,7 @@ NanoVGApp::OnInit() {
     
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->input = InputFacade::CreateSingle();
+    Input::Setup();
     this->nvg = NVGFacade::CreateSingle();
     this->ctx = this->nvg->CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     
@@ -108,10 +107,9 @@ NanoVGApp::OnCleanup() {
     this->nvg->DeleteContext(this->ctx);
     this->ctx = nullptr;
     this->nvg = nullptr;
-    this->input = nullptr;
     this->render = nullptr;
     NVGFacade::DestroySingle();
-    InputFacade::DestroySingle();
+    Input::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

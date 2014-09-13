@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Input/InputFacade.h"
+#include "Input/Input.h"
 #include "canvas.h"
 #include "game.h"
 
@@ -21,7 +21,6 @@ private:
     game::Direction getInput();
 
     RenderFacade* render;
-    InputFacade* input;
     canvas spriteCanvas;
     game gameState;
     int32 tick;
@@ -36,7 +35,7 @@ PacloneApp::OnInit() {
     const int dispWidth = game::Width * 8 * 2;
     const int dispHeight = game::Height * 8 * 2;
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
-    this->input = InputFacade::CreateSingle();
+    Input::Setup();
     
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
     this->gameState.Init(&this->spriteCanvas);
@@ -68,9 +67,8 @@ AppState::Code
 PacloneApp::OnCleanup() {
     this->gameState.Cleanup();
     this->spriteCanvas.Discard();
-    InputFacade::DestroySingle();
+    Input::Discard();
     RenderFacade::DestroySingle();
-    this->input = 0;
     this->render = 0;
     return App::OnCleanup();
 }
@@ -80,7 +78,7 @@ game::Direction
 PacloneApp::getInput() {
     // FIXME: add more input options
     game::Direction input = game::NoDirection;
-    const Keyboard& kbd = this->input->Keyboard();
+    const Keyboard& kbd = Input::Keyboard();
     if (kbd.Attached()) {
         if (kbd.KeyPressed(Key::Left))       input = game::Left;
         else if (kbd.KeyPressed(Key::Right)) input = game::Right;

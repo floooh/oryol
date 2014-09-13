@@ -5,7 +5,7 @@
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
 #include "Debug/Debug.h"
-#include "Input/InputFacade.h"
+#include "Input/Input.h"
 #include "Core/String/StringConverter.h"
 
 using namespace Oryol;
@@ -22,7 +22,6 @@ private:
     void testKey(const Keyboard& keyboard, Key::Code key, const char* name) const;
     
     RenderFacade* render;
-    InputFacade* input;
     
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
@@ -36,7 +35,7 @@ AppState::Code
 TestInputApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
     Debug::Setup();
-    this->input  = InputFacade::CreateSingle();
+    Input::Setup();
     
     return App::OnInit();
 }
@@ -80,8 +79,8 @@ TestInputApp::OnRunning() {
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
         
-        const Keyboard& keyboard = this->input->Keyboard();
-        const Mouse& mouse = this->input->Mouse();
+        const Keyboard& keyboard = Input::Keyboard();
+        const Mouse& mouse = Input::Mouse();
         
         // mouse status
         if (mouse.Attached()) {
@@ -104,17 +103,17 @@ TestInputApp::OnRunning() {
             Debug::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
             Debug::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
             if (keyboard.KeyDown(Key::Enter)) {
-                if (CursorMode::Disabled != this->input->GetCursorMode()) {
-                    this->input->SetCursorMode(CursorMode::Disabled);
+                if (CursorMode::Disabled != Input::GetCursorMode()) {
+                    Input::SetCursorMode(CursorMode::Disabled);
                 }
                 else {
-                    this->input->SetCursorMode(CursorMode::Normal);
+                    Input::SetCursorMode(CursorMode::Normal);
                 }
                 if (!keyboard.IsCapturingText()) {
-                    this->input->BeginCaptureText();
+                    Input::BeginCaptureText();
                 }
                 else {
-                    this->input->EndCaptureText();
+                    Input::EndCaptureText();
                 }
             }
             if (keyboard.IsCapturingText()) {
@@ -141,9 +140,8 @@ TestInputApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnCleanup() {
-    this->input  = nullptr;
     this->render = nullptr;
-    InputFacade::DestroySingle();
+    Input::Discard();
     Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();

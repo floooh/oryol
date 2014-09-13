@@ -7,7 +7,7 @@
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Debug/Debug.h"
-#include "Input/InputFacade.h"
+#include "Input/Input.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -29,7 +29,6 @@ private:
     void updateParticles();
 
     RenderFacade* render = nullptr;
-    InputFacade* input = nullptr;
     Id instanceMesh;
     Id drawState;
     glm::mat4 view;
@@ -81,7 +80,7 @@ InstancingApp::OnRunning() {
         this->render->EndFrame();
         
         // toggle particle update
-        const Mouse& mouse = this->input->Mouse();
+        const Mouse& mouse = Input::Mouse();
         if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
             this->updateEnabled = !this->updateEnabled;
         }
@@ -147,7 +146,7 @@ InstancingApp::OnInit() {
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
     Debug::Setup();
-    this->input = InputFacade::CreateSingle();
+    Input::Setup();
     
     // check instancing extension
     if (!this->render->Supports(RenderFeature::Instancing)) {
@@ -195,9 +194,8 @@ InstancingApp::OnCleanup() {
     // cleanup everything
     this->render->ReleaseResource(this->drawState);
     this->render->ReleaseResource(this->instanceMesh);
-    this->input = nullptr;
     this->render = nullptr;
-    InputFacade::DestroySingle();
+    Input::Discard();
     Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();

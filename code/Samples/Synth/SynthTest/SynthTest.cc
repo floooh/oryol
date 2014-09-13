@@ -5,7 +5,7 @@
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
 #include "Debug/Debug.h"
-#include "Input/InputFacade.h"
+#include "Input/Input.h"
 #include "Synth/SynthFacade.h"
 
 using namespace Oryol;
@@ -19,7 +19,6 @@ public:
     
 private:
     RenderFacade* render;
-    InputFacade* input;
     SynthFacade* synth;
     int32 frameCount = 0;
     static const int NumTracks = 4;
@@ -33,7 +32,7 @@ AppState::Code
 SynthTestApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
     Debug::Setup();
-    this->input  = InputFacade::CreateSingle();
+    Input::Setup();
     SynthSetup synthSetup;
     synthSetup.UseGPUSynthesizer = false;
     this->synth = SynthFacade::CreateSingle(synthSetup);
@@ -51,7 +50,7 @@ SynthTestApp::OnRunning() {
 
     if (this->render->BeginFrame()) {
         
-        const Keyboard& kbd = this->input->Keyboard();
+        const Keyboard& kbd = Input::Keyboard();
         if (kbd.KeyDown(Key::Left)) {
             this->op.Pulse -= 0.05f;
             if (this->op.Pulse < 0.0f) {
@@ -180,11 +179,10 @@ SynthTestApp::OnRunning() {
 AppState::Code
 SynthTestApp::OnCleanup() {
     this->synth  = nullptr;
-    this->input  = nullptr;
     this->render = nullptr;
     SynthFacade::DestroySingle();
     Debug::Discard();
-    InputFacade::DestroySingle();
+    Input::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
