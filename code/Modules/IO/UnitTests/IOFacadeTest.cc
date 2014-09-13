@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #include "Core/CoreFacade.h"
 #include "Core/RunLoop.h"
 #include "IO/Stream/BinaryStreamReader.h"
@@ -45,20 +45,20 @@ public:
 OryolClassImpl(TestFileSystem);
 
 TEST(IOFacadeTest) {
-    IOFacade* ioFacade = IOFacade::CreateSingle(IOSetup());
+    IO::Setup(IOSetup());
     
     // register our test file-system as URI scheme "test"
-    ioFacade->RegisterFileSystem("test", TestFileSystem::Creator());
+    IO::RegisterFileSystem("test", TestFileSystem::Creator());
     
     // setup an assign which resolves to the test file system
-    ioFacade->SetAssign("bla:", "test://blub.com/");
+    IO::SetAssign("bla:", "test://blub.com/");
     
     // an URL which should resolve to test://blub.com/blob.txt
     URL url("bla:blob.txt");
     CHECK(url.IsValid());
     
     // asynchronously 'load' a file
-    Ptr<IOProtocol::Get> msg = ioFacade->LoadFile(url);
+    Ptr<IOProtocol::Get> msg = IO::LoadFile(url);
     
     // trigger the runloop until our message is handled
     while (!msg->Handled()) {
@@ -80,5 +80,5 @@ TEST(IOFacadeTest) {
     
     // FIXME: dynamically add/remove/replace filesystems, ...
     
-    IOFacade::DestroySingle();
+    IO::Discard();
 }

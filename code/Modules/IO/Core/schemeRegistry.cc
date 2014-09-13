@@ -8,11 +8,9 @@
 namespace Oryol {
 namespace _priv {
 
-OryolGlobalSingletonImpl(schemeRegistry);
-
 //------------------------------------------------------------------------------
 schemeRegistry::schemeRegistry() {
-    this->SingletonEnsureUnique();
+    // empty
 }
 
 //------------------------------------------------------------------------------

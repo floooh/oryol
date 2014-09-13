@@ -4,7 +4,9 @@
 #include "Pre.h"
 #include "ioLane.h"
 #include "Messaging/Dispatcher.h"
-#include "IO/Core/schemeRegistry.h"
+
+// FIXME: access to IO.h from down here is a bit hacky :/
+#include "IO/IO.h"
 
 namespace Oryol {
 namespace _priv {
@@ -106,7 +108,7 @@ void
 ioLane::onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& msg) {
     const StringAtom& urlScheme = msg->GetScheme();
     o_assert(!this->fileSystems.Contains(urlScheme));
-    Ptr<FileSystem> newFileSystem = schemeRegistry::Instance()->CreateFileSystem(urlScheme);
+    Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
     this->fileSystems.Add(urlScheme, newFileSystem);
 }
 
@@ -115,7 +117,7 @@ void
 ioLane::onNotifyFileSystemReplaced(const Ptr<IOProtocol::notifyFileSystemReplaced>& msg) {
     const StringAtom& urlScheme = msg->GetScheme();
     o_assert(this->fileSystems.Contains(urlScheme));
-    Ptr<FileSystem> newFileSystem = schemeRegistry::Instance()->CreateFileSystem(urlScheme);
+    Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
     this->fileSystems[urlScheme] = newFileSystem;
 }
 

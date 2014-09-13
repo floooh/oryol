@@ -8,11 +8,8 @@
 namespace Oryol {
 namespace _priv {
 
-OryolGlobalSingletonImpl(assignRegistry);
-
 //------------------------------------------------------------------------------
 assignRegistry::assignRegistry() {
-    this->SingletonEnsureUnique();
     this->setStandardAssigns();
 }
 

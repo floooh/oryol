@@ -5,7 +5,7 @@
 #include "IOQueue.h"
 #include "Core/CoreFacade.h"
 #include "Core/RunLoop.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 
 namespace Oryol {
 
@@ -58,7 +58,7 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     // create IO request and push into IO facade
     Ptr<IOProtocol::Get> ioReq = IOProtocol::Get::Create();
     ioReq->SetURL(url);
-    IOFacade::Instance()->Put(ioReq);
+    IO::Put(ioReq);
     
     // add to our queue if pending requests
     this->ioRequests.Add(item{ ioReq, onSuccess, onFail });

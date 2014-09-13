@@ -5,7 +5,7 @@
 #include "URL.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Log.h"
-#include "IO/Core/assignRegistry.h"
+#include "IO/IO.h"
 
 namespace Oryol {
 
@@ -156,8 +156,8 @@ URL::crack(String urlString) {
     this->clearIndices();
     this->valid = false;
     
-    if (assignRegistry::HasInstance()) {
-        urlString = assignRegistry::Instance()->ResolveAssigns(urlString);
+    if (IO::IsValid()) {
+        urlString = IO::ResolveAssigns(urlString);
     }
     if (urlString.IsValid()) {
     

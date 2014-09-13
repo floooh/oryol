@@ -7,7 +7,7 @@
 #include "Core/CoreFacade.h"
 #include "Core/RunLoop.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 
 using namespace Oryol;
 
@@ -17,10 +17,10 @@ TEST(HTTPFileSystemTest) {
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
+    IO::Setup(ioSetup);
     
     // asynchronously load the index.html file
-    Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://www.flohofwoe.net/index.html");
+    Ptr<IOProtocol::Get> req = IO::LoadFile("http://www.flohofwoe.net/index.html");
     
     // trigger the runloop until the request has been handled
     while (!req->Handled()) {
@@ -39,6 +39,6 @@ TEST(HTTPFileSystemTest) {
     loadedData->Close();
     req = 0;
     
-    IOFacade::DestroySingle();
+    IO::Discard();
 }
 #endif

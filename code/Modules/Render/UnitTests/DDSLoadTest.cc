@@ -6,7 +6,7 @@
 #include "Core/CoreFacade.h"
 #include "Core/RunLoop.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #define GLIML_ASSERT o_assert
 #include "gliml/gliml.h"
 #include <thread>
@@ -19,10 +19,10 @@ TEST(DDSLoadTest) {
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    IOFacade* ioFacade = IOFacade::CreateSingle(ioSetup);
+    IO::Setup(ioSetup);
 
     // DXT1
-    Ptr<IOProtocol::Get> req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
+    Ptr<IOProtocol::Get> req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
     while (!req->Handled()) {
         CoreFacade::Instance()->RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -62,7 +62,7 @@ TEST(DDSLoadTest) {
     }
     
     // DXT3
-    req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt3.dds");
+    req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt3.dds");
     while (!req->Handled()) {
         CoreFacade::Instance()->RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -102,7 +102,7 @@ TEST(DDSLoadTest) {
     }
 
     // DXT5
-    req = ioFacade->LoadFile("http://floooh.github.com/oryol/lok_dxt5.dds");
+    req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt5.dds");
     while (!req->Handled()) {
         CoreFacade::Instance()->RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -144,6 +144,6 @@ TEST(DDSLoadTest) {
     // FIXME: RGBA, LUM
 
     req.Invalidate();
-    IOFacade::DestroySingle();
+    IO::Discard();
 #endif
 }

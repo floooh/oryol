@@ -46,29 +46,26 @@ TEST(schemeRegistryTest) {
     const StringAtom file("file");
     const StringAtom bla("bla");
 
-    schemeRegistry::CreateSingle();
-    schemeRegistry* reg = schemeRegistry::Instance();
+    schemeRegistry reg;
     
     // @todo: hrmpf, this is ugly ...
-    reg->RegisterFileSystem(http, TestFS_A::Creator());
-    reg->RegisterFileSystem(ftp, TestFS_B::Creator());
-    reg->RegisterFileSystem(file, TestFS_C::Creator());
+    reg.RegisterFileSystem(http, TestFS_A::Creator());
+    reg.RegisterFileSystem(ftp, TestFS_B::Creator());
+    reg.RegisterFileSystem(file, TestFS_C::Creator());
     
-    CHECK(reg->IsFileSystemRegistered(http));
-    CHECK(reg->IsFileSystemRegistered(ftp));
-    CHECK(reg->IsFileSystemRegistered(file));
-    CHECK(!reg->IsFileSystemRegistered(bla));
+    CHECK(reg.IsFileSystemRegistered(http));
+    CHECK(reg.IsFileSystemRegistered(ftp));
+    CHECK(reg.IsFileSystemRegistered(file));
+    CHECK(!reg.IsFileSystemRegistered(bla));
     
-    Ptr<TestFS_A> fsa = reg->CreateFileSystem(http);
+    Ptr<TestFS_A> fsa = reg.CreateFileSystem(http);
     CHECK(fsa);
     CHECK(fsa->GetType() == 0);
-    Ptr<TestFS_B> fsb = reg->CreateFileSystem(ftp);
+    Ptr<TestFS_B> fsb = reg.CreateFileSystem(ftp);
     CHECK(fsb);
     CHECK(fsb->GetType() == 1);
-    Ptr<TestFS_C> fsc = reg->CreateFileSystem(file);
+    Ptr<TestFS_C> fsc = reg.CreateFileSystem(file);
     CHECK(fsc);
     CHECK(fsc->GetType() == 2);
-    
-    schemeRegistry::DestroySingle();
 }
 

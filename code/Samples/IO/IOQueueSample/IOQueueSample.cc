@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 
@@ -17,7 +17,6 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    IOFacade* io;
     IOQueue ioQueue;
 };
 OryolMain(IOQueueApp);
@@ -35,7 +34,7 @@ IOQueueApp::OnInit() {
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
     ioSetup.Assigns.Add("res:", "http://localhost:8000/");
-    this->io = IOFacade::CreateSingle(ioSetup);
+    IO::Setup(ioSetup);
     
     // now the important part: add IO requests to the IOQueue,
     // and directly define success-callbacks as lambdas (of course
@@ -102,8 +101,7 @@ IOQueueApp::OnCleanup() {
     // usually you'd want to stop the queue as soon as it is done loading
     // all files
     this->ioQueue.Stop();
-    this->io = nullptr;
-    IOFacade::DestroySingle();
+    IO::Discard();
     
     return AppState::Destroy;
 }

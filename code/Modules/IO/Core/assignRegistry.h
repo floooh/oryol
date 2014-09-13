@@ -8,8 +8,6 @@
     Central registry for assign definitions. Assigns are
     path aliases (google for AmigaOS assign).
 */
-#include "Core/RefCounted.h"
-#include "Core/Singleton.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
 #include "Core/Threading/RWLock.h"
@@ -17,8 +15,7 @@
 namespace Oryol {
 namespace _priv {
 
-class assignRegistry : public RefCounted {
-    OryolGlobalSingletonDecl(assignRegistry);
+class assignRegistry {
 public:
     /// constructor
     assignRegistry();

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Render/RenderFacade.h"
@@ -25,7 +25,6 @@ public:
 private:
     void loadAssets();
 
-    IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
     NVGFacade* nvg = nullptr;
     NVGcontext* ctx = nullptr;
@@ -68,7 +67,7 @@ NanoVGApp::OnInit() {
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
     ioSetup.Assigns.Add("res:", "http://localhost:8000/");
-    this->io = IOFacade::CreateSingle(ioSetup);
+    IO::Setup(ioSetup);
     
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
     this->render = RenderFacade::CreateSingle(renderSetup);
@@ -111,5 +110,6 @@ NanoVGApp::OnCleanup() {
     NVGFacade::DestroySingle();
     Input::Discard();
     RenderFacade::DestroySingle();
+    IO::Discard();
     return App::OnCleanup();
 }

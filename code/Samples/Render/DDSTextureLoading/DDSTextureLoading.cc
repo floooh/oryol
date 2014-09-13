@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
@@ -26,7 +26,6 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
     Id drawState;
     static const int32 NumTextures = 15;
@@ -100,7 +99,7 @@ DDSTextureLoadingApp::OnInit() {
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
     ioSetup.Assigns.Add("tex:", "http://localhost:8000/");
-    this->io = IOFacade::CreateSingle(ioSetup);
+    IO::Setup(ioSetup);
 
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DDS Loading Sample");
@@ -167,8 +166,7 @@ DDSTextureLoadingApp::OnCleanup() {
     this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
     RenderFacade::DestroySingle();
-    this->io = nullptr;
-    IOFacade::DestroySingle();
+    IO::Discard();
     
     return App::OnCleanup();
 }

@@ -8,7 +8,7 @@
 #include "Render/gl/gl_impl.h"
 #define GLIML_ASSERT(x) o_assert(x)
 #include "gliml/gliml.h"
-#include "IO/IOFacade.h"
+#include "IO/IO.h"
 #include "Render/gl/glTypes.h"
 #include "Render/gl/glExt.h"
 #include "Render/Core/textureFactory.h"
@@ -66,7 +66,7 @@ glTextureLoader::Load(texture& tex) const {
     
     if (state == ResourceState::Setup) {
         // start loading the resource
-        tex.setIORequest(IOFacade::Instance()->LoadFile(setup.Locator.Location(), setup.IOLane));
+        tex.setIORequest(IO::LoadFile(setup.Locator.Location(), setup.IOLane));
         tex.setState(ResourceState::Pending);
         return;
     }
