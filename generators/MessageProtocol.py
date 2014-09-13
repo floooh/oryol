@@ -6,7 +6,7 @@ import os
 import sys
 import util
 
-Version = 3
+Version = 4
 
 #-------------------------------------------------------------------------------
 def checkValidAttr(attr) :
@@ -316,7 +316,8 @@ def generateHeader(xmlTree, absHeaderPath) :
     writeHeaderTop(f, xmlRoot) 
     writeIncludes(f, xmlRoot)
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + nameSpace + ' {\n')
+    if nameSpace :
+        f.write('namespace ' + nameSpace + ' {\n')
     f.write('class ' + protocol + ' {\n')
     f.write('public:\n')
     writeProtocolMethods(f, xmlRoot)
@@ -324,7 +325,8 @@ def generateHeader(xmlTree, absHeaderPath) :
     writeFactoryClassDecl(f, xmlRoot)
     writeMessageClasses(f, xmlRoot)
     f.write('};\n')
-    f.write('}\n')
+    if nameSpace :
+        f.write('}\n')
     f.write('}\n')
     f.close()
 
@@ -355,14 +357,16 @@ def generateSource(xmlTree, absSourcePath) :
     f = open(absSourcePath, 'w')
     writeSourceTop(f, xmlRoot, absSourcePath)
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + nameSpace + ' {\n')
+    if nameSpace :
+        f.write('namespace ' + nameSpace + ' {\n')
     for msg in xmlRoot.findall('Message') :
         msgClassName = msg.get('name')
         f.write('OryolClassPoolAllocImpl(' + protocol + '::' + msgClassName + ');\n')
         
     writeFactoryClassImpl(f, xmlRoot)
     writeSerializeMethods(f, xmlRoot)
-    f.write('}\n')
+    if nameSpace :
+        f.write('}\n')
     f.write('}\n')
     f.close()
 
