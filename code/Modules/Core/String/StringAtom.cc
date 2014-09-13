@@ -7,7 +7,6 @@
 #include "String.h"
 
 namespace Oryol {
-namespace Core {
 const char* StringAtom::emptyString = "";
 
 //------------------------------------------------------------------------------
@@ -62,7 +61,7 @@ StringAtom::setupFromCString(const char* str) {
         stringAtomTable* table = stringAtomTable::Instance();
         
         // get hash of string
-        std::size_t hash = stringAtomTable::HashForString(str);
+        int32 hash = stringAtomTable::HashForString(str);
         
         // check if string already exists in table
         this->data = table->Find(hash, str);
@@ -125,5 +124,4 @@ StringAtom::operator==(const char* rhs) const {
     }
 }
 
-} // namespace Core
 } // namespace Oryol

@@ -14,11 +14,11 @@
 namespace Oryol {
 namespace HTTP {
 
-using namespace Core;
+using namespace _priv;
 using namespace IO;
 
 // a helper class to wrap all request-related data into a ref-counted object
-class pnaclRequestWrapper : public Core::RefCounted {
+class pnaclRequestWrapper : public RefCounted {
     OryolClassPoolAllocDecl(pnaclRequestWrapper);
 public:
     pnaclRequestWrapper(Ptr<HTTPProtocol::HTTPRequest> req) {

@@ -36,9 +36,9 @@ public:
     bool QuitRequested() const;
     
     /// attach a display event handler
-    void AttachEventHandler(const Core::Ptr<Messaging::Port>& handler);
+    void AttachEventHandler(const Ptr<Messaging::Port>& handler);
     /// detach a display event handler
-    void DetachEventHandler(const Core::Ptr<Messaging::Port>& handler);
+    void DetachEventHandler(const Ptr<Messaging::Port>& handler);
     
     /// get the original render setup object
     const RenderSetup& GetRenderSetup() const;
@@ -50,7 +50,7 @@ public:
     /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
+    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<IO::Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
     /// release a resource (decrement use-count, free resource if use-count is 0)
@@ -127,7 +127,7 @@ RenderFacade::CreateResource(const SETUP& setup) {
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Resource::Id
-RenderFacade::CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
+RenderFacade::CreateResource(const SETUP& setup, const Ptr<IO::Stream>& data) {
     o_assert_dbg(this->valid);
     return this->resourceManager.CreateResource(setup, data);
 }

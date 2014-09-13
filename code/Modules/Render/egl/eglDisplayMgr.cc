@@ -20,8 +20,6 @@ extern android_app* OryolAndroidAppState;
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 eglDisplayMgr::eglDisplayMgr() :
 eglDisplay(nullptr),

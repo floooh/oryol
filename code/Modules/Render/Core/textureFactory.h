@@ -13,7 +13,7 @@ namespace Render {
 class textureFactory : public glTextureFactory {
 public:
     /// attach a loader
-    void AttachLoader(const Core::Ptr<textureLoaderBase>& loader);
+    void AttachLoader(const Ptr<textureLoaderBase>& loader);
 };
 #else
 #error "Platform not supported yet!"
@@ -21,7 +21,7 @@ public:
 
 //------------------------------------------------------------------------------
 inline void
-textureFactory::AttachLoader(const Core::Ptr<textureLoaderBase>& loader) {
+textureFactory::AttachLoader(const Ptr<textureLoaderBase>& loader) {
     o_assert(loader.isValid());
     o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
     loader->onAttachToFactory(this);

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::RefCounted
+    @class Oryol::RefCounted
+    @ingroup Core
     @brief Oryol's reference-counted base class
 
     The RefCounted class is used together with the Ptr smart-pointer class
@@ -16,7 +17,6 @@
 #include "Core/Memory/poolAllocator.h"
 
 namespace Oryol {
-namespace Core {
     
 class RefCounted {
     OryolClassDecl(RefCounted);
@@ -69,5 +69,4 @@ RefCounted::GetRefCount() const
     return this->refCount;
 }
 
-} // namespace Core
 } // namespace Oryol

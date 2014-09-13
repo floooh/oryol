@@ -33,7 +33,7 @@ public:
     /// setup resource, continue calling until res state is not Pending
     void SetupResource(texture& tex);
     /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(texture& tex, const Core::Ptr<IO::Stream>& data);
+    void SetupResource(texture& tex, const Ptr<IO::Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -44,7 +44,7 @@ private:
     /// create a render target
     void createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    void createFromPixelData(texture& tex, const Core::Ptr<IO::Stream>& data);
+    void createFromPixelData(texture& tex, const Ptr<IO::Stream>& data);
 
     stateWrapper* glStateWrapper;
     displayMgr* displayManager;

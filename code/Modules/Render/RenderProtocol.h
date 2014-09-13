@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:2#
+/* #version:3#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -38,11 +38,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[RenderProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class DisplaySetup : public Messaging::Message {
         OryolClassPoolAllocDecl(DisplaySetup);
@@ -50,7 +50,7 @@ public:
         DisplaySetup() {
             this->msgId = MessageId::DisplaySetupId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -68,7 +68,7 @@ private:
         DisplayDiscarded() {
             this->msgId = MessageId::DisplayDiscardedId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -86,7 +86,7 @@ private:
         DisplayModified() {
             this->msgId = MessageId::DisplayModifiedId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {

@@ -6,7 +6,6 @@
 #include "stringAtomTable.h"
 
 namespace Oryol {
-namespace Core {
 
 OryolLocalSingletonImpl(stringAtomTable);
 
@@ -102,7 +101,6 @@ stringAtomTable::Entry::operator<(const Entry& rhs) const {
     return std::strcmp(this->header->str, rhs.header->str) < 0;
 }
 
-} // namespace Core
 } // namespace Oryol
 
 

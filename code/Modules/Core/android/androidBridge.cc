@@ -11,7 +11,7 @@
 extern android_app* OryolAndroidAppState;
 
 namespace Oryol {
-namespace Core {    
+namespace _priv {    
 
 //------------------------------------------------------------------------------
 androidBridge::androidBridge() :
@@ -248,5 +248,5 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
     }
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

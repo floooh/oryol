@@ -9,7 +9,6 @@ namespace HTTP {
     
 OryolClassImpl(HTTPClient);
 
-using namespace Core;
 using namespace Messaging;
 
 //------------------------------------------------------------------------------

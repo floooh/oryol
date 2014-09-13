@@ -10,8 +10,8 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-    
+using namespace _priv;
+
 //------------------------------------------------------------------------------
 pnaclDisplayMgr::pnaclDisplayMgr() :
 glFramebufferWidth(0),

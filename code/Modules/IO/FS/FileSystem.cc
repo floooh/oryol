@@ -10,8 +10,6 @@ namespace IO {
 
 OryolClassImpl(FileSystem);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 FileSystem::FileSystem() {
     // empty

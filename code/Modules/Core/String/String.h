@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::String
+    @class Oryol::String
+    @ingroup Core
     @brief immutable, reference counted, shared strings
     
     An immutable, shared UTF-8 String class. Memory is only allocated
@@ -28,7 +29,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Core {
 
 class StringAtom;
 
@@ -152,6 +152,5 @@ bool operator>(const StringAtom& s0, const String& s1);
 bool operator<=(const StringAtom& s0, const String& s1);
 bool operator>=(const StringAtom& s0, const String& s1);
 
-} // namespace Core
 } // namespace Oryol
 

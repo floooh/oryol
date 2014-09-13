@@ -10,7 +10,8 @@
 #include "Core/Ptr.h"
 #include "Core/Memory/poolAllocator.h"
 
-using namespace Oryol::Core;
+using namespace Oryol;
+using namespace Oryol::_priv;
 
 TEST(PoolAllocator) {
 

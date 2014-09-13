@@ -6,7 +6,7 @@
 #include "Resource/State.h"
 #include "Core/String/String.h"
 
-using namespace Oryol::Core;
+using namespace Oryol;
 using namespace Oryol::Resource;
 
 TEST(StateTest) {

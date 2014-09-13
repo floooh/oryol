@@ -8,7 +8,6 @@
 #include "HTTP/HTTPFileSystem.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 

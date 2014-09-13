@@ -9,8 +9,6 @@ namespace Messaging {
     
 OryolClassImpl(Port);
     
-using namespace Core;
-
 //------------------------------------------------------------------------------
 Port::Port() {
     // empty

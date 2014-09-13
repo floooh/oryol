@@ -14,7 +14,6 @@
 #endif
 
 namespace Oryol {
-namespace Core {
     
 //------------------------------------------------------------------------------
 StringBuilder::StringBuilder() :
@@ -174,7 +173,7 @@ StringBuilder::Append(char c) {
 void
 StringBuilder::Append(const char* ptr, int32 startIndex, int32 endIndex) {
     if (EndOfString == endIndex) {
-        endIndex = std::strlen(ptr);
+        endIndex = int32(std::strlen(ptr));
     }
     o_assert(endIndex >= startIndex);
     const int32 length = endIndex - startIndex;
@@ -199,7 +198,7 @@ StringBuilder::Set(const char* ptr, int32 startIndex, int32 endIndex) {
 void
 StringBuilder::Append(const char* ptr) {
     if (ptr) {
-        this->Append(ptr, 0, std::strlen(ptr));
+        this->Append(ptr, 0, int32(std::strlen(ptr)));
     }
 }
 
@@ -316,7 +315,7 @@ StringBuilder::substituteCommon(char* occur, int32 matchLen, int32 substLen, con
     // move tail in or out
     const char* moveFrom = occur + matchLen;
     char* moveTo = occur + substLen;
-    const int32 moveNumBytes = this->size - (moveFrom - this->buffer);
+    const int32 moveNumBytes = this->size - int32(moveFrom - this->buffer);
     if ((moveFrom != moveTo) && (moveNumBytes > 0)) {
         std::memmove(moveTo, moveFrom, moveNumBytes);
     }
@@ -343,7 +342,7 @@ StringBuilder::SubstituteRange(int32 startIndex, int32 endIndex, const char* sub
     }
     o_assert(endIndex <= this->size);
     const int32 matchLen = endIndex - startIndex;
-    const int32 substLen = std::strlen(subst);
+    const int32 substLen = int32(std::strlen(subst));
     char* occur = this->buffer + startIndex;
     this->substituteCommon(occur, matchLen, substLen, subst);
 }
@@ -357,8 +356,8 @@ StringBuilder::SubstituteAll(const char* match, const char* subst) {
     int32 numSubst = 0;
     if (nullptr != this->buffer) {
         char* ptr = this->buffer;
-        const int32 matchLen = std::strlen(match);
-        const int32 substLen = std::strlen(subst);
+        const int32 matchLen = int32(std::strlen(match));
+        const int32 substLen = int32(std::strlen(subst));
         while (nullptr != (ptr = std::strstr(ptr, match))) {
             this->substituteCommon(ptr, matchLen, substLen, subst);
             numSubst++;
@@ -382,8 +381,8 @@ StringBuilder::SubstituteFirst(const char* match, const char* subst) {
     if (nullptr != this->buffer) {
         char* occur = std::strstr(this->buffer, match);
         if (nullptr != occur) {
-            const int32 matchLen = std::strlen(match);
-            const int32 substLen = std::strlen(subst);
+            const int32 matchLen = int32(std::strlen(match));
+            const int32 substLen = int32(std::strlen(subst));
             this->substituteCommon(occur, matchLen, substLen, subst);
             return true;
         }
@@ -408,7 +407,7 @@ StringBuilder::SubstituteFirst(const String& match, const String& subst) {
 int32
 StringBuilder::findFirstOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
     const char* ptr = str + startIndex;
-    const int index = std::strcspn(ptr, delims) + startIndex;
+    const int index = (const int)std::strcspn(ptr, delims) + startIndex;
     if (((endIndex != EndOfString) && (index >= endIndex)) || (index >= strLen)) {
         return InvalidIndex;
     }
@@ -428,7 +427,7 @@ StringBuilder::FindFirstOf(const char* str, int32 startIndex, int32 endIndex, co
     o_assert(0 != delims);
     o_assert(str);
     o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
-    const int32 strLen = std::strlen(str);
+    const int32 strLen = int32(std::strlen(str));
     return findFirstOf(str, strLen, startIndex, endIndex, delims);
 }
 
@@ -456,7 +455,7 @@ StringBuilder::FindFirstOf(int32 startIndex, int32 endIndex, const char* delims)
 int32
 StringBuilder::findFirstNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
     const char* ptr = str + startIndex;
-    int index = std::strspn(ptr, delims) + startIndex;
+    int index = int32(std::strspn(ptr, delims)) + startIndex;
     if (((EndOfString != endIndex) && (index >= endIndex)) || (index >= strLen)) {
         return InvalidIndex;
     }
@@ -476,7 +475,7 @@ StringBuilder::FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex,
     o_assert(0 != delims);
     o_assert(str);
     o_assert((EndOfString != endIndex) || (endIndex >= startIndex));
-    const int32 strLen = std::strlen(str);
+    const int32 strLen = int32(std::strlen(str));
     return findFirstOf(str, strLen, startIndex, endIndex, delims);
 }
 
@@ -509,7 +508,7 @@ StringBuilder::findSubString(const char* str, int32 startIndex, int32 endIndex, 
         return InvalidIndex;
     }
     else {
-        int32 index = (occur - ptr) + startIndex;
+        int32 index = int32(occur - ptr) + startIndex;
         if ((EndOfString != endIndex) && (index >= endIndex)) {
             return InvalidIndex;
         }
@@ -690,5 +689,4 @@ StringBuilder::AppendFormat(int32 maxLength, const char* fmt, va_list args) {
     return this->format(maxLength, true, fmt, args);
 }
 
-} // namespace Core
 } // namespace Oryol

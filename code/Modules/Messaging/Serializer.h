@@ -25,11 +25,11 @@ public:
     /// decode from plain-old-data representation, returns pointer to next pos, or nullptr if not enough data
     template<typename TYPE> static const uint8* Decode(const uint8* srcPtr, const uint8* maxPtr, TYPE& outVal);
     /// return the encoded size for an array of values
-    template<typename TYPE> static int32 EncodedArraySize(const Core::Array<TYPE>& vals);
+    template<typename TYPE> static int32 EncodedArraySize(const Array<TYPE>& vals);
     /// encode an array of values
-    template<typename TYPE> static uint8* EncodeArray(const Core::Array<TYPE>& vals, uint8* dstPtr, const uint8* maxPtr);
+    template<typename TYPE> static uint8* EncodeArray(const Array<TYPE>& vals, uint8* dstPtr, const uint8* maxPtr);
     /// decode an array of values
-    template<typename TYPE> static const uint8* DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Core::Array<TYPE>& outVals);
+    template<typename TYPE> static const uint8* DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Array<TYPE>& outVals);
 };
 
 //------------------------------------------------------------------------------
@@ -73,13 +73,13 @@ Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, TYPE& outVal) {
 
 //------------------------------------------------------------------------------
 template<> inline int32
-Serializer::EncodedSize(const Core::String& val) {
+Serializer::EncodedSize(const String& val) {
     return sizeof(int32) + val.Length();
 }
     
 //------------------------------------------------------------------------------
 template<> inline uint8*
-Serializer::Encode(const Core::String& val, uint8* dstPtr, const uint8* maxPtr) {
+Serializer::Encode(const String& val, uint8* dstPtr, const uint8* maxPtr) {
     if ((dstPtr + EncodedSize(val)) <= maxPtr) {
         const int32 len = val.Length();
         dstPtr = Serializer::Encode<int32>(len, dstPtr, maxPtr);
@@ -95,7 +95,7 @@ Serializer::Encode(const Core::String& val, uint8* dstPtr, const uint8* maxPtr) 
     
 //------------------------------------------------------------------------------
 template<> inline const uint8*
-Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::String& outVal) {
+Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, String& outVal) {
     if ((srcPtr + sizeof(int32)) <= maxPtr) {
         // read length
         int32 len = 0;
@@ -113,13 +113,13 @@ Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::String& outVa
     
 //------------------------------------------------------------------------------
 template<> inline int32
-Serializer::EncodedSize(const Core::StringAtom& val) {
+Serializer::EncodedSize(const StringAtom& val) {
     return sizeof(int32) + val.Length();
 }
     
 //------------------------------------------------------------------------------
 template<> inline uint8*
-Serializer::Encode(const Core::StringAtom& val, uint8* dstPtr, const uint8* maxPtr) {
+Serializer::Encode(const StringAtom& val, uint8* dstPtr, const uint8* maxPtr) {
     if ((dstPtr + EncodedSize(val)) <= maxPtr) {
         const int32 len = val.Length();
         dstPtr = Serializer::Encode<int32>(len, dstPtr, maxPtr);
@@ -135,7 +135,7 @@ Serializer::Encode(const Core::StringAtom& val, uint8* dstPtr, const uint8* maxP
     
 //------------------------------------------------------------------------------
 template<> inline const uint8*
-Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::StringAtom& outVal) {
+Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, StringAtom& outVal) {
     if ((srcPtr + sizeof(int32)) <= maxPtr) {
         // read length
         int32 len = 0;
@@ -143,7 +143,7 @@ Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::StringAtom& o
         o_assert(nullptr != srcPtr);
         if ((srcPtr + len) <= maxPtr) {
             /// @todo: meh, must create temp string
-            Core::String str((const char*) srcPtr, 0, len);
+            String str((const char*) srcPtr, 0, len);
             outVal = str;
             return srcPtr + len;
         }
@@ -154,7 +154,7 @@ Serializer::Decode(const uint8* srcPtr, const uint8* maxPtr, Core::StringAtom& o
     
 //------------------------------------------------------------------------------
 template<typename TYPE> inline int32
-Serializer::EncodedArraySize(const Core::Array<TYPE>& vals) {
+Serializer::EncodedArraySize(const Array<TYPE>& vals) {
     if (vals.Size() > 0) {
         int32 size = sizeof(int32);
         for (const TYPE& val : vals) {
@@ -171,7 +171,7 @@ Serializer::EncodedArraySize(const Core::Array<TYPE>& vals) {
     
 //------------------------------------------------------------------------------
 template<typename TYPE> inline uint8*
-Serializer::EncodeArray(const Core::Array<TYPE>& vals, uint8* dstPtr, const uint8* maxPtr) {
+Serializer::EncodeArray(const Array<TYPE>& vals, uint8* dstPtr, const uint8* maxPtr) {
     if ((dstPtr + EncodedArraySize<TYPE>(vals)) <= maxPtr) {
         const int32 numElements = vals.Size();
         dstPtr = Serializer::Encode<int32>(numElements, dstPtr, maxPtr);
@@ -190,7 +190,7 @@ Serializer::EncodeArray(const Core::Array<TYPE>& vals, uint8* dstPtr, const uint
     
 //------------------------------------------------------------------------------
 template<typename TYPE> inline const uint8*
-Serializer::DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Core::Array<TYPE>& outVals) {
+Serializer::DecodeArray(const uint8* srcPtr, const uint8* maxPtr, Array<TYPE>& outVals) {
     o_assert(outVals.Size() == 0);
     if ((srcPtr + sizeof(int32)) < maxPtr) {
         // read number of elements

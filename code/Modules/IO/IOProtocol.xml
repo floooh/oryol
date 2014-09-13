@@ -12,12 +12,12 @@
         <Attr name="CacheReadEnabled" type="bool" />
         <Attr name="CacheWriteEnabled" type="bool" />
         <Attr name="Status" type="IOStatus::Code" def="IOStatus::InvalidIOStatus" dir="out" />
-        <Attr name="ErrorDesc" type="Core::String" dir="out" />
+        <Attr name="ErrorDesc" type="String" dir="out" />
     </Message>
     
     <!-- fetch complete file -->
     <Message name="Get" parent="Request" serialize="false">
-        <Attr name="Stream" type="Core::Ptr&lt;IO::MemoryStream&gt;" dir="out" />
+        <Attr name="Stream" type="Ptr&lt;IO::MemoryStream&gt;" dir="out" />
     </Message>
 
     <!-- fetch a file range -->
@@ -31,17 +31,17 @@
 
     <!-- internal message: notify IO threads that a filesystem has been removed -->
     <Message name="notifyFileSystemRemoved" parent="notifyLanes" serialize="false" >
-        <Attr name="Scheme" type="Core::StringAtom" />
+        <Attr name="Scheme" type="StringAtom" />
     </Message>
 
     <!-- internal message: notify IO threads that a filesystem has been replaced -->
     <Message name="notifyFileSystemReplaced" parent="notifyLanes" serialize="false" >
-        <Attr name="Scheme" type="Core::StringAtom" />
+        <Attr name="Scheme" type="StringAtom" />
     </Message>
 
     <!-- internal message: notify IO threads that a filesystem has been added -->
     <Message name="notifyFileSystemAdded" parent="notifyLanes" serialize="false" >
-        <Attr name="Scheme" type="Core::StringAtom" />
+        <Attr name="Scheme" type="StringAtom" />
     </Message>
 
 </Generator>

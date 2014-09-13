@@ -22,13 +22,13 @@ public:
     virtual ~ioRequestRouter();
     
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Messaging::Message>& msg) override;
+    virtual bool Put(const Ptr<Messaging::Message>& msg) override;
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork() override;
     
 private:
     int32 numLanes;
-    Core::Array<Core::Ptr<IO::ioLane>> ioLanes;
+    Array<Ptr<IO::ioLane>> ioLanes;
 };
     
 } // namespace IO

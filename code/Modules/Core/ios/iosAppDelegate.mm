@@ -5,7 +5,8 @@
 #include "iosBridge.h"
 #include <GLKit/GLKit.h>
 
-using namespace Oryol::Core;
+using namespace Oryol;
+using namespace Oryol::_priv;
 
 @implementation iosAppDelegate
 

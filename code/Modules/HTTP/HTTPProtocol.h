@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:2#
+/* #version:3#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -41,11 +41,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[HTTPProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class HTTPResponse : public Messaging::Message {
         OryolClassPoolAllocDecl(HTTPResponse);
@@ -54,7 +54,7 @@ public:
             this->msgId = MessageId::HTTPResponseId;
             this->status = IO::IOStatus::InvalidIOStatus;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -70,29 +70,29 @@ public:
         const IO::IOStatus::Code& GetStatus() const {
             return this->status;
         };
-        void SetResponseHeaders(const Core::Map<Core::String,Core::String>& val) {
+        void SetResponseHeaders(const Map<String,String>& val) {
             this->responseheaders = val;
         };
-        const Core::Map<Core::String,Core::String>& GetResponseHeaders() const {
+        const Map<String,String>& GetResponseHeaders() const {
             return this->responseheaders;
         };
-        void SetBody(const Core::Ptr<IO::Stream>& val) {
+        void SetBody(const Ptr<IO::Stream>& val) {
             this->body = val;
         };
-        const Core::Ptr<IO::Stream>& GetBody() const {
+        const Ptr<IO::Stream>& GetBody() const {
             return this->body;
         };
-        void SetErrorDesc(const Core::String& val) {
+        void SetErrorDesc(const String& val) {
             this->errordesc = val;
         };
-        const Core::String& GetErrorDesc() const {
+        const String& GetErrorDesc() const {
             return this->errordesc;
         };
 private:
         IO::IOStatus::Code status;
-        Core::Map<Core::String,Core::String> responseheaders;
-        Core::Ptr<IO::Stream> body;
-        Core::String errordesc;
+        Map<String,String> responseheaders;
+        Ptr<IO::Stream> body;
+        String errordesc;
     };
     class HTTPRequest : public Messaging::Message {
         OryolClassPoolAllocDecl(HTTPRequest);
@@ -101,7 +101,7 @@ private:
             this->msgId = MessageId::HTTPRequestId;
             this->method = HTTP::HTTPMethod::Get;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -123,30 +123,30 @@ private:
         const IO::URL& GetURL() const {
             return this->url;
         };
-        void SetRequestHeaders(const Core::Map<Core::String,Core::String>& val) {
+        void SetRequestHeaders(const Map<String,String>& val) {
             this->requestheaders = val;
         };
-        const Core::Map<Core::String,Core::String>& GetRequestHeaders() const {
+        const Map<String,String>& GetRequestHeaders() const {
             return this->requestheaders;
         };
-        void SetBody(const Core::Ptr<IO::Stream>& val) {
+        void SetBody(const Ptr<IO::Stream>& val) {
             this->body = val;
         };
-        const Core::Ptr<IO::Stream>& GetBody() const {
+        const Ptr<IO::Stream>& GetBody() const {
             return this->body;
         };
-        void SetResponse(const Core::Ptr<HTTPProtocol::HTTPResponse>& val) {
+        void SetResponse(const Ptr<HTTPProtocol::HTTPResponse>& val) {
             this->response = val;
         };
-        const Core::Ptr<HTTPProtocol::HTTPResponse>& GetResponse() const {
+        const Ptr<HTTPProtocol::HTTPResponse>& GetResponse() const {
             return this->response;
         };
 private:
         HTTP::HTTPMethod::Code method;
         IO::URL url;
-        Core::Map<Core::String,Core::String> requestheaders;
-        Core::Ptr<IO::Stream> body;
-        Core::Ptr<HTTPProtocol::HTTPResponse> response;
+        Map<String,String> requestheaders;
+        Ptr<IO::Stream> body;
+        Ptr<HTTPProtocol::HTTPResponse> response;
     };
 };
 }

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::RunLoop
+    @class Oryol::RunLoop
+    @ingroup Core
     @brief universal run-loop object for on-frame callbacks
     
     A runloop object manages a priority-sorted array of callback 
@@ -28,7 +29,6 @@
 #include "Core/Containers/Map.h"
 
 namespace Oryol {
-namespace Core {
 
 class RunLoop : public RefCounted {
     OryolClassDecl(RunLoop);
@@ -72,5 +72,4 @@ private:
     Set<Id> toRemove;
 };
     
-} // namespace Core
 } // namespace Oryol

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:2# machine generated, do not edit!
+// #version:3# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "TestProtocol.h"
@@ -14,7 +14,7 @@ TestProtocol::CreateCallback TestProtocol::jumpTable[TestProtocol::MessageId::Nu
     &TestProtocol::TestMsg2::FactoryCreate,
     &TestProtocol::TestArrayMsg::FactoryCreate,
 };
-Core::Ptr<Messaging::Message>
+Ptr<Messaging::Message>
 TestProtocol::Factory::Create(Messaging::MessageIdType id) {
     if (id < Messaging::Protocol::MessageId::NumMessageIds) {
         return Messaging::Protocol::Factory::Create(id);
@@ -68,38 +68,38 @@ const uint8* TestProtocol::TestMsg1::Decode(const uint8* srcPtr, const uint8* ma
 }
 int32 TestProtocol::TestMsg2::EncodedSize() const {
     int32 s = TestMsg1::EncodedSize();
-    s += Messaging::Serializer::EncodedSize<Core::String>(this->stringval);
-    s += Messaging::Serializer::EncodedSize<Core::StringAtom>(this->stringatomval);
+    s += Messaging::Serializer::EncodedSize<String>(this->stringval);
+    s += Messaging::Serializer::EncodedSize<StringAtom>(this->stringatomval);
     return s;
 }
 uint8* TestProtocol::TestMsg2::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
     dstPtr = TestMsg1::Encode(dstPtr, maxValidPtr);
-    dstPtr = Messaging::Serializer::Encode<Core::String>(this->stringval, dstPtr, maxValidPtr);
-    dstPtr = Messaging::Serializer::Encode<Core::StringAtom>(this->stringatomval, dstPtr, maxValidPtr);
+    dstPtr = Messaging::Serializer::Encode<String>(this->stringval, dstPtr, maxValidPtr);
+    dstPtr = Messaging::Serializer::Encode<StringAtom>(this->stringatomval, dstPtr, maxValidPtr);
     return dstPtr;
 }
 const uint8* TestProtocol::TestMsg2::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
     srcPtr = TestMsg1::Decode(srcPtr, maxValidPtr);
-    srcPtr = Messaging::Serializer::Decode<Core::String>(srcPtr, maxValidPtr, this->stringval);
-    srcPtr = Messaging::Serializer::Decode<Core::StringAtom>(srcPtr, maxValidPtr, this->stringatomval);
+    srcPtr = Messaging::Serializer::Decode<String>(srcPtr, maxValidPtr, this->stringval);
+    srcPtr = Messaging::Serializer::Decode<StringAtom>(srcPtr, maxValidPtr, this->stringatomval);
     return srcPtr;
 }
 int32 TestProtocol::TestArrayMsg::EncodedSize() const {
     int32 s = Messaging::Message::EncodedSize();
-    s += Messaging::Serializer::EncodedArraySize<int32>(this->int32arrayval);
-    s += Messaging::Serializer::EncodedArraySize<Core::String>(this->stringarrayval);
+    s += Messaging::Serializer::EncodedArraySize<>(this->int32arrayval);
+    s += Messaging::Serializer::EncodedArraySize<>(this->stringarrayval);
     return s;
 }
 uint8* TestProtocol::TestArrayMsg::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
     dstPtr = Messaging::Message::Encode(dstPtr, maxValidPtr);
-    dstPtr = Messaging::Serializer::EncodeArray<int32>(this->int32arrayval, dstPtr, maxValidPtr);
-    dstPtr = Messaging::Serializer::EncodeArray<Core::String>(this->stringarrayval, dstPtr, maxValidPtr);
+    dstPtr = Messaging::Serializer::EncodeArray<>(this->int32arrayval, dstPtr, maxValidPtr);
+    dstPtr = Messaging::Serializer::EncodeArray<>(this->stringarrayval, dstPtr, maxValidPtr);
     return dstPtr;
 }
 const uint8* TestProtocol::TestArrayMsg::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
     srcPtr = Messaging::Message::Decode(srcPtr, maxValidPtr);
-    srcPtr = Messaging::Serializer::DecodeArray<int32>(srcPtr, maxValidPtr, this->int32arrayval);
-    srcPtr = Messaging::Serializer::DecodeArray<Core::String>(srcPtr, maxValidPtr, this->stringarrayval);
+    srcPtr = Messaging::Serializer::DecodeArray<>(srcPtr, maxValidPtr, this->int32arrayval);
+    srcPtr = Messaging::Serializer::DecodeArray<>(srcPtr, maxValidPtr, this->stringarrayval);
     return srcPtr;
 }
 }

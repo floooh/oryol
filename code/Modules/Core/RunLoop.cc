@@ -5,7 +5,6 @@
 #include "RunLoop.h"
 
 namespace Oryol {
-namespace Core {
 
 OryolClassImpl(RunLoop);
 
@@ -85,5 +84,4 @@ RunLoop::remCallbacks() {
     this->toRemove.Clear();
 }
 
-} // namespace Core
 } // namespace Oryol

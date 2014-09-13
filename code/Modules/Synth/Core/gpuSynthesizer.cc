@@ -78,7 +78,7 @@ gpuSynthesizer::Synthesize(const opBundle& bundle) const {
     int16* samples = (int16*) bundle.Buffer[0];
     int16 s0 = samples[0];
     int16 s1 = samples[1];
-    Core::Log::Info("s0=%d, s1=%d\n", s0, s1);
+    Log::Info("s0=%d, s1=%d\n", s0, s1);
 }
 
 } // namespace Synth

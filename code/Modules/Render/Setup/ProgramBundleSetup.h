@@ -26,11 +26,11 @@ public:
     /// add a program consisting of precompiled vertex and fragment shader
     void AddProgram(uint32 mask, const Resource::Id& vertexShader, const Resource::Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
-    void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const Core::String& vsSource, const Core::String& fsSource);
+    void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// bind a shader uniform name to a variable slot
-    void AddUniform(const Core::String& uniformName, int16 slotIndex);
+    void AddUniform(const String& uniformName, int16 slotIndex);
     /// bind a shader uniform name to a texture variable slot
-    void AddTextureUniform(const Core::String& uniformName, int16 slotIndex);
+    void AddTextureUniform(const String& uniformName, int16 slotIndex);
     
     /// get number of programs
     int32 NumPrograms() const;
@@ -41,14 +41,14 @@ public:
     /// get program fragment shader (only valid if setup from precompiled shaders)
     const Resource::Id& FragmentShader(int32 progIndex) const;
     /// get program vertex shader source (only valid if setup from sources)
-    const Core::String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
-    const Core::String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     
     /// get number of uniforms
     int32 NumUniforms() const;
     /// get uniform name at index
-    const Core::String& UniformName(int32 uniformIndex) const;
+    const String& UniformName(int32 uniformIndex) const;
     /// return true if uniform is a texture
     bool IsTextureUniform(int32 uniformIndex) const;
     /// get uniform slot index
@@ -63,8 +63,8 @@ private:
         uint32 mask;
         Resource::Id vertexShader;
         Resource::Id fragmentShader;
-        Core::String vsSources[ShaderLang::NumShaderLangs];
-        Core::String fsSources[ShaderLang::NumShaderLangs];
+        String vsSources[ShaderLang::NumShaderLangs];
+        String fsSources[ShaderLang::NumShaderLangs];
     };
 
     /// obtain an existing entry with matching mask or new entry
@@ -72,7 +72,7 @@ private:
     
     struct uniformEntry {
         uniformEntry() : isTexture(false), slotIndex(InvalidIndex) {};
-        Core::String uniformName;
+        String uniformName;
         bool isTexture;
         int16 slotIndex;
     };

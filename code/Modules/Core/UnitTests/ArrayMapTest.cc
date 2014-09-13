@@ -7,7 +7,6 @@
 #include "Core/Containers/ArrayMap.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(ArrayMapTest) {
     // test simple insertion of unique elements

@@ -18,7 +18,7 @@ public:
     /// assign a resource to the slot
     void Assign(FACTORY* factory, const Id& id, const SETUP& setup);
     /// assign a resource with creation data to the slot
-    void Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data);
+    void Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data);
     /// test if the resource is ready for the validate method (asynchronous creation)
     bool ReadyForValidate(FACTORY* factory) const;
     /// validate the slot (asynchronous creation)
@@ -41,7 +41,7 @@ public:
     
 private:
     RESOURCE resource;
-    Core::Ptr<IO::Stream> stream;
+    Ptr<IO::Stream> stream;
 };
 
 //------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ slot<RESOURCE,SETUP,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
-slot<RESOURCE,SETUP,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
+slot<RESOURCE,SETUP,FACTORY>::Assign(FACTORY* factory, const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data) {
     o_assert(this->IsUnassigned());
     o_assert(!this->stream.isValid());
     o_assert(factory);

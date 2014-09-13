@@ -29,9 +29,9 @@ public:
     /// construct from raw string
     ContentType(const char* rhs);
     /// construct from StringAtom
-    ContentType(const Core::StringAtom& rhs);
+    ContentType(const StringAtom& rhs);
     /// construct from String
-    ContentType(const Core::String& rhs);
+    ContentType(const String& rhs);
     
     /// copy-assignment
     void operator=(const ContentType& rhs);
@@ -40,9 +40,9 @@ public:
     /// assign from raw string
     void operator=(const char* rhs);
     /// assign from StringAtom
-    void operator=(const Core::StringAtom& rhs);
+    void operator=(const StringAtom& rhs);
     /// assign from String
-    void operator=(const Core::String& rhs);
+    void operator=(const String& rhs);
     
     /// equality
     bool operator==(const ContentType& rhs) const;
@@ -54,24 +54,24 @@ public:
     /// true if nothing assigned
     bool Empty() const;
     /// get the content-type string
-    const Core::StringAtom& Get() const;
+    const StringAtom& Get() const;
     /// get as C string
     const char* AsCStr() const;
     
     /// check if a top-level type is present
     bool HasType() const;
     /// get the top-level media-type (e.g. text, audio, image, ...)
-    Core::String Type() const;
+    String Type() const;
     /// check if subtype is present
     bool HasSubType() const;
     /// get the subtype
-    Core::String SubType() const;
+    String SubType() const;
     /// get the type and subtype string (but not params)
-    Core::String TypeAndSubType() const;
+    String TypeAndSubType() const;
     /// check if the media-type has parameters
     bool HasParams() const;
     /// get the parameters
-    Core::Map<Core::String,Core::String> Params() const;
+    Map<String,String> Params() const;
     
 private:
     /// crack the media-type string into its components
@@ -92,7 +92,7 @@ private:
         numIndices
     };
     
-    Core::StringAtom content;
+    StringAtom content;
     int16 indices[numIndices];
     bool valid;
 };

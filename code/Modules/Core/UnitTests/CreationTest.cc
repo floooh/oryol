@@ -19,20 +19,19 @@
 
 using namespace std;
 using namespace Oryol;
-using namespace Oryol::Core;
 
 // define a custom class
 class TestClass : public RefCounted {
     OryolClassPoolAllocDecl(TestClass);
 public:
     TestClass() : val(0) {
-//        Core::Log::Info("constructor called!\n");
+//        Log::Info("constructor called!\n");
     };
     TestClass(int32 v) : val(v) {
-//        Core::Log::Info("constructor with '%d' called!\n", this->val);
+//        Log::Info("constructor with '%d' called!\n", this->val);
     }
     virtual ~TestClass() {
-//        Core::Log::Info("destructor called!\n");
+//        Log::Info("destructor called!\n");
     };
     void Set(int32 i) { this->val = i; };
     int32 Get() const { return this->val; };
@@ -116,7 +115,7 @@ const int numInner = 65535 / 8;
 const int numOuter = 1000000 / numInner;
 
 void threadFunc() {
-    Oryol::Core::CoreFacade::EnterThread();
+    Oryol::CoreFacade::EnterThread();
     hash<thread::id> hashfn;
     
     Log::Info("CreateMultiThreaded: thread '%lu' entered!\n", hashfn(this_thread::get_id()));
@@ -132,7 +131,7 @@ void threadFunc() {
 
     Log::Info("CreateMultiThreaded: thread '%lu' leaving!\n", hashfn(this_thread::get_id()));
     
-    Oryol::Core::CoreFacade::LeaveThread();
+    Oryol::CoreFacade::LeaveThread();
 }
 
 TEST(CreateMultiThreaded) {

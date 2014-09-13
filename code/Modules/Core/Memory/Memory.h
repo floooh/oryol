@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Memory
+    @class Oryol::Memory
+    @ingroup Core
     @brief Low-level memory management functions
     
     Lowlevel memory allocation wrapper for Oryol. Standard memory alignment
@@ -15,7 +16,6 @@
 #include "Core/Config.h"
 
 namespace Oryol {
-namespace Core {
     
 class Memory {
 public:
@@ -54,5 +54,4 @@ Memory::RoundUp(int32 val, int32 byteSize) {
     return (val + (byteSize - 1)) & ~(byteSize - 1);
 }
     
-} // namespace Core
 } // namespace oryol

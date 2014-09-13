@@ -30,21 +30,21 @@ public:
 
 private:
     /// process a single HTTP request
-    void doOneRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// open connection, or get already open connection
     HINTERNET obtainConnection(const IO::URL& url);
     /// garbage collect expired connections (called from doWork)
     void garbageCollectConnections();
 
     static const std::chrono::seconds connectionMaxAge;   // disconnect after 10 seconds
-    const Core::String contentTypeString;
+    const String contentTypeString;
     HINTERNET hSession;
     struct connection {
         HINTERNET hConnection;
         std::chrono::steady_clock::time_point timeStamp;
     };
-    Core::Map<Core::String, connection> connections;
-    Core::StringBuilder stringBuilder;
+    Map<String, connection> connections;
+    StringBuilder stringBuilder;
 };
     
 } // namespace HTTP

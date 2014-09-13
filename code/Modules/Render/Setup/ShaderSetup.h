@@ -23,12 +23,12 @@ public:
     /// shader type
     ShaderType::Code Type;
     /// add a source code of a shader language syntax
-    void AddSource(ShaderLang::Code slang, const Core::String& source);
+    void AddSource(ShaderLang::Code slang, const String& source);
     /// get the shader sources by shader language version (may return empty string)
-    const Core::String& Source(ShaderLang::Code slang) const;
+    const String& Source(ShaderLang::Code slang) const;
     
 private:
-    Core::String sources[ShaderLang::NumShaderLangs];
+    String sources[ShaderLang::NumShaderLangs];
 };
     
 } // namespace Render

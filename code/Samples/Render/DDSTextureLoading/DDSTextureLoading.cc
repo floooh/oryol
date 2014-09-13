@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
 using namespace Oryol::Render;

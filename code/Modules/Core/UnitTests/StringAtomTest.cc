@@ -14,7 +14,6 @@
 
 using namespace std;
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(StringAtomSingleThreaded) {
     
@@ -61,7 +60,7 @@ TEST(StringAtomSingleThreaded) {
 // string-atom table yet
 static void threadFunc(const StringAtom& a0) {
     
-    Oryol::Core::CoreFacade::EnterThread();
+    Oryol::CoreFacade::EnterThread();
     
     // transfer into a thread-local string atom
     StringAtom a1(a0);
@@ -72,7 +71,7 @@ static void threadFunc(const StringAtom& a0) {
     CHECK(a0.AsString() == "BLOB");
     CHECK(a2.AsString() == "BLOB");
     
-    Oryol::Core::CoreFacade::LeaveThread();
+    Oryol::CoreFacade::LeaveThread();
 }
 
 // test string atom transfer into other thread

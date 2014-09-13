@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::RWLock
+    @class Oryol::RWLock
+    @ingroup Core
     @brief single-write / multiple-reader lock
 */
 #include "Core/Config.h"
@@ -11,7 +12,6 @@
 #endif
 
 namespace Oryol {
-namespace Core {
 
 class RWLock {
 public:
@@ -75,6 +75,5 @@ RWLock::UnlockRead() {
 #endif
 }
 
-} // namespace Core
 } // namespace Oryol
 

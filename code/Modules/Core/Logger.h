@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Logger
+    @class Oryol::Logger
+    @ingroup Core
     @brief base class for implementing custom loggers
 
     Derive from this class and override its methods in order to implement
@@ -14,7 +15,6 @@
 #include "Core/RefCounted.h"
 
 namespace Oryol {
-namespace Core {
 
 class Logger : public RefCounted {
     OryolClassDecl(Logger);
@@ -29,5 +29,4 @@ public:
     virtual void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
 };
     
-} // namespace Core
 } // namespace Oryol

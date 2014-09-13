@@ -9,8 +9,8 @@
 namespace Oryol {
 namespace Input {
 
-using namespace Core;
-    
+using namespace _priv;
+
 //------------------------------------------------------------------------------
 pnaclInputMgr::pnaclInputMgr() {
 

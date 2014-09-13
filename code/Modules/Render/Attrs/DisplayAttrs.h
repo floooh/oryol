@@ -26,7 +26,7 @@ struct DisplayAttrs {
     int32 Samples{0};
     bool IsFullscreen{false};
     int32 SwapInterval{1};
-    Core::String WindowTitle;
+    String WindowTitle;
 };
 } // namespace Render
 } // namespace Oryol

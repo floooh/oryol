@@ -22,13 +22,13 @@ public:
     /// default constructor
     BinaryStreamReader() { };
     /// construct with stream
-    BinaryStreamReader(const Core::Ptr<Stream>& stream) :
+    BinaryStreamReader(const Ptr<Stream>& stream) :
         StreamReader(stream) {
     };
     /// read a typed value from the stream
     template<typename TYPE> bool Read(TYPE& val);
     /// read array of typed values from stream
-    template<typename TYPE> bool Read(Core::Array<TYPE>& vals);
+    template<typename TYPE> bool Read(Array<TYPE>& vals);
 };
 
 //------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ BinaryStreamReader::Read(TYPE& val) {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> bool
-BinaryStreamReader::Read(Core::Array<TYPE>& val) {
+BinaryStreamReader::Read(Array<TYPE>& val) {
     // hmm this is expensive :/
     // better to Map/Unmap only once and call Decode many times
     // (which is a case for a code generator)

@@ -7,20 +7,19 @@
 #include "StringAtom.h"
 
 namespace Oryol {
-namespace Core {
 
 const char* String::emptyString = "";
 
 //------------------------------------------------------------------------------
 String::String(const StringAtom& str) {
     const char* cstr = str.AsCStr();
-    this->create(cstr, std::strlen(cstr));
+    this->create(cstr, int32(std::strlen(cstr)));
 }
 
 //------------------------------------------------------------------------------
 String::String(const char* str) {
     if (nullptr != str) {
-        this->create(str, std::strlen(str));
+        this->create(str, int32(std::strlen(str)));
     }
     else {
         this->data = nullptr;
@@ -58,7 +57,7 @@ String::String(const String& rhs, int32 startIndex, int32 endIndex) {
 String::String(const char* ptr, int32 startIndex, int32 endIndex) {
     o_assert(nullptr != ptr);
     if (EndOfString == endIndex) {
-        endIndex = std::strlen(ptr);
+        endIndex = int32(std::strlen(ptr));
     }
     o_assert(startIndex < endIndex);
     this->create(ptr + startIndex, endIndex - startIndex);
@@ -70,7 +69,7 @@ String::Assign(const char* ptr, int32 startIndex, int32 endIndex) {
     o_assert(nullptr != ptr);
     this->release();
     if (EndOfString == endIndex) {
-        endIndex = std::strlen(ptr);
+        endIndex = int32(std::strlen(ptr));
     }
     o_assert(startIndex < endIndex);
     this->create(ptr + startIndex, endIndex - startIndex);
@@ -81,7 +80,7 @@ void
 String::operator=(const StringAtom& str) {
     this->release();
     const char* cstr = str.AsCStr();
-    this->create(cstr, std::strlen(cstr));
+    this->create(cstr, int32(std::strlen(cstr)));
 }
 
 //------------------------------------------------------------------------------
@@ -199,7 +198,7 @@ void
 String::operator=(const char* str) {
     this->release();
     if (nullptr != str) {
-        this->create(str, std::strlen(str));
+        this->create(str, int32(std::strlen(str)));
     }
 }
 
@@ -497,5 +496,4 @@ bool operator>=(const char* s0, const String& s1) {
     return std::strcmp(s0, s1.AsCStr()) >= 0;
 }
 
-} // namespace Core
 } // namespace Oryol

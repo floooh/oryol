@@ -11,8 +11,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 ShapeBuilder::ShapeBuilder() :
 curPrimGroupBaseElement(0),

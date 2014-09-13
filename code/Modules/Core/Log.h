@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Log
+    @class Oryol::Log
+    @ingroup Core
     @brief logging functions
 
     The Log class provides a central place for logging. By default,
@@ -15,7 +16,6 @@
 #include "Core/Config.h"
 
 namespace Oryol {
-namespace Core {
 
 class Logger;
 template<class TYPE> class Ptr;
@@ -60,5 +60,4 @@ private:
     /// generic vprint-style method
     static void vprint(Level l, const char* msg, va_list args) __attribute__((format(printf, 2, 0)));
 };
-} // namespace Core
 } // namespace Oryol

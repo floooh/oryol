@@ -8,7 +8,6 @@
 #include "Core/String/StringAtom.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Messaging;
 
 // a POD struct
@@ -56,7 +55,7 @@ TEST(SerializerTest) {
     CHECK(Serializer::Decode<podStruct>(decodePtr, maxPtr, podRead) == space + sizeof(podStruct));
     CHECK(podWrite.bla == podRead.bla && podWrite.blub == podRead.blub && podWrite.blob == podRead.blob);
     
-    // test Core::String
+    // test String
     const String strWrite("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     String strRead;
     CHECK(Serializer::EncodedSize<String>(strWrite) == 30);
@@ -64,7 +63,7 @@ TEST(SerializerTest) {
     CHECK(Serializer::Decode<String>(decodePtr, maxPtr, strRead) == space + 30);
     CHECK(strWrite == strRead);
     
-    // test Core::StringAtom
+    // test StringAtom
     const StringAtom strAtomWrite("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     StringAtom strAtomRead;
     CHECK(Serializer::EncodedSize<StringAtom>(strAtomWrite) == 30);

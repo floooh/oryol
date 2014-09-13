@@ -9,7 +9,6 @@
 #include "game.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Input;
 using namespace Paclone;

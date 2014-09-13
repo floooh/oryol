@@ -9,7 +9,6 @@
 namespace Oryol {
 namespace HTTP {
 
-using namespace Core;
 using namespace IO;
 
 //------------------------------------------------------------------------------

@@ -6,7 +6,6 @@
 #include "Core/Log.h"
 
 namespace Oryol {
-namespace Core {
 
 OryolClassImpl(Logger);
 
@@ -34,5 +33,4 @@ Logger::AssertMsg(const char* /*cond*/, const char* /*msg*/, const char* /*file*
     // we can't do an o_error() here since it would recurse
 }
 
-} // namespace Core
 } // namespace Oryol

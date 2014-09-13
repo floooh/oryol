@@ -7,7 +7,6 @@
 #include "Core/Args.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(Args) {
     

@@ -8,7 +8,6 @@
 #include "glm/gtc/random.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Debug;
 
@@ -29,7 +28,7 @@ private:
     int32 width;
     int32 height;
     uint8* buffer = nullptr;
-    Core::StringBuilder strBuilder;
+    StringBuilder strBuilder;
 };
 OryolMain(DebugTextApp);
 

@@ -10,8 +10,6 @@ namespace Messaging {
     
 OryolClassPoolAllocImpl(ThreadedQueue);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 /**
  NOTE: if the default constructor is used, a forwarding port must be 
@@ -227,11 +225,11 @@ ThreadedQueue::threadFunc(ThreadedQueue* self) {
 //------------------------------------------------------------------------------
 /**
  The default implementation of onThreadEnter() will call 
- Core::Module::EnterThread() to setup any thread-locale data.
+ Module::EnterThread() to setup any thread-locale data.
 */
 void
 ThreadedQueue::onThreadEnter() {
-    Core::CoreFacade::EnterThread();
+    CoreFacade::EnterThread();
 }
 
 //------------------------------------------------------------------------------
@@ -259,11 +257,11 @@ ThreadedQueue::onTick() {
 //------------------------------------------------------------------------------
 /**
  The default implementation of onThreadLeave() will call 
- Core::Module::LeaveThread() to discard any thread-locale data.
+ Module::LeaveThread() to discard any thread-locale data.
 */
 void
 ThreadedQueue::onThreadLeave() {
-    Core::CoreFacade::LeaveThread();
+    CoreFacade::LeaveThread();
 }
 
 } // namespace Messaging

@@ -9,8 +9,6 @@ namespace Messaging {
     
 OryolClassPoolAllocImpl(AsyncQueue);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 AsyncQueue::AsyncQueue() {
     // empty
@@ -50,12 +48,12 @@ AsyncQueue::ForwardMessages() {
 
 //------------------------------------------------------------------------------
 void
-AsyncQueue::SetForwardingPort(const Core::Ptr<Port>& port) {
+AsyncQueue::SetForwardingPort(const Ptr<Port>& port) {
     this->forwardingPort = port;
 }
 
 //------------------------------------------------------------------------------
-const Core::Ptr<Port>&
+const Ptr<Port>&
 AsyncQueue::GetForwardingPort() const {
     return this->forwardingPort;
 }

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:2#
+/* #version:3#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -40,11 +40,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[TestProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class TestMsg1 : public Messaging::Message {
         OryolClassPoolAllocDecl(TestMsg1);
@@ -62,7 +62,7 @@ public:
             this->float32val = 123.0f;
             this->float64val = 12.0;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -154,7 +154,7 @@ private:
             this->msgId = MessageId::TestMsg2Id;
             this->stringval = "Test";
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -167,21 +167,21 @@ private:
         virtual int32 EncodedSize() const override;
         virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
         virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
-        void SetStringVal(const Core::String& val) {
+        void SetStringVal(const String& val) {
             this->stringval = val;
         };
-        const Core::String& GetStringVal() const {
+        const String& GetStringVal() const {
             return this->stringval;
         };
-        void SetStringAtomVal(const Core::StringAtom& val) {
+        void SetStringAtomVal(const StringAtom& val) {
             this->stringatomval = val;
         };
-        const Core::StringAtom& GetStringAtomVal() const {
+        const StringAtom& GetStringAtomVal() const {
             return this->stringatomval;
         };
 private:
-        Core::String stringval;
-        Core::StringAtom stringatomval;
+        String stringval;
+        StringAtom stringatomval;
     };
     class TestArrayMsg : public Messaging::Message {
         OryolClassPoolAllocDecl(TestArrayMsg);
@@ -189,7 +189,7 @@ private:
         TestArrayMsg() {
             this->msgId = MessageId::TestArrayMsgId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -202,21 +202,21 @@ private:
         virtual int32 EncodedSize() const override;
         virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
         virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
-        void SetInt32ArrayVal(const Core::Array<int32>& val) {
+        void SetInt32ArrayVal(const Array<int32>& val) {
             this->int32arrayval = val;
         };
-        const Core::Array<int32>& GetInt32ArrayVal() const {
+        const Array<int32>& GetInt32ArrayVal() const {
             return this->int32arrayval;
         };
-        void SetStringArrayVal(const Core::Array<Core::String>& val) {
+        void SetStringArrayVal(const Array<String>& val) {
             this->stringarrayval = val;
         };
-        const Core::Array<Core::String>& GetStringArrayVal() const {
+        const Array<String>& GetStringArrayVal() const {
             return this->stringarrayval;
         };
 private:
-        Core::Array<int32> int32arrayval;
-        Core::Array<Core::String> stringarrayval;
+        Array<int32> int32arrayval;
+        Array<String> stringarrayval;
     };
 };
 }

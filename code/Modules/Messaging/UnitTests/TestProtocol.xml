@@ -17,13 +17,13 @@
     </Message>
 
     <Message name="TestMsg2" parent="TestMsg1">
-        <Attr name="StringVal" type="Core::String" def="&quot;Test&quot;"/>
-        <Attr name="StringAtomVal" type="Core::StringAtom" />
+        <Attr name="StringVal" type="String" def="&quot;Test&quot;"/>
+        <Attr name="StringAtomVal" type="StringAtom" />
     </Message>
 
     <Message name="TestArrayMsg" >
-        <Attr name="Int32ArrayVal" type="Core::Array&lt;int32&gt;" />
-        <Attr name="StringArrayVal" type="Core::Array&lt;Core::String&gt;" />
+        <Attr name="Int32ArrayVal" type="Array&lt;int32&gt;" />
+        <Attr name="StringArrayVal" type="Array&lt;String&gt;" />
     </Message>
     
 </Generator>

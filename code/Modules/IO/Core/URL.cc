@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 void
 URL::clearIndices() {
@@ -57,13 +55,13 @@ valid(false) {
 }
     
 //------------------------------------------------------------------------------
-URL::URL(const Core::StringAtom& rhs) :
+URL::URL(const StringAtom& rhs) :
 valid(false) {
     this->crack(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
-URL::URL(const Core::String& rhs) :
+URL::URL(const String& rhs) :
 content(rhs),
 valid(false) {
     this->crack(rhs);
@@ -101,14 +99,14 @@ URL::operator=(const char* rhs) {
     
 //------------------------------------------------------------------------------
 void
-URL::operator=(const Core::StringAtom& rhs) {
+URL::operator=(const StringAtom& rhs) {
     this->content = rhs;
     this->crack(rhs.AsString());
 }
     
 //------------------------------------------------------------------------------
 void
-URL::operator=(const Core::String& rhs) {
+URL::operator=(const String& rhs) {
     this->content = rhs;
     this->crack(rhs);
 }
@@ -126,7 +124,7 @@ URL::operator!=(const URL& rhs) {
 }
     
 //------------------------------------------------------------------------------
-const Core::StringAtom&
+const StringAtom&
 URL::Get() const {
     return this->content;
 }

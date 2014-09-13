@@ -16,9 +16,9 @@ namespace IO {
 class IOSetup {
 public:
     /// initial assigns
-    Core::Map<Core::String, Core::String> Assigns;
+    Map<String, String> Assigns;
     /// initial file systems
-    Core::Map<Core::StringAtom, std::function<Core::Ptr<IO::FileSystem>()>> FileSystems;
+    Map<StringAtom, std::function<Ptr<IO::FileSystem>()>> FileSystems;
 };
     
 } // namespace IO

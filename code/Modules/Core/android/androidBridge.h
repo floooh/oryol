@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Core::androidBrigde
+    @class Oryol::_priv::androidBrigde
+    @ingroup _priv
     @brief Android bridge class between Oryol app and native activity glue
 */
 #include "Core/Types.h"
@@ -9,9 +10,9 @@
 struct android_app;
 
 namespace Oryol {
-namespace Core {
 class App;
 
+namespace _priv {
 class androidBridge {
 public:
     /// constructor
@@ -39,5 +40,5 @@ private:
     bool hasFocus;
     App* app;
 };
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

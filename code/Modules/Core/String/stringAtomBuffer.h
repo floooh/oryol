@@ -9,7 +9,6 @@
 #include "Core/Containers/Array.h"
 
 namespace Oryol {
-namespace Core {
 
 class stringAtomTable;
 
@@ -43,5 +42,4 @@ private:
     int8* curPointer = 0;        // this is always aligned to min(sizeof(header), ORYOL_MAX_PLATFORM_ALIGN)
 };
     
-} // namespace Core
 } // namespace Oryol

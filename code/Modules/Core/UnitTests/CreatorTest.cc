@@ -9,7 +9,6 @@
 #include "Core/Containers/Array.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 class CreatorTestClass : public RefCounted {
     OryolClassDecl(CreatorTestClass);
@@ -41,7 +40,7 @@ public:
     int64 v0;
 };
 
-void TestFunc(std::function<Core::Ptr<CreatorTestClass>()> bla) {
+void TestFunc(std::function<Ptr<CreatorTestClass>()> bla) {
     auto obj = bla();
     CHECK(obj->Bla() == 1);
 }

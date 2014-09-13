@@ -7,7 +7,6 @@
 #include "Core/RunLoop.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(RunLoopTest) {
     Ptr<RunLoop> runLoop = RunLoop::Create();

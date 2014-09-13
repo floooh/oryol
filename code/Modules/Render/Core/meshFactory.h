@@ -13,7 +13,7 @@ namespace Render {
 class meshFactory : public glMeshFactory {
 public:
     /// attach a loader
-    void AttachLoader(const Core::Ptr<meshLoaderBase>& loader);
+    void AttachLoader(const Ptr<meshLoaderBase>& loader);
 };
 #else
 #error "Platform not yet supported!"
@@ -21,7 +21,7 @@ public:
 
 //------------------------------------------------------------------------------
 inline void
-meshFactory::AttachLoader(const Core::Ptr<meshLoaderBase>& loader) {
+meshFactory::AttachLoader(const Ptr<meshLoaderBase>& loader) {
     o_assert(loader.isValid());
     o_assert(InvalidIndex == this->loaders.FindIndexLinear(loader));
     loader->onAttachToFactory(this);

@@ -28,25 +28,25 @@ public:
     ~IOFacade();
     
     /// add or replace an assign definition
-    void SetAssign(const Core::String& assign, const Core::String& path);
+    void SetAssign(const String& assign, const String& path);
     /// check if an assign exists
-    bool HasAssign(const Core::String& assign) const;
+    bool HasAssign(const String& assign) const;
     /// lookup an assign (return empty string if not exists)
-    Core::String LookupAssign(const Core::String& assign) const;
+    String LookupAssign(const String& assign) const;
     /// resolve assigns in the provided string
-    Core::String ResolveAssigns(const Core::String& str) const;
+    String ResolveAssigns(const String& str) const;
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator);
+    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator);
     /// unregister a filesystem
-    void UnregisterFileSystem(const Core::StringAtom& scheme);
+    void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered
-    bool IsFileSystemRegistered(const Core::StringAtom& scheme) const;
+    bool IsFileSystemRegistered(const StringAtom& scheme) const;
     
     /// start async loading of file from URL (also see IOQueue!)
-    Core::Ptr<IO::IOProtocol::Get> LoadFile(const URL& url, int32 ioLane=0);
+    Ptr<IO::IOProtocol::Get> LoadFile(const URL& url, int32 ioLane=0);
     /// push a generic asynchronous IO request
-    void Put(const Core::Ptr<IO::IOProtocol::Request>& ioReq);
+    void Put(const Ptr<IO::IOProtocol::Request>& ioReq);
     
 private:
     /// test if we are on the main thread
@@ -56,7 +56,7 @@ private:
 
     int32 runLoopId;
     std::thread::id mainThreadId;
-    Core::Ptr<ioRequestRouter> requestRouter;
+    Ptr<ioRequestRouter> requestRouter;
     static const int32 numIOLanes;
 };
 

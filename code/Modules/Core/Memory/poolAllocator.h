@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /*
-    private class, don't use!
+    @class Oryol::_priv::poolAllocator
+    @ingroup _priv
  
     Thread-safe pool allocator with placement-new/delete. Uses 32-bit
     tags with a unique-count masked-in for its forward-linked list 
@@ -18,7 +19,7 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Core {
+namespace _priv {
     
 template<class TYPE> class poolAllocator {
 public:
@@ -272,5 +273,5 @@ poolAllocator<TYPE>::Destroy(TYPE* obj) {
     push(n);
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

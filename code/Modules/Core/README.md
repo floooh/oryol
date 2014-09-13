@@ -22,8 +22,8 @@ The following constants are defined (all resolve to -1):
 
 ### Logging
 
-Oryol contains a central logging class **Core::Log** with static logging methods. All Oryol text output goes through
-this class. An application can attach custom logger objects derived from Core::Logger to hook into the log messages.
+Oryol contains a central logging class **Log** with static logging methods. All Oryol text output goes through
+this class. An application can attach custom logger objects derived from Logger to hook into the log messages.
 
 Use the following methods for text output instead of printf:
 

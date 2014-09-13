@@ -21,19 +21,19 @@ public:
     virtual ~Broadcaster();
     
     /// subscribe to messages from this port
-    void Subscribe(const Core::Ptr<Port>& port);
+    void Subscribe(const Ptr<Port>& port);
     /// unsubscribe from this port
-    void Unsubscribe(const Core::Ptr<Port>& port);
+    void Unsubscribe(const Ptr<Port>& port);
     /// get subscribers
-    const Core::Array<Core::Ptr<Port>>& GetSubscribers() const;
+    const Array<Ptr<Port>>& GetSubscribers() const;
 
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg) override;
+    virtual bool Put(const Ptr<Message>& msg) override;
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork();
     
 protected:
-    Core::Array<Core::Ptr<Port>> subscribers;
+    Array<Ptr<Port>> subscribers;
 };
     
 } // namespace Messaging

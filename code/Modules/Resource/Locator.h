@@ -30,18 +30,18 @@ public:
     /// default constructor
     Locator();
     /// shared locator from location
-    Locator(const Core::StringAtom& location);
+    Locator(const StringAtom& location);
     /// shared locator from raw location string
     Locator(const char* location);
     /// shared locator from location and signature
-    Locator(const Core::StringAtom& location, uint32 signature);
+    Locator(const StringAtom& location, uint32 signature);
     /// shared locator from raw location string
     Locator(const char* location, uint32 signature);
     
     /// create a unique Locator without location
     static Locator NonShared();
     /// create a unique Locator with location
-    static Locator NonShared(const Core::StringAtom& location);
+    static Locator NonShared(const StringAtom& location);
     
     /// copy constructor
     Locator(const Locator& rhs);
@@ -60,12 +60,12 @@ public:
     /// return true if the location is valid
     bool HasValidLocation() const;
     /// get the location
-    const Core::StringAtom& Location() const;
+    const StringAtom& Location() const;
     /// get the signature
     uint32 Signature() const;
     
 private:
-    Core::StringAtom location;
+    StringAtom location;
     uint32 signature;
 };
 
@@ -127,7 +127,7 @@ Locator::HasValidLocation() const {
 }
 
 //------------------------------------------------------------------------------
-inline const Core::StringAtom&
+inline const StringAtom&
 Locator::Location() const {
     return this->location;
 }

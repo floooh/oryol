@@ -11,7 +11,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 
 std::atomic<int32> numGetHandled{0};
@@ -22,7 +21,7 @@ class TestFileSystem : public FileSystem {
     OryolClassCreator(TestFileSystem);
 public:
     /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Core::Ptr<IOProtocol::Get>& msg) {
+    virtual void onGet(const Ptr<IOProtocol::Get>& msg) {
         Log::Info("TestFileSystem::onGet() called!\n");
         numGetHandled++;
         
@@ -38,7 +37,7 @@ public:
         msg->SetHandled();
     };
     /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Core::Ptr<IOProtocol::GetRange>& msg) {
+    virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
         Log::Info("TestFileSystem::onGetRange() called!\n");
         numGetRangeHandled++;
         msg->SetHandled();

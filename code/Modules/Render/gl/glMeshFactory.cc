@@ -14,7 +14,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
 using namespace IO;
 
 //------------------------------------------------------------------------------

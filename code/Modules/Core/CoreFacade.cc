@@ -7,7 +7,6 @@
 #include "Core/Ptr.h"
 
 namespace Oryol {
-namespace Core {
     
 OryolGlobalSingletonImpl(CoreFacade);
 
@@ -79,5 +78,4 @@ CoreFacade::LeaveThread() {
     #endif
 }
 
-} // namespace Core
 } // namespace Oryol

@@ -11,7 +11,6 @@ namespace Render {
 
 OryolClassImpl(RawMeshLoader);
 
-using namespace Core;
 using namespace IO;
 
 //------------------------------------------------------------------------------

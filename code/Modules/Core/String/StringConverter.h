@@ -15,7 +15,6 @@
 #include "Core/String/WideString.h"
 
 namespace Oryol {
-namespace Core {
     
 class StringConverter {
 public:
@@ -46,5 +45,4 @@ private:
     static const int32 MaxUTF8Size = 6;
 };
 
-} // namespace Core
 } // namespace Oryol

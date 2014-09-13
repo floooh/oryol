@@ -15,7 +15,7 @@
 namespace Oryol {
 namespace IO {
 
-class assignRegistry : public Core::RefCounted {
+class assignRegistry : public RefCounted {
     OryolGlobalSingletonDecl(assignRegistry);
 public:
     /// constructor
@@ -24,20 +24,20 @@ public:
     virtual ~assignRegistry();
     
     /// add or replace an assign definition
-    void SetAssign(const Core::String& assign, const Core::String& path);
+    void SetAssign(const String& assign, const String& path);
     /// check if an assign exists
-    bool HasAssign(const Core::String& assign) const;
+    bool HasAssign(const String& assign) const;
     /// lookup an assign (return empty string if not exists)
-    Core::String LookupAssign(const Core::String& assign) const;
+    String LookupAssign(const String& assign) const;
     /// resolve assigns in the provided string
-    Core::String ResolveAssigns(const Core::String& str) const;
+    String ResolveAssigns(const String& str) const;
     
 private:
     /// setup the standard assigns
     void setStandardAssigns();
     
-    mutable Core::RWLock rwLock;
-    Core::Map<Core::String, Core::String> assigns;
+    mutable RWLock rwLock;
+    Map<String, String> assigns;
 };
     
 } // namespace IO

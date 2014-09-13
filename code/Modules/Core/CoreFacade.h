@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::CoreFacade
+    @class Oryol::CoreFacade
+    @ingroup Core
     @brief facade singleton of the Core module
     
     @todo: CoreFacade description
@@ -11,7 +12,6 @@
 #include <thread>
 
 namespace Oryol {
-namespace Core {
 
 class RunLoop;
 
@@ -39,5 +39,4 @@ private:
     static ORYOL_THREAD_LOCAL class RunLoop* threadRunLoop;
 };
 
-} // namespace Core
 } // namespace Oryol

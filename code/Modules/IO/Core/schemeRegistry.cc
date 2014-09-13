@@ -10,8 +10,6 @@ namespace IO {
 
 OryolGlobalSingletonImpl(schemeRegistry);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 schemeRegistry::schemeRegistry() {
     this->SingletonEnsureUnique();
@@ -24,7 +22,7 @@ schemeRegistry::~schemeRegistry() {
 
 //------------------------------------------------------------------------------
 void
-schemeRegistry::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator) {
+schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator) {
     this->rwLock.LockWrite();
     o_assert(!this->registry.Contains(scheme));
     this->registry.Add(scheme, fsCreator);

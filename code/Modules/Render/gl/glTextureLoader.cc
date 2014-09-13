@@ -18,7 +18,6 @@ namespace Render {
     
 OryolClassImpl(glTextureLoader);
 
-using namespace Core;
 using namespace IO;
 
 //------------------------------------------------------------------------------

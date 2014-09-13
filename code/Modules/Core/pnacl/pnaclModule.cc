@@ -7,7 +7,7 @@
 #include "ppapi/gles2/gl2ext_ppapi.h"
 
 namespace Oryol {
-namespace Core {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 pp::Instance* 
@@ -15,5 +15,5 @@ pnaclModule::CreateInstance(PP_Instance instance) {
     return new pnaclInstance(instance);
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

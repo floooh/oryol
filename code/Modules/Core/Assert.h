@@ -37,17 +37,17 @@
 #define o_assert_range_dbg(val, max) ((void)0)
 #else
 /// standard assert macro
-#define o_assert(cond) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+#define o_assert(cond) do { if(!(cond)) { Oryol::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
 /// assert macro which is only active in debug mode
 #if ORYOL_DEBUG
-#define o_assert_dbg(cond) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+#define o_assert_dbg(cond) do { if(!(cond)) { Oryol::Log::AssertMsg(#cond,nullptr,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
 #else
 #define o_assert_dbg(cond) ((void)0)
 #endif
 /// assert macro with programmer's message
-#define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+#define o_assert2(cond, msg) do { if(!(cond)) { Oryol::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
 #if ORYOL_DEBUG
-#define o_assert2_dbg(cond, msg) do { if(!(cond)) { Oryol::Core::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
+#define o_assert2_dbg(cond, msg) do { if(!(cond)) { Oryol::Log::AssertMsg(#cond,msg,__FILE__,__LINE__,__PRETTY_FUNCTION__); ORYOL_TRAP(); } } while(0)
 #else
 #define o_assert2_dbg(cond, msg) ((void)0)
 #endif
@@ -58,8 +58,8 @@
 
 #if ORYOL_POSIX
 /// print a critical error and abort execution
-#define o_error(...) do { Oryol::Core::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
+#define o_error(...) do { Oryol::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
 #else
-#define o_error(...) do { Oryol::Core::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
+#define o_error(...) do { Oryol::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
 #endif
 

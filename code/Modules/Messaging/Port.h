@@ -23,7 +23,7 @@
 namespace Oryol {
 namespace Messaging {
 
-class Port : public Core::RefCounted {
+class Port : public RefCounted {
     OryolClassDecl(Port);
 public:
     /// construct with ProtocolId
@@ -32,7 +32,7 @@ public:
     virtual ~Port();
 
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg);
+    virtual bool Put(const Ptr<Message>& msg);
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork();
 };

@@ -7,7 +7,6 @@
 #include "Core/String/StringConverter.h"
 
 namespace Oryol {
-namespace Core {
     
 //------------------------------------------------------------------------------
 Args::Args() {
@@ -76,5 +75,4 @@ Args::GetFloat(const String& arg, float32 defaultValue) const {
     }
 }
     
-} // namespace Core
 } // namespace Oryol

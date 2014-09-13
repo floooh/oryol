@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 bool glExt::isValid = false;
 bool glExt::extensions[NumExtensions] = { false };
     
@@ -31,7 +29,7 @@ glExt::Setup() {
     }
     
     #if !ORYOL_MACOS
-    Core::StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
+    StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     ORYOL_GL_CHECK_ERROR();
     #endif
     

@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace Synth {
 
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 alSoundMgr::alSoundMgr() :
 alcDevice(nullptr),

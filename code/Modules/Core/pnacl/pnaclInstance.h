@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::pnaclInstance
+    @class Oryol::_priv::pnaclInstance
+    @ingroup _priv
     @brief derived pp::Instance class for PNaCl port
 */
 #include "Core/Types.h"
@@ -12,10 +13,8 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace Oryol {
-namespace Core {
-
 class App;
-
+namespace _priv {
 class pnaclInstance : public pp::Instance {
 public:
     /// constructor
@@ -75,5 +74,5 @@ private:
     std::function<bool(const pp::InputEvent&)> inputEventFunc;
 };
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

@@ -7,7 +7,6 @@
 #include <thread>
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 class CoreHelloApp : public App {
 public:

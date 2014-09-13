@@ -16,7 +16,7 @@
 namespace Oryol {
 namespace IO {
 
-class schemeRegistry : public Core::RefCounted {
+class schemeRegistry : public RefCounted {
     OryolGlobalSingletonDecl(schemeRegistry);
 public:
     /// constructor
@@ -25,17 +25,17 @@ public:
     virtual ~schemeRegistry();
     
     /// associate URL scheme with filesystem
-    void RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator);
+    void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator);
     /// unregister a filesystem
-    void UnregisterFileSystem(const Core::StringAtom& scheme);
+    void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered
-    bool IsFileSystemRegistered(const Core::StringAtom& scheme) const;
+    bool IsFileSystemRegistered(const StringAtom& scheme) const;
     /// return a new filesystem instance
-    Core::Ptr<FileSystem> CreateFileSystem(const Core::StringAtom& scheme) const;
+    Ptr<FileSystem> CreateFileSystem(const StringAtom& scheme) const;
     
 private:
-    mutable Core::RWLock rwLock;
-    Core::Map<Core::StringAtom, std::function<Core::Ptr<IO::FileSystem>()>> registry;
+    mutable RWLock rwLock;
+    Map<StringAtom, std::function<Ptr<IO::FileSystem>()>> registry;
 };
 
 } // namespace IO

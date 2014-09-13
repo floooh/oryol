@@ -8,7 +8,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Core {
     
 //------------------------------------------------------------------------------
 stringAtomBuffer::~stringAtomBuffer() {
@@ -40,7 +39,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     }
     
     // compute length of new entry (header + string len + 0 terminator byte)
-    const int32 strLen = std::strlen(str);
+    const int32 strLen = int32(std::strlen(str));
     size_t requiredSize = strLen + sizeof(Header) + 1;
     o_assert(requiredSize < this->chunkSize);
     
@@ -63,5 +62,4 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     return head;
 }
 
-} // namespace Core
 } // namespace Oryol

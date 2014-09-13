@@ -7,7 +7,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Resource;
-using namespace Oryol::Core;
 
 TEST(ResourceRegistryTest) {
 

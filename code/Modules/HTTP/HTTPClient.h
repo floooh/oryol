@@ -31,7 +31,7 @@ public:
     virtual ~HTTPClient();
     
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Messaging::Message>& msg) override;
+    virtual bool Put(const Ptr<Messaging::Message>& msg) override;
     /// perform work
     virtual void DoWork() override;
     

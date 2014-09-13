@@ -11,8 +11,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 int32 glInfo::intValues[NumInfos] = { 0 };
 bool glInfo::isValid = false;
 

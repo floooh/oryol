@@ -7,7 +7,6 @@
 #include "Memory.h"
 
 namespace Oryol {
-namespace Core {
     
 //------------------------------------------------------------------------------
 void*
@@ -56,7 +55,6 @@ Memory::Clear(void* ptr, int32 numBytes) {
     std::memset(ptr, 0, numBytes);
 }
 
-} // namespace Core
 } // namespace Oryol
 
 

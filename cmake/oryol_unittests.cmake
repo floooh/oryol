@@ -41,9 +41,9 @@ macro(oryol_end_unittest)
             "#include \"Core/CoreFacade.h\"\n"
             "#include \"UnitTest++/src/UnitTest++.h\"\n"
             "int main(void) {\n"
-            "    Oryol::Core::CoreFacade::CreateSingle();\n"
+            "    Oryol::CoreFacade::CreateSingle();\n"
             "    int res = UnitTest::RunAllTests();\n"
-            "    Oryol::Core::CoreFacade::DestroySingle();\n"
+            "    Oryol::CoreFacade::DestroySingle();\n"
             "    return res;\n"
             "}\n"
         )

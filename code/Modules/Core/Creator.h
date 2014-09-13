@@ -15,13 +15,13 @@
 /** WORKAROUND for GCC bug 'lambda argument pack' **/
 #define OryolClassCreator(TYPE) \
 public:\
-static std::function<Core::Ptr<TYPE>()> Creator() {\
+static std::function<Ptr<TYPE>()> Creator() {\
     return [] { return Create(); };\
 };
 #else
 #define OryolClassCreator(TYPE) \
 public:\
-template<typename... ARGS> static std::function<Core::Ptr<TYPE>()> Creator(ARGS... args) {\
+template<typename... ARGS> static std::function<Ptr<TYPE>()> Creator(ARGS... args) {\
   return [args...] { return Create(args...); };\
 };
 #endif

@@ -33,9 +33,9 @@ public:
     /// construct from raw string
     URL(const char* rhs);
     /// construct from StringAtom
-    URL(const Core::StringAtom& rhs);
+    URL(const StringAtom& rhs);
     /// construct from String
-    URL(const Core::String& rhs);
+    URL(const String& rhs);
     
     /// assignment from other URL
     void operator=(const URL& rhs);
@@ -44,9 +44,9 @@ public:
     /// assign from raw string
     void operator=(const char* rhs);
     /// assignment from StringAtom
-    void operator=(const Core::StringAtom& rhs);
+    void operator=(const StringAtom& rhs);
     /// assignment from String
-    void operator=(const Core::String& rhs);
+    void operator=(const String& rhs);
     
     /// equality
     bool operator==(const URL& rhs);
@@ -58,50 +58,50 @@ public:
     /// return true if the URL is empty
     bool Empty() const;
     /// get the URL string
-    const Core::StringAtom& Get() const;
+    const StringAtom& Get() const;
     /// shortcut: get content as C string
     const char* AsCStr() const;
     
     /// test if the URL has a scheme
     bool HasScheme() const;
     /// get the scheme string
-    Core::String Scheme() const;
+    String Scheme() const;
     /// test if the URL has a user string
     bool HasUser() const;
     /// get the user string
-    Core::String User() const;
+    String User() const;
     /// test if the URL has a password
     bool HasPassword() const;
     /// get the password string
-    Core::String Password() const;
+    String Password() const;
     /// test if the URL has a host string
     bool HasHost() const;
     /// get the host string
-    Core::String Host() const;
+    String Host() const;
     /// test if the URL has a port string
     bool HasPort() const;
     /// get the port string
-    Core::String Port() const;
+    String Port() const;
     /// get host and port (only host if no port was in URL)
-    Core::String HostAndPort() const;
+    String HostAndPort() const;
     /// test if the URL has a path string
     bool HasPath() const;
     /// get the path string
-    Core::String Path() const;
+    String Path() const;
     /// test if the URL has a fragment
     bool HasFragment() const;
     /// get the fragment string
-    Core::String Fragment() const;
+    String Fragment() const;
     /// test if the URL has a query
     bool HasQuery() const;
     /// get the query component
-    Core::Map<Core::String, Core::String> Query() const;
+    Map<String, String> Query() const;
     /// get everything right of the server
-    Core::String PathToEnd() const;
+    String PathToEnd() const;
     
 private:
     /// crack URL, populates string indices
-    void crack(Core::String urlString);
+    void crack(String urlString);
     /// clear string indices
     void clearIndices();
     /// copy string indices
@@ -128,7 +128,7 @@ private:
         numIndices,
     };
     
-    Core::StringAtom content;
+    StringAtom content;
     int16 indices[numIndices];
     bool valid;
 };

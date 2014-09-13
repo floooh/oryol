@@ -16,7 +16,7 @@
 namespace Oryol {
 namespace IO {
 
-class Stream : public Core::RefCounted {
+class Stream : public RefCounted {
     OryolClassDecl(Stream);
 public:
     /// constructor

@@ -5,7 +5,6 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Render/RenderFacade.h"
 
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------

@@ -8,7 +8,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 using namespace Oryol::Render;
 
@@ -78,7 +77,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     }
     
     // clear the vertex buffer
-    Core::Memory::Clear(this->vertexBuffer, sizeof(this->vertexBuffer));
+    Memory::Clear(this->vertexBuffer, sizeof(this->vertexBuffer));
 }
 
 //------------------------------------------------------------------------------

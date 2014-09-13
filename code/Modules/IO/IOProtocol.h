@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:2#
+/* #version:3#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -54,11 +54,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[IOProtocol::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class Request : public Messaging::Message {
         OryolClassPoolAllocDecl(Request);
@@ -70,7 +70,7 @@ public:
             this->cachewriteenabled = false;
             this->status = IOStatus::InvalidIOStatus;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -110,10 +110,10 @@ public:
         const IOStatus::Code& GetStatus() const {
             return this->status;
         };
-        void SetErrorDesc(const Core::String& val) {
+        void SetErrorDesc(const String& val) {
             this->errordesc = val;
         };
-        const Core::String& GetErrorDesc() const {
+        const String& GetErrorDesc() const {
             return this->errordesc;
         };
 private:
@@ -122,7 +122,7 @@ private:
         bool cachereadenabled;
         bool cachewriteenabled;
         IOStatus::Code status;
-        Core::String errordesc;
+        String errordesc;
     };
     class Get : public Request {
         OryolClassPoolAllocDecl(Get);
@@ -130,7 +130,7 @@ private:
         Get() {
             this->msgId = MessageId::GetId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -140,14 +140,14 @@ private:
             if (protId == 'IOPT') return true;
             else return Request::IsMemberOf(protId);
         };
-        void SetStream(const Core::Ptr<IO::MemoryStream>& val) {
+        void SetStream(const Ptr<IO::MemoryStream>& val) {
             this->stream = val;
         };
-        const Core::Ptr<IO::MemoryStream>& GetStream() const {
+        const Ptr<IO::MemoryStream>& GetStream() const {
             return this->stream;
         };
 private:
-        Core::Ptr<IO::MemoryStream> stream;
+        Ptr<IO::MemoryStream> stream;
     };
     class GetRange : public Get {
         OryolClassPoolAllocDecl(GetRange);
@@ -157,7 +157,7 @@ private:
             this->startoffset = 0;
             this->endoffset = 0;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -189,7 +189,7 @@ private:
         notifyLanes() {
             this->msgId = MessageId::notifyLanesId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -207,7 +207,7 @@ private:
         notifyFileSystemRemoved() {
             this->msgId = MessageId::notifyFileSystemRemovedId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -217,14 +217,14 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const Core::StringAtom& val) {
+        void SetScheme(const StringAtom& val) {
             this->scheme = val;
         };
-        const Core::StringAtom& GetScheme() const {
+        const StringAtom& GetScheme() const {
             return this->scheme;
         };
 private:
-        Core::StringAtom scheme;
+        StringAtom scheme;
     };
     class notifyFileSystemReplaced : public notifyLanes {
         OryolClassPoolAllocDecl(notifyFileSystemReplaced);
@@ -232,7 +232,7 @@ private:
         notifyFileSystemReplaced() {
             this->msgId = MessageId::notifyFileSystemReplacedId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -242,14 +242,14 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const Core::StringAtom& val) {
+        void SetScheme(const StringAtom& val) {
             this->scheme = val;
         };
-        const Core::StringAtom& GetScheme() const {
+        const StringAtom& GetScheme() const {
             return this->scheme;
         };
 private:
-        Core::StringAtom scheme;
+        StringAtom scheme;
     };
     class notifyFileSystemAdded : public notifyLanes {
         OryolClassPoolAllocDecl(notifyFileSystemAdded);
@@ -257,7 +257,7 @@ private:
         notifyFileSystemAdded() {
             this->msgId = MessageId::notifyFileSystemAddedId;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {
@@ -267,14 +267,14 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const Core::StringAtom& val) {
+        void SetScheme(const StringAtom& val) {
             this->scheme = val;
         };
-        const Core::StringAtom& GetScheme() const {
+        const StringAtom& GetScheme() const {
             return this->scheme;
         };
 private:
-        Core::StringAtom scheme;
+        StringAtom scheme;
     };
 };
 }

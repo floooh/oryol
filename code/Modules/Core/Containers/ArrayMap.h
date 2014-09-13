@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::ArrayMap
+    @class Oryol::ArrayMap
+    @ingroup Core
     @brief map class which stores value in a separate array
     
     An ArrayMap works like a Map, but stores the values in a separate
@@ -31,7 +32,6 @@
 #include "Core/Containers/Map.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class KEY, class VALUE> class ArrayMap {
 public:
@@ -313,6 +313,5 @@ ArrayMap<KEY, VALUE>::end() const {
     return this->valueArray.end();
 }
 
-} // namespace Core
 } // namespace Oryol
 

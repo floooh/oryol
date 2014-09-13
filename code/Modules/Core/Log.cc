@@ -23,8 +23,8 @@ const Oryol::int32 LogBufSize = 8096;
 #endif
 
 namespace Oryol {
-namespace Core {
 
+using namespace _priv;
 using namespace std;
 
 Log::Level curLogLevel = Log::Level::Dbg;
@@ -193,5 +193,4 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, 
     lock.UnlockRead();
 } 
 
-} // namespace Core
 } // namespace Oryol

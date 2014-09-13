@@ -52,7 +52,7 @@ public:
     /// build geometry
     void Build();
     /// get the resulting data stream with vertex and index data
-    const Core::Ptr<IO::Stream>& GetStream() const;
+    const Ptr<IO::Stream>& GetStream() const;
     
 private:
     enum ShapeType {
@@ -98,7 +98,7 @@ private:
     glm::mat4 transform;
     glm::vec4 color;
     bool randomColors;
-    Core::Array<ShapeData> shapes;
+    Array<ShapeData> shapes;
     MeshBuilder meshBuilder;
 };
     

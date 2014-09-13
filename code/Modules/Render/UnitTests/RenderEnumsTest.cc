@@ -8,7 +8,7 @@
 #include "Render/gl/gl_impl.h"
 #include <array>
 
-using namespace Oryol::Core;
+using namespace Oryol;
 using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------

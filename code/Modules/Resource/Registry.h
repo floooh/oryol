@@ -29,11 +29,11 @@ public:
     /// add a new resource id to the registry
     void AddResource(const Locator& loc, const Id& id);
     /// add a new resource id with dependents
-    void AddResource(const Locator& loc, const Id& id, const Core::Array<Id>& deps);
+    void AddResource(const Locator& loc, const Id& id, const Array<Id>& deps);
     /// lookup resource by locator, will increment the use-count of the resource!
     Id LookupResource(const Locator& loc);
     /// decreases use-count, and returns all resources which have reached use-count 0
-    int32 ReleaseResource(const Id& id, Core::Array<Id>& outRemoved);
+    int32 ReleaseResource(const Id& id, Array<Id>& outRemoved);
     
     /// check if resource is registered by resource id
     bool HasResourceById(const Id& id) const;
@@ -42,7 +42,7 @@ public:
     /// (debug) get the locator of a resource (fail hard if resource doesn't exist)
     const Locator& GetLocator(const Id& id) const;
     /// (debug) get dependents of a resource
-    Core::Array<Id> GetDependents(const Id& id) const;
+    Array<Id> GetDependents(const Id& id) const;
     
     /// (debug) get number of resource in the registry
     int32 GetNumResources() const;
@@ -53,7 +53,7 @@ private:
     /// increment use count of resource and dependents
     void incrUseCount(const Id& id);
     /// decrement use count of resource and dependents, return 0-usecount resources
-    int32 decrUseCount(const Id& id, Core::Array<Id>& outToRemove);
+    int32 decrUseCount(const Id& id, Array<Id>& outToRemove);
     #if ORYOL_DEBUG
     /// validate integrity of internal data structures
     bool checkIntegrity() const;
@@ -87,9 +87,9 @@ private:
     const Entry* findEntryById(const Id& id) const;
     
     bool isValid;
-    Core::Array<Entry> entries;
-    Core::Map<Locator, int32> locatorIndexMap;
-    Core::Map<Id, int32> idIndexMap;
+    Array<Entry> entries;
+    Map<Locator, int32> locatorIndexMap;
+    Map<Id, int32> idIndexMap;
 };
     
 } // namespace Resource

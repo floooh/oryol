@@ -16,25 +16,25 @@ namespace IO {
     
 class Stream;
 
-class StreamWriter : public Core::RefCounted {
+class StreamWriter : public RefCounted {
     OryolClassDecl(StreamWriter);
 public:
     /// default constructor
     StreamWriter();
     /// construct with Stream object (Stream object must be open)
-    StreamWriter(const Core::Ptr<Stream>& stream);
+    StreamWriter(const Ptr<Stream>& stream);
     /// destructor
     virtual ~StreamWriter();
     
     /// attach stream object (must be open, replaces previous object)
-    virtual void AttachStream(const Core::Ptr<Stream>& stream);
+    virtual void AttachStream(const Ptr<Stream>& stream);
     /// detach stream object
     virtual void DetachStream();
     /// get currently attached stream object
-    const Core::Ptr<Stream>& GetStream() const;
+    const Ptr<Stream>& GetStream() const;
     
 protected:
-    Core::Ptr<Stream> stream;
+    Ptr<Stream> stream;
 };
     
 } // namespace IO

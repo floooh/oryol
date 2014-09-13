@@ -7,7 +7,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
 using namespace Messaging;
 
 //------------------------------------------------------------------------------

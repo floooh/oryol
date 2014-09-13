@@ -128,7 +128,7 @@ alBufferStreamer::Enqueue(const void* ptr, int32 numBytes) {
     if (AL_PLAYING != srcState) {
         alSourcePlay(this->source);
         ORYOL_AL_CHECK_ERROR();
-        Core::Log::Dbg("alBufferStreamer: starting playback\n");
+        Log::Dbg("alBufferStreamer: starting playback\n");
     }
 }
 

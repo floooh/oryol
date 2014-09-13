@@ -60,7 +60,7 @@ private:
     /// setup the text draw state
     void  setupTextDrawState(Render::RenderFacade* renderFacade);
     /// convert the provides string object into vertices, and return number of vertices
-    int32 convertStringToVertices(const Core::String& str);
+    int32 convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
     int32 writeVertex(int32 vertexIndex, uint8 x, uint8 y, uint8 u, uint8 v, uint32 rgba);
     
@@ -71,11 +71,11 @@ private:
     
     glm::vec2 textScale;
     Render::VertexLayout vertexLayout;
-    Core::RWLock rwLock;
+    RWLock rwLock;
     Resource::Id fontTexture;
     Resource::Id textMesh;
     Resource::Id textDrawState;
-    Core::StringBuilder stringBuilder;
+    StringBuilder stringBuilder;
     bool valid;
     
     // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)

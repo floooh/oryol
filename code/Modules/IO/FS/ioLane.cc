@@ -11,7 +11,6 @@ namespace IO {
 
 OryolClassImpl(ioLane);
 
-using namespace Core;
 using namespace Messaging;
 
 //------------------------------------------------------------------------------

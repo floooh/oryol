@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::AppState
+    @class Oryol::AppState
+    @ingroup Core
     @brief application states
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Core {
     
 class AppState {
 public:
@@ -32,5 +32,4 @@ public:
     static Code FromString(const char* str);
 };
     
-} // namespace Core
 } // namespace Oryol

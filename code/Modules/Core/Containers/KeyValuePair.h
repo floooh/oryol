@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::KeyValuePair
+    @class Oryol::KeyValuePair
+    @ingroup Core
     @brief key-value-pair for mapping containers
     
     Key-value-pair template class. Similar to pair<>, but members are not
@@ -12,7 +13,6 @@
 #include "Core/Config.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class KEY, class VALUE> class KeyValuePair {
 public:
@@ -226,5 +226,4 @@ template<class KEY, class VALUE> inline bool operator<=(const KEY& key, const Ke
     return key <= kvp.key;
 };
 
-} // namespace Core
 } // namespace Oryol

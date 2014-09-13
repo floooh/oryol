@@ -31,7 +31,7 @@ public:
     ~resourceMgr();
     
     /// attach mesh loader
-    void AttachLoader(const Core::Ptr<loaderBase>& loader);
+    void AttachLoader(const Ptr<loaderBase>& loader);
     
     /// setup the resource manager
     void Setup(const RenderSetup& setup, stateWrapper* stWrapper, displayMgr* dspMgr);
@@ -45,7 +45,7 @@ public:
     /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Core::Ptr<IO::Stream>& data);
+    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<IO::Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
     Resource::Id LookupResource(const Resource::Locator& locator);
     /// release a resource (decrement use-count, free resource if use-count is 0)
@@ -67,7 +67,7 @@ private:
     class stateWrapper* stateWrapper;
     class displayMgr* displayMgr;
     Resource::Registry resourceRegistry;
-    Core::Array<Resource::Id> removedIds;
+    Array<Resource::Id> removedIds;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:2# machine generated, do not edit!
+// #version:3# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "RenderProtocol.h"
@@ -14,7 +14,7 @@ RenderProtocol::CreateCallback RenderProtocol::jumpTable[RenderProtocol::Message
     &RenderProtocol::DisplayDiscarded::FactoryCreate,
     &RenderProtocol::DisplayModified::FactoryCreate,
 };
-Core::Ptr<Messaging::Message>
+Ptr<Messaging::Message>
 RenderProtocol::Factory::Create(Messaging::MessageIdType id) {
     if (id < Messaging::Protocol::MessageId::NumMessageIds) {
         return Messaging::Protocol::Factory::Create(id);

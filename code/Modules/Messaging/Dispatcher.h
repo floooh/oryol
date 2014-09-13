@@ -27,7 +27,7 @@
 namespace Oryol {
 namespace Messaging {
 
-typedef std::function<void(const Core::Ptr<Message>&)> HandlerFunc;
+typedef std::function<void(const Ptr<Message>&)> HandlerFunc;
 
 template<class PROTOCOL> class Dispatcher : public Port {
     OryolClassDecl(Dispatcher);
@@ -38,10 +38,10 @@ public:
     virtual ~Dispatcher();
     
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg) override;
+    virtual bool Put(const Ptr<Message>& msg) override;
     
     /// bind a function to a message
-    template<class MSG> void Subscribe(std::function<void(const Core::Ptr<MSG>&)> func);
+    template<class MSG> void Subscribe(std::function<void(const Ptr<MSG>&)> func);
     /// unsubscribe from a specific message
     template<class MSG> void Unsubscribe();
     
@@ -63,7 +63,7 @@ Dispatcher<PROTOCOL>::~Dispatcher() {
 
 //------------------------------------------------------------------------------
 template<class PROTOCOL> bool
-Dispatcher<PROTOCOL>::Put(const Core::Ptr<Message>& msg) {
+Dispatcher<PROTOCOL>::Put(const Ptr<Message>& msg) {
     // only consider messages of our protocol, ignore others
     if (msg->IsMemberOf(PROTOCOL::GetProtocolId())) {
     
@@ -82,7 +82,7 @@ Dispatcher<PROTOCOL>::Put(const Core::Ptr<Message>& msg) {
 
 //------------------------------------------------------------------------------
 template<class PROTOCOL> template<class MSG> void
-Dispatcher<PROTOCOL>::Subscribe(std::function<void(const Core::Ptr<MSG>&)> func) {
+Dispatcher<PROTOCOL>::Subscribe(std::function<void(const Ptr<MSG>&)> func) {
     const MessageIdType classMsgId = MSG::ClassMessageId();
     o_assert((classMsgId >= 0) && (classMsgId < PROTOCOL::MessageId::NumMessageIds));
     

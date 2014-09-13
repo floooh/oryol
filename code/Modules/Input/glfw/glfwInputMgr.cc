@@ -12,7 +12,6 @@
 namespace Oryol {
 namespace Input {
 
-using namespace Core;
 using namespace Render;
     
 glfwInputMgr* glfwInputMgr::self = nullptr;
@@ -185,7 +184,7 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::cursorEnterCallback(GLFWwindow* win, int entered) {
-    Core::Log::Info("cursorenter: %d\n", entered);
+    Log::Info("cursorenter: %d\n", entered);
 }
 
 //------------------------------------------------------------------------------

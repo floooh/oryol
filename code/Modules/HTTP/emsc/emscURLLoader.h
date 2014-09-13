@@ -21,7 +21,7 @@ public:
 
 private:
     /// start the next, called from doWork
-    void startRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// success callback
     static void onLoaded(void* userData, void* buffer, int size);
     /// failure callback

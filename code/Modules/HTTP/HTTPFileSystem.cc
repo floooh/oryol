@@ -9,7 +9,6 @@ namespace HTTP {
     
 OryolClassImpl(HTTPFileSystem);
 
-using namespace Core;
 using namespace IO;
 
 //------------------------------------------------------------------------------

@@ -11,8 +11,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 iosDisplayMgr* iosDisplayMgr::self = nullptr;
 
 //------------------------------------------------------------------------------
@@ -42,8 +40,8 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     displayMgrBase::SetupDisplay(renderSetup);
     
     // modify the color/depth/stencil format of the GLKView
-    GLKView* glkView = iosBridge::Instance()->iosGetGLKView();
-    switch (renderSetup.ColorPixelFormat) {
+    GLKView* glkView = _priv::iosBridge::Instance()->iosGetGLKView();
+    switch (renderSetup.ColorFormat) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
@@ -58,7 +56,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
     }
-    switch (renderSetup.DepthPixelFormat) {
+    switch (renderSetup.DepthFormat) {
         case PixelFormat::None:
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormatNone;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
@@ -92,8 +90,8 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     glExt::Setup();
     
     // update the displayAttrs with the actual frame buffer size
-    this->glFramebufferWidth = glkView.drawableWidth;
-    this->glFramebufferHeight = glkView.drawableHeight;
+    this->glFramebufferWidth = (int) glkView.drawableWidth;
+    this->glFramebufferHeight = (int) glkView.drawableHeight;
     Log::Info("iosDisplayMgr: actual framebuffer size w=%d, h=%d\n", this->glFramebufferWidth, this->glFramebufferHeight);
     this->displayAttrs.FramebufferWidth = this->glFramebufferWidth;
     this->displayAttrs.FramebufferHeight = this->glFramebufferHeight;
@@ -124,7 +122,7 @@ iosDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 void
 iosDisplayMgr::glBindDefaultFramebuffer() {
-    GLKView* glkView = iosBridge::Instance()->iosGetGLKView();
+    GLKView* glkView = _priv::iosBridge::Instance()->iosGetGLKView();
     [glkView bindDrawable];
 }
 

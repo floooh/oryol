@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::StringAtom
+    @class Oryol::StringAtom
+    @ingroup Core
     @brief immutable, unique strings for fast comparison
     
     A unique string, relatively slow on creation, but fast for comparison.
@@ -14,7 +15,6 @@
 #include "Core/String/stringAtomTable.h"
 
 namespace Oryol {
-namespace Core {
 
 class String;
 
@@ -228,5 +228,4 @@ StringAtom::AsCStr() const {
     }
 }
 
-} // namespace Core
 } // namespace Oryol

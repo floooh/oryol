@@ -7,7 +7,7 @@
 #include "IO/Core/ContentType.h"
 #include <cstring>
 
-using namespace Oryol::Core;
+using namespace Oryol;
 using namespace Oryol::IO;
 
 TEST(ContentTypeTest) {

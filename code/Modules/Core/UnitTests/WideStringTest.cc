@@ -7,7 +7,6 @@
 #include "Core/String/WideString.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(WideStringTest) {
     

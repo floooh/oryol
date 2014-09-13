@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace Messaging {
 
-class Message : public Core::RefCounted {
+class Message : public RefCounted {
     OryolClassDecl(Message);
 public:
     /// constructor

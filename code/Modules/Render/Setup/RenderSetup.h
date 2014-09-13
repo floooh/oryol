@@ -23,9 +23,9 @@ namespace Render {
 class RenderSetup {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup AsWindow(int32 width, int32 height, bool msaa, Core::String windowTitle);
+    static RenderSetup AsWindow(int32 width, int32 height, bool msaa, String windowTitle);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup AsFullscreen(int32 width, int32 height, bool msaa, Core::String windowTitle);
+    static RenderSetup AsFullscreen(int32 width, int32 height, bool msaa, String windowTitle);
     
     /// canvas width
     int32 Width = 640;
@@ -40,10 +40,10 @@ public:
     /// fullscreen vs windowed
     bool Fullscreen = false;
     /// window title
-    Core::String Title = "Oryol";
+    String Title = "Oryol";
     
     /// resource loaders
-    Core::Array<std::function<Core::Ptr<loaderBase>()>> Loaders;
+    Array<std::function<Ptr<loaderBase>()>> Loaders;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);

@@ -26,7 +26,7 @@ public:
 
 private:
     /// start the next, called from doWork
-    void startRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
 
 } // namespace HTTP

@@ -28,18 +28,18 @@ public:
     /// per-frame update
     virtual void DoWork();
     /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Core::Ptr<IO::IOProtocol::Get>& msg);
+    virtual void onGet(const Ptr<IO::IOProtocol::Get>& msg);
     /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Core::Ptr<IO::IOProtocol::GetRange>& msg);
+    virtual void onGetRange(const Ptr<IO::IOProtocol::GetRange>& msg);
 
 private:
-    Core::StringBuilder stringBuilder;
-    Core::Ptr<HTTPClient> httpClient;
+    StringBuilder stringBuilder;
+    Ptr<HTTPClient> httpClient;
     struct pendingRequest {
-        Core::Ptr<IO::IOProtocol::Get> ioRequest;
-        Core::Ptr<HTTPProtocol::HTTPRequest> httpRequest;
+        Ptr<IO::IOProtocol::Get> ioRequest;
+        Ptr<HTTPProtocol::HTTPRequest> httpRequest;
     };
-    Core::Array<pendingRequest> pendingRequests;
+    Array<pendingRequest> pendingRequests;
 };
     
 } // namespace HTTP

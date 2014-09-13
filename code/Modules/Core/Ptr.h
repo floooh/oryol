@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Ptr
+    @class Oryol::Ptr
+    @ingroup Core
     @brief Oryol's smart pointer class
 
     The Oryol smart pointer class is used together with the RefCounted
@@ -14,7 +15,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class T> class Ptr {
 public:
@@ -193,5 +193,4 @@ private:
     };
 };
 
-} // namespace core
 } // namespace oryol

@@ -7,7 +7,6 @@
 #include "IO/Core/schemeRegistry.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 
 class TestFS_A : public FileSystem {

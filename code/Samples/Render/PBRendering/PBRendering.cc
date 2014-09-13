@@ -11,7 +11,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Debug;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;

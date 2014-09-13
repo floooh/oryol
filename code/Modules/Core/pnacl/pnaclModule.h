@@ -1,13 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::pnaclModule
+    @class Oryol::_priv::pnaclModule
+    @ingroup _priv
     @brief derived PP::Module class for PNaCl port
 */
 #include "ppapi/cpp/module.h"
 
 namespace Oryol {
-namespace Core {
+namespace _priv {
 
 class pnaclModule : public pp::Module {
 public:
@@ -15,5 +16,5 @@ public:
     virtual pp::Instance* CreateInstance(PP_Instance instance);
 };
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

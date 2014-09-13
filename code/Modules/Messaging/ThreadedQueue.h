@@ -39,7 +39,7 @@ public:
     /// default constructor (must setup forwardingPort in subclass!)
     ThreadedQueue();
     /// constructor with forwarding port
-    ThreadedQueue(const Core::Ptr<Port>& forwardingPort);
+    ThreadedQueue(const Ptr<Port>& forwardingPort);
     /// destructor
     virtual ~ThreadedQueue();
     
@@ -52,7 +52,7 @@ public:
     /// stop the handler thread, this cannot happen in the destructor
     virtual void StopThread();
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg) override;
+    virtual bool Put(const Ptr<Message>& msg) override;
     /// perform work, this will be invoked on downstream ports
     virtual void DoWork();
 
@@ -68,7 +68,7 @@ protected:
     /// called in thread on thread-entry
     virtual void onThreadEnter();
     /// called to forward one message
-    virtual void onMessage(const Core::Ptr<Message>& msg);
+    virtual void onMessage(const Ptr<Message>& msg);
     /// called after messages are processed, and on each tick (if a TickDuration is set)
     virtual void onTick();
     /// called in thread before thread is left
@@ -79,10 +79,10 @@ protected:
     void moveTransferToReadQueue();
     
     uint32 tickDuration;
-    Core::Queue<Core::Ptr<Message>> writeQueue;     // written by sender thread
-    Core::Queue<Core::Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
-    Core::Queue<Core::Ptr<Message>> readQueue;      // read by worker thread
-    Core::Ptr<Port> forwardingPort;                 // runs in thread!
+    Queue<Ptr<Message>> writeQueue;     // written by sender thread
+    Queue<Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
+    Queue<Ptr<Message>> readQueue;      // read by worker thread
+    Ptr<Port> forwardingPort;                 // runs in thread!
     
     #if ORYOL_HAS_THREADS
     std::thread::id createThreadId;

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::StringBuilder
+    @class Oryol::StringBuilder
+    @ingroup Core
     @brief manipulate and inspect string data
     
     Use the StringBuilder methods to build, manipulate and inspect
@@ -13,7 +14,6 @@
 #include "Core/Containers/Array.h"
 
 namespace Oryol {
-namespace Core {
     
 class StringBuilder {
 public:
@@ -153,5 +153,4 @@ private:
     int32 size;
 };
     
-} // namespace Core
 } // namespace Oryol

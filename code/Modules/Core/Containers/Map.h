@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Map
+    @class Oryol::Map
+    @ingroup Core
     @brief simple key-value map similar to std::map
     
     A key-value-pair container similar to std::map, with the following
@@ -37,7 +38,6 @@
 #include "Core/Containers/KeyValuePair.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class KEY, class VALUE> class Map {
 public:
@@ -141,7 +141,7 @@ private:
     /// grow to make room
     void grow();
     
-    elementBuffer<KeyValuePair<KEY,VALUE>> buffer;
+    _priv::elementBuffer<KeyValuePair<KEY,VALUE>> buffer;
     int32 minGrow;
     int32 maxGrow;
     bool inBulkMode;
@@ -302,7 +302,7 @@ Map<KEY, VALUE>::Add(KeyValuePair<KEY, VALUE>&& kvp) {
         this->grow();
     }
     auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    int32 index = ptr - this->buffer.elmStart;
+    int32 index = int32(ptr - this->buffer.elmStart);
     this->buffer.insert(index, std::move(kvp));
 }
 
@@ -342,7 +342,7 @@ Map<KEY, VALUE>::AddUnique(KeyValuePair<KEY, VALUE>&& kvp) {
         return false;
     }
     else {
-        int32 index = ptr - this->buffer.elmStart;
+        int32 index = int32(ptr - this->buffer.elmStart);
         this->buffer.insert(index, std::move(kvp));
         return true;
     }
@@ -359,7 +359,7 @@ template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Erase(const KEY& key) {
     auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
     if (ptr != this->buffer.elmEnd) {
-        const int32 index = ptr - this->buffer.elmStart;
+        const int32 index = int32(ptr - this->buffer.elmStart);
         while ((index < this->buffer.size()) && (this->buffer[index].key == key)) {
             this->buffer.erase(index);
         }
@@ -552,5 +552,4 @@ Map<KEY, VALUE>::grow() {
     this->adjustCapacity(newCapacity);
 }
 
-} // namespace Core
 } // namespace Oryol

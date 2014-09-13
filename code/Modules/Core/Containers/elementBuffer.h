@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /*
-    private class, do not use
+    @class Oryol::_priv::elementBuffer
+    @ingroup _priv
  
     Low-level dynamic memory buffer that is used as base for most
     higher-level Oryol container classes. Internally the buffer
@@ -26,7 +27,8 @@
 
 //------------------------------------------------------------------------------
 namespace Oryol {
-namespace Core {
+namespace _priv {
+
 template<class TYPE> class elementBuffer {
 public:
     /// default constructor
@@ -209,13 +211,13 @@ elementBuffer<TYPE>::operator=(elementBuffer<TYPE>&& rhs) {
 //------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::frontSpare() const {
-    return intptr(this->elmStart - this->bufStart);
+    return int32(intptr(this->elmStart - this->bufStart));
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::backSpare() const {
-    return intptr(this->bufEnd - this->elmEnd);
+    return int32(intptr(this->bufEnd - this->elmEnd));
 }
 
 //------------------------------------------------------------------------------
@@ -227,13 +229,13 @@ elementBuffer<TYPE>::spare() const {
 //------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::size() const {
-    return intptr(this->elmEnd - this->elmStart);
+    return int32(intptr(this->elmEnd - this->elmStart));
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> int32
 elementBuffer<TYPE>::capacity() const {
-    return intptr(this->bufEnd - this->bufStart);
+    return int32(intptr(this->bufEnd - this->bufStart));
 }
 
 //------------------------------------------------------------------------------
@@ -705,6 +707,6 @@ elementBuffer<TYPE>::popFront() {
     return val;
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol
 //------------------------------------------------------------------------------

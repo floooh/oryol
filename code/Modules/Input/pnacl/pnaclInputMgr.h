@@ -49,7 +49,7 @@ private:
     bool onChar(const pp::KeyboardInputEvent& ie);
 
     static const int32 MaxNumKeys = 256;
-    Core::RunLoop::Id runLoopId;    
+    RunLoop::Id runLoopId;    
     Key::Code keyTable[MaxNumKeys];    
 };
 

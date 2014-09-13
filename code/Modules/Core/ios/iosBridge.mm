@@ -11,7 +11,7 @@
 #import "iosAppDelegate.h"
 
 namespace Oryol {
-namespace Core {
+namespace _priv {
 
 OryolGlobalSingletonImpl(iosBridge);
 
@@ -171,5 +171,5 @@ iosBridge::iosGetGLKViewController() const {
     return this->glkViewController;
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

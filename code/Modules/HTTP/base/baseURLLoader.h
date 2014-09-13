@@ -15,11 +15,11 @@ namespace HTTP {
 class baseURLLoader {
 public:
     /// enqueue an URL request
-    void putRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void putRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// process enqueued requests
     void doWork();
 protected:
-    Core::Queue<Core::Ptr<HTTPProtocol::HTTPRequest>> requestQueue;
+    Queue<Ptr<HTTPProtocol::HTTPRequest>> requestQueue;
 };
 } // namespace HTTP
 } // namespace Oryol

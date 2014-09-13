@@ -6,7 +6,6 @@
 #include "Core/String/StringConverter.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(StringUtilTest) {
     /// @todo IMPLEMENT STRING CONVERTER TEST!!!

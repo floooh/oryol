@@ -7,8 +7,6 @@
 namespace Oryol {
 namespace Resource {
 
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 Registry::Registry() :
 isValid(false) {

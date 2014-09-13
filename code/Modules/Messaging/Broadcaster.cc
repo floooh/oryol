@@ -9,8 +9,6 @@ namespace Messaging {
     
 OryolClassPoolAllocImpl(Broadcaster);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 Broadcaster::Broadcaster() {
     // empty

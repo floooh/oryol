@@ -13,7 +13,8 @@
 #endif
 
 namespace Oryol {
-namespace Core {
+
+using namespace _priv;
 
 App* App::self = nullptr;
 
@@ -29,7 +30,7 @@ suspendRequested(false)
     #if ORYOL_ANDROID
     this->androidBridge.setup(this);
     #elif ORYOL_IOS
-    this->iosBridge = iosBridge::CreateSingle(this);
+    this->iosBridge = _priv::iosBridge::CreateSingle(this);
     #endif
 }
 
@@ -38,7 +39,7 @@ App::~App() {
     #if ORYOL_ANDROID
     this->androidBridge.discard();
     #elif ORYOL_IOS
-    iosBridge::DestroySingle();
+    _priv::iosBridge::DestroySingle();
     this->iosBridge = nullptr;
     #endif
     self = nullptr;
@@ -250,5 +251,4 @@ App::requestSuspend() {
     this->suspendRequested = true;
 }
 
-} // namespace Core
 } // namespace Oryol

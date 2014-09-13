@@ -8,7 +8,6 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Core {
 
 const wchar_t* WideString::emptyString = L"";
     
@@ -80,7 +79,7 @@ strPtr(0) {
 //------------------------------------------------------------------------------
 WideString::WideString(const wchar_t* str) {
     o_assert(nullptr != str);
-    this->create(str, std::wcslen(str));
+    this->create(str, int32(std::wcslen(str)));
 }
     
 //------------------------------------------------------------------------------
@@ -114,7 +113,7 @@ void
 WideString::operator=(const wchar_t* str) {
     o_assert(0 != str);
     this->release();
-    this->create(str, std::wcslen(str));
+    this->create(str, int32(std::wcslen(str)));
 }
     
 //------------------------------------------------------------------------------
@@ -274,7 +273,7 @@ WideString::Assign(const wchar_t* ptr, int32 numChars) {
     o_assert(nullptr != ptr);
     this->release();
     if (0 == numChars) {
-        numChars = std::wcslen(ptr);
+        numChars = int32(std::wcslen(ptr));
     }
     this->create(ptr, numChars);
 }
@@ -351,5 +350,4 @@ bool operator>=(const wchar_t* s0, const WideString& s1) {
     return std::wcscmp(s0, s1.AsCStr()) >= 0;
 }
     
-} // namespace Core
 } // namespace Oryol

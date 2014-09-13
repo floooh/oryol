@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::iosBridge
+    @class Oryol::_priv::iosBridge
+    @ingroup _priv
     @brief private bridge class between IOS and Oryol app
 */
 #include "Core/Types.h"
@@ -15,9 +16,10 @@ typedef void *id;
 #endif
 
 namespace Oryol {
-namespace Core {
-    
+
 class App;
+    
+namespace _priv {
     
 class iosBridge {
     OryolGlobalSingletonDecl(iosBridge);
@@ -67,5 +69,5 @@ private:
     id glkViewController;
 };
     
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

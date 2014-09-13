@@ -23,22 +23,22 @@ public:
     virtual ~AsyncQueue();
     
     /// add the forwarding port, where messages are forwarded to in DoWork
-    void SetForwardingPort(const Core::Ptr<Port>& port);
+    void SetForwardingPort(const Ptr<Port>& port);
     /// get the forwarding port
-    const Core::Ptr<Port>& GetForwardingPort() const;
+    const Ptr<Port>& GetForwardingPort() const;
     /// get number of queued messages
     int32 GetNumQueuedMessages() const;
     
     /// this only forwards the DoWork() call to the forwarding port
     virtual void DoWork();
     /// put a message into the port
-    virtual bool Put(const Core::Ptr<Message>& msg) override;
+    virtual bool Put(const Ptr<Message>& msg) override;
     /// explicitly forward queued messages
     void ForwardMessages();
 
 protected:
-    Core::Queue<Core::Ptr<Message>> queue;
-    Core::Ptr<Port> forwardingPort;
+    Queue<Ptr<Message>> queue;
+    Ptr<Port> forwardingPort;
 };
 
 } // namespace Messaging

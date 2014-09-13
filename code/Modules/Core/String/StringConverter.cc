@@ -10,7 +10,6 @@
 #include <cwchar>
 
 namespace Oryol {
-namespace Core {
 
 //------------------------------------------------------------------------------
 static void
@@ -39,7 +38,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t
         o_assert(dstPtr < (UTF32*) (dst + (dstMaxBytes / sizeof(wchar_t))));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = (dstPtr - (UTF32*)dst) + 1;
+            result = int32(dstPtr - (UTF32*)dst) + 1;
         }
     } 
     else {
@@ -49,7 +48,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t
         o_assert(dstPtr < (UTF16*) (dst + (dstMaxBytes / sizeof(wchar_t))));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = (int32) ((dstPtr - (UTF16*)dst) + 1);
+            result = int32(dstPtr - (UTF16*)dst) + 1;
         }
     }
     if (conversionOK != convRes) {
@@ -78,7 +77,7 @@ StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char
         o_assert(dstPtr < (dst + dstMaxBytes));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = (dstPtr - dst) + 1;
+            result = int32(dstPtr - dst) + 1;
         }
     }
     else {
@@ -89,7 +88,7 @@ StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char
         o_assert(dstPtr < (dst + dstMaxBytes));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = (int32) ((dstPtr - dst) + 1);
+            result = int32(dstPtr - dst) + 1;
         }
     }
     if (conversionOK != convRes) {
@@ -224,5 +223,4 @@ StringConverter::FromString(const String& str) {
     return (float32) std::atof(str.AsCStr());
 }
 
-} // namespace Core
 } // namespace Oryol

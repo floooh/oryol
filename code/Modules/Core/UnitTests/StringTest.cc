@@ -10,7 +10,6 @@
 #include <cstring>
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 TEST(StringTest) {
 

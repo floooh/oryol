@@ -8,7 +8,6 @@
 #include "Messaging/UnitTests/TestProtocol.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Messaging;
 
 static int val0 = 0;

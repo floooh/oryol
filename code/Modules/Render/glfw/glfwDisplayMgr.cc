@@ -163,7 +163,7 @@ glfwDisplayMgr::glBindDefaultFramebuffer() {
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::glfwErrorCallback(int error, const char* desc) {
-    Core::Log::Error("GLFW error: '%d', '%s'\n", error, desc);
+    Log::Error("GLFW error: '%d', '%s'\n", error, desc);
 }
 
 //------------------------------------------------------------------------------

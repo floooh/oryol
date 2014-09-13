@@ -8,10 +8,9 @@
 #include "glm/gtc/constants.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 
-class ClearApp : public Core::App {
+class ClearApp : public App {
 public:
     virtual AppState::Code OnInit();
     virtual AppState::Code OnRunning();

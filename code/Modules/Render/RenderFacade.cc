@@ -9,7 +9,6 @@ namespace Render {
 
 OryolLocalSingletonImpl(RenderFacade);
 
-using namespace Core;
 using namespace IO;
 using namespace Resource;
 using namespace Messaging;

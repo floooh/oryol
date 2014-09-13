@@ -7,7 +7,6 @@
 #include <cstring>
 
 namespace Oryol {
-namespace Core {
     
 //------------------------------------------------------------------------------
 const char*
@@ -39,5 +38,4 @@ AppState::FromString(const char* str) {
     return AppState::InvalidAppState;
 }
 
-} // namespace Core
 } // namespace Oryol

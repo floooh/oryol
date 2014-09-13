@@ -14,7 +14,6 @@
 
 using namespace std;
 using namespace Oryol;
-using namespace Oryol::Core;
 
 class A : public RefCounted {
     OryolClassDecl(A);

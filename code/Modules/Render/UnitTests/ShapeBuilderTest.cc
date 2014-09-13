@@ -18,7 +18,6 @@
 
 using namespace Oryol;
 using namespace Oryol::IO;
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Resource;
 

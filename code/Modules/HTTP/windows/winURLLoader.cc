@@ -13,7 +13,6 @@
 namespace Oryol {
 namespace HTTP {
 
-using namespace Core;
 using namespace IO;
 
 const std::chrono::seconds winURLLoader::connectionMaxAge{10};

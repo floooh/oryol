@@ -117,7 +117,7 @@ Here's a simple message protocol XML file (NOTE: syntax details are very likely 
           we need to use XML's escape mechanism (&quot; is ")
         -->
         <Message name="DerivedMsg" parent="TestMsg">
-            <Attr name="Name" type="Core::StringAtom" def="&quot;Test&quot;"/>
+            <Attr name="Name" type="StringAtom" def="&quot;Test&quot;"/>
         </Message>
 
     </Generator>

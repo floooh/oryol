@@ -5,6 +5,6 @@
 #include "Core/Log.h"
 
 int main(void) {
-    Oryol::Core::Log::Info("Hello World!\n");
+    Oryol::Log::Info("Hello World!\n");
     return 0;
 }

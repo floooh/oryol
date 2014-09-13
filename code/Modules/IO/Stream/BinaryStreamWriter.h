@@ -22,13 +22,13 @@ public:
     /// default constructor
     BinaryStreamWriter() { };
     /// construct with stream
-    BinaryStreamWriter(const Core::Ptr<Stream>& stream) :
+    BinaryStreamWriter(const Ptr<Stream>& stream) :
         StreamWriter(stream) {
     };
     /// write a typed value to the stream
     template<typename TYPE> bool Write(const TYPE& val);
     /// write an array of values
-    template<typename TYPE> bool Write(const Core::Array<TYPE>& vals);
+    template<typename TYPE> bool Write(const Array<TYPE>& vals);
 };
 
 //------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ BinaryStreamWriter::Write(const TYPE& val) {
     
 //------------------------------------------------------------------------------
 template<typename TYPE> bool
-BinaryStreamWriter::Write(const Core::Array<TYPE>& vals) {
+BinaryStreamWriter::Write(const Array<TYPE>& vals) {
     bool retval = false;
     int32 neededSize = Messaging::Serializer::EncodedArraySize<TYPE>(vals);
     uint8* dstPtr = this->stream->MapWrite(neededSize);

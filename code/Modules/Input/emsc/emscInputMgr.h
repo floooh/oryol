@@ -53,7 +53,7 @@ private:
     static EM_BOOL emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData);
 
     static const int32 MaxNumKeys = 256;
-    Core::RunLoop::Id runLoopId;
+    RunLoop::Id runLoopId;
     Key::Code keyTable[MaxNumKeys];
 };
 

@@ -8,7 +8,6 @@
 #include "Core/Assert.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 
 //------------------------------------------------------------------------------
 TEST(Memory) {

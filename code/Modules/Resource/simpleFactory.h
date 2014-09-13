@@ -18,7 +18,7 @@ public:
     /// setup resource, continue calling until res state is not Pending
     void SetupResource(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
+    void SetupResource(RESOURCE& resource, const Ptr<IO::Stream>& data);
     /// destroy the resource
     void DestroyResource(RESOURCE& resource);
 };
@@ -39,7 +39,7 @@ simpleFactory<RESOURCE>::SetupResource(RESOURCE& res) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE> void
-simpleFactory<RESOURCE>::SetupResource(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
+simpleFactory<RESOURCE>::SetupResource(RESOURCE& res, const Ptr<IO::Stream>& data) {
     // implement in subclass!
     res.setState(State::Failed);
 }

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::WideString
+    @class Oryol::WideString
+    @ingroup Core
     @brief wide-character version of String class 
     
     An immutable, shared wchar_t string class. Depending on platform,
@@ -18,8 +19,7 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Core {
-        
+    
 class StringAtom;
         
 class WideString {
@@ -116,5 +116,4 @@ bool operator>(const wchar_t* s0, const WideString& s1);
 bool operator<=(const wchar_t* s0, const WideString& s1);
 bool operator>=(const wchar_t* s0, const WideString& s1);
 
-} // namespace Core
 } // namespace Oryol

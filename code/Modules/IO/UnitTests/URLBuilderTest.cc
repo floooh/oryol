@@ -5,7 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/Core/URLBuilder.h"
 
-using namespace Oryol::Core;
+using namespace Oryol;
 using namespace Oryol::IO;
 
 TEST(URLBuilderTest) {

@@ -6,7 +6,7 @@ import os
 import sys
 import util
 
-Version = 2
+Version = 3
 
 #-------------------------------------------------------------------------------
 def checkValidAttr(attr) :
@@ -84,7 +84,7 @@ def writeMessageIdEnum(f, xmlRoot) :
     f.write('            return Messaging::InvalidMessageId;\n')
     f.write('        };\n')
     f.write('    };\n')
-    f.write('    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();\n')
+    f.write('    typedef Ptr<Messaging::Message> (*CreateCallback)();\n')
     f.write('    static CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds];\n')
 
 #-------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ def writeFactoryClassDecl(f, xmlRoot) :
     '''
     f.write('    class Factory {\n')
     f.write('    public:\n')
-    f.write('        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);\n')
+    f.write('        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);\n')
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ def writeFactoryClassImpl(f, xmlRoot) :
     for msg in xmlRoot.findall('Message') :
         f.write('    &' + protocol + '::' + msg.get('name') + '::FactoryCreate,\n')
     f.write('};\n')
-    f.write('Core::Ptr<Messaging::Message>\n')
+    f.write('Ptr<Messaging::Message>\n')
     f.write(protocol + '::Factory::Create(Messaging::MessageIdType id) {\n')
     f.write('    if (id < ' + parentProtocol + '::MessageId::NumMessageIds) {\n')
     f.write('        return ' + parentProtocol + '::Factory::Create(id);\n')
@@ -170,16 +170,16 @@ def getValueType(attrType) :
 #-------------------------------------------------------------------------------
 def isArrayType(attrType) :
     '''
-    Test if the type string is an array type (Core::Array<TYPE>)
+    Test if the type string is an array type (Array<TYPE>)
     '''
-    return attrType.startswith('Core::Array<') and attrType.endswith('>')
+    return attrType.startswith('Array<') and attrType.endswith('>')
 
 #-------------------------------------------------------------------------------
 def getArrayType(attrType) :
     '''
     Get the element type of an array type.
     '''
-    # strip the 'Core::Array<' at the left, and the '>' at the right
+    # strip the 'Array<' at the left, and the '>' at the right
     return attrType[12:-1]
 
 #-------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ def writeMessageClasses(f, xmlRoot) :
         f.write('        };\n')
 
         # special factory create method
-        f.write('        static Core::Ptr<Messaging::Message> FactoryCreate() {\n')
+        f.write('        static Ptr<Messaging::Message> FactoryCreate() {\n')
         f.write('            return Create();\n')
         f.write('        };\n')
 

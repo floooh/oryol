@@ -11,7 +11,6 @@
 #include "Core/Containers/HashSet.h"
 
 namespace Oryol {
-namespace Core {
 
 class stringAtomTable {
     OryolLocalSingletonDecl(stringAtomTable);
@@ -50,8 +49,7 @@ private:
         };
     };
     stringAtomBuffer buffer;
-    Core::HashSet<Entry, Hasher, 1024> table;
+    HashSet<Entry, Hasher, 1024> table;
 };
 
-} // namespace Core
 } // namespace Oryol

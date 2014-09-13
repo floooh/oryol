@@ -8,8 +8,6 @@
 namespace Oryol {
 namespace Render {
     
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 RenderSetup::RenderSetup() :
 registryCapacity(1024) {

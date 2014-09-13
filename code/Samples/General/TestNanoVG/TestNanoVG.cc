@@ -16,7 +16,6 @@
 using namespace Oryol;
 using namespace Oryol::IO;
 using namespace Oryol::HTTP;
-using namespace Oryol::Core;
 using namespace Oryol::Render;
 using namespace Oryol::Time;
 using namespace Oryol::Input;

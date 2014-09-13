@@ -28,7 +28,7 @@ private:
     /// discard the curl session
     void discardCurlSession();
     /// synchronously handle a single request
-    void doOneRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// curl write-data callback
     static size_t curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData);
     /// curl header-data callback
@@ -36,11 +36,11 @@ private:
 
     static bool curlInitCalled;
     static std::mutex curlInitMutex;
-    const Core::String contentTypeString;
+    const String contentTypeString;
     void* curlSession;
     char* curlError;
-    Core::StringBuilder stringBuilder;
-    Core::Map<Core::String,Core::String> responseHeaders;
+    StringBuilder stringBuilder;
+    Map<String,String> responseHeaders;
 };
 
 } // namespace HTTP

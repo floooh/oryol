@@ -9,7 +9,6 @@
 #include "Synth/SynthFacade.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::Debug;
 using namespace Oryol::Render;
 using namespace Oryol::Input;

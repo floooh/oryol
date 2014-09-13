@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Array
+    @class Oryol::Array
+    @ingroup Core
     @brief dynamic array class similar to std::vector
     
     Dynamic array class (similar to std::vector) with room for growth at
@@ -35,7 +36,6 @@
 #include <initializer_list>
 
 namespace Oryol {
-namespace Core {
 
 template<class TYPE> class Array {
 public:
@@ -134,7 +134,7 @@ private:
     /// grow to make room
     void grow();
     
-    elementBuffer<TYPE> buffer;
+    _priv::elementBuffer<TYPE> buffer;
     int32 minGrow;
     int32 maxGrow;
 };
@@ -463,5 +463,4 @@ Array<TYPE>::grow() {
     this->adjustCapacity(newCapacity);
 }
 
-} // namespace Core
 } // namespace Oryol

@@ -16,7 +16,7 @@ class texturePool : public Resource::Pool<texture, TextureSetup, textureFactory>
     /// get the resource type this factory produces
     uint16 GetResourceType() const;
     /// attach a resource loader
-    void AttachLoader(const Core::Ptr<textureLoaderBase>& loader);
+    void AttachLoader(const Ptr<textureLoaderBase>& loader);
     /// determine whether asynchronous loading has finished
     bool NeedsSetupResource(const texture& tex) const;
     /// destroy the resource

@@ -7,7 +7,6 @@
 #include "IO/Core/IOStatus.h"
 
 using namespace Oryol;
-using namespace Oryol::Core;
 using namespace Oryol::IO;
 
 #define TOSTR(code) String(IOStatus::ToString(IOStatus::code)) == #code

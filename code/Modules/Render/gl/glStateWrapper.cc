@@ -14,8 +14,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 GLenum glStateWrapper::mapCompareFunc[CompareFunc::NumCompareFuncs] = {
     GL_NEVER,
     GL_LESS,

@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
-    
 OryolGlobalSingletonImpl(IOFacade);
 
 /// @todo: make numIOLanes configurable
@@ -88,19 +86,19 @@ IOFacade::ResolveAssigns(const String& str) const {
 
 //------------------------------------------------------------------------------
 void
-IOFacade::RegisterFileSystem(const Core::StringAtom& scheme, std::function<Core::Ptr<IO::FileSystem>()> fsCreator) {
+IOFacade::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<IO::FileSystem>()> fsCreator) {
     schemeRegistry* reg = schemeRegistry::Instance();
     bool newFileSystem = !reg->IsFileSystemRegistered(scheme);
     reg->RegisterFileSystem(scheme, fsCreator);
     if (newFileSystem) {
         // notify IO threads that a filesystem was added
-        Core::Ptr<IOProtocol::notifyFileSystemAdded> msg = IOProtocol::notifyFileSystemAdded::Create();
+        Ptr<IOProtocol::notifyFileSystemAdded> msg = IOProtocol::notifyFileSystemAdded::Create();
         msg->SetScheme(scheme);
         this->requestRouter->Put(msg);
     }
     else {
         // notify IO threads that a filesystem was replaced
-        Core::Ptr<IOProtocol::notifyFileSystemReplaced> msg = IOProtocol::notifyFileSystemReplaced::Create();
+        Ptr<IOProtocol::notifyFileSystemReplaced> msg = IOProtocol::notifyFileSystemReplaced::Create();
         msg->SetScheme(scheme);
         this->requestRouter->Put(msg);
     }

@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 IOQueue::IOQueue() :
 isStarted(false),

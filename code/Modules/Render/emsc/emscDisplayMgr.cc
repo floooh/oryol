@@ -12,8 +12,6 @@
 namespace Oryol {
 namespace Render {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 emscDisplayMgr::emscDisplayMgr() :
 storedCanvasWidth(0),

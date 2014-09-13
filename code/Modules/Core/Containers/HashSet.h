@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::HashSet
+    @class Oryol::HashSet
+    @ingroup Core
     @brief a Set using hashing for fast access
     
     Implements a hash set with a fixed number of buckets, each
@@ -13,7 +14,6 @@
 #include "Core/Containers/Set.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> class HashSet {
 public:
@@ -182,5 +182,4 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::findBucket(const VALUETYPE& val) {
     return this->buckets[uint32(HASHER()(val)) % NUMBUCKETS];
 }
 
-} // namespace Core
 } // namespace Oryol

@@ -10,7 +10,7 @@
 namespace Oryol {
 namespace Render {
     
-class loaderBase : public Core::RefCounted {
+class loaderBase : public RefCounted {
 public:
     /// resource type of loader (override in subclass)
     virtual ResourceType::Code resourceType() const = 0;

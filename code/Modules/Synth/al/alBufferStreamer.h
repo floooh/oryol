@@ -53,9 +53,9 @@ private:
 
     bool isValid;
     ALuint source;
-    Core::Array<ALuint> allBuffers;
-    Core::Queue<ALuint> queuedBuffers;
-    Core::Queue<ALuint> freeBuffers;
+    Array<ALuint> allBuffers;
+    Queue<ALuint> queuedBuffers;
+    Queue<ALuint> freeBuffers;
 };
     
 } // namespace Synth

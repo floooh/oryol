@@ -28,7 +28,7 @@ voiceTrack::AddOp(const Op& op) {
         int32 index = ptr - this->track.begin();
         while (index < this->track.Size()) {
             this->track.Erase(this->track.Size() - 1);
-            Core::Log::Warn("voiceTrack::Add(): track was truncated\n");
+            Log::Warn("voiceTrack::Add(): track was truncated\n");
         }
     }
     

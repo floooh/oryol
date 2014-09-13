@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Queue
+    @class Oryol::Queue
+    @ingroup Core
     @brief a FIFO queue
 */
 #include "Core/Config.h"
@@ -9,7 +10,6 @@
 #include <algorithm>
 
 namespace Oryol {
-namespace Core {
 
 template<class TYPE> class Queue {
 public:
@@ -86,7 +86,7 @@ private:
     /// common checks before enqueuing
     void checkEnqueue();
     
-    elementBuffer<TYPE> buffer;
+    _priv::elementBuffer<TYPE> buffer;
     int32 minGrow;
     int32 maxGrow;
 };
@@ -347,5 +347,4 @@ Queue<TYPE>::Back() const {
     return this->buffer.back();
 }
 
-} // namespace Core
 } // namespace Oryol

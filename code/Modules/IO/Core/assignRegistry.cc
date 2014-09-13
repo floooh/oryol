@@ -10,8 +10,6 @@ namespace IO {
 
 OryolGlobalSingletonImpl(assignRegistry);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 assignRegistry::assignRegistry() {
     this->SingletonEnsureUnique();

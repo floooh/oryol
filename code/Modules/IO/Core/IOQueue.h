@@ -26,7 +26,7 @@ public:
     ~IOQueue();
 
     /// callback function signature for success
-    typedef std::function<void(const Core::Ptr<IO::Stream>&)> SuccessFunc;
+    typedef std::function<void(const Ptr<IO::Stream>&)> SuccessFunc;
     /// callback function signature for failure
     typedef std::function<void(const IO::URL& url, IOStatus::Code ioStatus)> FailFunc;
 
@@ -49,11 +49,11 @@ private:
     bool isStarted;
     int32 runLoopId;
     struct item {
-        Core::Ptr<IO::IOProtocol::Get> ioRequest;
+        Ptr<IO::IOProtocol::Get> ioRequest;
         SuccessFunc successFunc;
         FailFunc failFunc;
     };
-    Core::Array<item> ioRequests;
+    Array<item> ioRequests;
 };
     
 } // namespace IO

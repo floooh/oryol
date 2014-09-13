@@ -8,7 +8,7 @@ namespace Oryol {
 namespace Resource {
 
 //------------------------------------------------------------------------------
-Locator::Locator(const Core::StringAtom& loc) :
+Locator::Locator(const StringAtom& loc) :
 location(loc),
 signature(DefaultSignature) {
     // empty
@@ -22,7 +22,7 @@ signature(DefaultSignature) {
 }
 
 //------------------------------------------------------------------------------
-Locator::Locator(const Core::StringAtom& loc, uint32 sig) :
+Locator::Locator(const StringAtom& loc, uint32 sig) :
 location(loc),
 signature(sig) {
     // empty
@@ -38,12 +38,12 @@ signature(sig) {
 //------------------------------------------------------------------------------
 Locator
 Locator::NonShared() {
-    return Locator(Core::StringAtom(), NonSharedSignature);
+    return Locator(StringAtom(), NonSharedSignature);
 }
 
 //------------------------------------------------------------------------------
 Locator
-Locator::NonShared(const Core::StringAtom& loc) {
+Locator::NonShared(const StringAtom& loc) {
     return Locator(loc, NonSharedSignature);
 }
     

@@ -16,7 +16,6 @@
 namespace Oryol {
 namespace NanoVG {
 
-using namespace Core;
 using namespace IO;
 using namespace Render;
     

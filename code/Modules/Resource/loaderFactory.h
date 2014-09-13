@@ -20,7 +20,7 @@
     up the resource, so the order at which loaders are attached 
     may be important.
 
-    The LOADER base class must be derived Core::RefCounted. All actual
+    The LOADER base class must be derived RefCounted. All actual
     loaders attached to the factory must in turn be derived from the
     LOADER base class and implement the following methods:
  
@@ -43,18 +43,18 @@ public:
     ~loaderFactory();
 
     /// attach a resource loader
-    void AttachLoader(const Core::Ptr<LOADER>& loader);
+    void AttachLoader(const Ptr<LOADER>& loader);
     /// test if setup should be called for a resource
     bool NeedsSetupResource(const RESOURCE& resource) const;
     /// setup resource, continue calling until res state is not Pending
     void SetupResource(RESOURCE& resource);
     /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(RESOURCE& resource, const Core::Ptr<IO::Stream>& data);
+    void SetupResource(RESOURCE& resource, const Ptr<IO::Stream>& data);
     /// destroy the resource
     void DestroyResource(RESOURCE& resource);
 
 protected:
-    Core::Array<Core::Ptr<LOADER>> loaders;
+    Array<Ptr<LOADER>> loaders;
 };
 
 //------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ loaderFactory<RESOURCE,LOADER>::NeedsSetupResource(const RESOURCE& res) const {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class LOADER> void
-loaderFactory<RESOURCE,LOADER>::AttachLoader(const Core::Ptr<LOADER>& loader) {
+loaderFactory<RESOURCE,LOADER>::AttachLoader(const Ptr<LOADER>& loader) {
     // must override in Factory subclass matching the LOADER class,
     // otherwise we would need to do some dirty pointer casting
     o_error("Factory::AttachLoader() must be overridden in subclass!\n");
@@ -127,7 +127,7 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
             }
         }
         // fallthrough: no suitable loader found
-        Core::Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
+        Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
         res.setState(State::Failed);
     }
 }
@@ -139,7 +139,7 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
  from data in memory instead of loading the input data through the IO system.
 */
 template<class RESOURCE, class LOADER> void
-loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Core::Ptr<IO::Stream>& data) {
+loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Ptr<IO::Stream>& data) {
 
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
@@ -159,7 +159,7 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Core::Ptr<IO:
             }
         }
         // fallthrough: no suitable loader found
-        Core::Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
+        Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
         res.setState(State::Failed);
     }
 }

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Args
+    @class Oryol::Args
+    @ingroup Core
     @brief access command line args
     @see AppEntry
  
@@ -30,7 +31,6 @@
 #include "Core/Containers/Array.h"
 
 namespace Oryol {
-namespace Core {
 
 class Args {
 public:
@@ -56,5 +56,4 @@ private:
     Array<String> args;
 };
     
-} // namespace Core
 } // namespace Oryol

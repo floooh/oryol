@@ -527,7 +527,7 @@ game::eatEnergizer(Energizer& energizer) {
 //------------------------------------------------------------------------------
 void
 game::killPacman() {
-    Core::Log::Info("PACMAN KILLED!\n");
+    Log::Info("PACMAN KILLED!\n");
 }
 
 //------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:2#
+/* #version:3#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -32,11 +32,11 @@ public:
             return Messaging::InvalidMessageId;
         };
     };
-    typedef Core::Ptr<Messaging::Message> (*CreateCallback)();
+    typedef Ptr<Messaging::Message> (*CreateCallback)();
     static CreateCallback jumpTable[TestProtocol2::MessageId::NumMessageIds];
     class Factory {
     public:
-        static Core::Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
+        static Ptr<Messaging::Message> Create(Messaging::MessageIdType id);
     };
     class TestMsgEx : public Messaging::TestProtocol::TestMsg1 {
         OryolClassPoolAllocDecl(TestMsgEx);
@@ -45,7 +45,7 @@ public:
             this->msgId = MessageId::TestMsgExId;
             this->exval2 = 0;
         };
-        static Core::Ptr<Messaging::Message> FactoryCreate() {
+        static Ptr<Messaging::Message> FactoryCreate() {
             return Create();
         };
         static Messaging::MessageIdType ClassMessageId() {

@@ -9,8 +9,6 @@ namespace IO {
 
 OryolClassImpl(MemoryStream);
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 MemoryStream::MemoryStream() :
 minGrow(ORYOL_STREAM_DEFAULT_MIN_GROW),

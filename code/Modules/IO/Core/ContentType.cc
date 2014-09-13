@@ -8,8 +8,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 void
 ContentType::clearIndices() {

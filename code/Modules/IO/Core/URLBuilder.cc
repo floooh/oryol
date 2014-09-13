@@ -7,8 +7,6 @@
 namespace Oryol {
 namespace IO {
 
-using namespace Core;
-    
 //------------------------------------------------------------------------------
 URLBuilder::URLBuilder() {
     // empty

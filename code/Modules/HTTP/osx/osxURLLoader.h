@@ -17,7 +17,7 @@ public:
     
 private:
     /// handle a single request, synchronously
-    void doOneRequest(const Core::Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
     
 } // namespace HTTP

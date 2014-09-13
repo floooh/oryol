@@ -13,7 +13,7 @@
 void PNaclAppCreator();
 
 namespace Oryol {
-namespace Core {
+namespace _priv {
     
 pnaclInstance* pnaclInstance::self = nullptr;
 
@@ -207,5 +207,5 @@ pnaclInstance::disableInput() {
     this->inputEventFunc = nullptr;
 }
 
-} // namespace Core
+} // namespace _priv
 } // namespace Oryol

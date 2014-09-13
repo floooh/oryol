@@ -33,7 +33,7 @@ private:
     /// discard ops behind the play cursor (these no longer influence sound output)
     void discardExpiredOps(int32 tick);
 
-    Core::Array<Op> track;
+    Array<Op> track;
 };
 
 } // namespace Synth

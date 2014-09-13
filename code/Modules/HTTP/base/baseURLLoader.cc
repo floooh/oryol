@@ -7,8 +7,6 @@
 namespace Oryol {
 namespace HTTP {
 
-using namespace Core;
-
 //------------------------------------------------------------------------------
 void
 baseURLLoader::putRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {

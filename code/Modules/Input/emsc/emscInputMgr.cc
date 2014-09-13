@@ -8,8 +8,6 @@
 namespace Oryol {
 namespace Input {
     
-using namespace Core;
-
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() {
     this->setupKeyTable();

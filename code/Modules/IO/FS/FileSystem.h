@@ -15,7 +15,7 @@
 namespace Oryol {
 namespace IO {
     
-class FileSystem : public Core::RefCounted {
+class FileSystem : public RefCounted {
     OryolClassDecl(FileSystem);
 public:
     /// default constructor
@@ -26,9 +26,9 @@ public:
     /// per-frame update
     virtual void DoWork();
     /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Core::Ptr<IOProtocol::Get>& msg);
+    virtual void onGet(const Ptr<IOProtocol::Get>& msg);
     /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Core::Ptr<IOProtocol::GetRange>& msg);
+    virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg);
 };
     
 } // namespace IO

@@ -41,7 +41,7 @@ public:
     /// assign a resource to a free slot
     void Assign(const Id& id, const SETUP& setup);
     /// assign a resource to a free slot,
-    void Assign(const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data);
+    void Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder
@@ -74,10 +74,10 @@ protected:
     uint32 genericPlaceholderType;
     uint16 resourceType;
     
-    Core::Array<slot<RESOURCE,SETUP,FACTORY>> slots;
-    Core::Map<uint32, Id> placeholders;
-    Core::Queue<uint16> freeSlots;
-    Core::Array<uint16> pendingSlots;
+    Array<slot<RESOURCE,SETUP,FACTORY>> slots;
+    Map<uint32, Id> placeholders;
+    Queue<uint16> freeSlots;
+    Array<uint16> pendingSlots;
 };
     
 //------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
-Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Core::Ptr<IO::Stream>& data) {
+Pool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<IO::Stream>& data) {
     o_assert(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();

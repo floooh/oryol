@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Core::Set
+    @class Oryol::Set
+    @ingroup Core
     @brief a sorted, dynamic array of values
 
     The Set class provides a dynamic array of binary-sorted values similar
@@ -13,7 +14,6 @@
 #include "Core/Containers/Array.h"
 
 namespace Oryol {
-namespace Core {
 
 template<class VALUE> class Set {
 public:
@@ -173,7 +173,7 @@ Set<VALUE>::Add(const VALUE& val) {
         o_error("Trying to insert duplicate element!\n");
     }
     else {
-        int32 index = ptr - begin;
+        int32 index = int32(ptr - begin);
         this->valueArray.Insert(index, val);
     }
 }
@@ -185,7 +185,7 @@ Set<VALUE>::Erase(const VALUE& val) {
     const VALUE* end = this->valueArray.end();
     const VALUE* ptr = std::lower_bound(begin, end, val);
     if (ptr != end) {
-        int32 index = ptr - begin;
+        int32 index = int32(ptr - begin);
         this->valueArray.Erase(index);
     }
 }
@@ -220,5 +220,4 @@ Set<VALUE>::end() const {
     return this->valueArray.end();
 }
 
-} // namespace Core
 } // namespace Oryol
