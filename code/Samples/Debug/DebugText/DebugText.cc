@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "glm/gtc/random.hpp"
 
 using namespace Oryol;
@@ -22,7 +22,6 @@ private:
     void drawText();
 
     RenderFacade* render;
-    DebugFacade* debug;
     int32 width;
     int32 height;
     uint8* buffer = nullptr;
@@ -42,7 +41,7 @@ DebugTextApp::OnRunning() {
         
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         
         this->render->EndFrame();
     }
@@ -55,8 +54,8 @@ DebugTextApp::OnRunning() {
 AppState::Code
 DebugTextApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
-    this->debug  = DebugFacade::CreateSingle();
-    this->debug->SetTextScale(glm::vec2(2.0f, 2.0f));
+    Debug::Setup();
+    Debug::SetTextScale(glm::vec2(2.0f, 2.0f));
     
     this->width = this->render->GetDisplayAttrs().FramebufferWidth / 16;
     this->height = this->render->GetDisplayAttrs().FramebufferHeight / 16;
@@ -74,8 +73,7 @@ DebugTextApp::OnCleanup() {
     Memory::Free(this->buffer);
     this->buffer = nullptr;
     this->render = nullptr;
-    this->debug  = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
@@ -141,8 +139,8 @@ DebugTextApp::drawText() {
             }
         }
         strBuilder.Append("\r\n");
-        this->debug->TextColor(color[y % 3]);
-        this->debug->Print(strBuilder.AsCStr());
+        Debug::TextColor(color[y % 3]);
+        Debug::Print(strBuilder.AsCStr());
     }
 }
 

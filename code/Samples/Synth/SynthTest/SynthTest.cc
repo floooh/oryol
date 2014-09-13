@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Input/InputFacade.h"
 #include "Synth/SynthFacade.h"
 
@@ -19,7 +19,6 @@ public:
     
 private:
     RenderFacade* render;
-    DebugFacade* debug;
     InputFacade* input;
     SynthFacade* synth;
     int32 frameCount = 0;
@@ -33,7 +32,7 @@ OryolMain(SynthTestApp);
 AppState::Code
 SynthTestApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
-    this->debug  = DebugFacade::CreateSingle();
+    Debug::Setup();
     this->input  = InputFacade::CreateSingle();
     SynthSetup synthSetup;
     synthSetup.UseGPUSynthesizer = false;
@@ -161,14 +160,14 @@ SynthTestApp::OnRunning() {
         }
     
         this->synth->Update();
-        this->debug->Print("\n\n");
-        this->debug->PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
-        this->debug->PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
-        this->debug->PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
-        this->debug->PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
+        Debug::Print("\n\n");
+        Debug::PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
+        Debug::PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
+        Debug::PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
+        Debug::PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
         this->render->ApplyDefaultRenderTarget();
         this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
         this->frameCount++;
     }
@@ -181,11 +180,10 @@ SynthTestApp::OnRunning() {
 AppState::Code
 SynthTestApp::OnCleanup() {
     this->synth  = nullptr;
-    this->debug  = nullptr;
     this->input  = nullptr;
     this->render = nullptr;
     SynthFacade::DestroySingle();
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     InputFacade::DestroySingle();
     RenderFacade::DestroySingle();
     return App::OnCleanup();

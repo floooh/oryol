@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -24,7 +24,6 @@ private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
     RenderFacade* render = nullptr;
-    DebugFacade* debug = nullptr;
     Id renderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
@@ -59,12 +58,12 @@ VertexTextureApp::OnRunning() {
         this->render->ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
         this->render->Draw(0);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Debug::PrintF("%.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -77,7 +76,7 @@ VertexTextureApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Vertex Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug = DebugFacade::CreateSingle();
+    Debug::Setup();
     
     // FIXME: need a way to check number of vertex texture units
     
@@ -128,8 +127,7 @@ VertexTextureApp::OnCleanup() {
     this->render->ReleaseResource(this->plasmaDrawState);
     this->render->ReleaseResource(this->renderTarget);
     this->render = nullptr;
-    this->debug = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

@@ -6,7 +6,7 @@
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Input/InputFacade.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
@@ -29,7 +29,6 @@ private:
     void updateParticles();
 
     RenderFacade* render = nullptr;
-    DebugFacade* debug = nullptr;
     InputFacade* input = nullptr;
     Id instanceMesh;
     Id drawState;
@@ -78,7 +77,7 @@ InstancingApp::OnRunning() {
         this->render->DrawInstanced(0, this->curNumParticles);
         drawTime = Clock::Since(drawStart);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
         
         // toggle particle update
@@ -89,13 +88,13 @@ InstancingApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
-                        " LMB/Tap: toggle particle updates",
-                        this->curNumParticles,
-                        updTime.AsMilliSeconds(),
-                        bufTime.AsMilliSeconds(),
-                        drawTime.AsMilliSeconds(),
-                        frameTime.AsMilliSeconds());
+    Debug::PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+                  " LMB/Tap: toggle particle updates",
+                  this->curNumParticles,
+                  updTime.AsMilliSeconds(),
+                  bufTime.AsMilliSeconds(),
+                  drawTime.AsMilliSeconds(),
+                  frameTime.AsMilliSeconds());
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
@@ -147,7 +146,7 @@ InstancingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol Instancing Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug = DebugFacade::CreateSingle();
+    Debug::Setup();
     this->input = InputFacade::CreateSingle();
     
     // check instancing extension
@@ -198,9 +197,8 @@ InstancingApp::OnCleanup() {
     this->render->ReleaseResource(this->instanceMesh);
     this->input = nullptr;
     this->render = nullptr;
-    this->debug = nullptr;
     InputFacade::DestroySingle();
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

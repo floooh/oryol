@@ -6,7 +6,7 @@
 #include "Render/RenderFacade.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -28,7 +28,6 @@ private:
     void updateParticles();
 
     RenderFacade* render = nullptr;
-    DebugFacade* debug = nullptr;
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -73,19 +72,19 @@ DrawCallPerfApp::OnRunning() {
         }
         drawTime = Clock::Since(drawStart);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    this->debug->PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
-                        this->curNumParticles,
-                        updTime.AsMilliSeconds(),
-                        drawTime.AsMilliSeconds(),
-                        frameTime.AsMilliSeconds());
-    this->debug->TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    this->debug->PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
+    Debug::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    Debug::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
+                  this->curNumParticles,
+                  updTime.AsMilliSeconds(),
+                  drawTime.AsMilliSeconds(),
+                  frameTime.AsMilliSeconds());
+    Debug::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    Debug::PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
     
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
@@ -136,7 +135,7 @@ DrawCallPerfApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol DrawCallPerf Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug = DebugFacade::CreateSingle();
+    Debug::Setup();
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -174,8 +173,7 @@ DrawCallPerfApp::OnCleanup() {
     // cleanup everything
     this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
-    this->debug = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

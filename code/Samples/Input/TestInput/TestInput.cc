@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Input/InputFacade.h"
 #include "Core/String/StringConverter.h"
 
@@ -22,7 +22,6 @@ private:
     void testKey(const Keyboard& keyboard, Key::Code key, const char* name) const;
     
     RenderFacade* render;
-    DebugFacade* debug;
     InputFacade* input;
     
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
@@ -36,7 +35,7 @@ OryolMain(TestInputApp);
 AppState::Code
 TestInputApp::OnInit() {
     this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
-    this->debug  = DebugFacade::CreateSingle();
+    Debug::Setup();
     this->input  = InputFacade::CreateSingle();
     
     return App::OnInit();
@@ -50,8 +49,8 @@ TestInputApp::testMouseButton(const Mouse& mouse, Mouse::Button btn, const char*
     else if (mouse.ButtonUp(btn)) color = this->upColor;
     else if (mouse.ButtonPressed(btn)) color = this->pressedColor;
     else color = this->defaultColor;
-    this->debug->TextColor(color);
-    this->debug->PrintF(" %s", name);
+    Debug::TextColor(color);
+    Debug::PrintF(" %s", name);
 }
 
 //------------------------------------------------------------------------------
@@ -59,16 +58,16 @@ void
 TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name) const {
     glm::vec4 color;
     if (keyboard.KeyDown(key)) {
-        this->debug->TextColor(this->downColor);
-        this->debug->PrintF(" %s", Key::ToString(key));
+        Debug::TextColor(this->downColor);
+        Debug::PrintF(" %s", Key::ToString(key));
     }
     else if (keyboard.KeyUp(key)) {
-        this->debug->TextColor(this->upColor);
-        this->debug->PrintF(" %s", Key::ToString(key));
+        Debug::TextColor(this->upColor);
+        Debug::PrintF(" %s", Key::ToString(key));
     }
     else if (keyboard.KeyPressed(key)) {
-        this->debug->TextColor(this->pressedColor);
-        this->debug->PrintF(" %s", Key::ToString(key));
+        Debug::TextColor(this->pressedColor);
+        Debug::PrintF(" %s", Key::ToString(key));
     }
 }
 
@@ -86,24 +85,24 @@ TestInputApp::OnRunning() {
         
         // mouse status
         if (mouse.Attached()) {
-            this->debug->TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            this->debug->Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
+            Debug::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+            Debug::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
         
             this->testMouseButton(mouse, Mouse::LMB, "LMB");
             this->testMouseButton(mouse, Mouse::MMB, "MMB");
             this->testMouseButton(mouse, Mouse::RMB, "RMB");
             
-            this->debug->TextColor(glm::vec4(1.0f));
-            this->debug->PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
-                                mouse.Position().x, mouse.Position().y,
-                                mouse.Movement().x, mouse.Movement().y,
-                                mouse.Scroll().x, mouse.Scroll().y);
+            Debug::TextColor(glm::vec4(1.0f));
+            Debug::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
+                          mouse.Position().x, mouse.Position().y,
+                          mouse.Movement().x, mouse.Movement().y,
+                          mouse.Scroll().x, mouse.Scroll().y);
         }
         
         // keyboard status
         if (keyboard.Attached()) {
-            this->debug->TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-            this->debug->Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
+            Debug::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+            Debug::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
             if (keyboard.KeyDown(Key::Enter)) {
                 if (CursorMode::Disabled != this->input->GetCursorMode()) {
                     this->input->SetCursorMode(CursorMode::Disabled);
@@ -119,19 +118,19 @@ TestInputApp::OnRunning() {
                 }
             }
             if (keyboard.IsCapturingText()) {
-                this->debug->Print(" capturing: ");
+                Debug::Print(" capturing: ");
                 String str = StringConverter::WideToUTF8(keyboard.CapturedText());
-                this->debug->PrintF("%s\n\r", str.AsCStr());
+                Debug::PrintF("%s\n\r", str.AsCStr());
             }
             else {
-                this->debug->Print(" keys: ");
+                Debug::Print(" keys: ");
                 for (int32 key = 0; key < Key::NumKeys; key++) {
                     this->testKey(keyboard, (Key::Code)key, Key::ToString((Key::Code)key));
                 }
             }
         }
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
@@ -144,9 +143,8 @@ AppState::Code
 TestInputApp::OnCleanup() {
     this->input  = nullptr;
     this->render = nullptr;
-    this->debug  = nullptr;
     InputFacade::DestroySingle();
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

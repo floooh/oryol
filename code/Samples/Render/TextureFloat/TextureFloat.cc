@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -22,7 +22,6 @@ public:
     
 private:
     RenderFacade* render = nullptr;
-    DebugFacade* debug = nullptr;
     Id renderTarget;
     Id offscreenDrawState;
     Id copyDrawState;
@@ -54,12 +53,12 @@ TextureFloatApp::OnRunning() {
         this->render->ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
         this->render->Draw(0);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Debug::PrintF("%.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -72,7 +71,7 @@ TextureFloatApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(512, 512, false, "Oryol Float Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug = DebugFacade::CreateSingle();
+    Debug::Setup();
 
     // check required extensions
     if (!this->render->Supports(RenderFeature::TextureFloat)) {
@@ -119,8 +118,7 @@ TextureFloatApp::OnCleanup() {
     this->render->ReleaseResource(this->copyDrawState);
     this->render->ReleaseResource(this->renderTarget);
     this->render = nullptr;
-    this->debug = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

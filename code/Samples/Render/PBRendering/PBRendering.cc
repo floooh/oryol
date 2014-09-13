@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Render/RenderFacade.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/RawMeshLoader.h"
@@ -24,7 +24,6 @@ private:
     void applyDirLight() const;
 
     RenderFacade* render;
-    DebugFacade* debug;
     Id drawState;
     glm::mat4 proj;
     glm::mat4 view;
@@ -35,7 +34,7 @@ OryolMain(PBRenderingApp);
 AppState::Code
 PBRenderingApp::OnRunning() {
     
-    this->debug->Print("\n Work in progress!");
+    Debug::Print("\n Work in progress!");
     
     // render one frame
     if (this->render->BeginFrame()) {
@@ -50,7 +49,7 @@ PBRenderingApp::OnRunning() {
         this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
         this->render->Draw(1);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
@@ -64,7 +63,7 @@ PBRenderingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol PBR Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug  = DebugFacade::CreateSingle();
+    Debug::Setup();
     
     // create resources
     ShapeBuilder shapeBuilder;
@@ -97,8 +96,7 @@ AppState::Code
 PBRenderingApp::OnCleanup() {
     this->render->ReleaseResource(this->drawState);
     this->render = nullptr;
-    this->debug  = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }

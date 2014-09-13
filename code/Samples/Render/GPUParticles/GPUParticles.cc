@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Render/RenderFacade.h"
-#include "Debug/DebugFacade.h"
+#include "Debug/Debug.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -32,7 +32,6 @@ private:
     void updateCamera();
 
     RenderFacade* render = nullptr;
-    DebugFacade* debug = nullptr;
     
     Id particleBuffer[NumParticleBuffers];
     Id particleIdMesh;
@@ -97,14 +96,12 @@ GPUParticlesApp::OnRunning() {
         this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
         this->render->DrawInstanced(0, this->curNumParticles);
         
-        this->debug->DrawTextBuffer();
+        Debug::DrawTextBuffer();
         this->render->EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    this->debug->PrintF("\n %d instances\n\r frame=%.3fms",
-                        this->curNumParticles,
-                        frameTime.AsMilliSeconds());
+    Debug::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -126,7 +123,7 @@ GPUParticlesApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol GPU Particles Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     this->render = RenderFacade::CreateSingle(renderSetup);
-    this->debug = DebugFacade::CreateSingle();
+    Debug::Setup();
 
     // check required extensions
     if (!this->render->Supports(RenderFeature::TextureFloat)) {
@@ -235,8 +232,7 @@ GPUParticlesApp::OnCleanup() {
     this->render->ReleaseResource(this->updateParticles);
     this->render->ReleaseResource(this->drawParticles);
     this->render = nullptr;
-    this->debug = nullptr;
-    DebugFacade::DestroySingle();
+    Debug::Discard();
     RenderFacade::DestroySingle();
     return App::OnCleanup();
 }
