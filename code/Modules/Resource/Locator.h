@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::Locator
+    @class Oryol::Locator
+    @ingroup Resource
     @brief used to locate and share resource data
     
     A Locator describes where the source data for a resource object
@@ -19,7 +20,7 @@
 #include "Core/String/StringAtom.h"
 
 namespace Oryol {
-namespace Resource {
+
 class Locator {
 public:
     /// the signature for non-shared locators
@@ -138,5 +139,4 @@ Locator::Signature() const {
     return this->signature;
 }
 
-} // namespace Resource
 } // namespace Oryol

@@ -14,7 +14,7 @@
 namespace Oryol {
 namespace _priv {
 
-class textureBase : public Resource::resourceBase<TextureSetup> {
+class textureBase : public resourceBase<TextureSetup> {
 public:
     /// constructor
     textureBase();

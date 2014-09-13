@@ -11,7 +11,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class SimpleRenderTargetApp : public App {
@@ -24,9 +23,9 @@ private:
     glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
 
     RenderFacade* render = nullptr;
-    Resource::Id renderTarget;
-    Resource::Id offscreenDrawState;
-    Resource::Id displayDrawState;
+    Id renderTarget;
+    Id offscreenDrawState;
+    Id displayDrawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;

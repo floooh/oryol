@@ -108,7 +108,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.MinFilter == TextureFilterMode::Nearest);
     
     // setup as shared-depth render target
-    auto rt3 = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", Resource::Id(1, 2, ResourceType::Texture));
+    auto rt3 = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", Id(1, 2, ResourceType::Texture));
     rt3.ColorFormat = PixelFormat::RGBA32F;
     CHECK(!rt3.ShouldSetupFromFile());
     CHECK(!rt3.ShouldSetupFromImageFileData());

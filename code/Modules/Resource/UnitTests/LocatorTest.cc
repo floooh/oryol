@@ -1,12 +1,12 @@
 //------------------------------------------------------------------------------
 //  LocatorTest.cc
-//  Test Resource::Id
+//  Test resource Locator
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Resource/Locator.h"
 
-using namespace Oryol::Resource;
+using namespace Oryol;
 
 TEST(Locatortest) {
     

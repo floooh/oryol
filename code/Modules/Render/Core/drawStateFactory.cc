@@ -48,19 +48,19 @@ drawStateFactory::Discard() {
 //------------------------------------------------------------------------------
 void
 drawStateFactory::SetupResource(drawState& ds) {
-    o_assert(ds.GetState() == Resource::State::Setup);
+    o_assert(ds.GetState() == ResourceState::Setup);
     const DrawStateSetup& setup = ds.GetSetup();
     ds.setMesh(this->meshPool->Lookup(setup.Mesh));
     ds.setProgramBundle(this->programBundlePool->Lookup(setup.Program));
-    ds.setState(Resource::State::Valid);
+    ds.setState(ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
 drawStateFactory::DestroyResource(drawState& ds) {
-    o_assert(ds.GetState() == Resource::State::Valid);
+    o_assert(ds.GetState() == ResourceState::Valid);
     ds.clear();
-    ds.setState(Resource::State::Setup);
+    ds.setState(ResourceState::Setup);
 }
 
 } // namespace _priv

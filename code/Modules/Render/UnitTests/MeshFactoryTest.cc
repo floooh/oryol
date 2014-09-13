@@ -17,7 +17,6 @@
 
 using namespace Oryol;
 using namespace _priv;
-using namespace Oryol::Resource;
 
 // NOTE: this is should not be treated as sample code on how
 // to initialize a mesh!
@@ -62,7 +61,7 @@ TEST(MeshFactoryTest) {
     mesh.setSetup(MeshSetup::FromData(Locator("myQuad")));
     
     factory.SetupResource(mesh, meshData);
-    CHECK(mesh.GetState() == Resource::State::Valid);
+    CHECK(mesh.GetState() == ResourceState::Valid);
     CHECK(!mesh.GetId().IsValid());
     CHECK(mesh.GetSetup().Locator.Location() == "myQuad");
     CHECK(mesh.GetVertexBufferAttrs().NumVertices == 4);
@@ -122,7 +121,7 @@ TEST(MeshFactoryTest) {
     #endif
     
     factory.DestroyResource(mesh);
-    CHECK(mesh.GetState() == Resource::State::Setup);
+    CHECK(mesh.GetState() == ResourceState::Setup);
     CHECK(!mesh.GetId().IsValid());
     CHECK(mesh.GetVertexBufferAttrs().NumVertices == 0);
     CHECK(mesh.GetVertexBufferAttrs().BufferUsage == Usage::InvalidUsage);

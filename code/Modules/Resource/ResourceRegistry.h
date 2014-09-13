@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::Registry
+    @class Oryol::ResourceRegistry
+    @ingroup Resource
     @brief implements use-counted resource-sharing
 */
 #include "Resource/Locator.h"
@@ -10,14 +11,13 @@
 #include "Core/Containers/Map.h"
 
 namespace Oryol {
-namespace Resource {
     
-class Registry {
+class ResourceRegistry {
 public:
     /// constructor
-    Registry();
+    ResourceRegistry();
     /// destructor
-    ~Registry();
+    ~ResourceRegistry();
     
     /// setup the registry with an estimated number of entries
     void Setup(int32 reserveSize);
@@ -92,5 +92,4 @@ private:
     Map<Id, int32> idIndexMap;
 };
     
-} // namespace Resource
 } // namespace Oryol

@@ -14,7 +14,7 @@ namespace _priv {
 class mesh;
 class programBundle;
 
-class drawState : public Resource::resourceBase<DrawStateSetup> {
+class drawState : public resourceBase<DrawStateSetup> {
 public:
     /// constructor
     drawState();

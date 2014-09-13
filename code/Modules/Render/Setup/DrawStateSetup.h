@@ -18,12 +18,12 @@ public:
     /// default constructor
     DrawStateSetup();
     /// construct with locator
-    DrawStateSetup(const Resource::Locator& loc);
+    DrawStateSetup(const Locator& loc);
     /// construct with locator and resources
-    DrawStateSetup(const Resource::Locator& loc, const Resource::Id& mesh, const Resource::Id& prog, uint32 progSelMask);
+    DrawStateSetup(const Locator& loc, const Id& mesh, const Id& prog, uint32 progSelMask);
     
     /// resource locator
-    Resource::Locator Locator;
+    class Locator Locator;
     /// blend state
     class BlendState BlendState;
     /// depth-stencil state
@@ -31,9 +31,9 @@ public:
     /// rasterizer state
     class RasterizerState RasterizerState;
     /// mesh
-    Resource::Id Mesh;
+    Id Mesh;
     /// program bundle
-    Resource::Id Program;
+    Id Program;
     /// program bundle selection mask
     uint32 ProgramSelectionMask{0};
 };

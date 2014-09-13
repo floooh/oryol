@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::Id
+    @class Oryol::Id
+    @ingroup Resource
     @brief a generic resource identifier
     
     Resource identifiers are abstract handles to a resource object.
@@ -9,7 +10,6 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Resource {
     
 class Id {
 public:
@@ -151,7 +151,6 @@ Id::Invalidate() {
     this->id = this->makeId(InvalidUniqueStamp, InvalidSlotIndex, InvalidType);
 }
 
-} // namespace Resource
 } // namespace Oryol
     
  

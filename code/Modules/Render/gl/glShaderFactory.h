@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of class shaderFactory
 */
-#include "Render/base/simpleFactory.h"
+#include "Render/base/renderSimpleFactory.h"
 #include "Render/Core/mesh.h"
 #include "Render/Core/Enums.h"
 
@@ -14,7 +14,7 @@ namespace _priv {
     
 class shader;
     
-class glShaderFactory : public simpleFactory<shader, ResourceType::Shader> {
+class glShaderFactory : public renderSimpleFactory<shader, ResourceType::Shader> {
 public:
     /// constructor
     glShaderFactory();

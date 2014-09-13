@@ -17,9 +17,9 @@ public:
     /// default constructor
     ShaderSetup();
     /// construct with locator and shader type
-    ShaderSetup(const Resource::Locator& loc, ShaderType::Code type);
+    ShaderSetup(const Locator& loc, ShaderType::Code type);
     /// resource locator
-    Resource::Locator Locator;
+    class Locator Locator;
     /// shader type
     ShaderType::Code Type;
     /// add a source code of a shader language syntax

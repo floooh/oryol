@@ -9,7 +9,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class TriangleApp : public App {
@@ -20,7 +19,7 @@ public:
     
 private:
     RenderFacade* render;
-    Resource::Id drawState;
+    Id drawState;
 };
 OryolMain(TriangleApp);
 

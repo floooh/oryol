@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
@@ -37,12 +36,12 @@ private:
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
     
-    Resource::Id particleBuffer[NumParticleBuffers];
-    Resource::Id particleIdMesh;
-    Resource::Id shapeMesh;
-    Resource::Id initParticles;
-    Resource::Id updateParticles;
-    Resource::Id drawParticles;
+    Id particleBuffer[NumParticleBuffers];
+    Id particleIdMesh;
+    Id shapeMesh;
+    Id initParticles;
+    Id updateParticles;
+    Id drawParticles;
     
     glm::vec2 particleBufferDims{ ParticleBufferWidth, ParticleBufferHeight };
     glm::mat4 view;

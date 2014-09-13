@@ -6,8 +6,6 @@
 
 namespace Oryol {
     
-using namespace Resource;
-
 //------------------------------------------------------------------------------
 ShaderSetup::ShaderSetup() :
 Type(ShaderType::InvalidShaderType) {

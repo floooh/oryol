@@ -14,8 +14,6 @@
 namespace Oryol {
 namespace _priv {
 
-using namespace Resource;
-
 //------------------------------------------------------------------------------
 glProgramBundleFactory::glProgramBundleFactory() :
 glStateWrapper(0),
@@ -63,7 +61,7 @@ glProgramBundleFactory::IsValid() const {
 void
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert(this->isValid);
-    o_assert(progBundle.GetState() == Resource::State::Setup);
+    o_assert(progBundle.GetState() == ResourceState::Setup);
     this->glStateWrapper->InvalidateProgramState();
 
     #if ORYOL_OPENGLES2
@@ -159,7 +157,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // if linking failed, stop the app
         if (!linkStatus) {
             o_error("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
-            progBundle.setState(Resource::State::Failed);
+            progBundle.setState(ResourceState::Failed);
             return;
         }
         
@@ -196,7 +194,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     this->glStateWrapper->InvalidateProgramState();
     
     // at this point the whole programBundle object has been successfully setup
-    progBundle.setState(Resource::State::Valid);
+    progBundle.setState(ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -214,7 +212,7 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
         }
     }
     progBundle.clear();
-    progBundle.setState(Resource::State::Setup);
+    progBundle.setState(ResourceState::Setup);
 }
     
 } // namespace _priv

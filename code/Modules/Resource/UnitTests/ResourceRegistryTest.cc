@@ -3,10 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Resource/Registry.h"
+#include "Resource/ResourceRegistry.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 TEST(ResourceRegistryTest) {
 
@@ -20,7 +19,7 @@ TEST(ResourceRegistryTest) {
     const Id blobId(4, 4, 1);
     Array<Id> removed;
 
-    Registry reg;
+    ResourceRegistry reg;
     CHECK(!reg.IsValid());
     reg.Setup(256);
     CHECK(reg.IsValid());

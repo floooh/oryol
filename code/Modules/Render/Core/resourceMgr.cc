@@ -9,8 +9,6 @@
 namespace Oryol {
 namespace _priv {
 
-using namespace Resource;
-    
 //------------------------------------------------------------------------------
 resourceMgr::resourceMgr() :
 isValid(false),
@@ -293,7 +291,7 @@ resourceMgr::ReleaseResource(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-Resource::State::Code
+ResourceState::Code
 resourceMgr::QueryResourceState(const Id& resId) {
     o_assert(this->isValid);
     switch (resId.Type()) {
@@ -314,7 +312,7 @@ resourceMgr::QueryResourceState(const Id& resId) {
             o_assert(false);
             break;
     }
-    return Resource::State::InvalidState;
+    return ResourceState::InvalidState;
 }
 
 } // namespace _priv

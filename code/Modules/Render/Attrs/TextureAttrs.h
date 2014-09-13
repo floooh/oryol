@@ -14,7 +14,7 @@
 namespace Oryol {
     
 struct TextureAttrs {
-    class Resource::Locator Locator;
+    class Locator Locator;
     TextureType::Code Type{TextureType::InvalidTextureType};
     PixelFormat::Code ColorFormat{PixelFormat::InvalidPixelFormat};
     PixelFormat::Code DepthFormat{PixelFormat::InvalidPixelFormat};

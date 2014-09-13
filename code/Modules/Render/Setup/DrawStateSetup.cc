@@ -7,8 +7,6 @@
 
 namespace Oryol {
 
-using namespace Resource;
-
 //------------------------------------------------------------------------------
 DrawStateSetup::DrawStateSetup() {
     // empty

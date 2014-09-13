@@ -17,17 +17,17 @@ namespace Oryol {
 class MeshSetup {
 public:
     /// setup from file with creation parameters
-    static MeshSetup FromFile(const Resource::Locator& loc, int32 ioLane=0, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
+    static MeshSetup FromFile(const Locator& loc, int32 ioLane=0, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from file with blueprint
-    static MeshSetup FromFile(const Resource::Locator& loc, const MeshSetup& blueprint);
+    static MeshSetup FromFile(const Locator& loc, const MeshSetup& blueprint);
     /// setup from from data provided in separate stream object
-    static MeshSetup FromData(const Resource::Locator& loc, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
+    static MeshSetup FromData(const Locator& loc, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from data with blueprint
-    static MeshSetup FromData(const Resource::Locator& loc, const MeshSetup& blueprint);
+    static MeshSetup FromData(const Locator& loc, const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup CreateEmpty(const Resource::Locator& loc, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
+    static MeshSetup CreateEmpty(const Locator& loc, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
-    static MeshSetup CreateFullScreenQuad(const Resource::Locator& loc);
+    static MeshSetup CreateFullScreenQuad(const Locator& loc);
     
     /// default constructor
     MeshSetup();
@@ -41,7 +41,7 @@ public:
     bool ShouldSetupFullScreenQuad() const;
     
     /// resource locator
-    Resource::Locator Locator;
+    class Locator Locator;
     /// get vertex-data usage
     Usage::Code VertexUsage{Usage::InvalidUsage};
     /// get index-data usage
@@ -67,7 +67,7 @@ public:
     const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
     
     /// optional instance data mesh
-    Resource::Id InstanceMesh;
+    Id InstanceMesh;
     
 private:
     static const int32 MaxNumPrimGroups = 8;

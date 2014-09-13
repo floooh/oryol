@@ -9,8 +9,7 @@ namespace Oryol {
 OryolLocalSingletonImpl(RenderFacade);
 
 using namespace _priv;
-using namespace Resource;
-    
+
 //------------------------------------------------------------------------------
 RenderFacade::RenderFacade(const RenderSetup& setup) :
 valid(false) {
@@ -105,7 +104,7 @@ RenderFacade::ReleaseResource(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-Resource::State::Code
+ResourceState::Code
 RenderFacade::QueryResourceState(const Id& resId) {
     o_assert_dbg(this->valid);
     return this->resourceManager.QueryResourceState(resId);
@@ -162,7 +161,7 @@ RenderFacade::ResetStateCache() {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data) {
+RenderFacade::UpdateVertices(const Id& resId, int32 numBytes, const void* data) {
     o_assert_dbg(this->valid);
     mesh* msh = this->resourceManager.LookupMesh(resId);
     this->renderManager.UpdateVertices(msh, numBytes, data);

@@ -32,8 +32,8 @@ public:
     
 private:
     bool isValid;
-    Resource::Id renderTarget;
-    Resource::Id drawState;
+    Id renderTarget;
+    Id drawState;
 };
     
 } // namespace Synth

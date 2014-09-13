@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::simpleFactory
+    @class Oryol::_priv::simpleRenderFactory
     @ingroup _priv
     @brief template factory base class for simple rendering resources
     
@@ -15,7 +15,7 @@ namespace Oryol {
 namespace _priv {
     
 template<class RESOURCE, ResourceType::Code TYPE>
-class simpleFactory : public Resource::simpleFactory<RESOURCE> {
+class renderSimpleFactory : public simpleFactory<RESOURCE> {
 public:
     /// get the resource type this factory produces
     uint16 GetResourceType() const;
@@ -27,22 +27,22 @@ public:
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, ResourceType::Code TYPE> uint16
-simpleFactory<RESOURCE,TYPE>::GetResourceType() const {
+renderSimpleFactory<RESOURCE,TYPE>::GetResourceType() const {
     return TYPE;
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, ResourceType::Code TYPE> void
-simpleFactory<RESOURCE,TYPE>::SetupResource(RESOURCE& res) {
-    o_assert(res.GetState() == Resource::State::Setup);
-    res.setState(Resource::State::Valid);
+renderSimpleFactory<RESOURCE,TYPE>::SetupResource(RESOURCE& res) {
+    o_assert(res.GetState() == ResourceState::Setup);
+    res.setState(ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, ResourceType::Code TYPE> void
-simpleFactory<RESOURCE,TYPE>::DestroyResource(RESOURCE& res) {
-    o_assert(res.GetState() == Resource::State::Valid);
-    res.setState(Resource::State::Setup);
+renderSimpleFactory<RESOURCE,TYPE>::DestroyResource(RESOURCE& res) {
+    o_assert(res.GetState() == ResourceState::Valid);
+    res.setState(ResourceState::Setup);
 }
 
 } // namespace _priv

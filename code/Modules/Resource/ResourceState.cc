@@ -2,17 +2,16 @@
 //  State.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "State.h"
+#include "ResourceState.h"
 #include "Core/Macros.h"
 #include "Core/Assert.h"
 #include <cstring>
 
 namespace Oryol {
-namespace Resource {
     
 //------------------------------------------------------------------------------
 const char*
-State::ToString(Code c) {
+ResourceState::ToString(Code c) {
     switch (c) {
         __ORYOL_TOSTRING(Initial);
         __ORYOL_TOSTRING(Setup);
@@ -24,8 +23,8 @@ State::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
-State::Code
-State::FromString(const char* str) {
+ResourceState::Code
+ResourceState::FromString(const char* str) {
     o_assert(str);
     __ORYOL_FROMSTRING(Initial);
     __ORYOL_FROMSTRING(Setup);
@@ -35,5 +34,4 @@ State::FromString(const char* str) {
     return InvalidState;
 }
 
-} // namespace Resource
 } // namespace Oryol

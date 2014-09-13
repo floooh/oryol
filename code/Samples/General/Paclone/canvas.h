@@ -53,10 +53,10 @@ private:
     int canvasHeight;
     int numSprites;
     int numVertices;
-    Oryol::Resource::Id mesh;
-    Oryol::Resource::Id prog;
-    Oryol::Resource::Id drawState;
-    Oryol::Resource::Id texture;
+    Oryol::Id mesh;
+    Oryol::Id prog;
+    Oryol::Id drawState;
+    Oryol::Id texture;
 
     static const int MaxWidth = 64;
     static const int MaxHeight = 64;

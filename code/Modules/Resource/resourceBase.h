@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::resourceBase
+    @class Oryol::resourceBase
+    @ingroup Resource
     @brief private: resource base class
     
     This is the generic Oryol resource base class. Resources usually manage
@@ -16,10 +17,9 @@
 */
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
-#include "Resource/State.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
-namespace Resource {
     
 template<class SETUP> class resourceBase {
 public:
@@ -31,7 +31,7 @@ public:
     /// get the resource id
     const Id& GetId() const;
     /// get the current state of the resource
-    State::Code GetState() const;
+    ResourceState::Code GetState() const;
     /// get the setup object
     const SETUP& GetSetup() const;
     /// get the placeholder type fourcc (only for asynchronously loaded resources)
@@ -40,7 +40,7 @@ public:
     /// set the resource id of the resource
     void setId(const Id& id);
     /// set the resource state
-    void setState(State::Code s);
+    void setState(ResourceState::Code s);
     /// set the setup object
     void setSetup(const SETUP& s);
     /// set the loader index (set by factory)
@@ -52,7 +52,7 @@ public:
     
 protected:
     Id id;
-    State::Code state;
+    ResourceState::Code state;
     SETUP setup;
     int32 loaderIndex;
     uint32 placeholderType;
@@ -61,7 +61,7 @@ protected:
 //------------------------------------------------------------------------------
 template<class SETUP>
 resourceBase<SETUP>::resourceBase() :
-state(State::Initial),
+state(ResourceState::Initial),
 loaderIndex(InvalidIndex),
 placeholderType(0) {
     // empty
@@ -70,7 +70,7 @@ placeholderType(0) {
 //------------------------------------------------------------------------------
 template<class SETUP>
 resourceBase<SETUP>::~resourceBase() {
-    o_assert(State::Valid != this->state);
+    o_assert(ResourceState::Valid != this->state);
 }
     
 //------------------------------------------------------------------------------
@@ -87,12 +87,12 @@ resourceBase<SETUP>::GetId() const {
 
 //------------------------------------------------------------------------------
 template<class SETUP> void
-resourceBase<SETUP>::setState(State::Code s) {
+resourceBase<SETUP>::setState(ResourceState::Code s) {
     this->state = s;
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> State::Code
+template<class SETUP> ResourceState::Code
 resourceBase<SETUP>::GetState() const {
     return this->state;
 }
@@ -106,9 +106,9 @@ resourceBase<SETUP>::GetPlaceholderType() const {
 //------------------------------------------------------------------------------
 template<class SETUP> void
 resourceBase<SETUP>::setSetup(const SETUP& setup_) {
-    o_assert(State::Initial == this->state);
+    o_assert(ResourceState::Initial == this->state);
     this->setup = setup_;
-    this->state = State::Setup;
+    this->state = ResourceState::Setup;
 }
 
 //------------------------------------------------------------------------------
@@ -135,6 +135,6 @@ resourceBase<SETUP>::setPlaceholderType(uint32 fourcc) {
     this->placeholderType = fourcc;
 }
 
-} // namespace Resource
 } // namespace Oryol
+
  

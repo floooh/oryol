@@ -23,13 +23,13 @@ RawMeshLoader::Accepts(const mesh& mesh) const {
 void
 RawMeshLoader::Load(mesh& mesh) const {
     // this loader doesn't support loading without data
-    mesh.setState(Resource::State::Failed);
+    mesh.setState(ResourceState::Failed);
 }
 
 //------------------------------------------------------------------------------
 bool
 RawMeshLoader::Accepts(const mesh& mesh, const Ptr<Stream>& stream) const {
-    o_assert(mesh.GetState() == Resource::State::Setup);
+    o_assert(mesh.GetState() == ResourceState::Setup);
 
     // take a quick peek at the data to check the magic number
     if (stream->Open(OpenMode::ReadOnly)) {
@@ -46,7 +46,7 @@ RawMeshLoader::Accepts(const mesh& mesh, const Ptr<Stream>& stream) const {
 //------------------------------------------------------------------------------
 void
 RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
-    o_assert(mesh.GetState() == Resource::State::Setup);
+    o_assert(mesh.GetState() == ResourceState::Setup);
     o_assert(nullptr != this->mshFactory);
     
     // open stream and get pointer to contained data
@@ -97,7 +97,7 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
         this->mshFactory->setupVertexLayout(mesh);
         
         // set mesh to valid, and return
-        mesh.setState(Resource::State::Valid);
+        mesh.setState(ResourceState::Valid);
         
         stream->UnmapRead();
         stream->Close();
@@ -105,7 +105,7 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
     else {
         // this shouldn't happen
         o_error("RawMeshLoader::Load(): failed to open stream!\n");
-        mesh.setState(Resource::State::Failed);
+        mesh.setState(ResourceState::Failed);
     }
 }
     

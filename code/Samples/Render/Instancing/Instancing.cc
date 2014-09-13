@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 using namespace Oryol::Time;
 using namespace Oryol::Debug;
 using namespace Oryol::Input;
@@ -35,8 +34,8 @@ private:
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
     InputFacade* input = nullptr;
-    Resource::Id instanceMesh;
-    Resource::Id drawState;
+    Id instanceMesh;
+    Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;

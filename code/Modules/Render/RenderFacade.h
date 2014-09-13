@@ -11,7 +11,7 @@
 #include "Render/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
 #include "Resource/Id.h"
-#include "Resource/State.h"
+#include "Resource/ResourceState.h"
 #include "Resource/Locator.h"
 #include "Render/Setup/RenderSetup.h"
 #include "Render/Core/Enums.h"
@@ -48,15 +48,15 @@ public:
     bool Supports(RenderFeature::Code feat) const;
         
     /// create a resource, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
+    template<class SETUP> Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
+    template<class SETUP> Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
-    Resource::Id LookupResource(const Resource::Locator& locator);
+    Id LookupResource(const Locator& locator);
     /// release a resource (decrement use-count, free resource if use-count is 0)
-    void ReleaseResource(const Resource::Id& resId);
+    void ReleaseResource(const Id& resId);
     /// get the loading state of a resource
-    Resource::State::Code QueryResourceState(const Resource::Id& resId);
+    ResourceState::Code QueryResourceState(const Id& resId);
     
     /// begin frame rendering
     bool BeginFrame();
@@ -68,7 +68,7 @@ public:
     /// make the default render target (backbuffer) current
     void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
-    void ApplyOffscreenRenderTarget(const Resource::Id& resId);
+    void ApplyOffscreenRenderTarget(const Id& resId);
     /// apply view port
     void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
@@ -76,18 +76,18 @@ public:
     /// apply blend color (see DrawState.BlendState)
     void ApplyBlendColor(const glm::vec4& blendColor);
     /// apply draw state to use for rendering
-    void ApplyDrawState(const Resource::Id& resId);
+    void ApplyDrawState(const Id& resId);
     /// apply a shader constant block
-    void ApplyConstantBlock(const Resource::Id& resId);
+    void ApplyConstantBlock(const Id& resId);
     /// apply a shader variable
     template<class T> void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
     template<class T> void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     
     /// update dynamic vertex data (only complete replace possible at the moment)
-    void UpdateVertices(const Resource::Id& resId, int32 numBytes, const void* data);
+    void UpdateVertices(const Id& resId, int32 numBytes, const void* data);
     /// update dynamic index data (only complete replace possible at the moment)
-    void UpdateIndices(const Resource::Id& resId, int32 numBytes, const void* data);
+    void UpdateIndices(const Id& resId, int32 numBytes, const void* data);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     void ReadPixels(void* ptr, int32 numBytes);
     
@@ -119,14 +119,14 @@ private:
 };
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Resource::Id
+template<class SETUP> inline Id
 RenderFacade::CreateResource(const SETUP& setup) {
     o_assert_dbg(this->valid);
     return this->resourceManager.CreateResource(setup);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Resource::Id
+template<class SETUP> inline Id
 RenderFacade::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
     o_assert_dbg(this->valid);
     return this->resourceManager.CreateResource(setup, data);
@@ -134,7 +134,7 @@ RenderFacade::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
 
 //------------------------------------------------------------------------------
 template<> inline void
-RenderFacade::ApplyVariable(int32 index, const Resource::Id& texResId) {
+RenderFacade::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(this->valid);
     _priv::texture* tex = this->resourceManager.LookupTexture(texResId);
     this->renderManager.ApplyTexture(index, tex);

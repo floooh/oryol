@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-using namespace Resource;
-    
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
 IOLane(0),

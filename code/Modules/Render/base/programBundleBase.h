@@ -10,6 +10,6 @@
 
 namespace Oryol {
 namespace _priv {
-class programBundleBase : public Resource::resourceBase<ProgramBundleSetup> { };
+class programBundleBase : public resourceBase<ProgramBundleSetup> { };
 } // namespace _priv
 } // namespace Oryol

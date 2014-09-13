@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::State
+    @class Oryol::ResourceState
+    @ingroup Resource
     @brief current state of a resource object
     
     These are the states a resource object goes through during its lifetime:
@@ -18,9 +19,8 @@
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Resource {
     
-class State {
+class ResourceState {
 public:
     /// state codes
     enum Code {
@@ -40,6 +40,5 @@ public:
     static Code FromString(const char* str);
 };
     
-} // namespace Resource
 } // namespace Oryol
 

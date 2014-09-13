@@ -7,7 +7,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class FullscreenQuadApp : public App {

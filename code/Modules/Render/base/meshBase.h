@@ -17,7 +17,7 @@
 namespace Oryol {
 namespace _priv {
     
-class meshBase : public Resource::resourceBase<MeshSetup> {
+class meshBase : public resourceBase<MeshSetup> {
 public:
     /// constructor
     meshBase();

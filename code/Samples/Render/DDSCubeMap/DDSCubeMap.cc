@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class DDSCubeMapApp : public App {
@@ -29,8 +28,8 @@ private:
     
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id drawState;
-    Resource::Id tex;
+    Id drawState;
+    Id tex;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -54,7 +53,7 @@ DDSCubeMapApp::OnRunning() {
         this->render->ApplyDrawState(this->drawState);
         
         const auto resState = this->render->QueryResourceState(this->tex);
-        if (resState == Resource::State::Valid) {
+        if (resState == ResourceState::Valid) {
             this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
             this->render->ApplyVariable(Shaders::Main::Texture, this->tex);
             this->render->Draw(0);

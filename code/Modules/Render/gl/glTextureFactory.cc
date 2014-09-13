@@ -61,18 +61,18 @@ glTextureFactory::IsValid() const {
 void
 glTextureFactory::SetupResource(texture& tex) {
     o_assert(this->isValid);
-    o_assert((tex.GetState() == Resource::State::Setup) || (tex.GetState() == Resource::State::Pending));
+    o_assert((tex.GetState() == ResourceState::Setup) || (tex.GetState() == ResourceState::Pending));
     o_assert(!tex.GetSetup().ShouldSetupFromPixelData());
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (tex.GetSetup().ShouldSetupAsRenderTarget()) {
         this->createRenderTarget(tex);
-        o_assert((tex.GetState() == Resource::State::Valid) || (tex.GetState() == Resource::State::Failed));
+        o_assert((tex.GetState() == ResourceState::Valid) || (tex.GetState() == ResourceState::Failed));
     }
     else {
         // let a loader take over, parent class will take care of this
         o_assert(tex.GetSetup().ShouldSetupFromFile());
-        Resource::loaderFactory<texture, textureLoaderBase>::SetupResource(tex);
+        loaderFactory<texture, textureLoaderBase>::SetupResource(tex);
     }
 }
 
@@ -80,17 +80,17 @@ glTextureFactory::SetupResource(texture& tex) {
 void
 glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     o_assert(this->isValid);
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert(tex.GetState() == ResourceState::Setup);
     o_assert(!tex.GetSetup().ShouldSetupAsRenderTarget());
     o_assert(!tex.GetSetup().ShouldSetupFromFile());
     
     if (tex.GetSetup().ShouldSetupFromPixelData()) {
         this->createFromPixelData(tex, data);
-        o_assert(tex.GetState() == Resource::State::Valid);
+        o_assert(tex.GetState() == ResourceState::Valid);
     }
     else {
         o_assert(tex.GetSetup().ShouldSetupFromImageFileData());
-        Resource::loaderFactory<texture, textureLoaderBase>::SetupResource(tex, data);
+        loaderFactory<texture, textureLoaderBase>::SetupResource(tex, data);
     }
 }
 
@@ -128,7 +128,7 @@ glTextureFactory::DestroyResource(texture& tex) {
     }
     
     tex.clear();
-    tex.setState(Resource::State::Setup);
+    tex.setState(ResourceState::Setup);
 }
 
 //------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ glTextureFactory::DestroyResource(texture& tex) {
 */
 void
 glTextureFactory::createRenderTarget(texture& tex) {
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert(tex.GetState() == ResourceState::Setup);
     o_assert(0 == tex.glGetTexture());
     o_assert(0 == tex.glGetFramebuffer());
     o_assert(0 == tex.glGetDepthRenderbuffer());
@@ -269,7 +269,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     tex.glSetFramebuffer(glFramebuffer);
     tex.glSetDepthRenderbuffer(glDepthRenderBuffer);
     tex.glSetTarget(GL_TEXTURE_2D);
-    tex.setState(Resource::State::Valid);
+    tex.setState(ResourceState::Valid);
     
     // bind the default frame buffer
     ::glBindFramebuffer(GL_FRAMEBUFFER, glOrigFramebuffer);
@@ -279,7 +279,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
 //------------------------------------------------------------------------------
 void
 glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert(tex.GetState() == ResourceState::Setup);
 
     const TextureSetup& setup = tex.GetSetup();
     const int32 width = setup.Width;
@@ -346,7 +346,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     tex.setTextureAttrs(attrs);
     tex.glSetTexture(glTex);
     tex.glSetTarget(GL_TEXTURE_2D);
-    tex.setState(Resource::State::Valid);
+    tex.setState(ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------

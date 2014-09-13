@@ -21,7 +21,7 @@ OryolClassImpl(glTextureLoader);
 //------------------------------------------------------------------------------
 bool
 glTextureLoader::Accepts(const texture& tex) const {
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert(tex.GetState() == ResourceState::Setup);
 
     // test the file extension, we will accept and load anything, whether
     // the compressed texture can actually be loaded is another question
@@ -38,7 +38,7 @@ glTextureLoader::Accepts(const texture& tex) const {
 //------------------------------------------------------------------------------
 bool
 glTextureLoader::Accepts(const texture& tex, const Ptr<Stream>& data) const {
-    o_assert(tex.GetState() == Resource::State::Setup);
+    o_assert(tex.GetState() == ResourceState::Setup);
     bool accepted = false;
     
     // need to look at magic number
@@ -61,26 +61,26 @@ glTextureLoader::Accepts(const texture& tex, const Ptr<Stream>& data) const {
 void
 glTextureLoader::Load(texture& tex) const {
     const TextureSetup& setup = tex.GetSetup();
-    const Resource::State::Code state = tex.GetState();
-    o_assert((state == Resource::State::Setup) || (state == Resource::State::Pending));
+    const ResourceState::Code state = tex.GetState();
+    o_assert((state == ResourceState::Setup) || (state == ResourceState::Pending));
     
-    if (state == Resource::State::Setup) {
+    if (state == ResourceState::Setup) {
         // start loading the resource
         tex.setIORequest(IOFacade::Instance()->LoadFile(setup.Locator.Location(), setup.IOLane));
-        tex.setState(Resource::State::Pending);
+        tex.setState(ResourceState::Pending);
         return;
     }
-    else if (state == Resource::State::Pending) {
+    else if (state == ResourceState::Pending) {
         // check if async IO has finished
         if (tex.GetIORequest()->Handled()) {
             if (tex.GetIORequest()->GetStatus() == IOStatus::OK) {
                 // forward to load-with-data method
                 this->Load(tex, tex.GetIORequest()->GetStream());
-                o_assert((tex.GetState() == Resource::State::Valid) || (tex.GetState() == Resource::State::Failed));
+                o_assert((tex.GetState() == ResourceState::Valid) || (tex.GetState() == ResourceState::Failed));
             }
             else {
                 // hmm loading the image data failed
-                tex.setState(Resource::State::Failed);
+                tex.setState(ResourceState::Failed);
             }
             // clear the IO request object
             tex.setIORequest(nullptr);
@@ -91,7 +91,7 @@ glTextureLoader::Load(texture& tex) const {
 //------------------------------------------------------------------------------
 void
 glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
-    o_assert((tex.GetState() == Resource::State::Setup) || (tex.GetState() == Resource::State::Pending));
+    o_assert((tex.GetState() == ResourceState::Setup) || (tex.GetState() == ResourceState::Pending));
     
     // open stream and get pointer to contained data
     if (data->Open(OpenMode::ReadOnly)) {
@@ -102,15 +102,15 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
         ctx.enable_pvrtc(glExt::HasExtension(glExt::TextureCompressionPVRTC));
         if (ctx.load(dataPtr, dataSize)) {
             if (this->glCreateTexture(tex, ctx)) {
-                tex.setState(Resource::State::Valid);
+                tex.setState(ResourceState::Valid);
             }
             else {
-                tex.setState(Resource::State::Failed);
+                tex.setState(ResourceState::Failed);
             }
         }
         else {
             Log::Warn("glTextureLoader: failed to load texture '%s'!\n", tex.GetSetup().Locator.Location().AsCStr());
-            tex.setState(Resource::State::Failed);
+            tex.setState(ResourceState::Failed);
         }
         data->UnmapRead();
         data->Close();
@@ -262,7 +262,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     tex.setTextureAttrs(attrs);
     tex.glSetTexture(glTex);
     tex.glSetTarget(ctx.texture_target());
-    tex.setState(Resource::State::Valid);
+    tex.setState(ResourceState::Valid);
     
     return true;
 }

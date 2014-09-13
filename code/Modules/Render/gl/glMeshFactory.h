@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
-#include "Render/base/loaderFactory.h"
+#include "Render/base/renderLoaderFactory.h"
 #include "Render/Core/mesh.h"
 
 namespace Oryol {
@@ -16,7 +16,7 @@ class meshPool;
 class mesh;
 class meshLoaderBase;
 
-class glMeshFactory : public loaderFactory<mesh, meshLoaderBase, ResourceType::Mesh> {
+class glMeshFactory : public renderLoaderFactory<mesh, meshLoaderBase, ResourceType::Mesh> {
 public:
     /// constructor
     glMeshFactory();

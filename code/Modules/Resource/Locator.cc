@@ -5,7 +5,6 @@
 #include "Locator.h"
 
 namespace Oryol {
-namespace Resource {
 
 //------------------------------------------------------------------------------
 Locator::Locator(const StringAtom& loc) :
@@ -47,5 +46,4 @@ Locator::NonShared(const StringAtom& loc) {
     return Locator(loc, NonSharedSignature);
 }
     
-} // namespace Resource
 } // namespace Locator

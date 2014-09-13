@@ -11,7 +11,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class PackedNormalsApp : public App {
@@ -24,8 +23,8 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     RenderFacade* render = nullptr;
-    Resource::Id msaaDrawState;
-    Resource::Id noMsaaDrawState;
+    Id msaaDrawState;
+    Id noMsaaDrawState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;

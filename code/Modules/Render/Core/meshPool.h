@@ -5,13 +5,13 @@
     @ingroup _priv
     @brief resource pool specialization for meshes
 */
-#include "Resource/Pool.h"
+#include "Resource/ResourcePool.h"
 #include "Render/Core/mesh.h"
 #include "Render/Core/meshFactory.h"
 #include "Render/Setup/MeshSetup.h"
 
 namespace Oryol {
 namespace _priv {
-class meshPool : public Resource::Pool<mesh, MeshSetup, meshFactory> { };
+class meshPool : public ResourcePool<mesh, MeshSetup, meshFactory> { };
 } // namespace _priv
 } // namepspace Oryol

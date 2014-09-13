@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-class shaderBase : public Resource::resourceBase<ShaderSetup> {
+class shaderBase : public resourceBase<ShaderSetup> {
 public:
     /// constructor
     shaderBase();

@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-using namespace Resource;
-    
 //------------------------------------------------------------------------------
 MeshSetup::MeshSetup() :
 VertexUsage(Usage::InvalidUsage),

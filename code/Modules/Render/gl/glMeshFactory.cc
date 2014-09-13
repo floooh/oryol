@@ -9,7 +9,7 @@
 #include "Render/Core/meshPool.h"
 #include "Render/gl/glTypes.h"
 #include "Render/gl/glExt.h"
-#include "Resource/State.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
 namespace _priv {
@@ -57,30 +57,30 @@ glMeshFactory::IsValid() const {
 void
 glMeshFactory::SetupResource(mesh& msh) {
     o_assert(this->isValid);
-    o_assert((msh.GetState() == Resource::State::Setup) || (msh.GetState() == Resource::State::Pending));
+    o_assert((msh.GetState() == ResourceState::Setup) || (msh.GetState() == ResourceState::Pending));
     
     // decide whether a loader needs to take over, or whether we handle this right here
     const MeshSetup& setup = msh.GetSetup();
     if (setup.ShouldSetupEmpty()) {
         this->createEmptyMesh(msh);
-        o_assert((msh.GetState() == Resource::State::Valid) || (msh.GetState() == Resource::State::Failed));
+        o_assert((msh.GetState() == ResourceState::Valid) || (msh.GetState() == ResourceState::Failed));
     }
     else if (setup.ShouldSetupFullScreenQuad()) {
         o_assert(!setup.InstanceMesh.IsValid());
         this->createFullscreenQuad(msh);
-        o_assert(msh.GetState() == Resource::State::Valid);
+        o_assert(msh.GetState() == ResourceState::Valid);
     }
     else {
         // let a loader take over, parent class will take care of this
         o_assert(msh.GetSetup().ShouldSetupFromFile());
-        Resource::loaderFactory<mesh, meshLoaderBase>::SetupResource(msh);
+        loaderFactory<mesh, meshLoaderBase>::SetupResource(msh);
     }
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
-    Resource::loaderFactory<mesh, meshLoaderBase>::SetupResource(msh, data);
+    loaderFactory<mesh, meshLoaderBase>::SetupResource(msh, data);
 }
 
 //------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ glMeshFactory::DestroyResource(mesh& mesh) {
         ::glDeleteBuffers(1, &ib);
     }
     mesh.clear();
-    mesh.setState(Resource::State::Setup);
+    mesh.setState(ResourceState::Setup);
 }
 
 //------------------------------------------------------------------------------
@@ -159,9 +159,9 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
 //------------------------------------------------------------------------------
 void
 glMeshFactory::attachInstanceBuffer(mesh& msh) {
-    const Resource::Id& instMeshId = msh.GetSetup().InstanceMesh;
+    const Id& instMeshId = msh.GetSetup().InstanceMesh;
     if (instMeshId.IsValid()) {
-        o_assert(this->meshPool->QueryState(instMeshId) == Resource::State::Valid);
+        o_assert(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
         const mesh* instMesh = this->meshPool->Lookup(instMeshId);
         msh.setInstanceMesh(instMesh);
         
@@ -177,7 +177,7 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupVertexLayout(mesh& mesh) {
-    o_assert(mesh.GetState() != Resource::State::Valid);
+    o_assert(mesh.GetState() != ResourceState::Valid);
     o_assert(nullptr != this->stateWrapper);
     
     // create and initialize vertex array object
@@ -416,7 +416,7 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.setState(Resource::State::Valid);
+    mesh.setState(ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -473,7 +473,7 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.setState(Resource::State::Valid);
+    mesh.setState(ResourceState::Valid);
 }
 
 } // namespace _priv

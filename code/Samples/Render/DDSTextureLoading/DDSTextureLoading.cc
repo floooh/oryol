@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 class DDSTextureLoadingApp : public App {
 public:
@@ -29,9 +28,9 @@ private:
     float32 distVal = 0.0f;
     IOFacade* io = nullptr;
     RenderFacade* render = nullptr;
-    Resource::Id drawState;
+    Id drawState;
     static const int32 NumTextures = 15;
-    std::array<Resource::Id, NumTextures> texId;
+    std::array<Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -78,7 +77,7 @@ DDSTextureLoadingApp::OnRunning() {
             const Id& tex = this->texId[i];
             if (tex.IsValid()) {
                 const auto resState = this->render->QueryResourceState(tex);
-                if (resState == Resource::State::Valid) {
+                if (resState == ResourceState::Valid) {
                     glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
                     this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
                     this->render->ApplyVariable(Shaders::Main::Texture, tex);

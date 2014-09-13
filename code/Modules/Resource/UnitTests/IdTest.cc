@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //  IdTest.cc
-//  Test Resource::Id
+//  Test resource Id
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
@@ -9,14 +9,14 @@
 using namespace Oryol;
 
 TEST(IdTest) {
-    Resource::Id id;
+    Id id;
     CHECK(!id.IsValid());
-    CHECK(Resource::Id::InvalidUniqueStamp == id.UniqueStamp());
-    CHECK(Resource::Id::InvalidSlotIndex == id.SlotIndex());
-    CHECK(Resource::Id::InvalidType == id.Type());
-    CHECK(id == Resource::Id::InvalidId());
+    CHECK(Id::InvalidUniqueStamp == id.UniqueStamp());
+    CHECK(Id::InvalidSlotIndex == id.SlotIndex());
+    CHECK(Id::InvalidType == id.Type());
+    CHECK(id == Id::InvalidId());
     
-    Resource::Id id1(1, 2, 3);
+    Id id1(1, 2, 3);
     CHECK(id1.IsValid());
     CHECK(id != id1);
     CHECK(id1.UniqueStamp() == 1);
@@ -24,7 +24,7 @@ TEST(IdTest) {
     CHECK(id1.Type() == 3);
     
     // copy-constructor
-    Resource::Id id2(id1);
+    Id id2(id1);
     CHECK(id1 == id2);
     CHECK(id2.IsValid());
     CHECK(id2.UniqueStamp() == 1);
@@ -32,7 +32,7 @@ TEST(IdTest) {
     CHECK(id2.Type() == 3);
     
     // assignment
-    Resource::Id id3;
+    Id id3;
     id3 = id1;
     CHECK(id3 == id1);
     CHECK(id3.IsValid());
@@ -43,13 +43,13 @@ TEST(IdTest) {
     // invalidation
     id3.Invalidate();
     CHECK(id == id3);
-    CHECK(Resource::Id::InvalidUniqueStamp == id3.UniqueStamp());
-    CHECK(Resource::Id::InvalidSlotIndex == id3.SlotIndex());
-    CHECK(Resource::Id::InvalidType == id3.Type());
-    CHECK(id3 == Resource::Id::InvalidId());
+    CHECK(Id::InvalidUniqueStamp == id3.UniqueStamp());
+    CHECK(Id::InvalidSlotIndex == id3.SlotIndex());
+    CHECK(Id::InvalidType == id3.Type());
+    CHECK(id3 == Id::InvalidId());
 
     // comparison
-    id3 = Resource::Id(0, 1, 2);
+    id3 = Id(0, 1, 2);
     CHECK(id3.IsValid());
     CHECK(id3.UniqueStamp() == 0);
     CHECK(id3.SlotIndex() == 1);

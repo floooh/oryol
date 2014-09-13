@@ -15,17 +15,17 @@ namespace Oryol {
 class TextureSetup {
 public:
     /// setup a texture from an image file URL
-    static TextureSetup FromFile(const Resource::Locator& loc, TextureSetup blueprint=TextureSetup());
+    static TextureSetup FromFile(const Locator& loc, TextureSetup blueprint=TextureSetup());
     /// setup a texture from a image file data in stream
-    static TextureSetup FromImageFileData(const Resource::Locator& loc, TextureSetup blueprint=TextureSetup());
+    static TextureSetup FromImageFileData(const Locator& loc, TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data
-    static TextureSetup FromPixelData(const Resource::Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt);
+    static TextureSetup FromPixelData(const Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt);
     /// setup as absolute-size render target
-    static TextureSetup AsRenderTarget(const Resource::Locator& loc, int32 w, int32 h);
+    static TextureSetup AsRenderTarget(const Locator& loc, int32 w, int32 h);
     /// setup as render target with size relative to current display size
-    static TextureSetup AsRelSizeRenderTarget(const Resource::Locator& loc, float32 relWidth, float32 relHeight);
+    static TextureSetup AsRelSizeRenderTarget(const Locator& loc, float32 relWidth, float32 relHeight);
     /// create render target with shared depth buffer
-    static TextureSetup AsSharedDepthRenderTarget(const Resource::Locator& loc, const Resource::Id& depthRenderTarget);
+    static TextureSetup AsSharedDepthRenderTarget(const Locator& loc, const Id& depthRenderTarget);
 
     /// default constructor
     TextureSetup();
@@ -50,7 +50,7 @@ public:
     int32 IOLane;
     
     /// the resource locator
-    class Resource::Locator Locator;
+    class Locator Locator;
     /// the width in pixels (only if absolute-size render target)
     int32 Width;
     /// the height in pixels (only if absolute-size render target)
@@ -64,7 +64,7 @@ public:
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
     PixelFormat::Code DepthFormat;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
-    Resource::Id DepthRenderTarget;
+    Id DepthRenderTarget;
     
     /// texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
     TextureWrapMode::Code WrapU;

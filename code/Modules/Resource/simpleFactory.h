@@ -1,15 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::simpleFactory
+    @class Oryol::simpleFactory
+    @ingroup Resource
     @brief base class for factories that don't support loaders
     @see loaderFactory
 */
 #include "IO/Stream/Stream.h"
-#include "Resource/State.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
-namespace Resource {
     
 template<class RESOURCE> class simpleFactory {
 public:
@@ -34,14 +34,14 @@ simpleFactory<RESOURCE>::NeedsSetupResource(const RESOURCE& res) const {
 template<class RESOURCE> void
 simpleFactory<RESOURCE>::SetupResource(RESOURCE& res) {
     // implement in subclass!
-    res.setState(State::Failed);
+    res.setState(ResourceState::Failed);
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE> void
 simpleFactory<RESOURCE>::SetupResource(RESOURCE& res, const Ptr<Stream>& data) {
     // implement in subclass!
-    res.setState(State::Failed);
+    res.setState(ResourceState::Failed);
 }
 
 //------------------------------------------------------------------------------
@@ -50,5 +50,4 @@ simpleFactory<RESOURCE>::DestroyResource(RESOURCE& res) {
     // implement in subclass!
 }
 
-} // namespace Resource
 } // namespace Oryol

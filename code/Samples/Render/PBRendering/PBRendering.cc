@@ -12,7 +12,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Debug;
-using namespace Oryol::Resource;
 
 // derived application class
 class PBRenderingApp : public App {

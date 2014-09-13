@@ -35,7 +35,7 @@ TEST(RenderTargetCreationTest) {
     texture tex0;
     tex0.setSetup(texSetup);
     factory.SetupResource(tex0);
-    CHECK(tex0.GetState() == Resource::State::Valid);
+    CHECK(tex0.GetState() == ResourceState::Valid);
     CHECK(tex0.glGetTexture() != 0);
     CHECK(tex0.glGetFramebuffer() != 0);
     CHECK(tex0.glGetDepthRenderbuffer() == 0);
@@ -62,7 +62,7 @@ TEST(RenderTargetCreationTest) {
     texture tex1;
     tex1.setSetup(rtSetup);
     factory.SetupResource(tex1);
-    CHECK(tex1.GetState() == Resource::State::Valid);
+    CHECK(tex1.GetState() == ResourceState::Valid);
     CHECK(tex1.glGetTexture() != 0);
     CHECK(tex1.glGetFramebuffer() != 0);
     CHECK(tex1.glGetDepthRenderbuffer() != 0);
@@ -89,7 +89,7 @@ TEST(RenderTargetCreationTest) {
     texture tex2;
     tex2.setSetup(rtSetup);
     factory.SetupResource(tex2);
-    CHECK(tex2.GetState() == Resource::State::Valid);
+    CHECK(tex2.GetState() == ResourceState::Valid);
     CHECK(tex2.glGetTexture() != 0);
     CHECK(tex2.glGetFramebuffer() != 0);
     CHECK(tex2.glGetDepthRenderbuffer() != 0);
@@ -111,16 +111,16 @@ TEST(RenderTargetCreationTest) {
     
     // cleanup
     factory.DestroyResource(tex1);
-    CHECK(tex1.GetState() == Resource::State::Setup);
+    CHECK(tex1.GetState() == ResourceState::Setup);
     CHECK(tex1.glGetTexture() == 0);
     CHECK(tex1.glGetFramebuffer() == 0);
     CHECK(tex1.glGetDepthRenderbuffer() == 0);
     CHECK(tex1.glGetDepthTexture() == 0);
     
     factory.DestroyResource(tex0);
-    CHECK(tex0.GetState() == Resource::State::Setup);
+    CHECK(tex0.GetState() == ResourceState::Setup);
     factory.DestroyResource(tex2);
-    CHECK(tex2.GetState() == Resource::State::Setup);
+    CHECK(tex2.GetState() == ResourceState::Setup);
     factory.Discard();
     displayManager.DiscardDisplay();
     #endif

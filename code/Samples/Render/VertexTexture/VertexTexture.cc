@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
 
@@ -28,9 +27,9 @@ private:
 
     RenderFacade* render = nullptr;
     DebugFacade* debug = nullptr;
-    Resource::Id renderTarget;
-    Resource::Id plasmaDrawState;
-    Resource::Id planeDrawState;
+    Id renderTarget;
+    Id plasmaDrawState;
+    Id planeDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;

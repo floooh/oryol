@@ -18,7 +18,6 @@
 
 using namespace Oryol;
 using namespace _priv;
-using namespace Oryol::Resource;
 
 //------------------------------------------------------------------------------
 TEST(ShapeBuilderTest) {
@@ -47,7 +46,7 @@ TEST(ShapeBuilderTest) {
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
     simpleCube.setSetup(MeshSetup::FromData(Locator("myCube")));
-    simpleCube.setState(Resource::State::Setup);
+    simpleCube.setState(ResourceState::Setup);
     factory.SetupResource(simpleCube, shapeBuilder.GetStream());
     CHECK(simpleCube.GetVertexBufferAttrs().NumVertices == 24);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.NumComponents() == 1);

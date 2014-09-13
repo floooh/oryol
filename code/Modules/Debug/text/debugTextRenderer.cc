@@ -10,8 +10,6 @@
 namespace Oryol {
 namespace Debug {
 
-using namespace Resource;
-
 extern const char *kc85_4_Font;
 
 //------------------------------------------------------------------------------
@@ -194,7 +192,7 @@ debugTextRenderer::setupFontTexture(RenderFacade* renderFacade) {
     setup.WrapV = TextureWrapMode::ClampToEdge;
     this->fontTexture = renderFacade->CreateResource(setup, data);
     o_assert(this->fontTexture.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->fontTexture) == Resource::State::Valid);
+    o_assert(renderFacade->QueryResourceState(this->fontTexture) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -213,7 +211,7 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     setup.Layout = this->vertexLayout;
     this->textMesh = renderFacade->CreateResource(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->textMesh) == Resource::State::Valid);
+    o_assert(renderFacade->QueryResourceState(this->textMesh) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------

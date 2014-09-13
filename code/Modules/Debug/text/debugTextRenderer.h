@@ -70,9 +70,9 @@ private:
     glm::vec2 textScale;
     VertexLayout vertexLayout;
     RWLock rwLock;
-    Resource::Id fontTexture;
-    Resource::Id textMesh;
-    Resource::Id textDrawState;
+    Id fontTexture;
+    Id textMesh;
+    Id textDrawState;
     StringBuilder stringBuilder;
     bool valid;
     

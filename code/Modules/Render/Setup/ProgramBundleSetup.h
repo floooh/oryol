@@ -18,13 +18,13 @@ public:
     /// default constructor
     ProgramBundleSetup();
     /// construct with resource locator
-    ProgramBundleSetup(const Resource::Locator& loc);
+    ProgramBundleSetup(const Locator& loc);
 
     /// the resource locator
-    class Resource::Locator Locator;
+    class Locator Locator;
     
     /// add a program consisting of precompiled vertex and fragment shader
-    void AddProgram(uint32 mask, const Resource::Id& vertexShader, const Resource::Id& fragmentShader);
+    void AddProgram(uint32 mask, const Id& vertexShader, const Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// bind a shader uniform name to a variable slot
@@ -37,9 +37,9 @@ public:
     /// get program mask by index
     uint32 Mask(int32 progIndex) const;
     /// get program vertex shader (only valid if setup from precompiled shaders)
-    const Resource::Id& VertexShader(int32 progIndex) const;
+    const Id& VertexShader(int32 progIndex) const;
     /// get program fragment shader (only valid if setup from precompiled shaders)
-    const Resource::Id& FragmentShader(int32 progIndex) const;
+    const Id& FragmentShader(int32 progIndex) const;
     /// get program vertex shader source (only valid if setup from sources)
     const String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
@@ -61,8 +61,8 @@ private:
     struct programEntry {
         programEntry() : mask(0) {};
         uint32 mask;
-        Resource::Id vertexShader;
-        Resource::Id fragmentShader;
+        Id vertexShader;
+        Id fragmentShader;
         String vsSources[ShaderLang::NumShaderLangs];
         String fsSources[ShaderLang::NumShaderLangs];
     };

@@ -11,7 +11,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 // derived application class
 class ShapeApp : public App {
@@ -24,7 +23,7 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     RenderFacade* render = nullptr;
-    Resource::Id drawState;
+    Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;

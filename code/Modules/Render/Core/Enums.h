@@ -301,7 +301,7 @@ class PrimitiveType : public _priv::glPrimitiveType { };
     @ingroup Render
     @brief Render subsystem resource types
  
-    These types are used for the type in Resource::Id for Render module
+    These types are used for the type in Id for Render module
     resources.
 */
 class ResourceType {

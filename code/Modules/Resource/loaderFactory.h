@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Resource::loaderFactory
+    @class Oryol::loaderFactory
+    @ingroup Resource
     @brief base class for factories that support loaders
 
     Resource factories create resource objects from setup objects.
@@ -32,10 +33,9 @@
 #include "Core/Containers/Array.h"
 #include "Core/Log.h"
 #include "IO/Stream/Stream.h"
-#include "Resource/State.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
-namespace Resource {
 
 template<class RESOURCE, class LOADER> class loaderFactory {
 public:
@@ -110,25 +110,25 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res) {
     // load asynchronous resources
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
-        o_assert(State::Pending == res.GetState());
+        o_assert(ResourceState::Pending == res.GetState());
         this->loaders[loaderIndex]->Load(res);
-        o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+        o_assert((res.GetState() == ResourceState::Pending) || (res.GetState() == ResourceState::Valid) || (res.GetState() == ResourceState::Failed));
         return;
     }
     else {
         // no loader yet, delegate to first loader which accepts the resource
-        o_assert(State::Setup == res.GetState());
+        o_assert(ResourceState::Setup == res.GetState());
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res)) {
                 res.setLoaderIndex(loaderIndex);
                 this->loaders[loaderIndex]->Load(res);
-                o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+                o_assert((res.GetState() == ResourceState::Pending) || (res.GetState() == ResourceState::Valid) || (res.GetState() == ResourceState::Failed));
                 return;
             }
         }
         // fallthrough: no suitable loader found
-        Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
-        res.setState(State::Failed);
+        Log::Warn("loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
+        res.setState(ResourceState::Failed);
     }
 }
 
@@ -143,24 +143,24 @@ loaderFactory<RESOURCE,LOADER>::SetupResource(RESOURCE& res, const Ptr<Stream>& 
 
     int32 loaderIndex = res.getLoaderIndex();
     if (InvalidIndex != loaderIndex) {
-        o_assert(State::Pending == res.GetState());
+        o_assert(ResourceState::Pending == res.GetState());
         this->loaders[loaderIndex]->Load(res, data);
-        o_assert((res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+        o_assert((res.GetState() == ResourceState::Valid) || (res.GetState() == ResourceState::Failed));
         return;
     }
     else {
-        o_assert(State::Setup == res.GetState());
+        o_assert(ResourceState::Setup == res.GetState());
         for (loaderIndex = 0; loaderIndex < this->loaders.Size(); loaderIndex++) {
             if (this->loaders[loaderIndex]->Accepts(res, data)) {
                 res.setLoaderIndex(loaderIndex);
                 this->loaders[loaderIndex]->Load(res, data);
-                o_assert((res.GetState() == State::Pending) || (res.GetState() == State::Valid) || (res.GetState() == State::Failed));
+                o_assert((res.GetState() == ResourceState::Pending) || (res.GetState() == ResourceState::Valid) || (res.GetState() == ResourceState::Failed));
                 return;
             }
         }
         // fallthrough: no suitable loader found
-        Log::Warn("Resource::loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
-        res.setState(State::Failed);
+        Log::Warn("loaderFactory: No suitable loader for resource '%s'\n", res.GetSetup().Locator.Location().AsCStr());
+        res.setState(ResourceState::Failed);
     }
 }
 
@@ -173,5 +173,4 @@ loaderFactory<RESOURCE,LOADER>::DestroyResource(RESOURCE& res) {
     // implement in derived class
 }
 
-} // namespace Resource
 } // namespace Oryol

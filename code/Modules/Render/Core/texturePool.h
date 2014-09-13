@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool specialization for textures
 */
-#include "Resource/Pool.h"
+#include "Resource/ResourcePool.h"
 #include "Render/Core/texture.h"
 #include "Render/Core/textureFactory.h"
 #include "Render/Setup/TextureSetup.h"
@@ -13,7 +13,7 @@
 namespace Oryol {
 namespace _priv {
     
-class texturePool : public Resource::Pool<texture, TextureSetup, textureFactory> {
+class texturePool : public ResourcePool<texture, TextureSetup, textureFactory> {
     /// get the resource type this factory produces
     uint16 GetResourceType() const;
     /// attach a resource loader

@@ -14,8 +14,7 @@
 #include "Render/Core/programBundlePool.h"
 #include "Render/Core/texturePool.h"
 #include "Render/Core/drawStatePool.h"
-#include "Resource/Registry.h"
-#include "Resource/Pool.h"
+#include "Resource/ResourceRegistry.h"
 
 namespace Oryol {
 namespace _priv {
@@ -44,31 +43,31 @@ public:
     void Update();
     
     /// create a resource, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
+    template<class SETUP> Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> Resource::Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
+    template<class SETUP> Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
-    Resource::Id LookupResource(const Resource::Locator& locator);
+    Id LookupResource(const Locator& locator);
     /// release a resource (decrement use-count, free resource if use-count is 0)
-    void ReleaseResource(const Resource::Id& resId);
+    void ReleaseResource(const Id& resId);
     /// get the loading state of a resource
-    Resource::State::Code QueryResourceState(const Resource::Id& resId);
+    ResourceState::Code QueryResourceState(const Id& resId);
     
     /// lookup mesh object
-    mesh* LookupMesh(const Resource::Id& resId);
+    mesh* LookupMesh(const Id& resId);
     /// lookup program bundle object
-    programBundle* LookupProgramBundle(const Resource::Id& resId);
+    programBundle* LookupProgramBundle(const Id& resId);
     /// lookup texture object
-    texture* LookupTexture(const Resource::Id& resId);
+    texture* LookupTexture(const Id& resId);
     /// lookup draw-state object
-    drawState* LookupDrawState(const Resource::Id& resId);
+    drawState* LookupDrawState(const Id& resId);
 
 private:
     bool isValid;
     class stateWrapper* stateWrapper;
     class displayMgr* displayMgr;
-    Resource::Registry resourceRegistry;
-    Array<Resource::Id> removedIds;
+    ResourceRegistry resourceRegistry;
+    Array<Id> removedIds;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
@@ -83,28 +82,28 @@ private:
 
 //------------------------------------------------------------------------------
 inline mesh*
-resourceMgr::LookupMesh(const Resource::Id& resId) {
+resourceMgr::LookupMesh(const Id& resId) {
     o_assert_dbg(this->isValid);
     return this->meshPool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline programBundle*
-resourceMgr::LookupProgramBundle(const Resource::Id& resId) {
+resourceMgr::LookupProgramBundle(const Id& resId) {
     o_assert_dbg(this->isValid);
     return this->programBundlePool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline texture*
-resourceMgr::LookupTexture(const Resource::Id& resId) {
+resourceMgr::LookupTexture(const Id& resId) {
     o_assert_dbg(this->isValid);
     return this->texturePool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline drawState*
-resourceMgr::LookupDrawState(const Resource::Id& resId) {
+resourceMgr::LookupDrawState(const Id& resId) {
     o_assert_dbg(this->isValid);
     return this->drawStatePool.Lookup(resId);
 }

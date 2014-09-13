@@ -7,8 +7,6 @@
 
 namespace Oryol {
 
-using namespace Resource;
-    
 //------------------------------------------------------------------------------
 ProgramBundleSetup::ProgramBundleSetup() :
 numProgramEntries(0),

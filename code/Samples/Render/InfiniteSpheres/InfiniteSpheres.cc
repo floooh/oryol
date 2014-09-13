@@ -12,7 +12,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Resource;
 
 class InfiniteSpheresApp : public App {
 public:
@@ -25,8 +24,8 @@ private:
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
     RenderFacade* render = nullptr;
-    Resource::Id renderTargets[2];
-    Resource::Id drawState;
+    Id renderTargets[2];
+    Id drawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;

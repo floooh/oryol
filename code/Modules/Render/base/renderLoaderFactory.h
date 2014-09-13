@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::loaderFactory
+    @class Oryol::_priv::renderLoaderFactory
     @ingroup _priv
     @brief template loader factory base class for rendering resources
 */
@@ -13,7 +13,7 @@ namespace Oryol {
 namespace _priv {
     
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE>
-class loaderFactory : public Resource::loaderFactory<RESOURCE, RESLOADERBASE> {
+class renderLoaderFactory : public loaderFactory<RESOURCE, RESLOADERBASE> {
 public:
     /// get the resource type this factory produces
     uint16 GetResourceType() const;
@@ -25,14 +25,14 @@ public:
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE> uint16
-loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::GetResourceType() const {
+renderLoaderFactory<RESOURCE, RESLOADERBASE, TYPE>::GetResourceType() const {
     return TYPE;
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE> bool
-loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::NeedsSetupResource(const RESOURCE& res) const {
-    o_assert(res.GetState() == Resource::State::Pending);
+renderLoaderFactory<RESOURCE, RESLOADERBASE, TYPE>::NeedsSetupResource(const RESOURCE& res) const {
+    o_assert(res.GetState() == ResourceState::Pending);
     const Ptr<IOProtocol::Request>& ioRequest = res.GetIORequest();
     if (ioRequest.isValid()) {
         return ioRequest->Handled();
@@ -44,7 +44,7 @@ loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::NeedsSetupResource(const RESOURCE&
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE> void
-loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::DestroyResource(RESOURCE& res) {
+renderLoaderFactory<RESOURCE, RESLOADERBASE, TYPE>::DestroyResource(RESOURCE& res) {
     // We need to hook in here and check whether there's an asynchronous
     // IORequest in flight. If yes, cancel it so that it doesn't load data
     // which actually isn't needed anymore
@@ -52,7 +52,7 @@ loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::DestroyResource(RESOURCE& res) {
     if (ioRequest.isValid()) {
         ioRequest->SetCancelled();
     }
-    Resource::loaderFactory<RESOURCE,RESLOADERBASE>::DestroyResource(res);
+    loaderFactory<RESOURCE,RESLOADERBASE>::DestroyResource(res);
 }
 
 } // namespace _priv
