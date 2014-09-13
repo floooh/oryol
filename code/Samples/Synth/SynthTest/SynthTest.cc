@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Synth/Synth.h"
 
@@ -18,7 +18,6 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    RenderFacade* render;
     int32 frameCount = 0;
     static const int NumTracks = 4;
     SynthOp op;
@@ -29,8 +28,8 @@ OryolMain(SynthTestApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
-    Debug::Setup();
+    Render::Setup(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
+    Dbg::Setup();
     Input::Setup();
     SynthSetup synthSetup;
     synthSetup.UseGPUSynthesizer = false;
@@ -47,7 +46,7 @@ SynthTestApp::OnInit() {
 AppState::Code
 SynthTestApp::OnRunning() {
 
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         const Keyboard& kbd = Input::Keyboard();
         if (kbd.KeyDown(Key::Left)) {
@@ -158,29 +157,28 @@ SynthTestApp::OnRunning() {
         }
     
         Synth::Update();
-        Debug::Print("\n\n");
-        Debug::PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
-        Debug::PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
-        Debug::PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
-        Debug::PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::Print("\n\n");
+        Dbg::PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
+        Dbg::PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
+        Dbg::PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
+        Dbg::PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
         this->frameCount++;
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnCleanup() {
-    this->render = nullptr;
     Synth::Discard();
-    Debug::Discard();
+    Dbg::Discard();
     Input::Discard();
-    RenderFacade::DestroySingle();
+    Render::Discard();
     return App::OnCleanup();
 }

@@ -5,7 +5,7 @@
 #include "Core/App.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/TextureLoader.h"
@@ -26,7 +26,6 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    RenderFacade* render = nullptr;
     Id drawState;
     static const int32 NumTextures = 15;
     std::array<Id, NumTextures> texId;
@@ -39,13 +38,13 @@ OryolMain(DDSTextureLoadingApp);
 AppState::Code
 DDSTextureLoadingApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         this->distVal += 0.01f;
         
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.5f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->drawState);
+        Render::Clear(PixelChannel::All, glm::vec4(0.5f), 1.0f, 0);
         
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {
@@ -75,20 +74,20 @@ DDSTextureLoadingApp::OnRunning() {
         for (int32 i = 0; i < NumTextures; i++) {
             const Id& tex = this->texId[i];
             if (tex.IsValid()) {
-                const auto resState = this->render->QueryResourceState(tex);
+                const auto resState = Render::QueryResourceState(tex);
                 if (resState == ResourceState::Valid) {
                     glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-                    this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
-                    this->render->ApplyVariable(Shaders::Main::Texture, tex);
-                    this->render->Draw(0);
+                    Render::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
+                    Render::ApplyVariable(Shaders::Main::Texture, tex);
+                    Render::Draw(0);
                 }
             }
         }
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -105,7 +104,7 @@ DDSTextureLoadingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DDS Loading Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     renderSetup.Loaders.Add(TextureLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
+    Render::Setup(renderSetup);
 
     // setup resources
     TextureSetup texBluePrint;
@@ -113,21 +112,21 @@ DDSTextureLoadingApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
-    this->texId[0]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
-    this->texId[1]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
-    this->texId[2]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
-    this->texId[3]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bpp2.pvr", texBluePrint));
-    this->texId[4]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bpp4.pvr", texBluePrint));
-    this->texId[5]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
-    this->texId[6]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
-    this->texId[7]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
-    this->texId[8]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
-    this->texId[9]  = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
-    this->texId[10] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
-    this->texId[11] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
-    this->texId[12] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
-    this->texId[13] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
-    this->texId[14] = this->render->CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
+    this->texId[0]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
+    this->texId[1]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
+    this->texId[2]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
+    this->texId[3]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_bpp2.pvr", texBluePrint));
+    this->texId[4]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_bpp4.pvr", texBluePrint));
+    this->texId[5]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
+    this->texId[6]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
+    this->texId[7]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
+    this->texId[8]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
+    this->texId[9]  = Render::CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
+    this->texId[10] = Render::CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
+    this->texId[11] = Render::CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
+    this->texId[12] = Render::CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
+    this->texId[13] = Render::CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
+    this->texId[14] = Render::CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
@@ -136,18 +135,18 @@ DDSTextureLoadingApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddPlane(1.0f, 1.0f, 4);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;    
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -160,12 +159,11 @@ DDSTextureLoadingApp::OnCleanup() {
     // cleanup everything
     for (auto tex : this->texId) {
         if (tex.IsValid()) {
-            this->render->ReleaseResource(tex);
+            Render::ReleaseResource(tex);
         }
     }
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->drawState);
+    Render::Discard();
     IO::Discard();
     
     return App::OnCleanup();

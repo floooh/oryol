@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -23,7 +23,6 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
-    RenderFacade* render = nullptr;
     Id renderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
@@ -39,34 +38,34 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         this->time += 1.0f / 60.0f;
         
         // render plasma to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->ApplyDrawState(this->plasmaDrawState);
-        this->render->ApplyVariable(Shaders::Plasma::Time, this->time);
-        this->render->Draw(0);
+        Render::ApplyOffscreenRenderTarget(this->renderTarget);
+        Render::ApplyDrawState(this->plasmaDrawState);
+        Render::ApplyVariable(Shaders::Plasma::Time, this->time);
+        Render::Draw(0);
         
         // render displacement mapped plane shape
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->planeDrawState);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDrawState(this->planeDrawState);
         const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
-        this->render->ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
-        this->render->ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
-        this->render->Draw(0);
+        Render::ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
+        Render::ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
+        Render::Draw(0);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Debug::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -75,8 +74,8 @@ VertexTextureApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Vertex Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
     
     // FIXME: need a way to check number of vertex texture units
     
@@ -85,15 +84,15 @@ VertexTextureApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
-    this->renderTarget = this->render->CreateResource(rtSetup);
+    this->renderTarget = Render::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
-    Id fsQuadMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
-    Id plasmaProg = this->render->CreateResource(Shaders::Plasma::CreateSetup());
+    Id fsQuadMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id plasmaProg = Render::CreateResource(Shaders::Plasma::CreateSetup());
     DrawStateSetup plasmaSetup("dsPlasma", fsQuadMesh, plasmaProg, 0);
-    this->plasmaDrawState = this->render->CreateResource(plasmaSetup);
-    this->render->ReleaseResource(fsQuadMesh);
-    this->render->ReleaseResource(plasmaProg);
+    this->plasmaDrawState = Render::CreateResource(plasmaSetup);
+    Render::ReleaseResource(fsQuadMesh);
+    Render::ReleaseResource(plasmaProg);
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
@@ -101,18 +100,18 @@ VertexTextureApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddPlane(3.0f, 3.0f, 255);
     shapeBuilder.Build();
-    Id planeMesh = this->render->CreateResource(MeshSetup::FromData("planeMesh"), shapeBuilder.GetStream());
-    Id planeProg = this->render->CreateResource(Shaders::Plane::CreateSetup());
+    Id planeMesh = Render::CreateResource(MeshSetup::FromData("planeMesh"), shapeBuilder.GetStream());
+    Id planeProg = Render::CreateResource(Shaders::Plane::CreateSetup());
     DrawStateSetup dsPlane = DrawStateSetup("dsPlane", planeMesh, planeProg, 0);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->planeDrawState = this->render->CreateResource(dsPlane);
-    this->render->ReleaseResource(planeMesh);
-    this->render->ReleaseResource(planeProg);
+    this->planeDrawState = Render::CreateResource(dsPlane);
+    Render::ReleaseResource(planeMesh);
+    Render::ReleaseResource(planeProg);
     
     // setup static transform matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     
@@ -123,12 +122,11 @@ VertexTextureApp::OnInit() {
 AppState::Code
 VertexTextureApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->planeDrawState);
-    this->render->ReleaseResource(this->plasmaDrawState);
-    this->render->ReleaseResource(this->renderTarget);
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->planeDrawState);
+    Render::ReleaseResource(this->plasmaDrawState);
+    Render::ReleaseResource(this->renderTarget);
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }
 

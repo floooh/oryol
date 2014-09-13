@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -21,7 +21,6 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    RenderFacade* render = nullptr;
     Id renderTarget;
     Id offscreenDrawState;
     Id copyDrawState;
@@ -37,31 +36,31 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         this->time += 1.0f / 60.0f;
         
         // render plasma to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->ApplyDrawState(this->offscreenDrawState);
-        this->render->ApplyVariable(Shaders::Offscreen::Time, this->time);
-        this->render->Draw(0);
+        Render::ApplyOffscreenRenderTarget(this->renderTarget);
+        Render::ApplyDrawState(this->offscreenDrawState);
+        Render::ApplyVariable(Shaders::Offscreen::Time, this->time);
+        Render::Draw(0);
         
         // copy fullscreen quad
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->copyDrawState);
-        this->render->ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
-        this->render->Draw(0);
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->copyDrawState);
+        Render::ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
+        Render::Draw(0);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Debug::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -70,11 +69,11 @@ TextureFloatApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(512, 512, false, "Oryol Float Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
 
     // check required extensions
-    if (!this->render->Supports(RenderFeature::TextureFloat)) {
+    if (!Render::Supports(RenderFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
     
@@ -84,26 +83,26 @@ TextureFloatApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
-    this->renderTarget = this->render->CreateResource(rtSetup);
+    this->renderTarget = Render::CreateResource(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id fullscreenMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
 
     // setup draw state for offscreen rendering to float render target
-    Id offscreenProg = this->render->CreateResource(Shaders::Offscreen::CreateSetup());
+    Id offscreenProg = Render::CreateResource(Shaders::Offscreen::CreateSetup());
     DrawStateSetup offscreenSetup("dsOffscreen", fullscreenMesh, offscreenProg, 0);
-    this->offscreenDrawState = this->render->CreateResource(offscreenSetup);
-    this->render->ReleaseResource(offscreenProg);
+    this->offscreenDrawState = Render::CreateResource(offscreenSetup);
+    Render::ReleaseResource(offscreenProg);
     
     // fullscreen-copy mesh, shader and draw state
-    Id copyProg = this->render->CreateResource(Shaders::Copy::CreateSetup());
-    this->copyDrawState = this->render->CreateResource(DrawStateSetup("dsCopy", fullscreenMesh, copyProg, 0));
-    this->render->ReleaseResource(copyProg);
-    this->render->ReleaseResource(fullscreenMesh);
+    Id copyProg = Render::CreateResource(Shaders::Copy::CreateSetup());
+    this->copyDrawState = Render::CreateResource(DrawStateSetup("dsCopy", fullscreenMesh, copyProg, 0));
+    Render::ReleaseResource(copyProg);
+    Render::ReleaseResource(fullscreenMesh);
     
     // setup static transform matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
     
@@ -114,11 +113,10 @@ TextureFloatApp::OnInit() {
 AppState::Code
 TextureFloatApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->offscreenDrawState);
-    this->render->ReleaseResource(this->copyDrawState);
-    this->render->ReleaseResource(this->renderTarget);
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->offscreenDrawState);
+    Render::ReleaseResource(this->copyDrawState);
+    Render::ReleaseResource(this->renderTarget);
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }

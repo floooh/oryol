@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
-#include "Debug/Debug.h"
+#include "Dbg/Dbg.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -27,7 +27,6 @@ private:
     void emitParticles();
     void updateParticles();
 
-    RenderFacade* render = nullptr;
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -51,7 +50,7 @@ DrawCallPerfApp::OnRunning() {
     
     Duration updTime, drawTime;
     this->frameCount++;
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update block
         TimePoint updStart = Clock::Now();
@@ -62,31 +61,31 @@ DrawCallPerfApp::OnRunning() {
         
         // render block
         TimePoint drawStart = Clock::Now();
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDrawState(this->drawState);
+        Render::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
         for (int32 i = 0; i < this->curNumParticles; i++) {
-            this->render->ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
-            this->render->Draw(0);
+            Render::ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
+            Render::Draw(0);
         }
         drawTime = Clock::Since(drawStart);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Debug::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    Debug::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
-                  this->curNumParticles,
-                  updTime.AsMilliSeconds(),
-                  drawTime.AsMilliSeconds(),
-                  frameTime.AsMilliSeconds());
-    Debug::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    Debug::PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
+    Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
+                this->curNumParticles,
+                updTime.AsMilliSeconds(),
+                drawTime.AsMilliSeconds(),
+                frameTime.AsMilliSeconds());
+    Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    Dbg::PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
     
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -134,8 +133,8 @@ DrawCallPerfApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol DrawCallPerf Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -145,20 +144,20 @@ DrawCallPerfApp::OnInit() {
     shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
     shapeBuilder.AddSphere(0.05f, 3, 2);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.RasterizerState.CullFaceEnabled = true;
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();
@@ -171,9 +170,8 @@ DrawCallPerfApp::OnInit() {
 AppState::Code
 DrawCallPerfApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->drawState);
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }

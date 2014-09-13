@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "canvas.h"
 #include "shaders.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
@@ -40,18 +40,17 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     this->numVertices = (this->numTilesX * this->numTilesY + this->numSprites) * 6;
     
     // setup draw state with dynamic mesh
-    RenderFacade* render = RenderFacade::Instance();
     MeshSetup meshSetup = MeshSetup::CreateEmpty("p_canvas", this->numVertices, Usage::Stream);
     meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float2);
     meshSetup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
-    this->mesh = render->CreateResource(meshSetup);
-    this->prog = render->CreateResource(Shaders::Main::CreateSetup());
+    this->mesh = Render::CreateResource(meshSetup);
+    this->prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("p_ds", this->mesh, this->prog, 0);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->drawState = render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
     // setup sprite texture
     auto pixelData = MemoryStream::Create();
@@ -65,7 +64,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    this->texture = render->CreateResource(texSetup, pixelData);
+    this->texture = Render::CreateResource(texSetup, pixelData);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -83,11 +82,10 @@ void
 canvas::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    RenderFacade* render = RenderFacade::Instance();
-    render->ReleaseResource(this->drawState);
-    render->ReleaseResource(this->prog);
-    render->ReleaseResource(this->mesh);
-    render->ReleaseResource(this->texture);
+    Render::ReleaseResource(this->drawState);
+    Render::ReleaseResource(this->prog);
+    Render::ReleaseResource(this->mesh);
+    Render::ReleaseResource(this->texture);
     this->drawState.Invalidate();
     this->prog.Invalidate();
     this->mesh.Invalidate();
@@ -103,13 +101,12 @@ canvas::IsValid() const {
 void
 canvas::Render() {
     o_assert(this->isValid);
-    RenderFacade* render = RenderFacade::Instance();
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
-    render->UpdateVertices(this->mesh, numBytes, data);
-    render->ApplyDrawState(this->drawState);
-    render->ApplyVariable(Shaders::Main::Texture, this->texture);
-    render->Draw(0);
+    Render::UpdateVertices(this->mesh, numBytes, data);
+    Render::ApplyDrawState(this->drawState);
+    Render::ApplyVariable(Shaders::Main::Texture, this->texture);
+    Render::Draw(0);
 }
 
 //------------------------------------------------------------------------------

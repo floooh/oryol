@@ -20,7 +20,7 @@
     the Begin() method, and start writing vertices and indices,
     when done call End() and get the resulting Stream object
     object which can be handed together with a MeshSetup object to 
-    RenderFacade::CreateMesh().
+    Render::CreateResource().
     
     Vertex format packing happens on the fly when writing vertex data 
     according to the vertex layout given.

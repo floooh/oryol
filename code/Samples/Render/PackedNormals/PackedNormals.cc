@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
@@ -22,7 +22,6 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    RenderFacade* render = nullptr;
     Id msaaDrawState;
     Id noMsaaDrawState;
     glm::mat4 view;
@@ -36,38 +35,38 @@ OryolMain(PackedNormalsApp);
 AppState::Code
 PackedNormalsApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update angles
         this->angleY += 0.01f;
         this->angleX += 0.02f;
         
         // apply state and render
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->msaaDrawState);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->msaaDrawState);
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // draw shape primitive groups
-        this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
-        this->render->Draw(0);
-        this->render->ApplyDrawState(this->noMsaaDrawState);
-        this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
-        this->render->Draw(1);
-        this->render->ApplyDrawState(this->msaaDrawState);
-        this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
-        this->render->Draw(2);
-        this->render->ApplyDrawState(this->noMsaaDrawState);
-        this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
-        this->render->Draw(3);
-        this->render->ApplyDrawState(this->msaaDrawState);
-        this->render->ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
-        this->render->Draw(4);
+        Render::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
+        Render::Draw(0);
+        Render::ApplyDrawState(this->noMsaaDrawState);
+        Render::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
+        Render::Draw(1);
+        Render::ApplyDrawState(this->msaaDrawState);
+        Render::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
+        Render::Draw(2);
+        Render::ApplyDrawState(this->noMsaaDrawState);
+        Render::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
+        Render::Draw(3);
+        Render::ApplyDrawState(this->msaaDrawState);
+        Render::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
+        Render::Draw(4);
         
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -76,9 +75,7 @@ PackedNormalsApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Packed Normals Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    Render::Setup(renderSetup);
 
     // create resources
     // NOTE: we draw some shapes with MSAA, some without
@@ -91,22 +88,24 @@ PackedNormalsApp::OnInit() {
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.AddPlane(1.5f, 1.5f, 10);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::PackedNormals::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::PackedNormals::CreateSetup());
     DrawStateSetup dsSetup("dsmsaa", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsSetup.RasterizerState.CullFaceEnabled = true;
     dsSetup.RasterizerState.MultisampleEnabled = true;
-    this->msaaDrawState = this->render->CreateResource(dsSetup);
+    this->msaaDrawState = Render::CreateResource(dsSetup);
     dsSetup.Locator = "dsnomsaa";
     dsSetup.RasterizerState.MultisampleEnabled = false;
-    this->noMsaaDrawState = this->render->CreateResource(dsSetup);
+    this->noMsaaDrawState = Render::CreateResource(dsSetup);
 
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
+    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -117,10 +116,9 @@ PackedNormalsApp::OnInit() {
 AppState::Code
 PackedNormalsApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->msaaDrawState);
-    this->render->ReleaseResource(this->noMsaaDrawState);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->msaaDrawState);
+    Render::ReleaseResource(this->noMsaaDrawState);
+    Render::Discard();
     return App::OnCleanup();
 }
 

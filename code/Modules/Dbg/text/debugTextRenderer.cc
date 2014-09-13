@@ -3,9 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "debugTextRenderer.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "IO/Stream/MemoryStream.h"
-#include "Debug/shaders/DebugShaders.h"
+#include "Dbg/shaders/DebugShaders.h"
 
 namespace Oryol {
 namespace _priv {
@@ -44,10 +44,9 @@ debugTextRenderer::getTextScale() const {
 void
 debugTextRenderer::setup() {
     o_assert(!this->valid);
-    RenderFacade* renderFacade = RenderFacade::Instance();
-    this->setupFontTexture(renderFacade);
-    this->setupTextMesh(renderFacade);
-    this->setupTextDrawState(renderFacade);
+    this->setupFontTexture();
+    this->setupTextMesh();
+    this->setupTextDrawState();
     this->valid = true;
 }
 
@@ -56,10 +55,9 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    RenderFacade* renderFacade = RenderFacade::Instance();
-    renderFacade->ReleaseResource(this->textMesh);
-    renderFacade->ReleaseResource(this->textDrawState);
-    renderFacade->ReleaseResource(this->fontTexture);
+    Render::ReleaseResource(this->textMesh);
+    Render::ReleaseResource(this->textDrawState);
+    Render::ReleaseResource(this->fontTexture);
     this->textDrawState.Invalidate();
     this->fontTexture.Invalidate();
 }
@@ -130,29 +128,26 @@ debugTextRenderer::drawTextBuffer() {
 
     // draw the vertices
     if (numVertices > 0) {
-        RenderFacade* renderFacade = RenderFacade::Instance();
-        
         // compute the size factor for one 8x8 glyph on screen
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        const DisplayAttrs& dispAttrs = renderFacade->GetDisplayAttrs();
+        const DisplayAttrs& dispAttrs = Render::GetDisplayAttrs();
         const float w = 8.0f / dispAttrs.FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / dispAttrs.FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
-        renderFacade->UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
-        renderFacade->ApplyDrawState(this->textDrawState);
-        renderFacade->ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
-        renderFacade->ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
-        renderFacade->Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
+        Render::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
+        Render::ApplyDrawState(this->textDrawState);
+        Render::ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
+        Render::ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
+        Render::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
     }
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupFontTexture(RenderFacade* renderFacade) {
-    o_assert(nullptr != renderFacade);
+debugTextRenderer::setupFontTexture() {
     o_assert(!this->fontTexture.IsValid());
     
     // convert the KC85/4 font into 8bpp image data
@@ -190,15 +185,14 @@ debugTextRenderer::setupFontTexture(RenderFacade* renderFacade) {
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
-    this->fontTexture = renderFacade->CreateResource(setup, data);
+    this->fontTexture = Render::CreateResource(setup, data);
     o_assert(this->fontTexture.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->fontTexture) == ResourceState::Valid);
+    o_assert(Render::QueryResourceState(this->fontTexture) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
-    o_assert(nullptr != renderFacade);
+debugTextRenderer::setupTextMesh() {
     o_assert(!this->textMesh.IsValid());
     o_assert(this->vertexLayout.Empty());
     
@@ -209,20 +203,19 @@ debugTextRenderer::setupTextMesh(RenderFacade* renderFacade) {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh = renderFacade->CreateResource(setup);
+    this->textMesh = Render::CreateResource(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(renderFacade->QueryResourceState(this->textMesh) == ResourceState::Valid);
+    o_assert(Render::QueryResourceState(this->textMesh) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
-    o_assert(nullptr != renderFacade);
+debugTextRenderer::setupTextDrawState() {
     o_assert(!this->textDrawState.IsValid());
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id prog = renderFacade->CreateResource(DebugShaders::TextShader::CreateSetup());
+    Id prog = Render::CreateResource(DebugShaders::TextShader::CreateSetup());
     
     // finally create draw state
     DrawStateSetup dss("_dbgDrawState", this->textMesh, prog, 0);
@@ -231,10 +224,10 @@ debugTextRenderer::setupTextDrawState(RenderFacade* renderFacade) {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->textDrawState = renderFacade->CreateResource(dss);
+    this->textDrawState = Render::CreateResource(dss);
     
     // fix resource use counts
-    renderFacade->ReleaseResource(prog);
+    Render::ReleaseResource(prog);
 }
 
 //------------------------------------------------------------------------------

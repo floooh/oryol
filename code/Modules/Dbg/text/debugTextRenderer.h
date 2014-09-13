@@ -15,9 +15,6 @@
 #include <cstdarg>
 
 namespace Oryol {
-
-class RenderFacade;
-
 namespace _priv {
 
 class debugTextRenderer {
@@ -53,11 +50,11 @@ private:
     void setup();
 
     /// setup the font texture
-    void setupFontTexture(RenderFacade* renderFacade);
+    void setupFontTexture();
     /// setup the text dynamic mesh
-    void setupTextMesh(RenderFacade* renderFacade);
+    void setupTextMesh();
     /// setup the text draw state
-    void  setupTextDrawState(RenderFacade* renderFacade);
+    void  setupTextDrawState();
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index

@@ -6,7 +6,6 @@
 #include "Render/glfw/glfwDisplayMgr.h"
 #include "Core/CoreFacade.h"
 #include "Core/RunLoop.h"
-#include "Render/RenderFacade.h"
 #include "GLFW/glfw3.h"
 
 namespace Oryol {
@@ -24,7 +23,7 @@ glfwInputMgr::glfwInputMgr() {
     // first check that the Render subsystem has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
     if (nullptr == glfwWindow) {
-        o_error("glfwInputMgr: RenderFacade must be created before InputFacade!");
+        o_error("glfwInputMgr: Render module must be created before InputFacade!");
         return;
     }
     this->setupKeyTable();

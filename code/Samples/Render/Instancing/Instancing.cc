@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
-#include "Debug/Debug.h"
+#include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
@@ -28,7 +28,6 @@ private:
     void emitParticles();
     void updateParticles();
 
-    RenderFacade* render = nullptr;
     Id instanceMesh;
     Id drawState;
     glm::mat4 view;
@@ -52,7 +51,7 @@ InstancingApp::OnRunning() {
     
     Duration updTime, bufTime, drawTime;
     this->frameCount++;
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update block
         this->updateCamera();
@@ -63,21 +62,21 @@ InstancingApp::OnRunning() {
             updTime = Clock::Since(updStart);
 
             TimePoint bufStart = Clock::Now();
-            this->render->UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
+            Render::UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
             bufTime = Clock::Since(bufStart);
         }
         
         // render block        
         TimePoint drawStart = Clock::Now();
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-        this->render->DrawInstanced(0, this->curNumParticles);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDrawState(this->drawState);
+        Render::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+        Render::DrawInstanced(0, this->curNumParticles);
         drawTime = Clock::Since(drawStart);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
         
         // toggle particle update
         const Mouse& mouse = Input::Mouse();
@@ -87,15 +86,15 @@ InstancingApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Debug::PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
-                  " LMB/Tap: toggle particle updates",
-                  this->curNumParticles,
-                  updTime.AsMilliSeconds(),
-                  bufTime.AsMilliSeconds(),
-                  drawTime.AsMilliSeconds(),
-                  frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+                " LMB/Tap: toggle particle updates",
+                this->curNumParticles,
+                updTime.AsMilliSeconds(),
+                bufTime.AsMilliSeconds(),
+                drawTime.AsMilliSeconds(),
+                frameTime.AsMilliSeconds());
     
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -144,19 +143,19 @@ InstancingApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol Instancing Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
     Input::Setup();
     
     // check instancing extension
-    if (!this->render->Supports(RenderFeature::Instancing)) {
+    if (!Render::Supports(RenderFeature::Instancing)) {
         o_error("ERROR: instanced_arrays extension required!\n");
     }
 
     // create dynamic instance data mesh
     MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::Stream);
     instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->instanceMesh = render->CreateResource(instanceMeshSetup);
+    this->instanceMesh = Render::CreateResource(instanceMeshSetup);
     
     // setup static draw state
     ShapeBuilder shapeBuilder;
@@ -168,20 +167,20 @@ InstancingApp::OnInit() {
     shapeBuilder.Build();
     MeshSetup staticMeshSetup = MeshSetup::FromData("box");
     staticMeshSetup.InstanceMesh = this->instanceMesh;
-    Id mesh = this->render->CreateResource(staticMeshSetup, shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Render::CreateResource(staticMeshSetup, shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.RasterizerState.CullFaceEnabled = true;
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->modelViewProj = this->proj * this->view * this->model;
     
@@ -192,11 +191,10 @@ InstancingApp::OnInit() {
 AppState::Code
 InstancingApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->drawState);
-    this->render->ReleaseResource(this->instanceMesh);
-    this->render = nullptr;
+    Render::ReleaseResource(this->drawState);
+    Render::ReleaseResource(this->instanceMesh);
     Input::Discard();
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }

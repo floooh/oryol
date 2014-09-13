@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Core/String/StringConverter.h"
 
@@ -21,8 +21,6 @@ private:
     void testMouseButton(const Mouse& mouse, Mouse::Button btn, const char* name) const;
     void testKey(const Keyboard& keyboard, Key::Code key, const char* name) const;
     
-    RenderFacade* render;
-    
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
     const glm::vec4 pressedColor{0.0f, 1.0f, 0.0f, 1.0f};
@@ -33,8 +31,8 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
-    Debug::Setup();
+    Render::Setup(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
+    Dbg::Setup();
     Input::Setup();
     
     return App::OnInit();
@@ -48,8 +46,8 @@ TestInputApp::testMouseButton(const Mouse& mouse, Mouse::Button btn, const char*
     else if (mouse.ButtonUp(btn)) color = this->upColor;
     else if (mouse.ButtonPressed(btn)) color = this->pressedColor;
     else color = this->defaultColor;
-    Debug::TextColor(color);
-    Debug::PrintF(" %s", name);
+    Dbg::TextColor(color);
+    Dbg::PrintF(" %s", name);
 }
 
 //------------------------------------------------------------------------------
@@ -57,16 +55,16 @@ void
 TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name) const {
     glm::vec4 color;
     if (keyboard.KeyDown(key)) {
-        Debug::TextColor(this->downColor);
-        Debug::PrintF(" %s", Key::ToString(key));
+        Dbg::TextColor(this->downColor);
+        Dbg::PrintF(" %s", Key::ToString(key));
     }
     else if (keyboard.KeyUp(key)) {
-        Debug::TextColor(this->upColor);
-        Debug::PrintF(" %s", Key::ToString(key));
+        Dbg::TextColor(this->upColor);
+        Dbg::PrintF(" %s", Key::ToString(key));
     }
     else if (keyboard.KeyPressed(key)) {
-        Debug::TextColor(this->pressedColor);
-        Debug::PrintF(" %s", Key::ToString(key));
+        Dbg::TextColor(this->pressedColor);
+        Dbg::PrintF(" %s", Key::ToString(key));
     }
 }
 
@@ -74,34 +72,34 @@ TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name)
 AppState::Code
 TestInputApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
     
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
         
         const Keyboard& keyboard = Input::Keyboard();
         const Mouse& mouse = Input::Mouse();
         
         // mouse status
         if (mouse.Attached()) {
-            Debug::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            Debug::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
+            Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+            Dbg::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
         
             this->testMouseButton(mouse, Mouse::LMB, "LMB");
             this->testMouseButton(mouse, Mouse::MMB, "MMB");
             this->testMouseButton(mouse, Mouse::RMB, "RMB");
             
-            Debug::TextColor(glm::vec4(1.0f));
-            Debug::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
-                          mouse.Position().x, mouse.Position().y,
-                          mouse.Movement().x, mouse.Movement().y,
-                          mouse.Scroll().x, mouse.Scroll().y);
+            Dbg::TextColor(glm::vec4(1.0f));
+            Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
+                        mouse.Position().x, mouse.Position().y,
+                        mouse.Movement().x, mouse.Movement().y,
+                        mouse.Scroll().x, mouse.Scroll().y);
         }
         
         // keyboard status
         if (keyboard.Attached()) {
-            Debug::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-            Debug::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
+            Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+            Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
             if (keyboard.KeyDown(Key::Enter)) {
                 if (CursorMode::Disabled != Input::GetCursorMode()) {
                     Input::SetCursorMode(CursorMode::Disabled);
@@ -117,32 +115,31 @@ TestInputApp::OnRunning() {
                 }
             }
             if (keyboard.IsCapturingText()) {
-                Debug::Print(" capturing: ");
+                Dbg::Print(" capturing: ");
                 String str = StringConverter::WideToUTF8(keyboard.CapturedText());
-                Debug::PrintF("%s\n\r", str.AsCStr());
+                Dbg::PrintF("%s\n\r", str.AsCStr());
             }
             else {
-                Debug::Print(" keys: ");
+                Dbg::Print(" keys: ");
                 for (int32 key = 0; key < Key::NumKeys; key++) {
                     this->testKey(keyboard, (Key::Code)key, Key::ToString((Key::Code)key));
                 }
             }
         }
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnCleanup() {
-    this->render = nullptr;
     Input::Discard();
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }

@@ -6,11 +6,11 @@ The Render module is Oryol's low-level rendering API wrapper. It encapsulates an
 
 ### Concepts
 
-#### The RenderFacade
+#### The Render facade (FIXME: OBSOLETE)
 
-The RenderFacade class is the public interface to the Render module. Before 3D rendering can start, a RenderFacade singleton object must be created which sets up an application window, the GL context and the default frame buffer.
+The Render facade class is the public interface to the Render module. Before 3D rendering can start, a RenderFacade singleton object must be created which sets up an application window, the GL context and the default frame buffer.
 
-The RenderFacade class interface is roughly split into 3 method groups:
+The Render facade class interface is roughly split into 3 method groups:
 
 * **Resource Management:** methods for creating and destroying resource objects
 * **Apply Methods:** these methods apply state for the following Draw method

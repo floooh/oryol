@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "glm/gtc/random.hpp"
 
 using namespace Oryol;
@@ -21,7 +21,6 @@ private:
     void moveChars();
     void drawText();
 
-    RenderFacade* render;
     int32 width;
     int32 height;
     uint8* buffer = nullptr;
@@ -33,32 +32,32 @@ OryolMain(DebugTextApp);
 AppState::Code
 DebugTextApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         this->dropChar();
         this->moveChars();
         this->drawText();
         
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        Debug::DrawTextBuffer();
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        Dbg::DrawTextBuffer();
         
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
-    Debug::Setup();
-    Debug::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Render::Setup(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
+    Dbg::Setup();
+    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     
-    this->width = this->render->GetDisplayAttrs().FramebufferWidth / 16;
-    this->height = this->render->GetDisplayAttrs().FramebufferHeight / 16;
+    this->width = Render::GetDisplayAttrs().FramebufferWidth / 16;
+    this->height = Render::GetDisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
     
@@ -72,9 +71,8 @@ AppState::Code
 DebugTextApp::OnCleanup() {
     Memory::Free(this->buffer);
     this->buffer = nullptr;
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }
 
@@ -139,8 +137,8 @@ DebugTextApp::drawText() {
             }
         }
         strBuilder.Append("\r\n");
-        Debug::TextColor(color[y % 3]);
-        Debug::Print(strBuilder.AsCStr());
+        Dbg::TextColor(color[y % 3]);
+        Dbg::Print(strBuilder.AsCStr());
     }
 }
 

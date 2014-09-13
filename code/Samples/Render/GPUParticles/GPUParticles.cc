@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
-#include "Debug/Debug.h"
+#include "Render/Render.h"
+#include "Dbg/Dbg.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
@@ -31,8 +31,6 @@ public:
 private:
     void updateCamera();
 
-    RenderFacade* render = nullptr;
-    
     Id particleBuffer[NumParticleBuffers];
     Id particleIdMesh;
     Id shapeMesh;
@@ -55,7 +53,7 @@ OryolMain(GPUParticlesApp);
 AppState::Code
 GPUParticlesApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // increment frame count, update camera position
         this->frameCount++;
@@ -76,35 +74,35 @@ GPUParticlesApp::OnRunning() {
         // - the particle update shader reads the previous state and draws the next state
         // - we use a scissor rect around the currently active particles to make this update
         //   a bit more efficient
-        this->render->ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
+        Render::ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
         const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-        this->render->ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
-        this->render->ApplyDrawState(this->updateParticles);
-        this->render->ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
-        this->render->ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
-        this->render->ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
-        this->render->Draw(0);
+        Render::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
+        Render::ApplyDrawState(this->updateParticles);
+        Render::ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
+        Render::ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
+        Render::ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
+        Render::Draw(0);
         
         // now the actual particle shape rendering:
         // - the new particle state texture is sampled in the vertex shader to obtain particle positions
         // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawParticles);
-        this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
-        this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
-        this->render->ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
-        this->render->DrawInstanced(0, this->curNumParticles);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDrawState(this->drawParticles);
+        Render::ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
+        Render::ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
+        Render::ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
+        Render::DrawInstanced(0, this->curNumParticles);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Debug::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -122,14 +120,14 @@ GPUParticlesApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol GPU Particles Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
 
     // check required extensions
-    if (!this->render->Supports(RenderFeature::TextureFloat)) {
+    if (!Render::Supports(RenderFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
-    if (!this->render->Supports(RenderFeature::Instancing)) {
+    if (!Render::Supports(RenderFeature::Instancing)) {
         o_error("ERROR: instances_arrays extension required!\n");
     }
     
@@ -149,24 +147,24 @@ GPUParticlesApp::OnInit() {
     particleBufferSetup.ColorFormat = PixelFormat::RGBA32F;
     particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
     particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
-    this->particleBuffer[0] = this->render->CreateResource(particleBufferSetup);
+    this->particleBuffer[0] = Render::CreateResource(particleBufferSetup);
     particleBufferSetup.Locator = "pong";
-    this->particleBuffer[1] = this->render->CreateResource(particleBufferSetup);
+    this->particleBuffer[1] = Render::CreateResource(particleBufferSetup);
     
     // a fullscreen mesh for the particle init- and update-shaders
-    Id fullscreenMesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id fullscreenMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
     
     // particle initialization and update draw states
-    Id initProg = this->render->CreateResource(Shaders::InitParticles::CreateSetup());
+    Id initProg = Render::CreateResource(Shaders::InitParticles::CreateSetup());
     DrawStateSetup initSetup("init", fullscreenMesh, initProg, 0);
-    this->initParticles = this->render->CreateResource(initSetup);
-    Id updateProg = this->render->CreateResource(Shaders::UpdateParticles::CreateSetup());
+    this->initParticles = Render::CreateResource(initSetup);
+    Id updateProg = Render::CreateResource(Shaders::UpdateParticles::CreateSetup());
     DrawStateSetup updateSetup("update", fullscreenMesh, updateProg, 0);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = this->render->CreateResource(updateSetup);
-    this->render->ReleaseResource(fullscreenMesh);
-    this->render->ReleaseResource(initProg);
-    this->render->ReleaseResource(updateProg);
+    this->updateParticles = Render::CreateResource(updateSetup);
+    Render::ReleaseResource(fullscreenMesh);
+    Render::ReleaseResource(initProg);
+    Render::ReleaseResource(updateProg);
     
     // a vertex buffer with the particleIds, this would not be needed if
     // ANGLE_instanced_arrays would support gl_InstanceID
@@ -177,8 +175,8 @@ GPUParticlesApp::OnInit() {
     }
     auto particleIdSetup = MeshSetup::CreateEmpty("particleId", MaxNumParticles, Usage::Static);
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
-    this->particleIdMesh = this->render->CreateResource(particleIdSetup);
-    this->render->UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
+    this->particleIdMesh = Render::CreateResource(particleIdSetup);
+    Render::UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
     Memory::Free(particleIdData);
     
     // the geometry of a single particle
@@ -191,31 +189,31 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.Build();
     MeshSetup meshSetup = MeshSetup::FromData("box");
     meshSetup.InstanceMesh = this->particleIdMesh;
-    this->shapeMesh = this->render->CreateResource(meshSetup, shapeBuilder.GetStream());
+    this->shapeMesh = Render::CreateResource(meshSetup, shapeBuilder.GetStream());
     
     // particle rendering draw state
-    Id drawProg = this->render->CreateResource(Shaders::DrawParticles::CreateSetup());
+    Id drawProg = Render::CreateResource(Shaders::DrawParticles::CreateSetup());
     DrawStateSetup drawSetup("draw", this->shapeMesh, drawProg, 0);
     drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles = this->render->CreateResource(drawSetup);
-    this->render->ReleaseResource(drawProg);
+    this->drawParticles = Render::CreateResource(drawSetup);
+    Render::ReleaseResource(drawProg);
     
     // the static projection matrix
-    const float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
     
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
-    this->render->ApplyOffscreenRenderTarget(this->particleBuffer[0]);
-    this->render->ApplyDrawState(this->initParticles);
-    this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
-    this->render->Draw(0);
-    this->render->ApplyOffscreenRenderTarget(this->particleBuffer[1]);
-    this->render->ApplyDrawState(this->initParticles);
-    this->render->ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
-    this->render->Draw(0);
+    Render::ApplyOffscreenRenderTarget(this->particleBuffer[0]);
+    Render::ApplyDrawState(this->initParticles);
+    Render::ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
+    Render::Draw(0);
+    Render::ApplyOffscreenRenderTarget(this->particleBuffer[1]);
+    Render::ApplyDrawState(this->initParticles);
+    Render::ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
+    Render::Draw(0);
     
     return App::OnInit();
 }
@@ -224,15 +222,14 @@ GPUParticlesApp::OnInit() {
 AppState::Code
 GPUParticlesApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->particleBuffer[0]);
-    this->render->ReleaseResource(this->particleBuffer[1]);
-    this->render->ReleaseResource(this->particleIdMesh);
-    this->render->ReleaseResource(this->shapeMesh);
-    this->render->ReleaseResource(this->initParticles);
-    this->render->ReleaseResource(this->updateParticles);
-    this->render->ReleaseResource(this->drawParticles);
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->particleBuffer[0]);
+    Render::ReleaseResource(this->particleBuffer[1]);
+    Render::ReleaseResource(this->particleIdMesh);
+    Render::ReleaseResource(this->shapeMesh);
+    Render::ReleaseResource(this->initParticles);
+    Render::ReleaseResource(this->updateParticles);
+    Render::ReleaseResource(this->drawParticles);
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }

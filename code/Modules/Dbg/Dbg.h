@@ -1,18 +1,18 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Debug
+    @class Oryol::Dbg
     @ingroup Debug
     @brief various runtime debugging and debug visualization services
 */
 #include "Core/Config.h"
 #include "Core/Singleton.h"
-#include "Debug/text/debugTextRenderer.h"
+#include "Dbg/text/debugTextRenderer.h"
 #include "glm/fwd.hpp"
 
 namespace Oryol {
     
-class Debug {
+class Dbg {
 public:
     /// setup the Debug module
     static void Setup();

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
@@ -23,7 +23,6 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    RenderFacade* render = nullptr;
     Id renderTargets[2];
     Id drawState;
     glm::mat4 view;
@@ -39,7 +38,7 @@ OryolMain(InfiniteSpheresApp);
 AppState::Code
 InfiniteSpheresApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update angles
         this->angleY += 0.01f;
@@ -49,32 +48,32 @@ InfiniteSpheresApp::OnRunning() {
         const int32 index1 = (this->frameIndex + 1) % 2;
         
         // generall state
-        this->render->ApplyDrawState(this->drawState);
+        Render::ApplyDrawState(this->drawState);
         
         // render sphere to offscreen render target, using the other render target as
         // source texture
-        this->render->ApplyOffscreenRenderTarget(this->renderTargets[index0]);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
-        this->render->Draw(0);
+        Render::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+        Render::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
+        Render::Draw(0);
         
         // ...and again to display
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
         model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
         mvp = this->computeMVP(this->displayProj, model);
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
-        this->render->Draw(0);
+        Render::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+        Render::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
+        Render::Draw(0);
         
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -83,9 +82,7 @@ InfiniteSpheresApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Infinite Spheres Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    Render::Setup(renderSetup);
 
     // create resources
     for (int32 i = 0; i < 2; i++) {
@@ -96,7 +93,7 @@ InfiniteSpheresApp::OnInit() {
         rtSetup.MagFilter = TextureFilterMode::Linear;
         rtSetup.WrapU = TextureWrapMode::Repeat;
         rtSetup.WrapV = TextureWrapMode::Repeat;
-        this->renderTargets[i] = this->render->CreateResource(rtSetup);
+        this->renderTargets[i] = Render::CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
     shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
@@ -104,17 +101,19 @@ InfiniteSpheresApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.75f, 72.0f, 40.0f);
     shapeBuilder.Build();
-    Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id sphere = Render::CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", sphere, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(sphere);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(sphere);
+    Render::ReleaseResource(prog);
     
     // setup static transform matrices
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();
@@ -126,12 +125,11 @@ InfiniteSpheresApp::OnInit() {
 AppState::Code
 InfiniteSpheresApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->drawState);
+    Render::ReleaseResource(this->drawState);
     for (int32 i = 0; i < 2; i++) {
-        this->render->ReleaseResource(this->renderTargets[i]);
+        Render::ReleaseResource(this->renderTargets[i]);
     }
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::Discard();
     return App::OnCleanup();
 }
 

@@ -11,7 +11,7 @@
 #define NANOVG_GL2_IMPLEMENTATION
 #endif
 #include "NanoVGWrapper.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 
 namespace Oryol {
 
@@ -22,8 +22,8 @@ void
 NanoVG::Setup() {
     o_assert(!IsValid());
     state = new _state();
-    if (!RenderFacade::HasInstance()) {
-        o_error("RenderFacade object must be created before NVGFacade!\n");
+    if (!Render::IsValid()) {
+        o_error("Render module must be setuo before NanoVG!\n");
     }
 }
 
@@ -78,7 +78,7 @@ NanoVG::BeginFrame(NVGcontext* ctx) {
     o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     
-    const DisplayAttrs& dispAttrs = RenderFacade::Instance()->GetDisplayAttrs();
+    const DisplayAttrs& dispAttrs = Render::GetDisplayAttrs();
     const int32 w = dispAttrs.FramebufferWidth;
     const int32 h = dispAttrs.FramebufferHeight;
     o_assert_dbg(h > 0);
@@ -94,7 +94,7 @@ NanoVG::EndFrame(NVGcontext* ctx) {
     o_assert_dbg(ctx);
 
     nvgEndFrame(ctx);
-    RenderFacade::Instance()->ResetStateCache();
+    Render::ResetStateCache();
 }
 
 //------------------------------------------------------------------------------

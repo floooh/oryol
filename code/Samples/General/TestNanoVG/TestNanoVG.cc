@@ -6,7 +6,7 @@
 #include "IO/IO.h"
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
 #include "NanoVG/NanoVG.h"
@@ -25,7 +25,6 @@ public:
 private:
     void loadAssets();
 
-    RenderFacade* render = nullptr;
     NVGcontext* ctx = nullptr;
     DemoData data;
     IOQueue ioQueue;
@@ -36,13 +35,13 @@ OryolMain(NanoVGApp);
 AppState::Code
 NanoVGApp::OnRunning() {
     
-    const DisplayAttrs& attrs = this->render->GetDisplayAttrs();
-    const int32 w = attrs.FramebufferWidth;
-    const int32 h = attrs.FramebufferHeight;
-    if (this->render->BeginFrame()) {
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
+    if (Render::BeginFrame()) {
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
+        const DisplayAttrs& attrs = Render::GetDisplayAttrs();
+        const int32 w = attrs.FramebufferWidth;
+        const int32 h = attrs.FramebufferHeight;
         const Mouse& mouse = Input::Mouse();
         const int32 mouseX = mouse.Position().x;
         const int32 mouseY = mouse.Position().y;
@@ -53,11 +52,11 @@ NanoVGApp::OnRunning() {
         renderDemo(this->ctx, mouseX, mouseY, w, h, time, blowup, &this->data);
         NanoVG::EndFrame(this->ctx);
 
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -69,7 +68,7 @@ NanoVGApp::OnInit() {
     IO::Setup(ioSetup);
     
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
-    this->render = RenderFacade::CreateSingle(renderSetup);
+    Render::Setup(renderSetup);
     Input::Setup();
     NanoVG::Setup();
     this->ctx = NanoVG::CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
@@ -104,10 +103,9 @@ NanoVGApp::OnCleanup() {
     freeDemoData(this->ctx, &this->data);
     NanoVG::DeleteContext(this->ctx);
     this->ctx = nullptr;
-    this->render = nullptr;
     NanoVG::Discard();
     Input::Discard();
-    RenderFacade::DestroySingle();
+    Render::Discard();
     IO::Discard();
     return App::OnCleanup();
 }

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
@@ -22,7 +22,6 @@ public:
 private:
     glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
 
-    RenderFacade* render = nullptr;
     Id renderTarget;
     Id offscreenDrawState;
     Id displayDrawState;
@@ -38,34 +37,34 @@ OryolMain(SimpleRenderTargetApp);
 AppState::Code
 SimpleRenderTargetApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update angles
         this->angleY += 0.01f;
         this->angleX += 0.02f;
         
         // render donut to offscreen render target
-        this->render->ApplyOffscreenRenderTarget(this->renderTarget);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
-        this->render->ApplyDrawState(this->offscreenDrawState);
+        Render::ApplyOffscreenRenderTarget(this->renderTarget);
+        Render::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
+        Render::ApplyDrawState(this->offscreenDrawState);
         glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-        this->render->ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
-        this->render->Draw(0);
+        Render::ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
+        Render::Draw(0);
         
         // render sphere to display, with offscreen render target as texture
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
-        this->render->ApplyDrawState(this->displayDrawState);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
+        Render::ApplyDrawState(this->displayDrawState);
         glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-        this->render->ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
-        this->render->ApplyVariable(Shaders::Main::Texture, this->renderTarget);
-        this->render->Draw(0);
+        Render::ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
+        Render::ApplyVariable(Shaders::Main::Texture, this->renderTarget);
+        Render::Draw(0);
         
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -74,9 +73,7 @@ SimpleRenderTargetApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Simple Render Target Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    Render::Setup(renderSetup);
 
     // create an offscreen render target, we explicitely want repeat texture wrap mode
     // and linear blending...
@@ -87,7 +84,7 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.WrapV = TextureWrapMode::Repeat;
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
-    this->renderTarget = this->render->CreateResource(rtSetup);
+    this->renderTarget = Render::CreateResource(rtSetup);
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
@@ -95,7 +92,7 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.Build();
-    Id torus = this->render->CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
+    Id torus = Render::CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -104,28 +101,30 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.AddSphere(0.5f, 72.0f, 40.0f);
     shapeBuilder.Build();
-    Id sphere = this->render->CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    Id sphere = Render::CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
 
     // create shaders
-    Id offScreenProg = this->render->CreateResource(Shaders::RenderTarget::CreateSetup());
-    Id dispProg = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id offScreenProg = Render::CreateResource(Shaders::RenderTarget::CreateSetup());
+    Id dispProg = Render::CreateResource(Shaders::Main::CreateSetup());
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     DrawStateSetup offdsSetup("offds", torus, offScreenProg, 0);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->offscreenDrawState = this->render->CreateResource(offdsSetup);
+    this->offscreenDrawState = Render::CreateResource(offdsSetup);
     DrawStateSetup dispdsSetup("dispds", sphere, dispProg, 0);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->displayDrawState = this->render->CreateResource(dispdsSetup);
+    this->displayDrawState = Render::CreateResource(dispdsSetup);
     
-    this->render->ReleaseResource(torus);
-    this->render->ReleaseResource(sphere);
-    this->render->ReleaseResource(offScreenProg);
-    this->render->ReleaseResource(dispProg);
+    Render::ReleaseResource(torus);
+    Render::ReleaseResource(sphere);
+    Render::ReleaseResource(offScreenProg);
+    Render::ReleaseResource(dispProg);
     
     // setup static transform matrices
+    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -137,11 +136,10 @@ SimpleRenderTargetApp::OnInit() {
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->offscreenDrawState);
-    this->render->ReleaseResource(this->displayDrawState);
-    this->render->ReleaseResource(this->renderTarget);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->offscreenDrawState);
+    Render::ReleaseResource(this->displayDrawState);
+    Render::ReleaseResource(this->renderTarget);
+    Render::Discard();
     return App::OnCleanup();
 }
 

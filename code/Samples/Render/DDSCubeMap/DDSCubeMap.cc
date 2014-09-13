@@ -5,13 +5,12 @@
 #include "Core/App.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/TextureLoader.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include <array>
 #include "shaders.h"
 
 using namespace Oryol;
@@ -26,7 +25,6 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
-    RenderFacade* render = nullptr;
     Id drawState;
     Id tex;
     glm::mat4 view;
@@ -40,28 +38,28 @@ OryolMain(DDSCubeMapApp);
 AppState::Code
 DDSCubeMapApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update rotation angles
         this->angleY += 0.02f;
         this->angleX += 0.01f;
         
         // apply state and draw
-        this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
-        this->render->ApplyDrawState(this->drawState);
+        Render::ApplyDefaultRenderTarget();
+        Render::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
+        Render::ApplyDrawState(this->drawState);
         
-        const auto resState = this->render->QueryResourceState(this->tex);
+        const auto resState = Render::QueryResourceState(this->tex);
         if (resState == ResourceState::Valid) {
-            this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            this->render->ApplyVariable(Shaders::Main::Texture, this->tex);
-            this->render->Draw(0);
+            Render::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
+            Render::ApplyVariable(Shaders::Main::Texture, this->tex);
+            Render::Draw(0);
         }
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -78,7 +76,7 @@ DDSCubeMapApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DXT Cube Map Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     renderSetup.Loaders.Add(TextureLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
+    Render::Setup(renderSetup);
 
     // create resources
     TextureSetup texBluePrint;
@@ -86,11 +84,11 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
-    if (this->render->Supports(RenderFeature::TextureCompressionPVRTC)) {
-        this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
+    if (Render::Supports(RenderFeature::TextureCompressionPVRTC)) {
+        this->tex = Render::CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
     }
     else {
-        this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
+        this->tex = Render::CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
     }
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
@@ -99,19 +97,19 @@ DDSCubeMapApp::OnInit() {
     shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.AddSphere(1.0f, 36, 20);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;    
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -122,10 +120,9 @@ DDSCubeMapApp::OnInit() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->tex);
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->tex);
+    Render::ReleaseResource(this->drawState);
+    Render::Discard();
     IO::Discard();
     
     return App::OnCleanup();

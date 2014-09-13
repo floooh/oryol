@@ -1,24 +1,24 @@
 //------------------------------------------------------------------------------
-//  Debug.cc
+//  Dbg
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Debug.h"
+#include "Dbg.h"
 #include <cstdarg>
 
 namespace Oryol {
 
-struct Debug::_state* Debug::state = nullptr;
+struct Dbg::_state* Dbg::state = nullptr;
 
 //------------------------------------------------------------------------------
 void
-Debug::Setup() {
+Dbg::Setup() {
     o_assert(!IsValid());
     state = new _state();
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::Discard() {
+Dbg::Discard() {
     o_assert(IsValid());
     delete state;
     state = nullptr;
@@ -26,34 +26,34 @@ Debug::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-Debug::IsValid() {
+Dbg::IsValid() {
     return nullptr != state;
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::SetTextScale(const glm::vec2& s) {
+Dbg::SetTextScale(const glm::vec2& s) {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.setTextScale(s);
 }
 
 //------------------------------------------------------------------------------
 const glm::vec2&
-Debug::GetTextScale() {
+Dbg::GetTextScale() {
     o_assert_dbg(IsValid());
     return state->debugTextRenderer.getTextScale();
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::Print(const char* text) {
+Dbg::Print(const char* text) {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.print(text);
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::PrintF(const char* text, ...) {
+Dbg::PrintF(const char* text, ...) {
     o_assert_dbg(IsValid());
     std::va_list args;
     va_start(args, text);
@@ -63,21 +63,21 @@ Debug::PrintF(const char* text, ...) {
 
 //------------------------------------------------------------------------------
 void
-Debug::CursorPos(uint8 x, uint8 y) {
+Dbg::CursorPos(uint8 x, uint8 y) {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.cursorPos(x, y);
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::TextColor(const glm::vec4& c) {
+Dbg::TextColor(const glm::vec4& c) {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.textColor(c);
 }
 
 //------------------------------------------------------------------------------
 void
-Debug::DrawTextBuffer() {
+Dbg::DrawTextBuffer() {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.drawTextBuffer();
 }

@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Debug/Debug.h"
-#include "Render/RenderFacade.h"
+#include "Dbg/Dbg.h"
+#include "Render/Render.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "shaders.h"
@@ -23,7 +23,6 @@ private:
     void applyTransforms(const glm::vec3& pos) const;
     void applyDirLight() const;
 
-    RenderFacade* render;
     Id drawState;
     glm::mat4 proj;
     glm::mat4 view;
@@ -34,27 +33,27 @@ OryolMain(PBRenderingApp);
 AppState::Code
 PBRenderingApp::OnRunning() {
     
-    Debug::Print("\n Work in progress!");
+    Dbg::Print("\n Work in progress!");
     
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->drawState);
+        Render::Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
         
         this->applyDirLight();
         this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
-        this->render->Draw(0);
+        Render::Draw(0);
         this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
-        this->render->Draw(1);
+        Render::Draw(1);
         
-        Debug::DrawTextBuffer();
-        this->render->EndFrame();
+        Dbg::DrawTextBuffer();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -62,8 +61,8 @@ AppState::Code
 PBRenderingApp::OnInit() {
     auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol PBR Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    Debug::Setup();
+    Render::Setup(renderSetup);
+    Dbg::Setup();
     
     // create resources
     ShapeBuilder shapeBuilder;
@@ -72,19 +71,19 @@ PBRenderingApp::OnInit() {
     shapeBuilder.AddSphere(0.5f, 36, 20, true);
     shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
     
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     
@@ -94,10 +93,9 @@ PBRenderingApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnCleanup() {
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    Debug::Discard();
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->drawState);
+    Dbg::Discard();
+    Render::Discard();
     return App::OnCleanup();
 }
 
@@ -107,7 +105,7 @@ PBRenderingApp::applyDirLight() const {
     // compute directional light vector in view space (vector TOWARDS light)
     glm::vec4 worldLightDir(glm::normalize(glm::vec4(1.0, 1.0, 1.0, 0.0)));
     glm::vec3 viewSpaceLightDir = glm::vec3(this->view * worldLightDir);
-    this->render->ApplyVariable(Shaders::Main::LightVec, viewSpaceLightDir);
+    Render::ApplyVariable(Shaders::Main::LightVec, viewSpaceLightDir);
 }
 
 //------------------------------------------------------------------------------
@@ -116,6 +114,6 @@ PBRenderingApp::applyTransforms(const glm::vec3& pos) const {
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     glm::mat4 modelView = this->view * modelTform;
     glm::mat4 modelViewProj = this->proj * this->view * modelTform;
-    this->render->ApplyVariable(Shaders::Main::ModelViewProj, modelViewProj);
-    this->render->ApplyVariable(Shaders::Main::ModelView, modelView);
+    Render::ApplyVariable(Shaders::Main::ModelViewProj, modelViewProj);
+    Render::ApplyVariable(Shaders::Main::ModelView, modelView);
 }

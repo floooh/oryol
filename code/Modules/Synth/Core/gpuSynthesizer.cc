@@ -5,7 +5,7 @@
 #include "gpuSynthesizer.h"
 #include "Core/Assert.h"
 #include "Synth/shaders/SynthShaders.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Core/Log.h"
 
 namespace Oryol {
@@ -27,20 +27,19 @@ void
 gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
-    RenderFacade* render = RenderFacade::Instance();
     
     // setup a rendering resources
     const int32 rtWidth  = (synth::BufferNumSamples / 2) / 8;
     const int32 rtHeight = 8;
     auto rtSetup = TextureSetup::AsRenderTarget("_synthRT", rtWidth, rtHeight);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    this->renderTarget = render->CreateResource(rtSetup);
+    this->renderTarget = Render::CreateResource(rtSetup);
     
-    Id fsqMesh = render->CreateResource(MeshSetup::CreateFullScreenQuad("_synthFSQMesh"));
-    Id prog = render->CreateResource(Shaders::Synth::CreateSetup());
-    this->drawState = render->CreateResource(DrawStateSetup("_synthDS", fsqMesh, prog, 0));
-    render->ReleaseResource(prog);
-    render->ReleaseResource(fsqMesh);
+    Id fsqMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("_synthFSQMesh"));
+    Id prog = Render::CreateResource(Shaders::Synth::CreateSetup());
+    this->drawState = Render::CreateResource(DrawStateSetup("_synthDS", fsqMesh, prog, 0));
+    Render::ReleaseResource(prog);
+    Render::ReleaseResource(fsqMesh);
 }
 
 //------------------------------------------------------------------------------
@@ -49,10 +48,9 @@ gpuSynthesizer::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     
-    RenderFacade* render = RenderFacade::Instance();
-    render->ReleaseResource(this->renderTarget);
+    Render::ReleaseResource(this->renderTarget);
     this->renderTarget.Invalidate();
-    render->ReleaseResource(this->drawState);
+    Render::ReleaseResource(this->drawState);
     this->drawState.Invalidate();
 }
 
@@ -66,11 +64,10 @@ gpuSynthesizer::IsValid() const {
 void
 gpuSynthesizer::Synthesize(const opBundle& bundle) const {
 
-    RenderFacade* render = RenderFacade::Instance();
-    render->ApplyOffscreenRenderTarget(this->renderTarget);
-    render->ApplyDrawState(this->drawState);
-    render->Draw(0);
-    render->ReadPixels(bundle.Buffer[0], bundle.BufferNumBytes);
+    Render::ApplyOffscreenRenderTarget(this->renderTarget);
+    Render::ApplyDrawState(this->drawState);
+    Render::Draw(0);
+    Render::ReadPixels(bundle.Buffer[0], bundle.BufferNumBytes);
     
     int16* samples = (int16*) bundle.Buffer[0];
     int16 s0 = samples[0];

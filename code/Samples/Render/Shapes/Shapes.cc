@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
@@ -22,7 +22,6 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    RenderFacade* render = nullptr;
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -35,34 +34,34 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnRunning() {
     // render one frame
-    if (this->render->BeginFrame()) {
+    if (Render::BeginFrame()) {
         
         // update rotation angles
         this->angleY += 0.01f;
         this->angleX += 0.02f;
         
         // apply state and render
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->drawState);
+        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // render shape primitive groups
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
-        this->render->Draw(0);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
-        this->render->Draw(1);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
-        this->render->Draw(2);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
-        this->render->Draw(3);
-        this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
-        this->render->Draw(4);
+        Render::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));
+        Render::Draw(0);
+        Render::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(1.0f, 1.0f, -6.0f)));
+        Render::Draw(1);
+        Render::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-2.0f, -1.0f, -6.0f)));
+        Render::Draw(2);
+        Render::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(+2.0f, -1.0f, -6.0f)));
+        Render::Draw(3);
+        Render::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, -1.0f, -6.0f)));
+        Render::Draw(4);
         
-        this->render->EndFrame();
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -71,9 +70,7 @@ ShapeApp::OnInit() {
     // setup rendering system
     auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Shapes Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
-    this->render = RenderFacade::CreateSingle(renderSetup);
-    float32 fbWidth = this->render->GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = this->render->GetDisplayAttrs().FramebufferHeight;
+    Render::Setup(renderSetup);
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -86,18 +83,20 @@ ShapeApp::OnInit() {
     shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
     shapeBuilder.AddPlane(1.5f, 1.5f, 10);
     shapeBuilder.Build();
-    Id mesh = this->render->CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
-    Id prog = this->render->CreateResource(Shaders::Shapes::CreateSetup());
+    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    Id prog = Render::CreateResource(Shaders::Shapes::CreateSetup());
     
     DrawStateSetup dsSetup("ds", mesh, prog, 0);
     dsSetup.DepthStencilState.DepthWriteEnabled = true;
     dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = this->render->CreateResource(dsSetup);
+    this->drawState = Render::CreateResource(dsSetup);
 
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     
     // setup projection and view matrices
+    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -108,9 +107,8 @@ ShapeApp::OnInit() {
 AppState::Code
 ShapeApp::OnCleanup() {
     // cleanup everything
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->drawState);
+    Render::Discard();
     return App::OnCleanup();
 }
 

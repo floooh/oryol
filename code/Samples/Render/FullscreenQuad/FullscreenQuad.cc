@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/RenderFacade.h"
+#include "Render/Render.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -16,7 +16,6 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    RenderFacade* render;
     Id drawState;
     float time = 0.0f;
 };
@@ -27,35 +26,34 @@ AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
     this->time += 1.0f / 60.0f;
-    if (this->render->BeginFrame()) {
-        this->render->ApplyDefaultRenderTarget();
-        this->render->ApplyDrawState(this->drawState);
-        this->render->ApplyVariable(Shaders::Main::Time, this->time);
-        this->render->Draw(0);
-        this->render->EndFrame();
+    if (Render::BeginFrame()) {
+        Render::ApplyDefaultRenderTarget();
+        Render::ApplyDrawState(this->drawState);
+        Render::ApplyVariable(Shaders::Main::Time, this->time);
+        Render::Draw(0);
+        Render::EndFrame();
     }
     
     // continue running or quit?
-    return render->QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    this->render = RenderFacade::CreateSingle(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
-    Id mesh = this->render->CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
-    Id prog = this->render->CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = this->render->CreateResource(DrawStateSetup("ds", mesh, prog, 0));
-    this->render->ReleaseResource(mesh);
-    this->render->ReleaseResource(prog);
+    Render::Setup(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
+    Id mesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
+    Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
+    this->drawState = Render::CreateResource(DrawStateSetup("ds", mesh, prog, 0));
+    Render::ReleaseResource(mesh);
+    Render::ReleaseResource(prog);
     return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnCleanup() {
-    this->render->ReleaseResource(this->drawState);
-    this->render = nullptr;
-    RenderFacade::DestroySingle();
+    Render::ReleaseResource(this->drawState);
+    Render::Discard();
     return App::OnCleanup();
 }

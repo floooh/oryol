@@ -7,10 +7,10 @@
     
     The Render setup object holds the parameter used to setup the
     Rendering system. Create a RenderSetup object, optionally tweak
-    its values, and call the RenderFacade::Setup method with the
+    its values, and call the Render::Setup method with the
     RenderSetup object as argument.
  
-    @see RenderFacade, DisplayAttrs
+    @see Render, DisplayAttrs
 */
 #include "Core/Containers/Array.h"
 #include "Render/Core/Enums.h"
