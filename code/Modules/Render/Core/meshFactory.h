@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::meshFactory
+    @class Oryol::_priv::meshFactory
+    @ingroup _priv
     @brief private: resource factory for Mesh objects
     @todo describe meshFactory
 */
@@ -9,7 +10,7 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glMeshFactory.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class meshFactory : public glMeshFactory {
 public:
     /// attach a loader
@@ -28,7 +29,7 @@ meshFactory::AttachLoader(const Ptr<meshLoaderBase>& loader) {
     this->loaders.Add(loader);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 
  

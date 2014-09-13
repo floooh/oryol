@@ -5,7 +5,7 @@
 #include "glShader.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 glShader::glShader() :
@@ -32,5 +32,5 @@ glShader::glSetShader(GLuint shd) {
     this->glShd = shd;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

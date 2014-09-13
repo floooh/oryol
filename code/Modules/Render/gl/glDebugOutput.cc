@@ -8,7 +8,7 @@
 #include "gl_impl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 bool glDebugOutput::isEnabled = false;
 
@@ -83,5 +83,5 @@ glDebugOutput::Disable() {
     #endif
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

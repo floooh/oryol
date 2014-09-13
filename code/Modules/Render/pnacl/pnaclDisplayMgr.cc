@@ -8,7 +8,7 @@
 #include "Render/gl/gl_impl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 using namespace _priv;
 
@@ -74,5 +74,5 @@ pnaclDisplayMgr::glBindDefaultFramebuffer() {
     ORYOL_GL_CHECK_ERROR();
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

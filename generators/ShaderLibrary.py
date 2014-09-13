@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 3
+Version = 4
 
 import os
 import sys
@@ -15,9 +15,9 @@ import glslcompiler
 glslVersions = [ 100, 120, 150 ]
 
 glslSlangTypes = {
-    100: 'Render::ShaderLang::GLSL100',
-    120: 'Render::ShaderLang::GLSL120',
-    150: 'Render::ShaderLang::GLSL150'
+    100: 'ShaderLang::GLSL100',
+    120: 'ShaderLang::GLSL120',
+    150: 'ShaderLang::GLSL150'
 }
 
 macroKeywords = {
@@ -845,7 +845,7 @@ def writeBundleHeader(f, shdLib, bundle) :
     f.write('    public:\n')
     for i in range(0, len(bundle.uniforms)) :
         f.write('        static const int32 {} = {};\n'.format(bundle.uniforms[i].bind, i))
-    f.write('        static Render::ProgramBundleSetup CreateSetup();\n')
+    f.write('        static ProgramBundleSetup CreateSetup();\n')
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -893,8 +893,8 @@ def writeFragmentShaderSource(f, shdLib, fs, glslVersion) :
 
 #-------------------------------------------------------------------------------
 def writeBundleSource(f, shdLib, bundle) :
-    f.write('Render::ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
-    f.write('    Render::ProgramBundleSetup setup("' + bundle.name + '");\n')
+    f.write('ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
+    f.write('    ProgramBundleSetup setup("' + bundle.name + '");\n')
     for i in range(0, len(bundle.programs)) :
         vsName = shdLib.vertexShaders[bundle.programs[i].vs].name
         fsName = shdLib.fragmentShaders[bundle.programs[i].fs].name

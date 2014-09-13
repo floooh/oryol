@@ -35,5 +35,5 @@ State::FromString(const char* str) {
     return InvalidState;
 }
 
-} // namespace Render
+} // namespace Resource
 } // namespace Oryol

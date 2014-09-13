@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glShader
+    @class Oryol::_priv::glShader
+    @ingroup _priv
     @brief private: GL implementation of class Shader
 */
 #include "Render/base/shaderBase.h"
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glShader : public shaderBase {
 public:
@@ -35,5 +36,5 @@ glShader::glGetShader() const {
     return this->glShd;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

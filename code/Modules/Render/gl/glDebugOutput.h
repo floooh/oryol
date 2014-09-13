@@ -1,13 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glDebugOutput
+    @class Oryol::_priv::glDebugOutput
+    @ingroup _priv
     @brief detailed debugging output using ARB_debug_output
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class glDebugOutput {
 public:
@@ -29,5 +30,5 @@ private:
     static bool isEnabled;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

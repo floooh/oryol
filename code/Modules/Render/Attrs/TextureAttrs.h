@@ -1,17 +1,17 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureAttrs
+    @class Oryol::TextureAttrs
+    @ingroup Render
     @brief holds the public attributes of a Texture object
     
-    @todo: describe Render::TextureAttrs
+    @todo: describe TextureAttrs
 */
 #include "Core/Types.h"
 #include "Resource/Locator.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 struct TextureAttrs {
     class Resource::Locator Locator;
@@ -29,5 +29,4 @@ struct TextureAttrs {
     bool IsDepthTexture{false};
 };
     
-} // namespace Render
 } // namespace Oryol

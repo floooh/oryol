@@ -5,7 +5,7 @@
 #include "meshLoaderBase.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 meshLoaderBase::meshLoaderBase() :
@@ -33,5 +33,5 @@ meshLoaderBase::onDetachFromFactory() {
     this->mshFactory = 0;
 }
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

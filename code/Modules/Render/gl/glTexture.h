@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTexture
+    @class Oryol::_priv::glTexture
+    @ingroup _priv
     @brief GL implementation of texture class
 */
 #include "Render/base/textureBase.h"
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glTexture : public textureBase {
 public:
@@ -79,5 +80,5 @@ glTexture::glGetDepthTexture() const {
     return this->glDepthTexture;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

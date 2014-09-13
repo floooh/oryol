@@ -5,7 +5,7 @@
 #include "shaderBase.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 shaderBase::shaderBase() :
@@ -31,5 +31,5 @@ shaderBase::setShaderType(ShaderType::Code t) {
     this->type = t;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

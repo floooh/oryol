@@ -6,7 +6,6 @@
 #include "Render/Setup/TextureSetup.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 TEST(TextureSetupTest) {
     

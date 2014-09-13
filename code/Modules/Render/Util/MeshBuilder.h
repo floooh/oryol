@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::MeshBuilder
+    @class Oryol::MeshBuilder
+    @ingroup Render
     @brief build mesh data programmatically
     
     The MeshBuilder class simplifies creating mesh data from scratch with
@@ -58,7 +59,6 @@
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
-namespace Render {
 
 class MeshBuilder {
 public:
@@ -241,5 +241,4 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y,
     VertexWriter::Write(ptr, this->layout.Component(compIndex).Format, x, y, z, w);
 }
 
-} // namespace Render
 } // namespace Oryol

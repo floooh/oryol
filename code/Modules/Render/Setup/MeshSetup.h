@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::MeshSetup
+    @class Oryol::MeshSetup
+    @ingroup Render
     @brief setup attributes for meshes
 */
 #include "Resource/Locator.h"
@@ -12,7 +13,6 @@
 #include <limits>
 
 namespace Oryol {
-namespace Render {
     
 class MeshSetup {
 public:
@@ -80,5 +80,4 @@ private:
     bool setupFullScreenQuad : 1;
 };
     
-} // namespace Render
 } // namespace Oryol

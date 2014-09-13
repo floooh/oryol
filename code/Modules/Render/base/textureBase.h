@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::textureBase
+    @class Oryol::_priv::textureBase
+    @ingroup _priv
     @brief private: base class for platform-specific texture implementation
 */
 #include "Resource/resourceBase.h"
@@ -11,7 +12,7 @@
 #include "IO/IOProtocol.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class textureBase : public Resource::resourceBase<TextureSetup> {
 public:
@@ -47,7 +48,7 @@ textureBase::GetTextureAttrs() const {
     return this->textureAttrs;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 
     

@@ -7,7 +7,6 @@
 #include <cstring>
 
 namespace Oryol {
-namespace Render {
 
 //------------------------------------------------------------------------------
 MeshBuilder::MeshBuilder() :
@@ -159,5 +158,4 @@ MeshBuilder::GetStream() const {
     return this->stream;
 }
 
-} // namespace Render
 } // namespace Oryol

@@ -8,7 +8,6 @@
 #include "Render/RenderFacade.h"
 #include "Core/Log.h"
 
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 namespace Oryol {

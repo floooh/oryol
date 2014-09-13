@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::DrawStateSetup
+    @class Oryol::DrawStateSetup
+    @ingroup Render
     @brief setup object for DrawState resources
 */
 #include "Resource/Locator.h"
@@ -11,7 +12,6 @@
 #include "Render/Core/RasterizerState.h"
 
 namespace Oryol {
-namespace Render {
 
 class DrawStateSetup {
 public:
@@ -38,5 +38,4 @@ public:
     uint32 ProgramSelectionMask{0};
 };
 
-} // namespace Render
 } // namespace Oryol

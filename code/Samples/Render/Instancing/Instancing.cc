@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Time;
 using namespace Oryol::Debug;
@@ -77,7 +76,7 @@ InstancingApp::OnRunning() {
         // render block        
         TimePoint drawStart = Clock::Now();
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
         this->render->ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
         this->render->DrawInstanced(0, this->curNumParticles);
@@ -156,7 +155,7 @@ InstancingApp::OnInit() {
     this->input = InputFacade::CreateSingle();
     
     // check instancing extension
-    if (!this->render->Supports(Feature::Instancing)) {
+    if (!this->render->Supports(RenderFeature::Instancing)) {
         o_error("ERROR: instanced_arrays extension required!\n");
     }
 

@@ -14,7 +14,7 @@
 #include "Render/Core/textureFactory.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 OryolClassImpl(glTextureLoader);
 
@@ -267,5 +267,5 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     return true;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Texture

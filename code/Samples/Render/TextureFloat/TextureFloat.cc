@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
@@ -79,7 +78,7 @@ TextureFloatApp::OnInit() {
     this->debug = DebugFacade::CreateSingle();
 
     // check required extensions
-    if (!this->render->Supports(Feature::TextureFloat)) {
+    if (!this->render->Supports(RenderFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
     

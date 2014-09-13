@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureSetup
+    @class Oryol::TextureSetup
+    @ingroup Render
     @brief setup object for textures and render targets
     @todo setup from file, setup from stream, multiple rendertarget support, mipmap generation mode...?
 */
@@ -10,7 +11,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class TextureSetup {
 public:
@@ -88,5 +88,4 @@ private:
     bool hasMipMaps : 1;
 };
     
-} // namespace Render
 } // namespace Oryol

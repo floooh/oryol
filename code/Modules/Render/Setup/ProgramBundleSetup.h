@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ProgramBundleSetup
+    @class Oryol::ProgramBundleSetup
+    @ingroup Render
     @brief setup information for a shader program bundle
 */
 #include "Core/Types.h"
@@ -11,7 +12,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class ProgramBundleSetup {
 public:
@@ -83,7 +83,6 @@ private:
     uniformEntry uniformEntries[MaxNumUniformEntries];
 };
     
-} // namespace Render
 } // namespace Oryol
  
  

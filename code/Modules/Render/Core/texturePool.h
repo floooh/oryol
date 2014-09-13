@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::texturePool
+    @class Oryol::_priv::texturePool
+    @ingroup _priv
     @brief resource pool specialization for textures
 */
 #include "Resource/Pool.h"
@@ -10,7 +11,7 @@
 #include "Render/Setup/TextureSetup.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class texturePool : public Resource::Pool<texture, TextureSetup, textureFactory> {
     /// get the resource type this factory produces
@@ -23,5 +24,5 @@ class texturePool : public Resource::Pool<texture, TextureSetup, textureFactory>
     void DestroyResource(texture& tex);
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

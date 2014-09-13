@@ -9,7 +9,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 // derived application class
@@ -32,7 +31,7 @@ TriangleApp::OnRunning() {
     // render one frame
     if (this->render->BeginFrame()) {
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
         this->render->Draw(0);
         this->render->EndFrame();

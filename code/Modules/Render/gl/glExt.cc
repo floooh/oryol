@@ -8,7 +8,7 @@
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 bool glExt::isValid = false;
 bool glExt::extensions[NumExtensions] = { false };
@@ -192,5 +192,5 @@ glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void
     }
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "DebugShaders.h"
@@ -8,8 +8,6 @@ namespace Oryol {
 namespace DebugShaders{
 const char* vsText_100_src = 
 "#define _POSITION gl_Position\n"
-"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-"#endif\n"
 "uniform vec2 glyphSize;\n"
 "attribute vec4 position;\n"
 "attribute vec4 color0;\n"
@@ -26,8 +24,6 @@ const char* vsText_100_src =
 ;
 const char* fsText_100_src = 
 "precision mediump float;\n"
-"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-"#endif\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
 "uniform sampler2D tex;\n"
@@ -94,11 +90,11 @@ const char* fsText_150_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-Render::ProgramBundleSetup TextShader::CreateSetup() {
-    Render::ProgramBundleSetup setup("TextShader");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, vsText_100_src, fsText_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, vsText_120_src, fsText_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, vsText_150_src, fsText_150_src);
+ProgramBundleSetup TextShader::CreateSetup() {
+    ProgramBundleSetup setup("TextShader");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsText_100_src, fsText_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsText_120_src, fsText_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsText_150_src, fsText_150_src);
     setup.AddUniform("glyphSize", GlyphSize);
     setup.AddTextureUniform("tex", Texture);
     return setup;

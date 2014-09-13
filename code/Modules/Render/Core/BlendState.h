@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::BlendState
+    @class Oryol::BlendState
+    @ingroup Render
     @brief describe alpha blending state
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class BlendState {
 public:
@@ -21,7 +21,7 @@ public:
             BlendFactor::Code SrcFactorAlpha:5;
             BlendFactor::Code DstFactorAlpha:5;
             BlendOperation::Code OpAlpha:3;
-            Channel::Mask ColorWriteMask:4;
+            PixelChannel::Mask ColorWriteMask:4;
         };
         /// hash code from merged state
         uint32 Hash;
@@ -37,7 +37,7 @@ public:
         this->SrcFactorAlpha = BlendFactor::One;
         this->DstFactorAlpha = BlendFactor::Zero;
         this->OpAlpha = BlendOperation::Add;
-        this->ColorWriteMask = Channel::RGBA;
+        this->ColorWriteMask = PixelChannel::RGBA;
     };
     
     /// equality
@@ -50,5 +50,4 @@ public:
     };
 };
 
-} // namespace Render
 } // namespace Oryol

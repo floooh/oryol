@@ -5,7 +5,7 @@
 #include "glTexture.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 glTexture::glTexture() :
@@ -67,5 +67,5 @@ glTexture::glSetDepthTexture(GLuint tex) {
     this->glDepthTexture = tex;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

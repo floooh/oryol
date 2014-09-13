@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glStateWrapper
+    @class Oryol::_priv::glStateWrapper
     @brief translate State changes into GL state changes
 */
 #include "Core/Types.h"
@@ -14,7 +14,7 @@
 #include "glm/vec4.hpp"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class mesh;
 class programBundle;
@@ -68,7 +68,7 @@ public:
     void BindTexture(int32 samplerIndex, GLenum target, GLuint tex);
     
     /// clear current render target
-    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     
 private:    
     /// setup the initial depth-stencil-state
@@ -132,5 +132,6 @@ private:
     GLuint samplersCube[MaxTextureSamplers];
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+

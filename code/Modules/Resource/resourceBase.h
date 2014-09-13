@@ -135,6 +135,6 @@ resourceBase<SETUP>::setPlaceholderType(uint32 fourcc) {
     this->placeholderType = fourcc;
 }
 
-} // namespace Render
+} // namespace Resource
 } // namespace Oryol
  

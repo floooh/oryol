@@ -5,7 +5,6 @@
 #include "TextureSetup.h"
 
 namespace Oryol {
-namespace Render {
 
 using namespace Resource;
     
@@ -168,5 +167,4 @@ TextureSetup::HasMipMaps() const {
     return this->hasMipMaps;
 }
 
-} // namespace Render
 } // namespace Oryol

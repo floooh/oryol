@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::DisplayAttrs
+    @class Oryol::DisplayAttrs
+    @ingroup Render
     @brief actual display attributes
     
     Holds the properties of the current display, these can be 
@@ -12,7 +13,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
 
 struct DisplayAttrs {
     int32 WindowWidth{0};
@@ -28,6 +28,5 @@ struct DisplayAttrs {
     int32 SwapInterval{1};
     String WindowTitle;
 };
-} // namespace Render
 } // namespace Oryol
  

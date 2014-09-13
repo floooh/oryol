@@ -5,7 +5,7 @@
 #include "textureLoaderBase.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 textureLoaderBase::textureLoaderBase() :
@@ -33,5 +33,5 @@ textureLoaderBase::onDetachFromFactory() {
     this->texFactory = 0;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

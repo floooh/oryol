@@ -11,15 +11,15 @@
 #endif
 
 namespace Oryol {
-namespace Render {
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::IndexType
+    @class Oryol::IndexType
+    @ingroup Render
     @brief selects 16- or 32-bit indices
 */
 #if ORYOL_OPENGL
-class IndexType : public glIndexType {
+class IndexType : public _priv::glIndexType {
 #endif
 public:
     /// get byte size of index type
@@ -37,10 +37,11 @@ public:
 
 //------------------------------------------------------------------------------
 /**
- @class Oryol::Render::Channel
- @brief RGBA/Depth/Stencil channel bits and cominations
+    @class Oryol::PixelChannel
+    @ingroup Render
+    @brief RGBA/Depth/Stencil channel bits and cominations
  */
-class Channel {
+class PixelChannel {
 public:
     typedef uint32 Mask;
     enum Bits {
@@ -83,7 +84,8 @@ public:
     
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::PixelFormat
+    @class Oryol::PixelFormat
+    @ingroup Render
     @brief enum of pixel formats
 */
 class PixelFormat {
@@ -209,69 +211,69 @@ public:
         }
     }
     /// get number of bits in a pixel format channel (only for non-compressed formats!)
-    static int8 NumBits(Code pixelFormat, Channel::Bits channel) {
+    static int8 NumBits(Code pixelFormat, PixelChannel::Bits channel) {
         switch (pixelFormat) {
             case RGBA32F:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
                     return 32;
                 }
                 break;
             case RGBA16F:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
                     return 16;
                 }
                 break;
             case RGBA8:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
                     return 8;
                 }
                 break;
             case RGB8:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
                     return 8;
                 }
                 break;
             case R5G6B5:
-                if ((Channel::Red == channel) || (Channel::Blue == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Blue == channel)) {
                     return 5;
                 }
-                else if (Channel::Green == channel) {
+                else if (PixelChannel::Green == channel) {
                     return 6;
                 }
                 break;
             case R5G5B5A1:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
                     return 5;
                 }
-                else if (Channel::Alpha == channel) {
+                else if (PixelChannel::Alpha == channel) {
                     return 1;
                 }
                 break;
             case RGBA4:
-                if ((Channel::Red == channel) || (Channel::Green == channel) || (Channel::Blue == channel) || (Channel::Alpha == channel)) {
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
                     return 4;
                 }
                 break;
             case L8:
-                if (Channel::Red == channel) {
+                if (PixelChannel::Red == channel) {
                     return 8;
                 }
                 break;
             case D16:
-                if (Channel::Depth == channel) {
+                if (PixelChannel::Depth == channel) {
                     return 16;
                 }
                 break;
             case D32:
-                if (Channel::Depth == channel) {
+                if (PixelChannel::Depth == channel) {
                     return 32;
                 }
                 break;
             case D24S8:
-                if (Channel::Depth == channel) {
+                if (PixelChannel::Depth == channel) {
                     return 24;
                 }
-                else if (Channel::Stencil == channel) {
+                else if (PixelChannel::Stencil == channel) {
                     return 8;
                 }
                 break;
@@ -285,16 +287,18 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::PrimitiveType
+    @class Oryol::PrimitiveType
+    @ingroup Render
     @brief primitive type enum (triangle strips, lists, etc...)
 */
 #if ORYOL_OPENGL
-class PrimitiveType : public glPrimitiveType { };
+class PrimitiveType : public _priv::glPrimitiveType { };
 #endif
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ResourceType
+    @class Oryol::ResourceType
+    @ingroup Render
     @brief Render subsystem resource types
  
     These types are used for the type in Resource::Id for Render module
@@ -318,52 +322,58 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ShaderType
+    @class Oryol::ShaderType
+    @ingroup Render
     @brief shader types (vertex shader, fragment shader)
 */
 #if ORYOL_OPENGL
-class ShaderType : public glShaderType { };
+class ShaderType : public _priv::glShaderType { };
 #endif
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureFilterMode
+    @class Oryol::TextureFilterMode
+    @ingroup Render
     @brief texture sampling filter mode
 */
 #if ORYOL_OPENGL
-class TextureFilterMode  : public glTextureFilterMode { };
+class TextureFilterMode  : public _priv::glTextureFilterMode { };
 #endif
    
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureType
+    @class Oryol::TextureType
+    @ingroup Render
     @brief texture type (2D, 3D, Cube)
 */
 #if ORYOL_OPENGL
-class TextureType : public glTextureType { };
+class TextureType : public _priv::glTextureType { };
 #endif
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureWrapMode
+    @class Oryol::TextureWrapMode
+    @ingroup Render
     @brief texture coordinate wrapping modes
 */
 #if ORYOL_OPENGL
-class TextureWrapMode : public glTextureWrapMode { };
+class TextureWrapMode : public _priv::glTextureWrapMode { };
 #endif
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::Usage
+    @class Oryol::Usage
+    @ingroup Render
     @brief graphics resource usage types
 */
 #if ORYOL_OPENGL
-class Usage : public glUsage { };
+class Usage : public _priv::glUsage { };
 #endif
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexAttr
+    @class Oryol::VertexAttr
+    @ingroup Render
     @brief vertex attribute enum (position, texcoord, ...)
  
     The VertexAttr definitions don't have a hardwired meaning, they just
@@ -425,7 +435,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexFormat
+    @class Oryol::VertexFormat
+    @ingroup Render
     @brief vertex component formats
     @see VertexComponent, VertexLayout
 */
@@ -480,7 +491,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ShaderLang
+    @class Oryol::ShaderLang
+    @ingroup Render
     @brief shader language syntax
 */
 class ShaderLang {
@@ -497,10 +509,11 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::Feature
+    @class Oryol::RenderFeature
+    @ingroup Render
     @brief optional rendering features
 */
-class Feature {
+class RenderFeature {
 public:
     enum Code {
         TextureCompressionDXT,      ///< GPU supports DXT compressed textures
@@ -517,7 +530,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::Face
+    @class Oryol::Face
+    @ingroup Render
     @brief polygon face side (front, back, both)
 */
 class Face {
@@ -535,7 +549,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::CompareFunc
+    @class Oryol::CompareFunc
+    @ingroup Render
     @brief comparison modes for depth and stencil state
 */
 class CompareFunc {
@@ -557,7 +572,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::StencilOperation
+    @class Oryol::StencilOperation
+    @ingroup Render
     @brief stencil operations
 */
 class StencilOp {
@@ -579,7 +595,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::BlendFactor
+    @class Oryol::BlendFactor
+    @ingroup Render
     @brief blending factors
 */
 class BlendFactor {
@@ -608,7 +625,8 @@ public:
  
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::BlendOperation
+    @class Oryol::BlendOperation
+    @ingroup Render
     @brief blending operations
 */
 class BlendOperation {
@@ -623,5 +641,4 @@ public:
     };
 };
 
-} // namespace Render
 } // namespace Oryol

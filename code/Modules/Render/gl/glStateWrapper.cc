@@ -12,7 +12,7 @@
 #include "glm/vec4.hpp"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 GLenum glStateWrapper::mapCompareFunc[CompareFunc::NumCompareFuncs] = {
     GL_NEVER,
@@ -469,10 +469,10 @@ glStateWrapper::applyBlendState(const BlendState& bs) {
     }
 
     if (bs.ColorWriteMask != this->curBlendState.ColorWriteMask) {
-        ::glColorMask((bs.ColorWriteMask & Channel::R) != 0,
-                      (bs.ColorWriteMask & Channel::G) != 0,
-                      (bs.ColorWriteMask & Channel::B) != 0,
-                      (bs.ColorWriteMask & Channel::A) != 0);
+        ::glColorMask((bs.ColorWriteMask & PixelChannel::R) != 0,
+                      (bs.ColorWriteMask & PixelChannel::G) != 0,
+                      (bs.ColorWriteMask & PixelChannel::B) != 0,
+                      (bs.ColorWriteMask & PixelChannel::A) != 0);
     }
     
     this->curBlendState = bs;
@@ -652,25 +652,25 @@ glStateWrapper::BindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
 
 //------------------------------------------------------------------------------
 void
-glStateWrapper::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+glStateWrapper::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
 
     GLbitfield clearMask = 0;
 
     // update GL state
-    if ((channels & Channel::RGBA) != 0) {
+    if ((channels & PixelChannel::RGBA) != 0) {
         
         clearMask |= GL_COLOR_BUFFER_BIT;
         ::glClearColor(color.x, color.y, color.z, color.w);
         
-        if ((channels & Channel::RGBA) != this->curBlendState.ColorWriteMask) {
-            this->curBlendState.ColorWriteMask = channels & Channel::RGBA;
-            ::glColorMask((channels & Channel::R) != 0,
-                          (channels & Channel::G) != 0,
-                          (channels & Channel::B) != 0,
-                          (channels & Channel::A) != 0);
+        if ((channels & PixelChannel::RGBA) != this->curBlendState.ColorWriteMask) {
+            this->curBlendState.ColorWriteMask = channels & PixelChannel::RGBA;
+            ::glColorMask((channels & PixelChannel::R) != 0,
+                          (channels & PixelChannel::G) != 0,
+                          (channels & PixelChannel::B) != 0,
+                          (channels & PixelChannel::A) != 0);
         }
     }
-    if ((channels & Channel::Depth) != 0) {
+    if ((channels & PixelChannel::Depth) != 0) {
     
         clearMask |= GL_DEPTH_BUFFER_BIT;
         #if ORYOL_OPENGLES2
@@ -684,7 +684,7 @@ glStateWrapper::Clear(Channel::Mask channels, const glm::vec4& color, float32 de
             ::glDepthMask(GL_TRUE);
         }
     }
-    if ((channels & Channel::Stencil) != 0) {
+    if ((channels & PixelChannel::Stencil) != 0) {
     
         clearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(stencil);
@@ -703,5 +703,6 @@ glStateWrapper::Clear(Channel::Mask channels, const glm::vec4& color, float32 de
     ORYOL_GL_CHECK_ERROR();
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+

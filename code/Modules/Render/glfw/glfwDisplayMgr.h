@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glfwDisplayMgr
+    @class Oryol::_priv::glfwDisplayMgr
+    @ingroup _priv
     @brief private: display manager class on top of GLFW
     
     This is the display manager class for desktop platforms (OSX, Windows,
@@ -14,7 +15,7 @@
 struct GLFWwindow;
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glfwDisplayMgr : public displayMgrBase {
 public:
@@ -50,5 +51,5 @@ private:
     static GLFWwindow* glfwWindow;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

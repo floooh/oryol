@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::loaderFactory
+    @class Oryol::_priv::loaderFactory
+    @ingroup _priv
     @brief template loader factory base class for rendering resources
 */
 #include "Resource/loaderFactory.h"
@@ -9,7 +10,7 @@
 #include "IO/IOProtocol.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 template<class RESOURCE, class RESLOADERBASE, ResourceType::Code TYPE>
 class loaderFactory : public Resource::loaderFactory<RESOURCE, RESLOADERBASE> {
@@ -54,5 +55,5 @@ loaderFactory<RESOURCE, RESLOADERBASE, TYPE>::DestroyResource(RESOURCE& res) {
     Resource::loaderFactory<RESOURCE,RESLOADERBASE>::DestroyResource(res);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

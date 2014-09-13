@@ -19,23 +19,23 @@
 #include "glm/gtc/type_ptr.hpp"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 bool
-glRenderMgr::Supports(Feature::Code feat) const {
+glRenderMgr::Supports(RenderFeature::Code feat) const {
     switch (feat) {
-        case Feature::TextureCompressionDXT:
+        case RenderFeature::TextureCompressionDXT:
             return glExt::HasExtension(glExt::TextureCompressionDXT);
-        case Feature::TextureCompressionPVRTC:
+        case RenderFeature::TextureCompressionPVRTC:
             return glExt::HasExtension(glExt::TextureCompressionPVRTC);
-        case Feature::TextureCompressionATC:
+        case RenderFeature::TextureCompressionATC:
             return glExt::HasExtension(glExt::TextureCompressionATC);
-        case Feature::TextureFloat:
+        case RenderFeature::TextureFloat:
             return glExt::HasExtension(glExt::TextureFloat);
-        case Feature::TextureHalfFloat:
+        case RenderFeature::TextureHalfFloat:
             return glExt::HasExtension(glExt::TextureHalfFloat);
-        case Feature::Instancing:
+        case RenderFeature::Instancing:
             return glExt::HasExtension(glExt::InstancedArrays);
         default:
             return false;
@@ -266,7 +266,7 @@ glRenderMgr::ApplyVariableArray(int32 index, const glm::mat2* values, int32 numV
 
 //------------------------------------------------------------------------------
 void
-glRenderMgr::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+glRenderMgr::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->isValid);
     o_assert2_dbg(this->renderTargetValid, "No render target set!");
     this->stateWrapper->Clear(channels, color, depth, stencil);
@@ -410,6 +410,6 @@ glRenderMgr::ReadPixels(void* buf, int32 bufNumBytes) {
     ORYOL_GL_CHECK_ERROR();
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 

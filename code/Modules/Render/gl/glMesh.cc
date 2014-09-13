@@ -5,7 +5,7 @@
 #include "glMesh.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 glMesh::glMesh() :
@@ -88,5 +88,5 @@ glMesh::setInstanceMesh(const glMesh* msh) {
     this->instanceMesh = msh;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

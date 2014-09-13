@@ -15,7 +15,7 @@
 #include "GLFW/glfw3.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 glfwDisplayMgr* glfwDisplayMgr::self = nullptr;
 GLFWwindow* glfwDisplayMgr::glfwWindow = nullptr;
@@ -58,12 +58,12 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW window
-    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Red));
-    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Green));
-    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Blue));
-    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, Channel::Alpha));
-    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, Channel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, Channel::Stencil));
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Alpha));
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Stencil));
     glfwWindowHint(GLFW_SAMPLES, setup.Samples);
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
@@ -182,5 +182,5 @@ glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int heigh
     self->notifyEventHandlers(RenderProtocol::DisplayModified::Create());
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -2,16 +2,18 @@
 //------------------------------------------------------------------------------
 /**
     @file Render/gl/glEnums.h
+    @ingroup _priv
     @brief Render module enums mapped to their GL values
 */
 #include "Core/Types.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glIndexType
+    @class Oryol::_priv::glIndexType
+    @ingroup _priv
  */
 class glIndexType {
 public:
@@ -27,7 +29,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glPrimitiveType
+    @class Oryol::_priv::glPrimitiveType
+    @ingroup _priv
 */
 class glPrimitiveType {
 public:
@@ -48,7 +51,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glShaderType
+    @class Oryol::_priv::glShaderType
+    @ingroup _priv
 */
 class glShaderType {
 public:
@@ -64,7 +68,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTextureFilterMode
+    @class Oryol::_priv::glTextureFilterMode
+    @ingroup _priv
 */
 class glTextureFilterMode {
 public:
@@ -84,7 +89,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTextureType
+    @class Oryol::_priv::glTextureType
+    @ingroup _priv
 */
 class glTextureType {
 public:
@@ -101,7 +107,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTextureWrapMode
+    @class Oryol::_priv::glTextureWrapMode
+    @ingroup _priv
 */
 class glTextureWrapMode {
 public:
@@ -118,7 +125,8 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glUsage
+    @class Oryol::_priv::glUsage
+    @ingroup _priv
 */
 class glUsage {
 public:
@@ -134,5 +142,6 @@ public:
     };
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+

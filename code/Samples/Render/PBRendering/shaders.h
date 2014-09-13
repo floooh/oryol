@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:3#
+/*  #version:4#
     machine generated, do not edit!
 */
 #include "Render/Setup/ProgramBundleSetup.h"
@@ -11,7 +11,7 @@ namespace Shaders {
         static const int32 ModelViewProj = 0;
         static const int32 ModelView = 1;
         static const int32 LightVec = 2;
-        static Render::ProgramBundleSetup CreateSetup();
+        static ProgramBundleSetup CreateSetup();
     };
 }
 }

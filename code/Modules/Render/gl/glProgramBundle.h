@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glProgramBundle
+    @class Oryol::_priv::glProgramBundle
+    @ingroup _priv
     @brief private: GL implementation of program bundle
 */
 #include "Render/base/programBundleBase.h"
@@ -9,7 +10,7 @@
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glProgramBundle : public programBundleBase {
 public:
@@ -122,5 +123,5 @@ glProgramBundle::getAttribLocation(VertexAttr::Code attrib) const {
 }
 #endif
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

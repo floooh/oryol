@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexBufferAttrs
+    @class Oryol::VertexBufferAttrs
+    @ingroup Render
     @brief attributes of one vertex buffer
 */
 #include "Render/Core/VertexLayout.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 struct VertexBufferAttrs {
     int32 NumVertices{0};
@@ -19,5 +19,4 @@ struct VertexBufferAttrs {
     }
 };
 
-} // namespace Render
 } // namespace Oryol

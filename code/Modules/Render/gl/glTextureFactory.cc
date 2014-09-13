@@ -13,7 +13,7 @@
 #include "Render/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 glTextureFactory::glTextureFactory() :
@@ -362,5 +362,5 @@ glTextureFactory::glGenAndBindTexture(GLenum target) {
     return glTex;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

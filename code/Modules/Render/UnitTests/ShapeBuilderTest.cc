@@ -17,7 +17,7 @@
 #endif
 
 using namespace Oryol;
-using namespace Oryol::Render;
+using namespace _priv;
 using namespace Oryol::Resource;
 
 //------------------------------------------------------------------------------

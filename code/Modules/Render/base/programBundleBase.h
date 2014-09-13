@@ -1,16 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::programBundleBase
+    @class Oryol::_priv::programBundleBase
+    @ingroup _priv
     @brief private: program bundle resource base class
 */
 #include "Resource/resourceBase.h"
 #include "Render/Setup/ProgramBundleSetup.h"
 
 namespace Oryol {
-namespace Render {
-    
+namespace _priv {
 class programBundleBase : public Resource::resourceBase<ProgramBundleSetup> { };
-    
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

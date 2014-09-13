@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glExt
+    @class Oryol::_priv::glExt
+    @ingroup _priv
     @brief function wrapper for extension functions
     
     This class wraps some GL extension function calls which are tricky
@@ -11,7 +12,7 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class glExt {
 public:
@@ -65,5 +66,5 @@ glExt::HasExtension(Code c) {
     return extensions[c];
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

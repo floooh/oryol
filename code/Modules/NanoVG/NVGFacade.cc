@@ -16,8 +16,6 @@
 namespace Oryol {
 namespace NanoVG {
 
-using namespace Render;
-    
 OryolLocalSingletonImpl(NVGFacade);
     
 //------------------------------------------------------------------------------

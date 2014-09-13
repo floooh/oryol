@@ -7,7 +7,7 @@
 #include "resourceMgr.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 using namespace Resource;
     
@@ -317,5 +317,5 @@ resourceMgr::QueryResourceState(const Id& resId) {
     return Resource::State::InvalidState;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

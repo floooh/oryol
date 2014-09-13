@@ -6,7 +6,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Render {
 
 //------------------------------------------------------------------------------
 void
@@ -43,5 +42,4 @@ VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
     this->Add(VertexComponent(attr, format));
 }
 
-} // namespace Render
 } // namespace Oryol

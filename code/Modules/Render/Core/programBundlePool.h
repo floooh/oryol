@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::programBundlePool
+    @class Oryol::_priv::programBundlePool
+    @ingroup _priv
     @brief resource pool specialization for program bundles
 */
 #include "Resource/Pool.h"
@@ -10,10 +11,8 @@
 #include "Render/Core/programBundle.h"
 
 namespace Oryol {
-namespace Render {
-    
+namespace _priv {
 class programBundlePool : public Resource::Pool<programBundle, ProgramBundleSetup, programBundleFactory> { };
-    
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 

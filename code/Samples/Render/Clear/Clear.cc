@@ -8,7 +8,6 @@
 #include "glm/gtc/constants.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 class ClearApp : public App {
 public:
@@ -29,7 +28,7 @@ ClearApp::OnRunning() {
     if (this->render->BeginFrame()) {
         
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, this->clearColor, 1.0f, 0);
+        this->render->Clear(PixelChannel::RGBA, this->clearColor, 1.0f, 0);
         this->render->EndFrame();
         
         this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);

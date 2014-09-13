@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::shader
+    @class Oryol::_priv::shader
+    @ingroup _priv
     @brief simple shader (vertex- or fragment shader)
 
     A shader object holds a compiled vertex- or fragment-shader. Alone it
@@ -10,9 +11,9 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glShader.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class shader : public glShader { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 #else
 #error "Target platform not yet supported!"

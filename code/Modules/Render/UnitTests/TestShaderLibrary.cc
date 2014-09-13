@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "TestShaderLibrary.h"
@@ -117,11 +117,11 @@ const char* MyFragmentShader_150_src =
 "_COLOR = myColor(nrm, texColor);\n"
 "}\n"
 ;
-Render::ProgramBundleSetup MyShader::CreateSetup() {
-    Render::ProgramBundleSetup setup("MyShader");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, MyVertexShader_100_src, MyFragmentShader_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, MyVertexShader_120_src, MyFragmentShader_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, MyVertexShader_150_src, MyFragmentShader_150_src);
+ProgramBundleSetup MyShader::CreateSetup() {
+    ProgramBundleSetup setup("MyShader");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, MyVertexShader_100_src, MyFragmentShader_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, MyVertexShader_120_src, MyFragmentShader_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, MyVertexShader_150_src, MyFragmentShader_150_src);
     setup.AddUniform("mvp", ModelViewProj);
     setup.AddTextureUniform("tex", Texture);
     return setup;

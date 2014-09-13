@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -520,30 +520,30 @@ const char* drawFS_150_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-Render::ProgramBundleSetup InitParticles::CreateSetup() {
-    Render::ProgramBundleSetup setup("InitParticles");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, fsqVS_100_src, initFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, fsqVS_120_src, initFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, fsqVS_150_src, initFS_150_src);
+ProgramBundleSetup InitParticles::CreateSetup() {
+    ProgramBundleSetup setup("InitParticles");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_100_src, initFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_120_src, initFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_150_src, initFS_150_src);
     setup.AddUniform("bufDims", BufferDims);
     setup.AddUniform("time", Time);
     return setup;
 }
-Render::ProgramBundleSetup DrawParticles::CreateSetup() {
-    Render::ProgramBundleSetup setup("DrawParticles");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, drawVS_100_src, drawFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, drawVS_120_src, drawFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, drawVS_150_src, drawFS_150_src);
+ProgramBundleSetup DrawParticles::CreateSetup() {
+    ProgramBundleSetup setup("DrawParticles");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, drawVS_100_src, drawFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, drawVS_120_src, drawFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, drawVS_150_src, drawFS_150_src);
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddUniform("bufDims", BufferDims);
     setup.AddTextureUniform("particleTex", ParticleState);
     return setup;
 }
-Render::ProgramBundleSetup UpdateParticles::CreateSetup() {
-    Render::ProgramBundleSetup setup("UpdateParticles");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, fsqVS_100_src, updateFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, fsqVS_120_src, updateFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, fsqVS_150_src, updateFS_150_src);
+ProgramBundleSetup UpdateParticles::CreateSetup() {
+    ProgramBundleSetup setup("UpdateParticles");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_100_src, updateFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_120_src, updateFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_150_src, updateFS_150_src);
     setup.AddUniform("bufDims", BufferDims);
     setup.AddTextureUniform("prevState", PrevState);
     setup.AddUniform("numParticles", NumParticles);

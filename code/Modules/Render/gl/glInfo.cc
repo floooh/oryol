@@ -9,7 +9,7 @@
 #include "Render/gl/gl_impl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 int32 glInfo::intValues[NumInfos] = { 0 };
 bool glInfo::isValid = false;
@@ -114,5 +114,5 @@ glInfo::printInt(GLenum glEnum, const char* name, int dim) {
     else if (4 == dim) Log::Info("%s: %d %d %d %d\n", name, value[0], value[1], value[2], value[3]);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

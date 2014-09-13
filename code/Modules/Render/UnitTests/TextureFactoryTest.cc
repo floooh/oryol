@@ -13,7 +13,7 @@
 #endif
 
 using namespace Oryol;
-using namespace Oryol::Render;
+using namespace _priv;
 
 TEST(RenderTargetCreationTest) {
 

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::RenderFacade
+    @class Oryol::RenderFacade
+    @ingroup Render
     @brief public facade of the Render module
     
     @todo: describe RenderFacade
@@ -22,7 +23,6 @@
 #include "glm/vec4.hpp"
 
 namespace Oryol {
-namespace Render {
     
 class RenderFacade {
     OryolLocalSingletonDecl(RenderFacade);
@@ -45,7 +45,7 @@ public:
     /// get the current actual display attributes (can be different from setup)
     const DisplayAttrs& GetDisplayAttrs() const;
     /// test if an optional feature is supported
-    bool Supports(Feature::Code feat) const;
+    bool Supports(RenderFeature::Code feat) const;
         
     /// create a resource, or return existing resource
     template<class SETUP> Resource::Id CreateResource(const SETUP& setup);
@@ -92,7 +92,7 @@ public:
     void ReadPixels(void* ptr, int32 numBytes);
     
     /// clear the currently assigned render target
-    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -112,10 +112,10 @@ private:
 
     bool valid;
     RenderSetup renderSetup;
-    displayMgr displayManager;
-    renderMgr renderManager;
-    class stateWrapper stateWrapper;
-    resourceMgr resourceManager;
+    _priv::displayMgr displayManager;
+    _priv::renderMgr renderManager;
+    _priv::stateWrapper stateWrapper;
+    _priv::resourceMgr resourceManager;
 };
 
 //------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ RenderFacade::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
 template<> inline void
 RenderFacade::ApplyVariable(int32 index, const Resource::Id& texResId) {
     o_assert_dbg(this->valid);
-    texture* tex = this->resourceManager.LookupTexture(texResId);
+    _priv::texture* tex = this->resourceManager.LookupTexture(texResId);
     this->renderManager.ApplyTexture(index, tex);
 }
 
@@ -156,7 +156,7 @@ RenderFacade::ApplyVariableArray(int32 index, const T* values, int32 numValues) 
 
 //------------------------------------------------------------------------------
 inline bool
-RenderFacade::Supports(Feature::Code feat) const {
+RenderFacade::Supports(RenderFeature::Code feat) const {
     return this->renderManager.Supports(feat);
 }
 
@@ -178,5 +178,4 @@ RenderFacade::ApplyBlendColor(const glm::vec4& blendColor) {
     this->stateWrapper.ApplyBlendColor(blendColor.x, blendColor.y, blendColor.z, blendColor.w);
 }
 
-} // namespace Render
 } // namespace Oryol

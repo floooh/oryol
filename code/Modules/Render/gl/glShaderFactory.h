@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glShaderFactory
+    @class Oryol::_priv::glShaderFactory
+    @ingroup _priv
     @brief private: GL implementation of class shaderFactory
 */
 #include "Render/base/simpleFactory.h"
@@ -9,7 +10,7 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class shader;
     
@@ -39,5 +40,5 @@ private:
     bool isValid;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

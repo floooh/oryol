@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
@@ -94,7 +93,7 @@ GPUParticlesApp::OnRunning() {
         // - the new particle state texture is sampled in the vertex shader to obtain particle positions
         // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawParticles);
         this->render->ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
         this->render->ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
@@ -133,10 +132,10 @@ GPUParticlesApp::OnInit() {
     this->debug = DebugFacade::CreateSingle();
 
     // check required extensions
-    if (!this->render->Supports(Feature::TextureFloat)) {
+    if (!this->render->Supports(RenderFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
-    if (!this->render->Supports(Feature::Instancing)) {
+    if (!this->render->Supports(RenderFeature::Instancing)) {
         o_error("ERROR: instances_arrays extension required!\n");
     }
     

@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::loaderBase
+    @class Oryol::_priv::loaderBase
+    @ingroup _priv
     @brief resource loader base class for the Render module
 */
 #include "Core/RefCounted.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class loaderBase : public RefCounted {
 public:
@@ -16,5 +17,5 @@ public:
     virtual ResourceType::Code resourceType() const = 0;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

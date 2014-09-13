@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexComponent
+    @class Oryol::VertexComponent
+    @ingroup Render
     @brief describes a single component of a vertex
     @see VertexFormat, VertexLayout
 */
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class VertexComponent {
 public:
@@ -60,6 +60,5 @@ VertexComponent::ByteSize() const {
     return VertexFormat::ByteSize(this->Format);
 }
 
-} // namespace Render
 } // namespace Oryol
  

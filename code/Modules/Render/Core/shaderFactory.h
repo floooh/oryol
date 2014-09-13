@@ -1,15 +1,16 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::shaderFactory
+    @class Oryol::_priv::shaderFactory
+    @ingroup _priv
     @brief private: resource factory for shader objects
 */
 #if ORYOL_OPENGL
 #include "Render/gl/glShaderFactory.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class shaderFactory : public glShaderFactory { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 #else
 #error "Platform not yet supported!"

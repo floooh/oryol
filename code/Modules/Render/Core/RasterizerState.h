@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::RasterizerState
+    @class Oryol::RasterizerState
+    @ingroup Render
     @brief rasterizer state flags
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class RasterizerState {
 public:
@@ -44,5 +44,4 @@ public:
     };
 };
 
-} // namespace Render
 } // namespace Oryol

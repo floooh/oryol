@@ -9,7 +9,6 @@
 #include "Messaging/Protocol.h"
 
 namespace Oryol {
-namespace Render {
 class RenderProtocol {
 public:
     static ProtocolIdType GetProtocolId() {
@@ -99,5 +98,4 @@ private:
 private:
     };
 };
-}
 }

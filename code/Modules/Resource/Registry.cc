@@ -296,5 +296,5 @@ Registry::checkIntegrity() const {
 }
 #endif
 
-} // namespace Render
+} // namespace Resource
 } // namespace Oryol

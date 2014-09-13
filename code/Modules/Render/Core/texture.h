@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::texture
+    @class Oryol::_priv::texture
+    @ingroup _priv
     @brief texture frontend class
     
     A texture object can be a normal 2D, 3D or cube texture, as well
@@ -10,7 +11,7 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glTexture.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class texture : public glTexture { };
 } }
 #else

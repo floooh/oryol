@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 class DDSTextureLoadingApp : public App {
@@ -48,7 +47,7 @@ DDSTextureLoadingApp::OnRunning() {
         
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.5f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.5f), 1.0f, 0);
         
         // only render when texture is loaded (until texture placeholder are implemented)
         static const std::array<glm::vec3, NumTextures> pos{ {

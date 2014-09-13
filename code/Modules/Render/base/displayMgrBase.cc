@@ -7,7 +7,7 @@
 #include "Render/RenderProtocol.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 displayMgrBase::displayMgrBase() :
@@ -119,5 +119,5 @@ displayMgrBase::notifyEventHandlers(const Ptr<Message>& msg) {
     }
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

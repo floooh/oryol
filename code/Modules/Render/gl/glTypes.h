@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTypes
+    @class Oryol::_priv::glTypes
+    @ingroup _priv
     @brief OpenGL type conversion helpers
 */
 #include "Core/Types.h"
@@ -9,7 +10,7 @@
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glTypes {
 public:
@@ -23,5 +24,5 @@ public:
     static GLenum AsGLRenderbufferFormat(PixelFormat::Code c);
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

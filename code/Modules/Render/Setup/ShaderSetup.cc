@@ -5,7 +5,6 @@
 #include "ShaderSetup.h"
 
 namespace Oryol {
-namespace Render {
     
 using namespace Resource;
 
@@ -36,5 +35,4 @@ ShaderSetup::Source(ShaderLang::Code slang) const {
     return this->sources[slang];
 }
 
-} // namespace Render
 } // namespace Oryol

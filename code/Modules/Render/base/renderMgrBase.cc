@@ -9,7 +9,7 @@
 #include "Render/Core/texture.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 renderMgrBase::renderMgrBase() :
@@ -109,5 +109,5 @@ renderMgrBase::ApplyDrawState(drawState* ds) {
     this->curMesh = ds->getMesh();
 }
     
-} // namespace Render
-} // namespace Render
+} // namespace _priv
+} // namespace Oryol

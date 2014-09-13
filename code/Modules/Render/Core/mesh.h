@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::Mesh
+    @class Oryol::_priv::Mesh
+    @ingroup _priv
     @brief geometry mesh for rendering
     
     A Mesh object holds one or more vertex buffers, an optional 
@@ -11,7 +12,7 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glMesh.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class mesh : public glMesh { };
 } }
 #else

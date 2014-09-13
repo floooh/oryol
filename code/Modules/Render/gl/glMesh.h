@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glMesh
+    @class Oryol::_priv::glMesh
+    @ingroup _priv
     @brief GL implement of Mesh
 */
 #include "Render/base/meshBase.h"
@@ -10,7 +11,7 @@
 #include "Render/gl/glVertexAttr.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glMesh : public meshBase {
 public:
@@ -185,5 +186,5 @@ glMesh::getInstanceMesh() const {
     return this->instanceMesh;
 }
 
+} // namespace _priv
 } // namespace Oryol
-} // namespace Render

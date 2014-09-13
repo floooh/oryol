@@ -5,7 +5,6 @@
 #include "MeshSetup.h"
 
 namespace Oryol {
-namespace Render {
 
 using namespace Resource;
     
@@ -142,5 +141,4 @@ MeshSetup::PrimitiveGroup(int32 index) const {
     return this->primGroups[index];
 }
 
-} // namespace Render
 } // namespace Oryol

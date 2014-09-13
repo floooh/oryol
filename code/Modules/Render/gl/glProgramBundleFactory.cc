@@ -12,7 +12,7 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 using namespace Resource;
 
@@ -217,5 +217,5 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     progBundle.setState(Resource::State::Setup);
 }
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

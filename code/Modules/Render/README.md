@@ -72,7 +72,6 @@ This sets up the Render module with a 640x480 window for rendering with a defaul
 
 ```cpp
 #include "Render/RenderFacade.h"
-using namespace Oryol::Render
 ...
 auto renderFacade = RenderFacade::CreateSingle(RenderSetup::Windowed(640, 480));
 ```
@@ -104,8 +103,6 @@ auto renderFacade = RenderFacade::CreateSingle(renderSetup);
 To asynchronously create a texture from an asset file:
 
 ```cpp
-using namespace Oryol::Render;
-using namespace Oryol::Resource;
 
 // create texture from file at path 'tex:file.dds', if the texture is already
 // loaded, we get a shared resource id back

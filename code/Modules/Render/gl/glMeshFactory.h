@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glMeshFactory
+    @class Oryol::_priv::glMeshFactory
+    @ingroup _priv
     @brief GL implementation of MeshFactory
 */
 #include "Render/base/loaderFactory.h"
 #include "Render/Core/mesh.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class stateWrapper;
 class meshPool;
@@ -58,6 +59,7 @@ private:
     bool isValid;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+
  

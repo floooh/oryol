@@ -11,8 +11,6 @@
 
 namespace Oryol {
 namespace Input {
-
-using namespace Render;
     
 glfwInputMgr* glfwInputMgr::self = nullptr;
 
@@ -24,7 +22,7 @@ glfwInputMgr::glfwInputMgr() {
     self = this;
     
     // first check that the Render subsystem has already been initialized
-    GLFWwindow* glfwWindow = Render::glfwDisplayMgr::getGlfwWindow();
+    GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
     if (nullptr == glfwWindow) {
         o_error("glfwInputMgr: RenderFacade must be created before InputFacade!");
         return;
@@ -42,7 +40,7 @@ glfwInputMgr::~glfwInputMgr() {
     o_assert(nullptr != self);
 
     // remove glfw input callbacks
-    GLFWwindow* glfwWindow = Render::glfwDisplayMgr::getGlfwWindow();
+    GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
     o_assert(nullptr != glfwWindow);    
     this->discardCallbacks(glfwWindow);
 
@@ -84,7 +82,7 @@ glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
             case CursorMode::Hidden:    glfwInputMode = GLFW_CURSOR_HIDDEN; break;
             default:                    glfwInputMode = GLFW_CURSOR_DISABLED; break;
         }
-        GLFWwindow* glfwWindow = Render::glfwDisplayMgr::getGlfwWindow();
+        GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
         o_assert(nullptr != glfwWindow);
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, glfwInputMode);
     }

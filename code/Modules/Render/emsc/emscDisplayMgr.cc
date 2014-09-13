@@ -10,7 +10,7 @@
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 emscDisplayMgr::emscDisplayMgr() :
@@ -37,9 +37,9 @@ emscDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
 
     EmscriptenWebGLContextAttributes ctxAttrs;
     emscripten_webgl_init_context_attributes(&ctxAttrs);
-    ctxAttrs.alpha = 0 < PixelFormat::NumBits(renderSetup.ColorFormat, Channel::Alpha);
-    ctxAttrs.depth = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, Channel::Depth);
-    ctxAttrs.stencil = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, Channel::Stencil);
+    ctxAttrs.alpha = 0 < PixelFormat::NumBits(renderSetup.ColorFormat, PixelChannel::Alpha);
+    ctxAttrs.depth = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, PixelChannel::Depth);
+    ctxAttrs.stencil = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, PixelChannel::Stencil);
     ctxAttrs.antialias = renderSetup.Samples > 0;
     ctxAttrs.premultipliedAlpha = false;
     this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
@@ -104,5 +104,5 @@ emscDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenC
     return true;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

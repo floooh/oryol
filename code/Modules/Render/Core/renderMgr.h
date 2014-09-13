@@ -1,13 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::renderMgr
+    @class Oryol::_priv::renderMgr
+    @ingroup _priv
     @brief frontend-wrapper for internal render manager
 */
 #if ORYOL_OPENGL
 #include "Render/gl/glRenderMgr.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class renderMgr : public glRenderMgr { };
 } }
 #else

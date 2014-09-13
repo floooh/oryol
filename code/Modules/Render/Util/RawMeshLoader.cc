@@ -7,7 +7,8 @@
 #include "Render/Core/meshFactory.h"
 
 namespace Oryol {
-namespace Render {
+
+using namespace _priv;
 
 OryolClassImpl(RawMeshLoader);
 
@@ -108,5 +109,4 @@ RawMeshLoader::Load(mesh& mesh, const Ptr<Stream>& stream) const {
     }
 }
     
-} // namespace Render
 } // namespace Oryol

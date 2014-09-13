@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class shaderBase
-    @brief private: shader resource base class
+    @class Oryol::_priv::shaderBase
+    @ingroup _priv
+    @brief shader resource base class
 */
 #include "Resource/resourceBase.h"
 #include "Render/Setup/ShaderSetup.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class shaderBase : public Resource::resourceBase<ShaderSetup> {
 public:
@@ -26,5 +27,5 @@ private:
     ShaderType::Code type;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

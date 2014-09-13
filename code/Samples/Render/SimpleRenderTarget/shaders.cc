@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -150,20 +150,20 @@ const char* mainFS_150_src =
 "_COLOR = c * (l + 0.25);\n"
 "}\n"
 ;
-Render::ProgramBundleSetup Main::CreateSetup() {
-    Render::ProgramBundleSetup setup("Main");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, mainVS_100_src, mainFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, mainVS_120_src, mainFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, mainVS_150_src, mainFS_150_src);
+ProgramBundleSetup Main::CreateSetup() {
+    ProgramBundleSetup setup("Main");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, mainVS_100_src, mainFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, mainVS_120_src, mainFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, mainVS_150_src, mainFS_150_src);
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }
-Render::ProgramBundleSetup RenderTarget::CreateSetup() {
-    Render::ProgramBundleSetup setup("RenderTarget");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, renderTargetVS_100_src, renderTargetFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, renderTargetVS_120_src, renderTargetFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, renderTargetVS_150_src, renderTargetFS_150_src);
+ProgramBundleSetup RenderTarget::CreateSetup() {
+    ProgramBundleSetup setup("RenderTarget");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, renderTargetVS_100_src, renderTargetFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, renderTargetVS_120_src, renderTargetFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, renderTargetVS_150_src, renderTargetFS_150_src);
     setup.AddUniform("mvp", ModelViewProjection);
     return setup;
 }

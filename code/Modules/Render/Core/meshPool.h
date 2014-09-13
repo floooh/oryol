@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::meshPool
+    @class Oryol::_priv::meshPool
+    @ingroup _priv
     @brief resource pool specialization for meshes
 */
 #include "Resource/Pool.h"
@@ -10,9 +11,7 @@
 #include "Render/Setup/MeshSetup.h"
 
 namespace Oryol {
-namespace Render {
-
+namespace _priv {
 class meshPool : public Resource::Pool<mesh, MeshSetup, meshFactory> { };
-
-} // namespace Render
+} // namespace _priv
 } // namepspace Oryol

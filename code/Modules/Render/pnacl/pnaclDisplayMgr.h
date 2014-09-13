@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::pnaclDisplayMgr
+    @class Oryol::_priv::pnaclDisplayMgr
+    @ingroup _priv
     @brief PNaCl implementation of displayMgr
 */
 #include "Render/base/displayMgrBase.h"
@@ -9,7 +10,7 @@
 #include "Core/pnacl/pnaclInstance.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class pnaclDisplayMgr : public displayMgrBase {
 public:
@@ -33,5 +34,5 @@ private:
     int32 glFramebufferHeight;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTextureFactory
+    @class Oryol::_priv::glTextureFactory
+    @ingroup _priv
     @brief private: GL implementation of textureFactory
 */
 #include "Render/base/loaderFactory.h"
 #include "Render/Core/texture.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class stateWrapper;
 class texture;
@@ -52,5 +53,6 @@ private:
     bool isValid;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+

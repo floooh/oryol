@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 using namespace Oryol::Debug;
 using namespace Oryol::Time;
@@ -56,7 +55,7 @@ VertexTextureApp::OnRunning() {
         
         // render displacement mapped plane shape
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->planeDrawState);
         const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
         this->render->ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);

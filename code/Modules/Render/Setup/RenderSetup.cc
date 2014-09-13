@@ -6,7 +6,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Render {
     
 //------------------------------------------------------------------------------
 RenderSetup::RenderSetup() :
@@ -105,5 +104,4 @@ RenderSetup::ResourceRegistryCapacity() const {
     return this->registryCapacity;
 }
 
-} // namespace Render
 } // namespace Oryol

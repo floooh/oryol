@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::iosDisplayMgr
+    @class Oryol::_priv::iosDisplayMgr
+    @ingroup _priv
     @brief display manager for IOS
 */
 #include "Render/base/displayMgrBase.h"
@@ -9,7 +10,7 @@
 #include "Core/ios/iosBridge.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class iosDisplayMgr : public displayMgrBase {
 public:
@@ -35,5 +36,5 @@ private:
     GLint glFramebufferHeight;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ShaderSetup
+    @class Oryol::ShaderSetup
+    @ingroup Render
     @brief setup class for vertex- or fragment shaders
  */
 #include "Core/Containers/Map.h"
@@ -10,7 +11,6 @@
 #include "Resource/Locator.h"
 
 namespace Oryol {
-namespace Render {
     
 class ShaderSetup {
 public:
@@ -31,5 +31,4 @@ private:
     String sources[ShaderLang::NumShaderLangs];
 };
     
-} // namespace Render
 } // namespace Oryol

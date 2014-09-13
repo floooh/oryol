@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexWriter
+    @class Oryol::VertexWriter
+    @ingroup Render
     @brief efficiently write packed vertex components
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class VertexWriter {
 public:
@@ -22,5 +22,4 @@ public:
     static uint8* Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z, float32 w);
 };
     
-} // namespace Render
 } // namespace Oryol

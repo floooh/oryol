@@ -8,7 +8,7 @@
 #include "Render/Core/programBundlePool.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 drawStateFactory::drawStateFactory() :
@@ -63,5 +63,5 @@ drawStateFactory::DestroyResource(drawState& ds) {
     ds.setState(Resource::State::Setup);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

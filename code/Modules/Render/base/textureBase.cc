@@ -5,7 +5,7 @@
 #include "textureBase.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 textureBase::textureBase() {
@@ -31,5 +31,5 @@ textureBase::setTextureAttrs(const TextureAttrs& attrs) {
     this->textureAttrs = attrs;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

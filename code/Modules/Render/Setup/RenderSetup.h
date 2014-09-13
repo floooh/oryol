@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::RenderSetup
+    @class Oryol::RenderSetup
+    @ingroup Render
     @brief Render module setup parameters
     
     The Render setup object holds the parameter used to setup the
@@ -18,7 +19,6 @@
 #include <functional>
 
 namespace Oryol {
-namespace Render {
     
 class RenderSetup {
 public:
@@ -43,7 +43,7 @@ public:
     String Title = "Oryol";
     
     /// resource loaders
-    Array<std::function<Ptr<loaderBase>()>> Loaders;
+    Array<std::function<Ptr<_priv::loaderBase>()>> Loaders;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
@@ -73,5 +73,4 @@ private:
     int32 registryCapacity;
 };
     
-} // namespace Render
 } // namespace Oryol

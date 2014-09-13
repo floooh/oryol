@@ -6,7 +6,6 @@
 #include "Render/Setup/MeshSetup.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
     
 TEST(MeshSetupTest) {
     

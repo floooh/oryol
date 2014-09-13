@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::DepthStencilState
+    @class Oryol::DepthStencilState
+    @ingroup Render
     @brief holds the complete depth and stencil render state
 */
 #include "Render/Core/Enums.h"
 #include "Render/Core/StencilState.h"
 
 namespace Oryol {
-namespace Render {
     
 class DepthStencilState {
 public:
@@ -48,5 +48,4 @@ public:
     }
 };
 
-} // namespace Render
 } // namespace Oryol

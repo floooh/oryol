@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::shaderPool
+    @class Oryol::_priv::shaderPool
+    @ingroup _priv
     @brief resource pool specialization for shaders
 */
 #include "Resource/Pool.h"
@@ -10,9 +11,7 @@
 #include "Render/Core/shader.h"
 
 namespace Oryol {
-namespace Render {
-    
+namespace _priv {
 class shaderPool : public Resource::Pool<shader, ShaderSetup, shaderFactory> { };
-    
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

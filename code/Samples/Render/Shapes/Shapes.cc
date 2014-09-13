@@ -11,7 +11,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 // derived application class
@@ -46,7 +45,7 @@ ShapeApp::OnRunning() {
         // apply state and render
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // render shape primitive groups
         this->render->ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(glm::vec3(-1.0, 1.0f, -6.0f)));

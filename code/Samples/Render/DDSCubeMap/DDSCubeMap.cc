@@ -15,7 +15,6 @@
 #include "shaders.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 // derived application class
@@ -51,7 +50,7 @@ DDSCubeMapApp::OnRunning() {
         
         // apply state and draw
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
         this->render->ApplyDrawState(this->drawState);
         
         const auto resState = this->render->QueryResourceState(this->tex);
@@ -89,7 +88,7 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
-    if (this->render->Supports(Feature::TextureCompressionPVRTC)) {
+    if (this->render->Supports(RenderFeature::TextureCompressionPVRTC)) {
         this->tex = this->render->CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
     }
     else {

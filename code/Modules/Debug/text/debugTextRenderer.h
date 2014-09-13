@@ -15,9 +15,7 @@
 
 namespace Oryol {
 
-namespace Render {
-    class RenderFacade;
-}
+class RenderFacade;
 
 namespace Debug {
 
@@ -54,11 +52,11 @@ private:
     void setup();
 
     /// setup the font texture
-    void setupFontTexture(Render::RenderFacade* renderFacade);
+    void setupFontTexture(RenderFacade* renderFacade);
     /// setup the text dynamic mesh
-    void setupTextMesh(Render::RenderFacade* renderFacade);
+    void setupTextMesh(RenderFacade* renderFacade);
     /// setup the text draw state
-    void  setupTextDrawState(Render::RenderFacade* renderFacade);
+    void  setupTextDrawState(RenderFacade* renderFacade);
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
@@ -70,7 +68,7 @@ private:
     static const int32 MaxNumVertices = MaxNumChars * 6;
     
     glm::vec2 textScale;
-    Render::VertexLayout vertexLayout;
+    VertexLayout vertexLayout;
     RWLock rwLock;
     Resource::Id fontTexture;
     Resource::Id textMesh;

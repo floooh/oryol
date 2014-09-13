@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::eglDisplayMgr
+    @class Oryol::_priv::eglDisplayMgr
+    @ingroup _priv
     @brief display manager class for EGL platforms
 */
 #include "Render/base/displayMgrBase.h"
@@ -9,7 +10,7 @@
 #include <EGL/egl.h>
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class eglDisplayMgr : public displayMgrBase {
 public:
@@ -35,5 +36,5 @@ private:
     EGLContext eglContext;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

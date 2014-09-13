@@ -1,15 +1,16 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::programBundleFactory
+    @class Oryol::_priv::programBundleFactory
+    @ingroup _priv
     @brief private: resource factory for program bundle objects
 */
 #if ORYOL_OPENGL
 #include "Render/gl/glProgramBundleFactory.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class programBundleFactory : public glProgramBundleFactory { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 #else
 #error "Platform not yet supported!"

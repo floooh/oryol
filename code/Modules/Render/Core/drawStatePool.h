@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::drawStatePool
+    @class Oryol::_priv::drawStatePool
+    @ingroup _priv
     @brief resource pool for drawState resources
 */
 #include "Resource/Pool.h"
@@ -10,7 +11,7 @@
 #include "Render/Core/drawState.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class drawStatePool : public Resource::Pool<drawState, DrawStateSetup, drawStateFactory> { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

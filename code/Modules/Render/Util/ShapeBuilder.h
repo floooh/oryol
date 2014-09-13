@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::ShapeBuilder
+    @class Oryol::ShapeBuilder
+    @ingroup Render
     @brief shape geometry helper class
     @todo describe ShapeBuilder
 */
@@ -11,7 +12,6 @@
 #include "glm/vec4.hpp"
 
 namespace Oryol {
-namespace Render {
     
 class ShapeBuilder {
 public:
@@ -102,5 +102,4 @@ private:
     MeshBuilder meshBuilder;
 };
     
-} // namespace Render
 } // namespace Oryol

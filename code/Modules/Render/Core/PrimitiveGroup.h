@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::PrimitiveGroup
+    @class Oryol::PrimitiveGroup
+    @ingroup Render
     @brief describes a group of primitives to be rendered
     
     A PrimitiveGroup object describes the number and type of a set of
@@ -13,7 +14,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
 
 class PrimitiveGroup {
 public:
@@ -37,6 +37,5 @@ public:
     }
 };
 
-} // namespace Render
 } // namespace Oryol
  

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::simpleFactory
+    @class Oryol::_priv::simpleFactory
+    @ingroup _priv
     @brief template factory base class for simple rendering resources
     
     This base factory can be used as-is for very simple resource which
@@ -11,7 +12,7 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 template<class RESOURCE, ResourceType::Code TYPE>
 class simpleFactory : public Resource::simpleFactory<RESOURCE> {
@@ -44,5 +45,5 @@ simpleFactory<RESOURCE,TYPE>::DestroyResource(RESOURCE& res) {
     res.setState(Resource::State::Setup);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

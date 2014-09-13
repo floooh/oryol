@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -72,11 +72,11 @@ const char* fs_150_src =
 "_COLOR = _TEXTURE2D(tex, uv);\n"
 "}\n"
 ;
-Render::ProgramBundleSetup Main::CreateSetup() {
-    Render::ProgramBundleSetup setup("Main");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, vs_100_src, fs_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, vs_120_src, fs_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, vs_150_src, fs_150_src);
+ProgramBundleSetup Main::CreateSetup() {
+    ProgramBundleSetup setup("Main");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vs_100_src, fs_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vs_120_src, fs_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vs_150_src, fs_150_src);
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }

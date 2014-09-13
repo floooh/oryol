@@ -10,7 +10,6 @@
 namespace Oryol {
 namespace Debug {
 
-using namespace Render;
 using namespace Resource;
 
 extern const char *kc85_4_Font;

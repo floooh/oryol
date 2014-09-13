@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -288,19 +288,19 @@ const char* offscreenFS_150_src =
 "_COLOR = vec4(red, green, blue, 0.0) * 100.0;\n"
 "}\n"
 ;
-Render::ProgramBundleSetup Offscreen::CreateSetup() {
-    Render::ProgramBundleSetup setup("Offscreen");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, offscreenVS_100_src, offscreenFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, offscreenVS_120_src, offscreenFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, offscreenVS_150_src, offscreenFS_150_src);
+ProgramBundleSetup Offscreen::CreateSetup() {
+    ProgramBundleSetup setup("Offscreen");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, offscreenVS_100_src, offscreenFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, offscreenVS_120_src, offscreenFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, offscreenVS_150_src, offscreenFS_150_src);
     setup.AddUniform("time", Time);
     return setup;
 }
-Render::ProgramBundleSetup Copy::CreateSetup() {
-    Render::ProgramBundleSetup setup("Copy");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, copyVS_100_src, copyFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, copyVS_120_src, copyFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, copyVS_150_src, copyFS_150_src);
+ProgramBundleSetup Copy::CreateSetup() {
+    ProgramBundleSetup setup("Copy");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, copyVS_100_src, copyFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, copyVS_120_src, copyFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, copyVS_150_src, copyFS_150_src);
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }

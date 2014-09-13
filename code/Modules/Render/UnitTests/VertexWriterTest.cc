@@ -7,7 +7,6 @@
 #include "Core/Memory/Memory.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------
 TEST(VertexWriterTest) {

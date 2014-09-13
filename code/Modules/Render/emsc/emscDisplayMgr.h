@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::emscDisplayMgr
+    @class Oryol::_priv::emscDisplayMgr
+    @ingroup _priv
     @brief display manager class for emscripten platform
 */
 #include "Render/base/displayMgrBase.h"
 #include <emscripten/html5.h>
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class emscDisplayMgr : public displayMgrBase {
 public:
@@ -34,5 +35,5 @@ private:
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::VertexLayout
+    @class Oryol::VertexLayout
+    @ingroup Render
     @brief describes the data layout of a vertex in a vertex buffer
     @see VertexComponent
 */
@@ -9,7 +10,6 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Render {
     
 class VertexLayout {
 public:
@@ -92,5 +92,4 @@ VertexLayout::ComponentByteOffset(int32 index) const {
     return this->byteOffsets[index];
 }
 
-} // namespace Render
 } // namespace Oryol

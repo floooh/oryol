@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::StencilState
+    @class Oryol::StencilState
+    @ingroup Render
     @brief holds stencil-buffer render state for one face side
 */
 #include "Core/Types.h"
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
     
 class StencilState {
 public:
@@ -50,5 +50,4 @@ public:
     };
 };
 
-} // namespace Render
 } // namespace Oryol

@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glInfo
+    @class Oryol::_priv::glInfo
+    @ingroup _priv
     @brief dump information about the host's GL implementation
 */
 #include "Core/Types.h"
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class glInfo {
 public:
@@ -49,5 +50,5 @@ private:
     static bool isValid;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

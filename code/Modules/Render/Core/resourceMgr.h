@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::resourceMgr
+    @class Oryol::_priv::resourceMgr
+    @ingroup _priv
     @brief rendering resource manager
     
     The resource manager handles creation, sharing and destruction of
@@ -17,7 +18,7 @@
 #include "Resource/Pool.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class stateWrapper;
 class displayMgr;
@@ -108,6 +109,6 @@ resourceMgr::LookupDrawState(const Resource::Id& resId) {
     return this->drawStatePool.Lookup(resId);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
  

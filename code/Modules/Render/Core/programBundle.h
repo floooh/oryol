@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::programBundle
+    @class Oryol::_priv::programBundle
     @brief a shader program bundle
 
     A programBundle resource holds several related shader programs, one of
@@ -14,9 +14,9 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glProgramBundle.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class programBundle : public glProgramBundle { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 #else
 #error "Target platform not yet supported!"

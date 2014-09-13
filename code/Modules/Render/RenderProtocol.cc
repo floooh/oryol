@@ -5,7 +5,6 @@
 #include "RenderProtocol.h"
 
 namespace Oryol {
-namespace Render {
 OryolClassPoolAllocImpl(RenderProtocol::DisplaySetup);
 OryolClassPoolAllocImpl(RenderProtocol::DisplayDiscarded);
 OryolClassPoolAllocImpl(RenderProtocol::DisplayModified);
@@ -23,6 +22,5 @@ RenderProtocol::Factory::Create(MessageIdType id) {
         o_assert(id < RenderProtocol::MessageId::NumMessageIds);
         return jumpTable[id - Protocol::MessageId::NumMessageIds]();
     };
-}
 }
 }

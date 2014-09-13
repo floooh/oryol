@@ -6,7 +6,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
 
 using namespace Resource;
 
@@ -30,5 +29,4 @@ ProgramSelectionMask(selMask) {
     // empty
 }
 
-} // namespace Render
 } // namespace Oryol

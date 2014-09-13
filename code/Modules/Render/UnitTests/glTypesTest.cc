@@ -6,7 +6,8 @@
 #include "Render/gl/gl_impl.h"
 #include "Render/gl/glTypes.h"
 
-using namespace Oryol::Render;
+using namespace Oryol;
+using namespace _priv;
 
 //------------------------------------------------------------------------------
 TEST(glTypesTest) {

@@ -11,7 +11,7 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 using namespace Resource;
     
@@ -146,5 +146,6 @@ glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
     return glShader;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
+

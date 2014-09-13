@@ -1,14 +1,14 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glVertexAttr
+    @class Oryol::_priv::glVertexAttr
     @brief private: hold GL specific vertex attr values
 */
 #include "Core/Types.h"
 #include "Render/gl/gl_decl.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glVertexAttr {
 public:
@@ -37,5 +37,5 @@ public:
     GLuint divisor;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

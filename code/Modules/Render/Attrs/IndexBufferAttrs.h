@@ -1,13 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::IndexBufferAttrs
+    @class Oryol::IndexBufferAttrs
+    @ingroup Render
     @brief attributes of an index buffer
 */
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
 
 struct IndexBufferAttrs {
     int32 NumIndices{0};
@@ -18,5 +18,4 @@ struct IndexBufferAttrs {
     };
 };
 
-} // namespace Render
 } // namespace Oryol

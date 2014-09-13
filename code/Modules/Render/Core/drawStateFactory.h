@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::drawStateFactory
+    @class Oryol::_priv::drawStateFactory
+    @ingroup _priv
     @brief factory class for drawState resources
 */
 #include "Render/base/simpleFactory.h"
 #include "Render/Core/drawState.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class meshPool;
 class programBundlePool;
@@ -33,5 +34,5 @@ private:
     class programBundlePool* programBundlePool;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

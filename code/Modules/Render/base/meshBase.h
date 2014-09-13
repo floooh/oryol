@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::meshBase
+    @class Oryol::_priv::meshBase
+    @ingroup _priv
     @brief private: base class for platform-specific mesh implementations
 */
 #include "Resource/resourceBase.h"
@@ -14,7 +15,7 @@
 #include "IO/IOProtocol.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class meshBase : public Resource::resourceBase<MeshSetup> {
 public:
@@ -87,7 +88,7 @@ meshBase::GetPrimitiveGroup(int32 index) const {
     return this->primitiveGroups[index];
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 
 

@@ -7,7 +7,6 @@
 #include "glm/glm.hpp"
 
 namespace Oryol {
-namespace Render {
 
 //------------------------------------------------------------------------------
 uint8*
@@ -128,8 +127,5 @@ VertexWriter::Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, fl
     }
 }
     
-
-
-} // namespace Render
 } // namespace Oryol
 

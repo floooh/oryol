@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::drawState
+    @class Oryol::_priv::drawState
+    @ingroup _priv
     @brief bundles pre-compiled state for drawing operations
 */
 #include "Resource/resourceBase.h"
 #include "Render/Setup/DrawStateSetup.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class mesh;
 class programBundle;
@@ -49,5 +50,5 @@ drawState::getProgramBundle() const {
     return this->programBundle_;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

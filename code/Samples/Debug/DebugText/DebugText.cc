@@ -8,7 +8,6 @@
 #include "glm/gtc/random.hpp"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Debug;
 
 // derived application class
@@ -43,7 +42,7 @@ DebugTextApp::OnRunning() {
         this->drawText();
         
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
         this->debug->DrawTextBuffer();
         
         this->render->EndFrame();

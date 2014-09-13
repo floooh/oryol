@@ -1,19 +1,20 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glRenderMgr
+    @class Oryol::_priv::glRenderMgr
+    @ingroup _priv
     @brief GL implementation of renderer class
 */
 #include "Render/base/renderMgrBase.h"
 #include "glm/vec4.hpp"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glRenderMgr : public renderMgrBase {
 public:
     /// test if an optional feature is supported
-    bool Supports(Feature::Code feat) const;
+    bool Supports(RenderFeature::Code feat) const;
     /// apply the current render target
     void ApplyRenderTarget(texture* rt);
     /// apply draw state to use for rendering
@@ -25,7 +26,7 @@ public:
     /// apply a shader variable array
     template<class T> void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     /// clear the currently assigned render target
-    void Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -40,5 +41,5 @@ public:
     void ReadPixels(void* buf, int32 bufNumBytes);
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

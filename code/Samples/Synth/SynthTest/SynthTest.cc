@@ -10,7 +10,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Debug;
-using namespace Oryol::Render;
 using namespace Oryol::Input;
 using namespace Oryol::Synth;
 
@@ -171,7 +170,7 @@ SynthTestApp::OnRunning() {
         this->debug->PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
         this->debug->PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
         this->debug->DrawTextBuffer();
         this->render->EndFrame();
         this->frameCount++;

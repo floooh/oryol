@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -309,20 +309,20 @@ const char* plasmaFS_150_src =
 "_COLOR = vec4(red, green, blue, height * 0.2);\n"
 "}\n"
 ;
-Render::ProgramBundleSetup Plane::CreateSetup() {
-    Render::ProgramBundleSetup setup("Plane");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, planeVS_100_src, planeFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, planeVS_120_src, planeFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, planeVS_150_src, planeFS_150_src);
+ProgramBundleSetup Plane::CreateSetup() {
+    ProgramBundleSetup setup("Plane");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, planeVS_100_src, planeFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, planeVS_120_src, planeFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, planeVS_150_src, planeFS_150_src);
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }
-Render::ProgramBundleSetup Plasma::CreateSetup() {
-    Render::ProgramBundleSetup setup("Plasma");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, plasmaVS_100_src, plasmaFS_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, plasmaVS_120_src, plasmaFS_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, plasmaVS_150_src, plasmaFS_150_src);
+ProgramBundleSetup Plasma::CreateSetup() {
+    ProgramBundleSetup setup("Plasma");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, plasmaVS_100_src, plasmaFS_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, plasmaVS_120_src, plasmaFS_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, plasmaVS_150_src, plasmaFS_150_src);
     setup.AddUniform("time", Time);
     return setup;
 }

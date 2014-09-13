@@ -5,7 +5,7 @@
 #include "meshBase.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 meshBase::meshBase() :
@@ -57,5 +57,5 @@ meshBase::setPrimitiveGroup(int32 index, const PrimitiveGroup& group) {
     this->primitiveGroups[index] = group;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

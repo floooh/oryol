@@ -6,7 +6,6 @@
 #include "Render/Core/Enums.h"
 
 namespace Oryol {
-namespace Render {
 
 using namespace Resource;
     
@@ -158,5 +157,4 @@ ProgramBundleSetup::IsTextureUniform(int32 uniformIndex) const {
     return this->uniformEntries[uniformIndex].isTexture;
 }
 
-} // namespace Render
 } // namespace Oryol

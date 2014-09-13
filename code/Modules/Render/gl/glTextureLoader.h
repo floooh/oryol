@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glTextureLoader
+    @class Oryol::_priv::glTextureLoader
+    @ingroup _priv
     @brief standard texture file loader for GL
 
     This loads the most common runtime texture file formats for the
@@ -14,7 +15,7 @@ class context;
 }
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class glTextureLoader : public textureLoaderBase {
     OryolClassDecl(glTextureLoader);
@@ -32,5 +33,5 @@ private:
     bool glCreateTexture(texture& tex, const gliml::context& ctx) const;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

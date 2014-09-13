@@ -9,7 +9,6 @@
 #include "game.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Input;
 using namespace Paclone;
 
@@ -52,7 +51,7 @@ PacloneApp::OnRunning() {
     if (this->render->BeginFrame()) {
 
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         game::Direction input = this->getInput();
         this->gameState.Update(this->tick, &this->spriteCanvas, input);
         this->spriteCanvas.Render();

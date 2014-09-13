@@ -5,7 +5,7 @@
 #include "drawState.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 drawState::drawState() :
@@ -41,5 +41,5 @@ drawState::setProgramBundle(programBundle* pb) {
     this->programBundle_ = pb;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

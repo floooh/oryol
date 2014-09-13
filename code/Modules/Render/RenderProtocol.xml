@@ -1,4 +1,4 @@
-<Generator type="MessageProtocol" ns="Render" name="RenderProtocol" id="RRPT">
+<Generator type="MessageProtocol" name="RenderProtocol" id="RRPT">
 
     <!-- display has been setup -->
     <Message name="DisplaySetup" serialize="false"/>

@@ -9,7 +9,6 @@
 #include "glm/trigonometric.hpp"
 
 namespace Oryol {
-namespace Render {
 
 //------------------------------------------------------------------------------
 ShapeBuilder::ShapeBuilder() :
@@ -895,5 +894,4 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
     o_assert((curTriIndex - startTriIndex) == shape.numTris);
 }
 
-} // namespace Render
 } // namespace Oryol

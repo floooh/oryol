@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::renderMgrBase
+    @class Oryol::_priv::renderMgrBase
+    @ingroup _priv
     @brief base class for platform-specific renderers
 */
 #include "Core/Types.h"
 #include "Render/Core/mesh.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class displayMgr;
 class stateWrapper;
@@ -58,6 +59,6 @@ renderMgrBase::IsValid() const {
     return this->isValid;
 }
 
-} // namespace Renderer
+} // namespace _priv
 } // namespace Oryol
  

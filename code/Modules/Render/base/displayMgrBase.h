@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::displayMgrBase
+    @class Oryol::_priv::displayMgrBase
+    @ingroup _priv
     @brief private: display managers base class
     
     @see displayMgr
@@ -12,7 +13,7 @@
 #include "Messaging/Port.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 class displayMgrBase {
 public:
@@ -54,5 +55,5 @@ protected:
     bool displayValid;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

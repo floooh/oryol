@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:3#
+/*  #version:4#
     machine generated, do not edit!
 */
 #include "Render/Setup/ProgramBundleSetup.h"
@@ -9,7 +9,7 @@ namespace Shaders {
     class Main {
     public:
         static const int32 ModelViewProjection = 0;
-        static Render::ProgramBundleSetup CreateSetup();
+        static ProgramBundleSetup CreateSetup();
     };
 }
 }

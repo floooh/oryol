@@ -7,7 +7,7 @@
 #include "Core/Assert.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
     
 //------------------------------------------------------------------------------
 GLenum
@@ -181,5 +181,5 @@ glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
     }
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

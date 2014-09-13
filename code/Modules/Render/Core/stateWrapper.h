@@ -1,16 +1,17 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::StateWrapper
+    @class Oryol::_priv::StateWrapper
+    @ingroup _priv
     @brief platform-agnostic wrapper for render state management
     @todo describe StateWrapper
 */
 #if ORYOL_OPENGL
 #include "Render/gl/glStateWrapper.h"
 namespace Oryol {
-namespace Render {
+namespace _priv {
 class stateWrapper: public glStateWrapper { };
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol
 #else
 #error "Platform not yet supported!"

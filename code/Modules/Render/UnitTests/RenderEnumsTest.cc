@@ -9,7 +9,6 @@
 #include <array>
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------
 TEST(PixelFormatTest) {
@@ -19,82 +18,82 @@ TEST(PixelFormatTest) {
 //------------------------------------------------------------------------------
 TEST(PixelFormatChannelBitsTest) {
 
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Red) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Green) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Blue) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Alpha) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Red) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Green) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Blue) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Alpha) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA8, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Red) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Green) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Blue) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Red) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Green) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Blue) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGB8, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Red) == 5);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Green) == 6);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Blue) == 5);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Red) == 5);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Green) == 6);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Blue) == 5);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G6B5, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Red) == 5);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Green) == 5);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Blue) == 5);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Alpha) == 1);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Red) == 5);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Green) == 5);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Blue) == 5);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Alpha) == 1);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::R5G5B5A1, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Red) == 4);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Green) == 4);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Blue) == 4);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Alpha) == 4);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Red) == 4);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Green) == 4);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Blue) == 4);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Alpha) == 4);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA4, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Red) == 8);
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Green) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Blue) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::L8, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Red) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Green) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Blue) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::L8, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Red) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Green) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Blue) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Depth) == 16);
-    CHECK(PixelFormat::NumBits(PixelFormat::D16, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Red) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Green) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Blue) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Depth) == 16);
+    CHECK(PixelFormat::NumBits(PixelFormat::D16, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Red) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Green) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Blue) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Depth) == 32);
-    CHECK(PixelFormat::NumBits(PixelFormat::D32, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Red) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Green) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Blue) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Depth) == 32);
+    CHECK(PixelFormat::NumBits(PixelFormat::D32, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Red) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Green) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Blue) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Alpha) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Depth) == 24);
-    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, Channel::Stencil) == 8);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Red) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Green) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Blue) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Alpha) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Depth) == 24);
+    CHECK(PixelFormat::NumBits(PixelFormat::D24S8, PixelChannel::Stencil) == 8);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Red) == 32);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Green) == 32);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Blue) == 32);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Alpha) == 32);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Red) == 32);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Green) == 32);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Blue) == 32);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Alpha) == 32);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA32F, PixelChannel::Stencil) == 0);
 
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Red) == 16);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Green) == 16);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Blue) == 16);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Alpha) == 16);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Depth) == 0);
-    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, Channel::Stencil) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Red) == 16);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Green) == 16);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Blue) == 16);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Alpha) == 16);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Depth) == 0);
+    CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Stencil) == 0);
 
     // all other pixel formats must return 0 for all channels
     for (int pf = 0; pf < PixelFormat::NumPixelFormats; pf++) {
@@ -109,8 +108,8 @@ TEST(PixelFormatChannelBitsTest) {
             (pf != PixelFormat::D24S8) &&
             (pf != PixelFormat::RGBA32F) &&
             (pf != PixelFormat::RGBA16F)) {
-            std::array<Channel::Bits, 6> channels = { {Channel::Red, Channel::Green, Channel::Blue, Channel::Alpha, Channel::Depth, Channel::Stencil} };
-            for (Channel::Bits chn : channels) {
+            std::array<PixelChannel::Bits, 6> channels = { {PixelChannel::Red, PixelChannel::Green, PixelChannel::Blue, PixelChannel::Alpha, PixelChannel::Depth, PixelChannel::Stencil} };
+            for (PixelChannel::Bits chn : channels) {
                 CHECK(PixelFormat::NumBits((PixelFormat::Code)pf, chn) == 0);
             }
         }

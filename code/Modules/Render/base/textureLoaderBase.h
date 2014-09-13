@@ -1,15 +1,16 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::textureLoaderBase
-    @brief private: base class for texture loaders
+    @class Oryol::_priv::textureLoaderBase
+    @ingroup _priv
+    @brief base class for texture loaders
 */
 #include "Render/base/loaderBase.h"
 #include "Render/Core/texture.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class texture;
 class textureFactory;
@@ -44,5 +45,5 @@ protected:
     textureFactory* texFactory;
 };
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

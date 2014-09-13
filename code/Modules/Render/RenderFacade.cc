@@ -5,10 +5,10 @@
 #include "RenderFacade.h"
 
 namespace Oryol {
-namespace Render {
 
 OryolLocalSingletonImpl(RenderFacade);
 
+using namespace _priv;
 using namespace Resource;
     
 //------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ RenderFacade::ReadPixels(void* buf, int32 bufNumBytes) {
 
 //------------------------------------------------------------------------------
 void
-RenderFacade::Clear(Channel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+RenderFacade::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
     this->renderManager.Clear(channels, color, depth, stencil);
 }
@@ -210,5 +210,4 @@ RenderFacade::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances)
     this->renderManager.DrawInstanced(primGroup, numInstances);
 }
 
-} // namespace Render
 } // namespace Oryol

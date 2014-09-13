@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:3# machine generated, do not edit!
+// #version:4# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "SynthShaders.h"
@@ -60,11 +60,11 @@ const char* fsSynth_150_src =
 "_COLOR = vec4(s0, s1);\n"
 "}\n"
 ;
-Render::ProgramBundleSetup Synth::CreateSetup() {
-    Render::ProgramBundleSetup setup("Synth");
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL100, vsSynth_100_src, fsSynth_100_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL120, vsSynth_120_src, fsSynth_120_src);
-    setup.AddProgramFromSources(0, Render::ShaderLang::GLSL150, vsSynth_150_src, fsSynth_150_src);
+ProgramBundleSetup Synth::CreateSetup() {
+    ProgramBundleSetup setup("Synth");
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsSynth_100_src, fsSynth_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsSynth_120_src, fsSynth_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsSynth_150_src, fsSynth_150_src);
     return setup;
 }
 }

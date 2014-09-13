@@ -14,7 +14,6 @@
 #include "demo.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Time;
 using namespace Oryol::Input;
 using namespace Oryol::NanoVG;
@@ -48,7 +47,7 @@ NanoVGApp::OnRunning() {
     const int32 h = attrs.FramebufferHeight;
     if (this->render->BeginFrame()) {
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::All, glm::vec4(0.3f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
         const Mouse& mouse = this->input->Mouse();
         const int32 mouseX = mouse.Position().x;

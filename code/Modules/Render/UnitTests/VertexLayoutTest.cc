@@ -6,7 +6,6 @@
 #include "Render/Core/VertexLayout.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 TEST(VertexLayoutTest) {
     VertexLayout layout;

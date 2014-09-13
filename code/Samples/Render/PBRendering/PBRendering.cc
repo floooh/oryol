@@ -12,7 +12,6 @@
 
 using namespace Oryol;
 using namespace Oryol::Debug;
-using namespace Oryol::Render;
 using namespace Oryol::Resource;
 
 // derived application class
@@ -45,7 +44,7 @@ PBRenderingApp::OnRunning() {
         
         this->render->ApplyDefaultRenderTarget();
         this->render->ApplyDrawState(this->drawState);
-        this->render->Clear(Channel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
+        this->render->Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
         
         this->applyDirLight();
         this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));

@@ -7,7 +7,6 @@
 #include <cstring>
 
 using namespace Oryol;
-using namespace Oryol::Render;
 
 //------------------------------------------------------------------------------
 TEST(MeshBuilderTest) {

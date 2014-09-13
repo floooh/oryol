@@ -6,7 +6,7 @@
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 glProgramBundle::glProgramBundle() {
@@ -97,5 +97,5 @@ glProgramBundle::getProgramAtIndex(int32 progIndex) const {
     return this->programEntries[progIndex].program;
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::TextureLoader
+    @class Oryol::TextureLoader
+    @ingroup Render
     @brief the default texture loader class
     
     TextureLoader is the default texture loader which can load the default
@@ -13,14 +14,12 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glTextureLoader.h"
 namespace Oryol {
-namespace Render {
 
-class TextureLoader : public glTextureLoader {
+class TextureLoader : public _priv::glTextureLoader {
     OryolClassDecl(TextureLoader);
     OryolClassCreator(TextureLoader);
 };
     
-} // namespace Render
 } // namespace Oryol
 #else
 #error "TextureLoader not yet implemented for this platform!"

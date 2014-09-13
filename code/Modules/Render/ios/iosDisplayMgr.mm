@@ -9,7 +9,7 @@
 #include <GLKit/GLKit.h>
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 iosDisplayMgr* iosDisplayMgr::self = nullptr;
 
@@ -126,5 +126,5 @@ iosDisplayMgr::glBindDefaultFramebuffer() {
     [glkView bindDrawable];
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

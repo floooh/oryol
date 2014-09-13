@@ -1,14 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::glProgramBundleFactory
+    @class Oryol::_priv::glProgramBundleFactory
+    @ingroup _priv
     @brief private: GL implementation of programBundleFactory
 */
 #include "Render/base/simpleFactory.h"
 #include "Render/Core/programBundle.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class stateWrapper;
 class shaderPool;
@@ -40,5 +41,5 @@ private:
     bool isValid;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

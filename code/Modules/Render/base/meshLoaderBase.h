@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::meshLoaderBase
+    @class Oryol::_priv::meshLoaderBase
+    @ingroup _priv
     @brief private: base class for mesh loaders
 */
 #include "Render/base/loaderBase.h"
@@ -9,7 +10,7 @@
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 class meshFactory;
 
@@ -43,5 +44,5 @@ protected:
     meshFactory* mshFactory;
 };
     
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

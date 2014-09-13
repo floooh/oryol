@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Render::textureFactory
+    @class Oryol::_priv::textureFactory
+    @ingroup _priv
     @brief private: resource factory to texture objects
     @todo describe texture factory
 */
@@ -9,7 +10,7 @@
 #if ORYOL_OPENGL
 #include "Render/gl/glTextureFactory.h"
 namespace Oryol {
-namespace Render {    
+namespace _priv {
 class textureFactory : public glTextureFactory {
 public:
     /// attach a loader
@@ -28,5 +29,5 @@ textureFactory::AttachLoader(const Ptr<textureLoaderBase>& loader) {
     this->loaders.Add(loader);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

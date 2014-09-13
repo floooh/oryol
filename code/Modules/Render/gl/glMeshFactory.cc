@@ -12,7 +12,7 @@
 #include "Resource/State.h"
 
 namespace Oryol {
-namespace Render {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 glMeshFactory::glMeshFactory() :
@@ -476,5 +476,5 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     mesh.setState(Resource::State::Valid);
 }
 
-} // namespace Render
+} // namespace _priv
 } // namespace Oryol

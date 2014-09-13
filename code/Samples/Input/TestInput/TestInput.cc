@@ -9,7 +9,6 @@
 #include "Core/String/StringConverter.h"
 
 using namespace Oryol;
-using namespace Oryol::Render;
 using namespace Oryol::Debug;
 using namespace Oryol::Input;
 
@@ -82,7 +81,7 @@ TestInputApp::OnRunning() {
     if (this->render->BeginFrame()) {
     
         this->render->ApplyDefaultRenderTarget();
-        this->render->Clear(Channel::RGBA, glm::vec4(0.25f), 1.0f, 0);
+        this->render->Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
         
         const Keyboard& keyboard = this->input->Keyboard();
         const Mouse& mouse = this->input->Mouse();
