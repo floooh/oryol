@@ -444,7 +444,7 @@ Map<KEY, VALUE>::FindIndex(const KEY& key) const {
     o_assert(!this->inBulkMode);
     auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
     if ((ptr != this->buffer.elmEnd) && (key == ptr->key)) {
-        return ptr - this->buffer.elmStart;
+        return int32(ptr - this->buffer.elmStart);
     }
     else {
         return InvalidIndex;
