@@ -59,31 +59,32 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnInit() {
-    auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol PBR Sample");
+    auto renderSetup = RenderSetup::Window(1024, 600, true, "Oryol PBR Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
     
     // create resources
     ShapeBuilder shapeBuilder;
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Float3);
-    shapeBuilder.AddSphere(0.5f, 36, 20, true);
-    shapeBuilder.AddPlane(5.0f, 5.0f, 1, true);
-    shapeBuilder.Build();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Float3);
+    shapeBuilder.Sphere(0.5f, 36, 20, true)
+        .Plane(5.0f, 5.0f, 1, true)
+        .Build();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
     
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     

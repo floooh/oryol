@@ -33,50 +33,28 @@ ShapeBuilder::Clear() {
 
 //------------------------------------------------------------------------------
 class VertexLayout&
-ShapeBuilder::VertexLayout() {
-    return this->meshBuilder.VertexLayout();
+ShapeBuilder::Layout() {
+    return this->meshBuilder.Layout;
 }
 
 //------------------------------------------------------------------------------
 const class VertexLayout&
-ShapeBuilder::VertexLayout() const {
-    return this->meshBuilder.VertexLayout();
+ShapeBuilder::Layout() const {
+    return this->meshBuilder.Layout;
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::SetTransform(const glm::mat4& m) {
+ShapeBuilder&
+ShapeBuilder::Transform(const glm::mat4& m) {
     this->transform = m;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-const glm::mat4&
-ShapeBuilder::GetTransform() const {
-    return this->transform;
-}
-
-//------------------------------------------------------------------------------
-void
-ShapeBuilder::SetColor(const glm::vec4& c) {
+ShapeBuilder&
+ShapeBuilder::Color(const glm::vec4& c) {
     this->color = c;
-}
-
-//------------------------------------------------------------------------------
-const glm::vec4&
-ShapeBuilder::GetColor() const {
-    return this->color;
-}
-
-//------------------------------------------------------------------------------
-void
-ShapeBuilder::SetRandomColorsFlag(bool b) {
-    this->randomColors = b;
-}
-
-//------------------------------------------------------------------------------
-bool
-ShapeBuilder::GetRandomColorsFlag() const {
-    return this->randomColors;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -92,12 +70,12 @@ ShapeBuilder::buildPrimitiveGroup() {
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup) {
+ShapeBuilder&
+ShapeBuilder::Box(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup) {
     o_assert(tiles >= 1);
     
     ShapeData shape;
-    shape.type = Box;
+    shape.type = BoxShape;
     shape.transform = this->transform;
     shape.f0 = w;
     shape.f1 = h;
@@ -110,15 +88,16 @@ ShapeBuilder::AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPri
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup) {
+ShapeBuilder&
+ShapeBuilder::Sphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup) {
     o_assert((slices >= 3) && (stacks >= 2));
 
     ShapeData shape;
-    shape.type = Sphere;
+    shape.type = SphereShape;
     shape.transform = this->transform;
     shape.f0 = radius;
     shape.i0 = slices;
@@ -130,15 +109,16 @@ ShapeBuilder::AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPr
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup) {
+ShapeBuilder&
+ShapeBuilder::Cylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup) {
     o_assert((slices >= 3) && (stacks >= 1));
 
     ShapeData shape;
-    shape.type = Cylinder;
+    shape.type = CylinderShape;
     shape.transform = this->transform;
     shape.f0 = radius;
     shape.f2 = length;
@@ -151,15 +131,16 @@ ShapeBuilder::AddCylinder(float32 radius, float32 length, int32 slices, int32 st
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool buildPrimGroup) {
+ShapeBuilder&
+ShapeBuilder::Torus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool buildPrimGroup) {
     o_assert((sides >= 3) && (rings >= 3));
 
     ShapeData shape;
-    shape.type = Torus;
+    shape.type = TorusShape;
     shape.transform = this->transform;
     shape.f0 = ringRadius;
     shape.f1 = radius;
@@ -172,15 +153,16 @@ ShapeBuilder::AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 ri
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
+ShapeBuilder&
+ShapeBuilder::Plane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
     o_assert(tiles >= 1);
 
     ShapeData shape;
-    shape.type = Plane;
+    shape.type = PlaneShape;
     shape.transform = this->transform;
     shape.f0 = w;
     shape.f1 = d;
@@ -192,11 +174,12 @@ ShapeBuilder::AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
     if (buildPrimGroup) {
         this->buildPrimitiveGroup();
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
 const Ptr<Stream>&
-ShapeBuilder::GetStream() const {
+ShapeBuilder::Result() const {
     return this->meshBuilder.GetStream();
 }
 
@@ -204,14 +187,14 @@ ShapeBuilder::GetStream() const {
 void
 ShapeBuilder::UpdateNumElements(ShapeData& shape) {
     switch (shape.type) {
-        case Box:
+        case BoxShape:
             {
                 const int32 numTiles = shape.i0;
                 shape.numVertices = (numTiles + 1) * (numTiles + 1) * 6;
                 shape.numTris = numTiles * numTiles * 2 * 6;
             }
             break;
-        case Sphere:
+        case SphereShape:
             {
                 // see BuildSphere() for geometry layout
                 const int32 numSlices = shape.i0;
@@ -220,7 +203,7 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
                 shape.numTris = (2 * numSlices * numStacks) - (2 * numSlices);
             }
             break;
-        case Cylinder:
+        case CylinderShape:
             {
                 // see BuildCylinder() for geometry layout
                 const int32 numSlices = shape.i0;
@@ -229,7 +212,7 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
                 shape.numTris = (2 * numSlices * numStacks) + (2 * numSlices);
             }
             break;
-        case Torus:
+        case TorusShape:
             {
                 // see BuildTorus() for geometry layout
                 const int32 numSides = shape.i0;
@@ -238,7 +221,7 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
                 shape.numTris = 2 * numSides * numRings;
             }
             break;
-        case Plane:
+        case PlaneShape:
             {
                 const int32 numTiles = shape.i0;
                 shape.numVertices = (numTiles + 1) * (numTiles + 1);
@@ -270,27 +253,27 @@ ShapeBuilder::Build() {
     }
     
     // configure the mesh builder
-    this->meshBuilder.SetNumVertices(numVerticesAll);
-    this->meshBuilder.SetIndexType(IndexType::Index16);
-    this->meshBuilder.SetNumIndices(numIndicesAll);
+    this->meshBuilder.NumVertices = numVerticesAll;
+    this->meshBuilder.IndicesType = IndexType::Index16;
+    this->meshBuilder.NumIndices  = numIndicesAll;
     this->meshBuilder.Begin();
     int32 curVertexIndex = 0;
     int32 curTriIndex = 0;
     for (const ShapeData& shape : this->shapes) {
         switch (shape.type) {
-            case Box:
+            case BoxShape:
                 this->BuildBox(shape, curVertexIndex, curTriIndex);
                 break;
-            case Sphere:
+            case SphereShape:
                 this->BuildSphere(shape, curVertexIndex, curTriIndex);
                 break;
-            case Cylinder:
+            case CylinderShape:
                 this->BuildCylinder(shape, curVertexIndex, curTriIndex);
                 break;
-            case Torus:
+            case TorusShape:
                 this->BuildTorus(shape, curVertexIndex, curTriIndex);
                 break;
-            case Plane:
+            case PlaneShape:
                 this->BuildPlane(shape, curVertexIndex, curTriIndex);
                 break;
             default:
@@ -306,7 +289,7 @@ ShapeBuilder::Build() {
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) {
-    o_assert(this->meshBuilder.VertexLayout().Contains(VertexAttr::Color0));
+    o_assert(this->meshBuilder.Layout.Contains(VertexAttr::Color0));
     if (this->randomColors) {
         const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
         const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
@@ -329,7 +312,7 @@ ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) 
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const auto& vertexLayout = this->meshBuilder.VertexLayout();
+    const auto& vertexLayout = this->meshBuilder.Layout;
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     
     const int32 startVertexIndex = curVertexIndex;
@@ -494,7 +477,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
 */
 void
 ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const auto& vertexLayout = this->meshBuilder.VertexLayout();
+    const auto& vertexLayout = this->meshBuilder.Layout;
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     const int32 numSlices = shape.i0;
@@ -592,7 +575,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
 */
 void
 ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const auto& vertexLayout = this->meshBuilder.VertexLayout();
+    const auto& vertexLayout = this->meshBuilder.Layout;
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     const int32 numSlices = shape.i0;
@@ -739,7 +722,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
 */
 void
 ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const auto& vertexLayout = this->meshBuilder.VertexLayout();
+    const auto& vertexLayout = this->meshBuilder.Layout;
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
     static const float32 ringRadius = shape.f0;
@@ -830,7 +813,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
 */
 void
 ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex) {
-    const auto& vertexLayout = this->meshBuilder.VertexLayout();
+    const auto& vertexLayout = this->meshBuilder.Layout;
     o_assert(vertexLayout.Contains(VertexAttr::Position));
     const int32 startVertexIndex = curVertexIndex;
 

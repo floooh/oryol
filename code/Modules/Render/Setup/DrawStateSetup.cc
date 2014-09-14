@@ -8,23 +8,20 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-DrawStateSetup::DrawStateSetup() {
+DrawStateSetup::DrawStateSetup() :
+Locator(Locator::NonShared()),
+ProgramSelectionMask(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-DrawStateSetup::DrawStateSetup(const class Locator& loc) :
-Locator(loc) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-DrawStateSetup::DrawStateSetup(const class Locator& loc, const Id& msh, const Id& prg, uint32 selMask) :
-Locator(loc),
-Mesh(msh),
-Program(prg),
-ProgramSelectionMask(selMask) {
-    // empty
+DrawStateSetup
+DrawStateSetup::FromMeshAndProg(const Id& msh, const Id& prg, uint32 selMask) {
+    DrawStateSetup setup;
+    setup.Mesh = msh;
+    setup.Program = prg;
+    setup.ProgramSelectionMask = selMask;
+    return setup;
 }
 
 } // namespace Oryol

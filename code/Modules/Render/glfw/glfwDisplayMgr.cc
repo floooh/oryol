@@ -77,7 +77,7 @@ glfwDisplayMgr::SetupDisplay(const RenderSetup& setup) {
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
-    if (setup.Fullscreen) {
+    if (!setup.Windowed) {
         glfwMonitor = glfwGetPrimaryMonitor();
     }
     

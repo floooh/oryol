@@ -31,7 +31,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Render::Setup(RenderSetup::AsWindow(512, 256, false, "Oryol Input Test Sample"));
+    Render::Setup(RenderSetup::Window(512, 256, false, "Oryol Input Test Sample"));
     Dbg::Setup();
     Input::Setup();
     

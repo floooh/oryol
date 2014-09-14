@@ -8,6 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 MeshSetup::MeshSetup() :
+Locator(Locator::NonShared()),
 VertexUsage(Usage::InvalidUsage),
 IndexUsage(Usage::InvalidUsage),
 IOLane(0),
@@ -16,7 +17,7 @@ NumIndices(0),
 IndicesType(IndexType::None),
 numPrimGroups(0),
 setupFromFile(false),
-setupFromData(false),
+setupFromStream(false),
 setupEmpty(false),
 setupFullScreenQuad(false) {
     // empty
@@ -45,37 +46,33 @@ MeshSetup::FromFile(const class Locator& loc, const MeshSetup& blueprint) {
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromData(const class Locator& loc, Usage::Code vbUsage, Usage::Code ibUsage) {
+MeshSetup::FromStream(Usage::Code vbUsage, Usage::Code ibUsage) {
     MeshSetup setup;
-    setup.Locator = loc;
     setup.VertexUsage = vbUsage;
     setup.IndexUsage = ibUsage;
-    setup.setupFromData = true;
+    setup.setupFromStream = true;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromData(const class Locator& loc, const MeshSetup& blueprint) {
+MeshSetup::FromStream(const MeshSetup& blueprint) {
     MeshSetup setup(blueprint);
-    setup.Locator = loc;
-    setup.setupFromData = true;
+    setup.setupFromStream = true;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::CreateEmpty(const class Locator& loc,
-                       int32 numVertices,
-                       Usage::Code vertexUsage,
-                       IndexType::Code indexType,
-                       int32 numIndices,
-                       Usage::Code indexUsage) {
+MeshSetup::Empty(int32 numVertices,
+                 Usage::Code vertexUsage,
+                 IndexType::Code indexType,
+                 int32 numIndices,
+                 Usage::Code indexUsage) {
     
-    o_assert(numVertices > 0);
+    o_assert_dbg(numVertices > 0);
     
     MeshSetup setup;
-    setup.Locator = loc;
     setup.setupEmpty = true;
     setup.VertexUsage = vertexUsage;
     setup.IndexUsage = indexUsage;
@@ -87,9 +84,8 @@ MeshSetup::CreateEmpty(const class Locator& loc,
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::CreateFullScreenQuad(const class Locator& loc) {
+MeshSetup::FullScreenQuad() {
     MeshSetup setup;
-    setup.Locator = loc;
     setup.setupFullScreenQuad = true;
     return setup;
 }
@@ -102,8 +98,8 @@ MeshSetup::ShouldSetupFromFile() const {
 
 //------------------------------------------------------------------------------
 bool
-MeshSetup::ShouldSetupFromData() const {
-    return this->setupFromData;
+MeshSetup::ShouldSetupFromStream() const {
+    return this->setupFromStream;
 }
 
 //------------------------------------------------------------------------------

@@ -141,7 +141,7 @@ InstancingApp::updateParticles() {
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol Instancing Sample");
+    auto renderSetup = RenderSetup::Window(800, 500, false, "Oryol Instancing Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
@@ -153,34 +153,34 @@ InstancingApp::OnInit() {
     }
 
     // create dynamic instance data mesh
-    MeshSetup instanceMeshSetup = MeshSetup::CreateEmpty("inst", MaxNumParticles, Usage::Stream);
+    auto instanceMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
     this->instanceMesh = Render::CreateResource(instanceMeshSetup);
     
     // setup static draw state
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-    shapeBuilder.AddSphere(0.05f, 3, 2);
-    shapeBuilder.Build();
-    MeshSetup staticMeshSetup = MeshSetup::FromData("box");
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
+    auto staticMeshSetup = MeshSetup::FromStream();
     staticMeshSetup.InstanceMesh = this->instanceMesh;
-    Id mesh = Render::CreateResource(staticMeshSetup, shapeBuilder.GetStream());
+    Id mesh = Render::CreateResource(staticMeshSetup, shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.RasterizerState.CullFaceEnabled = true;
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.RasterizerState.CullFaceEnabled = true;
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
     
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->modelViewProj = this->proj * this->view * this->model;
     

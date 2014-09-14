@@ -118,7 +118,7 @@ GPUParticlesApp::updateCamera() {
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol GPU Particles Sample");
+    auto renderSetup = RenderSetup::Window(800, 500, false, "Oryol GPU Particles Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
@@ -143,7 +143,7 @@ GPUParticlesApp::OnInit() {
     // - 1 particle-rendering draw state
     
     // the 2 ping/pong particle state textures
-    auto particleBufferSetup = TextureSetup::AsRenderTarget("ping", ParticleBufferWidth, ParticleBufferHeight);
+    auto particleBufferSetup = TextureSetup::RenderTarget(ParticleBufferWidth, ParticleBufferHeight);
     particleBufferSetup.ColorFormat = PixelFormat::RGBA32F;
     particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
     particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
@@ -152,14 +152,13 @@ GPUParticlesApp::OnInit() {
     this->particleBuffer[1] = Render::CreateResource(particleBufferSetup);
     
     // a fullscreen mesh for the particle init- and update-shaders
-    Id fullscreenMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id fullscreenMesh = Render::CreateResource(MeshSetup::FullScreenQuad());
     
     // particle initialization and update draw states
     Id initProg = Render::CreateResource(Shaders::InitParticles::CreateSetup());
-    DrawStateSetup initSetup("init", fullscreenMesh, initProg, 0);
-    this->initParticles = Render::CreateResource(initSetup);
+    this->initParticles = Render::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg));
     Id updateProg = Render::CreateResource(Shaders::UpdateParticles::CreateSetup());
-    DrawStateSetup updateSetup("update", fullscreenMesh, updateProg, 0);
+    auto updateSetup = DrawStateSetup::FromMeshAndProg(fullscreenMesh, updateProg);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Render::CreateResource(updateSetup);
     Render::ReleaseResource(fullscreenMesh);
@@ -173,27 +172,27 @@ GPUParticlesApp::OnInit() {
     for (int32 i = 0; i < MaxNumParticles; i++) {
         particleIdData[i] = (float32) i;
     }
-    auto particleIdSetup = MeshSetup::CreateEmpty("particleId", MaxNumParticles, Usage::Static);
+    auto particleIdSetup = MeshSetup::Empty(MaxNumParticles, Usage::Static);
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
     this->particleIdMesh = Render::CreateResource(particleIdSetup);
     Render::UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
     Memory::Free(particleIdData);
     
     // the geometry of a single particle
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-    shapeBuilder.AddSphere(0.05f, 3, 2);
-    shapeBuilder.Build();
-    MeshSetup meshSetup = MeshSetup::FromData("box");
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
+    auto meshSetup = MeshSetup::FromStream();
     meshSetup.InstanceMesh = this->particleIdMesh;
-    this->shapeMesh = Render::CreateResource(meshSetup, shapeBuilder.GetStream());
+    this->shapeMesh = Render::CreateResource(meshSetup, shapeBuilder.Result());
     
     // particle rendering draw state
     Id drawProg = Render::CreateResource(Shaders::DrawParticles::CreateSetup());
-    DrawStateSetup drawSetup("draw", this->shapeMesh, drawProg, 0);
+    auto drawSetup = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
     drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
@@ -201,8 +200,8 @@ GPUParticlesApp::OnInit() {
     Render::ReleaseResource(drawProg);
     
     // the static projection matrix
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
     
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)

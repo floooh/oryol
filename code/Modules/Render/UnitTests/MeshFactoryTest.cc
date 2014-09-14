@@ -24,7 +24,7 @@ TEST(MeshFactoryTest) {
     
     #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
-    auto renderSetup = RenderSetup::AsWindow(400, 300, false, "Oryol Test");
+    auto renderSetup = RenderSetup::Window(400, 300, false, "Oryol Test");
     displayMgr displayManager;
     displayManager.SetupDisplay(renderSetup);
     
@@ -37,33 +37,34 @@ TEST(MeshFactoryTest) {
     
     // setup a MeshBuilder and create mesh geometry
     MeshBuilder mb;
-    mb.SetNumVertices(4);
-    mb.SetNumIndices(6);
-    mb.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    mb.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    mb.NumVertices = 4;
+    mb.NumIndices = 6;
+    mb.Layout
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
-    mb.Begin();
-    mb.Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f);  // top-left
-    mb.Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f);  // top-right
-    mb.Vertex(2, VertexAttr::Position, 1.0f, 1.0f, 0.0f);  // bottom-right
-    mb.Vertex(3, VertexAttr::Position, 0.0f, 1.0f, 0.0f);  // bottom-left
-    mb.Vertex(0, VertexAttr::TexCoord0, 0.0f, 0.0f);
-    mb.Vertex(1, VertexAttr::TexCoord0, 1.0f, 0.0f);
-    mb.Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f);
-    mb.Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f);
-    mb.Triangle(0, 0, 1, 2);
-    mb.Triangle(1, 0, 2, 3);
-    mb.End();
+    mb.Begin()
+        .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
+        .Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f)  // top-right
+        .Vertex(2, VertexAttr::Position, 1.0f, 1.0f, 0.0f)  // bottom-right
+        .Vertex(3, VertexAttr::Position, 0.0f, 1.0f, 0.0f)  // bottom-left
+        .Vertex(0, VertexAttr::TexCoord0, 0.0f, 0.0f)
+        .Vertex(1, VertexAttr::TexCoord0, 1.0f, 0.0f)
+        .Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f)
+        .Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f)
+        .Triangle(0, 0, 1, 2)
+        .Triangle(1, 0, 2, 3)
+        .End();
     
     // setup the mesh
     const Ptr<Stream>& meshData = mb.GetStream();
     mesh mesh;
-    mesh.setSetup(MeshSetup::FromData(Locator("myQuad")));
+    mesh.setSetup(MeshSetup::FromStream());
     
     factory.SetupResource(mesh, meshData);
     CHECK(mesh.GetState() == ResourceState::Valid);
     CHECK(!mesh.GetId().IsValid());
-    CHECK(mesh.GetSetup().Locator.Location() == "myQuad");
+    CHECK(mesh.GetSetup().Locator == Locator::NonShared());
     CHECK(mesh.GetVertexBufferAttrs().NumVertices == 4);
     CHECK(mesh.GetVertexBufferAttrs().BufferUsage == Usage::Immutable);
     CHECK(mesh.GetVertexBufferAttrs().Layout.NumComponents() == 2);

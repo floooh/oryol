@@ -71,13 +71,13 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Simple Render Target Sample");
+    auto renderSetup = RenderSetup::Window(800, 600, true, "Oryol Simple Render Target Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
 
     // create an offscreen render target, we explicitely want repeat texture wrap mode
     // and linear blending...
-    auto rtSetup = TextureSetup::AsRenderTarget("rt", 128, 128);
+    auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGB8;
     rtSetup.DepthFormat = PixelFormat::D16;
     rtSetup.WrapU = TextureWrapMode::Repeat;
@@ -88,31 +88,31 @@ SimpleRenderTargetApp::OnInit() {
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
-    shapeBuilder.Build();
-    Id torus = Render::CreateResource(MeshSetup::FromData("torus"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
+    Id torus = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.AddSphere(0.5f, 72.0f, 40.0f);
-    shapeBuilder.Build();
-    Id sphere = Render::CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Sphere(0.5f, 72.0f, 40.0f).Build();
+    Id sphere = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
 
     // create shaders
     Id offScreenProg = Render::CreateResource(Shaders::RenderTarget::CreateSetup());
     Id dispProg = Render::CreateResource(Shaders::Main::CreateSetup());
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
-    DrawStateSetup offdsSetup("offds", torus, offScreenProg, 0);
+    auto offdsSetup = DrawStateSetup::FromMeshAndProg(torus, offScreenProg);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->offscreenDrawState = Render::CreateResource(offdsSetup);
-    DrawStateSetup dispdsSetup("dispds", sphere, dispProg, 0);
+    auto dispdsSetup = DrawStateSetup::FromMeshAndProg(sphere, dispProg);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->displayDrawState = Render::CreateResource(dispdsSetup);
@@ -123,8 +123,8 @@ SimpleRenderTargetApp::OnInit() {
     Render::ReleaseResource(dispProg);
     
     // setup static transform matrices
-    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();

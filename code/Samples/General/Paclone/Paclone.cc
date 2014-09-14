@@ -33,7 +33,7 @@ PacloneApp::OnInit() {
     this->tick = 0;
     const int dispWidth = game::Width * 8 * 2;
     const int dispHeight = game::Height * 8 * 2;
-    Render::Setup(RenderSetup::AsWindow(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
+    Render::Setup(RenderSetup::Window(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
     Input::Setup();
     
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);

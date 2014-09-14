@@ -78,9 +78,8 @@ NanoVG::BeginFrame(NVGcontext* ctx) {
     o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     
-    const DisplayAttrs& dispAttrs = Render::GetDisplayAttrs();
-    const int32 w = dispAttrs.FramebufferWidth;
-    const int32 h = dispAttrs.FramebufferHeight;
+    const int32 w = Render::DisplayAttrs().FramebufferWidth;
+    const int32 h = Render::DisplayAttrs().FramebufferHeight;
     o_assert_dbg(h > 0);
     const float32 aspect = float32(w) / float32(h);
     

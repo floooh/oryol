@@ -41,7 +41,7 @@ ClearApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnInit() {
-    Render::Setup(RenderSetup::AsWindow(400, 300, false, "Oryol Clear Sample"));
+    Render::Setup(RenderSetup::Window(400, 300, false, "Oryol Clear Sample"));
     return App::OnInit();
 }
 

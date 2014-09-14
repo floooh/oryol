@@ -9,6 +9,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 ProgramBundleSetup::ProgramBundleSetup() :
+Locator(Locator::NonShared()),
 numProgramEntries(0),
 numUniformEntries(0) {
     // empty

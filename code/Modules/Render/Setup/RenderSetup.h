@@ -23,9 +23,9 @@ namespace Oryol {
 class RenderSetup {
 public:
     /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup AsWindow(int32 width, int32 height, bool msaa, String windowTitle);
+    static RenderSetup Window(int32 width, int32 height, bool msaa, String windowTitle);
     /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static RenderSetup AsFullscreen(int32 width, int32 height, bool msaa, String windowTitle);
+    static RenderSetup Fullscreen(int32 width, int32 height, bool msaa, String windowTitle);
     
     /// canvas width
     int32 Width = 640;
@@ -37,8 +37,8 @@ public:
     PixelFormat::Code DepthFormat = PixelFormat::D24S8;
     /// MSAA samples (2, 4, 8... no MSAA: 0)
     int32 Samples = 0;
-    /// fullscreen vs windowed
-    bool Fullscreen = false;
+    /// windowed vs Fullscreen
+    bool Windowed = true;
     /// window title
     String Title = "Oryol";
     

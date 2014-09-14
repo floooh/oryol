@@ -67,7 +67,7 @@ TextureFloatApp::OnRunning() {
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(512, 512, false, "Oryol Float Texture Sample");
+    auto renderSetup = RenderSetup::Window(512, 512, false, "Oryol Float Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
@@ -79,30 +79,29 @@ TextureFloatApp::OnInit() {
     
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
-    auto rtSetup = TextureSetup::AsRelSizeRenderTarget("rt", 1.0f, 1.0f);
+    auto rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     this->renderTarget = Render::CreateResource(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id fullscreenMesh = Render::CreateResource(MeshSetup::FullScreenQuad());
 
     // setup draw state for offscreen rendering to float render target
     Id offscreenProg = Render::CreateResource(Shaders::Offscreen::CreateSetup());
-    DrawStateSetup offscreenSetup("dsOffscreen", fullscreenMesh, offscreenProg, 0);
-    this->offscreenDrawState = Render::CreateResource(offscreenSetup);
+    this->offscreenDrawState = Render::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
     Render::ReleaseResource(offscreenProg);
     
     // fullscreen-copy mesh, shader and draw state
     Id copyProg = Render::CreateResource(Shaders::Copy::CreateSetup());
-    this->copyDrawState = Render::CreateResource(DrawStateSetup("dsCopy", fullscreenMesh, copyProg, 0));
+    this->copyDrawState = Render::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
     Render::ReleaseResource(copyProg);
     Render::ReleaseResource(fullscreenMesh);
     
     // setup static transform matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
     

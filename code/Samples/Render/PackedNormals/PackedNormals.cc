@@ -73,39 +73,39 @@ PackedNormalsApp::OnRunning() {
 AppState::Code
 PackedNormalsApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Packed Normals Sample");
+    auto renderSetup = RenderSetup::Window(600, 400, true, "Oryol Packed Normals Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
 
     // create resources
     // NOTE: we draw some shapes with MSAA, some without
     ShapeBuilder shapeBuilder;
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
-    shapeBuilder.AddSphere(0.75f, 36, 20);
-    shapeBuilder.AddCylinder(0.5f, 1.5f, 36, 10);
-    shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
-    shapeBuilder.AddPlane(1.5f, 1.5f, 10);
-    shapeBuilder.Build();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+        .Sphere(0.75f, 36, 20)
+        .Cylinder(0.5f, 1.5f, 36, 10)
+        .Torus(0.3f, 0.5f, 20, 36)
+        .Plane(1.5f, 1.5f, 10)
+        .Build();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::PackedNormals::CreateSetup());
-    DrawStateSetup dsSetup("dsmsaa", mesh, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dsSetup.RasterizerState.CullFaceEnabled = true;
-    dsSetup.RasterizerState.MultisampleEnabled = true;
-    this->msaaDrawState = Render::CreateResource(dsSetup);
-    dsSetup.Locator = "dsnomsaa";
-    dsSetup.RasterizerState.MultisampleEnabled = false;
-    this->noMsaaDrawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dss.RasterizerState.CullFaceEnabled = true;
+    dss.RasterizerState.MultisampleEnabled = true;
+    this->msaaDrawState = Render::CreateResource(dss);
+    dss.RasterizerState.MultisampleEnabled = false;
+    this->noMsaaDrawState = Render::CreateResource(dss);
 
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

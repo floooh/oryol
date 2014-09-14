@@ -42,9 +42,9 @@ public:
     static void DetachEventHandler(const Ptr<Port>& handler);
     
     /// get the original render setup object
-    static const RenderSetup& GetRenderSetup();
+    static const class RenderSetup& RenderSetup();
     /// get the current actual display attributes (can be different from setup)
-    static const DisplayAttrs& GetDisplayAttrs();
+    static const struct DisplayAttrs& DisplayAttrs();
     /// test if an optional feature is supported
     static bool Supports(RenderFeature::Code feat);
         
@@ -105,7 +105,7 @@ public:
 
 private:
     struct _state {
-        RenderSetup renderSetup;
+        class RenderSetup renderSetup;
         _priv::displayMgr displayManager;
         _priv::renderMgr renderManager;
         _priv::stateWrapper stateWrapper;

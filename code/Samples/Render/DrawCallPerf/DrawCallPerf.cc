@@ -131,33 +131,33 @@ DrawCallPerfApp::updateParticles() {
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 500, false, "Oryol DrawCallPerf Sample");
+    auto renderSetup = RenderSetup::Window(800, 500, false, "Oryol DrawCallPerf Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
 
     // create resources
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.SetTransform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-    shapeBuilder.AddSphere(0.05f, 3, 2);
-    shapeBuilder.Build();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("box"), shapeBuilder.GetStream());
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.RasterizerState.CullFaceEnabled = true;
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.RasterizerState.CullFaceEnabled = true;
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
     
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();

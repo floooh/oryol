@@ -21,31 +21,31 @@ public:
     /// setup from file with blueprint
     static MeshSetup FromFile(const Locator& loc, const MeshSetup& blueprint);
     /// setup from from data provided in separate stream object
-    static MeshSetup FromData(const Locator& loc, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
+    static MeshSetup FromStream(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from data with blueprint
-    static MeshSetup FromData(const Locator& loc, const MeshSetup& blueprint);
+    static MeshSetup FromStream(const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup CreateEmpty(const Locator& loc, int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
+    static MeshSetup Empty(int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
-    static MeshSetup CreateFullScreenQuad(const Locator& loc);
+    static MeshSetup FullScreenQuad();
     
     /// default constructor
     MeshSetup();
     /// check if should setup from file
     bool ShouldSetupFromFile() const;
     /// check if should setup from stream with file-data
-    bool ShouldSetupFromData() const;
+    bool ShouldSetupFromStream() const;
     /// check if should setup empty mesh
     bool ShouldSetupEmpty() const;
     /// check if should setup fullscreen quad mesh
     bool ShouldSetupFullScreenQuad() const;
     
-    /// resource locator
+    /// resource locator (default is non-shared)
     class Locator Locator;
     /// get vertex-data usage
-    Usage::Code VertexUsage{Usage::InvalidUsage};
+    Usage::Code VertexUsage;
     /// get index-data usage
-    Usage::Code IndexUsage{Usage::InvalidUsage};
+    Usage::Code IndexUsage;
     /// get ioLane index
     int32 IOLane;
 
@@ -57,7 +57,7 @@ public:
     /// number of indices (only CreateEmpty)
     int32 NumIndices;
     /// index type (only CreateEmpty)
-    IndexType::Code IndicesType{IndexType::InvalidIndexType};
+    IndexType::Code IndicesType;
     
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
@@ -75,7 +75,7 @@ private:
     int32 numPrimGroups;
     class PrimitiveGroup primGroups[MaxNumPrimGroups];
     bool setupFromFile : 1;
-    bool setupFromData : 1;
+    bool setupFromStream : 1;
     bool setupEmpty : 1;
     bool setupFullScreenQuad : 1;
 };

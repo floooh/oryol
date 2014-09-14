@@ -12,9 +12,9 @@ TEST(VertexLayoutTest) {
     CHECK(layout.Empty());
     CHECK(0 == layout.NumComponents());
     
-    layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    layout.Add(VertexAttr::Normal, VertexFormat::UByte4N);
-    layout.Add(VertexComponent(VertexAttr::TexCoord0, VertexFormat::Float2));
+    layout.Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::UByte4N)
+        .Add(VertexComponent(VertexAttr::TexCoord0, VertexFormat::Float2));
     CHECK(!layout.Empty());
     CHECK(3 == layout.NumComponents());
     

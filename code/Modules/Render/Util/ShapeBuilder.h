@@ -19,49 +19,42 @@ public:
     ShapeBuilder();
     
     /// read/write access to vertex layout
-    class VertexLayout& VertexLayout();
+    class VertexLayout& Layout();
     /// read-only access to vertex layout
-    const class VertexLayout& VertexLayout() const;
+    const class VertexLayout& Layout() const;
+    /// random-vertex-colors flag
+    bool RandomColors;
     
-    /// set current transform
-    void SetTransform(const glm::mat4& transform);
-    /// get current transform
-    const glm::mat4& GetTransform() const;
-    /// set current color
-    void SetColor(const glm::vec4& color);
-    /// get current color
-    const glm::vec4& GetColor() const;
-    /// assign random vertex colors (useful for debugging)
-    void SetRandomColorsFlag(bool b);
-    /// get random colors flag
-    bool GetRandomColorsFlag() const;
-    
+    /// put new transform
+    ShapeBuilder& Transform(const glm::mat4& t);
+    /// put new color
+    ShapeBuilder& Color(const glm::vec4& c);
     /// add a box shape
-    void AddBox(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup=true);
+    ShapeBuilder& Box(float32 w, float32 h, float32 d, int32 tiles, bool buildPrimGroup=true);
     /// add a sphere shape
-    void AddSphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup=true);
+    ShapeBuilder& Sphere(float32 radius, int32 slices, int32 stacks, bool buildPrimGroup=true);
     /// add a cylinder shape
-    void AddCylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup=true);
+    ShapeBuilder& Cylinder(float32 radius, float32 length, int32 slices, int32 stacks, bool buildPrimGroup=true);
     /// add a torus
-    void AddTorus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool builPrimGroup=true);
+    ShapeBuilder& Torus(float32 ringRadius, float32 radius, int32 sides, int32 rings, bool builPrimGroup=true);
     /// add a plane
-    void AddPlane(float32 w, float32 d, int32 tiles, bool buildPrimGroup=true);
+    ShapeBuilder& Plane(float32 w, float32 d, int32 tiles, bool buildPrimGroup=true);
     
     /// clear everything
     void Clear();
     /// build geometry
     void Build();
     /// get the resulting data stream with vertex and index data
-    const Ptr<Stream>& GetStream() const;
+    const Ptr<Stream>& Result() const;
     
 private:
     enum ShapeType {
         InvalidType,
-        Box,
-        Sphere,
-        Cylinder,
-        Torus,
-        Plane,
+        BoxShape,
+        SphereShape,
+        CylinderShape,
+        TorusShape,
+        PlaneShape,
     };
 
     struct ShapeData {

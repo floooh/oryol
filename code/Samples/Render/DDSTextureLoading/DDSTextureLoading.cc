@@ -101,7 +101,7 @@ DDSTextureLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(600, 400, false, "Oryol DDS Loading Sample");
+    auto renderSetup = RenderSetup::Window(600, 400, false, "Oryol DDS Loading Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     renderSetup.Loaders.Add(TextureLoader::Creator());
     Render::Setup(renderSetup);
@@ -128,25 +128,24 @@ DDSTextureLoadingApp::OnInit() {
     this->texId[13] = Render::CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
     this->texId[14] = Render::CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
 
-    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetTransform(rot90);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.AddPlane(1.0f, 1.0f, 4);
-    shapeBuilder.Build();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("shape"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4).Build();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
     
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

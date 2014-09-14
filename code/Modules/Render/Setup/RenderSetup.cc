@@ -18,29 +18,29 @@ registryCapacity(1024) {
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::AsWindow(int32 w, int32 h, bool msaa, String title) {
+RenderSetup::Window(int32 w, int32 h, bool msaa, String title) {
     o_assert((w > 0) && (h > 0));
 
     RenderSetup setup;
-    setup.Width       = w;
-    setup.Height      = h;
-    setup.Samples     = msaa ? 4 : 0;
-    setup.Fullscreen  = false;
-    setup.Title       = title;
+    setup.Width    = w;
+    setup.Height   = h;
+    setup.Samples  = msaa ? 4 : 0;
+    setup.Windowed = true;
+    setup.Title    = title;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 RenderSetup
-RenderSetup::AsFullscreen(int32 w, int32 h, bool msaa, String title) {
+RenderSetup::Fullscreen(int32 w, int32 h, bool msaa, String title) {
     o_assert((w > 0) && (h > 0));
     
     RenderSetup setup;
-    setup.Width       = w;
-    setup.Height      = h;
-    setup.Samples     = msaa ? 4 : 0;
-    setup.Fullscreen  = true;
-    setup.Title       = title;
+    setup.Width    = w;
+    setup.Height   = h;
+    setup.Samples  = msaa ? 4 : 0;
+    setup.Windowed = false;
+    setup.Title    = title;
     return setup;
 }
 

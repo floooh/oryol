@@ -19,7 +19,7 @@ TEST(RenderTargetCreationTest) {
 
     #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
-    auto renderSetup = RenderSetup::AsWindow(400, 300, false, "Oryol Test");
+    auto renderSetup = RenderSetup::Window(400, 300, false, "Oryol Test");
     displayMgr displayManager;
     displayManager.SetupDisplay(renderSetup);
     
@@ -30,7 +30,7 @@ TEST(RenderTargetCreationTest) {
     factory.Setup(&stWrapper, &displayManager, &texPool);
     
     // create a render target (no depth buffer)
-    auto texSetup = TextureSetup::AsRenderTarget("tex0", 320, 256);
+    auto texSetup = TextureSetup::RenderTarget(320, 256);
     texSetup.ColorFormat = PixelFormat::RGBA8;
     texture tex0;
     tex0.setSetup(texSetup);
@@ -41,7 +41,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex0.glGetDepthRenderbuffer() == 0);
     CHECK(tex0.glGetDepthTexture() == 0);
     const TextureAttrs& attrs0 = tex0.GetTextureAttrs();
-    CHECK(attrs0.Locator.Location() == "tex0");
+    CHECK(attrs0.Locator == Locator::NonShared());
     CHECK(attrs0.Type == TextureType::Texture2D);
     CHECK(attrs0.ColorFormat == PixelFormat::RGBA8);
     CHECK(attrs0.DepthFormat == PixelFormat::InvalidPixelFormat);
@@ -56,7 +56,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(!attrs0.IsDepthTexture);
     
     // create a render target with depth buffer
-    auto rtSetup = TextureSetup::AsRenderTarget("tex1", 640, 480);
+    auto rtSetup = TextureSetup::RenderTarget(640, 480);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D24S8;
     texture tex1;
@@ -68,7 +68,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex1.glGetDepthRenderbuffer() != 0);
     CHECK(tex1.glGetDepthTexture() == 0);
     const TextureAttrs& attrs1 = tex1.GetTextureAttrs();
-    CHECK(attrs1.Locator.Location() == "tex1");
+    CHECK(attrs1.Locator == Locator::NonShared());
     CHECK(attrs1.Type == TextureType::Texture2D);
     CHECK(attrs1.ColorFormat == PixelFormat::RGBA8);
     CHECK(attrs1.DepthFormat == PixelFormat::D24S8);
@@ -83,7 +83,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(!attrs1.IsDepthTexture);
     
     // create relative-size render target with depth buffer
-    rtSetup = TextureSetup::AsRelSizeRenderTarget("tex2", 1.0f, 1.0f);
+    rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
     rtSetup.ColorFormat = PixelFormat::R5G6B5;
     rtSetup.DepthFormat = PixelFormat::D16;
     texture tex2;
@@ -95,7 +95,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex2.glGetDepthRenderbuffer() != 0);
     CHECK(tex2.glGetDepthTexture() == 0);
     const TextureAttrs& attrs2 = tex2.GetTextureAttrs();
-    CHECK(attrs2.Locator.Location() == "tex2");
+    CHECK(attrs2.Locator == Locator::NonShared());
     CHECK(attrs2.Type == TextureType::Texture2D);
     CHECK(attrs2.ColorFormat == PixelFormat::R5G6B5);
     CHECK(attrs2.DepthFormat == PixelFormat::D16);

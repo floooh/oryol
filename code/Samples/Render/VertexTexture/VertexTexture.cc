@@ -72,7 +72,7 @@ VertexTextureApp::OnRunning() {
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Vertex Texture Sample");
+    auto renderSetup = RenderSetup::Window(800, 600, true, "Oryol Vertex Texture Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
@@ -80,29 +80,28 @@ VertexTextureApp::OnInit() {
     // FIXME: need a way to check number of vertex texture units
     
     // create RGBA offscreen render target which holds the plasma
-    auto rtSetup = TextureSetup::AsRenderTarget("rt", 256, 256);
+    auto rtSetup = TextureSetup::RenderTarget(256, 256);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     this->renderTarget = Render::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
-    Id fsQuadMesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("fsMesh"));
+    Id fsQuadMesh = Render::CreateResource(MeshSetup::FullScreenQuad());
     Id plasmaProg = Render::CreateResource(Shaders::Plasma::CreateSetup());
-    DrawStateSetup plasmaSetup("dsPlasma", fsQuadMesh, plasmaProg, 0);
-    this->plasmaDrawState = Render::CreateResource(plasmaSetup);
+    this->plasmaDrawState = Render::CreateResource(DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg));
     Render::ReleaseResource(fsQuadMesh);
     Render::ReleaseResource(plasmaProg);
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.AddPlane(3.0f, 3.0f, 255);
-    shapeBuilder.Build();
-    Id planeMesh = Render::CreateResource(MeshSetup::FromData("planeMesh"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
+    Id planeMesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id planeProg = Render::CreateResource(Shaders::Plane::CreateSetup());
-    DrawStateSetup dsPlane = DrawStateSetup("dsPlane", planeMesh, planeProg, 0);
+    auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->planeDrawState = Render::CreateResource(dsPlane);
@@ -110,8 +109,8 @@ VertexTextureApp::OnInit() {
     Render::ReleaseResource(planeProg);
     
     // setup static transform matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     

@@ -41,10 +41,10 @@ FullscreenQuadApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Render::Setup(RenderSetup::AsWindow(600, 600, false, "Oryol Fullscreen Quad Sample"));
-    Id mesh = Render::CreateResource(MeshSetup::CreateFullScreenQuad("msh"));
+    Render::Setup(RenderSetup::Window(600, 600, false, "Oryol Fullscreen Quad Sample"));
+    Id mesh = Render::CreateResource(MeshSetup::FullScreenQuad());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = Render::CreateResource(DrawStateSetup("ds", mesh, prog, 0));
+    this->drawState = Render::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     return App::OnInit();

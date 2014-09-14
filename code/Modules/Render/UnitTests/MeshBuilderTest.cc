@@ -13,31 +13,31 @@ TEST(MeshBuilderTest) {
     
     // build a quad with 4 vertices and 2 triangles
     MeshBuilder mb;
-    mb.SetNumVertices(4);
-    mb.SetNumIndices(6);
-    mb.SetIndexType(IndexType::Index16);
-    mb.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    mb.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    mb.NumVertices = 4;
+    mb.NumIndices = 6;
+    mb.IndicesType = IndexType::Index16;
+    mb.Layout
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
-    mb.Begin();
+    mb.Begin()
+        // positions
+        .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
+        .Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f)  // top-right
+        .Vertex(2, VertexAttr::Position, 1.0f, 1.0f, 0.0f)  // bottom-right
+        .Vertex(3, VertexAttr::Position, 0.0f, 1.0f, 0.0f)  // bottom-left
     
-    // positions
-    mb.Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f);  // top-left
-    mb.Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f);  // top-right
-    mb.Vertex(2, VertexAttr::Position, 1.0f, 1.0f, 0.0f);  // bottom-right
-    mb.Vertex(3, VertexAttr::Position, 0.0f, 1.0f, 0.0f);  // bottom-left
+        // uvs
+        .Vertex(0, VertexAttr::TexCoord0, 0.0f, 0.0f)
+        .Vertex(1, VertexAttr::TexCoord0, 1.0f, 0.0f)
+        .Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f)
+        .Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f)
     
-    // uvs
-    mb.Vertex(0, VertexAttr::TexCoord0, 0.0f, 0.0f);
-    mb.Vertex(1, VertexAttr::TexCoord0, 1.0f, 0.0f);
-    mb.Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f);
-    mb.Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f);
-    
-    // indices
-    mb.Triangle(0, 0, 1, 2);
-    mb.Triangle(1, 0, 2, 3);
+        // indices
+        .Triangle(0, 0, 1, 2)
+        .Triangle(1, 0, 2, 3)
 
-    mb.End();
+        .End();
 
     // get the resulting stream object
     const Ptr<Stream>& stream = mb.GetStream();

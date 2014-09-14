@@ -20,9 +20,9 @@ public:
     /// return true if layout is empty
     bool Empty() const;
     /// add a component
-    void Add(const VertexComponent& comp);
+    VertexLayout& Add(const VertexComponent& comp);
     /// add component by name and format
-    void Add(VertexAttr::Code attr, VertexFormat::Code format);
+    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
     /// get number of components
     int32 NumComponents() const;
     /// read-only get component at index

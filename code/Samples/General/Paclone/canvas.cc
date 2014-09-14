@@ -40,13 +40,14 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     this->numVertices = (this->numTilesX * this->numTilesY + this->numSprites) * 6;
     
     // setup draw state with dynamic mesh
-    MeshSetup meshSetup = MeshSetup::CreateEmpty("p_canvas", this->numVertices, Usage::Stream);
-    meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float2);
-    meshSetup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    auto meshSetup = MeshSetup::Empty(this->numVertices, Usage::Stream);
+    meshSetup.Layout
+        .Add(VertexAttr::Position, VertexFormat::Float2)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
     this->mesh = Render::CreateResource(meshSetup);
     this->prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("p_ds", this->mesh, this->prog, 0);
+    auto dsSetup = DrawStateSetup::FromMeshAndProg(this->mesh, this->prog, 0);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
@@ -59,7 +60,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     Memory::Copy(Sheet::Pixels, ptr, Sheet::NumBytes);
     pixelData->UnmapWrite();
     pixelData->Close();
-    TextureSetup texSetup = TextureSetup::FromPixelData("p_pixels", Sheet::Width, Sheet::Height, false, PixelFormat::RGBA8);
+    auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, false, PixelFormat::RGBA8);
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;

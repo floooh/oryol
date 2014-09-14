@@ -28,7 +28,7 @@ OryolMain(SynthTestApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnInit() {
-    Render::Setup(RenderSetup::AsWindow(640, 400, false, "Oryol Synth Test Sample"));
+    Render::Setup(RenderSetup::Window(640, 400, false, "Oryol Synth Test Sample"));
     Dbg::Setup();
     Input::Setup();
     SynthSetup synthSetup;

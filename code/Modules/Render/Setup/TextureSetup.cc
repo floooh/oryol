@@ -8,6 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
+Locator(Locator::NonShared()),
 IOLane(0),
 Width(0),
 Height(0),
@@ -32,13 +33,12 @@ hasMipMaps(false) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsRenderTarget(const class Locator& loc, int32 w, int32 h) {
+TextureSetup::RenderTarget(int32 w, int32 h) {
     o_assert(w > 0);
     o_assert(h > 0);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
-    setup.Locator = loc;
     setup.Width = w;
     setup.Height = h;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -58,16 +58,15 @@ TextureSetup::FromFile(const class Locator& loc, TextureSetup bluePrint) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromImageFileData(const class Locator& loc, TextureSetup bluePrint) {
+TextureSetup::FromImageFileData(TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
     setup.shouldSetupFromImageFileData = true;
-    setup.Locator = loc;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData(const class Locator& loc, int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt) {
+TextureSetup::FromPixelData(int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
@@ -76,7 +75,6 @@ TextureSetup::FromPixelData(const class Locator& loc, int32 w, int32 h, bool has
     TextureSetup setup;
     setup.shouldSetupFromPixelData = true;
     setup.hasMipMaps = hasMipMaps;
-    setup.Locator = loc;
     setup.Width = w;
     setup.Height = h;
     setup.ColorFormat = fmt;
@@ -85,14 +83,13 @@ TextureSetup::FromPixelData(const class Locator& loc, int32 w, int32 h, bool has
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, float32 relHeight) {
+TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
     o_assert(relWidth > 0.0f);
     o_assert(relHeight > 0.0f);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
     setup.isRelSizeRenderTarget = true;
-    setup.Locator = loc;
     setup.RelWidth = relWidth;
     setup.RelHeight = relHeight;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -103,12 +100,11 @@ TextureSetup::AsRelSizeRenderTarget(const class Locator& loc, float32 relWidth, 
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::AsSharedDepthRenderTarget(const class Locator& loc, const Id& depthRenderTarget) {
+TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
     o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == ResourceType::Texture);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;
-    setup.Locator = loc;
     setup.hasSharedDepth = true;
     setup.DepthRenderTarget = depthRenderTarget;
     setup.WrapU = TextureWrapMode::ClampToEdge;

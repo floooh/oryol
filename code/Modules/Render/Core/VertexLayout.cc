@@ -26,7 +26,7 @@ VertexLayout::VertexLayout() {
 }
 
 //------------------------------------------------------------------------------
-void
+VertexLayout&
 VertexLayout::Add(const VertexComponent& comp) {
     o_assert(this->numComps < MaxNumVertexComponents);
     this->comps[this->numComps] = comp;
@@ -34,12 +34,13 @@ VertexLayout::Add(const VertexComponent& comp) {
     this->byteOffsets[this->numComps] = this->byteSize;
     this->byteSize += comp.ByteSize();
     this->numComps++;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void
+VertexLayout&
 VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
-    this->Add(VertexComponent(attr, format));
+    return this->Add(VertexComponent(attr, format));
 }
 
 } // namespace Oryol

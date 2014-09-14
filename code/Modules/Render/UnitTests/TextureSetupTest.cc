@@ -10,7 +10,8 @@ using namespace Oryol;
 TEST(TextureSetupTest) {
     
     // setup as absolute-size render target, no depth buffer
-    auto rt = TextureSetup::AsRenderTarget("absSize", 320, 256);
+    auto rt = TextureSetup::RenderTarget(320, 256);
+    rt.Locator = Locator("absSize");
     rt.ColorFormat = PixelFormat::RGB8;
     CHECK(!rt.ShouldSetupFromFile());
     CHECK(!rt.ShouldSetupFromImageFileData());
@@ -34,7 +35,7 @@ TEST(TextureSetupTest) {
     CHECK(rt.MinFilter == TextureFilterMode::Nearest);
     
     // setup as absolute-size render target, with depth buffer
-    auto rt0 = TextureSetup::AsRenderTarget("absSize", 320, 256);
+    auto rt0 = TextureSetup::RenderTarget(320, 256);
     rt0.ColorFormat = PixelFormat::RGBA8;
     rt0.DepthFormat = PixelFormat::D24S8;
     CHECK(!rt0.ShouldSetupFromFile());
@@ -44,7 +45,7 @@ TEST(TextureSetupTest) {
     CHECK(!rt0.IsRelSizeRenderTarget());
     CHECK(!rt0.HasSharedDepth());
     CHECK(rt0.HasDepth());
-    CHECK(rt0.Locator.Location() == "absSize");
+    CHECK(rt0.Locator == Locator::NonShared());
     CHECK(rt0.Width == 320);
     CHECK(rt0.Height == 256);
     CHECK(rt0.RelWidth == 0.0f);
@@ -59,7 +60,7 @@ TEST(TextureSetupTest) {
     CHECK(rt0.MinFilter == TextureFilterMode::Nearest);
     
     // setup as relative-size render target, no depth buffer
-    auto rt1 = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f);
+    auto rt1 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
     rt1.ColorFormat = PixelFormat::R5G6B5;
     CHECK(!rt1.ShouldSetupFromFile());
     CHECK(!rt1.ShouldSetupFromImageFileData());
@@ -68,7 +69,7 @@ TEST(TextureSetupTest) {
     CHECK(rt1.IsRelSizeRenderTarget());
     CHECK(!rt1.HasSharedDepth());
     CHECK(!rt1.HasDepth());
-    CHECK(rt1.Locator.Location() == "relSize");
+    CHECK(rt1.Locator == Locator::NonShared());
     CHECK(rt1.Width == 0);
     CHECK(rt1.Height == 0);
     CHECK(rt1.RelWidth == 0.5f);
@@ -83,7 +84,7 @@ TEST(TextureSetupTest) {
     CHECK(rt1.MinFilter == TextureFilterMode::Nearest);
     
     // setup as relative-size render target, with depth buffer
-    auto rt2 = TextureSetup::AsRelSizeRenderTarget("relSize", 0.5f, 0.25f);
+    auto rt2 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
     rt2.ColorFormat = PixelFormat::RGBA4;
     rt2.DepthFormat = PixelFormat::D16;
     CHECK(!rt2.ShouldSetupFromFile());
@@ -93,7 +94,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.IsRelSizeRenderTarget());
     CHECK(!rt2.HasSharedDepth());
     CHECK(rt2.HasDepth());
-    CHECK(rt2.Locator.Location() == "relSize");
+    CHECK(rt2.Locator == Locator::NonShared());
     CHECK(rt2.Width == 0);
     CHECK(rt2.Height == 0);
     CHECK(rt2.RelWidth == 0.5f);
@@ -108,7 +109,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.MinFilter == TextureFilterMode::Nearest);
     
     // setup as shared-depth render target
-    auto rt3 = TextureSetup::AsSharedDepthRenderTarget("sharedDepth", Id(1, 2, ResourceType::Texture));
+    auto rt3 = TextureSetup::SharedDepthRenderTarget(Id(1, 2, ResourceType::Texture));
     rt3.ColorFormat = PixelFormat::RGBA32F;
     CHECK(!rt3.ShouldSetupFromFile());
     CHECK(!rt3.ShouldSetupFromImageFileData());
@@ -117,7 +118,6 @@ TEST(TextureSetupTest) {
     CHECK(!rt3.IsRelSizeRenderTarget());
     CHECK(rt3.HasSharedDepth());
     CHECK(rt3.HasDepth());
-    CHECK(rt3.Locator.Location() == "sharedDepth");
     CHECK(rt3.Width == 0);
     CHECK(rt3.Height == 0);
     CHECK(rt3.RelWidth == 0.0f);

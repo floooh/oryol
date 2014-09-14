@@ -24,9 +24,8 @@ TEST(ShapeBuilderTest) {
     #if !ORYOL_UNITTESTS_HEADLESS
     
     // setup a GL context
-    auto renderSetup = RenderSetup::AsWindow(400, 300, false, "Oryol Test");
     displayMgr displayManager;
-    displayManager.SetupDisplay(renderSetup);
+    displayManager.SetupDisplay(RenderSetup::Window(400, 300, false, "Oryol Test"));
     
     // setup a meshFactory object
     stateWrapper stWrapper;
@@ -39,15 +38,15 @@ TEST(ShapeBuilderTest) {
     ShapeBuilder shapeBuilder;
     
     // build a simple cube
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 1);
+    shapeBuilder.Layout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Build();
     
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
-    simpleCube.setSetup(MeshSetup::FromData(Locator("myCube")));
+    simpleCube.setSetup(MeshSetup::FromStream());
     simpleCube.setState(ResourceState::Setup);
-    factory.SetupResource(simpleCube, shapeBuilder.GetStream());
+    factory.SetupResource(simpleCube, shapeBuilder.Result());
     CHECK(simpleCube.GetVertexBufferAttrs().NumVertices == 24);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.NumComponents() == 1);
     CHECK(simpleCube.GetVertexBufferAttrs().Layout.ByteSize() == 12);

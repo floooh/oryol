@@ -39,12 +39,10 @@ NanoVGApp::OnRunning() {
         Render::ApplyDefaultRenderTarget();
         Render::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
-        const DisplayAttrs& attrs = Render::GetDisplayAttrs();
-        const int32 w = attrs.FramebufferWidth;
-        const int32 h = attrs.FramebufferHeight;
-        const Mouse& mouse = Input::Mouse();
-        const int32 mouseX = mouse.Position().x;
-        const int32 mouseY = mouse.Position().y;
+        const int32 w = Render::DisplayAttrs().FramebufferWidth;
+        const int32 h = Render::DisplayAttrs().FramebufferHeight;
+        const int32 mouseX = Input::Mouse().Position().x;
+        const int32 mouseY = Input::Mouse().Position().y;
         const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
         const float64 time = Clock::Now().Since(0).AsSeconds();
         
@@ -67,7 +65,7 @@ NanoVGApp::OnInit() {
     ioSetup.Assigns.Add("res:", "http://localhost:8000/");
     IO::Setup(ioSetup);
     
-    auto renderSetup = RenderSetup::AsWindow(1024, 600, true, "Oryol NanoVG Sample");
+    auto renderSetup = RenderSetup::Window(1024, 600, true, "Oryol NanoVG Sample");
     Render::Setup(renderSetup);
     Input::Setup();
     NanoVG::Setup();

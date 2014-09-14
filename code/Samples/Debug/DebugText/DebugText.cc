@@ -52,12 +52,12 @@ DebugTextApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    Render::Setup(RenderSetup::AsWindow(800, 600, false, "Oryol DebugText Sample"));
+    Render::Setup(RenderSetup::Window(800, 600, false, "Oryol DebugText Sample"));
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     
-    this->width = Render::GetDisplayAttrs().FramebufferWidth / 16;
-    this->height = Render::GetDisplayAttrs().FramebufferHeight / 16;
+    this->width = Render::DisplayAttrs().FramebufferWidth / 16;
+    this->height = Render::DisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
     

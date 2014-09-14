@@ -12,7 +12,7 @@ Render::_state* Render::state = nullptr;
 
 //------------------------------------------------------------------------------
 void
-Render::Setup(const RenderSetup& setup) {
+Render::Setup(const class RenderSetup& setup) {
     o_assert_dbg(!IsValid());
     state = new _state();
     state->renderSetup = setup;
@@ -59,14 +59,14 @@ Render::DetachEventHandler(const Ptr<Port>& handler) {
 
 //------------------------------------------------------------------------------
 const RenderSetup&
-Render::GetRenderSetup() {
+Render::RenderSetup() {
     o_assert_dbg(IsValid());
     return state->renderSetup;
 }
 
 //------------------------------------------------------------------------------
 const DisplayAttrs&
-Render::GetDisplayAttrs() {
+Render::DisplayAttrs() {
     o_assert_dbg(IsValid());
     return state->displayManager.GetDisplayAttrs();
 }

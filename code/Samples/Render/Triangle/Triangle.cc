@@ -43,31 +43,29 @@ TriangleApp::OnRunning() {
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(400, 400, false, "Oryol Triangle Sample");
+    auto renderSetup = RenderSetup::Window(400, 400, false, "Oryol Triangle Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     
-    // create a triangle mesh, with position and vertex color
+    // create triangle mesh with 3 vertices, with position and vertex color
     MeshBuilder meshBuilder;
-    meshBuilder.SetNumVertices(3);
-    meshBuilder.SetIndexType(IndexType::None);
-    meshBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    meshBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
+    meshBuilder.NumVertices = 3;
+    meshBuilder.IndicesType = IndexType::None;
+    meshBuilder.Layout
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
     meshBuilder.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 3);
-    meshBuilder.Begin();
-    // first vertex pos and color
-    meshBuilder.Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f);
-    meshBuilder.Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f);
-    // second vertex pos and color
-    meshBuilder.Vertex(1, VertexAttr::Position, 0.5f, -0.5f, 0.5f);
-    meshBuilder.Vertex(1, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f);
-    // third vertex pos and color
-    meshBuilder.Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f);
-    meshBuilder.Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
-    meshBuilder.End();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("msh"), meshBuilder.GetStream());
+    meshBuilder.Begin()
+        .Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f)
+        .Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f)
+        .Vertex(1, VertexAttr::Position, 0.5f, -0.5f, 0.5f)
+        .Vertex(1, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f)
+        .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
+        .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
+        .End();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), meshBuilder.GetStream());
     Id prog = Render::CreateResource(Shaders::Triangle::CreateSetup());
-    this->drawState = Render::CreateResource(DrawStateSetup("ds", mesh, prog, 0));
+    this->drawState = Render::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
 
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);

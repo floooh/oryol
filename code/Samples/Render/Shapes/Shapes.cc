@@ -68,35 +68,36 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(600, 400, true, "Oryol Shapes Sample");
+    auto renderSetup = RenderSetup::Window(600, 400, true, "Oryol Shapes Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
 
     // create resources
     ShapeBuilder shapeBuilder;
-    shapeBuilder.SetRandomColorsFlag(true);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.AddBox(1.0f, 1.0f, 1.0f, 4);
-    shapeBuilder.AddSphere(0.75f, 36, 20);
-    shapeBuilder.AddCylinder(0.5f, 1.5f, 36, 10);
-    shapeBuilder.AddTorus(0.3f, 0.5f, 20, 36);
-    shapeBuilder.AddPlane(1.5f, 1.5f, 10);
-    shapeBuilder.Build();
-    Id mesh = Render::CreateResource(MeshSetup::FromData("shapes"), shapeBuilder.GetStream());
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+        .Sphere(0.75f, 36, 20)
+        .Cylinder(0.5f, 1.5f, 36, 10)
+        .Torus(0.3f, 0.5f, 20, 36)
+        .Plane(1.5f, 1.5f, 10)
+        .Build();
+    Id mesh = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Shapes::CreateSetup());
     
-    DrawStateSetup dsSetup("ds", mesh, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
 
     Render::ReleaseResource(mesh);
     Render::ReleaseResource(prog);
     
     // setup projection and view matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

@@ -132,9 +132,8 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        const DisplayAttrs& dispAttrs = Render::GetDisplayAttrs();
-        const float w = 8.0f / dispAttrs.FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / dispAttrs.FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Render::DisplayAttrs().FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / Render::DisplayAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
         Render::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
@@ -180,7 +179,7 @@ debugTextRenderer::setupFontTexture() {
     data->Close();
     
     // setup texture, pixel format is 8bpp uncompressed
-    TextureSetup setup = TextureSetup::FromPixelData("_kc854font", imgWidth, imgHeight, false, PixelFormat::L8);
+    TextureSetup setup = TextureSetup::FromPixelData(imgWidth, imgHeight, false, PixelFormat::L8);
     setup.MinFilter = TextureFilterMode::Nearest;
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -198,10 +197,11 @@ debugTextRenderer::setupTextMesh() {
     
     // setup an empty mesh, only vertices
     int32 maxNumVerts = MaxNumChars * 6;
-    this->vertexLayout.Add(VertexAttr::Position, VertexFormat::UByte4);
-    this->vertexLayout.Add(VertexAttr::Color0, VertexFormat::UByte4N);
+    this->vertexLayout
+        .Add(VertexAttr::Position, VertexFormat::UByte4)
+        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
-    MeshSetup setup = MeshSetup::CreateEmpty("_dbgText", maxNumVerts, Usage::Stream);
+    MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
     this->textMesh = Render::CreateResource(setup);
     o_assert(this->textMesh.IsValid());
@@ -218,7 +218,7 @@ debugTextRenderer::setupTextDrawState() {
     Id prog = Render::CreateResource(DebugShaders::TextShader::CreateSetup());
     
     // finally create draw state
-    DrawStateSetup dss("_dbgDrawState", this->textMesh, prog, 0);
+    auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;

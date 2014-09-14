@@ -15,12 +15,11 @@ namespace Oryol {
 
 class DrawStateSetup {
 public:
+    /// construct from mesh and prog
+    static DrawStateSetup FromMeshAndProg(const Id& mesh, const Id& prog, uint32 progSelMask=0);
+
     /// default constructor
     DrawStateSetup();
-    /// construct with locator
-    DrawStateSetup(const Locator& loc);
-    /// construct with locator and resources
-    DrawStateSetup(const Locator& loc, const Id& mesh, const Id& prog, uint32 progSelMask);
     
     /// resource locator
     class Locator Locator;
@@ -35,7 +34,7 @@ public:
     /// program bundle
     Id Program;
     /// program bundle selection mask
-    uint32 ProgramSelectionMask{0};
+    uint32 ProgramSelectionMask;
 };
 
 } // namespace Oryol

@@ -80,13 +80,13 @@ InfiniteSpheresApp::OnRunning() {
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    auto renderSetup = RenderSetup::AsWindow(800, 600, true, "Oryol Infinite Spheres Sample");
+    auto renderSetup = RenderSetup::Window(800, 600, true, "Oryol Infinite Spheres Sample");
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
 
     // create resources
     for (int32 i = 0; i < 2; i++) {
-        auto rtSetup = TextureSetup::AsRenderTarget(Locator::NonShared(), 512, 512);
+        auto rtSetup = TextureSetup::RenderTarget(512, 512);
         rtSetup.ColorFormat = PixelFormat::RGB8;
         rtSetup.DepthFormat = PixelFormat::D16;
         rtSetup.MinFilter = TextureFilterMode::Linear;
@@ -96,24 +96,24 @@ InfiniteSpheresApp::OnInit() {
         this->renderTargets[i] = Render::CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
-    shapeBuilder.VertexLayout().Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.VertexLayout().Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.VertexLayout().Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.AddSphere(0.75f, 72.0f, 40.0f);
-    shapeBuilder.Build();
-    Id sphere = Render::CreateResource(MeshSetup::FromData("sphere"), shapeBuilder.GetStream());
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Sphere(0.75f, 72.0f, 40.0f).Build();
+    Id sphere = Render::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     Id prog = Render::CreateResource(Shaders::Main::CreateSetup());
-    DrawStateSetup dsSetup("ds", sphere, prog, 0);
-    dsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Render::CreateResource(dsSetup);
+    auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState = Render::CreateResource(dss);
     
     Render::ReleaseResource(sphere);
     Render::ReleaseResource(prog);
     
     // setup static transform matrices
-    const float32 fbWidth = Render::GetDisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Render::GetDisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = Render::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Render::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();
