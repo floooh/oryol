@@ -1,11 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Core Core
+    @brief Core module
+
     @class Oryol::Core
     @ingroup Core
     @brief Core module facade
-    
-    @todo: Core description
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"

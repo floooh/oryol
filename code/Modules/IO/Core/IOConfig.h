@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file IO/Config.h
+    @file IOConfig.h
     @ingroup IO
     @brief Configuration defines for the Oryol IO module.
 */

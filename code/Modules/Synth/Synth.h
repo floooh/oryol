@@ -1,9 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Synth Synth
+    @brief chip-tune audio synthesis
+
     @class Oryol::Synth
     @ingroup Synth
-    @brief the Synth module implements a chip-tune audio system
+    @brief Synth module facade
 */
 #include "Core/Singleton.h"
 #include "Synth/Core/soundMgr.h"

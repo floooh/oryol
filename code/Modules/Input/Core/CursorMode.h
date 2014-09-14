@@ -9,6 +9,7 @@ namespace Oryol {
 
 class CursorMode {
 public:
+    /// mouse cursor modes
     enum Code {
         Normal = 0, ///< cursor visible, mouse pos clamped by screen border
         Hidden,     ///< cursor invisible, mouse pos clamped by screen border

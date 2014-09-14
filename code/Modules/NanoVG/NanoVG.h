@@ -1,9 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup NanoVG NanoVG
+    @brief nanovg wrapper module
+    
     @class Oryol::NanoVG
     @ingroup NanoVG
-    @brief nanovg initialization and resource management wrapper
+    @brief NanoVG module facade
 */
 #include "Core/Types.h"
 #include "Core/Singleton.h"
@@ -19,7 +22,6 @@
 struct NVGcontext;
 
 namespace Oryol {
-    
 class NanoVG {
 public:
     /// setup the NanoVG module

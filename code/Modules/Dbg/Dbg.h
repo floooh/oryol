@@ -1,9 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Dbg Dbg
+    @brief debug visualization and services
+
     @class Oryol::Dbg
-    @ingroup Debug
-    @brief various runtime debugging and debug visualization services
+    @ingroup Dbg
+    @brief Dbg module facade
 */
 #include "Core/Config.h"
 #include "Core/Singleton.h"

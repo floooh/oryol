@@ -1,11 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Render Render
+    @brief 3D rendering
+
     @class Oryol::Render
     @ingroup Render
-    @brief public facade of the Render module
-    
-    @todo: describe Render module
+    @brief Render module facade
 */
 #include "Core/Singleton.h"
 #include "Render/Core/displayMgr.h"

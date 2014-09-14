@@ -1,10 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Input Input
+    @brief getting input
+
     @class Oryol::Input
     @ingroup Input
-    @brief Oryol Input module facade
-    
+    @brief Input module facade
+ 
     Provides access to connected input devices,
     like keyboard, mouse and game pads. On mobile platforms it also allows
     to query touch gestures.

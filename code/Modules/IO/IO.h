@@ -1,6 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup IO IO
+    @brief IO module
+
     @class Oryol::IO
     @ingroup IO
     @brief IO module facade
