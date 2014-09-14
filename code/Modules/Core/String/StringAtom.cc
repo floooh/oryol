@@ -38,7 +38,7 @@ StringAtom::copy(const StringAtom& rhs) {
     // check if rhs is from our thread, if yes the copy is quick,
     // if no we need to transfer it into this thread's string atom table
     if (rhs.data) {
-        if (rhs.data->table == stringAtomTable::Instance()) {
+        if (rhs.data->table == stringAtomTable::threadLocalPtr()) {
             this->data = rhs.data;
         }
         else {
@@ -58,7 +58,7 @@ StringAtom::setupFromCString(const char* str) {
 
     if ((0 != str) && (str[0] != 0)) {
         // get my thread-local string atom table
-        stringAtomTable* table = stringAtomTable::Instance();
+        stringAtomTable* table = stringAtomTable::threadLocalPtr();
         
         // get hash of string
         int32 hash = stringAtomTable::HashForString(str);

@@ -9,7 +9,6 @@
     @brief Core module facade
 */
 #include "Core/RefCounted.h"
-#include "Core/Singleton.h"
 #include <thread>
 
 namespace Oryol {

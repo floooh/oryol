@@ -12,7 +12,6 @@
     like keyboard, mouse and game pads. On mobile platforms it also allows
     to query touch gestures.
 */
-#include "Core/Singleton.h"
 #include "Input/Core/inputMgr.h"
 
 namespace Oryol {

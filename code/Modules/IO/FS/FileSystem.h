@@ -6,9 +6,7 @@
     @brief base-class for FileSystem handlers
 
     Subclasses of FileSystem provide a specific file-system implementation
-    (e.g. HttpFileSystem, HostFileSystem, etc). FileSystem implementations
-    are associated with URL schemes through the schemeRegistry 
-    global singleton. 
+    (e.g. HttpFileSystem, HostFileSystem, etc).
 */
 #include "Core/RefCounted.h"
 #include "IO/IOProtocol.h"

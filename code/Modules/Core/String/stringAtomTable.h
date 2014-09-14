@@ -7,27 +7,24 @@
 */
 #include "Core/Types.h"
 #include "Core/String/stringAtomBuffer.h"
-#include "Core/Singleton.h"
 #include "Core/Containers/HashSet.h"
 
 namespace Oryol {
 
 class stringAtomTable {
-    OryolLocalSingletonDecl(stringAtomTable);
 public:
-    /// constructor
-    stringAtomTable();
-    /// destructor
-    ~stringAtomTable();
-    
+    /// access to thread-local stringAtomTable (created on demand)
+    static stringAtomTable* threadLocalPtr();
     /// compute hash value for string
     static int32 HashForString(const char* str);
     /// find a matching buffer header in the table
     const stringAtomBuffer::Header* Find(int32 hash, const char* str) const;
     /// add a string to the atom table
     const stringAtomBuffer::Header* Add(int32 hash, const char* str);
-
+    
 private:
+    static ORYOL_THREAD_LOCAL stringAtomTable* ptr;
+
     /// a bucket entry
     struct Entry {
         /// default constructor

@@ -9,7 +9,6 @@
     @brief IO module facade
 */
 #include "Core/RefCounted.h"
-#include "Core/Singleton.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/IOSetup.h"

@@ -9,7 +9,6 @@
     @brief NanoVG module facade
 */
 #include "Core/Types.h"
-#include "Core/Singleton.h"
 #include "Core/Ptr.h"
 #include "IO/Stream/Stream.h"
 #include "Core/Containers/Map.h"

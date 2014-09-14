@@ -17,7 +17,6 @@ Core::Setup() {
     o_assert(!IsValid());
     state = new _state();
     state->mainThreadId = std::this_thread::get_id();
-    stringAtomTable::CreateSingle();
     auto ptr = RunLoop::Create();
     ptr->addRef();
     threadRunLoop = ptr.get();
@@ -66,9 +65,6 @@ void
 Core::EnterThread() {
     #if ORYOL_HAS_THREADS
     o_assert(nullptr == threadRunLoop);
-    
-    // create thread-local string atom table
-    stringAtomTable::CreateSingle();
     
     // create thread-local run loop
     auto ptr = RunLoop::Create();

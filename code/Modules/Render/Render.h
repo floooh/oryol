@@ -8,7 +8,6 @@
     @ingroup Render
     @brief Render module facade
 */
-#include "Core/Singleton.h"
 #include "Render/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
 #include "Resource/Id.h"

@@ -7,12 +7,15 @@
 
 namespace Oryol {
 
-OryolLocalSingletonImpl(stringAtomTable);
+ORYOL_THREAD_LOCAL stringAtomTable* stringAtomTable::ptr = nullptr;
 
 //------------------------------------------------------------------------------
-stringAtomTable::stringAtomTable() {
-    
-    SingletonEnsureUnique();
+stringAtomTable*
+stringAtomTable::threadLocalPtr() {
+    if (nullptr == ptr) {
+        ptr = new stringAtomTable();
+    }
+    return ptr;
 }
 
 //------------------------------------------------------------------------------

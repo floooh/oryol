@@ -9,7 +9,6 @@
     @brief Dbg module facade
 */
 #include "Core/Config.h"
-#include "Core/Singleton.h"
 #include "Dbg/text/debugTextRenderer.h"
 #include "glm/fwd.hpp"
 

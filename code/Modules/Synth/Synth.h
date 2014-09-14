@@ -8,7 +8,6 @@
     @ingroup Synth
     @brief Synth module facade
 */
-#include "Core/Singleton.h"
 #include "Synth/Core/soundMgr.h"
 #include "Synth/Core/SynthOp.h"
 
