@@ -7,7 +7,6 @@
 */
 #include "Core/Types.h"
 #include "Core/Macros.h"
-#include "Core/Singleton.h"
 
 #if defined(__OBJC__)
 static_assert(sizeof(void*) == sizeof(id), "sizeof(void*) doesn't match sizeof(id)!");
@@ -22,13 +21,18 @@ class App;
 namespace _priv {
     
 class iosBridge {
-    OryolGlobalSingletonDecl(iosBridge);
 public:
     /// constructor
-    iosBridge(App* app);
+    iosBridge();
     /// destructor
     ~iosBridge();
-    
+    /// return ptr to global iosBridge object
+    static iosBridge* ptr();
+
+    /// setup the iosBridge object
+    void setup(App* app);
+    /// discard the iosBridge object
+    void discard();
     /// setup IOS app and start the main loop
     void startMainLoop();
     
@@ -61,6 +65,7 @@ public:
     id iosGetGLKViewController() const;
     
 private:
+    static iosBridge* self;
     App* app;
     id appDelegate;
     id appWindow;

@@ -29,7 +29,7 @@ suspendRequested(false)
     #if ORYOL_ANDROID
     this->androidBridge.setup(this);
     #elif ORYOL_IOS
-    this->iosBridge = _priv::iosBridge::CreateSingle(this);
+    this->iosBridge.setup(this);
     #endif
 }
 
@@ -38,8 +38,7 @@ App::~App() {
     #if ORYOL_ANDROID
     this->androidBridge.discard();
     #elif ORYOL_IOS
-    _priv::iosBridge::DestroySingle();
-    this->iosBridge = nullptr;
+    this->iosBridge.discard();
     #endif
     self = nullptr;
 }
@@ -53,7 +52,7 @@ App::StartMainLoop() {
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
     #elif ORYOL_IOS
-        this->iosBridge->startMainLoop();
+        this->iosBridge.startMainLoop();
     #elif ORYOL_ANDROID
         this->addBlocker(AppState::Init);
         this->androidBridge.onStart();

@@ -13,24 +13,49 @@
 namespace Oryol {
 namespace _priv {
 
-OryolGlobalSingletonImpl(iosBridge);
+iosBridge* iosBridge::self = nullptr;
 
 //------------------------------------------------------------------------------
-iosBridge::iosBridge(App* app_) :
-app(app_),
+iosBridge::iosBridge() :
+app(nullptr),
 appDelegate(nil),
 appWindow(nil),
 eaglContext(nil),
 glkView(nil),
 glkViewController(nil) {
-    o_assert(nullptr != this->app);
-    this->SingletonEnsureUnique();
-    Log::Info("iosBridge::iosBridge() called.\n");
+    o_assert(nullptr == self);
+    self = this;
 }
 
 //------------------------------------------------------------------------------
 iosBridge::~iosBridge() {
-    Log::Info("iosBridge::~iosBridge() called.\n");
+    o_assert(nullptr == this->app);
+    o_assert(nullptr != self);
+    self = nullptr;
+}
+
+//------------------------------------------------------------------------------
+iosBridge*
+iosBridge::ptr() {
+    o_assert_dbg(nullptr != self);
+    return self;
+}
+
+//------------------------------------------------------------------------------
+void
+iosBridge::setup(App* app_) {
+    o_assert(nullptr == this->app);
+    o_assert(nullptr != app_);
+    this->app = app_;
+    Log::Info("iosBridge::setup() called.\n");
+}
+
+
+//------------------------------------------------------------------------------
+void
+iosBridge::discard() {
+    o_assert(nullptr != this->app);
+    Log::Info("iosBridge::discard() called.\n");
 
     [this->eaglContext invalidate]; this->eaglContext = nil;
     [this->appWindow invalidate]; this->appWindow = nil;

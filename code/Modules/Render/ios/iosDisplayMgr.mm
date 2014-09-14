@@ -40,7 +40,7 @@ iosDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     displayMgrBase::SetupDisplay(renderSetup);
     
     // modify the color/depth/stencil format of the GLKView
-    GLKView* glkView = _priv::iosBridge::Instance()->iosGetGLKView();
+    GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();
     switch (renderSetup.ColorFormat) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
@@ -122,7 +122,7 @@ iosDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 void
 iosDisplayMgr::glBindDefaultFramebuffer() {
-    GLKView* glkView = _priv::iosBridge::Instance()->iosGetGLKView();
+    GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();
     [glkView bindDrawable];
 }
 

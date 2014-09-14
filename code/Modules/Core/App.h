@@ -104,7 +104,7 @@ protected:
     bool quitRequested;
     bool suspendRequested;
     #if ORYOL_IOS
-    _priv::iosBridge* iosBridge;
+    _priv::iosBridge iosBridge;
     #endif
     #if ORYOL_ANDROID
     _priv::androidBridge androidBridge;
