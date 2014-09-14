@@ -15,7 +15,7 @@ http://floooh.github.io/oryol/
 ## _Clone it_ ##
 
 ```bash
-> git clone --recursive https://github.com/floooh/oryol.git oryol
+git clone --recursive https://github.com/floooh/oryol.git oryol
 ```
 
 ## _Build it_ ##
