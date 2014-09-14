@@ -54,9 +54,9 @@ DrawCallPerfApp::OnRunning() {
     if (Render::BeginFrame()) {
         
         // update block
+        this->updateCamera();
         if (this->updateEnabled) {
             TimePoint updStart = Clock::Now();
-            this->updateCamera();
             this->emitParticles();
             this->updateParticles();
             updTime = Clock::Since(updStart);
