@@ -1,5 +1,5 @@
 oryol_begin_app(GPUParticles windowed)
     oryol_sources(.)
     oryol_deps(Render Time Dbg)
-    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" "emscripten,android,pnacl" GPUParticles.jpg "Render/GPUParticles")
+    oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" "emscripten,android,pnacl" GPUParticles.jpg "Render/GPUParticles/GPUParticles.cc")
 oryol_end_app()

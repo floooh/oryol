@@ -1,5 +1,5 @@
 oryol_begin_app(SynthTest windowed)
     oryol_sources(.)
     oryol_deps(Core Render Dbg Input Synth)
-    oryol_add_web_sample(SynthTest "Most simple Synth audio sample" "emscripten" SynthTest.jpg "Synth/SynthTest")
+    oryol_add_web_sample(SynthTest "Most simple Synth audio sample" "emscripten" SynthTest.jpg "Synth/SynthTest/SynthTest.cc")
 oryol_end_app()

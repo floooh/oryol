@@ -1,5 +1,5 @@
 oryol_begin_app(CoreHello windowed)
     oryol_sources(.)
     oryol_deps(Core)
-    oryol_add_web_sample(CoreHello "Low-level hello world sample" "emscripten" none "Core/CoreHello")
+    oryol_add_web_sample(CoreHello "Low-level hello world sample" "emscripten" none "Core/CoreHello/CoreHello.cc")
 oryol_end_app()
