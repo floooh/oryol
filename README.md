@@ -22,5 +22,5 @@ git clone --recursive https://github.com/floooh/oryol.git oryol
 
 [How to Build](BUILD.md)
 
-## Enjoy! ##
+#### Enjoy! ####
 
