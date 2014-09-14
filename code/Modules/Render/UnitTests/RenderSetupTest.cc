@@ -30,7 +30,7 @@ TEST(RenderSetupTest) {
     CHECK(Render::DisplayAttrs().DepthPixelFormat == PixelFormat::D24S8);
     CHECK(Render::DisplayAttrs().SwapInterval == 1);
     CHECK(Render::DisplayAttrs().WindowTitle == "Oryol Test");
-    CHECK(Render::DisplayAttrs().IsFullscreen == false);
+    CHECK(Render::DisplayAttrs().Windowed == true);
     
     Render::Discard();
     #endif

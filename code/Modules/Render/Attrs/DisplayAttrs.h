@@ -24,7 +24,7 @@ struct DisplayAttrs {
     PixelFormat::Code ColorPixelFormat{PixelFormat::RGB8};
     PixelFormat::Code DepthPixelFormat{PixelFormat::D24S8};
     int32 Samples{0};
-    bool IsFullscreen{false};
+    bool Windowed{true};
     int32 SwapInterval{1};
     String WindowTitle;
 };

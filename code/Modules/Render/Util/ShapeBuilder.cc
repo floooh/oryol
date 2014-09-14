@@ -12,21 +12,21 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 ShapeBuilder::ShapeBuilder() :
+RandomColors(false),
 curPrimGroupBaseElement(0),
 curPrimGroupNumElements(0),
-color(1.0f, 1.0f, 1.0f, 1.0f),
-randomColors(false) {
+color(1.0f, 1.0f, 1.0f, 1.0f) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::Clear() {
+    this->RandomColors = false;
     this->curPrimGroupBaseElement = 0;
     this->curPrimGroupNumElements = 0;
     this->transform = glm::mat4();
     this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    this->randomColors = false;
     this->shapes.Clear();
     this->meshBuilder.Clear();
 }
@@ -290,7 +290,7 @@ ShapeBuilder::Build() {
 void
 ShapeBuilder::BuildVertexColors(const ShapeData& shape, int32 startVertexIndex) {
     o_assert(this->meshBuilder.Layout.Contains(VertexAttr::Color0));
-    if (this->randomColors) {
+    if (this->RandomColors) {
         const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
         const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
         for (int32 i = 0; i < shape.numVertices; i++) {

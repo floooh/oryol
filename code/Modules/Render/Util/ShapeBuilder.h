@@ -90,7 +90,6 @@ private:
     int32 curPrimGroupNumElements;
     glm::mat4 transform;
     glm::vec4 color;
-    bool randomColors;
     Array<ShapeData> shapes;
     MeshBuilder meshBuilder;
 };

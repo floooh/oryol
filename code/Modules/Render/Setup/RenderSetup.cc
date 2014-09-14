@@ -57,7 +57,7 @@ RenderSetup::GetDisplayAttrs() const {
     attrs.ColorPixelFormat  = this->ColorFormat;
     attrs.DepthPixelFormat  = this->DepthFormat;
     attrs.Samples           = this->Samples;
-    attrs.IsFullscreen      = this->Fullscreen;
+    attrs.Windowed          = this->Windowed;
     attrs.WindowTitle       = this->Title;
     return attrs;
 }
