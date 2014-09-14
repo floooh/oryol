@@ -55,8 +55,6 @@
 
 namespace Oryol {
 
-class CoreFacade;
-
 class App {
 public:
     /// constructor
@@ -100,7 +98,6 @@ public:
 
 protected:    
     static App* self;
-    CoreFacade* coreFacade;
     AppState::Code curState;
     AppState::Code nextState;
     Set<AppState::Code> blockers;

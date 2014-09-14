@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "IO/IO.h"
@@ -24,7 +24,7 @@ TEST(DDSLoadTest) {
     // DXT1
     Ptr<IOProtocol::Get> req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
     while (!req->Handled()) {
-        CoreFacade::Instance()->RunLoop()->Run();
+        Core::RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     CHECK(req->GetStatus() == IOStatus::OK);
@@ -64,7 +64,7 @@ TEST(DDSLoadTest) {
     // DXT3
     req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt3.dds");
     while (!req->Handled()) {
-        CoreFacade::Instance()->RunLoop()->Run();
+        Core::RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     CHECK(req->GetStatus() == IOStatus::OK);
@@ -104,7 +104,7 @@ TEST(DDSLoadTest) {
     // DXT5
     req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt5.dds");
     while (!req->Handled()) {
-        CoreFacade::Instance()->RunLoop()->Run();
+        Core::RunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     CHECK(req->GetStatus() == IOStatus::OK);

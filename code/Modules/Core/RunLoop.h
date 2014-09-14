@@ -7,7 +7,7 @@
     
     A runloop object manages a priority-sorted array of callback 
     functions which are called per-frame. By default, each thread
-    has a RunLoop object which can be configured through the CoreFacade
+    has a RunLoop object which can be configured through the Core facade
     singleton. Runloops can be nested by adding the Run() function
     of one runloop to another runloop. NOTE that priority values are
     inverted, lower values are called first).

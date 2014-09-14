@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "IO/IO.h"
@@ -24,7 +24,7 @@ TEST(HTTPFileSystemTest) {
     
     // trigger the runloop until the request has been handled
     while (!req->Handled()) {
-        CoreFacade::Instance()->RunLoop()->Run();
+        Core::RunLoop()->Run();
     }
     
     // check what we got

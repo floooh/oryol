@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOQueue.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "IO/IO.h"
 
@@ -26,7 +26,7 @@ void
 IOQueue::Start() {
     o_assert_dbg(!this->isStarted);
     this->isStarted = true;
-    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->update(); });
+    this->runLoopId = Core::RunLoop()->Add([this]() { this->update(); });
 }
 
 //------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ void
 IOQueue::Stop() {
     o_assert(this->isStarted);
     this->isStarted = false;
-    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
+    Core::RunLoop()->Remove(this->runLoopId);
     this->ioRequests.Clear();
 }
 

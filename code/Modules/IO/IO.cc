@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "IO.h"
 #include "IO/Core/assignRegistry.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 
 namespace Oryol {
@@ -32,14 +32,14 @@ IO::Setup(const IOSetup& setup) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
     
-    state->runLoopId = CoreFacade::Instance()->RunLoop()->Add([] { doWork(); });
+    state->runLoopId = Core::RunLoop()->Add([] { doWork(); });
 }
 
 //------------------------------------------------------------------------------
 void
 IO::Discard() {
     o_assert(IsValid());
-    CoreFacade::Instance()->RunLoop()->Remove(state->runLoopId);
+    Core::RunLoop()->Remove(state->runLoopId);
     state->requestRouter = 0;
     delete state;
     state = nullptr;

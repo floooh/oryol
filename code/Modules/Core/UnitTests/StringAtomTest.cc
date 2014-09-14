@@ -6,7 +6,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/StringAtom.h"
 #include "Core/String/String.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 
 #include <cstring>
 #include <thread>
@@ -60,7 +60,7 @@ TEST(StringAtomSingleThreaded) {
 // string-atom table yet
 static void threadFunc(const StringAtom& a0) {
     
-    Oryol::CoreFacade::EnterThread();
+    Oryol::Core::EnterThread();
     
     // transfer into a thread-local string atom
     StringAtom a1(a0);
@@ -71,7 +71,7 @@ static void threadFunc(const StringAtom& a0) {
     CHECK(a0.AsString() == "BLOB");
     CHECK(a2.AsString() == "BLOB");
     
-    Oryol::CoreFacade::LeaveThread();
+    Oryol::Core::LeaveThread();
 }
 
 // test string atom transfer into other thread

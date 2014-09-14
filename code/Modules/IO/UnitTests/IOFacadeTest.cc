@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/IO.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "IO/Stream/BinaryStreamReader.h"
 #include "IO/Stream/BinaryStreamWriter.h"
@@ -62,7 +62,7 @@ TEST(IOFacadeTest) {
     
     // trigger the runloop until our message is handled
     while (!msg->Handled()) {
-        CoreFacade::Instance()->RunLoop()->Run();
+        Core::RunLoop()->Run();
     }
     CHECK(numGetHandled == 1);
     CHECK(numGetRangeHandled == 0);

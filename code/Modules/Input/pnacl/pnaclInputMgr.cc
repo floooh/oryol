@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "pnaclInputMgr.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/pnacl/pnaclInstance.h"
 
 namespace Oryol {
@@ -19,13 +19,13 @@ pnaclInputMgr::pnaclInputMgr() {
     pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
 
     // register our pre-frame reset method with the runloop
-    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 pnaclInputMgr::~pnaclInputMgr() {
     // unregister reset method from runloop
-    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
+    Core::RunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------

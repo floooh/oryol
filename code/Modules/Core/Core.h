@@ -1,11 +1,11 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::CoreFacade
+    @class Oryol::Core
     @ingroup Core
-    @brief facade singleton of the Core module
+    @brief Core module facade
     
-    @todo: CoreFacade description
+    @todo: Core description
 */
 #include "Core/RefCounted.h"
 #include "Core/Singleton.h"
@@ -15,16 +15,17 @@ namespace Oryol {
 
 class RunLoop;
 
-class CoreFacade {
-    OryolGlobalSingletonDecl(CoreFacade);
+class Core {
 public:
-    /// constructor
-    CoreFacade();
-    /// destructor
-    ~CoreFacade();
+    /// setup the Core module
+    static void Setup();
+    /// discard the Core module
+    static void Discard();
+    /// check if Core module has been setup
+    static bool IsValid();
     
     /// get pointer to the per-thread runloop
-    class RunLoop* RunLoop();
+    static class RunLoop* RunLoop();
 
     /// called when a thread is entered
     static void EnterThread();
@@ -33,10 +34,13 @@ public:
 
 private:
     /// return true if main thread
-    bool isMainThread() const;
-
-    std::thread::id mainThreadId;
+    static bool isMainThread();
+    
     static ORYOL_THREAD_LOCAL class RunLoop* threadRunLoop;
+    struct _state {
+        std::thread::id mainThreadId;
+    };
+    static _state* state;
 };
 
 } // namespace Oryol

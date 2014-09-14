@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "glfwInputMgr.h"
 #include "Render/glfw/glfwDisplayMgr.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "GLFW/glfw3.h"
 
@@ -31,7 +31,7 @@ glfwInputMgr::glfwInputMgr() {
     this->setCursorMode(CursorMode::Normal);
 
     // attach our reset callback to the global runloop
-    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ glfwInputMgr::~glfwInputMgr() {
     this->discardCallbacks(glfwWindow);
 
     // detach our reset callback from runloop
-    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
+    Core::RunLoop()->Remove(this->runLoopId);
     
     self = nullptr;
 }

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "emscInputMgr.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 
 namespace Oryol {
 namespace _priv {
@@ -12,13 +12,13 @@ namespace _priv {
 emscInputMgr::emscInputMgr() {
     this->setupKeyTable();
     this->setupCallbacks();
-    this->runLoopId = CoreFacade::Instance()->RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 emscInputMgr::~emscInputMgr() {
     this->discardCallbacks();
-    CoreFacade::Instance()->RunLoop()->Remove(this->runLoopId);
+    Core::RunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------

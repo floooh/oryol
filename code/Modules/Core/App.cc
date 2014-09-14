@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "App.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
@@ -20,7 +20,6 @@ App* App::self = nullptr;
 
 //------------------------------------------------------------------------------
 App::App() :
-coreFacade(nullptr),
 curState(AppState::Construct),
 nextState(AppState::InvalidAppState),
 quitRequested(false),
@@ -49,7 +48,7 @@ App::~App() {
 void
 App::StartMainLoop() {
     o_assert(nullptr != self);
-    this->coreFacade = CoreFacade::CreateSingle();
+    Core::Setup();
     Log::Info("=> App::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
@@ -73,8 +72,7 @@ App::StartMainLoop() {
     // returns while the app continues running!
     #if !ORYOL_PNACL
     Log::Info("<= App::StartMainLoop()\n");
-    CoreFacade::DestroySingle();
-    this->coreFacade = nullptr;
+    Core::Discard();
     #endif
 }
 
@@ -161,7 +159,7 @@ App::onFrame() {
         // IMPORTANT: ideally we'd want separate 'before frame' and 
         // 'after frame' runloops, currently the emscripten input
         // handler code depends that this is executed 'after'
-        this->coreFacade->RunLoop()->Run();
+        Core::RunLoop()->Run();
     }  
 }
 

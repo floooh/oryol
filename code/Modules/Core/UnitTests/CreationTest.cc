@@ -5,7 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Log.h"
-#include "Core/CoreFacade.h"
+#include "Core/Core.h"
 #include "Core/Types.h"
 #include "Core/Macros.h"
 #include "Core/RefCounted.h"
@@ -115,7 +115,7 @@ const int numInner = 65535 / 8;
 const int numOuter = 1000000 / numInner;
 
 void threadFunc() {
-    Oryol::CoreFacade::EnterThread();
+    Oryol::Core::EnterThread();
     hash<thread::id> hashfn;
     
     Log::Info("CreateMultiThreaded: thread '%lu' entered!\n", hashfn(this_thread::get_id()));
@@ -131,7 +131,7 @@ void threadFunc() {
 
     Log::Info("CreateMultiThreaded: thread '%lu' leaving!\n", hashfn(this_thread::get_id()));
     
-    Oryol::CoreFacade::LeaveThread();
+    Oryol::Core::LeaveThread();
 }
 
 TEST(CreateMultiThreaded) {

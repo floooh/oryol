@@ -1,21 +1,22 @@
 //------------------------------------------------------------------------------
-//  CoreFacade.cc
+//  Core.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "CoreFacade.h"
+#include "Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Ptr.h"
 
 namespace Oryol {
     
-OryolGlobalSingletonImpl(CoreFacade);
-
-ORYOL_THREAD_LOCAL RunLoop* CoreFacade::threadRunLoop = 0;
+Core::_state* Core::state = nullptr;
+ORYOL_THREAD_LOCAL RunLoop* Core::threadRunLoop = nullptr;
 
 //------------------------------------------------------------------------------
-CoreFacade::CoreFacade() {
-    this->SingletonEnsureUnique();
-    this->mainThreadId = std::this_thread::get_id();
+void
+Core::Setup() {
+    o_assert(!IsValid());
+    state = new _state();
+    state->mainThreadId = std::this_thread::get_id();
     stringAtomTable::CreateSingle();
     auto ptr = RunLoop::Create();
     ptr->addRef();
@@ -23,28 +24,38 @@ CoreFacade::CoreFacade() {
 }
 
 //------------------------------------------------------------------------------
-CoreFacade::~CoreFacade() {
-    o_assert(this->isMainThread());
+void
+Core::Discard() {
+    o_assert(IsValid());
     o_assert(nullptr != threadRunLoop);
     threadRunLoop->release();
     threadRunLoop = 0;
+    delete state;
+    state = nullptr;
 
     // do NOT destroy the thread-local string atom table to
     // ensure that string atom data pointers still point to valid data!!!    
 }
 
 //------------------------------------------------------------------------------
+bool
+Core::IsValid() {
+    return nullptr != state;
+}
+
+//------------------------------------------------------------------------------
 RunLoop*
-CoreFacade::RunLoop() {
+Core::RunLoop() {
     o_assert(nullptr != threadRunLoop);
     return threadRunLoop;
 }
 
 //------------------------------------------------------------------------------
 bool
-CoreFacade::isMainThread() const {
+Core::isMainThread() {
     #if ORYOL_HAS_THREADS
-    return this->mainThreadId == std::this_thread::get_id();
+    o_assert_dbg(IsValid());
+    return state->mainThreadId == std::this_thread::get_id();
     #else
     return true;
     #endif
@@ -52,7 +63,7 @@ CoreFacade::isMainThread() const {
 
 //------------------------------------------------------------------------------
 void
-CoreFacade::EnterThread() {
+Core::EnterThread() {
     #if ORYOL_HAS_THREADS
     o_assert(nullptr == threadRunLoop);
     
@@ -68,7 +79,7 @@ CoreFacade::EnterThread() {
 
 //------------------------------------------------------------------------------
 void
-CoreFacade::LeaveThread() {
+Core::LeaveThread() {
     #if ORYOL_HAS_THREADS
     o_assert(nullptr != threadRunLoop);
     threadRunLoop->release();

@@ -38,12 +38,12 @@ macro(oryol_end_unittest)
         file(WRITE ${main_path}
             "// machine generated, do not edit\n"
             "#include \"Pre.h\"\n"
-            "#include \"Core/CoreFacade.h\"\n"
+            "#include \"Core/Core.h\"\n"
             "#include \"UnitTest++/src/UnitTest++.h\"\n"
             "int main(void) {\n"
-            "    Oryol::CoreFacade::CreateSingle();\n"
+            "    Oryol::Core::Setup();\n"
             "    int res = UnitTest::RunAllTests();\n"
-            "    Oryol::CoreFacade::DestroySingle();\n"
+            "    Oryol::Core::Discard();\n"
             "    return res;\n"
             "}\n"
         )
