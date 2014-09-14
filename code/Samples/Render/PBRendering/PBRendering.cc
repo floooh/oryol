@@ -12,7 +12,6 @@
 
 using namespace Oryol;
 
-// derived application class
 class PBRenderingApp : public App {
 public:
     virtual AppState::Code OnInit();

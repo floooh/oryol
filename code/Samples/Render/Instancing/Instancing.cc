@@ -16,12 +16,11 @@
 
 using namespace Oryol;
 
-// derived application class
 class InstancingApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnInit();
+    AppState::Code OnRunning();
+    AppState::Code OnCleanup();
     
 private:
     void updateCamera();

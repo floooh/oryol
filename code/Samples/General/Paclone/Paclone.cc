@@ -13,9 +13,9 @@ using namespace Paclone;
 
 class PacloneApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
 
 private:
     game::Direction getInput();

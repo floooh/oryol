@@ -14,23 +14,23 @@
 
 using namespace Oryol;
 
-const int32 NumParticleBuffers = 2;
-const int32 NumParticlesEmittedPerFrame = 100;
-const int32 NumParticlesX = 1024;
-const int32 NumParticlesY = 1024;
-const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
-const int32 ParticleBufferWidth = 2 * NumParticlesX;
-const int32 ParticleBufferHeight = NumParticlesY;
-
 class GPUParticlesApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     void updateCamera();
 
+    const int32 NumParticleBuffers = 2;
+    const int32 NumParticlesEmittedPerFrame = 100;
+    const int32 NumParticlesX = 1024;
+    const int32 NumParticlesY = 1024;
+    const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
+    const int32 ParticleBufferWidth = 2 * NumParticlesX;
+    const int32 ParticleBufferHeight = NumParticlesY;
+    
     Id particleBuffer[NumParticleBuffers];
     Id particleIdMesh;
     Id shapeMesh;

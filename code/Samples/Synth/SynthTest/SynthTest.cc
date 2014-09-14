@@ -10,12 +10,11 @@
 
 using namespace Oryol;
 
-// derived application class
 class SynthTestApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     int32 frameCount = 0;

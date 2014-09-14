@@ -15,12 +15,11 @@
 
 using namespace Oryol;
 
-// derived application class
 class NanoVGApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     void loadAssets();

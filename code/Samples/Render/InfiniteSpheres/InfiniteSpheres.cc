@@ -15,9 +15,9 @@ using namespace Oryol;
 
 class InfiniteSpheresApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);

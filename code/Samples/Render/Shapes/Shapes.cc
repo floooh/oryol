@@ -12,16 +12,13 @@
 
 using namespace Oryol;
 
-// derived application class
 class ShapeApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
-    
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
-
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -107,7 +104,6 @@ ShapeApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnCleanup() {
-    // cleanup everything
     Render::ReleaseResource(this->drawState);
     Render::Discard();
     return App::OnCleanup();

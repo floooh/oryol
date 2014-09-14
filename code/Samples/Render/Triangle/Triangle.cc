@@ -10,13 +10,11 @@
 
 using namespace Oryol;
 
-// derived application class
 class TriangleApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
-    
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
 private:
     Id drawState;
 };
@@ -75,7 +73,6 @@ TriangleApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 TriangleApp::OnCleanup() {
-    // cleanup everything
     Render::ReleaseResource(this->drawState);
     Render::Discard();
     return App::OnCleanup();

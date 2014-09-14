@@ -10,12 +10,11 @@
 
 using namespace Oryol;
 
-// derived application class
 class TestInputApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     void testMouseButton(const Mouse& mouse, Mouse::Button btn, const char* name) const;

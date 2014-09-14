@@ -16,9 +16,9 @@ using namespace Oryol;
 
 class VertexTextureApp : public App {
 public:
-    virtual AppState::Code OnInit();
-    virtual AppState::Code OnRunning();
-    virtual AppState::Code OnCleanup();
+    AppState::Code OnRunning();
+    AppState::Code OnInit();
+    AppState::Code OnCleanup();
     
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
