@@ -1,26 +1,26 @@
 # _Oryol_ #
 
-[![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)
-
 Experimental C++11 multi-platform 3D engine.
 
-#### Try the live demos: ####
+[![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)
+
+## _Try the Live Demos_ ##
 
 http://floooh.github.io/oryol/
 
-#### Read the Design Manifesto: ####
+## _Read the Design Manifesto:_ ##
 
-[Design Manifesto](DESIGN-MANIFESTO.md) (work in progress)
+[Design Manifesto](DESIGN-MANIFESTO.md)
 
-#### Clone it: ####
+## _Clone it_ ##
 
 ```bash
 > git clone --recursive https://github.com/floooh/oryol.git oryol
 ```
 
-#### Build it: ####
+## _Build it_ ##
 
-[How to build](BUILD.md)
+[How to Build](BUILD.md)
 
-#### Enjoy! ####
+## Enjoy! ##
 
