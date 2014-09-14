@@ -14,9 +14,9 @@ http://floooh.github.io/oryol/
 
 #### Clone it: ####
 
-Use **'git clone --recursive https://github.com/floooh/oryol.git oryol'** to clone the repo, so that you're getting any submodules.
-
-If you have cloned without the submodules, use **'git submodule update --init --recursive'** to fetch the submodules.
+```bash
+> git clone --recursive https://github.com/floooh/oryol.git oryol
+```
 
 #### Build it: ####
 
