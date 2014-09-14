@@ -7,6 +7,7 @@
 #include "Render/Util/RawMeshLoader.h"
 #include "Render/Util/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
+#include "Input/Input.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -31,6 +32,7 @@ private:
     glm::mat4 proj;
     glm::mat4 model;
     glm::mat4 modelViewProj;
+    bool updateEnabled = true;    
     int32 frameCount = 0;
     int32 curNumParticles = 0;
     TimePoint lastFrameTimePoint;
@@ -52,11 +54,13 @@ DrawCallPerfApp::OnRunning() {
     if (Render::BeginFrame()) {
         
         // update block
-        TimePoint updStart = Clock::Now();
-        this->updateCamera();
-        this->emitParticles();
-        this->updateParticles();
-        updTime = Clock::Since(updStart);
+        if (this->updateEnabled) {
+            TimePoint updStart = Clock::Now();
+            this->updateCamera();
+            this->emitParticles();
+            this->updateParticles();
+            updTime = Clock::Since(updStart);
+        }
         
         // render block
         TimePoint drawStart = Clock::Now();
@@ -72,11 +76,18 @@ DrawCallPerfApp::OnRunning() {
         
         Dbg::DrawTextBuffer();
         Render::EndFrame();
+
+        // toggle particle update
+        const Mouse& mouse = Input::Mouse();
+        if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
+            this->updateEnabled = !this->updateEnabled;
+        }
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r",
+    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+                "LMB/tap: toggle particle update",
                 this->curNumParticles,
                 updTime.AsMilliSeconds(),
                 drawTime.AsMilliSeconds(),
@@ -134,6 +145,7 @@ DrawCallPerfApp::OnInit() {
     renderSetup.Loaders.Add(RawMeshLoader::Creator());
     Render::Setup(renderSetup);
     Dbg::Setup();
+    Input::Setup();
 
     // create resources
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -171,6 +183,7 @@ DrawCallPerfApp::OnCleanup() {
     // cleanup everything
     Render::ReleaseResource(this->drawState);
     Dbg::Discard();
+    Input::Discard();
     Render::Discard();
     return App::OnCleanup();
 }
