@@ -47,7 +47,9 @@ emscDisplayMgr::SetupDisplay(const RenderSetup& renderSetup) {
     emscripten_webgl_make_context_current(this->ctx);
 
     EMSCRIPTEN_RESULT res = emscripten_set_fullscreenchange_callback(0, this, 1, emscFullscreenChanged);
-    o_assert(EMSCRIPTEN_RESULT_SUCCESS == res);
+    if (EMSCRIPTEN_RESULT_SUCCESS != res) {
+        Log::Warn("emscripten_set_fullscreenchange_callback failed!\n");
+    }
 
     glInfo::Setup();
     glExt::Setup();
