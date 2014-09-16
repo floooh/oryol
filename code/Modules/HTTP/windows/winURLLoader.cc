@@ -11,9 +11,7 @@
 #include <WinHttp.h>
 
 namespace Oryol {
-namespace HTTP {
-
-using namespace IO;
+namespace _priv {
 
 const std::chrono::seconds winURLLoader::connectionMaxAge{10};
 
@@ -291,5 +289,5 @@ winURLLoader::garbageCollectConnections() {
     }
 }
 
-} // namespace HTTP
+} // namespace _priv
 } // namespace Oryol

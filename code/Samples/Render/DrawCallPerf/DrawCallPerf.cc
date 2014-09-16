@@ -93,7 +93,7 @@ DrawCallPerfApp::OnRunning() {
                 drawTime.AsMilliSeconds(),
                 frameTime.AsMilliSeconds());
     Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    Dbg::PrintF("\n NOTE: this demo will bring down GL fairly quickly!\n");
+    Dbg::PrintF("\n\r NOTE: this demo will bring down GL fairly quickly!\n");
     
     return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
