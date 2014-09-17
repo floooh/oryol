@@ -74,7 +74,6 @@ PackedNormalsApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     // create resources
-    // NOTE: we draw some shapes with MSAA, some without
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout()
         .Add(VertexAttr::Position, VertexFormat::Float3)
