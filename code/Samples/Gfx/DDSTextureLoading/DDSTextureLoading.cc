@@ -25,9 +25,9 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    Id drawState;
+    GfxId drawState;
     static const int32 NumTextures = 15;
-    std::array<Id, NumTextures> texId;
+    std::array<GfxId, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -71,7 +71,7 @@ DDSTextureLoadingApp::OnRunning() {
             glm::vec3(+2.75f, -1.1f, 0.0f)
         } };
         for (int32 i = 0; i < NumTextures; i++) {
-            const Id& tex = this->texId[i];
+            const GfxId& tex = this->texId[i];
             if (tex.IsValid()) {
                 const auto resState = Gfx::QueryResourceState(tex);
                 if (resState == ResourceState::Valid) {
@@ -133,15 +133,12 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4).Build();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
@@ -155,12 +152,12 @@ DDSTextureLoadingApp::OnInit() {
 AppState::Code
 DDSTextureLoadingApp::OnCleanup() {
     // cleanup everything
-    for (auto tex : this->texId) {
+    for (auto& tex : this->texId) {
         if (tex.IsValid()) {
-            Gfx::ReleaseResource(tex);
+            tex.Release();
         }
     }
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     Gfx::Discard();
     IO::Discard();
     

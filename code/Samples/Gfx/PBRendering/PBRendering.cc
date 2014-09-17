@@ -22,7 +22,7 @@ private:
     void applyTransforms(const glm::vec3& pos) const;
     void applyDirLight() const;
 
-    Id drawState;
+    GfxId drawState;
     glm::mat4 proj;
     glm::mat4 view;
 };
@@ -71,15 +71,12 @@ PBRenderingApp::OnInit() {
     shapeBuilder.Sphere(0.5f, 36, 20, true)
         .Plane(5.0f, 5.0f, 1, true)
         .Build();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     
     // setup projection and view matrices
     float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -93,7 +90,7 @@ PBRenderingApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnCleanup() {
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();

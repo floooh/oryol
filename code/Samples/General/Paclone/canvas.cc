@@ -83,13 +83,10 @@ void
 canvas::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    Gfx::ReleaseResource(this->drawState);
-    Gfx::ReleaseResource(this->prog);
-    Gfx::ReleaseResource(this->mesh);
-    Gfx::ReleaseResource(this->texture);
-    this->drawState.Invalidate();
-    this->prog.Invalidate();
-    this->mesh.Invalidate();
+    this->drawState.Release();
+    this->prog.Release();
+    this->mesh.Release();
+    this->texture.Release();
 }
 
 //------------------------------------------------------------------------------

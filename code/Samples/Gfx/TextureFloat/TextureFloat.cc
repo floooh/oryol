@@ -21,9 +21,9 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    Id renderTarget;
-    Id offscreenDrawState;
-    Id copyDrawState;
+    GfxId renderTarget;
+    GfxId offscreenDrawState;
+    GfxId copyDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -86,18 +86,15 @@ TextureFloatApp::OnInit() {
     this->renderTarget = Gfx::CreateResource(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    GfxId fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
 
     // setup draw state for offscreen rendering to float render target
-    Id offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
+    GfxId offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
     this->offscreenDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
-    Gfx::ReleaseResource(offscreenProg);
     
     // fullscreen-copy mesh, shader and draw state
-    Id copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
+    GfxId copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
-    Gfx::ReleaseResource(copyProg);
-    Gfx::ReleaseResource(fullscreenMesh);
     
     // setup static transform matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -112,9 +109,9 @@ TextureFloatApp::OnInit() {
 AppState::Code
 TextureFloatApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->offscreenDrawState);
-    Gfx::ReleaseResource(this->copyDrawState);
-    Gfx::ReleaseResource(this->renderTarget);
+    this->offscreenDrawState.Release();
+    this->copyDrawState.Release();
+    this->renderTarget.Release();
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();

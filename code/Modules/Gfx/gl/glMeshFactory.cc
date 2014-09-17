@@ -159,7 +159,7 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
 //------------------------------------------------------------------------------
 void
 glMeshFactory::attachInstanceBuffer(mesh& msh) {
-    const Id& instMeshId = msh.GetSetup().InstanceMesh;
+    const Id& instMeshId = msh.GetSetup().InstanceMesh.Id();
     if (instMeshId.IsValid()) {
         o_assert(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
         const mesh* instMesh = this->meshPool->Lookup(instMeshId);

@@ -27,8 +27,8 @@ private:
     void emitParticles();
     void updateParticles();
 
-    Id instanceMesh;
-    Id drawState;
+    GfxId instanceMesh;
+    GfxId drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -166,16 +166,13 @@ InstancingApp::OnInit() {
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto staticMeshSetup = MeshSetup::FromStream();
     staticMeshSetup.InstanceMesh = this->instanceMesh;
-    Id mesh = Gfx::CreateResource(staticMeshSetup, shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(staticMeshSetup, shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     
     // setup projection and view matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -190,8 +187,8 @@ InstancingApp::OnInit() {
 AppState::Code
 InstancingApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->drawState);
-    Gfx::ReleaseResource(this->instanceMesh);
+    this->drawState.Release();
+    this->instanceMesh.Release();
     Input::Discard();
     Dbg::Discard();
     Gfx::Discard();

@@ -23,6 +23,7 @@ meshBase::clear() {
         this->primitiveGroups[i] = PrimitiveGroup();
     }
     this->numPrimitiveGroups = 0;
+    resourceBase::clear();    
 }
 
 //------------------------------------------------------------------------------

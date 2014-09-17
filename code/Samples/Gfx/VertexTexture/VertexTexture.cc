@@ -23,9 +23,9 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
-    Id renderTarget;
-    Id plasmaDrawState;
-    Id planeDrawState;
+    GfxId renderTarget;
+    GfxId plasmaDrawState;
+    GfxId planeDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -87,11 +87,9 @@ VertexTextureApp::OnInit() {
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
-    Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id plasmaProg = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
+    GfxId fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    GfxId plasmaProg = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
     this->plasmaDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg));
-    Gfx::ReleaseResource(fsQuadMesh);
-    Gfx::ReleaseResource(plasmaProg);
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
@@ -99,14 +97,12 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
-    Id planeMesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id planeProg = Gfx::CreateResource(Shaders::Plane::CreateSetup());
+    GfxId planeMesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId planeProg = Gfx::CreateResource(Shaders::Plane::CreateSetup());
     auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
-    Gfx::ReleaseResource(planeMesh);
-    Gfx::ReleaseResource(planeProg);
     
     // setup static transform matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -121,9 +117,9 @@ VertexTextureApp::OnInit() {
 AppState::Code
 VertexTextureApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->planeDrawState);
-    Gfx::ReleaseResource(this->plasmaDrawState);
-    Gfx::ReleaseResource(this->renderTarget);
+    this->planeDrawState.Release();
+    this->plasmaDrawState.Release();
+    this->renderTarget.Release();
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();

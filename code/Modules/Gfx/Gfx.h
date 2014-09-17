@@ -19,6 +19,7 @@
 #include "Gfx/Core/stateWrapper.h"
 #include "Gfx/Core/resourceMgr.h"
 #include "Gfx/Core/renderMgr.h"
+#include "Gfx/Core/GfxId.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "glm/vec4.hpp"
 
@@ -49,15 +50,13 @@ public:
     static bool Supports(GfxFeature::Code feat);
         
     /// create a resource, or return existing resource
-    template<class SETUP> static Id CreateResource(const SETUP& setup);
+    template<class SETUP> static GfxId CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
+    template<class SETUP> static GfxId CreateResource(const SETUP& setup, const Ptr<Stream>& data);
     /// lookup a resource by resource locator (increments use-count of resource!)
-    static Id LookupResource(const Locator& locator);
-    /// release a resource (decrement use-count, free resource if use-count is 0)
-    static void ReleaseResource(const Id& resId);
+    static GfxId LookupResource(const Locator& locator);
     /// get the loading state of a resource
-    static ResourceState::Code QueryResourceState(const Id& resId);
+    static ResourceState::Code QueryResourceState(const GfxId& gfxId);
     
     /// begin frame rendering
     static bool BeginFrame();
@@ -69,7 +68,7 @@ public:
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
-    static void ApplyOffscreenRenderTarget(const Id& resId);
+    static void ApplyOffscreenRenderTarget(const GfxId& gfxId);
     /// apply view port
     static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
@@ -77,18 +76,18 @@ public:
     /// apply blend color (see DrawState.BlendState)
     static void ApplyBlendColor(const glm::vec4& blendColor);
     /// apply draw state to use for rendering
-    static void ApplyDrawState(const Id& resId);
+    static void ApplyDrawState(const GfxId& gfxId);
     /// apply a shader constant block
-    static void ApplyConstantBlock(const Id& resId);
+    static void ApplyConstantBlock(const GfxId& gfxId);
     /// apply a shader variable
     template<class T> static void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
     template<class T> static void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     
     /// update dynamic vertex data (only complete replace possible at the moment)
-    static void UpdateVertices(const Id& resId, int32 numBytes, const void* data);
+    static void UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data);
     /// update dynamic index data (only complete replace possible at the moment)
-    static void UpdateIndices(const Id& resId, int32 numBytes, const void* data);
+    static void UpdateIndices(const GfxId& gfxId, int32 numBytes, const void* data);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     
@@ -104,6 +103,13 @@ public:
     static void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
 
 private:
+    friend class GfxId;
+    
+    /// increment resource id use count
+    static void useResource(const Id& id);
+    /// decrement resource id use count
+    static void releaseResource(const Id& id);
+
     struct _state {
         class GfxSetup gfxSetup;
         _priv::displayMgr displayManager;
@@ -121,24 +127,24 @@ Gfx::IsValid() {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
+template<class SETUP> inline GfxId
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
-    return state->resourceManager.CreateResource(setup);
+    return GfxId(state->resourceManager.CreateResource(setup));
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
+template<class SETUP> inline GfxId
 Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
     o_assert_dbg(IsValid());
-    return state->resourceManager.CreateResource(setup, data);
+    return GfxId(state->resourceManager.CreateResource(setup, data));
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
-Gfx::ApplyVariable(int32 index, const Id& texResId) {
+Gfx::ApplyVariable(int32 index, const GfxId& texResId) {
     o_assert_dbg(IsValid());
-    _priv::texture* tex = state->resourceManager.LookupTexture(texResId);
+    _priv::texture* tex = state->resourceManager.LookupTexture(texResId.Id());
     state->renderManager.ApplyTexture(index, tex);
 }
 
@@ -182,6 +188,22 @@ inline void
 Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
     o_assert_dbg(IsValid());
     state->stateWrapper.ApplyBlendColor(blendColor.x, blendColor.y, blendColor.z, blendColor.w);
+}
+
+//------------------------------------------------------------------------------
+inline void
+Gfx::releaseResource(const Id& resId) {
+    if (IsValid()) {
+        state->resourceManager.ReleaseResource(resId);
+    }
+}
+
+//------------------------------------------------------------------------------
+inline void
+Gfx::useResource(const Id& resId) {
+    if (IsValid()) {
+        state->resourceManager.UseResource(resId);
+    }
 }
 
 } // namespace Oryol

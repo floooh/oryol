@@ -16,7 +16,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    Id drawState;
+    GfxId drawState;
 };
 OryolMain(TriangleApp);
 
@@ -61,19 +61,17 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
         .End();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), meshBuilder.GetStream());
-    Id prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), meshBuilder.GetStream());
+    GfxId prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
 
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 TriangleApp::OnCleanup() {
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }

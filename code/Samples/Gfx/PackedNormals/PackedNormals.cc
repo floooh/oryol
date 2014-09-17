@@ -20,8 +20,8 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    Id msaaDrawState;
-    Id noMsaaDrawState;
+    GfxId msaaDrawState;
+    GfxId noMsaaDrawState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -56,7 +56,7 @@ PackedNormalsApp::OnRunning() {
         
         for (int i = 0; i < numShapes; i++) {
             Gfx::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(pos[i]));
-            Gfx::Draw(0);
+            Gfx::Draw(i);
         }
         
         Gfx::EndFrame();
@@ -86,8 +86,8 @@ PackedNormalsApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::PackedNormals::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::PackedNormals::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
@@ -97,9 +97,6 @@ PackedNormalsApp::OnInit() {
     dss.RasterizerState.MultisampleEnabled = false;
     this->noMsaaDrawState = Gfx::CreateResource(dss);
 
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
-    
     // setup projection and view matrices
     float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
     float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
@@ -113,8 +110,8 @@ PackedNormalsApp::OnInit() {
 AppState::Code
 PackedNormalsApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->msaaDrawState);
-    Gfx::ReleaseResource(this->noMsaaDrawState);
+    this->msaaDrawState.Release();
+    this->noMsaaDrawState.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }

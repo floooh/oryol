@@ -17,6 +17,7 @@ void
 textureBase::clear() {
     this->ioRequest.Invalidate();
     this->textureAttrs = TextureAttrs();
+    resourceBase::clear();    
 }
 
 //------------------------------------------------------------------------------

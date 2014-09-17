@@ -9,6 +9,7 @@
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxId.h"
 
 namespace Oryol {
     
@@ -25,7 +26,7 @@ public:
     /// setup as render target with size relative to current display size
     static TextureSetup RelSizeRenderTarget(float32 relWidth, float32 relHeight);
     /// create render target with shared depth buffer
-    static TextureSetup SharedDepthRenderTarget(const Id& depthRenderTarget);
+    static TextureSetup SharedDepthRenderTarget(const GfxId& depthRenderTarget);
 
     /// default constructor
     TextureSetup();
@@ -63,7 +64,7 @@ public:
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
     PixelFormat::Code DepthFormat;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
-    Id DepthRenderTarget;
+    GfxId DepthRenderTarget;
     
     /// texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
     TextureWrapMode::Code WrapU;

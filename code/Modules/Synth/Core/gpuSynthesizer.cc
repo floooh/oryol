@@ -34,23 +34,18 @@ gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     auto rtSetup = TextureSetup::RenderTarget(rtWidth, rtHeight);
     this->renderTarget = Gfx::CreateResource(rtSetup);
     
-    Id fsqMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id prog = Gfx::CreateResource(Shaders::Synth::CreateSetup());
+    GfxId fsqMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    GfxId prog = Gfx::CreateResource(Shaders::Synth::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsqMesh, prog));
-    Gfx::ReleaseResource(prog);
-    Gfx::ReleaseResource(fsqMesh);
 }
 
 //------------------------------------------------------------------------------
 void
 gpuSynthesizer::Discard() {
     o_assert_dbg(this->isValid);
-    this->isValid = false;
-    
-    Gfx::ReleaseResource(this->renderTarget);
-    this->renderTarget.Invalidate();
-    Gfx::ReleaseResource(this->drawState);
-    this->drawState.Invalidate();
+    this->isValid = false;    
+    this->renderTarget.Release();
+    this->drawState.Release();
 }
 
 //------------------------------------------------------------------------------

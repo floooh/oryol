@@ -15,6 +15,7 @@ isValid(false) {
 //------------------------------------------------------------------------------
 ResourceRegistry::~ResourceRegistry() {
     o_assert(!this->isValid);
+    o_assert(this->entries.Empty());
 }
 
 //------------------------------------------------------------------------------
@@ -58,8 +59,6 @@ ResourceRegistry::AddResource(const Locator& loc, const Id& id) {
         this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
     }
     this->idIndexMap.Add(id, this->entries.Size() - 1);
-    
-    this->incrUseCount(id);
 }
 
 //------------------------------------------------------------------------------
@@ -82,8 +81,6 @@ ResourceRegistry::AddResource(const Locator& loc, const Id& id, const Array<Id>&
         this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
     }
     this->idIndexMap.Add(id, this->entries.Size() - 1);
-    
-    this->incrUseCount(id);
 }
 
 //------------------------------------------------------------------------------
@@ -126,11 +123,16 @@ ResourceRegistry::LookupResource(const Locator& loc) {
     if (loc.IsShared()) {
         const Entry* entry = this->findEntryByLocator(loc);
         if (nullptr != entry) {
-            this->incrUseCount(entry->id);
             return entry->id;
         }
     }
     return Id::InvalidId();
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceRegistry::UseResource(const Id& id) {
+    this->incrUseCount(id);
 }
 
 //------------------------------------------------------------------------------
@@ -183,9 +185,9 @@ ResourceRegistry::ReleaseResource(const Id& id, Array<Id>& outRemoved) {
 //------------------------------------------------------------------------------
 void
 ResourceRegistry::incrUseCount(const Id& id) {
-    o_assert(id.IsValid());
+    o_assert_dbg(id.IsValid());
     Entry* entry = (Entry*) this->findEntryById(id);
-    o_assert(nullptr != entry);
+    o_assert_dbg(nullptr != entry);
 
     // increment ref-count of dependent resources
     for (int32 i = 0; i < entry->numDeps; i++) {
@@ -197,10 +199,10 @@ ResourceRegistry::incrUseCount(const Id& id) {
 //------------------------------------------------------------------------------
 int32
 ResourceRegistry::decrUseCount(const Id& id, Array<Id>& outToRemove) {
-    o_assert(id.IsValid());
+    o_assert_dbg(id.IsValid());
     Entry* entry = (Entry*) this->findEntryById(id);
-    o_assert(nullptr != entry);
-    o_assert(entry->useCount > 0);
+    o_assert_dbg(nullptr != entry);
+    o_assert_dbg(entry->useCount > 0);
     
     entry->useCount--;
     if (0 == entry->useCount) {

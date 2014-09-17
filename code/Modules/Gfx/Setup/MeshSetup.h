@@ -10,6 +10,7 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/GfxId.h"
 #include <limits>
 
 namespace Oryol {
@@ -67,7 +68,7 @@ public:
     const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
     
     /// optional instance data mesh
-    Id InstanceMesh;
+    GfxId InstanceMesh;
     
 private:
     static const int32 MaxNumPrimGroups = 8;

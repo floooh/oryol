@@ -49,6 +49,8 @@ public:
     int32 getLoaderIndex() const;
     /// set placeholder type fourcc
     void setPlaceholderType(uint32 fourcc);
+    /// clear the resource
+    void clear();
     
 protected:
     Id id;
@@ -133,6 +135,12 @@ resourceBase<SETUP>::getLoaderIndex() const {
 template<class SETUP> void
 resourceBase<SETUP>::setPlaceholderType(uint32 fourcc) {
     this->placeholderType = fourcc;
+}
+
+//------------------------------------------------------------------------------
+template<class SETUP> void
+resourceBase<SETUP>::clear() {
+    this->setup = SETUP();
 }
 
 } // namespace Oryol

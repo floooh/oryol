@@ -9,7 +9,7 @@
 */
 #include "Synth/Core/opBundle.h"
 #include "Synth/Core/SynthSetup.h"
-#include "Resource/Id.h"
+#include "Gfx/Core/GfxId.h"
 
 namespace Oryol {
 namespace _priv {
@@ -33,8 +33,8 @@ public:
     
 private:
     bool isValid;
-    Id renderTarget;
-    Id drawState;
+    GfxId renderTarget;
+    GfxId drawState;
 };
     
 } // namespace _priv

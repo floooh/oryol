@@ -15,7 +15,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    Id drawState;
+    GfxId drawState;
     float time = 0.0f;
 };
 OryolMain(FullscreenQuadApp);
@@ -41,18 +41,16 @@ FullscreenQuadApp::OnRunning() {
 AppState::Code
 FullscreenQuadApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(600, 600, false, "Oryol Fullscreen Quad Sample"));
-    Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnCleanup() {
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }

@@ -31,12 +31,12 @@ public:
 private:
     void updateCamera();
 
-    Id particleBuffer[NumParticleBuffers];
-    Id particleIdMesh;
-    Id shapeMesh;
-    Id initParticles;
-    Id updateParticles;
-    Id drawParticles;
+    GfxId particleBuffer[NumParticleBuffers];
+    GfxId particleIdMesh;
+    GfxId shapeMesh;
+    GfxId initParticles;
+    GfxId updateParticles;
+    GfxId drawParticles;
     
     glm::vec2 particleBufferDims{ ParticleBufferWidth, ParticleBufferHeight };
     glm::mat4 view;
@@ -152,18 +152,15 @@ GPUParticlesApp::OnInit() {
     this->particleBuffer[1] = Gfx::CreateResource(particleBufferSetup);
     
     // a fullscreen mesh for the particle init- and update-shaders
-    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    GfxId fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     
     // particle initialization and update draw states
-    Id initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
+    GfxId initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
     this->initParticles = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg));
-    Id updateProg = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
+    GfxId updateProg = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
     auto updateSetup = DrawStateSetup::FromMeshAndProg(fullscreenMesh, updateProg);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Gfx::CreateResource(updateSetup);
-    Gfx::ReleaseResource(fullscreenMesh);
-    Gfx::ReleaseResource(initProg);
-    Gfx::ReleaseResource(updateProg);
     
     // a vertex buffer with the particleIds, this would not be needed if
     // ANGLE_instanced_arrays would support gl_InstanceID
@@ -191,13 +188,12 @@ GPUParticlesApp::OnInit() {
     this->shapeMesh = Gfx::CreateResource(meshSetup, shapeBuilder.Result());
     
     // particle rendering draw state
-    Id drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
+    GfxId drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
     auto drawSetup = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
     drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = Gfx::CreateResource(drawSetup);
-    Gfx::ReleaseResource(drawProg);
     
     // the static projection matrix
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -221,13 +217,13 @@ GPUParticlesApp::OnInit() {
 AppState::Code
 GPUParticlesApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->particleBuffer[0]);
-    Gfx::ReleaseResource(this->particleBuffer[1]);
-    Gfx::ReleaseResource(this->particleIdMesh);
-    Gfx::ReleaseResource(this->shapeMesh);
-    Gfx::ReleaseResource(this->initParticles);
-    Gfx::ReleaseResource(this->updateParticles);
-    Gfx::ReleaseResource(this->drawParticles);
+    this->particleBuffer[0].Release();
+    this->particleBuffer[1].Release();
+    this->particleIdMesh.Release();
+    this->shapeMesh.Release();
+    this->initParticles.Release();
+    this->updateParticles.Release();
+    this->drawParticles.Release();
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();

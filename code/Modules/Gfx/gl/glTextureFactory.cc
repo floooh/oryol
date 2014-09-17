@@ -163,7 +163,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget.Id());
         o_assert(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->GetTextureAttrs().Width;
         height = sharedDepthProvider->GetTextureAttrs().Height;

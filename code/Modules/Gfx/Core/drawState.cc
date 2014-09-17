@@ -25,6 +25,7 @@ void
 drawState::clear() {
     this->mesh_ = nullptr;
     this->programBundle_ = nullptr;
+    resourceBase::clear();
 }
 
 //------------------------------------------------------------------------------

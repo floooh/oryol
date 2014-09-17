@@ -10,6 +10,7 @@
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
 #include "Gfx/Core/VertexLayout.h"
+#include "Gfx/Core/GfxId.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <cstdarg>
@@ -68,9 +69,9 @@ private:
     glm::vec2 textScale;
     VertexLayout vertexLayout;
     RWLock rwLock;
-    Id fontTexture;
-    Id textMesh;
-    Id textDrawState;
+    GfxId fontTexture;
+    GfxId textMesh;
+    GfxId textDrawState;
     StringBuilder stringBuilder;
     bool valid;
     

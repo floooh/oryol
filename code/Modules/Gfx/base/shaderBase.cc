@@ -23,6 +23,7 @@ shaderBase::GetShaderType() const {
 void
 shaderBase::clear() {
     this->type = ShaderType::InvalidShaderType;
+    resourceBase::clear();    
 }
 
 //------------------------------------------------------------------------------

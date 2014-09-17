@@ -27,7 +27,7 @@ private:
     void emitParticles();
     void updateParticles();
 
-    Id drawState;
+    GfxId drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -155,16 +155,13 @@ DrawCallPerfApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     
     // setup projection and view matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -181,7 +178,7 @@ DrawCallPerfApp::OnInit() {
 AppState::Code
 DrawCallPerfApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     Dbg::Discard();
     Input::Discard();
     Gfx::Discard();

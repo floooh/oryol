@@ -55,11 +55,9 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    Gfx::ReleaseResource(this->textMesh);
-    Gfx::ReleaseResource(this->textDrawState);
-    Gfx::ReleaseResource(this->fontTexture);
-    this->textDrawState.Invalidate();
-    this->fontTexture.Invalidate();
+    this->textMesh.Release();
+    this->textDrawState.Release();
+    this->fontTexture.Release();
 }
 
 //------------------------------------------------------------------------------
@@ -215,7 +213,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id prog = Gfx::CreateResource(DebugShaders::TextShader::CreateSetup());
+    GfxId prog = Gfx::CreateResource(DebugShaders::TextShader::CreateSetup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
@@ -225,9 +223,6 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
     this->textDrawState = Gfx::CreateResource(dss);
-    
-    // fix resource use counts
-    Gfx::ReleaseResource(prog);
 }
 
 //------------------------------------------------------------------------------

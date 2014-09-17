@@ -24,8 +24,8 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
-    Id drawState;
-    Id tex;
+    GfxId drawState;
+    GfxId tex;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -95,15 +95,12 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
-    Id mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(mesh);
-    Gfx::ReleaseResource(prog);
     
     // setup projection and view matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -118,8 +115,8 @@ DDSCubeMapApp::OnInit() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->tex);
-    Gfx::ReleaseResource(this->drawState);
+    this->tex.Release();
+    this->drawState.Release();
     Gfx::Discard();
     IO::Discard();
     

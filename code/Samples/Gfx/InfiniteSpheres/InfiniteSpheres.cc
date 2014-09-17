@@ -23,8 +23,8 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    Id renderTargets[2];
-    Id drawState;
+    GfxId renderTargets[2];
+    GfxId drawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -101,15 +101,12 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72.0f, 40.0f).Build();
-    Id sphere = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    GfxId sphere = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
-    
-    Gfx::ReleaseResource(sphere);
-    Gfx::ReleaseResource(prog);
     
     // setup static transform matrices
     const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -125,9 +122,9 @@ InfiniteSpheresApp::OnInit() {
 AppState::Code
 InfiniteSpheresApp::OnCleanup() {
     // cleanup everything
-    Gfx::ReleaseResource(this->drawState);
+    this->drawState.Release();
     for (int32 i = 0; i < 2; i++) {
-        Gfx::ReleaseResource(this->renderTargets[i]);
+        this->renderTargets[i].Release();
     }
     Gfx::Discard();
     return App::OnCleanup();

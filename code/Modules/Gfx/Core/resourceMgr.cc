@@ -107,17 +107,17 @@ resourceMgr::Update() {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::Mesh);
+        o_assert_dbg(resId.Type() == ResourceType::Mesh);
         return resId;
     }
     else {
         resId = this->meshPool.AllocId();
         Array<Id> deps;
         if (setup.InstanceMesh.IsValid()) {
-            deps.Add(setup.InstanceMesh);
+            deps.Add(setup.InstanceMesh.Id());
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup);
@@ -128,17 +128,17 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<Stream>& data) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::Mesh);
+        o_assert_dbg(resId.Type() == ResourceType::Mesh);
         return resId;
     }
     else {
         resId = this->meshPool.AllocId();
         Array<Id> deps;
         if (setup.InstanceMesh.IsValid()) {
-            deps.Add(setup.InstanceMesh);
+            deps.Add(setup.InstanceMesh.Id());
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->meshPool.Assign(resId, setup, data);
@@ -149,11 +149,11 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<Stream>& data) {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     const Locator& loc = setup.Locator;
     Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::Texture);
+        o_assert_dbg(resId.Type() == ResourceType::Texture);
         return resId;
     }
     else {
@@ -167,11 +167,11 @@ resourceMgr::CreateResource(const TextureSetup& setup) {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<Stream>& data) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     const Locator& loc = setup.Locator;
     Id resId = this->resourceRegistry.LookupResource(loc);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::Texture);
+        o_assert_dbg(resId.Type() == ResourceType::Texture);
         return resId;
     }
     else {
@@ -185,10 +185,10 @@ resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<Stream>& data) 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const ShaderSetup& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::Shader);
+        o_assert_dbg(resId.Type() == ResourceType::Shader);
         return resId;
     }
     else {
@@ -202,10 +202,10 @@ resourceMgr::CreateResource(const ShaderSetup& setup) {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::ProgramBundle);
+        o_assert_dbg(resId.Type() == ResourceType::ProgramBundle);
         return resId;
     }
     else {
@@ -216,10 +216,10 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
         deps.Reserve(numProgs * 2);
         for (int32 i = 0; i < numProgs; i++) {
             if (setup.VertexShader(i).IsValid()) {
-                deps.Add(setup.VertexShader(i));
+                deps.Add(setup.VertexShader(i).Id());
             }
             if (setup.FragmentShader(i).IsValid()) {
-                deps.Add(setup.FragmentShader(i));
+                deps.Add(setup.FragmentShader(i).Id());
             }
         }
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
@@ -231,18 +231,18 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const DrawStateSetup& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Id resId = this->resourceRegistry.LookupResource(setup.Locator);
     if (resId.IsValid()) {
-        o_assert(resId.Type() == ResourceType::DrawState);
+        o_assert_dbg(resId.Type() == ResourceType::DrawState);
         return resId;
     }
     else {
         resId = this->drawStatePool.AllocId();
         // add dependent resources
         Array<Id> deps;
-        deps.Add(setup.Program);
-        deps.Add(setup.Mesh);
+        deps.Add(setup.Program.Id());
+        deps.Add(setup.Mesh.Id());
         this->resourceRegistry.AddResource(setup.Locator, resId, deps);
         this->drawStatePool.Assign(resId, setup);
         return resId;
@@ -252,14 +252,20 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
 //------------------------------------------------------------------------------
 Id
 resourceMgr::LookupResource(const Locator& loc) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     return this->resourceRegistry.LookupResource(loc);
 }
 
 //------------------------------------------------------------------------------
 void
+resourceMgr::UseResource(const Id& resId) {
+    this->resourceRegistry.UseResource(resId);
+}
+
+//------------------------------------------------------------------------------
+void
 resourceMgr::ReleaseResource(const Id& resId) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     if (this->resourceRegistry.ReleaseResource(resId, this->removedIds) > 0) {
         // removedIds now has the resources which need to be destroyed
         for (const Id& removeId : this->removedIds) {
@@ -293,7 +299,7 @@ resourceMgr::ReleaseResource(const Id& resId) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 resourceMgr::QueryResourceState(const Id& resId) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     switch (resId.Type()) {
         case ResourceType::Texture:
             return this->texturePool.QueryState(resId);

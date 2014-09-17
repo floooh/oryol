@@ -30,8 +30,10 @@ public:
     void AddResource(const Locator& loc, const Id& id);
     /// add a new resource id with dependents
     void AddResource(const Locator& loc, const Id& id, const Array<Id>& deps);
-    /// lookup resource by locator, will increment the use-count of the resource!
+    /// lookup resource by locator
     Id LookupResource(const Locator& loc);
+    /// increment the use-count of the resource (and its dependents)
+    void UseResource(const Id& id);
     /// decreases use-count, and returns all resources which have reached use-count 0
     int32 ReleaseResource(const Id& id, Array<Id>& outRemoved);
     

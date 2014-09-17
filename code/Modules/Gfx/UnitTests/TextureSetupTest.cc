@@ -124,9 +124,9 @@ TEST(TextureSetupTest) {
     CHECK(rt3.RelHeight == 0.0f);
     CHECK(rt3.ColorFormat == PixelFormat::RGBA32F);
     CHECK(rt3.DepthFormat == PixelFormat::InvalidPixelFormat);
-    CHECK(rt3.DepthRenderTarget.SlotIndex() == 2);
-    CHECK(rt3.DepthRenderTarget.Type() == ResourceType::Texture);
-    CHECK(rt3.DepthRenderTarget.UniqueStamp() == 1);
+    CHECK(rt3.DepthRenderTarget.Id().SlotIndex() == 2);
+    CHECK(rt3.DepthRenderTarget.Id().Type() == ResourceType::Texture);
+    CHECK(rt3.DepthRenderTarget.Id().UniqueStamp() == 1);
     CHECK(rt3.WrapU == TextureWrapMode::ClampToEdge);
     CHECK(rt3.WrapV == TextureWrapMode::ClampToEdge);
     CHECK(rt3.WrapW == TextureWrapMode::InvalidTextureWrapMode);

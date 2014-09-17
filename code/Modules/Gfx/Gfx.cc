@@ -76,24 +76,17 @@ Gfx::DisplayAttrs() {
  NOTE: the LookupResource() method will bump the use-count of looked up
  resource, so make sure to call DiscardResource() when you're done with it!
 */
-Id
+GfxId
 Gfx::LookupResource(const Locator& loc) {
     o_assert_dbg(IsValid());
-    return state->resourceManager.LookupResource(loc);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::ReleaseResource(const Id& resId) {
-    o_assert_dbg(IsValid());
-    state->resourceManager.ReleaseResource(resId);
+    return GfxId(state->resourceManager.LookupResource(loc));
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-Gfx::QueryResourceState(const Id& resId) {
+Gfx::QueryResourceState(const GfxId& gfxId) {
     o_assert_dbg(IsValid());
-    return state->resourceManager.QueryResourceState(resId);
+    return state->resourceManager.QueryResourceState(gfxId.Id());
 }
 
 //------------------------------------------------------------------------------
@@ -105,20 +98,20 @@ Gfx::ApplyDefaultRenderTarget() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyOffscreenRenderTarget(const Id& resId) {
+Gfx::ApplyOffscreenRenderTarget(const GfxId& gfxId) {
     o_assert_dbg(IsValid());
-    o_assert_dbg(resId.IsValid());
+    o_assert_dbg(gfxId.IsValid());
 
-    texture* renderTarget = state->resourceManager.LookupTexture(resId);
+    texture* renderTarget = state->resourceManager.LookupTexture(gfxId.Id());
     o_assert_dbg(nullptr != renderTarget);
     state->renderManager.ApplyRenderTarget(renderTarget);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyDrawState(const Id& resId) {
+Gfx::ApplyDrawState(const GfxId& gfxId) {
     o_assert_dbg(IsValid());
-    state->renderManager.ApplyDrawState(state->resourceManager.LookupDrawState(resId));
+    state->renderManager.ApplyDrawState(state->resourceManager.LookupDrawState(gfxId.Id()));
 }
 
 //------------------------------------------------------------------------------
@@ -151,9 +144,9 @@ Gfx::ResetStateCache() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::UpdateVertices(const Id& resId, int32 numBytes, const void* data) {
+Gfx::UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data) {
     o_assert_dbg(IsValid());
-    mesh* msh = state->resourceManager.LookupMesh(resId);
+    mesh* msh = state->resourceManager.LookupMesh(gfxId.Id());
     state->renderManager.UpdateVertices(msh, numBytes, data);
 }
 
