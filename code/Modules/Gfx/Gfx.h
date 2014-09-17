@@ -49,11 +49,11 @@ public:
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
         
-    /// create a resource, or return existing resource
+    /// create a resource, or return existing shared resource
     template<class SETUP> static GfxId CreateResource(const SETUP& setup);
-    /// create a resource with data stream, or return existing resource
+    /// create a resource with data stream, or return existing shared resource
     template<class SETUP> static GfxId CreateResource(const SETUP& setup, const Ptr<Stream>& data);
-    /// lookup a resource by resource locator (increments use-count of resource!)
+    /// lookup a resource by resource locator
     static GfxId LookupResource(const Locator& locator);
     /// get the loading state of a resource
     static ResourceState::Code QueryResourceState(const GfxId& gfxId);
