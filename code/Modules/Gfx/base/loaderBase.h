@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::loaderBase
     @ingroup _priv
-    @brief resource loader base class for the Render module
+    @brief resource loader base class for the Gfx module
 */
 #include "Core/RefCounted.h"
 #include "Gfx/Core/Enums.h"

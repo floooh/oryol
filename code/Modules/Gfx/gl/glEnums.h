@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Render/gl/glEnums.h
+    @file Gfx/gl/glEnums.h
     @ingroup _priv
-    @brief Render module enums mapped to their GL values
+    @brief Gfx module enums mapped to their GL values
 */
 #include "Core/Types.h"
 

@@ -20,10 +20,10 @@ glfwInputMgr::glfwInputMgr() {
     o_assert(nullptr == self);
     self = this;
     
-    // first check that the Render subsystem has already been initialized
+    // first check that the Gfx module has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
     if (nullptr == glfwWindow) {
-        o_error("glfwInputMgr: Render module must be created before InputFacade!");
+        o_error("glfwInputMgr: Gfx module must be created before InputFacade!");
         return;
     }
     this->setupKeyTable();

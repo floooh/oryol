@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Render/Core/Enums.h
-    @brief Render module enums
+    @file Gfx/Core/Enums.h
+    @brief Gfx module enums
 */
 #include "Core/Types.h"
 #include "Core/Assert.h"
@@ -299,9 +299,9 @@ class PrimitiveType : public _priv::glPrimitiveType { };
 /**
     @class Oryol::ResourceType
     @ingroup Gfx
-    @brief Render subsystem resource types
+    @brief Gfx module resource types
  
-    These types are used for the type in Id for Render module
+    These types are used for the type in Id for Gfx module
     resources.
 */
 class ResourceType {
