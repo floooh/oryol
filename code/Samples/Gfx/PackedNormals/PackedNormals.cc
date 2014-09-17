@@ -20,8 +20,7 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    GfxId msaaDrawState;
-    GfxId noMsaaDrawState;
+    GfxId drawState;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -41,7 +40,6 @@ PackedNormalsApp::OnRunning() {
         
         // apply state and render
         Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->msaaDrawState);
         Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         
         // draw shape primitive groups
@@ -54,6 +52,7 @@ PackedNormalsApp::OnRunning() {
             glm::vec3(0.0f, -1.0f, -6.0f)
         };
         
+        Gfx::ApplyDrawState(this->drawState);
         for (int i = 0; i < numShapes; i++) {
             Gfx::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(pos[i]));
             Gfx::Draw(i);
@@ -92,10 +91,7 @@ PackedNormalsApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
-    dss.RasterizerState.MultisampleEnabled = true;
-    this->msaaDrawState = Gfx::CreateResource(dss);
-    dss.RasterizerState.MultisampleEnabled = false;
-    this->noMsaaDrawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::CreateResource(dss);
 
     // setup projection and view matrices
     float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
@@ -110,8 +106,7 @@ PackedNormalsApp::OnInit() {
 AppState::Code
 PackedNormalsApp::OnCleanup() {
     // cleanup everything
-    this->msaaDrawState.Release();
-    this->noMsaaDrawState.Release();
+    this->drawState.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }
