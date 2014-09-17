@@ -115,11 +115,7 @@ resourceMgr::CreateResource(const MeshSetup& setup) {
     }
     else {
         resId = this->meshPool.AllocId();
-        Array<Id> deps;
-        if (setup.InstanceMesh.IsValid()) {
-            deps.Add(setup.InstanceMesh.Id());
-        }
-        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId);
         this->meshPool.Assign(resId, setup);
         return resId;
     }
@@ -136,11 +132,7 @@ resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<Stream>& data) {
     }
     else {
         resId = this->meshPool.AllocId();
-        Array<Id> deps;
-        if (setup.InstanceMesh.IsValid()) {
-            deps.Add(setup.InstanceMesh.Id());
-        }
-        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId);
         this->meshPool.Assign(resId, setup, data);
         return resId;
     }
@@ -210,19 +202,7 @@ resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
     }
     else {
         resId = this->programBundlePool.AllocId();
-        // add vertex/fragment shaders as dependencies
-        Array<Id> deps;
-        const int32 numProgs = setup.NumPrograms();
-        deps.Reserve(numProgs * 2);
-        for (int32 i = 0; i < numProgs; i++) {
-            if (setup.VertexShader(i).IsValid()) {
-                deps.Add(setup.VertexShader(i).Id());
-            }
-            if (setup.FragmentShader(i).IsValid()) {
-                deps.Add(setup.FragmentShader(i).Id());
-            }
-        }
-        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId);
         this->programBundlePool.Assign(resId, setup);
         return resId;
     }
@@ -239,11 +219,7 @@ resourceMgr::CreateResource(const DrawStateSetup& setup) {
     }
     else {
         resId = this->drawStatePool.AllocId();
-        // add dependent resources
-        Array<Id> deps;
-        deps.Add(setup.Program.Id());
-        deps.Add(setup.Mesh.Id());
-        this->resourceRegistry.AddResource(setup.Locator, resId, deps);
+        this->resourceRegistry.AddResource(setup.Locator, resId);
         this->drawStatePool.Assign(resId, setup);
         return resId;
     }
@@ -266,32 +242,30 @@ resourceMgr::UseResource(const Id& resId) {
 void
 resourceMgr::ReleaseResource(const Id& resId) {
     o_assert_dbg(this->isValid);
-    if (this->resourceRegistry.ReleaseResource(resId, this->removedIds) > 0) {
-        // removedIds now has the resources which need to be destroyed
-        for (const Id& removeId : this->removedIds) {
-            switch (removeId.Type()) {
-                case ResourceType::Texture:
-                    this->texturePool.Unassign(removeId);
-                    break;
-                case ResourceType::Mesh:
-                    this->meshPool.Unassign(removeId);
-                    break;
-                case ResourceType::Shader:
-                    this->shaderPool.Unassign(removeId);
-                    break;
-                case ResourceType::ProgramBundle:
-                    this->programBundlePool.Unassign(removeId);
-                    break;
-                case ResourceType::ConstantBlock:
-                    o_assert2(false, "FIXME!!!\n");
-                    break;
-                case ResourceType::DrawState:
-                    this->drawStatePool.Unassign(removeId);
-                    break;
-                default:
-                    o_assert(false);
-                    break;
-            }
+    if (this->resourceRegistry.ReleaseResource(resId)) {
+        // use count 0 reached, destroy the resource
+        switch (resId.Type()) {
+            case ResourceType::Texture:
+                this->texturePool.Unassign(resId);
+                break;
+            case ResourceType::Mesh:
+                this->meshPool.Unassign(resId);
+                break;
+            case ResourceType::Shader:
+                this->shaderPool.Unassign(resId);
+                break;
+            case ResourceType::ProgramBundle:
+                this->programBundlePool.Unassign(resId);
+                break;
+            case ResourceType::ConstantBlock:
+                o_assert2(false, "FIXME!!!\n");
+                break;
+            case ResourceType::DrawState:
+                this->drawStatePool.Unassign(resId);
+                break;
+            default:
+                o_assert(false);
+                break;
         }
     }
 }

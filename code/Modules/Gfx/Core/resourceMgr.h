@@ -69,7 +69,6 @@ private:
     class stateWrapper* stateWrapper;
     class displayMgr* displayMgr;
     ResourceRegistry resourceRegistry;
-    Array<Id> removedIds;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
