@@ -1,0 +1,5 @@
+oryol_begin_app(PBRendering windowed)
+    oryol_sources(.)
+    oryol_deps(Gfx Dbg)
+    oryol_add_web_sample(PBRendering "Physically based rendering sample" "emscripten,pnacl,android" PBRendering.jpg "Gfx/PBRendering/PBRendering.cc")
+oryol_end_app()

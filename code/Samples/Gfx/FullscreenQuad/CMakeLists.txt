@@ -1,0 +1,5 @@
+oryol_begin_app(FullscreenQuad windowed)
+    oryol_sources(.)
+    oryol_deps(Gfx)
+    oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" "emscripten,pnacl" FullscreenQuad.jpg "Gfx/FullscreenQuad/FullscreenQuad.cc")
+oryol_end_app()

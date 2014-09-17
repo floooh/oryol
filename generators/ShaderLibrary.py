@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 4
+Version = 5
 
 import os
 import sys
@@ -829,7 +829,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('/*  #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
-    f.write('#include "Render/Setup/ProgramBundleSetup.h"\n')
+    f.write('#include "Gfx/Setup/ProgramBundleSetup.h"\n')
     f.write('namespace Oryol {\n')
     f.write('namespace ' + shdLib.name + ' {\n')
 

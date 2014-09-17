@@ -11,7 +11,7 @@
 #define NANOVG_GL2_IMPLEMENTATION
 #endif
 #include "NanoVGWrapper.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 
 namespace Oryol {
 
@@ -22,7 +22,7 @@ void
 NanoVG::Setup() {
     o_assert(!IsValid());
     state = new _state();
-    if (!Render::IsValid()) {
+    if (!Gfx::IsValid()) {
         o_error("Render module must be setuo before NanoVG!\n");
     }
 }
@@ -78,8 +78,8 @@ NanoVG::BeginFrame(NVGcontext* ctx) {
     o_assert_dbg(IsValid());
     o_assert_dbg(ctx);
     
-    const int32 w = Render::DisplayAttrs().FramebufferWidth;
-    const int32 h = Render::DisplayAttrs().FramebufferHeight;
+    const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
+    const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
     o_assert_dbg(h > 0);
     const float32 aspect = float32(w) / float32(h);
     
@@ -93,7 +93,7 @@ NanoVG::EndFrame(NVGcontext* ctx) {
     o_assert_dbg(ctx);
 
     nvgEndFrame(ctx);
-    Render::ResetStateCache();
+    Gfx::ResetStateCache();
 }
 
 //------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
     which call nanovg functions. It makes sure that the right defines
     are set and the right OpenGL headers are included.
 */
-#include "Render/gl/gl_impl.h"
+#include "Gfx/gl/gl_impl.h"
 #ifndef NVG_NO_STDIO
 #define NVG_NO_STDIO
 #endif

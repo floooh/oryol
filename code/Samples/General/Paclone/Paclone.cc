@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "Input/Input.h"
 #include "canvas.h"
 #include "game.h"
@@ -33,7 +33,7 @@ PacloneApp::OnInit() {
     this->tick = 0;
     const int dispWidth = game::Width * 8 * 2;
     const int dispHeight = game::Height * 8 * 2;
-    Render::Setup(RenderSetup::Window(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
+    Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
     Input::Setup();
     
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
@@ -45,20 +45,20 @@ PacloneApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 PacloneApp::OnRunning() {
-    if (Render::BeginFrame()) {
+    if (Gfx::BeginFrame()) {
 
-        Render::ApplyDefaultRenderTarget();
-        Render::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+        Gfx::ApplyDefaultRenderTarget();
+        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
         game::Direction input = this->getInput();
         this->gameState.Update(this->tick, &this->spriteCanvas, input);
         this->spriteCanvas.Render();
         
-        Render::EndFrame();
+        Gfx::EndFrame();
         this->tick++;
     }
 
     // continue running or quit?
-    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ PacloneApp::OnCleanup() {
     this->gameState.Cleanup();
     this->spriteCanvas.Discard();
     Input::Discard();
-    Render::Discard();
+    Gfx::Discard();
     return App::OnCleanup();
 }
 

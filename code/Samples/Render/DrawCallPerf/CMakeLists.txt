@@ -1,5 +1,0 @@
-oryol_begin_app(DrawCallPerf windowed)
-    oryol_sources(.)
-    oryol_deps(Render Time Dbg Input)
-    oryol_add_web_sample(DrawCallPerf "Measure draw call performance" "emscripten,pnacl,android" DrawCallPerf.jpg "Render/DrawCallPerf/DrawCallPerf.cc")    
-oryol_end_app()

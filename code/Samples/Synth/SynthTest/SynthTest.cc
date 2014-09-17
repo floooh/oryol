@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Synth/Synth.h"
@@ -27,7 +27,7 @@ OryolMain(SynthTestApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SynthTestApp::OnInit() {
-    Render::Setup(RenderSetup::Window(640, 400, false, "Oryol Synth Test Sample"));
+    Gfx::Setup(GfxSetup::Window(640, 400, false, "Oryol Synth Test Sample"));
     Dbg::Setup();
     Input::Setup();
     SynthSetup synthSetup;
@@ -45,7 +45,7 @@ SynthTestApp::OnInit() {
 AppState::Code
 SynthTestApp::OnRunning() {
 
-    if (Render::BeginFrame()) {
+    if (Gfx::BeginFrame()) {
         
         const Keyboard& kbd = Input::Keyboard();
         if (kbd.KeyDown(Key::Left)) {
@@ -161,15 +161,15 @@ SynthTestApp::OnRunning() {
         Dbg::PrintF(" Freq (up/down): %.2f\n\r", this->op.Frequency);
         Dbg::PrintF(" Pulse (left/right): %.2f\n\r", this->op.Pulse);
         Dbg::PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
-        Render::ApplyDefaultRenderTarget();
-        Render::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        Gfx::ApplyDefaultRenderTarget();
+        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
         Dbg::DrawTextBuffer();
-        Render::EndFrame();
+        Gfx::EndFrame();
         this->frameCount++;
     }
     
     // continue running or quit?
-    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -178,6 +178,6 @@ SynthTestApp::OnCleanup() {
     Synth::Discard();
     Dbg::Discard();
     Input::Discard();
-    Render::Discard();
+    Gfx::Discard();
     return App::OnCleanup();
 }

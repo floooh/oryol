@@ -1,0 +1,12 @@
+<Generator type="MessageProtocol" name="GfxProtocol" id="GXPT">
+
+    <!-- display has been setup -->
+    <Message name="DisplaySetup" serialize="false"/>
+    
+    <!-- display has been discarded -->
+    <Message name="DisplayDiscarded" serialize="false"/>
+
+    <!-- display has been modified -->
+    <Message name="DisplayModified" serialize="false"/>
+    
+</Generator>

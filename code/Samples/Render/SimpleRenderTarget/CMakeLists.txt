@@ -1,5 +1,0 @@
-oryol_begin_app(SimpleRenderTarget windowed)
-    oryol_sources(.)
-    oryol_deps(Render)
-    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" "emscripten,android,pnacl" SimpleRenderTarget.jpg "Render/SimpleRenderTarget/SimpleRenderTarget.cc")
-oryol_end_app()

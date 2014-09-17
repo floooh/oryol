@@ -4,7 +4,7 @@
     XY-Canvas for sprite tiles.
 */
 #include "Core/Assert.h"
-#include "Render/Setup/MeshSetup.h"
+#include "Gfx/Setup/MeshSetup.h"
 #include "sprites.h"
 
 namespace Paclone {

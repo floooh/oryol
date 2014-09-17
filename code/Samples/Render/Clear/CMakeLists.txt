@@ -1,5 +1,0 @@
-oryol_begin_app(Clear windowed)
-    oryol_sources(.)
-    oryol_deps(Render)
-    oryol_add_web_sample(Clear "Just call glClear in a loop" "emscripten,pnacl,android" Clear.jpg "Render/Clear/Clear.cc")
-oryol_end_app()

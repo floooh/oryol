@@ -1,0 +1,5 @@
+oryol_begin_app(TextureFloat windowed)
+    oryol_sources(.)
+    oryol_deps(Gfx Time Dbg)
+    oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten,android,pnacl" TextureFloat.jpg "Gfx/TextureFloat/TextureFloat.cc")
+oryol_end_app()

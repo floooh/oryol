@@ -10,6 +10,6 @@ if (ORYOL_MACOS OR ORYOL_WINDOWS OR ORYOL_LINUX)
     oryol_sources(glfw)
     oryol_deps(glfw3)
 endif()
-oryol_deps(Core Render)
+oryol_deps(Core Gfx)
 oryol_end_module()
 

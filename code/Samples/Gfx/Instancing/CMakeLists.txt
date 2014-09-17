@@ -1,0 +1,5 @@
+oryol_begin_app(Instancing windowed)
+    oryol_sources(.)
+    oryol_deps(Gfx Time Dbg Input)
+    oryol_add_web_sample(Instancing "Instanced rendering" "emscripten,pnacl" Instancing.jpg "Gfx/Instancing/Instancing.cc")
+oryol_end_app()

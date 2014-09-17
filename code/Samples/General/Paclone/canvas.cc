@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "canvas.h"
 #include "shaders.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
@@ -45,13 +45,13 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
-    this->mesh = Render::CreateResource(meshSetup);
-    this->prog = Render::CreateResource(Shaders::Main::CreateSetup());
+    this->mesh = Gfx::CreateResource(meshSetup);
+    this->prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dsSetup = DrawStateSetup::FromMeshAndProg(this->mesh, this->prog, 0);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->drawState = Render::CreateResource(dsSetup);
+    this->drawState = Gfx::CreateResource(dsSetup);
     
     // setup sprite texture
     auto pixelData = MemoryStream::Create();
@@ -65,7 +65,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    this->texture = Render::CreateResource(texSetup, pixelData);
+    this->texture = Gfx::CreateResource(texSetup, pixelData);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -83,10 +83,10 @@ void
 canvas::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    Render::ReleaseResource(this->drawState);
-    Render::ReleaseResource(this->prog);
-    Render::ReleaseResource(this->mesh);
-    Render::ReleaseResource(this->texture);
+    Gfx::ReleaseResource(this->drawState);
+    Gfx::ReleaseResource(this->prog);
+    Gfx::ReleaseResource(this->mesh);
+    Gfx::ReleaseResource(this->texture);
     this->drawState.Invalidate();
     this->prog.Invalidate();
     this->mesh.Invalidate();
@@ -104,10 +104,10 @@ canvas::Render() {
     o_assert(this->isValid);
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
-    Render::UpdateVertices(this->mesh, numBytes, data);
-    Render::ApplyDrawState(this->drawState);
-    Render::ApplyVariable(Shaders::Main::Texture, this->texture);
-    Render::Draw(0);
+    Gfx::UpdateVertices(this->mesh, numBytes, data);
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::Texture, this->texture);
+    Gfx::Draw(0);
 }
 
 //------------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #include "IO/IO.h"
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
 #include "NanoVG/NanoVG.h"
@@ -34,12 +34,12 @@ OryolMain(NanoVGApp);
 AppState::Code
 NanoVGApp::OnRunning() {
     
-    if (Render::BeginFrame()) {
-        Render::ApplyDefaultRenderTarget();
-        Render::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
+    if (Gfx::BeginFrame()) {
+        Gfx::ApplyDefaultRenderTarget();
+        Gfx::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
-        const int32 w = Render::DisplayAttrs().FramebufferWidth;
-        const int32 h = Render::DisplayAttrs().FramebufferHeight;
+        const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
+        const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
         const int32 mouseX = Input::Mouse().Position().x;
         const int32 mouseY = Input::Mouse().Position().y;
         const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
@@ -49,11 +49,11 @@ NanoVGApp::OnRunning() {
         renderDemo(this->ctx, mouseX, mouseY, w, h, time, blowup, &this->data);
         NanoVG::EndFrame(this->ctx);
 
-        Render::EndFrame();
+        Gfx::EndFrame();
     }
     
     // continue running or quit?
-    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -64,8 +64,8 @@ NanoVGApp::OnInit() {
     ioSetup.Assigns.Add("res:", "http://localhost:8000/");
     IO::Setup(ioSetup);
     
-    auto renderSetup = RenderSetup::Window(1024, 600, true, "Oryol NanoVG Sample");
-    Render::Setup(renderSetup);
+    auto gfxSetup = GfxSetup::Window(1024, 600, true, "Oryol NanoVG Sample");
+    Gfx::Setup(gfxSetup);
     Input::Setup();
     NanoVG::Setup();
     this->ctx = NanoVG::CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
@@ -102,7 +102,7 @@ NanoVGApp::OnCleanup() {
     this->ctx = nullptr;
     NanoVG::Discard();
     Input::Discard();
-    Render::Discard();
+    Gfx::Discard();
     IO::Discard();
     return App::OnCleanup();
 }

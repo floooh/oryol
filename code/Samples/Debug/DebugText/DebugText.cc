@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "glm/gtc/random.hpp"
 
@@ -31,32 +31,32 @@ OryolMain(DebugTextApp);
 AppState::Code
 DebugTextApp::OnRunning() {
     // render one frame
-    if (Render::BeginFrame()) {
+    if (Gfx::BeginFrame()) {
         
         this->dropChar();
         this->moveChars();
         this->drawText();
         
-        Render::ApplyDefaultRenderTarget();
-        Render::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+        Gfx::ApplyDefaultRenderTarget();
+        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
         Dbg::DrawTextBuffer();
         
-        Render::EndFrame();
+        Gfx::EndFrame();
     }
     
     // continue running or quit?
-    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    Render::Setup(RenderSetup::Window(800, 600, false, "Oryol DebugText Sample"));
+    Gfx::Setup(GfxSetup::Window(800, 600, false, "Oryol DebugText Sample"));
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     
-    this->width = Render::DisplayAttrs().FramebufferWidth / 16;
-    this->height = Render::DisplayAttrs().FramebufferHeight / 16;
+    this->width = Gfx::DisplayAttrs().FramebufferWidth / 16;
+    this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
     
@@ -71,7 +71,7 @@ DebugTextApp::OnCleanup() {
     Memory::Free(this->buffer);
     this->buffer = nullptr;
     Dbg::Discard();
-    Render::Discard();
+    Gfx::Discard();
     return App::OnCleanup();
 }
 

@@ -1,5 +1,0 @@
-oryol_begin_app(InfiniteSpheres windowed)
-    oryol_sources(.)
-    oryol_deps(Render)
-    oryol_add_web_sample(InfiniteSpheres "Infinite recursive spheres" "emscripten,android,pnacl" InfiniteSpheres.jpg "Render/InfiniteSpheres/InfiniteSpheres.cc")    
-oryol_end_app()

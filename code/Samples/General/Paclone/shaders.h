@@ -1,9 +1,9 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:4#
+/*  #version:5#
     machine generated, do not edit!
 */
-#include "Render/Setup/ProgramBundleSetup.h"
+#include "Gfx/Setup/ProgramBundleSetup.h"
 namespace Oryol {
 namespace Shaders {
     class Main {

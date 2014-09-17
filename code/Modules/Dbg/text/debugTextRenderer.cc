@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "debugTextRenderer.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "IO/Stream/MemoryStream.h"
 #include "Dbg/shaders/DebugShaders.h"
 
@@ -55,9 +55,9 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    Render::ReleaseResource(this->textMesh);
-    Render::ReleaseResource(this->textDrawState);
-    Render::ReleaseResource(this->fontTexture);
+    Gfx::ReleaseResource(this->textMesh);
+    Gfx::ReleaseResource(this->textDrawState);
+    Gfx::ReleaseResource(this->fontTexture);
     this->textDrawState.Invalidate();
     this->fontTexture.Invalidate();
 }
@@ -132,15 +132,15 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        const float w = 8.0f / Render::DisplayAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Render::DisplayAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Gfx::DisplayAttrs().FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / Gfx::DisplayAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
-        Render::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
-        Render::ApplyDrawState(this->textDrawState);
-        Render::ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
-        Render::ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
-        Render::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
+        Gfx::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
+        Gfx::ApplyDrawState(this->textDrawState);
+        Gfx::ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
+        Gfx::ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
+        Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
     }
 }
 
@@ -184,9 +184,9 @@ debugTextRenderer::setupFontTexture() {
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
-    this->fontTexture = Render::CreateResource(setup, data);
+    this->fontTexture = Gfx::CreateResource(setup, data);
     o_assert(this->fontTexture.IsValid());
-    o_assert(Render::QueryResourceState(this->fontTexture) == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceState(this->fontTexture) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -203,9 +203,9 @@ debugTextRenderer::setupTextMesh() {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh = Render::CreateResource(setup);
+    this->textMesh = Gfx::CreateResource(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(Render::QueryResourceState(this->textMesh) == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceState(this->textMesh) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -215,7 +215,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id prog = Render::CreateResource(DebugShaders::TextShader::CreateSetup());
+    Id prog = Gfx::CreateResource(DebugShaders::TextShader::CreateSetup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
@@ -224,10 +224,10 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->textDrawState = Render::CreateResource(dss);
+    this->textDrawState = Gfx::CreateResource(dss);
     
     // fix resource use counts
-    Render::ReleaseResource(prog);
+    Gfx::ReleaseResource(prog);
 }
 
 //------------------------------------------------------------------------------

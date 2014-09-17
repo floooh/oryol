@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
-#include "Render/Render.h"
+#include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Core/String/StringConverter.h"
@@ -30,7 +30,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Render::Setup(RenderSetup::Window(512, 256, false, "Oryol Input Test Sample"));
+    Gfx::Setup(GfxSetup::Window(512, 256, false, "Oryol Input Test Sample"));
     Dbg::Setup();
     Input::Setup();
     
@@ -71,10 +71,10 @@ TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name)
 AppState::Code
 TestInputApp::OnRunning() {
     // render one frame
-    if (Render::BeginFrame()) {
+    if (Gfx::BeginFrame()) {
     
-        Render::ApplyDefaultRenderTarget();
-        Render::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
+        Gfx::ApplyDefaultRenderTarget();
+        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
         
         const Keyboard& keyboard = Input::Keyboard();
         const Mouse& mouse = Input::Mouse();
@@ -127,11 +127,11 @@ TestInputApp::OnRunning() {
         }
         
         Dbg::DrawTextBuffer();
-        Render::EndFrame();
+        Gfx::EndFrame();
     }
     
     // continue running or quit?
-    return Render::QuitRequested() ? AppState::Cleanup : AppState::Running;
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
@@ -139,6 +139,6 @@ AppState::Code
 TestInputApp::OnCleanup() {
     Input::Discard();
     Dbg::Discard();
-    Render::Discard();
+    Gfx::Discard();
     return App::OnCleanup();
 }

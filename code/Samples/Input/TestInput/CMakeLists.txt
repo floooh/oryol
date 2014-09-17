@@ -1,5 +1,5 @@
 oryol_begin_app(TestInput windowed)
     oryol_sources(.)
-    oryol_deps(Core Render Dbg Input)
+    oryol_deps(Core Gfx Dbg Input)
     oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten,pnacl,android" TestInput.jpg "Input/TestInput/TestInput.cc")
 oryol_end_app()

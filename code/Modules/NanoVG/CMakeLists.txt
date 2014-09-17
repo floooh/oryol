@@ -6,6 +6,6 @@ add_definitions(-DNVG_NO_STB_ASSERTS=1)
 
 oryol_begin_module(NanoVG)
 oryol_sources(. nanovg)
-oryol_deps(Core IO Render)
+oryol_deps(Core IO Gfx)
 oryol_end_module()
 
