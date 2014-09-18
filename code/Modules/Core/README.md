@@ -46,8 +46,7 @@ public:
 OryolMain(MyApp);
 
 //---: 1 frame initialization
-AppState::Code
-MyApp::OnInit() {
+AppState::Code MyApp::OnInit() {
     // do initialization work
     ...
 
@@ -56,8 +55,7 @@ MyApp::OnInit() {
 }
 
 //---: per-frame callback
-AppState::Code
-MyApp::OnRunning() {
+AppState::Code MyApp::OnRunning() {
     // do per-frame work (e.g. 3D rendering)
     ...
 
@@ -66,8 +64,7 @@ MyApp::OnRunning() {
 }
 
 //---: 1 frame cleanup
-AppState::Code
-MyApp::OnCleanup() {
+AppState::Code MyApp::OnCleanup() {
     // do cleanup-work, calling parent class OnCleanup is currently necessary
     return App::OnCleanup();
 }
