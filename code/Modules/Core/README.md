@@ -31,7 +31,7 @@ spread over several frames.
 
 A minimal Oryol application looks like this:
 
-```
+```cpp
 #include "Core/App.h"
 
 using namespace Oryol;
