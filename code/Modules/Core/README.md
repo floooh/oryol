@@ -10,18 +10,19 @@ The Core module provides basic functionality which every Oryol app and Oryol mod
 
 ### The Oryol Application Model
 
-Oryol needs to run on platforms where applications are forbidden to 'own the game loop',
-or block the application's main thread for more then a few dozen milliseconds. Instead of 
-having a main() function with an 'infinite loop' these platforms require to register
-a frame-callback which is called whenever a new frame needs to be rendered.
+Oryol needs to run on esoteric platforms where applications are forbidden to 'own the game loop',
+block the main thread for more then a few dozen milliseconds, specific functionality
+is only available from the main (or UI-) thread, don't have shared-memory-threading, don't
+even have a main() function or where an app can be suspended and restored at will by 
+the operating system.
 
-There are also platforms which have restrictions which operating system services are 
-available from threads, and some platforms don't even have a main function.
-
-In fact, most platforms except Windows and game consoles have at least some of these limitations.
-
-Oryol's App class hides all these dirty details from the programmer by implementing
-a simple application state model.
+To hide all these dirty platform-specific details, Oryol offers a convenient application
+class *Oryol::App* which implements a simple *application-state-model*. During the lifetime
+of an Oryol application, the app goes through different states, controlled by a derived 
+application subclass. While a state is active, an associated per-frame method is called
+which implements a frame's worth of work for the current application state. The only
+hard rule is that these callback methods must not block for more then a few dozen milliseconds
+(the usual frame budget is 16ms for a 60fps application, or 32ms for a 30fps app).
 
 Creating a new Oryol application starts with deriving from the App class and overriding
 the virtual state-callback methods which are called once per frame as long as this specific
