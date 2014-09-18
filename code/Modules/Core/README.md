@@ -26,7 +26,7 @@ a simple application state model.
 Creating a new Oryol application starts with deriving from the App class and overriding
 the virtual state-callback methods which are called once per frame as long as this specific
 state is active. The return value of a state callback method is the next state the application
-should switch to. This way an application may decode to do initialization in small chunks 
+should switch to. This way an application can do initialization in small chunks 
 spread over several frames.
 
 A minimal Oryol application looks like this:
@@ -92,7 +92,7 @@ public:
 };
 ```
 
-Here, OryolClassDecl and OryolClassCreator are 'class annotation macros' which add some 
+*OryolClassDecl* and *OryolClassCreator*  are 'class annotation macros' which add some 
 Oryol-specific standard functionality to a class. 
 
 
@@ -102,9 +102,9 @@ Oryol-specific standard functionality to a class.
 > instead Oryol's philosophy is to pre-allocate fixed sized memory blocks and
 > object pools and keep dynamic allocations to a minimum
 
-Oryol application should try to keep heap-allocated objects to a minimum, but if
+Oryol applications should try to keep heap-allocated objects to a minimum, but if
 needed, raw new and delete calls should be avoided in favour of Oryol's lifetime-
-managed heap objects through ref-counting and smart pointers. 
+managed heap objects using ref-counting and smart pointers. 
 
 There's a few things to keep in mind when using ref-counted objects in Oryol:
 
@@ -137,6 +137,8 @@ of course you can also use the new C++11 auto keyword:
 ```cpp
 auto myObj = MyClass::Create(arg1, arg2, arg3);
 ```
+
+> TODO: write about why std::shared_ptr and std::make_shared is not used.
 
 
 ### Object Pools
