@@ -137,8 +137,8 @@ auto myObj = MyClass::Create(arg1, arg2, arg3);
 > TODO: write about why std::shared_ptr and std::make_shared is not used.
 
 > NOTE: Always keep in mind that there should be a good reason to use heap-allocated, 
-> ref-counted objects instead of stack-allocated or class-embedded objects. Don't
-> make everything ref-counted by default!
+> ref-counted objects instead of stack-allocated or class-embedded objects. Always consider
+> stack-allocated objects and class-embedded objects first!
 
 
 ### Object Pools
