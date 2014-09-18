@@ -146,7 +146,7 @@ auto myObj = MyClass::Create(arg1, arg2, arg3);
 Object creation can be optimized with object pools which prevents dynamic memory
 allocation per object and reduces fragmentation (but still needs to call the constructor 
 and destructor). This should only be used for small objects which need to be very frequently 
-created and destroyed (which is something that should be avoided in a game engine). To object 
+created and destroyed (which is something that should be avoided in a game engine). To use object 
 pools for a class, use the OryolClassPoolAllocDecl annotation macro:
 
 ```cpp
@@ -234,8 +234,8 @@ o_assert(x != 0);
 o_assert_dbg(x != 0);
 
 // assert with additional text message:
-o_assert(x != 0, "Message");
-o_assert_dbg(x != 0, "Message");
+o_assert2(x != 0, "Message");
+o_assert2_dbg(x != 0, "Message");
 
 // short-cut range check assert (tests that val >= 0 and val < max)
 o_assert_range(val, max);
