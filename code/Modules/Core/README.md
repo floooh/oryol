@@ -147,11 +147,11 @@ auto myObj = MyClass::Create(arg1, arg2, arg3);
 
 ### Object Pools
 
-Object creation can be optimized with object pools which prevent dynamic memory
-allocation per object (but still calls the constructor and destructor). This should
-only be used for small objects which need to be very frequently created and destroyed
-(which is something that should be avoided in a game engine). To object pools for
-a class, use the OryolClassPoolAllocDecl annotation macro:
+Object creation can be optimized with object pools which prevents dynamic memory
+allocation per object and reduces fragmentation (but still needs to call the constructor 
+and destructor). This should only be used for small objects which need to be very frequently 
+created and destroyed (which is something that should be avoided in a game engine). To object 
+pools for a class, use the OryolClassPoolAllocDecl annotation macro:
 
 ```cpp
 class MyPoolClass : public MyClass {
