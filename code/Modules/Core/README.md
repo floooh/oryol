@@ -1,6 +1,6 @@
 ## Core Module
 
-The Core module provides basic functionality which every Oryol app and other modules need:
+The Core module provides basic functionality which every Oryol app and Oryol module depends on:
 
 * a unified application model for all target platforms
 * lifetime management for heap-allocated objects
@@ -12,8 +12,8 @@ The Core module provides basic functionality which every Oryol app and other mod
 
 Oryol needs to run on platforms where applications are forbidden to 'own the game loop',
 or block the application's main thread for more then a few dozen milliseconds. Instead of 
-having a main() function with a simple game loop, some sort of per-frame callback must be
-registered, and control is given back to the operating system.
+having a main() function with an 'infinite loop' these platforms require to register
+a frame-callback which is called whenever a new frame needs to be rendered.
 
 There are also platforms which have restrictions which operating system services are 
 available from threads, and some platforms don't even have a main function.
