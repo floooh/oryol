@@ -224,7 +224,7 @@ The Log class can be called safely from any thread.
 
 ### Asserts
 
-Instead of assert(), use Oryol specialized o_assert() macros, the standard form is 
+Instead of assert(), use Oryol's specialized o_assert() macros, the standard form is 
 also active when the code is compiled in release mode (with optimizations), the _dbg()
 form is only active in debug mode:
 
