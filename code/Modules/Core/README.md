@@ -103,8 +103,8 @@ Oryol-specific standard functionality to a class.
 > object pools and keep dynamic allocations to a minimum
 
 Oryol applications should try to keep heap-allocated objects to a minimum, but if
-needed, raw new and delete calls should be avoided in favour of Oryol's lifetime-
-managed heap objects using ref-counting and smart pointers. 
+needed, Oryol's lifetime-managed heap objects using ref-counting and smart pointers
+should be used instead of raw new and delete calls.
 
 There's a few things to keep in mind when using ref-counted objects in Oryol:
 
