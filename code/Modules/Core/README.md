@@ -265,7 +265,7 @@ In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per sec
 
 There are a couple of C++ features which are black-listed on Oryol for various reasons:
 
-- *C++ exceptions*: These are disabled by default, but can be enabled with a cmake option. Don't use them as they decrease performance on emscripten.
+- *C++ exceptions*: These are disabled by default, but can be enabled with a cmake option. Don't use them as they fairly expensive on emscripten.
 - *std containers (std::vector, std::map, ...)*: Oryol comes with its own set of containers classes which offer more fine-control over their behaviour and use asserts instead of exceptions.
 - *C++ style input/output (e.g. std::cout << "hello")*: This causes a lot of code to be pulled into the executable, which is especially bad in emscripten where client-size matters.
 
