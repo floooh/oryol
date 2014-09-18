@@ -22,7 +22,7 @@ of an Oryol application, the app goes through different states, controlled by a 
 application subclass. While a state is active, an associated per-frame method is called
 which implements a frame's worth of work for the current application state. The only
 hard rule is that these callback methods must not block for more then a few dozen milliseconds
-(the usual frame budget is 16ms for a 60fps application, or 32ms for a 30fps app).
+(the usual frame budget is 16ms or 32ms).
 
 Creating a new Oryol application starts with deriving from the App class and overriding
 the virtual state-callback methods which are called once per frame as long as this specific
