@@ -108,9 +108,8 @@ should be used instead of raw new and delete calls.
 
 There's a few things to keep in mind when using ref-counted objects in Oryol:
 
-1. to use ref-counting, a class must have a public addRef(), release() and virtual destroy 
-method (for convenience, a RefCounted base class exists which can be derived from), if an object
-is going to be used from different threads, the refcount management must be thread-safe)
+1. to use ref-counting, a class must have a public *addRef()*, *release()* and *virtual destroy()* 
+methods (for convenience, these are provided by the *RefCounted* base class)
 2. the destructor must be virtual
 3. a class annoation macro must be used to add creation methods to refcounted class
 4. the Ptr<> class must be used as smart-pointer class
