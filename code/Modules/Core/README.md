@@ -43,6 +43,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();    
 };
+// this declare MyApp as Oryol main class
 OryolMain(MyApp);
 
 //---: 1 frame initialization
