@@ -27,8 +27,7 @@ hard rule is that these callback methods must not block for more then a few doze
 Creating a new Oryol application starts with deriving an App subclass and overriding
 the virtual state-callback methods which are called once per frame as long as the associated state
 state is active. The return value of a state callback method is the next state the application
-should switch to. This way an application can do initialization in small chunks 
-spread over several frames.
+should switch to. 
 
 A minimal Oryol application looks like this:
 
