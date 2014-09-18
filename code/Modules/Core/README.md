@@ -6,7 +6,7 @@ The Core module provides basic functionality which every Oryol app and Oryol mod
 * lifetime management for heap-allocated objects
 * a central logging facility
 * a per-thread run-loop 
-* selected alternative classes and concepts to the C++ std library tailored to game applications (containers, strings, low-level memory management)
+* selected alternatives for parts of the C++ std library which don't fit well into a realtime game application
 
 ### The Oryol Application Model
 
@@ -265,4 +265,13 @@ In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per sec
 > NOTE: there's currently no control over the order of how RunLoop callbacks are executed,
 > and it is not defined whether the callback is called before or after the App's
 > per-frame callback. These details will very likely change in the future.
+
+
+### Things you should NOT use
+
+There are a couple of C++ features which are black-listed on Oryol for various reasons:
+
+- *C++ exceptions*: These are disabled by default, but can be enabled with a cmake option. Don't use them as they decrease performance on emscripten.
+- *std containers (std::vector, std::map, ...)*: Oryol comes with its own set of containers classes which offer more fine-control over their behaviour and use asserts instead of exceptions.
+- *C++ style input/output (e.g. std::cout << "hello")*: This causes a lot of code to be pulled into the executable, which is especially bad in emscripten where client-size matters.
 
