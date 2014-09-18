@@ -2,7 +2,7 @@
 
 The Core module provides basic functionality which every Oryol app and Oryol module depends on:
 
-* a unified application model for all target platforms
+* a unified application model across all target platforms
 * lifetime management for heap-allocated objects
 * a central logging facility
 * a per-thread run-loop 
