@@ -10,8 +10,8 @@ The Core module provides basic functionality which every Oryol app and Oryol mod
 
 ### The Oryol Application Model
 
-Oryol needs to run on esoteric platforms where applications are forbidden to 'own the game loop',
-block the main thread for more then a few dozen milliseconds, specific functionality
+Oryol needs to run on all types of esoteric host platforms where applications may be forbidden to 
+'own the game loop', block the main thread for more then a few dozen milliseconds, specific functionality
 is only available from the main (or UI-) thread, don't have shared-memory-threading, don't
 even have a main() function or where an app can be suspended and restored at will by 
 the operating system.
