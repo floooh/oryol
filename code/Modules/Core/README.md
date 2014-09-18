@@ -6,11 +6,11 @@ The Core module provides basic functionality which every Oryol app and other mod
 * lifetime management for heap-allocated objects
 * a central logging facility
 * a per-thread run-loop 
-* selected alternative classes and concepts to the C++ std library tailored to game applications
+* selected alternative classes and concepts to the C++ std library tailored to game applications (containers, strings, low-level memory management)
 
 ### The Oryol Application Model
 
-Oryol needs to run on platforms where applications are forbidden to 'own the main loop',
+Oryol needs to run on platforms where applications are forbidden to 'own the game loop',
 or block the application's main thread for more then a few dozen milliseconds. Instead of 
 having a main() function with a simple game loop, some sort of per-frame callback must be
 registered, and control is given back to the operating system.
