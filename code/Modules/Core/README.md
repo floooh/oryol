@@ -205,8 +205,6 @@ this class. An application can attach custom logger objects derived from Logger 
 Use the following methods for text output instead of printf:
 
 ```cpp
-using namespace Oryol::Core;
-
 // normal text output
 Log::Info("Hello World!");
 // warning-level output
