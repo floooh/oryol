@@ -28,7 +28,7 @@ using namespace Gfx
 
 // in App::OnInit(), initialize the Gfx module 
 // (here a 400x300 window is created)
-Gfx::Setup(GfxSetup::Window(400, 300, false, "Oryol Clear Sample"));
+Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
 ...
 
 // in each invokation of App::OnRunning(), a single frame is rendered:
