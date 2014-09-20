@@ -94,7 +94,11 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup) {
     o_assert(nullptr != this->eglSurface);
 
     EGLint contextAttrs[] = {
+        #if ORYOL_OPENGLES3
+        EGL_CONTEXT_CLIENT_VERSION, 3,
+        #else
         EGL_CONTEXT_CLIENT_VERSION, 2,
+        #endif
         EGL_NONE
     };
     this->eglContext = eglCreateContext(this->eglDisplay, this->eglConfig, EGL_NO_CONTEXT, contextAttrs);
