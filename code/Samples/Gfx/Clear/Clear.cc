@@ -23,16 +23,14 @@ OryolMain(ClearApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnRunning() {
+
     // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::RGBA, this->clearColor, 1.0f, 0);
-        Gfx::EndFrame();
-        
-        this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
-        this->clearColor = glm::mod(this->clearColor, glm::vec4(1.0f));
-    }
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, this->clearColor);
+    Gfx::CommitFrame();
+    
+    this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
+    this->clearColor = glm::mod(this->clearColor, glm::vec4(1.0f));
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -41,7 +39,7 @@ ClearApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(400, 300, false, "Oryol Clear Sample"));
+    Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
     return App::OnInit();
 }
 

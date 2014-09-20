@@ -37,40 +37,37 @@ OryolMain(InfiniteSpheresApp);
 //------------------------------------------------------------------------------
 AppState::Code
 InfiniteSpheresApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // update angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-        this->frameIndex++;
-        const int32 index0 = this->frameIndex % 2;
-        const int32 index1 = (this->frameIndex + 1) % 2;
-        
-        // generall state
-        Gfx::ApplyDrawState(this->drawState);
-        
-        // render sphere to offscreen render target, using the other render target as
-        // source texture
-        Gfx::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-        glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-        Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
-        Gfx::Draw(0);
-        
-        // ...and again to display
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
-        model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-        mvp = this->computeMVP(this->displayProj, model);
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-        Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
-        Gfx::Draw(0);
-        
-        Gfx::EndFrame();
-    }
+    
+    // update angles
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    this->frameIndex++;
+    const int32 index0 = this->frameIndex % 2;
+    const int32 index1 = (this->frameIndex + 1) % 2;
+    
+    // generall state
+    Gfx::ApplyDrawState(this->drawState);
+    
+    // render sphere to offscreen render target, using the other render target as
+    // source texture
+    Gfx::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
+    glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
+    Gfx::Draw(0);
+    
+    // ...and again to display
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.25f));
+    model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
+    mvp = this->computeMVP(this->displayProj, model);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
+    Gfx::Draw(0);
+    
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -80,7 +77,7 @@ InfiniteSpheresApp::OnRunning() {
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 600, true, "Oryol Infinite Spheres Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
 

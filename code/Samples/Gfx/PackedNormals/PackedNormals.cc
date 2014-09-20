@@ -31,35 +31,32 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // update angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-        
-        // apply state and render
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        
-        // draw shape primitive groups
-        static const int numShapes = 5;
-        static const glm::vec3 pos[numShapes] = {
-            glm::vec3(-1.0, 1.0f, -6.0f),
-            glm::vec3(1.0f, 1.0f, -6.0f),
-            glm::vec3(-2.0f, -1.0f, -6.0f),
-            glm::vec3(+2.0f, -1.0f, -6.0f),
-            glm::vec3(0.0f, -1.0f, -6.0f)
-        };
-        
-        Gfx::ApplyDrawState(this->drawState);
-        for (int i = 0; i < numShapes; i++) {
-            Gfx::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(pos[i]));
-            Gfx::Draw(i);
-        }
-        
-        Gfx::EndFrame();
+    
+    // update angles
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    
+    // apply state and render
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    
+    // draw shape primitive groups
+    static const int numShapes = 5;
+    static const glm::vec3 pos[numShapes] = {
+        glm::vec3(-1.0, 1.0f, -6.0f),
+        glm::vec3(1.0f, 1.0f, -6.0f),
+        glm::vec3(-2.0f, -1.0f, -6.0f),
+        glm::vec3(+2.0f, -1.0f, -6.0f),
+        glm::vec3(0.0f, -1.0f, -6.0f)
+    };
+    
+    Gfx::ApplyDrawState(this->drawState);
+    for (int i = 0; i < numShapes; i++) {
+        Gfx::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(pos[i]));
+        Gfx::Draw(i);
     }
+    
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -69,7 +66,7 @@ PackedNormalsApp::OnRunning() {
 AppState::Code
 PackedNormalsApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, true, "Oryol Packed Normals Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
 

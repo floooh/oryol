@@ -15,7 +15,6 @@ namespace _priv {
 renderMgrBase::renderMgrBase() :
 isValid(false),
 renderTargetValid(false),
-inFrame(false),
 displayManager(nullptr),
 stateWrapper(nullptr),
 curRenderTarget(nullptr),
@@ -56,21 +55,8 @@ renderMgrBase::Discard() {
 
 //------------------------------------------------------------------------------
 void
-renderMgrBase::BeginFrame() {
+renderMgrBase::CommitFrame() {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(!this->inFrame);
-    
-    this->inFrame = true;
-    this->renderTargetValid = false;
-}
-
-//------------------------------------------------------------------------------
-void
-renderMgrBase::EndFrame() {
-    o_assert_dbg(this->isValid);
-    o_assert_dbg(this->inFrame);
-    
-    this->inFrame = false;
     this->renderTargetValid = false;
 }
 

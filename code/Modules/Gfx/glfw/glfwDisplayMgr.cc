@@ -144,7 +144,6 @@ glfwDisplayMgr::ProcessSystemEvents() {
     displayMgrBase::ProcessSystemEvents();
 }
 
-
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::Present() {

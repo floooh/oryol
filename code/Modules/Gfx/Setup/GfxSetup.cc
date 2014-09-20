@@ -18,13 +18,12 @@ registryCapacity(1024) {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::Window(int32 w, int32 h, bool msaa, String title) {
+GfxSetup::Window(int32 w, int32 h, String title) {
     o_assert((w > 0) && (h > 0));
 
     GfxSetup setup;
     setup.Width    = w;
     setup.Height   = h;
-    setup.Samples  = msaa ? 4 : 0;
     setup.Windowed = true;
     setup.Title    = title;
     return setup;
@@ -32,15 +31,30 @@ GfxSetup::Window(int32 w, int32 h, bool msaa, String title) {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::Fullscreen(int32 w, int32 h, bool msaa, String title) {
+GfxSetup::Fullscreen(int32 w, int32 h, String title) {
     o_assert((w > 0) && (h > 0));
     
     GfxSetup setup;
     setup.Width    = w;
     setup.Height   = h;
-    setup.Samples  = msaa ? 4 : 0;
     setup.Windowed = false;
     setup.Title    = title;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+GfxSetup
+GfxSetup::WindowMSAA4(int32 w, int32 h, String title) {
+    GfxSetup setup = Window(w, h, title);
+    setup.Samples = 4;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+GfxSetup
+GfxSetup::FullscreenMSAA4(int32 w, int32 h, String title) {
+    GfxSetup setup = Fullscreen(w, h, title);
+    setup.Samples = 4;
     return setup;
 }
 

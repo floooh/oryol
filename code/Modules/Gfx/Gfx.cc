@@ -115,24 +115,12 @@ Gfx::ApplyDrawState(const GfxId& gfxId) {
 }
 
 //------------------------------------------------------------------------------
-bool
-Gfx::BeginFrame() {
-    o_assert_dbg(IsValid());
-    
-    state->resourceManager.Update();
-    state->displayManager.ProcessSystemEvents();
-    state->renderManager.BeginFrame();
-    
-    /// @todo: check and return whether rendering is possible / necessary
-    return true;
-}
-
-//------------------------------------------------------------------------------
 void
-Gfx::EndFrame() {
+Gfx::CommitFrame() {
     o_assert_dbg(IsValid());
-    state->renderManager.EndFrame();
+    state->renderManager.CommitFrame();
     state->displayManager.Present();
+    state->displayManager.ProcessSystemEvents();
 }
 
 //------------------------------------------------------------------------------

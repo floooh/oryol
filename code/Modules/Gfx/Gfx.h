@@ -58,13 +58,6 @@ public:
     /// get the loading state of a resource
     static ResourceState::Code QueryResourceState(const GfxId& gfxId);
     
-    /// begin frame rendering
-    static bool BeginFrame();
-    /// end frame rendering
-    static void EndFrame();
-    /// reset internal state (must be called when directly rendering through GL; FIXME: better name?)
-    static void ResetStateCache();
-
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
@@ -91,8 +84,8 @@ public:
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     
-    /// clear the currently assigned render target
-    static void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    /// clear the currently assigned render target (default depth value is 1.0f, default stencil value is 0)
+    static void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth=1.0f, uint8 stencil=0);
     /// submit a draw call with primitive group index in current mesh
     static void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -102,6 +95,11 @@ public:
     /// submit a draw call for instanced rendering with direct primitive group
     static void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
 
+    /// commit (and display) the current frame
+    static void CommitFrame();
+    /// reset internal state (must be called when directly rendering through GL; FIXME: better name?)
+    static void ResetStateCache();
+    
 private:
     friend class GfxId;
     

@@ -50,38 +50,36 @@ InstancingApp::OnRunning() {
     
     Duration updTime, bufTime, drawTime;
     this->frameCount++;
-    if (Gfx::BeginFrame()) {
-        
-        // update block
-        this->updateCamera();
-        if (this->updateEnabled) {
-            TimePoint updStart = Clock::Now();
-            this->emitParticles();
-            this->updateParticles();
-            updTime = Clock::Since(updStart);
+    
+    // update block
+    this->updateCamera();
+    if (this->updateEnabled) {
+        TimePoint updStart = Clock::Now();
+        this->emitParticles();
+        this->updateParticles();
+        updTime = Clock::Since(updStart);
 
-            TimePoint bufStart = Clock::Now();
-            Gfx::UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
-            bufTime = Clock::Since(bufStart);
-        }
-        
-        // render block        
-        TimePoint drawStart = Clock::Now();
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-        Gfx::DrawInstanced(0, this->curNumParticles);
-        drawTime = Clock::Since(drawStart);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
-        
-        // toggle particle update
-        const Mouse& mouse = Input::Mouse();
-        if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
-            this->updateEnabled = !this->updateEnabled;
-        }
+        TimePoint bufStart = Clock::Now();
+        Gfx::UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
+        bufTime = Clock::Since(bufStart);
+    }
+    
+    // render block        
+    TimePoint drawStart = Clock::Now();
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+    Gfx::DrawInstanced(0, this->curNumParticles);
+    drawTime = Clock::Since(drawStart);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
+    
+    // toggle particle update
+    const Mouse& mouse = Input::Mouse();
+    if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
+        this->updateEnabled = !this->updateEnabled;
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
@@ -140,7 +138,7 @@ InstancingApp::updateParticles() {
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 500, false, "Oryol Instancing Sample");
+    auto gfxSetup = GfxSetup::Window(800, 500, "Oryol Instancing Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

@@ -22,10 +22,14 @@ namespace Oryol {
     
 class GfxSetup {
 public:
-    /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth)
-    static GfxSetup Window(int32 width, int32 height, bool msaa, String windowTitle);
-    /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth)
-    static GfxSetup Fullscreen(int32 width, int32 height, bool msaa, String windowTitle);
+    /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth, no MSAA)
+    static GfxSetup Window(int32 width, int32 height, String windowTitle);
+    /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth, no MSAA)
+    static GfxSetup Fullscreen(int32 width, int32 height, String windowTitle);
+    /// shortcut for windowed mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+    static GfxSetup WindowMSAA4(int32 width, int32 height, String windowTitle);
+    /// shortcut for fullscreen mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+    static GfxSetup FullscreenMSAA4(int32 width, int32 height, String windowTitle);
     
     /// canvas width
     int32 Width = 640;

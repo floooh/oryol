@@ -35,32 +35,29 @@ OryolMain(SimpleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // update angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-        
-        // render donut to offscreen render target
-        Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->offscreenDrawState);
-        glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-        Gfx::ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
-        Gfx::Draw(0);
-        
-        // render sphere to display, with offscreen render target as texture
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->displayDrawState);
-        glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
-        Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTarget);
-        Gfx::Draw(0);
-        
-        Gfx::EndFrame();
-    }
+    
+    // update angles
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    
+    // render donut to offscreen render target
+    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.25f));
+    Gfx::ApplyDrawState(this->offscreenDrawState);
+    glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
+    Gfx::ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
+    Gfx::Draw(0);
+    
+    // render sphere to display, with offscreen render target as texture
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.25f), 1.0f, 0);
+    Gfx::ApplyDrawState(this->displayDrawState);
+    glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
+    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTarget);
+    Gfx::Draw(0);
+    
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -70,7 +67,7 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 600, true, "Oryol Simple Render Target Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
 

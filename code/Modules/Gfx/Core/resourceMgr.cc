@@ -2,6 +2,7 @@
 //  resourceMgr.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Core.h"
 #include "Gfx/base/meshLoaderBase.h"
 #include "Gfx/base/textureLoaderBase.h"
 #include "resourceMgr.h"
@@ -12,6 +13,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 resourceMgr::resourceMgr() :
 isValid(false),
+runLoopId(RunLoop::InvalidId),
 stateWrapper(nullptr),
 displayMgr(nullptr) {
     // empty
@@ -67,6 +69,11 @@ resourceMgr::Setup(const GfxSetup& setup, class stateWrapper* stWrapper, class d
         Ptr<loaderBase> loader = loaderCreator();
         this->AttachLoader(loader);
     }
+    
+    // add out update method to the runloop
+    this->runLoopId = Core::RunLoop()->Add([this] {
+        this->Update();
+    });
 }
 
 //------------------------------------------------------------------------------
@@ -74,6 +81,7 @@ void
 resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
+    Core::RunLoop()->Remove(this->runLoopId);
     this->resourceRegistry.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();

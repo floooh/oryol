@@ -34,22 +34,18 @@ PBRenderingApp::OnRunning() {
     
     Dbg::Print("\n Work in progress!");
     
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 0.0f), 1.0f, 0);
-        
-        this->applyDirLight();
-        this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
-        Gfx::Draw(0);
-        this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::Draw(1);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
-    }
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+    
+    this->applyDirLight();
+    this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
+    Gfx::Draw(0);
+    this->applyTransforms(glm::vec3(0.0f, 0.0f, 0.0f));
+    Gfx::Draw(1);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -58,7 +54,7 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(1024, 600, true, "Oryol PBR Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(1024, 600, "Oryol PBR Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

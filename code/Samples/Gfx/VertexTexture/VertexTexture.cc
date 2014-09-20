@@ -37,29 +37,26 @@ OryolMain(VertexTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 VertexTextureApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        this->time += 1.0f / 60.0f;
-        
-        // render plasma to offscreen render target
-        Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
-        Gfx::ApplyDrawState(this->plasmaDrawState);
-        Gfx::ApplyVariable(Shaders::Plasma::Time, this->time);
-        Gfx::Draw(0);
-        
-        // render displacement mapped plane shape
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->planeDrawState);
-        const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
-        Gfx::ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
-        Gfx::ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
-        Gfx::Draw(0);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
-    }
+    
+    this->time += 1.0f / 60.0f;
+    
+    // render plasma to offscreen render target
+    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::ApplyDrawState(this->plasmaDrawState);
+    Gfx::ApplyVariable(Shaders::Plasma::Time, this->time);
+    Gfx::Draw(0);
+    
+    // render displacement mapped plane shape
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::ApplyDrawState(this->planeDrawState);
+    const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
+    Gfx::ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
+    Gfx::ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
+    Gfx::Draw(0);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
@@ -72,7 +69,7 @@ VertexTextureApp::OnRunning() {
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 600, true, "Oryol Vertex Texture Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Vertex Texture Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

@@ -36,54 +36,51 @@ OryolMain(DDSTextureLoadingApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DDSTextureLoadingApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
+    
+    this->distVal += 0.01f;
+    
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f));
+    
+    // only render when texture is loaded (until texture placeholder are implemented)
+    static const std::array<glm::vec3, NumTextures> pos{ {
+        // dxt1, dxt3, dxt5
+        glm::vec3(-2.2f, +1.1f, 0.0f),
+        glm::vec3(-1.1f, +1.1f, 0.0f),
+        glm::vec3( 0.0f, +1.1f, 0.0f),
         
-        this->distVal += 0.01f;
+        // pvr2bpp pvr4bpp
+        glm::vec3(+1.1f, +1.1f, 0.0f),
+        glm::vec3(+2.2f, +1.1f, 0.0f),
         
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.5f), 1.0f, 0);
+        // rgba8, bgra8, rgb8, bgr8
+        glm::vec3(-1.65f, 0.0f, 0.0f),
+        glm::vec3(-0.55f, 0.0f, 0.0f),
+        glm::vec3(+0.55f, 0.0f, 0.0f),
+        glm::vec3(+1.65f, 0.0f, 0.0f),
         
-        // only render when texture is loaded (until texture placeholder are implemented)
-        static const std::array<glm::vec3, NumTextures> pos{ {
-            // dxt1, dxt3, dxt5
-            glm::vec3(-2.2f, +1.1f, 0.0f),
-            glm::vec3(-1.1f, +1.1f, 0.0f),
-            glm::vec3( 0.0f, +1.1f, 0.0f),
-            
-            // pvr2bpp pvr4bpp
-            glm::vec3(+1.1f, +1.1f, 0.0f),
-            glm::vec3(+2.2f, +1.1f, 0.0f),
-            
-            // rgba8, bgra8, rgb8, bgr8
-            glm::vec3(-1.65f, 0.0f, 0.0f),
-            glm::vec3(-0.55f, 0.0f, 0.0f),
-            glm::vec3(+0.55f, 0.0f, 0.0f),
-            glm::vec3(+1.65f, 0.0f, 0.0f),
-            
-            // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
-            glm::vec3(-2.75f, -1.1f, 0.0f),
-            glm::vec3(-1.65f, -1.1f, 0.0f),
-            glm::vec3(-0.55f, -1.1f, 0.0f),
-            glm::vec3(+0.55f, -1.1f, 0.0f),
-            glm::vec3(+1.65f, -1.1f, 0.0f),
-            glm::vec3(+2.75f, -1.1f, 0.0f)
-        } };
-        for (int32 i = 0; i < NumTextures; i++) {
-            const GfxId& tex = this->texId[i];
-            if (tex.IsValid()) {
-                const auto resState = Gfx::QueryResourceState(tex);
-                if (resState == ResourceState::Valid) {
-                    glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-                    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
-                    Gfx::ApplyVariable(Shaders::Main::Texture, tex);
-                    Gfx::Draw(0);
-                }
+        // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
+        glm::vec3(-2.75f, -1.1f, 0.0f),
+        glm::vec3(-1.65f, -1.1f, 0.0f),
+        glm::vec3(-0.55f, -1.1f, 0.0f),
+        glm::vec3(+0.55f, -1.1f, 0.0f),
+        glm::vec3(+1.65f, -1.1f, 0.0f),
+        glm::vec3(+2.75f, -1.1f, 0.0f)
+    } };
+    for (int32 i = 0; i < NumTextures; i++) {
+        const GfxId& tex = this->texId[i];
+        if (tex.IsValid()) {
+            const auto resState = Gfx::QueryResourceState(tex);
+            if (resState == ResourceState::Valid) {
+                glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
+                Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
+                Gfx::ApplyVariable(Shaders::Main::Texture, tex);
+                Gfx::Draw(0);
             }
         }
-        Gfx::EndFrame();
     }
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -100,7 +97,7 @@ DDSTextureLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, false, "Oryol DDS Loading Sample");
+    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     gfxSetup.Loaders.Add(TextureLoader::Creator());
     Gfx::Setup(gfxSetup);

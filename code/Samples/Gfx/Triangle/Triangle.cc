@@ -24,14 +24,11 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnRunning() {
     
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::Draw(0);
-        Gfx::EndFrame();
-    }
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::Draw(0);
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -41,7 +38,7 @@ TriangleApp::OnRunning() {
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(400, 400, false, "Oryol Triangle Sample");
+    auto gfxSetup = GfxSetup::Window(400, 400, "Oryol Triangle Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     

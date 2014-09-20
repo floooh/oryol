@@ -8,6 +8,7 @@
     The resource manager handles creation, sharing and destruction of
     rendering resources.
 */
+#include "Core/RunLoop.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/meshPool.h"
 #include "Gfx/Core/shaderPool.h"
@@ -66,6 +67,7 @@ public:
     
 private:
     bool isValid;
+    RunLoop::Id runLoopId;
     class stateWrapper* stateWrapper;
     class displayMgr* displayMgr;
     ResourceRegistry resourceRegistry;

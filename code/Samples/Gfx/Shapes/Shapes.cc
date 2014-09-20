@@ -30,33 +30,30 @@ OryolMain(ShapeApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // update rotation angles
-        this->angleY += 0.01f;
-        this->angleX += 0.02f;
-        
-        // apply state and render
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        
-        // render shape primitive groups
-        static const int numShapes = 5;
-        static const glm::vec3 pos[numShapes] = {
-            glm::vec3(-1.0, 1.0f, -6.0f),
-            glm::vec3(1.0f, 1.0f, -6.0f),
-            glm::vec3(-2.0f, -1.0f, -6.0f),
-            glm::vec3(+2.0f, -1.0f, -6.0f),
-            glm::vec3(0.0f, -1.0f, -6.0f)
-        };
-        for (int i = 0; i < numShapes; i++) {
-            Gfx::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(pos[i]));
-            Gfx::Draw(i);
-        }
-        Gfx::EndFrame();
+    
+    // update rotation angles
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    
+    // apply state and render
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    
+    // render shape primitive groups
+    static const int numShapes = 5;
+    static const glm::vec3 pos[numShapes] = {
+        glm::vec3(-1.0, 1.0f, -6.0f),
+        glm::vec3(1.0f, 1.0f, -6.0f),
+        glm::vec3(-2.0f, -1.0f, -6.0f),
+        glm::vec3(+2.0f, -1.0f, -6.0f),
+        glm::vec3(0.0f, -1.0f, -6.0f)
+    };
+    for (int i = 0; i < numShapes; i++) {
+        Gfx::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(pos[i]));
+        Gfx::Draw(i);
     }
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -66,7 +63,7 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, true, "Oryol Shapes Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
 

@@ -36,26 +36,23 @@ OryolMain(DDSCubeMapApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DDSCubeMapApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // update rotation angles
-        this->angleY += 0.02f;
-        this->angleX += 0.01f;
-        
-        // apply state and draw
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->drawState);
-        
-        const auto resState = Gfx::QueryResourceState(this->tex);
-        if (resState == ResourceState::Valid) {
-            Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-            Gfx::ApplyVariable(Shaders::Main::Texture, this->tex);
-            Gfx::Draw(0);
-        }
-        Gfx::EndFrame();
+    
+    // update rotation angles
+    this->angleY += 0.02f;
+    this->angleX += 0.01f;
+    
+    // apply state and draw
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    
+    // check whether the cube map has finished loading
+    if (Gfx::QueryResourceState(this->tex) == ResourceState::Valid) {
+        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
+        Gfx::ApplyVariable(Shaders::Main::Texture, this->tex);
+        Gfx::Draw(0);
     }
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -72,7 +69,7 @@ DDSCubeMapApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, false, "Oryol DXT Cube Map Sample");
+    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     gfxSetup.Loaders.Add(TextureLoader::Creator());
     Gfx::Setup(gfxSetup);

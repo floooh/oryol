@@ -51,37 +51,35 @@ DrawCallPerfApp::OnRunning() {
     
     Duration updTime, drawTime;
     this->frameCount++;
-    if (Gfx::BeginFrame()) {
-        
-        // update block
-        this->updateCamera();
-        if (this->updateEnabled) {
-            TimePoint updStart = Clock::Now();
-            this->emitParticles();
-            this->updateParticles();
-            updTime = Clock::Since(updStart);
-        }
-        
-        // render block
-        TimePoint drawStart = Clock::Now();
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-        for (int32 i = 0; i < this->curNumParticles; i++) {
-            Gfx::ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
-            Gfx::Draw(0);
-        }
-        drawTime = Clock::Since(drawStart);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
+    
+    // update block
+    this->updateCamera();
+    if (this->updateEnabled) {
+        TimePoint updStart = Clock::Now();
+        this->emitParticles();
+        this->updateParticles();
+        updTime = Clock::Since(updStart);
+    }
+    
+    // render block
+    TimePoint drawStart = Clock::Now();
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+    for (int32 i = 0; i < this->curNumParticles; i++) {
+        Gfx::ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
+        Gfx::Draw(0);
+    }
+    drawTime = Clock::Since(drawStart);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
 
-        // toggle particle update
-        const Mouse& mouse = Input::Mouse();
-        if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
-            this->updateEnabled = !this->updateEnabled;
-        }
+    // toggle particle update
+    const Mouse& mouse = Input::Mouse();
+    if (mouse.Attached() && mouse.ButtonDown(Mouse::Button::LMB)) {
+        this->updateEnabled = !this->updateEnabled;
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
@@ -141,7 +139,7 @@ DrawCallPerfApp::updateParticles() {
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 500, false, "Oryol DrawCallPerf Sample");
+    auto gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

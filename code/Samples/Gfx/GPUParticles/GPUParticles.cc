@@ -52,51 +52,48 @@ OryolMain(GPUParticlesApp);
 //------------------------------------------------------------------------------
 AppState::Code
 GPUParticlesApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        // increment frame count, update camera position
-        this->frameCount++;
-        this->updateCamera();
-        
-        // bump number of active particles
-        this->curNumParticles += NumParticlesEmittedPerFrame;
-        if (this->curNumParticles > MaxNumParticles) {
-            this->curNumParticles = MaxNumParticles;
-        }
-        
-        // ping and pong particle state buffer indices
-        const int32 readIndex = (this->frameCount + 1) % NumParticleBuffers;
-        const int32 drawIndex = this->frameCount % NumParticleBuffers;
-        
-        // update particle state texture by rendering a fullscreen-quad:
-        // - the previous and next particle state are stored in separate float textures
-        // - the particle update shader reads the previous state and draws the next state
-        // - we use a scissor rect around the currently active particles to make this update
-        //   a bit more efficient
-        Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
-        const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-        Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
-        Gfx::ApplyDrawState(this->updateParticles);
-        Gfx::ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
-        Gfx::ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
-        Gfx::ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
-        Gfx::Draw(0);
-        
-        // now the actual particle shape rendering:
-        // - the new particle state texture is sampled in the vertex shader to obtain particle positions
-        // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        Gfx::ApplyDrawState(this->drawParticles);
-        Gfx::ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
-        Gfx::ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
-        Gfx::ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
-        Gfx::DrawInstanced(0, this->curNumParticles);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
+    
+    // increment frame count, update camera position
+    this->frameCount++;
+    this->updateCamera();
+    
+    // bump number of active particles
+    this->curNumParticles += NumParticlesEmittedPerFrame;
+    if (this->curNumParticles > MaxNumParticles) {
+        this->curNumParticles = MaxNumParticles;
     }
+    
+    // ping and pong particle state buffer indices
+    const int32 readIndex = (this->frameCount + 1) % NumParticleBuffers;
+    const int32 drawIndex = this->frameCount % NumParticleBuffers;
+    
+    // update particle state texture by rendering a fullscreen-quad:
+    // - the previous and next particle state are stored in separate float textures
+    // - the particle update shader reads the previous state and draws the next state
+    // - we use a scissor rect around the currently active particles to make this update
+    //   a bit more efficient
+    Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
+    const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
+    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
+    Gfx::ApplyDrawState(this->updateParticles);
+    Gfx::ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
+    Gfx::ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
+    Gfx::ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
+    Gfx::Draw(0);
+    
+    // now the actual particle shape rendering:
+    // - the new particle state texture is sampled in the vertex shader to obtain particle positions
+    // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::ApplyDrawState(this->drawParticles);
+    Gfx::ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
+    Gfx::ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
+    Gfx::ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
+    Gfx::DrawInstanced(0, this->curNumParticles);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
@@ -118,7 +115,7 @@ GPUParticlesApp::updateCamera() {
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 500, false, "Oryol GPU Particles Sample");
+    auto gfxSetup = GfxSetup::Window(800, 500, "Oryol GPU Particles Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

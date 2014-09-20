@@ -35,26 +35,23 @@ OryolMain(TextureFloatApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TextureFloatApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        this->time += 1.0f / 60.0f;
-        
-        // render plasma to offscreen render target
-        Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
-        Gfx::ApplyDrawState(this->offscreenDrawState);
-        Gfx::ApplyVariable(Shaders::Offscreen::Time, this->time);
-        Gfx::Draw(0);
-        
-        // copy fullscreen quad
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->copyDrawState);
-        Gfx::ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
-        Gfx::Draw(0);
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
-    }
+    
+    this->time += 1.0f / 60.0f;
+    
+    // render plasma to offscreen render target
+    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::ApplyDrawState(this->offscreenDrawState);
+    Gfx::ApplyVariable(Shaders::Offscreen::Time, this->time);
+    Gfx::Draw(0);
+    
+    // copy fullscreen quad
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->copyDrawState);
+    Gfx::ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
+    Gfx::Draw(0);
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
@@ -67,7 +64,7 @@ TextureFloatApp::OnRunning() {
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(512, 512, false, "Oryol Float Texture Sample");
+    auto gfxSetup = GfxSetup::Window(512, 512, "Oryol Float Texture Sample");
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();

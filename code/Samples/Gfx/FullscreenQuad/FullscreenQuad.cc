@@ -25,13 +25,11 @@ AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
     this->time += 1.0f / 60.0f;
-    if (Gfx::BeginFrame()) {
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyVariable(Shaders::Main::Time, this->time);
-        Gfx::Draw(0);
-        Gfx::EndFrame();
-    }
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::Time, this->time);
+    Gfx::Draw(0);
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -40,7 +38,7 @@ FullscreenQuadApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(600, 600, false, "Oryol Fullscreen Quad Sample"));
+    Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
     GfxId mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));

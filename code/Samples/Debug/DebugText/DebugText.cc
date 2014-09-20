@@ -30,19 +30,15 @@ OryolMain(DebugTextApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
-        
-        this->dropChar();
-        this->moveChars();
-        this->drawText();
-        
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
-        Dbg::DrawTextBuffer();
-        
-        Gfx::EndFrame();
-    }
+
+    this->dropChar();
+    this->moveChars();
+    this->drawText();
+    
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -51,7 +47,7 @@ DebugTextApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(800, 600, false, "Oryol DebugText Sample"));
+    Gfx::Setup(GfxSetup::Window(800, 600, "Oryol DebugText Sample"));
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     

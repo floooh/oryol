@@ -33,7 +33,7 @@ PacloneApp::OnInit() {
     this->tick = 0;
     const int dispWidth = game::Width * 8 * 2;
     const int dispHeight = game::Height * 8 * 2;
-    Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, false, "Oryol Pacman Clone Sample"));
+    Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, "Oryol Pacman Clone Sample"));
     Input::Setup();
     
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
@@ -45,17 +45,15 @@ PacloneApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 PacloneApp::OnRunning() {
-    if (Gfx::BeginFrame()) {
 
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
-        game::Direction input = this->getInput();
-        this->gameState.Update(this->tick, &this->spriteCanvas, input);
-        this->spriteCanvas.Render();
-        
-        Gfx::EndFrame();
-        this->tick++;
-    }
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+    game::Direction input = this->getInput();
+    this->gameState.Update(this->tick, &this->spriteCanvas, input);
+    this->spriteCanvas.Render();
+    
+    Gfx::CommitFrame();
+    this->tick++;
 
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

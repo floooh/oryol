@@ -34,23 +34,21 @@ OryolMain(NanoVGApp);
 AppState::Code
 NanoVGApp::OnRunning() {
     
-    if (Gfx::BeginFrame()) {
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
 
-        const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
-        const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
-        const int32 mouseX = Input::Mouse().Position().x;
-        const int32 mouseY = Input::Mouse().Position().y;
-        const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
-        const float64 time = Clock::Now().Since(0).AsSeconds();
-        
-        NanoVG::BeginFrame(this->ctx);
-        renderDemo(this->ctx, mouseX, mouseY, w, h, time, blowup, &this->data);
-        NanoVG::EndFrame(this->ctx);
+    const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
+    const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
+    const int32 mouseX = Input::Mouse().Position().x;
+    const int32 mouseY = Input::Mouse().Position().y;
+    const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
+    const float64 time = Clock::Now().Since(0).AsSeconds();
+    
+    NanoVG::BeginFrame(this->ctx);
+    renderDemo(this->ctx, mouseX, mouseY, w, h, time, blowup, &this->data);
+    NanoVG::EndFrame(this->ctx);
 
-        Gfx::EndFrame();
-    }
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -65,7 +63,7 @@ NanoVGApp::OnInit() {
     ioSetup.Assigns.Add("res:", ORYOL_SAMPLE_URL);
     IO::Setup(ioSetup);
     
-    auto gfxSetup = GfxSetup::Window(1024, 600, true, "Oryol NanoVG Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(1024, 600, "Oryol NanoVG Sample");
     Gfx::Setup(gfxSetup);
     Input::Setup();
     NanoVG::Setup();

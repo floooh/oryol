@@ -30,7 +30,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(512, 256, false, "Oryol Input Test Sample"));
+    Gfx::Setup(GfxSetup::Window(512, 256, "Oryol Input Test Sample"));
     Dbg::Setup();
     Input::Setup();
     
@@ -70,65 +70,62 @@ TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name)
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnRunning() {
-    // render one frame
-    if (Gfx::BeginFrame()) {
+
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
     
-        Gfx::ApplyDefaultRenderTarget();
-        Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
+    const Keyboard& keyboard = Input::Keyboard();
+    const Mouse& mouse = Input::Mouse();
+    
+    // mouse status
+    if (mouse.Attached()) {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
+    
+        this->testMouseButton(mouse, Mouse::LMB, "LMB");
+        this->testMouseButton(mouse, Mouse::MMB, "MMB");
+        this->testMouseButton(mouse, Mouse::RMB, "RMB");
         
-        const Keyboard& keyboard = Input::Keyboard();
-        const Mouse& mouse = Input::Mouse();
-        
-        // mouse status
-        if (mouse.Attached()) {
-            Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            Dbg::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
-        
-            this->testMouseButton(mouse, Mouse::LMB, "LMB");
-            this->testMouseButton(mouse, Mouse::MMB, "MMB");
-            this->testMouseButton(mouse, Mouse::RMB, "RMB");
-            
-            Dbg::TextColor(glm::vec4(1.0f));
-            Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
-                        mouse.Position().x, mouse.Position().y,
-                        mouse.Movement().x, mouse.Movement().y,
-                        mouse.Scroll().x, mouse.Scroll().y);
-        }
-        
-        // keyboard status
-        if (keyboard.Attached()) {
-            Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-            Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
-            if (keyboard.KeyDown(Key::Enter)) {
-                if (CursorMode::Disabled != Input::GetCursorMode()) {
-                    Input::SetCursorMode(CursorMode::Disabled);
-                }
-                else {
-                    Input::SetCursorMode(CursorMode::Normal);
-                }
-                if (!keyboard.IsCapturingText()) {
-                    Input::BeginCaptureText();
-                }
-                else {
-                    Input::EndCaptureText();
-                }
-            }
-            if (keyboard.IsCapturingText()) {
-                Dbg::Print(" capturing: ");
-                String str = StringConverter::WideToUTF8(keyboard.CapturedText());
-                Dbg::PrintF("%s\n\r", str.AsCStr());
+        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
+                    mouse.Position().x, mouse.Position().y,
+                    mouse.Movement().x, mouse.Movement().y,
+                    mouse.Scroll().x, mouse.Scroll().y);
+    }
+    
+    // keyboard status
+    if (keyboard.Attached()) {
+        Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
+        if (keyboard.KeyDown(Key::Enter)) {
+            if (CursorMode::Disabled != Input::GetCursorMode()) {
+                Input::SetCursorMode(CursorMode::Disabled);
             }
             else {
-                Dbg::Print(" keys: ");
-                for (int32 key = 0; key < Key::NumKeys; key++) {
-                    this->testKey(keyboard, (Key::Code)key, Key::ToString((Key::Code)key));
-                }
+                Input::SetCursorMode(CursorMode::Normal);
+            }
+            if (!keyboard.IsCapturingText()) {
+                Input::BeginCaptureText();
+            }
+            else {
+                Input::EndCaptureText();
             }
         }
-        
-        Dbg::DrawTextBuffer();
-        Gfx::EndFrame();
+        if (keyboard.IsCapturingText()) {
+            Dbg::Print(" capturing: ");
+            String str = StringConverter::WideToUTF8(keyboard.CapturedText());
+            Dbg::PrintF("%s\n\r", str.AsCStr());
+        }
+        else {
+            Dbg::Print(" keys: ");
+            for (int32 key = 0; key < Key::NumKeys; key++) {
+                this->testKey(keyboard, (Key::Code)key, Key::ToString((Key::Code)key));
+            }
+        }
     }
+    
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
