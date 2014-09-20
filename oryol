@@ -394,6 +394,8 @@ def exportSampleAssets() :
     TexExport.exportSampleTextures()
     for dataFile in glob.glob('data/nanovg/*') :
         shutil.copy(dataFile, 'build/webpage')
+    for dataFile in glob.glob('data/*.txt') :
+        shutil.copy(dataFile, 'build/webpage')
 
 # start a simple HTTP server
 def startHttpServer() :
