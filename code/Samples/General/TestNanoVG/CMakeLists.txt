@@ -1,5 +1,5 @@
 oryol_begin_app(TestNanoVG windowed)
     oryol_sources(.)
     oryol_deps(Core IO HTTP Gfx Input Time NanoVG)
-    oryol_add_web_sample(TestNanoVG "NanoVG integration" "emscripten,pnacl" TestNanoVG.jpg "General/TestNanoVG/TestNanoVG.cc")
+    oryol_add_web_sample(TestNanoVG "NanoVG integration" "emscripten,pnacl,android" TestNanoVG.jpg "General/TestNanoVG/TestNanoVG.cc")
 oryol_end_app()
