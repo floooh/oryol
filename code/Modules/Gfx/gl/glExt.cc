@@ -61,6 +61,11 @@ glExt::Setup() {
     // half-float-formats are included in the desktop GL extensions
     extensions[TextureHalfFloat] = extensions[TextureFloat];
     #endif
+
+    #if ORYOL_OPENGLES3
+    extensions[VertexArrayObject] = true;
+    extensions[InstancedArrays] = true;
+    #endif
     
     #if ORYOL_USE_GLGETATTRIBLOCATION
     // If forced to use GetAttribLocation, VertexArrayObject must be disabled as
@@ -97,10 +102,8 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
         ::glGenVertexArrays(n, arrays);
     #elif ORYOL_OPENGLES2
         ::glGenVertexArraysOES(n, arrays);
-    #elif ORYOL_OPENGL
-        ::glGenVertexArrays(n, arrays);
     #else
-    #error "Not an OpenGL platform!"
+        ::glGenVertexArrays(n, arrays);
     #endif
 }
 
@@ -111,10 +114,8 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
         ::glDeleteVertexArrays(n, arrays);
     #elif ORYOL_OPENGLES2
         ::glDeleteVertexArraysOES(n, arrays);
-    #elif ORYOL_OPENGL
-        ::glDeleteVertexArrays(n, arrays);
     #else
-    #error "Not an OpenGL platform!"
+        ::glDeleteVertexArrays(n, arrays);
     #endif
 }
 
@@ -125,10 +126,8 @@ glExt::BindVertexArray(GLuint array) {
         ::glBindVertexArray(array);
     #elif ORYOL_OPENGLES2
         ::glBindVertexArrayOES(array);
-    #elif ORYOL_OPENGL
-        ::glBindVertexArray(array);
     #else
-    #error "Not an OpenGL platform!"
+        ::glBindVertexArray(array);
     #endif
 }
 
@@ -136,18 +135,14 @@ glExt::BindVertexArray(GLuint array) {
 void
 glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
     if (extensions[InstancedArrays]) {
-        #if ORYOL_ANDROID
-        // Android GLES2 headers don't have instancing function prototypes
-        #elif ORYOL_EMSCRIPTEN
+        #if ORYOL_EMSCRIPTEN
         ::glVertexAttribDivisor(index, divisor);
         #elif ORYOL_IOS
         ::glVertexAttribDivisorEXT(index, divisor);
         #elif ORYOL_OPENGLES2
         ::glVertexAttribDivisorANGLE(index, divisor);
-        #elif ORYOL_OPENGL
-        ::glVertexAttribDivisor(index, divisor);
         #else
-        #error "Not an OpenGL platform!"
+        ::glVertexAttribDivisor(index, divisor);
         #endif
     }
 }
@@ -156,18 +151,14 @@ glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
 void
 glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
     if (extensions[InstancedArrays]) {
-        #if ORYOL_ANDROID
-        // Android GLES2 headers don't have instancing function prototypes
-        #elif ORYOL_EMSCRIPTEN
+        #if ORYOL_EMSCRIPTEN
         ::glDrawArraysInstanced(mode, first, count, primcount);
         #elif ORYOL_IOS
         ::glDrawArraysInstancedEXT(mode, first, count, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
-        #elif ORYOL_OPENGL
-        ::glDrawArraysInstanced(mode, first, count, primcount);
         #else
-        #error "Not an OpenGL platform!"
+        ::glDrawArraysInstanced(mode, first, count, primcount);
         #endif
     }
 }
@@ -176,18 +167,14 @@ glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei prim
 void
 glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount) {
     if (extensions[InstancedArrays]) {    
-        #if ORYOL_ANDROID
-        // Android GLES2 headers don't have instancing function prototypes
-        #elif ORYOL_EMSCRIPTEN
+        #if ORYOL_EMSCRIPTEN
         ::glDrawElementsInstanced(mode, count, type, indices, primcount);
         #elif ORYOL_IOS
         ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
-        #elif ORYOL_OPENGL
-        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
         #else
-        #error "Not an OpenGL platform!"
+        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
         #endif
     }
 }

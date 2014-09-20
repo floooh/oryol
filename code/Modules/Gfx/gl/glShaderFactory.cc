@@ -56,7 +56,7 @@ glShaderFactory::SetupResource(shader& shd) {
     // create a shader object
     const ShaderSetup& setup = shd.GetSetup();
     
-    #if ORYOL_OPENGLES2
+    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
     #elif ORYOL_MACOS
     const ShaderLang::Code slang = ShaderLang::GLSL150;

@@ -28,8 +28,8 @@
 #include <GL/glext.h>
 #elif ORYOL_ANDROID
 #define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
 #else
 #error "Missing platform for GL header include!"
 #endif

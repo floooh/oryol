@@ -12,7 +12,7 @@
 #define NVG_NO_STDIO
 #endif
 #include "NanoVG/nanovg/nanovg.h"
-#if ORYOL_OPENGLES2
+#if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
 #ifndef NANOVG_GLES2_IMPLEMENTATION
 #define NANOVG_GLES2
 #endif

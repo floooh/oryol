@@ -64,7 +64,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert(progBundle.GetState() == ResourceState::Setup);
     this->glStateWrapper->InvalidateProgramState();
 
-    #if ORYOL_OPENGLES2
+    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
     #elif ORYOL_MACOS
     const ShaderLang::Code slang = ShaderLang::GLSL150;

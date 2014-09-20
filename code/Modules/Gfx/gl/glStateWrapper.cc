@@ -491,7 +491,7 @@ glStateWrapper::setupRasterizerState() {
     ::glDisable(GL_POLYGON_OFFSET_FILL);
     ::glDisable(GL_SCISSOR_TEST);
     ::glEnable(GL_DITHER);
-    #if !ORYOL_OPENGLES2
+    #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     ::glEnable(GL_MULTISAMPLE);
     #endif
     ORYOL_GL_CHECK_ERROR();
@@ -543,7 +543,7 @@ glStateWrapper::applyRasterizerState(const RasterizerState& newState) {
             ::glDisable(GL_DITHER);
         }
     }
-    #if !ORYOL_OPENGLES2
+    #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const bool msaaEnabled = newState.MultisampleEnabled;
     if (msaaEnabled != curState.MultisampleEnabled) {
         if (msaaEnabled) {
@@ -673,7 +673,7 @@ glStateWrapper::Clear(PixelChannel::Mask channels, const glm::vec4& color, float
     if ((channels & PixelChannel::Depth) != 0) {
     
         clearMask |= GL_DEPTH_BUFFER_BIT;
-        #if ORYOL_OPENGLES2
+        #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
         ::glClearDepthf(depth);
         #else
         ::glClearDepth(depth);

@@ -52,7 +52,7 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
 //------------------------------------------------------------------------------
 GLenum
 glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
-    #if ORYOL_OPENGLES2
+    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     return glTypes::AsGLTexImageFormat(c);
     #else
     switch (c) {
@@ -163,12 +163,6 @@ glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
             return GL_RGBA4;
         case PixelFormat::D16:      
             return GL_DEPTH_COMPONENT16;
-        case PixelFormat::D32:      
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_DEPTH_COMPONENT32_OES;
-            #else
-            return GL_DEPTH_COMPONENT32;
-            #endif
         case PixelFormat::D24S8:    
             #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_DEPTH24_STENCIL8_OES;
