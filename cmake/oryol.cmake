@@ -129,7 +129,11 @@ macro(oryol_setup)
     else()
         add_definitions(-DORYOL_FORCE_NO_THREADS=0)
     endif()
-    add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
+    if (ORYOL_EMSCRIPTEN OR ORYOL_PNACL)
+        add_definitions(-DORYOL_SAMPLE_URL=\"http://localhost/\")
+    else()
+        add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
+    endif()
 
     # GLM (math lib) definitions
     add_definitions(-DGLM_FORCE_RADIANS=1)
