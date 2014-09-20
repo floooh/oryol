@@ -39,6 +39,8 @@ macro(oryol_android_create_project target)
         "  <application android:label=\"Oryol ${target}\" android:hasCode=\"false\">\n"
         "    <activity android:name=\"android.app.NativeActivity\"\n"
         "      android:label=\"Oryol ${target}\"\n"
+        "      android:theme=\"@android:style/Theme.NoTitleBar.Fullscreen\"\n"
+        "      android:launchMode=\"singleTask\"\n"
         "      android:screenOrientation=\"landscape\"\n"
         "      android:configChanges=\"orientation|keyboardHidden\">\n"
         "      <meta-data android:name=\"android.app.lib_name\" android:value=\"${target}\"/>\n"
