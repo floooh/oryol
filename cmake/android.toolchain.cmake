@@ -27,7 +27,7 @@ set(ORYOL_PLATFORM_NAME "android")
 set(ORYOL_ANDROID 1)
 set(ORYOL_POSIX 1)
 set(ORYOL_OPENGL 1)
-set(ORYOL_OPENGLES2 1)
+set(ORYOL_OPENGLES3 1)
 set(ORYOL_PLATFORM_DEFINES "-DORYOL_ANDROID=1 -DORYOL_POSIX=1")
 
 # verbose compile mode? (to check how headers and link libs are resolved)
@@ -139,12 +139,12 @@ set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_SYSROOT} -no-canonical-prefixe
 
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -fno-strict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # c compiler flags
 set(CMAKE_C_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
-set(CMAKE_C_FLAGS_RELEASE "-Os -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=64 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-Os -fomit-frame-pointer -fno-strict-aliasing -funswitch-loops -finline-limit=64 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # shared linker flags (native code on Android always lives in DLLs)
