@@ -56,7 +56,8 @@ App::StartMainLoop() {
     #elif ORYOL_ANDROID
         this->addBlocker(AppState::Init);
         this->androidBridge.onStart();
-        while (this->androidBridge.onFrame()) {
+        while (this->androidBridge.onFrame() && (AppState::InvalidAppState != this->curState)) {
+            // empty
         }
         this->androidBridge.onStop();
     #elif ORYOL_PNACL
