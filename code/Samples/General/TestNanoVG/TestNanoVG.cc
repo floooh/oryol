@@ -59,9 +59,10 @@ NanoVGApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 NanoVGApp::OnInit() {
+
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("res:", "http://localhost:8000/");
+    ioSetup.Assigns.Add("res:", ORYOL_SAMPLE_URL);
     IO::Setup(ioSetup);
     
     auto gfxSetup = GfxSetup::Window(1024, 600, true, "Oryol NanoVG Sample");

@@ -32,7 +32,9 @@ HTTPClientApp::OnInit() {
     // host is currently ignored (everything must be loaded from
     // from the domain the app is running on)
     this->req = HTTPProtocol::HTTPRequest::Create();
-    this->req->SetURL("http://localhost:8000/httptest.txt");
+//    this->req->SetURL("http://localhost:8000/httptest.txt");
+// FIXME: HACK:
+this->req->SetURL("http://10.56.236.177:8000/httptest.txt");
     this->httpClient->Put(this->req);
 
     return AppState::Running;

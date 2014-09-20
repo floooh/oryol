@@ -68,7 +68,7 @@ DDSCubeMapApp::OnInit() {
     // setup IO system
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("tex:", "http://localhost:8000/");
+    ioSetup.Assigns.Add("tex:", ORYOL_SAMPLE_URL);
     IO::Setup(ioSetup);
 
     // setup rendering system

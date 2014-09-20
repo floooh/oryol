@@ -32,7 +32,7 @@ IOQueueApp::OnInit() {
     // from the own domain, the host URL part is ignored then
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("res:", "http://localhost:8000/");
+    ioSetup.Assigns.Add("res:", ORYOL_SAMPLE_URL);
     IO::Setup(ioSetup);
     
     // now the important part: add IO requests to the IOQueue,

@@ -18,7 +18,7 @@ namespace Oryol {
 namespace _priv {
 class urlLoader : public winURLLoader {};
 } }
-#elif ORYOL_LINUX
+#elif (ORYOL_LINUX || ORYOL_ANDROID)
 #include "HTTP/curl/curlURLLoader.h"
 namespace Oryol {
 namespace _priv {

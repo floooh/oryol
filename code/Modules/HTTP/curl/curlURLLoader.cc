@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "curlURLLoader.h"
 #include "IO/Stream/MemoryStream.h"
+#include "Core/String/StringConverter.h"
 #include "curl/curl.h"
 
 #if LIBCURL_VERSION_NUM != 0x072400
@@ -66,6 +67,8 @@ curlURLLoader::setupCurlSession() {
     curl_easy_setopt(this->curlSession, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(this->curlSession, CURLOPT_TCP_KEEPIDLE, 10L);
     curl_easy_setopt(this->curlSession, CURLOPT_TCP_KEEPINTVL, 10L);
+    curl_easy_setopt(this->curlSession, CURLOPT_TIMEOUT, 30);
+    curl_easy_setopt(this->curlSession, CURLOPT_CONNECTTIMEOUT, 30);
 }
 
 //------------------------------------------------------------------------------
@@ -84,6 +87,7 @@ curlURLLoader::discardCurlSession() {
 size_t
 curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
     // userData is expected to point to a Stream object, open for writing
+    Log::Dbg("curlWriteDataCallback: ptr=%p, size=%d, nmemb=%d\n", ptr, size, nmemb);
     int32 bytesToWrite = (int32) (size * nmemb);
     if (bytesToWrite > 0) {
         Stream* stream = (Stream*) userData;
@@ -99,6 +103,7 @@ curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void*
 size_t
 curlURLLoader::curlHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
     // userData is expected to point to the curlURLLoader object
+    Log::Dbg("curlHeaderCallback: ptr=%p, size=%d, nmemb=%d\n", ptr, size, nmemb);
     curlURLLoader* self = (curlURLLoader*) userData;
     int32 receivedBytes = (int32) (size * nmemb);
     if (receivedBytes > 0) {
@@ -139,6 +144,12 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     const URL& url = req->GetURL();
     o_assert(url.Scheme() == "http");
     curl_easy_setopt(this->curlSession, CURLOPT_URL, url.AsCStr());
+    Log::Dbg("curlURLLoader: CURLOPT_URL '%s'\n", url.AsCStr());
+    if (url.HasPort()) {
+        uint16 port = StringConverter::FromString<uint16>(url.Port());
+        Log::Dbg("curlURLLoader: CURLOPT_PORT '%d'\n", port);
+        curl_easy_setopt(this->curlSession, CURLOPT_PORT, port);
+    }
 
     // set the HTTP method
     /// @todo: only HTTP GET and POST supported for now
@@ -190,7 +201,9 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, responseBodyStream.get());
 
     // perform the request
+    Log::Dbg("curlURLLoader: before curl_easy_setopt\n");
     CURLcode performResult = curl_easy_perform(this->curlSession);
+    Log::Dbg("curlURLLoader: after curl_easy_setopt\n");
 
     // query the http code
     long curlHttpCode = 0;

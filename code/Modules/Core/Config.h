@@ -57,3 +57,7 @@
 
 /// silence unused variable warning
 #define ORYOL_UNUSED __attribute__((unused))
+
+/// stringify helper
+#define __oryol_stringify(x) #x
+#define ORYOL_STRINGIFY(x) __oryol_stringify(x)
