@@ -40,8 +40,7 @@ Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
 Gfx::CommitFrame();
 
 // at the end of OnRunning(), ask the Gfx system whether the app
-// should continue running, or stop (check whether the user 
-// has pressed the Window's close button)
+// should continue running, or quit
 return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 
 // finally, in App::OnCleanup() we need to discard the Gfx module
