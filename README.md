@@ -12,7 +12,7 @@ http://floooh.github.io/oryol/
 
 * [Design Manifesto](DESIGN-MANIFESTO.md)
 * [Core Module](code/Modules/Core/README.md)
-* [Render Module](code/Modules/Render/README.md)
+* [Gfx Module](code/Modules/Gfx/README.md)
 
 ## _Clone it_ ##
 
