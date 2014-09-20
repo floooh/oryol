@@ -2,14 +2,6 @@
 
 The Gfx module is the 3D rendering API of Oryol. 
 
-### Scope
-
-- run well on a large range of devices (min-spec is OpenGLES2 plus some extensions)
-- reduce boiler-plate code to a minimum
-- move complex state setup to initialization
-- be prepared-for/compatible-with new-style APIs like Metal, DX12, GLnext
-
-
 ### Getting Started
 
 In general, the Oryol Gfx module tries to move all the complex resource and
@@ -17,14 +9,17 @@ render state setup out of the render loop and into the initialization phase.
 
 In the initialization phase, the Gfx module itself is setup and graphics
 resources likes textures, meshes and shaders are created. In the render
-loop resources and state required for the next draw state is applied, and
-one of the draw method is called to actually submit a draw call. Finally
+loop resources and state required for the next draw call is applied, and
+one of the draw methods is called to actually submit a draw call. Finally
 the Gfx::CommitFrame() method is called which marks the end of the rendering
 frame.
 
-Here are some sample code fragments how to setup the Gfx system and
+#### A minimal render loop
+
+Here are code fragments for how to setup the Gfx system and
 run a minimal render loop. For an actual working code example, see
 the [Clear sample](http://floooh.github.com/oryol/Clear.html):
+
 
 ```cpp
 #include "Gfx/Gfx.h"
@@ -53,11 +48,14 @@ return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 Gfx::Discard();
 ```
 
-#### Gfx Initialization and Teardown
+#### Gfx initialization and teardown
 
-Before an Oryol app can render, the Gfx module must be setup, and at application 
-shutdown, the Gfx module must be discarded. This happens with the following methods
-in *Gfx/Gfx.h*:
+Before an Oryol app can render anything, the Gfx module must be initialized in
+the App::OnInit() method. In each invokation of App::OnRunning(), one frame
+is rendered, finished with a call to Gfx::CommitFrame(). In App::OnCleanup()
+the Gfx module is destroyed with a call to Gfx::Discard(). The GfxIsValid()
+method can be used to check whether the Gfx module has been initialized:
+
 
 ```cpp
 class Gfx {
@@ -72,9 +70,9 @@ class Gfx {
 }
 ```
 
-The *GfxSetup* object allows to customize the Gfx module and rendering environment. For
+The *GfxSetup* object allows to further customize the Gfx module and rendering environment. For
 the most common display configuration, static construction methods exist (like windowed
-versus fullscreen, multisample antialiasing on/off). The color and depth buffer
+versus fullscreen mode, multisample antialiasing on/off). The color and depth buffer
 pixel formats can also be tweaked through public members.
 
 Here's some sample code with initializes the default render target with 4xMSAA, 
@@ -92,11 +90,11 @@ For more Gfx module setup options, see the [GfxSetup header](https://github.com/
 
 #### Gfx Resources and Resource Handles
 
-Resources are data opaque data objects required for rendering, like textures, meshes or shaders.
+Resources are opaque data objects required for rendering, like textures, meshes or shaders.
 
 The Oryol resource system is very simple on the outside, but fairly advanced on the inside.
 
-The entire resource management is wrapped in 3 methods:
+The entire resource management is wrapped in 3 Gfx methods:
 
 ```cpp
 class Gfx {
@@ -110,14 +108,14 @@ class Gfx {
 ```
 
 The most important method is *Gfx::CreateResource()*, this takes a *Setup Object*,
-and returns a *GfxId* resource handle.
+and returns a *GfxId* resource handle which represents the created resource object.
 
 The Setup Object describes the type of the resource to be created, how it should be
-created (for instance from a file, or a chunk of memory), and often additional 
+created (for instance from a file, or a chunk of memory), and (usually) additional 
 initialization attributes.
 
 There is no explicite Gfx method to discard a resource. This is handled under the
-hood by the *GfxId*, which manages a resource use count (and thus works like a 
+hood by the *GfxId* object, which manages a resource use count (and thus works like a 
 smart pointer to the resource). When the last *GfxId* of a resource is destroyed,
 the resource itself is also destroyed.
 
@@ -232,13 +230,15 @@ with the 'GfxSetup::SetPoolSize() method.
 
 ##### Resource Locators and Sharing
 
+(TODO)
+
+##### Resource Throttling
+
 Asynchronously resource creation can be 'throttled', which limits the maximum
 number of resources of a specific type which will be created per frame. This helps
 to take pressure from the resource system and reduces peak memory consumption
 when many resource loading requests are issued in a very short time. The throttling
 (max number of resources created per frame) is also defined in the GfxSetup object
 via the 'GfxSetup::SetThrottling()' method.
-
-Resource locators are used as paths to asset files and for sharing. 
 
 
