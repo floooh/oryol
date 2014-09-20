@@ -52,7 +52,7 @@ Gfx::Discard();
 Before an Oryol app can render anything, the Gfx module must be initialized in
 the App::OnInit() method. In each invokation of App::OnRunning(), one frame
 is rendered, finished with a call to Gfx::CommitFrame(). In App::OnCleanup()
-the Gfx module is destroyed with a call to Gfx::Discard(). The GfxIsValid()
+the Gfx module is destroyed with a call to Gfx::Discard(). The Gfx::IsValid()
 method can be used to check whether the Gfx module has been initialized:
 
 
