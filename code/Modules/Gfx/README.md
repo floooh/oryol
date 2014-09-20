@@ -74,8 +74,8 @@ the most common display configuration, static construction methods exist (like w
 versus fullscreen mode, multisample antialiasing on/off). The color and depth buffer
 pixel formats can also be tweaked through public members.
 
-Here's some sample code with initializes the default render target with 4xMSAA, 
-an RGBA8 color buffer format (vs the default RGB8), and no depth/stencil buffer:
+Here's some sample code which initializes the default render target with 4xMSAA, 
+an RGBA8 color buffer format and no depth/stencil buffer:
 
 ```cpp
 auto gfxSetup = GfxSetup::WindowMSAA4(640, 480, "Window Title");
