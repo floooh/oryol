@@ -8,9 +8,10 @@ Experimental C++11 multi-platform 3D engine.
 
 http://floooh.github.io/oryol/
 
-## _Read the Design Manifesto:_ ##
+## _Read:_ ##
 
-[Design Manifesto](DESIGN-MANIFESTO.md)
+* [Design Manifesto](DESIGN-MANIFESTO.md)
+* [Core Module](code/Modules/Core/README.md)
 
 ## _Clone it_ ##
 

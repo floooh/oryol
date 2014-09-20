@@ -1,37 +1,37 @@
 ## Core Module
 
-The Core module provides basic functionality which every Oryol app and other modules need:
+The Core module provides basic functionality which every Oryol app and Oryol module depends on:
 
-* a unified application model for all target platforms
+* a unified application model across all target platforms
 * lifetime management for heap-allocated objects
 * a central logging facility
 * a per-thread run-loop 
-* selected alternative classes and concepts to the C++ std library tailored to game applications
+* selected alternatives for parts of the C++ std library which don't fit well into a realtime game application
 
 ### The Oryol Application Model
 
-Oryol needs to run on platforms where applications are forbidden to 'own the main loop',
-or block the application's main thread for more then a few dozen milliseconds. Instead of 
-having a main() function with a simple game loop, some sort of per-frame callback must be
-registered, and control is given back to the operating system.
+Oryol needs to run on all types of esoteric host platforms where applications may be forbidden to 
+'own the game loop', block the main thread for more then a few dozen milliseconds, specific functionality
+is only available from the main (or UI-) thread, don't have shared-memory-threading, don't
+even have a main() function or where an app can be suspended and restored at will by 
+the operating system.
 
-There are also platforms which have restrictions which operating system services are 
-available from threads, and some platforms don't even have a main function.
+To hide all these dirty platform-specific details, Oryol offers a convenient application
+class *Oryol::App* which implements a simple *application-state-model*. During the lifetime
+of an Oryol application, the app goes through different states, controlled by a derived 
+application subclass. While a state is active, an associated per-frame method is called
+which implements a frame's worth of work for the current application state. The only
+hard rule is that these callback methods must not block for more then a few dozen milliseconds
+(the usual frame budget is 16ms or 32ms).
 
-In fact, most platforms except Windows and game consoles have at least some of these limitations.
-
-Oryol's App class hides all these dirty details from the programmer by implementing
-a simple application state model.
-
-Creating a new Oryol application starts with deriving from the App class and overriding
-the virtual state-callback methods which are called once per frame as long as this specific
+Creating a new Oryol application starts with deriving an App subclass and overriding
+the virtual state-callback methods which are called once per frame as long as the associated state
 state is active. The return value of a state callback method is the next state the application
-should switch to. This way an application may decode to do initialization in small chunks 
-spread over several frames.
+should switch to. 
 
 A minimal Oryol application looks like this:
 
-```
+```cpp
 #include "Core/App.h"
 
 using namespace Oryol;
@@ -42,11 +42,11 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();    
 };
+// this declares MyApp as the Oryol main class
 OryolMain(MyApp);
 
 //---: 1 frame initialization
-AppState::Code
-MyApp::OnInit() {
+AppState::Code MyApp::OnInit() {
     // do initialization work
     ...
 
@@ -55,8 +55,7 @@ MyApp::OnInit() {
 }
 
 //---: per-frame callback
-AppState::Code
-MyApp::OnRunning() {
+AppState::Code MyApp::OnRunning() {
     // do per-frame work (e.g. 3D rendering)
     ...
 
@@ -65,8 +64,7 @@ MyApp::OnRunning() {
 }
 
 //---: 1 frame cleanup
-AppState::Code
-MyApp::OnCleanup() {
+AppState::Code MyApp::OnCleanup() {
     // do cleanup-work, calling parent class OnCleanup is currently necessary
     return App::OnCleanup();
 }
@@ -92,7 +90,7 @@ public:
 };
 ```
 
-Here, OryolClassDecl and OryolClassCreator are 'class annotation macros' which add some 
+*OryolClassDecl* and *OryolClassCreator*  are 'class annotation macros' which add some 
 Oryol-specific standard functionality to a class. 
 
 
@@ -102,15 +100,13 @@ Oryol-specific standard functionality to a class.
 > instead Oryol's philosophy is to pre-allocate fixed sized memory blocks and
 > object pools and keep dynamic allocations to a minimum
 
-Oryol application should try to keep heap-allocated objects to a minimum, but if
-needed, raw new and delete calls should be avoided in favour of Oryol's lifetime-
-managed heap objects through ref-counting and smart pointers. 
+Oryol applications should try to keep heap-allocated objects to a minimum, but if
+needed, Oryol's lifetime-managed heap objects using ref-counting and smart pointers
+should be used instead of raw new and delete calls.
 
 There's a few things to keep in mind when using ref-counted objects in Oryol:
 
-1. to use ref-counting, a class must have a public addRef(), release() and virtual destroy 
-method (for convenience, a RefCounted base class exists which can be derived from), if an object
-is going to be used from different threads, the refcount management must be thread-safe)
+1. classes which use ref-counting should be subclasses of RefCounted (or provide a specific set of methods to manage the refcount, but that's an advanced topic)
 2. the destructor must be virtual
 3. a class annoation macro must be used to add creation methods to refcounted class
 4. the Ptr<> class must be used as smart-pointer class
@@ -138,14 +134,20 @@ of course you can also use the new C++11 auto keyword:
 auto myObj = MyClass::Create(arg1, arg2, arg3);
 ```
 
+> TODO: write about why std::shared_ptr and std::make_shared is not used.
+
+> NOTE: Always keep in mind that there should be a good reason to use heap-allocated, 
+> ref-counted objects instead of stack-allocated or class-embedded objects. Always consider
+> stack-allocated objects and class-embedded objects first!
+
 
 ### Object Pools
 
-Object creation can be optimized with object pools which prevent dynamic memory
-allocation per object (but still calls the constructor and destructor). This should
-only be used for small objects which need to be very frequently created and destroyed
-(which is something that should be avoided in a game engine). To object pools for
-a class, use the OryolClassPoolAllocDecl annotation macro:
+Object creation can be optimized with object pools which prevents dynamic memory
+allocation per object and reduces fragmentation (but still needs to call the constructor 
+and destructor). This should only be used for small objects which need to be very frequently 
+created and destroyed (which is something that should be avoided in a game engine). To use object 
+pools for a class, use the OryolClassPoolAllocDecl annotation macro:
 
 ```cpp
 class MyPoolClass : public MyClass {
@@ -203,8 +205,6 @@ this class. An application can attach custom logger objects derived from Logger 
 Use the following methods for text output instead of printf:
 
 ```cpp
-using namespace Oryol::Core;
-
 // normal text output
 Log::Info("Hello World!");
 // warning-level output
@@ -222,7 +222,7 @@ The Log class can be called safely from any thread.
 
 ### Asserts
 
-Instead of assert(), use Oryol specialized o_assert() macros, the standard form is 
+Instead of assert(), use Oryol's specialized o_assert() macros, the standard form is 
 also active when the code is compiled in release mode (with optimizations), the _dbg()
 form is only active in debug mode:
 
@@ -232,8 +232,8 @@ o_assert(x != 0);
 o_assert_dbg(x != 0);
 
 // assert with additional text message:
-o_assert(x != 0, "Message");
-o_assert_dbg(x != 0, "Message");
+o_assert2(x != 0, "Message");
+o_assert2_dbg(x != 0, "Message");
 
 // short-cut range check assert (tests that val >= 0 and val < max)
 o_assert_range(val, max);
@@ -259,4 +259,13 @@ In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per sec
 > NOTE: there's currently no control over the order of how RunLoop callbacks are executed,
 > and it is not defined whether the callback is called before or after the App's
 > per-frame callback. These details will very likely change in the future.
+
+
+### Things you should NOT use
+
+There are a couple of C++ features which are black-listed on Oryol for various reasons:
+
+- *C++ exceptions*: These are disabled by default, but can be enabled with a cmake option. Don't use them as they are fairly expensive on emscripten.
+- *std containers (std::vector, std::map, ...)*: Oryol comes with its own set of containers classes which offer more fine-control over their behaviour and use asserts instead of exceptions.
+- *C++ style input/output (e.g. std::cout << "hello")*: This causes a lot of code to be pulled into the executable, which is especially bad in emscripten where client-size matters.
 
