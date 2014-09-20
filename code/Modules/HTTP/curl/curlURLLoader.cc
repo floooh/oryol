@@ -69,6 +69,7 @@ curlURLLoader::setupCurlSession() {
     curl_easy_setopt(this->curlSession, CURLOPT_TCP_KEEPINTVL, 10L);
     curl_easy_setopt(this->curlSession, CURLOPT_TIMEOUT, 30);
     curl_easy_setopt(this->curlSession, CURLOPT_CONNECTTIMEOUT, 30);
+    curl_easy_setopt(this->curlSession, CURLOPT_ACCEPT_ENCODING, "");   // all encodings supported by curl
 }
 
 //------------------------------------------------------------------------------
