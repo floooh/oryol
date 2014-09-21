@@ -31,6 +31,12 @@ glRenderMgr::Supports(GfxFeature::Code feat) const {
             return glExt::HasExtension(glExt::TextureCompressionPVRTC);
         case GfxFeature::TextureCompressionATC:
             return glExt::HasExtension(glExt::TextureCompressionATC);
+        case GfxFeature::TextureCompressionETC2:
+            #if ORYOL_OPENGLES3
+            return true;
+            #else
+            return false;
+            #endif
         case GfxFeature::TextureFloat:
             return glExt::HasExtension(glExt::TextureFloat);
         case GfxFeature::TextureHalfFloat:

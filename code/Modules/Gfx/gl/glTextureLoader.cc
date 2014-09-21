@@ -27,7 +27,8 @@ glTextureLoader::Accepts(const texture& tex) const {
     // the compressed texture can actually be loaded is another question
     const char* loc = tex.GetSetup().Locator.Location().AsCStr();
     if ((InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".dds")) ||
-        (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".pvr"))) {
+        (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".pvr")) ||
+        (InvalidIndex != StringBuilder::FindSubString(loc, 0, EndOfString, ".ktx"))) {
         return true;
     }
     else {
@@ -49,6 +50,9 @@ glTextureLoader::Accepts(const texture& tex, const Ptr<Stream>& data) const {
             accepted = true;
         }
         else if (gliml::is_pvr(dataPtr, dataSize)) {
+            accepted = true;
+        }
+        else if (gliml::is_ktx(dataPtr, dataSize)) {
             accepted = true;
         }
         data->UnmapRead();
@@ -100,6 +104,9 @@ glTextureLoader::Load(texture& tex, const Ptr<Stream>& data) const {
         gliml::context ctx;
         ctx.enable_dxt(glExt::HasExtension(glExt::TextureCompressionDXT));
         ctx.enable_pvrtc(glExt::HasExtension(glExt::TextureCompressionPVRTC));
+        #if ORYOL_OPENGLES3
+        ctx.enable_etc2(true);
+        #endif
         if (ctx.load(dataPtr, dataSize)) {
             if (this->glCreateTexture(tex, ctx)) {
                 tex.setState(ResourceState::Valid);
@@ -145,7 +152,7 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(glTexTarget, GL_TEXTURE_MAG_FILTER, glMagFilter);
     ORYOL_GL_CHECK_ERROR();
-    if (ctx.num_faces() > 0) {
+    if (ctx.num_faces() > 1) {
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }

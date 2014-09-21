@@ -519,6 +519,7 @@ public:
         TextureCompressionDXT,      ///< GPU supports DXT compressed textures
         TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
         TextureCompressionATC,      ///< GPU supports ATC compressed textures
+        TextureCompressionETC2,     ///< GPU supports ETC2 compressed textures (OpenGLES3)
         TextureFloat,               ///< support for float textures
         TextureHalfFloat,           ///< support for half-float textures
         Instancing,                 ///< supports hardware-instanced rendering
