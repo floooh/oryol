@@ -14,6 +14,7 @@ TexDstDirectory = ProjectDirectory + '/build/webpage'
 
 # NOTE: PVRTexTools supports a lot more formats!
 PVRFormats = ['PVRTC1_2', 'PVRTC1_4', 'PVRTC1_2_RGB', 'PVRTC1_4_RGB', 'PVRTC2_2', 'PVRTC2_4']
+ETCFormats = ['ETC1', 'ETC2']
 
 #-------------------------------------------------------------------------------
 def error(msg) :
@@ -147,11 +148,14 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
-def toETC2(srcFilename, dstFilename) :
+def toETC(srcFilename, dstFilename, format) :
     '''
     Convert a file to ETC2 in a KTX container file.
     FIXME: alpha channel support
     '''
+    if format not in ETCFormats :
+        error('invalid ETC texture format {}!'.format(format))
+
     ensureDstDirectory()
     tmpFilename, ext = os.path.splitext(dstFilename)
     tmpFilename += '.ppm'
@@ -165,7 +169,12 @@ def toETC2(srcFilename, dstFilename) :
 
     # first convert file to PPM format
     subprocess.call(args=[convTool, srcPath, tmpPath])
-    subprocess.call(args=[etcTool, tmpPath, TexDstDirectory, '-mipmaps', '-ktx'])
+    cmd = [etcTool, tmpPath, TexDstDirectory, '-mipmaps', '-ktx', '-c']
+    if format == 'etc1' :
+        cmd.append('etc1')
+    else :
+        cmd.append('etc2')
+    subprocess.call(args=cmd)
     os.unlink(tmpPath)
 
 #-------------------------------------------------------------------------------
@@ -207,8 +216,9 @@ def exportSampleTextures() :
     toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
     toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
 
-    # ETC2
-    toETC2('lok256.jpg', 'lok_etc2.ktx')
+    # ETC1/2
+    toETC('lok256.jpg', 'lok_etc1.ktx', 'ETC1')
+    toETC('lok256.jpg', 'lok_etc2.ktx', 'ETC2')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
