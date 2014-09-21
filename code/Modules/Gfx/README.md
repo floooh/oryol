@@ -24,8 +24,6 @@ the [Clear sample](http://floooh.github.com/oryol/Clear.html):
 ```cpp
 #include "Gfx/Gfx.h"
 
-using namespace Gfx
-
 // in App::OnInit(), initialize the Gfx module 
 // (here a 400x300 window is created)
 Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
