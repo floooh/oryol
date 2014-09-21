@@ -6,6 +6,7 @@ import sys
 import os
 import platform
 import subprocess
+import tempfile
 
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 TexSrcDirectory = ProjectDirectory + '/data'
@@ -146,6 +147,28 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
     subprocess.call(args=cmdLine)
 
 #-------------------------------------------------------------------------------
+def toETC2(srcFilename, dstFilename) :
+    '''
+    Convert a file to ETC2 in a KTX container file.
+    FIXME: alpha channel support
+    '''
+    ensureDstDirectory()
+    tmpFilename, ext = os.path.splitext(dstFilename)
+    tmpFilename += '.ppm'
+
+    convTool = getToolsBinPath() + 'convert'
+    etcTool  = getToolsBinPath() + 'etcpack'
+    srcPath  = TexSrcDirectory + '/' + srcFilename
+    dstPath  = TexDstDirectory + '/' + dstFilename
+    tmpPath  = tempfile.gettempdir() + '/' + tmpFilename
+    print '=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath)
+
+    # first convert file to PPM format
+    subprocess.call(args=[convTool, srcPath, tmpPath])
+    subprocess.call(args=[etcTool, tmpPath, TexDstDirectory, '-mipmaps', '-ktx'])
+    os.unlink(tmpPath)
+
+#-------------------------------------------------------------------------------
 def exportSampleTextures() :
     # default gamma 2.2
     toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
@@ -183,6 +206,9 @@ def exportSampleTextures() :
     toPVR('lok256.jpg', 'lok_bpp2.pvr', 'PVRTC1_2')
     toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
     toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
+
+    # ETC2
+    toETC2('lok256.jpg', 'lok_etc2.ktx')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
