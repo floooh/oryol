@@ -88,7 +88,6 @@ curlURLLoader::discardCurlSession() {
 size_t
 curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
     // userData is expected to point to a Stream object, open for writing
-    Log::Dbg("curlWriteDataCallback: ptr=%p, size=%d, nmemb=%d\n", ptr, size, nmemb);
     int32 bytesToWrite = (int32) (size * nmemb);
     if (bytesToWrite > 0) {
         Stream* stream = (Stream*) userData;
@@ -104,7 +103,6 @@ curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void*
 size_t
 curlURLLoader::curlHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
     // userData is expected to point to the curlURLLoader object
-    Log::Dbg("curlHeaderCallback: ptr=%p, size=%d, nmemb=%d\n", ptr, size, nmemb);
     curlURLLoader* self = (curlURLLoader*) userData;
     int32 receivedBytes = (int32) (size * nmemb);
     if (receivedBytes > 0) {
@@ -145,10 +143,8 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     const URL& url = req->GetURL();
     o_assert(url.Scheme() == "http");
     curl_easy_setopt(this->curlSession, CURLOPT_URL, url.AsCStr());
-    Log::Dbg("curlURLLoader: CURLOPT_URL '%s'\n", url.AsCStr());
     if (url.HasPort()) {
         uint16 port = StringConverter::FromString<uint16>(url.Port());
-        Log::Dbg("curlURLLoader: CURLOPT_PORT '%d'\n", port);
         curl_easy_setopt(this->curlSession, CURLOPT_PORT, port);
     }
 
@@ -202,9 +198,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, responseBodyStream.get());
 
     // perform the request
-    Log::Dbg("curlURLLoader: before curl_easy_setopt\n");
     CURLcode performResult = curl_easy_perform(this->curlSession);
-    Log::Dbg("curlURLLoader: after curl_easy_setopt\n");
 
     // query the http code
     long curlHttpCode = 0;
