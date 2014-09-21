@@ -23,6 +23,12 @@ namespace Oryol {
 namespace _priv {
 class inputMgr : public pnaclInputMgr { };
 } }
+#elif ORYOL_ANDROID
+#include "Input/android/androidInputMgr.h"
+namespace Oryol {
+namespace _priv {
+class inputMgr : public androidInputMgr { };
+} }
 #else
 #include "Input/base/inputMgrBase.h"
 namespace Oryol {
