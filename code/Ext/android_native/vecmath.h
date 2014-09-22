@@ -41,11 +41,10 @@ class Mat4;
  */
 class Vec2
 {
-private:
+public:
     float x_;
     float y_;
 
-public:
     friend class Vec3;
     friend class Vec4;
     friend class Mat4;
