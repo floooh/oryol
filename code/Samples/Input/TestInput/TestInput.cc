@@ -30,8 +30,9 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(512, 256, "Oryol Input Test Sample"));
+    Gfx::Setup(GfxSetup::Window(800, 400, "Oryol Input Test Sample"));
     Dbg::Setup();
+    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Input::Setup();
     
     return App::OnInit();
@@ -71,11 +72,12 @@ TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name)
 AppState::Code
 TestInputApp::OnRunning() {
 
+    glm::vec4 clearColor(0.25f);
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.25f), 1.0f, 0);
     
     const Keyboard& keyboard = Input::Keyboard();
     const Mouse& mouse = Input::Mouse();
+    const Touchpad& touchpad = Input::Touchpad();
     
     // mouse status
     if (mouse.Attached) {
@@ -123,7 +125,54 @@ TestInputApp::OnRunning() {
             }
         }
     }
-    
+
+    // touchpad status
+    if (touchpad.Attached) {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r TOUCHPAD STATUS:\n\n\r");
+        if (touchpad.Tapped) {
+            Dbg::TextColor(this->pressedColor);
+            clearColor = this->downColor;
+        }
+        else {
+            Dbg::TextColor(this->defaultColor);
+        }
+        Dbg::Print(" TAPPED ");
+        if (touchpad.DoubleTapped) {
+            Dbg::TextColor(this->pressedColor);
+            clearColor = this->upColor;
+        }
+        else { 
+            Dbg::TextColor(this->defaultColor);
+        }
+        Dbg::Print("DOUBLETAPPED ");
+        if (touchpad.Panning) {
+            Dbg::TextColor(this->pressedColor);
+        }
+        else {
+            Dbg::TextColor(this->defaultColor);
+        }
+        Dbg::Print("PANNING ");
+        if (touchpad.Pinching) {
+            Dbg::TextColor(this->pressedColor);
+        }
+        else {
+            Dbg::TextColor(this->defaultColor);
+        }
+        Dbg::Print("PINCHING");
+        Dbg::Print("\n\n\r");
+        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::PrintF(" touch pos0: %.3f %.3f\n\r"
+                    " touch mov0: %.3f %.3f\n\r"
+                    " touch pos1: %.3f %.3f\n\r"
+                    " touch mov1: %.3f %.3f\n\r",
+                    touchpad.Position(0).x, touchpad.Position(0).y,
+                    touchpad.Movement(0).x, touchpad.Movement(0).y,
+                    touchpad.Position(1).x, touchpad.Position(1).y,
+                    touchpad.Movement(1).x, touchpad.Movement(1).y);
+    }
+
+    Gfx::Clear(PixelChannel::RGBA, clearColor, 1.0f, 0);    
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     

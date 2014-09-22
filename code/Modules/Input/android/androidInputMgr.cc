@@ -9,17 +9,29 @@
 // this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
 
+using namespace ndk_helper;
+
 namespace Oryol {
 namespace _priv {
 
+static androidInputMgr* self = nullptr;
+
 //------------------------------------------------------------------------------
 androidInputMgr::androidInputMgr() {
-    OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;    
+    o_assert_dbg(nullptr == self);
+    this->touchpad.Attached = true;
+    self = this;
+    this->tapDetector.SetConfiguration(OryolAndroidAppState->config);
+    this->doubleTapDetector.SetConfiguration(OryolAndroidAppState->config);
+    this->pinchDetector.SetConfiguration(OryolAndroidAppState->config);
+    this->dragDetector.SetConfiguration(OryolAndroidAppState->config);
+    OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 androidInputMgr::~androidInputMgr() {
+    self = nullptr;
     OryolAndroidAppState->onInputEvent = nullptr;
     Core::PostRunLoop()->Remove(this->runLoopId);
 }
@@ -46,43 +58,54 @@ androidInputMgr::reset() {
 //------------------------------------------------------------------------------
 int32_t
 androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* event) {
+    o_assert_dbg(nullptr != self);
+
     int32_t retval = 0;
     const int32_t type = AInputEvent_getType(event);
-
-    const char* source = "unknown";
-    switch (AInputEvent_getSource(event)) {
-        case AINPUT_SOURCE_KEYBOARD:    source = "keyboard"; break;
-        case AINPUT_SOURCE_DPAD:        source = "dpad"; break;
-        case AINPUT_SOURCE_GAMEPAD:     source = "gamepad"; break;
-        case AINPUT_SOURCE_TOUCHSCREEN: source = "touchscreen"; break;
-        case AINPUT_SOURCE_MOUSE:       source = "mouse"; break;
-        case AINPUT_SOURCE_STYLUS:      source = "stylus"; break;
-        case AINPUT_SOURCE_TRACKBALL:   source = "trackball"; break;
-        case AINPUT_SOURCE_TOUCHPAD:    source = "touchpad"; break;
-        case AINPUT_SOURCE_TOUCH_NAVIGATION: source = "touchnavigation"; break;
-        case AINPUT_SOURCE_JOYSTICK:    source = "joystick"; break;
-    }
-
     if (AINPUT_EVENT_TYPE_MOTION == type) {
-        const int32_t actionAll = AMotionEvent_getAction(event);
-        const int32_t pointerIndex = (actionAll & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
-        const int32_t action = actionAll & AMOTION_EVENT_ACTION_MASK;
 
-        const char* actionStr = "unknown";
-        switch (action) {
-            case AMOTION_EVENT_ACTION_DOWN:         actionStr = "AMOTION_EVENT_ACTION_DOWN"; break;
-            case AMOTION_EVENT_ACTION_UP:           actionStr = "AMOTION_EVENT_ACTION_UP"; break;
-            case AMOTION_EVENT_ACTION_MOVE:         actionStr = "AMOTION_EVENT_ACTION_MOVE"; break;
-            case AMOTION_EVENT_ACTION_CANCEL:       actionStr = "AMOTION_EVENT_ACTION_CANCEL"; break;
-            case AMOTION_EVENT_ACTION_OUTSIDE:      actionStr = "AMOTION_EVENT_ACTION_OUTSIDE"; break;
-            case AMOTION_EVENT_ACTION_POINTER_DOWN: actionStr = "AMOTION_EVENT_ACTION_POINTER_DOWN"; break;
-            case AMOTION_EVENT_ACTION_POINTER_UP:   actionStr = "AMOTION_EVENT_ACTION_POINTER_UP"; break;
-            case AMOTION_EVENT_ACTION_HOVER_MOVE:   actionStr = "AMOTION_EVENT_ACTION_HOVER_MOVE"; break;
-            case AMOTION_EVENT_ACTION_SCROLL:       actionStr = "AMOTION_EVENT_ACTION_SCROLL"; break;
-            case AMOTION_EVENT_ACTION_HOVER_ENTER:  actionStr = "AMOTION_EVENT_ACTION_HOVER_ENTER"; break;
-            case AMOTION_EVENT_ACTION_HOVER_EXIT:   actionStr = "AMOTION_EVENT_ACTION_HOVER_EXIT"; break;
+        GESTURE_STATE tapState = self->tapDetector.Detect(event);
+        GESTURE_STATE doubleTapState = self->doubleTapDetector.Detect(event);
+        GESTURE_STATE pinchState = self->pinchDetector.Detect(event);
+        GESTURE_STATE dragState = self->dragDetector.Detect(event);
+        glm::vec2 pos;
+        pos.x = AMotionEvent_getX(event, 0);
+        pos.y = AMotionEvent_getY(event, 0);
+
+        if (doubleTapState & GESTURE_STATE_ACTION) {
+            self->touchpad.DoubleTapped = true;
+            self->touchpad.onPos(0, pos);
         }
-        Log::Dbg("androidInputMgr: src=%s, action=%s, pointer=%d\n", source, actionStr, pointerIndex);
+        if (tapState & GESTURE_STATE_ACTION) {
+            self->touchpad.Tapped = true;
+            self->touchpad.onPos(0, pos);
+        }
+        if (dragState & GESTURE_STATE_START) {
+            // need to init position
+            Vec2 v;
+            self->dragDetector.GetPointer(v);
+            self->touchpad.onPos(0, glm::vec2(v.x_, v.y_));
+        }
+        if (dragState & GESTURE_STATE_MOVE) {
+            Vec2 v;
+            self->dragDetector.GetPointer(v);
+            self->touchpad.Panning = true;
+            self->touchpad.onPosMov(0, glm::vec2(v.x_, v.y_));
+        }
+        if (pinchState & GESTURE_STATE_START) {
+            // need to init positions
+            Vec2 v0, v1;
+            self->pinchDetector.GetPointers(v0, v1);
+            self->touchpad.onPos(0, glm::vec2(v0.x_, v0.y_));
+            self->touchpad.onPos(1, glm::vec2(v1.x_, v1.y_));
+        }
+        if (pinchState & GESTURE_STATE_MOVE) {
+            Vec2 v0, v1;
+            self->pinchDetector.GetPointers(v0, v1);
+            self->touchpad.Pinching = true;
+            self->touchpad.onPosMov(0, glm::vec2(v0.x_, v0.y_));
+            self->touchpad.onPosMov(1, glm::vec2(v1.x_, v1.y_));
+        }
     }
     else if (AINPUT_EVENT_TYPE_KEY == type) {
         Log::Dbg("androidInputMgr: key event received (not handled)!\n");

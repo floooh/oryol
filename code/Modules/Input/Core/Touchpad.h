@@ -27,13 +27,37 @@ public:
     /// panning gesture underway?
     bool Panning;
 
-    /// current position
-    glm::vec2 Position;
-    /// current movement
-    glm::vec2 Movement;
+    /// current position (1 for tap/pan, 2 for pinch)
+    const glm::vec2& Position(int32 touchIndex) const;
+    /// current movement (1 for tap/pan, 2 for pinch)
+    const glm::vec2& Movement(int32 touchIndex) const;
+
+    /// update position
+    void onPos(int32 touchIndex, const glm::vec2& p);
+    /// update position and compute movement
+    void onPosMov(int32 touchIndex, const glm::vec2& p);
 
     /// reset the touchpad state
     void reset();
+
+private:
+    static const int32 MaxNumTouches = 2;
+    glm::vec2 pos[MaxNumTouches];
+    glm::vec2 mov[MaxNumTouches];
 };
+
+//------------------------------------------------------------------------------
+inline const glm::vec2&
+Touchpad::Position(int32 touchIndex) const {
+    o_assert_range_dbg(touchIndex, MaxNumTouches);
+    return this->pos[touchIndex];
+}
+
+//------------------------------------------------------------------------------
+inline const glm::vec2&
+Touchpad::Movement(int32 touchIndex) const {
+    o_assert_range_dbg(touchIndex, MaxNumTouches);
+    return this->mov[touchIndex];
+}
 
 } // namespace Oryol
