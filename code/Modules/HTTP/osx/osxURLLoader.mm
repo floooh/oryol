@@ -98,7 +98,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             
             // extract response body...
             const void* responseBytes = [responseData bytes];
-            const int responseLength = [responseData length];
+            const int responseLength = (const int) [responseData length];
             if (responseLength > 0) {
                 Ptr<MemoryStream> responseBody = MemoryStream::Create();
                 responseBody->SetURL(req->GetURL());
