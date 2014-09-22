@@ -11,7 +11,7 @@ using namespace Oryol;
 TEST(RenderSetupTest) {
 
     #if !ORYOL_UNITTESTS_HEADLESS
-    Gfx::Setup(GfxSetup::Window(400, 300, false, "Oryol Test"));
+    Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Test"));
     
     CHECK(Gfx::GfxSetup().Width == 400);
     CHECK(Gfx::GfxSetup().Height == 300);

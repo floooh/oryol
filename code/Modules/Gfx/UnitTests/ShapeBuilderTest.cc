@@ -25,7 +25,7 @@ TEST(ShapeBuilderTest) {
     
     // setup a GL context
     displayMgr displayManager;
-    displayManager.SetupDisplay(GfxSetup::Window(400, 300, false, "Oryol Test"));
+    displayManager.SetupDisplay(GfxSetup::Window(400, 300, "Oryol Test"));
     
     // setup a meshFactory object
     stateWrapper stWrapper;

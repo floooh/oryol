@@ -24,7 +24,7 @@ TEST(MeshFactoryTest) {
     
     #if !ORYOL_UNITTESTS_HEADLESS
     // setup a GL context
-    auto gfxSetup = GfxSetup::Window(400, 300, false, "Oryol Test");
+    auto gfxSetup = GfxSetup::Window(400, 300, "Oryol Test");
     displayMgr displayManager;
     displayManager.SetupDisplay(gfxSetup);
     
