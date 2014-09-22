@@ -42,8 +42,8 @@ public:
         InvalidElement = 0,
     };
     
-    /// return true if gamepad is valid/attached
-    bool Attached() const;
+    /// gamepad is valid/attached?
+    bool Attached;
     /// test if button is currently pressed
     bool ButtonPressed(Element btn) const;
     /// test if button was pressed-down this frame
@@ -55,8 +55,6 @@ public:
     /// get stick position (-1.0 .. +1.0)
     const glm::vec2& StickPos(Element stick) const;
     
-    /// set keyboard attached state
-    void setAttached(bool b);
     /// FIXME??? called when button is pressed-down
     void onButtonDown(Element btn);
     /// FIXME??? called when button is released
@@ -73,14 +71,7 @@ private:
     uint32 up;
     uint32 pressed;
     glm::vec2 values[NumElements];
-    bool attached;
 };
-
-//------------------------------------------------------------------------------
-inline bool
-Gamepad::Attached() const {
-    return this->attached;
-}
 
 //------------------------------------------------------------------------------
 inline bool

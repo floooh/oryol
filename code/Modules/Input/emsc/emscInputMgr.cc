@@ -12,13 +12,13 @@ namespace _priv {
 emscInputMgr::emscInputMgr() {
     this->setupKeyTable();
     this->setupCallbacks();
-    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 emscInputMgr::~emscInputMgr() {
     this->discardCallbacks();
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PostRunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------
@@ -36,17 +36,17 @@ emscInputMgr::setCursorMode(CursorMode::Code mode) {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::reset() {
-    if (this->keyboard.Attached()) {
+    if (this->keyboard.Attached) {
         this->keyboard.reset();
     }
-    if (this->mouse.Attached()) {
+    if (this->mouse.Attached) {
         this->mouse.reset();
     }
-    if (this->touchpad.Attached()) {
+    if (this->touchpad.Attached) {
         this->touchpad.reset();
     }
     for (int32 i = 0; i < MaxNumGamepads; i++) {
-        if (this->gamepads[i].Attached()) {
+        if (this->gamepads[i].Attached) {
             this->gamepads[i].reset();
         }
     }    
@@ -176,11 +176,11 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
     // check if pointerlock is active, if yes directly obtain movement
     if (self->getCursorMode() == CursorMode::Disabled) {
         const glm::vec2 mov((float32)e->movementX, (float32)e->movementY);
-        self->mouse.onMove(mov);
+        self->mouse.Movement = mov;
     }
     else {
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
-        self->mouse.onPos(pos);        
+        self->mouse.onPos(pos);
     }
     return self->getCursorMode() == CursorMode::Disabled;    
 }
@@ -191,7 +191,7 @@ emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* user
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
     const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
-    self->mouse.onScroll(scroll);
+    self->mouse.Scroll = scroll;
     return self->getCursorMode() == CursorMode::Disabled;
 }
 

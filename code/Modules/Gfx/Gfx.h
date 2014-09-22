@@ -8,6 +8,7 @@
     @ingroup Gfx
     @brief Gfx module facade
 */
+#include "Core/RunLoop.h"
 #include "Gfx/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
 #include "Resource/Id.h"
@@ -110,6 +111,7 @@ private:
 
     struct _state {
         class GfxSetup gfxSetup;
+        RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::displayMgr displayManager;
         _priv::renderMgr renderManager;
         _priv::stateWrapper stateWrapper;

@@ -9,16 +9,10 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 Keyboard::Keyboard() :
+Attached(false),
 charIndex(0),
-attached(false),
 textCapturing(false) {
     Memory::Clear(&this->chars, sizeof(this->chars));
-}
-
-//------------------------------------------------------------------------------
-void
-Keyboard::setAttached(bool b) {
-    this->attached = b;
 }
 
 //------------------------------------------------------------------------------

@@ -25,33 +25,27 @@ public:
         InvalidButton,
     };
     
-    /// return true if mouse is valid/attached
-    bool Attached() const;
+    /// mouse attached?
+    bool Attached;
     /// test if mouse button is pressed
     bool ButtonPressed(Button btn) const;
     /// test if mouse button was pressed down last frame
     bool ButtonDown(Button btn) const;
     /// test if mouse button was release last frame
     bool ButtonUp(Button btn) const;
-    /// get mouse position (unbounded pixel coords)
-    const glm::vec2& Position() const;
-    /// get mouse movement since last frame
-    const glm::vec2& Movement() const;
-    /// get scroll movement (usually provided by mouse wheel)
-    const glm::vec2& Scroll() const;
+    /// mouse position (unbounded pixel coords)
+    glm::vec2 Position;
+    /// mouse movement since last frame
+    glm::vec2 Movement;
+    /// scroll movement (usually provided by mouse wheel)
+    glm::vec2 Scroll;
     
-    /// set mouse attached state
-    void setAttached(bool b);
     /// call when mouse button down event happens
     void onButtonDown(Button btn);
     /// call when mouse button up event happens
     void onButtonUp(Button btn);
-    /// set mouse position (unbounded pixel coords), also updates movement
-    void onPos(const glm::vec2& p);
-    /// directly set movement
-    void onMove(const glm::vec2& m);
-    /// set scroll position
-    void onScroll(const glm::vec2& p);
+    /// called to update position and movement
+    void onPos(const glm::vec2& pos);
     /// reset the mouse state
     void reset();
     
@@ -63,17 +57,7 @@ private:
     };
     
     uint8 buttonState[Button::NumButtons];
-    glm::vec2 pos;
-    glm::vec2 move;
-    glm::vec2 scroll;
-    bool attached;
 };
-
-//------------------------------------------------------------------------------
-inline bool
-Mouse::Attached() const {
-    return this->attached;
-}
 
 //------------------------------------------------------------------------------
 inline bool
@@ -94,24 +78,6 @@ inline bool
 Mouse::ButtonUp(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
     return this->buttonState[btn] & btnUp;
-}
-
-//------------------------------------------------------------------------------
-inline const glm::vec2&
-Mouse::Position() const {
-    return this->pos;
-}
-
-//------------------------------------------------------------------------------
-inline const glm::vec2&
-Mouse::Movement() const {
-    return this->move;
-}
-
-//------------------------------------------------------------------------------
-inline const glm::vec2&
-Mouse::Scroll() const {
-    return this->scroll;
 }
 
 } // namespace Oryol

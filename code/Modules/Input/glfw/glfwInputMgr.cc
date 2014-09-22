@@ -31,7 +31,7 @@ glfwInputMgr::glfwInputMgr() {
     this->setCursorMode(CursorMode::Normal);
 
     // attach our reset callback to the global runloop
-    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ glfwInputMgr::~glfwInputMgr() {
     this->discardCallbacks(glfwWindow);
 
     // detach our reset callback from runloop
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PostRunLoop()->Remove(this->runLoopId);
     
     self = nullptr;
 }
@@ -91,22 +91,22 @@ glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::reset() {
-    if (this->keyboard.Attached()) {
+    if (this->keyboard.Attached) {
         this->keyboard.reset();
     }
-    if (this->mouse.Attached()) {
+    if (this->mouse.Attached) {
         this->mouse.reset();
     }
-    if (this->touchpad.Attached()) {
+    if (this->touchpad.Attached) {
         this->touchpad.reset();
     }
     for (int32 i = 0; i < MaxNumGamepads; i++) {
         if (glfwJoystickPresent(i)) {
-            this->gamepads[i].setAttached(true);
+            this->gamepads[i].Attached = true;
             this->gamepads[i].reset();
         }
         else {
-            this->gamepads[i].setAttached(false);
+            this->gamepads[i].Attached = false;
         }
     }
 }
@@ -174,7 +174,7 @@ void
 glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
-        self->mouse.onScroll(scroll);
+        self->mouse.Scroll = scroll;
     }
 }
 

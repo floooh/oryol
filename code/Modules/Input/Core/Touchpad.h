@@ -6,6 +6,7 @@
     @brief access to touchpad state
 */
 #include "Core/Types.h"
+#include "glm/vec2.hpp"
 
 namespace Oryol {
     
@@ -14,18 +15,25 @@ public:
     /// constructor
     Touchpad();
     
-    /// return true if mouse is valid/attached
-    bool Attached() const;
+    /// touchpad valid?
+    bool Attached;
     
-    /// FIXME: add actual API
-    
-    /// set touchpad attached state
-    void setAttached(bool b);
+    /// single-tapped?
+    bool Tapped;
+    /// double-tapped?
+    bool DoubleTapped;
+    /// pinching gesture underway?
+    bool Pinching;
+    /// panning gesture underway?
+    bool Panning;
+
+    /// current position
+    glm::vec2 Position;
+    /// current movement
+    glm::vec2 Movement;
+
     /// reset the touchpad state
     void reset();
-    
-private:
-    bool attached;
 };
-    
+
 } // namespace Oryol

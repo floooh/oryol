@@ -62,7 +62,7 @@ TEST(IOFacadeTest) {
     
     // trigger the runloop until our message is handled
     while (!msg->Handled()) {
-        Core::RunLoop()->Run();
+        Core::PreRunLoop()->Run();
     }
     CHECK(numGetHandled == 1);
     CHECK(numGetRangeHandled == 0);

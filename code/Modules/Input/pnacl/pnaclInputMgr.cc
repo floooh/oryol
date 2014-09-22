@@ -19,30 +19,30 @@ pnaclInputMgr::pnaclInputMgr() {
     pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
 
     // register our pre-frame reset method with the runloop
-    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 pnaclInputMgr::~pnaclInputMgr() {
     // unregister reset method from runloop
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PostRunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------
 void
 pnaclInputMgr::reset() {
 
-    if (this->keyboard.Attached()) {
+    if (this->keyboard.Attached) {
         this->keyboard.reset();
     }
-    if (this->mouse.Attached()) {
+    if (this->mouse.Attached) {
         this->mouse.reset();
     }
-    if (this->touchpad.Attached()) {
+    if (this->touchpad.Attached) {
         this->touchpad.reset();
     }
     for (int32 i = 0; i < MaxNumGamepads; i++) {
-        if (this->gamepads[i].Attached()) {
+        if (this->gamepads[i].Attached) {
             this->gamepads[i].reset();
         }
     }
@@ -124,8 +124,8 @@ bool
 pnaclInputMgr::onMouseMove(const pp::MouseInputEvent& ie) {
     pp::Point pos = ie.GetPosition();
     pp::Point mov = ie.GetMovement();
-    this->mouse.onPos(glm::vec2(pos.x(), pos.y()));
-    this->mouse.onMove(glm::vec2(mov.x(), mov.y()));
+    this->mouse.Position = glm::vec2(pos.x(), pos.y());
+    this->mouse.Movement = glm::vec2(mov.x(), mov.y());
     return true;
 }
 
@@ -147,7 +147,7 @@ pnaclInputMgr::onMouseLeave(const pp::MouseInputEvent& ie) {
 bool
 pnaclInputMgr::onWheel(const pp::WheelInputEvent& ie) {
     const pp::FloatPoint pos = ie.GetDelta();
-    this->mouse.onScroll(glm::vec2(pos.x(), pos.y())); 
+    this->mouse.Scroll = glm::vec2(pos.x(), pos.y()); 
     return true;
 }
 

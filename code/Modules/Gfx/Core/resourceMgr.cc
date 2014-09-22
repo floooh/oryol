@@ -71,7 +71,7 @@ resourceMgr::Setup(const GfxSetup& setup, class stateWrapper* stWrapper, class d
     }
     
     // add out update method to the runloop
-    this->runLoopId = Core::RunLoop()->Add([this] {
+    this->runLoopId = Core::PreRunLoop()->Add([this] {
         this->Update();
     });
 }
@@ -81,7 +81,7 @@ void
 resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PreRunLoop()->Remove(this->runLoopId);
     this->resourceRegistry.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();

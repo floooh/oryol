@@ -126,6 +126,9 @@ App::onFrame() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     else {
+        // trigger the 'before-frame' runloop
+        Core::PreRunLoop()->Run();
+    
         // call current state handler function
         switch (this->curState) {
             case AppState::Construct:
@@ -155,11 +158,8 @@ App::onFrame() {
                 break;
         }  
 
-        // trigger central runloop
-        // IMPORTANT: ideally we'd want separate 'before frame' and 
-        // 'after frame' runloops, currently the emscripten input
-        // handler code depends that this is executed 'after'
-        Core::RunLoop()->Run();
+        // trigger the 'after-frame' runloop
+        Core::PostRunLoop()->Run();
     }  
 }
 

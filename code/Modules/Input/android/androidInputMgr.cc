@@ -15,29 +15,29 @@ namespace _priv {
 //------------------------------------------------------------------------------
 androidInputMgr::androidInputMgr() {
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;    
-    this->runLoopId = Core::RunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 androidInputMgr::~androidInputMgr() {
     OryolAndroidAppState->onInputEvent = nullptr;
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PostRunLoop()->Remove(this->runLoopId);
 }
 
 //------------------------------------------------------------------------------
 void
 androidInputMgr::reset() {
-    if (this->keyboard.Attached()) {
+    if (this->keyboard.Attached) {
         this->keyboard.reset();
     }
-    if (this->mouse.Attached()) {
+    if (this->mouse.Attached) {
         this->mouse.reset();
     }
-    if (this->touchpad.Attached()) {
+    if (this->touchpad.Attached) {
         this->touchpad.reset();
     }
     for (int32 i = 0; i < MaxNumGamepads; i++) {
-        if (this->gamepads[i].Attached()) {
+        if (this->gamepads[i].Attached) {
             this->gamepads[i].reset();
         }
     }    

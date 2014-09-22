@@ -10,8 +10,8 @@ namespace _priv {
 //------------------------------------------------------------------------------
 inputMgrBase::inputMgrBase() :
 cursorMode(CursorMode::Normal) {
-    this->keyboard.setAttached(true);
-    this->mouse.setAttached(true);
+    this->keyboard.Attached = true;
+    this->mouse.Attached = true;
 }
     
 //------------------------------------------------------------------------------

@@ -24,7 +24,7 @@ TEST(HTTPFileSystemTest) {
     
     // trigger the runloop until the request has been handled
     while (!req->Handled()) {
-        Core::RunLoop()->Run();
+        Core::PreRunLoop()->Run();
     }
     
     // check what we got

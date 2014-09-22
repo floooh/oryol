@@ -75,7 +75,7 @@ PacloneApp::getInput() {
     // FIXME: add more input options
     game::Direction input = game::NoDirection;
     const Keyboard& kbd = Input::Keyboard();
-    if (kbd.Attached()) {
+    if (kbd.Attached) {
         if (kbd.KeyPressed(Key::Left))       input = game::Left;
         else if (kbd.KeyPressed(Key::Right)) input = game::Right;
         else if (kbd.KeyPressed(Key::Up))    input = game::Up;

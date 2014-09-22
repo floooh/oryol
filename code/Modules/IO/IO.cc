@@ -32,14 +32,14 @@ IO::Setup(const IOSetup& setup) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
     
-    state->runLoopId = Core::RunLoop()->Add([] { doWork(); });
+    state->runLoopId = Core::PreRunLoop()->Add([] { doWork(); });
 }
 
 //------------------------------------------------------------------------------
 void
 IO::Discard() {
     o_assert(IsValid());
-    Core::RunLoop()->Remove(state->runLoopId);
+    Core::PreRunLoop()->Remove(state->runLoopId);
     state->requestRouter = 0;
     delete state;
     state = nullptr;

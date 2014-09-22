@@ -26,7 +26,7 @@ void
 IOQueue::Start() {
     o_assert_dbg(!this->isStarted);
     this->isStarted = true;
-    this->runLoopId = Core::RunLoop()->Add([this]() { this->update(); });
+    this->runLoopId = Core::PreRunLoop()->Add([this]() { this->update(); });
 }
 
 //------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ void
 IOQueue::Stop() {
     o_assert(this->isStarted);
     this->isStarted = false;
-    Core::RunLoop()->Remove(this->runLoopId);
+    Core::PreRunLoop()->Remove(this->runLoopId);
     this->ioRequests.Clear();
 }
 

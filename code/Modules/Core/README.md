@@ -242,14 +242,15 @@ o_assert_range_dbg(val, max);
 
 ### The RunLoop
 
-The main thread, and each thread created by Oryol has a thread-local RunLoop object. An 
+The main thread, and each thread created by Oryol has a 2 thread-local RunLoop objects,
+one executed before the App's on-frame method, one after. An 
 application (or Oryol modules) can attach std::function objects to the run loop so that
 this function is automatically called once per frame.
 
 Here's an example using C++11 lambdas:
 
 ```cpp
-Core::RunLoop()->Add([] {
+Core::PreRunLoop()->Add([] {
     Core::Log("Hello!\n");
 });
 ```

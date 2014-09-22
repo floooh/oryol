@@ -78,7 +78,7 @@ TestInputApp::OnRunning() {
     const Mouse& mouse = Input::Mouse();
     
     // mouse status
-    if (mouse.Attached()) {
+    if (mouse.Attached) {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::Print("\n MOUSE STATUS (Enter for pointerlock):\n\n\r");
     
@@ -88,13 +88,13 @@ TestInputApp::OnRunning() {
         
         Dbg::TextColor(glm::vec4(1.0f));
         Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
-                    mouse.Position().x, mouse.Position().y,
-                    mouse.Movement().x, mouse.Movement().y,
-                    mouse.Scroll().x, mouse.Scroll().y);
+                    mouse.Position.x, mouse.Position.y,
+                    mouse.Movement.x, mouse.Movement.y,
+                    mouse.Scroll.x, mouse.Scroll.y);
     }
     
     // keyboard status
-    if (keyboard.Attached()) {
+    if (keyboard.Attached) {
         Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
         Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
         if (keyboard.KeyDown(Key::Enter)) {

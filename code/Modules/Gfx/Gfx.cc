@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Gfx.h"
+#include "Core/Core.h"
 
 namespace Oryol {
 
@@ -20,12 +21,16 @@ Gfx::Setup(const class GfxSetup& setup) {
     state->stateWrapper.Setup();
     state->resourceManager.Setup(setup, &state->stateWrapper, &state->displayManager);
     state->renderManager.Setup(&state->stateWrapper, &state->displayManager);
+    state->runLoopId = Core::PreRunLoop()->Add([] {
+        state->displayManager.ProcessSystemEvents();
+    });
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::Discard() {
     o_assert_dbg(IsValid());
+    Core::PreRunLoop()->Remove(state->runLoopId);
     state->renderManager.Discard();
     state->resourceManager.Discard();
     state->stateWrapper.Discard();
@@ -120,7 +125,6 @@ Gfx::CommitFrame() {
     o_assert_dbg(IsValid());
     state->renderManager.CommitFrame();
     state->displayManager.Present();
-    state->displayManager.ProcessSystemEvents();
 }
 
 //------------------------------------------------------------------------------

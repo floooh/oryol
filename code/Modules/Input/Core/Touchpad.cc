@@ -8,26 +8,24 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 Touchpad::Touchpad() :
-attached(false) {
+Attached(false),
+Tapped(false),
+DoubleTapped(false),
+Pinching(false),
+Panning(false),
+Position(0.0f, 0.0f),
+Movement(0.0f, 0.0f) {
     // empty
-}
-
-//------------------------------------------------------------------------------
-bool
-Touchpad::Attached() const {
-    return this->attached;
-}
-
-//------------------------------------------------------------------------------
-void
-Touchpad::setAttached(bool b) {
-    this->attached = b;
 }
 
 //------------------------------------------------------------------------------
 void
 Touchpad::reset() {
-    // FIXME!
+    this->Tapped = false;
+    this->DoubleTapped = false;
+    this->Pinching = false;
+    this->Panning = false;
+    this->Movement = glm::vec2(0.0f, 0.0f);
 }
 
 } // namespace Oryol

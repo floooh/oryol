@@ -24,8 +24,10 @@ public:
     /// check if Core module has been setup
     static bool IsValid();
     
-    /// get pointer to the per-thread runloop
-    static class RunLoop* RunLoop();
+    /// get pointer to the per-thread 'before-frame' runloop
+    static class RunLoop* PreRunLoop();
+    /// get pointer to the per-thread 'after-frame' runloop
+    static class RunLoop* PostRunLoop();
 
     /// called when a thread is entered
     static void EnterThread();
@@ -36,7 +38,8 @@ private:
     /// return true if main thread
     static bool isMainThread();
     
-    static ORYOL_THREAD_LOCAL class RunLoop* threadRunLoop;
+    static ORYOL_THREAD_LOCAL class RunLoop* threadPreRunLoop;
+    static ORYOL_THREAD_LOCAL class RunLoop* threadPostRunLoop;
     struct _state {
         std::thread::id mainThreadId;
     };

@@ -16,8 +16,8 @@ public:
     /// constructor
     Keyboard();
     
-    /// return true if keyboard is valid/attached
-    bool Attached() const;
+    /// keyboard attached?
+    bool Attached;
     /// test if key is currently pressed
     bool KeyPressed(Key::Code key) const;
     /// test if key was pressed down last frame
@@ -30,8 +30,6 @@ public:
     /// get current captured text
     const wchar_t* CapturedText() const;
     
-    /// set keyboard attached state
-    void setAttached(bool b);
     /// call when key down event happens
     void onKeyDown(Key::Code key);
     /// call when key up event happens
@@ -52,15 +50,8 @@ private:
     static const int32 MaxNumChars = 128;
     int32 charIndex;
     wchar_t chars[MaxNumChars + 1];
-    bool attached;
     bool textCapturing;
 };
-
-//------------------------------------------------------------------------------
-inline bool
-Keyboard::Attached() const {
-    return this->attached;
-}
 
 //------------------------------------------------------------------------------
 inline bool

@@ -8,19 +8,13 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 Mouse::Mouse() :
-pos(0.0f, 0.0f),
-move(0.0f, 0.0f),
-scroll(0.0f, 0.0f),
-attached(false) {
+Attached(false),
+Position(0.0f, 0.0f),
+Movement(0.0f, 0.0f),
+Scroll(0.0f, 0.0f) {
     for (int32 i = 0; i < Button::NumButtons; i++) {
         this->buttonState[i] = 0;
     }
-}
-
-//------------------------------------------------------------------------------
-void
-Mouse::setAttached(bool b) {
-    this->attached = b;
 }
 
 //------------------------------------------------------------------------------
@@ -40,21 +34,9 @@ Mouse::onButtonUp(Button btn) {
 
 //------------------------------------------------------------------------------
 void
-Mouse::onPos(const glm::vec2& p) {
-    this->move = p - this->pos;
-    this->pos = p;
-}
-
-//------------------------------------------------------------------------------
-void
-Mouse::onMove(const glm::vec2& m) {
-    this->move = m;
-}
-
-//------------------------------------------------------------------------------
-void
-Mouse::onScroll(const glm::vec2& p) {
-    this->scroll = p;
+Mouse::onPos(const glm::vec2& pos) {
+    this->Movement = pos - this->Position;
+    this->Position = pos;
 }
 
 //------------------------------------------------------------------------------
@@ -63,8 +45,8 @@ Mouse::reset() {
     for (int32 i = 0; i < NumButtons; i++) {
         this->buttonState[i] &= ~(btnDown | btnUp);
     }
-    this->move = glm::vec2(0.0f, 0.0f);
-    this->scroll = glm::vec2(0.0f, 0.0f);
+    this->Movement = glm::vec2(0.0f, 0.0f);
+    this->Scroll = glm::vec2(0.0f, 0.0f);
 }
 
 } // namespace Oryol
