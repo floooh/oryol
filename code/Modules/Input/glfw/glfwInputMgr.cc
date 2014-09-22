@@ -165,7 +165,7 @@ void
 glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)glfwX, (float32)glfwY);
-        self->mouse.onPos(pos);
+        self->mouse.onPosMov(pos);
     }
 }
 

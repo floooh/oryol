@@ -180,7 +180,7 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
     }
     else {
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
-        self->mouse.onPos(pos);
+        self->mouse.onPosMov(pos);
     }
     return self->getCursorMode() == CursorMode::Disabled;    
 }

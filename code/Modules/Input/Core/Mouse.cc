@@ -34,7 +34,7 @@ Mouse::onButtonUp(Button btn) {
 
 //------------------------------------------------------------------------------
 void
-Mouse::onPos(const glm::vec2& pos) {
+Mouse::onPosMov(const glm::vec2& pos) {
     this->Movement = pos - this->Position;
     this->Position = pos;
 }

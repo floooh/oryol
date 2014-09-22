@@ -45,7 +45,7 @@ public:
     /// call when mouse button up event happens
     void onButtonUp(Button btn);
     /// called to update position and movement
-    void onPos(const glm::vec2& pos);
+    void onPosMov(const glm::vec2& pos);
     /// reset the mouse state
     void reset();
     
