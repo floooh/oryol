@@ -60,7 +60,7 @@ RunLoop::Add(Func func) {
 void
 RunLoop::Remove(Id id) {
     o_assert_dbg(!this->toRemove.Contains(id));
-    o_assert_dbg(this->callbacks.Contains(id));
+    o_assert_dbg(this->callbacks.Contains(id) || this->toAdd.Contains(id));
     this->toRemove.Add(id);
 }
 
@@ -79,7 +79,12 @@ RunLoop::addCallbacks() {
 void
 RunLoop::remCallbacks() {
     for (Id id : this->toRemove) {
-        this->callbacks.Erase(id);
+        if (this->callbacks.Contains(id)) {
+            this->callbacks.Erase(id);
+        }
+        else if (this->toAdd.Contains(id)) {
+            this->toAdd.Erase(id);
+        }
     }
     this->toRemove.Clear();
 }
