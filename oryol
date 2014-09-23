@@ -330,7 +330,7 @@ def runBuild(config, target) :
             if target != None :
                 args.append(target)
         else :
-            # generic invokation of cmake --build
+            # generic invocation of cmake --build
             args = ['cmake', '--build', '.', '--config', buildType]
         if subprocess.call(args=args, cwd=buildPath) != 0 :
             error("Build failed.")
@@ -353,7 +353,7 @@ def runRebuild(config, target) :
             # run ninja
             exitCode = subprocess.call(args=['ninja', 'clean'], cwd=buildPath)
         else :
-            # generic invokation of cmake --build
+            # generic invocation of cmake --build
             exitCode = subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
         if exitCode != 0 :
             error("Clean failed.")

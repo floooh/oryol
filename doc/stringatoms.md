@@ -45,7 +45,7 @@ structures as keys and the precomputed hash values for hashing into the buckets.
 This is implemented in the private method StringAtom::setupFromCString():
 
 * the hash value of the input string is computed
-* the unordered set in the thread-local string atom table is searched (inolves comparing the 
+* the unordered set in the thread-local string atom table is searched (involves comparing the
 hash values, and on hash-collisions actual string-comparisons)
 * if the string is already in the table we're done
 * otherwise a new entry in the stringAtomBuffer is created, this involves copying the computed hash and string data
