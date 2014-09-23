@@ -7,12 +7,12 @@
 
 namespace Oryol {
 
-ORYOL_THREAD_LOCAL stringAtomTable* stringAtomTable::ptr = nullptr;
+ORYOL_THREADLOCAL_PTR(stringAtomTable) stringAtomTable::ptr = nullptr;
 
 //------------------------------------------------------------------------------
 stringAtomTable*
 stringAtomTable::threadLocalPtr() {
-    if (nullptr == ptr) {
+    if (!ptr) {
         ptr = new stringAtomTable();
     }
     return ptr;

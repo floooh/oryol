@@ -8,6 +8,7 @@
 #include "Core/Types.h"
 #include "Core/String/stringAtomBuffer.h"
 #include "Core/Containers/HashSet.h"
+#include "Core/Threading/ThreadLocalPtr.h"
 
 namespace Oryol {
 
@@ -23,7 +24,7 @@ public:
     const stringAtomBuffer::Header* Add(int32 hash, const char* str);
     
 private:
-    static ORYOL_THREAD_LOCAL stringAtomTable* ptr;
+    static ORYOL_THREADLOCAL_PTR(stringAtomTable) ptr;
 
     /// a bucket entry
     struct Entry {

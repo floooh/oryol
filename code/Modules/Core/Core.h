@@ -9,6 +9,7 @@
     @brief Core module facade
 */
 #include "Core/RefCounted.h"
+#include "Core/Threading/ThreadLocalPtr.h"
 #include <thread>
 
 namespace Oryol {
@@ -38,8 +39,8 @@ private:
     /// return true if main thread
     static bool isMainThread();
     
-    static ORYOL_THREAD_LOCAL class RunLoop* threadPreRunLoop;
-    static ORYOL_THREAD_LOCAL class RunLoop* threadPostRunLoop;
+    static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop;
+    static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop;
     struct _state {
         std::thread::id mainThreadId;
     };
