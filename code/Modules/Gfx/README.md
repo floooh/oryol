@@ -29,7 +29,7 @@ the [Clear sample](http://floooh.github.com/oryol/Clear.html):
 Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
 ...
 
-// in each invokation of App::OnRunning(), a single frame is rendered:
+// in each invocation of App::OnRunning(), a single frame is rendered:
 // - need to apply a render target (default render target in this case)
 // - clear the render target to black
 // - commit the rendered frame
@@ -48,7 +48,7 @@ Gfx::Discard();
 #### Gfx initialization and teardown
 
 Before an Oryol app can render anything, the Gfx module must be initialized in
-the App::OnInit() method. In each invokation of App::OnRunning(), one frame
+the App::OnInit() method. In each invocation of App::OnRunning(), one frame
 is rendered, finished with a call to Gfx::CommitFrame(). In App::OnCleanup()
 the Gfx module is destroyed with a call to Gfx::Discard(). The Gfx::IsValid()
 method can be used to check whether the Gfx module has been initialized:
@@ -111,7 +111,7 @@ The Setup Object describes the type of the resource to be created, how it should
 created (for instance from a file, or a chunk of memory), and (usually) additional 
 initialization attributes.
 
-There is no explicite Gfx method to discard a resource. This is handled under the
+There is no explicit Gfx method to discard a resource. This is handled under the
 hood by the *GfxId* object, which manages a resource use count (and thus works like a 
 smart pointer to the resource). When the last *GfxId* of a resource is destroyed,
 the resource itself is also destroyed.

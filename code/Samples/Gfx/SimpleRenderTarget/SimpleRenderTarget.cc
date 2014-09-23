@@ -71,7 +71,7 @@ SimpleRenderTargetApp::OnInit() {
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
 
-    // create an offscreen render target, we explicitely want repeat texture wrap mode
+    // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGB8;

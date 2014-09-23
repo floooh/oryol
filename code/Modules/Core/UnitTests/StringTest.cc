@@ -139,7 +139,7 @@ TEST(StringTest) {
     CHECK(subStr.Front() == 0);
     CHECK(subStr.Back() == 0);
     
-    // construction and assignment from nullpointers is explicitely allowed
+    // construction and assignment from nullpointers is explicitly allowed
     const char* nullPointer = nullptr;
     String nullString(nullPointer);
     CHECK(nullString.Empty());
