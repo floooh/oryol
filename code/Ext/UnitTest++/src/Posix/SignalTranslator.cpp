@@ -2,7 +2,7 @@
 
 namespace UnitTest {
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 sigjmp_buf* SignalTranslator::s_jumpTarget = 0;
 
 namespace {

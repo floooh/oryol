@@ -7,7 +7,7 @@
 namespace UnitTest {
 
 // Oryol: change
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 class SignalTranslator
 {
 public:
@@ -39,7 +39,7 @@ private:
 #endif
 
 // Oryol: change
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 #define UNITTEST_THROW_SIGNALS \
 	UnitTest::SignalTranslator sig; \
 	if (UNITTEST_EXTENSION sigsetjmp(*UnitTest::SignalTranslator::s_jumpTarget, 1) != 0) \
