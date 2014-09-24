@@ -58,8 +58,11 @@ instance:
 
 - a 3D model rendering system which can efficiently render multi-material models
 - one or more realtime lighting modules implementing different lighting techniques
-- a higher-level animation 
+- a higher-level animation system
 - a 3D character model rendering and animation system
+- physics/collision engine integration
+- client/server messaging
+- pathfinding engine integration
 
 Above this there _could_ be a entity-component system which integrates all of this
 with an editor UI. But specifically this is a non-goal for Oryol. Big engines
