@@ -14,7 +14,7 @@ http://floooh.github.io/oryol/
 
 ## _Read:_ ##
 
-* [Design Manifesto](DESIGN-MANIFESTO.md)
+* [Design Manifesto](doc/DESIGN-MANIFESTO.md)
 * [Core Module](code/Modules/Core/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
@@ -26,7 +26,7 @@ git clone --recursive https://github.com/floooh/oryol.git oryol
 
 ## _Build it_ ##
 
-[How to Build](BUILD.md)
+[How to Build](doc/BUILD.md)
 
 #### Enjoy! ####
 
