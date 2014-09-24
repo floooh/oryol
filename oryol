@@ -667,7 +667,7 @@ else :
         elif sys.argv[2] == 'emscripten' :
             SDKSetupEmsc.setupEmscripten()
         else :
-            error('sdk {} not yet supported (try android, emscripten, nacl)'.format())
+            error('sdk {} not yet supported (try android, emscripten, nacl)'.format(sys.argv[2]))
 
     else :
         error('Oryol called with unknown argument: {}'.format(cmd))
