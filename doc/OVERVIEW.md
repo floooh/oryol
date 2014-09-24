@@ -163,7 +163,7 @@ as possible. I would be happier if I would not need any RTTI at all (neither sta
 or self-made).
 
 The whole C++ streambuf stuff isn't used (this includes std::cout and std::cin).
-The code bloat this introduces is incredible even if it isn't used. 
+The code bloat this introduces is incredible (most importantly in emscripten). 
 
 The rest of the std lib is mostly ok to use, but there's some stuff I'd like
 to use, but compilers just aren't ready yet: constexpr isn't supported in 
