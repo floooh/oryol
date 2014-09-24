@@ -8,7 +8,7 @@ Let's get the bullet-point checklist out of the way first :)
 with some features lagging behind on some platforms
 - builds on Linux, OSX, Windows with native IDE support (QtCreator, Xcode, VStudio)
 - cmake based build system with a frontend python script
-- GLSL shader coding integrated into IDE with Khronos reference compiler integrated 
+- GLSL shader coding integrated into IDE with Khronos reference compiler shader validation 
 and clickable error messages
 - python/XML-driven C++ code generation integrated into IDE/build process
 - written in a fairly high-level form of C++(11)
