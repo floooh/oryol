@@ -52,6 +52,10 @@ def ensureSdkDirectory() :
         os.makedirs(getSdkDir())
 
 #-------------------------------------------------------------------------------
+def getEmscConfigFilePath() :
+    return getSdkDir() + '/.emscripten'
+
+#-------------------------------------------------------------------------------
 def getEmscSdkPath() :
     return getSdkDir() + '/emscripten'
 
@@ -100,7 +104,7 @@ def writeEmscConfigFile() :
     content = templ.safe_substitute(emscripten_root=emscRoot, llvm_root=llvmRoot)
 
     # write emscripten config file
-    f = open(os.path.expanduser('~/.emscripten'), 'w')
+    f = open(getEmscConfigFilePath(), 'w')
     f.write(content)
     f.close()
 
@@ -119,8 +123,8 @@ def setupEmscripten() :
     '''
 
     # first check if we would overwrite anything important
-    if os.path.isfile(os.path.expanduser('~/.emscripten')) :
-        if not queryYesNo("This will overwrite your existing ~/.emscripten file, continue?") :
+    if os.path.isfile(getEmscConfigFilePath()) :
+        if not queryYesNo("This will overwrite your existing %s, continue?" % getEmscConfigFilePath()) :
             print "Nothing done."
             return
 
@@ -137,7 +141,7 @@ def setupEmscripten() :
     gitCloneOrUpdate(EmscFastCompClangGitUrl, 'clang', 'incoming', getEmscFastcompToolsPath())
     print "=> configuring and building clang..."
     buildClang()
-    print "=> write ~/.emscripten file"
+    print "=> write .emscripten file"
     writeEmscConfigFile()
     print "=> testing emcc execution"
     testEmcc()

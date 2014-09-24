@@ -83,6 +83,12 @@ find_emscripten_sdk()
 # Normalize, convert Windows backslashes to forward slashes or CMake will crash.
 get_filename_component(EMSCRIPTEN_ROOT_PATH "${EMSCRIPTEN_ROOT_PATH}" ABSOLUTE)
 
+# Set the path to .emscripten file
+get_filename_component(EMSCRIPTEN_DOT_FILE "${EMSCRIPTEN_ROOT_PATH}/../.emscripten" ABSOLUTE)
+
+# Set up options that we always want to pass to emscripten
+set(EMSCRIPTEN_CONFIG_OPTIONS "--em-config ${EMSCRIPTEN_DOT_FILE}")
+
 # tool suffic (.bat on windows)
 if (CMAKE_HOST_WIN32)
     set(EMCC_SUFFIX ".bat")
@@ -114,25 +120,25 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_SYSTEM_INCLUDE_PATH "${EMSCRIPTEN_ROOT_PATH}/system/include")
 
 # c++ compiler flags
-set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} -std=c++11 -stdlib=libc++ ${ORYOL_EMSC_EXCEPTION_FLAGS} -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
+set(CMAKE_CXX_FLAGS "${ORYOL_PLATFORM_DEFINES} ${EMSCRIPTEN_CONFIG_OPTIONS} -std=c++11 -stdlib=libc++ ${ORYOL_EMSC_EXCEPTION_FLAGS} -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O3 -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 set(CMAKE_CXX_FLAGS_PROFILING "-O3 -profiling")
 
 # c compiler flags
-set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wextra -Wno-multichar -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
+set(CMAKE_C_FLAGS "${ORYOL_PLATFORM_DEFINES} ${EMSCRIPTEN_CONFIG_OPTIONS} -fstrict-aliasing -Wall -Wno-warn-absolute-paths -Wextra -Wno-multichar -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-deprecated-writable-strings -Wno-unused-volatile-lvalue")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_C_FLAGS_DEBUG "-O3 -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 set(CMAKE_C_FLAGS_PROFILING "-O3 -profiling")
 
 # linker flags
-set(CMAKE_EXE_LINKER_FLAGS "--memory-init-file ${EMSCRIPTEN_USE_MEMORY_INIT_FILE} -s WARN_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=${EMSCRIPTEN_TOTAL_MEMORY} -s DISABLE_EXCEPTION_CATCHING=${EMSCRIPTEN_DISABLE_EXCEPTION_CATCHING} -s NO_FILESYSTEM=${EMSCRIPTEN_NO_FILESYSTEM}")
+set(CMAKE_EXE_LINKER_FLAGS "${EMSCRIPTEN_CONFIG_OPTIONS} --memory-init-file ${EMSCRIPTEN_USE_MEMORY_INIT_FILE} -s WARN_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=${EMSCRIPTEN_TOTAL_MEMORY} -s DISABLE_EXCEPTION_CATCHING=${EMSCRIPTEN_DISABLE_EXCEPTION_CATCHING} -s NO_FILESYSTEM=${EMSCRIPTEN_NO_FILESYSTEM}")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-O3 --llvm-lto ${EMSCRIPTEN_LTO_LEVEL} -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE} -s ASM_JS=1 -s ASSERTIONS=${EMSCRIPTEN_ASSERTIONS} -s OUTLINING_LIMIT=${EMSCRIPTEN_OUTLINING_LIMIT} --closure ${EMSCRIPTEN_USE_CLOSURE}")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-O3 -g -s ASM_JS=1 -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE}")
 set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-profiling -O3 --llvm-lto ${EMSCRIPTEN_LTO_LEVEL} -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE} -s ASM_JS=1 -s ASSERTIONS=${EMSCRIPTEN_ASSERTIONS} -s OUTLINING_LIMIT=${EMSCRIPTEN_OUTLINING_LIMIT}")
 
 # dynamic lib linker flags
-set(CMAKE_SHARED_LINKER_FLAGS "-shared --memory-init-file 0 -s WARN_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=${EMSCRIPTEN_TOTAL_MEMORY_WORKER} -s BUILD_AS_WORKER=1 -s EXPORTED_FUNCTIONS=[\\\"_dowork\\\"] -s DISABLE_EXCEPTION_CATCHING=${EMSCRIPTEN_DISABLE_EXCEPTION_CATCHING} -s NO_FILESYSTEM=${EMSCRIPTEN_NO_FILESYSTEM}")
+set(CMAKE_SHARED_LINKER_FLAGS "-shared ${EMSCRIPTEN_CONFIG_OPTIONS} --memory-init-file 0 -s WARN_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=${EMSCRIPTEN_TOTAL_MEMORY_WORKER} -s BUILD_AS_WORKER=1 -s EXPORTED_FUNCTIONS=[\\\"_dowork\\\"] -s DISABLE_EXCEPTION_CATCHING=${EMSCRIPTEN_DISABLE_EXCEPTION_CATCHING} -s NO_FILESYSTEM=${EMSCRIPTEN_NO_FILESYSTEM}")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "-O3 --llvm-lto ${EMSCRIPTEN_LTO_LEVEL} -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE} -s ASM_JS=1 -s ASSERTIONS=${EMSCRIPTEN_ASSERTIONS} -s OUTLINING_LIMIT=${EMSCRIPTEN_OUTLINING_LIMIT} --closure ${EMSCRIPTEN_USE_CLOSURE}")
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "-O3 -g -s ASM_JS=1 -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE} --closure 0")
 set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-profiling -O3 --llvm-lto ${EMSCRIPTEN_LTO_LEVEL} -s VERBOSE=${EMSCRIPTEN_BUILD_VERBOSE} -s ASM_JS=1 -s ASSERTIONS=${EMSCRIPTEN_ASSERTIONS} -s OUTLINING_LIMIT=${EMSCRIPTEN_OUTLINING_LIMIT}")
