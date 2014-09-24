@@ -109,7 +109,7 @@ module depends on it).
 
 ### C++ Features
 
-Like possibly every C++ code I have a love/hate relationship with the language.
+Like possibly every C++ coder I have a love/hate relationship with the language.
 I wrote a blogpost about what I think is "sane C++" a while ago:
 
 http://flohofwoe.blogspot.de/2013/06/sane-c.html
