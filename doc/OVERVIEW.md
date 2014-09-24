@@ -119,21 +119,21 @@ look at C++11 and the new STL again with an open mind. I wrote benchmarks, conte
 about the look and feel of the code, tried out a lot of things and formed a new 
 view - which isn't much different from my old view unfortunately.
 
-I still think exceptions are useless: I'm a bug fan of the 'let it crash'
-philosophy. Of course an app shouldn't get into an invalid state, but when
+I still think exceptions are useless: I'm a big fan of the 'let it crash'
+philosophy. Of course an app shouldn't get into an invalid state in the first place, but when
 it does, most of the time it doesn't even make sense to try to recover because
-it's not clear what might be broken. It's best to crash and dump as much 
+it's not clear what else might be broken. It's best to crash and dump as much 
 information for post-mortem debugging as possible. 
 
 An exception which isn't bad enough to terminate an app immediately is 
 hardly an exception, but a really expensive status code.
 
-For the 'crash and dump information', exceptions are surposingly useless.
+For the 'crash and dump as much information as possible', exceptions are surprisingly useless.
 What I need is a callstack from the location where the exception was thrown,
 and some local information of what went wrong and where, like, for instance
 a print-out of the failed condition, a filename and a line count. On GCC one 
 can hijack __cxa_throw and generate a stack trace there, but why implement
-such hacks on top of a complex system which is useless anyway, when asserts
+such hacks on top of an already complex system which is useless anyway, when asserts
 do a much better job with infinitely less complexity?
 
 It is possible to compile Oryol with exceptions enabled (this is necessary for
