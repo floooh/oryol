@@ -32,11 +32,12 @@ An Oryol executable shouldn't contain any dead code, and everything should be li
 into a single executable and no DLLs (except the absolutely required system DLLs). 
 
 Oryol features are implemented in code modules, which compile to static link libraries.
-Module dependencies are defined in the build system files per module and resolved
-to a list of linked libraries at link time. 
 
 There's a clear module hierarchy (e.g. every module will depend on the Core module, 
 but the Core module must never depend on another higher-level module). 
+
+In the end, an Oryol app should be a self-contained executable, with all dependencies 
+statically linked in and only minimal dependencies into the underlying operating system.
 
 I think a minimal, portable game engine should at least provide the following 
 low-level services:
