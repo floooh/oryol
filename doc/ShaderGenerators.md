@@ -1,8 +1,8 @@
 ## Shader Generators
 
-Generate C++ code with embedded GLSL shaders from annotated shader source snippets through a python generator script.
+**NOTE:** NOTE the syntax details in here are obsolete 
 
-**NOTE:** this is work-in-progress, and currently the focus is on simple OpenGL ES GLSL (however later hopefully special features of higher GLSL versions will be supported by the code generators).
+Generate C++ code with embedded GLSL shaders from annotated shader source snippets through a python generator script.
 
 ### Problems:
 
