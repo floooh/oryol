@@ -85,8 +85,8 @@ itself a complex beast.
 Managing dozens of build systems alone with cmake is not very comfortable, so (inspired by
 emscripten's emcc frontend python script) a python script 'oryol' exists, which
 calls cmake and over time had more comfort-commands added (like automatically 
-setting up the Android and emscripten SDKs, deploying a target to an mobile devices,
-or opening the IDE for a build configuration).
+setting up the Android and emscripten SDKs, deploying to mobile devices, asset
+export and serving, or opening an IDE and load a build configuration project).
 
 Oryol CMakeLists.txt files use a very simplified custom syntax to define
 the type of target (module, app or extlib), their dependencies and source files.
