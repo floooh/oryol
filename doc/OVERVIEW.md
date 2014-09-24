@@ -77,23 +77,23 @@ into the executable, or generate assets on the fly.
 A multiplatform build system is a complex beast. It should be able to 
 support the native compilers of a host platform (for instance Visual Studio
 on Windows, instead of mingw/gcc), it must support cross-compiling and it
-should support IDEs. I already had experience with cmake which fits these
-requirements, even though it is itself a complex beast.
+should support IDEs. Oryol uses cmake which fits these
+requirements and which I already had experience with, even though cmake 
+itself a complex beast.
 
-Managing dozens of build systems alone is not very comfortable, so (inspired by
-emscripten's emcc python script) a frontend python script 'oryol' exists, which
-calls cmake and over time a lot of comfort features where added (like automatically 
+Managing dozens of build systems alone with cmake is not very comfortable, so (inspired by
+emscripten's emcc frontend python script) a python script 'oryol' exists, which
+calls cmake and over time had more comfort-commands added (like automatically 
 setting up the Android and emscripten SDKs, deploying a target to an mobile devices,
 or opening the IDE for a build configuration).
 
-CMakeLists.txt files use a very simplified custom syntax to define
-the type of target (module, app or extlib), the source code directory (with
-the ability to filter sources by target platform).
+Oryol CMakeLists.txt files use a very simplified custom syntax to define
+the type of target (module, app or extlib), their dependencies and source files.
 
 ### Modules, ExtLibs and Apps
 
-An Oryol Module is a group of related source code under a directory and compiled
-into a static link library. Modules define dependencies to other modules and ExtLibs,
+An Oryol Module is a group of related sources and headers under one directory, compiled
+into a static link library. Modules have dependencies to other modules and ExtLibs,
 which are then automatically resolved when linking Apps.
 
 An ExtLib is a special lowlevel type of module for 3rd party libs (like libcurl, GLFW, glm, ...).
