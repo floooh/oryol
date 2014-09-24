@@ -31,7 +31,7 @@ The question is: how small can a game engine be while still being useful and ext
 An Oryol executable shouldn't contain any dead code, and everything should be linked statically
 into a single executable and no DLLs (except the absolutely required system DLLs). 
 
-Oryols features are implemented in code modules, which compile to static link libraries.
+Oryol features are implemented in code modules, which compile to static link libraries.
 Module dependencies are defined in the build system files per module and resolved
 to a list of linked libraries at link time. 
 
