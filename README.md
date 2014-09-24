@@ -15,6 +15,7 @@ http://floooh.github.io/oryol/
 ## _Read:_ ##
 
 * [Design Manifesto](doc/DESIGN-MANIFESTO.md)
+* [10,000ft View](doc/OVERVIEW.md)
 * [Core Module](code/Modules/Core/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
