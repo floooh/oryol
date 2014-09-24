@@ -142,7 +142,7 @@ exception free.
 
 I still think that the std containers are useless. First they communicate failure
 with exceptions. I know that something went wrong, but only very little 
-what went wrong since I'm not getting a callstack from where the exception thrown. 
+what went wrong since I'm not getting a callstack from where the exception was thrown. 
 I think that the std container classes are plagued by over-engineering and
 the need for backward compatibility. Some "features" are plain dangerous. 
 Why does vector::operator[] not do a bounds check but happily overwrites 
