@@ -79,7 +79,7 @@ should support IDEs. Oryol uses cmake which fits these
 requirements and which I already had experience with, even though cmake 
 itself a complex beast.
 
-Managing dozens of build systems alone with cmake is not very comfortable, so (inspired by
+Managing dozens of build configurations alone with cmake is not very comfortable, so (inspired by
 emscripten's emcc frontend python script) a python script 'oryol' exists, which
 calls cmake and over time had more comfort-commands added (like automatically 
 setting up the Android and emscripten SDKs, deploying to mobile devices, asset
