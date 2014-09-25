@@ -20,7 +20,7 @@ TEST(HTTPFileSystemTest) {
     IO::Setup(ioSetup);
     
     // asynchronously load the index.html file
-    Ptr<IOProtocol::Get> req = IO::LoadFile("http://www.flohofwoe.net/index.html");
+    Ptr<IOProtocol::Request> req = IO::LoadFile("http://www.flohofwoe.net/index.html");
     
     // trigger the runloop until the request has been handled
     while (!req->Handled()) {

@@ -22,7 +22,7 @@ TEST(DDSLoadTest) {
     IO::Setup(ioSetup);
 
     // DXT1
-    Ptr<IOProtocol::Get> req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
+    Ptr<IOProtocol::Request> req = IO::LoadFile("http://floooh.github.com/oryol/lok_dxt1.dds");
     while (!req->Handled()) {
         Core::PreRunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
