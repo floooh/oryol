@@ -28,9 +28,6 @@ The question is: how small can a game engine be while still being useful and ext
 
 'Small' means 'little complexity', 'few lines of code', 'small client executable size'.
 
-An Oryol executable shouldn't contain any dead code, and everything should be linked statically
-into a single executable and no DLLs (except the absolutely required system DLLs). 
-
 Oryol features are implemented in code modules, which compile to static link libraries.
 
 There's a clear module hierarchy (e.g. every module will depend on the Core module, 
