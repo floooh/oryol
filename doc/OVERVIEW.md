@@ -129,7 +129,7 @@ hardly an exception, but a really expensive status code.
 For the 'crash and dump as much information as possible', exceptions are surprisingly useless.
 What I need is a callstack from the location where the exception was thrown,
 and some local information of what went wrong and where, like, for instance
-a print-out of the failed condition, a filename and a line count. On GCC one 
+a print-out of the failed condition, a filename and a line number. On GCC one 
 can hijack __cxa_throw and generate a stack trace there, but why implement
 such hacks on top of an already complex system which is useless anyway, when asserts
 do a much better job with infinitely less complexity?
