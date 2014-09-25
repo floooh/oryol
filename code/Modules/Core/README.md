@@ -257,9 +257,7 @@ Core::PreRunLoop()->Add([] {
 
 In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per second.
 
-> NOTE: there's currently no control over the order of how RunLoop callbacks are executed,
-> and it is not defined whether the callback is called before or after the App's
-> per-frame callback. These details will very likely change in the future.
+> NOTE: there's currently no control over the order of how RunLoop callbacks are executed in relation to each other.
 
 
 ### Things you should NOT use
