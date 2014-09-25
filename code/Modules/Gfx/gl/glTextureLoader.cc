@@ -184,9 +184,6 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
                                              0,
                                              ctx.image_size(faceIndex, mipIndex),
                                              ctx.image_data(faceIndex, mipIndex));
-                    Log::Info("Called glCompressedTexImage2D(tgt=%#04x, mip=%d, fmt=%#04x, w=%d, h=%d, ...)\n", 
-                        ctx.image_target(faceIndex), mipIndex, ctx.image_internal_format(),
-                        ctx.image_width(faceIndex, mipIndex), ctx.image_height(faceIndex, mipIndex));
                     ORYOL_GL_CHECK_ERROR();
                 }
                 else {
