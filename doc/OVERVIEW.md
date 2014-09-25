@@ -150,7 +150,7 @@ wonderful opportunities to shoot oneself into the foot.
 
 Oryol has its own containers (after all, 3d engines and games need non-standard
 containers anyway, like ring buffers or trees), but these are mostly compatible 
-with <algorithm>.
+with the rest of std.
 
 I think that the behaviour of dynamic_cast is broken (returning a null-pointer
 on a failed cast instead of terminating the app, there should be a '.isa' to
