@@ -15,6 +15,16 @@ osxURLLoader::doWork() {
     while (!this->requestQueue.Empty()) {
         Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
         this->doOneRequest(req);
+        
+        // transfer result to embedded IoRequest and set to handled
+        auto ioReq = req->GetIoRequest();
+        if (ioReq) {
+            auto httpResponse = req->GetResponse();
+            ioReq->SetStatus(httpResponse->GetStatus());
+            ioReq->SetStream(httpResponse->GetBody());
+            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+            ioReq->SetHandled();
+        }
         req->SetHandled();
     }
 }
