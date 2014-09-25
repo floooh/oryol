@@ -62,7 +62,16 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     response->SetBody(responseBody);
 
     // set the response on the request, mark the request as handled
+    // also fill the embedded IORequest object
     req->SetResponse(response);
+    auto ioReq = req->GetIoRequest();
+    if (ioReq) {
+        auto httpResponse = req->GetResponse();
+        ioReq->SetStatus(httpResponse->GetStatus());
+        ioReq->SetStream(httpResponse->GetBody());
+        ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+        ioReq->SetHandled();
+    }
     req->SetHandled();
 }
 
@@ -81,6 +90,12 @@ emscURLLoader::onFailed(void* userData) {
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
     response->SetStatus(IOStatus::NotFound);
     req->SetResponse(response);
+    auto ioReq = req->GetIoRequest();
+    if (ioReq) {
+        auto httpResponse = req->GetResponse();
+        ioReq->SetStatus(httpResponse->GetStatus());
+        ioReq->SetHandled();
+    }
     req->SetHandled();
 }
 

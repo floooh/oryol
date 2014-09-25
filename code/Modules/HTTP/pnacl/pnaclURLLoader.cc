@@ -130,6 +130,12 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
         // HTTP error, dump a warning, and cleanup
         Log::Warn("pnaclURLLoader::cbRequestComplete: GET '%s' returned with '%d'\n", 
             req->httpRequest->GetURL().AsCStr(), httpStatus);
+        auto ioReq = req->httpRequest->GetIoRequest();
+        if (ioReq) {
+            auto httpResponse = req->httpRequest->GetResponse();
+            ioReq->SetStatus(httpResponse->GetStatus());
+            ioReq->SetHandled();
+        }                
         req->httpRequest->SetHandled();
         req->release();
     }
@@ -143,6 +149,14 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     {
         // all data received
         req->httpRequest->GetResponse()->GetBody()->Close();
+        auto ioReq = req->httpRequest->GetIoRequest();
+        if (ioReq) {
+            auto httpResponse = req->httpRequest->GetResponse();
+            ioReq->SetStatus(httpResponse->GetStatus());
+            ioReq->SetStream(httpResponse->GetBody());
+            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+            ioReq->SetHandled();
+        }        
         req->httpRequest->SetHandled();
         req->release();
         return;
@@ -158,6 +172,12 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
         // an error occured
         Log::Warn("pnaclURLLoader::cbOnRead: Error while reading body data.\n");
         req->httpRequest->GetResponse()->SetStatus(IOStatus::DownloadError);
+        auto ioReq = req->httpRequest->GetIoRequest();
+        if (ioReq) {
+            auto httpResponse = req->httpRequest->GetResponse();
+            ioReq->SetStatus(httpResponse->GetStatus());
+            ioReq->SetHandled();
+        }        
         req->httpRequest->SetHandled();
         req->release();
         return;
