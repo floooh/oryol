@@ -67,7 +67,7 @@ with an editor UI. But specifically this is a non-goal for Oryol. Big engines
 like Unreal or Unity will always do this type of integrated environment much better.
 
 One feature I'd like to explore more is the feasability of games which don't have
-traditional asset loading at all. Have very few assets and link them directly 
+traditional asset loading at all. Instead have very few assets and link them directly 
 into the executable, or generate assets on the fly.
 
 ### Build System
