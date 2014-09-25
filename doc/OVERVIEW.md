@@ -64,7 +64,7 @@ instance:
 
 Above this there _could_ be a entity-component system which integrates all of this
 with an editor UI. But specifically this is a non-goal for Oryol. Big engines
-like Unreal or Unity will always this type of integrated environment much better.
+like Unreal or Unity will always do this type of integrated environment much better.
 
 One feature I'd like to explore more is the feasability of games which don't have
 traditional asset loading at all. Have very few assets and link them directly 
