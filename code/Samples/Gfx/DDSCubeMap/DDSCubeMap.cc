@@ -81,10 +81,10 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
     if (Gfx::Supports(GfxFeature::TextureCompressionPVRTC)) {
-        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", texBluePrint));
+        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", 0, texBluePrint));
     }
     else {
-        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", texBluePrint));
+        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", 0, texBluePrint));
     }
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;

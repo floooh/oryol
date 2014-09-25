@@ -107,22 +107,27 @@ DDSTextureLoadingApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
-    this->texId[0]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_dxt1.dds", texBluePrint));
-    this->texId[1]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_dxt3.dds", texBluePrint));
-    this->texId[2]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_dxt5.dds", texBluePrint));
-    this->texId[3]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_bpp2.pvr", texBluePrint));
-    this->texId[4]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_bpp4.pvr", texBluePrint));
-    this->texId[5]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_etc2.ktx", texBluePrint));
-    this->texId[6]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_rgba8.dds", texBluePrint));
-    this->texId[7]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_bgra8.dds", texBluePrint));
-    this->texId[8]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_rgb8.dds", texBluePrint));
-    this->texId[9]  = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_bgr8.dds", texBluePrint));
-    this->texId[10] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_argb4.dds", texBluePrint));
-    this->texId[11] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_abgr4.dds", texBluePrint));
-    this->texId[12] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_argb1555.dds", texBluePrint));
-    this->texId[13] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_abgr1555.dds", texBluePrint));
-    this->texId[14] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_rgb565.dds", texBluePrint));
-    this->texId[15] = Gfx::CreateResource(TextureSetup::FromFile("tex:lok_bgr565.dds", texBluePrint));
+    static const std::array<const char*, NumTextures> paths = { {
+        "tex:lok_dxt1.dds",
+        "tex:lok_dxt3.dds",
+        "tex:lok_dxt5.dds",
+        "tex:lok_bpp2.pvr",
+        "tex:lok_bpp4.pvr",
+        "tex:lok_etc2.ktx",
+        "tex:lok_rgba8.dds",
+        "tex:lok_bgra8.dds",
+        "tex:lok_rgb8.dds",
+        "tex:lok_bgr8.dds",
+        "tex:lok_argb4.dds",
+        "tex:lok_abgr4.dds",
+        "tex:lok_argb1555.dds",
+        "tex:lok_abgr1555.dds",
+        "tex:lok_rgb565.dds",
+        "tex:lok_bgr565.dds",
+    } };
+    for (int32 i = 0; i < NumTextures; i++) {
+        this->texId[i] = Gfx::CreateResource(TextureSetup::FromFile(paths[i], i, texBluePrint));
+    }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;

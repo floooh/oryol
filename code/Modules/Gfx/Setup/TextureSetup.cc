@@ -49,9 +49,10 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromFile(const class Locator& loc, TextureSetup bluePrint) {
+TextureSetup::FromFile(const class Locator& loc, int32 ioLane, TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
     setup.shouldSetupFromFile = true;
+    setup.IOLane = ioLane;
     setup.Locator = loc;
     return setup;
 }

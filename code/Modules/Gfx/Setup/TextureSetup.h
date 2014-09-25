@@ -16,7 +16,7 @@ namespace Oryol {
 class TextureSetup {
 public:
     /// setup a texture from an image file URL
-    static TextureSetup FromFile(const Locator& loc, TextureSetup blueprint=TextureSetup());
+    static TextureSetup FromFile(const Locator& loc, int32 ioLane=0, TextureSetup blueprint=TextureSetup());
     /// setup a texture from a image file data in stream
     static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data
