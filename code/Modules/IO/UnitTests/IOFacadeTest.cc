@@ -12,17 +12,16 @@
 
 using namespace Oryol;
 
-std::atomic<int32> numGetHandled{0};
-std::atomic<int32> numGetRangeHandled{0};
+std::atomic<int32> numRequestsHandled{0};
 
 class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
     OryolClassCreator(TestFileSystem);
 public:
     /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Ptr<IOProtocol::Get>& msg) {
-        Log::Info("TestFileSystem::onGet() called!\n");
-        numGetHandled++;
+    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) {
+        Log::Info("TestFileSystem::onRequest() called!\n");
+        numRequestsHandled++;
         
         // create a stream object, and just write the URL from the msg to it
         Ptr<MemoryStream> stream = MemoryStream::Create();
@@ -35,12 +34,6 @@ public:
         msg->SetStatus(IOStatus::OK);
         msg->SetHandled();
     };
-    /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
-        Log::Info("TestFileSystem::onGetRange() called!\n");
-        numGetRangeHandled++;
-        msg->SetHandled();
-    }
 };
 OryolClassImpl(TestFileSystem);
 
@@ -58,14 +51,13 @@ TEST(IOFacadeTest) {
     CHECK(url.IsValid());
     
     // asynchronously 'load' a file
-    Ptr<IOProtocol::Get> msg = IO::LoadFile(url);
+    Ptr<IOProtocol::Request> msg = IO::LoadFile(url);
     
     // trigger the runloop until our message is handled
     while (!msg->Handled()) {
         Core::PreRunLoop()->Run();
     }
-    CHECK(numGetHandled == 1);
-    CHECK(numGetRangeHandled == 0);
+    CHECK(numRequestsHandled == 1);
     
     // check the msg result
     CHECK(msg->GetStream().isValid());
