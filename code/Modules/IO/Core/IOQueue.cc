@@ -56,7 +56,7 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     o_assert(onSuccess);
 
     // create IO request and push into IO facade
-    Ptr<IOProtocol::Get> ioReq = IOProtocol::Get::Create();
+    Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
     ioReq->SetURL(url);
     IO::Put(ioReq);
     

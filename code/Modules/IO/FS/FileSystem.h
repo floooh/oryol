@@ -23,10 +23,8 @@ public:
     
     /// per-frame update
     virtual void DoWork();
-    /// called when the IOProtocol::Get message is received
-    virtual void onGet(const Ptr<IOProtocol::Get>& msg);
-    /// called when the IOProtocol::GetRange message is received
-    virtual void onGetRange(const Ptr<IOProtocol::GetRange>& msg);
+    /// called when the IOProtocol::Request message is received
+    virtual void onRequest(const Ptr<IOProtocol::Request>& msg);
 };
     
 } // namespace Oryol

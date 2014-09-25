@@ -13,19 +13,11 @@
         <Attr name="CacheWriteEnabled" type="bool" />
         <Attr name="Status" type="IOStatus::Code" def="IOStatus::InvalidIOStatus" dir="out" />
         <Attr name="ErrorDesc" type="String" dir="out" />
-    </Message>
-    
-    <!-- fetch complete file -->
-    <Message name="Get" parent="Request" serialize="false">
         <Attr name="Stream" type="Ptr&lt;MemoryStream&gt;" dir="out" />
-    </Message>
-
-    <!-- fetch a file range -->
-    <Message name="GetRange" parent="Get" serialize="false">
         <Attr name="StartOffset" type="int32" def="0" />
         <Attr name="EndOffset" type="int32" def="0" />
     </Message>
-
+    
     <!-- notify message base class, these are forwarded to all IO lanes -->
     <Message name="notifyLanes" serialize="false"/>
 

@@ -33,8 +33,7 @@ ioLane::onThreadEnter() {
     // to this object's callback methods
     Ptr<Dispatcher<IOProtocol>> disp = Dispatcher<IOProtocol>::Create();
     using namespace std::placeholders;
-    disp->Subscribe<IOProtocol::Get>(std::bind(&ioLane::onGet, this, _1));
-    disp->Subscribe<IOProtocol::GetRange>(std::bind(&ioLane::onGetRange, this, _1));
+    disp->Subscribe<IOProtocol::Request>(std::bind(&ioLane::onRequest, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemAdded>(std::bind(&ioLane::onNotifyFileSystemAdded, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemReplaced>(std::bind(&ioLane::onNotifyFileSystemReplaced, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemRemoved>(std::bind(&ioLane::onNotifyFileSystemRemoved, this, _1));
@@ -75,7 +74,7 @@ ioLane::fileSystemForURL(const URL& url) {
 
 //------------------------------------------------------------------------------
 void
-ioLane::onGet(const Ptr<IOProtocol::Get>& msg) {
+ioLane::onRequest(const Ptr<IOProtocol::Request>& msg) {
     if (msg->Cancelled()) {
         // message has been cancelled, don't waste time with it
         msg->SetStatus(IOStatus::Cancelled);
@@ -84,22 +83,8 @@ ioLane::onGet(const Ptr<IOProtocol::Get>& msg) {
     else {
         Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
         if (fs) {
-            fs->onGet(msg);
+            fs->onRequest(msg);
         }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-ioLane::onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
-    if (msg->Cancelled()) {
-        // message has been cancelled, don't waste time with it
-        msg->SetStatus(IOStatus::Cancelled);
-        msg->SetHandled();
-    }
-    Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
-    if (fs) {
-        fs->onGetRange(msg);
     }
 }
 

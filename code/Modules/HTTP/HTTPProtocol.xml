@@ -6,6 +6,7 @@
     <Header path="Core/String/String.h"/>
     <Header path="IO/Stream/Stream.h"/>
     <Header path="IO/Core/IOStatus.h"/>
+    <Header path="IO/IOProtocol.h"/>
 
     <!-- a HTTPResponse -->
     <Message name="HTTPResponse" serialize="false">
@@ -22,6 +23,7 @@
         <Attr name="URL" type="URL" />
         <Attr name="RequestHeaders" type="Map&lt;String,String&gt;" />
         <Attr name="Body" type="Ptr&lt;Stream&gt;" />
+        <Attr name="IoRequest" type="Ptr&lt;IOProtocol::Request&gt;" />
         
         <!-- output -->
         <Attr name="Response" type="Ptr&lt;HTTPProtocol::HTTPResponse&gt;" dir="out" />

@@ -49,7 +49,7 @@ private:
     bool isStarted;
     int32 runLoopId;
     struct item {
-        Ptr<IOProtocol::Get> ioRequest;
+        Ptr<IOProtocol::Request> ioRequest;
         SuccessFunc successFunc;
         FailFunc failFunc;
     };

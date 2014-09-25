@@ -21,16 +21,9 @@ FileSystem::~FileSystem() {
 
 //------------------------------------------------------------------------------
 void
-FileSystem::onGet(const Ptr<IOProtocol::Get>& msg) {
+FileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
     // implement in subclass!
-    Log::Warn("FileSystem::onGet(): message not handled by FileSystem!\n");
-}
-
-//------------------------------------------------------------------------------
-void
-FileSystem::onGetRange(const Ptr<IOProtocol::GetRange>& msg) {
-    // implement in subclass!
-    Log::Warn("FileSystem::onGetRange(): message not handled by FileSystem!\n");
+    Log::Warn("FileSystem::onRequest(): message not handled by FileSystem!\n");
 }
 
 //------------------------------------------------------------------------------

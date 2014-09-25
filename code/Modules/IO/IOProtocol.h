@@ -22,8 +22,6 @@ public:
     public:
         enum {
             RequestId = Protocol::MessageId::NumMessageIds, 
-            GetId,
-            GetRangeId,
             notifyLanesId,
             notifyFileSystemRemovedId,
             notifyFileSystemReplacedId,
@@ -33,8 +31,6 @@ public:
         static const char* ToString(MessageIdType c) {
             switch (c) {
                 case RequestId: return "RequestId";
-                case GetId: return "GetId";
-                case GetRangeId: return "GetRangeId";
                 case notifyLanesId: return "notifyLanesId";
                 case notifyFileSystemRemovedId: return "notifyFileSystemRemovedId";
                 case notifyFileSystemReplacedId: return "notifyFileSystemReplacedId";
@@ -44,8 +40,6 @@ public:
         };
         static MessageIdType FromString(const char* str) {
             if (std::strcmp("RequestId", str) == 0) return RequestId;
-            if (std::strcmp("GetId", str) == 0) return GetId;
-            if (std::strcmp("GetRangeId", str) == 0) return GetRangeId;
             if (std::strcmp("notifyLanesId", str) == 0) return notifyLanesId;
             if (std::strcmp("notifyFileSystemRemovedId", str) == 0) return notifyFileSystemRemovedId;
             if (std::strcmp("notifyFileSystemReplacedId", str) == 0) return notifyFileSystemReplacedId;
@@ -68,6 +62,8 @@ public:
             this->cachereadenabled = false;
             this->cachewriteenabled = false;
             this->status = IOStatus::InvalidIOStatus;
+            this->startoffset = 0;
+            this->endoffset = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -115,56 +111,11 @@ public:
         const String& GetErrorDesc() const {
             return this->errordesc;
         };
-private:
-        URL url;
-        int32 lane;
-        bool cachereadenabled;
-        bool cachewriteenabled;
-        IOStatus::Code status;
-        String errordesc;
-    };
-    class Get : public Request {
-        OryolClassPoolAllocDecl(Get);
-    public:
-        Get() {
-            this->msgId = MessageId::GetId;
-        };
-        static Ptr<Message> FactoryCreate() {
-            return Create();
-        };
-        static MessageIdType ClassMessageId() {
-            return MessageId::GetId;
-        };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
-            if (protId == 'IOPT') return true;
-            else return Request::IsMemberOf(protId);
-        };
         void SetStream(const Ptr<MemoryStream>& val) {
             this->stream = val;
         };
         const Ptr<MemoryStream>& GetStream() const {
             return this->stream;
-        };
-private:
-        Ptr<MemoryStream> stream;
-    };
-    class GetRange : public Get {
-        OryolClassPoolAllocDecl(GetRange);
-    public:
-        GetRange() {
-            this->msgId = MessageId::GetRangeId;
-            this->startoffset = 0;
-            this->endoffset = 0;
-        };
-        static Ptr<Message> FactoryCreate() {
-            return Create();
-        };
-        static MessageIdType ClassMessageId() {
-            return MessageId::GetRangeId;
-        };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
-            if (protId == 'IOPT') return true;
-            else return Get::IsMemberOf(protId);
         };
         void SetStartOffset(int32 val) {
             this->startoffset = val;
@@ -179,6 +130,13 @@ private:
             return this->endoffset;
         };
 private:
+        URL url;
+        int32 lane;
+        bool cachereadenabled;
+        bool cachewriteenabled;
+        IOStatus::Code status;
+        String errordesc;
+        Ptr<MemoryStream> stream;
         int32 startoffset;
         int32 endoffset;
     };

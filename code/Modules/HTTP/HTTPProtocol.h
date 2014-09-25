@@ -13,6 +13,7 @@
 #include "Core/String/String.h"
 #include "IO/Stream/Stream.h"
 #include "IO/Core/IOStatus.h"
+#include "IO/IOProtocol.h"
 
 namespace Oryol {
 class HTTPProtocol {
@@ -134,6 +135,12 @@ private:
         const Ptr<Stream>& GetBody() const {
             return this->body;
         };
+        void SetIoRequest(const Ptr<IOProtocol::Request>& val) {
+            this->iorequest = val;
+        };
+        const Ptr<IOProtocol::Request>& GetIoRequest() const {
+            return this->iorequest;
+        };
         void SetResponse(const Ptr<HTTPProtocol::HTTPResponse>& val) {
             this->response = val;
         };
@@ -145,6 +152,7 @@ private:
         URL url;
         Map<String,String> requestheaders;
         Ptr<Stream> body;
+        Ptr<IOProtocol::Request> iorequest;
         Ptr<HTTPProtocol::HTTPResponse> response;
     };
 };

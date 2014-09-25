@@ -33,10 +33,8 @@ private:
     virtual void onThreadLeave() override;
     /// called after messages are processed, and on each tick (if a TickDuration is set)
     virtual void onTick();
-    /// callback for IOProtocol::Get
-    void onGet(const Ptr<IOProtocol::Get>& msg);
-    /// callback for IOProtocol::GetRange
-    void onGetRange(const Ptr<IOProtocol::GetRange>& msg);
+    /// callback for IOProtocol::Request
+    void onRequest(const Ptr<IOProtocol::Request>& msg);
     /// callback for IOProtocol::notifyFileSystemAdded
     void onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& msg);
     /// callback for IOProtocol::notifyFileSystemReplaced

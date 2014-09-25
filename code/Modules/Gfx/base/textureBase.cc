@@ -22,7 +22,7 @@ textureBase::clear() {
 
 //------------------------------------------------------------------------------
 void
-textureBase::setIORequest(const Ptr<IOProtocol::Get>& req) {
+textureBase::setIORequest(const Ptr<IOProtocol::Request>& req) {
     this->ioRequest = req;
 }
 
