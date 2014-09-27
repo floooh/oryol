@@ -42,7 +42,7 @@ ThreadLocalData::PointerTable() {
 //------------------------------------------------------------------------------
 int32
 ThreadLocalData::Alloc() {
-    o_assert_dbg(slot < (MaxNumSlots - 1));
+    o_assert_dbg(curSlot < (MaxNumSlots - 1));
     return curSlot++;
 }
     
