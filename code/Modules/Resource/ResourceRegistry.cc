@@ -152,7 +152,9 @@ ResourceRegistry::ReleaseResource(const Id& id) {
             }
             
             // make sure nothing broke
-            o_assert_dbg(this->checkIntegrity());
+            #if ORYOL_DEBUG
+            o_assert(this->checkIntegrity());
+            #endif
         }
         return true;
     }
