@@ -9,16 +9,31 @@ namespace Oryol {
 namespace _priv {
     
 //------------------------------------------------------------------------------
-emscInputMgr::emscInputMgr() {
+emscInputMgr::emscInputMgr() :
+runLoopId(RunLoop::InvalidId) {
     this->setupKeyTable();
+}
+
+//------------------------------------------------------------------------------
+emscInputMgr::~emscInputMgr() {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+void
+emscInputMgr::setup(const InputSetup& setup) {
+    inputMgrBase::setup(setup);
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
-emscInputMgr::~emscInputMgr() {
+void
+emscInputMgr::discard() {
     this->discardCallbacks();
     Core::PostRunLoop()->Remove(this->runLoopId);
+    this->runLoopId = RunLoop::InvalidId;
+    inputMgrBase::discard();    
 }
 
 //------------------------------------------------------------------------------

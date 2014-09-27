@@ -9,7 +9,24 @@
 #include "Core/Macros.h"
 
 #if defined(__OBJC__)
+#import <UIKit/UIKit.h>
+#import <GLKit/GLKit.h>
+
 static_assert(sizeof(void*) == sizeof(id), "sizeof(void*) doesn't match sizeof(id)!");
+
+// a delegate for touch events, and our own GLKView which delegates touch events
+@protocol touchDelegate
+- (void) touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void) touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event;
+- (void) touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event;
+@end
+
+@interface oryolGLKView: GLKView
+@property (nonatomic, retain) id<touchDelegate> touchDelegate;
+- (void) setTouchDelegate:(id<touchDelegate>)dlg;
+@end
+
 #else
 typedef void *id;
 #endif

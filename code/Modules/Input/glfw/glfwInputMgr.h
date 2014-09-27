@@ -19,6 +19,11 @@ public:
     /// destructor
     ~glfwInputMgr();
     
+    /// setup the GLFW input manager
+    void setup(const InputSetup& setup);
+    /// discard the GLFW input manager
+    void discard();
+    
     /// set mouse cursor mode
     void setCursorMode(CursorMode::Code mode);
     

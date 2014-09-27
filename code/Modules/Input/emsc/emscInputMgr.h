@@ -19,6 +19,11 @@ public:
     /// destructor
     ~emscInputMgr();
 
+    /// setup the input manager
+    void setup(const InputSetup& setup);
+    /// discard the input manager
+    void discard();
+
     /// set mouse cursor mode
     void setCursorMode(CursorMode::Code mode);
 

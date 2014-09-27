@@ -10,15 +10,17 @@ struct Input::_state* Input::state = nullptr;
     
 //------------------------------------------------------------------------------
 void
-Input::Setup() {
+Input::Setup(const InputSetup& setup) {
     o_assert(!IsValid());
     state = new _state();
+    state->inputManager.setup(setup);
 }
 
 //------------------------------------------------------------------------------
 void
 Input::Discard() {
     o_assert(IsValid());
+    state->inputManager.discard();
     delete state;
     state = nullptr;
 }

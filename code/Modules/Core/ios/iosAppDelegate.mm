@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
 //  iosAppDelegate.mm
 //------------------------------------------------------------------------------
-#import "iosAppDelegate.h"
+#include "iosAppDelegate.h"
 #include "iosBridge.h"
-#include <GLKit/GLKit.h>
+#import <GLKit/GLKit.h>
 
 using namespace Oryol;
 using namespace Oryol::_priv;

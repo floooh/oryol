@@ -29,6 +29,12 @@ namespace Oryol {
 namespace _priv {
 class inputMgr : public androidInputMgr { };
 } }
+#elif ORYOL_IOS
+#include "Input/ios/iosInputMgr.h"
+namespace Oryol {
+namespace _priv {
+class inputMgr : public iosInputMgr { };
+} }
 #else
 #include "Input/base/inputMgrBase.h"
 namespace Oryol {

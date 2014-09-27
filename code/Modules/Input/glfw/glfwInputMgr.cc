@@ -16,9 +16,23 @@ glfwInputMgr* glfwInputMgr::self = nullptr;
 static Key::Code keyTable[GLFW_KEY_LAST + 1];
 
 //------------------------------------------------------------------------------
-glfwInputMgr::glfwInputMgr() {
+glfwInputMgr::glfwInputMgr() :
+runLoopId(RunLoop::InvalidId) {
     o_assert(nullptr == self);
     self = this;
+}
+
+//------------------------------------------------------------------------------
+glfwInputMgr::~glfwInputMgr() {
+    o_assert(nullptr != self);
+    self = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void
+glfwInputMgr::setup(const InputSetup& setup) {
+    
+    inputMgrBase::setup(setup);
     
     // first check that the Gfx module has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
@@ -29,25 +43,27 @@ glfwInputMgr::glfwInputMgr() {
     this->setupKeyTable();
     this->setupCallbacks(glfwWindow);
     this->setCursorMode(CursorMode::Normal);
-
+    
     // attach our reset callback to the global runloop
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    
 }
 
 //------------------------------------------------------------------------------
-glfwInputMgr::~glfwInputMgr() {
-    o_assert(nullptr != self);
-
+void
+glfwInputMgr::discard() {
+    
     // remove glfw input callbacks
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
-    o_assert(nullptr != glfwWindow);    
+    o_assert(nullptr != glfwWindow);
     this->discardCallbacks(glfwWindow);
-
+    
     // detach our reset callback from runloop
     Core::PostRunLoop()->Remove(this->runLoopId);
+    this->runLoopId = RunLoop::InvalidId;
     
-    self = nullptr;
+    inputMgrBase::discard();
 }
+
 
 //------------------------------------------------------------------------------
 void

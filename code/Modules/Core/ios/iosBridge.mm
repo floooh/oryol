@@ -6,9 +6,51 @@
 #include "Core/Macros.h"
 #include "Core/Log.h"
 #include "Core/App.h"
-#import <UIKit/UIKit.h>
-#import <GLKit/GLKit.h>
 #import "iosAppDelegate.h"
+
+@implementation oryolGLKView
+@synthesize touchDelegate;
+
+- (void) setTouchDelegate:(id<touchDelegate>)dlg {
+    touchDelegate = dlg;
+}
+
+- (void) touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
+    if (nil != touchDelegate) {
+        [touchDelegate touchesBegan:touches withEvent:event];
+    }
+    else {
+        [super touchesBegan:touches withEvent:event];
+    }
+}
+
+- (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event {
+    if (nil != touchDelegate) {
+        [touchDelegate touchesMoved:touches withEvent:event];
+    }
+    else {
+        [super touchesMoved:touches withEvent:event];
+    }
+}
+
+- (void) touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
+    if (nil != touchDelegate) {
+        [touchDelegate touchesEnded:touches withEvent:event];
+    }
+    else {
+        [super touchesEnded:touches withEvent:event];
+    }
+}
+
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (nil != touchDelegate) {
+        [touchDelegate touchesCancelled:touches withEvent:event];
+    }
+    else {
+        [super touchesCancelled:touches withEvent:event];
+    }
+}
+@end
 
 namespace Oryol {
 namespace _priv {
@@ -91,7 +133,7 @@ iosBridge::onDidFinishLaunching() {
     // create GL context and GLKView
     // NOTE: the drawable properties will be overridden later in iosDisplayMgr!
     this->eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-    GLKView* _glkView = [[GLKView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    oryolGLKView* _glkView = [[oryolGLKView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     _glkView.drawableColorFormat   = GLKViewDrawableColorFormatRGBA8888;
     _glkView.drawableDepthFormat   = GLKViewDrawableDepthFormat24;
     _glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;

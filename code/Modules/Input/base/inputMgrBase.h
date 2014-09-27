@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief base class for platform-specific input managers
 */
+#include "Input/Core/InputSetup.h"
 #include "Input/Core/Keyboard.h"
 #include "Input/Core/Mouse.h"
 #include "Input/Core/Gamepad.h"
@@ -20,6 +21,15 @@ public:
     inputMgrBase();
     /// destructor
     ~inputMgrBase();
+    
+    /// setup the input manager
+    void setup(const InputSetup& setup);
+    /// discard the input manager
+    void discard();
+    /// return true if the input manager has been setup
+    bool isValid() const;
+    /// get the input setup object
+    const InputSetup& getInputSetup() const;
 
     /// get keyboard state
     const class Keyboard& Keyboard() const;
@@ -42,6 +52,8 @@ public:
     
 protected:
     static const int32 MaxNumGamepads = 4;
+    bool valid;
+    InputSetup inputSetup;
     class Keyboard keyboard;
     class Mouse mouse;
     class Gamepad gamepads[MaxNumGamepads];
