@@ -29,8 +29,8 @@ public:
     /// touch points
     struct point {
         uintptr identifier = 0;     // unique 'finger identifier'
-        float32 posX = 0.0f;
-        float32 posY = 0.0f;
+        float32 x = 0.0f;
+        float32 y = 0.0f;
         bool isChanged = false;
     } points[MaxNumPoints];
 };

@@ -31,8 +31,8 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
             CGPoint pos = [curTouch locationInView:curTouch.view];
             touch::point& curPoint = touchEvent.points[touchEvent.numTouches++];
             curPoint.identifier = (Oryol::uintptr) curTouch;
-            curPoint.posX = pos.x;
-            curPoint.posY = pos.y;
+            curPoint.x = pos.x;
+            curPoint.y = pos.y;
             curPoint.isChanged = [touches containsObject:curTouch];
         }
     }
@@ -145,6 +145,7 @@ void
 iosInputMgr::onTouchEvent(const Oryol::_priv::touch &touchEvent) {
     o_assert_dbg(this->isValid());
     
+    // FIXME: DEBUG OUTPUT
     const char* type;
     switch (touchEvent.type) {
         case touch::began: type = "began"; break;
@@ -157,10 +158,16 @@ iosInputMgr::onTouchEvent(const Oryol::_priv::touch &touchEvent) {
         Log::Info("  point %d: id=%ld, x=%.2f, y=%.2f, changed=%s\n",
             i,
             touchEvent.points[i].identifier,
-            touchEvent.points[i].posX,
-            touchEvent.points[i].posY,
+            touchEvent.points[i].x,
+            touchEvent.points[i].y,
             touchEvent.points[i].isChanged ? "yes" : "no");
     }
+    
+    // feed event into gestures detectors and check for detected gestures
+    if (gestureState::action == this->tapDetector.detect(touchEvent)) {
+        this->touchpad.Tapped = true;
+        this->touchpad.onPos(0, this->tapDetector.pos());
+    }    
 }
 
 } // namespace _priv
