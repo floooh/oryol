@@ -160,7 +160,7 @@ check for type compatibility), but it's the only sensible way to do downcasts
 as possible. I would be happier if I would not need any RTTI at all (neither standard
 or self-made).
 
-The whole C++ streambuf stuff isn't used (this includes std::cout and std::cin).
+The whole C++ iostream stuff isn't used (this includes std::cout and std::cin).
 The code bloat this introduces is incredible (most importantly in emscripten). 
 
 The rest of the std lib is mostly ok to use, but there's some stuff I'd like
