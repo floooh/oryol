@@ -62,11 +62,6 @@ panDetector::detect(const touch& newEvent) {
         if (this->startEvent.type == touch::invalid) {
             return gestureState::none;
         }
-
-        // for multitouch panning, check if distance between fingers
-        // has changes too much
-        // FIXME!
-        
         
         this->position = newEvent.touchPos(this->startEvent.points[0].identifier);
         if (this->panning) {
