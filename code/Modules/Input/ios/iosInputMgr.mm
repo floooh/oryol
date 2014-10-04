@@ -67,6 +67,8 @@ inputDelegate(nil)
 {
     o_assert(nullptr == iosInputMgrPtr);
     iosInputMgrPtr = this;
+    this->singleTapDetector.numRequiredTaps = 1;
+    this->doubleTapDetector.numRequiredTaps = 2;
 }
 
 //------------------------------------------------------------------------------
@@ -164,10 +166,14 @@ iosInputMgr::onTouchEvent(const Oryol::_priv::touch &touchEvent) {
     }
     
     // feed event into gestures detectors and check for detected gestures
-    if (gestureState::action == this->tapDetector.detect(touchEvent)) {
+    if (gestureState::action == this->singleTapDetector.detect(touchEvent)) {
         this->touchpad.Tapped = true;
-        this->touchpad.onPos(0, this->tapDetector.pos());
-    }    
+        this->touchpad.onPos(0, this->singleTapDetector.pos());
+    }
+    if (gestureState::action == this->doubleTapDetector.detect(touchEvent)) {
+        this->touchpad.DoubleTapped = true;
+        this->touchpad.onPos(0, this->doubleTapDetector.pos());
+    }
 }
 
 } // namespace _priv

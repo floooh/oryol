@@ -38,7 +38,8 @@ private:
     float32 screenHeight;
     id inputDelegate;
     RunLoop::Id runLoopId;
-    class tapDetector tapDetector;
+    class tapDetector singleTapDetector;
+    class tapDetector doubleTapDetector;
 };
 
 } // namespace _priv
