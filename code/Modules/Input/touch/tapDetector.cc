@@ -9,16 +9,11 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-tapDetector::tapDetector() :
-tapCount(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 tapDetector::reset() {
-    this->tapEvent = touch();
-    this->position = glm::vec2(0.0f, 0.0f);
+    if (this->tapEvent.type != touch::invalid) {
+        this->tapEvent = touch();
+    }
     this->tapCount = 0;
 }
 
@@ -34,8 +29,8 @@ tapDetector::withinDistance(const touch& newEvent, const touch& oldEvent, float 
 
     // FIXME: take device DPI into account
 
-    float32 dx = newEvent.points[0].x - oldEvent.points[0].x;
-    float32 dy = newEvent.points[0].y - oldEvent.points[0].y;
+    float32 dx = newEvent.points[0].pos.x - oldEvent.points[0].pos.x;
+    float32 dy = newEvent.points[0].pos.y - oldEvent.points[0].pos.y;
     return (dx * dx + dy * dy) < (maxDist * maxDist);
 }
 
@@ -76,20 +71,13 @@ tapDetector::detect(const touch& newEvent) {
                 this->tapEvent = newEvent;
                 if (this->tapCount == this->numRequiredTaps) {
                     this->reset();
-                    this->position.x = newEvent.points[0].x;
-                    this->position.y = newEvent.points[0].y;
+                    this->position = newEvent.points[0].pos;
                     return gestureState::action;
                 }
             }
         }
     }
     return gestureState::none;
-}
-
-//------------------------------------------------------------------------------
-const glm::vec2&
-tapDetector::pos() const {
-    return this->position;
 }
 
 } // namespace _priv

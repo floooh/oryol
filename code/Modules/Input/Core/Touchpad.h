@@ -24,8 +24,12 @@ public:
     bool DoubleTapped;
     /// pinching gesture underway?
     bool Pinching;
+    /// started panning
+    bool PanningStarted;
     /// panning gesture underway?
     bool Panning;
+    /// ended panning
+    bool PanningEnded;
 
     /// current position (1 for tap/pan, 2 for pinch)
     const glm::vec2& Position(int32 touchIndex) const;

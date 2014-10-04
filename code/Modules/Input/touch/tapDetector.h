@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::tapDetector
-    @brief simple tap-gesture recognizer
+    @brief singletap- and multitap-gesture recognizer
 */
 #include "Input/touch/touch.h"
 #include "Input/touch/gestureState.h"
@@ -22,26 +22,23 @@ public:
     /// max pixel distance between taps
     static const int32 MaxTapDistance = 30;
     
-    /// constructor
-    tapDetector();
+    /// number of required taps
+    int32 numRequiredTaps = 1;
     /// feed new touch event and return detected state (if any)
-    gestureState::Code detect(const touch& touchEvent);
+    gestureState::Code detect(const touch& newEvent);
     /// reset the detector
     void reset();
     /// get current tap position
-    const glm::vec2& pos() const;
-    /// number of required taps
-    int32 numRequiredTaps = 1;
+    glm::vec2 position;
     
 private:
     /// check if 2 touch events are within the tap max distance
     bool withinDistance(const touch& newEvent, const touch& oldEvent, float maxDist) const;
     /// check if 2 touch events are within a timeout
     bool withinTimeout(const touch& newEvent, const touch& oldEvent, int32 timeOutMs) const;
-
+    
     touch tapEvent;
-    glm::vec2 position;
-    int32 tapCount;
+    int32 tapCount = 0;
 };
     
 } // namespace _priv

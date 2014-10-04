@@ -31,8 +31,8 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
             CGPoint pos = [curTouch locationInView:curTouch.view];
             touch::point& curPoint = touchEvent.points[touchEvent.numTouches++];
             curPoint.identifier = (Oryol::uintptr) curTouch;
-            curPoint.x = pos.x;
-            curPoint.y = pos.y;
+            curPoint.pos.x = pos.x;
+            curPoint.pos.y = pos.y;
             curPoint.isChanged = [touches containsObject:curTouch];
         }
     }
@@ -160,19 +160,41 @@ iosInputMgr::onTouchEvent(const Oryol::_priv::touch &touchEvent) {
         Log::Info("  point %d: id=%ld, x=%.2f, y=%.2f, changed=%s\n",
             i,
             touchEvent.points[i].identifier,
-            touchEvent.points[i].x,
-            touchEvent.points[i].y,
+            touchEvent.points[i].pos.x,
+            touchEvent.points[i].pos.y,
             touchEvent.points[i].isChanged ? "yes" : "no");
     }
     
     // feed event into gestures detectors and check for detected gestures
     if (gestureState::action == this->singleTapDetector.detect(touchEvent)) {
         this->touchpad.Tapped = true;
-        this->touchpad.onPos(0, this->singleTapDetector.pos());
+        this->touchpad.onPos(0, this->singleTapDetector.position);
     }
     if (gestureState::action == this->doubleTapDetector.detect(touchEvent)) {
         this->touchpad.DoubleTapped = true;
-        this->touchpad.onPos(0, this->doubleTapDetector.pos());
+        this->touchpad.onPos(0, this->doubleTapDetector.position);
+    }
+    switch (this->panDetector.detect(touchEvent)) {
+        case gestureState::start:
+            this->touchpad.PanningStarted = true;
+            this->touchpad.Panning = true;
+            this->touchpad.onPos(0, this->panDetector.position);
+            this->touchpad.onPos(1, this->panDetector.startPosition);
+            break;
+        case gestureState::move:
+            this->touchpad.Panning = true;
+            this->touchpad.onPosMov(0, this->panDetector.position);
+            this->touchpad.onPos(1, this->panDetector.startPosition);
+            break;
+        case gestureState::end:
+            this->touchpad.PanningEnded = true;
+            this->touchpad.Panning = false;
+            this->touchpad.onPos(0, this->panDetector.position);
+            this->touchpad.onPos(1, this->panDetector.startPosition);
+            break;
+        default:
+            this->touchpad.Panning = false;
+            break;
     }
 }
 

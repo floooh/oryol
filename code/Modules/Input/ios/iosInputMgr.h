@@ -7,6 +7,7 @@
 #include "Input/base/inputMgrBase.h"
 #include "Input/touch/touch.h"
 #include "Input/touch/tapDetector.h"
+#include "Input/touch/panDetector.h"
 #include "Core/ios/iosBridge.h"
 #include "Core/RunLoop.h"
 
@@ -38,8 +39,9 @@ private:
     float32 screenHeight;
     id inputDelegate;
     RunLoop::Id runLoopId;
-    class tapDetector singleTapDetector;
-    class tapDetector doubleTapDetector;
+    tapDetector singleTapDetector;
+    tapDetector doubleTapDetector;
+    class panDetector panDetector;
 };
 
 } // namespace _priv

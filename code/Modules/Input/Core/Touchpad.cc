@@ -13,7 +13,9 @@ Attached(false),
 Tapped(false),
 DoubleTapped(false),
 Pinching(false),
-Panning(false) {
+PanningStarted(false),
+Panning(false),
+PanningEnded(false) {
     // empty
 }
 
@@ -22,8 +24,8 @@ void
 Touchpad::reset() {
     this->Tapped = false;
     this->DoubleTapped = false;
-    this->Pinching = false;
-    this->Panning = false;
+    this->PanningStarted = false;
+    this->PanningEnded = false;
     for (int i = 0; i < MaxNumTouches; i++) {
         this->mov[i] = glm::vec2(0.0f, 0.0f);
     }
