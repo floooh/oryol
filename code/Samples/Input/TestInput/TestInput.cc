@@ -4,9 +4,15 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
+#include "Gfx/Util/RawMeshLoader.h"
+#include "Gfx/Util/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Core/String/StringConverter.h"
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/polar_coordinates.hpp"
+#include "shaders.h"
 
 using namespace Oryol;
 
@@ -18,28 +24,85 @@ public:
     
 private:
     void testMouseButton(const Mouse& mouse, Mouse::Button btn, const char* name) const;
-    void testKey(const Keyboard& keyboard, Key::Code key, const char* name) const;
+    void testKey(const Keyboard& kbd, Key::Code key, const char* name) const;
     void printMouseState(const Mouse& mouse) const;
-    void printKeyboardState(const Keyboard& keyboard) const;
+    void printKeyboardState(const Keyboard& kbd) const;
     void printTouchpadState(const Touchpad& touchpad) const;
     glm::vec4 getClearColor(const Touchpad& touchpad) const;
+    void updateView();
+    void reset();
+    void drawCube() const;
+    void handleKeyboardInput(const Keyboard& kbd);
+    void handleMouseInput(const Mouse& mouse);
+    void handleTouchInput(const Touchpad& touchpad);
     
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
     const glm::vec4 pressedColor{0.0f, 1.0f, 0.0f, 1.0f};
     const glm::vec4 defaultColor{1.0f, 1.0f, 1.0f, 0.5f};
+    float32 minLatitude;
+    float32 maxLatitude;
+    float32 minDist;
+    float32 maxDist;
+    
+    GfxId drawState;
+    glm::vec2 startPolar;
+    glm::vec2 polar;
+    float32 distance = 6.0f;
+    float32 startDistance = 6.0f;
+    glm::vec2 startMousePos;
+    glm::vec3 pointOfInterest;
+    glm::mat4 proj;
+    glm::mat4 view;
+    glm::mat4 invView;
 };
 OryolMain(TestInputApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(800, 400, "Oryol Input Test Sample"));
+    auto gfxSetup = GfxSetup::Window(800, 400, "Oryol Input Test Sample");
+    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Input::Setup();
     
+    // create a 3D cube
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.Layout()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1).Build();
+    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dss.RasterizerState.CullFaceEnabled = true;
+    this->drawState = Gfx::CreateResource(dss);
+
+    // setup transform matrices
+    const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
+    this->distance = 6.0f;
+    this->minLatitude = glm::radians(-85.0f);
+    this->maxLatitude = glm::radians(+85.0f);
+    this->minDist = 1.5f;
+    this->maxDist = 20.0f;
+    
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+void
+TestInputApp::updateView() {
+    // first rotate around global Y axis, then rotate around global X axis (transformed to local space)
+    glm::vec3 eucl = glm::euclidean(this->polar) * distance;
+    this->view = glm::lookAt(eucl + this->pointOfInterest, this->pointOfInterest, glm::vec3(0.0f, 1.0f, 0.0f));
+    this->invView = glm::inverse(this->view);
 }
 
 //------------------------------------------------------------------------------
@@ -56,17 +119,17 @@ TestInputApp::testMouseButton(const Mouse& mouse, Mouse::Button btn, const char*
 
 //------------------------------------------------------------------------------
 void
-TestInputApp::testKey(const Keyboard& keyboard, Key::Code key, const char* name) const {
+TestInputApp::testKey(const Keyboard& kbd, Key::Code key, const char* name) const {
     glm::vec4 color;
-    if (keyboard.KeyDown(key)) {
+    if (kbd.KeyDown(key)) {
         Dbg::TextColor(this->downColor);
         Dbg::PrintF(" %s", Key::ToString(key));
     }
-    else if (keyboard.KeyUp(key)) {
+    else if (kbd.KeyUp(key)) {
         Dbg::TextColor(this->upColor);
         Dbg::PrintF(" %s", Key::ToString(key));
     }
-    else if (keyboard.KeyPressed(key)) {
+    else if (kbd.KeyPressed(key)) {
         Dbg::TextColor(this->pressedColor);
         Dbg::PrintF(" %s", Key::ToString(key));
     }
@@ -93,33 +156,33 @@ TestInputApp::printMouseState(const Mouse& mouse) const {
 
 //------------------------------------------------------------------------------
 void
-TestInputApp::printKeyboardState(const Keyboard& keyboard) const {
-    if (keyboard.Attached) {
+TestInputApp::printKeyboardState(const Keyboard& kbd) const {
+    if (kbd.Attached) {
         Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
         Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
-        if (keyboard.KeyDown(Key::Enter)) {
+        if (kbd.KeyDown(Key::Enter)) {
             if (CursorMode::Disabled != Input::GetCursorMode()) {
                 Input::SetCursorMode(CursorMode::Disabled);
             }
             else {
                 Input::SetCursorMode(CursorMode::Normal);
             }
-            if (!keyboard.IsCapturingText()) {
+            if (!kbd.IsCapturingText()) {
                 Input::BeginCaptureText();
             }
             else {
                 Input::EndCaptureText();
             }
         }
-        if (keyboard.IsCapturingText()) {
+        if (kbd.IsCapturingText()) {
             Dbg::Print(" capturing: ");
-            String str = StringConverter::WideToUTF8(keyboard.CapturedText());
+            String str = StringConverter::WideToUTF8(kbd.CapturedText());
             Dbg::PrintF("%s\n\r", str.AsCStr());
         }
         else {
             Dbg::Print(" keys: ");
             for (int32 key = 0; key < Key::NumKeys; key++) {
-                this->testKey(keyboard, (Key::Code)key, Key::ToString((Key::Code)key));
+                this->testKey(kbd, (Key::Code)key, Key::ToString((Key::Code)key));
             }
         }
     }
@@ -190,20 +253,125 @@ TestInputApp::getClearColor(const Touchpad& touchpad) const {
 }
 
 //------------------------------------------------------------------------------
+void
+TestInputApp::reset() {
+    this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
+    this->distance = 6.0f;
+}
+
+//------------------------------------------------------------------------------
+void
+TestInputApp::handleKeyboardInput(const Keyboard& kbd) {
+    if (kbd.Attached) {
+
+        if (kbd.KeyDown(Key::Space)) {
+            this->reset();
+        }
+
+        static const float32 rotatePerFrame = 0.025f;
+        static const float32 movePerFrame = 0.025f;
+        
+        if (kbd.KeyPressed(Key::LeftShift)) {
+            // rotate cube
+            if (kbd.KeyPressed(Key::Left)) {
+                this->polar.y -= rotatePerFrame;
+            }
+            if (kbd.KeyPressed(Key::Right)) {
+                this->polar.y += rotatePerFrame;
+            }
+            if (kbd.KeyPressed(Key::Up)) {
+                this->polar.x = glm::clamp(this->polar.x - rotatePerFrame, this->minLatitude, this->maxLatitude);
+            }
+            if (kbd.KeyPressed(Key::Down)) {
+                this->polar.x = glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);
+            }
+        }
+        else {
+            // move cube
+            if (kbd.KeyPressed(Key::Left)) {
+                this->pointOfInterest += glm::vec3(this->invView[0]) * movePerFrame;
+            }
+            if (kbd.KeyPressed(Key::Right)) {
+                this->pointOfInterest -= glm::vec3(this->invView[0]) * movePerFrame;
+            }
+            if (kbd.KeyPressed(Key::Up)) {
+                this->pointOfInterest -= glm::vec3(this->invView[1]) * movePerFrame;
+            }
+            if (kbd.KeyPressed(Key::Down)) {
+                this->pointOfInterest += glm::vec3(this->invView[1]) * movePerFrame;
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+TestInputApp::handleMouseInput(const Mouse& mouse) {
+    if (mouse.Attached) {
+        if (mouse.ButtonPressed(Mouse::LMB)) {
+            this->polar.y -= mouse.Movement.x * 0.01f;
+            this->polar.x += glm::clamp(mouse.Movement.y * 0.01f, this->minLatitude, this->maxLatitude);
+        }
+        this->distance = glm::clamp(this->distance + mouse.Scroll.y * 0.1f, this->minDist, this->maxDist);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+TestInputApp::handleTouchInput(const Touchpad& touchpad) {
+    if (touchpad.Attached) {
+        if (touchpad.DoubleTapped) {
+            this->reset();
+        }
+        
+        if (touchpad.PanningStarted) {
+            this->startPolar = this->polar;
+        }
+        if (touchpad.Panning) {
+            glm::vec2 diff = (touchpad.Position(0) - touchpad.StartPosition(0)) * 0.01f;
+            this->polar.y = this->startPolar.y - diff.x;
+            this->polar.x = glm::clamp(this->startPolar.x + diff.y, this->minLatitude, this->maxLatitude);
+        }
+        if (touchpad.PinchingStarted) {
+            this->startDistance = this->distance;
+        }
+        if (touchpad.Pinching) {
+            float32 startDist = glm::length(glm::vec2(touchpad.StartPosition(1) - touchpad.StartPosition(0)));
+            float32 curDist   = glm::length(glm::vec2(touchpad.Position(1) - touchpad.Position(0)));
+            this->distance = glm::clamp(this->startDistance - (curDist - startDist) * 0.01f, this->minDist, this->maxDist);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+TestInputApp::drawCube() const {
+    glm::mat4 mvp = this->proj * this->view;
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+    Gfx::Draw(0);
+}
+
+//------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnRunning() {
 
     // print input device status as debug text
-    const Keyboard& keyboard = Input::Keyboard();
+    const Keyboard& kbd = Input::Keyboard();
     const Mouse& mouse = Input::Mouse();
     const Touchpad& touchpad = Input::Touchpad();
     this->printMouseState(mouse);
-    this->printKeyboardState(keyboard);
+    this->printKeyboardState(kbd);
     this->printTouchpadState(touchpad);
+    this->handleKeyboardInput(kbd);
+    this->handleMouseInput(mouse);
+    this->handleTouchInput(touchpad);
+    this->updateView();
     
     // draw frame
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::RGBA, this->getClearColor(touchpad), 1.0f, 0);
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+    this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     
@@ -214,6 +382,7 @@ TestInputApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnCleanup() {
+    this->drawState.Release();
     Input::Discard();
     Dbg::Discard();
     Gfx::Discard();
