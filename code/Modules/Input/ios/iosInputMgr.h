@@ -5,9 +5,10 @@
     @brief input manager for iOS
 */
 #include "Input/base/inputMgrBase.h"
-#include "Input/touch/touch.h"
+#include "Input/touch/touchEvent.h"
 #include "Input/touch/tapDetector.h"
 #include "Input/touch/panDetector.h"
+#include "Input/touch/pinchDetector.h"
 #include "Core/ios/iosBridge.h"
 #include "Core/RunLoop.h"
 
@@ -27,13 +28,11 @@ public:
     void discard();
     
     /// called when a touch event occured
-    void onTouchEvent(const touch& touchEvent);
+    void onTouchEvent(const touchEvent& touchEvent);
     
 private:
     /// per-frame callback to reset input state at start of frame
     void reset();
-    /// transform coordinates to landscape
-    glm::vec2 toLandscape(float32 x, float32 y);
 
     float32 screenWidth;
     float32 screenHeight;
@@ -42,6 +41,7 @@ private:
     tapDetector singleTapDetector;
     tapDetector doubleTapDetector;
     class panDetector panDetector;
+    class pinchDetector pinchDetector;
 };
 
 } // namespace _priv

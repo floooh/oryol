@@ -11,21 +11,21 @@ namespace _priv {
 //------------------------------------------------------------------------------
 void
 tapDetector::reset() {
-    if (this->tapEvent.type != touch::invalid) {
-        this->tapEvent = touch();
+    if (this->tapEvent.type != touchEvent::invalid) {
+        this->tapEvent = touchEvent();
     }
     this->tapCount = 0;
 }
 
 //------------------------------------------------------------------------------
 bool
-tapDetector::withinTimeout(const touch& newEvent, const touch& oldEvent, int32 timeOutMs) const {
+tapDetector::withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int32 timeOutMs) const {
     return (newEvent.time - oldEvent.time).AsMilliSeconds() < timeOutMs;
 }
 
 //------------------------------------------------------------------------------
 bool
-tapDetector::withinDistance(const touch& newEvent, const touch& oldEvent, float maxDist) const {
+tapDetector::withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, float maxDist) const {
 
     // FIXME: take device DPI into account
 
@@ -36,17 +36,17 @@ tapDetector::withinDistance(const touch& newEvent, const touch& oldEvent, float 
 
 //------------------------------------------------------------------------------
 gestureState::Code
-tapDetector::detect(const touch& newEvent) {
+tapDetector::detect(const touchEvent& newEvent) {
     o_assert_dbg(newEvent.numTouches > 0);
     
     // only look at single-touch events, and stop at cancel event
-    if ((newEvent.numTouches > 1) || (newEvent.type == touch::cancelled)) {
+    if ((newEvent.numTouches > 1) || (newEvent.type == touchEvent::cancelled)) {
         this->reset();
         return gestureState::none;
     }
     
     // store down-event as start of a new potential tap
-    if (newEvent.type == touch::began) {
+    if (newEvent.type == touchEvent::began) {
         // if multitap, check if within max distance and tap timeout of
         // last tap, if not, start a new multitap sequence
         if (this->tapCount > 0) {
@@ -62,7 +62,7 @@ tapDetector::detect(const touch& newEvent) {
     }
     
     // check up-event against start event
-    if (newEvent.type == touch::ended) {
+    if (newEvent.type == touchEvent::ended) {
         // check time stamp
         if (this->withinTimeout(newEvent, this->tapEvent, TouchTimeout)) {
             if (this->withinDistance(newEvent, this->tapEvent, MaxTouchDistance)) {

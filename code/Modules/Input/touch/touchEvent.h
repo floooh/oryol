@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::touch
+    @class Oryol::_priv::touchEvent
     @brief internal touch event
 */
 #include "Core/Types.h"
@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
     
-class touch {
+class touchEvent {
 public:
     /// touch event type
     enum touchType {
@@ -36,7 +36,7 @@ public:
     /// find point with matching identifier, return nullptr if not exists
     const point* findPoint(uintptr touchId) const;
     /// check if all point identifiers in touch event match this touch event
-    bool sameTouches(const touch& other) const;
+    bool sameTouches(const touchEvent& other) const;
     /// get position of point matching touchId
     const glm::vec2& touchPos(uintptr touchId) const;
 };

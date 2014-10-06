@@ -4,7 +4,7 @@
     @class Oryol::_priv::tapDetector
     @brief singletap- and multitap-gesture recognizer
 */
-#include "Input/touch/touch.h"
+#include "Input/touch/touchEvent.h"
 #include "Input/touch/gestureState.h"
 #include "glm/vec2.hpp"
 
@@ -25,7 +25,7 @@ public:
     /// number of required taps
     int32 numRequiredTaps = 1;
     /// feed new touch event and return detected state (if any)
-    gestureState::Code detect(const touch& newEvent);
+    gestureState::Code detect(const touchEvent& newEvent);
     /// reset the detector
     void reset();
     /// get current tap position
@@ -33,11 +33,11 @@ public:
     
 private:
     /// check if 2 touch events are within the tap max distance
-    bool withinDistance(const touch& newEvent, const touch& oldEvent, float maxDist) const;
+    bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, float maxDist) const;
     /// check if 2 touch events are within a timeout
-    bool withinTimeout(const touch& newEvent, const touch& oldEvent, int32 timeOutMs) const;
+    bool withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int32 timeOutMs) const;
     
-    touch tapEvent;
+    touchEvent tapEvent;
     int32 tapCount = 0;
 };
     

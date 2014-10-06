@@ -11,8 +11,8 @@ namespace _priv {
 //------------------------------------------------------------------------------
 void
 panDetector::reset() {
-    if (this->startEvent.type != touch::invalid) {
-        this->startEvent = touch();
+    if (this->startEvent.type != touchEvent::invalid) {
+        this->startEvent = touchEvent();
     }
     this->panning = false;
 }
@@ -27,39 +27,38 @@ panDetector::distLess(const glm::vec2& pos0, const glm::vec2& pos1, float dist) 
 
 //------------------------------------------------------------------------------
 gestureState::Code
-panDetector::detect(const touch& newEvent) {
+panDetector::detect(const touchEvent& newEvent) {
     o_assert_dbg(newEvent.numTouches > 0);
     
     // check for cancelled event
-    if (newEvent.type == touch::cancelled) {
+    if (newEvent.type == touchEvent::cancelled) {
         this->reset();
         return gestureState::none;
     }
     
-    // ignore/cancel if not required number of touches or touch id's have changed
-    if (1 != newEvent.numTouches) {
+    // check for required number of touches
+    if (newEvent.numTouches != 1) {
         this->reset();
         return gestureState::none;
     }
     
-    // check if events identifiers match
-    if ((this->startEvent.type != touch::invalid) && !this->startEvent.sameTouches(newEvent)) {
+    // check if touch identifiers are unchanged (number of touches and same touch ids)
+    if ((this->startEvent.type != touchEvent::invalid) && !this->startEvent.sameTouches(newEvent)) {
         this->reset();
         return gestureState::none;
     }
     
-    // number of required touches is ok now,
     // check whether to start, move or end panning
-    if (newEvent.type == touch::began) {
+    if (newEvent.type == touchEvent::began) {
         this->startEvent = newEvent;
         this->startPosition = newEvent.touchPos(newEvent.points[0].identifier);
         this->position = this->startPosition;
         this->panning = false;
         return gestureState::none;
     }
-    else if (newEvent.type == touch::moved) {
+    else if (newEvent.type == touchEvent::moved) {
         // cancel if start event is not valid
-        if (this->startEvent.type == touch::invalid) {
+        if (this->startEvent.type == touchEvent::invalid) {
             return gestureState::none;
         }
         
@@ -81,7 +80,7 @@ panDetector::detect(const touch& newEvent) {
             }
         }
     }
-    else if (newEvent.type == touch::ended) {
+    else if (newEvent.type == touchEvent::ended) {
         if (this->panning) {
             this->position = newEvent.touchPos(this->startEvent.points[0].identifier);
             this->reset();

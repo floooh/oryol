@@ -5,7 +5,7 @@
 #include "Core/Core.h"
 #include "iosInputMgr.h"
 #include "Core/ios/iosBridge.h"
-#include "Input/touch/touch.h"
+#include "Input/touch/touchEvent.h"
 #include "Time/Clock.h"
 #import <UIKit/UIKit.h>
 
@@ -18,41 +18,41 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
 
 @implementation iosInputDelegate
 
-- (void) onTouchEvent:(touch::touchType)type withTouches:(NSSet*)touches withEvent:(UIEvent*)event {
+- (void) onTouchEvent:(touchEvent::touchType)type withTouches:(NSSet*)touches withEvent:(UIEvent*)event {
     o_assert(iosInputMgrPtr);
 
-    touch touchEvent;
-    touchEvent.type = type;
-    touchEvent.time = Oryol::Clock::Now();
+    touchEvent newEvent;
+    newEvent.type = type;
+    newEvent.time = Oryol::Clock::Now();
     NSEnumerator* enumerator = [[event allTouches] objectEnumerator];
     UITouch* curTouch;
     while ((curTouch = [enumerator nextObject])) {
-        if ((touchEvent.numTouches + 1) < touch::MaxNumPoints) {
+        if ((newEvent.numTouches + 1) < touchEvent::MaxNumPoints) {
             CGPoint pos = [curTouch locationInView:curTouch.view];
-            touch::point& curPoint = touchEvent.points[touchEvent.numTouches++];
+            touchEvent::point& curPoint = newEvent.points[newEvent.numTouches++];
             curPoint.identifier = (Oryol::uintptr) curTouch;
             curPoint.pos.x = pos.x;
             curPoint.pos.y = pos.y;
             curPoint.isChanged = [touches containsObject:curTouch];
         }
     }
-    iosInputMgrPtr->onTouchEvent(touchEvent);
+    iosInputMgrPtr->onTouchEvent(newEvent);
 }
 
 - (void) touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-    [self onTouchEvent:touch::began withTouches:touches withEvent:event];
+    [self onTouchEvent:touchEvent::began withTouches:touches withEvent:event];
 }
 
 - (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event {
-    [self onTouchEvent:touch::moved withTouches:touches withEvent:event];
+    [self onTouchEvent:touchEvent::moved withTouches:touches withEvent:event];
 }
 
 - (void) touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
-    [self onTouchEvent:touch::ended withTouches:touches withEvent:event];
+    [self onTouchEvent:touchEvent::ended withTouches:touches withEvent:event];
 }
 
 - (void) touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
-    [self onTouchEvent:touch::cancelled withTouches:touches withEvent:event];
+    [self onTouchEvent:touchEvent::cancelled withTouches:touches withEvent:event];
 }
 @end
 
@@ -137,63 +137,69 @@ iosInputMgr::reset() {
 }
 
 //------------------------------------------------------------------------------
-glm::vec2
-iosInputMgr::toLandscape(float32 x, float32 y) {
-    return glm::vec2(y, this->screenWidth - x);
-}
-
-//------------------------------------------------------------------------------
 void
-iosInputMgr::onTouchEvent(const Oryol::_priv::touch &touchEvent) {
+iosInputMgr::onTouchEvent(const Oryol::_priv::touchEvent &event) {
     o_assert_dbg(this->isValid());
     
-    // FIXME: DEBUG OUTPUT
-    const char* type;
-    switch (touchEvent.type) {
-        case touch::began: type = "began"; break;
-        case touch::moved: type = "moved"; break;
-        case touch::ended: type = "ended"; break;
-        default: type = "invalid"; break;
-    }
-    Log::Info("touchEvent: type=%s, time=%f, numTouches=%d\n", type, touchEvent.time.Since(0).AsSeconds(), touchEvent.numTouches);
-    for (int i = 0; i < touchEvent.numTouches; i++) {
-        Log::Info("  point %d: id=%ld, x=%.2f, y=%.2f, changed=%s\n",
-            i,
-            touchEvent.points[i].identifier,
-            touchEvent.points[i].pos.x,
-            touchEvent.points[i].pos.y,
-            touchEvent.points[i].isChanged ? "yes" : "no");
-    }
-    
     // feed event into gestures detectors and check for detected gestures
-    if (gestureState::action == this->singleTapDetector.detect(touchEvent)) {
+    if (gestureState::action == this->singleTapDetector.detect(event)) {
         this->touchpad.Tapped = true;
         this->touchpad.onPos(0, this->singleTapDetector.position);
+        this->touchpad.onStartPos(0, this->singleTapDetector.position);
     }
-    if (gestureState::action == this->doubleTapDetector.detect(touchEvent)) {
+    if (gestureState::action == this->doubleTapDetector.detect(event)) {
         this->touchpad.DoubleTapped = true;
         this->touchpad.onPos(0, this->doubleTapDetector.position);
+        this->touchpad.onStartPos(0, this->doubleTapDetector.position);
     }
-    switch (this->panDetector.detect(touchEvent)) {
+    switch (this->panDetector.detect(event)) {
         case gestureState::start:
             this->touchpad.PanningStarted = true;
             this->touchpad.Panning = true;
             this->touchpad.onPos(0, this->panDetector.position);
-            this->touchpad.onPos(1, this->panDetector.startPosition);
+            this->touchpad.onStartPos(0, this->panDetector.startPosition);
             break;
         case gestureState::move:
             this->touchpad.Panning = true;
             this->touchpad.onPosMov(0, this->panDetector.position);
-            this->touchpad.onPos(1, this->panDetector.startPosition);
+            this->touchpad.onStartPos(0, this->panDetector.startPosition);
             break;
         case gestureState::end:
             this->touchpad.PanningEnded = true;
             this->touchpad.Panning = false;
             this->touchpad.onPos(0, this->panDetector.position);
-            this->touchpad.onPos(1, this->panDetector.startPosition);
+            this->touchpad.onStartPos(1, this->panDetector.startPosition);
             break;
         default:
             this->touchpad.Panning = false;
+            break;
+    }
+    switch (this->pinchDetector.detect(event)) {
+        case gestureState::start:
+            this->touchpad.PinchingStarted = true;
+            this->touchpad.Pinching = true;
+            this->touchpad.onPos(0, this->pinchDetector.position0);
+            this->touchpad.onPos(1, this->pinchDetector.position1);
+            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+            break;
+        case gestureState::move:
+            this->touchpad.Pinching = true;
+            this->touchpad.onPosMov(0, this->pinchDetector.position0);
+            this->touchpad.onPosMov(1, this->pinchDetector.position1);
+            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+            break;
+        case gestureState::end:
+            this->touchpad.PinchingEnded = true;
+            this->touchpad.Pinching = false;
+            this->touchpad.onPos(0, this->pinchDetector.position0);
+            this->touchpad.onPos(1, this->pinchDetector.position1);
+            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+            break;
+        default:
+            this->touchpad.Pinching = false;
             break;
     }
 }
