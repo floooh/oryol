@@ -4,12 +4,11 @@
 #include "Pre.h"
 #include "androidInputMgr.h"
 #include "Core/Core.h"
+#include "Time/Clock.h"
 #include "android_native/android_native_app_glue.h"
 
 // this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
-
-using namespace ndk_helper;
 
 namespace Oryol {
 namespace _priv {
@@ -25,6 +24,7 @@ runLoopId(RunLoop::InvalidId) {
 
 //------------------------------------------------------------------------------
 androidInputMgr::~androidInputMgr() {
+    o_assert_dbg(this == self);
     self = nullptr;
 }
 
@@ -35,18 +35,9 @@ androidInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
 
     this->touchpad.Attached = true;
-    if (setup.TapEnabled) {
-        this->tapDetector.SetConfiguration(OryolAndroidAppState->config);
-    }
-    if (setup.DoubleTapEnabled) {
-        this->doubleTapDetector.SetConfiguration(OryolAndroidAppState->config);
-    }
-    if (setup.PinchEnabled) {
-        this->pinchDetector.SetConfiguration(OryolAndroidAppState->config);
-    }
-    if (setup.PanEnabled) {
-        this->dragDetector.SetConfiguration(OryolAndroidAppState->config);
-    }
+    this->singleTapDetector.numRequiredTaps = 1;
+    this->doubleTapDetector.numRequiredTaps = 2;
+
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    
 }
@@ -83,65 +74,50 @@ androidInputMgr::reset() {
 
 //------------------------------------------------------------------------------
 int32_t
-androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* event) {
+androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* aEvent) {
     o_assert_dbg(nullptr != self);
 
     int32_t retval = 0;
-    const int32_t type = AInputEvent_getType(event);
+    const int32_t type = AInputEvent_getType(aEvent);
     if (AINPUT_EVENT_TYPE_MOTION == type) {
 
-        glm::vec2 pos;
-        pos.x = AMotionEvent_getX(event, 0);
-        pos.y = AMotionEvent_getY(event, 0);
+        int32_t action = AMotionEvent_getAction(aEvent);
+        uint32_t flags = action & AMOTION_EVENT_ACTION_MASK;        
+        int32_t pointerIndex = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 
-        if (self->inputSetup.DoubleTapEnabled) {
-            GESTURE_STATE doubleTapState = self->doubleTapDetector.Detect(event);
-            if (doubleTapState & GESTURE_STATE_ACTION) {
-                self->touchpad.DoubleTapped = true;
-                self->touchpad.onPos(0, pos);
-            }
+        // convert to touchEvent object
+        touchEvent event;
+        switch (flags) {
+            case AMOTION_EVENT_ACTION_DOWN:
+            case AMOTION_EVENT_ACTION_POINTER_DOWN:
+                event.type = touchEvent::began;
+                break;
+            case AMOTION_EVENT_ACTION_UP:
+            case AMOTION_EVENT_ACTION_POINTER_UP:
+                event.type = touchEvent::ended;
+                break;
+            case AMOTION_EVENT_ACTION_MOVE:
+                event.type = touchEvent::moved;
+                break;
+            case AMOTION_EVENT_ACTION_CANCEL:
+                event.type = touchEvent::cancelled;
+                break;
+            default:
+                event.type = touchEvent::invalid;
+                break;
         }
-
-        if (self->inputSetup.TapEnabled) {
-            GESTURE_STATE tapState = self->tapDetector.Detect(event);
-            if (tapState & GESTURE_STATE_ACTION) {
-                self->touchpad.Tapped = true;
-                self->touchpad.onPos(0, pos);
-            }
+        event.time = Oryol::Clock::Now();
+        event.numTouches = AMotionEvent_getPointerCount(aEvent);
+        for (int32 i = 0; i < event.numTouches; i++) {
+            touchEvent::point& curPoint = event.points[i];
+            curPoint.identifier = AMotionEvent_getPointerId(aEvent, i);
+            curPoint.pos.x = AMotionEvent_getX(aEvent, i);
+            curPoint.pos.y = AMotionEvent_getY(aEvent, i);
+            curPoint.isChanged = (i == pointerIndex);
         }
-
-        if (self->inputSetup.PanEnabled) {
-            GESTURE_STATE dragState = self->dragDetector.Detect(event);
-            if (dragState & GESTURE_STATE_START) {
-                // need to init position
-                Vec2 v;
-                self->dragDetector.GetPointer(v);
-                self->touchpad.onPos(0, glm::vec2(v.x_, v.y_));
-            }
-            if (dragState & GESTURE_STATE_MOVE) {
-                Vec2 v;
-                self->dragDetector.GetPointer(v);
-                self->touchpad.Panning = true;
-                self->touchpad.onPosMov(0, glm::vec2(v.x_, v.y_));
-            }
-        }
-
-        if (self->inputSetup.PinchEnabled) {
-            GESTURE_STATE pinchState = self->pinchDetector.Detect(event);
-            if (pinchState & GESTURE_STATE_START) {
-                // need to init positions
-                Vec2 v0, v1;
-                self->pinchDetector.GetPointers(v0, v1);
-                self->touchpad.onPos(0, glm::vec2(v0.x_, v0.y_));
-                self->touchpad.onPos(1, glm::vec2(v1.x_, v1.y_));
-            }
-            if (pinchState & GESTURE_STATE_MOVE) {
-                Vec2 v0, v1;
-                self->pinchDetector.GetPointers(v0, v1);
-                self->touchpad.Pinching = true;
-                self->touchpad.onPosMov(0, glm::vec2(v0.x_, v0.y_));
-                self->touchpad.onPosMov(1, glm::vec2(v1.x_, v1.y_));
-            }
+        if (touchEvent::invalid != event.type) {
+            self->handleTouchEvent(event);
+            retval = 1;
         }
     }
     else if (AINPUT_EVENT_TYPE_KEY == type) {
@@ -151,6 +127,81 @@ androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* event) {
         Log::Dbg("androidInputMgr: unknown input event type '%d'\n", type);
     }
     return retval;
+}
+
+//------------------------------------------------------------------------------
+void
+androidInputMgr::handleTouchEvent(const touchEvent& event) {
+
+    // feed gesture detectors
+    if (this->inputSetup.TapEnabled) {
+        if (gestureState::action == this->singleTapDetector.detect(event)) {
+            this->touchpad.Tapped = true;
+            this->touchpad.onPos(0, this->singleTapDetector.position);
+            this->touchpad.onStartPos(0, this->singleTapDetector.position);
+        }
+    }
+    if (this->inputSetup.DoubleTapEnabled) {
+        if (gestureState::action == this->doubleTapDetector.detect(event)) {
+            this->touchpad.DoubleTapped = true;
+            this->touchpad.onPos(0, this->doubleTapDetector.position);
+            this->touchpad.onStartPos(0, this->doubleTapDetector.position);
+        }
+    }
+    if (this->inputSetup.PanEnabled) {
+        switch (this->panDetector.detect(event)) {
+            case gestureState::start:
+                this->touchpad.PanningStarted = true;
+                this->touchpad.Panning = true;
+                this->touchpad.onPos(0, this->panDetector.position);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                break;
+            case gestureState::move:
+                this->touchpad.Panning = true;
+                this->touchpad.onPosMov(0, this->panDetector.position);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                break;
+            case gestureState::end:
+                this->touchpad.PanningEnded = true;
+                this->touchpad.Panning = false;
+                this->touchpad.onPos(0, this->panDetector.position);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                break;
+            default:
+                this->touchpad.Panning = false;
+                break;
+        }
+    }
+    if (this->inputSetup.PinchEnabled) {
+        switch (this->pinchDetector.detect(event)) {
+            case gestureState::start:
+                this->touchpad.PinchingStarted = true;
+                this->touchpad.Pinching = true;
+                this->touchpad.onPos(0, this->pinchDetector.position0);
+                this->touchpad.onPos(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            case gestureState::move:
+                this->touchpad.Pinching = true;
+                this->touchpad.onPosMov(0, this->pinchDetector.position0);
+                this->touchpad.onPosMov(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            case gestureState::end:
+                this->touchpad.PinchingEnded = true;
+                this->touchpad.Pinching = false;
+                this->touchpad.onPos(0, this->pinchDetector.position0);
+                this->touchpad.onPos(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            default:
+                this->touchpad.Pinching = false;
+                break;
+        }
+    }
 }
 
 } // namespace _priv
