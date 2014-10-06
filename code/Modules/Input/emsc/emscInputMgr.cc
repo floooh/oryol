@@ -11,7 +11,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() :
 runLoopId(RunLoop::InvalidId) {
-    this->setupKeyTable();
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -23,6 +23,9 @@ emscInputMgr::~emscInputMgr() {
 void
 emscInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
+    this->setupKeyTable();
+    this->keyboard.Attached = true;
+    this->mouse.Attached = true;
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -76,7 +79,7 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_mousedown_callback(0, this, true, emscMouseDown);
     emscripten_set_mouseup_callback(0, this, true, emscMouseUp);
     emscripten_set_mousemove_callback(0, this, true, emscMouseMove);
-    emscripten_set_wheel_callback(0, this, true, emscWheel);
+    emscripten_set_wheel_callback(0, this, false, emscWheel);
     emscripten_set_pointerlockchange_callback(0, this, true, emscPointerLockChange);
 }
 
@@ -197,7 +200,7 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
         self->mouse.onPosMov(pos);
     }
-    return self->getCursorMode() == CursorMode::Disabled;    
+    return true;    
 }
 
 //------------------------------------------------------------------------------
@@ -207,7 +210,7 @@ emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* user
     o_assert_dbg(self);
     const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
     self->mouse.Scroll = scroll;
-    return self->getCursorMode() == CursorMode::Disabled;
+    return true;
 }
 
 //------------------------------------------------------------------------------

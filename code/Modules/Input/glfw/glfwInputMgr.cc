@@ -33,6 +33,8 @@ void
 glfwInputMgr::setup(const InputSetup& setup) {
     
     inputMgrBase::setup(setup);
+    this->keyboard.Attached = true;
+    this->mouse.Attached = true;
     
     // first check that the Gfx module has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();

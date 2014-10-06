@@ -152,6 +152,10 @@ TestInputApp::printMouseState(const Mouse& mouse) const {
                     mouse.Movement.x, mouse.Movement.y,
                     mouse.Scroll.x, mouse.Scroll.y);
     }
+    else {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n MOUSE NOT ATTACHED");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -186,6 +190,10 @@ TestInputApp::printKeyboardState(const Keyboard& kbd) const {
             }
         }
     }
+    else {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r KEYBOARD NOT ATTACHED");
+    };
 }
 
 //------------------------------------------------------------------------------
@@ -236,6 +244,10 @@ TestInputApp::printTouchpadState(const Touchpad& touchpad) const {
                     touchpad.Position(1).x, touchpad.Position(1).y,
                     touchpad.Movement(1).x, touchpad.Movement(1).y,
                     touchpad.StartPosition(1).x, touchpad.StartPosition(1).y);
+    }
+    else {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r TOUCHPAD NOT ATTACHED");
     }
 }
 
@@ -310,7 +322,7 @@ TestInputApp::handleMouseInput(const Mouse& mouse) {
     if (mouse.Attached) {
         if (mouse.ButtonPressed(Mouse::LMB)) {
             this->polar.y -= mouse.Movement.x * 0.01f;
-            this->polar.x += glm::clamp(mouse.Movement.y * 0.01f, this->minLatitude, this->maxLatitude);
+            this->polar.x = glm::clamp(this->polar.x + mouse.Movement.y * 0.01f, this->minLatitude, this->maxLatitude);
         }
         this->distance = glm::clamp(this->distance + mouse.Scroll.y * 0.1f, this->minDist, this->maxDist);
     }

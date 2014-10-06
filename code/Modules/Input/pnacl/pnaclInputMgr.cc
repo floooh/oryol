@@ -10,22 +10,36 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-pnaclInputMgr::pnaclInputMgr() {
-
-    this->setupKeyTable();
-
-    // request input events
-    using namespace std::placeholders;    
-    pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
-
-    // register our pre-frame reset method with the runloop
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
+pnaclInputMgr::pnaclInputMgr() :
+runLoopId(RunLoop::InvalidId) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
 pnaclInputMgr::~pnaclInputMgr() {
-    // unregister reset method from runloop
+    // empty
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInputMgr::setup(const InputSetup& setup) {
+    inputMgrBase::setup(setup);
+    this->keyboard.Attached = true;
+    this->mouse.Attached = true;
+    this->setupKeyTable();
+
+    using namespace std::placeholders;    
+    pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
+
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInputMgr::discard() {
     Core::PostRunLoop()->Remove(this->runLoopId);
+    this->runLoopId = RunLoop::InvalidId;
+    inputMgrBase::discard();
 }
 
 //------------------------------------------------------------------------------

@@ -26,8 +26,6 @@ inputMgrBase::setup(const InputSetup& setup) {
     this->valid = true;
     this->inputSetup = setup;
     this->cursorMode = CursorMode::Normal;
-    this->keyboard.Attached = true;
-    this->mouse.Attached = true;
 }
 
 //------------------------------------------------------------------------------

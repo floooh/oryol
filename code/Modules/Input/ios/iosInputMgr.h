@@ -34,8 +34,6 @@ private:
     /// per-frame callback to reset input state at start of frame
     void reset();
 
-    float32 screenWidth;
-    float32 screenHeight;
     id inputDelegate;
     RunLoop::Id runLoopId;
     tapDetector singleTapDetector;

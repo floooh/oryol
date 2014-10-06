@@ -18,6 +18,11 @@ public:
     /// destructor
     ~pnaclInputMgr();
 
+    /// setup the input manager
+    void setup(const InputSetup& setup);
+    /// discard the input manager
+    void discard();
+
 private:
     /// per-frame callback to reset input state at start of frame
     void reset();

@@ -61,14 +61,10 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 iosInputMgr::iosInputMgr() :
-screenWidth(0.0f),
-screenHeight(0.0f),
 inputDelegate(nil)
 {
     o_assert(nullptr == iosInputMgrPtr);
     iosInputMgrPtr = this;
-    this->singleTapDetector.numRequiredTaps = 1;
-    this->doubleTapDetector.numRequiredTaps = 2;
 }
 
 //------------------------------------------------------------------------------
@@ -83,11 +79,8 @@ iosInputMgr::setup(const InputSetup& setup) {
     
     inputMgrBase::setup(setup);
     this->touchpad.Attached = true;
-    
-    // get current screen size
-    CGRect mainScreenBounds = [[UIScreen mainScreen] bounds];
-    this->screenWidth = mainScreenBounds.size.width;
-    this->screenHeight = mainScreenBounds.size.height;
+    this->singleTapDetector.numRequiredTaps = 1;
+    this->doubleTapDetector.numRequiredTaps = 2;
     
     // create the input delegate object
     this->inputDelegate = [[iosInputDelegate alloc] init];
@@ -142,65 +135,73 @@ iosInputMgr::onTouchEvent(const Oryol::_priv::touchEvent &event) {
     o_assert_dbg(this->isValid());
     
     // feed event into gestures detectors and check for detected gestures
-    if (gestureState::action == this->singleTapDetector.detect(event)) {
-        this->touchpad.Tapped = true;
-        this->touchpad.onPos(0, this->singleTapDetector.position);
-        this->touchpad.onStartPos(0, this->singleTapDetector.position);
+    if (this->inputSetup.TapEnabled) {
+        if (gestureState::action == this->singleTapDetector.detect(event)) {
+            this->touchpad.Tapped = true;
+            this->touchpad.onPos(0, this->singleTapDetector.position);
+            this->touchpad.onStartPos(0, this->singleTapDetector.position);
+        }
     }
-    if (gestureState::action == this->doubleTapDetector.detect(event)) {
-        this->touchpad.DoubleTapped = true;
-        this->touchpad.onPos(0, this->doubleTapDetector.position);
-        this->touchpad.onStartPos(0, this->doubleTapDetector.position);
+    if (this->inputSetup.DoubleTapEnabled) {
+        if (gestureState::action == this->doubleTapDetector.detect(event)) {
+            this->touchpad.DoubleTapped = true;
+            this->touchpad.onPos(0, this->doubleTapDetector.position);
+            this->touchpad.onStartPos(0, this->doubleTapDetector.position);
+        }
     }
-    switch (this->panDetector.detect(event)) {
-        case gestureState::start:
-            this->touchpad.PanningStarted = true;
-            this->touchpad.Panning = true;
-            this->touchpad.onPos(0, this->panDetector.position);
-            this->touchpad.onStartPos(0, this->panDetector.startPosition);
-            break;
-        case gestureState::move:
-            this->touchpad.Panning = true;
-            this->touchpad.onPosMov(0, this->panDetector.position);
-            this->touchpad.onStartPos(0, this->panDetector.startPosition);
-            break;
-        case gestureState::end:
-            this->touchpad.PanningEnded = true;
-            this->touchpad.Panning = false;
-            this->touchpad.onPos(0, this->panDetector.position);
-            this->touchpad.onStartPos(1, this->panDetector.startPosition);
-            break;
-        default:
-            this->touchpad.Panning = false;
-            break;
+    if (this->inputSetup.PanEnabled) {
+        switch (this->panDetector.detect(event)) {
+            case gestureState::start:
+                this->touchpad.PanningStarted = true;
+                this->touchpad.Panning = true;
+                this->touchpad.onPos(0, this->panDetector.position);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                break;
+            case gestureState::move:
+                this->touchpad.Panning = true;
+                this->touchpad.onPosMov(0, this->panDetector.position);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                break;
+            case gestureState::end:
+                this->touchpad.PanningEnded = true;
+                this->touchpad.Panning = false;
+                this->touchpad.onPos(0, this->panDetector.position);
+                this->touchpad.onStartPos(1, this->panDetector.startPosition);
+                break;
+            default:
+                this->touchpad.Panning = false;
+                break;
+        }
     }
-    switch (this->pinchDetector.detect(event)) {
-        case gestureState::start:
-            this->touchpad.PinchingStarted = true;
-            this->touchpad.Pinching = true;
-            this->touchpad.onPos(0, this->pinchDetector.position0);
-            this->touchpad.onPos(1, this->pinchDetector.position1);
-            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
-            break;
-        case gestureState::move:
-            this->touchpad.Pinching = true;
-            this->touchpad.onPosMov(0, this->pinchDetector.position0);
-            this->touchpad.onPosMov(1, this->pinchDetector.position1);
-            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
-            break;
-        case gestureState::end:
-            this->touchpad.PinchingEnded = true;
-            this->touchpad.Pinching = false;
-            this->touchpad.onPos(0, this->pinchDetector.position0);
-            this->touchpad.onPos(1, this->pinchDetector.position1);
-            this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-            this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
-            break;
-        default:
-            this->touchpad.Pinching = false;
-            break;
+    if (this->inputSetup.PinchEnabled) {
+        switch (this->pinchDetector.detect(event)) {
+            case gestureState::start:
+                this->touchpad.PinchingStarted = true;
+                this->touchpad.Pinching = true;
+                this->touchpad.onPos(0, this->pinchDetector.position0);
+                this->touchpad.onPos(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            case gestureState::move:
+                this->touchpad.Pinching = true;
+                this->touchpad.onPosMov(0, this->pinchDetector.position0);
+                this->touchpad.onPosMov(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            case gestureState::end:
+                this->touchpad.PinchingEnded = true;
+                this->touchpad.Pinching = false;
+                this->touchpad.onPos(0, this->pinchDetector.position0);
+                this->touchpad.onPos(1, this->pinchDetector.position1);
+                this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                break;
+            default:
+                this->touchpad.Pinching = false;
+                break;
+        }
     }
 }
 
