@@ -166,7 +166,7 @@ iosInputMgr::onTouchEvent(const Oryol::_priv::touchEvent &event) {
                 this->touchpad.PanningEnded = true;
                 this->touchpad.Panning = false;
                 this->touchpad.onPos(0, this->panDetector.position);
-                this->touchpad.onStartPos(1, this->panDetector.startPosition);
+                this->touchpad.onStartPos(0, this->panDetector.startPosition);
                 break;
             default:
                 this->touchpad.Panning = false;
