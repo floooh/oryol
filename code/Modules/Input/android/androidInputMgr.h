@@ -31,8 +31,6 @@ public:
     void discard();
 
 private:
-    /// per-frame callback to reset input state at start of frame
-    void reset();
     /// callback method from global android_app object
     static int32_t onInputEvent(struct android_app* app, AInputEvent* event);
     /// handle a touch event

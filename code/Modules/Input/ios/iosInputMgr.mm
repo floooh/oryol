@@ -112,25 +112,6 @@ iosInputMgr::discard() {
 
 //------------------------------------------------------------------------------
 void
-iosInputMgr::reset() {
-    if (this->keyboard.Attached) {
-        this->keyboard.reset();
-    }
-    if (this->mouse.Attached) {
-        this->mouse.reset();
-    }
-    if (this->touchpad.Attached) {
-        this->touchpad.reset();
-    }
-    for (int32 i = 0; i < MaxNumGamepads; i++) {
-        if (this->gamepads[i].Attached) {
-            this->gamepads[i].reset();
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 iosInputMgr::onTouchEvent(const Oryol::_priv::touchEvent &event) {
     o_assert_dbg(this->isValid());
     

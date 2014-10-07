@@ -28,8 +28,6 @@ public:
     void setCursorMode(CursorMode::Code mode);
 
 private:
-    /// per-frame callback to reset input state at start of frame
-    void reset();
     /// setup the key mapping table
     void setupKeyTable();    
     /// setup emscripten input handling callbacks

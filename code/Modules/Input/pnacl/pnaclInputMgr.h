@@ -24,8 +24,6 @@ public:
     void discard();
 
 private:
-    /// per-frame callback to reset input state at start of frame
-    void reset();
     /// setup the key code mapping table
     void setupKeyTable();
     /// convert nacl key code to oryol key code

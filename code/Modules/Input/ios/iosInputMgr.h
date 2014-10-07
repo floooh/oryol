@@ -31,9 +31,6 @@ public:
     void onTouchEvent(const touchEvent& touchEvent);
     
 private:
-    /// per-frame callback to reset input state at start of frame
-    void reset();
-
     id inputDelegate;
     RunLoop::Id runLoopId;
     tapDetector singleTapDetector;

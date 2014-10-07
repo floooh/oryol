@@ -28,6 +28,8 @@ public:
     void discard();
     /// return true if the input manager has been setup
     bool isValid() const;
+    /// reset input devices (usually called by RunLoop at end of frame)
+    void reset();
     /// get the input setup object
     const InputSetup& getInputSetup() const;
 

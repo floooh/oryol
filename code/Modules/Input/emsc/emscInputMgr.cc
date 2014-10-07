@@ -53,25 +53,6 @@ emscInputMgr::setCursorMode(CursorMode::Code mode) {
 
 //------------------------------------------------------------------------------
 void
-emscInputMgr::reset() {
-    if (this->keyboard.Attached) {
-        this->keyboard.reset();
-    }
-    if (this->mouse.Attached) {
-        this->mouse.reset();
-    }
-    if (this->touchpad.Attached) {
-        this->touchpad.reset();
-    }
-    for (int32 i = 0; i < MaxNumGamepads; i++) {
-        if (this->gamepads[i].Attached) {
-            this->gamepads[i].reset();
-        }
-    }    
-}
-
-//------------------------------------------------------------------------------
-void
 emscInputMgr::setupCallbacks() {
     emscripten_set_keydown_callback(0, this, true, emscKeyDown);
     emscripten_set_keyup_callback(0, this, true, emscKeyUp);
