@@ -59,15 +59,15 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_keydown_callback(0, this, true, emscKeyDown);
     emscripten_set_keyup_callback(0, this, true, emscKeyUp);
     emscripten_set_keypress_callback(0, this, true, emscKeyPress);
-    emscripten_set_mousedown_callback(0, this, true, emscMouseDown);
-    emscripten_set_mouseup_callback(0, this, true, emscMouseUp);
-    emscripten_set_mousemove_callback(0, this, true, emscMouseMove);
-    emscripten_set_wheel_callback(0, this, false, emscWheel);
-    emscripten_set_pointerlockchange_callback(0, this, true, emscPointerLockChange);
-    emscripten_set_touchstart_callback(0, this, true, emscTouch);
-    emscripten_set_touchend_callback(0, this, true, emscTouch);
-    emscripten_set_touchmove_callback(0, this, true, emscTouch);
-    emscripten_set_touchcancel_callback(0, this, true, emscTouch);
+    emscripten_set_mousedown_callback("#canvas", this, true, emscMouseDown);
+    emscripten_set_mouseup_callback("#canvas", this, true, emscMouseUp);
+    emscripten_set_mousemove_callback("#canvas", this, true, emscMouseMove);
+    emscripten_set_wheel_callback("#canvas", this, false, emscWheel);
+    emscripten_set_pointerlockchange_callback("#canvas", this, true, emscPointerLockChange);
+    emscripten_set_touchstart_callback("#canvas", this, true, emscTouch);
+    emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
+    emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
+    emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
 }
 
 //------------------------------------------------------------------------------
@@ -76,15 +76,15 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_keydown_callback(0, 0, true, 0);
     emscripten_set_keyup_callback(0, 0, true, 0);    
     emscripten_set_keypress_callback(0, 0, true, 0);
-    emscripten_set_mousedown_callback(0, 0, true, 0);
-    emscripten_set_mouseup_callback(0, 0, true, 0);
-    emscripten_set_mousemove_callback(0, 0, true, 0);
-    emscripten_set_wheel_callback(0, 0, true, 0);
-    emscripten_set_pointerlockchange_callback(0, this, true, 0);
-    emscripten_set_touchstart_callback(0, 0, true, 0);
-    emscripten_set_touchend_callback(0, 0, true, 0);
-    emscripten_set_touchmove_callback(0, 0, true, 0);
-    emscripten_set_touchcancel_callback(0, 0, true, 0);
+    emscripten_set_mousedown_callback("#canvas", 0, true, 0);
+    emscripten_set_mouseup_callback("#canvas", 0, true, 0);
+    emscripten_set_mousemove_callback("#canvas", 0, true, 0);
+    emscripten_set_wheel_callback("#canvas", 0, true, 0);
+    emscripten_set_pointerlockchange_callback("#canvas", this, true, 0);
+    emscripten_set_touchstart_callback("#canvas", 0, true, 0);
+    emscripten_set_touchend_callback("#canvas", 0, true, 0);
+    emscripten_set_touchmove_callback("#canvas", 0, true, 0);
+    emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* 
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonDown(btn);
     }
-    return self->getCursorMode() == CursorMode::Disabled;
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonUp(btn);
     }
-    return self->getCursorMode() == CursorMode::Disabled;
+    return true;
 }
 
 //------------------------------------------------------------------------------
