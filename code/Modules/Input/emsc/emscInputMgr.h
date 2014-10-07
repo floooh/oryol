@@ -6,6 +6,10 @@
     @brief provide input on emscripten platform
 */
 #include "Input/base/inputMgrBase.h"
+#include "Input/touch/touchEvent.h"
+#include "Input/touch/tapDetector.h"
+#include "Input/touch/panDetector.h"
+#include "Input/touch/pinchDetector.h"
 #include "Core/RunLoop.h"
 #include <emscripten/html5.h>
 
@@ -55,7 +59,9 @@ private:
     static EM_BOOL emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData);
     /// pointerlockchange callback
     static EM_BOOL emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData);
-
+    /// touch event callback (same callback for touchstart, touchmove, touchend, touchcancel)
+    static EM_BOOL emscTouch(int eventType, const EmscriptenTouchEvent* e, void* userData);
+    
     static const int32 MaxNumKeys = 256;
     RunLoop::Id runLoopId;
     Key::Code keyTable[MaxNumKeys];

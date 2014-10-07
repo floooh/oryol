@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "emscInputMgr.h"
 #include "Core/Core.h"
+#include "Time/Clock.h"
 
 namespace Oryol {
 namespace _priv {
@@ -26,6 +27,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->setupKeyTable();
     this->keyboard.Attached = true;
     this->mouse.Attached = true;
+    this->touchpad.Attached = true;
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -62,6 +64,10 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_mousemove_callback(0, this, true, emscMouseMove);
     emscripten_set_wheel_callback(0, this, false, emscWheel);
     emscripten_set_pointerlockchange_callback(0, this, true, emscPointerLockChange);
+    emscripten_set_touchstart_callback(0, this, true, emscTouch);
+    emscripten_set_touchend_callback(0, this, true, emscTouch);
+    emscripten_set_touchmove_callback(0, this, true, emscTouch);
+    emscripten_set_touchcancel_callback(0, this, true, emscTouch);
 }
 
 //------------------------------------------------------------------------------
@@ -75,6 +81,10 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_mousemove_callback(0, 0, true, 0);
     emscripten_set_wheel_callback(0, 0, true, 0);
     emscripten_set_pointerlockchange_callback(0, this, true, 0);
+    emscripten_set_touchstart_callback(0, 0, true, 0);
+    emscripten_set_touchend_callback(0, 0, true, 0);
+    emscripten_set_touchmove_callback(0, 0, true, 0);
+    emscripten_set_touchcancel_callback(0, 0, true, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -204,6 +214,42 @@ emscInputMgr::emscPointerLockChange(int eventType, const EmscriptenPointerlockCh
     else {
         ((inputMgrBase*)self)->setCursorMode(CursorMode::Normal);
     }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscTouch(int eventType, const EmscriptenTouchEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+
+    // convert to touchEvent
+    touchEvent event;
+    switch (eventType) {
+        case EMSCRIPTEN_EVENT_TOUCHSTART:
+            event.type = touchEvent::began;
+            break;
+        case EMSCRIPTEN_EVENT_TOUCHEND:
+            event.type = touchEvent::ended;
+            break;
+        case EMSCRIPTEN_EVENT_TOUCHMOVE:
+            event.type = touchEvent::moved;
+            break;
+        case EMSCRIPTEN_EVENT_TOUCHCANCEL:
+            event.type = touchEvent::cancelled;
+            break;
+        default:
+            return false;
+    }
+    event.time = Oryol::Clock::Now();
+    event.numTouches = e->numTouches;
+    for (int32 i = 0; i < event.numTouches; i++) {
+        touchEvent::point& curPoint = event.points[i];
+        curPoint.identifier = e->touches[i].identifier;
+        curPoint.pos.x = e->touches[i].canvasX;
+        curPoint.pos.y = e->touches[i].canvasY;
+        curPoint.isChanged = e->touches[i].isChanged;
+    }
+    self->onTouchEvent(event);
     return true;
 }
 

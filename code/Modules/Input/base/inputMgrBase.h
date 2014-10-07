@@ -11,6 +11,10 @@
 #include "Input/Core/Gamepad.h"
 #include "Input/Core/Touchpad.h"
 #include "Input/Core/CursorMode.h"
+#include "Input/touch/touchEvent.h"
+#include "Input/touch/tapDetector.h"
+#include "Input/touch/panDetector.h"
+#include "Input/touch/pinchDetector.h"
 
 namespace Oryol {
 namespace _priv {
@@ -51,6 +55,9 @@ public:
     void beginCaptureText();
     /// end text capturing
     void endCaptureText();
+
+    /// handle a touch event (detect gestures)
+    void onTouchEvent(const touchEvent& event);
     
 protected:
     static const int32 MaxNumGamepads = 4;
@@ -60,6 +67,10 @@ protected:
     class Mouse mouse;
     class Gamepad gamepads[MaxNumGamepads];
     class Touchpad touchpad;
+    tapDetector singleTapDetector;
+    tapDetector doubleTapDetector;
+    class panDetector panDetector;
+    class pinchDetector pinchDetector;        
     CursorMode::Code cursorMode;    
 };
 
