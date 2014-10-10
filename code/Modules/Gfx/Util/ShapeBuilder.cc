@@ -530,7 +530,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
     int32 rowA = startVertexIndex;
     int32 rowB = rowA + numSlices + 1;
     for (int32 slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
+        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
     }
     
     // stack triangles
@@ -538,8 +538,8 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
         rowA = startVertexIndex + stack * (numSlices + 1);
         rowB = rowA + numSlices + 1;
         for (int32 slice = 0; slice < numSlices; slice++) {
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
+            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
+            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
         }
     }
     
@@ -547,7 +547,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
     rowA = startVertexIndex + (numStacks - 1) * (numSlices + 1);
     rowB = rowA + numSlices + 1;
     for (int32 slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
+        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
     }
     o_assert((curTriIndex - startTriIndex) == shape.numTris);
 }
