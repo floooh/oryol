@@ -373,6 +373,13 @@ def runDeploy(config, target) :
     else :
         error('{} is not a mobile platform'.format(config['name']))
 
+# attach to device log
+def runLogcat(config) :
+    if 'android-' in config['name'] :
+        subprocess.call(args=[SDKSetupAndroid.getAdbPath(), 'logcat'])
+    else :
+        error('logcat not supported on this platform (only on: android)')
+
 # run cmake-gui or ccmake on config
 def runConfigure(config) :
     if testConfigRequirements(config) :
@@ -415,34 +422,37 @@ if len(sys.argv) == 1 :
     print 'oryol [COMMAND] [SUBCOMMAND] [config]\n'
     print 'Commands:'
     print '---------'
-    print 'oryol list [configs,platforms,build-types,selected]'
+    print '\noryol list [configs,platforms,build-types,selected]'
     print '  list configs, platforms, build-types, or selected config'
-    print 'oryol new [config-name]'
+    print '\noryol new [config-name]'
     print '  create a config skeleton json file'
-    print 'oryol select [config-name]'
+    print '\noryol select [config-name]'
     print '  set the active config (omit config-name to select the default config for the platform)'
-    print 'oryol update [config-name, partial-config-name or all]'
+    print '\noryol update [config-name, partial-config-name or all]'
     print '  do a cmake run on the selected or provided config (required after adding sources)'
-    print 'oryol open [config-name]'
+    print '\noryol open [config-name]'
     print "  open the config's project in the IDE (only works for Xcode and VStudio currently)"
-    print 'oryol build [config-name, partial-config-name or all]'
+    print '\noryol build [config-name, partial-config-name or all]'
     print '  build selected or provided config'
-    print 'oryol rebuild [config-name, partial-config-name or all]'
+    print '\noryol rebuild [config-name, partial-config-name or all]'
     print '  rebuild selected or provided config'
-    print 'oryol clean [config-name, partial-config-name or all]'
+    print '\noryol clean [config-name, partial-config-name or all]'
     print '  delete the cmake cache and build files of the selected or provided config'
-    print 'oryol make target [config-name, partial-config-name or all]'
+    print '\noryol make target [config-name, partial-config-name or all]'
     print '  build a specific target'
-    print 'oryol deploy target [config-name]'
+    print '\noryol deploy target [config-name]'
     print '  make and deploy a target executable to mobile device'
-    print 'oryol config [config-name]'
+    print '\noryol logcat'
+    print '  attach to device log (currently only supported on Android)'
+    print '\noryol config [config-name]'
     print '  call cmake-gui or ccmake for selected or specific config'
-    print 'oryol webpage [norebuild]'
+    print '\noryol webpage [norebuild]'
     print '  build web samples and create web page from it'
-    print 'oryol setup [android | nacl | emscripten]'
+    print '\noryol setup [android | nacl | emscripten]'
     print '  setup a local Android, Google Native Client, or Emscripten SDK'
-    print 'oryol assets [export|serve]'
+    print '\noryol assets [export|serve]'
     print '  export or HTTP-serve asset files'
+    print '\n'
 
 else :
     cmd = sys.argv[1]
@@ -620,6 +630,11 @@ else :
                 config = loadConfig(sys.argv[3])
             runBuild(config, target)
             runDeploy(config, target)
+
+    elif cmd == 'logcat' :
+        # attach to device log
+        config = getActiveConfig()
+        runLogcat(config)
 
     elif cmd == 'config' :
         # call ccmake or cmake-gui on a config
