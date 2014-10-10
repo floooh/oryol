@@ -125,6 +125,7 @@ macro(oryol_osx_generate_plist_file target)
             "    <array>\n"
             "      <string>opengles-2</string>\n"
             "      <string>armv7</string>\n"
+            "      <string>accelerometer</string>\n"
             "    </array>\n"
             "  </dict>\n"
             "</plist>\n")

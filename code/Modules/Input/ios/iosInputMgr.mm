@@ -7,6 +7,7 @@
 #include "Core/ios/iosBridge.h"
 #include "Time/Clock.h"
 #import <UIKit/UIKit.h>
+#import <CoreMotion/CoreMotion.h>
 
 using namespace Oryol::_priv;
 
@@ -60,7 +61,10 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 iosInputMgr::iosInputMgr() :
-inputDelegate(nil)
+inputDelegate(nil),
+motionManager(nil),
+resetRunLoopId(RunLoop::InvalidId),
+motionRunLoopId(RunLoop::InvalidId)
 {
     o_assert(nullptr == iosInputMgrPtr);
     iosInputMgrPtr = this;
@@ -82,29 +86,69 @@ iosInputMgr::setup(const InputSetup& setup) {
     // create the input delegate object
     this->inputDelegate = [[iosInputDelegate alloc] init];
     
+    // create CoreMotionManager to sample device motion data
+    if (setup.AccelerometerEnabled) {
+        this->motionManager = [[CMMotionManager alloc] init];
+        if ([this->motionManager isDeviceMotionAvailable]) {
+            [this->motionManager startDeviceMotionUpdates];
+            this->accelerometer.Attached = true;
+            this->motionRunLoopId = Core::PreRunLoop()->Add([this]() { this->sampleMotionData(); });
+        }
+        else {
+            this->motionRunLoopId = RunLoop::InvalidId;
+        }
+    }
+    
     // set delegate in our overriden GLKView
     oryolGLKView* glkView = iosBridge::ptr()->iosGetGLKView();
     [glkView setTouchDelegate:this->inputDelegate];
     
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
+    // add reset callback to post-runloop
+    this->resetRunLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
 void
 iosInputMgr::discard() {
     
-    // detach from runloop
-    Core::PostRunLoop()->Remove(this->runLoopId);
-    this->runLoopId = RunLoop::InvalidId;
+    // detach from runloops
+    Core::PostRunLoop()->Remove(this->resetRunLoopId);
+    this->resetRunLoopId = RunLoop::InvalidId;
 
     // remove touch delegate
     oryolGLKView* glkView = iosBridge::ptr()->iosGetGLKView();
     [glkView setTouchDelegate:nil];
     
+    if (nil != this->motionManager) {
+        if (RunLoop::InvalidId != this->motionRunLoopId) {
+            Core::PreRunLoop()->Remove(this->motionRunLoopId);
+            this->motionRunLoopId = RunLoop::InvalidId;
+            [this->motionManager stopDeviceMotionUpdates];
+        }
+        [this->motionManager release];
+        this->motionManager = nil;
+    }
     [this->inputDelegate release];
     this->inputDelegate = nil;
     
     inputMgrBase::discard();
+}
+
+//------------------------------------------------------------------------------
+void
+iosInputMgr::sampleMotionData() {
+    o_assert_dbg(nil != this->motionManager);
+    CMDeviceMotion* motion = [this->motionManager deviceMotion];
+    if (nil != motion) {
+        CMAcceleration gravity = motion.gravity;
+        CMAcceleration userAccel = motion.userAcceleration;
+        this->accelerometer.Acceleration.x = (float32) userAccel.x;
+        this->accelerometer.Acceleration.y = (float32) userAccel.y;
+        this->accelerometer.Acceleration.z = (float32) userAccel.z;
+        this->accelerometer.AccelerationWithGravity.x = (float32) (userAccel.x + gravity.x);
+        this->accelerometer.AccelerationWithGravity.y = (float32) (userAccel.y + gravity.y);
+        this->accelerometer.AccelerationWithGravity.z = (float32) (userAccel.z + gravity.z);        
+    }
 }
 
 } // namespace _priv

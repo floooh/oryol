@@ -24,8 +24,13 @@ public:
     void discard();
     
 private:
+    /// sample motion data
+    void sampleMotionData();
+
     id inputDelegate;
-    RunLoop::Id runLoopId;
+    id motionManager;
+    RunLoop::Id resetRunLoopId;
+    RunLoop::Id motionRunLoopId;
 };
 
 } // namespace _priv

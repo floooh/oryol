@@ -27,7 +27,7 @@ set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos;-iphonesimulator")
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 # define standard frame works that are always linked
-set(ORYOL_OSX_STANDARD_FRAMEWORKS Foundation OpenGLES UIKit GLKit QuartzCore OpenAL)
+set(ORYOL_OSX_STANDARD_FRAMEWORKS Foundation OpenGLES UIKit GLKit QuartzCore OpenAL CoreMotion)
 
 # need to set some flags directly as Xcode attributes
 set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")

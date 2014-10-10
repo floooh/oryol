@@ -18,6 +18,8 @@ public:
     bool PinchEnabled = true;
     /// enable/disable pan touch gesture
     bool PanEnabled = true;
+    /// accelerometer enabled
+    bool AccelerometerEnabled = true;
 };
     
 } // namespace Oryol

@@ -28,6 +28,7 @@ private:
     void printMouseState(const Mouse& mouse) const;
     void printKeyboardState(const Keyboard& kbd) const;
     void printTouchpadState(const Touchpad& touchpad) const;
+    void printAccelState(const Accelerometer& accelerometer) const;
     glm::vec4 getClearColor(const Touchpad& touchpad) const;
     void updateView();
     void reset();
@@ -65,7 +66,9 @@ TestInputApp::OnInit() {
     gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
-    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    if (Gfx::DisplayAttrs().WindowWidth > 800) {
+        Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    }
     Input::Setup();
     
     // create a 3D cube
@@ -252,6 +255,28 @@ TestInputApp::printTouchpadState(const Touchpad& touchpad) const {
 }
 
 //------------------------------------------------------------------------------
+void
+TestInputApp::printAccelState(const Accelerometer& accelerometer) const {
+    if (accelerometer.Attached) {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r ACCELEROMETER STATUS:\n\n\r");
+        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::PrintF(" incl gravity: %.3f %.3f %.3f\n\r"
+                    " no gravity:   %.3f %.3f %.3f\n\r",
+                    accelerometer.AccelerationWithGravity.x,
+                    accelerometer.AccelerationWithGravity.y,
+                    accelerometer.AccelerationWithGravity.z,
+                    accelerometer.Acceleration.x,
+                    accelerometer.Acceleration.y,
+                    accelerometer.Acceleration.z);
+    }
+    else {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r ACCELEROMETER NOT ATTACHED");
+    }
+}
+
+//------------------------------------------------------------------------------
 glm::vec4
 TestInputApp::getClearColor(const Touchpad& touchpad) const {
     glm::vec4 clearColor(0.25f);
@@ -372,9 +397,11 @@ TestInputApp::OnRunning() {
     const Keyboard& kbd = Input::Keyboard();
     const Mouse& mouse = Input::Mouse();
     const Touchpad& touchpad = Input::Touchpad();
+    const Accelerometer& accelerometer = Input::Accelerometer();
     this->printMouseState(mouse);
     this->printKeyboardState(kbd);
     this->printTouchpadState(touchpad);
+    this->printAccelState(accelerometer);
     this->handleKeyboardInput(kbd);
     this->handleMouseInput(mouse);
     this->handleTouchInput(touchpad);
@@ -382,7 +409,7 @@ TestInputApp::OnRunning() {
     
     // draw frame
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
+    Gfx::Clear(PixelChannel::All, this->getClearColor(touchpad), 1.0f, 0);
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
