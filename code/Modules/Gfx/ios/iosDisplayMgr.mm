@@ -78,12 +78,15 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& GfxSetup) {
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
     }
+    /*
+    FIXME: this doesn't work, find out why
     if (gfxSetup.Samples > 0) {
         glkView.drawableMultisample = GLKViewDrawableMultisample4X;
     }
     else {
         glkView.drawableMultisample = GLKViewDrawableMultisampleNone;
     }
+    */
     
     // setup platform constants and extensions
     glInfo::Setup();
