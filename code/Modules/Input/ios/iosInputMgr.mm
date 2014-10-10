@@ -89,8 +89,8 @@ iosInputMgr::setup(const InputSetup& setup) {
     // create CoreMotionManager to sample device motion data
     if (setup.AccelerometerEnabled) {
         this->motionManager = [[CMMotionManager alloc] init];
-        if ([this->motionManager isDeviceMotionAvailable]) {
-            [this->motionManager startDeviceMotionUpdates];
+        if ([this->motionManager isAccelerometerAvailable]) {
+            [this->motionManager startAccelerometerUpdates];
             this->accelerometer.Attached = true;
             this->motionRunLoopId = Core::PreRunLoop()->Add([this]() { this->sampleMotionData(); });
         }
@@ -123,7 +123,7 @@ iosInputMgr::discard() {
         if (RunLoop::InvalidId != this->motionRunLoopId) {
             Core::PreRunLoop()->Remove(this->motionRunLoopId);
             this->motionRunLoopId = RunLoop::InvalidId;
-            [this->motionManager stopDeviceMotionUpdates];
+            [this->motionManager stopAccelerometerUpdates];
         }
         [this->motionManager release];
         this->motionManager = nil;
@@ -138,16 +138,14 @@ iosInputMgr::discard() {
 void
 iosInputMgr::sampleMotionData() {
     o_assert_dbg(nil != this->motionManager);
-    CMDeviceMotion* motion = [this->motionManager deviceMotion];
-    if (nil != motion) {
-        CMAcceleration gravity = motion.gravity;
-        CMAcceleration userAccel = motion.userAcceleration;
-        static const float32 earthGravity = 9.80665f;
+    CMAccelerometerData* accelData = [this->motionManager accelerometerData];
+    if (nil != accelData) {
+        CMAcceleration cmAccel = accelData.acceleration;
         
         // note: flip x and y, since we're by default in landscape orientation
-        glm::vec3 accel(-(userAccel.y + gravity.y), userAccel.x + gravity.x, userAccel.z + gravity.z);
-        accel *= earthGravity;
-        this->accelerometer.Acceleration = accel;
+        static const float32 earthGravity = 9.80665;
+        glm::vec3 accel(-cmAccel.y, cmAccel.x, cmAccel.z);
+        this->accelerometer.Acceleration = accel * earthGravity;
     }
 }
 
