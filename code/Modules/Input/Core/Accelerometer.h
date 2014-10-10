@@ -12,9 +12,7 @@ class Accelerometer {
 public:
     /// does the host platform provide acceleration data?
     bool Attached = false;
-    /// current acceleration vector, including gravity
-    glm::vec3 AccelerationWithGravity;
-    /// current acceleration with gravity removed
+    /// acceleration vector including gravity in m/sec^2
     glm::vec3 Acceleration;
 };
 

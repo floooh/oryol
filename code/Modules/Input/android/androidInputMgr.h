@@ -29,6 +29,8 @@ public:
 private:
     /// callback method from global android_app object
     static int32_t onInputEvent(struct android_app* app, AInputEvent* event);
+    /// sensor event callback
+    static void onSensorEvent(const ASensorEvent* event);
 
     RunLoop::Id runLoopId;
 };

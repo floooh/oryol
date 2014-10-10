@@ -13,18 +13,33 @@ extern android_app* OryolAndroidAppState;
 namespace Oryol {
 namespace _priv {    
 
+androidBridge* androidBridge::self = nullptr;
+
 //------------------------------------------------------------------------------
 androidBridge::androidBridge() :
 valid(false),
 hasWindow(false),
 hasFocus(false),
-app(nullptr) {
-    // empty
+app(nullptr),
+sensorManager(nullptr),
+accelerometerSensor(nullptr),
+sensorEventQueue(nullptr) {
+    o_assert(nullptr == self);
+    self = this;
 }
 
 //------------------------------------------------------------------------------
 androidBridge::~androidBridge() {
     o_assert(!this->isValid());
+    o_assert(nullptr != self);
+    self = nullptr;
+}
+
+//------------------------------------------------------------------------------
+androidBridge*
+androidBridge::ptr() {
+    o_assert_dbg(nullptr != self);
+    return self;
 }
 
 //------------------------------------------------------------------------------
@@ -57,6 +72,12 @@ androidBridge::isValid() const {
 
 //------------------------------------------------------------------------------
 void
+androidBridge::setSensorEventCallback(std::function<void(const ASensorEvent*)> cb) {
+    this->sensorEventCallback = cb;
+}
+
+//------------------------------------------------------------------------------
+void
 androidBridge::onStart() {
     o_assert(this->isValid());
     Log::Info("androidBridge::onStart()\n");
@@ -64,6 +85,11 @@ androidBridge::onStart() {
     // setup the callback hook for AppCmds
     OryolAndroidAppState->userData = this;
     OryolAndroidAppState->onAppCmd = androidBridge::onAppCmd;
+
+    // setup the accelerometer
+    this->sensorManager = ASensorManager_getInstance();
+    this->accelerometerSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+    this->sensorEventQueue = ASensorManager_createEventQueue(this->sensorManager, OryolAndroidAppState->looper, LOOPER_ID_USER, NULL, NULL);
 }
 
 //------------------------------------------------------------------------------
@@ -80,6 +106,18 @@ androidBridge::onFrame() {
         if (source) {
             source->process(OryolAndroidAppState, source);
         }
+
+        // sensor event?
+        if (id == LOOPER_ID_USER) {
+            if (this->accelerometerSensor) {
+                ASensorEvent event;
+                while (ASensorEventQueue_getEvents(this->sensorEventQueue, &event, 1) > 0) {
+                    if (this->sensorEventCallback) {
+                        this->sensorEventCallback(&event);
+                    }
+                }
+            }
+        }
     }
     this->app->onFrame();
     return 0 == OryolAndroidAppState->destroyRequested;
@@ -89,6 +127,11 @@ androidBridge::onFrame() {
 void
 androidBridge::onStop() {
     o_assert(this->isValid());
+
+    ASensorManager_destroyEventQueue(this->sensorManager, this->sensorEventQueue);
+    this->sensorEventQueue = nullptr;
+    this->accelerometerSensor = nullptr;
+    this->sensorManager = nullptr;
 
     Log::Info("androidBridge::onStop()\n");
 }
@@ -169,6 +212,12 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS:
             Log::Info("androidBridge::onAppCmd(): APP_CMD_GAINED_FOCUS\n");
             self->hasFocus = true;
+
+            // enable sensor events
+            if (self->accelerometerSensor) {
+                ASensorEventQueue_enableSensor(self->sensorEventQueue, self->accelerometerSensor);
+                ASensorEventQueue_setEventRate(self->sensorEventQueue,self->accelerometerSensor, (1000L/60)*1000);
+            }            
             break;
 
         /**
@@ -178,6 +227,11 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
         case APP_CMD_LOST_FOCUS:
             Log::Info("androidBridge::onAppCmd(): APP_CMD_LOST_FOCUS\n");
             self->hasFocus = false;
+
+            // disable sensor events
+            if (self->accelerometerSensor) {
+                ASensorEventQueue_disableSensor(self->sensorEventQueue, self->accelerometerSensor);
+            }
             break;
 
         /**

@@ -142,12 +142,12 @@ iosInputMgr::sampleMotionData() {
     if (nil != motion) {
         CMAcceleration gravity = motion.gravity;
         CMAcceleration userAccel = motion.userAcceleration;
-        this->accelerometer.Acceleration.x = (float32) userAccel.x;
-        this->accelerometer.Acceleration.y = (float32) userAccel.y;
-        this->accelerometer.Acceleration.z = (float32) userAccel.z;
-        this->accelerometer.AccelerationWithGravity.x = (float32) (userAccel.x + gravity.x);
-        this->accelerometer.AccelerationWithGravity.y = (float32) (userAccel.y + gravity.y);
-        this->accelerometer.AccelerationWithGravity.z = (float32) (userAccel.z + gravity.z);        
+        static const float32 earthGravity = 9.80665f;
+        
+        // note: flip x and y, since we're by default in landscape orientation
+        glm::vec3 accel(-(userAccel.y + gravity.y), userAccel.x + gravity.x, userAccel.z + gravity.z);
+        accel *= earthGravity;
+        this->accelerometer.Acceleration = accel;
     }
 }
 

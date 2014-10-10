@@ -31,15 +31,21 @@ androidInputMgr::~androidInputMgr() {
 //------------------------------------------------------------------------------
 void
 androidInputMgr::setup(const InputSetup& setup) {
+    Log::Info("androidInputMgr::setup called!\n");
+
     inputMgrBase::setup(setup);
     this->touchpad.Attached = true;
+    this->accelerometer.Attached = true;
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    
+    androidBridge::ptr()->setSensorEventCallback(this->onSensorEvent);
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });   
 }
 
 //------------------------------------------------------------------------------
 void
-androidInputMgr::discard() {
+androidInputMgr::discard() {    
+    Log::Info("androidInputMgr::discard called!\n");
+
     OryolAndroidAppState->onInputEvent = nullptr;
     Core::PostRunLoop()->Remove(this->runLoopId);
     this->runLoopId = RunLoop::InvalidId;
@@ -88,6 +94,7 @@ androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* aEvent) {
             curPoint.pos.y = AMotionEvent_getY(aEvent, i);
             curPoint.isChanged = (i == pointerIndex);
         }
+
         self->onTouchEvent(event);
         retval = 1;
     }
@@ -98,6 +105,17 @@ androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* aEvent) {
         Log::Dbg("androidInputMgr: unknown input event type '%d'\n", type);
     }
     return retval;
+}
+
+//------------------------------------------------------------------------------
+void
+androidInputMgr::onSensorEvent(const ASensorEvent* event) {
+    o_assert_dbg(nullptr != self);
+
+    // NOTE: x and y are swapped because the default orientation is landscape
+    self->accelerometer.Acceleration.x = event->acceleration.y;
+    self->accelerometer.Acceleration.y = -event->acceleration.x;
+    self->accelerometer.Acceleration.z = -event->acceleration.z;
 }
 
 } // namespace _priv

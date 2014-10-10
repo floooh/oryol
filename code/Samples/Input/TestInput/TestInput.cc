@@ -261,11 +261,7 @@ TestInputApp::printAccelState(const Accelerometer& accelerometer) const {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::Print("\n\n\r ACCELEROMETER STATUS:\n\n\r");
         Dbg::TextColor(glm::vec4(1.0f));
-        Dbg::PrintF(" incl gravity: %.3f %.3f %.3f\n\r"
-                    " no gravity:   %.3f %.3f %.3f\n\r",
-                    accelerometer.AccelerationWithGravity.x,
-                    accelerometer.AccelerationWithGravity.y,
-                    accelerometer.AccelerationWithGravity.z,
+        Dbg::PrintF(" acceleration: %.3f %.3f %.3f\n\r",
                     accelerometer.Acceleration.x,
                     accelerometer.Acceleration.y,
                     accelerometer.Acceleration.z);
