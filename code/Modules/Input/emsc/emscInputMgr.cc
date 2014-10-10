@@ -28,6 +28,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->keyboard.Attached = true;
     this->mouse.Attached = true;
     this->touchpad.Attached = true;
+    this->accelerometer.Attached = true;
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -68,6 +69,9 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
+    if (this->inputSetup.AccelerometerEnabled) {
+        emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -85,6 +89,7 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_touchend_callback("#canvas", 0, true, 0);
     emscripten_set_touchmove_callback("#canvas", 0, true, 0);
     emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
+    emscripten_set_devicemotion_callback(0, true, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -250,6 +255,19 @@ emscInputMgr::emscTouch(int eventType, const EmscriptenTouchEvent* e, void* user
         curPoint.isChanged = e->touches[i].isChanged;
     }
     self->onTouchEvent(event);
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+
+    // note: swap x and y because default orientation is landscape
+    self->accelerometer.Acceleration.x = e->accelerationIncludingGravityY;
+    self->accelerometer.Acceleration.y = -e->accelerationIncludingGravityX;
+    self->accelerometer.Acceleration.z = -e->accelerationIncludingGravityZ;
+
     return true;
 }
 

@@ -61,6 +61,8 @@ private:
     static EM_BOOL emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData);
     /// touch event callback (same callback for touchstart, touchmove, touchend, touchcancel)
     static EM_BOOL emscTouch(int eventType, const EmscriptenTouchEvent* e, void* userData);
+    /// device motion callback
+    static EM_BOOL emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData);
     
     static const int32 MaxNumKeys = 256;
     RunLoop::Id runLoopId;
