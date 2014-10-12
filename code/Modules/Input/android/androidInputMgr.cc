@@ -35,7 +35,7 @@ androidInputMgr::setup(const InputSetup& setup) {
 
     inputMgrBase::setup(setup);
     this->touchpad.Attached = true;
-    this->accelerometer.Attached = true;
+    this->sensors.Attached = true;
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
     androidBridge::ptr()->setSensorEventCallback(this->onSensorEvent);
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });   
@@ -112,10 +112,31 @@ void
 androidInputMgr::onSensorEvent(const ASensorEvent* event) {
     o_assert_dbg(nullptr != self);
 
-    // NOTE: x and y are swapped because the default orientation is landscape
-    self->accelerometer.Acceleration.x = event->acceleration.y;
-    self->accelerometer.Acceleration.y = -event->acceleration.x;
-    self->accelerometer.Acceleration.z = -event->acceleration.z;
+    switch (event->type) {
+        case ASENSOR_TYPE_ACCELEROMETER:
+            if (self->inputSetup.AccelerometerEnabled) {
+                // NOTE: x and y are swapped because the default orientation is landscape
+                self->sensors.Acceleration.x = event->acceleration.y;
+                self->sensors.Acceleration.y = -event->acceleration.x;
+                self->sensors.Acceleration.z = -event->acceleration.z;
+            }
+            break;
+
+        case ASENSOR_TYPE_GYROSCOPE:
+            if (self->inputSetup.GyrometerEnabled) {
+                // NOTE: the gyroscope values are *changes*
+                // in orientation, not orientation :/
+                // FIXME: compute absolute vector (look at browser 
+                // source code to see how?)
+                self->sensors.Yaw   += event->vector.roll * (1.0/60.0);
+                self->sensors.Pitch += event->vector.azimuth * (1.0/60.0);
+                self->sensors.Roll  += event->vector.pitch * (1.0/60.0);
+            }
+            break;
+
+        default:
+            break;
+    }
 }
 
 } // namespace _priv

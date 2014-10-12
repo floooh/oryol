@@ -87,11 +87,11 @@ iosInputMgr::setup(const InputSetup& setup) {
     this->inputDelegate = [[iosInputDelegate alloc] init];
     
     // create CoreMotionManager to sample device motion data
-    if (setup.AccelerometerEnabled) {
+    if (setup.AccelerometerEnabled || setup.GyrometerEnabled) {
         this->motionManager = [[CMMotionManager alloc] init];
-        if ([this->motionManager isAccelerometerAvailable]) {
-            [this->motionManager startAccelerometerUpdates];
-            this->accelerometer.Attached = true;
+        if ([this->motionManager isDeviceMotionAvailable]) {
+            [this->motionManager startDeviceMotionUpdates];
+            this->sensors.Attached = true;
             this->motionRunLoopId = Core::PreRunLoop()->Add([this]() { this->sampleMotionData(); });
         }
         else {
@@ -138,14 +138,24 @@ iosInputMgr::discard() {
 void
 iosInputMgr::sampleMotionData() {
     o_assert_dbg(nil != this->motionManager);
-    CMAccelerometerData* accelData = [this->motionManager accelerometerData];
-    if (nil != accelData) {
-        CMAcceleration cmAccel = accelData.acceleration;
+    CMDeviceMotion* motionData = [this->motionManager deviceMotion];
+    if (nil != motionData) {
+        CMAcceleration cmGravity = motionData.gravity;
+        CMAcceleration cmUserAccel = motionData.userAcceleration;
         
-        // note: flip x and y, since we're by default in landscape orientation
-        static const float32 earthGravity = 9.80665;
-        glm::vec3 accel(-cmAccel.y, cmAccel.x, cmAccel.z);
-        this->accelerometer.Acceleration = accel * earthGravity;
+        // acceleration
+        if (this->inputSetup.AccelerometerEnabled) {
+            static const float32 earthGravity = 9.80665;
+            glm::vec3 accel(cmGravity.x + cmUserAccel.x, cmGravity.y + cmUserAccel.y, cmGravity.z + cmUserAccel.z);
+            this->sensors.Acceleration = accel * earthGravity;
+        }
+        
+        // attitude
+        if (this->inputSetup.GyrometerEnabled) {
+            this->sensors.Yaw   = motionData.attitude.yaw;
+            this->sensors.Pitch = motionData.attitude.pitch;
+            this->sensors.Roll  = motionData.attitude.roll;
+        }
     }
 }
 

@@ -63,7 +63,9 @@ private:
     static EM_BOOL emscTouch(int eventType, const EmscriptenTouchEvent* e, void* userData);
     /// device motion callback
     static EM_BOOL emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData);
-    
+    /// device orientation callback
+    static EM_BOOL emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData);
+
     static const int32 MaxNumKeys = 256;
     RunLoop::Id runLoopId;
     Key::Code keyTable[MaxNumKeys];

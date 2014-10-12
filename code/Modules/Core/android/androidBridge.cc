@@ -22,7 +22,8 @@ hasWindow(false),
 hasFocus(false),
 app(nullptr),
 sensorManager(nullptr),
-accelerometerSensor(nullptr),
+accelSensor(nullptr),
+gyroSensor(nullptr),
 sensorEventQueue(nullptr) {
     o_assert(nullptr == self);
     self = this;
@@ -88,7 +89,8 @@ androidBridge::onStart() {
 
     // setup the accelerometer
     this->sensorManager = ASensorManager_getInstance();
-    this->accelerometerSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+    this->accelSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+    this->gyroSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_GYROSCOPE);
     this->sensorEventQueue = ASensorManager_createEventQueue(this->sensorManager, OryolAndroidAppState->looper, LOOPER_ID_USER, NULL, NULL);
 }
 
@@ -109,7 +111,7 @@ androidBridge::onFrame() {
 
         // sensor event?
         if (id == LOOPER_ID_USER) {
-            if (this->accelerometerSensor) {
+            if (this->sensorEventQueue) {
                 ASensorEvent event;
                 while (ASensorEventQueue_getEvents(this->sensorEventQueue, &event, 1) > 0) {
                     if (this->sensorEventCallback) {
@@ -129,8 +131,9 @@ androidBridge::onStop() {
     o_assert(this->isValid());
 
     ASensorManager_destroyEventQueue(this->sensorManager, this->sensorEventQueue);
-    this->sensorEventQueue = nullptr;
-    this->accelerometerSensor = nullptr;
+    this->sensorEventQueue = nullptr;    
+    this->accelSensor = nullptr;
+    this->gyroSensor = nullptr;
     this->sensorManager = nullptr;
 
     Log::Info("androidBridge::onStop()\n");
@@ -214,10 +217,14 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
             self->hasFocus = true;
 
             // enable sensor events
-            if (self->accelerometerSensor) {
-                ASensorEventQueue_enableSensor(self->sensorEventQueue, self->accelerometerSensor);
-                ASensorEventQueue_setEventRate(self->sensorEventQueue,self->accelerometerSensor, (1000L/60)*1000);
-            }            
+            if (self->accelSensor) {
+                ASensorEventQueue_enableSensor(self->sensorEventQueue, self->accelSensor);
+                ASensorEventQueue_setEventRate(self->sensorEventQueue, self->accelSensor, (1000L/60)*1000);
+            }   
+            if (self->gyroSensor) {
+                ASensorEventQueue_enableSensor(self->sensorEventQueue, self->gyroSensor);
+                ASensorEventQueue_setEventRate(self->sensorEventQueue, self->gyroSensor, (1000L/60)*1000);
+            }         
             break;
 
         /**
@@ -229,8 +236,11 @@ androidBridge::onAppCmd(android_app* appState, int32_t cmd) {
             self->hasFocus = false;
 
             // disable sensor events
-            if (self->accelerometerSensor) {
-                ASensorEventQueue_disableSensor(self->sensorEventQueue, self->accelerometerSensor);
+            if (self->accelSensor) {
+                ASensorEventQueue_disableSensor(self->sensorEventQueue, self->accelSensor);
+            }
+            if (self->gyroSensor) {
+                ASensorEventQueue_disableSensor(self->sensorEventQueue, self->gyroSensor);
             }
             break;
 

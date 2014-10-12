@@ -88,10 +88,10 @@ Input::Touchpad() {
 }
 
 //------------------------------------------------------------------------------
-const class Accelerometer&
-Input::Accelerometer() {
+const class Sensors&
+Input::Sensors() {
     o_assert_dbg(IsValid());
-    return state->inputManager.Accelerometer();
+    return state->inputManager.Sensors();
 }
 
 } // namespace Input

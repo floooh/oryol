@@ -33,8 +33,8 @@ public:
     static const class Gamepad& Gamepad(int32 index);
     /// get touchpad state (for touch/multitouch gestures)
     static const class Touchpad& Touchpad();
-    /// get accelerometer state
-    static const class Accelerometer& Accelerometer();
+    /// get sensory state
+    static const class Sensors& Sensors();
     
     /// set mouse cursor mode
     static void SetCursorMode(CursorMode::Code mode);

@@ -20,6 +20,8 @@ public:
     bool PanEnabled = true;
     /// accelerometer enabled
     bool AccelerometerEnabled = true;
+    /// gyrometer enabled
+    bool GyrometerEnabled = true;
 };
     
 } // namespace Oryol

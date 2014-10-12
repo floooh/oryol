@@ -5,6 +5,7 @@
 #include "emscInputMgr.h"
 #include "Core/Core.h"
 #include "Time/Clock.h"
+#include "glm/glm.hpp"
 
 namespace Oryol {
 namespace _priv {
@@ -28,7 +29,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->keyboard.Attached = true;
     this->mouse.Attached = true;
     this->touchpad.Attached = true;
-    this->accelerometer.Attached = true;
+    this->sensors.Attached = true;
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -72,6 +73,9 @@ emscInputMgr::setupCallbacks() {
     if (this->inputSetup.AccelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
+    if (this->inputSetup.GyrometerEnabled) {
+        emscripten_set_deviceorientation_callback(this, true, emscDeviceOrientation);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -90,6 +94,7 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_touchmove_callback("#canvas", 0, true, 0);
     emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
     emscripten_set_devicemotion_callback(0, true, 0);
+    emscripten_set_deviceorientation_callback(0, true, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -263,10 +268,22 @@ EM_BOOL
 emscInputMgr::emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
 
-    // note: swap x and y because default orientation is landscape
-    self->accelerometer.Acceleration.x = e->accelerationIncludingGravityY;
-    self->accelerometer.Acceleration.y = -e->accelerationIncludingGravityX;
-    self->accelerometer.Acceleration.z = -e->accelerationIncludingGravityZ;
+    self->sensors.Acceleration.x = -e->accelerationIncludingGravityX;
+    self->sensors.Acceleration.y = -e->accelerationIncludingGravityY;
+    self->sensors.Acceleration.z = -e->accelerationIncludingGravityZ;
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+
+    // FIXME: the roll angle needs some fixing
+    self->sensors.Roll  = glm::radians(e->gamma);
+    self->sensors.Pitch = glm::radians(e->beta);
+    self->sensors.Yaw   = glm::radians(e->alpha);
 
     return true;
 }

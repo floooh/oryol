@@ -28,7 +28,7 @@ private:
     void printMouseState(const Mouse& mouse) const;
     void printKeyboardState(const Keyboard& kbd) const;
     void printTouchpadState(const Touchpad& touchpad) const;
-    void printAccelState(const Accelerometer& accelerometer) const;
+    void printSensorState(const Sensors& sensors) const;
     glm::vec4 getClearColor(const Touchpad& touchpad) const;
     void updateView();
     void reset();
@@ -256,19 +256,23 @@ TestInputApp::printTouchpadState(const Touchpad& touchpad) const {
 
 //------------------------------------------------------------------------------
 void
-TestInputApp::printAccelState(const Accelerometer& accelerometer) const {
-    if (accelerometer.Attached) {
+TestInputApp::printSensorState(const Sensors& sensors) const {
+    if (sensors.Attached) {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        Dbg::Print("\n\n\r ACCELEROMETER STATUS:\n\n\r");
+        Dbg::Print("\n\n\r SENSOR STATUS:\n\n\r");
         Dbg::TextColor(glm::vec4(1.0f));
         Dbg::PrintF(" acceleration: %.3f %.3f %.3f\n\r",
-                    accelerometer.Acceleration.x,
-                    accelerometer.Acceleration.y,
-                    accelerometer.Acceleration.z);
+                    sensors.Acceleration.x,
+                    sensors.Acceleration.y,
+                    sensors.Acceleration.z);
+        Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r",
+                    glm::degrees(sensors.Yaw),
+                    glm::degrees(sensors.Pitch),
+                    glm::degrees(sensors.Roll));
     }
     else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        Dbg::Print("\n\n\r ACCELEROMETER NOT ATTACHED");
+        Dbg::Print("\n\n\r SENSORS NOT ATTACHED");
     }
 }
 
@@ -393,11 +397,11 @@ TestInputApp::OnRunning() {
     const Keyboard& kbd = Input::Keyboard();
     const Mouse& mouse = Input::Mouse();
     const Touchpad& touchpad = Input::Touchpad();
-    const Accelerometer& accelerometer = Input::Accelerometer();
+    const Sensors& sensors = Input::Sensors();
     this->printMouseState(mouse);
     this->printKeyboardState(kbd);
     this->printTouchpadState(touchpad);
-    this->printAccelState(accelerometer);
+    this->printSensorState(sensors);
     this->handleKeyboardInput(kbd);
     this->handleMouseInput(mouse);
     this->handleTouchInput(touchpad);

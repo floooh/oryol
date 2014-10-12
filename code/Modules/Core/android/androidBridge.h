@@ -47,7 +47,8 @@ private:
     bool hasFocus;
     App* app;
     ASensorManager* sensorManager;
-    const ASensor* accelerometerSensor;
+    const ASensor* accelSensor;
+    const ASensor* gyroSensor;
     ASensorEventQueue* sensorEventQueue;    
     std::function<void(const ASensorEvent*)> sensorEventCallback;
 };

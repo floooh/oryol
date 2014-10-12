@@ -10,7 +10,7 @@
 #include "Input/Core/Mouse.h"
 #include "Input/Core/Gamepad.h"
 #include "Input/Core/Touchpad.h"
-#include "Input/Core/Accelerometer.h"
+#include "Input/Core/Sensors.h"
 #include "Input/Core/CursorMode.h"
 #include "Input/touch/touchEvent.h"
 #include "Input/touch/tapDetector.h"
@@ -46,8 +46,8 @@ public:
     const class Gamepad& Gamepad(int32 index) const;
     /// get touchpad state (for touch/multitouch gestures)
     const class Touchpad& Touchpad() const;
-    /// get accelerometer state
-    const class Accelerometer& Accelerometer() const;
+    /// get sensory state
+    const class Sensors& Sensors() const;
     
     /// set mouse cursor mode
     void setCursorMode(CursorMode::Code mode);
@@ -70,7 +70,7 @@ protected:
     class Mouse mouse;
     class Gamepad gamepads[MaxNumGamepads];
     class Touchpad touchpad;
-    class Accelerometer accelerometer;
+    class Sensors sensors;
     tapDetector singleTapDetector;
     tapDetector doubleTapDetector;
     class panDetector panDetector;
@@ -104,9 +104,9 @@ inputMgrBase::Touchpad() const {
 }
 
 //------------------------------------------------------------------------------
-inline const class Accelerometer&
-inputMgrBase::Accelerometer() const {
-    return this->accelerometer;
+inline const class Sensors&
+inputMgrBase::Sensors() const {
+    return this->sensors;
 }
 
 //------------------------------------------------------------------------------
