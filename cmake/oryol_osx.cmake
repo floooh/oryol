@@ -119,7 +119,6 @@ macro(oryol_osx_generate_plist_file target)
             "    <key>UISupportedInterfaceOrientations</key>\n"
             "    <array>\n"
             "      <string>UIInterfaceOrientationLandscapeRight</string>\n"
-            "      <string>UIInterfaceOrientationLandscapeLeft</string>\n"
             "    </array>\n"
             "    <key>UIRequiredDeviceCapabilities</key>\n"
             "    <array>\n"

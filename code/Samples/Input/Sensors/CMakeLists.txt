@@ -1,0 +1,5 @@
+oryol_begin_app(Sensors windowed)
+    oryol_sources(.)
+    oryol_deps(Core Gfx Dbg Input)
+    oryol_add_web_sample(Sensors "Device sensors sample" "emscripten,android" Sensors.jpg "Input/Sensors/Sensors.cc")
+oryol_end_app()

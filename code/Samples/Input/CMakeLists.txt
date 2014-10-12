@@ -1,3 +1,3 @@
 oryol_add_subdirectory(TestInput)
-oryol_add_subdirectory(Accelerometer)
+oryol_add_subdirectory(Sensors)
 
