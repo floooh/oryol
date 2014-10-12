@@ -6,6 +6,9 @@
 #include "Core/Core.h"
 #include "Time/Clock.h"
 #include "android_native/android_native_app_glue.h"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/constants.hpp"
+#include "glm/trigonometric.hpp"
 
 // this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
@@ -122,17 +125,22 @@ androidInputMgr::onSensorEvent(const ASensorEvent* event) {
             }
             break;
 
-        case ASENSOR_TYPE_GYROSCOPE:
+        // note: this is an undocumented sensor type
+        // http://developer.android.com/guide/topics/sensors/sensors_motion.html#sensors-motion-rotate
+            /*
+        case ASENSOR_TYPE_GAME_ROTATION_VECTOR:
+            // FIXME FIXME FIXME: this doesn't seem to work!
             if (self->inputSetup.GyrometerEnabled) {
-                // NOTE: the gyroscope values are *changes*
-                // in orientation, not orientation :/
-                // FIXME: compute absolute vector (look at browser 
-                // source code to see how?)
-                self->sensors.Yaw   += event->vector.roll * (1.0/60.0);
-                self->sensors.Pitch += event->vector.azimuth * (1.0/60.0);
-                self->sensors.Roll  += event->vector.pitch * (1.0/60.0);
+                glm::vec3 axis(event->vector.x, event->vector.y, event->vector.z);
+                float mag = glm::length(axis);
+                glm::quat q(glm::cos(mag), event->vector.x, event->vector.y, event->vector.z);
+                glm::vec3 eulerAngles = glm::eulerAngles(q);
+                self->sensors.Yaw   = eulerAngles.y;
+                self->sensors.Pitch = eulerAngles.x;
+                self->sensors.Roll  = eulerAngles.z;
             }
             break;
+        */
 
         default:
             break;

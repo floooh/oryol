@@ -11,6 +11,11 @@
 
 struct android_app;
 
+// undocumented sensor type (not documented in NDK)
+enum {
+    ASENSOR_TYPE_GAME_ROTATION_VECTOR = 15,
+};
+
 namespace Oryol {
 class App;
 

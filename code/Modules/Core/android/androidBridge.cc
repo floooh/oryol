@@ -90,7 +90,7 @@ androidBridge::onStart() {
     // setup the accelerometer
     this->sensorManager = ASensorManager_getInstance();
     this->accelSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_ACCELEROMETER);
-    this->gyroSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_GYROSCOPE);
+    this->gyroSensor = ASensorManager_getDefaultSensor(this->sensorManager, ASENSOR_TYPE_GAME_ROTATION_VECTOR);
     this->sensorEventQueue = ASensorManager_createEventQueue(this->sensorManager, OryolAndroidAppState->looper, LOOPER_ID_USER, NULL, NULL);
 }
 
