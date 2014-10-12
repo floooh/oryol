@@ -23,6 +23,10 @@ private:
     canvas spriteCanvas;
     game gameState;
     int32 tick;
+    int32 viewPortX;
+    int32 viewPortY;
+    int32 viewPortW;
+    int32 viewPortH;
 };
 OryolMain(PacloneApp);
 
@@ -38,6 +42,15 @@ PacloneApp::OnInit() {
     
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
     this->gameState.Init(&this->spriteCanvas);
+
+    // get actual display width and height and compute viewport
+    float aspect = float(dispWidth) / float(dispHeight);
+    const int actWidth = Gfx::DisplayAttrs().WindowWidth;
+    const int actHeight = Gfx::DisplayAttrs().WindowHeight;
+    this->viewPortY = 0;
+    this->viewPortH = actHeight;
+    this->viewPortW = actHeight * aspect;
+    this->viewPortX = (actWidth - this->viewPortW) / 2;
     
     return App::OnInit();
 }
@@ -47,6 +60,7 @@ AppState::Code
 PacloneApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyViewPort(this->viewPortX, this->viewPortY, this->viewPortW, this->viewPortH);
     Gfx::Clear(PixelChannel::All, glm::vec4(0.0f), 1.0f, 0);
     game::Direction input = this->getInput();
     this->gameState.Update(this->tick, &this->spriteCanvas, input);
