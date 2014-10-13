@@ -80,8 +80,8 @@ be unified with OSX and Linux in the future:
 
 ```
 > cd [path]/oryol
-> ./oryol setup emsdk
-> ./oryol build emscripten-ninja-release
+> oryol setup emsdk
+> oryol build emscripten-ninja-release
 [this should run cmake and compile the samples]
 > cd bin/emsc
 > ls
