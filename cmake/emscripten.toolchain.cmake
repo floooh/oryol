@@ -6,7 +6,7 @@
 message("Target Platform: emscripten")
 
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(EMSC_SDK_DIRNAME "sdks/win/emscripten")
+    set(EMSC_SDK_DIRNAME "sdks/windows/emscripten/emscripten/incoming")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
     set(EMSC_SDK_DIRNAME "sdks/osx/emscripten")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
@@ -87,7 +87,11 @@ get_filename_component(EMSCRIPTEN_ROOT_PATH "${EMSCRIPTEN_ROOT_PATH}" ABSOLUTE)
 get_filename_component(EMSCRIPTEN_DOT_FILE "${EMSCRIPTEN_ROOT_PATH}/../.emscripten" ABSOLUTE)
 
 # Set up options that we always want to pass to emscripten
-set(EMSCRIPTEN_CONFIG_OPTIONS "--em-config ${EMSCRIPTEN_DOT_FILE}")
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(EMSCRIPTEN_CONFIG_OPTIONS "")    
+else()
+    set(EMSCRIPTEN_CONFIG_OPTIONS "--em-config ${EMSCRIPTEN_DOT_FILE}")
+endif()
 
 # tool suffic (.bat on windows)
 if (CMAKE_HOST_WIN32)

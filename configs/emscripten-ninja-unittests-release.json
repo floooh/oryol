@@ -1,0 +1,11 @@
+{
+    "name": "emscripten-ninja-unittests-release", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "release",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
+    }
+}

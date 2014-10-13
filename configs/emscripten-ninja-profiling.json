@@ -1,0 +1,8 @@
+{
+    "name": "emscripten-ninja-profiling", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "profiling"
+    }
+}

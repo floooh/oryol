@@ -16,6 +16,18 @@ EmscGitUrl = 'https://github.com/kripken/emscripten.git'
 EmscFastCompGitUrl = 'https://github.com/kripken/emscripten-fastcomp.git'
 EmscFastCompClangGitUrl = 'https://github.com/kripken/emscripten-fastcomp-clang.git'
 
+EmsdkUrls = {
+    'Windows' : 'https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-1.22.0-portable-64bit.zip',
+    'Darwin' : 'https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz',
+    'Linux' : 'https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz'
+}
+
+EmsdkArchivePaths = {
+    'Windows' : 'emsdk-1.22.0-portable-64bit.zip',
+    'Darwin' : 'emsdk-portable.tar.gz',
+    'Linux' : 'emsdk-portable.tar.gz'
+}
+
 #-------------------------------------------------------------------------------
 def queryYesNo(question) :
     validAnswers={'': False, 'yes': True, 'ye': True, 'y': True, 'no': False, 'n': False }
@@ -58,6 +70,11 @@ def getEmscConfigFilePath() :
 #-------------------------------------------------------------------------------
 def getEmscSdkPath() :
     return getSdkDir() + '/emscripten'
+
+#-------------------------------------------------------------------------------
+def ensureEmscSdkPath() :
+    if not os.path.exists(getEmscSdkPath()) :
+        os.makedirs(getEmscSdkPath())
 
 #-------------------------------------------------------------------------------
 def getEmscFastcompPath() :
@@ -129,7 +146,7 @@ def setupEmscripten() :
             return
 
     if platform.system() == 'Windows' :
-        error('Not yet supported on Windows')
+        error('Not yet supported on Windows, please use "oryol setup emsdk"')
     ensureSdkDirectory()
 
     # git clone everything
@@ -145,3 +162,60 @@ def setupEmscripten() :
     writeEmscConfigFile()
     print "=> testing emcc execution"
     testEmcc()
+
+#-------------------------------------------------------------------------------
+def urlDownloadHook(count, blockSize, totalSize) :
+    percent = int(count * blockSize * 100 / totalSize)
+    sys.stdout.write('\r{}%'.format(percent))
+
+#-------------------------------------------------------------------------------
+def getEmSdkUrl() :
+    if platform.system() in EmsdkUrls :
+        return EmsdkUrls[platform.system()]
+    else :
+        error('unknown host platform')
+
+#-------------------------------------------------------------------------------
+def getEmSdkArchivePath() :
+    if platform.system() in EmsdkArchivePaths :
+        return getSdkDir() + '/' + EmsdkArchivePaths[platform.system()]
+    else :
+        error('unknown host platform')
+
+#-------------------------------------------------------------------------------
+def uncompress(srcPath, dstPath) :
+    if '.zip' in srcPath :
+        subprocess.call(args=['unzip', '-o', srcPath], cwd=dstPath)
+    elif '.tgz' or '.bz2' in path :
+        subprocess.call(args=['tar', '-xvf', srcPath], cwd=dstPath)
+
+#-------------------------------------------------------------------------------
+def prepare(path) :
+    print "prepare {}".format(path)
+    if platform.system() == 'Windows' :
+        subprocess.call(args=['emsdk.bat', 'update'], cwd=path, shell=True)
+        subprocess.call(args=['emsdk.bat', 'install', 'sdk-incoming-64bit'], cwd=path, shell=True)
+        subprocess.call(args=['emsdk.bat', 'activate', 'sdk-incoming-64bit'], cwd=path, shell=True)
+    else :
+        subprocess.call(args=['emsdk', 'update'], cwd=path)
+        subprocess.call(args=['emsdk', 'install', 'sdk-incoming-64bit'], cwd=path)
+        subprocess.call(args=['emsdk', 'activate', 'sdk-incoming-64bit'], cwd=path)
+
+#-------------------------------------------------------------------------------
+def setupEmSdk() :
+    '''
+    Setup the official emscripten SDK.
+    '''
+
+    ensureSdkDirectory()
+    ensureEmscSdkPath()
+
+    print "=> downloading emscripten SDK..."
+    sdkUrl = getEmSdkUrl()
+    urllib.urlretrieve(sdkUrl, getEmSdkArchivePath(), urlDownloadHook)
+    print '\n => unpacking emscripten SDK...'
+    uncompress(getEmSdkArchivePath(), getEmscSdkPath())
+    print '\n => preparing emscripten SDK...'
+    prepare(getEmscSdkPath())
+
+

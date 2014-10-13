@@ -1,0 +1,8 @@
+{
+    "name": "emscripten-ninja-debug", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "debug"
+    }
+}

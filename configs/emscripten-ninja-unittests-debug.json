@@ -1,0 +1,11 @@
+{
+    "name": "emscripten-ninja-unittests-debug", 
+    "target": {
+        "platform": "emscripten", 
+        "generator": "Ninja", 
+        "build-type": "Debug",
+        "defs": {
+            "ORYOL_UNITTESTS": "ON"
+        }
+    }
+}

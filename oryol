@@ -29,7 +29,7 @@ platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'an
 validTargetPlatforms = { 
     'Darwin': ['osx', 'ios', 'emscripten', 'pnacl', 'android'],
     'Linux': ['linux', 'emscripten', 'pnacl', 'android'],
-    'Windows': ['win32', 'win64']
+    'Windows': ['win32', 'win64', 'emscripten']
 }
 
 # valid non-cross-compiling platforms for a given host platform
@@ -43,7 +43,14 @@ validNativePlatforms = {
 validCrossPlatforms = {
     'Darwin': ['ios', 'emscripten', 'pnacl', 'android'],
     'Linux': ['emscripten', 'pnacl', 'android'],
-    'Windows': []
+    'Windows': ['emscripten']
+}
+
+# where ninja tool can be found
+ninjaPath = {
+    'Darwin': 'ninja',
+    'Linux': 'ninja',
+    'Windows': 'tools/win32/ninja.exe'
 }
 
 # dump an error string and exit with code 10
@@ -143,7 +150,7 @@ def testCMakeGUI() :
 # check whether ninja exists
 def testNinja() :
     try:
-        subprocess.check_output(["ninja", "--version"])
+        subprocess.check_output([ninjaPath[platform.system()], "--version"])
         print "ninja: found"
         return True;
     except OSError:
@@ -294,6 +301,10 @@ def runCMake(config) :
         if not os.path.exists(buildPath) :
             os.makedirs(buildPath)
 
+        # hack for windows: copy the ninja executable to the build path so that cmake finds it
+        if platform.system() == 'Windows' :
+            shutil.copy(ninjaPath['Windows'], buildPath)
+
         # change to build path and execute the cmake command
         if subprocess.call(args=cmdLine, cwd=buildPath) != 0 :
             error("Cmake run failed.")
@@ -326,7 +337,7 @@ def runBuild(config, target) :
             if target != None :
                 args.append(target)
         elif 'Ninja' in generator :
-            args = ['ninja']
+            args = [ninjaPath[platform.system()]]
             if target != None :
                 args.append(target)
         else :
@@ -351,7 +362,7 @@ def runRebuild(config, target) :
             exitCode = subprocess.call(args=['make', 'clean'], cwd=buildPath)
         elif 'Ninja' in generator :
             # run ninja
-            exitCode = subprocess.call(args=['ninja', 'clean'], cwd=buildPath)
+            exitCode = subprocess.call(args=[ninjaPath[platform.system()], 'clean'], cwd=buildPath)
         else :
             # generic invocation of cmake --build
             exitCode = subprocess.call(args=['cmake', '--build', '.', '--target', 'clean'], cwd=buildPath)
@@ -681,6 +692,8 @@ else :
             SDKSetupNacl.setupNacl()
         elif sys.argv[2] == 'emscripten' :
             SDKSetupEmsc.setupEmscripten()
+        elif sys.argv[2] == 'emsdk' :
+            SDKSetupEmsc.setupEmSdk()
         else :
             error('sdk {} not yet supported (try android, emscripten, nacl)'.format(sys.argv[2]))
 

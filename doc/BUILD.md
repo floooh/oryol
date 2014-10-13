@@ -54,6 +54,9 @@ To build the 64-bit samples:
 ```
 
 ### emscripten ###
+
+(OSX and Linux only, for Windows, see below)
+
 To build and run the Triangle sample for emscripten (NOTE: you also 
 need node.js and Java runtime installation):
 
@@ -69,6 +72,25 @@ Clear.html Shapes.html Triangle.html ...
 Serving HTTP on 0.0.0.0 port 8000 ...
 ```
 Now start Chrome or Firefox and navigate to **http://0.0.0.0:8000**
+
+#### Experimental emscripten support on Windows ####
+
+On Windows, the official emscripten SDK and the Ninja build tool must be used. This will
+be unified with OSX and Linux in the future:
+
+```
+> cd [path]/oryol
+> ./oryol setup emsdk
+> ./oryol build emscripten-ninja-release
+[this should run cmake and compile the samples]
+> cd bin/emsc
+> ls
+Clear.html Shapes.html Triangle.html ...
+> python -m SimpleHTTPServer
+Serving HTTP on 0.0.0.0 port 8000 ...
+```
+
+The IP address '0.0.0.0' doesn't seem to work on Windows, instead navigate to http://localhost:8000 in the browser.
 
 ### Android ###
 To setup a local Android development environment, build and deploy the
@@ -143,7 +165,7 @@ There are restrictions for cross-compiling:
 
 - host OS OSX can build for: OSX, emscripten, PNaCl, iOS, Android
 - host OS Linux can build for: Linux, emscripten, PNaCl, Android
-- host OS Windows can build for:  Windows 32-bit and Windows 64-bit
+- host OS Windows can build for:  Windows 32-bit, Windows 64-bit and emscripten
 
 ### Tools
 
