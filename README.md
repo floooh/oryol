@@ -19,13 +19,13 @@ http://floooh.github.io/oryol/
 * [Core Module](code/Modules/Core/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
-## _Clone it_ ##
+## _Clone_ ##
 
 ```bash
 git clone --recursive https://github.com/floooh/oryol.git oryol
 ```
 
-## _Build it_ ##
+## _Build_ ##
 
 [How to Build](doc/BUILD.md)
 
