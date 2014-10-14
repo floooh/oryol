@@ -5,12 +5,30 @@
 
 message("Target Platform: emscripten")
 
+#
+# FIXME FIXME FIXME:
+#
+#   emar currently has trouble using a non-standard .emscripten config
+#   file: https://github.com/kripken/emscripten/issues/2886
+#
+#   once this is fixed, set the CMAKE_AR_FLAGS variable to
+#   use the --em-config like the C/CXX compilers.
+#
+
+# depending on whether the official EMSDK is used or the
+# 'raw' emscripten SDK, OSX and Linux have 2 potential
+# locations for the emscripten SDK and the .emscripten file
+#
+# (NOTE: the 'raw SDK' is not supported on Windows)
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(EMSC_SDK_DIRNAME "sdks/windows/emscripten/emscripten/incoming")
+    set(EMSC_EMSDK_DIRNAME "sdks/windows/emscripten/emscripten/incoming")
+    set(EMSC_RAWSDK_DIRNAME "")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
-    set(EMSC_SDK_DIRNAME "sdks/osx/emscripten")
+    set(EMSC_EMSDK_DIRNAME "sdks/osx/emsdk_portable/emscripten/incoming")
+    set(EMSC_RAWSDK_DIRNAME "sdks/osx/emscripten")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
-    set(EMSC_SDK_DIRNAME "sdks/linux/emscripten")
+    set(EMSC_EMSDK_DIRNAME "sdks/linux/emsdk_portable/emscripten/incoming")
+    set(EMSC_RAWSDK_DIRNAME "sdks/linux/emscripten")
 endif()
 
 set(ORYOL_PLATFORM EMSCRIPTEN)
@@ -67,13 +85,23 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(COMPILING on)
 set(CMAKE_CROSSCOMPILING TRUE)
 
+# find the emscripten SDK and set the "EMSC_HAS_LOCAL_CONFIG" variable
+set(EMSC_HAS_LOCAL_CONFIG 0)
 macro(find_emscripten_sdk)
-    get_filename_component(EMSCRIPTEN_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../${EMSC_SDK_DIRNAME}" ABSOLUTE)
-    if (NOT EXISTS "${EMSCRIPTEN_ROOT_PATH}/emcc")
-        message(FATAL_ERROR "Could not find emscripten SDK at ${EMSC_SDK_DIRNAME}! See BUILD.md for instructions to setup Oryol for emscripten development!")
+    # first check for the official EMSDK, this does not allow to override
+    # the location of the .emscripten config file
+    get_filename_component(EMSCRIPTEN_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../${EMSC_EMSDK_DIRNAME}" ABSOLUTE)
+    if (EXISTS "${EMSCRIPTEN_ROOT_PATH}/emcc")
+        message("Emscripten SDK found (emsdk): ${EMSCRIPTEN_ROOT_PATH}")
     else()
-        message("Emscripten SDK found: ${EMSCRIPTEN_ROOT_PATH}")
-        set(EMSCRIPTEN_ROOT_PATH ${EMSCRIPTEN_ROOT_PATH} CACHE STRING "Emscripten SDK location.")
+        # check for the RAW SDK (not supported on Windows)
+        get_filename_component(EMSCRIPTEN_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../${EMSC_RAWSDK_DIRNAME}" ABSOLUTE)
+        if (EXISTS "${EMSCRIPTEN_ROOT_PATH}/emcc")
+            message("Emscripten SDK found (raw sdk): ${EMSCRIPTEN_ROOT_PATH}")
+            set(EMSC_HAS_LOCAL_CONFIG 1)
+        else()
+            message(FATAL_ERROR "Could not find emscripten SDK! See BUILD.md for instructions to setup Oryol for emscripten development!")
+        endif()
     endif()
 endmacro()
 
@@ -87,10 +115,10 @@ get_filename_component(EMSCRIPTEN_ROOT_PATH "${EMSCRIPTEN_ROOT_PATH}" ABSOLUTE)
 get_filename_component(EMSCRIPTEN_DOT_FILE "${EMSCRIPTEN_ROOT_PATH}/../.emscripten" ABSOLUTE)
 
 # Set up options that we always want to pass to emscripten
-if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(EMSCRIPTEN_CONFIG_OPTIONS "")    
-else()
+if (EMSC_HAS_LOCAL_CONFIG)
     set(EMSCRIPTEN_CONFIG_OPTIONS "--em-config ${EMSCRIPTEN_DOT_FILE}")
+else()
+    set(EMSCRIPTEN_CONFIG_OPTIONS "")    
 endif()
 
 # tool suffic (.bat on windows)

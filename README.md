@@ -6,7 +6,10 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_ ##
 
-- **24-Sep-2014**: Existing emscripten users: please run a './oryol setup emscripten' again to reconfigure/update the local emscripten SDK. The local SDK no longer overwrites the global .emscripten file (which is a good thing because it allows to run several emscripten SDKs side by side).
+- **14-Oct-2014**: I have switched to the official emscripten SDK for all platforms now. Please check
+BUILD.md for updated emscripten cross-compiling instructions. The main advantage is that Windows
+is now supported as host-platform, and that the official SDK makes it easy to switch between
+_incoming_ and _master_ versions of emscripten.
 
 ## _Try the Live Demos_ ##
 
