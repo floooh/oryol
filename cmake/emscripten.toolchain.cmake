@@ -21,7 +21,7 @@ message("Target Platform: emscripten")
 #
 # (NOTE: the 'raw SDK' is not supported on Windows)
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(EMSC_EMSDK_DIRNAME "sdks/windows/emscripten/emscripten/incoming")
+    set(EMSC_EMSDK_DIRNAME "sdks/windows/emsdk_portable/emscripten/incoming")
     set(EMSC_RAWSDK_DIRNAME "")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
     set(EMSC_EMSDK_DIRNAME "sdks/osx/emsdk_portable/emscripten/incoming")

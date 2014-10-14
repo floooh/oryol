@@ -29,7 +29,7 @@ EmsdkArchivePaths = {
 }
 
 EmsdkPaths = {
-    'Windows' : 'emscripten',
+    'Windows' : 'emsdk_portable',
     'Darwin' : 'emsdk_portable',
     'Linux' : 'emsdk_portable'
 }
@@ -201,9 +201,9 @@ def ensureEmsdkPath() :
         os.makedirs(getEmsdkPath())
 
 #-------------------------------------------------------------------------------
-def uncompress(srcPath, dstPath) :
+def uncompress(srcPath, dstPath, zipDirName) :
     if '.zip' in srcPath :
-        subprocess.call(args=['unzip', '-o', srcPath], cwd=dstPath)
+        subprocess.call(args=['unzip', '-o', srcPath, '-d', zipDirName ], cwd=dstPath)
     elif '.tgz' or '.bz2' in path :
         subprocess.call(args=['tar', '-xvf', srcPath], cwd=dstPath)
 
@@ -237,7 +237,7 @@ def setupEmSdk() :
     sdkUrl = getEmSdkUrl()
     urllib.urlretrieve(sdkUrl, getEmSdkArchivePath(), urlDownloadHook)
     print '\n => unpacking emscripten SDK...'
-    uncompress(getEmSdkArchivePath(), getSdkDir())
+    uncompress(getEmSdkArchivePath(), getSdkDir(), EmsdkPaths[platform.system()])
     print '\n => preparing emscripten SDK...'
     prepare(getEmsdkPath())
 
