@@ -34,9 +34,6 @@ else()
     set(ORYOL_ANDROID_EXCEPTION_FLAGS "-fno-exceptions")
 endif()
 
-# detect host system
-set(ANDROID_NDK_HOST "darwin-x86_64")
-
 # tweakable values (FIXME: convert to cmake options)
 set(CMAKE_SYSTEM_PROCESSOR "arm")
 set(ANDROID_API "android-19")
@@ -49,8 +46,20 @@ set(ANDROID_NDK_ABI_EXT "arm-linux-androideabi")
 set(ANDROID_NDK_GCC_PREFIX "arm-linux-androideabi")
 
 # paths
-set(ANDROID_NDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/${ANDROID_NDK_NAME}")
-set(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/android-sdk-macosx")
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin") 
+    set(ANDROID_NDK_HOST "darwin-x86_64")
+    set(ANDROID_NDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/${ANDROID_NDK_NAME}")
+    set(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/android-sdk-macosx")
+elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
+    set(ANDROID_NDK_HOST "linux-x86_64")
+    set(ANDROID_NDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/linux/${ANDROID_NDK_NAME}")
+    set(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/linux/android-sdk-linux")
+elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(ANDROID_NDK_HOST "window")
+    set(ANDROID_NDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/windows/${ANDROID_NDK_NAME}")
+    set(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/windows/android-sdk-windows")
+endif()
+
 set(ANDROID_SDK_TOOL "${ANDROID_SDK_ROOT}/tools/android")
 set(ANDROID_NDK_SYSROOT "${ANDROID_NDK_ROOT}/platforms/${ANDROID_API}/arch-arm")
 set(ANDROID_NDK_TOOLCHAIN_BIN "${ANDROID_NDK_ROOT}/toolchains/${ANDROID_NDK_ABI_EXT}-${ANDROID_NDK_GCC_VERSION}/prebuilt/${ANDROID_NDK_HOST}/bin")
