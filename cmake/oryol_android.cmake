@@ -14,7 +14,7 @@ macro(oryol_android_create_project target)
         message("=> create Android SDK project: ${target}")
         execute_process(COMMAND ${ANDROID_SDK_TOOL} --silent create project
                         --path ${CMAKE_CURRENT_BINARY_DIR}/android
-                        --target ${ANDROID_PLATFORM}
+                        --target ${ANDROID_API}
                         --name ${target}
                         --package com.oryol.${target}
                         --activity DummyActivity
@@ -22,7 +22,7 @@ macro(oryol_android_create_project target)
     endif()
 
     # set the output directory for the .so files to point to the android project's 'lib/[cpuarch] directory
-    set(ANDROID_SO_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/android/libs/${ANDROID_NDK_CPU})
+    set(ANDROID_SO_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/android/libs/${ANDROID_NDK_ARCH})
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${ANDROID_SO_OUTDIR})
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ANDROID_SO_OUTDIR})
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ANDROID_SO_OUTDIR})

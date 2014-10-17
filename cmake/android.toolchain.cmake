@@ -8,20 +8,6 @@
 
 message("Target Platform: Android")
 
-set(ANDROID_PLATFORM "android-19" CACHE STRING "Android platform version")
-set(ANDROID_NDK_ABI "arm-linux-androideabi" CACHE STRING "Android ABI name")
-set(ANDROID_NDK_CPU "armeabi-v7a" CACHE STRING "Android CPU instruction set identifier")
-if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(ANDROID_SDK_DIRNAME "sdks/win/android-sdk-windows")
-    set(ANDROID_TOOLCHAIN_DIRNAME "sdks/win/android-toolchain")
-elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
-    set(ANDROID_SDK_DIRNAME "sdks/osx/android-sdk-macosx")
-    set(ANDROID_TOOLCHAIN_DIRNAME "sdks/osx/android-toolchain")
-elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
-    set(ANDROID_SDK_DIRNAME "sdks/linux/android-sdk-linux")
-    set(ANDROID_TOOLCHAIN_DIRNAME "sdks/linux/android-toolchain")
-endif()
-
 set(ORYOL_PLATFORM ANDROID)
 set(ORYOL_PLATFORM_NAME "android")
 set(ORYOL_ANDROID 1)
@@ -48,37 +34,57 @@ else()
     set(ORYOL_ANDROID_EXCEPTION_FLAGS "-fno-exceptions")
 endif()
 
+# detect host system
+set(ANDROID_NDK_HOST "darwin-x86_64")
+
+# tweakable values (FIXME: convert to cmake options)
+set(CMAKE_SYSTEM_PROCESSOR "arm")
+set(ANDROID_API "android-19")
+set(ANDROID_NDK_STL "gnu-libstdc++")
+set(ANDROID_NDK_GCC_VERSION "4.8")
+set(ANDROID_NDK_ARCH "armeabi-v7a")
+set(ANDROID_NDK_NAME "android-ndk-r9d")
+set(ANDROID_NDK_ABI "armeabi-v7a-hard")
+set(ANDROID_NDK_ABI_EXT "arm-linux-androideabi")
+set(ANDROID_NDK_GCC_PREFIX "arm-linux-androideabi")
+
+# paths
+set(ANDROID_NDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/${ANDROID_NDK_NAME}")
+set(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../sdks/osx/android-sdk-macosx")
+set(ANDROID_SDK_TOOL "${ANDROID_SDK_ROOT}/tools/android")
+set(ANDROID_NDK_SYSROOT "${ANDROID_NDK_ROOT}/platforms/${ANDROID_API}/arch-arm")
+set(ANDROID_NDK_TOOLCHAIN_BIN "${ANDROID_NDK_ROOT}/toolchains/${ANDROID_NDK_ABI_EXT}-${ANDROID_NDK_GCC_VERSION}/prebuilt/${ANDROID_NDK_HOST}/bin")
+
+# CPU architecture dependent flags
+set(ANDROID_NDK_ARCH_CFLAGS "-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -mhard-float -D_NDK_MATH_NO_SOFTFP=1")
+set(ANDROID_NDK_CMATHLIB "m_hard")
+
+# STL dependent flags (FIXME: select based on ANDROID_NDK_STL)
+set(ANDROID_NDK_STL_ROOT "${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/${ANDROID_NDK_GCC_VERSION}")
+set(ANDROID_NDK_STL_CXXFLAGS "-I${ANDROID_NDK_STL_ROOT}/include -I${ANDROID_NDK_STL_ROOT}/libs/${ANDROID_NDK_ABI}/include")
+set(ANDROID_NDK_STL_LIBRARYPATH "${ANDROID_NDK_STL_ROOT}/libs/${ANDROID_NDK_ABI}")
+set(ANDROID_NDK_STL_LDFLAGS "-lgnustl_static")
+
+set(ANDROID_NDK_GLOBAL_CFLAGS "-fPIC -fno-strict-aliasing -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes")
+set(ANDROID_NDK_CXX_WARN_FLAGS "-Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
+set(ANDROID_NDK_C_WARN_FLAGS "-Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
+
+# get the gcc companion lib (FIXME: NOT NEEDED?)
+#exec_program(
+#    ${ANDROID_NDK_ROOT}/toolchains/${ANDROID_NDK_ABI_EXT}-${ANDROID_NDK_GCC_VERSION}/prebuilt/${ANDROID_NDK_HOST}/bin/${ANDROID_NDK_GCC_PREFIX}-gcc 
+#    ARGS "-print-libgcc-file-name"
+#    OUTPUT_VARIABLE ANDROID_NDK_GCC_COMPANIONLIBRARY
+#    )
+#get_filename_component(ANDROID_NDK_GCC_COMPANIONLIBRARY_PATH ${ANDROID_NDK_GCC_COMPANIONLIBRARY} PATH)
+
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_VERSION 1)
-set(COMPILING on)
+set(COMPILING ON)
+SET(CMAKE_SKIP_RPATH ON)
 set(CMAKE_CROSSCOMPILING TRUE)
-
-macro(find_android_toolchain_root)
-    get_filename_component(ANDROID_TOOLCHAIN_ROOT "${CMAKE_CURRENT_LIST_DIR}/../${ANDROID_TOOLCHAIN_DIRNAME}" ABSOLUTE)
-    if (NOT EXISTS "${ANDROID_TOOLCHAIN_ROOT}/SOURCES")
-        message(FATAL_ERROR "Could not find Android standalone toolchain at ${ANDROID_TOOLCHAIN_ROOT}! See BUILD.md for instructions to setup Oryol for Android development!")
-    else()
-        message("Android standalone toolchain found: ${ANDROID_TOOLCHAIN_ROOT}")
-        set(ANDROID_TOOLCHAIN_ROOT ${ANDROID_TOOLCHAIN_ROOT} CACHE STRING "Android standalone toolchain path")
-    endif()
-endmacro()
-
-macro(find_android_sdk_root)
-    get_filename_component(ANDROID_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../${ANDROID_SDK_DIRNAME}" ABSOLUTE)
-    if (NOT EXISTS "${ANDROID_SDK_ROOT}/tools/android")
-        message(FATAL_ERROR "Could not find Android SDK at ${ANDROID_SDK_DIRNAME}! See BUILD.md for instructions to setup Oryol for Android development!")
-    else()
-        message("Android SDK found: ${ANDROID_SDK_ROOT}")
-        set(ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT} CACHE STRING "Android SDK location.")
-    endif()
-endmacro()
-
-# try to find the Android standalone toolchain and the Android SDK
-find_android_toolchain_root()
-find_android_sdk_root()
-
-# set path to Android tool
-set(ANDROID_SDK_TOOL "${ANDROID_SDK_ROOT}/tools/android")
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+set(CMAKE_SKIP_COMPATIBILITY_TESTS 1)
 
 # find the ant tool
 find_program(ANDROID_ANT "ant")
@@ -87,25 +93,6 @@ if (ANDROID_ANT)
 else()
     message(FATAL_ERROR "ant tool NOT FOUND (must be in path)!")
 endif()
-
-# set paths to toolchain components
-set(ANDROID_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}/sysroot")
-set(ANDROID_TOOLCHAIN_BIN "${ANDROID_TOOLCHAIN_ROOT}/bin")
-set(ANDROID_TOOLCHAIN_INCLUDE "${ANDROID_TOOLCHAIN_ROOT}/include")
-set(ANDROID_TOOLCHAIN_LIB "${ANDROID_TOOLCHAIN_ROOT}/lib")
-set(ANDROID_SYSROOT_INCLUDE "${ANDROID_SYSROOT}/usr/include")
-set(ANDROID_SYSROOT_LIB "${ANDROID_SYSROOT}/usr/lib")
-
-message("ANDROID_SYSROOT: ${ANDROID_SYSROOT}")
-message("ANDROID_TOOLCHAIN_BIN: ${ANDROID_TOOLCHAIN_BIN}")
-message("ANDROID_TOOLCHAIN_INCLUDE: ${ANDROID_TOOLCHAIN_INCLUDE}")
-message("ANDROID_TOOLCHAIN_LIB: ${ANDROID_TOOLCHAIN_LIB}")
-message("ANDROID_SYSROOT_INCLUDE: ${ANDROID_SYSROOT_INCLUDE}")
-message("ANDROID_SYSROOT_LIB: ${ANDROID_SYSROOT_LIB}")
-
-# standard header and lib search paths
-include_directories(${ANDROID_TOOLCHAIN_INCLUDE} ${ANDROID_SYSROOT_INCLUDE})
-link_directories(${ANDROID_TOOLCHAIN_LIB})
 
 # disable compiler detection
 include(CMakeForceCompiler)
@@ -116,36 +103,36 @@ CMAKE_FORCE_CXX_COMPILER("${CMAKE_CXX_COMPILER}" GNU)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 # standard libraries
-set(CMAKE_CXX_STANDARD_LIBRARIES "-lgcc -lm_hard -llog -landroid")
-set(CMAKE_C_STANDARD_LIBRARIES "-lgcc -lm_hard -llog -landroid")
+set(CMAKE_C_STANDARD_LIBRARIES "-landroid -llog -lc -l${ANDROID_NDK_CMATHLIB} -lgcc")
+set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} ${ANDROID_NDK_STL_LDFLAGS}")
 
 # specify cross-compilers
-set(CMAKE_C_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-gcc" CACHE PATH "gcc" FORCE)
-set(CMAKE_CXX_COMPILER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-g++" CACHE PATH "g++" FORCE)
-set(CMAKE_AR "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-ar" CACHE PATH "archive" FORCE)
-set(CMAKE_LINKER "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-g++" CACHE PATH "linker" FORCE)
-set(CMAKE_RANLIB "${ANDROID_TOOLCHAIN_BIN}/${ANDROID_NDK_ABI}-ranlib" CACHE PATH "ranlib" FORCE)
+set(CMAKE_C_COMPILER "${ANDROID_NDK_TOOLCHAIN_BIN}/${ANDROID_NDK_GCC_PREFIX}-gcc" CACHE PATH "gcc" FORCE)
+set(CMAKE_CXX_COMPILER "${ANDROID_NDK_TOOLCHAIN_BIN}/${ANDROID_NDK_GCC_PREFIX}-g++" CACHE PATH "g++" FORCE)
+set(CMAKE_AR "${ANDROID_NDK_TOOLCHAIN_BIN}/${ANDROID_NDK_GCC_PREFIX}-ar" CACHE PATH "archive" FORCE)
+set(CMAKE_LINKER "${ANDROID_NDK_TOOLCHAIN_BIN}/${ANDROID_NDK_GCC_PREFIX}-g++" CACHE PATH "linker" FORCE)
+set(CMAKE_RANLIB "${ANDROID_NDK_TOOLCHAIN_BIN}/${ANDROID_NDK_GCC_PREFIX}-ranlib" CACHE PATH "ranlib" FORCE)
 
 # only search for libraries and includes in the toolchain
-set(CMAKE_FIND_ROOT_PATH ${ANDROID_SYSROOT})
+set(CMAKE_FIND_ROOT_PATH ${ANDROID_NDK_SYSROOT})
+set(CMAKE_SYSTEM_PROGRAM_PATH ${ANDROID_NDK_TOOLCHAIN_BIN})
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-set(CMAKE_SYSTEM_INCLUDE_PATH "${ANDROID_SYSROOT_INCLUDE}")
-set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} -fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -DANDROID -mhard-float -D_NDK_MATH_NO_SOFTFP=1 -Wa,--noexecstack -Wformat -Werror=format-security")
-set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_SYSROOT} -no-canonical-prefixes -march=armv7-a -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ANDROID_LINK_VERBOSE}")
+set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} ${ANDROID_NDK_ARCH_CFLAGS} --sysroot=${ANDROID_NDK_SYSROOT} ${ANDROID_NDK_GLOBAL_CFLAGS} -DANDROID -Wa,--noexecstack -Wformat -Werror=format-security")
+set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_NDK_SYSROOT} -L${ANDROID_NDK_STL_LIBRARYPATH} -no-canonical-prefixes -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ORYOL_ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
-set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ORYOL_ANDROID_EXCEPTION_FLAGS} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -fno-strict-aliasing -funswitch-loops -finline-limit=300 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
+set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ANDROID_NDK_STL_CXXFLAGS} ${ORYOL_ANDROID_EXCEPTION_FLAGS} ${ANDROID_NDK_CXX_WARN_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -funswitch-loops -finline-limit=300 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # c compiler flags
-set(CMAKE_C_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -Wall -Wno-multichar -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long")
-set(CMAKE_C_FLAGS_RELEASE "-Os -fomit-frame-pointer -fno-strict-aliasing -funswitch-loops -finline-limit=64 -DNDEBUG")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -fno-strict-aliasing -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
+set(CMAKE_C_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} ${ANDROID_NDK_C_WARN_FLAGS}")
+set(CMAKE_C_FLAGS_RELEASE "-Os -fomit-frame-pointer -funswitch-loops -finline-limit=64 -DNDEBUG")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
 # shared linker flags (native code on Android always lives in DLLs)
 set(CMAKE_SHARED_LINKER_FLAGS "${ANDROID_LD_FLAGS} -pthread -dead_strip")

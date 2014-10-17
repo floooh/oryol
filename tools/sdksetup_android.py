@@ -64,6 +64,7 @@ def getSdkDir() :
 def ensureSdkDirectory() :
     if not os.path.exists(getSdkDir()) :
         os.makedirs(getSdkDir())
+
 #-------------------------------------------------------------------------------
 def getAndroidSdkPath() :
     if platform.system() in androidSdkPaths :
@@ -74,10 +75,6 @@ def getAndroidSdkPath() :
 #-------------------------------------------------------------------------------
 def getAndroidNdkPath() :
     return getSdkDir() + '/android-ndk-r9d'
-
-#-------------------------------------------------------------------------------
-def getAndroidToolchainPath() :
-    return getSdkDir() + '/android-toolchain'  
 
 #-------------------------------------------------------------------------------
 def getAndroidSdkUrl() :
@@ -117,8 +114,6 @@ def checkAndroidSdk() :
         return False
     if not os.path.isdir(getAndroidNdkPath()) :
         return False
-    if not os.path.isdir(getAndroidToolchainPath()) :
-        return False
     return True
 
 #-------------------------------------------------------------------------------
@@ -132,27 +127,8 @@ def uncompress(path) :
 def updateAndroidSdk() :
     cmd = ['sh', '{}/tools/android'.format(getAndroidSdkPath()),
            'update','sdk',
-           '-f', '-u', 
-           '-t', 'platform-tools,build-tools-19.0.3,android-19']
-    print cmd
-    subprocess.call(args=cmd, cwd=ProjectDirectory)
-
-#-------------------------------------------------------------------------------
-def createAndroidToolchain() :
-
-    if platform.system() == 'Darwin' :
-        toolchainSystem = 'darwin-x86_64'
-    elif platform.system() == 'Linux' :
-        toolchainSystem = 'linux-x86_64'
-    else :
-        error('FIXME: additional toolchain system names')
-
-    cmd = ['sh', '{}/build/tools/make-standalone-toolchain.sh'.format(getAndroidNdkPath()),
-           '--platform=android-19',
-           '--ndk-dir={}'.format(getAndroidNdkPath()),
-           '--install-dir={}'.format(getAndroidToolchainPath()),
-           '--toolchain=arm-linux-androideabi-4.8',
-           '--system={}'.format(toolchainSystem)]
+           '-f', '-u', '--all',
+           '--filter', 'tools,platform-tools,build-tools-19.1.0,android-19']
     print cmd
     subprocess.call(args=cmd, cwd=ProjectDirectory)
 
@@ -163,9 +139,6 @@ def setupAndroid() :
     '''
     if checkAndroidSdk() :
         return
-
-    if platform.system() == 'Windows' :
-        error('Not yet supported on Windows')
 
     ensureSdkDirectory()
 
@@ -184,5 +157,3 @@ def setupAndroid() :
     urllib.urlretrieve(ndkUrl, getAndroidNdkArchivePath(), urlDownloadHook)
     print '\n => unpacking NDK...'
     uncompress(getAndroidNdkArchivePath())
-    print '\n => creating standalone toolchain...'
-    createAndroidToolchain()
