@@ -175,9 +175,9 @@ canvas::updateVertices(int32& outNumBytes) {
             x1 = x0 + float(sprite.w) / canWidth;
             y1 = y0 + float(sprite.h) / canHeight;
             u0 = float(s.X + s.W * sprite.frame) / sheetWidth;
-            v0 = float(s.Y) / sheetWidth;
+            v0 = float(s.Y) / sheetHeight;
             u1 = u0 + float(s.W) / sheetWidth;
-            v1 = v0 + float(s.H) / sheetWidth;
+            v1 = v0 + float(s.H) / sheetHeight;
         }
         // write vertex data (2 triangles)
         o_assert_dbg((vIndex + 6) <= this->numVertices);
