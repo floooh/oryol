@@ -20,16 +20,13 @@ public:
 
 private:
     game::Direction getInput();
+    void applyViewPort();
 
     GfxId canvasRenderTarget;
     GfxId crtEffect;
     canvas spriteCanvas;
     game gameState;
     int32 tick;
-    int32 viewPortX;
-    int32 viewPortY;
-    int32 viewPortW;
-    int32 viewPortH;
 };
 OryolMain(PacloneApp);
 
@@ -58,16 +55,20 @@ PacloneApp::OnInit() {
     GfxId prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
 
-    // get actual display width and height and compute viewport
-    float aspect = float(dispWidth) / float(dispHeight);
-    const int actWidth = Gfx::DisplayAttrs().WindowWidth;
-    const int actHeight = Gfx::DisplayAttrs().WindowHeight;
-    this->viewPortY = 0;
-    this->viewPortH = actHeight;
-    this->viewPortW = actHeight * aspect;
-    this->viewPortX = (actWidth - this->viewPortW) / 2;
-    
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+void
+PacloneApp::applyViewPort() {
+    float aspect = float(game::Width) / float(game::Height);
+    const int fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
+    const int fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    const int viewPortY = 0;
+    const int viewPortH = fbHeight;
+    const int viewPortW = fbHeight * aspect;
+    const int viewPortX = (fbWidth - viewPortW) / 2;
+    Gfx::ApplyViewPort(viewPortX, viewPortY, viewPortW, viewPortH);
 }
 
 //------------------------------------------------------------------------------
@@ -85,12 +86,12 @@ PacloneApp::OnRunning() {
     // copy offscreen render target into backbuffer
     glm::vec2 dispRes(Gfx::DisplayAttrs().WindowWidth, Gfx::DisplayAttrs().WindowHeight);
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyViewPort(this->viewPortX, this->viewPortY, this->viewPortW, this->viewPortH);
+    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
+    this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyVariable(Shaders::CRT::Canvas, this->canvasRenderTarget);
     Gfx::ApplyVariable(Shaders::CRT::Resolution, dispRes);
     Gfx::Draw(0);
-    
     Gfx::CommitFrame();
     this->tick++;
 
