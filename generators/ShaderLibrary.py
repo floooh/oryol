@@ -785,10 +785,12 @@ class ShaderLibrary :
             for dep in vs.dependencies :
                 self.resolveDeps(vs, dep)
             self.removeDuplicateDeps(vs)
+            self.resolveMacros(vs)
         for fs in self.fragmentShaders.values() :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
+            self.resolveMacros(fs)
         for vs in self.vertexShaders.values() :
             self.resolveShaderUniforms(vs)
         for fs in self.fragmentShaders.values() :

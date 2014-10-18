@@ -45,9 +45,12 @@ def parseOutput(output, lines) :
     map them to the original source code location and output
     an error message compatible with Xcode or VStudio
     '''
+    hasError = False
     outLines = output.splitlines()
     for outLine in outLines :
         if outLine.startswith('ERROR: ') :
+            hasError = True
+
             # extract generated shader source column, line and message
             colStartIndex = 7
             colEndIndex = outLine.find(':', colStartIndex)
@@ -71,7 +74,11 @@ def parseOutput(output, lines) :
             
             # and output...
             util.setErrorLocation(srcPath, srcLineNr)
-            util.fmtError(msg)
+            util.fmtError(msg, False)
+            
+    if hasError :
+        for line in lines :
+            print "{}\n".format(line.content)
 
 def validate(lines, type, glslVersion) :
     '''
