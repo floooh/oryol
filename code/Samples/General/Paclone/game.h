@@ -18,8 +18,9 @@ public:
     /// static game elements
     enum TileType {
         Empty = 0,
-        Pill,
+        Dot,
         Wall,
+        Door,
         
         NumTileTypes,
     };
@@ -50,6 +51,9 @@ public:
         Scatter,
         Frightened,
         Hollow,
+        House,
+        LeaveHouse,
+        EnterHouse,
     };
 
     static const int Width = 28;
@@ -71,8 +75,11 @@ private:
     static const int TileSize = 8;
     static const int TileMidX = 3;
     static const int TileMidY = 4;
+    static const Oryol::int16 AntePortasPixelX = 13 * TileSize + TileMidX + TileSize/2;
+    static const Oryol::int16 AntePortasPixelY = 14 * TileSize + TileMidY;
 
     int gameTick = 0;
+    int dotCounter = 0;
     
     struct Actor {
         ActorType type;
@@ -88,8 +95,12 @@ private:
         Oryol::int16 distToMidY = 0;
         Oryol::int16 targetX = 0;
         Oryol::int16 targetY = 0;
+        Oryol::int16 homeBasePixelX = 0;
+        Oryol::int16 homeBasePixelY = 0;
         GhostState state = Scatter;
-        int frightenedTick;
+        int frightenedTick = 0;
+        int dotCounter = 0;
+        int dotLimit = 0;
     } actors[NumActorTypes];
     
     struct Energizer {
@@ -98,7 +109,13 @@ private:
         int spriteIndex = 0;
         bool active = false;
     } energizers[NumEnergizers];
-
+    
+    static bool nearEqual(Oryol::int16 i0, Oryol::int16 i1, Oryol::int16 maxDiff) {
+        Oryol::int16 diff = i1 - i0;
+        diff = diff >= 0 ? diff : -diff;
+        o_assert(diff >= 0);
+        return diff <= maxDiff;
+    };
     static Oryol::int16 clampX(Oryol::int16 x) {
         if (x < 0) return 0;
         else if (x >= Width) return Width - 1;
@@ -115,6 +132,11 @@ private:
     TileType tile(Oryol::int16 x, Oryol::int16 y) const {
         return this->tileMap[clampY(y)][clampX(x)];
     };
+    static void homePixelPos(Oryol::int16 inTileX, Oryol::int16 inTileY, Oryol::int16& outPixelX, Oryol::int16& outPixelY) {
+        outPixelX = inTileX * TileSize + TileMidX + TileSize/2;
+        outPixelY = inTileY * TileSize + TileMidY;
+    };
+    
     static Oryol::int32 targetDistSq(Oryol::int16 x, Oryol::int16 y, Oryol::int16 targetX, Oryol::int16 targetY) {
         Oryol::int16 dx = x - targetX;
         Oryol::int16 dy = y - targetY;
@@ -133,11 +155,12 @@ private:
     void updateActors(Direction input);
     void drawActors(canvas* canvas) const;
     void drawEnergizers(canvas* canvas) const;
+    bool isBlocked(const Actor& actor, Oryol::int16 tileX, Oryol::int16 tileY) const;
     bool canMove(const Actor& actor, Direction dir, bool allowCornering) const;
-    void computeMove(Actor& actor, Direction dir) const;
-    void move(Actor& actor) const;
+    void computeMove(Actor& actor, Direction dir, bool allowCornering) const;
+    void move(Actor& actor, bool allowCornering) const;
     void handleCollide(canvas* canvas);
-    void eatPill(canvas* canvas);
+    void eatDot(canvas* canvas);
     void eatEnergizer(Energizer& energizer);
     void killPacman();
     void killGhost(Actor& ghost);
@@ -145,14 +168,20 @@ private:
     void chooseChaseTarget(Actor& ghost) const;
     void chooseFrightenedTarget(Actor& ghost) const;
     void chooseHollowTarget(Actor& ghost) const;
-    void updateDirection(Actor& ghost) const;
+    void chooseLeaveHouseTarget(Actor& ghost) const;
+    void updateGhostDirection(Actor& ghost) const;
+    void updateHouseDirection(Actor& ghost) const;
+    void updateEnterHouseDirection(Actor& ghost) const;
+    void updateLeaveHouseDirection(Actor& ghost) const;
     void updateGhostState(Actor& ghost);
+    void updateDotCounters();
 
     static TileType tileMap[Height][Width];
     static const Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections];
     static const Sheet::SpriteId hollowSpriteMap[NumDirections];
     static const Direction reverseDir[NumDirections];
     static const Oryol::int16 dirVec[NumDirections][2];
+    static const Oryol::int16 homeTilePos[NumActorTypes][2];
 };
     
 } // namespace Paclone

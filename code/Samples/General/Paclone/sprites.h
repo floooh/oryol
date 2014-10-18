@@ -7,9 +7,9 @@
 namespace Paclone {
 struct Sheet {
     static const Oryol::int32 Width{128};
-    static const Oryol::int32 Height{128};
-    static const Oryol::int32 NumBytes{65536};
-    static const Oryol::uint32 Pixels[16384];
+    static const Oryol::int32 Height{256};
+    static const Oryol::int32 NumBytes{131072};
+    static const Oryol::uint32 Pixels[32768];
     enum SpriteId {
         Space,
         TestWall,
@@ -72,6 +72,13 @@ struct Sheet {
         OuterCorner1,
         OuterCorner2,
         OuterCorner3,
+        HouseVert,
+        HouseHori,
+        HouseTopLeft,
+        HouseTopRight,
+        HouseBottomLeft,
+        HouseBottomRight,
+        HouseDoor,
 
         NumSprites,
         InvalidSprite

@@ -2,8 +2,8 @@
 
     <Sheet file="data/sprites.png" spriteWidth="8" spriteHeight="8">
 
-        <Sprite name="Space"      x="120" y="0" char=" " />
-        <Sprite name="TestWall"   x="112" y="8" char="#" />
+        <Sprite name="Space"    x="120" y="0" char=" " />
+        <Sprite name="TestWall" x="112" y="8" char="#" />
 
         <Sprite name="Pill"        x="112" y="0" char="." />
         <Sprite name="Energizer"   x="0" y="112" w="16" h="16" />
@@ -76,6 +76,13 @@
         <Sprite name="OuterCorner2" x="96"  y="8" char="g" />
         <Sprite name="OuterCorner3" x="104" y="8" char="h" />
 
+        <Sprite name="HouseVert"        x="0" y="128" char="i" />
+        <Sprite name="HouseHori"        x="8" y="128" char="j" />
+        <Sprite name="HouseTopLeft"     x="16" y="128" char="m" />
+        <Sprite name="HouseTopRight"    x="24" y="128" char="n" />
+        <Sprite name="HouseBottomLeft"  x="32" y="128" char="o" />
+        <Sprite name="HouseBottomRight" x="40" y="128" char="p" />
+        <Sprite name="HouseDoor"        x="48" y="128" char="-" />
 
     </Sheet>
 

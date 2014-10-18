@@ -27,11 +27,11 @@ const char* charMap =
     "2BBBBf.rzbbf rl ebbwl.eBBBB3" // 12
     "     L.rxuuh gh guuyl.R     " // 13
     "     L.rl          rl.R     " // 14
-    "     L.rl eb####bf rl.R     " // 15
-    "UUUUUh.gh r      l gh.gUUUUU" // 16
-    "      .   r      l   .      " // 17
-    "BBBBBf.ef r      l ef.eBBBBB" // 18
-    "     L.rl guuuuuuh rl.R     " // 19
+    "     L.rl mjj--jjn rl.R     " // 15
+    "UUUUUh.gh i      i gh.gUUUUU" // 16
+    "      .   i      i   .      " // 17
+    "BBBBBf.ef i      i ef.eBBBBB" // 18
+    "     L.rl ojjjjjjp rl.R     " // 19
     "     L.rl          rl.R     " // 20
     "     L.rl ebbbbbbf rl.R     " // 21
     "0UUUUh.gh guuyxuuh gh.gUUUU1" // 22
@@ -49,20 +49,24 @@ const char* charMap =
     "                            " // 34
     "                            ";// 35
 
+// map from a direction into the reverse direction
 const game::Direction game::reverseDir[NumDirections] = {
     NoDirection, Right, Left, Down, Up,
 };
 
-const Sheet::SpriteId game::hollowSpriteMap[NumDirections] = {
-    Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
-};
-
+// map direction enum to 2D movement vec
 const Oryol::int16 game::dirVec[NumDirections][2] = {
     { 0, 0 }, { -1, 0 }, { +1, 0 }, { 0, -1 }, { 0, +1 }
 };
 
+// actor home positions/targets
+const int16 game::homeTilePos[NumActorTypes][2] = {
+    { 13, 14 }, { 13, 17 }, { 11, 17 }, { 15, 17 }, { 13, 26 },
+};
+
 game::TileType game::tileMap[Height][Width] = { {Empty} };
 
+// map actor types and movement direction to sprites
 const Sheet::SpriteId game::defaultSpriteMap[NumActorTypes][NumDirections] = {
         { Sheet::BlinkyNoDir, Sheet::BlinkyLeft, Sheet::BlinkyRight, Sheet::BlinkyUp, Sheet::BlinkyDown },
         { Sheet::PinkyNoDir, Sheet::PinkyLeft, Sheet::PinkyRight, Sheet::PinkyUp, Sheet::PinkyDown },
@@ -71,6 +75,11 @@ const Sheet::SpriteId game::defaultSpriteMap[NumActorTypes][NumDirections] = {
         { Sheet::PacmanNoDir, Sheet::PacmanLeft, Sheet::PacmanRight, Sheet::PacmanUp, Sheet::PacmanDown },
 };
 
+// map from direction to sprite for ghost hollow mode
+const Sheet::SpriteId game::hollowSpriteMap[NumDirections] = {
+    Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
+};
+    
 //------------------------------------------------------------------------------
 game::game() {
     o_assert(std::strlen(charMap) == Width * Height);
@@ -82,6 +91,7 @@ game::Init(canvas* canvas) {
     o_assert(canvas);
     canvas->CopyCharMap(0, 0, Width, Height, charMap);
     this->gameTick = 0;
+    this->dotCounter = 0;
     this->setupTiles();
     this->setupActors();
     this->setupEnergizers();
@@ -112,8 +122,9 @@ game::setupTiles() {
             char c = charMap[y * Width + x];
             TileType tileType = Empty;
             switch (c) {
-                case '.': tileType = Pill; break;
+                case '.': tileType = Dot; break;
                 case ' ': tileType = Empty; break;
+                case '-': tileType = Door; break;
                 default:  tileType = Wall; break;
             }
             this->setTile(x, y, tileType);
@@ -138,19 +149,26 @@ game::setupEnergizers() {
 //------------------------------------------------------------------------------
 void
 game::setupActors() {
-    static const int16 pos[NumActorTypes][2] = {
-        { 13, 14 }, { 13, 14 }, { 13, 14 }, { 13, 14 }, { 13, 26 },
+    static const Direction startDir[NumActorTypes] = {
+        Left, Down, Up, Up, NoDirection
     };
+    static const int dotLimits[NumActorTypes] = {
+        0, 0, 30, 60, 0
+    };
+    
     for (int type = 0; type < NumActorTypes; type++) {
         Actor& actor = this->actors[type];
         actor.type = (ActorType) type;
         actor.spriteIndex = type + NumEnergizers;
-        actor.dir = NoDirection;
-        actor.nextDir = NoDirection;
-        actor.pixelX = pos[type][0] * TileSize + TileMidX + TileSize/2;
-        actor.pixelY = pos[type][1] * TileSize + TileMidY;
-        actor.state = Scatter;
+        actor.dir = startDir[type];
+        actor.nextDir = actor.dir;
+        game::homePixelPos(game::homeTilePos[type][0], game::homeTilePos[type][1], actor.pixelX, actor.pixelY);
+        actor.homeBasePixelX = actor.pixelX;
+        actor.homeBasePixelY = actor.pixelY;
+        actor.state = type == Blinky ? Scatter : House;
         actor.frightenedTick = 0;
+        actor.dotCounter = 0;
+        actor.dotLimit = dotLimits[type];
         commitPosition(actor);
     }
 }
@@ -168,11 +186,11 @@ game::drawActors(canvas* canvas) const {
                 spriteId = Sheet::FlashingGhost;
             }
         }
-        else if (actor.state == Hollow) {
-            spriteId = this->hollowSpriteMap[dir];
+        else if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
+            spriteId = game::hollowSpriteMap[dir];
         }
         else {
-            spriteId = this->defaultSpriteMap[actor.type][dir];
+            spriteId = game::defaultSpriteMap[actor.type][dir];
         }
         if (Sheet::InvalidSprite != spriteId) {
             const int pixX = actor.pixelX - TileMidX - TileSize/2;
@@ -205,39 +223,66 @@ game::drawEnergizers(canvas* canvas) const {
 void
 game::updateActors(Direction input) {
     for (Actor& actor : this->actors) {
+        bool doMove = true;
         if (Pacman == actor.type) {
             // update pacman from user input
-            this->computeMove(actor, input);
-            this->move(actor);
+            if (doMove) {
+                this->computeMove(actor, input, true);
+                this->move(actor, true);
+            }
         }
         else {
             // update ghosts
-            bool doMove  = true;
-            int numMoves = 1;
             this->updateGhostState(actor);
-            switch (actor.state) {
-                case Scatter:
-                    this->chooseScatterTarget(actor);
-                    break;
-                case Chase:
-                    this->chooseChaseTarget(actor);
-                    break;
-                case Frightened:
-                    this->chooseFrightenedTarget(actor);
-                    doMove = this->gameTick & 1;
-                    break;
-                case Hollow:
-                    this->chooseHollowTarget(actor);
-                    numMoves = 2;
-                    break;
-                default:
-                    break;
+            if (House == actor.state) {
+                // special behaviour when inside house
+                if (doMove) {
+                    this->updateHouseDirection(actor);
+                    this->move(actor, false);
+                }
             }
-            if (doMove) {
-                for (int i = 0; i < numMoves; i++) {
-                    this->updateDirection(actor);
-                    this->computeMove(actor, actor.dir);
-                    this->move(actor);
+            else if (EnterHouse == actor.state) {
+                if (doMove) {
+                    this->updateEnterHouseDirection(actor);
+                    this->move(actor, false);
+                }
+            }
+            else if (LeaveHouse == actor.state) {
+                // special behaviour when leaving house
+                if (doMove) {
+                    this->updateLeaveHouseDirection(actor);
+                    this->move(actor, false);
+                }
+            }
+            else {
+                // all other states have the same movement
+                // behaviour and only differ in choosing the target
+                bool allowCornering = false;
+                int numMove = 1;
+                switch (actor.state) {
+                    case Scatter:
+                        this->chooseScatterTarget(actor);
+                        break;
+                    case Chase:
+                        this->chooseChaseTarget(actor);
+                        break;
+                    case Frightened:
+                        this->chooseFrightenedTarget(actor);
+                        doMove = this->gameTick & 1;
+                        break;
+                    case Hollow:
+                        this->chooseHollowTarget(actor);
+                        numMove = this->gameTick & 1 ? 1 : 2;
+                        break;
+                    default:
+                        break;
+                }
+                if (doMove) {
+                    for (int i = 0; i < numMove; i++) {
+                        this->updateGhostDirection(actor);
+                        this->computeMove(actor, actor.dir, allowCornering);
+                        this->move(actor, true);
+                    }
                 }
             }
         }
@@ -250,8 +295,32 @@ game::updateGhostState(Actor& ghost) {
 
     GhostState newState = ghost.state;
     if (ghost.state == Hollow) {
-        if ((ghost.tileX == ghost.targetX) && (ghost.tileY == ghost.targetY)) {
-            // FIXME: switch state to House
+        // hollow is moving at 2x speed, so need to relax check in X
+        if (game::nearEqual(ghost.pixelX, AntePortasPixelX, 8) && (ghost.pixelY == AntePortasPixelY)) {
+            // let EnterHouse state take over, which moves the hollow ghost
+            // to its homebase position
+            newState = EnterHouse;
+            ghost.pixelX = AntePortasPixelX;
+            ghost.pixelY = AntePortasPixelY;
+            ghost.frightenedTick = 0;
+            ghost.dotCounter = 0;
+        }
+    }
+    else if (ghost.state == EnterHouse) {
+        if ((ghost.pixelX == ghost.homeBasePixelX) && (ghost.pixelY == ghost.homeBasePixelY)) {
+            newState = House;
+        }
+    }
+    else if (ghost.state == House) {
+        // check if ghost may leave the house
+        // FIXME: this is more involved then just the dot counter!!!
+        if (ghost.dotCounter >= ghost.dotLimit) {
+            newState = LeaveHouse;
+        }
+        
+    }
+    else if (ghost.state == LeaveHouse) {
+        if ((ghost.pixelX == AntePortasPixelX) && (ghost.pixelY == AntePortasPixelY)) {
             newState = Scatter;
             ghost.frightenedTick = 0;
         }
@@ -272,8 +341,17 @@ game::updateGhostState(Actor& ghost) {
         }
     }
     if (ghost.state != newState) {
-        // invert current direction when switching state
-        ghost.nextDir = game::reverseDir[ghost.dir];
+        // switch state and handle initial state direction
+        // (usually the direction is inverted, except in some special states)
+        if (LeaveHouse == ghost.state) {
+            ghost.nextDir = Left;
+        }
+        else if (EnterHouse == ghost.state) {
+            ghost.nextDir = Down;
+        }
+        else {
+            ghost.nextDir = reverseDir[ghost.dir];
+        }
         ghost.state = newState;
     }
 }
@@ -340,21 +418,27 @@ game::chooseFrightenedTarget(Actor& ghost) const {
 void
 game::chooseHollowTarget(Actor& ghost) const {
     ghost.targetX = 13;
-    ghost.targetY = 14;
+    ghost.targetY = 15;
 }
 
 //------------------------------------------------------------------------------
 void
-game::updateDirection(Actor& ghost) const {
+game::updateGhostDirection(Actor& ghost) const {
+    // this method is not valid for ghosts in House state
+    o_assert_dbg(House != ghost.state);
+
+    // only compute new direction when currently at the mid of a tile or not currently moving
     if (((ghost.distToMidX == 0) && (ghost.distToMidY == 0)) || (NoDirection == ghost.dir)) {
+        
         if (NoDirection != ghost.nextDir) {
             ghost.dir = ghost.nextDir;
         }
         
-        // look ahead one tile to find next direction
-        const int16 x = ghost.tileX + game::dirVec[ghost.dir][0];
-        const int16 y = ghost.tileY + game::dirVec[ghost.dir][1];
+        // one-tile-ahead position
+        const int16 nextX = ghost.tileX + game::dirVec[ghost.dir][0];
+        const int16 nextY = ghost.tileY + game::dirVec[ghost.dir][1];
         
+        // this is the default behaviour:
         // now test distance of each possible target tile
         // note: directions have a preference in case of a tie:
         // UP -> LEFT -> DOWN -> RIGHT
@@ -364,9 +448,9 @@ game::updateDirection(Actor& ghost) const {
         const Direction dirs[4] = { Up, Left, Down, Right };
         for (Direction dir : dirs) {
             const Direction revDir = game::reverseDir[dir];
-            const int16 checkX = x + game::dirVec[dir][0];
-            const int16 checkY = y + game::dirVec[dir][1];
-            if ((revDir != ghost.dir) && (Wall != this->tile(checkX, checkY))) {
+            const int16 checkX = nextX + game::dirVec[dir][0];
+            const int16 checkY = nextY + game::dirVec[dir][1];
+            if ((revDir != ghost.dir) && !this->isBlocked(ghost, checkX, checkY)) {
                 if ((dist = targetDistSq(checkX, checkY, ghost.targetX, ghost.targetY)) < minDist) {
                     bestDirection = dir;
                     minDist = dist;
@@ -379,7 +463,63 @@ game::updateDirection(Actor& ghost) const {
 
 //------------------------------------------------------------------------------
 void
-game::move(Actor& actor) const {
+game::updateHouseDirection(Actor& ghost) const {
+    if ((ghost.dir != Up) && (ghost.dir != Down)) {
+        ghost.dir = Up;
+    }
+    const int16 nextX = ghost.tileX + game::dirVec[ghost.dir][0];
+    const int16 nextY = ghost.tileY + game::dirVec[ghost.dir][1];
+    if (this->isBlocked(ghost, nextX, nextY)) {
+        ghost.dir = reverseDir[ghost.dir];
+        ghost.nextDir = ghost.dir;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::updateLeaveHouseDirection(Actor& ghost) const {
+    // first move to the middle, then up, all by pixel coords
+    if (ghost.pixelX > AntePortasPixelX) {
+        ghost.dir = Left;
+    }
+    else if (ghost.pixelX < AntePortasPixelX) {
+        ghost.dir = Right;
+    }
+    else {
+        ghost.dir = Up;
+    }
+    ghost.nextDir = ghost.dir;
+}
+
+//------------------------------------------------------------------------------
+void
+game::updateEnterHouseDirection(Actor& ghost) const {
+    // at the begging, we're on the home-lane, first move
+    // toward the right X position in front of the door,
+    // then down into the house, and then to the homeBase position
+    if ((ghost.pixelY == AntePortasPixelY) && (ghost.pixelX > AntePortasPixelX)) {
+        ghost.dir = Left;
+    }
+    else if ((ghost.pixelY == AntePortasPixelY) && (ghost.pixelX < AntePortasPixelX)) {
+        ghost.dir = Right;
+    }
+    else if (ghost.pixelY < ghost.homeBasePixelY) {
+        ghost.dir = Down;
+    }
+    else if (ghost.pixelX > ghost.homeBasePixelX) {
+        ghost.dir = Left;
+    }
+    else if (ghost.pixelX < ghost.homeBasePixelX) {
+        ghost.dir = Right;
+    }
+    else {
+        ghost.dir = NoDirection;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::move(Actor& actor, bool allowCornering) const {
     const int16 dirX = game::dirVec[actor.dir][0];
     const int16 dirY = game::dirVec[actor.dir][1];
     actor.pixelX += dirX;
@@ -388,14 +528,17 @@ game::move(Actor& actor) const {
         actor.moveTick++;
     }
 
-    // cornering (drag actor towards middle line)
-    if (dirX != 0) {
-        if (actor.distToMidY < 0)       actor.pixelY--;
-        else if (actor.distToMidY > 0)  actor.pixelY++;
-    }
-    else if (dirY != 0) {
-        if (actor.distToMidX < 0)       actor.pixelX--;
-        else if (actor.distToMidX > 0)  actor.pixelX++;
+    // cornering (drag actor towards middle line), this is switched off
+    // in House mode
+    if (allowCornering) {
+        if (dirX != 0) {
+            if (actor.distToMidY < 0)       actor.pixelY--;
+            else if (actor.distToMidY > 0)  actor.pixelY++;
+        }
+        else if (dirY != 0) {
+            if (actor.distToMidX < 0)       actor.pixelX--;
+            else if (actor.distToMidX > 0)  actor.pixelX++;
+        }
     }
     
     // wrap around X for teleport (not 100% right I think)
@@ -407,8 +550,22 @@ game::move(Actor& actor) const {
 
 //------------------------------------------------------------------------------
 /**
+ Check if a tile is blocked for actor at specific position.
+*/
+bool
+game::isBlocked(const Actor& actor, int16 tileX, int16 tileY) const {
+    TileType tile = this->tile(tileX, tileY);
+    if ((Hollow == actor.state) || (LeaveHouse == actor.state)) {
+        return (Wall == tile);
+    }
+    else {
+        return (Wall == tile) || (Door == tile);
+    }
+}
+
+//------------------------------------------------------------------------------
+/**
  Test if movement in a given direction is possible.
- FIXME: take cornering into account.
 */
 bool
 game::canMove(const Actor& actor, Direction dir, bool allowCornering) const {
@@ -424,8 +581,8 @@ game::canMove(const Actor& actor, Direction dir, bool allowCornering) const {
         distToMid1 = actor.distToMidX;
     }
     
-    bool isWall = Wall == this->tile(actor.tileX + dirX, actor.tileY + dirY);
-    if ((!allowCornering && (0 != distToMid0)) || (isWall && (0 == distToMid1))) {
+    bool isBlocked = this->isBlocked(actor, actor.tileX + dirX, actor.tileY + dirY);
+    if ((!allowCornering && (0 != distToMid0)) || (isBlocked && (0 == distToMid1))) {
         // way is blocked
         return false;
     }
@@ -441,11 +598,10 @@ game::canMove(const Actor& actor, Direction dir, bool allowCornering) const {
  http://home.comcast.net/~jpittman2/pacman/pacmandossier.html#CH2_Cornering
 */
 void
-game::computeMove(Actor& actor, Direction dir) const {
+game::computeMove(Actor& actor, Direction dir, bool allowCornering) const {
 
     // dir is the direction the actor *wants* to move,
     // which might not be possible
-    const bool allowCornering = (Pacman == actor.type);
     if ((NoDirection != dir) && this->canMove(actor, dir, allowCornering)) {
         // can move in intended direction, update actor direction and movement vector
         actor.dir = dir;
@@ -463,7 +619,7 @@ game::computeMove(Actor& actor, Direction dir) const {
 //------------------------------------------------------------------------------
 /**
     Checks for collission between pacman and ghosts, and between pacman and
-    pills.
+    dots.
 */
 void
 game::handleCollide(canvas* canvas) {
@@ -498,19 +654,39 @@ game::handleCollide(canvas* canvas) {
         }
     }
     
-    // check for pill
-    if (this->tile(pacX, pacY) == Pill) {
-        this->eatPill(canvas);
+    // check for dot
+    if (this->tile(pacX, pacY) == Dot) {
+        this->eatDot(canvas);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-game::eatPill(canvas* canvas) {
+game::updateDotCounters() {
+
+    // Blinky's dot counter is never updated since it's
+    // limit is always 0, the other ghost's dot counters
+    // are updated for the first ghost in the house in
+    // the following order:
+    static ActorType ghosts[] = { Pinky, Inky, Clyde };
+    for (ActorType type : ghosts) {
+        if (House == this->actors[type].state) {
+            this->actors[type].dotCounter++;
+            break;
+        }
+    }
+    
+    
+}
+
+//------------------------------------------------------------------------------
+void
+game::eatDot(canvas* canvas) {
     const int16 x = this->actors[Pacman].tileX;
     const int16 y = this->actors[Pacman].tileY;
     this->setTile(x, y, Empty);
     canvas->SetTile(Sheet::Space, x, y);
+    this->updateDotCounters();
 }
 
 //------------------------------------------------------------------------------
