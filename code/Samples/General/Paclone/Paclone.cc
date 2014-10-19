@@ -87,7 +87,7 @@ PacloneApp::OnRunning() {
     Dbg::DrawTextBuffer();
     
     // copy offscreen render target into backbuffer
-    glm::vec2 dispRes(Gfx::DisplayAttrs().WindowWidth, Gfx::DisplayAttrs().WindowHeight);
+    glm::vec2 dispRes(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
     this->applyViewPort();

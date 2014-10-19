@@ -46,14 +46,8 @@ void main() {
 // Please take and use, change, or whatever.
 //
 
-// Emulated input resolution.
-#if 0
-// Fix resolution to set amount.
-vec2 res=vec2(320.0/1.0,160.0/1.0);
-#else
-// Optimize for resize.
-vec2 res = iResolution.xy / 2.0;
-#endif
+// hardcoded to Pacman original display resolution
+vec2 res = vec2(224, 288);
 
 // Hardness of scanline.
 //  -8.0 = soft
