@@ -130,8 +130,8 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        const float w = 8.0f / Gfx::DisplayAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::DisplayAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Gfx::RenderTargetAttrs().FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
         Gfx::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);

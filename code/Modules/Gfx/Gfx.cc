@@ -77,6 +77,13 @@ Gfx::DisplayAttrs() {
 }
 
 //------------------------------------------------------------------------------
+const DisplayAttrs&
+Gfx::RenderTargetAttrs() {
+    o_assert_dbg(IsValid());
+    return state->renderManager.GetRenderTargetAttrs();
+}
+
+//------------------------------------------------------------------------------
 /**
  NOTE: the LookupResource() method will bump the use-count of looked up
  resource, so make sure to call DiscardResource() when you're done with it!

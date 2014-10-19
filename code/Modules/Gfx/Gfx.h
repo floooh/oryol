@@ -45,8 +45,10 @@ public:
     
     /// get the original render setup object
     static const class GfxSetup& GfxSetup();
-    /// get the current actual display attributes (can be different from setup)
+    /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
+    /// get the current render target attributes (default or offscreen)
+    static const struct DisplayAttrs& RenderTargetAttrs();
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
         

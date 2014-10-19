@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Core/mesh.h"
+#include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
 namespace _priv {
@@ -31,6 +32,8 @@ public:
     void Discard();
     /// return true if the renderer has been setup
     bool IsValid() const;
+    /// get the current render target attributes
+    const DisplayAttrs& GetRenderTargetAttrs() const;
     
     /// apply the current render target (can be 0)
     void ApplyRenderTarget(texture* rt);
@@ -48,12 +51,19 @@ protected:
     drawState* curDrawState;
     mesh* curMesh;
     programBundle* curProgramBundle;
+    DisplayAttrs renderTargetAttrs;
 };
 
 //------------------------------------------------------------------------------
 inline bool
 renderMgrBase::IsValid() const {
     return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+inline const DisplayAttrs&
+renderMgrBase::GetRenderTargetAttrs() const {
+    return this->renderTargetAttrs;
 }
 
 } // namespace _priv

@@ -71,18 +71,25 @@ renderMgrBase::ApplyRenderTarget(texture* rt) {
     this->renderTargetValid = true;
     
     // also update view port to cover full render target
-    int32 width, height;
     if (nullptr == rt) {
-        const DisplayAttrs& attrs = this->displayManager->GetDisplayAttrs();
-        width = attrs.FramebufferWidth;
-        height = attrs.FramebufferHeight;
+        this->renderTargetAttrs = this->displayManager->GetDisplayAttrs();
     }
     else {
+        // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
         const TextureAttrs& attrs = rt->GetTextureAttrs();
-        width = attrs.Width;
-        height = attrs.Height;
+        this->renderTargetAttrs.WindowWidth = attrs.Width;
+        this->renderTargetAttrs.WindowHeight = attrs.Height;
+        this->renderTargetAttrs.WindowPosX = 0;
+        this->renderTargetAttrs.WindowPosY = 0;
+        this->renderTargetAttrs.FramebufferWidth = attrs.Width;
+        this->renderTargetAttrs.FramebufferHeight = attrs.Height;
+        this->renderTargetAttrs.ColorPixelFormat = attrs.ColorFormat;
+        this->renderTargetAttrs.DepthPixelFormat = attrs.DepthFormat;
+        this->renderTargetAttrs.Samples = 1;
+        this->renderTargetAttrs.Windowed = false;
+        this->renderTargetAttrs.SwapInterval = 1;
     }
-    this->stateWrapper->ApplyRenderTargetState(width, height);
+    this->stateWrapper->ApplyRenderTargetState(this->renderTargetAttrs.FramebufferWidth, this->renderTargetAttrs.FramebufferHeight);
 }
     
 //------------------------------------------------------------------------------
