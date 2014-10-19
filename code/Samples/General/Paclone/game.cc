@@ -192,14 +192,14 @@ game::drawActors(canvas* canvas) const {
     for (const Actor& actor : this->actors) {
         Direction dir = (actor.type == Pacman ? actor.dir : actor.nextDir);
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
-        if (actor.state == Frightened) {
+        if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
+            spriteId = game::hollowSpriteMap[dir];
+        }
+        else if (actor.frightenedTick > 0) {
             spriteId = Sheet::FrightenedGhost;
             if ((actor.frightenedTick < (2 * 60)) && ((actor.frightenedTick / 15) % 2)) {
                 spriteId = Sheet::FlashingGhost;
             }
-        }
-        else if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
-            spriteId = game::hollowSpriteMap[dir];
         }
         else {
             spriteId = game::defaultSpriteMap[actor.type][dir];
@@ -336,7 +336,6 @@ game::updateGhostState(Actor& ghost) {
             newState = EnterHouse;
             ghost.pixelX = AntePortasPixelX;
             ghost.pixelY = AntePortasPixelY;
-            ghost.frightenedTick = 0;
             ghost.dotCounter = 0;
         }
     }
@@ -356,12 +355,10 @@ game::updateGhostState(Actor& ghost) {
     else if (ghost.state == LeaveHouse) {
         if ((ghost.pixelX == AntePortasPixelX) && (ghost.pixelY == AntePortasPixelY)) {
             newState = Scatter;
-            ghost.frightenedTick = 0;
         }
     }
     else if (ghost.frightenedTick > 0) {
         newState = Frightened;
-        ghost.frightenedTick--;
     }
     else {
         // alternate between scatter and chase
@@ -378,12 +375,17 @@ game::updateGhostState(Actor& ghost) {
             ghost.nextDir = Down;
         }
         else if (Frightened == ghost.state) {
-            // don't reverse direction when leaving frightened state            
+            // don't reverse direction when leaving frightened state
+            // force frightened tick to 0 when leaving frightened state
         }
         else {
             ghost.nextDir = reverseDir[ghost.dir];
         }
         ghost.state = newState;
+    }
+    // decrease frightened tick (in ALL states!)
+    if (ghost.frightenedTick > 0) {
+        ghost.frightenedTick--;
     }
 }
 
@@ -740,6 +742,7 @@ game::eatEnergizer(Energizer& energizer) {
     energizer.active = false;
     for (Actor& actor : this->actors) {
         if (Pacman != actor.type) {
+            // FIXME: 6 seconds is only for the first level
             actor.frightenedTick = 6 * 60;
         }
     }
@@ -755,6 +758,7 @@ game::killPacman() {
 void
 game::killGhost(Actor& ghost) {
     ghost.state = Hollow;
+    ghost.frightenedTick = 0;
 }
 
 } // namespace Paclone
