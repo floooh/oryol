@@ -77,6 +77,7 @@ private:
     static const int TileMidY = 4;
     static const Oryol::int16 AntePortasPixelX = 13 * TileSize + TileMidX + TileSize/2;
     static const Oryol::int16 AntePortasPixelY = 14 * TileSize + TileMidY;
+    static const Oryol::int32 NumScatterChasePhases = 8;
 
     int gameTick = 0;
     int dotCounter = 0;
@@ -148,6 +149,15 @@ private:
         actor.distToMidX = TileMidX - actor.pixelX % TileSize;
         actor.distToMidY = TileMidY - actor.pixelY % TileSize;
     };
+    static GhostState lookupScatterChaseMode(int tick) {
+        for (int i = 0; i < NumScatterChasePhases; i++) {
+            if (tick < scatterChaseTable[i].frame) {
+                return (GhostState) scatterChaseTable[i].state;
+            }
+        }
+        // can't happen
+        return Chase;
+    };
 
     void setupTiles();
     void setupActors();
@@ -182,6 +192,10 @@ private:
     static const Direction reverseDir[NumDirections];
     static const Oryol::int16 dirVec[NumDirections][2];
     static const Oryol::int16 homeTilePos[NumActorTypes][2];
+    static const struct scatterChase {
+        Oryol::int32 frame;
+        GhostState state;
+    } scatterChaseTable[NumScatterChasePhases];
 };
     
 } // namespace Paclone

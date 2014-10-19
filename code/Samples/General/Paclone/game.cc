@@ -79,6 +79,18 @@ const Sheet::SpriteId game::defaultSpriteMap[NumActorTypes][NumDirections] = {
 const Sheet::SpriteId game::hollowSpriteMap[NumDirections] = {
     Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
 };
+
+// scatter/phase mode table (start tick, and phase)
+const game::scatterChase game::scatterChaseTable[NumScatterChasePhases] = {
+    { 7  * 60, Scatter },   // 7 seconds Scatter
+    { 27 * 60, Chase },     // 20 seconds Chase
+    { 34 * 60, Scatter },   // ...
+    { 54 * 60, Chase },
+    { 59 * 60, Scatter },
+    { 79 * 60, Chase },
+    { 84 * 60, Scatter },
+    { std::numeric_limits<int>::max(), Chase },
+};
     
 //------------------------------------------------------------------------------
 game::game() {
@@ -330,15 +342,8 @@ game::updateGhostState(Actor& ghost) {
         ghost.frightenedTick--;
     }
     else {
-        const int scatterFrames = 7 * 60;
-        const int chaseFrames = 20 * 60;
-        int tick = this->gameTick % (scatterFrames + chaseFrames);
-        if (tick >= scatterFrames) {
-            newState = Chase;
-        }
-        else {
-            newState = Scatter;
-        }
+        // alternate between scatter and chase
+        newState = game::lookupScatterChaseMode(this->gameTick);
     }
     if (ghost.state != newState) {
         // switch state and handle initial state direction
