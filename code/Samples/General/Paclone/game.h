@@ -166,6 +166,7 @@ private:
     void drawActors(canvas* canvas) const;
     void drawEnergizers(canvas* canvas) const;
     bool isBlocked(const Actor& actor, Oryol::int16 tileX, Oryol::int16 tileY) const;
+    Oryol::int32 actorSpeed(const Actor& actor) const;
     bool canMove(const Actor& actor, Direction dir, bool allowCornering) const;
     void computeMove(Actor& actor, Direction dir, bool allowCornering) const;
     void move(Actor& actor, bool allowCornering) const;

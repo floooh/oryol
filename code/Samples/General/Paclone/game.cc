@@ -198,6 +198,9 @@ game::drawActors(canvas* canvas) const {
                 spriteId = Sheet::FlashingGhost;
             }
         }
+else if ((actor.state == EnterHouse) || (actor.state == LeaveHouse)) {
+    spriteId = Sheet::PacmanNoDir;
+}
         else if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
             spriteId = game::hollowSpriteMap[dir];
         }
@@ -232,13 +235,41 @@ game::drawEnergizers(canvas* canvas) const {
 }
 
 //------------------------------------------------------------------------------
+int32
+game::actorSpeed(const Actor& actor) const {
+    // determine the speed of an actor by returning whether a
+    // frame should be skipped
+    if (actor.type == Pacman) {
+        // Pacman normally moves at 80% (skipping every 5th frame)
+        return (0 != this->gameTick % 5) ? 1 : 0;
+    }
+    else if (actor.state == Frightened) {
+        // frightened: move at half speed
+        return this->gameTick & 1;
+    }
+    else if (actor.state == Hollow) {
+        // hollow: ~1.5x movement speed
+        return (this->gameTick & 1) ? 1 : 2;
+    }
+    else {
+        // normal ghost speed is 75% (skip every 4th frame)
+        // ghost speed in tunnel is 40%
+        if ((actor.tileY == 17) && ((actor.tileX <= 5) || (actor.tileX >= 22))) {
+            return (0 != ((this->gameTick * 2) % 4));
+        }
+        else {
+            return (0 != this->gameTick % 4) ? 1 : 0;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 game::updateActors(Direction input) {
     for (Actor& actor : this->actors) {
-        bool doMove = true;
         if (Pacman == actor.type) {
             // update pacman from user input
-            if (doMove) {
+            for (int i = 0, num = this->actorSpeed(actor); i < num; i++) {
                 this->computeMove(actor, input, true);
                 this->move(actor, true);
             }
@@ -246,22 +277,23 @@ game::updateActors(Direction input) {
         else {
             // update ghosts
             this->updateGhostState(actor);
+            const int numMove = this->actorSpeed(actor);
             if (House == actor.state) {
                 // special behaviour when inside house
-                if (doMove) {
+                for (int i = 0; i < numMove; i++) {
                     this->updateHouseDirection(actor);
                     this->move(actor, false);
                 }
             }
             else if (EnterHouse == actor.state) {
-                if (doMove) {
+                for (int i = 0; i < numMove; i++) {
                     this->updateEnterHouseDirection(actor);
                     this->move(actor, false);
                 }
             }
             else if (LeaveHouse == actor.state) {
                 // special behaviour when leaving house
-                if (doMove) {
+                for (int i = 0; i < numMove; i++) {
                     this->updateLeaveHouseDirection(actor);
                     this->move(actor, false);
                 }
@@ -269,8 +301,6 @@ game::updateActors(Direction input) {
             else {
                 // all other states have the same movement
                 // behaviour and only differ in choosing the target
-                bool allowCornering = false;
-                int numMove = 1;
                 switch (actor.state) {
                     case Scatter:
                         this->chooseScatterTarget(actor);
@@ -280,21 +310,17 @@ game::updateActors(Direction input) {
                         break;
                     case Frightened:
                         this->chooseFrightenedTarget(actor);
-                        doMove = this->gameTick & 1;
                         break;
                     case Hollow:
                         this->chooseHollowTarget(actor);
-                        numMove = this->gameTick & 1 ? 1 : 2;
                         break;
                     default:
                         break;
                 }
-                if (doMove) {
-                    for (int i = 0; i < numMove; i++) {
-                        this->updateGhostDirection(actor);
-                        this->computeMove(actor, actor.dir, allowCornering);
-                        this->move(actor, true);
-                    }
+                for (int i = 0; i < numMove; i++) {
+                    this->updateGhostDirection(actor);
+                    this->computeMove(actor, actor.dir, false);
+                    this->move(actor, true);
                 }
             }
         }
@@ -304,7 +330,6 @@ game::updateActors(Direction input) {
 //------------------------------------------------------------------------------
 void
 game::updateGhostState(Actor& ghost) {
-
     GhostState newState = ghost.state;
     if (ghost.state == Hollow) {
         // hollow is moving at 2x speed, so need to relax check in X
@@ -349,6 +374,7 @@ game::updateGhostState(Actor& ghost) {
         // switch state and handle initial state direction
         // (usually the direction is inverted, except in some special states)
         if (LeaveHouse == ghost.state) {
+            ghost.dir = Left;
             ghost.nextDir = Left;
         }
         else if (EnterHouse == ghost.state) {
@@ -432,8 +458,9 @@ game::chooseHollowTarget(Actor& ghost) const {
 //------------------------------------------------------------------------------
 void
 game::updateGhostDirection(Actor& ghost) const {
-    // this method is not valid for ghosts in House state
-    o_assert_dbg(House != ghost.state);
+    // note: this is only called in the non-special ghost states
+    // (scatter, chase, frightened, hollow)
+    o_assert_dbg(Scatter == ghost.state || Chase == ghost.state || Frightened == ghost.state || Hollow == ghost.state);
 
     // only compute new direction when currently at the mid of a tile or not currently moving
     if (((ghost.distToMidX == 0) && (ghost.distToMidY == 0)) || (NoDirection == ghost.dir)) {
@@ -472,6 +499,8 @@ game::updateGhostDirection(Actor& ghost) const {
 //------------------------------------------------------------------------------
 void
 game::updateHouseDirection(Actor& ghost) const {
+    o_assert_dbg(House == ghost.state);
+
     if ((ghost.dir != Up) && (ghost.dir != Down)) {
         ghost.dir = Up;
     }
@@ -486,6 +515,8 @@ game::updateHouseDirection(Actor& ghost) const {
 //------------------------------------------------------------------------------
 void
 game::updateLeaveHouseDirection(Actor& ghost) const {
+    o_assert_dbg(LeaveHouse == ghost.state);
+
     // first move to the middle, then up, all by pixel coords
     if (ghost.pixelX > AntePortasPixelX) {
         ghost.dir = Left;
@@ -493,8 +524,15 @@ game::updateLeaveHouseDirection(Actor& ghost) const {
     else if (ghost.pixelX < AntePortasPixelX) {
         ghost.dir = Right;
     }
-    else {
+    else if (ghost.pixelY > AntePortasPixelY) {
         ghost.dir = Up;
+    }
+    else if (ghost.pixelY < AntePortasPixelY) {
+        ghost.dir = Down;
+    }
+    else {
+        // exactly on target point
+        ghost.dir = Left;
     }
     ghost.nextDir = ghost.dir;
 }
@@ -502,6 +540,8 @@ game::updateLeaveHouseDirection(Actor& ghost) const {
 //------------------------------------------------------------------------------
 void
 game::updateEnterHouseDirection(Actor& ghost) const {
+    o_assert_dbg(EnterHouse == ghost.state);
+
     // at the begging, we're on the home-lane, first move
     // toward the right X position in front of the door,
     // then down into the house, and then to the homeBase position
@@ -521,7 +561,7 @@ game::updateEnterHouseDirection(Actor& ghost) const {
         ghost.dir = Right;
     }
     else {
-        ghost.dir = NoDirection;
+        ghost.dir = Up;
     }
 }
 
