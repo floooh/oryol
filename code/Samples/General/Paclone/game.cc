@@ -349,6 +349,9 @@ game::updateGhostState(Actor& ghost) {
         else if (EnterHouse == ghost.state) {
             ghost.nextDir = Down;
         }
+        else if (Frightened == ghost.state) {
+            // don't reverse direction when leaving frightened state            
+        }
         else {
             ghost.nextDir = reverseDir[ghost.dir];
         }
