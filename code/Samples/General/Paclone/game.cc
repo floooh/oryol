@@ -198,9 +198,6 @@ game::drawActors(canvas* canvas) const {
                 spriteId = Sheet::FlashingGhost;
             }
         }
-else if ((actor.state == EnterHouse) || (actor.state == LeaveHouse)) {
-    spriteId = Sheet::PacmanNoDir;
-}
         else if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
             spriteId = game::hollowSpriteMap[dir];
         }
