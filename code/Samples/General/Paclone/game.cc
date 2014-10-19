@@ -5,6 +5,7 @@
 #include "game.h"
 #include <cstring>
 #include <cstdlib>
+#include "Dbg/Dbg.h"
 
 using namespace Oryol;
 
@@ -104,6 +105,10 @@ game::Init(canvas* canvas) {
     canvas->CopyCharMap(0, 0, Width, Height, charMap);
     this->gameTick = 0;
     this->dotCounter = 0;
+    this->noDotFrames = 0;
+    this->score = 0;
+    this->hiscore = 0;
+    this->lives = NumLives;
     this->setupTiles();
     this->setupActors();
     this->setupEnergizers();
@@ -123,7 +128,9 @@ game::Update(int tick, canvas* canvas, Direction input) {
     this->handleCollide(canvas);
     this->drawEnergizers(canvas);
     this->drawActors(canvas);
+    this->drawChrome(canvas);
     this->gameTick++;
+    this->noDotFrames++;
 }
 
 //------------------------------------------------------------------------------
@@ -181,6 +188,7 @@ game::setupActors() {
         actor.frightenedTick = 0;
         actor.dotCounter = 0;
         actor.dotLimit = dotLimits[type];
+        actor.forceLeaveHouse = false;
         commitPosition(actor);
     }
 }
@@ -221,13 +229,38 @@ game::drawEnergizers(canvas* canvas) const {
         if (cur.active) {
             const int pixX = cur.tileX * TileSize - TileSize/2;
             const int pixY = cur.tileY * TileSize - TileSize/2;
-            const int pixW = 2 * 8;
-            const int pixH = 2 * 8;
+            const int pixW = 2 * TileSize;
+            const int pixH = 2 * TileSize;
             canvas->SetSprite(cur.spriteIndex, Sheet::Energizer, pixX, pixY, pixW, pixH, 0);
         }
         else {
             canvas->ClearSprite(cur.spriteIndex);
         }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::drawChrome(canvas* canvas) const {
+    // draw the playfield chrome (highscore, lives, ...)
+    Dbg::CursorPos(9, 0);
+    Dbg::TextColor(glm::vec4(1.0f));
+    Dbg::Print("HIGH SCORE");
+    
+    // current score and hiscore
+    Dbg::CursorPos(0, 1);
+    Dbg::PrintF("% 6d0", this->score);
+    Dbg::CursorPos(10, 1);
+    Dbg::PrintF("% 6d0", this->hiscore);
+    
+    // draw lives
+    const int baseIndex = NumActorTypes + NumEnergizers;
+    int pixX = 0;
+    const int pixY = 34 * TileSize;
+    const int size = 2 * TileSize;
+    for (int i = 0; i < this->lives; i++) {
+        canvas->SetSprite(baseIndex + i, Sheet::PacmanLeft, pixX, pixY, size, size, 1);
+        pixX += size;
     }
 }
 
@@ -263,6 +296,21 @@ game::actorSpeed(const Actor& actor) const {
 //------------------------------------------------------------------------------
 void
 game::updateActors(Direction input) {
+    
+    // first check if a ghost is forced out of the
+    // monster den because Pacman hasn't been eating dots for too long,
+    // only the first monster will be evicted and the counter reset to 0
+    // (it is also reset every time a dot is eaten)
+    for (Actor& actor : this->actors) {
+        if (House == actor.state) {
+            if (this->noDotFrames > 4 * 60) {
+                actor.forceLeaveHouse = true;
+                this->noDotFrames = 0;
+                break;
+            }
+        }
+    }
+
     for (Actor& actor : this->actors) {
         if (Pacman == actor.type) {
             // update pacman from user input
@@ -347,7 +395,7 @@ game::updateGhostState(Actor& ghost) {
     else if (ghost.state == House) {
         // check if ghost may leave the house
         // FIXME: this is more involved then just the dot counter!!!
-        if (ghost.dotCounter >= ghost.dotLimit) {
+        if ((ghost.dotCounter >= ghost.dotLimit) || ghost.forceLeaveHouse) {
             newState = LeaveHouse;
         }
         
@@ -387,6 +435,7 @@ game::updateGhostState(Actor& ghost) {
     if (ghost.frightenedTick > 0) {
         ghost.frightenedTick--;
     }
+    ghost.forceLeaveHouse = false;
 }
 
 //------------------------------------------------------------------------------
@@ -709,7 +758,16 @@ game::handleCollide(canvas* canvas) {
 
 //------------------------------------------------------------------------------
 void
-game::updateDotCounters() {
+game::addScore(int val) {
+    this->score += val;
+    if (this->score > this->hiscore) {
+        this->hiscore = score;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+game::updateGhostDotCounters() {
 
     // Blinky's dot counter is never updated since it's
     // limit is always 0, the other ghost's dot counters
@@ -722,8 +780,6 @@ game::updateDotCounters() {
             break;
         }
     }
-    
-    
 }
 
 //------------------------------------------------------------------------------
@@ -733,7 +789,9 @@ game::eatDot(canvas* canvas) {
     const int16 y = this->actors[Pacman].tileY;
     this->setTile(x, y, Empty);
     canvas->SetTile(Sheet::Space, x, y);
-    this->updateDotCounters();
+    this->updateGhostDotCounters();
+    this->addScore(1);
+    this->noDotFrames = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -746,6 +804,7 @@ game::eatEnergizer(Energizer& energizer) {
             actor.frightenedTick = 6 * 60;
         }
     }
+    this->addScore(5);
 }
 
 //------------------------------------------------------------------------------

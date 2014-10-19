@@ -5,6 +5,7 @@
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
 #include "Input/Input.h"
+#include "Dbg/Dbg.h"
 #include "canvas.h"
 #include "game.h"
 #include "shaders.h"
@@ -41,6 +42,7 @@ PacloneApp::OnInit() {
     const int dispHeight = canvasHeight * 2;
     Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, "Oryol Pacman Clone Sample"));
     Input::Setup();
+    Dbg::Setup();
     
     // setup canvas and game state
     this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
@@ -82,6 +84,7 @@ PacloneApp::OnRunning() {
     Gfx::ApplyOffscreenRenderTarget(this->canvasRenderTarget);
     Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
     this->spriteCanvas.Render();
+    Dbg::DrawTextBuffer();
     
     // copy offscreen render target into backbuffer
     glm::vec2 dispRes(Gfx::DisplayAttrs().WindowWidth, Gfx::DisplayAttrs().WindowHeight);
@@ -106,6 +109,7 @@ PacloneApp::OnCleanup() {
     this->crtEffect.Release();
     this->gameState.Cleanup();
     this->spriteCanvas.Discard();
+    Dbg::Discard();
     Input::Discard();
     Gfx::Discard();
     return App::OnCleanup();

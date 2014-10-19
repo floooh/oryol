@@ -56,10 +56,11 @@ public:
         EnterHouse,
     };
 
+    static const int NumLives = 3;
     static const int Width = 28;
     static const int Height = 36;
     static const int NumEnergizers = 4;
-    static const int NumSprites = NumEnergizers + NumActorTypes;
+    static const int NumSprites = NumEnergizers + NumActorTypes + NumLives;
     
     /// constructor
     game();
@@ -81,6 +82,10 @@ private:
 
     int gameTick = 0;
     int dotCounter = 0;
+    int noDotFrames = 0;    // number of frames since last dot eaten
+    int score = 0;
+    int hiscore = 0;
+    int lives = NumLives;
     
     struct Actor {
         ActorType type;
@@ -102,6 +107,7 @@ private:
         int frightenedTick = 0;
         int dotCounter = 0;
         int dotLimit = 0;
+        bool forceLeaveHouse = false;
     } actors[NumActorTypes];
     
     struct Energizer {
@@ -165,6 +171,7 @@ private:
     void updateActors(Direction input);
     void drawActors(canvas* canvas) const;
     void drawEnergizers(canvas* canvas) const;
+    void drawChrome(canvas* canvas) const;
     bool isBlocked(const Actor& actor, Oryol::int16 tileX, Oryol::int16 tileY) const;
     Oryol::int32 actorSpeed(const Actor& actor) const;
     bool canMove(const Actor& actor, Direction dir, bool allowCornering) const;
@@ -185,7 +192,8 @@ private:
     void updateEnterHouseDirection(Actor& ghost) const;
     void updateLeaveHouseDirection(Actor& ghost) const;
     void updateGhostState(Actor& ghost);
-    void updateDotCounters();
+    void updateGhostDotCounters();
+    void addScore(int val);
 
     static TileType tileMap[Height][Width];
     static const Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections];

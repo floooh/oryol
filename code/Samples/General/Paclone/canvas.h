@@ -63,7 +63,7 @@ private:
     static const int MaxHeight = 64;
     Sheet::SpriteId tiles[MaxWidth * MaxHeight];
     
-    static const int MaxNumSprites = 12;
+    static const int MaxNumSprites = 32;
     struct sprite {
         Sheet::SpriteId id = Sheet::InvalidSprite;
         int x = 0;
