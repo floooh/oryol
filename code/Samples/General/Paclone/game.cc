@@ -217,7 +217,8 @@ game::drawActors(canvas* canvas) const {
             const int pixY = actor.pixelY - TileMidY - TileSize/2;
             const int pixW = 2 * 8;
             const int pixH = 2 * 8;
-            canvas->SetSprite(actor.spriteIndex, spriteId, pixX, pixY, pixW, pixH, actor.moveTick / 3);
+            const int animSpeed = (actor.type == Pacman) ? 2 : 4;
+            canvas->SetSprite(actor.spriteIndex, spriteId, pixX, pixY, pixW, pixH, actor.moveTick / animSpeed);
         }
     }
 }
