@@ -29,7 +29,7 @@ platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'an
 validTargetPlatforms = { 
     'Darwin': ['osx', 'ios', 'emscripten', 'pnacl', 'android'],
     'Linux': ['linux', 'emscripten', 'pnacl', 'android'],
-    'Windows': ['win32', 'win64', 'emscripten']
+    'Windows': ['win32', 'win64', 'emscripten', 'android']
 }
 
 # valid non-cross-compiling platforms for a given host platform
@@ -43,7 +43,7 @@ validNativePlatforms = {
 validCrossPlatforms = {
     'Darwin': ['ios', 'emscripten', 'pnacl', 'android'],
     'Linux': ['emscripten', 'pnacl', 'android'],
-    'Windows': ['emscripten']
+    'Windows': ['emscripten', 'android']
 }
 
 # where ninja tool can be found
