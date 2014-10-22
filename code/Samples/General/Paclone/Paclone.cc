@@ -8,7 +8,7 @@
 #include "Dbg/Dbg.h"
 #include "canvas.h"
 #include "game.h"
-#include "shaders.h"
+#include "shaders/shaders.h"
 
 using namespace Oryol;
 using namespace Paclone;
@@ -20,7 +20,7 @@ public:
     AppState::Code OnCleanup();
 
 private:
-    game::Direction getInput();
+    Direction getInput();
     void applyViewPort();
 
     GfxId canvasRenderTarget;
@@ -36,8 +36,8 @@ AppState::Code
 PacloneApp::OnInit() {
     
     this->tick = 0;
-    const int canvasWidth = game::Width * 8;
-    const int canvasHeight = game::Height * 8;
+    const int canvasWidth = Width * 8;
+    const int canvasHeight = Height * 8;
     const int dispWidth = canvasWidth * 2;
     const int dispHeight = canvasHeight * 2;
     Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, "Oryol Pacman Clone Sample"));
@@ -45,7 +45,7 @@ PacloneApp::OnInit() {
     Dbg::Setup();
     
     // setup canvas and game state
-    this->spriteCanvas.Setup(game::Width, game::Height, 8, 8, game::NumSprites);
+    this->spriteCanvas.Setup(Width, Height, 8, 8, NumSprites);
     this->gameState.Init(&this->spriteCanvas);
     
     // setup a offscreen render target and copy-shader
@@ -63,7 +63,7 @@ PacloneApp::OnInit() {
 //------------------------------------------------------------------------------
 void
 PacloneApp::applyViewPort() {
-    float aspect = float(game::Width) / float(game::Height);
+    float aspect = float(Width) / float(Height);
     const int fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
     const int fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
     const int viewPortY = 0;
@@ -77,7 +77,7 @@ PacloneApp::applyViewPort() {
 AppState::Code
 PacloneApp::OnRunning() {
 
-    game::Direction input = this->getInput();
+    Direction input = this->getInput();
     this->gameState.Update(this->tick, &this->spriteCanvas, input);
     
     // render into offscreen render target
@@ -116,16 +116,16 @@ PacloneApp::OnCleanup() {
 }
 
 //------------------------------------------------------------------------------
-game::Direction
+Direction
 PacloneApp::getInput() {
     // FIXME: add more input options
-    game::Direction input = game::NoDirection;
+    Direction input = NoDirection;
     const Keyboard& kbd = Input::Keyboard();
     if (kbd.Attached) {
-        if (kbd.KeyPressed(Key::Left))       input = game::Left;
-        else if (kbd.KeyPressed(Key::Right)) input = game::Right;
-        else if (kbd.KeyPressed(Key::Up))    input = game::Up;
-        else if (kbd.KeyPressed(Key::Down))  input = game::Down;
+        if (kbd.KeyPressed(Key::Left))       input = Left;
+        else if (kbd.KeyPressed(Key::Right)) input = Right;
+        else if (kbd.KeyPressed(Key::Up))    input = Up;
+        else if (kbd.KeyPressed(Key::Down))  input = Down;
     }
     return input;
 }

@@ -1,6 +1,6 @@
 <Generator type="SpriteSheet" namespace="Paclone" >
 
-    <Sheet file="data/sprites.png" spriteWidth="8" spriteHeight="8">
+    <Sheet file="sprites.png" spriteWidth="8" spriteHeight="8">
 
         <Sprite name="Space"    x="120" y="0" char=" " />
         <Sprite name="TestWall" x="112" y="8" char="#" />

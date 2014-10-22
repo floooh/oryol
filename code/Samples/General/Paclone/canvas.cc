@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "canvas.h"
-#include "shaders.h"
+#include "shaders/shaders.h"
 #include "Gfx/Gfx.h"
 #include "IO/Stream/MemoryStream.h"
 
