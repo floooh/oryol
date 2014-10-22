@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "game.h"
 #include "Dbg/Dbg.h"
+#include <cstring>
 
 using namespace Oryol;
 
