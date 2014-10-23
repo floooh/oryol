@@ -136,19 +136,23 @@ func::actorSpeed(const Actor& actor, int gameTick) {
 bool
 func::canMove(const Actor& actor, Direction dir, bool allowCornering) {
     const Int2& dirVec = state::dirVec[dir];
-    Int2 distToMid;
+    
+    // get distance to midpoint in move direction and other direction
+    int perpDistToMid = 0;
+    int moveDistToMid = 0;
     if (dirVec.y != 0) {
-        distToMid = actor.distToMid;
+        perpDistToMid = actor.distToMid.x;
+        moveDistToMid = actor.distToMid.y;
     }
     else {
-        // flip x/y
-        distToMid.x = actor.distToMid.y;
-        distToMid.y = actor.distToMid.x;
+        perpDistToMid = actor.distToMid.y;
+        moveDistToMid = actor.distToMid.x;
     }
     
+    // look one tile ahead in movement direction
     Int2 checkPos{actor.tilePos.x + dirVec.x, actor.tilePos.y + dirVec.y};
     bool isBlocked = func::isBlocked(actor.state, checkPos);
-    if ((!allowCornering && (0 != distToMid.x)) || (isBlocked && (0 == distToMid.y))) {
+    if ((!allowCornering && (0 != perpDistToMid)) || (isBlocked && (0 == moveDistToMid))) {
         // way is blocked
         return false;
     }
