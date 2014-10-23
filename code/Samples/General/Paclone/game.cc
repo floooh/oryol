@@ -21,7 +21,7 @@ game::Init(canvas* canvas) {
     o_assert(canvas);
     canvas->CopyCharMap(0, 0, Width, Height, state.charMap);
     state.gameTick = 0;
-    state.blockCounter = 0;
+    state.blockCounter = 180;
     state.dotCounter = 0;
     state.noDotFrames = 0;
     state.score = 0;
@@ -192,6 +192,13 @@ game::drawChrome(canvas* canvas) const {
     Dbg::PrintF("% 6d0", state.score);
     Dbg::CursorPos(10, 1);
     Dbg::PrintF("% 6d0", state.hiscore);
+    
+    // READY! string
+    if (0 == state.gameTick) {
+        Dbg::CursorPos(11, 20);
+        Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        Dbg::Print("READY!");
+    }
     
     // draw lives
     const int baseIndex = NumActorTypes + NumEnergizers;
