@@ -174,8 +174,8 @@ canvas::updateVertices(int32& outNumBytes) {
             y0 = float(sprite.y) / canHeight;
             x1 = x0 + float(sprite.w) / canWidth;
             y1 = y0 + float(sprite.h) / canHeight;
-            u0 = float(s.X + s.W * sprite.frame) / sheetWidth;
-            v0 = float(s.Y) / sheetHeight;
+            u0 = float((s.X + s.W * sprite.frame) % Sheet::Width) / sheetWidth;
+            v0 = float(s.Y + ((s.X + s.W * sprite.frame) / Sheet::Width) * s.H) / sheetHeight;
             u1 = u0 + float(s.W) / sheetWidth;
             v1 = v0 + float(s.H) / sheetHeight;
         }

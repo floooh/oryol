@@ -42,6 +42,8 @@ private:
     void setupTiles();
     void setupActors();
     void setupEnergizers();
+    bool checkNewRound() const;
+    void startNewRound();
     void updateActors(Direction input);
     void drawActors(canvas* canvas) const;
     void drawEnergizers(canvas* canvas) const;

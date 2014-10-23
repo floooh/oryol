@@ -20,6 +20,7 @@ struct Sheet {
         PacmanDown,
         PacmanUp,
         PacmanLeft,
+        PacmanDead,
         BlinkyNoDir,
         BlinkyRight,
         BlinkyLeft,

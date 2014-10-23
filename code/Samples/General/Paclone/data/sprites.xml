@@ -13,6 +13,7 @@
         <Sprite name="PacmanDown"  x="48" y="16" w="16" h="16" frames="3" anim="pingpong" />
         <Sprite name="PacmanUp"    x="0"  y="32" w="16" h="16" frames="3" anim="pingpong" />
         <Sprite name="PacmanLeft"  x="48" y="32" w="16" h="16" frames="3" anim="pingpong" />
+        <Sprite name="PacmanDead"  x="0"  y="152" w="16" h="16" frames="11" anim="clamp" />
 
         <Sprite name="BlinkyNoDir" x="0"  y="48" w="16" h="16" />
         <Sprite name="BlinkyRight" x="0"  y="48" w="16" h="16" frames="2" anim="loop" />

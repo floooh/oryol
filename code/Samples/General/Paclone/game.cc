@@ -44,6 +44,9 @@ void
 game::Update(int tick, canvas* canvas, Direction input) {
     o_assert_dbg(canvas);
     this->updateCounters();
+    if (this->checkNewRound()) {
+        this->startNewRound();
+    }
     if (state.blockCounter == 0) {
         this->updateActors(input);
         this->handleCollide(canvas);
@@ -67,7 +70,6 @@ game::updateCounters() {
         }
     }
 }
-
 
 //------------------------------------------------------------------------------
 void
@@ -101,6 +103,8 @@ game::setupEnergizers() {
 void
 game::setupActors() {
     
+    // FIXME: split into level init and round init!
+    
     // map actor type to sprite index, pacman needs to render
     // after energizers and before ghosts
     int spriteIndices[NumActorTypes] = {
@@ -131,13 +135,57 @@ game::setupActors() {
 }
 
 //------------------------------------------------------------------------------
+bool
+game::checkNewRound() const {
+    return 1 == state.actors[Pacman].killedTicks;
+}
+
+//------------------------------------------------------------------------------
+void
+game::startNewRound() {
+    o_assert_dbg(this->checkNewRound());
+
+    // pacman has lost a life, start new life
+    state.lives--;
+    if (state.lives <= 0) {
+        // no more lifes left
+        state.lives = 0;
+    }
+    state.gameTick = 0;
+    state.blockCounter = 180;
+    state.dotCounter = 0;
+    state.noDotFrames = 0;
+    state.ghostKillCounter = 0;
+    for (Actor& actor : state.actors) {
+        actor.dir = state.actorStartDir[actor.type];
+        actor.nextDir = actor.dir;
+        actor.pixelPos = func::homePixelPos(state.homeTilePos[actor.type]);
+        actor.state = actor.type == Blinky ? Scatter : House;
+        actor.frightenedTick = 0;
+        actor.dotCounter = 0;
+        actor.forceLeaveHouse = false;
+        if (Pacman != actor.type) {
+            actor.killedCount = 0;
+        }
+        actor.killedTicks = 0;
+        commitPosition(actor);
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 game::drawActors(canvas* canvas) const {
     o_assert_dbg(canvas);
     for (const Actor& actor : state.actors) {
         Direction dir = (actor.type == Pacman ? actor.dir : actor.nextDir);
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
-        if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
+        int animSpeed = (actor.type == Pacman) ? 2 : 4;
+        int animTick  = actor.moveTick / animSpeed;
+        if ((actor.type == Pacman) && (actor.killedTicks > 0)) {
+            spriteId = Sheet::PacmanDead;
+            animTick = (PacmanDeathTicks - actor.killedTicks) / 5;
+        }
+        else if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
             if (actor.killedTicks > 0) {
                 o_assert_dbg((actor.killedCount > 0) && (actor.killedCount <= NumGhosts));
                 spriteId = state.killedGhostMap[actor.killedCount - 1];
@@ -158,8 +206,7 @@ game::drawActors(canvas* canvas) const {
         if (Sheet::InvalidSprite != spriteId) {
             const Int2 pos = func::pixelDrawPos(actor.pixelPos);
             const Int2 size{2 * TileSize, 2 * TileSize};
-            const int animSpeed = (actor.type == Pacman) ? 2 : 4;
-            canvas->SetSprite(actor.spriteIndex, spriteId, pos.x, pos.y, size.x, size.y, actor.moveTick / animSpeed);
+            canvas->SetSprite(actor.spriteIndex, spriteId, pos.x, pos.y, size.x, size.y, animTick);
         }
     }
 }
@@ -205,9 +252,13 @@ game::drawChrome(canvas* canvas) const {
     int pixX = 0;
     const int pixY = 34 * TileSize;
     const int size = 2 * TileSize;
-    for (int i = 0; i < state.lives; i++) {
+    int i;
+    for (i = 0; i < state.lives; i++) {
         canvas->SetSprite(baseIndex + i, Sheet::PacmanLeft, pixX, pixY, size, size, 1);
         pixX += size;
+    }
+    for (; i < NumLives; i++) {
+        canvas->ClearSprite(baseIndex + i);
     }
 }
 
@@ -593,6 +644,10 @@ game::eatEnergizer(Energizer& energizer) {
 void
 game::killPacman() {
     Log::Info("PACMAN KILLED!\n");
+    Actor& pacman = state.actors[Pacman];
+    pacman.killedCount++;
+    pacman.killedTicks = PacmanDeathTicks;
+    state.blockCounter = PacmanDeathTicks;
 }
 
 //------------------------------------------------------------------------------
@@ -601,8 +656,8 @@ game::killGhost(Actor& ghost) {
     ghost.state = Hollow;
     ghost.frightenedTick = 0;
     ghost.killedCount = ++state.ghostKillCounter;
-    ghost.killedTicks = 30;
-    state.blockCounter = 30;
+    ghost.killedTicks = GhostDeathTicks;
+    state.blockCounter = GhostDeathTicks;
     int score = 0;
     switch (ghost.killedCount) {
         case 1: score = 20; break;

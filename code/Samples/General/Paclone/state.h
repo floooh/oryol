@@ -94,6 +94,8 @@ static const int TileMidY = 4;
 static const int AntePortasPixelX = 13 * TileSize + TileMidX + TileSize/2;
 static const int AntePortasPixelY = 14 * TileSize + TileMidY;
 static const int NumScatterChasePhases = 8;
+static const int PacmanDeathTicks = 180;
+static const int GhostDeathTicks = 30;
 
 class state {
 public:
