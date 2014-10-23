@@ -84,6 +84,11 @@
         <Sprite name="HouseBottomRight" x="40" y="128" char="p" />
         <Sprite name="HouseDoor"        x="48" y="128" char="-" />
 
+        <Sprite name="P200" x="0"  y="136" w="16" h="16"/>
+        <Sprite name="P400" x="16" y="136" w="16" h="16"/>
+        <Sprite name="P800" x="32" y="136" w="16" h="16"/>
+        <Sprite name="P1600" x="48" y="136" w="16" h="16"/>
+
     </Sheet>
 
 </Generator>

@@ -79,6 +79,10 @@ struct Sheet {
         HouseBottomLeft,
         HouseBottomRight,
         HouseDoor,
+        P200,
+        P400,
+        P800,
+        P1600,
 
         NumSprites,
         InvalidSprite

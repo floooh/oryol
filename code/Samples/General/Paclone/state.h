@@ -19,6 +19,7 @@ enum TileType {
 };
 
 enum ActorType {
+    // don't change order!
     Blinky = 0,
     Pinky,
     Inky,
@@ -70,6 +71,8 @@ struct Actor {
     int frightenedTick = 0;
     int dotCounter = 0;
     int dotLimit = 0;
+    int killedCount = 0;    // 1, 2, 3 or 4th killed ghost
+    int killedTicks = 0;    // count down ticks after killed
     bool forceLeaveHouse = false;
 };
 
@@ -83,6 +86,7 @@ static const int NumLives = 3;
 static const int Width = 28;
 static const int Height = 36;
 static const int NumEnergizers = 4;
+static const int NumGhosts = 4;
 static const int NumSprites = NumEnergizers + NumActorTypes + NumLives;
 static const int TileSize = 8;
 static const int TileMidX = 3;
@@ -95,11 +99,13 @@ class state {
 public:
 
     int gameTick = 0;
+    int blockCounter = 0;   // game 'freezes' as long as blockCounter > 0
     int dotCounter = 0;
     int noDotFrames = 0;    // number of frames since last dot eaten
     int score = 0;
     int hiscore = 0;
     int lives = NumLives;
+    int ghostKillCounter = 0;   // consecutive ghost kill counter
     Actor actors[NumActorTypes];
     Energizer energizers[NumEnergizers];
 
@@ -107,6 +113,7 @@ public:
     static TileType tileMap[Height][Width];
     static const Sheet::SpriteId defaultSpriteMap[NumActorTypes][NumDirections];
     static const Sheet::SpriteId hollowSpriteMap[NumDirections];
+    static const Sheet::SpriteId killedGhostMap[NumGhosts];
     static const Direction reverseDir[NumDirections];
     static const Int2 dirVec[NumDirections];
     static const Int2 homeTilePos[NumActorTypes];

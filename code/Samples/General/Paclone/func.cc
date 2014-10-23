@@ -138,8 +138,7 @@ func::canMove(const Actor& actor, Direction dir, bool allowCornering) {
     const Int2& dirVec = state::dirVec[dir];
     
     // get distance to midpoint in move direction and other direction
-    int perpDistToMid = 0;
-    int moveDistToMid = 0;
+    int perpDistToMid, moveDistToMid;
     if (dirVec.y != 0) {
         perpDistToMid = actor.distToMid.x;
         moveDistToMid = actor.distToMid.y;

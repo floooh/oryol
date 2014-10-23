@@ -76,6 +76,11 @@ const Sheet::SpriteId state::defaultSpriteMap[NumActorTypes][NumDirections] = {
 const Sheet::SpriteId state::hollowSpriteMap[NumDirections] = {
     Sheet::EyesLeft, Sheet::EyesLeft, Sheet::EyesRight, Sheet::EyesUp, Sheet::EyesDown
 };
+
+// map to score sprites for 1st, 2nd, 3rd, 4th killed ghost
+const Sheet::SpriteId state::killedGhostMap[NumGhosts] = {
+    Sheet::P200, Sheet::P400, Sheet::P800, Sheet::P1600
+};
     
 // scatter/phase mode table (start tick, and phase)
 const state::scatterChase state::scatterChaseTable[NumScatterChasePhases] = {

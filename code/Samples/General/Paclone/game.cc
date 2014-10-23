@@ -21,11 +21,13 @@ game::Init(canvas* canvas) {
     o_assert(canvas);
     canvas->CopyCharMap(0, 0, Width, Height, state.charMap);
     state.gameTick = 0;
+    state.blockCounter = 0;
     state.dotCounter = 0;
     state.noDotFrames = 0;
     state.score = 0;
     state.hiscore = 0;
     state.lives = NumLives;
+    state.ghostKillCounter = 0;
     this->setupTiles();
     this->setupActors();
     this->setupEnergizers();
@@ -41,14 +43,31 @@ game::Cleanup() {
 void
 game::Update(int tick, canvas* canvas, Direction input) {
     o_assert_dbg(canvas);
-    this->updateActors(input);
-    this->handleCollide(canvas);
+    this->updateCounters();
+    if (state.blockCounter == 0) {
+        this->updateActors(input);
+        this->handleCollide(canvas);
+        state.gameTick++;
+        state.noDotFrames++;
+    }
     this->drawEnergizers(canvas);
     this->drawActors(canvas);
     this->drawChrome(canvas);
-    state.gameTick++;
-    state.noDotFrames++;
 }
+
+//------------------------------------------------------------------------------
+void
+game::updateCounters() {
+    if (state.blockCounter > 0) {
+        state.blockCounter--;
+    }
+    for (Actor& actor : state.actors) {
+        if (actor.killedTicks > 0) {
+            actor.killedTicks--;
+        }
+    }
+}
+
 
 //------------------------------------------------------------------------------
 void
@@ -82,10 +101,20 @@ game::setupEnergizers() {
 void
 game::setupActors() {
     
+    // map actor type to sprite index, pacman needs to render
+    // after energizers and before ghosts
+    int spriteIndices[NumActorTypes] = {
+        NumEnergizers + 1,  // Blinky
+        NumEnergizers + 2,  // Pinky
+        NumEnergizers + 3,  // Inky
+        NumEnergizers + 4,  // Clyde
+        NumEnergizers + 0,  // Pacman
+    };
+    
     for (int type = 0; type < NumActorTypes; type++) {
         Actor& actor = state.actors[type];
         actor.type = (ActorType) type;
-        actor.spriteIndex = type + NumEnergizers;
+        actor.spriteIndex = spriteIndices[type];
         actor.dir = state.actorStartDir[type];
         actor.nextDir = actor.dir;
         actor.pixelPos = func::homePixelPos(state.homeTilePos[type]);
@@ -95,6 +124,8 @@ game::setupActors() {
         actor.dotCounter = 0;
         actor.dotLimit = state.actorDotLimits[type];
         actor.forceLeaveHouse = false;
+        actor.killedCount = 0;
+        actor.killedTicks = 0;
         commitPosition(actor);
     }
 }
@@ -107,7 +138,13 @@ game::drawActors(canvas* canvas) const {
         Direction dir = (actor.type == Pacman ? actor.dir : actor.nextDir);
         Sheet::SpriteId spriteId = Sheet::InvalidSprite;
         if ((actor.state == Hollow) || (actor.state == EnterHouse)) {
-            spriteId = state.hollowSpriteMap[dir];
+            if (actor.killedTicks > 0) {
+                o_assert_dbg((actor.killedCount > 0) && (actor.killedCount <= NumGhosts));
+                spriteId = state.killedGhostMap[actor.killedCount - 1];
+            }
+            else {
+                spriteId = state.hollowSpriteMap[dir];
+            }
         }
         else if (actor.frightenedTick > 0) {
             spriteId = Sheet::FrightenedGhost;
@@ -184,7 +221,7 @@ game::updateActors(Direction input) {
             }
         }
     }
-
+    
     for (Actor& actor : state.actors) {
         if (Pacman == actor.type) {
             // update pacman from user input
@@ -535,6 +572,7 @@ game::eatDot(canvas* canvas) {
 void
 game::eatEnergizer(Energizer& energizer) {
     energizer.active = false;
+    state.ghostKillCounter = 0;
     for (Actor& actor : state.actors) {
         if (Pacman != actor.type) {
             // FIXME: 6 seconds is only for the first level
@@ -555,6 +593,17 @@ void
 game::killGhost(Actor& ghost) {
     ghost.state = Hollow;
     ghost.frightenedTick = 0;
+    ghost.killedCount = ++state.ghostKillCounter;
+    ghost.killedTicks = 30;
+    state.blockCounter = 30;
+    int score = 0;
+    switch (ghost.killedCount) {
+        case 1: score = 20; break;
+        case 2: score = 40; break;
+        case 3: score = 80; break;
+        default: score = 160; break;
+    }
+    this->addScore(score);
 }
 
 } // namespace Paclone

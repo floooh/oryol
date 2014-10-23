@@ -52,6 +52,7 @@ private:
     void eatEnergizer(Energizer& energizer);
     void killPacman();
     void killGhost(Actor& ghost);
+    void updateCounters();
     void updateGhostDirection(Actor& ghost) const;
     void updateHouseDirection(Actor& ghost) const;
     void updateEnterHouseDirection(Actor& ghost) const;
