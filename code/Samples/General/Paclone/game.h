@@ -45,9 +45,6 @@ private:
     bool checkNewRound() const;
     void startNewRound();
     void updateActors(Direction input);
-    void drawActors(canvas* canvas) const;
-    void drawEnergizers(canvas* canvas) const;
-    void drawChrome(canvas* canvas) const;
     void move(Actor& actor, bool allowCornering) const;
     void handleCollide(canvas* canvas);
     void eatDot(canvas* canvas);
