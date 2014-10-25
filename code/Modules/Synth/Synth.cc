@@ -40,7 +40,7 @@ Synth::Update() {
 
 //------------------------------------------------------------------------------
 void
-Synth::AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset) {
+Synth::AddOp(int32 voice, int32 track, const SynthOp& op, int32 timeOffset) {
     o_assert_dbg(IsValid());
     state->soundManager.AddOp(voice, track, op, timeOffset);
 }

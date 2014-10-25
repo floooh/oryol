@@ -41,7 +41,7 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
         this->AddOp(i, 0, nop, 0.0f);
     }
     
-    // setup the GPU synthesizer
+    this->cpuSynth.Setup(setupParams);
     this->gpuSynth.Setup(setupParams);
 }
 
@@ -71,13 +71,11 @@ soundMgrBase::Update() {
 
 //------------------------------------------------------------------------------
 void
-soundMgrBase::AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset) {
+soundMgrBase::AddOp(int32 voice, int32 track, const SynthOp& op, int32 timeOffset) {
     o_assert_range_dbg(voice, synth::NumVoices);
 
     SynthOp addOp = op;
-    addOp.startTick     = this->curTick + synth::TimeToTicks(timeOffset, synth::SampleRate);
-    addOp.freqLoopTicks = float32(synth::SampleRate) / addOp.Frequency;
-    addOp.FadeInTicks   = synth::TimeToTicks(addOp.FadeIn, synth::SampleRate);
+    addOp.startTick = this->curTick + timeOffset;
     this->voices[voice].AddOp(track, addOp);
 }
 

@@ -17,17 +17,21 @@ namespace _priv {
 class synth {
 public:
     /// standard sample rate
-    static const int32 SampleRate = 22050;
+    static const int32 SampleRate = 44100;
     /// byte size of a single sample
     static const int32 SampleSize = 2;
     /// number of samples in one streaming buffer
-    static const int32 BufferNumSamples = 1 * 1024;
+    static const int32 BufferNumSamples = 2 * 1024;
     /// byte size of one streaming buffer
     static const int32 BufferSize = SampleSize * BufferNumSamples;
     /// number of voices
     static const int32 NumVoices = 1;
     /// number of tracks per voice
     static const int32 NumTracks = 4;
+    /// max sample value (16 bit signed)
+    static const int32 MaxSampleVal = (1<<15) - 1;
+    /// min sample value (16 bit signed)
+    static const int32 MinSampleVal = -((1<<15) - 1);
     
     /// convert time in seconds to sample ticks
     static int32 TimeToTicks(float32 seconds, int32 freq);

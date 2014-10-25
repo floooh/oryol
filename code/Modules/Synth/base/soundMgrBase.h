@@ -32,7 +32,7 @@ public:
     void Update();
     
     /// add an op to a voice track
-    void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset);
+    void AddOp(int32 voice, int32 track, const SynthOp& op, int32 timeOffset);
     
 protected:
     bool isValid;

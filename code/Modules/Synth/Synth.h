@@ -24,7 +24,7 @@ public:
     /// update the sound system, call once per frame, advances tick
     static void Update();
     /// add a sound synthesis Op
-    static void AddOp(int32 voice, int32 track, const SynthOp& op, float32 timeOffset = 0.0f);
+    static void AddOp(int32 voice, int32 track, const SynthOp& op, int32 timeOffset = 0);
     
 private:
     struct _state {

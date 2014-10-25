@@ -35,7 +35,7 @@ voiceTrack::AddOp(const SynthOp& op) {
     // fix the end tick of the previous op
     if (!this->track.Empty()) {
         SynthOp& prev = this->track.Back();
-        prev.endTick = op.startTick + op.FadeInTicks;
+        prev.endTick = op.startTick;
     }
     this->track.Add(op);
 }
