@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief holds all info needed to fill a sample buffer
 */
+#include "Core/Assert.h"
 #include "Synth/Core/SynthOp.h"
 #include "Synth/Core/synth.h"
 
@@ -41,6 +42,21 @@ public:
     void* Buffer[synth::NumVoices];
     /// sample buffer size in bytes
     int32 BufferNumBytes;
+    
+    /// return op at voice, track and tick
+    SynthOp* Op(int32 voiceIndex, int32 trackIndex, int32 tick) const {
+        o_assert_range_dbg(voiceIndex, synth::NumVoices);
+        o_assert_range_dbg(trackIndex, synth::NumTracks);
+        SynthOp* begin = Begin[voiceIndex][trackIndex];
+        const SynthOp* end = End[voiceIndex][trackIndex];
+        for (SynthOp* op = begin; op < end; op++) {
+            if ((tick >= op->startTick) && (tick < op->endTick)) {
+                return op;
+            }
+        }
+        // can't happen
+        return nullptr;
+    };
 };
     
 } // namespace _priv

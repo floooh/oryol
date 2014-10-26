@@ -28,10 +28,10 @@ private:
     /// synthesize a single voice
     void synthesizeVoice(int32 voiceIndex, const opBundle& bundle);
     /// generate a single voice-track sample
-    int32 sample(int32 voiceIndex, int32 trackIndex, const SynthOp* op);
+    int32 sample(int32 voiceIndex, int32 trackIndex, int32 accum, const SynthOp* op);
     
     static const int32 NumWaveSamples = 32;
-    int32 waves[SynthOp::NumCodes][NumWaveSamples];
+    int32 waves[SynthOp::NumWaves][NumWaveSamples];
     uint32 freqCounters[synth::NumVoices][synth::NumTracks];
 };
     

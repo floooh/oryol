@@ -19,24 +19,40 @@ namespace Oryol {
     
 class SynthOp {
 public:
-    /// the op-code
-    enum Code {
-        Nop = 0,        // no operation, pass-thru, this is the default
-        Const,          // output a constant Amplitude, Frequency not used
+    /// operation to perform on accumulated value
+    enum OpT {
+        Nop,            // simply pass-thru accumulated value (default)
+        Modulate,       // multiply with accumulated value
+        Add,            // add-saturate with accumulated value
+        Replace,        // replace accum with current value
+        ModFreq,        // modulate frequency with accumulated value
+    } Op = Nop;
+
+    /// oscillator waveform
+    enum WaveT {
+        Const,          // output a constant Amplitude, Frequency not used (default)
         Sine,           // sine wave
         SawTooth,       // sawtooth wave
         Triangle,       // triangle wave
         Square,         // square wave
         Noise,          // generate noise
+        Custom0,
+        Custom1,
+        Custom2,
+        Custom3,
+        Custom4,
+        Custom5,
+        Custom6,
+        Custom7,
         
-        NumCodes
-    } Code = Nop;
+        NumWaves
+    } Wave = Const;
     /// amplitude (MinSampleVal .. MaxSampleVal)
     int32 Amp = _priv::synth::MaxSampleVal;
     /// amplitude bias (can be used to move wave into positive area)
     int32 Bias = 0;
     /// frequency
-    int32 Frequency = 440;
+    int32 Freq = 440;
     /// start tick (private, computed)
     int32 startTick = 0;
     /// end tick (private, computed)
@@ -46,15 +62,32 @@ public:
         return this->startTick < rhs.startTick;
     };
     /// convert op-code to string
-    static const char* ToString(enum Code c) {
-        switch (c) {
-            case Nop:      return "Nop";
-            case Const:    return "Const";
-            case Sine:     return "Sine";
-            case Triangle: return "Triangle";
-            case Square:   return "Square";
-            case Noise:    return "Noise";
-            default:       return "Invalid";
+    static const char* ToString(enum OpT op) {
+        switch (op) {
+            case Nop:       return "Nop";
+            case Modulate:  return "Modulate";
+            case Add:       return "Add";
+            case ModFreq:   return "ModFreq";
+            default:        return "Invalid";
+        }
+    }
+    /// convert wave-form to string
+    static const char* ToString(enum WaveT w) {
+        switch (w) {
+            case Const:     return "Const";
+            case Sine:      return "Sine";
+            case Triangle:  return "Triangle";
+            case Square:    return "Square";
+            case Noise:     return "Noise";
+            case Custom0:   return "Custom0";
+            case Custom1:   return "Custom1";
+            case Custom2:   return "Custom2";
+            case Custom3:   return "Custom3";
+            case Custom4:   return "Custom4";
+            case Custom5:   return "Custom5";
+            case Custom6:   return "Custom6";
+            case Custom7:   return "Custom7";
+            default:        return "Invalid";
         }
     };
 };

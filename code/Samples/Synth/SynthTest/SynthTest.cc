@@ -19,10 +19,13 @@ public:
 private:
     int32 frameCount = 0;
     static const int NumTracks = 4;
-    SynthOp op;
-    const char* modType = "Silence";
+    SynthOp freqOp;     // frequency modulation
+    SynthOp sndOp;      // sound waveform
+    SynthOp volOp;      // volume modulation
 };
 OryolMain(SynthTestApp);
+
+#define ToAmp(x) (int32)(x * (1<<15))
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -34,8 +37,19 @@ SynthTestApp::OnInit() {
     synthSetup.UseGPUSynthesizer = false;
     Synth::Setup(synthSetup);
     
-    this->op.Code = SynthOp::Square;
-    this->op.Frequency = 660;
+    this->freqOp.Op = SynthOp::Replace;
+    this->freqOp.Wave = SynthOp::Custom0;
+    this->freqOp.Freq = 5;
+    this->freqOp.Amp = ToAmp(0.5f);
+    this->freqOp.Bias = ToAmp(0.25f);
+    
+    this->sndOp.Op   = SynthOp::ModFreq;
+    this->sndOp.Wave = SynthOp::Custom0;
+    this->sndOp.Freq = 660;
+    this->sndOp.Amp  = (1<<15);
+    
+    Synth::AddOp(0, 0, this->freqOp);
+    Synth::AddOp(0, 1, this->sndOp);
     
     return App::OnInit();
 }
@@ -45,38 +59,61 @@ AppState::Code
 SynthTestApp::OnRunning() {
 
     const Keyboard& kbd = Input::Keyboard();
-    if (kbd.KeyDown(Key::Up)) {
-        this->op.Frequency += 11;
-        if (this->op.Frequency > 4400) {
-            this->op.Frequency = 4400;
+    if (kbd.KeyDown(Key::Escape)) {
+        if (this->sndOp.Op == SynthOp::ModFreq) {
+            this->sndOp.Op = SynthOp::Replace;
         }
-        Synth::AddOp(0, 0, this->op);
+        else {
+            this->sndOp.Op = SynthOp::ModFreq;
+        }
+        Synth::AddOp(0, 1, this->sndOp);
+    }
+    
+    if (kbd.KeyDown(Key::Up)) {
+        if (kbd.KeyPressed(Key::LeftShift)) {
+            this->freqOp.Freq += 2;
+            Synth::AddOp(0, 0, this->freqOp);
+        }
+        else {
+            this->sndOp.Freq += 11;
+            if (this->sndOp.Freq > 4400) {
+                this->sndOp.Freq = 4400;
+            }
+            Synth::AddOp(0, 1, this->sndOp);
+        }
     }
     if (kbd.KeyDown(Key::Down)) {
-        this->op.Frequency -= 11;
-        if (this->op.Frequency < 11) {
-            this->op.Frequency = 11;
+        if (kbd.KeyPressed(Key::LeftShift)) {
+            this->freqOp.Freq -= 1;
+            if (this->freqOp.Freq < 1) {
+                this->freqOp.Freq = 1;
+            }
+            Synth::AddOp(0, 0, this->freqOp);
         }
-        Synth::AddOp(0, 0, this->op);
+        else {
+            this->sndOp.Freq -= 11;
+            if (this->sndOp.Freq < 11) {
+                this->sndOp.Freq = 11;
+            }
+            Synth::AddOp(0, 1, this->sndOp);
+        }
     }
-    if (kbd.KeyDown(Key::T)) {
-        this->op.Code = SynthOp::Triangle;
-        Synth::AddOp(0, 0, this->op);
-    }
-    else if (kbd.KeyDown(Key::Q)) {
-        this->op.Code = SynthOp::Square;
-        Synth::AddOp(0, 0, this->op);
-    }
-    else if (kbd.KeyDown(Key::S)) {
-        this->op.Code = SynthOp::Sine;
-        Synth::AddOp(0, 0, this->op);
-    }
-    else if (kbd.KeyDown(Key::N)) {
-        this->op.Code = SynthOp::Noise;
-        Synth::AddOp(0, 0, this->op);
+    
+    for (int i = 0; i < 8; i++) {
+        if (kbd.KeyDown(Key::Code(Key::N1 + i))) {
+            if (kbd.KeyPressed(Key::LeftShift)) {
+                this->freqOp.Wave = SynthOp::WaveT(SynthOp::Custom0 + i);
+                Synth::AddOp(0, 0, this->freqOp);
+            }
+            else {
+                this->sndOp.Wave = SynthOp::WaveT(SynthOp::Custom0 + i);
+                Synth::AddOp(0, 1, this->sndOp);
+            }
+        }
     }
     
     // modulation
+    /*
     if (kbd.KeyDown(Key::N1)) {
         this->modType = "Silence";
         SynthOp mod;
@@ -96,7 +133,7 @@ SynthTestApp::OnRunning() {
         this->modType = "LowFreq Sine";
         SynthOp mod;
         mod.Code = SynthOp::Sine;
-        mod.Frequency = 5;
+        mod.Freq = 5;
         Synth::AddOp(0, 1, mod);
         Synth::AddOp(0, 0, this->op);
     }
@@ -104,12 +141,13 @@ SynthTestApp::OnRunning() {
         this->modType = "HiFreq Sawtooth";
         SynthOp mod;
         mod.Code = SynthOp::Triangle;
-        mod.Frequency = 55;
+        mod.Freq = 55;
         mod.Amp = 0.5f;
         mod.Bias = 0.5f;
         Synth::AddOp(0, 1, mod);
         Synth::AddOp(0, 0, this->op);
     }
+    */
     /*
     if (kbd.KeyDown(Key::N5)) {
         // ASDR modulation
@@ -135,9 +173,11 @@ SynthTestApp::OnRunning() {
 
     Synth::Update();
     Dbg::Print("\n\n");
-    Dbg::PrintF(" Waveform (T,S,Q,N): %s\n\r", SynthOp::ToString(this->op.Code));
-    Dbg::PrintF(" Freq (up/down): %d\n\r", this->op.Frequency);
-    Dbg::PrintF(" Modulation (1,2,3,4,5): %s\n\r", this->modType);
+    Dbg::PrintF(" Frequency Modulation (Esc): %s\n\r", this->sndOp.Op == SynthOp::ModFreq ? "on" : "off");
+    Dbg::PrintF(" Sound Wave (1..8): %s\n\r", SynthOp::ToString(this->sndOp.Wave));
+    Dbg::PrintF(" Sound Freq (up/down): %d\n\r", this->sndOp.Freq);
+    Dbg::PrintF(" Freq Mod Wave (Shift 1..8): %s\n\r", SynthOp::ToString(this->freqOp.Wave));
+    Dbg::PrintF(" Freq Mod Freq (Shift up/down): %d\n\r", this->freqOp.Freq);
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
     Dbg::DrawTextBuffer();
