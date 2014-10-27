@@ -87,7 +87,7 @@ Serving HTTP on 0.0.0.0 port 8000 ...
 In Chrome, Firefox or IE11, navigate to: **http://localhost:8000**
 
 ### Android ###
-To setup a local Android development environment, build and deploy the
+On OSX: To setup a local Android development environment, build and deploy the
 Triangle sample to your Android device (with unlocked development mode):
 
 ```
@@ -102,6 +102,8 @@ Triangle sample to your Android device (with unlocked development mode):
 ```
 If everything has worked, there should be a new Triangle app installed,
 tap to run.
+
+For Android development on other platforms, see the Android section below.
 
 ### Google Native Client ###
 To setup the NaCl SDK, and build the Triangle sample on OSX or Linux:
@@ -438,7 +440,9 @@ Cross-compiling in Visual Studio using the emscripten VS plugin is currently not
 
 ## Android Cross-Compiling
 
-**NOTE:** this only works on OSX at the moment!
+*Windows:* first make sure that a JDK is installed, and if you have a separate JRE and JDK installation
+you may have to point a JAVA_HOME env variable to the *JDK* location. If the Oryol build system
+complains about a missing 'tools.jar' then it couldn't find the JDK location.
 
 Before Android development can start, setup the required SDKs. The ./oryol python script makes this easy:
 

@@ -125,10 +125,16 @@ def uncompress(path) :
 
 #-------------------------------------------------------------------------------
 def updateAndroidSdk() :
-    cmd = ['sh', '{}/tools/android'.format(getAndroidSdkPath()),
-           'update','sdk',
-           '-f', '-u', '--all',
-           '--filter', 'tools,platform-tools,build-tools-19.1.0,android-19']
+    if platform.system() == 'Windows' :
+        cmd = ['{}/tools/android.bat'.format(getAndroidSdkPath()),
+               'update','sdk',
+               '-f', '-u', '--all',
+               '--filter', 'tools,platform-tools,build-tools-19.1.0,android-19']
+    else :
+        cmd = ['sh', '{}/tools/android'.format(getAndroidSdkPath()),
+               'update','sdk',
+               '-f', '-u', '--all',
+               '--filter', 'tools,platform-tools,build-tools-19.1.0,android-19']
     print cmd
     subprocess.call(args=cmd, cwd=ProjectDirectory)
 
