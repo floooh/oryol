@@ -52,6 +52,8 @@ enum GhostState {
 };
 
 struct Int2 {
+    Int2() : x(0), y(0) {};
+    Int2(int x_, int y_) : x(x_), y(y_) {};
     int x;
     int y;
 };
@@ -62,11 +64,11 @@ struct Actor {
     Direction dir = NoDirection;
     Direction nextDir = NoDirection;
     int moveTick = 0;
-    Int2 pixelPos{0,0};
-    Int2 tilePos{0,0};
-    Int2 distToMid{0,0};
-    Int2 targetPos{0,0};
-    Int2 homeBasePixelPos{0,0};
+    Int2 pixelPos;
+    Int2 tilePos;
+    Int2 distToMid;
+    Int2 targetPos;
+    Int2 homeBasePixelPos;
     GhostState state = Scatter;
     int frightenedTick = 0;
     int dotCounter = 0;
@@ -77,7 +79,7 @@ struct Actor {
 };
 
 struct Energizer {
-    Int2 tilePos{0,0};
+    Int2 tilePos;
     int spriteIndex = 0;
     bool active = false;
 };
