@@ -6,7 +6,7 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_ ##
 
-- **27-Oct-2014**: Android cross-compilation should now also work on Windows, if you already experimented with this, please first delete the the android sdk files under *oryol/sdk/windows/*, do an 'oryol clean all', and then run 'oryol setup android' again. Details are in [BUILD.md](doc/BUILD.md)
+- **27-Oct-2014**: Android cross-compilation should now also work on Windows, if you already experimented with this, please first delete the Android SDK/NDK files under *oryol/sdk/windows/*, do an 'oryol clean all', and then run 'oryol setup android' again. Details are in [BUILD.md](doc/BUILD.md)
 - **14-Oct-2014**: I have switched to the official emscripten SDK for all platforms now. Please check
 BUILD.md for updated emscripten cross-compiling instructions. The main advantage is that Windows
 is now supported as host-platform, and that the official SDK makes it easy to switch between
