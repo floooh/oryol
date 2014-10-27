@@ -8,7 +8,7 @@ CMake to manage build configurations for the supported host and target platforms
 - cmake 2.8.11 or better
 - for **OSX:** Xcode 5.x (Xcode 6 Beta works as well)
 - for **Windows:** VStudio 2013 (Express should work fine)
-- for **Android:** the 'ant' Java build tool must be in the path
+- for **Android:** the 'ant' Java build tool must be in the path, and the JDK must be installed
 
 ### OSX ###
 To build and run the Triangle sample on OSX:
@@ -188,7 +188,9 @@ Make sure all these tools are in the path!
 
 #### Android
 
+- make sure a JDK is installed
 - make sure 'ant' is in the path (e.g. on OSX: 'brew install ant')
+- if both a JDK and JRE is installed, the Android SDK may have trouble finding the JDK, in that case, point a JAVA_HOME environment variable to the JDK location
 
 #### Emscripten
 
@@ -440,20 +442,20 @@ Cross-compiling in Visual Studio using the emscripten VS plugin is currently not
 
 ## Android Cross-Compiling
 
-*Windows:* first make sure that a JDK is installed, and if you have a separate JRE and JDK installation
-you may have to point a JAVA_HOME env variable to the *JDK* location. If the Oryol build system
-complains about a missing 'tools.jar' then it couldn't find the JDK location.
+Prerequisites:
 
-Before Android development can start, setup the required SDKs. The ./oryol python script makes this easy:
+* install a JDK
+* in case you have a JRE and JDK installed, set a JAVA_HOME environment variable pointing to the JDK
+* install ant (I use Apache Ant on Windows: http://ant.apache.org/manual/install.html, and 'brew install ant' on OSX: http://brew.sh)
 
+
+Setup the Android SDK and NDK:
 ```
 > cd ~/oryol
 > ./oryol setup android
 ```
 
-This will download and prepare the Android SDK and the Android NDK, and setup a standalone GCC toolchain, all in the 'sdks' subdirectory. Your environment will not be altered (no environment variables or paths will be set).
-
-You must install the 'ant' build tool though. On OSX I recommend the brew package manager (http://brew.sh/)
+This will download the Android SDK and the Android NDK in the 'sdks' subdirectory. Your environment will not be altered (no environment variables or paths will be set).
 
 ```
 > brew install ant
