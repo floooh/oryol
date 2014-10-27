@@ -1,9 +1,8 @@
 #-------------------------------------------------------------------------------
 #   android.toolchain.cmake
 #
-#   NOTE: this script expects the Android SDK, NDK and a standalone
-#   toolchain in the 'sdks' subdirectory as created by 
-#   './oryol setup android'
+#   NOTE: this script expects the Android SDK and NDK in the 'sdks' 
+#   subdirectory as created by './oryol setup android'
 #-------------------------------------------------------------------------------
 
 message("Target Platform: Android")
