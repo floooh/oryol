@@ -457,13 +457,6 @@ Setup the Android SDK and NDK:
 
 This will download the Android SDK and the Android NDK in the 'sdks' subdirectory. Your environment will not be altered (no environment variables or paths will be set).
 
-```
-> brew install ant
-==> Downloading http://www.apache.org/dyn/closer.cgi?path=ant/binaries/apache-ant-1.9.3-bin.tar.gz
-Already downloaded: /Library/Caches/Homebrew/ant-1.9.3.tar.gz
-/usr/local/Cellar/ant/1.9.3: 1592 files, 39M, built in 3 seconds
-```
-
 Next, make sure that the Development Mode on your Android device is unlocked (see here: http://developer.android.com/tools/index.html):
 
 Here's the important part:
@@ -494,6 +487,7 @@ compile a sample, and deploy it to your device:
 3275 KB/s (1726765 bytes in 0.514s)
 	pkg: /data/local/tmp/PackedNormals-debug.apk
 Success
+> ./oryol logcat
 ```
 
 The App Launcher (or whatever it is called) now has a new PackedNormals app!
