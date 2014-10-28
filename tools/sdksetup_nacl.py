@@ -55,7 +55,9 @@ def uncompress(path) :
 
 #-------------------------------------------------------------------------------
 def updateNaclSdk() :
-    cmd = ['sh', '{}/naclsdk'.format(getNaclSdkPath()), 'install', '--force', 'pepper_canary']
+    naclsdk = '{}/naclsdk'.format(getNaclSdkPath())
+    os.chmod(naclsdk, 0744)
+    cmd = [naclsdk, 'install', '--force', 'pepper_canary']
     print cmd
     subprocess.call(args=cmd, cwd=ProjectDirectory)
 
