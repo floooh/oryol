@@ -8,6 +8,7 @@ import os
 import platform
 import subprocess
 import urllib
+import zipfile
 
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 
@@ -49,7 +50,8 @@ def getNaclSdkArchivePath() :
 
 #-------------------------------------------------------------------------------
 def uncompress(path) :
-    subprocess.call(args=['unzip', path], cwd=getSdkDir())
+    with zipfile.ZipFile(path, 'r') as archive:
+        archive.extractall(getSdkDir())
 
 #-------------------------------------------------------------------------------
 def updateNaclSdk() :

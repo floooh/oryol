@@ -9,7 +9,10 @@ import os
 import platform
 import subprocess
 import urllib
+import zipfile
 from string import Template
+
+hostPlatform = platform.system()
 
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
 EmscGitUrl = 'https://github.com/kripken/emscripten.git'
@@ -57,9 +60,9 @@ def error(msg) :
 
 #-------------------------------------------------------------------------------
 def getSdkDir() :
-    if platform.system() == 'Darwin' :        
+    if hostPlatform == 'Darwin' :        
         return ProjectDirectory + '/sdks/osx'
-    elif platform.system() == 'Windows' :
+    elif hostPlatform == 'Windows' :
         return ProjectDirectory + '/sdks/windows'
     else :
         return ProjectDirectory + '/sdks/linux'
@@ -151,7 +154,7 @@ def setupEmscripten() :
             print "Nothing done."
             return
 
-    if platform.system() == 'Windows' :
+    if hostPlatform == 'Windows' :
         error('Not supported on Windows, please use "oryol setup emsdk"')
     ensureSdkDirectory()
 
@@ -176,22 +179,22 @@ def urlDownloadHook(count, blockSize, totalSize) :
 
 #-------------------------------------------------------------------------------
 def getEmSdkUrl() :
-    if platform.system() in EmsdkUrls :
-        return EmsdkUrls[platform.system()]
+    if hostPlatform in EmsdkUrls :
+        return EmsdkUrls[hostPlatform]
     else :
         error('unknown host platform')
 
 #-------------------------------------------------------------------------------
 def getEmSdkArchivePath() :
-    if platform.system() in EmsdkArchivePaths :
-        return getSdkDir() + '/' + EmsdkArchivePaths[platform.system()]
+    if hostPlatform in EmsdkArchivePaths :
+        return getSdkDir() + '/' + EmsdkArchivePaths[hostPlatform]
     else :
         error('unknown host platform')
 
 #-------------------------------------------------------------------------------
 def getEmsdkPath() :
-    if platform.system() in EmsdkPaths :
-        return getSdkDir() + '/' + EmsdkPaths[platform.system()]
+    if hostPlatform in EmsdkPaths :
+        return getSdkDir() + '/' + EmsdkPaths[hostPlatform]
     else :
         error('unknown host platform')
 
@@ -203,14 +206,15 @@ def ensureEmsdkPath() :
 #-------------------------------------------------------------------------------
 def uncompress(srcPath, dstPath, zipDirName) :
     if '.zip' in srcPath :
-        subprocess.call(args=['unzip', '-o', srcPath, '-d', zipDirName ], cwd=dstPath)
+        with zipfile.ZipFile(srcPath, 'r') as archive:
+            archive.extractall(dstPath + '/' + zipDirName)
     elif '.tgz' or '.bz2' in path :
         subprocess.call(args=['tar', '-xvf', srcPath], cwd=dstPath)
 
 #-------------------------------------------------------------------------------
 def prepare(path) :
     print "prepare {}".format(path)
-    if platform.system() == 'Windows' :
+    if hostPlatform == 'Windows' :
         subprocess.call(args=['emsdk.bat', 'update'], cwd=path, shell=True)
         subprocess.call(args=['emsdk.bat', 'install', 'sdk-incoming-64bit'], cwd=path, shell=True)
         subprocess.call(args=['emsdk.bat', 'activate', 'sdk-incoming-64bit'], cwd=path, shell=True)
@@ -237,7 +241,7 @@ def setupEmSdk() :
     sdkUrl = getEmSdkUrl()
     urllib.urlretrieve(sdkUrl, getEmSdkArchivePath(), urlDownloadHook)
     print '\n => unpacking emscripten SDK...'
-    uncompress(getEmSdkArchivePath(), getSdkDir(), EmsdkPaths[platform.system()])
+    uncompress(getEmSdkArchivePath(), getSdkDir(), EmsdkPaths[hostPlatform])
     print '\n => preparing emscripten SDK...'
     prepare(getEmsdkPath())
 

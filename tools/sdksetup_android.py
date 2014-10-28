@@ -8,8 +8,10 @@ import os
 import platform
 import subprocess
 import urllib
+import zipfile
 
 ProjectDirectory = os.path.dirname(os.path.abspath(__file__)) + '/..'
+hostPlatform = platform.system()
 
 androidSdkUrls = {
     'Windows' : 'http://dl.google.com/android/android-sdk_r22.6.2-windows.zip',
@@ -53,9 +55,9 @@ def error(msg) :
 
 #-------------------------------------------------------------------------------
 def getSdkDir() :
-    if platform.system() == 'Darwin' :        
+    if hostPlatform == 'Darwin' :        
         return ProjectDirectory + '/sdks/osx'
-    elif platform.system() == 'Windows' :
+    elif hostPlatform == 'Windows' :
         return ProjectDirectory + '/sdks/windows'
     else :
         return ProjectDirectory + '/sdks/linux'
@@ -67,8 +69,8 @@ def ensureSdkDirectory() :
 
 #-------------------------------------------------------------------------------
 def getAndroidSdkPath() :
-    if platform.system() in androidSdkPaths :
-        return getSdkDir() + '/' + androidSdkPaths[platform.system()]
+    if hostPlatform in androidSdkPaths :
+        return getSdkDir() + '/' + androidSdkPaths[hostPlatform]
     else :
         error('unknown host platform')
 
@@ -78,29 +80,29 @@ def getAndroidNdkPath() :
 
 #-------------------------------------------------------------------------------
 def getAndroidSdkUrl() :
-    if platform.system() in androidSdkUrls :
-        return androidSdkUrls[platform.system()]
+    if hostPlatform in androidSdkUrls :
+        return androidSdkUrls[hostPlatform]
     else :
         error('unknown host platform')
 
 #-------------------------------------------------------------------------------
 def getAndroidSdkArchivePath() :
-    if platform.system() in androidSdkArchivePaths :
-        return getSdkDir() + '/' + androidSdkArchivePaths[platform.system()]
+    if hostPlatform in androidSdkArchivePaths :
+        return getSdkDir() + '/' + androidSdkArchivePaths[hostPlatform]
     else :
         error('unknown host platform')
 
 #-------------------------------------------------------------------------------
 def getAndroidNdkUrl() :
-    if platform.system() in androidSdkUrls :
-        return androidNdkUrls[platform.system()]
+    if hostPlatform in androidSdkUrls :
+        return androidNdkUrls[hostPlatform]
     else :
         error('unknown host platform')
 
 #-------------------------------------------------------------------------------
 def getAndroidNdkArchivePath() :
-    if platform.system() in androidNdkArchivePaths :
-        return getSdkDir() + '/' + androidNdkArchivePaths[platform.system()]
+    if hostPlatform in androidNdkArchivePaths :
+        return getSdkDir() + '/' + androidNdkArchivePaths[hostPlatform]
     else :
         error('unknown host platform')
 
@@ -119,13 +121,18 @@ def checkAndroidSdk() :
 #-------------------------------------------------------------------------------
 def uncompress(path) :
     if '.zip' in path :
-        subprocess.call(args=['unzip', path], cwd=getSdkDir())
-    elif '.tgz' or '.bz2' in path :
+        with zipfile.ZipFile(path, 'r') as archive:
+            archive.extractall(getSdkDir())
+    elif '.bz2' or '.tgz' in path :
+        # note: for some reason python's tarfile
+        # module cannot completely unpack the 
+        # Android NDK tar.gz2 file (tested on OSX with python 2.7),
+        # so fall back to command line tar
         subprocess.call(args=['tar', '-xvf', path], cwd=getSdkDir())
 
 #-------------------------------------------------------------------------------
 def updateAndroidSdk() :
-    if platform.system() == 'Windows' :
+    if hostPlatform == 'Windows' :
         cmd = ['{}/tools/android.bat'.format(getAndroidSdkPath()),
                'update','sdk',
                '-f', '-u', '--all',
@@ -143,9 +150,6 @@ def setupAndroid() :
     '''
     Setup everything needed for Oryol Android development
     '''
-    if checkAndroidSdk() :
-        return
-
     ensureSdkDirectory()
 
     # the Android SDK...
