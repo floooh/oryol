@@ -13,8 +13,8 @@ macro(oryol_pnacl_post_buildsteps target)
         set(PNACL_POSTFIX "")
     endif()
     add_custom_command(TARGET ${target} POST_BUILD COMMAND ${NACL_TOOLCHAIN_ROOT}/bin/pnacl-finalize --compress $<TARGET_FILE:${target}>)
-    add_custom_command(TARGET ${target} POST_BUILD COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/${target}${PNACL_POSTFIX}.nmf $<TARGET_FILE_DIR:${target}>)
-    add_custom_command(TARGET ${target} POST_BUILD COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/${target}${PNACL_POSTFIX}_pnacl.html $<TARGET_FILE_DIR:${target}>)
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${target}${PNACL_POSTFIX}.nmf $<TARGET_FILE_DIR:${target}>)
+    add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${target}${PNACL_POSTFIX}_pnacl.html $<TARGET_FILE_DIR:${target}>)
 endmacro()
 
 #-------------------------------------------------------------------------------
