@@ -1,0 +1,11 @@
+{
+    "name": "androidmips-make-debug", 
+    "target": {
+        "platform": "android", 
+        "generator": "Unix Makefiles", 
+        "build-type": "debug",
+        "defs": {
+            "ANDROID_CPU": "mips"
+        }        
+    }
+}

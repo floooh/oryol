@@ -33,16 +33,51 @@ else()
     set(ORYOL_ANDROID_EXCEPTION_FLAGS "-fno-exceptions")
 endif()
 
-# tweakable values (FIXME: convert to cmake options)
-set(CMAKE_SYSTEM_PROCESSOR "arm")
-set(ANDROID_API "android-19")
+# tweakable values
+set(ANDROID_CPU "arm" CACHE STRING "Android NDK CPU architecture")
+set_property(CACHE ANDROID_CPU PROPERTY STRINGS arm x86 mips)
+set(ANDROID_API "android-19" CACHE STRING "Android platform version")
+
+message("Android CPU arch: ${ANDROID_CPU}")
+message("Android platform: ${ANDROID_API}")
+
+if (${ANDROID_CPU} STREQUAL "arm")
+    set(ANDROID_NDK_ABI_EXT "arm-linux-androideabi")
+    set(ANDROID_NDK_GCC_PREFIX "arm-linux-androideabi")
+    set(ANDROID_NDK_ABI "armeabi-v7a-hard")
+    set(ANDROID_NDK_SYSROOT_DIR "arch-arm")
+    set(ANDROID_NDK_ARCH_CFLAGS "-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -mhard-float -D_NDK_MATH_NO_SOFTFP=1")
+    set(ANDROID_NDK_ARCH_LDFLAGS "-Wl,--fix-cortex-a8")
+    set(ANDROID_NDK_CMATHLIB "m_hard")
+    # KEEP THIS IN, this is used in oryol_android.cmake!
+    set(ANDROID_NDK_ARCH "armeabi-v7a")    
+elseif (${ANDROID_CPU} STREQUAL "mips")
+    set(ORYOL_PLATFORM_NAME "androidmips")
+    set(ANDROID_NDK_ABI_EXT "mipsel-linux-android")
+    set(ANDROID_NDK_GCC_PREFIX "mipsel-linux-android")    
+    set(ANDROID_NDK_ABI "mips")
+    set(ANDROID_NDK_SYSROOT_DIR "arch-mips")
+    set(ANDROID_NDK_ARCH_CFLAGS "")
+    set(ANDROID_NDK_ARCH_LDFLAGS "")
+    set(ANDROID_NDK_CMATHLIB "m")
+    # KEEP THIS IN, this is used in oryol_android.cmake!
+    set(ANDROID_NDK_ARCH "mips")    
+else()
+    set(ORYOL_PLATFORM_NAME "androidx86")
+    set(ANDROID_NDK_ABI_EXT "x86")
+    set(ANDROID_NDK_GCC_PREFIX "i686-linux-android")
+    set(ANDROID_NDK_ABI "x86")
+    set(ANDROID_NDK_SYSROOT_DIR "arch-x86")    
+    set(ANDROID_NDK_ARCH_CFLAGS "")
+    set(ANDROID_NDK_ARCH_LDFLAGS "")
+    set(ANDROID_NDK_CMATHLIB "m")
+    # KEEP THIS IN, this is used in oryol_android.cmake!
+    set(ANDROID_NDK_ARCH "x86")        
+endif()
+
 set(ANDROID_NDK_STL "gnu-libstdc++")
-set(ANDROID_NDK_GCC_VERSION "4.8")
-set(ANDROID_NDK_ARCH "armeabi-v7a")
 set(ANDROID_NDK_NAME "android-ndk-r9d")
-set(ANDROID_NDK_ABI "armeabi-v7a-hard")
-set(ANDROID_NDK_ABI_EXT "arm-linux-androideabi")
-set(ANDROID_NDK_GCC_PREFIX "arm-linux-androideabi")
+set(ANDROID_NDK_GCC_VERSION "4.8")
 
 # paths
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin") 
@@ -66,12 +101,8 @@ elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 set(ANDROID_SDK_TOOL "${ANDROID_SDK_ROOT}/tools/android${ANDROID_SDK_TOOL_EXT}")
-set(ANDROID_NDK_SYSROOT "${ANDROID_NDK_ROOT}/platforms/${ANDROID_API}/arch-arm")
+set(ANDROID_NDK_SYSROOT "${ANDROID_NDK_ROOT}/platforms/${ANDROID_API}/${ANDROID_NDK_SYSROOT_DIR}")
 set(ANDROID_NDK_TOOLCHAIN_BIN "${ANDROID_NDK_ROOT}/toolchains/${ANDROID_NDK_ABI_EXT}-${ANDROID_NDK_GCC_VERSION}/prebuilt/${ANDROID_NDK_HOST}/bin")
-
-# CPU architecture dependent flags
-set(ANDROID_NDK_ARCH_CFLAGS "-march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -mthumb -mhard-float -D_NDK_MATH_NO_SOFTFP=1")
-set(ANDROID_NDK_CMATHLIB "m_hard")
 
 # STL dependent flags (FIXME: select based on ANDROID_NDK_STL)
 set(ANDROID_NDK_STL_ROOT "${ANDROID_NDK_ROOT}/sources/cxx-stl/${ANDROID_NDK_STL}/${ANDROID_NDK_GCC_VERSION}")
@@ -136,7 +167,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} ${ANDROID_NDK_ARCH_CFLAGS} --sysroot=${ANDROID_NDK_SYSROOT} ${ANDROID_NDK_GLOBAL_CFLAGS} -DANDROID -Wa,--noexecstack -Wformat -Werror=format-security")
-set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_NDK_SYSROOT} -L${ANDROID_NDK_STL_LIBRARYPATH} -no-canonical-prefixes -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ORYOL_ANDROID_LINK_VERBOSE}")
+set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_NDK_SYSROOT} -L${ANDROID_NDK_STL_LIBRARYPATH} -no-canonical-prefixes ${ANDROID_NDK_ARCH_LDFLAGS} -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ORYOL_ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
 set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=c++11 ${ANDROID_NDK_STL_CXXFLAGS} ${ORYOL_ANDROID_EXCEPTION_FLAGS} ${ANDROID_NDK_CXX_WARN_FLAGS}")
