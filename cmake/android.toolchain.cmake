@@ -139,7 +139,7 @@ set(ANDROID_C_FLAGS "${ORYOL_ANDROID_COMPILE_VERBOSE} ${ANDROID_NDK_ARCH_CFLAGS}
 set(ANDROID_LD_FLAGS "-shared --sysroot=${ANDROID_NDK_SYSROOT} -L${ANDROID_NDK_STL_LIBRARYPATH} -no-canonical-prefixes -Wl,--fix-cortex-a8 -Wl,--no-warn-mismatch -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now ${ORYOL_ANDROID_LINK_VERBOSE}")
 
 # c++ compiler flags
-set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=gnu++11 ${ANDROID_NDK_STL_CXXFLAGS} ${ORYOL_ANDROID_EXCEPTION_FLAGS} ${ANDROID_NDK_CXX_WARN_FLAGS}")
+set(CMAKE_CXX_FLAGS "${ANDROID_C_FLAGS} ${ORYOL_PLATFORM_DEFINES} -std=c++11 ${ANDROID_NDK_STL_CXXFLAGS} ${ORYOL_ANDROID_EXCEPTION_FLAGS} ${ANDROID_NDK_CXX_WARN_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fomit-frame-pointer -funswitch-loops -finline-limit=300 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-omit-frame-pointer -g -D_DEBUG_ -D_DEBUG -DORYOL_DEBUG=1")
 
