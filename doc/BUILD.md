@@ -9,6 +9,7 @@ CMake to manage build configurations for the supported host and target platforms
 - for **OSX:** Xcode 5.x (Xcode 6 Beta works as well)
 - for **Windows:** VStudio 2013 (Express should work fine)
 - for **Android:** the 'ant' Java build tool must be in the path, and the JDK must be installed
+- for **emscripten:** on OSX and Linux, node.js must be installed ('node' in path)
 
 ### OSX ###
 To build and run the Triangle sample on OSX:
@@ -181,6 +182,7 @@ Make sure all these tools are in the path!
 
 - gcc4.8 is required 
 - the ninja build tool is recommended, but not required
+- node.js must be installed, 
 
 #### Windows
 
@@ -194,7 +196,8 @@ Make sure all these tools are in the path!
 
 #### Emscripten
 
-- no additional tools are required
+- on OSX and Linux, node.js must be installed (run 'node --version' to check whether it's in the path)
+- **Debian NOTE**: On recent Debian based distributions, you must install the 'nodejs-legacy' package!
 
 ## Using The oryol Build System Wrapper Script
 
