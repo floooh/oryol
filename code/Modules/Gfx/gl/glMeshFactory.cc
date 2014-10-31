@@ -5,8 +5,8 @@
 #include "Gfx/base/meshLoaderBase.h"
 #include "glMeshFactory.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/Core/stateWrapper.h"
 #include "Gfx/Core/meshPool.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/gl/glExt.h"
 #include "Resource/ResourceState.h"
@@ -16,7 +16,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glMeshFactory::glMeshFactory() :
-stateWrapper(nullptr),
+renderer(nullptr),
 meshPool(nullptr),
 isValid(false) {
     // empty
@@ -29,12 +29,12 @@ glMeshFactory::~glMeshFactory() {
 
 //------------------------------------------------------------------------------
 void
-glMeshFactory::Setup(class stateWrapper* stWrapper, class meshPool* mshPool) {
+glMeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
     o_assert(!this->isValid);
-    o_assert(nullptr != stWrapper);
+    o_assert(nullptr != rendr);
     o_assert(nullptr != mshPool);
     this->isValid = true;
-    this->stateWrapper = stWrapper;
+    this->renderer = rendr;
     this->meshPool = mshPool;
 }
 
@@ -43,7 +43,7 @@ void
 glMeshFactory::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    this->stateWrapper = nullptr;
+    this->renderer = nullptr;
     this->meshPool = nullptr;
 }
 
@@ -86,11 +86,11 @@ glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
-    o_assert(nullptr != this->stateWrapper);
+    o_assert(nullptr != this->renderer);
     
     loaderFactory::DestroyResource(mesh);
     
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
     
     for (uint8 i = 0; i < mesh.getNumVertexBufferSlots(); i++) {
         GLuint vb = mesh.glGetVertexBuffer(i);
@@ -119,18 +119,18 @@ glMeshFactory::DestroyResource(mesh& mesh) {
 */
 GLuint
 glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage) {
-    o_assert(nullptr != this->stateWrapper);
+    o_assert(nullptr != this->renderer);
     o_assert(vertexDataSize > 0);
     
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
     GLuint vb = 0;
     ::glGenBuffers(1, &vb);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != vb);
-    this->stateWrapper->BindVertexBuffer(vb);
+    this->renderer->bindVertexBuffer(vb);
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, usage);
     ORYOL_GL_CHECK_ERROR();
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
     return vb;
 }
 
@@ -141,18 +141,18 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
 */
 GLuint
 glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage) {
-    o_assert(nullptr != this->stateWrapper);
+    o_assert(nullptr != this->renderer);
     o_assert(indexDataSize > 0);
     
     GLuint ib = 0;
     ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
     o_assert(0 != ib);
-    this->stateWrapper->InvalidateMeshState();  // IMPORTANT to unlink current VAO
-    this->stateWrapper->BindIndexBuffer(ib);
+    this->renderer->invalidateMeshState();  // IMPORTANT to unlink current VAO
+    this->renderer->bindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, usage);
     ORYOL_GL_CHECK_ERROR();
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
     return ib;
 }
 
@@ -178,10 +178,10 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
 void
 glMeshFactory::setupVertexLayout(mesh& mesh) {
     o_assert(mesh.GetState() != ResourceState::Valid);
-    o_assert(nullptr != this->stateWrapper);
+    o_assert(nullptr != this->renderer);
     
     // create and initialize vertex array object
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
     
     // setup number of vertex array slots
     uint8 numVAOSlots;
@@ -202,9 +202,9 @@ glMeshFactory::setupVertexLayout(mesh& mesh) {
             GLuint vb = 0;
             GLuint vao = 0;
             glExt::GenVertexArrays(1, &vao);
-            this->stateWrapper->BindVertexArrayObject(vao);
+            this->renderer->bindVertexArrayObject(vao);
             const GLuint ib = mesh.glGetIndexBuffer();
-            this->stateWrapper->BindIndexBuffer(ib);
+            this->renderer->bindIndexBuffer(ib);
             
             for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
                 const glVertexAttr& glAttr = mesh.glAttr(vaoSlotIndex, attrIndex);
@@ -233,7 +233,7 @@ glMeshFactory::setupVertexLayout(mesh& mesh) {
             mesh.glSetVAO(vaoSlotIndex, vao);
         }
     }
-    this->stateWrapper->InvalidateMeshState();
+    this->renderer->invalidateMeshState();
 }
 
 //------------------------------------------------------------------------------

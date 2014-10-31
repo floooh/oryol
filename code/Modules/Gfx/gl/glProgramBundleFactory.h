@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-class stateWrapper;
+class renderer;
 class shaderPool;
 class shaderFactory;
     
@@ -23,7 +23,7 @@ public:
     ~glProgramBundleFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(stateWrapper* stWrapper, shaderPool* shdPool, shaderFactory* shdFactory);
+    void Setup(class renderer* rendr, shaderPool* shdPool, shaderFactory* shdFactory);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -35,7 +35,7 @@ public:
     void DestroyResource(programBundle& progBundle);
 
 private:
-    stateWrapper* glStateWrapper;
+    class renderer* renderer;
     shaderPool* shdPool;
     shaderFactory* shdFactory;
     bool isValid;

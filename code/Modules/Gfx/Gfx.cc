@@ -18,9 +18,8 @@ Gfx::Setup(const class GfxSetup& setup) {
     state = new _state();
     state->gfxSetup = setup;
     state->displayManager.SetupDisplay(setup);
-    state->stateWrapper.Setup();
-    state->resourceManager.Setup(setup, &state->stateWrapper, &state->displayManager);
-    state->renderManager.Setup(&state->stateWrapper, &state->displayManager);
+    state->renderer.setup();
+    state->resourceManager.Setup(setup, &state->renderer, &state->displayManager);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();
     });
@@ -31,9 +30,8 @@ void
 Gfx::Discard() {
     o_assert_dbg(IsValid());
     Core::PreRunLoop()->Remove(state->runLoopId);
-    state->renderManager.Discard();
+    state->renderer.discard();
     state->resourceManager.Discard();
-    state->stateWrapper.Discard();
     state->displayManager.DiscardDisplay();
     delete state;
     state = nullptr;
@@ -80,7 +78,7 @@ Gfx::DisplayAttrs() {
 const DisplayAttrs&
 Gfx::RenderTargetAttrs() {
     o_assert_dbg(IsValid());
-    return state->renderManager.GetRenderTargetAttrs();
+    return state->renderer.renderTargetAttrs();
 }
 
 //------------------------------------------------------------------------------
@@ -105,7 +103,7 @@ Gfx::QueryResourceState(const GfxId& gfxId) {
 void
 Gfx::ApplyDefaultRenderTarget() {
     o_assert_dbg(IsValid());
-    state->renderManager.ApplyRenderTarget(nullptr);
+    state->renderer.applyRenderTarget(&state->displayManager, nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -116,21 +114,21 @@ Gfx::ApplyOffscreenRenderTarget(const GfxId& gfxId) {
 
     texture* renderTarget = state->resourceManager.LookupTexture(gfxId.Id());
     o_assert_dbg(nullptr != renderTarget);
-    state->renderManager.ApplyRenderTarget(renderTarget);
+    state->renderer.applyRenderTarget(&state->displayManager, renderTarget);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::ApplyDrawState(const GfxId& gfxId) {
     o_assert_dbg(IsValid());
-    state->renderManager.ApplyDrawState(state->resourceManager.LookupDrawState(gfxId.Id()));
+    state->renderer.applyDrawState(state->resourceManager.LookupDrawState(gfxId.Id()));
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::CommitFrame() {
     o_assert_dbg(IsValid());
-    state->renderManager.CommitFrame();
+    state->renderer.commitFrame();
     state->displayManager.Present();
 }
 
@@ -138,7 +136,7 @@ Gfx::CommitFrame() {
 void
 Gfx::ResetStateCache() {
     o_assert_dbg(IsValid());
-    state->stateWrapper.ResetStateCache();
+    state->renderer.resetStateCache();
 }
 
 //------------------------------------------------------------------------------
@@ -146,49 +144,49 @@ void
 Gfx::UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data) {
     o_assert_dbg(IsValid());
     mesh* msh = state->resourceManager.LookupMesh(gfxId.Id());
-    state->renderManager.UpdateVertices(msh, numBytes, data);
+    state->renderer.updateVertices(msh, numBytes, data);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(IsValid());
-    state->renderManager.ReadPixels(buf, bufNumBytes);
+    state->renderer.readPixels(&state->displayManager, buf, bufNumBytes);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(IsValid());
-    state->renderManager.Clear(channels, color, depth, stencil);
+    state->renderer.clear(channels, color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::Draw(int32 primGroupIndex) {
     o_assert_dbg(IsValid());
-    state->renderManager.Draw(primGroupIndex);
+    state->renderer.draw(primGroupIndex);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::Draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(IsValid());
-    state->renderManager.Draw(primGroup);
+    state->renderer.draw(primGroup);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(IsValid());
-    state->renderManager.DrawInstanced(primGroupIndex, numInstances);
+    state->renderer.drawInstanced(primGroupIndex, numInstances);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(IsValid());
-    state->renderManager.DrawInstanced(primGroup, numInstances);
+    state->renderer.drawInstanced(primGroup, numInstances);
 }
 
 } // namespace Oryol

@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-class stateWrapper;
+class renderer;
 class meshPool;
 class mesh;
 class meshLoaderBase;
@@ -24,7 +24,7 @@ public:
     ~glMeshFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(stateWrapper* stWrapper, meshPool* mshPool);
+    void Setup(renderer* rendr, meshPool* mshPool);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -54,7 +54,7 @@ private:
     /// setup a Mesh's GL vertex attributes
     void glSetupVertexAttrs(mesh& mesh);
 
-    class stateWrapper* stateWrapper;
+    class renderer* renderer;
     class meshPool* meshPool;
     bool isValid;
 };

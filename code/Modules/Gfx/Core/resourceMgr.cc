@@ -14,7 +14,7 @@ namespace _priv {
 resourceMgr::resourceMgr() :
 isValid(false),
 runLoopId(RunLoop::InvalidId),
-stateWrapper(nullptr),
+renderer(nullptr),
 displayMgr(nullptr) {
     // empty
 }
@@ -42,22 +42,22 @@ resourceMgr::AttachLoader(const Ptr<loaderBase>& loader) {
 
 //------------------------------------------------------------------------------
 void
-resourceMgr::Setup(const GfxSetup& setup, class stateWrapper* stWrapper, class displayMgr* dspMgr) {
+resourceMgr::Setup(const GfxSetup& setup, class renderer* rendr, class displayMgr* dspMgr) {
     o_assert(!this->isValid);
-    o_assert(nullptr != stWrapper);
+    o_assert(nullptr != rendr);
     o_assert(nullptr != dspMgr);
     
     this->isValid = true;
-    this->stateWrapper = stWrapper;
+    this->renderer = rendr;
     this->displayMgr = dspMgr;
 
-    this->meshFactory.Setup(this->stateWrapper, &this->meshPool);
+    this->meshFactory.Setup(this->renderer, &this->meshPool);
     this->meshPool.Setup(&this->meshFactory, setup.PoolSize(ResourceType::Mesh), setup.Throttling(ResourceType::Mesh), 'MESH');
     this->shaderFactory.Setup();
     this->shaderPool.Setup(&this->shaderFactory, setup.PoolSize(ResourceType::Shader), 0, 'SHDR');
-    this->programBundleFactory.Setup(this->stateWrapper, &this->shaderPool, &this->shaderFactory);
+    this->programBundleFactory.Setup(this->renderer, &this->shaderPool, &this->shaderFactory);
     this->programBundlePool.Setup(&this->programBundleFactory, setup.PoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
-    this->textureFactory.Setup(this->stateWrapper, this->displayMgr, &this->texturePool);
+    this->textureFactory.Setup(this->renderer, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(&this->textureFactory, setup.PoolSize(ResourceType::Texture), setup.Throttling(ResourceType::Texture), 'TXTR');
     this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(&this->drawStateFactory, setup.PoolSize(ResourceType::DrawState), 0, 'DRWS');
@@ -93,7 +93,7 @@ resourceMgr::Discard() {
     this->shaderFactory.Discard();
     this->meshPool.Discard();
     this->meshFactory.Discard();
-    this->stateWrapper = nullptr;
+    this->renderer = nullptr;
 }
 
 //------------------------------------------------------------------------------

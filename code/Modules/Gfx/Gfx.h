@@ -17,9 +17,8 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/stateWrapper.h"
 #include "Gfx/Core/resourceMgr.h"
-#include "Gfx/Core/renderMgr.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/Core/GfxId.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "glm/vec4.hpp"
@@ -115,8 +114,7 @@ private:
         class GfxSetup gfxSetup;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::displayMgr displayManager;
-        _priv::renderMgr renderManager;
-        _priv::stateWrapper stateWrapper;
+        class _priv::renderer renderer;
         _priv::resourceMgr resourceManager;
     };
     static _state* state;
@@ -147,49 +145,49 @@ template<> inline void
 Gfx::ApplyVariable(int32 index, const GfxId& texResId) {
     o_assert_dbg(IsValid());
     _priv::texture* tex = state->resourceManager.LookupTexture(texResId.Id());
-    state->renderManager.ApplyTexture(index, tex);
+    state->renderer.applyTexture(index, tex);
 }
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::ApplyVariable(int32 index, const T& value) {
     o_assert_dbg(IsValid());
-    state->renderManager.ApplyVariable(index, value);
+    state->renderer.applyVariable(index, value);
 }
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
     o_assert_dbg(IsValid());
-    state->renderManager.ApplyVariableArray(index, values, numValues);
+    state->renderer.applyVariableArray(index, values, numValues);
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Gfx::Supports(GfxFeature::Code feat) {
     o_assert_dbg(IsValid());
-    return state->renderManager.Supports(feat);
+    return state->renderer.supports(feat);
 }
 
 //------------------------------------------------------------------------------
 inline void
 Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(IsValid());
-    state->stateWrapper.ApplyViewPort(x, y, width, height);
+    state->renderer.applyViewPort(x, y, width, height);
 }
 
 //------------------------------------------------------------------------------
 inline void
 Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(IsValid());
-    state->stateWrapper.ApplyScissorRect(x, y, width, height);
+    state->renderer.applyScissorRect(x, y, width, height);
 }
 
 //------------------------------------------------------------------------------
 inline void
 Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
     o_assert_dbg(IsValid());
-    state->stateWrapper.ApplyBlendColor(blendColor.x, blendColor.y, blendColor.z, blendColor.w);
+    state->renderer.applyBlendColor(blendColor);
 }
 
 //------------------------------------------------------------------------------

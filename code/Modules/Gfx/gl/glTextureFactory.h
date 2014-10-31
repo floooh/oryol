@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-class stateWrapper;
+class renderer;
 class texture;
 class textureLoaderBase;
 class displayMgr;
@@ -25,7 +25,7 @@ public:
     ~glTextureFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(stateWrapper* stWrapper, displayMgr* displayMgr, texturePool* texPool);
+    void Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -47,7 +47,7 @@ private:
     /// create texture from raw pixel data
     void createFromPixelData(texture& tex, const Ptr<Stream>& data);
 
-    stateWrapper* glStateWrapper;
+    class renderer* renderer;
     displayMgr* displayManager;
     texturePool* texPool;
     bool isValid;

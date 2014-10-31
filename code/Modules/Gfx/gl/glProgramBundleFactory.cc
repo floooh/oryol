@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glProgramBundleFactory.h"
-#include "Gfx/Core/stateWrapper.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/Core/shader.h"
 #include "Gfx/Core/shaderPool.h"
 #include "Gfx/Core/shaderFactory.h"
@@ -16,7 +16,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glProgramBundleFactory::glProgramBundleFactory() :
-glStateWrapper(0),
+renderer(0),
 shdPool(0),
 shdFactory(0),
 isValid(false) {
@@ -30,13 +30,13 @@ glProgramBundleFactory::~glProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Setup(stateWrapper* stWrapper, shaderPool* pool, shaderFactory* factory) {
+glProgramBundleFactory::Setup(class renderer* rendr, shaderPool* pool, shaderFactory* factory) {
     o_assert(!this->isValid);
-    o_assert(nullptr != stWrapper);
+    o_assert(nullptr != rendr);
     o_assert(nullptr != pool);
     o_assert(nullptr != factory);
     this->isValid = true;
-    this->glStateWrapper = stWrapper;
+    this->renderer = rendr;
     this->shdPool = pool;
     this->shdFactory = factory;
 }
@@ -46,7 +46,7 @@ void
 glProgramBundleFactory::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    this->glStateWrapper = nullptr;
+    this->renderer = nullptr;
     this->shdPool = nullptr;
     this->shdFactory = nullptr;
 }
@@ -62,7 +62,7 @@ void
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert(this->isValid);
     o_assert(progBundle.GetState() == ResourceState::Setup);
-    this->glStateWrapper->InvalidateProgramState();
+    this->renderer->invalidateProgramState();
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
@@ -165,7 +165,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         progBundle.addProgram(setup.Mask(progIndex), glProg);
         
         // resolve user uniform locations
-        this->glStateWrapper->UseProgram(glProg);
+        this->renderer->useProgram(glProg);
         int32 samplerIndex = 0;
         const int32 numUniforms = setup.NumUniforms();
         for (int32 i = 0; i < numUniforms; i++) {
@@ -191,7 +191,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         }
         #endif
     }
-    this->glStateWrapper->InvalidateProgramState();
+    this->renderer->invalidateProgramState();
     
     // at this point the whole programBundle object has been successfully setup
     progBundle.setState(ResourceState::Valid);
@@ -201,7 +201,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
 void
 glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert(this->isValid);
-    this->glStateWrapper->InvalidateProgramState();
+    this->renderer->invalidateProgramState();
     
     const int32 numProgs = progBundle.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {

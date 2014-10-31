@@ -20,7 +20,7 @@
 namespace Oryol {
 namespace _priv {
 
-class stateWrapper;
+class renderer;
 class displayMgr;
 class meshBaseLoader;
     
@@ -35,7 +35,7 @@ public:
     void AttachLoader(const Ptr<loaderBase>& loader);
     
     /// setup the resource manager
-    void Setup(const GfxSetup& setup, stateWrapper* stWrapper, displayMgr* dspMgr);
+    void Setup(const GfxSetup& setup, renderer* rendr, displayMgr* dspMgr);
     /// discard the resource manager
     void Discard();
     /// return true if the resource manager has been setup
@@ -68,7 +68,7 @@ public:
 private:
     bool isValid;
     RunLoop::Id runLoopId;
-    class stateWrapper* stateWrapper;
+    class renderer* renderer;
     class displayMgr* displayMgr;
     ResourceRegistry resourceRegistry;
     class meshFactory meshFactory;

@@ -6,7 +6,7 @@
 #include "Gfx/base/textureLoaderBase.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
-#include "Gfx/Core/stateWrapper.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/Core/texture.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/texturePool.h"
@@ -17,7 +17,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glTextureFactory::glTextureFactory() :
-glStateWrapper(nullptr),
+renderer(nullptr),
 displayManager(nullptr),
 texPool(nullptr),
 isValid(false) {
@@ -31,13 +31,13 @@ glTextureFactory::~glTextureFactory() {
 
 //------------------------------------------------------------------------------
 void
-glTextureFactory::Setup(stateWrapper* stateWrapper_, displayMgr* displayMgr_, texturePool* texPool_) {
+glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, texturePool* texPool_) {
     o_assert(!this->isValid);
-    o_assert(nullptr != stateWrapper_);
+    o_assert(nullptr != rendr);
     o_assert(nullptr != displayMgr_);
     o_assert(nullptr != texPool_);
     this->isValid = true;
-    this->glStateWrapper = stateWrapper_;
+    this->renderer = rendr;
     this->displayManager = displayMgr_;
     this->texPool = texPool_;
 }
@@ -47,7 +47,7 @@ void
 glTextureFactory::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    this->glStateWrapper = nullptr;
+    this->renderer = nullptr;
     this->displayManager = nullptr;
 }
 
@@ -101,7 +101,7 @@ glTextureFactory::DestroyResource(texture& tex) {
     
     loaderFactory::DestroyResource(tex);
     
-    this->glStateWrapper->InvalidateTextureState();
+    this->renderer->invalidateTextureState();
 
     GLuint glFb = tex.glGetFramebuffer();
     if (0 != glFb) {
@@ -144,7 +144,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert(0 == tex.glGetDepthRenderbuffer());
     o_assert(0 == tex.glGetDepthTexture());
     
-    this->glStateWrapper->InvalidateTextureState();
+    this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
     ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
@@ -246,7 +246,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         Log::Warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
     }
-    this->glStateWrapper->InvalidateTextureState();
+    this->renderer->invalidateTextureState();
     
     // setup texture attrs and set on texture
     TextureAttrs attrs;
@@ -353,7 +353,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert(this->isValid);
-    this->glStateWrapper->InvalidateTextureState();
+    this->renderer->invalidateTextureState();
     GLuint glTex = 0;
     ::glGenTextures(1, &glTex);
     ::glActiveTexture(GL_TEXTURE0);
