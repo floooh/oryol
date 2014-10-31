@@ -120,7 +120,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // bind vertex attribute locations
         /// @todo: would be good to optimize this to only bind
         /// attributes which exist in the shader (may be with more shader source generation)
-        #if !ORYOL_USE_GLGETATTRIBLOCATION
+        #if !ORYOL_GL_USE_GETATTRIBLOCATION
         o_assert(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
@@ -183,7 +183,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
             }
         }
         
-        #if ORYOL_USE_GLGETATTRIBLOCATION
+        #if ORYOL_GL_USE_GETATTRIBLOCATION
         // resolve attrib locations
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             GLint loc = ::glGetAttribLocation(glProg, VertexAttr::ToString((VertexAttr::Code)i));

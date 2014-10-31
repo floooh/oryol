@@ -10,18 +10,29 @@
 # restriction so far seems to be the Raspberry Pi). This option
 # is mutually exclusive with vertex array objects.
 #
-option(ORYOL_USE_GLGETATTRIBLOCATION "Use glGetAttribLocation instead of glBindAttribLocation" OFF)
+option(ORYOL_GL_USE_GETATTRIBLOCATION "Use glGetAttribLocation instead of glBindAttribLocation" OFF)
 
 # on MacOS, GLGETATTRIBLOCATION must always be false because the
 # OpenGL3 Core Profile is used
-if (ORYOL_MACOS)
-    message("=> Forcing ORYOL_USE_GLGETATTRIBLOCATION to off on MacOS")
-    set(ORYOL_USE_GLGETATTRIBLOCATION OFF CACHE BOOL "Use glGetAttribLocation instead of glBindAttribLocation" FORCE)
-endif()    
-if (ORYOL_USE_GLGETATTRIBLOCATION)
-    add_definitions(-DORYOL_USE_GLGETATTRIBLOCATION=1)
+#if (ORYOL_MACOS)
+#    message("=> Forcing ORYOL_GL_USE_GETATTRIBLOCATION to off on MacOS")
+#    set(ORYOL_GL_USE_GETATTRIBLOCATION OFF CACHE BOOL "Use glGetAttribLocation instead of glBindAttribLocation" FORCE)
+#endif()
+if (ORYOL_GL_USE_GETATTRIBLOCATION)
+    add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=1)
 else()
-    add_definitions(-DORYOL_USE_GLGETATTRIBLOCATION=0)    
+    add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=0)    
+endif()
+
+#
+# Disable vertex_array_object even if the extension is available.
+# Useful for debugging the non-VAO code.
+#
+option(ORYOL_GL_DISABLE_VERTEXARRAYOBJECT "Disable use of vertex_array_object extension" OFF)
+if (ORYOL_GL_DISABLE_VERTEXARRAYOBJECT)
+    add_definitions(-DORYOL_GL_DISABLE_VERTEXARRAYOBJECT=1)
+else()
+    add_definitions(-DORYOL_GL_DISABLE_VERTEXARRAYOBJECT=0)
 endif()
 
 oryol_begin_module(Gfx)

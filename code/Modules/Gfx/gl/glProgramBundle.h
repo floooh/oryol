@@ -28,7 +28,7 @@ public:
     void bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
     void bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
-    #if ORYOL_USE_GLGETATTRIBLOCATION
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// bind a vertex attribute location
     void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
     #endif
@@ -43,7 +43,7 @@ public:
     GLint getUniformLocation(int32 slotIndex) const;
     /// get sampler location by slot index in currently selected program (-1 if not exists)
     int32 getSamplerIndex(int32 slotIndex) const;
-    #if ORYOL_USE_GLGETATTRIBLOCATION
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// get a vertex attribute location
     GLint getAttribLocation(VertexAttr::Code attrib) const;
     #endif
@@ -62,7 +62,7 @@ private:
         GLuint program;
         GLint uniformMapping[MaxNumUniforms];
         int32 samplerMapping[MaxNumUniforms];
-        #if ORYOL_USE_GLGETATTRIBLOCATION
+        #if ORYOL_GL_USE_GETATTRIBLOCATION
         GLint attribMapping[VertexAttr::NumVertexAttrs];
         #endif
     };
@@ -115,7 +115,7 @@ glProgramBundle::getSamplerIndex(int32 slotIndex) const {
 }
 
 //------------------------------------------------------------------------------
-#if ORYOL_USE_GLGETATTRIBLOCATION
+#if ORYOL_GL_USE_GETATTRIBLOCATION
 inline GLint
 glProgramBundle::getAttribLocation(VertexAttr::Code attrib) const {
     o_assert_range_dbg(attrib, VertexAttr::NumVertexAttrs);

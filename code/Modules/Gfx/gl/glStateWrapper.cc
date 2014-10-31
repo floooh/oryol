@@ -10,6 +10,9 @@
 #include "Gfx/Core/programBundle.h"
 #include "Gfx/Core/drawState.h"
 #include "glm/vec4.hpp"
+#if ORYOL_GL_USE_GETATTRIBLOCATION
+#include "Gfx/gl/glInfo.h"
+#endif
 
 namespace Oryol {
 namespace _priv {
@@ -106,8 +109,11 @@ glStateWrapper::Setup() {
     o_assert(!this->isValid);
     this->isValid = true;
     
-    #if ORYOL_USE_GLGETATTRIBLOCATION
-    Log::Warn("glStateWrapper: ORYOL_USE_GLGETATTRIBLOCATION is ON\n");
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
+    Log::Warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
+    #endif
+    #if ORYOL_GL_DISABLE_VERTEXARRAYOBJECT
+    Log::Warn("glStateWrapper: ORYOL_GL_DISABLE_VERTEXARRAYOBJECT is ON\n!");
     #endif
     
     // in case we are on a Core Profile, create a global Vertex Array Object
@@ -252,7 +258,7 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
         // mesh state must be reapplied
         const uint8 vaoIndex = msh->getActiveVAOSlot();
     
-#if ORYOL_USE_GLGETATTRIBLOCATION
+#if ORYOL_GL_USE_GETATTRIBLOCATION
         // FIXME: UNTESTED
         // This is the code path which uses glGetAttribLocation instead of
         // glBindAttribLocation, which must be used if GL_MAX_VERTEX_ATTRIBS is smaller
@@ -265,23 +271,23 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
         int32 maxUsedAttrib = 0;
         for (int8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
             const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
-            if (attr.vertexBuffer != vb) {
-                vb = attr.vertexAttr;
-                this->BindVertexBuffer(vb);
-                ORYOL_GL_CHECK_ERROR();
-            }
-            const GLint glAttribIndex = progBundle->getAttribLocation((VertexAttr::Code)i);
+            const GLint glAttribIndex = progBundle->getAttribLocation((VertexAttr::Code)attrIndex);
             if (-1 != glAttribIndex) {
-                ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                ORYOL_GL_CHECK_ERROR();
-                glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                ORYOL_GL_CHECK_ERROR();
+                o_assert_dbg(attr.vertexBuffer);
+                if (attr.vertexBuffer != vb) {
+                    vb = attr.vertexBuffer;
+                    this->BindVertexBuffer(vb);
+                }
                 ::glEnableVertexAttribArray(glAttribIndex);
+                ORYOL_GL_CHECK_ERROR();
+                glExt::VertexAttribDivisor(glAttribIndex, attr.divisor);
+                ORYOL_GL_CHECK_ERROR();
+                ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
                 ORYOL_GL_CHECK_ERROR();
                 maxUsedAttrib++;
             }
         }
-        int32 maxAttribs = glInfo::Int(MaxVertexAttribs);
+        int32 maxAttribs = glInfo::Int(glInfo::MaxVertexAttribs);
         if (VertexAttr::NumVertexAttrs < maxAttribs) {
             maxAttribs = VertexAttr::NumVertexAttrs;
         }
@@ -302,6 +308,7 @@ glStateWrapper::applyMesh(const mesh* msh, const programBundle* progBundle) {
             for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
                 const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
                 if (attr.enabled) {
+                    o_assert_dbg(attr.vertexBuffer);
                     if (attr.vertexBuffer != vb) {
                         vb = attr.vertexBuffer;
                         this->BindVertexBuffer(vb);

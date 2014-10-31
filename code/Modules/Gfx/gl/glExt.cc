@@ -67,7 +67,11 @@ glExt::Setup() {
     extensions[InstancedArrays] = true;
     #endif
     
-    #if ORYOL_USE_GLGETATTRIBLOCATION
+    #if ORYOL_GL_DISABLE_VERTEXARRAYOBJECT
+    extensions[VertexArrayObject] = false;
+    #endif
+    
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
     // If forced to use GetAttribLocation, VertexArrayObject must be disabled as
     // well since VertexArrayObject code path depends on BindAttribLocation
     extensions[VertexArrayObject] = false;
@@ -75,7 +79,7 @@ glExt::Setup() {
 
     // put warnings to the console for extensions that we expect but are not provided
     if (!extensions[VertexArrayObject]) {
-        Log::Warn("glExt::Setup(): vertex_array_object extension not found!\n");
+        Log::Warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
     }
     if (!extensions[InstancedArrays]) {
         Log::Warn("glExt::Setup(): instanced_arrays extension not found!\n");
