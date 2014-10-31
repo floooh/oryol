@@ -233,10 +233,21 @@ def generateSource(absSourcePath, spriteSheet) :
 
 #-------------------------------------------------------------------------------
 def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    # FIXME: need to parse XML for all image files, and check their 
-    # modified date!
-    return True
-    # return util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version)
+    # first check version stamps
+    if util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version) :
+        return True
+
+    # now need to check all used image files for their modified date
+    srcTime = os.path.getmtime(absSourcePath)    
+    hdrTime = os.path.getmtime(absHeaderPath)
+    imgList = []
+    rootDir = os.path.dirname(absXmlPath)
+    for dirNode in xmlTree.getroot().findall('Sheet') :
+        imgPath = rootDir + '/' + dirNode.get('file')
+        imgTime = os.path.getmtime(imgPath)
+        if imgTime > srcTime or imgTime > hdrTime :
+            return True
+    return False
 
 #-------------------------------------------------------------------------------
 def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
