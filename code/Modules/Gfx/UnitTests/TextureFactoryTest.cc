@@ -6,7 +6,7 @@
 #include "Gfx/Core/textureFactory.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/texturePool.h"
-#include "Gfx/Core/stateWrapper.h"
+#include "Gfx/Core/renderer.h"
 
 #if ORYOL_OPENGL
 #include "Gfx/gl/gl_impl.h"
@@ -25,9 +25,10 @@ TEST(RenderTargetCreationTest) {
     
     // setup a meshFactory object
     texturePool texPool;
-    stateWrapper stWrapper;
+    class renderer renderer;
+    renderer.setup();
     textureFactory factory;
-    factory.Setup(&stWrapper, &displayManager, &texPool);
+    factory.Setup(&renderer, &displayManager, &texPool);
     
     // create a render target (no depth buffer)
     auto texSetup = TextureSetup::RenderTarget(320, 256);
@@ -122,6 +123,7 @@ TEST(RenderTargetCreationTest) {
     factory.DestroyResource(tex2);
     CHECK(tex2.GetState() == ResourceState::Setup);
     factory.Discard();
+    renderer.discard();
     displayManager.DiscardDisplay();
     #endif
 }

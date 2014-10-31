@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Core/stateWrapper.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/Core/meshFactory.h"
 #include "Gfx/Core/meshPool.h"
 #include "Gfx/Setup/GfxSetup.h"
@@ -29,10 +29,11 @@ TEST(MeshFactoryTest) {
     displayManager.SetupDisplay(gfxSetup);
     
     // setup a meshFactory object
-    stateWrapper stWrapper;
+    class renderer renderer;
+    renderer.setup();
     meshPool meshPool;
     meshFactory factory;
-    factory.Setup(&stWrapper, &meshPool);
+    factory.Setup(&renderer, &meshPool);
     factory.AttachLoader(RawMeshLoader::Create());
     
     // setup a MeshBuilder and create mesh geometry
@@ -134,6 +135,7 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.GetNumPrimitiveGroups() == 0);
     factory.Discard();
     displayManager.DiscardDisplay();
+    renderer.discard();
     
     #endif
 }

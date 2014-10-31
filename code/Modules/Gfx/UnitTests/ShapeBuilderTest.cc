@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Gfx/Util/ShapeBuilder.h"
-#include "Gfx/Core/stateWrapper.h"
+#include "Gfx/Core/renderer.h"
 #include "Gfx/Core/meshFactory.h"
 #include "Gfx/Core/meshPool.h"
 #include "Gfx/Setup/GfxSetup.h"
@@ -28,10 +28,11 @@ TEST(ShapeBuilderTest) {
     displayManager.SetupDisplay(GfxSetup::Window(400, 300, "Oryol Test"));
     
     // setup a meshFactory object
-    stateWrapper stWrapper;
+    class renderer renderer;
+    renderer.setup();
     meshPool meshPool;
     meshFactory factory;
-    factory.Setup(&stWrapper, &meshPool);
+    factory.Setup(&renderer, &meshPool);
     factory.AttachLoader(RawMeshLoader::Create());
     
     // the state builder
@@ -88,8 +89,8 @@ TEST(ShapeBuilderTest) {
     #endif
     
     factory.DestroyResource(simpleCube);
-
     factory.Discard();
+    renderer.discard();
     displayManager.DiscardDisplay();
     
     #endif
