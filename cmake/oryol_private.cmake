@@ -10,7 +10,7 @@
 #
 macro(oryol_reset target)
     set(CurSources)
-    set(CurXmlFiles)
+    set(CurPyFiles)
     set(CurDependencies)
     set(CurLinkLibs)
     set(CurFrameworks)

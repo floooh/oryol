@@ -143,7 +143,7 @@ macro(oryol_setup)
     if (PYTHON)
         message("PYTHON INTERPRETER FOUND")
     else()
-        message("PYTHON INTERPRETER NOT FOUND, *.xml FILES WILL NOT BE CONVERTED!")
+        message("PYTHON INTERPRETER NOT FOUND, NO SOURCE CODE GENERATION!")
     endif()
 
     # clear the web samples config file
@@ -199,18 +199,18 @@ macro(oryol_end_module)
     set_property(GLOBAL PROPERTY ${CurModuleName}_libs ${CurLinkLibs})
     set_property(GLOBAL PROPERTY ${CurModuleName}_frameworks ${CurFrameworks})
 
-    # handle XML generators (pre-target)
-    if (CurXmlFiles)
-        oryol_handle_generator_files_pretarget("${CurXmlFiles}")
+    # handle generators (pre-target)
+    if (CurPyFiles)
+        oryol_handle_py_files_pretarget("${CurPyFiles}")
     endif()
 
     # add library target
     add_library(${CurModuleName} ${CurSources})
     oryol_apply_target_group(${CurModuleName})
 
-    # handle XML generators (post-target)
-    if (CurXmlFiles)
-        oryol_handle_generator_files_posttarget(${CurModuleName} "${CurXmlFiles}")
+    # handle generators (post-target)
+    if (CurPyFiles)
+        oryol_handle_py_files_posttarget(${CurModuleName} "${CurPyFiles}")
     endif()
 
 endmacro()
@@ -278,9 +278,9 @@ macro(oryol_end_app)
         message(FATAL_ERROR "No sources in target: ${CurAppName} !!!")
     endif()
 
-    # handle XML generators (pre-target)
-    if (CurXmlFiles)
-        oryol_handle_generator_files_pretarget("${CurXmlFiles}")
+    # handle generators (pre-target)
+    if (CurPyFiles)
+        oryol_handle_py_files_pretarget("${CurPyFiles}")
     endif()
 
     # add executable target
@@ -316,9 +316,9 @@ macro(oryol_end_app)
         oryol_android_postbuildstep(${CurAppName})
     endif()
 
-    # handle XML generators (post-target)
-    if (CurXmlFiles)
-        oryol_handle_generator_files_posttarget(${CurAppName} "${CurXmlFiles}")
+    # handle generators (post-target)
+    if (CurPyFiles)
+        oryol_handle_py_files_posttarget(${CurAppName} "${CurPyFiles}")
     endif()
 
     # PNaCl specific stuff
@@ -369,33 +369,33 @@ macro(oryol_sources dirs)
     foreach (dir ${ARGV})
         # gather files
         file(GLOB src ${dir}/*.cc ${dir}/*.cpp ${dir}/*.c ${dir}/*.m ${dir}/*.mm ${dir}/*.h ${dir}/*.hh)
-        file(GLOB xmls ${dir}/*.xml)
+        file(GLOB pys ${dir}/*.py)
         file(GLOB shds ${dir}/*.shd)
         file(GLOB imgs ${dir}/*.png ${dir}/*.tga ${dir}/*.jpg)
 
         # determine group folder name
         string(REPLACE / \\ groupName ${dir})
         if (${dir} STREQUAL .)
-            source_group("" FILES ${src} ${xmls} ${shds} ${imgs})
+            source_group("" FILES ${src} ${pys} ${shds} ${imgs})
         else()
-            source_group(${groupName} FILES ${src} ${xmls} ${shds} ${imgs})
+            source_group(${groupName} FILES ${src} ${pys} ${shds} ${imgs})
         endif()
 
         # add generated source files
-        foreach (xml ${xmls})
-            string(REPLACE .xml .cc xmlSrc ${xml})
-            string(REPLACE .xml .h xmlHdr ${xml})
-            list(APPEND CurSources ${xmlSrc} ${xmlHdr})
+        foreach(py ${pys})
+            string(REPLACE .py .cc pySrc ${py})
+            string(REPLACE .py .h pyHdr ${py})
+            list(APPEND CurSources ${pySrc} ${pyHdr})
             if (${dir} STREQUAL .)
-                source_group("" FILES ${xmlSrc} ${xmlHdr})
+                source_group("" FILES ${pySrc} ${pyHdr})
             else()
-                source_group(${groupName} FILES ${xmlSrc} ${xmlHdr})
+                source_group(${groupName} FILES ${pySrc} ${pyHdr})
             endif()
         endforeach()
 
         # add to global tracker variables
-        list(APPEND CurSources ${src} ${xmls} ${shds} ${imgs})
-        list(APPEND CurXmlFiles ${xmls})
+        list(APPEND CurSources ${src} ${pys} ${shds} ${imgs})
+        list(APPEND CurPyFiles ${pys})
 
         # remove duplicate sources 
         if (CurSources)

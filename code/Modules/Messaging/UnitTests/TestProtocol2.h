@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:5#
+/* #version:6#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -54,9 +54,6 @@ public:
             if (protId == 'TSP2') return true;
             else return TestProtocol::TestMsg1::IsMemberOf(protId);
         };
-        virtual int32 EncodedSize() const override;
-        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
-        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
         void SetExVal2(int8 val) {
             this->exval2 = val;
         };

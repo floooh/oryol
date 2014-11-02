@@ -36,18 +36,16 @@ with binding / reflection information, these classes are only data providers and
 #### Build Process Integration
 
 Oryol already comes with a general source code generation mechanism called 'generator 
-scripts'. This usually converts one XML file into one C++ header and one C++ source file through a python 
-script which is selected in the header of the XML file.
+scripts'. This usually runs a python file to generate one C++ header and one C++ source file.
 
 This process is already integrated into the build process as a CMake pre-build-step.
 
-For shader generation there is only a very minimal XML file per shader library (since I didn't want to embed GLSL into XML) which contains the name of the library and where to find the shader snippet files for the library, e.g.:
+For shader generation there is only a very minimal python file per shader library (since I didn't want to embed GLSL into python) which contains the name of the library and where to find the shader snippet files for the library, e.g.:
 
-```xml
-<Generator type="ShaderLibrary" name="PreLightPassLib">
-    <AddDir path="shd/prelightpass"/>
-    <AddDir path="shd/common"/>
-</Generator>
+```python
+import ShaderLibrary as shd
+def generate(directory, name) :
+    shd.generate(directory, name, 'Shaders', ['.'])
 ```
 
 This would gather all GLSL snippet files from the directories "shd/prelightpass" and "shd/common" and 

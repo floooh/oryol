@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:5#
+/* #version:6#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -9,6 +9,7 @@
 #include "Messaging/Protocol.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
+#include "Core/Containers/Array.h"
 
 namespace Oryol {
 class TestProtocol {
@@ -71,9 +72,6 @@ public:
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };
-        virtual int32 EncodedSize() const override;
-        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
-        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
         void SetInt8Val(int8 val) {
             this->int8val = val;
         };
@@ -163,9 +161,6 @@ private:
             if (protId == 'TSTP') return true;
             else return TestMsg1::IsMemberOf(protId);
         };
-        virtual int32 EncodedSize() const override;
-        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
-        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
         void SetStringVal(const String& val) {
             this->stringval = val;
         };
@@ -198,9 +193,6 @@ private:
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };
-        virtual int32 EncodedSize() const override;
-        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;
-        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;
         void SetInt32ArrayVal(const Array<int32>& val) {
             this->int32arrayval = val;
         };

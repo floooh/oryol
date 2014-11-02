@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:2#
+/*  #version:4#
     machine generated, do not edit!
 */
 #include "Core/Types.h"
@@ -106,7 +106,6 @@ struct Sheet {
         Oryol::int32 H;
         Oryol::int32 NumFrames;
         Anim::Code AnimType;
-        Oryol::uint32 Mask;
         Oryol::uint8 Char;
     } Sprite[NumSprites];
 };

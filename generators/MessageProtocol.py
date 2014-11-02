@@ -4,18 +4,12 @@ Code generator for message protocol xml files.
 
 import os
 import sys
-import util
+import genutil as util
 
-Version = 5
-
-#-------------------------------------------------------------------------------
-def checkValidAttr(attr) :
-    for key in attr.keys() :
-        if not key in ('name', 'type', 'def', 'dir') :
-            util.error('Invalid Attr attr "{}"'.format(key))
+Version = 6
     
 #-------------------------------------------------------------------------------
-def writeHeaderTop(f, xmlRoot) :
+def writeHeaderTop(f, desc) :
     '''
         Write header area for the generated C++ header.
     '''
@@ -27,59 +21,59 @@ def writeHeaderTop(f, xmlRoot) :
     f.write('#include <cstring>\n')
 
 #-------------------------------------------------------------------------------
-def writeIncludes(f, xmlRoot) :
+def writeIncludes(f, desc) :
     '''
         Write include statements in the generated C++ header.
     '''
     f.write('#include "Messaging/Message.h"\n')
     f.write('#include "Messaging/Serializer.h"\n')
-    parentHdr = xmlRoot.get('parenthdr', 'Messaging/Protocol.h')
+    parentHdr = desc.get('parentProtocolHeader', 'Messaging/Protocol.h')
     f.write('#include "{}"\n'.format(parentHdr))
 
-    for hdr in xmlRoot.findall('Header') :
-        f.write('#include "{}"\n'.format(hdr.get('path')))
+    for hdr in desc.get('headers', []) :
+        f.write('#include "{}"\n'.format(hdr))
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeProtocolMethods(f, xmlRoot) :
+def writeProtocolMethods(f, desc) :
     '''
     Write the protocol methods
     '''
     f.write('    static ProtocolIdType GetProtocolId() {\n')
-    f.write("        return '{}';\n".format(xmlRoot.get('id')))
+    f.write("        return '{}';\n".format(desc['protocolId']))
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
-def writeMessageIdEnum(f, xmlRoot) :
+def writeMessageIdEnum(f, desc) :
     '''
     Write the enum with message ids
     '''
-    protocol = xmlRoot.get('name')
-    parentProtocol = xmlRoot.get('parent', 'Protocol')
+    protocol = desc['protocolName']
+    parentProtocol = desc.get('parentProtocol', 'Protocol')
 
     f.write('    class MessageId {\n')
     f.write('    public:\n')
     f.write('        enum {\n')
     msgCount = 0
-    for msg in xmlRoot.findall('Message') :
+    for msg in desc['messages'] :
         if msgCount == 0:
-            f.write('            ' + msg.get('name') + 'Id = ' + parentProtocol + '::MessageId::NumMessageIds, \n')
+            f.write('            ' + msg['name'] + 'Id = ' + parentProtocol + '::MessageId::NumMessageIds, \n')
         else :
-            f.write('            ' + msg.get('name') + 'Id,\n')
+            f.write('            ' + msg['name'] + 'Id,\n')
         msgCount += 1
     f.write('            NumMessageIds\n')
     f.write('        };\n')
     f.write('        static const char* ToString(MessageIdType c) {\n')
     f.write('            switch (c) {\n')
-    for msg in xmlRoot.findall('Message') :
-        msgName = msg.get('name') + 'Id'
+    for msg in desc['messages'] :
+        msgName = msg['name'] + 'Id'
         f.write('                case ' + msgName + ': return "' + msgName + '";\n')
     f.write('                default: return "InvalidMessageId";\n')
     f.write('            }\n')
     f.write('        };\n')
     f.write('        static MessageIdType FromString(const char* str) {\n')
-    for msg in xmlRoot.findall('Message') :
-        msgName = msg.get('name') + 'Id'
+    for msg in desc['messages'] :
+        msgName = msg['name'] + 'Id'
         f.write('            if (std::strcmp("' + msgName + '", str) == 0) return ' + msgName + ';\n')
     f.write('            return InvalidMessageId;\n')
     f.write('        };\n')
@@ -88,7 +82,7 @@ def writeMessageIdEnum(f, xmlRoot) :
     f.write('    static CreateCallback jumpTable[' + protocol + '::MessageId::NumMessageIds];\n')
 
 #-------------------------------------------------------------------------------
-def writeFactoryClassDecl(f, xmlRoot) :
+def writeFactoryClassDecl(f, desc) :
     '''
     Writes the message factory for this protocol
     '''
@@ -98,16 +92,16 @@ def writeFactoryClassDecl(f, xmlRoot) :
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
-def writeFactoryClassImpl(f, xmlRoot) :
+def writeFactoryClassImpl(f, desc) :
     '''
     Writes the factory class implementation
     '''
-    protocol = xmlRoot.get('name')
-    parentProtocol = xmlRoot.get('parent', 'Protocol')
+    protocol = desc['protocolName']
+    parentProtocol = desc.get('parentProtocol', 'Protocol')
 
     f.write(protocol + '::CreateCallback ' + protocol + '::jumpTable[' + protocol + '::MessageId::NumMessageIds] = { \n') 
-    for msg in xmlRoot.findall('Message') :
-        f.write('    &' + protocol + '::' + msg.get('name') + '::FactoryCreate,\n')
+    for msg in desc['messages'] :
+        f.write('    &' + protocol + '::' + msg['name'] + '::FactoryCreate,\n')
     f.write('};\n')
     f.write('Ptr<Message>\n')
     f.write(protocol + '::Factory::Create(MessageIdType id) {\n')
@@ -125,8 +119,8 @@ def getAttrDefaultValue(attr) :
     '''
     Get the default value for a given attribute
     '''
-    defValue = attr.get('def')
-    attrType = attr.get('type')
+    defValue = attr.get('default')
+    attrType = attr['type']
     if attrType in ('int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64') :
         if not defValue :
             defValue = '0'
@@ -183,13 +177,13 @@ def getArrayType(attrType) :
     return attrType[12:-1]
 
 #-------------------------------------------------------------------------------
-def writeMessageClasses(f, xmlRoot) :
+def writeMessageClasses(f, desc) :
     '''
     Write the message classes to the generated C++ header
     '''
-    protocolId = xmlRoot.get('id')
-    for msg in xmlRoot.findall('Message') :
-        msgClassName = msg.get('name')
+    protocolId = desc['protocolId']
+    for msg in desc['messages'] :
+        msgClassName = msg['name']
         msgParentClassName = msg.get('parent', 'Message')
         f.write('    class ' + msgClassName + ' : public ' + msgParentClassName + ' {\n')
         f.write('        OryolClassPoolAllocDecl(' + msgClassName + ');\n')
@@ -198,8 +192,8 @@ def writeMessageClasses(f, xmlRoot) :
         # write constructor
         f.write('        ' + msgClassName + '() {\n')
         f.write('            this->msgId = MessageId::' + msgClassName + 'Id;\n')
-        for attr in msg.findall('Attr') :
-            attrName = attr.get('name').lower()
+        for attr in msg.get('attrs', []) :
+            attrName = attr['name'].lower()
             defValue = getAttrDefaultValue(attr)
             if defValue :
                 f.write('            this->' + attrName + ' = ' + defValue + ';\n')
@@ -222,16 +216,15 @@ def writeMessageClasses(f, xmlRoot) :
         f.write('        };\n') 
 
         # write serializer methods
-        if msg.get('serialize', 'true') == 'true' :
+        if msg.get('serialize', False) :
             f.write('        virtual int32 EncodedSize() const override;\n')
             f.write('        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
             f.write('        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
 
         # write setters/getters
-        for attr in msg.findall('Attr') :
-            checkValidAttr(attr)
-            attrName = attr.get('name')
-            attrType = attr.get('type')
+        for attr in msg.get('attrs', []) :
+            attrName = attr['name']
+            attrType = attr['type']
             f.write('        void Set' + attrName + '(' + getRefType(attrType) + ' val) {\n')
             f.write('            this->' + attrName.lower() + ' = val;\n')
             f.write('        };\n')
@@ -241,29 +234,29 @@ def writeMessageClasses(f, xmlRoot) :
 
         # write members
         f.write('private:\n')
-        for attr in msg.findall('Attr') :
-            attrName = attr.get('name').lower()
-            attrType = attr.get('type')
+        for attr in msg.get('attrs', []) :
+            attrName = attr['name'].lower()
+            attrType = attr['type']
             f.write('        ' + getValueType(attrType) + ' ' + attrName + ';\n')
         f.write('    };\n')
 
 #-------------------------------------------------------------------------------
-def writeSerializeMethods(f, xmlRoot) :
+def writeSerializeMethods(f, desc) :
     '''
     Writes the serializer methods of the message to the source file.
     '''
-    for msg in xmlRoot.findall('Message') : 
-        if msg.get('serialize', 'true') == 'true' :   
-            protocol = xmlRoot.get('name')
-            msgClassName = msg.get('name')
+    for msg in desc['messages'] : 
+        if msg.get('serialize', False) :   
+            protocol = desc['protocolName']
+            msgClassName = msg['name']
             msgParentClassName = msg.get('parent', 'Message')
 
             # EncodedSize()
             f.write('int32 ' + protocol + '::' + msgClassName + '::EncodedSize() const {\n')
             f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
-            for attr in msg.findall('Attr') :
-                attrName = attr.get('name').lower()
-                attrType = attr.get('type')
+            for attr in msg.get('attrs', []) :
+                attrName = attr['name'].lower()
+                attrType = attr['type']
                 if isArrayType(attrType) :
                     elmType = getArrayType(attrType)                
                     f.write('    s += Serializer::EncodedArraySize<' + elmType + '>(this->' + attrName + ');\n')
@@ -277,9 +270,9 @@ def writeSerializeMethods(f, xmlRoot) :
             # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
             f.write('uint8* ' + protocol + '::' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
             f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
-            for attr in msg.findall('Attr') :
-                attrName = attr.get('name').lower()
-                attrType = attr.get('type')
+            for attr in msg.get('attrs', []) :
+                attrName = attr['name'].lower()
+                attrType = attr['type']
                 if isArrayType(attrType) :
                     elmType = getArrayType(attrType)                
                     f.write('    dstPtr = Serializer::EncodeArray<' + elmType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
@@ -291,9 +284,9 @@ def writeSerializeMethods(f, xmlRoot) :
             # Decode
             f.write('const uint8* ' + protocol + '::' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
             f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
-            for attr in msg.findall('Attr') :
-                attrName = attr.get('name').lower()
-                attrType = attr.get('type')
+            for attr in msg.get('attrs', []) :
+                attrName = attr['name'].lower()
+                attrType = attr['type']
                 if isArrayType(attrType) :
                     elmType = getArrayType(attrType)
                     f.write('    srcPtr = Serializer::DecodeArray<' + elmType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
@@ -303,35 +296,28 @@ def writeSerializeMethods(f, xmlRoot) :
             f.write('}\n')            
 
 #-------------------------------------------------------------------------------
-def generateHeader(xmlTree, absHeaderPath) :
+def generateHeader(desc, absHeaderPath) :
     '''
     Generate the C++ header file 
     '''
-    xmlRoot = xmlTree.getroot()
     f = open(absHeaderPath, 'w')
 
-    nameSpace = xmlRoot.get('ns')
-    protocol = xmlRoot.get('name')
-    
-    writeHeaderTop(f, xmlRoot) 
-    writeIncludes(f, xmlRoot)
+    protocol = desc['protocolName']
+    writeHeaderTop(f, desc) 
+    writeIncludes(f, desc)
     f.write('namespace Oryol {\n')
-    if nameSpace :
-        f.write('namespace ' + nameSpace + ' {\n')
     f.write('class ' + protocol + ' {\n')
     f.write('public:\n')
-    writeProtocolMethods(f, xmlRoot)
-    writeMessageIdEnum(f, xmlRoot)
-    writeFactoryClassDecl(f, xmlRoot)
-    writeMessageClasses(f, xmlRoot)
+    writeProtocolMethods(f, desc)
+    writeMessageIdEnum(f, desc)
+    writeFactoryClassDecl(f, desc)
+    writeMessageClasses(f, desc)
     f.write('};\n')
-    if nameSpace :
-        f.write('}\n')
     f.write('}\n')
     f.close()
 
 #-------------------------------------------------------------------------------
-def writeSourceTop(f, xmlRoot, absSourcePath) :
+def writeSourceTop(f, desc, absSourcePath) :
     '''
     Write source file header area
     '''
@@ -346,35 +332,33 @@ def writeSourceTop(f, xmlRoot, absSourcePath) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def generateSource(xmlTree, absSourcePath) :
+def generateSource(desc, absSourcePath) :
     '''
     Generate the C++ source file
     '''
-    xmlRoot = xmlTree.getroot()
-    nameSpace = xmlRoot.get('ns')
-    protocol = xmlRoot.get('name')
+    protocol = desc['protocolName']
 
     f = open(absSourcePath, 'w')
-    writeSourceTop(f, xmlRoot, absSourcePath)
+    writeSourceTop(f, desc, absSourcePath)
     f.write('namespace Oryol {\n')
-    if nameSpace :
-        f.write('namespace ' + nameSpace + ' {\n')
-    for msg in xmlRoot.findall('Message') :
-        msgClassName = msg.get('name')
+    for msg in desc['messages'] :
+        msgClassName = msg['name']
         f.write('OryolClassPoolAllocImpl(' + protocol + '::' + msgClassName + ');\n')
         
-    writeFactoryClassImpl(f, xmlRoot)
-    writeSerializeMethods(f, xmlRoot)
-    if nameSpace :
-        f.write('}\n')
+    writeFactoryClassImpl(f, desc)
+    writeSerializeMethods(f, desc)
     f.write('}\n')
     f.close()
 
 #-------------------------------------------------------------------------------
-def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    return util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version)
-
-#-------------------------------------------------------------------------------
-def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    generateHeader(xmlTree, absHeaderPath)
-    generateSource(xmlTree, absSourcePath)
+def generate(directory, name, desc) :
+    selfPath = directory + name + '.py'
+    hdrPath = directory + name + '.h'
+    srcPath = directory + name + '.cc'
+    if util.isDirty([selfPath], Version, hdrPath, srcPath) :
+        print '## generating {}'.format(hdrPath)        
+        generateHeader(desc, hdrPath)
+        print '## generating {}'.format(srcPath)        
+        generateSource(desc, srcPath)
+    else :
+        print '## nothing to do for {}'.format(selfPath)

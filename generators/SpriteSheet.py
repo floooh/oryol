@@ -1,11 +1,11 @@
 '''
 Code generator for sprite sheets.
 '''
-import util
+import genutil as util
 import png
 import os
 
-Version = 2
+Version = 4
 
 #-------------------------------------------------------------------------------
 class Sprite :
@@ -15,51 +15,37 @@ class Sprite :
         self.y = 0
         self.w = 0
         self.h = 0
-        self.mask = 0
         self.frames = 1
         self.anim = ''
         self.char = None
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
-    def __init__(self, xmlTree, absXmlPath) :
-        self.xmlPath = absXmlPath
-        self.xmlRoot = xmlTree.getroot()
-        self.namespace = ''
-        self.imagePath = ''
+    def __init__(self, directory, name, dct) :
+        self.directory = directory
+        self.name = name
+        self.namespace = dct['namespace']
+        self.imagePath = directory + dct['image']
         self.imageWidth = 0
         self.imageHeight = 0
-        self.clampWidth = 0
-        self.clampHeight = 0
+        self.clampWidth = dct.get('clampWidth', 0)
+        self.clampHeight = dct.get('clampHeight', 0)
         self.imagePixels = None
         self.imageInfo = None
-        self.defSpriteWidth = 0
-        self.defSpriteHeight = 0
+        self.defSpriteWidth = dct['spriteWidth']
+        self.defSpriteHeight = dct['spriteHeight']
         self.sprites = []
-
-    def parseXml(self) :
-        self.namespace = self.xmlRoot.get('namespace')
-        xmlSheet = self.xmlRoot.find('Sheet')
-        if xmlSheet is not None :
-            self.imagePath = os.path.dirname(self.xmlPath) + '/' + xmlSheet.get('file')
-            self.defSpriteWidth = int(xmlSheet.get('spriteWidth', 16))
-            self.defSpriteHeight = int(xmlSheet.get('spriteHeight', 16))
-            self.clampWidth = int(xmlSheet.get('clampWidth', 0))
-            self.clampHeight = int(xmlSheet.get('clampHeight', 0))
-            for xmlSprite in xmlSheet.findall('Sprite') :
-                sprite = Sprite()
-                sprite.name = xmlSprite.get('name', 'undefined')
-                sprite.x = int(xmlSprite.get('x', 0))
-                sprite.y = int(xmlSprite.get('y', 0))
-                sprite.w = int(xmlSprite.get('w', self.defSpriteWidth))
-                sprite.h = int(xmlSprite.get('h', self.defSpriteHeight))
-                sprite.frames = int(xmlSprite.get('frames', 1))
-                sprite.anim = xmlSprite.get('anim', 'none')
-                sprite.char = xmlSprite.get('char', None)
-                sprite.mask = int(xmlSprite.get('bitmask', '0'), 2)
-                self.sprites.append(sprite)
-        else :
-            util.error('No Sheet element in sprite sheet XML file!')
+        for s in dct['sprites'] :
+            sprite = Sprite()
+            sprite.name = s['name']
+            sprite.x = s['x']
+            sprite.y = s['y']
+            sprite.w = s.get('w', self.defSpriteWidth)
+            sprite.h = s.get('h', self.defSpriteHeight)
+            sprite.frames = s.get('frames', 1)
+            sprite.anim = s.get('anim', 'none')
+            sprite.char = s.get('char', None)
+            self.sprites.append(sprite)
 
     def loadImage(self) :
         pngReader = png.Reader(self.imagePath)
@@ -85,176 +71,152 @@ class SpriteSheet :
                     charMap[ascii] = sprite
         return charMap
 
-#-------------------------------------------------------------------------------
-def writeHeaderTop(f, spriteSheet) :
-    f.write('#pragma once\n')
-    f.write('//-----------------------------------------------------------------------------\n')
-    f.write('/*  #version:{}#\n'.format(Version))
-    f.write('    machine generated, do not edit!\n')
-    f.write('*/\n')
-    f.write('#include "Core/Types.h"\n')
-    f.write('namespace ' + spriteSheet.namespace + ' {\n')
+    def writeHeaderTop(self, f) :
+        f.write('#pragma once\n')
+        f.write('//-----------------------------------------------------------------------------\n')
+        f.write('/*  #version:{}#\n'.format(Version))
+        f.write('    machine generated, do not edit!\n')
+        f.write('*/\n')
+        f.write('#include "Core/Types.h"\n')
+        f.write('namespace ' + self.namespace + ' {\n')
 
-#-------------------------------------------------------------------------------
-def writeHeaderBottom(f, spriteSheet) :
-    f.write('}\n')
-    f.write('\n')
+    def writeHeaderBottom(self, f) :
+        f.write('}\n')
+        f.write('\n')
 
-#-------------------------------------------------------------------------------
-def writeSpriteSheet(f, spriteSheet) :
-    numPixels = spriteSheet.imageWidth * spriteSheet.imageHeight
-    numBytes = numPixels * 4
-    f.write('struct Sheet {\n')
-    f.write('    static const Oryol::int32 Width{' + str(spriteSheet.imageWidth) + '};\n')
-    f.write('    static const Oryol::int32 Height{' + str(spriteSheet.imageHeight) + '};\n')
-    f.write('    static const Oryol::int32 NumBytes{' + str(numBytes) + '};\n')
-    f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(numPixels))
-    f.write('    enum SpriteId {\n')
-    for sprite in spriteSheet.sprites :
-        f.write('        ' + sprite.name + ',\n')
-    f.write('\n')
-    f.write('        NumSprites,\n')
-    f.write('        InvalidSprite\n')
-    f.write('    };\n')
-    f.write('    class Anim {\n')
-    f.write('    public:\n')
-    f.write('        enum Code {\n')
-    f.write('            None,\n')
-    f.write('            Loop,\n')
-    f.write('            PingPong,\n')
-    f.write('            Clamp,\n')
-    f.write('        };\n')
-    f.write('    };\n')
-    f.write('    static const SpriteId CharMap[256];\n')
-    f.write('    static const struct sprite {\n')
-    f.write('        SpriteId id;\n')
-    f.write('        Oryol::int32 X;\n')
-    f.write('        Oryol::int32 Y;\n')
-    f.write('        Oryol::int32 W;\n')
-    f.write('        Oryol::int32 H;\n')
-    f.write('        Oryol::int32 NumFrames;\n')
-    f.write('        Anim::Code AnimType;\n')
-    f.write('        Oryol::uint32 Mask;\n')
-    f.write('        Oryol::uint8 Char;\n')
-    f.write('    } Sprite[NumSprites];\n')
-    f.write('};\n')
-#-------------------------------------------------------------------------------
-def generateHeader(absHeaderPath, spriteSheet) :
-    f = open(absHeaderPath, 'w')
-    writeHeaderTop(f, spriteSheet)
-    writeSpriteSheet(f, spriteSheet)
-    writeHeaderBottom(f, spriteSheet)
-    f.close()
+    def writeSpriteSheet(self, f) :
+        numPixels = self.imageWidth * self.imageHeight
+        numBytes = numPixels * 4
+        f.write('struct Sheet {\n')
+        f.write('    static const Oryol::int32 Width{' + str(self.imageWidth) + '};\n')
+        f.write('    static const Oryol::int32 Height{' + str(self.imageHeight) + '};\n')
+        f.write('    static const Oryol::int32 NumBytes{' + str(numBytes) + '};\n')
+        f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(numPixels))
+        f.write('    enum SpriteId {\n')
+        for sprite in self.sprites :
+            f.write('        ' + sprite.name + ',\n')
+        f.write('\n')
+        f.write('        NumSprites,\n')
+        f.write('        InvalidSprite\n')
+        f.write('    };\n')
+        f.write('    class Anim {\n')
+        f.write('    public:\n')
+        f.write('        enum Code {\n')
+        f.write('            None,\n')
+        f.write('            Loop,\n')
+        f.write('            PingPong,\n')
+        f.write('            Clamp,\n')
+        f.write('        };\n')
+        f.write('    };\n')
+        f.write('    static const SpriteId CharMap[256];\n')
+        f.write('    static const struct sprite {\n')
+        f.write('        SpriteId id;\n')
+        f.write('        Oryol::int32 X;\n')
+        f.write('        Oryol::int32 Y;\n')
+        f.write('        Oryol::int32 W;\n')
+        f.write('        Oryol::int32 H;\n')
+        f.write('        Oryol::int32 NumFrames;\n')
+        f.write('        Anim::Code AnimType;\n')
+        f.write('        Oryol::uint8 Char;\n')
+        f.write('    } Sprite[NumSprites];\n')
+        f.write('};\n')
 
-#-------------------------------------------------------------------------------
-def writeSourceTop(f, absSourcePath, spriteSheet) :
-    path, hdrFileAndExt = os.path.split(absSourcePath)
-    hdrFile, ext = os.path.splitext(hdrFileAndExt)
+    def genHeader(self, absHeaderPath) :
+        f = open(absHeaderPath, 'w')
+        self.writeHeaderTop(f)
+        self.writeSpriteSheet(f)
+        self.writeHeaderBottom(f)
+        f.close()
 
-    f.write('//-----------------------------------------------------------------------------\n')
-    f.write('// #version:{}# machine generated, do not edit!\n'.format(Version))
-    f.write('//-----------------------------------------------------------------------------\n')
-    f.write('#include "Pre.h"\n')
-    f.write('#include "' + hdrFile + '.h"\n')
-    f.write('\n')
-    f.write('namespace ' + spriteSheet.namespace + ' {\n')
+    def writeSourceTop(self, f, absSourcePath) :
+        path, hdrFileAndExt = os.path.split(absSourcePath)
+        hdrFile, ext = os.path.splitext(hdrFileAndExt)
 
-#-------------------------------------------------------------------------------
-def writeImageData(f, spriteSheet) :
-    width = spriteSheet.imageWidth
-    height = spriteSheet.imageHeight
-    numPixels = width * height
-    f.write('const Oryol::uint32 Sheet::Pixels[' + str(numPixels) + '] = {\n')
-    for y,row in enumerate(spriteSheet.imagePixels) :
-        if y < spriteSheet.imageHeight :
-            f.write('    ')
-            for x in xrange(0, width) :
-                offset = x * 4
-                r = row[offset]
-                g = row[offset + 1]
-                b = row[offset + 2]
-                a = row[offset + 3]
-                f.write('0x{:02x}{:02x}{:02x}{:02x},'.format(a, b, g, r))
-            f.write('\n')
-    f.write('};\n')
+        f.write('//-----------------------------------------------------------------------------\n')
+        f.write('// #version:{}# machine generated, do not edit!\n'.format(Version))
+        f.write('//-----------------------------------------------------------------------------\n')
+        f.write('#include "Pre.h"\n')
+        f.write('#include "' + hdrFile + '.h"\n')
+        f.write('\n')
+        f.write('namespace ' + self.namespace + ' {\n')
 
-#-------------------------------------------------------------------------------
-def writeSpriteData(f, spriteSheet) :
-    mapAnimType = {
-        '':         'None',
-        'none':     'None',
-        'loop':     'Loop',
-        'pingpong': 'PingPong',
-        'clamp':    'Clamp'
-    }
+    def writeImageData(self, f) :
+        width = self.imageWidth
+        height = self.imageHeight
+        numPixels = width * height
+        f.write('const Oryol::uint32 Sheet::Pixels[' + str(numPixels) + '] = {\n')
+        for y,row in enumerate(self.imagePixels) :
+            if y < self.imageHeight :
+                f.write('    ')
+                for x in xrange(0, width) :
+                    offset = x * 4
+                    r = row[offset]
+                    g = row[offset + 1]
+                    b = row[offset + 2]
+                    a = row[offset + 3]
+                    f.write('0x{:02x}{:02x}{:02x}{:02x},'.format(a, b, g, r))
+                f.write('\n')
+        f.write('};\n')
 
-    f.write('const Sheet::sprite Sheet::Sprite[Sheet::NumSprites] = {\n')
-    for sprite in spriteSheet.sprites :
-        name = str(sprite.name)
-        x = str(sprite.x)
-        y = str(sprite.y)
-        w = str(sprite.w)
-        h = str(sprite.h)
-        frs = str(sprite.frames)
-        anm = 'Sheet::Anim::' + mapAnimType[sprite.anim]
-        mask = str(sprite.mask)
-        char = 0
-        if sprite.char is not None :
-            char = ord(sprite.char[0])
-        char = str(char)
-        f.write('    { '+name+','+x+','+y+','+w+','+h+','+frs+','+anm+','+mask+','+char+' },\n')
-    f.write('};\n')
+    def writeSpriteData(self, f) :
+        mapAnimType = {
+            '':         'None',
+            'none':     'None',
+            'loop':     'Loop',
+            'pingpong': 'PingPong',
+            'clamp':    'Clamp'
+        }
 
-#-------------------------------------------------------------------------------
-def writeSpriteCharMap(f, spriteSheet) :
-    f.write('const Sheet::SpriteId Sheet::CharMap[256] = {\n')
-    charMap = spriteSheet.buildCharMap()
-    for sprite in charMap :
-        if sprite is None :
-            f.write('    Sheet::InvalidSprite,\n')
+        f.write('const Sheet::sprite Sheet::Sprite[Sheet::NumSprites] = {\n')
+        for sprite in self.sprites :
+            name = str(sprite.name)
+            x = str(sprite.x)
+            y = str(sprite.y)
+            w = str(sprite.w)
+            h = str(sprite.h)
+            frs = str(sprite.frames)
+            anm = 'Sheet::Anim::' + mapAnimType[sprite.anim]
+            char = 0
+            if sprite.char is not None :
+                char = ord(sprite.char[0])
+            char = str(char)
+            f.write('    { '+name+','+x+','+y+','+w+','+h+','+frs+','+anm+','+char+' },\n')
+        f.write('};\n')
+
+    def writeSpriteCharMap(self, f) :
+        f.write('const Sheet::SpriteId Sheet::CharMap[256] = {\n')
+        charMap = self.buildCharMap()
+        for sprite in charMap :
+            if sprite is None :
+                f.write('    Sheet::InvalidSprite,\n')
+            else :
+                f.write('    Sheet::' + sprite.name + ',\n')
+        f.write('};\n')
+
+    def writeSourceBottom(self, f) :
+        f.write('}\n')
+        f.write('\n')
+
+    def genSource(self, absSourcePath) :
+        f = open(absSourcePath, 'w')
+        self.writeSourceTop(f, absSourcePath)
+        self.writeImageData(f)
+        self.writeSpriteData(f)
+        self.writeSpriteCharMap(f)
+        self.writeSourceBottom(f)
+        f.close()
+
+    #-------------------------------------------------------------------------------
+    def generate(self) :
+        selfPath = self.directory + self.name + '.py'
+        hdrPath = self.directory + self.name + '.h'
+        srcPath = self.directory + self.name + '.cc'
+        if util.isDirty([selfPath, self.imagePath], Version, hdrPath, srcPath) :
+            print '## loading {}'.format(self.imagePath)
+            self.loadImage()
+            print '## generating {}'.format(hdrPath)
+            self.genHeader(hdrPath)
+            print '## generating {}'.format(srcPath)
+            self.genSource(srcPath)
         else :
-            f.write('    Sheet::' + sprite.name + ',\n')
-    f.write('};\n')
-
-#-------------------------------------------------------------------------------
-def writeSourceBottom(f, spriteSheet) :
-    f.write('}\n')
-    f.write('\n')
-
-#-------------------------------------------------------------------------------
-def generateSource(absSourcePath, spriteSheet) :
-    f = open(absSourcePath, 'w')
-    writeSourceTop(f, absSourcePath, spriteSheet)
-    writeImageData(f, spriteSheet)
-    writeSpriteData(f, spriteSheet)
-    writeSpriteCharMap(f, spriteSheet)
-    writeSourceBottom(f, spriteSheet)
-    f.close()
-
-#-------------------------------------------------------------------------------
-def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    # first check version stamps
-    if util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version) :
-        return True
-
-    # now need to check all used image files for their modified date
-    srcTime = os.path.getmtime(absSourcePath)    
-    hdrTime = os.path.getmtime(absHeaderPath)
-    imgList = []
-    rootDir = os.path.dirname(absXmlPath)
-    for dirNode in xmlTree.getroot().findall('Sheet') :
-        imgPath = rootDir + '/' + dirNode.get('file')
-        imgTime = os.path.getmtime(imgPath)
-        if imgTime > srcTime or imgTime > hdrTime :
-            return True
-    return False
-
-#-------------------------------------------------------------------------------
-def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    spriteSheet = SpriteSheet(xmlTree, absXmlPath)
-    spriteSheet.parseXml()
-    spriteSheet.loadImage()
-    generateHeader(absHeaderPath, spriteSheet)
-    generateSource(absSourcePath, spriteSheet)
-
-
+            print '## nothing to do for {}'.format(selfPath)
