@@ -16,7 +16,7 @@ def processFile(absPyPath) :
 #=== entry point
 if len(sys.argv) > 1 :
     for arg in sys.argv[1:] :
-        print '>> Processing: {}'.format(arg)
+        print '## processing: {}'.format(arg)
         processFile(arg)
 else :
     print 'Needs full path to a generator py file!'

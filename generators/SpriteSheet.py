@@ -5,7 +5,7 @@ import genutil as util
 import png
 import os
 
-Version = 2
+Version = 4
 
 #-------------------------------------------------------------------------------
 class Sprite :
@@ -206,30 +206,17 @@ class SpriteSheet :
         self.writeSourceBottom(f)
         f.close()
 
-    def isDirty(self, pyPath, srcPath, hdrPath, imgPath) :
-        # first check version stamps
-        if util.fileVersionDirty(srcPath, Version) or util.fileVersionDirty(hdrPath, Version) :
-            return True
-
-        # now need to check all used image files for their modified date
-        pyTime  = os.path.getmtime(pyPath)
-        srcTime = os.path.getmtime(srcPath)    
-        hdrTime = os.path.getmtime(hdrPath)
-        imgTime = os.path.getmtime(imgPath)
-        if pyTime > srcTime or pyTime > hdrTime or imgTime > srcTime or imgTime > hdrTime :
-            return True
-        return False
-
     #-------------------------------------------------------------------------------
     def generate(self) :
         selfPath = self.directory + self.name + '.py'
         hdrPath = self.directory + self.name + '.h'
         srcPath = self.directory + self.name + '.cc'
-        if self.isDirty(selfPath, hdrPath, srcPath, self.imagePath) :
+        if util.isDirty([selfPath, self.imagePath], Version, hdrPath, srcPath) :
+            print '## loading {}'.format(self.imagePath)
             self.loadImage()
-            print '>> generating {}'.format(hdrPath)
+            print '## generating {}'.format(hdrPath)
             self.genHeader(hdrPath)
-            print '>> generating {}'.format(srcPath)
+            print '## generating {}'.format(srcPath)
             self.genSource(srcPath)
         else :
-            print '>> nothing to do for {}'.format(selfPath)
+            print '## nothing to do for {}'.format(selfPath)

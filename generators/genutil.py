@@ -2,6 +2,7 @@
     Common utilities for generator scripts.
 '''
 import sys
+import os
 import platform
 
 FilePath = ''
@@ -55,3 +56,21 @@ def fileVersionDirty(filePath, version) :
 
     # fallthrough: no version or version doesn't match
     return True
+
+#-------------------------------------------------------------------------------
+def isDirty(srcFiles, version, dstSrcPath, dstHdrPath) :
+    '''
+    Check if code generation needs to run by comparing version stamp
+    and time stamps of a number of source files, and generated
+    source and header files.
+    '''
+    if fileVersionDirty(dstSrcPath, version) or fileVersionDirty(dstHdrPath, version) :
+        return True
+
+    dstSrcTime = os.path.getmtime(dstSrcPath)
+    dstHdrTime = os.path.getmtime(dstHdrPath)
+    for srcFile in srcFiles :
+        srcTime = os.path.getmtime(srcFile)
+        if srcTime > dstSrcTime or srcTime > dstHdrTime :
+            return True
+    return False
