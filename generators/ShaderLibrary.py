@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 5
+Version = 7
 
 import os
 import sys
@@ -79,11 +79,10 @@ def getMacroValue(macro, glslVersion) :
         return glsl130Macros[macro]
 
 #-------------------------------------------------------------------------------
-def gatherShaderSources(xmlRoot, absXmlPath) :
+def gatherShaderSources(rootDir, dirs) :
     srcList = []
-    rootDir = os.path.dirname(absXmlPath)
-    for dirNode in xmlRoot.findall('AddDir') :
-        path = rootDir + '/' + dirNode.get('path')
+    for directory in dirs :
+        path = rootDir + directory
         srcList.extend(glob.glob(path + '/*.shd'))
     return srcList
 
@@ -646,11 +645,10 @@ class ShaderLibrary :
     '''
     This represents the entire shader lib.
     '''
-    def __init__(self, xmlTree, absXmlPath) :
-        self.xmlRoot = xmlTree.getroot()
-        self.xmlPath = absXmlPath
-        self.name = None
-        self.sources = []
+    def __init__(self, directory, name, dirs) :
+        self.rootDirectory = directory
+        self.name = name
+        self.sources = gatherShaderSources(directory, dirs)
         self.blocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
@@ -671,14 +669,6 @@ class ShaderLibrary :
         print 'Bundles:'
         for bundle in self.bundles.values() :
             bundle.dump()
-
-    def parseXmlTree(self) :
-        '''
-        Parse the root xml file, this sets the name
-        and the source directories members.
-        '''
-        self.name = self.xmlRoot.get('name')
-        self.sources = gatherShaderSources(self.xmlRoot, self.xmlPath)
 
     def parseSources(self) :
         '''
@@ -928,32 +918,22 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def isDirty(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-    '''
-    Glob all source files and check their last-modified time
-    against the source/header path sources. 
-    '''
-    if util.fileVersionDirty(absSourcePath, Version) or util.fileVersionDirty(absHeaderPath, Version) :
-        return True
+def generate(directory, fileName, shdName, dirs) :
 
-    srcTime = os.path.getmtime(absSourcePath)    
-    hdrTime = os.path.getmtime(absHeaderPath)
-    shdFiles = gatherShaderSources(xmlTree.getroot(), absXmlPath)
-    for shdFile in shdFiles :
-        shdTime = os.path.getmtime(shdFile)
-        if shdTime > srcTime or shdTime > hdrTime :
-            return True
-    return False
-
-#-------------------------------------------------------------------------------
-def generate(xmlTree, absXmlPath, absSourcePath, absHeaderPath) :
-
-    shaderLibrary = ShaderLibrary(xmlTree, absXmlPath)
-    shaderLibrary.parseXmlTree()
-    shaderLibrary.parseSources()
-    shaderLibrary.resolveAllDependencies()
-    shaderLibrary.generateShaderSources()
-    shaderLibrary.validateShaders()
-
-    generateHeader(absHeaderPath, shaderLibrary)
-    generateSource(absSourcePath, shaderLibrary)
+    selfPath = directory + fileName + '.py'
+    hdrPath = directory + fileName + '.h'
+    srcPath = directory + fileName + '.cc'
+    files = gatherShaderSources(directory, dirs)
+    files.append(selfPath)
+    if util.isDirty(files, Version, hdrPath, srcPath) :
+        shaderLibrary = ShaderLibrary(directory, shdName, dirs)
+        shaderLibrary.parseSources()
+        shaderLibrary.resolveAllDependencies()
+        shaderLibrary.generateShaderSources()
+        shaderLibrary.validateShaders()
+        print '## generating {}'.format(hdrPath)        
+        generateHeader(hdrPath, shaderLibrary)
+        print '## generating {}'.format(srcPath)        
+        generateSource(srcPath, shaderLibrary)
+    else :
+        print '## nothing to do for {}'.format(selfPath)

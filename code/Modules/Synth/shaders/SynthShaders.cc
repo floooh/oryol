@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:5# machine generated, do not edit!
+// #version:7# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "SynthShaders.h"
