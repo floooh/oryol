@@ -8,7 +8,7 @@ import os
 import sys
 import glob
 from pprint import pprint
-import util
+import genutil as util
 import glslcompiler
 
 # GLSL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0

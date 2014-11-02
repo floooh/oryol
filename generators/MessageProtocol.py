@@ -4,7 +4,7 @@ Code generator for message protocol xml files.
 
 import os
 import sys
-import util
+import genutil as util
 
 Version = 5
 
