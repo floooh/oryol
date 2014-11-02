@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import platform
 import os
-import util
+import genutil as util
 
 def getToolsBinPath() :
     path = os.path.dirname(os.path.abspath(__file__))
