@@ -4,7 +4,7 @@ Oryol build system control script.
 '''
 
 # when enabled, this dumps a lot of information during CMake runs
-verbose = True
+verbose = False
 
 import sys
 import json
