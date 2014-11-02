@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:5#
+/* #version:6#
     machine generated, do not edit!
 */
 #include <cstring>

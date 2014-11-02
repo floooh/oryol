@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:5# machine generated, do not edit!
+// #version:6# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "GfxProtocol.h"

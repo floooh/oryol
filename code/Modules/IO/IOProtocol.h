@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:5#
+/* #version:6#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -156,7 +156,14 @@ private:
             if (protId == 'IOPT') return true;
             else return Message::IsMemberOf(protId);
         };
+        void SetScheme(const StringAtom& val) {
+            this->scheme = val;
+        };
+        const StringAtom& GetScheme() const {
+            return this->scheme;
+        };
 private:
+        StringAtom scheme;
     };
     class notifyFileSystemRemoved : public notifyLanes {
         OryolClassPoolAllocDecl(notifyFileSystemRemoved);
@@ -174,14 +181,7 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const StringAtom& val) {
-            this->scheme = val;
-        };
-        const StringAtom& GetScheme() const {
-            return this->scheme;
-        };
 private:
-        StringAtom scheme;
     };
     class notifyFileSystemReplaced : public notifyLanes {
         OryolClassPoolAllocDecl(notifyFileSystemReplaced);
@@ -199,14 +199,7 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const StringAtom& val) {
-            this->scheme = val;
-        };
-        const StringAtom& GetScheme() const {
-            return this->scheme;
-        };
 private:
-        StringAtom scheme;
     };
     class notifyFileSystemAdded : public notifyLanes {
         OryolClassPoolAllocDecl(notifyFileSystemAdded);
@@ -224,14 +217,7 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-        void SetScheme(const StringAtom& val) {
-            this->scheme = val;
-        };
-        const StringAtom& GetScheme() const {
-            return this->scheme;
-        };
 private:
-        StringAtom scheme;
     };
 };
 }
