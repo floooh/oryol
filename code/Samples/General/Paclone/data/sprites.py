@@ -2,100 +2,84 @@ import SpriteSheet as sprites
 
 def generate(directory, name) :
 
-    sheet = sprites.SpriteSheet(directory, name, dict( 
-        namespace    = 'Paclone',
-        image        = 'sprites.png',
-        spriteWidth  = 8,
-        spriteHeight = 8,
-        sprites      = [
-            dict(name='Space',          x=120, y=0, char=' '),
-            dict(name='TestWall',       x=112, y=8, char='#'),
-            dict(name='Pill',           x=112, y=0, char='.'),
-            dict(name='Energizer',      x=0,   y=112, w=16, h=16),
-
-            dict(name='PacmanNoDir',    x=0,   y=16,  w=16, h=16),
-            dict(name='PacmanRight',    x=0,   y=16,  w=16, h=16, frames=3, anim='pingpong'),
-            dict(name='PacmanDown',     x=48,  y=16,  w=16, h=16, frames=3, anim='pingpong'),
-            dict(name='PacmanUp',       x=0,   y=32,  w=16, h=16, frames=3, anim='pingpong'),
-            dict(name='PacmanLeft',     x=48,  y=32,  w=16, h=16, frames=3, anim='pingpong'),
-            dict(name='PacmanDead',     x=0,   y=152, w=16, h=16, frames=11, anim='clamp'),
-    
-            dict(name='BlinkyNoDir',    x=0,   y=48,  w=16, h=16),
-            dict(name='BlinkyRight',    x=0,   y=48,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='BlinkyLeft',     x=32,  y=48,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='BlinkyUp',       x=64,  y=48,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='BlinkyDown',     x=96,  y=48,  w=16, h=16, frames=2, anim='loop'),
-
-            dict(name='PinkyNoDir',     x=0,   y=64,  w=16, h=16),
-            dict(name='PinkyRight',     x=0,   y=64,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='PinkyLeft',      x=32,  y=64,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='PinkyUp',        x=64,  y=64,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='PinkyDown',      x=96,  y=64,  w=16, h=16, frames=2, anim='loop'),
-
-            dict(name='InkyNoDir',      x=0,   y=80,  w=16, h=16),
-            dict(name='InkyRight',      x=0,   y=80,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='InkyLeft',       x=32,  y=80,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='InkyUp',         x=64,  y=80,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='InkyDown',       x=96,  y=80,  w=16, h=16, frames=2, anim='loop'),
-
-            dict(name='ClydeNoDir',     x=0,   y=96,  w=16, h=16),
-            dict(name='ClydeRight',     x=0,   y=96,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='ClydeLeft',      x=32,  y=96,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='ClydeUp',        x=64,  y=96,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='ClydeDown',      x=96,  y=96,  w=16, h=16, frames=2, anim='loop'),
-
-            dict(name='FrightenedGhost', x=96, y=16,  w=16, h=16, frames=2, anim='loop'),
-            dict(name='FlashingGhost',   x=96, y=32,  w=16, h=16, frames=2, anim='loop'),
-
-            dict(name='EyesRight',       x=16, y=112, w=16, h=16),
-            dict(name='EyesLeft',        x=32, y=112, w=16, h=16),
-            dict(name='EyesUp',          x=48, y=112, w=16, h=16),
-            dict(name='EyesDown',        x=64, y=112, w=16, h=16),
-
-            dict(name='DoubleLeft',      x=0,  y=0, char='L'),
-            dict(name='DoubleRight',     x=8,  y=0, char='R'),
-            dict(name='DoubleUp',        x=16, y=0, char='U'),
-            dict(name='DoubleBottom',    x=24, y=0, char='B'),
-            dict(name='DoubleUpLeft',    x=32, y=0, char='0'),
-            dict(name='DoubleUpRight',   x=40, y=0, char='1'),
-            dict(name='DoubleBottomLeft',  x=48, y=0, char='2'),
-            dict(name='DoubleBottomRight', x=56, y=0, char='3'),
-            dict(name='DoubleTUpLeft',     x=64, y=0, char='4'),
-            dict(name='DoubleTUpRight',    x=72, y=0, char='5'),
-            dict(name='DoubleTLeftUp',     x=80, y=0, char='6'),
-            dict(name='DoubleTLeftDown',   x=80, y=8, char='7'),
-            dict(name='DoubleTRightUp',    x=88, y=0, char='8'),
-            dict(name='DoubleTRightDown',  x=88, y=8, char='9'),
-
-            dict(name='WallLeft',   x=0,  y=8, char='l'),
-            dict(name='WallRight',  x=8,  y=8, char='r'),
-            dict(name='WallUp',     x=16, y=8, char='u'),
-            dict(name='WallBottom', x=24, y=8, char='b'),
-
-            dict(name='InnerCorner0', x=32, y=8, char='x'),
-            dict(name='InnerCorner1', x=40, y=8, char='y'),
-            dict(name='InnerCorner2', x=48, y=8, char='z'),
-            dict(name='InnerCorner3', x=56, y=8, char='w'),
-
-            dict(name='OuterCorner0', x=96,  y=0, char='e'),
-            dict(name='OuterCorner1', x=104, y=0, char='f'),
-            dict(name='OuterCorner2', x=96,  y=8, char='g'),
-            dict(name='OuterCorner3', x=104, y=8, char='h'),
-
-            dict(name='HouseVert',        x=0, y=128, char='i'),
-            dict(name='HouseHori',        x=8, y=128, char='j'),
-            dict(name='HouseTopLeft',     x=16, y=128, char='m'),
-            dict(name='HouseTopRight',    x=24, y=128, char='n'),
-            dict(name='HouseBottomLeft',  x=32, y=128, char='o'),
-            dict(name='HouseBottomRight', x=40, y=128, char='p'),
-            dict(name='HouseDoor',        x=48, y=128, char='-'),
-
-            dict(name='P200', x=0,  y=136, w=16, h=16),
-            dict(name='P400', x=16, y=136, w=16, h=16),
-            dict(name='P800', x=32, y=136, w=16, h=16),
-            dict(name='P1600', x=48, y=136, w=16, h=16)
-        ]))
-    sheet.generate()
+    s = sprites.SpriteSheet(directory, name)
+    s.namespace('Paclone')
+    s.image('sprites.png')
+    s.defaultSpriteSize(8, 8)
+    s.sprite('Space',               120, 0, char=' ')
+    s.sprite('TestWall',            112, 8, char='#')
+    s.sprite('Pill',                112, 0, char='.')
+    s.sprite('Energizer',           0,   112, w=16, h=16)
+    s.sprite('PacmanNoDir',         0,   16,  w=16, h=16)
+    s.sprite('PacmanRight',         0,   16,  w=16, h=16, frames=3, anim='pingpong')
+    s.sprite('PacmanDown',          48,  16,  w=16, h=16, frames=3, anim='pingpong')
+    s.sprite('PacmanUp',            0,   32,  w=16, h=16, frames=3, anim='pingpong')
+    s.sprite('PacmanLeft',          48,  32,  w=16, h=16, frames=3, anim='pingpong')
+    s.sprite('PacmanDead',          0,   152, w=16, h=16, frames=11, anim='clamp')
+    s.sprite('BlinkyNoDir',         0,   48,  w=16, h=16)
+    s.sprite('BlinkyRight',         0,   48,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('BlinkyLeft',          32,  48,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('BlinkyUp',            64,  48,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('BlinkyDown',          96,  48,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('PinkyNoDir',          0,   64,  w=16, h=16)
+    s.sprite('PinkyRight',          0,   64,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('PinkyLeft',           32,  64,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('PinkyUp',             64,  64,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('PinkyDown',           96,  64,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('InkyNoDir',           0,   80,  w=16, h=16)
+    s.sprite('InkyRight',           0,   80,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('InkyLeft',            32,  80,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('InkyUp',              64,  80,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('InkyDown',            96,  80,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('ClydeNoDir',          0,   96,  w=16, h=16)
+    s.sprite('ClydeRight',          0,   96,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('ClydeLeft',           32,  96,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('ClydeUp',             64,  96,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('ClydeDown',           96,  96,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('FrightenedGhost',     96,  16,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('FlashingGhost',       96,  32,  w=16, h=16, frames=2, anim='loop')
+    s.sprite('EyesRight',           16,  112, w=16, h=16)
+    s.sprite('EyesLeft',            32,  112, w=16, h=16)
+    s.sprite('EyesUp',              48,  112, w=16, h=16)
+    s.sprite('EyesDown',            64,  112, w=16, h=16)
+    s.sprite('DoubleLeft',          0,   0, char='L')
+    s.sprite('DoubleRight',         8,   0, char='R')
+    s.sprite('DoubleUp',            16,  0, char='U')
+    s.sprite('DoubleBottom',        24,  0, char='B')
+    s.sprite('DoubleUpLeft',        32,  0, char='0')
+    s.sprite('DoubleUpRight',       40,  0, char='1')
+    s.sprite('DoubleBottomLeft',    48,  0, char='2')
+    s.sprite('DoubleBottomRight',   56,  0, char='3')
+    s.sprite('DoubleTUpLeft',       64,  0, char='4')
+    s.sprite('DoubleTUpRight',      72,  0, char='5')
+    s.sprite('DoubleTLeftUp',       80,  0, char='6')
+    s.sprite('DoubleTLeftDown',     80,  8, char='7')
+    s.sprite('DoubleTRightUp',      88,  0, char='8')
+    s.sprite('DoubleTRightDown',    88,  8, char='9')
+    s.sprite('WallLeft',            0,   8, char='l')
+    s.sprite('WallRight',           8,   8, char='r')
+    s.sprite('WallUp',              16,  8, char='u')
+    s.sprite('WallBottom',          24,  8, char='b')
+    s.sprite('InnerCorner0',        32,  8, char='x')
+    s.sprite('InnerCorner1',        40,  8, char='y')
+    s.sprite('InnerCorner2',        48,  8, char='z')
+    s.sprite('InnerCorner3',        56,  8, char='w')
+    s.sprite('OuterCorner0',        96,  0, char='e')
+    s.sprite('OuterCorner1',        104, 0, char='f')
+    s.sprite('OuterCorner2',        96,  8, char='g')
+    s.sprite('OuterCorner3',        104, 8, char='h')
+    s.sprite('HouseVert',           0,   128, char='i')
+    s.sprite('HouseHori',           8,   128, char='j')
+    s.sprite('HouseTopLeft',        16,  128, char='m')
+    s.sprite('HouseTopRight',       24,  128, char='n')
+    s.sprite('HouseBottomLeft',     32,  128, char='o')
+    s.sprite('HouseBottomRight',    40,  128, char='p')
+    s.sprite('HouseDoor',           48,  128, char='-')
+    s.sprite('P200',                0,   136, w=16, h=16)
+    s.sprite('P400',                16,  136, w=16, h=16)
+    s.sprite('P800',                32,  136, w=16, h=16)
+    s.sprite('P1600',               48,  136, w=16, h=16)
+    s.generate()
 
 
 

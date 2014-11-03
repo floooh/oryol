@@ -21,31 +21,46 @@ class Sprite :
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
-    def __init__(self, directory, name, dct) :
+    def __init__(self, directory, name) :
         self.directory = directory
         self.name = name
-        self.namespace = dct['namespace']
-        self.imagePath = directory + dct['image']
+        self.ns = ''
+        self.imagePath = ''
         self.imageWidth = 0
         self.imageHeight = 0
-        self.clampWidth = dct.get('clampWidth', 0)
-        self.clampHeight = dct.get('clampHeight', 0)
+        self.clampWidth = 0
+        self.clampHeight = 0
         self.imagePixels = None
         self.imageInfo = None
-        self.defSpriteWidth = dct['spriteWidth']
-        self.defSpriteHeight = dct['spriteHeight']
+        self.defSpriteWidth = 0
+        self.defSpriteHeight = 0
         self.sprites = []
-        for s in dct['sprites'] :
-            sprite = Sprite()
-            sprite.name = s['name']
-            sprite.x = s['x']
-            sprite.y = s['y']
-            sprite.w = s.get('w', self.defSpriteWidth)
-            sprite.h = s.get('h', self.defSpriteHeight)
-            sprite.frames = s.get('frames', 1)
-            sprite.anim = s.get('anim', 'none')
-            sprite.char = s.get('char', None)
-            self.sprites.append(sprite)
+
+    def namespace(self, ns) :
+        self.ns = ns
+
+    def image(self, img) :
+        self.imagePath = self.directory + img
+
+    def clampImageSize(self, w, h) :
+        self.clampWidth = w
+        self.clampHeight = h
+
+    def defaultSpriteSize(self, w, h) :
+        self.defSpriteWidth = w
+        self.defSpriteHeight = h
+
+    def sprite(self, name, x, y, w=0, h=0, frames=1, anim='none', char=None) :
+        sprite = Sprite()
+        sprite.name = name
+        sprite.x = x
+        sprite.y = y
+        sprite.w = w if w != 0 else self.defSpriteWidth
+        sprite.h = h if h != 0 else self.defSpriteHeight
+        sprite.frames = frames
+        sprite.anim = anim
+        sprite.char = char
+        self.sprites.append(sprite)
 
     def loadImage(self) :
         pngReader = png.Reader(self.imagePath)
@@ -78,7 +93,7 @@ class SpriteSheet :
         f.write('    machine generated, do not edit!\n')
         f.write('*/\n')
         f.write('#include "Core/Types.h"\n')
-        f.write('namespace ' + self.namespace + ' {\n')
+        f.write('namespace ' + self.ns + ' {\n')
 
     def writeHeaderBottom(self, f) :
         f.write('}\n')
@@ -138,7 +153,7 @@ class SpriteSheet :
         f.write('#include "Pre.h"\n')
         f.write('#include "' + hdrFile + '.h"\n')
         f.write('\n')
-        f.write('namespace ' + self.namespace + ' {\n')
+        f.write('namespace ' + self.ns + ' {\n')
 
     def writeImageData(self, f) :
         width = self.imageWidth
