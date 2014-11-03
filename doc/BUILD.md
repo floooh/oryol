@@ -113,6 +113,8 @@ To setup the NaCl SDK, and build the Triangle sample on OSX or Linux:
 * sudo apt-get install libc6:i386
 * sudo apt-get install libstdc++6:i386
 
+**Update**: this has changed on recent Debian based distros, try *lib32stdc++6* instead
+
 ```
 > cd ~/oryol
 ~ ./oryol setup nacl
@@ -498,8 +500,6 @@ The App Launcher (or whatever it is called) now has a new PackedNormals app!
 
 ## Cross-platform builds with Vagrant
 
-NOTE: this probably doesn't work right now!
-
 Oryol comes with a Vagrantfile which sets up a Linux VM with all required tools and SDKs to compile
 native Linux builds and cross-compile to emscripten and PNaCl.
 
@@ -511,7 +511,7 @@ First you need to setup vagrant:
 
 Now you're ready to setup the VM with **vagrant up**
 
-```
+```bash
 flohofwoe:oryol floh$ pwd
 /Users/floh/oryol
 flohofwoe:oryol floh$ cd vagrant
@@ -522,17 +522,23 @@ This will download a Linux image and install all required tools and SDKs inside 
 
 After everything's setup, connect to the VM:
 
-```
+```bash
 flohofwoe:vagrant floh$ vagrant ssh
-Welcome to Ubuntu 12.04 LTS (GNU/Linux 3.2.0-23-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com/
-Welcome to your Vagrant-built virtual machine.
-Last login: Sat Feb  1 15:50:56 2014 from 10.0.2.2
-vagrant@precise64:~$ cd oryol/
-vagrant@precise64:~/oryol$ ls
+...
+vagrant@oryol-linux:~$ cd oryol
+vagrant@oryol-linux:~/oryol$ ls
 bin  build  BUILD.md  cmake  CMakeLists.txt  code  configs  data  doc  IDEAS.md  LICENSE  oryol  README.md  vagrant
-vagrant@precise64:~/oryol$ ./oryol build all
+vagrant@oryol-linux:~/oryol$ ./oryol build linux-make-release
 ```
 
-There's you (shared) oryol directory, ready to go!
+All packages required for cross-compiling are installed in the VM, only thing left is to 
+setup the SDKs and build the cross-compiling configs:
+
+```bash
+vagrant@oryol-linux:~/oryol$ ./oryol setup nacl
+vagrant@oryol-linux:~/oryol$ ./oryol build pnacl-make-release
+vagrant@oryol-linux:~/oryol$ ./oryol setup android
+vagrant@oryol-linux:~/oryol$ ./oryol build android-make-release
+vagrant@oryol-linux:~/oryol$ ./oryol setup emsdk
+vagrant@oryol-linux:~/oryol$ ./oryol build emscripten-make-release
+```

@@ -17,6 +17,7 @@ class essentials {
     package { "ninja-build": }
     package { "default-jre": }
     package { "ant": }
+    package { "lib32stdc++6": }
 }
 
 # native Linux build requirements
