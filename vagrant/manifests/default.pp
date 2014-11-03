@@ -28,4 +28,5 @@ class oryol-build {
 }
 
 include essentials
+include oryol-build
 

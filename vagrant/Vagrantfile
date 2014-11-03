@@ -17,8 +17,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # then VBox shared folders, a bit more hassle to setup 
   # though (asks for the host machine's root password, 
   # and doesn't work on Windows)
-  # MEH, this is still all very slow, better to clone
-  # a new copy into the VM's local FS instead of sharing
-  # config.vm.network "private_network", ip: "192.168.127.127"
-  # config.vm.synced_folder "../../oryol", "/home/vagrant/oryol", type: "nfs"
+  config.vm.network "private_network", ip: "192.168.127.127"
+  config.vm.synced_folder "../../oryol", "/home/vagrant/oryol", type: "nfs"
 end

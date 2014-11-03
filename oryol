@@ -39,6 +39,13 @@ validNativePlatforms = {
     'Windows': ['win32', 'win64']
 }
 
+# map host platform to dir name
+platformName = {
+    'Darwin': 'osx',
+    'Linux': 'linux',
+    'Windows': 'windows'
+}
+
 # valid cross-compiling platforms for a given host platform
 validCrossPlatforms = {
     'Darwin': ['ios', 'emscripten', 'pnacl', 'android'],
@@ -240,9 +247,13 @@ def getAllValidConfigs() :
             validConfigs.append(config)
     return validConfigs
 
+# get the build directory path
+def buildDir(config) :
+    return 'build/{}/{}'.format(platformName[platform.system()], config['name'])
+
 # test if the build directory of a config exists
 def buildDirExists(config) :
-    return os.path.isdir('build/{}'.format(config['name']))
+    return os.path.isdir(buildDir(config))
 
 # recursively find path to file
 def findPath(startDir, subDir, fileName) :
@@ -290,14 +301,14 @@ def runCMake(config) :
 
         # toolchain file required?
         if isValidCrossPlatform(targetPlatform) :
-            cmdLine.append('-DCMAKE_TOOLCHAIN_FILE=../../cmake/{}.toolchain.cmake'.format(targetPlatform))
+            cmdLine.append('-DCMAKE_TOOLCHAIN_FILE=../../../cmake/{}.toolchain.cmake'.format(targetPlatform))
         
         # relative path to root CMakeFile
-        cmdLine.append('../..')
+        cmdLine.append('../../..')
         print " ".join(cmdLine)
 
         # make sure build path exists
-        buildPath = 'build/{}'.format(name)
+        buildPath = buildDir(config)
         if not os.path.exists(buildPath) :
             os.makedirs(buildPath)
 
@@ -318,7 +329,7 @@ def runBuild(config, target) :
         name = config['name']
         generator = config['target']['generator']
         buildType = config['target']['build-type']
-        buildPath = "build/{}".format(name)
+        buildPath = buildDir(config)
         if 'Xcode' in generator :
             # run the Xcode command line tool
             args = ['xcodebuild', '-jobs', '3']
@@ -352,7 +363,7 @@ def runRebuild(config, target) :
         name = config['name']
         generator = config['target']['generator']
         buildType = config['target']['build-type']
-        buildPath = "build/{}".format(name)
+        buildPath = buildDir(config)
         exitCode = 0
         if 'Xcode' in generator :
             # run the Xcode command line tool
@@ -395,7 +406,7 @@ def runLogcat(config) :
 def runConfigure(config) :
     if testConfigRequirements(config) :
         name = config['name']
-        buildPath = "build/{}".format(name)
+        buildPath = buildDir(config)
         # prefer ccmake over cmake-gui
         if testCCMake() :
             subprocess.call(args=['ccmake', buildPath])
@@ -551,10 +562,10 @@ else :
             config = loadConfig(sys.argv[2])
         if 'Xcode' in config['target']['generator'] :
             print "Opening '{}' in Xcode...".format(config['name'])
-            subprocess.call(['open', 'build/{}/oryol.xcodeproj'.format(config['name'])])
+            subprocess.call(['open', buildDir(config) + '/oryol.xcodeproj'])
         elif 'Visual Studio' in config['target']['generator'] :
             print "Opening '{}' in Visual Studio...".format(config['name'])
-            subprocess.call(['cmd', '/c', 'start', 'build\{}\oryol.sln'.format(config['name'])])
+            subprocess.call(['cmd', '/c', 'start', buildDir(config) + '\oryol.sln'])
         else :
             error('open is currently only supported for Xcode and VStudio projects')
 
@@ -571,7 +582,7 @@ else :
             error('No matching configs found!')
         else :
             for config in configs :
-                path = 'build/{}'.format(config['name'])
+                path = buildDir(config)
                 if os.path.isdir(path) :
                     shutil.rmtree(path)
                     print "Directory '{}' deleted!".format(path)
@@ -695,7 +706,7 @@ else :
         elif sys.argv[2] == 'emsdk' :
             SDKSetupEmsc.setupEmSdk()
         else :
-            error('sdk {} not yet supported (try android, emscripten, nacl)'.format(sys.argv[2]))
+            error('sdk {} not yet supported (try android, emsdk, nacl)'.format(sys.argv[2]))
 
     else :
         error('Oryol called with unknown argument: {}'.format(cmd))

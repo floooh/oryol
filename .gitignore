@@ -2,6 +2,7 @@ bin/
 vagrant/.vagrant
 doc/html
 build/*-*-*
+build/*/*-*-*
 build/*.json
 build/webpage
 sdks/
