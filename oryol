@@ -26,7 +26,7 @@ import SocketServer
 platforms = ['osx', 'linux', 'win32', 'win64', 'emscripten', 'pnacl', 'ios', 'android']
 
 # valid target platforms for a given host platforms
-validTargetPlatforms = { 
+validTargetPlatforms = {
     'Darwin': ['osx', 'ios', 'emscripten', 'pnacl', 'android'],
     'Linux': ['linux', 'emscripten', 'pnacl', 'android'],
     'Windows': ['win32', 'win64', 'emscripten', 'android']
@@ -183,7 +183,7 @@ def testXCode() :
 
 # test if the given target platform is valid on the given host
 def isValidTargetPlatform(targetPlatform) :
-    return targetPlatform in validTargetPlatforms[platform.system()] 
+    return targetPlatform in validTargetPlatforms[platform.system()]
 
 # test if the given target platform is a valid non-cross-compiling target
 def isValidNativePlatform(targetPlatform) :
@@ -204,7 +204,7 @@ def testConfigRequirements(config) :
 
     # FIXME: if cross-compiling, check if the
     # cross-compiling SDK is installed
-    
+
     # cmake is always required
     testCMake()
 
@@ -302,7 +302,7 @@ def runCMake(config) :
         # toolchain file required?
         if isValidCrossPlatform(targetPlatform) :
             cmdLine.append('-DCMAKE_TOOLCHAIN_FILE=../../../cmake/{}.toolchain.cmake'.format(targetPlatform))
-        
+
         # relative path to root CMakeFile
         cmdLine.append('../../..')
         print " ".join(cmdLine)
@@ -432,7 +432,7 @@ def startHttpServer() :
     os.chdir('build/webpage')
     handler = SimpleHTTPServer.SimpleHTTPRequestHandler
     httpd = SocketServer.TCPServer(('localhost', 8000), handler)
-    httpd.serve_forever()    
+    httpd.serve_forever()
 
 #===============================================================================
 if len(sys.argv) == 1 :
@@ -513,7 +513,7 @@ else :
             # list existing configs
             print "CONFIGS:"
             configs = glob.glob('configs/*.json')
-            for config in configs :            
+            for config in configs :
                 path,nameExt = os.path.split(config)
                 name,ext = os.path.splitext(nameExt)
                 print "  {}".format(name)
@@ -544,14 +544,14 @@ else :
         if len(sys.argv) < 3 :
             configs = [ getActiveConfig() ]
         else :
-            if sys.argv[2] == 'all' : 
+            if sys.argv[2] == 'all' :
                 configs = getAllValidConfigs()
             else :
                 configs = loadMatchingConfigs(sys.argv[2])
         if len(configs) == 0 :
             error('No matching configs found!')
         else :
-            for config in configs: 
+            for config in configs:
                 runCMake(config)
 
     elif cmd == 'open' :
@@ -666,7 +666,7 @@ else :
             config = loadConfig(sys.argv[2])
         if not buildDirExists(config) :
             runCMake(config)
-        runConfigure(config)            
+        runConfigure(config)
 
     elif cmd == 'webpage' :
         if not (len(sys.argv) > 2 and sys.argv[2] == 'norebuild') :
@@ -710,11 +710,3 @@ else :
 
     else :
         error('Oryol called with unknown argument: {}'.format(cmd))
-
-
-
-
-
-
-
-
