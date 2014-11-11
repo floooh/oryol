@@ -434,8 +434,7 @@ def startHttpServer() :
     httpd = SocketServer.TCPServer(('localhost', 8000), handler)
     httpd.serve_forever()
 
-#===============================================================================
-if len(sys.argv) == 1 :
+def printUsage() :
     print '-------------------------------------'
     print 'The Oryol build system control script'
     print '-------------------------------------'
@@ -476,9 +475,14 @@ if len(sys.argv) == 1 :
     print '  export or HTTP-serve asset files'
     print '\n'
 
+#===============================================================================
+if len(sys.argv) == 1 :
+    printUsage()
 else :
     cmd = sys.argv[1]
-    if cmd == 'new' :
+    if cmd in ['help', '-h', '--help'] :
+        printUsage()
+    elif cmd == 'new' :
         # create new config skeleton file
         if len(sys.argv) < 3 :
             error("config name expected after 'new'!")
