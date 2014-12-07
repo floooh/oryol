@@ -66,7 +66,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
-    #elif ORYOL_MACOS
+    #elif ORYOL_OPENGL_CORE_PROFILE
     const ShaderLang::Code slang = ShaderLang::GLSL150;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;

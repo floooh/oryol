@@ -23,6 +23,7 @@ else()
 	set(ORYOL_WINDOWS_PLATFORM_NAME "x86")
 endif()
 set(ORYOL_OPENGL 1)
+set(ORYOL_OPENGL_CORE_PROFILE 1)
 
 # define configuration types
 set(CMAKE_CONFIGURATION_TYPES Debug Release)

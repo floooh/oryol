@@ -4,12 +4,8 @@
     Central GL header file, this is BIG, make sure to only include
     this in implementation files, not header files.
 */
-#if ORYOL_MACOS
-#include <OpenGL/gl3.h>
-#include <OpenGL/gl3ext.h>
-#elif (ORYOL_WINDOWS || ORYOL_LINUX)
-#define GLEW_STATIC (1)
-#include "glew/GL/glew.h"
+#if ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
+#include "flextgl/flextGL.h"
 #elif ORYOL_IOS
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>

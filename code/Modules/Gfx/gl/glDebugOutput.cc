@@ -13,13 +13,14 @@ namespace _priv {
 bool glDebugOutput::isEnabled = false;
 
 //------------------------------------------------------------------------------
+#if !ORYOL_EMSCRIPTEN
 #if defined(GL_ARB_debug_output)
 #if ORYOL_WINDOWS
 void __stdcall
 #else
 void
 #endif
-debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam)
 {
     const char* typeStr;
     switch (type)
@@ -45,11 +46,12 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
         typeStr, id, sevStr, message);
 }
 #endif
+#endif
 
 //------------------------------------------------------------------------------
 void
 glDebugOutput::Enable(Severity s) {
-    #if defined(GL_ARB_debug_output)
+    #if defined(GL_ARB_debug_output) && !ORYOL_EMSCRIPTEN
     if (glExt::HasExtension(glExt::DebugOutput)) {
         GLenum glSeverity = GL_DONT_CARE;
         switch (s) {
@@ -75,7 +77,7 @@ glDebugOutput::Enable(Severity s) {
 //------------------------------------------------------------------------------
 void
 glDebugOutput::Disable() {
-    #if defined(GL_ARB_debug_output)
+    #if defined(GL_ARB_debug_output) && !ORYOL_EMSCRIPTEN
     if (glExt::HasExtension(glExt::DebugOutput)) {
         ::glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
         isEnabled = false;
