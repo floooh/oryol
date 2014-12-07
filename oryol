@@ -628,21 +628,20 @@ else :
 
     elif cmd == 'make' :
         # build a specific target
-        if len(sys.argv) < 3 :
-            error("need at least a target name!")
-        else :
+        target = None
+        if len(sys.argv) > 2 :
             target = sys.argv[2]
-            if len(sys.argv) < 4 :
-                configs = [ getActiveConfig() ]
+        if len(sys.argv) < 4 :
+            configs = [ getActiveConfig() ]
+        else :
+            if sys.argv[3] == 'all' :
+                configs = getAllValidConfigs()
             else :
-                if sys.argv[3] == 'all' :
-                    configs = getAllValidConfigs()
-                else :
-                    configs = loadMatchingConfigs(sys.argv[3])
-            for config in configs :
-                if not buildDirExists(config) :
-                    runCMake(config)
-                runBuild(config, target)
+                configs = loadMatchingConfigs(sys.argv[3])
+        for config in configs :
+            if not buildDirExists(config) :
+                runCMake(config)
+            runBuild(config, target)
 
     elif cmd == 'deploy' :
         # deploy to mobile device
