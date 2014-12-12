@@ -354,6 +354,8 @@ def runBuild(config, target) :
         else :
             # generic invocation of cmake --build
             args = ['cmake', '--build', '.', '--config', buildType]
+            if target != None :
+                args.extend(['--target', target])
         if subprocess.call(args=args, cwd=buildPath) != 0 :
             error("Build failed.")
 
