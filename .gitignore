@@ -7,5 +7,9 @@ build/*.json
 build/webpage
 sdks/
 configs/.selected
-*.pyc
 *.txt.user
+#>fips
+# this area is managed by fips, do not edit
+.fips-*
+*.pyc
+#<fips

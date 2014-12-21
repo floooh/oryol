@@ -1,0 +1,23 @@
+#
+# oryol
+#
+---
+# IMPORTS:
+# ========
+# imports:
+#    proj-name or git-url: [ dep1, dep2, dep3, ... ]
+#
+# EXPORTS:
+# ========
+# exports:
+#     header-dirs : [ dir, ... ]
+#     lib-dirs : [ dir, ... ]
+#     generator-dirs: [ dir, ... ]
+#     defines :
+#         def1 : value
+#         ...
+#     modules :
+#         dep1: src/dep1
+#         ...
+
+
