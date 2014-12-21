@@ -19,29 +19,23 @@ glExt::Setup() {
     o_assert(!isValid);
     isValid = true;
 
-    // initialize GLEW
-    #if ORYOL_LINUX || ORYOL_WINDOWS
-    glewInit();
-    #endif
-    
     for (int32 i = 0; i < NumExtensions; i++) {
         extensions[i] = false;
     }
     
-    #if !ORYOL_MACOS
+    #if !ORYOL_OPENGL_CORE_PROFILE
     StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
     ORYOL_GL_CHECK_ERROR();
     #endif
     
-    #if ORYOL_MACOS
-    // FIXME: this is actually GL 3.2 Core Profile
+    #if ORYOL_OPENGL_CORE_PROFILE
     extensions[VertexArrayObject] = true;
     extensions[TextureCompressionDXT] = true;
     extensions[InstancedArrays] = true;
     extensions[TextureFloat] = true;
     #endif
     
-    #if !ORYOL_MACOS
+    #if !ORYOL_OPENGL_CORE_PROFILE
     extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     extensions[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                         strBuilder.Contains("_compressed_texture_s3tc") ||

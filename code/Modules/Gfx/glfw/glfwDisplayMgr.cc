@@ -9,9 +9,7 @@
 #include "Gfx/GfxProtocol.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
-#if ORYOL_MACOS
-#define GLFW_INCLUDE_GLCOREARB
-#endif
+#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
 namespace Oryol {
@@ -68,12 +66,10 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
-    #if ORYOL_MACOS
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    #endif
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
@@ -90,6 +86,9 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
     glfwSwapInterval(1);
 
     // setup extensions and platform-dependent constants
+    ORYOL_GL_CHECK_ERROR();
+    flextInit(glfwWindow);
+    ORYOL_GL_CHECK_ERROR();
     glInfo::Setup();
     glExt::Setup();
     #if ORYOL_DEBUG

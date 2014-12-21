@@ -153,10 +153,6 @@ glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
             #else
             return GL_RGB8;
             #endif
-#if !ORYOL_EMSCRIPTEN
-        case PixelFormat::R5G6B5:   
-            return GL_RGB565;
-#endif
         case PixelFormat::R5G5B5A1: 
             return GL_RGB5_A1;
         case PixelFormat::RGBA4:

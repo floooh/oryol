@@ -22,15 +22,29 @@ glInfo::Setup() {
     
     // setup int values
     ::glGetIntegerv(GL_MAX_TEXTURE_SIZE, &intValues[MaxTextureSize]);
+    ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &intValues[MaxCubeMapTextureSize]);
+    ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &intValues[MaxViewPortWidth]);
+    ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &intValues[MaxVertexAttribs]);
-    ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &intValues[MaxVertexUniformVectors]);
-    ::glGetIntegerv(GL_MAX_VARYING_VECTORS, &intValues[MaxVaryingVectors]);
+    ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &intValues[MaxCombinedTextureImageUnits]);
+    ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &intValues[MaxVertexTextureImageUnits]);
-    ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &intValues[MaxFragmentUniformVectors]);
-    
+    ORYOL_GL_CHECK_ERROR();
+    #if ORYOL_OPENGLES2
+    ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &intValues[MaxVertexUniformComponents]);
+    ORYOL_GL_CHECK_ERROR();
+    ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &intValues[MaxFragmentUniformComponents]);
+    ORYOL_GL_CHECK_ERROR();
+    #else
+    ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &intValues[MaxVertexUniformComponents]);
+    ORYOL_GL_CHECK_ERROR();
+    ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &intValues[MaxFragmentUniformComponents]);
+    ORYOL_GL_CHECK_ERROR();
+    #endif
+
     // print GL info
     printInfo();
 }
@@ -67,13 +81,17 @@ glInfo::printInfo() {
     glInfo::printInt(GL_MAX_CUBE_MAP_TEXTURE_SIZE, "GL_MAX_CUBE_MAP_TEXTURE_SIZE", 1);
     glInfo::printInt(GL_MAX_VIEWPORT_DIMS, "GL_MAX_VIEWPORT_DIMS", 2);
     glInfo::printInt(GL_MAX_VERTEX_ATTRIBS, "GL_MAX_VERTEX_ATTRIBS", 1);
-    glInfo::printInt(GL_MAX_VERTEX_UNIFORM_VECTORS, "GL_MAX_VERTEX_UNIFORM_VECTORS", 1);
-    glInfo::printInt(GL_MAX_VARYING_VECTORS, "GL_MAX_VARYING_VECTORS", 1);
     glInfo::printInt(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS", 1);
     glInfo::printInt(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS", 1);
+    #if ORYOL_OPENGLES2
+    glInfo::printInt(GL_MAX_VERTEX_UNIFORM_VECTORS, "GL_MAX_VERTEX_UNIFORM_VECTORS", 1);
     glInfo::printInt(GL_MAX_FRAGMENT_UNIFORM_VECTORS, "GL_MAX_FRAGMENT_UNIFORM_VECTORS", 1);
-    #if !ORYOL_MACOS
-    // on OSX, core profile is used, where getting the extensions string is an error
+    #else
+    glInfo::printInt(GL_MAX_VERTEX_UNIFORM_COMPONENTS, "GL_MAX_VERTEX_UNIFORM_COMPONENTS", 1);
+    glInfo::printInt(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS", 1);
+    #endif
+
+    #if !ORYOL_OPENGL_CORE_PROFILE
     glInfo::printString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
     #endif
 }

@@ -5,7 +5,7 @@
 #include "NanoVG.h"
 #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
 #define NANOVG_GLES2_IMPLEMENTATION
-#elif ORYOL_OSX
+#elif ORYOL_OSX || ORYOL_WINDOWS || ORYOL_LINUX
 #define NANOVG_GL3_IMPLEMENTATION
 #else
 #define NANOVG_GL2_IMPLEMENTATION
@@ -49,7 +49,7 @@ NanoVG::CreateContext(int flags) {
     NVGcontext* ctx = nullptr;
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     ctx = nvgCreateGLES2(flags);
-    #elif ORYOL_OSX
+    #elif ORYOL_OSX || ORYOL_WINDOWS || ORYOL_LINUX
     ctx = nvgCreateGL3(flags);
     #else
     ctx = nvgCreateGL2(flags);
@@ -65,7 +65,7 @@ NanoVG::DeleteContext(NVGcontext* ctx) {
     
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     nvgDeleteGLES2(ctx);
-    #elif ORYOL_OSX
+    #elif ORYOL_OSX || ORYOL_WINDOWS || ORYOL_LINUX
     nvgDeleteGL3(ctx);
     #else
     nvgDeleteGL2(ctx);
