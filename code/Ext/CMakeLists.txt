@@ -1,12 +1,12 @@
 #
 #   external libraries
 #
-oryol_add_subdirectory(UnitTest++)
-oryol_add_subdirectory(ConvertUTF)
-oryol_add_subdirectory(zlib)
-if (ORYOL_ANDROID)
-  oryol_add_subdirectory(android_native)
+fips_add_subdirectory(UnitTest++)
+fips_add_subdirectory(ConvertUTF)
+fips_add_subdirectory(zlib)
+if (FIPS_ANDROID)
+  fips_add_subdirectory(android_native)
 endif()
-if (ORYOL_LINUX OR ORYOL_WINDOWS OR ORYOL_MACOS)
-  oryol_add_subdirectory(flextgl)
+if (FIPS_LINUX OR FIPS_WINDOWS OR FIPS_MACOS)
+  fips_add_subdirectory(flextgl)
 endif()

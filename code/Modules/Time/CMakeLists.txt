@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #   oryol Time module
 #-------------------------------------------------------------------------------
-oryol_begin_module(Time)
-oryol_sources(.)
-oryol_deps(Core)
-oryol_end_module()
+fips_begin_module(Time)
+fips_sources(.)
+fips_deps(Core)
+fips_end_module()
 
-oryol_begin_unittest(Time)
-oryol_sources(UnitTests)
-oryol_deps(Time Core)
-oryol_end_unittest()
+fips_begin_unittest(Time)
+fips_sources(UnitTests)
+fips_deps(Time Core)
+fips_end_unittest()

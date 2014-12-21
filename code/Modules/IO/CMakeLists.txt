@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #   oryol IO module
 #-------------------------------------------------------------------------------
-oryol_begin_module(IO)
-oryol_sources(. Core FS Stream)
-oryol_deps(Messaging Core)
-oryol_end_module()
+fips_begin_module(IO)
+fips_sources(. Core FS Stream)
+fips_deps(Messaging Core)
+fips_end_module()
 
-oryol_begin_unittest(IO)
-oryol_sources(UnitTests)
-oryol_deps(IO Messaging Core)
-oryol_end_unittest()
+fips_begin_unittest(IO)
+fips_sources(UnitTests)
+fips_deps(IO Messaging Core)
+fips_end_unittest()

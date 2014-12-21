@@ -1,7 +1,7 @@
 #
 #   UNICODE UTF conversion routines
 #
-oryol_begin_lib(ConvertUTF)
-    oryol_sources(.)
-oryol_end_lib()
+fips_begin_lib(ConvertUTF)
+    fips_sources(.)
+fips_end_lib()
 

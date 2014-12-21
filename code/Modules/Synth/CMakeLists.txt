@@ -2,10 +2,10 @@
 #   oryol Synth module (chip-tune sound)
 #-------------------------------------------------------------------------------
 
-oryol_begin_module(Synth)
-oryol_sources(. Core base shaders)
-oryol_sources_osx(al)
-oryol_sources_emscripten(al)
-oryol_deps(Resource Core)
-oryol_end_module()
+fips_begin_module(Synth)
+fips_sources(. Core base shaders)
+fips_sources_osx(al)
+fips_sources_emscripten(al)
+fips_deps(Resource Core)
+fips_end_module()
 

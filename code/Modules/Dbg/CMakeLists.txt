@@ -1,5 +1,5 @@
-oryol_begin_module(Dbg)
-oryol_sources(. shaders text)
-oryol_deps(Core Gfx)
-oryol_end_module()
+fips_begin_module(Dbg)
+fips_sources(. shaders text)
+fips_deps(Core Gfx)
+fips_end_module()
 

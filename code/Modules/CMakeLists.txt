@@ -1,15 +1,15 @@
 #-------------------------------------------------------------------------------
 #   oryol modules
 #-------------------------------------------------------------------------------
-oryol_add_subdirectory(Core)
-oryol_add_subdirectory(IO)
-oryol_add_subdirectory(Messaging)
-oryol_add_subdirectory(HTTP)
-oryol_add_subdirectory(Gfx)
-oryol_add_subdirectory(Resource)
-oryol_add_subdirectory(Time)
-oryol_add_subdirectory(Dbg)
-oryol_add_subdirectory(Input)
-oryol_add_subdirectory(Synth)
-oryol_add_subdirectory(NanoVG)
+fips_add_subdirectory(Core)
+fips_add_subdirectory(IO)
+fips_add_subdirectory(Messaging)
+fips_add_subdirectory(HTTP)
+fips_add_subdirectory(Gfx)
+fips_add_subdirectory(Resource)
+fips_add_subdirectory(Time)
+fips_add_subdirectory(Dbg)
+fips_add_subdirectory(Input)
+fips_add_subdirectory(Synth)
+fips_add_subdirectory(NanoVG)
 

@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #   oryol Resource module
 #-------------------------------------------------------------------------------
-oryol_begin_module(Resource)
-oryol_sources(.)
-oryol_deps(Core)
-oryol_end_module()
+fips_begin_module(Resource)
+fips_sources(.)
+fips_deps(Core)
+fips_end_module()
 
-oryol_begin_unittest(Resource)
-oryol_sources(UnitTests)
-oryol_deps(Resource Core)
-oryol_end_unittest()
+fips_begin_unittest(Resource)
+fips_sources(UnitTests)
+fips_deps(Resource Core)
+fips_end_unittest()
