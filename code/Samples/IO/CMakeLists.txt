@@ -1,1 +1,1 @@
-oryol_add_subdirectory(IOQueueSample)
+fips_add_subdirectory(IOQueueSample)

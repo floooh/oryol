@@ -1,1 +1,1 @@
-oryol_add_subdirectory(DebugText)
+fips_add_subdirectory(DebugText)

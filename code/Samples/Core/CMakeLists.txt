@@ -1,1 +1,1 @@
-oryol_add_subdirectory(CoreHello)
+fips_add_subdirectory(CoreHello)
