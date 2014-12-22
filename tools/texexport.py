@@ -26,9 +26,12 @@ def configure(projDir, texSrcDir, texDstDir) :
     '''
     Configure the directories of the texture export module
     '''
+    global ProjectDirectory
+    global TexSrcDirectory
+    global TexDstDirectory
     ProjectDirectory = projDir
-    TexSrcDirectory = projDir + '/' + texSrcDir
-    TexDstDirectory = projDir + '/' + texDstDir
+    TexSrcDirectory = texSrcDir
+    TexDstDirectory = texDstDir
 
 #-------------------------------------------------------------------------------
 def getToolsBinPath() :

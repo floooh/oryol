@@ -84,22 +84,10 @@ endif()
 add_definitions(-DGLM_FORCE_RADIANS=1)
 
 #-------------------------------------------------------------------------------
-#   Clear and start websamples description file.
-#
-macro(oryol_begin_web_samples)
-    file(WRITE ${FIPS_DEPLOY_DIR}/webpage/websamples.json "{\n  \"samples\": [\n")
-endmacro()
-
-#-------------------------------------------------------------------------------
 #   Add a sample file to the web samples description file
 #
+file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
 macro(oryol_add_web_sample name desc type image src)
-    file(APPEND ${FIPS_DEPLOY_DIR}/webpage/websamples.json "    { \"name\": \"${name}\", \"desc\": \"${desc}\", \"type\": \"${type}\", \"image\": \"${CMAKE_CURRENT_LIST_DIR}/${image}\", \"src\": \"${src}\" },\n")
+    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
 endmacro()
 
-#-------------------------------------------------------------------------------
-#   Finish the web samples description file
-#
-macro(oryol_end_web_samples)
-    file(APPEND ${FIPS_DEPLOY_DIR}/webpage/websamples.json "    { \"name\": \"__end__\" }\n  ]\n}\n")
-endmacro()
