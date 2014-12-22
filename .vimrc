@@ -13,4 +13,4 @@ command! -nargs=* Oryol !python oryol <args>
 set makeprg=python\ oryol\ make
 
 " CtrlP ignore patterns
-let g:ctrlp_custom_ignore = 'lib\|bin\|sdks\|build\|doc/html'
+let g:ctrlp_custom_ignore = 'lib\|bin\|sdks\|doc/html'
