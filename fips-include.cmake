@@ -81,7 +81,6 @@ if (FIPS_EMSCRIPTEN OR FIPS_PNACL)
 else()
     add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
 endif()
-add_definitions(-DGLM_FORCE_RADIANS=1)
 
 #-------------------------------------------------------------------------------
 #   Add a sample file to the web samples description file

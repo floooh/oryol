@@ -4,6 +4,7 @@
 ---
 imports:
     - gliml
+    - fips-glm
 
 # IMPORTS:
 # ========
