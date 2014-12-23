@@ -14,7 +14,7 @@ GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 #-------------------------------------------------------------------------------
 def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
-    """builds the final webpage under under .fips-deploy/oryol-webpage"""
+    """builds the final webpage under under fips-deploy/oryol-webpage"""
     ws_dir = util.get_workspace_dir(fips_dir)
 
     # load the websamples.yml file, should have been created during the last build
@@ -62,7 +62,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
     # generate emscripten HTML pages
-    emsc_deploy_dir = '{}/.fips-deploy/oryol/emsc-make-release'.format(ws_dir)
+    emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-make-release'.format(ws_dir)
     for sample in samples :
         name = sample['name']
         if name != '__end__' and 'emscripten' in sample['type'] :
@@ -77,7 +77,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 f.write(html)
 
     # copy PNaCl HTML pages
-    pnacl_deploy_dir = '{}/.fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
+    pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
     for sample in samples :
         name = sample['name']
         if name != '__end__' and 'pnacl' in sample['type'] :
@@ -101,11 +101,11 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 shutil.copy(img_path, webpage_dir + '/' + tail)
 
     # copy the Android sample files over
-    # android_deploy_dir = '{}/.fips-deploy/oryol/android-make-release'.format(ws_dir)
-    # for sample in samples :
-    #     if sample['name'] != '__end__' and 'android' in sample['type'] :
-    #         log.info('> copy android sample files: {}'.format(sample['name']))
-    #         shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
+    android_deploy_dir = '{}/fips-deploy/oryol/android-make-release'.format(ws_dir)
+    for sample in samples :
+        if sample['name'] != '__end__' and 'android' in sample['type'] :
+            log.info('> copy android sample files: {}'.format(sample['name']))
+            shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
 
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
@@ -123,7 +123,7 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
 def build_deploy_webpage(fips_dir, proj_dir) :
     # if webpage dir exists, clear it first
     ws_dir = util.get_workspace_dir(fips_dir)
-    webpage_dir = '{}/.fips-deploy/oryol-webpage'.format(ws_dir)
+    webpage_dir = '{}/fips-deploy/oryol-webpage'.format(ws_dir)
     if os.path.isdir(webpage_dir) :
         shutil.rmtree(webpage_dir)
     os.makedirs(webpage_dir)
@@ -131,7 +131,7 @@ def build_deploy_webpage(fips_dir, proj_dir) :
     # compile emscripten, pnacl and android samples
     project.build(fips_dir, proj_dir, 'emsc-make-release')
     project.build(fips_dir, proj_dir, 'pnacl-make-release')
-    # project.build(fips_dir, proj_dir, 'android-make-release')
+    project.build(fips_dir, proj_dir, 'android-make-release')
     
     # export sample assets
     export_assets(fips_dir, proj_dir, webpage_dir)
@@ -144,7 +144,7 @@ def build_deploy_webpage(fips_dir, proj_dir) :
 #-------------------------------------------------------------------------------
 def serve_webpage(fips_dir, proj_dir) :
     ws_dir = util.get_workspace_dir(fips_dir)
-    webpage_dir = '{}/.fips-deploy/oryol-webpage'.format(ws_dir)
+    webpage_dir = '{}/fips-deploy/oryol-webpage'.format(ws_dir)
     p = config.get_host_platform()
     if p == 'osx' :
         try :
