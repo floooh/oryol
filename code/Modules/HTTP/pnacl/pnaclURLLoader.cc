@@ -96,7 +96,7 @@ pnaclURLLoader::cbSendRequest(void* data, int32_t /*result*/) {
     httpRequest->release();
     req->addRef();
     pnaclRequestWrapper* reqPtr = req.get();
-    int32_t openResult = req->ppUrlLoader.Open(req->ppUrlRequestInfo, pp::CompletionCallback(cbRequestComplete, reqPtr));
+    ORYOL_UNUSED int32_t openResult = req->ppUrlLoader.Open(req->ppUrlRequestInfo, pp::CompletionCallback(cbRequestComplete, reqPtr));
     o_assert(PP_OK_COMPLETIONPENDING == openResult);
 }
 
