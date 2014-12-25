@@ -931,9 +931,5 @@ def generate(directory, fileName, shdName, dirs) :
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()
         shaderLibrary.validateShaders()
-        print '## generating {}'.format(hdrPath)        
         generateHeader(hdrPath, shaderLibrary)
-        print '## generating {}'.format(srcPath)        
         generateSource(srcPath, shaderLibrary)
-    else :
-        print '## nothing to do for {}'.format(selfPath)

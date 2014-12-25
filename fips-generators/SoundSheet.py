@@ -53,11 +53,6 @@ class SoundSheet :
         hdrPath = self.directory + self.name + '.h'
         srcPath = self.directory + self.name + '.cc'
         if util.isDirty([selfPath, self.imagePath], Version, hdrPath, srcPath) :
-            print '## loading {}'.format(self.imagePath)
             self.loadImage()
-            print '## generating {}'.format(hdrPath)
             self.genHeader(hdrPath)
-            print '## generating {}'.format(srcPath)
             self.genSource(srcPath)
-        else :
-            print '## nothing to do for {}'.format(selfPath)

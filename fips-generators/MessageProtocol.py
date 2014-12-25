@@ -356,9 +356,5 @@ def generate(directory, name, desc) :
     hdrPath = directory + name + '.h'
     srcPath = directory + name + '.cc'
     if util.isDirty([selfPath], Version, hdrPath, srcPath) :
-        print '## generating {}'.format(hdrPath)        
         generateHeader(desc, hdrPath)
-        print '## generating {}'.format(srcPath)        
         generateSource(desc, srcPath)
-    else :
-        print '## nothing to do for {}'.format(selfPath)
