@@ -1,0 +1,120 @@
+- name: Clear
+  desc: Just call glClear in a loop
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/Clear/Clear.jpg
+  src: Gfx/Clear/Clear.cc
+- name: Triangle
+  desc: The canonical triangle demo
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/Triangle/Triangle.jpg
+  src: Gfx/Triangle/Triangle.cc
+- name: Shapes
+  desc: Shapes with random vertex colors, created with ShapeBuilder class
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/Shapes/Shapes.jpg
+  src: Gfx/Shapes/Shapes.cc
+- name: PackedNormals
+  desc: Shapes with packed vertex normals
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/PackedNormals/PackedNormals.jpg
+  src: Gfx/PackedNormals/PackedNormals.cc
+- name: SimpleRenderTarget
+  desc: Demonstrate simple offscreen rendering
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/SimpleRenderTarget/SimpleRenderTarget.jpg
+  src: Gfx/SimpleRenderTarget/SimpleRenderTarget.cc
+- name: InfiniteSpheres
+  desc: Infinite recursive spheres
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/InfiniteSpheres/InfiniteSpheres.jpg
+  src: Gfx/InfiniteSpheres/InfiniteSpheres.cc
+- name: DDSTextureLoading
+  desc: Load and render various DDS texture formats
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/DDSTextureLoading/DDSTextureLoading.jpg
+  src: Gfx/DDSTextureLoading/DDSTextureLoading.cc
+- name: DDSCubeMap
+  desc: Load and display DDS DXT1 cube map
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/DDSCubeMap/DDSCubeMap.jpg
+  src: Gfx/DDSCubeMap/DDSCubeMap.cc
+- name: DrawCallPerf
+  desc: Measure draw call performance
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/DrawCallPerf/DrawCallPerf.jpg
+  src: Gfx/DrawCallPerf/DrawCallPerf.cc
+- name: FullscreenQuad
+  desc: Fullscreen quad with some distance field ray-marching
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/FullscreenQuad/FullscreenQuad.jpg
+  src: Gfx/FullscreenQuad/FullscreenQuad.cc
+- name: PBRendering
+  desc: Physically based rendering sample
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/PBRendering/PBRendering.jpg
+  src: Gfx/PBRendering/PBRendering.cc
+- name: Instancing
+  desc: Instanced rendering
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/Instancing/Instancing.jpg
+  src: Gfx/Instancing/Instancing.cc
+- name: TextureFloat
+  desc: RGB plasma using float render texture
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/TextureFloat/TextureFloat.jpg
+  src: Gfx/TextureFloat/TextureFloat.cc
+- name: VertexTexture
+  desc: Vertex texture fetch from offscreen render target
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/VertexTexture/VertexTexture.jpg
+  src: Gfx/VertexTexture/VertexTexture.cc
+- name: GPUParticles
+  desc: Fully GPU driven 3D particles
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/GPUParticles/GPUParticles.jpg
+  src: Gfx/GPUParticles/GPUParticles.cc
+- name: HTTPClientSample
+  desc: Low-level HTTP loading sample
+  type: emscripten,pnack,android
+  image: /Users/floh/projects/oryol/code/Samples/HTTP/HTTPClientSample/none
+  src: HTTP/HTTPClientSample/HTTPClientSample.cc
+- name: CoreHello
+  desc: Low-level hello world sample
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/Core/CoreHello/none
+  src: Core/CoreHello/CoreHello.cc
+- name: DebugText
+  desc: Demonstrate debug text rendering
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Debug/DebugText/DebugText.jpg
+  src: Debug/DebugText/DebugText.cc
+- name: TestInput
+  desc: Test Input module functionality
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Input/TestInput/TestInput.jpg
+  src: Input/TestInput/TestInput.cc
+- name: Sensors
+  desc: Device sensors sample
+  type: emscripten,android
+  image: /Users/floh/projects/oryol/code/Samples/Input/Sensors/none
+  src: Input/Sensors/Sensors.cc
+- name: Paclone
+  desc: Simple Pacman clone (work in progress!
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/General/Paclone/Paclone.jpg
+  src: General/Paclone/Paclone.cc
+- name: TestNanoVG
+  desc: NanoVG integration
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/General/TestNanoVG/TestNanoVG.jpg
+  src: General/TestNanoVG/TestNanoVG.cc
+- name: SynthTest
+  desc: Most simple Synth audio sample
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/Synth/SynthTest/SynthTest.jpg
+  src: Synth/SynthTest/SynthTest.cc
+- name: IOQueueSample
+  desc: Asynchronous file loading with IOQueue
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/IO/IOQueueSample/none
+  src: IO/IOQueueSample/IOQueueSample.cc
