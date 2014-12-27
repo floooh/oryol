@@ -1,8 +1,0 @@
-{
-    "name": "emscripten-make-profiling", 
-    "target": {
-        "platform": "emscripten", 
-        "generator": "Unix Makefiles", 
-        "build-type": "profiling"
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "name": "osx-xcode-release", 
-    "target": {
-        "platform": "osx", 
-        "generator": "Xcode", 
-        "build-type": "release"
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "name": "emscripten-make-release", 
-    "target": {
-        "platform": "emscripten", 
-        "generator": "Unix Makefiles", 
-        "build-type": "release"
-    }
-}
