@@ -18,10 +18,10 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install libglu1-mesa-dev; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install xorg-dev; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user PyYAML; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo pip install --user PyYAML; fi
   # OSX
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install cmake; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then pip install PyYAML; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then pip install --user PyYAML; fi
 
 script:
   - echo $TRAVIS_OS_NAME
