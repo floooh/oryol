@@ -37,3 +37,5 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python fips clean all; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python fips build; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then python fips make test; fi
+
+
