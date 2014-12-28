@@ -1,4 +1,4 @@
-# _Oryol_ #
+# _Oryol_ # 
 
 Experimental C++11 multi-platform 3D engine.
 
