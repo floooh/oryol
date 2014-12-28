@@ -12,8 +12,6 @@ exports:
         - code/Modules
         - code/Ext
         - code/Ext/glfw/include
-    lib-dirs :
-        - lib
     modules :
         # engine modules
         Core :          code/Modules/Core
