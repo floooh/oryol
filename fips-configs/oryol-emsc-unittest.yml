@@ -1,0 +1,11 @@
+# this demonstrates how to add a custom config to fips projects
+# usually you'll want to tweak cmake-options with such 
+# custom settings
+---
+platform: emscripten 
+generator: Ninja 
+build_tool: ninja
+build_type: Debug
+defines:
+    FIPS_UNITTESTS: ON
+    FIPS_UNITTESTS_HEADLESS: ON
