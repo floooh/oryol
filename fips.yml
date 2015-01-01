@@ -6,6 +6,7 @@ imports:
     - gliml
     - fips-glm
     - fips-unittestpp
+    - fips-zlib
 
 exports:
     header-dirs :
@@ -28,9 +29,7 @@ exports:
         NanoVG :        code/Modules/NanoVG
         
         # ext libs
-        unittestpp:         code/Ext/UnitTest++
         ConvertUTF:         code/Ext/ConvertUTF
-        zlib:               code/Ext/zlib
         android-native:     code/Ext/android_native
         flextgl:            code/Ext/flextgl
 
