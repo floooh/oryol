@@ -86,7 +86,7 @@ fips_begin_unittest(Core)
         ArrayMapTest.cc
         CreationTest.cc
         CreatorTest.cc
-        HashSettest.cc
+        HashSetTest.cc
         MapTest.cc
         MemoryTest.cc
         PoolAllocatorTest.cc
