@@ -154,14 +154,14 @@ fips_begin_unittest(Gfx)
         MeshSetupTest.cc
         RenderEnumsTest.cc
         RenderSetupTest.cc
-        ShapeBuilderTest.py
+        ShapeBuilderTest.cc
         TextureFactoryTest.cc
         TextureSetupTest.cc
         VertexLayoutTest.cc
         VertexWriterTest.cc
         glTypesTest.cc
     )
-    fips_dir(shd)
+    fips_dir(UnitTests/shd)
     fips_files(test.shd)
     fips_deps(HTTP Gfx)
 fips_end_unittest()

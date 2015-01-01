@@ -32,14 +32,14 @@ if (FIPS_UNITTESTS)
             XmlTestReporter.cpp XmlTestReporter.h
         )
         if (FIPS_POSIX)
-            fips_dir(Posix)
+            fips_dir(src/Posix)
             fips_files(
                 SignalTranslator.cpp SignalTranslator.h
                 TimeHelpers.cpp TimeHelpers.h
             )
         endif()
         if (FIPS_WINDOWS)
-            fips_dir(Win32)
+            fips_dir(src/Win32)
             fips_files(TimeHelpers.cpp TimeHelpers.h)
         endif()
     fips_end_lib()
