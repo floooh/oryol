@@ -1,5 +1,5 @@
 fips_begin_app(GPUParticles windowed)
-    fips_sources(.)
+    fips_files(GPUParticles.cc GPUParticles.jpg shaders.py shaders.shd)
     fips_deps(Gfx Time Dbg)
     oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" "emscripten,android,pnacl" GPUParticles.jpg "Gfx/GPUParticles/GPUParticles.cc")
 fips_end_app()

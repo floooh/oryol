@@ -1,5 +1,5 @@
 fips_begin_app(TextureFloat windowed)
-    fips_sources(.)
+    fips_files(TextureFloat.cc TextureFloat.jpg shaders.py shaders.shd)
     fips_deps(Gfx Time Dbg)
     oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten,android,pnacl" TextureFloat.jpg "Gfx/TextureFloat/TextureFloat.cc")
 fips_end_app()

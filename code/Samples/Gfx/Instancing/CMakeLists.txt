@@ -1,5 +1,5 @@
 fips_begin_app(Instancing windowed)
-    fips_sources(.)
+    fips_files(Instancing.cc Instancing.jpg shaders.py shaders.shd)
     fips_deps(Gfx Time Dbg Input)
     oryol_add_web_sample(Instancing "Instanced rendering" "emscripten,pnacl,android" Instancing.jpg "Gfx/Instancing/Instancing.cc")
 fips_end_app()

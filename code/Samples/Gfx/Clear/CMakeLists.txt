@@ -1,5 +1,5 @@
 fips_begin_app(Clear windowed)
-    fips_sources(.)
+    fips_files(Clear.cc Clear.jpg)
     fips_deps(Gfx)
     oryol_add_web_sample(Clear "Just call glClear in a loop" "emscripten,pnacl,android" Clear.jpg "Gfx/Clear/Clear.cc")
 fips_end_app()
