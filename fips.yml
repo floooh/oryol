@@ -5,6 +5,7 @@
 imports:
     - gliml
     - fips-glm
+    - fips-unittestpp
 
 exports:
     header-dirs :
