@@ -7,13 +7,13 @@ imports:
     - fips-glm
     - fips-unittestpp
     - fips-zlib
+    - fips-glfw
 
 exports:
     header-dirs :
         - code
         - code/Modules
         - code/Ext
-        - code/Ext/glfw/include
     modules :
         # engine modules
         Core :          code/Modules/Core

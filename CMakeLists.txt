@@ -13,7 +13,6 @@ option(ORYOL_SAMPLES "Build Oryol samples" ON)
 include_directories(code)
 include_directories(code/Modules)
 include_directories(code/Ext)
-include_directories(code/Ext/glfw/include)
 
 fips_setup()
 fips_project(oryol)
