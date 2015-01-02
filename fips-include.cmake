@@ -1,4 +1,5 @@
-# platform identification
+# cmake options
+set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
 
 # POSIX platforms
 if (FIPS_POSIX)
