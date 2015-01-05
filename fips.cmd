@@ -1,2 +1,3 @@
-python fips %*
+@python fips %*
+
 
