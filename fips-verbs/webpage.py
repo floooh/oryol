@@ -7,7 +7,7 @@ import subprocess
 import glob
 from string import Template
 
-from mod import log, util, project, config
+from mod import log, util, project
 from tools import texexport
 
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
@@ -145,7 +145,7 @@ def build_deploy_webpage(fips_dir, proj_dir) :
 def serve_webpage(fips_dir, proj_dir) :
     ws_dir = util.get_workspace_dir(fips_dir)
     webpage_dir = '{}/fips-deploy/oryol-webpage'.format(ws_dir)
-    p = config.get_host_platform()
+    p = util.get_host_platform()
     if p == 'osx' :
         try :
             subprocess.call(
