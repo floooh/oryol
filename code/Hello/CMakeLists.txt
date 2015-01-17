@@ -3,11 +3,11 @@
 #	The most simple hello-world to test the build system.
 #-------------------------------------------------------------------------------
 
-if (NOT ORYOL_ANDROID AND NOT ORYOL_IOS AND NOT ORYOL_PNACL)
-oryol_begin_app(hello cmdline)
-    oryol_sources(.)
-    oryol_deps(Core)
-oryol_end_app()
+if (NOT FIPS_ANDROID AND NOT FIPS_IOS AND NOT FIPS_PNACL)
+fips_begin_app(hello cmdline)
+    fips_files(hello.cc)
+    fips_deps(Core)
+fips_end_app()
 endif()
 
 

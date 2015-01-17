@@ -6,11 +6,11 @@
 " 
 "
 
-" :Oryol command maps to oryol python script
-command! -nargs=* Oryol !python oryol <args>
+" :Fips command maps to oryol python script
+command! -nargs=* Fips !python fips <args>
 
 " override :make for compilation
-set makeprg=python\ oryol\ make
+set makeprg=python\ fips\ make
 
 " CtrlP ignore patterns
-let g:ctrlp_custom_ignore = 'lib\|bin\|sdks\|build\|doc/html'
+let g:ctrlp_custom_ignore = '.pyc\|lib\|bin\|sdks\|doc/html'

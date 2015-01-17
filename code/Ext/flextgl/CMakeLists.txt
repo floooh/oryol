@@ -1,8 +1,8 @@
 #
 #   flextgl generated files
 #
-oryol_begin_lib(flextgl)
-    include_directories(${ORYOL_ROOT_DIR}/code/Ext/glfw/include)
-    oryol_sources(.)
-oryol_end_lib()
-
+if (FIPS_LINUX OR FIPS_WINDOWS OR FIPS_MACOS)
+    fips_begin_lib(flextgl)
+        fips_files(flextGL.c flextGL.h)
+    fips_end_lib()
+endif()

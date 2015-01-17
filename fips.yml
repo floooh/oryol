@@ -1,0 +1,36 @@
+#
+# oryol
+#
+---
+imports:
+    - gliml
+    - fips-glm
+    - fips-unittestpp
+    - fips-zlib
+    - fips-glfw
+    - fips-libcurl
+
+exports:
+    header-dirs :
+        - code
+        - code/Modules
+        - code/Ext
+    modules :
+        # engine modules
+        Core :          code/Modules/Core
+        IO :            code/Modules/IO
+        Messaging :     code/Modules/Messaging
+        HTTP :          code/Modules/HTTP
+        Gfx :           code/Modules/Gfx
+        Resource :      code/Modules/Resource
+        Time :          code/Modules/Time
+        Dbg :           code/Modules/Dbg
+        Input :         code/Modules/Input
+        Synth :         code/Modules/Synth
+        NanoVG :        code/Modules/NanoVG
+        
+        # ext libs
+        ConvertUTF:         code/Ext/ConvertUTF
+        android-native:     code/Ext/android_native
+        flextgl:            code/Ext/flextgl
+

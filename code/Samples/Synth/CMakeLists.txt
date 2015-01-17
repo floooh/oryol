@@ -1,1 +1,1 @@
-oryol_add_subdirectory(SynthTest)
+fips_add_subdirectory(SynthTest)

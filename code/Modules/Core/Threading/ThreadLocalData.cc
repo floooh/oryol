@@ -55,4 +55,7 @@ ThreadLocalData::Set(int32 slotIndex, void* ptr) {
 }
 
 } // namespace Oryol
+#else
+// silence 'has no symbols' warning
+ORYOL_UNUSED int oryol_thread_local_dummy = 0;
 #endif

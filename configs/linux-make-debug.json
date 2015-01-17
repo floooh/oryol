@@ -1,8 +1,0 @@
-{
-    "name": "linux-make-debug", 
-    "target": {
-        "platform": "linux", 
-        "generator": "Unix Makefiles", 
-        "build-type": "debug"
-    }
-}

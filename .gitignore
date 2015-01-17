@@ -7,5 +7,12 @@ build/*.json
 build/webpage
 sdks/
 configs/.selected
-*.pyc
 *.txt.user
+*.swp
+CMakeLists.txt.user*
+.idea/
+#>fips
+# this area is managed by fips, do not edit
+.fips-*
+*.pyc
+#<fips

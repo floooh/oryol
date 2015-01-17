@@ -8,7 +8,7 @@
 #include "HTTP/HTTPFileSystem.h"
 #include "IO/IO.h"
 #define GLIML_ASSERT o_assert
-#include "gliml/gliml.h"
+#include "gliml.h"
 #include <thread>
 #include <chrono>
 

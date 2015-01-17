@@ -1,1 +1,1 @@
-oryol_add_subdirectory(HTTPClientSample)
+fips_add_subdirectory(HTTPClientSample)

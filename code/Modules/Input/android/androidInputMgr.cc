@@ -7,7 +7,6 @@
 #include "Time/Clock.h"
 #include "android_native/android_native_app_glue.h"
 #include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/constants.hpp"
 #include "glm/trigonometric.hpp"
 
 // this is in the app's main file (see App.h -> OryolApp)

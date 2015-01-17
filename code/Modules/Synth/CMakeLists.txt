@@ -2,10 +2,31 @@
 #   oryol Synth module (chip-tune sound)
 #-------------------------------------------------------------------------------
 
-oryol_begin_module(Synth)
-oryol_sources(. Core base shaders)
-oryol_sources_osx(al)
-oryol_sources_emscripten(al)
-oryol_deps(Resource Core)
-oryol_end_module()
+fips_begin_module(Synth)
+    fips_files(Synth.cc Synth.h)
+    fips_dir(Core)
+    fips_files(
+        SynthOp.h
+        cpuSynthesizer.cc cpuSynthesizer.h
+        gpuSynthesizer.cc gpuSynthesizer.h
+        opBundle.h
+        soundMgr.h
+        synth.h
+        voice.cc voice.h
+        voiceTrack.cc voiceTrack.h
+    )
+    fips_dir(base)
+    fips_files(soundMgrBase.cc soundMgrBase.h)
+    fips_dir(shaders)
+    fips_files(SynthShaders.py SynthShaders.shd)
+    if (FIPS_OSX OR FIPS_EMSCRIPTEN)
+        fips_dir(al)
+        fips_files(
+            al.h
+            alBufferStreamer.cc alBufferStreamer.h
+            alSoundMgr.cc alSoundMgr.h
+        )
+    endif() 
+    fips_deps(Resource Core)
+fips_end_module()
 

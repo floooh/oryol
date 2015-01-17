@@ -166,11 +166,13 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         msh.setInstanceMesh(instMesh);
         
         // verify that there are no colliding vertex components
+        #if !ORYOL_NO_ASSERT
         const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().Layout;
         const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
             o_assert(!instLayout.Contains(mshLayout.Component(i).Attr));
         }
+        #endif
     }
 }
 
