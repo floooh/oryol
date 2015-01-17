@@ -6,11 +6,11 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_ ##
 
-- **27-Oct-2014**: Android cross-compilation should now also work on Windows, if you already experimented with this, please first delete the Android SDK/NDK files under *oryol/sdk/windows/*, do an 'oryol clean all', and then run 'oryol setup android' again. Details are in [BUILD.md](doc/BUILD.md)
-- **14-Oct-2014**: I have switched to the official emscripten SDK for all platforms now. Please check
-BUILD.md for updated emscripten cross-compiling instructions. The main advantage is that Windows
-is now supported as host-platform, and that the official SDK makes it easy to switch between
-_incoming_ and _master_ versions of emscripten.
+- **17-Jan-2015**: I have switched the Oryol master branch over to use 'fips' as 
+build system, 'fips' is the former Oryol build system moved into its
+own project, plus some goodies. Check the updated [BUILD.md](doc/BUILD.md) for
+details, the TL;DR is to run **./fips** instead of **./oryol**. Some subcommand
+names have changed, check **./fips help** for that!
 
 ## _Try the Live Demos_ ##
 
