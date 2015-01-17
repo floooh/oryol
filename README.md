@@ -6,7 +6,8 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_ ##
 
-- **17-Jan-2015**: I have switched the Oryol master branch over to use 'fips' as 
+- **17-Jan-2015**: I have switched the Oryol master branch over to use 
+[fips](http://floooh.github.com/fips) as 
 build system, 'fips' is the former Oryol build system moved into its
 own project, plus some goodies. Check the updated [BUILD.md](doc/BUILD.md) for
 details, the TL;DR is to run **./fips** instead of **./oryol**. Some subcommand
@@ -26,7 +27,7 @@ http://floooh.github.io/oryol/
 ## _Clone_ ##
 
 ```bash
-git clone --recursive https://github.com/floooh/oryol.git oryol
+git clone https://github.com/floooh/oryol.git oryol
 ```
 
 ## _Build_ ##
