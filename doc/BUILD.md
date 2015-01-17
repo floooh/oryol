@@ -30,8 +30,6 @@ Install any tools that are not found.
 
 ### Building and running the samples:
 
-#### On OSX, Linux and Windows:
-
 ```bash
 > cd oryol
 > ./fips build
