@@ -193,8 +193,8 @@ GPUParticlesApp::OnInit() {
     this->drawParticles = Gfx::CreateResource(drawSetup);
     
     // the static projection matrix
-    const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
     
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)

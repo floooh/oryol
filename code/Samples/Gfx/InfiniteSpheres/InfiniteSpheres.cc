@@ -97,7 +97,7 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Sphere(0.75f, 72.0f, 40.0f).Build();
+    shapeBuilder.Sphere(0.75f, 72, 40).Build();
     GfxId sphere = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
@@ -106,8 +106,8 @@ InfiniteSpheresApp::OnInit() {
     this->drawState = Gfx::CreateResource(dss);
     
     // setup static transform matrices
-    const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();

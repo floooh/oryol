@@ -75,8 +75,8 @@ PBRenderingApp::OnInit() {
     this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
-    float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
-    float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
+    float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     

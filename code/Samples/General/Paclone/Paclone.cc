@@ -68,7 +68,7 @@ PacloneApp::applyViewPort() {
     const int fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
     const int viewPortY = 0;
     const int viewPortH = fbHeight;
-    const int viewPortW = fbHeight * aspect;
+    const int viewPortW = const int(fbHeight * aspect);
     const int viewPortX = (fbWidth - viewPortW) / 2;
     Gfx::ApplyViewPort(viewPortX, viewPortY, viewPortW, viewPortH);
 }

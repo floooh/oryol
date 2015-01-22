@@ -38,7 +38,7 @@ soundMgrBase::Setup(const SynthSetup& setupParams) {
     // this will generate all 0.0 samples instead of 1.0s
     SynthOp nop;
     for (int i = 0; i < synth::NumVoices; i++) {
-        this->AddOp(i, 0, nop, 0.0f);
+        this->AddOp(i, 0, nop, 0);
     }
     
     this->cpuSynth.Setup(setupParams);

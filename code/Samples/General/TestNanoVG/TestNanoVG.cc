@@ -39,8 +39,8 @@ NanoVGApp::OnRunning() {
 
     const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
     const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
-    const int32 mouseX = Input::Mouse().Position.x;
-    const int32 mouseY = Input::Mouse().Position.y;
+    const int32 mouseX = (const int32) Input::Mouse().Position.x;
+    const int32 mouseY = (const int32) Input::Mouse().Position.y;
     const int32 blowup = Input::Keyboard().KeyPressed(Key::Space) ? 1 : 0;
     const float64 time = Clock::Now().Since(0).AsSeconds();
     

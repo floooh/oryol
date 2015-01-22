@@ -140,7 +140,7 @@ Duration::operator-=(const Duration& rhs) {
 //------------------------------------------------------------------------------
 inline void
 Duration::operator*=(float64 s) {
-    this->val *= s;
+    this->val = (int64) ((float64)this->val * s);
 }
 
 //------------------------------------------------------------------------------

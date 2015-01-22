@@ -132,7 +132,7 @@ glfwDisplayMgr::DiscardDisplay() {
 bool
 glfwDisplayMgr::QuitRequested() const {
     o_assert(nullptr != glfwWindow);
-    return glfwWindowShouldClose(glfwWindow);
+    return glfwWindowShouldClose(glfwWindow) != 0;
 }
 
 //------------------------------------------------------------------------------

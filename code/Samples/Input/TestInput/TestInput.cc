@@ -86,8 +86,8 @@ TestInputApp::OnInit() {
     this->drawState = Gfx::CreateResource(dss);
 
     // setup transform matrices
-    const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;

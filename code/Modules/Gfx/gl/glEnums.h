@@ -45,7 +45,7 @@ public:
         TriangleFan = 0x0006,       // GL_TRIANGLE_FAN
         
         NumPrimitiveTypes = 7,
-        InvalidPrimitiveType = 0xFFFFFFFFF,
+        InvalidPrimitiveType = 0xFFFFFFFF,
     };
 };
 

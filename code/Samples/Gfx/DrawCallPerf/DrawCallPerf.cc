@@ -162,8 +162,8 @@ DrawCallPerfApp::OnInit() {
     this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
-    const float32 fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
+    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
+    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();

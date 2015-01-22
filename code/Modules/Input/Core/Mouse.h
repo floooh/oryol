@@ -63,21 +63,21 @@ private:
 inline bool
 Mouse::ButtonPressed(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
-    return this->buttonState[btn] & btnPressed;
+    return 0 != (this->buttonState[btn] & btnPressed);
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Mouse::ButtonDown(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
-    return this->buttonState[btn] & btnDown;
+    return 0 != (this->buttonState[btn] & btnDown);
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Mouse::ButtonUp(Button btn) const {
     o_assert_range_dbg(btn, NumButtons);
-    return this->buttonState[btn] & btnUp;
+    return 0 != (this->buttonState[btn] & btnUp);
 }
 
 } // namespace Oryol

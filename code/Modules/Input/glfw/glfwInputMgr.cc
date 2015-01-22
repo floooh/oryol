@@ -110,7 +110,7 @@ glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
 void
 glfwInputMgr::reset() {
     for (int32 i = 0; i < MaxNumGamepads; i++) {
-        this->gamepads[i].Attached = glfwJoystickPresent(i);
+        this->gamepads[i].Attached = glfwJoystickPresent(i) != 0;
     }
     inputMgrBase::reset();
 }
