@@ -3,12 +3,18 @@
 #
 ---
 imports:
-    - gliml
-    - fips-glm
-    - fips-unittestpp
-    - fips-zlib
-    - fips-glfw
-    - fips-libcurl
+    gliml:
+        git: https://github.com/floooh/gliml.git
+    fips-glm:
+        git: https://github.com/floooh/fips-glm.git
+    fips-unittestpp:
+        git: https://github.com/floooh/fips-unittestpp.git
+    fips-zlib:
+        git: https://github.com/floooh/fips-zlib.git
+    fips-glfw:
+        git: https://github.com/floooh/fips-glfw.git
+    fips-libcurl:
+        git: https://github.com/floooh/fips-libcurl.git
 
 exports:
     header-dirs :
