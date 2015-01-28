@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:4#
+/*  #version:5#
     machine generated, do not edit!
 */
 #include "Core/Types.h"

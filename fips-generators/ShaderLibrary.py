@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 7
+Version = 13
 
 import os
 import sys
@@ -82,7 +82,7 @@ def getMacroValue(macro, glslVersion) :
 def gatherShaderSources(rootDir, dirs) :
     srcList = []
     for directory in dirs :
-        path = rootDir + directory
+        path = rootDir + '/' + directory
         srcList.extend(glob.glob(path + '/*.shd'))
     return srcList
 
@@ -918,18 +918,19 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(directory, fileName, shdName, dirs) :
-
-    selfPath = directory + fileName + '.py'
-    hdrPath = directory + fileName + '.h'
-    srcPath = directory + fileName + '.cc'
-    files = gatherShaderSources(directory, dirs)
-    files.append(selfPath)
-    if util.isDirty(files, Version, hdrPath, srcPath) :
+def generate(selfPath, outputs, shdName, dirs) :
+    directory = os.path.dirname(selfPath)
+    inputs = gatherShaderSources(directory, dirs)
+    inputs.append(selfPath)
+    if util.isDirty(Version, inputs, outputs) :
         shaderLibrary = ShaderLibrary(directory, shdName, dirs)
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()
         shaderLibrary.validateShaders()
-        generateHeader(hdrPath, shaderLibrary)
-        generateSource(srcPath, shaderLibrary)
+        for output in outputs :
+            if output.endswith('.h') :
+                generateHeader(output, shaderLibrary)
+            else :
+                generateSource(output, shaderLibrary)
+

@@ -1,8 +1,8 @@
 import SpriteSheet as sprites
 
-def generate(directory, name) :
+def generate(selfPath, inputs, outputs) :
 
-    s = sprites.SpriteSheet(directory, name)
+    s = sprites.SpriteSheet(selfPath, outputs)
     s.namespace('Paclone')
     s.image('sprites.png')
     s.defaultSpriteSize(8, 8)

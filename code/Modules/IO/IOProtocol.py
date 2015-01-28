@@ -1,7 +1,7 @@
 import MessageProtocol as msg
 
-def generate(directory, name) :
-    msg.generate(directory, name, dict(
+def generate(selfPath, inputs, outputs) :
+    msg.generate(selfPath, outputs, dict(
         protocolName='IOProtocol',
         protocolId='IOPT',
         headers=[

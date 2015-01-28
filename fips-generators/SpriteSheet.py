@@ -5,7 +5,7 @@ import genutil as util
 import png
 import os
 
-Version = 4
+Version = 5 
 
 #-------------------------------------------------------------------------------
 class Sprite :
@@ -21,9 +21,9 @@ class Sprite :
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
-    def __init__(self, directory, name) :
-        self.directory = directory
-        self.name = name
+    def __init__(self, selfPath, outputs) :
+        self.selfPath = selfPath
+        self.outputs = outputs
         self.ns = ''
         self.imagePath = ''
         self.imageWidth = 0
@@ -40,7 +40,7 @@ class SpriteSheet :
         self.ns = ns
 
     def image(self, img) :
-        self.imagePath = self.directory + img
+        self.imagePath = os.path.dirname(self.selfPath) + '/' + img
 
     def clampImageSize(self, w, h) :
         self.clampWidth = w
@@ -223,10 +223,10 @@ class SpriteSheet :
 
     #-------------------------------------------------------------------------------
     def generate(self) :
-        selfPath = self.directory + self.name + '.py'
-        hdrPath = self.directory + self.name + '.h'
-        srcPath = self.directory + self.name + '.cc'
-        if util.isDirty([selfPath, self.imagePath], Version, hdrPath, srcPath) :
+        if util.isDirty(Version, [self.selfPath, self.imagePath], self.outputs) :
             self.loadImage()
-            self.genHeader(hdrPath)
-            self.genSource(srcPath)
+            for output in self.outputs :
+                if output.endswith('.h') :
+                    self.genHeader(output)
+                else :
+                    self.genSource(output)

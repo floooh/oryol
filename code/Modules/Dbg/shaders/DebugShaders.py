@@ -1,4 +1,4 @@
 import ShaderLibrary as shd
-def generate(directory, name) :
-    shd.generate(directory, name, 'DebugShaders', ['.'])
+def generate(selfPath, inputs, outputs) :
+    shd.generate(selfPath, outputs, 'DebugShaders', ['.'])
 
