@@ -18,7 +18,7 @@ fips_begin_module(Synth)
     fips_dir(base)
     fips_files(soundMgrBase.cc soundMgrBase.h)
     fips_dir(shaders)
-    fips_files(SynthShaders.py SynthShaders.shd)
+    fips_generate(ShaderLibrary.py SynthShaders.shd "SynthShaders.cc;SynthShaders.h")
     if (FIPS_OSX OR FIPS_EMSCRIPTEN)
         fips_dir(al)
         fips_files(

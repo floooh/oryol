@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// #version:13# machine generated, do not edit!
+// #version:14# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
-namespace Shaders{
+namespace Shaders {
 const char* planeVS_100_src = 
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"

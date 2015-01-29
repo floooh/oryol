@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 13
+Version = 14
 
 import os
 import sys
@@ -77,14 +77,6 @@ def getMacroValue(macro, glslVersion) :
         return glsl100Macros[macro]
     else :
         return glsl130Macros[macro]
-
-#-------------------------------------------------------------------------------
-def gatherShaderSources(rootDir, dirs) :
-    srcList = []
-    for directory in dirs :
-        path = rootDir + '/' + directory
-        srcList.extend(glob.glob(path + '/*.shd'))
-    return srcList
 
 #-------------------------------------------------------------------------------
 class Line :
@@ -645,10 +637,8 @@ class ShaderLibrary :
     '''
     This represents the entire shader lib.
     '''
-    def __init__(self, directory, name, dirs) :
-        self.rootDirectory = directory
-        self.name = name
-        self.sources = gatherShaderSources(directory, dirs)
+    def __init__(self, inputs) :
+        self.sources = inputs
         self.blocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
@@ -823,7 +813,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('*/\n')
     f.write('#include "Gfx/Setup/ProgramBundleSetup.h"\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + shdLib.name + ' {\n')
+    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
@@ -861,7 +851,7 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + shdLib.name + '{\n')
+    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
@@ -918,12 +908,9 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(selfPath, outputs, shdName, dirs) :
-    directory = os.path.dirname(selfPath)
-    inputs = gatherShaderSources(directory, dirs)
-    inputs.append(selfPath)
+def generate(inputs, outputs) :
     if util.isDirty(Version, inputs, outputs) :
-        shaderLibrary = ShaderLibrary(directory, shdName, dirs)
+        shaderLibrary = ShaderLibrary(inputs)
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()

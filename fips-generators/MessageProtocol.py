@@ -6,7 +6,7 @@ import os
 import sys
 import genutil as util
 
-Version = 7 
+Version = 8 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -351,8 +351,8 @@ def generateSource(desc, absSourcePath) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(selfPath, outputs, desc) :
-    if util.isDirty(Version, [selfPath], outputs) :
+def generate(inputs, outputs, desc) :
+    if util.isDirty(Version, inputs, outputs) :
         for output in outputs :
             if output.endswith('.h') :
                 generateHeader(desc, output)

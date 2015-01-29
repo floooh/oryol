@@ -1,5 +1,5 @@
 fips_begin_app(SynthTest windowed)
-    fips_files(SynthTest.cc SynthTest.jpg)
+    fips_files(SynthTest.cc)
     fips_deps(Core Gfx Dbg Input Synth)
     oryol_add_web_sample(SynthTest "Most simple Synth audio sample" "emscripten" SynthTest.jpg "Synth/SynthTest/SynthTest.cc")
 fips_end_app()

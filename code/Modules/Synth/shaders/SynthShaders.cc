@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// #version:13# machine generated, do not edit!
+// #version:14# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "SynthShaders.h"
 
 namespace Oryol {
-namespace Shaders{
+namespace Shaders {
 const char* vsSynth_100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"

@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// #version:13# machine generated, do not edit!
+// #version:14# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "DebugShaders.h"
 
 namespace Oryol {
-namespace DebugShaders{
+namespace Shaders {
 const char* vsText_100_src = 
 "#define _POSITION gl_Position\n"
 "uniform vec2 glyphSize;\n"

@@ -1,11 +1,11 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/*  #version:13#
+/*  #version:14#
     machine generated, do not edit!
 */
 #include "Gfx/Setup/ProgramBundleSetup.h"
 namespace Oryol {
-namespace DebugShaders {
+namespace Shaders {
     class TextShader {
     public:
         static const int32 GlyphSize = 0;

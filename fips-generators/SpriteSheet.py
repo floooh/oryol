@@ -5,7 +5,7 @@ import genutil as util
 import png
 import os
 
-Version = 5 
+Version = 6 
 
 #-------------------------------------------------------------------------------
 class Sprite :

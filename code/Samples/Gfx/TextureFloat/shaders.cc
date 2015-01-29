@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// #version:13# machine generated, do not edit!
+// #version:14# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
-namespace Shaders{
+namespace Shaders {
 const char* copyVS_100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
