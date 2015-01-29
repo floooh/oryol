@@ -5,7 +5,7 @@
     
     Wraps the entire Paclone game state.
 */
-#include "data/sprites.h"
+#include "sprites.h"
 
 namespace Paclone {
 

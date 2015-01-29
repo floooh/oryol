@@ -6,7 +6,7 @@
 #include "Core/Assert.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Core/GfxId.h"
-#include "data/sprites.h"
+#include "sprites.h"
 
 namespace Paclone {
     

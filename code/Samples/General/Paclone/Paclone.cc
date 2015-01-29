@@ -8,7 +8,7 @@
 #include "Dbg/Dbg.h"
 #include "canvas.h"
 #include "game.h"
-#include "shaders/shaders.h"
+#include "shaders.h"
 
 using namespace Oryol;
 using namespace Paclone;

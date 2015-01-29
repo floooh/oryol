@@ -7,9 +7,7 @@ fips_begin_app(Paclone windowed)
         game.cc game.h
         state.cc state.h
     )
-    fips_dir(data)
     fips_files(sprites.py sprites.png)
-    fips_dir(shaders)
     fips_generate(ShaderLibrary.py shaders.shd "shaders.cc;shaders.h")
     fips_deps(Core Gfx Input Dbg)
     oryol_add_web_sample(Paclone "Simple Pacman clone (work in progress!" "emscripten,pnacl,android" Paclone.jpg "General/Paclone/Paclone.cc")
