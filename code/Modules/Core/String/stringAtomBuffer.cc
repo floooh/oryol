@@ -5,7 +5,7 @@
 #include <cstring>
 #include "stringAtomBuffer.h"
 #include "Core/Memory/Memory.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
     

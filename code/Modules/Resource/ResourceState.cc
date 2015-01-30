@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "ResourceState.h"
 #include "Core/Macros.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include <cstring>
 
 namespace Oryol {

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "MeshBuilder.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include <cstring>
 
 namespace Oryol {

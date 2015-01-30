@@ -2,7 +2,7 @@
 //  Touchpad.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Input/Core/Touchpad.h"
 
 namespace Oryol {

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "soundMgrBase.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Time/Clock.h"
 
 namespace Oryol {

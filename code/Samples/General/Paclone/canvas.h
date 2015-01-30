@@ -3,7 +3,7 @@
 /**
     XY-Canvas for sprite tiles.
 */
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Core/GfxId.h"
 #include "sprites.h"

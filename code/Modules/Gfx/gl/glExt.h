@@ -9,7 +9,7 @@
     to resolve (e.g. GL_APPLE_vertex_array_object vs GL_ARB_vertex_array_object)
 */
 #include "Gfx/gl/gl_decl.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
 namespace _priv {

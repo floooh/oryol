@@ -2,7 +2,7 @@
 //  touch.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "touchEvent.h"
 
 namespace Oryol {

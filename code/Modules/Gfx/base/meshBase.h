@@ -11,7 +11,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Core/Enums.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "IO/IOProtocol.h"
 
 namespace Oryol {

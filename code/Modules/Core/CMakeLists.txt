@@ -6,7 +6,7 @@ fips_begin_module(Core)
         App.cc App.h
         AppState.cc AppState.h
         Args.cc Args.h
-        Assert.h
+        Assertion.h
         Class.h
         Config.h
         Core.cc Core.h

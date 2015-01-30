@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "ThreadLocalData.h"
 #include "Core/Memory/Memory.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 #if ORYOL_THREADLOCAL_PTHREAD
 namespace Oryol {

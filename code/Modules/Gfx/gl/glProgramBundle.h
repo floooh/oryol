@@ -6,7 +6,7 @@
     @brief private: GL implementation of program bundle
 */
 #include "Gfx/base/programBundleBase.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
