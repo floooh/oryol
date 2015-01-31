@@ -6,9 +6,9 @@ fips_begin_module(HTTP)
         HTTPClient.cc HTTPClient.h
         HTTPFileSystem.cc HTTPFileSystem.h
         HTTPMethod.cc HTTPMethod.h
-        HTTPProtocol.py
         urlLoader.h
     )
+    fips_generate(MessageProtocol.py HTTPProtocol.yml "HTTPProtocol.cc;HTTPProtocol.h")
     fips_dir(base)
     fips_files(baseURLLoader.cc baseURLLoader.h)
     if (FIPS_OSX)
