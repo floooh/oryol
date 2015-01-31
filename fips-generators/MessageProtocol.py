@@ -357,7 +357,6 @@ def generate(inputs, outputs) :
         # read YAML file into dict
         with open(inputs[0], 'r') as f :
             desc = yaml.load(f)
-            print(desc) 
         # generate source and header files
         for output in outputs :
             if output.endswith('.h') :
