@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 14
+Version = 15
 
 import os
 import sys
@@ -514,7 +514,6 @@ class Parser :
         '''
         Parse a single file and populate shader lib
         '''
-        print '=> parsing {}'.format(fileName)
         f = open(fileName, 'r')
         self.fileName = fileName
         self.lineNumber = 0
@@ -796,11 +795,9 @@ class ShaderLibrary :
         '''
         for glslVersion in glslVersions :
             for vs in self.vertexShaders.values() :
-                print "=> validating '{}' for glsl version {}".format(vs.name, glslVersion)
                 srcLines = vs.generatedSource[glslVersion]
                 glslcompiler.validate(srcLines, 'vs', glslVersion)
             for fs in self.fragmentShaders.values() :
-                print "=> validating '{}' for glsl version {}".format(fs.name, glslVersion)
                 srcLines = fs.generatedSource[glslVersion]
                 glslcompiler.validate(srcLines, 'fs', glslVersion)
 

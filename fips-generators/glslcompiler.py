@@ -90,7 +90,6 @@ def validate(lines, type, glslVersion) :
         'fs': '.frag'
     }
     f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
-    print '=> compiling {}'.format(f.name)
     writeFile(f, lines)
     f.close()
 

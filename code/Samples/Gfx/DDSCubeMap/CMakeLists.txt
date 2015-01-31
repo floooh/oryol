@@ -1,6 +1,6 @@
 fips_begin_app(DDSCubeMap windowed)
     fips_files(DDSCubeMap.cc)
-    fips_generate(ShaderLibrary.py shaders.shd "shaders.cc;shaders.h")
+    fips_generate(Shader.py shaders.shd "shaders.cc;shaders.h")
     fips_deps(Gfx HTTP)
     oryol_add_web_sample(DDSCubeMap "Load and display DDS DXT1 cube map" "emscripten,pnacl" DDSCubeMap.jpg "Gfx/DDSCubeMap/DDSCubeMap.cc")
 fips_end_app()
