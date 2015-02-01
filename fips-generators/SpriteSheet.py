@@ -2,7 +2,7 @@
 Code generator for sprite sheets.
 '''
 import genutil as util
-import png
+from util import png
 import os
 
 Version = 6 
