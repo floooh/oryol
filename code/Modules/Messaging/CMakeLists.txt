@@ -24,7 +24,7 @@ fips_begin_unittest(Messaging)
         SerializerTest.cc
         ThreadedQueueTest.cc
     )
-    fips_generate(MessageProtocol.py TestProtocol.yml "TestProtocol.cc;TestProtocol.h")
-    fips_generate(MessageProtocol.py TestProtocol2.yml "TestProtocol2.cc;TestProtocol2.h")
+    fips_generate(FROM TestProtocol.yml TYPE MessageProtocol SOURCE TestProtocol.cc HEADER TestProtocol.h)
+    fips_generate(TYPE MessageProtocol FROM TestProtocol2.yml)
     fips_deps(Messaging Core)
 fips_end_unittest()

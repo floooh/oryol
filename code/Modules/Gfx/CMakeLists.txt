@@ -31,7 +31,7 @@ endif()
 
 fips_begin_module(Gfx)
     fips_files(Gfx.cc Gfx.h)
-    fips_generate(MessageProtocol.py GfxProtocol.yml "GfxProtocol.cc;GfxProtocol.h")
+    fips_generate(TYPE MessageProtocol FROM GfxProtocol.yml)
     fips_dir(Attrs)
     fips_files(DisplayAttrs.h IndexBufferAttrs.h TextureAttrs.h VertexBufferAttrs.h)
     fips_dir(Core)
@@ -163,7 +163,7 @@ fips_begin_unittest(Gfx)
         VertexWriterTest.cc
         glTypesTest.cc
     )
-    fips_generate(Shader.py TestShaderLibrary.shd "TestShaderLibrary.cc;TestShaderLibrary.h")
+    fips_generate(TYPE Shader FROM TestShaderLibrary.shd)
     fips_deps(HTTP Gfx)
 fips_end_unittest()
 

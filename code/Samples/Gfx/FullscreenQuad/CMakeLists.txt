@@ -1,6 +1,6 @@
 fips_begin_app(FullscreenQuad windowed)
     fips_files(FullscreenQuad.cc)
-    fips_generate(Shader.py shaders.shd "shaders.cc;shaders.h")
+    fips_generate(TYPE Shader FROM shaders.shd)
     fips_deps(Gfx)
     oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" "emscripten,pnacl,android" FullscreenQuad.jpg "Gfx/FullscreenQuad/FullscreenQuad.cc")
 fips_end_app()

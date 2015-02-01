@@ -8,7 +8,7 @@ fips_begin_module(HTTP)
         HTTPMethod.cc HTTPMethod.h
         urlLoader.h
     )
-    fips_generate(MessageProtocol.py HTTPProtocol.yml "HTTPProtocol.cc;HTTPProtocol.h")
+    fips_generate(TYPE MessageProtocol FROM HTTPProtocol.yml SOURCE HTTPProtocol.cc HEADER HTTPProtocol.h)
     fips_dir(base)
     fips_files(baseURLLoader.cc baseURLLoader.h)
     if (FIPS_OSX)

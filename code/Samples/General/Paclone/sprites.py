@@ -1,8 +1,8 @@
 import SpriteSheet as sprites
 
-def generate(inputs, outputs) :
+def generate(input, out_src, out_hdr) :
 
-    s = sprites.SpriteSheet(inputs[0], outputs)
+    s = sprites.SpriteSheet(input, out_src, out_hdr)
     s.namespace('Paclone')
     s.image('sprites.png')
     s.defaultSpriteSize(8, 8)

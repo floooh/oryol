@@ -352,15 +352,10 @@ def generateSource(desc, absSourcePath) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(inputs, outputs) :
-    if util.isDirty(Version, inputs, outputs) :
-        # read YAML file into dict
-        with open(inputs[0], 'r') as f :
+def generate(input, out_src, out_hdr) :
+    if util.isDirty(Version, [input], [out_src, out_hdr]) :
+        with open(input, 'r') as f :
             desc = yaml.load(f)
-        # generate source and header files
-        for output in outputs :
-            if output.endswith('.h') :
-                generateHeader(desc, output)
-            else :
-                generateSource(desc, output)
+        generateHeader(desc, out_hdr)
+        generateSource(desc, out_src)
 

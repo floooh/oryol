@@ -905,16 +905,13 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(inputs, outputs) :
-    if util.isDirty(Version, inputs, outputs) :
-        shaderLibrary = ShaderLibrary(inputs)
+def generate(input, out_src, out_hdr) :
+    if util.isDirty(Version, [input], [out_src, out_hdr]) :
+        shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()
         shaderLibrary.validateShaders()
-        for output in outputs :
-            if output.endswith('.h') :
-                generateHeader(output, shaderLibrary)
-            else :
-                generateSource(output, shaderLibrary)
+        generateSource(out_src, shaderLibrary)
+        generateHeader(out_hdr, shaderLibrary)
 

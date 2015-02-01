@@ -21,9 +21,10 @@ class Sprite :
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
-    def __init__(self, selfPath, outputs) :
-        self.selfPath = selfPath
-        self.outputs = outputs
+    def __init__(self, input, out_src, out_hdr) :
+        self.input = input
+        self.out_src = out_src
+        self.out_hdr = out_hdr
         self.ns = ''
         self.imagePath = ''
         self.imageWidth = 0
@@ -40,7 +41,7 @@ class SpriteSheet :
         self.ns = ns
 
     def image(self, img) :
-        self.imagePath = os.path.dirname(self.selfPath) + '/' + img
+        self.imagePath = os.path.dirname(self.input) + '/' + img
 
     def clampImageSize(self, w, h) :
         self.clampWidth = w
@@ -223,10 +224,8 @@ class SpriteSheet :
 
     #-------------------------------------------------------------------------------
     def generate(self) :
-        if util.isDirty(Version, [self.selfPath, self.imagePath], self.outputs) :
+        if util.isDirty(Version, [self.input, self.imagePath], [self.out_src, self.out_hdr]) :
             self.loadImage()
-            for output in self.outputs :
-                if output.endswith('.h') :
-                    self.genHeader(output)
-                else :
-                    self.genSource(output)
+            self.genHeader(self.out_hdr)
+            self.genSource(self.out_src)
+            

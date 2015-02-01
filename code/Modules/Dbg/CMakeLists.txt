@@ -3,7 +3,7 @@ fips_begin_module(Dbg)
     fips_dir(text)
     fips_files(debugFont.cc debugTextRenderer.cc debugTextRenderer.h)
     fips_dir(shaders)
-    fips_generate(Shader.py DebugShaders.shd "DebugShaders.cc;DebugShaders.h")
+    fips_generate(TYPE Shader FROM DebugShaders.shd)
     fips_deps(Core Gfx)
 fips_end_module()
 
