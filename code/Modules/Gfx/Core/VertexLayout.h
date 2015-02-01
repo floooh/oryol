@@ -7,7 +7,7 @@
     @see VertexComponent
 */
 #include "Gfx/Core/VertexComponent.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
     

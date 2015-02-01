@@ -2,7 +2,7 @@
 Code generator for 'sound sheets' (audio wave forms and sound effects)
 '''
 import genutil as util
-import png
+from util import png
 import os
 
 Version = 1

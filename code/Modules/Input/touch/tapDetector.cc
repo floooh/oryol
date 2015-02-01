@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "tapDetector.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
 namespace _priv {

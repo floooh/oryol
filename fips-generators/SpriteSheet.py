@@ -2,10 +2,10 @@
 Code generator for sprite sheets.
 '''
 import genutil as util
-import png
+from util import png
 import os
 
-Version = 4
+Version = 6 
 
 #-------------------------------------------------------------------------------
 class Sprite :
@@ -21,9 +21,10 @@ class Sprite :
 
 #-------------------------------------------------------------------------------
 class SpriteSheet :
-    def __init__(self, directory, name) :
-        self.directory = directory
-        self.name = name
+    def __init__(self, input, out_src, out_hdr) :
+        self.input = input
+        self.out_src = out_src
+        self.out_hdr = out_hdr
         self.ns = ''
         self.imagePath = ''
         self.imageWidth = 0
@@ -40,7 +41,7 @@ class SpriteSheet :
         self.ns = ns
 
     def image(self, img) :
-        self.imagePath = self.directory + img
+        self.imagePath = os.path.dirname(self.input) + '/' + img
 
     def clampImageSize(self, w, h) :
         self.clampWidth = w
@@ -223,10 +224,8 @@ class SpriteSheet :
 
     #-------------------------------------------------------------------------------
     def generate(self) :
-        selfPath = self.directory + self.name + '.py'
-        hdrPath = self.directory + self.name + '.h'
-        srcPath = self.directory + self.name + '.cc'
-        if util.isDirty([selfPath, self.imagePath], Version, hdrPath, srcPath) :
+        if util.isDirty(Version, [self.input, self.imagePath], [self.out_src, self.out_hdr]) :
             self.loadImage()
-            self.genHeader(hdrPath)
-            self.genSource(srcPath)
+            self.genHeader(self.out_hdr)
+            self.genSource(self.out_src)
+            

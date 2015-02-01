@@ -2,7 +2,7 @@
 //  StringConverter.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "StringConverter.h"
 #include "Ext/ConvertUTF/ConvertUTF.h"
 #include <cstdlib>

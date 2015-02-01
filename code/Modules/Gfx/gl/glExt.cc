@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Gfx/gl/gl_impl.h"
 #include "glExt.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {

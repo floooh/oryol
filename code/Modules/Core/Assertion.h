@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Core/Assert.h
+    @file Core/Assertion.h
     @brief Oryol's assert macros
 */
 #include "Core/Types.h"

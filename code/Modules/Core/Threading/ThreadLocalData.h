@@ -10,7 +10,7 @@
 */
 #include "Core/Types.h"
 #if ORYOL_THREADLOCAL_PTHREAD
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include <atomic>
 #include <pthread.h>
 

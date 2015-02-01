@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "voice.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Synth/Core/synth.h"
 
 namespace Oryol {

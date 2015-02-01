@@ -5,7 +5,7 @@
     @ingroup Input
     @brief access to gamepad state
 */
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "glm/vec2.hpp"
 
 namespace Oryol {

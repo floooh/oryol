@@ -136,8 +136,8 @@ debugTextRenderer::drawTextBuffer() {
     
         Gfx::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
         Gfx::ApplyDrawState(this->textDrawState);
-        Gfx::ApplyVariable(DebugShaders::TextShader::GlyphSize, glyphSize);
-        Gfx::ApplyVariable(DebugShaders::TextShader::Texture, this->fontTexture);
+        Gfx::ApplyVariable(Shaders::TextShader::GlyphSize, glyphSize);
+        Gfx::ApplyVariable(Shaders::TextShader::Texture, this->fontTexture);
         Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
     }
 }
@@ -213,7 +213,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    GfxId prog = Gfx::CreateResource(DebugShaders::TextShader::CreateSetup());
+    GfxId prog = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);

@@ -5,7 +5,7 @@
     @brief Gfx module enums
 */
 #include "Core/Types.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #if ORYOL_OPENGL
 #include "Gfx/gl/glEnums.h"
 #endif

@@ -30,7 +30,8 @@ else()
 endif()
 
 fips_begin_module(Gfx)
-    fips_files(Gfx.cc Gfx.h GfxProtocol.py)
+    fips_files(Gfx.cc Gfx.h)
+    fips_generate(TYPE MessageProtocol FROM GfxProtocol.yml)
     fips_dir(Attrs)
     fips_files(DisplayAttrs.h IndexBufferAttrs.h TextureAttrs.h VertexBufferAttrs.h)
     fips_dir(Core)
@@ -162,8 +163,7 @@ fips_begin_unittest(Gfx)
         VertexWriterTest.cc
         glTypesTest.cc
     )
-    fips_dir(UnitTests/shd)
-    fips_files(test.shd)
+    fips_generate(TYPE Shader FROM TestShaderLibrary.shd)
     fips_deps(HTTP Gfx)
 fips_end_unittest()
 

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "VertexWriter.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "glm/glm.hpp"
 
 namespace Oryol {

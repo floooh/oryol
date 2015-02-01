@@ -1,5 +1,6 @@
 fips_begin_app(PackedNormals windowed)
-    fips_files(PackedNormals.cc PackedNormals.jpg shaders.py shaders.shd)
+    fips_files(PackedNormals.cc)
+    fips_generate(TYPE Shader FROM shaders.shd)
     fips_deps(Gfx)
     oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" "emscripten,android,pnacl" PackedNormals.jpg "Gfx/PackedNormals/PackedNormals.cc")
 fips_end_app()

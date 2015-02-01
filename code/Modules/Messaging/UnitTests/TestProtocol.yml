@@ -1,0 +1,31 @@
+# TestProtocol.yml
+---
+name: TestProtocol
+id: TSTP
+headers:
+    - 'Core/String/String.h'
+    - 'Core/String/StringAtom.h'
+    - 'Core/Containers/Array.h'
+messages:
+    - name: TestMsg1
+      attrs:
+        - { name: Int8Val, type: int8 }
+        - { name: Int16Val, type: int16, default: '-1' }
+        - { name: Int32Val, type: int32 }
+        - { name: Int64Val, type: int64 }
+        - { name: UInt8Val, type: uint8 }
+        - { name: UInt16Val, type: uint16 }
+        - { name: UInt32Val, type: uint32 }
+        - { name: UInt64Val, type: uint64 }
+        - { name: Float32Val, type: float32, default: '123.0f' }
+        - { name: Float64Val, type: float64, default: '12.0' }
+    - name: TestMsg2
+      parent: TestMsg1
+      attrs:
+        - { name: StringVal, type: 'String', default: '"Test"' }
+        - { name: StringAtomVal, type: 'StringAtom' }
+    - name: TestArrayMsg
+      attrs:
+        - { name: Int32ArrayVal, type: Array<int32> }
+        - { name: StringArrayVal, type: Array<String> }
+

@@ -4,8 +4,8 @@
 fips_begin_module(IO)
     fips_files(
         IO.cc IO.h
-        IOProtocol.py
     )
+    fips_generate(FROM IOProtocol.yml TYPE MessageProtocol)
     fips_dir(Core)
     fips_files(
         ContentType.cc ContentType.h

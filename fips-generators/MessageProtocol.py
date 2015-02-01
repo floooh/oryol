@@ -4,9 +4,10 @@ Code generator for message protocol xml files.
 
 import os
 import sys
+import yaml
 import genutil as util
 
-Version = 6
+Version = 8 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -40,7 +41,7 @@ def writeProtocolMethods(f, desc) :
     Write the protocol methods
     '''
     f.write('    static ProtocolIdType GetProtocolId() {\n')
-    f.write("        return '{}';\n".format(desc['protocolId']))
+    f.write("        return '{}';\n".format(desc['id']))
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -48,7 +49,7 @@ def writeMessageIdEnum(f, desc) :
     '''
     Write the enum with message ids
     '''
-    protocol = desc['protocolName']
+    protocol = desc['name']
     parentProtocol = desc.get('parentProtocol', 'Protocol')
 
     f.write('    class MessageId {\n')
@@ -96,7 +97,7 @@ def writeFactoryClassImpl(f, desc) :
     '''
     Writes the factory class implementation
     '''
-    protocol = desc['protocolName']
+    protocol = desc['name']
     parentProtocol = desc.get('parentProtocol', 'Protocol')
 
     f.write(protocol + '::CreateCallback ' + protocol + '::jumpTable[' + protocol + '::MessageId::NumMessageIds] = { \n') 
@@ -181,7 +182,7 @@ def writeMessageClasses(f, desc) :
     '''
     Write the message classes to the generated C++ header
     '''
-    protocolId = desc['protocolId']
+    protocolId = desc['id']
     for msg in desc['messages'] :
         msgClassName = msg['name']
         msgParentClassName = msg.get('parent', 'Message')
@@ -247,7 +248,7 @@ def writeSerializeMethods(f, desc) :
     '''
     for msg in desc['messages'] : 
         if msg.get('serialize', False) :   
-            protocol = desc['protocolName']
+            protocol = desc['name']
             msgClassName = msg['name']
             msgParentClassName = msg.get('parent', 'Message')
 
@@ -302,7 +303,7 @@ def generateHeader(desc, absHeaderPath) :
     '''
     f = open(absHeaderPath, 'w')
 
-    protocol = desc['protocolName']
+    protocol = desc['name']
     writeHeaderTop(f, desc) 
     writeIncludes(f, desc)
     f.write('namespace Oryol {\n')
@@ -336,7 +337,7 @@ def generateSource(desc, absSourcePath) :
     '''
     Generate the C++ source file
     '''
-    protocol = desc['protocolName']
+    protocol = desc['name']
 
     f = open(absSourcePath, 'w')
     writeSourceTop(f, desc, absSourcePath)
@@ -351,10 +352,10 @@ def generateSource(desc, absSourcePath) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(directory, name, desc) :
-    selfPath = directory + name + '.py'
-    hdrPath = directory + name + '.h'
-    srcPath = directory + name + '.cc'
-    if util.isDirty([selfPath], Version, hdrPath, srcPath) :
-        generateHeader(desc, hdrPath)
-        generateSource(desc, srcPath)
+def generate(input, out_src, out_hdr) :
+    if util.isDirty(Version, [input], [out_src, out_hdr]) :
+        with open(input, 'r') as f :
+            desc = yaml.load(f)
+        generateHeader(desc, out_hdr)
+        generateSource(desc, out_src)
+

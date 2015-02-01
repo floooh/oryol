@@ -2,14 +2,14 @@
 Code generator for shader libraries.
 '''
 
-Version = 7
+Version = 15
 
 import os
 import sys
 import glob
 from pprint import pprint
 import genutil as util
-import glslcompiler
+from util import glslcompiler
 
 # GLSL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0
 glslVersions = [ 100, 120, 150 ]
@@ -77,14 +77,6 @@ def getMacroValue(macro, glslVersion) :
         return glsl100Macros[macro]
     else :
         return glsl130Macros[macro]
-
-#-------------------------------------------------------------------------------
-def gatherShaderSources(rootDir, dirs) :
-    srcList = []
-    for directory in dirs :
-        path = rootDir + directory
-        srcList.extend(glob.glob(path + '/*.shd'))
-    return srcList
 
 #-------------------------------------------------------------------------------
 class Line :
@@ -522,7 +514,6 @@ class Parser :
         '''
         Parse a single file and populate shader lib
         '''
-        print '=> parsing {}'.format(fileName)
         f = open(fileName, 'r')
         self.fileName = fileName
         self.lineNumber = 0
@@ -645,10 +636,8 @@ class ShaderLibrary :
     '''
     This represents the entire shader lib.
     '''
-    def __init__(self, directory, name, dirs) :
-        self.rootDirectory = directory
-        self.name = name
-        self.sources = gatherShaderSources(directory, dirs)
+    def __init__(self, inputs) :
+        self.sources = inputs
         self.blocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
@@ -806,11 +795,9 @@ class ShaderLibrary :
         '''
         for glslVersion in glslVersions :
             for vs in self.vertexShaders.values() :
-                print "=> validating '{}' for glsl version {}".format(vs.name, glslVersion)
                 srcLines = vs.generatedSource[glslVersion]
                 glslcompiler.validate(srcLines, 'vs', glslVersion)
             for fs in self.fragmentShaders.values() :
-                print "=> validating '{}' for glsl version {}".format(fs.name, glslVersion)
                 srcLines = fs.generatedSource[glslVersion]
                 glslcompiler.validate(srcLines, 'fs', glslVersion)
 
@@ -823,7 +810,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('*/\n')
     f.write('#include "Gfx/Setup/ProgramBundleSetup.h"\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + shdLib.name + ' {\n')
+    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
@@ -861,7 +848,7 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace ' + shdLib.name + '{\n')
+    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
@@ -918,18 +905,13 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(directory, fileName, shdName, dirs) :
-
-    selfPath = directory + fileName + '.py'
-    hdrPath = directory + fileName + '.h'
-    srcPath = directory + fileName + '.cc'
-    files = gatherShaderSources(directory, dirs)
-    files.append(selfPath)
-    if util.isDirty(files, Version, hdrPath, srcPath) :
-        shaderLibrary = ShaderLibrary(directory, shdName, dirs)
+def generate(input, out_src, out_hdr) :
+    if util.isDirty(Version, [input], [out_src, out_hdr]) :
+        shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()
         shaderLibrary.validateShaders()
-        generateHeader(hdrPath, shaderLibrary)
-        generateSource(srcPath, shaderLibrary)
+        generateSource(out_src, shaderLibrary)
+        generateHeader(out_hdr, shaderLibrary)
+

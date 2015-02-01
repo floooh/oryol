@@ -1,0 +1,12 @@
+# TestProtocol2.yml
+---
+name: TestProtocol2
+id: TSP2
+parentProtocol: TestProtocol
+parentProtocolHeader: Messaging/UnitTests/TestProtocol.h
+messages:
+    - name: TestMsgEx
+      parent: 'TestProtocol::TestMsg1'
+      attrs:
+          - { name: ExVal2, type: int8 }
+

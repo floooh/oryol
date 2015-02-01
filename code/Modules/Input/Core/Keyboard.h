@@ -6,7 +6,7 @@
     @brief access to keyboard state
 */
 #include "Input/Core/Key.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include <bitset>
 
 namespace Oryol {

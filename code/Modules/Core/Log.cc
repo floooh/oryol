@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include <cstdio>
 #include "Core/Log.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/Logger.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"

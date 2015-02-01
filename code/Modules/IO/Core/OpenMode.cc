@@ -5,7 +5,7 @@
 #include <cstring>
 #include "OpenMode.h"
 #include "Core/Macros.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
 

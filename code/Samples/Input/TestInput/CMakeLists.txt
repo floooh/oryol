@@ -1,5 +1,6 @@
 fips_begin_app(TestInput windowed)
-    fips_files(TestInput.cc TestInput.jpg shaders.py shaders.shd)
+    fips_files(TestInput.cc)
+    fips_generate(TYPE Shader FROM shaders.shd)
     fips_deps(Core Gfx Dbg Input)
     oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten,pnacl,android" TestInput.jpg "Input/TestInput/TestInput.cc")
 fips_end_app()

@@ -5,8 +5,8 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Messaging/Dispatcher.h"
 #include "Messaging/Broadcaster.h"
-#include "TestProtocol.h"
-#include "TestProtocol2.h"
+#include "Messaging/UnitTests/TestProtocol.h"
+#include "Messaging/UnitTests/TestProtocol2.h"
 
 using namespace Oryol;
 

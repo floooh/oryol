@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glInfo.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
 #include "Gfx/gl/gl_impl.h"

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Key.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 
 namespace Oryol {
     

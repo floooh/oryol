@@ -11,11 +11,11 @@ import genutil as util
 def getToolsBinPath() :
     path = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == 'Windows' :
-        path += '/../tools/win32/'
+        path += '/../../tools/win32/'
     elif platform.system() == 'Darwin' :
-        path += '/../tools/osx/'
+        path += '/../../tools/osx/'
     elif platform.system() == 'Linux' :
-        path +=  '/../tools/linux/'
+        path +=  '/../../tools/linux/'
     else :
         error("Unknown host system {}".format(platform.system()))
     return path;
@@ -90,7 +90,6 @@ def validate(lines, type, glslVersion) :
         'fs': '.frag'
     }
     f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
-    print '=> compiling {}'.format(f.name)
     writeFile(f, lines)
     f.close()
 

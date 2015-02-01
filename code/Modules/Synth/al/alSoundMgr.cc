@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "alSoundMgr.h"
 #include "Core/Log.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {

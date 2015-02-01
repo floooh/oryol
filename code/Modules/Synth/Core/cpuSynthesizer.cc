@@ -2,7 +2,7 @@
 //  cpuSynthesizer.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
 #include "cpuSynthesizer.h"
 #if ORYOL_WINDOWS

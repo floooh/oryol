@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief holds all info needed to fill a sample buffer
 */
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Synth/Core/SynthOp.h"
 #include "Synth/Core/synth.h"
 
