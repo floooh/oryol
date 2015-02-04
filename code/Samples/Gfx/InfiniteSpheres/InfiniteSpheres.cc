@@ -93,7 +93,7 @@ InfiniteSpheresApp::OnInit() {
         this->renderTargets[i] = Gfx::CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);

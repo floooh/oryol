@@ -32,18 +32,6 @@ ShapeBuilder::Clear() {
 }
 
 //------------------------------------------------------------------------------
-class VertexLayout&
-ShapeBuilder::Layout() {
-    return this->meshBuilder.Layout;
-}
-
-//------------------------------------------------------------------------------
-const class VertexLayout&
-ShapeBuilder::Layout() const {
-    return this->meshBuilder.Layout;
-}
-
-//------------------------------------------------------------------------------
 ShapeBuilder&
 ShapeBuilder::Transform(const glm::mat4& m) {
     this->transform = m;
@@ -243,6 +231,9 @@ ShapeBuilder::Build() {
     if (this->curPrimGroupNumElements > 0) {
         this->buildPrimitiveGroup();
     }
+    
+    // assign vertex layout
+    this->meshBuilder.Layout = this->Layout;
     
     // overall number of vertices and indices
     int32 numVerticesAll = 0;

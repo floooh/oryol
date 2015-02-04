@@ -19,9 +19,7 @@ public:
     ShapeBuilder();
     
     /// read/write access to vertex layout
-    class VertexLayout& Layout();
-    /// read-only access to vertex layout
-    const class VertexLayout& Layout() const;
+    class VertexLayout Layout;
     /// random-vertex-colors flag
     bool RandomColors;
     

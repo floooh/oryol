@@ -84,7 +84,7 @@ SimpleRenderTargetApp::OnInit() {
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
@@ -92,7 +92,7 @@ SimpleRenderTargetApp::OnInit() {
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);

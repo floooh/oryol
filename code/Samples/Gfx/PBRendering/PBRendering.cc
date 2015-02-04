@@ -61,7 +61,7 @@ PBRenderingApp::OnInit() {
     
     // create resources
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Sphere(0.5f, 36, 20, true)

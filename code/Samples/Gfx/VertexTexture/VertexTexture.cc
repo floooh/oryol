@@ -90,7 +90,7 @@ VertexTextureApp::OnInit() {
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();

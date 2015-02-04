@@ -70,7 +70,7 @@ ShapeApp::OnInit() {
     // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout()
+    shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
