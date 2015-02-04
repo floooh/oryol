@@ -41,17 +41,17 @@ ShapeApp::OnRunning() {
     Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
     
     // render shape primitive groups
-    static const int numShapes = 5;
-    static const glm::vec3 pos[numShapes] = {
+    static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
         glm::vec3(-2.0f, -1.0f, -6.0f),
         glm::vec3(+2.0f, -1.0f, -6.0f),
         glm::vec3(0.0f, -1.0f, -6.0f)
     };
-    for (int i = 0; i < numShapes; i++) {
-        Gfx::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(pos[i]));
-        Gfx::Draw(i);
+    int32 primGroupIndex = 0;
+    for (const auto& pos : positions) {
+        Gfx::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(pos));
+        Gfx::Draw(primGroupIndex++);
     }
     Gfx::CommitFrame();
     
