@@ -115,7 +115,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, i
     
     // setup empty slots
     for (int32 i = 0; i < poolSize; i++) {
-        this->slots.Emplace();
+        this->slots.Add();
     }
     
     // setup free slots queue

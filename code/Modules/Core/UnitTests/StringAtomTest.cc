@@ -102,7 +102,7 @@ TEST(StringAtomPerformance) {
         Array<StringAtom> stringAtoms;
         stringAtoms.Reserve(numStringAtoms);
         for (int j = 0; j < numStringAtoms; j++) {
-            stringAtoms.Emplace(uniqueStrings[j & mask]);
+            stringAtoms.Add(uniqueStrings[j & mask]);
         }
         
         end = chrono::system_clock::now();

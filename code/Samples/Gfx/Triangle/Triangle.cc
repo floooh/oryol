@@ -49,7 +49,7 @@ TriangleApp::OnInit() {
     meshBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
-    meshBuilder.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 3);
+    meshBuilder.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 3);
     meshBuilder.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f)
         .Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f)

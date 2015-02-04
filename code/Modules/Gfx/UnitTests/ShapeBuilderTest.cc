@@ -39,7 +39,7 @@ TEST(ShapeBuilderTest) {
     ShapeBuilder shapeBuilder;
     
     // build a simple cube
-    shapeBuilder.Layout().Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Build();
     

@@ -73,10 +73,8 @@ public:
     IndexType::Code IndicesType;
     /// read/write access to vertex layout
     class VertexLayout Layout;
-    /// add a primitive group (at least one needed!)
-    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
-    /// add a primitive group (at least one needed!)
-    void AddPrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements);
+    /// primitive groups (at least one must be defined)
+    Array<PrimitiveGroup> PrimitiveGroups;
     
     /// begin writing vertex and index data
     MeshBuilder& Begin();
@@ -133,7 +131,6 @@ private:
     /// compute byte offset into vertex buffer given vertex and component index
     uint32 vertexByteOffset(uint32 vertexIndex, int32 compIndex) const;
     
-    Array<PrimitiveGroup> primGroups;
     Ptr<MemoryStream> stream;
     MeshSetup meshSetup;
     bool inBegin;

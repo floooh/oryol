@@ -52,7 +52,7 @@ ShapeBuilder::buildPrimitiveGroup() {
     PrimitiveGroup primGroup(PrimitiveType::Triangles,
                              this->curPrimGroupBaseElement,
                              this->curPrimGroupNumElements);
-    this->meshBuilder.AddPrimitiveGroup(primGroup);
+    this->meshBuilder.PrimitiveGroups.Add(primGroup);
     this->curPrimGroupBaseElement += this->curPrimGroupNumElements;
     this->curPrimGroupNumElements = 0;
 }

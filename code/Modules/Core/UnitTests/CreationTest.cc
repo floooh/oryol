@@ -84,7 +84,7 @@ TEST(CreatePtrBenchmark) {
             Array<Ptr<TestClass>> objs;
             objs.Reserve(maxLiveObjects);
             for (int32 k = 0; k < maxLiveObjects; k++) {
-                objs.Emplace(TestClass::Create());
+                objs.Add(TestClass::Create());
             }
         }
         end = chrono::system_clock::now();
@@ -124,7 +124,7 @@ void threadFunc() {
         Array<Ptr<TestClass>> pointers;
         pointers.Reserve(numInner);
         for (int j = 0 ; j < numInner; j++) {
-            pointers.Emplace(TestClass::Create());
+            pointers.Add(TestClass::Create());
             o_assert(1 == pointers.Back()->GetRefCount());
         }
     }

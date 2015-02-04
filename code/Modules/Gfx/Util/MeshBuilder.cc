@@ -32,7 +32,7 @@ MeshBuilder::Clear() {
     this->NumIndices = 0;
     this->IndicesType = IndexType::Index16;
     this->Layout.Clear();
-    this->primGroups.Clear();
+    this->PrimitiveGroups.Clear();
     this->meshSetup = MeshSetup();
     this->inBegin = false;
     this->resultValid = false;
@@ -46,26 +46,12 @@ MeshBuilder::Clear() {
 }
 
 //------------------------------------------------------------------------------
-void
-MeshBuilder::AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
-    o_assert(!this->inBegin);
-    this->primGroups.Add(primGroup);
-}
-
-//------------------------------------------------------------------------------
-void
-MeshBuilder::AddPrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements) {
-    o_assert(!this->inBegin);
-    this->primGroups.Emplace(type, baseElement, numElements);
-}
-
-//------------------------------------------------------------------------------
 MeshBuilder&
 MeshBuilder::Begin() {
     o_assert(!this->inBegin);
     o_assert(this->NumVertices > 0);
     o_assert(!this->Layout.Empty());
-    o_assert(!this->primGroups.Empty());
+    o_assert(!this->PrimitiveGroups.Empty());
     this->inBegin = true;
     this->resultValid = false;
     
@@ -75,7 +61,7 @@ MeshBuilder::Begin() {
     // compute the required stream size
     int32 hdrSize = sizeof(Header);
     hdrSize      += sizeof(HeaderVertexComponent) * this->workSet.layout.NumComponents();
-    hdrSize      += sizeof(HeaderPrimitiveGroup) * this->primGroups.Size();
+    hdrSize      += sizeof(HeaderPrimitiveGroup) * this->PrimitiveGroups.Size();
     int32 vbSize  = Memory::RoundUp(this->NumVertices * this->workSet.layout.ByteSize(), 4);
     int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
     int32 allSize = hdrSize + vbSize + ibSize;
@@ -96,7 +82,7 @@ MeshBuilder::Begin() {
     this->header->numIndices  = this->NumIndices;
     this->header->indexType   = (int32) this->IndicesType;
     this->header->numVertexComponents = this->workSet.layout.NumComponents();
-    this->header->numPrimitiveGroups  = this->primGroups.Size();
+    this->header->numPrimitiveGroups  = this->PrimitiveGroups.Size();
     this->header->verticesByteSize = vbSize;
     this->header->indicesByteSize  = ibSize;
     
@@ -108,8 +94,9 @@ MeshBuilder::Begin() {
     }
     
     HeaderPrimitiveGroup* hdrPrimGroup = (HeaderPrimitiveGroup*) hdrComp;
-    for (int32 i = 0; i < this->primGroups.Size(); i++, hdrPrimGroup++) {
-        const PrimitiveGroup& src = this->primGroups[i];
+    const int32 numPrimGroups = this->PrimitiveGroups.Size();
+    for (int32 i = 0; i < numPrimGroups; i++, hdrPrimGroup++) {
+        const PrimitiveGroup& src = this->PrimitiveGroups[i];
         hdrPrimGroup->type = (uint32) src.PrimType;
         hdrPrimGroup->baseElement = src.BaseElement;
         hdrPrimGroup->numElements = src.NumElements;

@@ -74,7 +74,7 @@ TEST(QueueTest) {
     CHECK(r3 == "Element3");
     CHECK(queue0.Empty());
     
-    queue0.Emplace("Bla");
+    queue0.Enqueue("Bla");
     CHECK(queue0.SpareDequeue() == 0);
     CHECK(queue0.Size() == 1);
     CHECK(queue0.Dequeue() == "Bla");

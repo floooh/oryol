@@ -63,7 +63,7 @@ public:
     /// move-enqueue an element
     void Enqueue(TYPE&& elm);
     /// construct-enqueue an element
-    template<class... ARGS> void Emplace(ARGS&&... args);
+    template<class... ARGS> void Enqueue(ARGS&&... args);
 
     /// dequeue an element
     TYPE Dequeue();
@@ -304,7 +304,7 @@ Queue<TYPE>::Enqueue(TYPE&& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> void
-Queue<TYPE>::Emplace(ARGS&&... args) {
+Queue<TYPE>::Enqueue(ARGS&&... args) {
     this->checkEnqueue();
     this->buffer.emplaceBack(std::forward<ARGS>(args)...);
 }

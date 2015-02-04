@@ -94,12 +94,12 @@ public:
     void Add(const TYPE& elm);
     /// move-add element to back of array
     void Add(TYPE&& elm);
+    /// construct-add new element at back of array
+    template<class... ARGS> void Add(ARGS&&... args);
     /// copy-insert element at index, keep array order
     void Insert(int32 index, const TYPE& elm);
     /// move-insert element at index, keep array order
     void Insert(int32 index, TYPE&& elm);
-    /// emplace new element at back of array
-    template<class... ARGS> void Emplace(ARGS&&... args);
     
     /// erase element at index, keep element ordering
     void Erase(int32 index);
@@ -316,7 +316,7 @@ Array<TYPE>::Add(TYPE&& elm) {
     }
     this->buffer.pushBack(std::move(elm));
 }
-
+    
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Insert(int32 index, const TYPE& elm) {
@@ -337,7 +337,7 @@ Array<TYPE>::Insert(int32 index, TYPE&& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> void
-Array<TYPE>::Emplace(ARGS&&... args) {
+Array<TYPE>::Add(ARGS&&... args) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }

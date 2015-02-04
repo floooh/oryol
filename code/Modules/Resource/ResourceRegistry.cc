@@ -53,7 +53,7 @@ ResourceRegistry::AddResource(const Locator& loc, const Id& id) {
     o_assert(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
     
-    this->entries.Emplace(loc, id);
+    this->entries.Add(loc, id);
     if (loc.IsShared()) {
         o_assert(!this->locatorIndexMap.Contains(loc));
         this->locatorIndexMap.Add(loc, this->entries.Size() - 1);

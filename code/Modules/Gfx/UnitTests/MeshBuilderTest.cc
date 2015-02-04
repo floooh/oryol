@@ -19,7 +19,7 @@ TEST(MeshBuilderTest) {
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    mb.AddPrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    mb.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 6);
     mb.Begin()
         // positions
         .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
