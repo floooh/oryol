@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "pnaclInstance.h"
-#include "Core/Assert.h"
+#include "Core/Assertion.h"
 #include "Core/App.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/var.h"
