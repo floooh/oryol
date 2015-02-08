@@ -120,6 +120,7 @@ Gfx::ApplyOffscreenRenderTarget(const GfxId& gfxId) {
 //------------------------------------------------------------------------------
 void
 Gfx::ApplyDrawState(const GfxId& gfxId) {
+    o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
     state->renderer.applyDrawState(state->resourceManager.LookupDrawState(gfxId.Id()));
 }
@@ -127,6 +128,7 @@ Gfx::ApplyDrawState(const GfxId& gfxId) {
 //------------------------------------------------------------------------------
 void
 Gfx::CommitFrame() {
+    o_trace_scoped(Gfx_CommitFrame);
     o_assert_dbg(IsValid());
     state->renderer.commitFrame();
     state->displayManager.Present();
@@ -135,6 +137,7 @@ Gfx::CommitFrame() {
 //------------------------------------------------------------------------------
 void
 Gfx::ResetStateCache() {
+    o_trace_scoped(Gfx_ResetStateCache);
     o_assert_dbg(IsValid());
     state->renderer.resetStateCache();
 }
@@ -142,6 +145,7 @@ Gfx::ResetStateCache() {
 //------------------------------------------------------------------------------
 void
 Gfx::UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data) {
+    o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
     mesh* msh = state->resourceManager.LookupMesh(gfxId.Id());
     state->renderer.updateVertices(msh, numBytes, data);
@@ -150,6 +154,7 @@ Gfx::UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data) {
 //------------------------------------------------------------------------------
 void
 Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
+    o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
     state->renderer.readPixels(&state->displayManager, buf, bufNumBytes);
 }
@@ -164,6 +169,7 @@ Gfx::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, u
 //------------------------------------------------------------------------------
 void
 Gfx::Draw(int32 primGroupIndex) {
+    o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->renderer.draw(primGroupIndex);
 }
@@ -171,6 +177,7 @@ Gfx::Draw(int32 primGroupIndex) {
 //------------------------------------------------------------------------------
 void
 Gfx::Draw(const PrimitiveGroup& primGroup) {
+    o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->renderer.draw(primGroup);
 }
@@ -178,6 +185,7 @@ Gfx::Draw(const PrimitiveGroup& primGroup) {
 //------------------------------------------------------------------------------
 void
 Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
+    o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
     state->renderer.drawInstanced(primGroupIndex, numInstances);
 }
@@ -185,6 +193,7 @@ Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
 //------------------------------------------------------------------------------
 void
 Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+    o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
     state->renderer.drawInstanced(primGroup, numInstances);
 }

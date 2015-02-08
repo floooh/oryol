@@ -5,6 +5,7 @@
 #include "App.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
+#include "Core/Trace.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
@@ -102,6 +103,8 @@ App::remBlocker(AppState::Code blockedState) {
 //------------------------------------------------------------------------------
 void
 App::onFrame() {
+    o_trace_scoped(App_OnFrame);
+    
     // state transition?
     if ((this->nextState != AppState::InvalidAppState) && (this->nextState != this->curState)) {
         // check if the next state is blocked
@@ -123,13 +126,17 @@ App::onFrame() {
     // trigger the main loop
     if (AppState::Blocked == this->curState) {
         // we're currently blocked by some external force
+        o_trace_scoped(App_Blocked);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     else {
         // trigger the 'before-frame' runloop
+        o_trace_begin(App_PreRunLoop);
         Core::PreRunLoop()->Run();
+        o_trace_end();
     
         // call current state handler function
+        o_trace_begin(App_InnerFrame);
         switch (this->curState) {
             case AppState::Construct:
                 this->nextState = this->OnConstruct();
@@ -156,10 +163,13 @@ App::onFrame() {
             default:
                 Log::Warn("App::onFrame(): UNHANDLED APP STATE '%s'!\n", AppState::ToString(this->curState));
                 break;
-        }  
+        }
+        o_trace_end();
 
         // trigger the 'after-frame' runloop
+        o_trace_begin(App_PostRunLoop);
         Core::PostRunLoop()->Run();
+        o_trace_end();
     }  
 }
 

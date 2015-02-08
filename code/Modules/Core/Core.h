@@ -11,6 +11,7 @@
 #include "Core/RefCounted.h"
 #include "Core/Threading/ThreadLocalPtr.h"
 #include <thread>
+#include "Core/Trace.h"
 
 namespace Oryol {
 
@@ -43,6 +44,9 @@ private:
     static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop;
     struct _state {
         std::thread::id mainThreadId;
+        #if ORYOL_PROFILING
+        Trace trace;
+        #endif
     };
     static _state* state;
 };

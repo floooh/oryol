@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Dbg.h"
+#include "Core/Trace.h"
 #include <cstdarg>
 
 namespace Oryol {
@@ -78,6 +79,7 @@ Dbg::TextColor(const glm::vec4& c) {
 //------------------------------------------------------------------------------
 void
 Dbg::DrawTextBuffer() {
+    o_trace_scoped(Dbg_DrawTextBuffer);
     o_assert_dbg(IsValid());
     state->debugTextRenderer.drawTextBuffer();
 }

@@ -15,6 +15,8 @@ imports:
         git: https://github.com/floooh/fips-glfw.git
     fips-libcurl:
         git: https://github.com/floooh/fips-libcurl.git
+    fips-remotery:
+        git: https://github.com/floooh/fips-remotery.git
 
 exports:
     header-dirs :

@@ -1,6 +1,11 @@
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
 
+# profiling enabled?
+if (FIPS_PROFILING)
+    add_definitions(-DORYOL_PROFILING=1)
+endif()
+
 # POSIX platforms
 if (FIPS_POSIX)
     set(ORYOL_OPENGL 1)
