@@ -103,6 +103,7 @@ App::remBlocker(AppState::Code blockedState) {
 //------------------------------------------------------------------------------
 void
 App::onFrame() {
+    o_trace_begin_frame();
     o_trace_scoped(App_OnFrame);
     
     // state transition?
@@ -170,7 +171,8 @@ App::onFrame() {
         o_trace_begin(App_PostRunLoop);
         Core::PostRunLoop()->Run();
         o_trace_end();
-    }  
+    }
+    o_trace_end_frame();
 }
 
 //------------------------------------------------------------------------------
