@@ -43,11 +43,11 @@ public:
     
     /// resource locator (default is non-shared)
     class Locator Locator;
-    /// get vertex-data usage
+    /// vertex-data usage
     Usage::Code VertexUsage;
-    /// get index-data usage
+    /// index-data usage
     Usage::Code IndexUsage;
-    /// get ioLane index
+    /// ioLane index
     int32 IOLane;
 
     /// vertex layout

@@ -5,8 +5,7 @@
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -115,9 +114,7 @@ GPUParticlesApp::updateCamera() {
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 500, "Oryol GPU Particles Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol GPU Particles Sample"));
     Dbg::Setup();
 
     // check required extensions
@@ -180,9 +177,9 @@ GPUParticlesApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    auto meshSetup = MeshSetup::FromStream();
+    auto meshSetup = shapeBuilder.GetMeshSetup();
     meshSetup.InstanceMesh = this->particleIdMesh;
-    this->shapeMesh = Gfx::CreateResource(meshSetup, shapeBuilder.Result());
+    this->shapeMesh = Gfx::CreateResource(meshSetup, shapeBuilder.GetStream());
     
     // particle rendering draw state
     GfxId drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());

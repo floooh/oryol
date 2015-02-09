@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
-#include "Gfx/base/renderLoaderFactory.h"
+#include "Gfx/base/renderSimpleFactory.h"
 #include "Gfx/Core/mesh.h"
 
 namespace Oryol {
@@ -16,7 +16,7 @@ class meshPool;
 class mesh;
 class meshLoaderBase;
 
-class glMeshFactory : public renderLoaderFactory<mesh, meshLoaderBase, ResourceType::Mesh> {
+class glMeshFactory : public renderSimpleFactory<mesh, ResourceType::Mesh> {
 public:
     /// constructor
     glMeshFactory();
@@ -49,6 +49,8 @@ public:
     void createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
     void createEmptyMesh(mesh& mesh);
+    /// create from stream data
+    void createFromStream(mesh& mesh, const Ptr<Stream>& data);
     
 private:
     /// setup a Mesh's GL vertex attributes

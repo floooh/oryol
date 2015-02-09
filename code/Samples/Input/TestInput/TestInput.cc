@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Core/String/StringConverter.h"
@@ -62,9 +61,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 400, "Oryol Input Test Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(800, 400, "Oryol Input Test Sample"));
     Dbg::Setup();
     if (Gfx::DisplayAttrs().WindowWidth > 800) {
         Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
@@ -77,7 +74,7 @@ TestInputApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1).Build();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;

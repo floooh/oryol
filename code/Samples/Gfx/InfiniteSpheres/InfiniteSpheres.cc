@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
@@ -77,9 +76,7 @@ InfiniteSpheresApp::OnRunning() {
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample"));
 
     // create resources
     for (int32 i = 0; i < 2; i++) {
@@ -98,7 +95,7 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72, 40).Build();
-    GfxId sphere = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId sphere = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;

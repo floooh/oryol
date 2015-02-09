@@ -28,9 +28,6 @@ resourceMgr::~resourceMgr() {
 void
 resourceMgr::AttachLoader(const Ptr<loaderBase>& loader) {
     switch (loader->resourceType()) {
-        case ResourceType::Mesh:
-            this->meshFactory.AttachLoader(loader.dynamicCast<meshLoaderBase>());
-            break;
         case ResourceType::Texture:
             this->textureFactory.AttachLoader(loader.dynamicCast<textureLoaderBase>());
             break;

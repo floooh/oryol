@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
@@ -34,9 +33,7 @@ OryolMain(SensorsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 400, "Oryol Device Sensor Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(800, 400, "Oryol Device Sensor Sample"));
     Dbg::Setup();
     Input::Setup();
     
@@ -46,7 +43,7 @@ SensorsApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(2.0, 2.0, 2.0, 1).Build();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;

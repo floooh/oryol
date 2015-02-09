@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -67,9 +66,7 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample"));
 
     // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
@@ -88,7 +85,7 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
-    GfxId torus = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId torus = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -97,7 +94,7 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.5f, 72, 40).Build();
-    GfxId sphere = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId sphere = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
 
     // create shaders
     GfxId offScreenProg = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());

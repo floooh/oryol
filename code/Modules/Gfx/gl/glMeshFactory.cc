@@ -71,24 +71,21 @@ glMeshFactory::SetupResource(mesh& msh) {
         o_assert(msh.GetState() == ResourceState::Valid);
     }
     else {
-        // let a loader take over, parent class will take care of this
-        o_assert(msh.GetSetup().ShouldSetupFromFile());
-        loaderFactory<mesh, meshLoaderBase>::SetupResource(msh);
+        o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
     }
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
-    loaderFactory<mesh, meshLoaderBase>::SetupResource(msh, data);
+    o_assert(msh.GetSetup().ShouldSetupFromStream());
+    this->createFromStream(msh, data);
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
     o_assert(nullptr != this->renderer);
-    
-    loaderFactory::DestroyResource(mesh);
     
     this->renderer->invalidateMeshState();
     
@@ -476,6 +473,65 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     this->setupVertexLayout(mesh);
     
     mesh.setState(ResourceState::Valid);
+}
+    
+//------------------------------------------------------------------------------
+void
+glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
+    o_assert(mesh.GetState() == ResourceState::Setup);
+    const MeshSetup& setup = mesh.GetSetup();
+    
+    // open stream and get pointer to contained data
+    if (data->Open(OpenMode::ReadOnly)) {
+        const uint8* endPtr = nullptr;
+        const uint8* ptr = data->MapRead(&endPtr);
+        o_assert(nullptr != ptr);
+        
+        // setup vertex buffer attrs
+        VertexBufferAttrs vbAttrs;
+        vbAttrs.NumVertices = setup.NumVertices;
+        vbAttrs.BufferUsage = setup.VertexUsage;
+        vbAttrs.Layout = setup.Layout;
+        mesh.setVertexBufferAttrs(vbAttrs);
+        
+        // setup index buffer attrs
+        IndexBufferAttrs ibAttrs;
+        ibAttrs.NumIndices = setup.NumIndices;
+        ibAttrs.Type = setup.IndicesType;
+        ibAttrs.BufferUsage = setup.IndexUsage;
+        mesh.setIndexBufferAttrs(ibAttrs);
+        
+        // setup primitive groups
+        const int32 numPrimGroups = setup.NumPrimitiveGroups();
+        mesh.setNumPrimitiveGroups(numPrimGroups);
+        for (int32 i = 0; i < numPrimGroups; i++) {
+            mesh.setPrimitiveGroup(i, setup.PrimitiveGroup(i));
+        }
+        
+        // setup the mesh object
+        const uint8* vertices = (const uint8*) ptr;
+        const uint32 verticesByteSize = Memory::RoundUp(setup.NumVertices * setup.Layout.ByteSize(), 4);
+        mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage));
+        if (setup.IndicesType != IndexType::None) {
+            const uint8* indices = vertices + verticesByteSize;
+            const uint32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
+            mesh.glSetIndexBuffer(this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage));
+        }
+        
+        this->attachInstanceBuffer(mesh);
+        this->setupVertexLayout(mesh);
+        
+        // set mesh to valid, and return
+        mesh.setState(ResourceState::Valid);
+        
+        data->UnmapRead();
+        data->Close();
+    }
+    else {
+        // this shouldn't happen
+        o_error("glMeshFactory::createFromStream(): failed to open stream!\n");
+        mesh.setState(ResourceState::Failed);
+    }
 }
 
 } // namespace _priv

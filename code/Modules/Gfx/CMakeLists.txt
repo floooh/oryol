@@ -75,11 +75,7 @@ fips_begin_module(Gfx)
     )
     fips_dir(Util)
     fips_files(
-        MeshBuilder.cc MeshBuilder.h
-        RawMeshLoader.cc RawMeshLoader.h
-        ShapeBuilder.cc ShapeBuilder.h
         TextureLoader.h
-        VertexWriter.cc VertexWriter.h
     )
     fips_dir(base)
     fips_files(

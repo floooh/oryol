@@ -6,7 +6,7 @@
     @brief shape geometry helper class
     @todo describe ShapeBuilder
 */
-#include "Gfx/Util/MeshBuilder.h"
+#include "Asset/Util/MeshBuilder.h"
 #include "Core/Containers/Array.h"
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"
@@ -42,8 +42,10 @@ public:
     void Clear();
     /// build geometry
     void Build();
+    /// get the resulting mesh setup object
+    const MeshSetup& GetMeshSetup() const;
     /// get the resulting data stream with vertex and index data
-    const Ptr<Stream>& Result() const;
+    const Ptr<Stream>& GetStream() const;
     
 private:
     enum ShapeType {

@@ -117,7 +117,7 @@ MeshSetup::ShouldSetupFullScreenQuad() const {
 //------------------------------------------------------------------------------
 void
 MeshSetup::AddPrimitiveGroup(const class PrimitiveGroup& primGroup) {
-    o_assert(this->setupEmpty);
+    o_assert(this->setupEmpty || this->setupFromStream);
     o_assert(this->numPrimGroups < MaxNumPrimGroups);
     this->primGroups[this->numPrimGroups++] = primGroup;
 }

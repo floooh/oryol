@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
@@ -138,9 +137,7 @@ InstancingApp::updateParticles() {
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(800, 500, "Oryol Instancing Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol Instancing Sample"));
     Dbg::Setup();
     Input::Setup();
     
@@ -162,9 +159,9 @@ InstancingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    auto staticMeshSetup = MeshSetup::FromStream();
+    MeshSetup staticMeshSetup = shapeBuilder.GetMeshSetup();
     staticMeshSetup.InstanceMesh = this->instanceMesh;
-    GfxId mesh = Gfx::CreateResource(staticMeshSetup, shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(staticMeshSetup, shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;

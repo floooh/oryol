@@ -13,10 +13,10 @@ MeshBuilder::MeshBuilder() :
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::Index16),
+VertexUsage(Usage::Immutable),
+IndexUsage(Usage::Immutable),
 inBegin(false),
 resultValid(false),
-header(nullptr),
-headerPointer(nullptr),
 vertexPointer(nullptr),
 indexPointer(nullptr),
 endPointer(nullptr) {
@@ -33,16 +33,15 @@ MeshBuilder::Clear() {
     this->IndicesType = IndexType::Index16;
     this->Layout.Clear();
     this->PrimitiveGroups.Clear();
-    this->meshSetup = MeshSetup();
+    this->VertexUsage = Usage::Immutable;
+    this->IndexUsage = Usage::Immutable;
+    this->meshSetup = MeshSetup::FromStream();
     this->inBegin = false;
     this->resultValid = false;
-    this->header = nullptr;
-    this->headerPointer = nullptr;
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
     this->stream.Invalidate();
-    this->workSet.layout.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -54,54 +53,29 @@ MeshBuilder::Begin() {
     o_assert(!this->PrimitiveGroups.Empty());
     this->inBegin = true;
     this->resultValid = false;
-    
-    // copy config objects into internal temporary state
-    this->workSet.layout = this->Layout;
+
+    // setup MeshSetup object
+    this->meshSetup = MeshSetup::FromStream(this->VertexUsage, this->IndexUsage);
+    this->meshSetup.Layout = this->Layout;
+    this->meshSetup.NumVertices = this->NumVertices;
+    this->meshSetup.NumIndices = this->NumIndices;
+    this->meshSetup.IndicesType = this->IndicesType;
+    for (const auto& primGroup : this->PrimitiveGroups) {
+        this->meshSetup.AddPrimitiveGroup(primGroup);
+    }
     
     // compute the required stream size
-    int32 hdrSize = sizeof(Header);
-    hdrSize      += sizeof(HeaderVertexComponent) * this->workSet.layout.NumComponents();
-    hdrSize      += sizeof(HeaderPrimitiveGroup) * this->PrimitiveGroups.Size();
-    int32 vbSize  = Memory::RoundUp(this->NumVertices * this->workSet.layout.ByteSize(), 4);
-    int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
-    int32 allSize = hdrSize + vbSize + ibSize;
+    const int32 vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
+    const int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
+    int32 allSize = vbSize + ibSize;
     
     // setup the memory stream object
     this->stream = MemoryStream::Create();
     this->stream->Open(OpenMode::WriteOnly);
     o_assert(this->stream->IsOpen());
-    this->headerPointer = this->stream->MapWrite(allSize);
-    this->vertexPointer = this->headerPointer + hdrSize;
+    this->vertexPointer = this->stream->MapWrite(allSize);
     this->indexPointer  = this->vertexPointer + vbSize;
     this->endPointer    = this->indexPointer + ibSize;
-    
-    // write the header
-    this->header = (Header*) this->headerPointer;
-    this->header->magic = 'ORAW';
-    this->header->numVertices = this->NumVertices;
-    this->header->numIndices  = this->NumIndices;
-    this->header->indexType   = (int32) this->IndicesType;
-    this->header->numVertexComponents = this->workSet.layout.NumComponents();
-    this->header->numPrimitiveGroups  = this->PrimitiveGroups.Size();
-    this->header->verticesByteSize = vbSize;
-    this->header->indicesByteSize  = ibSize;
-    
-    HeaderVertexComponent* hdrComp = (HeaderVertexComponent*) (this->headerPointer + sizeof(Header));
-    for (int32 i = 0; i < this->workSet.layout.NumComponents(); i++, hdrComp++) {
-        const VertexComponent& src = this->workSet.layout.Component(i);
-        hdrComp->attr   = src.Attr;
-        hdrComp->format = src.Format;
-    }
-    
-    HeaderPrimitiveGroup* hdrPrimGroup = (HeaderPrimitiveGroup*) hdrComp;
-    const int32 numPrimGroups = this->PrimitiveGroups.Size();
-    for (int32 i = 0; i < numPrimGroups; i++, hdrPrimGroup++) {
-        const PrimitiveGroup& src = this->PrimitiveGroups[i];
-        hdrPrimGroup->type = (uint32) src.PrimType;
-        hdrPrimGroup->baseElement = src.BaseElement;
-        hdrPrimGroup->numElements = src.NumElements;
-    }
-    o_assert((uint8*)hdrPrimGroup == this->vertexPointer);
     
     return *this;
 }
@@ -119,8 +93,6 @@ MeshBuilder::End() {
     this->stream->UnmapWrite();
     this->stream->Close();
     
-    this->header = nullptr;
-    this->headerPointer = nullptr;
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
@@ -130,6 +102,12 @@ MeshBuilder::End() {
 const Ptr<Stream>&
 MeshBuilder::GetStream() const {
     return this->stream;
+}
+
+//------------------------------------------------------------------------------
+const MeshSetup&
+MeshBuilder::GetMeshSetup() const {
+    return this->meshSetup;
 }
 
 } // namespace Oryol

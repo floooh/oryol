@@ -6,8 +6,7 @@
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Gfx/Util/TextureLoader.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -70,7 +69,6 @@ DDSCubeMapApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
     gfxSetup.Loaders.Add(TextureLoader::Creator());
     Gfx::Setup(gfxSetup);
 
@@ -92,7 +90,7 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;

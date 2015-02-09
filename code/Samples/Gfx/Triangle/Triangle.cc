@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/MeshBuilder.h"
+#include "Asset/Util/MeshBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -38,9 +37,7 @@ TriangleApp::OnRunning() {
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(400, 400, "Oryol Triangle Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Triangle Sample"));
     
     // create triangle mesh with 3 vertices, with position and vertex color
     MeshBuilder meshBuilder;
@@ -58,7 +55,7 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
         .End();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), meshBuilder.GetStream());
+    GfxId mesh = Gfx::CreateResource(meshBuilder.GetMeshSetup(), meshBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
 

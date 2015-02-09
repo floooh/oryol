@@ -5,8 +5,6 @@
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -64,9 +62,7 @@ TextureFloatApp::OnRunning() {
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(512, 512, "Oryol Float Texture Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::Window(512, 512, "Oryol Float Texture Sample"));
     Dbg::Setup();
 
     // check required extensions

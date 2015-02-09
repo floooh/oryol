@@ -5,8 +5,7 @@
 #include "Core/App.h"
 #include "Dbg/Dbg.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/ShapeBuilder.h"
-#include "Gfx/Util/RawMeshLoader.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "shaders.h"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -54,9 +53,7 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(1024, 600, "Oryol PBR Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::WindowMSAA4(1024, 600, "Oryol PBR Sample"));
     Dbg::Setup();
     
     // create resources
@@ -67,7 +64,7 @@ PBRenderingApp::OnInit() {
     shapeBuilder.Sphere(0.5f, 36, 20, true)
         .Plane(5.0f, 5.0f, 1, true)
         .Build();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;

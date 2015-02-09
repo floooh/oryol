@@ -5,8 +5,7 @@
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -69,9 +68,7 @@ VertexTextureApp::OnRunning() {
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Vertex Texture Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Vertex Texture Sample"));
     Dbg::Setup();
     
     // FIXME: need a way to check number of vertex texture units
@@ -94,7 +91,7 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
-    GfxId planeMesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId planeMesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId planeProg = Gfx::CreateResource(Shaders::Plane::CreateSetup());
     auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;

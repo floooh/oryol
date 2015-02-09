@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Util/RawMeshLoader.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -63,9 +62,7 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
-    gfxSetup.Loaders.Add(RawMeshLoader::Creator());
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample"));
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -79,7 +76,7 @@ ShapeApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FromStream(), shapeBuilder.Result());
+    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
     GfxId prog = Gfx::CreateResource(Shaders::Shapes::CreateSetup());
     
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
