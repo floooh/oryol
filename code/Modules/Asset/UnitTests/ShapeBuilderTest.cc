@@ -3,13 +3,12 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Util/ShapeBuilder.h"
+#include "Asset/Util/ShapeBuilder.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Core/meshFactory.h"
 #include "Gfx/Core/meshPool.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Util/RawMeshLoader.h"
 #include <cstring>
 
 #if ORYOL_OPENGL
@@ -33,7 +32,6 @@ TEST(ShapeBuilderTest) {
     meshPool meshPool;
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
-    factory.AttachLoader(RawMeshLoader::Create());
     
     // the state builder
     ShapeBuilder shapeBuilder;
@@ -45,23 +43,23 @@ TEST(ShapeBuilderTest) {
     
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
-    simpleCube.setSetup(MeshSetup::FromStream());
+    simpleCube.setSetup(shapeBuilder.GetMeshSetup());
     simpleCube.setState(ResourceState::Setup);
-    factory.SetupResource(simpleCube, shapeBuilder.Result());
-    CHECK(simpleCube.GetVertexBufferAttrs().NumVertices == 24);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.NumComponents() == 1);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.ByteSize() == 12);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).IsValid());
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Attr == VertexAttr::Position);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).Format == VertexFormat::Float3);
-    CHECK(simpleCube.GetVertexBufferAttrs().Layout.Component(0).ByteSize() == 12);
-    CHECK(simpleCube.GetIndexBufferAttrs().NumIndices == 36);
-    CHECK(simpleCube.GetIndexBufferAttrs().Type == IndexType::Index16);
-    CHECK(simpleCube.GetIndexBufferAttrs().BufferUsage == Usage::Immutable);
-    CHECK(simpleCube.GetNumPrimitiveGroups() == 1);
-    CHECK(simpleCube.GetPrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
-    CHECK(simpleCube.GetPrimitiveGroup(0).BaseElement == 0);
-    CHECK(simpleCube.GetPrimitiveGroup(0).NumElements == 36);
+    factory.SetupResource(simpleCube, shapeBuilder.GetStream());
+    CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.ByteSize() == 12);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).IsValid());
+    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).Attr == VertexAttr::Position);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).Format == VertexFormat::Float3);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).ByteSize() == 12);
+    CHECK(simpleCube.indexBufferAttrs.NumIndices == 36);
+    CHECK(simpleCube.indexBufferAttrs.Type == IndexType::Index16);
+    CHECK(simpleCube.indexBufferAttrs.BufferUsage == Usage::Immutable);
+    CHECK(simpleCube.numPrimGroups == 1);
+    CHECK(simpleCube.primGroup[0].PrimType == PrimitiveType::Triangles);
+    CHECK(simpleCube.primGroup[0].BaseElement == 0);
+    CHECK(simpleCube.primGroup[0].NumElements == 36);
     #if ORYOL_OPENGL
     CHECK(simpleCube.glGetVertexBuffer(0) != 0);
     CHECK(simpleCube.glGetIndexBuffer() != 0);

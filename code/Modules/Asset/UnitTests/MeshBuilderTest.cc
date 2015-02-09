@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Util/MeshBuilder.h"
+#include "Asset/Util/MeshBuilder.h"
 #include <cstring>
 
 using namespace Oryol;
@@ -42,14 +42,29 @@ TEST(MeshBuilderTest) {
     // get the resulting stream object
     const Ptr<Stream>& stream = mb.GetStream();
     CHECK(!stream->IsOpen());
+    const MeshSetup& meshSetup = mb.GetMeshSetup();
+    CHECK(meshSetup.ShouldSetupFromStream());
+    
+    // check MeshSetup
+    CHECK(meshSetup.NumVertices == 4);
+    CHECK(meshSetup.NumIndices == 6);
+    CHECK(meshSetup.IndicesType == IndexType::Index16);
+    CHECK(meshSetup.VertexUsage == Usage::Immutable);
+    CHECK(meshSetup.IndexUsage == Usage::Immutable);
+    CHECK(meshSetup.Layout.NumComponents() == 2);
+    CHECK(meshSetup.Layout.Component(0).Attr == VertexAttr::Position);
+    CHECK(meshSetup.Layout.Component(0).Format == VertexFormat::Float3);
+    CHECK(meshSetup.Layout.Component(1).Attr == VertexAttr::TexCoord0);
+    CHECK(meshSetup.Layout.Component(1).Format == VertexFormat::Float2);
+    CHECK(meshSetup.NumPrimitiveGroups() == 1);
+    CHECK(meshSetup.PrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
+    CHECK(meshSetup.PrimitiveGroup(0).BaseElement == 0);
+    CHECK(meshSetup.PrimitiveGroup(0).NumElements == 6);
     
     // see MeshBuilder header for those sizes
-    const uint32 hdrSize = 8 * sizeof(int32);
-    const uint32 hdrCompSize = 2 * 2 * sizeof(int32);
-    const uint32 hdrPrimGroupSize = 3 * sizeof(int32);
     const uint32 vbufSize = 4 * 5 * sizeof(float32);
     const uint32 ibufSize = 6 * sizeof(uint16);
-    const uint32 allDataSize = hdrSize + hdrCompSize + hdrPrimGroupSize + vbufSize + ibufSize;
+    const uint32 allDataSize = vbufSize + ibufSize;
     CHECK(stream->Size() == allDataSize);
     
     // check the generated data
@@ -60,31 +75,8 @@ TEST(MeshBuilderTest) {
     CHECK(ptr != nullptr);
     CHECK(maxPtr == ptr + allDataSize);
     
-    const uint32* i32ptr = (const uint32*) ptr;
-    
-    // check header
-    CHECK(i32ptr[0] == 'ORAW'); // magic number
-    CHECK(i32ptr[1] == 4);      // num vertices
-    CHECK(i32ptr[2] == 6);      // num indices
-    CHECK(i32ptr[3] == IndexType::Index16); // index type
-    CHECK(i32ptr[4] == 2);      // num vertex components
-    CHECK(i32ptr[5] == 1);      // num primitive groups
-    CHECK(i32ptr[6] == vbufSize);   // vertices byte size
-    CHECK(i32ptr[7] == ibufSize);   // indices byte size
-    
-    // check header vertex components
-    CHECK(i32ptr[8] == VertexAttr::Position);                               // comp0: attr
-    CHECK(i32ptr[9] == VertexFormat::Float3);                               // comp0: format
-    CHECK(i32ptr[10] == VertexAttr::TexCoord0);                             // comp1: attr
-    CHECK(i32ptr[11] == VertexFormat::Float2);                              // comp1: format
-    
-    // check primitive group
-    CHECK(i32ptr[12] == PrimitiveType::Triangles);  // prim-group 0: primitive type
-    CHECK(i32ptr[13] == 0);                         // prim-group 0: baseElement
-    CHECK(i32ptr[14] == 6);                         // prim-group 0: numElements
-    
     // check vertices
-    const float32* vPtr = (const float32*) &(i32ptr[15]);
+    const float32* vPtr = (const float32*) ptr;
     CHECK(vPtr[0] == 0.0f); CHECK(vPtr[1] == 0.0f); CHECK(vPtr[2] == 0.0f);
     CHECK(vPtr[3] == 0.0f); CHECK(vPtr[4] == 0.0f);
     CHECK(vPtr[5] == 1.0f); CHECK(vPtr[6] == 0.0f); CHECK(vPtr[7] == 0.0f);

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Util/VertexWriter.h"
+#include "Asset/Util/VertexWriter.h"
 #include "Core/Memory/Memory.h"
 
 using namespace Oryol;

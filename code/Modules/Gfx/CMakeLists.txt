@@ -147,19 +147,16 @@ fips_begin_unittest(Gfx)
     fips_dir(UnitTests)
     fips_files(
         DDSLoadTest.cc
-        MeshBuilderTest.cc
         MeshFactoryTest.cc
         MeshSetupTest.cc
         RenderEnumsTest.cc
         RenderSetupTest.cc
-        ShapeBuilderTest.cc
         TextureFactoryTest.cc
         TextureSetupTest.cc
         VertexLayoutTest.cc
-        VertexWriterTest.cc
         glTypesTest.cc
     )
     fips_generate(TYPE Shader FROM TestShaderLibrary.shd)
-    fips_deps(HTTP Gfx)
+    fips_deps(HTTP Gfx Asset)
 fips_end_unittest()
 

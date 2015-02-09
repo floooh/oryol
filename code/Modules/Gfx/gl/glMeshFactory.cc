@@ -164,8 +164,8 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         
         // verify that there are no colliding vertex components
         #if !ORYOL_NO_ASSERT
-        const VertexLayout& mshLayout = msh.GetVertexBufferAttrs().Layout;
-        const VertexLayout& instLayout = instMesh->GetVertexBufferAttrs().Layout;
+        const VertexLayout& mshLayout = msh.vertexBufferAttrs.Layout;
+        const VertexLayout& instLayout = instMesh->vertexBufferAttrs.Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
             o_assert(!instLayout.Contains(mshLayout.Component(i).Attr));
         }
@@ -268,7 +268,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
         for (int32 i = 0; i < 2; i++) {
             const glMesh* curMesh = meshes[i];
             if (nullptr != curMesh) {
-                const VertexLayout& layout = curMesh->GetVertexBufferAttrs().Layout;
+                const VertexLayout& layout = curMesh->vertexBufferAttrs.Layout;
                 const int32 numComps = layout.NumComponents();
                 for (int i = 0; i < numComps; i++) {
                     const VertexComponent& comp = layout.Component(i);
@@ -394,7 +394,7 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     layout.Add(VertexAttr::Position, VertexFormat::Float3);
     layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     vbAttrs.Layout = layout;
-    mesh.setVertexBufferAttrs(vbAttrs);
+    mesh.vertexBufferAttrs = vbAttrs;
     
     // indices
     IndexBufferAttrs ibAttrs;
@@ -405,13 +405,13 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     ibAttrs.NumIndices = 6;
     ibAttrs.Type = IndexType::Index16;
     ibAttrs.BufferUsage = Usage::Immutable;
-    mesh.setIndexBufferAttrs(ibAttrs);
+    mesh.indexBufferAttrs = ibAttrs;
     
     // primitive grous
-    mesh.setNumPrimitiveGroups(1);
-    mesh.setPrimitiveGroup(0, PrimitiveGroup(PrimitiveType::Triangles, 0, 6));
-    mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, sizeof(vertices), mesh.GetVertexBufferAttrs().BufferUsage));
-    mesh.glSetIndexBuffer(this->createIndexBuffer(indices, sizeof(indices), mesh.GetIndexBufferAttrs().BufferUsage));
+    mesh.numPrimGroups = 1;
+    mesh.primGroup[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage));
+    mesh.glSetIndexBuffer(this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage));
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
@@ -433,7 +433,7 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     vbAttrs.NumVertices = numVertices;
     vbAttrs.Layout = layout;
     vbAttrs.BufferUsage = setup.VertexUsage;
-    mesh.setVertexBufferAttrs(vbAttrs);
+    mesh.vertexBufferAttrs = vbAttrs;
     
     const int32 numIndices = setup.NumIndices;
     const IndexType::Code indexType = setup.IndicesType;
@@ -443,13 +443,13 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     ibAttrs.NumIndices = setup.NumIndices;
     ibAttrs.Type = setup.IndicesType;
     ibAttrs.BufferUsage = setup.IndexUsage;
-    mesh.setIndexBufferAttrs(ibAttrs);
+    mesh.indexBufferAttrs = ibAttrs;
     
     const int32 numPrimGroups = setup.NumPrimitiveGroups();
     if (numPrimGroups > 0) {
-        mesh.setNumPrimitiveGroups(numPrimGroups);
+        mesh.numPrimGroups = numPrimGroups;
         for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.setPrimitiveGroup(i, setup.PrimitiveGroup(i));
+            mesh.primGroup[i] = setup.PrimitiveGroup(i);
         }
     }
     
@@ -492,20 +492,21 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         vbAttrs.NumVertices = setup.NumVertices;
         vbAttrs.BufferUsage = setup.VertexUsage;
         vbAttrs.Layout = setup.Layout;
-        mesh.setVertexBufferAttrs(vbAttrs);
+        mesh.vertexBufferAttrs = vbAttrs;
         
         // setup index buffer attrs
         IndexBufferAttrs ibAttrs;
         ibAttrs.NumIndices = setup.NumIndices;
         ibAttrs.Type = setup.IndicesType;
         ibAttrs.BufferUsage = setup.IndexUsage;
-        mesh.setIndexBufferAttrs(ibAttrs);
+        mesh.indexBufferAttrs = ibAttrs;
         
         // setup primitive groups
         const int32 numPrimGroups = setup.NumPrimitiveGroups();
-        mesh.setNumPrimitiveGroups(numPrimGroups);
+        mesh.numPrimGroups = numPrimGroups;
+        o_assert(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
         for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.setPrimitiveGroup(i, setup.PrimitiveGroup(i));
+            mesh.primGroup[i] = setup.PrimitiveGroup(i);
         }
         
         // setup the mesh object

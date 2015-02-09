@@ -23,70 +23,20 @@ public:
     meshBase();
     
     /// max number of primitive groups in the mesh
-    static const int32 MaxNumPrimitiveGroups = 16;
+    static const int32 MaxNumPrimGroups = 16;
     
-    /// get (optional) IORequest
-    const Ptr<IOProtocol::Request>& GetIORequest() const;
-    /// get vertex buffer attributes
-    const VertexBufferAttrs& GetVertexBufferAttrs() const;
-    /// get the index buffer attributes
-    const IndexBufferAttrs& GetIndexBufferAttrs() const;
-    /// get number of primitive groups
-    int32 GetNumPrimitiveGroups() const;
-    /// get primitive group at index
-    const PrimitiveGroup& GetPrimitiveGroup(int32 index) const;
-
+    /// vertex buffer attributes
+    VertexBufferAttrs vertexBufferAttrs;
+    /// index buffer attributes
+    IndexBufferAttrs indexBufferAttrs;
+    /// number of primitive groups
+    int32 numPrimGroups;
+    /// primitive groups (FIXME: replace with StaticArray<>)
+    PrimitiveGroup primGroup[MaxNumPrimGroups];
+    
     /// clear the object
     void clear();
-    /// set IO request for asynchronous loading
-    void setIORequest(const Ptr<IOProtocol::Request>& ioRequest);
-    /// set vertex buffer attrs
-    void setVertexBufferAttrs(const VertexBufferAttrs& attrs);
-    /// set index buffer attrs
-    void setIndexBufferAttrs(const IndexBufferAttrs& attrs);
-    /// set number of primitive groups
-    void setNumPrimitiveGroups(int32 num);
-    /// set primitive group at index
-    void setPrimitiveGroup(int32 index, const PrimitiveGroup& group);
-    
-protected:
-    Ptr<IOProtocol::Request> ioRequest;
-    VertexBufferAttrs vertexBufferAttrs;
-    IndexBufferAttrs indexBufferAttrs;
-    int numPrimitiveGroups;
-    PrimitiveGroup primitiveGroups[MaxNumPrimitiveGroups];
 };
-
-//------------------------------------------------------------------------------
-inline const Ptr<IOProtocol::Request>&
-meshBase::GetIORequest() const {
-    return this->ioRequest;
-}
-
-//------------------------------------------------------------------------------
-inline const VertexBufferAttrs&
-meshBase::GetVertexBufferAttrs() const {
-    return this->vertexBufferAttrs;
-}
-
-//------------------------------------------------------------------------------
-inline const IndexBufferAttrs&
-meshBase::GetIndexBufferAttrs() const {
-    return this->indexBufferAttrs;
-}
-
-//------------------------------------------------------------------------------
-inline int32
-meshBase::GetNumPrimitiveGroups() const {
-    return this->numPrimitiveGroups;
-}
-
-//------------------------------------------------------------------------------
-inline const PrimitiveGroup&
-meshBase::GetPrimitiveGroup(int32 index) const {
-    o_assert_range(index, MaxNumPrimitiveGroups);
-    return this->primitiveGroups[index];
-}
 
 } // namespace _priv
 } // namespace Oryol

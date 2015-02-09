@@ -681,7 +681,7 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert2_dbg(this->rtValid, "No render target set!");
     ORYOL_GL_CHECK_ERROR();
     
-    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
+    const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -702,13 +702,13 @@ glRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
     
-    if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
+    if (primGroupIndex >= this->curMesh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMesh->GetPrimitiveGroup(primGroupIndex);
+    const PrimitiveGroup& primGroup = this->curMesh->primGroup[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -720,7 +720,7 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert2_dbg(this->rtValid, "No render target set!");
     
     ORYOL_GL_CHECK_ERROR();
-    const IndexType::Code indexType = this->curMesh->GetIndexBufferAttrs().Type;
+    const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -741,13 +741,13 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
     
-    if (primGroupIndex >= this->curMesh->GetNumPrimitiveGroups()) {
+    if (primGroupIndex >= this->curMesh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMesh->GetPrimitiveGroup(primGroupIndex);
+    const PrimitiveGroup& primGroup = this->curMesh->primGroup[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 
@@ -758,7 +758,7 @@ glRenderer::updateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert_dbg(nullptr != msh);
     o_assert(numBytes > 0);
     
-    const VertexBufferAttrs& attrs = msh->GetVertexBufferAttrs();
+    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
     const Usage::Code vbUsage = attrs.BufferUsage;
     o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
     o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
