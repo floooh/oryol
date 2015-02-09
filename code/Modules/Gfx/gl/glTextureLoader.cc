@@ -263,9 +263,9 @@ glTextureLoader::glCreateTexture(texture& tex, const gliml::context& ctx) const 
     attrs.HasMipmaps = ctx.num_mipmaps(0) > 1;
     
     // setup texture
-    tex.setTextureAttrs(attrs);
-    tex.glSetTexture(glTex);
-    tex.glSetTarget(ctx.texture_target());
+    tex.textureAttrs = attrs;
+    tex.glTex = glTex;
+    tex.glTarget = ctx.texture_target();
     tex.setState(ResourceState::Valid);
     
     return true;

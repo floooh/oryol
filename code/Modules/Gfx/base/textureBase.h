@@ -19,33 +19,25 @@ public:
     /// constructor
     textureBase();
     
+    /// texture attributes
+    TextureAttrs textureAttrs;
+    
     /// get (optional) IORequest
     const Ptr<IOProtocol::Request>& GetIORequest() const;
-    /// get texture attrs object
-    const TextureAttrs& GetTextureAttrs() const;
 
     /// clear the object
     void clear();
     /// set IO request for asynchronous loading
     void setIORequest(const Ptr<IOProtocol::Request>& ioRequest);
-    /// set texture attributes object
-    void setTextureAttrs(const TextureAttrs& attrs);
     
 protected:
     Ptr<IOProtocol::Request> ioRequest;
-    TextureAttrs textureAttrs;
 };
 
 //------------------------------------------------------------------------------
 inline const Ptr<IOProtocol::Request>&
 textureBase::GetIORequest() const {
     return this->ioRequest;
-}
-
-//------------------------------------------------------------------------------
-inline const TextureAttrs&
-textureBase::GetTextureAttrs() const {
-    return this->textureAttrs;
 }
 
 } // namespace _priv

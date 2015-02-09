@@ -37,11 +37,11 @@ TEST(RenderTargetCreationTest) {
     tex0.setSetup(texSetup);
     factory.SetupResource(tex0);
     CHECK(tex0.GetState() == ResourceState::Valid);
-    CHECK(tex0.glGetTexture() != 0);
-    CHECK(tex0.glGetFramebuffer() != 0);
-    CHECK(tex0.glGetDepthRenderbuffer() == 0);
-    CHECK(tex0.glGetDepthTexture() == 0);
-    const TextureAttrs& attrs0 = tex0.GetTextureAttrs();
+    CHECK(tex0.glTex != 0);
+    CHECK(tex0.glFramebuffer != 0);
+    CHECK(tex0.glDepthRenderbuffer == 0);
+    CHECK(tex0.glDepthTexture == 0);
+    const TextureAttrs& attrs0 = tex0.textureAttrs;
     CHECK(attrs0.Locator == Locator::NonShared());
     CHECK(attrs0.Type == TextureType::Texture2D);
     CHECK(attrs0.ColorFormat == PixelFormat::RGBA8);
@@ -64,11 +64,11 @@ TEST(RenderTargetCreationTest) {
     tex1.setSetup(rtSetup);
     factory.SetupResource(tex1);
     CHECK(tex1.GetState() == ResourceState::Valid);
-    CHECK(tex1.glGetTexture() != 0);
-    CHECK(tex1.glGetFramebuffer() != 0);
-    CHECK(tex1.glGetDepthRenderbuffer() != 0);
-    CHECK(tex1.glGetDepthTexture() == 0);
-    const TextureAttrs& attrs1 = tex1.GetTextureAttrs();
+    CHECK(tex1.glTex != 0);
+    CHECK(tex1.glFramebuffer != 0);
+    CHECK(tex1.glDepthRenderbuffer != 0);
+    CHECK(tex1.glDepthTexture == 0);
+    const TextureAttrs& attrs1 = tex1.textureAttrs;
     CHECK(attrs1.Locator == Locator::NonShared());
     CHECK(attrs1.Type == TextureType::Texture2D);
     CHECK(attrs1.ColorFormat == PixelFormat::RGBA8);
@@ -91,11 +91,11 @@ TEST(RenderTargetCreationTest) {
     tex2.setSetup(rtSetup);
     factory.SetupResource(tex2);
     CHECK(tex2.GetState() == ResourceState::Valid);
-    CHECK(tex2.glGetTexture() != 0);
-    CHECK(tex2.glGetFramebuffer() != 0);
-    CHECK(tex2.glGetDepthRenderbuffer() != 0);
-    CHECK(tex2.glGetDepthTexture() == 0);
-    const TextureAttrs& attrs2 = tex2.GetTextureAttrs();
+    CHECK(tex2.glTex != 0);
+    CHECK(tex2.glFramebuffer != 0);
+    CHECK(tex2.glDepthRenderbuffer != 0);
+    CHECK(tex2.glDepthTexture == 0);
+    const TextureAttrs& attrs2 = tex2.textureAttrs;
     CHECK(attrs2.Locator == Locator::NonShared());
     CHECK(attrs2.Type == TextureType::Texture2D);
     CHECK(attrs2.ColorFormat == PixelFormat::R5G6B5);
@@ -113,10 +113,10 @@ TEST(RenderTargetCreationTest) {
     // cleanup
     factory.DestroyResource(tex1);
     CHECK(tex1.GetState() == ResourceState::Setup);
-    CHECK(tex1.glGetTexture() == 0);
-    CHECK(tex1.glGetFramebuffer() == 0);
-    CHECK(tex1.glGetDepthRenderbuffer() == 0);
-    CHECK(tex1.glGetDepthTexture() == 0);
+    CHECK(tex1.glTex == 0);
+    CHECK(tex1.glFramebuffer == 0);
+    CHECK(tex1.glDepthRenderbuffer == 0);
+    CHECK(tex1.glDepthTexture == 0);
     
     factory.DestroyResource(tex0);
     CHECK(tex0.GetState() == ResourceState::Setup);

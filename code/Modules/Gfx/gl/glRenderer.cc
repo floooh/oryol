@@ -235,7 +235,7 @@ glRenderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
     }
     else {
         // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
-        const TextureAttrs& attrs = rt->GetTextureAttrs();
+        const TextureAttrs& attrs = rt->textureAttrs;
         this->rtAttrs.WindowWidth = attrs.Width;
         this->rtAttrs.WindowHeight = attrs.Height;
         this->rtAttrs.WindowPosX = 0;
@@ -256,7 +256,7 @@ glRenderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
             displayManager->glBindDefaultFramebuffer();
         }
         else {
-            ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glGetFramebuffer());
+            ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glFramebuffer);
             ORYOL_GL_CHECK_ERROR();
         }
     }
@@ -432,8 +432,8 @@ glRenderer::applyTexture(int32 index, const texture* tex) {
     o_assert_dbg(tex);
     
     int32 samplerIndex = this->curProgramBundle->getSamplerIndex(index);
-    GLuint glTexture = tex->glGetTexture();
-    GLenum glTarget = tex->glGetTarget();
+    GLuint glTexture = tex->glTex;
+    GLenum glTarget = tex->glTarget;
     this->bindTexture(samplerIndex, glTarget, glTexture);
 }
     
@@ -800,7 +800,7 @@ glRenderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes)
         o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorPixelFormat)));
     }
     else {
-        const TextureAttrs& attrs = this->curRenderTarget->GetTextureAttrs();
+        const TextureAttrs& attrs = this->curRenderTarget->textureAttrs;
         width  = attrs.Width;
         height = attrs.Height;
         format = glTypes::AsGLTexImageFormat(attrs.ColorFormat);

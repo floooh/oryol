@@ -20,65 +20,18 @@ public:
     
     /// clear the object
     void clear();
-    
-    /// set the GL texture object
-    void glSetTexture(GLuint tex);
-    /// get the GL texture object
-    GLuint glGetTexture() const;
-    /// set the GL texture target (GL_TEXTURE_2D, ...)
-    void glSetTarget(GLenum tgt);
-    /// get the GL texture target
-    GLuint glGetTarget() const;
-    /// set GL framebuffer (if this is a render target texture)
-    void glSetFramebuffer(GLuint fb);
-    /// get GL framebuffer (if this is a render target texture)
-    GLuint glGetFramebuffer() const;
-    /// set GL depth render buffer object (if render target texture with depth buffer, and no depth textures supported)
-    void glSetDepthRenderbuffer(GLuint drb);
-    /// get GL depth render buffer object
-    GLuint glGetDepthRenderbuffer() const;
-    /// set GL depth texture (if render target texture with depth buffer, and depth textures supported)
-    void glSetDepthTexture(GLuint dtx);
-    /// get GL depth texture (if render target texture with depth buffer, and depth textures supported)
-    GLuint glGetDepthTexture() const;
-    
-protected:
+
+    /// GL texture object
     GLuint glTex;
+    /// GL texture target
     GLenum glTarget;
+    /// GL frame buffer object
     GLuint glFramebuffer;
+    /// GL depth render buffer
     GLuint glDepthRenderbuffer;
+    /// GL depth texture
     GLuint glDepthTexture;
 };
-
-//------------------------------------------------------------------------------
-inline GLuint
-glTexture::glGetTexture() const {
-    return this->glTex;
-}
-
-//------------------------------------------------------------------------------
-inline GLenum
-glTexture::glGetTarget() const {
-    return this->glTarget;
-}
-
-//------------------------------------------------------------------------------
-inline GLuint
-glTexture::glGetFramebuffer() const {
-    return this->glFramebuffer;
-}
-
-//------------------------------------------------------------------------------
-inline GLuint
-glTexture::glGetDepthRenderbuffer() const {
-    return this->glDepthRenderbuffer;
-}
-
-//------------------------------------------------------------------------------
-inline GLuint
-glTexture::glGetDepthTexture() const {
-    return this->glDepthTexture;
-}
 
 } // namespace _priv
 } // namespace Oryol

@@ -37,35 +37,5 @@ glTexture::clear() {
     this->glDepthTexture = 0;
 }
 
-//------------------------------------------------------------------------------
-void
-glTexture::glSetTexture(GLuint tex) {
-    this->glTex = tex;
-}
-
-//------------------------------------------------------------------------------
-void
-glTexture::glSetTarget(GLenum tgt) {
-    this->glTarget = tgt;
-}
-
-//------------------------------------------------------------------------------
-void
-glTexture::glSetFramebuffer(GLuint fb) {
-    this->glFramebuffer = fb;
-}
-
-//------------------------------------------------------------------------------
-void
-glTexture::glSetDepthRenderbuffer(GLuint drb) {
-    this->glDepthRenderbuffer = drb;
-}
-
-//------------------------------------------------------------------------------
-void
-glTexture::glSetDepthTexture(GLuint tex) {
-    this->glDepthTexture = tex;
-}
-
 } // namespace _priv
 } // namespace Oryol

@@ -26,11 +26,5 @@ textureBase::setIORequest(const Ptr<IOProtocol::Request>& req) {
     this->ioRequest = req;
 }
 
-//------------------------------------------------------------------------------
-void
-textureBase::setTextureAttrs(const TextureAttrs& attrs) {
-    this->textureAttrs = attrs;
-}
-
 } // namespace _priv
 } // namespace Oryol

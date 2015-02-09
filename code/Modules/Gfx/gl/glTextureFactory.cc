@@ -103,27 +103,23 @@ glTextureFactory::DestroyResource(texture& tex) {
     
     this->renderer->invalidateTextureState();
 
-    GLuint glFb = tex.glGetFramebuffer();
-    if (0 != glFb) {
-        ::glDeleteFramebuffers(1, &glFb);
+    if (0 != tex.glFramebuffer) {
+        ::glDeleteFramebuffers(1, &tex.glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
     }
         
-    GLuint glTex = tex.glGetTexture();
-    if (0 != glTex) {
-        ::glDeleteTextures(1, &glTex);
+    if (0 != tex.glTex) {
+        ::glDeleteTextures(1, &tex.glTex);
         ORYOL_GL_CHECK_ERROR();
     }
     
-    GLuint glDepthRenderBuffer = tex.glGetDepthRenderbuffer();
-    if (0 != glDepthRenderBuffer) {
-        ::glDeleteRenderbuffers(1, &glDepthRenderBuffer);
+    if (0 != tex.glDepthRenderbuffer) {
+        ::glDeleteRenderbuffers(1, &tex.glDepthRenderbuffer);
         ORYOL_GL_CHECK_ERROR();
     }
     
-    GLuint glDepthTex = tex.glGetDepthTexture();
-    if (0 != glDepthTex) {
-        ::glDeleteTextures(1, &glDepthTex);
+    if (0 != tex.glDepthTexture) {
+        ::glDeleteTextures(1, &tex.glDepthTexture);
         ORYOL_GL_CHECK_ERROR();
     }
     
@@ -139,10 +135,10 @@ glTextureFactory::DestroyResource(texture& tex) {
 void
 glTextureFactory::createRenderTarget(texture& tex) {
     o_assert(tex.GetState() == ResourceState::Setup);
-    o_assert(0 == tex.glGetTexture());
-    o_assert(0 == tex.glGetFramebuffer());
-    o_assert(0 == tex.glGetDepthRenderbuffer());
-    o_assert(0 == tex.glGetDepthTexture());
+    o_assert(0 == tex.glTex);
+    o_assert(0 == tex.glFramebuffer);
+    o_assert(0 == tex.glDepthRenderbuffer);
+    o_assert(0 == tex.glDepthTexture);
     
     this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
@@ -165,8 +161,8 @@ glTextureFactory::createRenderTarget(texture& tex) {
         // from the original render target
         texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget.Id());
         o_assert(nullptr != sharedDepthProvider);
-        width = sharedDepthProvider->GetTextureAttrs().Width;
-        height = sharedDepthProvider->GetTextureAttrs().Height;
+        width = sharedDepthProvider->textureAttrs.Width;
+        height = sharedDepthProvider->textureAttrs.Height;
     }
     else {
         width = setup.Width;
@@ -231,7 +227,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
         else {
             // use shared depth buffer
             o_assert(nullptr != sharedDepthProvider);
-            GLuint glSharedDepthBuffer = sharedDepthProvider->glGetDepthRenderbuffer();
+            GLuint glSharedDepthBuffer = sharedDepthProvider->glDepthRenderbuffer;
             o_assert(0 != glSharedDepthBuffer);
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
             ORYOL_GL_CHECK_ERROR();
@@ -264,11 +260,11 @@ glTextureFactory::createRenderTarget(texture& tex) {
     attrs.IsDepthTexture = false;
     
     // setup the texture object
-    tex.setTextureAttrs(attrs);
-    tex.glSetTexture(glColorRenderTexture);
-    tex.glSetFramebuffer(glFramebuffer);
-    tex.glSetDepthRenderbuffer(glDepthRenderBuffer);
-    tex.glSetTarget(GL_TEXTURE_2D);
+    tex.textureAttrs = attrs;
+    tex.glTex = glColorRenderTexture;
+    tex.glFramebuffer = glFramebuffer;
+    tex.glDepthRenderbuffer = glDepthRenderBuffer;
+    tex.glTarget = GL_TEXTURE_2D;
     tex.setState(ResourceState::Valid);
     
     // bind the default frame buffer
@@ -343,9 +339,9 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     attrs.HasMipmaps = setup.HasMipMaps();
     
     // setup texture
-    tex.setTextureAttrs(attrs);
-    tex.glSetTexture(glTex);
-    tex.glSetTarget(GL_TEXTURE_2D);
+    tex.textureAttrs = attrs;
+    tex.glTex = glTex;
+    tex.glTarget = GL_TEXTURE_2D;
     tex.setState(ResourceState::Valid);
 }
 
