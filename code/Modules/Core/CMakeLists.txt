@@ -29,6 +29,7 @@ fips_begin_module(Core)
         Map.h
         Queue.h
         Set.h
+        StaticArray.h
         elementBuffer.h
     )
     fips_dir(Memory)
@@ -88,6 +89,8 @@ fips_begin_unittest(Core)
     fips_dir(UnitTests)
     fips_files(
         ArgsTest.cc
+        ArrayTest.cc
+        StaticArrayTest.cc
         ArrayMapTest.cc
         CreationTest.cc
         CreatorTest.cc

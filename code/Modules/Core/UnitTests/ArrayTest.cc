@@ -7,6 +7,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Array.h"
 #include "Core/String/String.h"
+#include "Core/Containers/KeyValuePair.h"
 
 using namespace Oryol;
 
@@ -91,8 +92,8 @@ TEST(ArrayTest) {
     CHECK(array2.Front() == 0);
     CHECK(array2.Back() == 2);
     
-    // test emplace-back
-    array2.Emplace(3);
+    // test add
+    array2.Add(3);
     CHECK(array2.Size() == 4);
     CHECK(array2[0] == 0);
     CHECK(array2[1] == 1);
@@ -294,5 +295,15 @@ TEST(ArrayTest) {
     CHECK(array4[1] == "Blub");
     CHECK(array4[2] == "Blob");
     CHECK(array4[3] == "Blubber");
+    
+    // test emplace
+    Array<KeyValuePair<int32, String>> array5;
+    array5.Add(1, "Bla");
+    array5.Add(2, "Blub");
+    CHECK(array5.Size() == 2);
+    CHECK(array5[0].Key() == 1);
+    CHECK(array5[0].Value() == "Bla");
+    CHECK(array5[1].Key() == 2);
+    CHECK(array5[1].Value() == String("Blub"));
 }
 
