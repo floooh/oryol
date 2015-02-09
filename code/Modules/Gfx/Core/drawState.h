@@ -25,9 +25,9 @@ public:
     void clear();
     
     /// mesh pointer
-    mesh* mesh;
+    class mesh* mesh;
     /// program bundle pointer
-    programBundle* programBundle;
+    class programBundle* programBundle;
 };
 
 } // namespace _priv
