@@ -406,8 +406,8 @@ glRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(nullptr != ds);
     
     this->curDrawState = ds;
-    this->curProgramBundle = ds->getProgramBundle();
-    this->curMesh = ds->getMesh();
+    this->curProgramBundle = ds->programBundle;
+    this->curMesh = ds->mesh;
     
     const DrawStateSetup& setup = ds->GetSetup();
     if (setup.DepthStencilState != this->depthStencilState) {
@@ -419,9 +419,9 @@ glRenderer::applyDrawState(drawState* ds) {
     if (setup.RasterizerState != this->rasterizerState) {
         this->applyRasterizerState(setup.RasterizerState);
     }
-    programBundle* pb = ds->getProgramBundle();
+    programBundle* pb = ds->programBundle;
     this->applyProgramBundle(pb, setup.ProgramSelectionMask);
-    this->applyMesh(ds->getMesh(), pb);
+    this->applyMesh(ds->mesh, pb);
 }
 
 //------------------------------------------------------------------------------

@@ -24,31 +24,11 @@ public:
     /// clear the object
     void clear();
     
-    /// set mesh pointer
-    void setMesh(mesh* msh);
-    /// get mesh pointer
-    mesh* getMesh() const;
-    /// set program bundle pointer
-    void setProgramBundle(programBundle* pb);
-    /// get program bundle pointer
-    programBundle* getProgramBundle() const;
-    
-private:
-    mesh* mesh_;
-    programBundle* programBundle_;
+    /// mesh pointer
+    mesh* mesh;
+    /// program bundle pointer
+    programBundle* programBundle;
 };
-
-//------------------------------------------------------------------------------
-inline mesh*
-drawState::getMesh() const {
-    return this->mesh_;
-}
-
-//------------------------------------------------------------------------------
-inline programBundle*
-drawState::getProgramBundle() const {
-    return this->programBundle_;
-}
 
 } // namespace _priv
 } // namespace Oryol
