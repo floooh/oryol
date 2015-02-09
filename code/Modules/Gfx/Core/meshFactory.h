@@ -6,7 +6,6 @@
     @brief private: resource factory for Mesh objects
     @todo describe meshFactory
 */
-#include "Gfx/base/meshLoaderBase.h"
 #if ORYOL_OPENGL
 #include "Gfx/gl/glMeshFactory.h"
 namespace Oryol {

@@ -82,7 +82,6 @@ fips_begin_module(Gfx)
         displayMgrBase.cc displayMgrBase.h
         loaderBase.h
         meshBase.cc meshBase.h
-        meshLoaderBase.cc meshLoaderBase.h
         programBundleBase.h
         renderLoaderFactory.h
         renderSimpleFactory.h

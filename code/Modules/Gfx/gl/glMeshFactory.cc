@@ -2,7 +2,6 @@
 //  glMeshFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Gfx/base/meshLoaderBase.h"
 #include "glMeshFactory.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/Core/meshPool.h"

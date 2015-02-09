@@ -14,7 +14,6 @@ namespace _priv {
 class renderer;
 class meshPool;
 class mesh;
-class meshLoaderBase;
 
 class glMeshFactory : public renderSimpleFactory<mesh, ResourceType::Mesh> {
 public:

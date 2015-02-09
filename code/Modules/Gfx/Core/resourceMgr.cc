@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "Gfx/base/meshLoaderBase.h"
 #include "Gfx/base/textureLoaderBase.h"
 #include "resourceMgr.h"
 
