@@ -5,13 +5,14 @@
     @ingroup _priv
     @brief private: base class for platform-specific mesh implementations
 */
+#include "Core/Assertion.h"
+#include "Core/Containers/StaticArray.h"
 #include "Resource/resourceBase.h"
 #include "Gfx/Attrs/VertexBufferAttrs.h"
 #include "Gfx/Attrs/IndexBufferAttrs.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Core/Enums.h"
-#include "Core/Assertion.h"
 #include "IO/IOProtocol.h"
 
 namespace Oryol {
@@ -32,7 +33,7 @@ public:
     /// number of primitive groups
     int32 numPrimGroups;
     /// primitive groups (FIXME: replace with StaticArray<>)
-    PrimitiveGroup primGroup[MaxNumPrimGroups];
+    StaticArray<PrimitiveGroup, MaxNumPrimGroups> primGroups;
     
     /// clear the object
     void clear();

@@ -89,21 +89,20 @@ glMeshFactory::DestroyResource(mesh& mesh) {
     
     this->renderer->invalidateMeshState();
     
-    for (uint8 i = 0; i < mesh.getNumVertexBufferSlots(); i++) {
-        GLuint vb = mesh.glGetVertexBuffer(i);
+    for (uint8 i = 0; i < mesh.numVertexBufferSlots; i++) {
+        GLuint vb = mesh.glVertexBuffers[i];
         if (0 != vb) {
             ::glDeleteBuffers(1, &vb);
         }
     }
-    for (uint8 i = 0; i < mesh.getNumVAOSlots(); i++) {
-        GLuint vao = mesh.glGetVAO(i);
+    for (uint8 i = 0; i < mesh.numVAOSlots; i++) {
+        GLuint vao = mesh.glVAOs[i];
         if (0 != vao) {
             glExt::DeleteVertexArrays(1, &vao);
         }
     }
-    GLuint ib = mesh.glGetIndexBuffer();
-    if (0 != ib) {
-        ::glDeleteBuffers(1, &ib);
+    if (0 != mesh.glIndexBuffer) {
+        ::glDeleteBuffers(1, &mesh.glIndexBuffer);
     }
     mesh.clear();
     mesh.setState(ResourceState::Setup);
@@ -160,7 +159,7 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
     if (instMeshId.IsValid()) {
         o_assert(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
         const mesh* instMesh = this->meshPool->Lookup(instMeshId);
-        msh.setInstanceMesh(instMesh);
+        msh.instanceMesh = instMesh;
         
         // verify that there are no colliding vertex components
         #if !ORYOL_NO_ASSERT
@@ -184,13 +183,13 @@ glMeshFactory::setupVertexLayout(mesh& mesh) {
     
     // setup number of vertex array slots
     uint8 numVAOSlots;
-    if (mesh.getInstanceMesh()) {
-        numVAOSlots = mesh.getInstanceMesh()->getNumVertexBufferSlots();
+    if (mesh.instanceMesh) {
+        numVAOSlots = mesh.instanceMesh->numVertexBufferSlots;
     }
     else {
-        numVAOSlots = mesh.getNumVertexBufferSlots();
+        numVAOSlots = mesh.numVertexBufferSlots;
     }
-    mesh.setNumVAOSlots(numVAOSlots);
+    mesh.numVAOSlots = numVAOSlots;
     
     // setup the GL vertex attributes
     this->glSetupVertexAttrs(mesh);
@@ -202,11 +201,11 @@ glMeshFactory::setupVertexLayout(mesh& mesh) {
             GLuint vao = 0;
             glExt::GenVertexArrays(1, &vao);
             this->renderer->bindVertexArrayObject(vao);
-            const GLuint ib = mesh.glGetIndexBuffer();
+            const GLuint ib = mesh.glIndexBuffer;
             this->renderer->bindIndexBuffer(ib);
             
             for (int32 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-                const glVertexAttr& glAttr = mesh.glAttr(vaoSlotIndex, attrIndex);
+                const glVertexAttr& glAttr = mesh.glAttrs[vaoSlotIndex][attrIndex];
                 if (glAttr.enabled) {
                     if (glAttr.vertexBuffer != vb) {
                         vb = glAttr.vertexBuffer;
@@ -229,7 +228,7 @@ glMeshFactory::setupVertexLayout(mesh& mesh) {
                     ORYOL_GL_CHECK_ERROR();
                 }
             }
-            mesh.glSetVAO(vaoSlotIndex, vao);
+            mesh.glVAOs[vaoSlotIndex] = vao;
         }
     }
     this->renderer->invalidateMeshState();
@@ -241,20 +240,20 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
     
     // check if mesh needs instancing, and host supports instancing
     // and lookup the optional instancing mesh
-    const glMesh* instMesh = msh.getInstanceMesh();
+    const glMesh* instMesh = msh.instanceMesh;
     if (nullptr != instMesh) {
         o_assert(glExt::HasExtension(glExt::InstancedArrays));
         
         // if instancing is used, geometry mesh cannot be dynamic
         // (FIXME: this is currently a rather arbitrary restriction)
-        o_assert(msh.getNumVertexBufferSlots() == 1);
+        o_assert(msh.numVertexBufferSlots == 1);
     }
 
     // first disable all attrs
-    const uint8 numVAOSlots = msh.getNumVAOSlots();
+    const uint8 numVAOSlots = msh.numVAOSlots;
     for (uint8 vaoSlotIndex = 0; vaoSlotIndex < numVAOSlots; vaoSlotIndex++) {
         for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-            glVertexAttr& glAttr = msh.glAttr(vaoSlotIndex, attrIndex);
+            glVertexAttr& glAttr = msh.glAttrs[vaoSlotIndex][attrIndex];
             glAttr.enabled = GL_FALSE;
             glAttr.index = attrIndex;
             glAttr.vertexBuffer = 0;
@@ -272,22 +271,22 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                 const int32 numComps = layout.NumComponents();
                 for (int i = 0; i < numComps; i++) {
                     const VertexComponent& comp = layout.Component(i);
-                    glVertexAttr& glAttr = msh.glAttr(vaoSlotIndex, comp.Attr);  // msh is not a bug
+                    glVertexAttr& glAttr = msh.glAttrs[vaoSlotIndex][comp.Attr];  // msh is not a bug
                     glAttr.enabled = GL_TRUE;
                     if (curMesh == &msh) {
                         if (instMesh) {
                             // instancing situation: static geometry
-                            glAttr.vertexBuffer = msh.glGetVertexBuffer(0);
+                            glAttr.vertexBuffer = msh.glVertexBuffers[0];
                         }
                         else {
                             // non-instancing: static or dynamic geometry
-                            glAttr.vertexBuffer = msh.glGetVertexBuffer(vaoSlotIndex);
+                            glAttr.vertexBuffer = msh.glVertexBuffers[vaoSlotIndex];
                         }
                         glAttr.divisor = 0;
                     }
                     else {
                         // instancing: instance data
-                        glAttr.vertexBuffer = instMesh->glGetVertexBuffer(vaoSlotIndex);
+                        glAttr.vertexBuffer = instMesh->glVertexBuffers[vaoSlotIndex];
                         glAttr.divisor = 1;
                     }
                     switch (comp.Format) {
@@ -409,9 +408,9 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     
     // primitive grous
     mesh.numPrimGroups = 1;
-    mesh.primGroup[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
-    mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage));
-    mesh.glSetIndexBuffer(this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage));
+    mesh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
+    mesh.glIndexBuffer = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
@@ -449,25 +448,25 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     if (numPrimGroups > 0) {
         mesh.numPrimGroups = numPrimGroups;
         for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.primGroup[i] = setup.PrimitiveGroup(i);
+            mesh.primGroups[i] = setup.PrimitiveGroup(i);
         }
     }
     
     // if this is a stream update mesh, we actually create 2 vertex buffers for double-buffered updated
     if (Usage::Stream == vbAttrs.BufferUsage) {
         const uint8 numSlots = 2;
-        mesh.setNumVertexBufferSlots(numSlots);
-        mesh.setNumVAOSlots(numSlots);
+        mesh.numVertexBufferSlots = numSlots;
+        mesh.numVAOSlots = numSlots;
         for (uint8 slotIndex = 0; slotIndex < numSlots; slotIndex++) {
-            mesh.glSetVertexBuffer(slotIndex, this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage));
+            mesh.glVertexBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
         }
     }
     else {
         // normal static or dynamic mesh, no double-buffering
-        mesh.glSetVertexBuffer(0, this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage));
+        mesh.glVertexBuffers[0] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
     }
     if (indexType != IndexType::None) {
-        mesh.glSetIndexBuffer(this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage));
+        mesh.glIndexBuffer = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
     }
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
@@ -506,17 +505,17 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         mesh.numPrimGroups = numPrimGroups;
         o_assert(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
         for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.primGroup[i] = setup.PrimitiveGroup(i);
+            mesh.primGroups[i] = setup.PrimitiveGroup(i);
         }
         
         // setup the mesh object
         const uint8* vertices = (const uint8*) ptr;
         const uint32 verticesByteSize = Memory::RoundUp(setup.NumVertices * setup.Layout.ByteSize(), 4);
-        mesh.glSetVertexBuffer(0, this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage));
+        mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
         if (setup.IndicesType != IndexType::None) {
             const uint8* indices = vertices + verticesByteSize;
             const uint32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
-            mesh.glSetIndexBuffer(this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage));
+            mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
         }
         
         this->attachInstanceBuffer(mesh);

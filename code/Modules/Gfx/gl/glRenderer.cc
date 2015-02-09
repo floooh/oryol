@@ -365,17 +365,17 @@ glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
         }
     #else
         if (glExt::HasExtension(glExt::VertexArrayObject)) {
-            GLuint vao = msh->glGetVAO(vaoIndex);
+            GLuint vao = msh->glVAOs[vaoIndex];
             o_assert_dbg(0 != vao);
             this->bindVertexArrayObject(vao);
         }
         else {
             GLuint vb = 0;
-            const GLuint ib = msh->glGetIndexBuffer();
+            const GLuint ib = msh->glIndexBuffer;
             this->bindIndexBuffer(ib);
             ORYOL_GL_CHECK_ERROR();
             for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-                const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
+                const glVertexAttr& attr = msh->glAttrs[vaoIndex][attrIndex];
                 if (attr.enabled) {
                     o_assert_dbg(attr.vertexBuffer);
                     if (attr.vertexBuffer != vb) {
@@ -708,7 +708,7 @@ glRenderer::draw(int32 primGroupIndex) {
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMesh->primGroup[primGroupIndex];
+    const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -747,7 +747,7 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMesh->primGroup[primGroupIndex];
+    const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 
@@ -763,19 +763,19 @@ glRenderer::updateVertices(mesh* msh, int32 numBytes, const void* data) {
     o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
     o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
     
-    uint8 slotIndex = msh->getActiveVertexBufferSlot();
+    uint8 slotIndex = msh->activeVertexBufferSlot;
     if (Usage::Stream == vbUsage) {
         // if usage is streaming, rotate slot index to next dynamic vertex buffer
         // to implement double/multi-buffering
         slotIndex++;
-        if (slotIndex >= msh->getNumVertexBufferSlots()) {
+        if (slotIndex >= msh->numVertexBufferSlots) {
             slotIndex = 0;
         }
-        msh->setActiveVertexBufferSlot(slotIndex);
+        msh->activeVertexBufferSlot = slotIndex;
         msh->setActiveVAOSlot(slotIndex);
     }
     
-    GLuint vb = msh->glGetVertexBuffer(slotIndex);
+    GLuint vb = msh->glVertexBuffers[slotIndex];
     this->bindVertexBuffer(vb);
     ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
     ORYOL_GL_CHECK_ERROR();

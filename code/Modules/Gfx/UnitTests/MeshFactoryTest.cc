@@ -83,15 +83,15 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(mesh.indexBufferAttrs.ByteSize() == 12);
     CHECK(mesh.numPrimGroups == 1);
-    CHECK(mesh.primGroup[0].PrimType == PrimitiveType::Triangles);
-    CHECK(mesh.primGroup[0].BaseElement == 0);
-    CHECK(mesh.primGroup[0].NumElements == 6);
+    CHECK(mesh.primGroups[0].PrimType == PrimitiveType::Triangles);
+    CHECK(mesh.primGroups[0].BaseElement == 0);
+    CHECK(mesh.primGroups[0].NumElements == 6);
     #if ORYOL_OPENGL
-    CHECK(mesh.glGetVertexBuffer(0) != 0);
-    CHECK(mesh.glGetIndexBuffer() != 0);
-    CHECK(mesh.glGetVAO(0) != 0);
+    CHECK(mesh.glVertexBuffers[0] != 0);
+    CHECK(mesh.glIndexBuffer != 0);
+    CHECK(mesh.glVAOs[0] != 0);
     for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = mesh.glAttr(0, i);
+        const glVertexAttr& glAttr = mesh.glAttrs[0][i];
         CHECK(glAttr.index == i);
         if (VertexAttr::Position == i) {
             CHECK(glAttr.enabled == GL_TRUE);

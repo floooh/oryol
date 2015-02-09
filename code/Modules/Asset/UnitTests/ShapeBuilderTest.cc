@@ -57,15 +57,15 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.indexBufferAttrs.Type == IndexType::Index16);
     CHECK(simpleCube.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(simpleCube.numPrimGroups == 1);
-    CHECK(simpleCube.primGroup[0].PrimType == PrimitiveType::Triangles);
-    CHECK(simpleCube.primGroup[0].BaseElement == 0);
-    CHECK(simpleCube.primGroup[0].NumElements == 36);
+    CHECK(simpleCube.primGroups[0].PrimType == PrimitiveType::Triangles);
+    CHECK(simpleCube.primGroups[0].BaseElement == 0);
+    CHECK(simpleCube.primGroups[0].NumElements == 36);
     #if ORYOL_OPENGL
-    CHECK(simpleCube.glGetVertexBuffer(0) != 0);
-    CHECK(simpleCube.glGetIndexBuffer() != 0);
-    CHECK(simpleCube.glGetVAO(0) != 0);
+    CHECK(simpleCube.glVertexBuffers[0] != 0);
+    CHECK(simpleCube.glIndexBuffer != 0);
+    CHECK(simpleCube.glVAOs[0] != 0);
     for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = simpleCube.glAttr(0, i);
+        const glVertexAttr& glAttr = simpleCube.glAttrs[0][i];
         CHECK(glAttr.index == i);
         if (VertexAttr::Position == i) {
             CHECK(glAttr.enabled == GL_TRUE);

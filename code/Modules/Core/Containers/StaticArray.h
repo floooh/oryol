@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
+#include <utility>
 
 namespace Oryol {
 
@@ -31,8 +32,6 @@ public:
     /// read-only access single element
     const TYPE& operator[](int32 index) const;
     
-    /// clear the array (assigns default-constructed elements)
-    void Clear();
     /// fill the array with a value
     void Fill(const TYPE& val);
     
@@ -105,14 +104,6 @@ template<class TYPE, int32 SIZE> const TYPE&
 StaticArray<TYPE, SIZE>::operator[](int32 index) const {
     o_assert_range_dbg(index, SIZE);
     return this->items[index];
-}
-    
-//------------------------------------------------------------------------------
-template<class TYPE, int32 SIZE> void
-StaticArray<TYPE, SIZE>::Clear() {
-    for (int32 i = 0; i < SIZE; i++) {
-        this->items[i] = TYPE();
-    }
 }
     
 //------------------------------------------------------------------------------
