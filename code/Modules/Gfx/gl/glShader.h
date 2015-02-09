@@ -20,21 +20,9 @@ public:
     
     /// clear the object
     void clear();
-
-    /// set the GL shader object
-    void glSetShader(GLuint shd);
-    /// get the GL shader object
-    GLuint glGetShader() const;
-    
-protected:
+    /// GL shader id
     GLuint glShd;
 };
-
-//------------------------------------------------------------------------------
-inline GLuint
-glShader::glGetShader() const {
-    return this->glShd;
-}
 
 } // namespace _priv
 } // namespace Oryol

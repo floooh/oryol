@@ -73,8 +73,8 @@ glShaderFactory::SetupResource(shader& shd) {
     }
     
     // all ok, shader has been successfully compiled
-    shd.setShaderType(setup.Type);
-    shd.glSetShader(glShader);
+    shd.shaderType = setup.Type;
+    shd.glShd = glShader;
     shd.setState(ResourceState::Valid);
 }
 
@@ -84,9 +84,8 @@ glShaderFactory::DestroyResource(shader& shd) {
     o_assert(this->isValid);
     o_assert(ResourceState::Valid == shd.GetState());
 
-    GLuint glShader = shd.glGetShader();
-    o_assert(0 != glShader);
-    ::glDeleteShader(glShader);
+    o_assert(0 != shd.glShd);
+    ::glDeleteShader(shd.glShd);
     ORYOL_GL_CHECK_ERROR();
     
     shd.clear();

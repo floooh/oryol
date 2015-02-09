@@ -25,12 +25,5 @@ glShader::clear() {
     shaderBase::clear();
 }
 
-//------------------------------------------------------------------------------
-void
-glShader::glSetShader(GLuint shd) {
-    o_assert(0 == this->glShd);
-    this->glShd = shd;
-}
-
 } // namespace _priv
 } // namespace Oryol

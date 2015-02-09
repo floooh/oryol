@@ -16,15 +16,10 @@ public:
     /// constructor
     shaderBase();
     
-    /// get shader type
-    ShaderType::Code GetShaderType() const;
+    /// shader type
+    ShaderType::Code shaderType;
     /// clear the object
     void clear();
-    /// set shader type
-    void setShaderType(ShaderType::Code type);
-    
-private:
-    ShaderType::Code type;
 };
     
 } // namespace _priv

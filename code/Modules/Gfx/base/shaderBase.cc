@@ -9,27 +9,15 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 shaderBase::shaderBase() :
-type(ShaderType::InvalidShaderType) {
+shaderType(ShaderType::InvalidShaderType) {
     // empty
-}
-
-//------------------------------------------------------------------------------
-ShaderType::Code
-shaderBase::GetShaderType() const {
-    return this->type;
 }
 
 //------------------------------------------------------------------------------
 void
 shaderBase::clear() {
-    this->type = ShaderType::InvalidShaderType;
+    this->shaderType = ShaderType::InvalidShaderType;
     resourceBase::clear();    
-}
-
-//------------------------------------------------------------------------------
-void
-shaderBase::setShaderType(ShaderType::Code t) {
-    this->type = t;
 }
 
 } // namespace _priv
