@@ -13,13 +13,11 @@
 #include "IO/Stream/Stream.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceState.h"
-#include "Resource/Locator.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/resourceMgr.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/GfxId.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "glm/vec4.hpp"
 
@@ -51,19 +49,25 @@ public:
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
         
-    /// create a resource, or return existing shared resource
-    template<class SETUP> static GfxId CreateResource(const SETUP& setup);
-    /// create a resource with data stream, or return existing shared resource
-    template<class SETUP> static GfxId CreateResource(const SETUP& setup, const Ptr<Stream>& data);
-    /// lookup a resource by resource locator
-    static GfxId LookupResource(const Locator& locator);
+    /// create a gfx resource
+    template<class SETUP> static Id CreateResource(const SETUP& setup);
+    /// create a gfx resource with data in stream object
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
+    /// allocate a resource (for async resource loading)
+    template<class SETUP> static Id AllocResource(const SETUP& setup, Id placeholder=Id::InvalidId());
+    /// setup a previously allocated resource from data (for async resource loading)
+    static void SetupResource(const Id& id, const Ptr<Stream>& data);
+    /// discard a gfx resource
+    static void DiscardResource(const Id& id);
     /// get the loading state of a resource
-    static ResourceState::Code QueryResourceState(const GfxId& gfxId);
+    static ResourceState::Code QueryResourceState(const Id& id);
+    /// query the resource setup object for an id
+    template<class SETUP> const SETUP& QueryResourceSetup(const Id& id) const;
     
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
-    static void ApplyOffscreenRenderTarget(const GfxId& gfxId);
+    static void ApplyOffscreenRenderTarget(const Id& id);
     /// apply view port
     static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
@@ -71,18 +75,18 @@ public:
     /// apply blend color (see DrawState.BlendState)
     static void ApplyBlendColor(const glm::vec4& blendColor);
     /// apply draw state to use for rendering
-    static void ApplyDrawState(const GfxId& gfxId);
+    static void ApplyDrawState(const Id& id);
     /// apply a shader constant block
-    static void ApplyConstantBlock(const GfxId& gfxId);
+    static void ApplyConstantBlock(const Id& id);
     /// apply a shader variable
     template<class T> static void ApplyVariable(int32 index, const T& value);
     /// apply a shader variable array
     template<class T> static void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     
     /// update dynamic vertex data (only complete replace possible at the moment)
-    static void UpdateVertices(const GfxId& gfxId, int32 numBytes, const void* data);
+    static void UpdateVertices(const Id& id, int32 numBytes, const void* data);
     /// update dynamic index data (only complete replace possible at the moment)
-    static void UpdateIndices(const GfxId& gfxId, int32 numBytes, const void* data);
+    static void UpdateIndices(const Id& id, int32 numBytes, const void* data);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     
@@ -103,13 +107,6 @@ public:
     static void ResetStateCache();
     
 private:
-    friend class GfxId;
-    
-    /// increment resource id use count
-    static void useResource(const Id& id);
-    /// decrement resource id use count
-    static void releaseResource(const Id& id);
-
     struct _state {
         class GfxSetup gfxSetup;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
@@ -127,22 +124,29 @@ Gfx::IsValid() {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline GfxId
+template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
-    return GfxId(state->resourceManager.CreateResource(setup));
+    return state->resourceManager.CreateResource(setup);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline GfxId
+template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
     o_assert_dbg(IsValid());
-    return GfxId(state->resourceManager.CreateResource(setup, data));
+    return state->resourceManager.CreateResource(setup, data);
+}
+
+//------------------------------------------------------------------------------
+inline void
+Gfx::DiscardResource(const Id& id) {
+    o_assert_dbg(IsValid());
+    state->resourceManager.DiscardResource(id);
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
-Gfx::ApplyVariable(int32 index, const GfxId& texResId) {
+Gfx::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(IsValid());
     _priv::texture* tex = state->resourceManager.LookupTexture(texResId.Id());
     state->renderer.applyTexture(index, tex);

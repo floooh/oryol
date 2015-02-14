@@ -1,40 +1,43 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::GfxId
+    @class Oryol::AssetId
+    @ingroup Assets
     @brief RAII wrapper for Resource::Id
     
     Wraps a resource id and manages its use count for automatic life time
-    management of graphics resources.
+    management of assets through the asset registry.
 */
 #include "Resource/Id.h"
 
 namespace Oryol {
     
-class GfxId {
+class AssetId {
 public:
     /// default constructor
-    GfxId();
+    AssetId();
     /// copy constructor
-    GfxId(const GfxId& rhs);
+    AssetId(const AssetId& rhs);
     /// move constructor
-    GfxId(GfxId&& rhs);
+    AssetId(AssetId&& rhs);
     /// construct from resource Id
-    GfxId(const class Id& rhs);
+    AssetId(const class Id& rhs);
     /// destructor
-    ~GfxId();
+    ~AssetId();
     
     /// copy-assign
-    void operator=(const GfxId& rhs);
+    void operator=(const AssetId& rhs);
     /// move-assign
-    void operator=(GfxId&& rhs);
+    void operator=(AssetId&& rhs);
     
     /// equality
-    bool operator==(const GfxId& rhs) const;
+    bool operator==(const AssetId& rhs) const;
     /// inequality
-    bool operator!=(const GfxId& rhs) const;
+    bool operator!=(const AssetId& rhs) const;
     /// less-then
-    bool operator<(const GfxId& rhs) const;
+    bool operator<(const AssetId& rhs) const;
+    /// cast to resource id
+    operator Id() const;
     
     /// return true if resource Id is valid
     bool IsValid() const;
@@ -49,44 +52,50 @@ private:
 
 //------------------------------------------------------------------------------
 inline
-GfxId::GfxId() {
+AssetId::AssetId() {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-GfxId::GfxId(GfxId&& rhs) {
+AssetId::AssetId(AssetId&& rhs) {
     this->resId = rhs.resId;
     rhs.resId.Invalidate();
 }
 
 //------------------------------------------------------------------------------
 inline bool
-GfxId::operator==(const GfxId& rhs) const {
+AssetId::operator==(const AssetId& rhs) const {
     return this->resId == rhs.resId;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-GfxId::operator!=(const GfxId& rhs) const {
+AssetId::operator!=(const AssetId& rhs) const {
     return this->resId != rhs.resId;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-GfxId::operator<(const GfxId& rhs) const {
+AssetId::operator<(const AssetId& rhs) const {
     return this->resId < rhs.resId;
 }
 
 //------------------------------------------------------------------------------
+inline
+AssetId::operator class Id() const {
+    return this->resId;
+}
+
+//------------------------------------------------------------------------------
 inline bool
-GfxId::IsValid() const {
+AssetId::IsValid() const {
     return this->resId.IsValid();
 }
 
 //------------------------------------------------------------------------------
 inline const class Id&
-GfxId::Id() const {
+AssetId::Id() const {
     return this->resId;
 }
     

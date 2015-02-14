@@ -47,12 +47,8 @@ public:
     template<class SETUP> Id CreateResource(const SETUP& setup);
     /// create a resource with data stream, or return existing resource
     template<class SETUP> Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
-    /// lookup a resource by resource locator (increments use-count of resource!)
-    Id LookupResource(const Locator& locator);
-    /// bump resource use count
-    void UseResource(const Id& resId);
-    /// release a resource (decrement use-count, free resource if use-count is 0)
-    void ReleaseResource(const Id& resId);
+    /// discard a resource
+    void DiscardResource(const Id& resId);
     /// get the loading state of a resource
     ResourceState::Code QueryResourceState(const Id& resId);
     
@@ -70,7 +66,6 @@ private:
     RunLoop::Id runLoopId;
     class renderer* renderer;
     class displayMgr* displayMgr;
-    ResourceRegistry resourceRegistry;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;

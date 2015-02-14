@@ -2,13 +2,13 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Locator
-    @ingroup Resource
-    @brief used to locate and share resource data
+    @ingroup Resources
+    @brief
     
-    A Locator describes where the source data for a resource object
+    A Locator describes where the source data for a resource
     is located. It usually contains a string that can be resolved
-    to an URL. Locators are also used for sharing resources. If 2 Locators
-    are completely identical, the same resource will be returned for them.
+    to an URL. Locators are also used for sharing. If 2 Locators
+    are completely identical, they identify the same resource.
     The optional signature can be used to forbid sharing between
     2 otherwise identical Locators. Only Locators with identical location
     and signature will be shared.

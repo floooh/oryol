@@ -1,54 +1,54 @@
 //------------------------------------------------------------------------------
-//  GfxId.cc
+//  AssetId.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "GfxId.h"
-#include "Gfx/Gfx.h"
+#include "AssetId.h"
+#include "Assets/Assets.h"
 
 namespace Oryol {
     
 //------------------------------------------------------------------------------
-GfxId::GfxId(const GfxId& rhs) {
+AssetId::AssetId(const AssetId& rhs) {
     this->resId = rhs.resId;
     if (this->resId.IsValid()) {
-        Gfx::useResource(this->resId);
+        Assets::useAsset(this->resId);
     }
 }
 
 //------------------------------------------------------------------------------
-GfxId::GfxId(const class Id& rhs) {
+AssetId::AssetId(const class Id& rhs) {
     this->resId = rhs;
     if (this->resId.IsValid()) {
-        Gfx::useResource(this->resId);
+        Assets::useAsset(this->resId);
     }
 }
 
 //------------------------------------------------------------------------------
-GfxId::~GfxId() {
+AssetId::~AssetId() {
     if (this->resId.IsValid()) {
-        Gfx::releaseResource(this->resId);
+        Assets::releaseAsset(this->resId);
         this->resId.Invalidate();
     }
 }
 
 //------------------------------------------------------------------------------
 void
-GfxId::operator=(const GfxId& rhs) {
+AssetId::operator=(const AssetId& rhs) {
     if (this->resId.IsValid()) {
-        Gfx::releaseResource(this->resId);
+        Assets::releaseAsset(this->resId);
         this->resId.Invalidate();
     }
     this->resId = rhs.resId;
     if (this->resId.IsValid()) {
-        Gfx::useResource(this->resId);
+        Assets::useAsset(this->resId);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-GfxId::operator=(GfxId&& rhs) {
+AssetId::operator=(AssetId&& rhs) {
     if (this->resId.IsValid()) {
-        Gfx::releaseResource(this->resId);
+        Assets::releaseAsset(this->resId);
         this->resId.Invalidate();
     }
     this->resId = rhs.resId;
@@ -57,9 +57,9 @@ GfxId::operator=(GfxId&& rhs) {
     
 //------------------------------------------------------------------------------
 void
-GfxId::Release() {
+AssetId::Release() {
     if (this->resId.IsValid()) {
-        Gfx::releaseResource(this->resId);
+        Assets::releaseAsset(this->resId);
         this->resId.Invalidate();
     }
 }

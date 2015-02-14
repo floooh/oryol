@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::VertexWriter
-    @ingroup Gfx
+    @ingroup Assets
     @brief efficiently write packed vertex components
 */
 #include "Core/Types.h"

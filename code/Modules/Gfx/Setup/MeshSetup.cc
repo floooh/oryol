@@ -8,39 +8,26 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 MeshSetup::MeshSetup() :
-Locator(Locator::NonShared()),
 VertexUsage(Usage::InvalidUsage),
 IndexUsage(Usage::InvalidUsage),
-IOLane(0),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
 numPrimGroups(0),
-setupFromFile(false),
+setupLoadAsync(false),
 setupFromStream(false),
 setupEmpty(false),
-setupFullScreenQuad(false) {
+setupFullScreenQuad(false),
+Locator(Locator::NonShared()) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-MeshSetup
-MeshSetup::FromFile(const class Locator& loc, int32 ioLane, Usage::Code vbUsage, Usage::Code ibUsage) {
+MeshSetup::FromFileAsync(const class Locator& loc, Id placeholder) {
     MeshSetup setup;
     setup.Locator = loc;
-    setup.IOLane = ioLane;
-    setup.VertexUsage = vbUsage;
-    setup.IndexUsage = ibUsage;
-    setup.setupFromFile = true;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup
-MeshSetup::FromFile(const class Locator& loc, const MeshSetup& blueprint) {
-    MeshSetup setup(blueprint);
-    setup.Locator = loc;
-    setup.setupFromFile = true;
+    setup.Placeholder = placeholder;
+    setup.setupLoadAsync = true;
     return setup;
 }
 
@@ -92,8 +79,8 @@ MeshSetup::FullScreenQuad() {
 
 //------------------------------------------------------------------------------
 bool
-MeshSetup::ShouldSetupFromFile() const {
-    return this->setupFromFile;
+MeshSetup::ShouldSetupFromFileAsync() const {
+    return this->setupLoadAsync;
 }
 
 //------------------------------------------------------------------------------

@@ -8,7 +8,6 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
-Locator(Locator::NonShared()),
 IOLane(0),
 Width(0),
 Height(0),
@@ -21,14 +20,25 @@ WrapV(TextureWrapMode::Repeat),
 WrapW(TextureWrapMode::Repeat),
 MagFilter(TextureFilterMode::Nearest),
 MinFilter(TextureFilterMode::Nearest),
-shouldSetupFromFile(false),
+shouldSetupLoadAsync(false),
 shouldSetupFromImageFileData(false),
 shouldSetupFromPixelData(false),
 shouldSetupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
-hasMipMaps(false) {
+hasMipMaps(false),
+Locator(Locator::NonShared()) {
     // empty
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromFileAsync(const class Locator& loc, Id placeholder) {
+    TextureSetup setup;
+    setup.shouldSetupLoadAsync = true;
+    setup.Locator = loc;
+    setup.Placeholder = placeholder;
+    return setup;
 }
 
 //------------------------------------------------------------------------------
@@ -44,16 +54,6 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
     setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup
-TextureSetup::FromFile(const class Locator& loc, int32 ioLane, TextureSetup bluePrint) {
-    TextureSetup setup(bluePrint);
-    setup.shouldSetupFromFile = true;
-    setup.IOLane = ioLane;
-    setup.Locator = loc;
     return setup;
 }
 
@@ -116,8 +116,8 @@ TextureSetup::SharedDepthRenderTarget(const GfxId& depthRenderTarget) {
 
 //------------------------------------------------------------------------------
 bool
-TextureSetup::ShouldSetupFromFile() const {
-    return this->shouldSetupFromFile;
+TextureSetup::ShouldSetupFromFileAsync() const {
+    return this->shouldSetupLoadAsync;
 }
 
 //------------------------------------------------------------------------------

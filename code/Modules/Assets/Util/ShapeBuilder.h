@@ -2,11 +2,11 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::ShapeBuilder
-    @ingroup Gfx
+    @ingroup Assets
     @brief shape geometry helper class
     @todo describe ShapeBuilder
 */
-#include "Asset/Util/MeshBuilder.h"
+#include "Assets/Util/MeshBuilder.h"
 #include "Core/Containers/Array.h"
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"

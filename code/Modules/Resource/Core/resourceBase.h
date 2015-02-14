@@ -16,7 +16,6 @@
     can be destroyed and re-created if needed.
 */
 #include "Resource/Id.h"
-#include "Resource/Locator.h"
 #include "Resource/ResourceState.h"
 
 namespace Oryol {

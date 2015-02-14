@@ -58,8 +58,6 @@ resourceMgr::Setup(const GfxSetup& setup, class renderer* rendr, class displayMg
     this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(&this->drawStateFactory, setup.PoolSize(ResourceType::DrawState), 0, 'DRWS');
     
-    this->resourceRegistry.Setup(setup.ResourceRegistryCapacity());
-    
     // attach loaders
     for (const auto& loaderCreator : setup.Loaders) {
         Ptr<loaderBase> loader = loaderCreator();
@@ -78,7 +76,6 @@ resourceMgr::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
     Core::PreRunLoop()->Remove(this->runLoopId);
-    this->resourceRegistry.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
     this->texturePool.Discard();
@@ -112,51 +109,30 @@ resourceMgr::Update() {
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup) {
     o_assert_dbg(this->isValid);
-    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::Mesh);
-        return resId;
-    }
-    else {
-        resId = this->meshPool.AllocId();
-        this->resourceRegistry.AddResource(setup.Locator, resId);
-        this->meshPool.Assign(resId, setup);
-        return resId;
-    }
+    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    Id resId = this->meshPool.AllocId();
+    this->meshPool.Assign(resId, setup);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const MeshSetup& setup, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid);
-    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::Mesh);
-        return resId;
-    }
-    else {
-        resId = this->meshPool.AllocId();
-        this->resourceRegistry.AddResource(setup.Locator, resId);
-        this->meshPool.Assign(resId, setup, data);
-        return resId;
-    }
+    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    Id resId = this->meshPool.AllocId();
+    this->meshPool.Assign(resId, setup, data);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup) {
     o_assert_dbg(this->isValid);
-    const Locator& loc = setup.Locator;
-    Id resId = this->resourceRegistry.LookupResource(loc);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::Texture);
-        return resId;
-    }
-    else {
-        resId = this->texturePool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
-        this->texturePool.Assign(resId, setup);
-        return resId;
+    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    Id resId = this->texturePool.AllocId();
+    this->texturePool.Assign(resId, setup);
+    return resId;
     }
 }
 
@@ -164,113 +140,66 @@ resourceMgr::CreateResource(const TextureSetup& setup) {
 template<> Id
 resourceMgr::CreateResource(const TextureSetup& setup, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid);
-    const Locator& loc = setup.Locator;
-    Id resId = this->resourceRegistry.LookupResource(loc);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::Texture);
-        return resId;
-    }
-    else {
-        resId = this->texturePool.AllocId();
-        this->resourceRegistry.AddResource(loc, resId);
-        this->texturePool.Assign(resId, setup, data);
-        return resId;
-    }
+    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    Id resId = this->texturePool.AllocId();
+    this->texturePool.Assign(resId, setup, data);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid);
-    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::Shader);
-        return resId;
-    }
-    else {
-        resId = this->shaderPool.AllocId();
-        this->resourceRegistry.AddResource(setup.Locator, resId);
-        this->shaderPool.Assign(resId, setup);
-        return resId;
-    }
+    Id resId = this->shaderPool.AllocId();
+    this->shaderPool.Assign(resId, setup);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const ProgramBundleSetup& setup) {
     o_assert_dbg(this->isValid);
-    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::ProgramBundle);
-        return resId;
-    }
-    else {
-        resId = this->programBundlePool.AllocId();
-        this->resourceRegistry.AddResource(setup.Locator, resId);
-        this->programBundlePool.Assign(resId, setup);
-        return resId;
-    }
+    Id resId = this->programBundlePool.AllocId();
+    this->programBundlePool.Assign(resId, setup);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 resourceMgr::CreateResource(const DrawStateSetup& setup) {
     o_assert_dbg(this->isValid);
-    Id resId = this->resourceRegistry.LookupResource(setup.Locator);
-    if (resId.IsValid()) {
-        o_assert_dbg(resId.Type() == ResourceType::DrawState);
-        return resId;
-    }
-    else {
-        resId = this->drawStatePool.AllocId();
-        this->resourceRegistry.AddResource(setup.Locator, resId);
-        this->drawStatePool.Assign(resId, setup);
-        return resId;
-    }
+    Id resId = this->drawStatePool.AllocId();
+    this->drawStatePool.Assign(resId, setup);
+    return resId;
 }
     
 //------------------------------------------------------------------------------
-Id
-resourceMgr::LookupResource(const Locator& loc) {
-    o_assert_dbg(this->isValid);
-    return this->resourceRegistry.LookupResource(loc);
-}
-
-//------------------------------------------------------------------------------
 void
-resourceMgr::UseResource(const Id& resId) {
-    this->resourceRegistry.UseResource(resId);
-}
-
-//------------------------------------------------------------------------------
-void
-resourceMgr::ReleaseResource(const Id& resId) {
+resourceMgr::DiscardResource(const Id& resId) {
     o_assert_dbg(this->isValid);
-    if (this->resourceRegistry.ReleaseResource(resId)) {
-        // use count 0 reached, destroy the resource
-        switch (resId.Type()) {
-            case ResourceType::Texture:
-                this->texturePool.Unassign(resId);
-                break;
-            case ResourceType::Mesh:
-                this->meshPool.Unassign(resId);
-                break;
-            case ResourceType::Shader:
-                this->shaderPool.Unassign(resId);
-                break;
-            case ResourceType::ProgramBundle:
-                this->programBundlePool.Unassign(resId);
-                break;
-            case ResourceType::ConstantBlock:
-                o_assert2(false, "FIXME!!!\n");
-                break;
-            case ResourceType::DrawState:
-                this->drawStatePool.Unassign(resId);
-                break;
-            default:
-                o_assert(false);
-                break;
-        }
+    switch (resId.Type()) {
+        case ResourceType::Texture:
+            this->texturePool.Unassign(resId);
+            break;
+        case ResourceType::Mesh:
+            this->meshPool.Unassign(resId);
+            break;
+        case ResourceType::Shader:
+            this->shaderPool.Unassign(resId);
+            break;
+        case ResourceType::ProgramBundle:
+            this->programBundlePool.Unassign(resId);
+            break;
+        case ResourceType::ConstantBlock:
+            o_assert2(false, "FIXME!!!\n");
+            break;
+        case ResourceType::DrawState:
+            this->drawStatePool.Unassign(resId);
+            break;
+        default:
+            o_assert(false);
+            break;
+    }
     }
 }
 

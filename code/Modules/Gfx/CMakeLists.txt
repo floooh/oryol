@@ -39,7 +39,6 @@ fips_begin_module(Gfx)
         BlendState.h
         DepthStencilState.h
         Enums.h
-        GfxId.cc GfxId.h
         PrimitiveGroup.h
         RasterizerState.h
         StencilState.h

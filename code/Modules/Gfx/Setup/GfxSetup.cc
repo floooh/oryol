@@ -8,8 +8,7 @@
 namespace Oryol {
     
 //------------------------------------------------------------------------------
-GfxSetup::GfxSetup() :
-registryCapacity(1024) {
+GfxSetup::GfxSetup() {
     for (int32 i = 0; i < ResourceType::NumResourceTypes; i++) {
         this->poolSizes[i] = DefaultPoolSize;
         this->throttling[i] = 0;    // unthrottled
@@ -105,17 +104,4 @@ GfxSetup::Throttling(ResourceType::Code type) const {
     return this->throttling[type];
 }
     
-//------------------------------------------------------------------------------
-void
-GfxSetup::SetResourceRegistryCapacity(int32 capacity) {
-    o_assert(capacity > 0);
-    this->registryCapacity = capacity;
-}
-    
-//------------------------------------------------------------------------------
-int32
-GfxSetup::ResourceRegistryCapacity() const {
-    return this->registryCapacity;
-}
-
 } // namespace Oryol

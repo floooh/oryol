@@ -57,10 +57,6 @@ public:
     void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
     /// get resource throttling value
     int32 Throttling(ResourceType::Code type) const;
-    /// tweak the resource registry initial capacity (this can reduce memory re-allocations)
-    void SetResourceRegistryCapacity(int32 capacity);
-    /// get the resource registry initial capacity
-    int32 ResourceRegistryCapacity() const;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
@@ -73,7 +69,6 @@ private:
     
     int32 poolSizes[ResourceType::NumResourceTypes];
     int32 throttling[ResourceType::NumResourceTypes];
-    int32 registryCapacity;
 };
     
 } // namespace Oryol

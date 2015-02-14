@@ -40,7 +40,7 @@
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
-#include "Asset/Util/VertexWriter.h"
+#include "Assets/Util/VertexWriter.h"
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
