@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: program bundle resource base class
 */
-#include "Resource/resourceBase.h"
+#include "Resource/Core/resourceBase.h"
 #include "Gfx/Setup/ProgramBundleSetup.h"
 
 namespace Oryol {

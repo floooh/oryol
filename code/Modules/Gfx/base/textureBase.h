@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: base class for platform-specific texture implementation
 */
-#include "Resource/resourceBase.h"
+#include "Resource/Core/resourceBase.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/Core/Enums.h"

@@ -5,9 +5,12 @@ fips_begin_module(Resource)
     fips_files(
         Id.h
         Locator.cc Locator.h
+        ResourceState.cc ResourceState.h
+    )
+    fips_dir(Core)
+    fips_files(
         ResourcePool.h
         ResourceRegistry.cc ResourceRegistry.h
-        ResourceState.cc ResourceState.h
         loaderFactory.h
         resourceBase.h
         resourceSlot.h

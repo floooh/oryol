@@ -15,7 +15,7 @@
 #include "Gfx/Core/programBundlePool.h"
 #include "Gfx/Core/texturePool.h"
 #include "Gfx/Core/drawStatePool.h"
-#include "Resource/ResourceRegistry.h"
+#include "Resource/Core/ResourceRegistry.h"
 
 namespace Oryol {
 namespace _priv {

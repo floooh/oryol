@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool for drawState resources
 */
-#include "Resource/ResourcePool.h"
+#include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/DrawStateSetup.h"
 #include "Gfx/Core/drawStateFactory.h"
 #include "Gfx/Core/drawState.h"

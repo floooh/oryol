@@ -8,7 +8,7 @@
     This base factory can be used as-is for very simple resource which
     don't require a customized setup action at all.
 */
-#include "Resource/simpleFactory.h"
+#include "Resource/Core/simpleFactory.h"
 #include "Gfx/Core/Enums.h"
 
 namespace Oryol {

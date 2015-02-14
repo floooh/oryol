@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool specialization for meshes
 */
-#include "Resource/ResourcePool.h"
+#include "Resource/Core/ResourcePool.h"
 #include "Gfx/Core/mesh.h"
 #include "Gfx/Core/meshFactory.h"
 #include "Gfx/Setup/MeshSetup.h"

@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool specialization for shaders
 */
-#include "Resource/ResourcePool.h"
+#include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/ShaderSetup.h"
 #include "Gfx/Core/shaderFactory.h"
 #include "Gfx/Core/shader.h"

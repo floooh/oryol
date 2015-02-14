@@ -11,7 +11,7 @@
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Map.h"
 #include "Resource/Id.h"
-#include "Resource/resourceSlot.h"
+#include "Resource/Core/resourceSlot.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {

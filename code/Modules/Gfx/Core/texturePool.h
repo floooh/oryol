@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool specialization for textures
 */
-#include "Resource/ResourcePool.h"
+#include "Resource/Core/ResourcePool.h"
 #include "Gfx/Core/texture.h"
 #include "Gfx/Core/textureFactory.h"
 #include "Gfx/Setup/TextureSetup.h"

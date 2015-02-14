@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief template loader factory base class for rendering resources
 */
-#include "Resource/loaderFactory.h"
+#include "Resource/Core/loaderFactory.h"
 #include "Gfx/Core/Enums.h"
 #include "IO/IOProtocol.h"
 

@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief bundles pre-compiled state for drawing operations
 */
-#include "Resource/resourceBase.h"
+#include "Resource/Core/resourceBase.h"
 #include "Gfx/Setup/DrawStateSetup.h"
 
 namespace Oryol {

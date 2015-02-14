@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief resource pool specialization for program bundles
 */
-#include "Resource/ResourcePool.h"
+#include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/ProgramBundleSetup.h"
 #include "Gfx/Core/programBundleFactory.h"
 #include "Gfx/Core/programBundle.h"

@@ -7,7 +7,7 @@
 */
 #include "Core/Assertion.h"
 #include "Core/Containers/StaticArray.h"
-#include "Resource/resourceBase.h"
+#include "Resource/Core/resourceBase.h"
 #include "Gfx/Attrs/VertexBufferAttrs.h"
 #include "Gfx/Attrs/IndexBufferAttrs.h"
 #include "Gfx/Core/PrimitiveGroup.h"

@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief shader resource base class
 */
-#include "Resource/resourceBase.h"
+#include "Resource/Core/resourceBase.h"
 #include "Gfx/Setup/ShaderSetup.h"
 
 namespace Oryol {
