@@ -71,8 +71,7 @@ glTextureFactory::SetupResource(texture& tex) {
     }
     else {
         // let a loader take over, parent class will take care of this
-        o_assert(tex.GetSetup().ShouldSetupFromFile());
-        loaderFactory<texture, textureLoaderBase>::SetupResource(tex);
+        o_error("FIXME FIXME FIXME");
     }
 }
 
@@ -82,7 +81,7 @@ glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     o_assert(this->isValid);
     o_assert(tex.GetState() == ResourceState::Setup);
     o_assert(!tex.GetSetup().ShouldSetupAsRenderTarget());
-    o_assert(!tex.GetSetup().ShouldSetupFromFile());
+    o_assert(!tex.GetSetup().ShouldSetupFromFileAsync());
     
     if (tex.GetSetup().ShouldSetupFromPixelData()) {
         this->createFromPixelData(tex, data);
@@ -159,7 +158,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget.Id());
+        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
         o_assert(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;

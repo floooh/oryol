@@ -150,8 +150,11 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::IsValid() const {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> Id
 ResourcePool<RESOURCE,SETUP, FACTORY>::AllocId() {
+o_error("FIXE FIXME FIXME");
+/*
     o_assert(this->isValid);
     return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
+*/
 }
 
 //------------------------------------------------------------------------------

@@ -88,7 +88,7 @@ assetRegistry::findEntryById(const Id& id) const {
 
 //------------------------------------------------------------------------------
 bool
-assetRegistry::Exists(const Id& id) const {
+assetRegistry::Contains(const Id& id) const {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     return this->idIndexMap.Contains(id);
@@ -109,26 +109,17 @@ assetRegistry::Lookup(const Locator& loc) {
 
 //------------------------------------------------------------------------------
 void
-assetRegistry::Use(const Id& id) {
-    this->incrUseCount(id);
-}
-
-//------------------------------------------------------------------------------
-bool
-assetRegistry::Release(const Id& id) {
+assetRegistry::Remove(uint8 label) {
     o_assert(this->isValid);
-    o_assert(id.IsValid());
     
-    if (this->decrUseCount(id)) {
-        const int32 mapIndex = this->idIndexMap.FindIndex(id);
-        if (InvalidIndex != mapIndex) {
-            const int32 entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
-            o_assert(this->entries[entryIndex].useCount == 0);
-            o_assert(this->entries[entryIndex].id == id);
+    // for each entry where id.label matches label (from behind
+    // because matching entries will be removed)
+    // FIXME: this can be slow if many resource are live!
+    int32 entryIndex = this->entries.Size() - 1;
+    for (; entryIndex >= 0; entryIndex--) {
+        if (this->entries[entryIndex].id.Label() == label) {
+            Id id = this->entries[entryIndex].id;
             Locator loc = this->entries[entryIndex].locator;
-            
-            // call the discard function to release the resource
-            this->entries[entryIndex].discardFunc(id);
             
             // remove entries
             this->entries.EraseSwapBack(entryIndex);
@@ -159,42 +150,7 @@ assetRegistry::Release(const Id& id) {
             o_assert(this->checkIntegrity());
             #endif
         }
-        return true;
     }
-    else {
-        return false;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-assetRegistry::incrUseCount(const Id& id) {
-    o_assert_dbg(id.IsValid());
-    Entry* entry = (Entry*) this->findEntryById(id);
-    o_assert_dbg(nullptr != entry);
-    entry->useCount++;
-}
-
-//------------------------------------------------------------------------------
-bool
-assetRegistry::decrUseCount(const Id& id) {
-    o_assert_dbg(id.IsValid());
-    Entry* entry = (Entry*) this->findEntryById(id);
-    o_assert_dbg(nullptr != entry);
-    o_assert_dbg(entry->useCount > 0);
-    entry->useCount--;
-    return 0 == entry->useCount;
-}
-
-//------------------------------------------------------------------------------
-int32
-assetRegistry::GetUseCount(const Id& id) const {
-    o_assert(this->isValid);
-    o_assert(id.IsValid());
-    
-    const Entry* entry = this->findEntryById(id);
-    o_assert(nullptr != entry);
-    return entry->useCount;
 }
 
 //------------------------------------------------------------------------------

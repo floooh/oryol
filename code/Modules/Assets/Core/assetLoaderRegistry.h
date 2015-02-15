@@ -41,7 +41,7 @@ private:
     Array<Ptr<AssetLoader>> loaders;
     struct request {
         Id id;
-        Ptr<IORequest> ioRequest;
+        Ptr<IOProtocol::Request> ioRequest;
     };
     Array<request> pendingRequests;
     RunLoop::Id runLoopId;

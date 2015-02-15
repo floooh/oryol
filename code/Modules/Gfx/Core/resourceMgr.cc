@@ -133,7 +133,6 @@ resourceMgr::CreateResource(const TextureSetup& setup) {
     Id resId = this->texturePool.AllocId();
     this->texturePool.Assign(resId, setup);
     return resId;
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -199,7 +198,6 @@ resourceMgr::DiscardResource(const Id& resId) {
         default:
             o_assert(false);
             break;
-    }
     }
 }
 

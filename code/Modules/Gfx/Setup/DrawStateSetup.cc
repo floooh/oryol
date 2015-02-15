@@ -16,7 +16,7 @@ ProgramSelectionMask(0) {
 
 //------------------------------------------------------------------------------
 DrawStateSetup
-DrawStateSetup::FromMeshAndProg(const GfxId& msh, const GfxId& prg, uint32 selMask) {
+DrawStateSetup::FromMeshAndProg(const Id& msh, const Id& prg, uint32 selMask) {
     DrawStateSetup setup;
     setup.Mesh = msh;
     setup.Program = prg;

@@ -64,6 +64,8 @@ glTextureLoader::Accepts(const texture& tex, const Ptr<Stream>& data) const {
 //------------------------------------------------------------------------------
 void
 glTextureLoader::Load(texture& tex) const {
+o_error("FIXME FIXME FIXME");
+/*
     const TextureSetup& setup = tex.GetSetup();
     const ResourceState::Code state = tex.GetState();
     o_assert((state == ResourceState::Setup) || (state == ResourceState::Pending));
@@ -90,6 +92,7 @@ glTextureLoader::Load(texture& tex) const {
             tex.setIORequest(nullptr);
         }
     }
+*/
 }
 
 //------------------------------------------------------------------------------

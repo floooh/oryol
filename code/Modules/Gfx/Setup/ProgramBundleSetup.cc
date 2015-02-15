@@ -40,10 +40,10 @@ ProgramBundleSetup::obtainEntry(uint32 mask) {
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddProgram(uint32 mask, const GfxId& vs, const GfxId& fs) {
+ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
     o_assert(this->numProgramEntries < MaxNumProgramEntries);
-    o_assert(vs.IsValid() && vs.Id().Type() == ResourceType::Shader);
-    o_assert(fs.IsValid() && fs.Id().Type() == ResourceType::Shader);
+    o_assert(vs.IsValid() && vs.Type() == ResourceType::Shader);
+    o_assert(fs.IsValid() && fs.Type() == ResourceType::Shader);
     
     programEntry& entry = this->obtainEntry(mask);
     entry.vertexShader = vs;
@@ -100,14 +100,14 @@ ProgramBundleSetup::Mask(int32 progIndex) const {
 }
 
 //------------------------------------------------------------------------------
-const GfxId&
+const Id&
 ProgramBundleSetup::VertexShader(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].vertexShader;
 }
 
 //------------------------------------------------------------------------------
-const GfxId&
+const Id&
 ProgramBundleSetup::FragmentShader(int32 progIndex) const {
     o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].fragmentShader;

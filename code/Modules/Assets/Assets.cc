@@ -34,8 +34,42 @@ Assets::IsValid() {
     return nullptr != state;
 }
 
+//------------------------------------------------------------------------------
+const class AssetsSetup&
+Assets::AssetsSetup() {
+    o_assert_dbg(IsValid());
+    return state->setup;
+}
 
-FIXME:
-- Load must first check the registry, then call assetLoaderRegistry
+//------------------------------------------------------------------------------
+void
+Assets::AttachLoader(const Ptr<AssetLoader>& loader) {
+    o_assert_dbg(IsValid());
+    state->loaderRegistry.AttachLoader(loader);
+}
+
+//------------------------------------------------------------------------------
+void
+Assets::DetachLoader(const Ptr<AssetLoader>& loader) {
+    o_assert_dbg(IsValid());
+    state->loaderRegistry.DetachLoader(loader);
+}
+
+//------------------------------------------------------------------------------
+AssetId
+Assets::Lookup(const Locator& loc) {
+    o_assert_dbg(IsValid());
+    return AssetId(state->registry.Lookup(loc));
+}
+
+//------------------------------------------------------------------------------
+AssetId
+Assets::Register(const Locator& loc, Id resId, DiscardFunc discardFunc) {
+    o_assert_dbg(IsValid());
+    o_assert_dbg(!state->registry.Contains(id));
+    o_assert_dbg(!state->registry.Lookup(loc).IsValid());
+    state->registry.Add(loc, resId, discardFunc);
+    return AssetId(resId);
+}
 
 } // namespace Oryol

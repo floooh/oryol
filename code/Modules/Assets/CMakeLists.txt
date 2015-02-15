@@ -7,7 +7,10 @@ fips_begin_module(Assets)
     fips_dir(Core)
     fips_files(
         assetRegistry.cc assetRegistry.h
-        AssetLoader.h
+        assetLoaderRegistry.cc assetLoaderRegistry.h
+        assetCreator.h
+        assetCreator_Gfx.cc
+        AssetLoader.cc AssetLoader.h
     )
     fips_dir(Util)
     fips_files(

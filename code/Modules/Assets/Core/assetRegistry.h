@@ -19,9 +19,6 @@ namespace _priv {
     
 class assetRegistry {
 public:
-    /// discard function definition
-    typedef std::function<void(const Id&)> DiscardFunc;
-
     /// constructor
     assetRegistry();
     /// destructor
@@ -35,18 +32,14 @@ public:
     bool IsValid() const;
     
     /// add a new asset to the registry
-    void Add(const Locator& loc, const Id& id, DiscardFunc discardFunc);
+    void Add(const Locator& loc, const Id& id);
     /// lookup asset by locator
     Id Lookup(const Locator& loc);
-    /// increment the use-count of the asset
-    void Use(const Id& id);
-    /// decreases use-count, return true if resource must be destroyed
-    bool Release(const Id& id);
+    /// remove all resource matching label from registry (does not discard!)
+    void Remove(uint8 label);
     
     /// check if asset is registered by AssetId
-    bool Exists(const Id& id) const;
-    /// (debug) get the current use-count of an asset (fail hard if resource doesn't exist)
-    int32 GetUseCount(const Id& id) const;
+    bool Contains(const Id& id) const;
     /// (debug) get the locator of an asset (fail hard if asset doesn't exist)
     const Locator& GetLocator(const Id& id) const;
     
@@ -66,20 +59,12 @@ private:
     #endif
     
     struct Entry {
-        Entry() :
-            useCount(0) {
-        };
-        Entry(const Locator& loc_, const Id& id_, DiscardFunc discardFunc_) :
-            useCount(0),
+        Entry(const Locator& loc_, const Id& id_) :
             locator(loc_),
-            id(id_),
-            discardFunc(discardFunc_) {
-        };
+            id(id_) { };
         
-        int32 useCount;
         Locator locator;
         Id id;
-        DiscardFunc discardFunc;
     };
     
     /// find an entry by locator

@@ -48,7 +48,13 @@ public:
     static const struct DisplayAttrs& RenderTargetAttrs();
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
-        
+    
+    /// push a new resource label, all resources after this get this label
+    static void PushResourceLabel(uint8 label);
+    /// pop current top level resource label
+    static uint8 PopResourceLabel();
+    /// discard all resource matching label
+    static void DiscardResources(uint8 label);
     /// create a gfx resource
     template<class SETUP> static Id CreateResource(const SETUP& setup);
     /// create a gfx resource with data in stream object
@@ -56,9 +62,7 @@ public:
     /// allocate a resource (for async resource loading)
     template<class SETUP> static Id AllocResource(const SETUP& setup, Id placeholder=Id::InvalidId());
     /// setup a previously allocated resource from data (for async resource loading)
-    static void SetupResource(const Id& id, const Ptr<Stream>& data);
-    /// discard a gfx resource
-    static void DiscardResource(const Id& id);
+    template<class SETUP> static void InitResource(const Id& id, const SETUP& setup, const Ptr<Stream>& data);
     /// get the loading state of a resource
     static ResourceState::Code QueryResourceState(const Id& id);
     /// query the resource setup object for an id
@@ -139,16 +143,17 @@ Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
 
 //------------------------------------------------------------------------------
 inline void
-Gfx::DiscardResource(const Id& id) {
+Gfx::DiscardResources(uint8 label) {
     o_assert_dbg(IsValid());
-    state->resourceManager.DiscardResource(id);
+    
+o_error("FIXME FIXM FIXME");
 }
 
 //------------------------------------------------------------------------------
 template<> inline void
 Gfx::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(IsValid());
-    _priv::texture* tex = state->resourceManager.LookupTexture(texResId.Id());
+    _priv::texture* tex = state->resourceManager.LookupTexture(texResId);
     state->renderer.applyTexture(index, tex);
 }
 
@@ -192,22 +197,6 @@ inline void
 Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
     o_assert_dbg(IsValid());
     state->renderer.applyBlendColor(blendColor);
-}
-
-//------------------------------------------------------------------------------
-inline void
-Gfx::releaseResource(const Id& resId) {
-    if (IsValid()) {
-        state->resourceManager.ReleaseResource(resId);
-    }
-}
-
-//------------------------------------------------------------------------------
-inline void
-Gfx::useResource(const Id& resId) {
-    if (IsValid()) {
-        state->resourceManager.UseResource(resId);
-    }
 }
 
 } // namespace Oryol

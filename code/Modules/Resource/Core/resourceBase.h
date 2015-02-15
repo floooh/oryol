@@ -15,6 +15,7 @@
     setup object is stored in the resource object, so that the resource
     can be destroyed and re-created if needed.
 */
+#include "Core/Assertion.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceState.h"
 

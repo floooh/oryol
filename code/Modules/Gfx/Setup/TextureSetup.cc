@@ -8,7 +8,6 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
-IOLane(0),
 Width(0),
 Height(0),
 RelWidth(0.0f),
@@ -20,14 +19,14 @@ WrapV(TextureWrapMode::Repeat),
 WrapW(TextureWrapMode::Repeat),
 MagFilter(TextureFilterMode::Nearest),
 MinFilter(TextureFilterMode::Nearest),
+Locator(Locator::NonShared()),
 shouldSetupLoadAsync(false),
 shouldSetupFromImageFileData(false),
 shouldSetupFromPixelData(false),
 shouldSetupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
-hasMipMaps(false),
-Locator(Locator::NonShared()) {
+hasMipMaps(false) {
     // empty
 }
 
@@ -101,8 +100,8 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::SharedDepthRenderTarget(const GfxId& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Id().Type() == ResourceType::Texture);
+TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
+    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == ResourceType::Texture);
 
     TextureSetup setup;
     setup.shouldSetupAsRenderTarget = true;

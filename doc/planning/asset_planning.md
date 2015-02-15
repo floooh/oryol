@@ -16,7 +16,7 @@ The following Gfx features should be moved out of Gfx:
 
 - asynchronous resource loading
 - custom resource loaders
-- resource sharing and use-count
+- resource sharing
 - resource placeholders
 
 Where to move this to? It would make sense to move this into the
@@ -24,6 +24,17 @@ Resource module, but this would mess up module dependencies,
 Gfx would depend on Resource, Resource would depend on Gfx.
 
 Current plan:
+
+NO USE COUNTS ANYMORE.
+
+Use counts are too complicated for dependent resources (e.g.
+when a Shader is a dependent resource of a ProgramBundle, 
+or an instance mesh is a dependent resource of an instanced mesh.
+
+Instead use resource labels and batch deletion. Each created
+resource gets a label slapped on which can be set by
+the caller before creating resources. Then there's a DiscardResource(label)
+method which deletes all resource matching that label.
 
 - make Resource module even lower level, and introduce a new 
 higher level 'Asset' module

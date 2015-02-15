@@ -3,8 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "assetLoaderRegistry.h"
+#include "Core/Core.h"
 
 namespace Oryol {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 assetLoaderRegistry::assetLoaderRegistry() :
@@ -69,14 +71,5 @@ assetLoaderRegistry::DetachLoader(Ptr<AssetLoader> loader) {
     this->loaders.Erase(loaderIndex);
 }
 
-//------------------------------------------------------------------------------
-FIXME: Load method:
-
-- specialized for asset type by SETUP template param
-- get resource Id from Gfx via Gfx::AllocResource
-- create IO request
-- append to pendingRequests
-- then in update: check requests for finished, and call Gfx::SetupResource
-
-
+} // namespace _priv
 } // namespace Oryol

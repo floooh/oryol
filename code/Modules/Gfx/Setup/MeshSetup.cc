@@ -13,16 +13,17 @@ IndexUsage(Usage::InvalidUsage),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
+Locator(Locator::NonShared()),
 numPrimGroups(0),
 setupLoadAsync(false),
 setupFromStream(false),
 setupEmpty(false),
-setupFullScreenQuad(false),
-Locator(Locator::NonShared()) {
+setupFullScreenQuad(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
+MeshSetup
 MeshSetup::FromFileAsync(const class Locator& loc, Id placeholder) {
     MeshSetup setup;
     setup.Locator = loc;

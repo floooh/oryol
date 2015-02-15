@@ -88,7 +88,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         }
         else {
             // vertex shader is precompiled
-            const shader* vertexShader = this->shdPool->Lookup(setup.VertexShader(progIndex).Id());
+            const shader* vertexShader = this->shdPool->Lookup(setup.VertexShader(progIndex));
             o_assert(nullptr != vertexShader);
             glVertexShader = vertexShader->glShd;
         }
@@ -104,7 +104,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         }
         else {
             // fragment shader is precompiled
-            const shader* fragmentShader = this->shdPool->Lookup(setup.FragmentShader(progIndex).Id());
+            const shader* fragmentShader = this->shdPool->Lookup(setup.FragmentShader(progIndex));
             o_assert(nullptr != fragmentShader);
             glFragmentShader = fragmentShader->glShd;
         }
