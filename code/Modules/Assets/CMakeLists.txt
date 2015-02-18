@@ -23,7 +23,6 @@ fips_end_module()
 fips_begin_unittest(Assets)
     fips_dir(UnitTests)
     fips_files(
-        LocatorTest.cc
         assetRegistryTest.cc
         MeshBuilderTest.cc
         ShapeBuilderTest.cc
