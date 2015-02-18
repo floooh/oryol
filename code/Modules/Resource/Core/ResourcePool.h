@@ -36,7 +36,7 @@ public:
     void Update();
     
     /// allocate a resource id
-    Id AllocId();
+    Id AllocId(uint8 resourceLabel);
     
     /// assign a resource to a free slot
     void Assign(const Id& id, const SETUP& setup);
@@ -149,12 +149,9 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::IsValid() const {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> Id
-ResourcePool<RESOURCE,SETUP, FACTORY>::AllocId() {
-o_error("FIXE FIXME FIXME");
-/*
+ResourcePool<RESOURCE,SETUP,FACTORY>::AllocId(uint8 resourceLabel) {
     o_assert(this->isValid);
-    return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
-*/
+    return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType, resourceLabel);
 }
 
 //------------------------------------------------------------------------------
@@ -223,7 +220,8 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
         else {
             // resource exists but is not currently valid (pending or failed to load)
             // try to return matching placeholder
-            return this->lookupPlaceholder(slot.GetResource().GetPlaceholderType());
+            o_error("FIXME FIXME FIXME");
+            return nullptr;
         }
     }
     else {

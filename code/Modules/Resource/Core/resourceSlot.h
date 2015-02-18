@@ -6,6 +6,7 @@
     @brief a slot in a ResourcePool
 */
 #include "Resource/Id.h"
+#include "Resource/ResourceState.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {

@@ -25,6 +25,7 @@ fips_begin_unittest(Resource)
         IdTest.cc
         LocatorTest.cc
         ResourceLabelStackTest.cc
+        ResourcePoolTest.cc
         StateTest.cc
     )
     fips_deps(Resource Core)

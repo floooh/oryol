@@ -34,8 +34,6 @@ public:
     ResourceState::Code GetState() const;
     /// get the setup object
     const SETUP& GetSetup() const;
-    /// get the placeholder type fourcc (only for asynchronously loaded resources)
-    uint32 GetPlaceholderType() const;
 
     /// set the resource id of the resource
     void setId(const Id& id);
@@ -47,8 +45,6 @@ public:
     void setLoaderIndex(int32 i);
     /// get the loader index
     int32 getLoaderIndex() const;
-    /// set placeholder type fourcc
-    void setPlaceholderType(uint32 fourcc);
     /// clear the resource
     void clear();
     
@@ -57,15 +53,13 @@ protected:
     ResourceState::Code state;
     SETUP setup;
     int32 loaderIndex;
-    uint32 placeholderType;
 };
 
 //------------------------------------------------------------------------------
 template<class SETUP>
 resourceBase<SETUP>::resourceBase() :
 state(ResourceState::Initial),
-loaderIndex(InvalidIndex),
-placeholderType(0) {
+loaderIndex(InvalidIndex) {
     // empty
 }
     
@@ -100,12 +94,6 @@ resourceBase<SETUP>::GetState() const {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> uint32
-resourceBase<SETUP>::GetPlaceholderType() const {
-    return this->placeholderType;
-}
-
-//------------------------------------------------------------------------------
 template<class SETUP> void
 resourceBase<SETUP>::setSetup(const SETUP& setup_) {
     o_assert(ResourceState::Initial == this->state);
@@ -129,12 +117,6 @@ resourceBase<SETUP>::setLoaderIndex(int32 i) {
 template<class SETUP> int32
 resourceBase<SETUP>::getLoaderIndex() const {
     return this->loaderIndex;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
-resourceBase<SETUP>::setPlaceholderType(uint32 fourcc) {
-    this->placeholderType = fourcc;
 }
 
 //------------------------------------------------------------------------------
