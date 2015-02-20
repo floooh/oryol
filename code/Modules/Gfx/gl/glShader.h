@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of class Shader
 */
-#include "Gfx/base/shaderBase.h"
+#include "Gfx/Resource/shaderBase.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {

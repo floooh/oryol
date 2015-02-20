@@ -22,9 +22,6 @@
 namespace Oryol {
 class Assets {
 public:
-    /// asset discard function
-    typedef _priv::assetRegistry::DiscardFunc DiscardFunc;
-
     /// setup the Asset module
     static void Setup(const AssetsSetup& setup = AssetsSetup());
     /// discard the Asset module

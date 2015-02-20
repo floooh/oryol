@@ -3,13 +3,13 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glTextureFactory.h"
-#include "Gfx/base/textureLoaderBase.h"
+#include "Gfx/Resource/textureLoaderBase.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/texture.h"
+#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/texturePool.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Core/texturePool.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {

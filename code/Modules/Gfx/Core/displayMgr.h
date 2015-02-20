@@ -40,7 +40,7 @@ namespace _priv {
 class displayMgr : public pnaclDisplayMgr { };
 } }
 #else
-#include "Gfx/base/displayMgrBase.h"
+#include "Gfx/Core/displayMgrBase.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public displayMgrBase { };

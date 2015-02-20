@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief private: GL implementation of textureFactory
 */
-#include "Gfx/base/renderLoaderFactory.h"
-#include "Gfx/Core/texture.h"
+#include "Gfx/Resource/renderLoaderFactory.h"
+#include "Gfx/Resource/texture.h"
 
 namespace Oryol {
 namespace _priv {

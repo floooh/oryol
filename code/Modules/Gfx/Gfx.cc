@@ -19,7 +19,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     state->gfxSetup = setup;
     state->displayManager.SetupDisplay(setup);
     state->renderer.setup();
-    state->resourceManager.Setup(setup, &state->renderer, &state->displayManager);
+    state->resourceContainer.setup(setup, &state->renderer, &state->displayManager);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();
     });
@@ -31,7 +31,7 @@ Gfx::Discard() {
     o_assert_dbg(IsValid());
     Core::PreRunLoop()->Remove(state->runLoopId);
     state->renderer.discard();
-    state->resourceManager.Discard();
+    state->resourceContainer.discard();
     state->displayManager.DiscardDisplay();
     delete state;
     state = nullptr;
@@ -82,13 +82,6 @@ Gfx::RenderTargetAttrs() {
 }
 
 //------------------------------------------------------------------------------
-ResourceState::Code
-Gfx::QueryResourceState(const Id& id) {
-    o_assert_dbg(IsValid());
-    return state->resourceManager.QueryResourceState(id);
-}
-
-//------------------------------------------------------------------------------
 void
 Gfx::ApplyDefaultRenderTarget() {
     o_assert_dbg(IsValid());
@@ -101,7 +94,7 @@ Gfx::ApplyOffscreenRenderTarget(const Id& id) {
     o_assert_dbg(IsValid());
     o_assert_dbg(id.IsValid());
 
-    texture* renderTarget = state->resourceManager.LookupTexture(id);
+    texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
     state->renderer.applyRenderTarget(&state->displayManager, renderTarget);
 }
@@ -111,7 +104,7 @@ void
 Gfx::ApplyDrawState(const Id& id) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
-    state->renderer.applyDrawState(state->resourceManager.LookupDrawState(id));
+    state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
 }
 
 //------------------------------------------------------------------------------
@@ -136,7 +129,7 @@ void
 Gfx::UpdateVertices(const Id& id, int32 numBytes, const void* data) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
-    mesh* msh = state->resourceManager.LookupMesh(id);
+    mesh* msh = state->resourceContainer.lookupMesh(id);
     state->renderer.updateVertices(msh, numBytes, data);
 }
 

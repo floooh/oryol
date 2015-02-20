@@ -8,7 +8,7 @@
     This loads the most common runtime texture file formats for the
     target platform (such as DDS, PVR, ...) into GL textures.
 */
-#include "Gfx/base/textureLoaderBase.h"
+#include "Gfx/Resource/textureLoaderBase.h"
 
 namespace gliml {
 class context;

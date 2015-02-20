@@ -36,6 +36,7 @@ fips_begin_module(Gfx)
     fips_files(DisplayAttrs.h IndexBufferAttrs.h TextureAttrs.h VertexBufferAttrs.h)
     fips_dir(Core)
     fips_files(
+        displayMgrBase.cc displayMgrBase.h
         BlendState.h
         DepthStencilState.h
         Enums.h
@@ -45,6 +46,10 @@ fips_begin_module(Gfx)
         VertexComponent.h
         VertexLayout.cc VertexLayout.h
         displayMgr.h
+        renderer.h
+    )
+    fips_dir(Resource)
+    fips_files(
         drawState.cc drawState.h
         drawStateFactory.cc drawStateFactory.h
         drawStatePool.h
@@ -54,14 +59,21 @@ fips_begin_module(Gfx)
         programBundle.h
         programBundleFactory.h
         programBundlePool.h
-        renderer.h
-        resourceMgr.cc resourceMgr.h
         shader.h
         shaderFactory.h
         shaderPool.h
         texture.h
         textureFactory.h
         texturePool.h
+        loaderBase.h
+        meshBase.cc meshBase.h
+        programBundleBase.h
+        renderLoaderFactory.h
+        renderSimpleFactory.h
+        shaderBase.cc shaderBase.h
+        textureBase.cc textureBase.h
+        textureLoaderBase.cc textureLoaderBase.h
+        GfxResourceContainer.cc GfxResourceContainer.h
     )
     fips_dir(Setup)
     fips_files(
@@ -75,18 +87,6 @@ fips_begin_module(Gfx)
     fips_dir(Util)
     fips_files(
         TextureLoader.h
-    )
-    fips_dir(base)
-    fips_files(
-        displayMgrBase.cc displayMgrBase.h
-        loaderBase.h
-        meshBase.cc meshBase.h
-        programBundleBase.h
-        renderLoaderFactory.h
-        renderSimpleFactory.h
-        shaderBase.cc shaderBase.h
-        textureBase.cc textureBase.h
-        textureLoaderBase.cc textureLoaderBase.h
     )
     fips_dir(gl)
     fips_files(

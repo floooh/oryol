@@ -6,7 +6,7 @@
     @brief private: resource factory to texture objects
     @todo describe texture factory
 */
-#include "Gfx/base/textureLoaderBase.h"
+#include "Gfx/Resource/textureLoaderBase.h"
 #if ORYOL_OPENGL
 #include "Gfx/gl/glTextureFactory.h"
 namespace Oryol {

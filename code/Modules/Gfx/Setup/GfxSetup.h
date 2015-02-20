@@ -15,8 +15,6 @@
 #include "Core/Containers/Array.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
-#include "Gfx/base/loaderBase.h"
-#include <functional>
 
 namespace Oryol {
     
@@ -46,9 +44,6 @@ public:
     /// window title
     String Title = "Oryol";
     
-    /// resource loaders
-    Array<std::function<Ptr<_priv::loaderBase>()>> Loaders;
-    
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(ResourceType::Code type, int32 poolSize);
     /// get resource pool size for a rendering resource type
@@ -57,6 +52,11 @@ public:
     void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
     /// get resource throttling value
     int32 Throttling(ResourceType::Code type) const;
+    
+    /// initial resource label stack capacity
+    int32 ResourceLabelStackCapacity = 256;
+    /// initial resource registry capacity
+    int32 ResourceRegistryCapacity = 256;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;

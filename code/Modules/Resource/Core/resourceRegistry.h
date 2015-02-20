@@ -1,14 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::assetRegistry
+    @class Oryol:resourceRegistry
     @ingroup _priv
     @brief registry for shared, use-counted assets
     
-    The assetRegistry maps asset names (Locators) to use-counted
-    AssetIds.
+    The resourceRegistry maps resource names (Locators) to use-counted
+    resource Ids.
 */
-#include <functional>
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/Array.h"
@@ -17,12 +16,12 @@
 namespace Oryol {
 namespace _priv {
     
-class assetRegistry {
+class resourceRegistry {
 public:
     /// constructor
-    assetRegistry();
+    resourceRegistry();
     /// destructor
-    ~assetRegistry();
+    ~resourceRegistry();
     
     /// setup the registry with an estimated number of entries
     void Setup(int32 reserveSize);
@@ -34,7 +33,7 @@ public:
     /// add a new asset to the registry
     void Add(const Locator& loc, const Id& id);
     /// lookup asset by locator
-    Id Lookup(const Locator& loc);
+    Id Lookup(const Locator& loc) const;
     /// remove all resource matching label from registry (does not discard!)
     void Remove(uint8 label);
     

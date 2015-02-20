@@ -7,8 +7,8 @@
 */
 #include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/ShaderSetup.h"
-#include "Gfx/Core/shaderFactory.h"
-#include "Gfx/Core/shader.h"
+#include "Gfx/Resource/shaderFactory.h"
+#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {

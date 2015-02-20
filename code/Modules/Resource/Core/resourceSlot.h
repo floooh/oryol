@@ -27,8 +27,10 @@ public:
     /// unassign the resource
     void Unassign(FACTORY* factory);
     
-    /// get the resource currently assigned to the slot
+    /// get the resource currently assigned to the slot (read/write)
     RESOURCE& GetResource();
+    /// get the resource currently assigned to the slot (read-only)
+    const RESOURCE& GetResource() const;
     /// get the resource id of the resource assigned to the slot
     const Id& GetId() const;
     /// return true if the slot currently has no resource assigned
@@ -60,6 +62,12 @@ resourceSlot<RESOURCE,SETUP,FACTORY>::GetId() const {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> RESOURCE&
 resourceSlot<RESOURCE,SETUP,FACTORY>::GetResource() {
+    return this->resource;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP, class FACTORY> const RESOURCE&
+resourceSlot<RESOURCE,SETUP,FACTORY>::GetResource() const {
     return this->resource;
 }
 

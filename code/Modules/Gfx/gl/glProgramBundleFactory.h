@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief private: GL implementation of programBundleFactory
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/programBundle.h"
+#include "Gfx/Resource/renderSimpleFactory.h"
+#include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
 namespace _priv {

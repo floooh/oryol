@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief private: GL implementation of class shaderFactory
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/mesh.h"
+#include "Gfx/Resource/renderSimpleFactory.h"
+#include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/Enums.h"
 
 namespace Oryol {

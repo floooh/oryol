@@ -4,14 +4,14 @@
 #include "Pre.h"
 #include "glTextureLoader.h"
 #include "Core/String/StringBuilder.h"
-#include "Gfx/Core/texture.h"
+#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/textureFactory.h"
 #include "Gfx/gl/gl_impl.h"
 #define GLIML_ASSERT(x) o_assert(x)
 #include "gliml.h"
 #include "IO/IO.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/gl/glExt.h"
-#include "Gfx/Core/textureFactory.h"
 
 namespace Oryol {
 namespace _priv {

@@ -1,27 +1,27 @@
 //------------------------------------------------------------------------------
-//  assetRegistry.cc
+//  resourceRegistry.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "assetRegistry.h"
+#include "resourceRegistry.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-assetRegistry::assetRegistry() :
+resourceRegistry::resourceRegistry() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-assetRegistry::~assetRegistry() {
+resourceRegistry::~resourceRegistry() {
     o_assert(!this->isValid);
     o_assert(this->entries.Empty());
 }
 
 //------------------------------------------------------------------------------
 void
-assetRegistry::Setup(int32 reserveSize) {
+resourceRegistry::Setup(int32 reserveSize) {
     o_assert(!this->isValid);
     
     this->isValid = true;
@@ -32,7 +32,7 @@ assetRegistry::Setup(int32 reserveSize) {
 
 //------------------------------------------------------------------------------
 void
-assetRegistry::Discard() {
+resourceRegistry::Discard() {
     o_assert(this->isValid);
     
     this->entries.Clear();
@@ -43,13 +43,13 @@ assetRegistry::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-assetRegistry::IsValid() const {
+resourceRegistry::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 void
-assetRegistry::Add(const Locator& loc, const Id& id) {
+resourceRegistry::Add(const Locator& loc, const Id& id) {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
@@ -63,8 +63,8 @@ assetRegistry::Add(const Locator& loc, const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-const assetRegistry::Entry*
-assetRegistry::findEntryByLocator(const Locator& loc) const {
+const resourceRegistry::Entry*
+resourceRegistry::findEntryByLocator(const Locator& loc) const {
     if (loc.IsShared()) {
         const int32 mapIndex = this->locatorIndexMap.FindIndex(loc);
         if (InvalidIndex != mapIndex) {
@@ -76,8 +76,8 @@ assetRegistry::findEntryByLocator(const Locator& loc) const {
 }
 
 //------------------------------------------------------------------------------
-const assetRegistry::Entry*
-assetRegistry::findEntryById(const Id& id) const {
+const resourceRegistry::Entry*
+resourceRegistry::findEntryById(const Id& id) const {
     const int32 mapIndex = this->idIndexMap.FindIndex(id);
     if (InvalidIndex != mapIndex) {
         const int32 entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
@@ -88,7 +88,7 @@ assetRegistry::findEntryById(const Id& id) const {
 
 //------------------------------------------------------------------------------
 bool
-assetRegistry::Contains(const Id& id) const {
+resourceRegistry::Contains(const Id& id) const {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     return this->idIndexMap.Contains(id);
@@ -96,7 +96,7 @@ assetRegistry::Contains(const Id& id) const {
 
 //------------------------------------------------------------------------------
 Id
-assetRegistry::Lookup(const Locator& loc) {
+resourceRegistry::Lookup(const Locator& loc) const {
     o_assert(this->isValid);
     if (loc.IsShared()) {
         const Entry* entry = this->findEntryByLocator(loc);
@@ -109,7 +109,7 @@ assetRegistry::Lookup(const Locator& loc) {
 
 //------------------------------------------------------------------------------
 void
-assetRegistry::Remove(uint8 label) {
+resourceRegistry::Remove(uint8 label) {
     o_assert(this->isValid);
     
     // for each entry where id.label matches label (from behind
@@ -155,7 +155,7 @@ assetRegistry::Remove(uint8 label) {
 
 //------------------------------------------------------------------------------
 const Locator&
-assetRegistry::GetLocator(const Id& id) const {
+resourceRegistry::GetLocator(const Id& id) const {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     
@@ -166,14 +166,14 @@ assetRegistry::GetLocator(const Id& id) const {
 
 //------------------------------------------------------------------------------
 int32
-assetRegistry::GetNumResources() const {
+resourceRegistry::GetNumResources() const {
     o_assert(this->isValid);
     return this->entries.Size();
 }
 
 //------------------------------------------------------------------------------
 Id
-assetRegistry::GetIdByIndex(int32 index) const {
+resourceRegistry::GetIdByIndex(int32 index) const {
     o_assert(this->isValid);
     return this->entries[index].id;
 }
@@ -181,7 +181,7 @@ assetRegistry::GetIdByIndex(int32 index) const {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 bool
-assetRegistry::checkIntegrity() const {
+resourceRegistry::checkIntegrity() const {
     for (const auto& kvp : this->locatorIndexMap) {
         const Locator& loc = kvp.key;
         const int32 entryIndex = kvp.value;

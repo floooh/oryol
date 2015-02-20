@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief base class for texture loaders
 */
-#include "Gfx/base/loaderBase.h"
-#include "Gfx/Core/texture.h"
+#include "Gfx/Resource/loaderBase.h"
+#include "Gfx/Resource/texture.h"
 #include "IO/Stream/Stream.h"
 
 namespace Oryol {

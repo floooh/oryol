@@ -44,10 +44,12 @@ public:
     void Assign(const Id& id, const SETUP& setup, const Ptr<Stream>& data);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
+    /// unassign all slots matching label by label (iterates over entire pool)
+    void UnassignByLabel(uint8 label);
     /// return pointer to resource object, may return placeholder
-    RESOURCE* Lookup(const Id& id);
+    RESOURCE* Lookup(const Id& id) const;
     /// query the loading state of a contained resource
-    ResourceState::Code QueryState(const Id& id);
+    ResourceState::Code QueryState(const Id& id) const;
     
     /// add a placeholder
     void RegisterPlaceholder(uint32 typeFourcc, const Id& id);
@@ -65,7 +67,7 @@ protected:
     /// free a resource id
     void freeId(const Id& id);
     /// lookup placeholder
-    RESOURCE* lookupPlaceholder(uint32 typeFourcc);
+    RESOURCE* lookupPlaceholder(uint32 typeFourcc) const;
 
     bool isValid;
     FACTORY* factory;
@@ -95,15 +97,15 @@ resourceType(0xFFFF) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY>
 ResourcePool<RESOURCE,SETUP,FACTORY>::~ResourcePool() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, int32 maxCreatePerFrame, uint32 genericPlaceholderTypeFourcc) {
-    o_assert(!this->isValid);
-    o_assert(factory_);
-    o_assert(poolSize > 0);
+    o_assert_dbg(!this->isValid);
+    o_assert_dbg(factory_);
+    o_assert_dbg(poolSize > 0);
     
     this->factory = factory_;
     this->resourceType = this->factory->GetResourceType();
@@ -129,9 +131,9 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Setup(FACTORY* factory_, int32 poolSize, i
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     // make sure that all resources had been freed (or should we do this here?)
-    o_assert(this->freeSlots.Size() == this->slots.Size());
+    o_assert_dbg(this->freeSlots.Size() == this->slots.Size());
     this->isValid = false;
     
     this->slots.Clear();
@@ -150,14 +152,14 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::IsValid() const {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> Id
 ResourcePool<RESOURCE,SETUP,FACTORY>::AllocId(uint8 resourceLabel) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType, resourceLabel);
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::freeId(const Id& id) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
     o_assert(this->slots[slotIndex].IsUnassigned());
@@ -167,7 +169,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::freeId(const Id& id) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
@@ -181,7 +183,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, const Ptr<Stream>& data) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
@@ -195,7 +197,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Assign(const Id& id, const SETUP& setup, c
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Unassign(const Id& id) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex()];
     if (slot.GetId() == id) {
@@ -205,8 +207,22 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Unassign(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP, class FACTORY> void
+ResourcePool<RESOURCE,SETUP,FACTORY>::UnassignByLabel(uint8 label) {
+    o_assert_dbg(this->isValid);
+    
+    for (auto& slot : this->slots) {
+        Id id = slot.GetId();
+        if (id.Label() == label) {
+            slot.Unassign(this->factory);
+            this->freeId(id);
+        }        
+    }
+}
+
+//------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> RESOURCE*
-ResourcePool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
+ResourcePool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type() == this->resourceType);
     
@@ -215,7 +231,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
     if (slot.GetId() == id) {
         if (slot.IsValid()) {
             // resource exists and is valid, all ok
-            return &slot.GetResource();
+            return (RESOURCE*) &slot.GetResource();
         }
         else {
             // resource exists but is not currently valid (pending or failed to load)
@@ -232,7 +248,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::Lookup(const Id& id) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> ResourceState::Code
-ResourcePool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) {
+ResourcePool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type() == this->resourceType);
     
@@ -249,15 +265,15 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::QueryState(const Id& id) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::RegisterPlaceholder(uint32 typeFourcc, const Id& id) {
-    o_assert(this->isValid);
-    o_assert(!this->placeholders.Contains(typeFourcc));
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(!this->placeholders.Contains(typeFourcc));
     this->placeholders.Add(typeFourcc, id);
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> RESOURCE*
-ResourcePool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) {
-    o_assert(this->isValid);
+ResourcePool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) const {
+    o_assert_dbg(this->isValid);
     
     int32 index = this->placeholders.FindIndex(typeFourcc);
     if (InvalidIndex != index) {
@@ -266,7 +282,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) {
         const Id& id = this->placeholders.ValueAtIndex(index);
         auto& slot = this->slots[id.SlotIndex()];
         if ((slot.GetId() == id) && slot.IsValid()) {
-            return &slot.GetResource();
+            return (RESOURCE*) &slot.GetResource();
         }
     }
     
@@ -277,7 +293,7 @@ ResourcePool<RESOURCE,SETUP,FACTORY>::lookupPlaceholder(uint32 typeFourcc) {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP, class FACTORY> void
 ResourcePool<RESOURCE,SETUP,FACTORY>::Update() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     // go over pending slots (these are currently loading), and call their update
     // method, break if maxNumCreatePerFrame is reached

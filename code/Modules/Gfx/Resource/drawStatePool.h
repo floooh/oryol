@@ -7,8 +7,8 @@
 */
 #include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/DrawStateSetup.h"
-#include "Gfx/Core/drawStateFactory.h"
-#include "Gfx/Core/drawState.h"
+#include "Gfx/Resource/drawStateFactory.h"
+#include "Gfx/Resource/drawState.h"
 
 namespace Oryol {
 namespace _priv {

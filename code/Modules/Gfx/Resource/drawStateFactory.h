@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief factory class for drawState resources
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/drawState.h"
+#include "Gfx/Resource/renderSimpleFactory.h"
+#include "Gfx/Resource/drawState.h"
 
 namespace Oryol {
 namespace _priv {

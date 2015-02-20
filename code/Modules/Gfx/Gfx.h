@@ -11,12 +11,10 @@
 #include "Core/RunLoop.h"
 #include "Gfx/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
-#include "Resource/Id.h"
-#include "Resource/ResourceState.h"
+#include "Resource/GfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/resourceMgr.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "glm/vec4.hpp"
@@ -49,24 +47,8 @@ public:
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
     
-    /// push a new resource label, all resources after this get this label
-    static void PushResourceLabel(uint8 label);
-    /// pop current top level resource label
-    static uint8 PopResourceLabel();
-    /// discard all resource matching label
-    static void DiscardResources(uint8 label);
-    /// create a gfx resource
-    template<class SETUP> static Id CreateResource(const SETUP& setup);
-    /// create a gfx resource with data in stream object
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& data);
-    /// allocate a resource (for async resource loading)
-    template<class SETUP> static Id AllocResource(const SETUP& setup, Id placeholder=Id::InvalidId());
-    /// setup a previously allocated resource from data (for async resource loading)
-    template<class SETUP> static void InitResource(const Id& id, const SETUP& setup, const Ptr<Stream>& data);
-    /// get the loading state of a resource
-    static ResourceState::Code QueryResourceState(const Id& id);
-    /// query the resource setup object for an id
-    template<class SETUP> const SETUP& QueryResourceSetup(const Id& id) const;
+    /// resource management
+    static GfxResourceContainer& Resource();
     
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();
@@ -116,7 +98,7 @@ private:
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::displayMgr displayManager;
         class _priv::renderer renderer;
-        _priv::resourceMgr resourceManager;
+        GfxResourceContainer resourceContainer;
     };
     static _state* state;
 };
@@ -128,32 +110,10 @@ Gfx::IsValid() {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup) {
-    o_assert_dbg(IsValid());
-    return state->resourceManager.CreateResource(setup);
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& data) {
-    o_assert_dbg(IsValid());
-    return state->resourceManager.CreateResource(setup, data);
-}
-
-//------------------------------------------------------------------------------
-inline void
-Gfx::DiscardResources(uint8 label) {
-    o_assert_dbg(IsValid());
-    
-o_error("FIXME FIXM FIXME");
-}
-
-//------------------------------------------------------------------------------
 template<> inline void
 Gfx::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(IsValid());
-    _priv::texture* tex = state->resourceManager.LookupTexture(texResId);
+    _priv::texture* tex = state->resourceContainer.lookupTexture(texResId);
     state->renderer.applyTexture(index, tex);
 }
 

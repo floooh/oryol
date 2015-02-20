@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/mesh.h"
+#include "Gfx/Resource/renderSimpleFactory.h"
+#include "Gfx/Resource/mesh.h"
 
 namespace Oryol {
 namespace _priv {

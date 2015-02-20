@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glShaderFactory.h"
-#include "Gfx/Core/shader.h"
+#include "Gfx/Resource/shader.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Core/String/StringBuilder.h"

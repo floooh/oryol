@@ -6,7 +6,7 @@
     @brief GL implement of Mesh
 */
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/base/meshBase.h"
+#include "Gfx/Resource/meshBase.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"

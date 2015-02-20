@@ -6,8 +6,8 @@
     @brief resource pool specialization for meshes
 */
 #include "Resource/Core/ResourcePool.h"
-#include "Gfx/Core/mesh.h"
-#include "Gfx/Core/meshFactory.h"
+#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/meshFactory.h"
 #include "Gfx/Setup/MeshSetup.h"
 
 namespace Oryol {
