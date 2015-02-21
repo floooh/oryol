@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief PNaCl implementation of displayMgr
 */
-#include "Gfx/base/displayMgrBase.h"
+#include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Core/pnacl/pnaclInstance.h"
 

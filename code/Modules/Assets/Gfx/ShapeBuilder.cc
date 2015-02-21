@@ -166,7 +166,7 @@ ShapeBuilder::Plane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
 }
 
 //------------------------------------------------------------------------------
-std::tuple<MeshSetup, Ptr<Stream>>
+const SetupAndStream<MeshSetup>
 ShapeBuilder::Result() const {
     return this->meshBuilder.Result();
 }

@@ -178,8 +178,7 @@ GPUParticlesApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
-    // FIXME: blargh, this is mighty ugly, consider using a SetupAndStream class
-    std::get<0>(shapeBuilderResult).InstanceMesh = this->particleIdMesh;
+    shapeBuilderResult.Setup.InstanceMesh = this->particleIdMesh;
     this->shapeMesh = Gfx::Resource().Create(shapeBuilderResult);
     
     // particle rendering draw state

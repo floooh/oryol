@@ -43,7 +43,7 @@ public:
     /// build geometry
     void Build();
     /// get result
-    std::tuple<MeshSetup, Ptr<Stream>> Result() const;
+    const SetupAndStream<MeshSetup> Result() const;
     
 private:
     enum ShapeType {

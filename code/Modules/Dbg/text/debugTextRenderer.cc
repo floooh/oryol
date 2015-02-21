@@ -182,7 +182,7 @@ debugTextRenderer::setupFontTexture() {
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
-    this->fontTexture = Gfx::Resource().Create(std::make_tuple(setup, data));
+    this->fontTexture = Gfx::Resource().Create(setup, data);
     o_assert(this->fontTexture.IsValid());
     o_assert(Gfx::Resource().QueryState(this->fontTexture) == ResourceState::Valid);
 }

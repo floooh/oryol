@@ -72,7 +72,7 @@ template<class RESOURCE, class SETUP>
 ResourcePool<RESOURCE,SETUP>::ResourcePool() :
 isValid(false),
 uniqueCounter(0),
-resourceType(0xFFFF) {
+resourceType(0xFF) {
     // empty
 }
 

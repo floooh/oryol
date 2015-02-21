@@ -5,6 +5,7 @@
     @brief resource container implementation of the Gfx module
 */
 #include "Resource/Core/resourceContainerBase.h"
+#include "Resource/Core/SetupAndStream.h"
 #include "Core/RunLoop.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/meshPool.h"
@@ -17,7 +18,6 @@
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStatePool.h"
 #include "Gfx/Resource/drawStateFactory.h"
-#include <tuple>
 
 namespace Oryol {
     
@@ -34,7 +34,9 @@ public:
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
-    template<class SETUP> Id Create(const std::tuple<SETUP, Ptr<Stream>>& setupAndData);
+    template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& stream);
+    /// create a resource object with data
+    template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
     /// async-load resource object
     template<class SETUP, class LOADER> Id Load(const SETUP& setup, const Ptr<LOADER>& loader);
     /// query current resource state
@@ -71,6 +73,12 @@ private:
     class _priv::texturePool texturePool;
     class _priv::drawStatePool drawStatePool;
 };
+
+//------------------------------------------------------------------------------
+template<class SETUP> Id
+GfxResourceContainer::Create(const SETUP& setup, const Ptr<Stream>& stream) {
+    return this->Create(SetupAndStream<SETUP>(setup, stream));
+}
 
 //------------------------------------------------------------------------------
 inline _priv::mesh*

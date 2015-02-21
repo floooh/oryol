@@ -33,8 +33,7 @@ void
 resourceContainerBase::discard() {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->labelStack.Size() == 1);
-    uint8 defLabel = this->PopLabel();
-    o_assert_dbg(Id::LabelDefault == defLabel);
+    this->PopLabel();
     this->registry.Discard();
     this->valid = false;
 }

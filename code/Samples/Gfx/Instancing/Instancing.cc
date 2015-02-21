@@ -160,8 +160,7 @@ InstancingApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
-    // FIXME: blargh, this is mighty ugly, consider using a SetupAndStream class
-    std::get<0>(shapeBuilderResult).InstanceMesh = this->instanceMesh;
+    shapeBuilderResult.Setup.InstanceMesh = this->instanceMesh;
     Id mesh = Gfx::Resource().Create(shapeBuilderResult);
     Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);

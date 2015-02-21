@@ -16,7 +16,7 @@
     void PushLabel(uint8 label);
     uint8 PopLabel();
     template<SETUP> Id Create(const SETUP& setup);
-    template<SETUP> Id Create(std::tuple<SETUP,Ptr<Stream>>);
+    template<SETUP> Id Create(const SetupAndStream<SETUP> setupAndStream);
     template<SETUP> Id Load(const SETUP& setup);
     Id Lookup(const Locator& locator);
     ResourceState::Code QueryState(const Id& id);

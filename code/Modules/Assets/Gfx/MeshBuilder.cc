@@ -35,13 +35,13 @@ MeshBuilder::Clear() {
     this->PrimitiveGroups.Clear();
     this->VertexUsage = Usage::Immutable;
     this->IndexUsage = Usage::Immutable;
-    this->meshSetup = MeshSetup::FromStream();
     this->inBegin = false;
     this->resultValid = false;
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
-    this->stream.Invalidate();
+    this->setupAndStream.Setup = MeshSetup::FromStream();
+    this->setupAndStream.Stream.Invalidate();
 }
 
 //------------------------------------------------------------------------------
@@ -55,29 +55,30 @@ MeshBuilder::Begin() {
     this->resultValid = false;
 
     // setup MeshSetup object
-    this->meshSetup = MeshSetup::FromStream(this->VertexUsage, this->IndexUsage);
-    this->meshSetup.Layout = this->Layout;
-    this->meshSetup.NumVertices = this->NumVertices;
-    this->meshSetup.NumIndices = this->NumIndices;
-    this->meshSetup.IndicesType = this->IndicesType;
+    MeshSetup& meshSetup = this->setupAndStream.Setup;
+    meshSetup = MeshSetup::FromStream(this->VertexUsage, this->IndexUsage);
+    meshSetup.Layout = this->Layout;
+    meshSetup.NumVertices = this->NumVertices;
+    meshSetup.NumIndices = this->NumIndices;
+    meshSetup.IndicesType = this->IndicesType;
     for (const auto& primGroup : this->PrimitiveGroups) {
-        this->meshSetup.AddPrimitiveGroup(primGroup);
+        meshSetup.AddPrimitiveGroup(primGroup);
     }
     
     // compute the required stream size
     const int32 vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
     const int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
     int32 allSize = vbSize + ibSize;
-    this->meshSetup.StreamVertexOffset = 0;
+    meshSetup.StreamVertexOffset = 0;
     if (ibSize > 0) {
-        this->meshSetup.StreamIndexOffset = vbSize;
+        meshSetup.StreamIndexOffset = vbSize;
     }
     
     // setup the memory stream object
-    this->stream = MemoryStream::Create();
-    this->stream->Open(OpenMode::WriteOnly);
-    o_assert(this->stream->IsOpen());
-    this->vertexPointer = this->stream->MapWrite(allSize);
+    this->setupAndStream.Stream = MemoryStream::Create();
+    this->setupAndStream.Stream->Open(OpenMode::WriteOnly);
+    o_assert(this->setupAndStream.Stream->IsOpen());
+    this->vertexPointer = this->setupAndStream.Stream->MapWrite(allSize);
     this->indexPointer  = this->vertexPointer + vbSize;
     this->endPointer    = this->indexPointer + ibSize;
     
@@ -89,13 +90,13 @@ void
 MeshBuilder::End() {
     o_assert(this->inBegin);
     o_assert(!this->resultValid);
-    o_assert(this->stream->IsOpen());
+    o_assert(this->setupAndStream.Stream->IsOpen());
 
     this->inBegin = false;
     this->resultValid = true;
     
-    this->stream->UnmapWrite();
-    this->stream->Close();
+    this->setupAndStream.Stream->UnmapWrite();
+    this->setupAndStream.Stream->Close();
     
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
@@ -103,9 +104,9 @@ MeshBuilder::End() {
 }
 
 //------------------------------------------------------------------------------
-std::tuple<MeshSetup, Ptr<Stream>>
+const SetupAndStream<MeshSetup>&
 MeshBuilder::Result() const {
-    return std::make_tuple(this->meshSetup, this->stream);
+    return this->setupAndStream;
 }
 
 } // namespace Oryol

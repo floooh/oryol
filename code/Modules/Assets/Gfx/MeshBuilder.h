@@ -41,7 +41,7 @@
 #include "Gfx/Setup/MeshSetup.h"
 #include "Assets/Gfx/VertexWriter.h"
 #include "IO/Stream/MemoryStream.h"
-#include <tuple>
+#include "Resource/Core/SetupAndStream.h"
 
 namespace Oryol {
 
@@ -86,7 +86,7 @@ public:
     /// end writing vertex and index data
     void End();
     /// get result
-    std::tuple<MeshSetup, Ptr<Stream>> Result() const;    
+    const SetupAndStream<MeshSetup>& Result() const;
     /// clear the mesh builder
     void Clear();
     
@@ -94,8 +94,7 @@ private:
     /// compute byte offset into vertex buffer given vertex and component index
     uint32 vertexByteOffset(uint32 vertexIndex, int32 compIndex) const;
     
-    Ptr<MemoryStream> stream;
-    MeshSetup meshSetup;
+    SetupAndStream<MeshSetup> setupAndStream;
     bool inBegin;
     bool resultValid;
     

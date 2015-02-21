@@ -81,10 +81,10 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const std::tuple<MeshSetup, Ptr<Stream>>& setupAndData) {
+GfxResourceContainer::Create(const SetupAndStream<MeshSetup>& setupAndStream) {
     o_assert_dbg(this->isValid());
-    const MeshSetup& setup = std::get<0>(setupAndData);
-    const Ptr<Stream>& data = std::get<1>(setupAndData);
+    const MeshSetup& setup = setupAndStream.Setup;
+    const Ptr<Stream>& data = setupAndStream.Stream;
     o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -139,10 +139,10 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const std::tuple<TextureSetup, Ptr<Stream>>& setupAndData) {
+GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream) {
     o_assert_dbg(this->isValid());
-    const TextureSetup& setup = std::get<0>(setupAndData);
-    const Ptr<Stream>& data = std::get<1>(setupAndData);
+    const TextureSetup& setup = setupAndStream.Setup;
+    const Ptr<Stream>& data = setupAndStream.Stream;
     o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {

@@ -65,7 +65,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    this->texture = Gfx::Resource().Create(std::make_tuple(texSetup, pixelData));
+    this->texture = Gfx::Resource().Create(texSetup, pixelData);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {

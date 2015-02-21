@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief display manager class for EGL platforms
 */
-#include "Gfx/base/displayMgrBase.h"
+#include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
 #include <EGL/egl.h>
 
