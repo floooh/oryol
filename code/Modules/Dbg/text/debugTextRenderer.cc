@@ -44,9 +44,11 @@ debugTextRenderer::getTextScale() const {
 void
 debugTextRenderer::setup() {
     o_assert(!this->valid);
+    Gfx::Resource().PushLabel(DbgResourceLabel);
     this->setupFontTexture();
     this->setupTextMesh();
     this->setupTextDrawState();
+    Gfx::Resource().PopLabel();
     this->valid = true;
 }
 
@@ -55,9 +57,7 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    this->textMesh.Release();
-    this->textDrawState.Release();
-    this->fontTexture.Release();
+    Gfx::Resource().Destroy(DbgResourceLabel);
 }
 
 //------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ debugTextRenderer::setupFontTexture() {
     o_assert((imgWidth * imgHeight) == imgDataSize);
     
     // setup a memory buffer and write font image data to it
-    auto data = MemoryStream::Create();
+    Ptr<Stream> data = MemoryStream::Create();
     data->Open(OpenMode::WriteOnly);
     uint8* dstPtr = data->MapWrite(imgDataSize);
     const char* srcPtr = kc85_4_Font;
@@ -182,9 +182,9 @@ debugTextRenderer::setupFontTexture() {
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
-    this->fontTexture = Gfx::CreateResource(setup, data);
+    this->fontTexture = Gfx::Resource().Create(std::make_tuple(setup, data));
     o_assert(this->fontTexture.IsValid());
-    o_assert(Gfx::QueryResourceState(this->fontTexture) == ResourceState::Valid);
+    o_assert(Gfx::Resource().QueryState(this->fontTexture) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -201,9 +201,9 @@ debugTextRenderer::setupTextMesh() {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh = Gfx::CreateResource(setup);
+    this->textMesh = Gfx::Resource().Create(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(Gfx::QueryResourceState(this->textMesh) == ResourceState::Valid);
+    o_assert(Gfx::Resource().QueryState(this->textMesh) == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    GfxId prog = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
+    Id prog = Gfx::Resource().Create(Shaders::TextShader::CreateSetup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
@@ -222,7 +222,7 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->textDrawState = Gfx::CreateResource(dss);
+    this->textDrawState = Gfx::Resource().Create(dss);
 }
 
 //------------------------------------------------------------------------------

@@ -10,7 +10,6 @@
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
 #include "Gfx/Core/VertexLayout.h"
-#include "Gfx/Core/GfxId.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <cstdarg>
@@ -47,6 +46,10 @@ public:
     void drawTextBuffer();
     
 private:
+    // FIXME: hmm, I think the resource label stack should just
+    // return the next label...
+    static const uint8 DbgResourceLabel = 0xFD;
+
     /// setup the text renderer (will be called as needed)
     void setup();
 
@@ -69,9 +72,9 @@ private:
     glm::vec2 textScale;
     VertexLayout vertexLayout;
     RWLock rwLock;
-    GfxId fontTexture;
-    GfxId textMesh;
-    GfxId textDrawState;
+    Id fontTexture;
+    Id textMesh;
+    Id textDrawState;
     StringBuilder stringBuilder;
     bool valid;
     
