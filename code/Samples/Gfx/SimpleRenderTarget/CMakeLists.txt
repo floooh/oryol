@@ -1,6 +1,6 @@
 fips_begin_app(SimpleRenderTarget windowed)
     fips_files(SimpleRenderTarget.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Asset)
+    fips_deps(Assets)
     oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" "emscripten,android,pnacl" SimpleRenderTarget.jpg "Gfx/SimpleRenderTarget/SimpleRenderTarget.cc")
 fips_end_app()

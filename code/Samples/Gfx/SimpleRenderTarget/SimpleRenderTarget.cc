@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -20,9 +20,9 @@ public:
 private:
     glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
 
-    GfxId renderTarget;
-    GfxId offscreenDrawState;
-    GfxId displayDrawState;
+    Id renderTarget;
+    Id offscreenDrawState;
+    Id displayDrawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -77,7 +77,7 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.WrapV = TextureWrapMode::Repeat;
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
-    this->renderTarget = Gfx::CreateResource(rtSetup);
+    this->renderTarget = Gfx::Resource().Create(rtSetup);
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
@@ -85,7 +85,7 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
-    GfxId torus = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
+    Id torus = Gfx::Resource().Create(shapeBuilder.Result());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -94,21 +94,21 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.5f, 72, 40).Build();
-    GfxId sphere = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
+    Id sphere = Gfx::Resource().Create(shapeBuilder.Result());
 
     // create shaders
-    GfxId offScreenProg = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
-    GfxId dispProg = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id offScreenProg = Gfx::Resource().Create(Shaders::RenderTarget::CreateSetup());
+    Id dispProg = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     auto offdsSetup = DrawStateSetup::FromMeshAndProg(torus, offScreenProg);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
+    this->offscreenDrawState = Gfx::Resource().Create(offdsSetup);
     auto dispdsSetup = DrawStateSetup::FromMeshAndProg(sphere, dispProg);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->displayDrawState = Gfx::CreateResource(dispdsSetup);
+    this->displayDrawState = Gfx::Resource().Create(dispdsSetup);
     
     // setup static transform matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -123,10 +123,6 @@ SimpleRenderTargetApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnCleanup() {
-    // cleanup everything
-    this->offscreenDrawState.Release();
-    this->displayDrawState.Release();
-    this->renderTarget.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }
