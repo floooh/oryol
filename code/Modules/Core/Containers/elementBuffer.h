@@ -255,28 +255,28 @@ elementBuffer<TYPE>::operator[](int32 index) const {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::front() {
-    o_assert_dbg(nullptr != this->elmStart);
+    o_assert_dbg((this->elmStart != this->elmEnd) && (nullptr != this->elmStart));
     return *this->elmStart;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::front() const {
-    o_assert_dbg(nullptr != this->elmStart);
+    o_assert_dbg((this->elmStart != this->elmEnd) && (nullptr != this->elmStart));
     return *this->elmStart;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::back() {
-    o_assert_dbg(nullptr != this->elmEnd);
+    o_assert_dbg((this->elmStart != this->elmEnd) && (nullptr != this->elmEnd));
     return *(this->elmEnd - 1);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::back() const {
-    o_assert_dbg(nullptr != this->elmEnd);
+    o_assert_dbg((this->elmStart != this->elmEnd) && (nullptr != this->elmEnd));
     return *(this->elmEnd - 1);
 }
 
