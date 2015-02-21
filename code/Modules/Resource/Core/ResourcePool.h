@@ -26,7 +26,7 @@ public:
     ~ResourcePool();
     
     /// setup the resource pool
-    void Setup(uint16 resourceType, int32 poolSize);
+    void Setup(uint8 resourceType, int32 poolSize);
     /// discard the resource pool
     void Discard();
     /// return true if the pool has been setup
@@ -61,7 +61,7 @@ protected:
 
     bool isValid;
     int32 uniqueCounter;
-    uint16 resourceType;
+    uint8 resourceType;
     
     Array<resourceSlot<RESOURCE,SETUP>> slots;
     Queue<uint16> freeSlots;
@@ -84,10 +84,12 @@ ResourcePool<RESOURCE,SETUP>::~ResourcePool() {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Setup(uint16 resType, int32 poolSize) {
+ResourcePool<RESOURCE,SETUP>::Setup(uint8 resType, int32 poolSize) {
     o_assert_dbg(!this->isValid);
+    o_assert_dbg(Id::InvalidType != resType);
     o_assert_dbg(poolSize > 0);
     
+    this->resourceType = resType;
     this->slots.Reserve(poolSize);
     this->slots.SetAllocStrategy(0, 0);    // make this a fixed-size array
     this->freeSlots.Reserve(poolSize);
@@ -127,6 +129,7 @@ ResourcePool<RESOURCE,SETUP>::IsValid() const {
 template<class RESOURCE, class SETUP> Id
 ResourcePool<RESOURCE,SETUP>::AllocId(uint8 resourceLabel) {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(Id::InvalidType != this->resourceType);
     return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType, resourceLabel);
 }
 

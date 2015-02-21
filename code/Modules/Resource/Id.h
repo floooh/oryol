@@ -22,7 +22,9 @@ public:
     /// invalid label constant
     static const uint8 InvalidLabel = 0xFF;
     /// special label meaning 'all resources'
-    static const uint8 All = 0xFF;
+    static const uint8 LabelAll = 0xFF;
+    /// default resource label
+    static const uint8 LabelDefault = 0xFE;
 
     /// returns an invalid resource id
     static Id InvalidId();

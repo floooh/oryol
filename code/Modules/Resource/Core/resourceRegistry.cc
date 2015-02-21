@@ -119,7 +119,7 @@ resourceRegistry::Remove(uint8 label) {
     // FIXME: this can be slow if many resource are live!
     int32 entryIndex = this->entries.Size() - 1;
     for (; entryIndex >= 0; entryIndex--) {
-        if ((Id::All == label) || (this->entries[entryIndex].id.Label() == label)) {
+        if ((Id::LabelAll == label) || (this->entries[entryIndex].id.Label() == label)) {
             Id id = this->entries[entryIndex].id;
             Locator loc = this->entries[entryIndex].locator;
             removed.Add(id);

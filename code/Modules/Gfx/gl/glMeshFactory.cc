@@ -174,7 +174,7 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupVertexLayout(mesh& mesh) {
-    o_assert_dbg(ResourceState::Valid == mesh.State);
+    o_assert_dbg(ResourceState::Valid != mesh.State);
     o_assert_dbg(nullptr != this->renderer);
     
     // create and initialize vertex array object

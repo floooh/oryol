@@ -25,13 +25,16 @@ resourceContainerBase::setup(int32 labelStackCapacity, int32 registryCapacity) {
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);
     this->valid = true;
+    this->PushLabel(Id::LabelDefault);
 }
 
 //------------------------------------------------------------------------------
 void
 resourceContainerBase::discard() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->labelStack.Empty());
+    o_assert_dbg(this->labelStack.Size() == 1);
+    uint8 defLabel = this->PopLabel();
+    o_assert_dbg(Id::LabelDefault == defLabel);
     this->registry.Discard();
     this->valid = false;
 }

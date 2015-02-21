@@ -69,7 +69,9 @@ MeshBuilder::Begin() {
     const int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
     int32 allSize = vbSize + ibSize;
     this->meshSetup.StreamVertexOffset = 0;
-    this->meshSetup.StreamIndexOffset = vbSize;
+    if (ibSize > 0) {
+        this->meshSetup.StreamIndexOffset = vbSize;
+    }
     
     // setup the memory stream object
     this->stream = MemoryStream::Create();

@@ -48,8 +48,6 @@ private:
     void setup(const GfxSetup& setup, _priv::renderer* rendr, _priv::displayMgr* dspMgr);
     /// discard the resource manager
     void discard();
-    /// per-frame update
-    void update();
     /// lookup mesh object
     _priv::mesh* lookupMesh(const Id& resId);
     /// lookup program bundle object
@@ -59,7 +57,6 @@ private:
     /// lookup draw-state object
     _priv::drawState* lookupDrawState(const Id& resId);
     
-    RunLoop::Id runLoopId;
     class _priv::renderer* renderer;
     class _priv::displayMgr* displayMgr;
     class _priv::meshFactory meshFactory;

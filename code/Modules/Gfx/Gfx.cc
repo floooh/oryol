@@ -29,6 +29,7 @@ Gfx::Setup(const class GfxSetup& setup) {
 void
 Gfx::Discard() {
     o_assert_dbg(IsValid());
+    state->resourceContainer.Destroy(Id::LabelAll);
     Core::PreRunLoop()->Remove(state->runLoopId);
     state->renderer.discard();
     state->resourceContainer.discard();

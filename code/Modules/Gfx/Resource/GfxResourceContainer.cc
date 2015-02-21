@@ -11,7 +11,6 @@ using namespace _priv;
 
 //------------------------------------------------------------------------------
 GfxResourceContainer::GfxResourceContainer() :
-runLoopId(RunLoop::InvalidId),
 renderer(nullptr),
 displayMgr(nullptr) {
     // empty
@@ -48,7 +47,6 @@ GfxResourceContainer::discard() {
     
     resourceContainerBase::discard();
     
-    Core::PreRunLoop()->Remove(this->runLoopId);
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
     this->texturePool.Discard();
@@ -61,15 +59,6 @@ GfxResourceContainer::discard() {
     this->meshFactory.Discard();
     this->renderer = nullptr;
     this->displayMgr = nullptr;
-}
-
-//------------------------------------------------------------------------------
-void
-GfxResourceContainer::update() {
-    o_assert_dbg(this->isValid());
-    
-    // only call Update on pools which support asynchronous resource loading
-    // FIXME: MOVE ASYNC LOADING OUT OF RESOURCE POOLS
 }
 
 //------------------------------------------------------------------------------
