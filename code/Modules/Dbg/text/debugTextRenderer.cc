@@ -15,7 +15,8 @@ extern const char *kc85_4_Font;
 //------------------------------------------------------------------------------
 debugTextRenderer::debugTextRenderer() :
 textScale(1.0f, 1.0f),
-valid(false) {
+valid(false),
+resourceLabel(Id::InvalidLabel) {
     // NOTE: text rendering will be setup lazily when the text rendering
     // method is called first
     this->stringBuilder.Reserve(MaxNumChars * 2);
@@ -44,7 +45,7 @@ debugTextRenderer::getTextScale() const {
 void
 debugTextRenderer::setup() {
     o_assert(!this->valid);
-    Gfx::Resource().PushLabel(DbgResourceLabel);
+    this->resourceLabel = Gfx::Resource().PushLabel();
     this->setupFontTexture();
     this->setupTextMesh();
     this->setupTextDrawState();
@@ -57,7 +58,7 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    Gfx::Resource().Destroy(DbgResourceLabel);
+    Gfx::Resource().Destroy(this->resourceLabel);
 }
 
 //------------------------------------------------------------------------------

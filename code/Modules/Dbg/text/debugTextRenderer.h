@@ -46,10 +46,6 @@ public:
     void drawTextBuffer();
     
 private:
-    // FIXME: hmm, I think the resource label stack should just
-    // return the next label...
-    static const uint8 DbgResourceLabel = 0xFD;
-
     /// setup the text renderer (will be called as needed)
     void setup();
 
@@ -77,6 +73,7 @@ private:
     Id textDrawState;
     StringBuilder stringBuilder;
     bool valid;
+    uint8 resourceLabel;
     
     // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)
     uint32 vertexData[MaxNumVertices][2];

@@ -9,6 +9,7 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 resourceContainerBase::resourceContainerBase() :
+curLabelCount(0),
 valid(false) {
     // empty
 }
@@ -42,6 +43,16 @@ resourceContainerBase::discard() {
 bool
 resourceContainerBase::isValid() const {
     return this->valid;
+}
+
+//------------------------------------------------------------------------------
+uint8
+resourceContainerBase::PushLabel() {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(this->curLabelCount < Id::LabelDefault);
+    uint8 label = this->curLabelCount++;
+    this->labelStack.Add(label);
+    return label;
 }
 
 //------------------------------------------------------------------------------

@@ -13,7 +13,8 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 gpuSynthesizer::gpuSynthesizer() :
-isValid(false) {
+isValid(false),
+resourceLabel(Id::InvalidLabel) {
     // empty
 }
 
@@ -28,8 +29,7 @@ gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     
-    // setup a rendering resources
-    Gfx::Resource().PushLabel(SynthResourceLabel);
+    this->resourceLabel = Gfx::Resource().PushLabel();
     const int32 rtWidth  = (synth::BufferNumSamples / 2) / 8;
     const int32 rtHeight = 8;
     auto rtSetup = TextureSetup::RenderTarget(rtWidth, rtHeight);
@@ -46,7 +46,7 @@ void
 gpuSynthesizer::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    Gfx::Resource().Destroy(SynthResourceLabel);
+    Gfx::Resource().Destroy(this->resourceLabel);
 }
 
 //------------------------------------------------------------------------------

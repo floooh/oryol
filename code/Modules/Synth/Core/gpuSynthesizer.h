@@ -32,9 +32,8 @@ public:
     void Synthesize(const opBundle& bundle) const;
     
 private:
-    // FIXME: better if we could get a resource label from the resource stack assigned!
-    static const uint8 SynthResourceLabel = 0xFC;
     bool isValid;
+    uint8 resourceLabel;
     Id renderTarget;
     Id drawState;
 };

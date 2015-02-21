@@ -35,7 +35,9 @@ public:
     /// destructor
     ~resourceContainerBase();
     
-    /// push resource label on label stack
+    /// generate new resource label and push on label stack
+    uint8 PushLabel();
+    /// push explicit resource label on label stack
     void PushLabel(uint8 label);
     /// pop resource label from label stack
     uint8 PopLabel();
@@ -54,6 +56,7 @@ protected:
     
     Array<uint8> labelStack;
     _priv::resourceRegistry registry;
+    uint8 curLabelCount;
     bool valid;
 };
 
