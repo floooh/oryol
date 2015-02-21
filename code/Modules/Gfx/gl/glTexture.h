@@ -19,7 +19,7 @@ public:
     ~glTexture();
     
     /// clear the object
-    void clear();
+    void Clear();
 
     /// GL texture object
     GLuint glTex;

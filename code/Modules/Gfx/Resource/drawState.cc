@@ -22,10 +22,10 @@ drawState::~drawState() {
 
 //------------------------------------------------------------------------------
 void
-drawState::clear() {
+drawState::Clear() {
     this->mesh = nullptr;
     this->programBundle = nullptr;
-    resourceBase::clear();
+    resourceBase::Clear();
 }
 
 } // namespace _priv

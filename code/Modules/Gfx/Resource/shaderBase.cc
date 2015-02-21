@@ -15,9 +15,9 @@ shaderType(ShaderType::InvalidShaderType) {
 
 //------------------------------------------------------------------------------
 void
-shaderBase::clear() {
+shaderBase::Clear() {
     this->shaderType = ShaderType::InvalidShaderType;
-    resourceBase::clear();    
+    resourceBase::Clear();
 }
 
 } // namespace _priv

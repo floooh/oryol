@@ -28,15 +28,15 @@ GfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
     this->displayMgr = dspMgr;
     
     this->meshFactory.Setup(this->renderer, &this->meshPool);
-    this->meshPool.Setup(&this->meshFactory, setup.PoolSize(ResourceType::Mesh), setup.Throttling(ResourceType::Mesh), 'MESH');
+    this->meshPool.Setup(ResourceType::Mesh, setup.PoolSize(ResourceType::Mesh));
     this->shaderFactory.Setup();
-    this->shaderPool.Setup(&this->shaderFactory, setup.PoolSize(ResourceType::Shader), 0, 'SHDR');
+    this->shaderPool.Setup(ResourceType::Shader, setup.PoolSize(ResourceType::Shader));
     this->programBundleFactory.Setup(this->renderer, &this->shaderPool, &this->shaderFactory);
-    this->programBundlePool.Setup(&this->programBundleFactory, setup.PoolSize(ResourceType::ProgramBundle), 0, 'PRGB');
+    this->programBundlePool.Setup(ResourceType::ProgramBundle, setup.PoolSize(ResourceType::ProgramBundle));
     this->textureFactory.Setup(this->renderer, this->displayMgr, &this->texturePool);
-    this->texturePool.Setup(&this->textureFactory, setup.PoolSize(ResourceType::Texture), setup.Throttling(ResourceType::Texture), 'TXTR');
+    this->texturePool.Setup(ResourceType::Texture, setup.PoolSize(ResourceType::Texture));
     this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
-    this->drawStatePool.Setup(&this->drawStateFactory, setup.PoolSize(ResourceType::DrawState), 0, 'DRWS');
+    this->drawStatePool.Setup(ResourceType::DrawState, setup.PoolSize(ResourceType::DrawState));
     
     resourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
 }
@@ -76,14 +76,15 @@ GfxResourceContainer::update() {
 template<> Id
 GfxResourceContainer::Create(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
         return resId;
     }
     else {
         resId = this->meshPool.AllocId(this->peekLabel());
-        this->meshPool.Assign(resId, setup);
+        mesh& res = this->meshPool.Assign(resId, setup);
+        this->meshFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -93,31 +94,53 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
 template<> Id
 GfxResourceContainer::Create(const MeshSetup& setup, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
         return resId;
     }
     else {
         resId = this->meshPool.AllocId(this->peekLabel());
-        this->meshPool.Assign(resId, setup, data);
+        mesh& res = this->meshPool.Assign(resId, setup);
+        this->meshFactory.SetupResource(res, data);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
 }
+
+//------------------------------------------------------------------------------
+/*
+template<> Id
+GfxResourceContainer::Load(const MeshSetup& setup, const Ptr<MeshLoader>& loader) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(setup.ShouldSetupFromFile());
+    Id resId = this->registry.Lookup(setup.Locator);
+    if (resId.IsValid()) {
+        return resId;
+    }
+    else {
+        resId = this->meshPool.AllocId(this->peekLabel());
+        mesh& res = this->meshPool.Assign(resId, setup);
+        // FIXME FIXME FIXME: call loader
+        this->registry.Add(setup.Locator, resId);
+    }
+    return resId;
+}
+*/
     
 //------------------------------------------------------------------------------
 template<> Id
 GfxResourceContainer::Create(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
         return resId;
     }
     else {
         resId = this->texturePool.AllocId(this->peekLabel());
-        this->texturePool.Assign(resId, setup);
+        texture& res = this->texturePool.Assign(resId, setup);
+        this->textureFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -127,14 +150,15 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
 template<> Id
 GfxResourceContainer::Create(const TextureSetup& setup, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(!setup.ShouldSetupFromFileAsync());
+    o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
         return resId;
     }
     else {
         resId = this->texturePool.AllocId(this->peekLabel());
-        this->texturePool.Assign(resId, setup, data);
+        texture& res = this->texturePool.Assign(resId, setup);
+        this->textureFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -150,7 +174,8 @@ GfxResourceContainer::Create(const ShaderSetup& setup) {
     }
     else {
         resId = this->shaderPool.AllocId(this->peekLabel());
-        this->shaderPool.Assign(resId, setup);
+        shader& res = this->shaderPool.Assign(resId, setup);
+        this->shaderFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -166,7 +191,8 @@ GfxResourceContainer::Create(const ProgramBundleSetup& setup) {
     }
     else {
         resId = this->programBundlePool.AllocId(this->peekLabel());
-        this->programBundlePool.Assign(resId, setup);
+        programBundle& res = this->programBundlePool.Assign(resId, setup);
+        this->programBundleFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -182,7 +208,8 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
     }
     else {
         resId = this->drawStatePool.AllocId(this->peekLabel());
-        this->drawStatePool.Assign(resId, setup);
+        drawState& res = this->drawStatePool.Assign(resId, setup);
+        this->drawStateFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;
@@ -192,12 +219,68 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
 void
 GfxResourceContainer::Destroy(uint8 label) {
     o_assert_dbg(this->isValid());
-    this->registry.Remove(label);
-    this->texturePool.UnassignByLabel(label);
-    this->meshPool.UnassignByLabel(label);
-    this->shaderPool.UnassignByLabel(label);
-    this->programBundlePool.UnassignByLabel(label);
-    this->drawStatePool.UnassignByLabel(label);
+    Array<Id> ids = this->registry.Remove(label);
+    for (const Id& id : ids) {
+        switch (id.Type()) {
+            case ResourceType::Texture:
+            {
+                texture* tex = this->texturePool.Lookup(id);
+                if (tex) {
+                    this->textureFactory.DestroyResource(*tex);
+                }
+                this->texturePool.Unassign(id);
+            }
+            break;
+                
+            case ResourceType::Mesh:
+            {
+                mesh* msh = this->meshPool.Lookup(id);
+                if (msh) {
+                    this->meshFactory.DestroyResource(*msh);
+                }
+                this->meshPool.Unassign(id);
+            }
+            break;
+                
+            case ResourceType::Shader:
+            {
+                shader* shd = this->shaderPool.Lookup(id);
+                if (shd) {
+                    this->shaderFactory.DestroyResource(*shd);
+                }
+                this->shaderPool.Unassign(id);
+            }
+            break;
+                
+            case ResourceType::ProgramBundle:
+            {
+                programBundle* prog = this->programBundlePool.Lookup(id);
+                if (prog) {
+                    this->programBundleFactory.DestroyResource(*prog);
+                }
+                this->programBundlePool.Unassign(id);
+            }
+            break;
+                
+            case ResourceType::ConstantBlock:
+                o_assert2(false, "FIXME!!!\n");
+                break;
+                
+            case ResourceType::DrawState:
+            {
+                drawState* ds = this->drawStatePool.Lookup(id);
+                if (ds) {
+                    this->drawStateFactory.DestroyResource(*ds);
+                }
+                this->drawStatePool.Unassign(id);
+            }
+            break;
+                
+            default:
+                o_assert(false);
+                break;
+        }
+    }
 }
     
 //------------------------------------------------------------------------------

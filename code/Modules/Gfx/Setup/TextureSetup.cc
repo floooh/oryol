@@ -20,10 +20,10 @@ WrapW(TextureWrapMode::Repeat),
 MagFilter(TextureFilterMode::Nearest),
 MinFilter(TextureFilterMode::Nearest),
 Locator(Locator::NonShared()),
-shouldSetupLoadAsync(false),
-shouldSetupFromImageFileData(false),
-shouldSetupFromPixelData(false),
-shouldSetupAsRenderTarget(false),
+setupFromFile(false),
+setupFromImageFileData(false),
+setupFromPixelData(false),
+setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
@@ -32,9 +32,9 @@ hasMipMaps(false) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromFileAsync(const class Locator& loc, Id placeholder) {
+TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
     TextureSetup setup;
-    setup.shouldSetupLoadAsync = true;
+    setup.setupFromFile = true;
     setup.Locator = loc;
     setup.Placeholder = placeholder;
     return setup;
@@ -47,7 +47,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
     o_assert(h > 0);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -60,7 +60,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 TextureSetup
 TextureSetup::FromImageFileData(TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
-    setup.shouldSetupFromImageFileData = true;
+    setup.setupFromImageFileData = true;
     return setup;
 }
 
@@ -73,7 +73,7 @@ TextureSetup::FromPixelData(int32 w, int32 h, bool hasMipMaps, PixelFormat::Code
     o_assert(!PixelFormat::IsCompressedFormat(fmt));
     
     TextureSetup setup;
-    setup.shouldSetupFromPixelData = true;
+    setup.setupFromPixelData = true;
     setup.hasMipMaps = hasMipMaps;
     setup.Width = w;
     setup.Height = h;
@@ -88,7 +88,7 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
     o_assert(relHeight > 0.0f);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.isRelSizeRenderTarget = true;
     setup.RelWidth = relWidth;
     setup.RelHeight = relHeight;
@@ -104,7 +104,7 @@ TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
     o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == ResourceType::Texture);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.hasSharedDepth = true;
     setup.DepthRenderTarget = depthRenderTarget;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -115,26 +115,26 @@ TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
 
 //------------------------------------------------------------------------------
 bool
-TextureSetup::ShouldSetupFromFileAsync() const {
-    return this->shouldSetupLoadAsync;
+TextureSetup::ShouldSetupFromFile() const {
+    return this->setupFromFile;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromImageFileData() const {
-    return this->shouldSetupFromImageFileData;
+    return this->setupFromImageFileData;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromPixelData() const {
-    return this->shouldSetupFromPixelData;
+    return this->setupFromPixelData;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupAsRenderTarget() const {
-    return this->shouldSetupAsRenderTarget;
+    return this->setupAsRenderTarget;
 }
 
 //------------------------------------------------------------------------------

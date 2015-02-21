@@ -108,18 +108,21 @@ resourceRegistry::Lookup(const Locator& loc) const {
 }
 
 //------------------------------------------------------------------------------
-void
+Array<Id>
 resourceRegistry::Remove(uint8 label) {
     o_assert(this->isValid);
+    Array<Id> removed;
+    removed.Reserve(this->entries.Size() < 256 ? this->entries.Size() : 256);
     
     // for each entry where id.label matches label (from behind
     // because matching entries will be removed)
     // FIXME: this can be slow if many resource are live!
     int32 entryIndex = this->entries.Size() - 1;
     for (; entryIndex >= 0; entryIndex--) {
-        if (this->entries[entryIndex].id.Label() == label) {
+        if ((Id::All == label) || (this->entries[entryIndex].id.Label() == label)) {
             Id id = this->entries[entryIndex].id;
             Locator loc = this->entries[entryIndex].locator;
+            removed.Add(id);
             
             // remove entries
             this->entries.EraseSwapBack(entryIndex);
@@ -151,6 +154,7 @@ resourceRegistry::Remove(uint8 label) {
             #endif
         }
     }
+    return removed;
 }
 
 //------------------------------------------------------------------------------

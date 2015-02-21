@@ -139,6 +139,13 @@ Gfx::Supports(GfxFeature::Code feat) {
 }
 
 //------------------------------------------------------------------------------
+inline GfxResourceContainer&
+Gfx::Resource() {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer;
+}
+
+//------------------------------------------------------------------------------
 inline void
 Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(IsValid());

@@ -14,16 +14,9 @@ textureBase::textureBase() {
 
 //------------------------------------------------------------------------------
 void
-textureBase::clear() {
-    this->ioRequest.Invalidate();
+textureBase::Clear() {
     this->textureAttrs = TextureAttrs();
-    resourceBase::clear();    
-}
-
-//------------------------------------------------------------------------------
-void
-textureBase::setIORequest(const Ptr<IOProtocol::Request>& req) {
-    this->ioRequest = req;
+    resourceBase::Clear();
 }
 
 } // namespace _priv

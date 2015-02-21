@@ -48,19 +48,18 @@ drawStateFactory::Discard() {
 //------------------------------------------------------------------------------
 void
 drawStateFactory::SetupResource(drawState& ds) {
-    o_assert(ds.GetState() == ResourceState::Setup);
-    const DrawStateSetup& setup = ds.GetSetup();
-    ds.mesh = this->meshPool->Lookup(setup.Mesh);
-    ds.programBundle = this->programBundlePool->Lookup(setup.Program);
-    ds.setState(ResourceState::Valid);
+    o_assert(ResourceState::Setup == ds.State);
+    ds.mesh = this->meshPool->Lookup(ds.Setup.Mesh);
+    ds.programBundle = this->programBundlePool->Lookup(ds.Setup.Program);
+    ds.State = ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 drawStateFactory::DestroyResource(drawState& ds) {
-    o_assert(ds.GetState() == ResourceState::Valid);
-    ds.clear();
-    ds.setState(ResourceState::Setup);
+    o_assert(ResourceState::Valid == ds.State);
+    ds.Clear();
+    ds.State = ResourceState::Setup;
 }
 
 } // namespace _priv

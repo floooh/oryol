@@ -13,7 +13,6 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Core/Enums.h"
-#include "IO/IOProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -36,7 +35,7 @@ public:
     StaticArray<PrimitiveGroup, MaxNumPrimGroups> primGroups;
     
     /// clear the object
-    void clear();
+    void Clear();
 };
 
 } // namespace _priv

@@ -15,7 +15,7 @@ namespace Oryol {
 class TextureSetup {
 public:
     /// asynchronously load from file
-    static TextureSetup FromFileAsync(const Locator& loc, Id placeholder=Id::InvalidId());
+    static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// setup a texture from a image file data in stream
     static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data
@@ -30,7 +30,7 @@ public:
     /// default constructor
     TextureSetup();
     /// return true if texture should be setup from a file
-    bool ShouldSetupFromFileAsync() const;
+    bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from image file data in stream
     bool ShouldSetupFromImageFileData() const;
     /// return true if texture should be setup from raw pixel data
@@ -79,10 +79,10 @@ public:
     Id Placeholder;
     
 private:
-    bool shouldSetupLoadAsync : 1;
-    bool shouldSetupFromImageFileData : 1;
-    bool shouldSetupFromPixelData : 1;
-    bool shouldSetupAsRenderTarget : 1;
+    bool setupFromFile : 1;
+    bool setupFromImageFileData : 1;
+    bool setupFromPixelData : 1;
+    bool setupAsRenderTarget : 1;
     bool isRelSizeRenderTarget : 1;
     bool hasSharedDepth : 1;
     bool hasMipMaps : 1;

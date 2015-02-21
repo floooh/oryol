@@ -19,7 +19,7 @@ public:
     ~glShader();
     
     /// clear the object
-    void clear();
+    void Clear();
     /// GL shader id
     GLuint glShd;
 };

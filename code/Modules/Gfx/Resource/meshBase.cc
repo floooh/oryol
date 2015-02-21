@@ -15,12 +15,12 @@ numPrimGroups(0) {
 
 //------------------------------------------------------------------------------
 void
-meshBase::clear() {
+meshBase::Clear() {
     this->vertexBufferAttrs = VertexBufferAttrs();
     this->indexBufferAttrs = IndexBufferAttrs();
     this->primGroups.Fill(PrimitiveGroup());
     this->numPrimGroups = 0;
-    resourceBase::clear();    
+    resourceBase::Clear();
 }
 
 } // namespace _priv

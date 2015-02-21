@@ -22,7 +22,7 @@ public:
     ~drawState();
     
     /// clear the object
-    void clear();
+    void Clear();
     
     /// mesh pointer
     class mesh* mesh;

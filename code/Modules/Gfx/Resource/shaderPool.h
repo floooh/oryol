@@ -7,11 +7,10 @@
 */
 #include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/ShaderSetup.h"
-#include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {
-class shaderPool : public ResourcePool<shader, ShaderSetup, shaderFactory> { };
+class shaderPool : public ResourcePool<shader, ShaderSetup> { };
 } // namespace _priv
 } // namespace Oryol

@@ -19,7 +19,7 @@ public:
     /// shader type
     ShaderType::Code shaderType;
     /// clear the object
-    void clear();
+    void Clear();
 };
     
 } // namespace _priv

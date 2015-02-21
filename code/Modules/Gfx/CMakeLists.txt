@@ -65,14 +65,10 @@ fips_begin_module(Gfx)
         texture.h
         textureFactory.h
         texturePool.h
-        loaderBase.h
         meshBase.cc meshBase.h
         programBundleBase.h
-        renderLoaderFactory.h
-        renderSimpleFactory.h
         shaderBase.cc shaderBase.h
         textureBase.cc textureBase.h
-        textureLoaderBase.cc textureLoaderBase.h
         GfxResourceContainer.cc GfxResourceContainer.h
     )
     fips_dir(Setup)
@@ -83,10 +79,6 @@ fips_begin_module(Gfx)
         ProgramBundleSetup.cc ProgramBundleSetup.h
         ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
-    )
-    fips_dir(Util)
-    fips_files(
-        TextureLoader.h
     )
     fips_dir(gl)
     fips_files(
@@ -103,7 +95,6 @@ fips_begin_module(Gfx)
         glShaderFactory.cc glShaderFactory.h
         glTexture.cc glTexture.h
         glTextureFactory.cc glTextureFactory.h
-        glTextureLoader.cc glTextureLoader.h
         glTypes.cc glTypes.h
         glVertexAttr.h
         gl_decl.h

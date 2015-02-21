@@ -409,7 +409,7 @@ glRenderer::applyDrawState(drawState* ds) {
     this->curProgramBundle = ds->programBundle;
     this->curMesh = ds->mesh;
     
-    const DrawStateSetup& setup = ds->GetSetup();
+    const DrawStateSetup& setup = ds->Setup;
     if (setup.DepthStencilState != this->depthStencilState) {
         this->applyDepthStencilState(setup.DepthStencilState);
     }

@@ -21,20 +21,20 @@ isValid(false) {
 
 //------------------------------------------------------------------------------
 glShaderFactory::~glShaderFactory() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
 glShaderFactory::Setup() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
     this->isValid = true;
 }
 
 //------------------------------------------------------------------------------
 void
 glShaderFactory::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     this->isValid = false;
 }
 
@@ -47,14 +47,14 @@ glShaderFactory::IsValid() const {
 //------------------------------------------------------------------------------
 void
 glShaderFactory::SetupResource(shader& shd) {
-    o_assert(this->isValid);
-    o_assert(shd.GetState() == ResourceState::Setup);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(ResourceState::Setup == shd.State);
     ORYOL_GL_CHECK_ERROR();
     
-    Log::Info("glShaderFactory: compiling shader '%s'\n", shd.GetSetup().Locator.Location().AsCStr());
+    Log::Info("glShaderFactory: compiling shader '%s'\n", shd.Setup.Locator.Location().AsCStr());
     
     // create a shader object
-    const ShaderSetup& setup = shd.GetSetup();
+    const ShaderSetup& setup = shd.Setup;
     
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
@@ -68,37 +68,37 @@ glShaderFactory::SetupResource(shader& shd) {
     // if compilation has failed, stop the program
     if (0 == glShader) {
         o_error("Failed to compile shader '%s'\n", setup.Locator.Location().AsCStr());
-        shd.setState(ResourceState::Failed);
+        shd.State = ResourceState::Failed;
         return;
     }
     
     // all ok, shader has been successfully compiled
     shd.shaderType = setup.Type;
     shd.glShd = glShader;
-    shd.setState(ResourceState::Valid);
+    shd.State = ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 glShaderFactory::DestroyResource(shader& shd) {
-    o_assert(this->isValid);
-    o_assert(ResourceState::Valid == shd.GetState());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(ResourceState::Valid == shd.State);
 
-    o_assert(0 != shd.glShd);
+    o_assert_dbg(0 != shd.glShd);
     ::glDeleteShader(shd.glShd);
     ORYOL_GL_CHECK_ERROR();
     
-    shd.clear();
-    shd.setState(ResourceState::Setup);
+    shd.Clear();
+    shd.State = ResourceState::Setup;
 }
 
 //------------------------------------------------------------------------------
 GLuint
 glShaderFactory::compileShader(ShaderType::Code type, const String& src) const {
-    o_assert(src.IsValid());
+    o_assert_dbg(src.IsValid());
     
     GLuint glShader = glCreateShader(type);
-    o_assert(0 != glShader);
+    o_assert_dbg(0 != glShader);
     ORYOL_GL_CHECK_ERROR();
     
     // attach source to shader object

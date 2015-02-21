@@ -30,16 +30,12 @@ public:
     /// constructor
     GfxResourceContainer();
 
-    /// attach a resource loader
-//    void AttachLoader(const Ptr<ResourceLoader>& loader);
-    /// detach a resource loader
-//    void DetachLoader(const Ptr<ResourceLoader>& loader);
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
     template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& data);
     /// async-load resource object
-    template<class SETUP> Id Load(const SETUP& setup);
+    template<class SETUP, class LOADER> Id Load(const SETUP& setup, const Ptr<LOADER>& loader);
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
@@ -81,28 +77,28 @@ private:
 //------------------------------------------------------------------------------
 inline _priv::mesh*
 GfxResourceContainer::lookupMesh(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->meshPool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline _priv::programBundle*
 GfxResourceContainer::lookupProgramBundle(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->programBundlePool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline _priv::texture*
 GfxResourceContainer::lookupTexture(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->texturePool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------
 inline _priv::drawState*
 GfxResourceContainer::lookupDrawState(const Id& resId) {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     return this->drawStatePool.Lookup(resId);
 }
     

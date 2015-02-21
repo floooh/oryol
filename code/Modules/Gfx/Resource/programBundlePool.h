@@ -7,12 +7,11 @@
 */
 #include "Resource/Core/ResourcePool.h"
 #include "Gfx/Setup/ProgramBundleSetup.h"
-#include "Gfx/Resource/programBundleFactory.h"
 #include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
 namespace _priv {
-class programBundlePool : public ResourcePool<programBundle, ProgramBundleSetup, programBundleFactory> { };
+class programBundlePool : public ResourcePool<programBundle, ProgramBundleSetup> { };
 } // namespace _priv
 } // namespace Oryol
 

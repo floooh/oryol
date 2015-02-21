@@ -28,101 +28,34 @@ public:
     /// destructor
     ~resourceBase();
     
-    /// get the resource id
-    const Id& GetId() const;
-    /// get the current state of the resource
-    ResourceState::Code GetState() const;
-    /// get the setup object
-    const SETUP& GetSetup() const;
-
-    /// set the resource id of the resource
-    void setId(const Id& id);
-    /// set the resource state
-    void setState(ResourceState::Code s);
-    /// set the setup object
-    void setSetup(const SETUP& s);
-    /// set the loader index (set by factory)
-    void setLoaderIndex(int32 i);
-    /// get the loader index
-    int32 getLoaderIndex() const;
-    /// clear the resource
-    void clear();
+    /// the resource id
+    class Id Id;
+    /// the resource state
+    ResourceState::Code State;
+    /// the setup object
+    SETUP Setup;
     
-protected:
-    Id id;
-    ResourceState::Code state;
-    SETUP setup;
-    int32 loaderIndex;
+    /// clear the resource
+    void Clear();
 };
 
 //------------------------------------------------------------------------------
 template<class SETUP>
 resourceBase<SETUP>::resourceBase() :
-state(ResourceState::Initial),
-loaderIndex(InvalidIndex) {
+State(ResourceState::Initial) {
     // empty
 }
     
 //------------------------------------------------------------------------------
 template<class SETUP>
 resourceBase<SETUP>::~resourceBase() {
-    o_assert(ResourceState::Valid != this->state);
+    o_assert(ResourceState::Valid != this->State);
 }
     
 //------------------------------------------------------------------------------
 template<class SETUP> void
-resourceBase<SETUP>::setId(const Id& id_) {
-    this->id = id_;
-}
-    
-//------------------------------------------------------------------------------
-template<class SETUP> const Id&
-resourceBase<SETUP>::GetId() const {
-    return this->id;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
-resourceBase<SETUP>::setState(ResourceState::Code s) {
-    this->state = s;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> ResourceState::Code
-resourceBase<SETUP>::GetState() const {
-    return this->state;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
-resourceBase<SETUP>::setSetup(const SETUP& setup_) {
-    o_assert(ResourceState::Initial == this->state);
-    this->setup = setup_;
-    this->state = ResourceState::Setup;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> const SETUP&
-resourceBase<SETUP>::GetSetup() const {
-    return this->setup;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
-resourceBase<SETUP>::setLoaderIndex(int32 i) {
-    this->loaderIndex = i;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> int32
-resourceBase<SETUP>::getLoaderIndex() const {
-    return this->loaderIndex;
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> void
-resourceBase<SETUP>::clear() {
-    this->setup = SETUP();
+resourceBase<SETUP>::Clear() {
+    this->Setup = SETUP();
 }
 
 } // namespace Oryol

@@ -6,7 +6,7 @@
     @brief shape geometry helper class
     @todo describe ShapeBuilder
 */
-#include "Assets/Util/MeshBuilder.h"
+#include "Assets/Gfx/MeshBuilder.h"
 #include "Core/Containers/Array.h"
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"

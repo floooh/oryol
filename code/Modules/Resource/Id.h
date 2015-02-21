@@ -21,6 +21,8 @@ public:
     static const uint8 InvalidType = 0xFF;
     /// invalid label constant
     static const uint8 InvalidLabel = 0xFF;
+    /// special label meaning 'all resources'
+    static const uint8 All = 0xFF;
 
     /// returns an invalid resource id
     static Id InvalidId();

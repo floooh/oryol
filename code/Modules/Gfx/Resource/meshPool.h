@@ -7,11 +7,10 @@
 */
 #include "Resource/Core/ResourcePool.h"
 #include "Gfx/Resource/mesh.h"
-#include "Gfx/Resource/meshFactory.h"
 #include "Gfx/Setup/MeshSetup.h"
 
 namespace Oryol {
 namespace _priv {
-class meshPool : public ResourcePool<mesh, MeshSetup, meshFactory> { };
+class meshPool : public ResourcePool<mesh, MeshSetup> { };
 } // namespace _priv
 } // namepspace Oryol

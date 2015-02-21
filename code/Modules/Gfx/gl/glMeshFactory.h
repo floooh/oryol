@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
-#include "Gfx/Resource/renderSimpleFactory.h"
 #include "Gfx/Resource/mesh.h"
+#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace _priv {
@@ -15,7 +15,7 @@ class renderer;
 class meshPool;
 class mesh;
 
-class glMeshFactory : public renderSimpleFactory<mesh, ResourceType::Mesh> {
+class glMeshFactory {
 public:
     /// constructor
     glMeshFactory();
@@ -29,9 +29,9 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource, continue calling until res state is not Pending
+    /// setup resource
     void SetupResource(mesh& mesh);
-    /// setup with input data, continue calling until res state is not Pending
+    /// setup with 'raw' data
     void SetupResource(mesh& mesh, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);

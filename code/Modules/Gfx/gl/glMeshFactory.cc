@@ -23,15 +23,15 @@ isValid(false) {
 
 //------------------------------------------------------------------------------
 glMeshFactory::~glMeshFactory() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
-    o_assert(!this->isValid);
-    o_assert(nullptr != rendr);
-    o_assert(nullptr != mshPool);
+    o_assert_dbg(!this->isValid);
+    o_assert_dbg(nullptr != rendr);
+    o_assert_dbg(nullptr != mshPool);
     this->isValid = true;
     this->renderer = rendr;
     this->meshPool = mshPool;
@@ -40,7 +40,7 @@ glMeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     this->isValid = false;
     this->renderer = nullptr;
     this->meshPool = nullptr;
@@ -55,19 +55,18 @@ glMeshFactory::IsValid() const {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::SetupResource(mesh& msh) {
-    o_assert(this->isValid);
-    o_assert((msh.GetState() == ResourceState::Setup) || (msh.GetState() == ResourceState::Pending));
+    o_assert_dbg(this->isValid);
+    o_assert_dbg((ResourceState::Setup == msh.State) || (ResourceState::Pending == msh.State));
     
     // decide whether a loader needs to take over, or whether we handle this right here
-    const MeshSetup& setup = msh.GetSetup();
-    if (setup.ShouldSetupEmpty()) {
+    if (msh.Setup.ShouldSetupEmpty()) {
         this->createEmptyMesh(msh);
-        o_assert((msh.GetState() == ResourceState::Valid) || (msh.GetState() == ResourceState::Failed));
+        o_assert_dbg((ResourceState::Valid == msh.State) || (ResourceState::Failed == msh.State));
     }
-    else if (setup.ShouldSetupFullScreenQuad()) {
-        o_assert(!setup.InstanceMesh.IsValid());
+    else if (msh.Setup.ShouldSetupFullScreenQuad()) {
+        o_assert_dbg(!msh.Setup.InstanceMesh.IsValid());
         this->createFullscreenQuad(msh);
-        o_assert(msh.GetState() == ResourceState::Valid);
+        o_assert_dbg(ResourceState::Valid == msh.State);
     }
     else {
         o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
@@ -77,14 +76,14 @@ glMeshFactory::SetupResource(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
-    o_assert(msh.GetSetup().ShouldSetupFromStream());
+    o_assert_dbg(msh.Setup.ShouldSetupFromStream());
     this->createFromStream(msh, data);
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
-    o_assert(nullptr != this->renderer);
+    o_assert_dbg(nullptr != this->renderer);
     
     this->renderer->invalidateMeshState();
     
@@ -103,8 +102,8 @@ glMeshFactory::DestroyResource(mesh& mesh) {
     if (0 != mesh.glIndexBuffer) {
         ::glDeleteBuffers(1, &mesh.glIndexBuffer);
     }
-    mesh.clear();
-    mesh.setState(ResourceState::Setup);
+    mesh.Clear();
+    mesh.State = ResourceState::Setup;
 }
 
 //------------------------------------------------------------------------------
@@ -114,14 +113,14 @@ glMeshFactory::DestroyResource(mesh& mesh) {
 */
 GLuint
 glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage) {
-    o_assert(nullptr != this->renderer);
-    o_assert(vertexDataSize > 0);
+    o_assert_dbg(nullptr != this->renderer);
+    o_assert_dbg(vertexDataSize > 0);
     
     this->renderer->invalidateMeshState();
     GLuint vb = 0;
     ::glGenBuffers(1, &vb);
     ORYOL_GL_CHECK_ERROR();
-    o_assert(0 != vb);
+    o_assert_dbg(0 != vb);
     this->renderer->bindVertexBuffer(vb);
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, usage);
     ORYOL_GL_CHECK_ERROR();
@@ -136,13 +135,13 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
 */
 GLuint
 glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage) {
-    o_assert(nullptr != this->renderer);
-    o_assert(indexDataSize > 0);
+    o_assert_dbg(nullptr != this->renderer);
+    o_assert_dbg(indexDataSize > 0);
     
     GLuint ib = 0;
     ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
-    o_assert(0 != ib);
+    o_assert_dbg(0 != ib);
     this->renderer->invalidateMeshState();  // IMPORTANT to unlink current VAO
     this->renderer->bindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, usage);
@@ -154,18 +153,19 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
 //------------------------------------------------------------------------------
 void
 glMeshFactory::attachInstanceBuffer(mesh& msh) {
-    const Id& instMeshId = msh.GetSetup().InstanceMesh;
+    const Id& instMeshId = msh.Setup.InstanceMesh;
     if (instMeshId.IsValid()) {
-        o_assert(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
+        o_assert_dbg(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
         const mesh* instMesh = this->meshPool->Lookup(instMeshId);
+        o_assert_dbg(instMesh);
         msh.instanceMesh = instMesh;
         
         // verify that there are no colliding vertex components
-        #if !ORYOL_NO_ASSERT
+        #if ORYOL_DEBUG
         const VertexLayout& mshLayout = msh.vertexBufferAttrs.Layout;
         const VertexLayout& instLayout = instMesh->vertexBufferAttrs.Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
-            o_assert(!instLayout.Contains(mshLayout.Component(i).Attr));
+            o_assert_dbg(!instLayout.Contains(mshLayout.Component(i).Attr));
         }
         #endif
     }
@@ -174,8 +174,8 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupVertexLayout(mesh& mesh) {
-    o_assert(mesh.GetState() != ResourceState::Valid);
-    o_assert(nullptr != this->renderer);
+    o_assert_dbg(ResourceState::Valid == mesh.State);
+    o_assert_dbg(nullptr != this->renderer);
     
     // create and initialize vertex array object
     this->renderer->invalidateMeshState();
@@ -241,11 +241,11 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
     // and lookup the optional instancing mesh
     const glMesh* instMesh = msh.instanceMesh;
     if (nullptr != instMesh) {
-        o_assert(glExt::HasExtension(glExt::InstancedArrays));
+        o_assert_dbg(glExt::HasExtension(glExt::InstancedArrays));
         
         // if instancing is used, geometry mesh cannot be dynamic
         // (FIXME: this is currently a rather arbitrary restriction)
-        o_assert(msh.numVertexBufferSlots == 1);
+        o_assert_dbg(msh.numVertexBufferSlots == 1);
     }
 
     // first disable all attrs
@@ -376,7 +376,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
-    o_assert(!mesh.GetSetup().InstanceMesh.IsValid());
+    o_assert_dbg(!mesh.Setup.InstanceMesh.IsValid());
     
     // vertices
     float32 vertices[] = {
@@ -413,15 +413,15 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.setState(ResourceState::Valid);
+    mesh.State = ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::createEmptyMesh(mesh& mesh) {
     
-    const MeshSetup& setup = mesh.GetSetup();
-    o_assert(setup.NumVertices > 0);
+    const MeshSetup& setup = mesh.Setup;
+    o_assert_dbg(setup.NumVertices > 0);
     
     const int32 numVertices = setup.NumVertices;
     const VertexLayout& layout = setup.Layout;
@@ -470,20 +470,20 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.setState(ResourceState::Valid);
+    mesh.State = ResourceState::Valid;
 }
     
 //------------------------------------------------------------------------------
 void
 glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
-    o_assert(mesh.GetState() == ResourceState::Setup);
-    const MeshSetup& setup = mesh.GetSetup();
+    o_assert_dbg(ResourceState::Setup == mesh.State);
+    const MeshSetup& setup = mesh.Setup;
     
     // open stream and get pointer to contained data
     if (data->Open(OpenMode::ReadOnly)) {
         const uint8* endPtr = nullptr;
         const uint8* ptr = data->MapRead(&endPtr);
-        o_assert(nullptr != ptr);
+        o_assert_dbg(nullptr != ptr);
         
         // setup vertex buffer attrs
         VertexBufferAttrs vbAttrs;
@@ -502,18 +502,22 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         // setup primitive groups
         const int32 numPrimGroups = setup.NumPrimitiveGroups();
         mesh.numPrimGroups = numPrimGroups;
-        o_assert(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
+        o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
         for (int32 i = 0; i < numPrimGroups; i++) {
             mesh.primGroups[i] = setup.PrimitiveGroup(i);
         }
         
         // setup the mesh object
-        const uint8* vertices = (const uint8*) ptr;
-        const uint32 verticesByteSize = Memory::RoundUp(setup.NumVertices * setup.Layout.ByteSize(), 4);
+        const uint8* vertices = ptr + setup.StreamVertexOffset;
+        const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
+        o_assert_dbg(endPtr >= (vertices + verticesByteSize));
         mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
         if (setup.IndicesType != IndexType::None) {
-            const uint8* indices = vertices + verticesByteSize;
-            const uint32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
+            o_assert_dbg(setup.StreamIndexOffset != InvalidIndex);
+            o_assert_dbg(setup.StreamIndexOffset >= verticesByteSize);
+            const uint8* indices = ((const uint8*)ptr) + setup.StreamIndexOffset;
+            const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
+            o_assert_dbg(endPtr >= (indices + indicesByteSize));
             mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
         }
         
@@ -521,7 +525,7 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         this->setupVertexLayout(mesh);
         
         // set mesh to valid, and return
-        mesh.setState(ResourceState::Valid);
+        mesh.State = ResourceState::Valid;
         
         data->UnmapRead();
         data->Close();
@@ -529,7 +533,7 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
     else {
         // this shouldn't happen
         o_error("glMeshFactory::createFromStream(): failed to open stream!\n");
-        mesh.setState(ResourceState::Failed);
+        mesh.State = ResourceState::Failed;
     }
 }
 

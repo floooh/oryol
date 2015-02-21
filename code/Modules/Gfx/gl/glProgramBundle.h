@@ -20,7 +20,7 @@ public:
     ~glProgramBundle();
     
     /// clear the object
-    void clear();
+    void Clear();
     
     /// set GL program object by mask
     int32 addProgram(uint32 mask, GLuint glProg);

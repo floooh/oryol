@@ -24,7 +24,7 @@ public:
     static const int32 MaxNumSlots = 4;
 
     /// clear the object
-    void clear();
+    void Clear();
     
     /// number of vertex buffer slots
     uint8 numVertexBufferSlots;

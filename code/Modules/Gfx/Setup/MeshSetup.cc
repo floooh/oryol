@@ -14,8 +14,10 @@ NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
 Locator(Locator::NonShared()),
+StreamVertexOffset(0),
+StreamIndexOffset(InvalidIndex),
 numPrimGroups(0),
-setupLoadAsync(false),
+setupFromFile(false),
 setupFromStream(false),
 setupEmpty(false),
 setupFullScreenQuad(false) {
@@ -24,11 +26,11 @@ setupFullScreenQuad(false) {
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromFileAsync(const class Locator& loc, Id placeholder) {
+MeshSetup::FromFile(const class Locator& loc, Id placeholder) {
     MeshSetup setup;
     setup.Locator = loc;
     setup.Placeholder = placeholder;
-    setup.setupLoadAsync = true;
+    setup.setupFromFile = true;
     return setup;
 }
 
@@ -80,8 +82,8 @@ MeshSetup::FullScreenQuad() {
 
 //------------------------------------------------------------------------------
 bool
-MeshSetup::ShouldSetupFromFileAsync() const {
-    return this->setupLoadAsync;
+MeshSetup::ShouldSetupFromFile() const {
+    return this->setupFromFile;
 }
 
 //------------------------------------------------------------------------------

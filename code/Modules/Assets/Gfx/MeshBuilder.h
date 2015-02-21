@@ -25,8 +25,7 @@
     Vertex format packing happens on the fly when writing vertex data 
     according to the vertex layout given.
     
-    This is the format of the stream data that will be written, this
-    is compatible with the RawMeshLoader format:
+    This is the format of the stream data that will be written:
     
     [1..numVertices]
         [1..N bytes per vertex]
@@ -40,7 +39,7 @@
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
-#include "Assets/Util/VertexWriter.h"
+#include "Assets/Gfx/VertexWriter.h"
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
@@ -123,7 +122,7 @@ MeshBuilder::Index(uint32 index, uint16 vertexIndex) {
 inline MeshBuilder&
 MeshBuilder::Index32(uint32 index, uint32 vertexIndex) {
     o_assert_dbg(this->inBegin && (index < this->NumIndices) && (this->IndicesType == IndexType::Index32));
-    o_assert_dbg(vertexIndex < this->header->numVertices);
+    o_assert_dbg(vertexIndex < this->NumVertices);
     
     uint32* ptr = ((uint32*)this->indexPointer) + index;
     o_assert_dbg(ptr < (uint32*)this->endPointer);

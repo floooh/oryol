@@ -21,7 +21,7 @@ resourceContainerBase::~resourceContainerBase() {
 //------------------------------------------------------------------------------
 void
 resourceContainerBase::setup(int32 labelStackCapacity, int32 registryCapacity) {
-    o_assert_dbg(!this->isValid);
+    o_assert_dbg(!this->valid);
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);
     this->valid = true;
@@ -30,7 +30,7 @@ resourceContainerBase::setup(int32 labelStackCapacity, int32 registryCapacity) {
 //------------------------------------------------------------------------------
 void
 resourceContainerBase::discard() {
-    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->valid);
     o_assert_dbg(this->labelStack.Empty());
     this->registry.Discard();
     this->valid = false;

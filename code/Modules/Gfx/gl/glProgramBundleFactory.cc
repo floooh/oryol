@@ -25,16 +25,16 @@ isValid(false) {
 
 //------------------------------------------------------------------------------
 glProgramBundleFactory::~glProgramBundleFactory() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
 glProgramBundleFactory::Setup(class renderer* rendr, shaderPool* pool, shaderFactory* factory) {
-    o_assert(!this->isValid);
-    o_assert(nullptr != rendr);
-    o_assert(nullptr != pool);
-    o_assert(nullptr != factory);
+    o_assert_dbg(!this->isValid);
+    o_assert_dbg(nullptr != rendr);
+    o_assert_dbg(nullptr != pool);
+    o_assert_dbg(nullptr != factory);
     this->isValid = true;
     this->renderer = rendr;
     this->shdPool = pool;
@@ -44,7 +44,7 @@ glProgramBundleFactory::Setup(class renderer* rendr, shaderPool* pool, shaderFac
 //------------------------------------------------------------------------------
 void
 glProgramBundleFactory::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     this->isValid = false;
     this->renderer = nullptr;
     this->shdPool = nullptr;
@@ -60,8 +60,8 @@ glProgramBundleFactory::IsValid() const {
 //------------------------------------------------------------------------------
 void
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
-    o_assert(this->isValid);
-    o_assert(progBundle.GetState() == ResourceState::Setup);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(ResourceState::Setup == progBundle.State);
     this->renderer->invalidateProgramState();
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
@@ -73,7 +73,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     #endif
 
     // for each program in the bundle...
-    const ProgramBundleSetup& setup = progBundle.GetSetup();
+    const ProgramBundleSetup& setup = progBundle.Setup;
     const int32 numProgs = setup.NumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         
@@ -89,10 +89,10 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         else {
             // vertex shader is precompiled
             const shader* vertexShader = this->shdPool->Lookup(setup.VertexShader(progIndex));
-            o_assert(nullptr != vertexShader);
+            o_assert_dbg(nullptr != vertexShader);
             glVertexShader = vertexShader->glShd;
         }
-        o_assert(0 != glVertexShader);
+        o_assert_dbg(0 != glVertexShader);
         
         // lookup or compile fragment shader
         GLuint glFragmentShader = 0;
@@ -105,10 +105,10 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         else {
             // fragment shader is precompiled
             const shader* fragmentShader = this->shdPool->Lookup(setup.FragmentShader(progIndex));
-            o_assert(nullptr != fragmentShader);
+            o_assert_dbg(nullptr != fragmentShader);
             glFragmentShader = fragmentShader->glShd;
         }
-        o_assert(0 != glFragmentShader);
+        o_assert_dbg(0 != glFragmentShader);
         
         // create GL program object and attach vertex/fragment shader
         GLuint glProg = ::glCreateProgram();
@@ -121,7 +121,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         /// @todo: would be good to optimize this to only bind
         /// attributes which exist in the shader (may be with more shader source generation)
         #if !ORYOL_GL_USE_GETATTRIBLOCATION
-        o_assert(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
+        o_assert_dbg(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
         }
@@ -157,7 +157,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // if linking failed, stop the app
         if (!linkStatus) {
             o_error("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
-            progBundle.setState(ResourceState::Failed);
+            progBundle.State = ResourceState::Failed;
             return;
         }
         
@@ -194,13 +194,13 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     this->renderer->invalidateProgramState();
     
     // at this point the whole programBundle object has been successfully setup
-    progBundle.setState(ResourceState::Valid);
+    progBundle.State = ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     this->renderer->invalidateProgramState();
     
     const int32 numProgs = progBundle.getNumPrograms();
@@ -211,8 +211,8 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
             ORYOL_GL_CHECK_ERROR();
         }
     }
-    progBundle.clear();
-    progBundle.setState(ResourceState::Setup);
+    progBundle.Clear();
+    progBundle.State = ResourceState::Setup;
 }
     
 } // namespace _priv

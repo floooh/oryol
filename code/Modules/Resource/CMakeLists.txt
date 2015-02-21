@@ -12,10 +12,8 @@ fips_begin_module(Resource)
         ResourcePool.h
         resourceContainerBase.cc resourceContainerBase.h
         resourceRegistry.cc resourceRegistry.h
-        loaderFactory.h
         resourceBase.h
         resourceSlot.h
-        simpleFactory.h
     )
     fips_deps(Core)
 fips_end_module()
@@ -25,7 +23,6 @@ fips_begin_unittest(Resource)
     fips_files(
         IdTest.cc
         LocatorTest.cc
-        ResourceLabelStackTest.cc
         ResourcePoolTest.cc
         resourceRegistryTest.cc
         StateTest.cc

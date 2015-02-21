@@ -19,17 +19,17 @@ glDepthTexture(0) {
 
 //------------------------------------------------------------------------------
 glTexture::~glTexture() {
-    o_assert(0 == this->glTex);
-    o_assert(0 == this->glTarget);
-    o_assert(0 == this->glFramebuffer);
-    o_assert(0 == this->glDepthRenderbuffer);
-    o_assert(0 == this->glDepthTexture);
+    o_assert_dbg(0 == this->glTex);
+    o_assert_dbg(0 == this->glTarget);
+    o_assert_dbg(0 == this->glFramebuffer);
+    o_assert_dbg(0 == this->glDepthRenderbuffer);
+    o_assert_dbg(0 == this->glDepthTexture);
 }
 
 //------------------------------------------------------------------------------
 void
-glTexture::clear() {
-    textureBase::clear();
+glTexture::Clear() {
+    textureBase::Clear();
     this->glTex = 0;
     this->glTarget = 0;
     this->glFramebuffer = 0;

@@ -17,7 +17,7 @@ namespace Oryol {
 class MeshSetup {
 public:
     /// asynchronously load from file
-    static MeshSetup FromFileAsync(const class Locator& loc, Id placeholder=Id::InvalidId());
+    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
     /// setup from from data provided in separate stream object
     static MeshSetup FromStream(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from data with blueprint
@@ -30,7 +30,7 @@ public:
     /// default constructor
     MeshSetup();
     /// check if should load asynchronously
-    bool ShouldSetupFromFileAsync() const;
+    bool ShouldSetupFromFile() const;
     /// check if should setup from stream with file-data
     bool ShouldSetupFromStream() const;
     /// check if should setup empty mesh
@@ -63,17 +63,22 @@ public:
     /// optional instance data mesh
     Id InstanceMesh;
     
-    /// resource locator (only for LoadAsync)
+    /// resource locator (only for LoadFromFile)
     class Locator Locator;
-    /// placeholder Id (only for LoadAsync)
+    /// placeholder Id (only for LoadFromFile)
     Id Placeholder;
+    
+    /// vertex data byte offset in stream (default: 0)
+    int32 StreamVertexOffset;
+    /// index data byte offset in stream (default: InvalidIndex)
+    int32 StreamIndexOffset;
     
 private:
     static const int32 MaxNumPrimGroups = 8;
 
     int32 numPrimGroups;
     class PrimitiveGroup primGroups[MaxNumPrimGroups];
-    bool setupLoadAsync : 1;
+    bool setupFromFile : 1;
     bool setupFromStream : 1;
     bool setupEmpty : 1;
     bool setupFullScreenQuad : 1;

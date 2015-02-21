@@ -34,8 +34,8 @@ public:
     void Add(const Locator& loc, const Id& id);
     /// lookup asset by locator
     Id Lookup(const Locator& loc) const;
-    /// remove all resource matching label from registry (does not discard!)
-    void Remove(uint8 label);
+    /// remove all resource matching label from registry, returns removed Ids
+    Array<Id> Remove(uint8 label);
     
     /// check if asset is registered by AssetId
     bool Contains(const Id& id) const;

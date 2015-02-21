@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of textureFactory
 */
-#include "Gfx/Resource/renderLoaderFactory.h"
+#include "IO/Stream/Stream.h"
 #include "Gfx/Resource/texture.h"
 
 namespace Oryol {
@@ -17,7 +17,7 @@ class textureLoaderBase;
 class displayMgr;
 class texturePool;
     
-class glTextureFactory : public renderLoaderFactory<texture, textureLoaderBase, ResourceType::Texture> {
+class glTextureFactory {
 public:
     /// constructor
     glTextureFactory();

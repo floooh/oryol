@@ -20,9 +20,9 @@ glShader::~glShader() {
 
 //------------------------------------------------------------------------------
 void
-glShader::clear() {
+glShader::Clear() {
     this->glShd = 0;
-    shaderBase::clear();
+    shaderBase::Clear();
 }
 
 } // namespace _priv
