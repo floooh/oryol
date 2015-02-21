@@ -9,7 +9,7 @@
 */
 #include "Synth/Core/opBundle.h"
 #include "Synth/Core/SynthSetup.h"
-#include "Gfx/Core/GfxId.h"
+#include "Resource/Id.h"
 
 namespace Oryol {
 namespace _priv {
@@ -32,9 +32,11 @@ public:
     void Synthesize(const opBundle& bundle) const;
     
 private:
+    // FIXME: better if we could get a resource label from the resource stack assigned!
+    static const uint8 SynthResourceLabel = 0xFC;
     bool isValid;
-    GfxId renderTarget;
-    GfxId drawState;
+    Id renderTarget;
+    Id drawState;
 };
     
 } // namespace _priv

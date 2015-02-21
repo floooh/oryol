@@ -1,6 +1,6 @@
 fips_begin_app(Instancing windowed)
     fips_files(Instancing.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Asset Time Dbg Input)
+    fips_deps(Assets Time Dbg Input)
     oryol_add_web_sample(Instancing "Instanced rendering" "emscripten,pnacl,android" Instancing.jpg "Gfx/Instancing/Instancing.cc")
 fips_end_app()

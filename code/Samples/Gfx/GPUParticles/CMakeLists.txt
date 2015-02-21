@@ -1,6 +1,6 @@
 fips_begin_app(GPUParticles windowed)
     fips_files(GPUParticles.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Asset Time Dbg)
+    fips_deps(Assets Time Dbg)
     oryol_add_web_sample(GPUParticles "Fully GPU driven 3D particles" "emscripten,android,pnacl" GPUParticles.jpg "Gfx/GPUParticles/GPUParticles.cc")
 fips_end_app()

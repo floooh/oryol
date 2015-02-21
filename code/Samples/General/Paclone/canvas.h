@@ -5,7 +5,6 @@
 */
 #include "Core/Assertion.h"
 #include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Core/GfxId.h"
 #include "sprites.h"
 
 namespace Paclone {
@@ -54,10 +53,10 @@ private:
     int canvasHeight;
     int numSprites;
     int numVertices;
-    Oryol::GfxId mesh;
-    Oryol::GfxId prog;
-    Oryol::GfxId drawState;
-    Oryol::GfxId texture;
+    Oryol::Id mesh;
+    Oryol::Id prog;
+    Oryol::Id drawState;
+    Oryol::Id texture;
 
     static const int MaxWidth = 64;
     static const int MaxHeight = 64;

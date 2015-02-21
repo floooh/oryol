@@ -1,6 +1,6 @@
 fips_begin_app(PBRendering windowed)
     fips_files(PBRendering.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Asset Dbg)
+    fips_deps(Assets Dbg)
     oryol_add_web_sample(PBRendering "Physically based rendering sample" "emscripten,pnacl,android" PBRendering.jpg "Gfx/PBRendering/PBRendering.cc")
 fips_end_app()

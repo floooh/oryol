@@ -1,6 +1,6 @@
 fips_begin_app(TestInput windowed)
     fips_files(TestInput.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Asset Dbg Input)
+    fips_deps(Assets Dbg Input)
     oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten,pnacl,android" TestInput.jpg "Input/TestInput/TestInput.cc")
 fips_end_app()

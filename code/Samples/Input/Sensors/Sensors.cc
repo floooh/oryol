@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
@@ -24,7 +24,7 @@ public:
 private:
     glm::mat4 computeMVP(const Sensors& sensor);
 
-    GfxId drawState;
+    Id drawState;
     glm::mat4 proj;
     TimePoint lastFrameTimePoint;
 };
@@ -43,13 +43,13 @@ SensorsApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(2.0, 2.0, 2.0, 1).Build();
-    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
 
     // setup transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -99,7 +99,6 @@ SensorsApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnCleanup() {
-    this->drawState.Release();
     Input::Discard();
     Dbg::Discard();
     Gfx::Discard();

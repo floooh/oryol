@@ -19,9 +19,9 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    GfxId renderTarget;
-    GfxId offscreenDrawState;
-    GfxId copyDrawState;
+    Id renderTarget;
+    Id offscreenDrawState;
+    Id copyDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -76,18 +76,18 @@ TextureFloatApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::CreateResource(rtSetup);
+    this->renderTarget = Gfx::Resource().Create(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
-    GfxId fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    Id fullscreenMesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
 
     // setup draw state for offscreen rendering to float render target
-    GfxId offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
-    this->offscreenDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
+    Id offscreenProg = Gfx::Resource().Create(Shaders::Offscreen::CreateSetup());
+    this->offscreenDrawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
     
     // fullscreen-copy mesh, shader and draw state
-    GfxId copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
-    this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
+    Id copyProg = Gfx::Resource().Create(Shaders::Copy::CreateSetup());
+    this->copyDrawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -101,10 +101,6 @@ TextureFloatApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 TextureFloatApp::OnCleanup() {
-    // cleanup everything
-    this->offscreenDrawState.Release();
-    this->copyDrawState.Release();
-    this->renderTarget.Release();
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();

@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Core/String/StringConverter.h"
@@ -45,7 +45,7 @@ private:
     float32 minDist;
     float32 maxDist;
     
-    GfxId drawState;
+    Id drawState;
     glm::vec2 startPolar;
     glm::vec2 polar;
     float32 distance = 6.0f;
@@ -74,13 +74,13 @@ TestInputApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1).Build();
-    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
 
     // setup transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -418,7 +418,6 @@ TestInputApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnCleanup() {
-    this->drawState.Release();
     Input::Discard();
     Dbg::Discard();
     Gfx::Discard();

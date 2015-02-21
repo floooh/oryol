@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
@@ -26,8 +26,8 @@ private:
     void emitParticles();
     void updateParticles();
 
-    GfxId instanceMesh;
-    GfxId drawState;
+    Id instanceMesh;
+    Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -149,7 +149,7 @@ InstancingApp::OnInit() {
     // create dynamic instance data mesh
     auto instanceMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->instanceMesh = Gfx::CreateResource(instanceMeshSetup);
+    this->instanceMesh = Gfx::Resource().Create(instanceMeshSetup);
     
     // setup static draw state
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -159,15 +159,16 @@ InstancingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    MeshSetup staticMeshSetup = shapeBuilder.GetMeshSetup();
-    staticMeshSetup.InstanceMesh = this->instanceMesh;
-    GfxId mesh = Gfx::CreateResource(staticMeshSetup, shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    auto shapeBuilderResult = shapeBuilder.Result();
+    // FIXME: blargh, this is mighty ugly, consider using a SetupAndStream class
+    std::get<0>(shapeBuilderResult).InstanceMesh = this->instanceMesh;
+    Id mesh = Gfx::Resource().Create(shapeBuilderResult);
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -181,9 +182,6 @@ InstancingApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 InstancingApp::OnCleanup() {
-    // cleanup everything
-    this->drawState.Release();
-    this->instanceMesh.Release();
     Input::Discard();
     Dbg::Discard();
     Gfx::Discard();
