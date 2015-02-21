@@ -103,15 +103,9 @@ MeshBuilder::End() {
 }
 
 //------------------------------------------------------------------------------
-const Ptr<Stream>&
-MeshBuilder::GetStream() const {
-    return this->stream;
-}
-
-//------------------------------------------------------------------------------
-const MeshSetup&
-MeshBuilder::GetMeshSetup() const {
-    return this->meshSetup;
+std::tuple<MeshSetup, Ptr<Stream>>
+MeshBuilder::Result() const {
+    return std::make_tuple(this->meshSetup, this->stream);
 }
 
 } // namespace Oryol

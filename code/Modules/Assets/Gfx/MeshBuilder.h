@@ -41,6 +41,7 @@
 #include "Gfx/Setup/MeshSetup.h"
 #include "Assets/Gfx/VertexWriter.h"
 #include "IO/Stream/MemoryStream.h"
+#include <tuple>
 
 namespace Oryol {
 
@@ -84,13 +85,10 @@ public:
     MeshBuilder& Triangle32(uint32 triangleIndex, uint32 vertexIndex0, uint32 vertexIndex1, uint32 vertexIndex2);
     /// end writing vertex and index data
     void End();
-    
+    /// get result
+    std::tuple<MeshSetup, Ptr<Stream>> Result() const;    
     /// clear the mesh builder
     void Clear();
-    /// get the resulting mesh setup object
-    const MeshSetup& GetMeshSetup() const;
-    /// get the resulting data stream with vertex and index data
-    const Ptr<Stream>& GetStream() const;
     
 private:
     /// compute byte offset into vertex buffer given vertex and component index

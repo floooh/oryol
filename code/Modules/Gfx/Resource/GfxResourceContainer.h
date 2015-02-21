@@ -17,6 +17,7 @@
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStatePool.h"
 #include "Gfx/Resource/drawStateFactory.h"
+#include <tuple>
 
 namespace Oryol {
     
@@ -33,7 +34,7 @@ public:
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
-    template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& data);
+    template<class SETUP> Id Create(const std::tuple<SETUP, Ptr<Stream>>& setupAndData);
     /// async-load resource object
     template<class SETUP, class LOADER> Id Load(const SETUP& setup, const Ptr<LOADER>& loader);
     /// query current resource state

@@ -81,8 +81,10 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const MeshSetup& setup, const Ptr<Stream>& data) {
+GfxResourceContainer::Create(const std::tuple<MeshSetup, Ptr<Stream>>& setupAndData) {
     o_assert_dbg(this->isValid());
+    const MeshSetup& setup = std::get<0>(setupAndData);
+    const Ptr<Stream>& data = std::get<1>(setupAndData);
     o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -137,8 +139,10 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const TextureSetup& setup, const Ptr<Stream>& data) {
+GfxResourceContainer::Create(const std::tuple<TextureSetup, Ptr<Stream>>& setupAndData) {
     o_assert_dbg(this->isValid());
+    const TextureSetup& setup = std::get<0>(setupAndData);
+    const Ptr<Stream>& data = std::get<1>(setupAndData);
     o_assert_dbg(!setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -147,7 +151,7 @@ GfxResourceContainer::Create(const TextureSetup& setup, const Ptr<Stream>& data)
     else {
         resId = this->texturePool.AllocId(this->peekLabel());
         texture& res = this->texturePool.Assign(resId, setup);
-        this->textureFactory.SetupResource(res);
+        this->textureFactory.SetupResource(res, data);
         this->registry.Add(setup.Locator, resId);
     }
     return resId;

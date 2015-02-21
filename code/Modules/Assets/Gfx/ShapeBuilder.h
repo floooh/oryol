@@ -42,10 +42,8 @@ public:
     void Clear();
     /// build geometry
     void Build();
-    /// get the resulting mesh setup object
-    const MeshSetup& GetMeshSetup() const;
-    /// get the resulting data stream with vertex and index data
-    const Ptr<Stream>& GetStream() const;
+    /// get result
+    std::tuple<MeshSetup, Ptr<Stream>> Result() const;
     
 private:
     enum ShapeType {
