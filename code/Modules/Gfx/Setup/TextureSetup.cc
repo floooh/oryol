@@ -42,6 +42,16 @@ TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
 
 //------------------------------------------------------------------------------
 TextureSetup
+TextureSetup::FromFile(const class Locator& loc, TextureSetup blueprint, Id placeholder) {
+    TextureSetup setup(blueprint);
+    setup.setupFromFile = true;
+    setup.Locator = loc;
+    setup.Placeholder = placeholder;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
 TextureSetup::RenderTarget(int32 w, int32 h) {
     o_assert(w > 0);
     o_assert(h > 0);
@@ -101,7 +111,7 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == ResourceType::Texture);
+    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == GfxResourceType::Texture);
 
     TextureSetup setup;
     setup.setupAsRenderTarget = true;

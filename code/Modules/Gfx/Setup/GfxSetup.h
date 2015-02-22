@@ -45,13 +45,13 @@ public:
     String Title = "Oryol";
     
     /// tweak resource pool size for a rendering resource type
-    void SetPoolSize(ResourceType::Code type, int32 poolSize);
+    void SetPoolSize(GfxResourceType::Code type, int32 poolSize);
     /// get resource pool size for a rendering resource type
-    int32 PoolSize(ResourceType::Code type) const;
+    int32 PoolSize(GfxResourceType::Code type) const;
     /// tweak resource throttling value for a resource type, 0 means unthrottled
-    void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
+    void SetThrottling(GfxResourceType::Code type, int32 maxCreatePerFrame);
     /// get resource throttling value
-    int32 Throttling(ResourceType::Code type) const;
+    int32 Throttling(GfxResourceType::Code type) const;
     
     /// initial resource label stack capacity
     int32 ResourceLabelStackCapacity = 256;
@@ -67,8 +67,8 @@ public:
 private:
     static const int32 DefaultPoolSize = 128;
     
-    int32 poolSizes[ResourceType::NumResourceTypes];
-    int32 throttling[ResourceType::NumResourceTypes];
+    int32 poolSizes[GfxResourceType::NumResourceTypes];
+    int32 throttling[GfxResourceType::NumResourceTypes];
 };
     
 } // namespace Oryol

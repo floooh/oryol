@@ -9,7 +9,7 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 GfxSetup::GfxSetup() {
-    for (int32 i = 0; i < ResourceType::NumResourceTypes; i++) {
+    for (int32 i = 0; i < GfxResourceType::NumResourceTypes; i++) {
         this->poolSizes[i] = DefaultPoolSize;
         this->throttling[i] = 0;    // unthrottled
     }
@@ -77,30 +77,30 @@ GfxSetup::GetDisplayAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-GfxSetup::SetPoolSize(ResourceType::Code type, int32 size) {
-    o_assert_range(type, ResourceType::NumResourceTypes);
+GfxSetup::SetPoolSize(GfxResourceType::Code type, int32 size) {
+    o_assert_range(type, GfxResourceType::NumResourceTypes);
     o_assert(size > 0);
     this->poolSizes[type] = size;
 }
     
 //------------------------------------------------------------------------------
 int32
-GfxSetup::PoolSize(ResourceType::Code type) const {
-    o_assert_range(type, ResourceType::NumResourceTypes);
+GfxSetup::PoolSize(GfxResourceType::Code type) const {
+    o_assert_range(type, GfxResourceType::NumResourceTypes);
     return this->poolSizes[type];
 }
     
 //------------------------------------------------------------------------------
 void
-GfxSetup::SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame) {
-    o_assert_range(type, ResourceType::NumResourceTypes);
+GfxSetup::SetThrottling(GfxResourceType::Code type, int32 maxCreatePerFrame) {
+    o_assert_range(type, GfxResourceType::NumResourceTypes);
     this->throttling[type] = maxCreatePerFrame;
 }
     
 //------------------------------------------------------------------------------
 int32
-GfxSetup::Throttling(ResourceType::Code type) const {
-    o_assert_range(type, ResourceType::NumResourceTypes);
+GfxSetup::Throttling(GfxResourceType::Code type) const {
+    o_assert_range(type, GfxResourceType::NumResourceTypes);
     return this->throttling[type];
 }
     

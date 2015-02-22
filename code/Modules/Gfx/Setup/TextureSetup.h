@@ -16,6 +16,8 @@ class TextureSetup {
 public:
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
+    /// asynchronously load from file
+    static TextureSetup FromFile(const Locator& loc, TextureSetup blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup a texture from a image file data in stream
     static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data

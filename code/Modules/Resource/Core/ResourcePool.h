@@ -43,8 +43,10 @@ public:
     void Unassign(const Id& id);
     /// unassign all slots matching label by label (iterates over entire pool)
     void UnassignByLabel(uint8 label);
-    /// return pointer to resource object, may return placeholder
+    /// return pointer to resource object, may return placeholder or nullptr
     RESOURCE* Lookup(const Id& id) const;
+    /// lookup 'raw' resource, may return nullptr
+    RESOURCE* Get(const Id& id) const;
     /// query the loading state of a contained resource
     ResourceState::Code QueryState(const Id& id) const;
     
@@ -197,6 +199,22 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
     // FALLTHROUGH: no valid resource (doesn't exist, is pending, failed etc...)
     o_error("FIXME FIXME FIXME");
     return nullptr;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> RESOURCE*
+ResourcePool<RESOURCE,SETUP>::Get(const Id& id) const {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type() == this->resourceType);
+    
+    const uint16 slotIndex = id.SlotIndex();
+    auto& slot = this->slots[slotIndex];
+    if (id == slot.Resource.Id) {
+        return (RESOURCE*) &slot.Resource;
+    }
+    else {
+        return nullptr;
+    }
 }
 
 //------------------------------------------------------------------------------

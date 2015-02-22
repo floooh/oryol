@@ -3,14 +3,14 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
+#include "Core/Containers/StaticArray.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
-#include "Gfx/Util/TextureLoader.h"
+#include "Assets/Gfx/ShapeBuilder.h"
+#include "Assets/Gfx/TextureLoader.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include <array>
 #include "shaders.h"
 
 using namespace Oryol;
@@ -24,9 +24,9 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    GfxId drawState;
+    Id drawState;
     static const int32 NumTextures = 16;
-    std::array<GfxId, NumTextures> texId;
+    StaticArray<Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -43,7 +43,7 @@ DDSTextureLoadingApp::OnRunning() {
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f));
     
     // only render when texture is loaded (until texture placeholder are implemented)
-    static const std::array<glm::vec3, NumTextures> pos{ {
+    static const glm::vec3 pos[NumTextures] = {
         // dxt1, dxt3, dxt5, pvr2, pvr4, etc2
         glm::vec3(-2.75f, +1.1f, 0.0f),
         glm::vec3(-1.65f, +1.1f, 0.0f),
@@ -65,11 +65,11 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+0.55f, -1.1f, 0.0f),
         glm::vec3(+1.65f, -1.1f, 0.0f),
         glm::vec3(+2.75f, -1.1f, 0.0f)
-    } };
+    };
     for (int32 i = 0; i < NumTextures; i++) {
-        const GfxId& tex = this->texId[i];
+        const Id& tex = this->texId[i];
         if (tex.IsValid()) {
-            const auto resState = Gfx::QueryResourceState(tex);
+            const auto resState = Gfx::Resource().QueryState(tex);
             if (resState == ResourceState::Valid) {
                 glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
                 Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
@@ -96,8 +96,8 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
-    gfxSetup.Loaders.Add(TextureLoader::Creator());
     Gfx::Setup(gfxSetup);
+    Gfx::Resource().AttachLoader(TextureLoader::Create());
 
     // setup resources
     TextureSetup texBluePrint;
@@ -105,7 +105,7 @@ DDSTextureLoadingApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
-    static const std::array<const char*, NumTextures> paths = { {
+    static const char *paths[NumTextures] = {
         "tex:lok_dxt1.dds",
         "tex:lok_dxt3.dds",
         "tex:lok_dxt5.dds",
@@ -122,9 +122,9 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_abgr1555.dds",
         "tex:lok_rgb565.dds",
         "tex:lok_bgr565.dds",
-    } };
+    };
     for (int32 i = 0; i < NumTextures; i++) {
-        this->texId[i] = Gfx::CreateResource(TextureSetup::FromFile(paths[i], i, texBluePrint));
+        this->texId[i] = Gfx::Resource().Load(TextureSetup::FromFile(paths[i], texBluePrint));
     }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -133,12 +133,12 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4).Build();
-    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -151,16 +151,8 @@ DDSTextureLoadingApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 DDSTextureLoadingApp::OnCleanup() {
-    // cleanup everything
-    for (auto& tex : this->texId) {
-        if (tex.IsValid()) {
-            tex.Release();
-        }
-    }
-    this->drawState.Release();
     Gfx::Discard();
-    IO::Discard();
-    
+    IO::Discard();    
     return App::OnCleanup();
 }
 

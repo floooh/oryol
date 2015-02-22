@@ -297,14 +297,14 @@ class PrimitiveType : public _priv::glPrimitiveType { };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ResourceType
+    @class Oryol::GfxResourceType
     @ingroup Gfx
     @brief Gfx module resource types
  
     These types are used for the type in Id for Gfx module
     resources.
 */
-class ResourceType {
+class GfxResourceType {
 public:
     /// type enum
     enum Code {
