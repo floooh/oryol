@@ -149,14 +149,24 @@ def serve_webpage(fips_dir, proj_dir) :
     if p == 'osx' :
         try :
             subprocess.call(
-                    ['open http://localhost:8000 ; python {}/mod/httpserver.py'.format(fips_dir)],
-                    cwd = webpage_dir, shell=True)
+                'open http://localhost:8000 ; python {}/mod/httpserver.py'.format(fips_dir),
+                cwd = webpage_dir, shell=True)
         except KeyboardInterrupt :
             pass
     elif p == 'win':
-        log.error("FIXME: Windows not supported yet")
+        try:
+            subprocess.call(
+                'cmd /c start http://localhost:8000 && python {}/mod/httpserver.py'.format(fips_dir),
+                cwd = webpage_dir, shell=True)
+        except KeyboardInterrupt:
+            pass
     elif p == 'linux':
-        log.error("FIXME: Linux not supported yet")
+        try:
+            subprocess.call(
+                'xdg-open http://localhost:8000; python {}/mod/httpserver.py'.format(fips_dir),
+                cwd = webpage_dir, shell=True)
+        except KeyboardInterrupt:
+            pass
 
 #-------------------------------------------------------------------------------
 def run(fips_dir, proj_dir, args) :
