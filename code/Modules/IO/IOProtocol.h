@@ -10,6 +10,7 @@
 #include "Core/Ptr.h"
 #include "IO/Core/URL.h"
 #include "IO/Core/IOStatus.h"
+#include "IO/Core/IOLoader.h"
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
@@ -61,9 +62,10 @@ public:
             this->lane = 0;
             this->cachereadenabled = true;
             this->cachewriteenabled = true;
-            this->status = IOStatus::InvalidIOStatus;
             this->startoffset = 0;
             this->endoffset = 0;
+            this->status = IOStatus::InvalidIOStatus;
+            this->actuallane = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -99,6 +101,24 @@ public:
         bool GetCacheWriteEnabled() const {
             return this->cachewriteenabled;
         };
+        void SetStartOffset(int32 val) {
+            this->startoffset = val;
+        };
+        int32 GetStartOffset() const {
+            return this->startoffset;
+        };
+        void SetEndOffset(int32 val) {
+            this->endoffset = val;
+        };
+        int32 GetEndOffset() const {
+            return this->endoffset;
+        };
+        void SetLoader(const Ptr<IOLoader>& val) {
+            this->loader = val;
+        };
+        const Ptr<IOLoader>& GetLoader() const {
+            return this->loader;
+        };
         void SetStatus(const IOStatus::Code& val) {
             this->status = val;
         };
@@ -117,28 +137,24 @@ public:
         const Ptr<MemoryStream>& GetStream() const {
             return this->stream;
         };
-        void SetStartOffset(int32 val) {
-            this->startoffset = val;
+        void SetActualLane(int32 val) {
+            this->actuallane = val;
         };
-        int32 GetStartOffset() const {
-            return this->startoffset;
-        };
-        void SetEndOffset(int32 val) {
-            this->endoffset = val;
-        };
-        int32 GetEndOffset() const {
-            return this->endoffset;
+        int32 GetActualLane() const {
+            return this->actuallane;
         };
 private:
         URL url;
         int32 lane;
         bool cachereadenabled;
         bool cachewriteenabled;
+        int32 startoffset;
+        int32 endoffset;
+        Ptr<IOLoader> loader;
         IOStatus::Code status;
         String errordesc;
         Ptr<MemoryStream> stream;
-        int32 startoffset;
-        int32 endoffset;
+        int32 actuallane;
     };
     class notifyLanes : public Message {
         OryolClassPoolAllocDecl(notifyLanes);

@@ -9,21 +9,11 @@ namespace Oryol {
 OryolClassImpl(TextureLoaderBase);
 
 //------------------------------------------------------------------------------
-bool
-TextureLoaderBase::Supports(GfxResourceType::Code resType) const {
-    return GfxResourceType::Texture == resType;
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureLoaderBase::Accepts(const SetupAndStream<TextureSetup>& input) const {
-    return false;
-}
-
-//------------------------------------------------------------------------------
-SetupAndStream<TextureSetup>
-TextureLoaderBase::Load(const SetupAndStream<TextureSetup>& input) const {
-    return input;
+void
+TextureLoaderBase::Prepare(const Id& id_, const TextureSetup& setup_) {
+    o_assert_dbg(!this->id.IsValid());
+    this->id = id_;
+    this->setup = setup_;
 }
 
 } // namespace Oryol

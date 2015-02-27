@@ -6,7 +6,7 @@
 */
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/Core/SetupAndStream.h"
-#include "Resource/Core/ResourceLoader.h"
+#include "Resource/Core/ResourceStreamTarget.h"
 #include "Core/RunLoop.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/meshPool.h"
@@ -34,32 +34,23 @@ public:
     /// constructor
     GfxResourceContainer();
 
-    /// attach a mesh resource loader (FIXME: UGLY!)
-    template<class LOADER> typename std::enable_if<std::is_base_of<MeshLoaderBase, LOADER>::value,void>::type
-        AttachLoader(const Ptr<LOADER>& loader) {
-            o_assert_dbg(loader->Supports(GfxResourceType::Mesh));
-            loader->OnAttach();
-            this->meshLoaders.Insert(0, loader);
-        };
-    /// attach a texture resource loader (FIXME: UGLY!)
-    template<class LOADER> typename std::enable_if<std::is_base_of<TextureLoaderBase, LOADER>::value,void>::type
-        AttachLoader(const Ptr<LOADER>& loader) {
-            o_assert_dbg(loader->Supports(GfxResourceType::Texture));
-            loader->OnAttach();
-            this->textureLoaders.Insert(0, loader.get());
-        };
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
     template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& stream);
     /// create a resource object with data
     template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
-    /// async-load resource object
-    template<class SETUP> Id Load(const SETUP& setup);
+    /// streaming-load resource object
+    template<class SETUP, class LOADER> Id Load(const SETUP& setup, std::function<Ptr<LOADER>()> loader);
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
     void Destroy(uint8 label);
+    
+    /// begin streaming resource setup, usually called by loaders (can be called from other thread)
+    template<class SETUP> ResourceStreamTarget BeginStreaming(const Id& id, const SETUP& setup);
+    /// finish streaming resource setup, usually called by loaders (can be called from other thread)
+    void EndStreaming(const Id& id);
     
 private:
     friend class Gfx;
@@ -89,8 +80,6 @@ private:
     class _priv::programBundlePool programBundlePool;
     class _priv::texturePool texturePool;
     class _priv::drawStatePool drawStatePool;
-    Array<Ptr<MeshLoaderBase>> meshLoaders;
-    Array<Ptr<TextureLoaderBase>> textureLoaders;
 };
 
 //------------------------------------------------------------------------------

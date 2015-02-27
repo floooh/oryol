@@ -13,6 +13,8 @@ namespace _priv {
     
 class osxURLLoader : public baseURLLoader {
 public:
+    /// constructor
+    osxURLLoader();
     /// process enqueued requests
     void doWork();
     

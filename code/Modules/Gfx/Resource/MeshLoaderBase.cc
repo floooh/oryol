@@ -9,21 +9,11 @@ namespace Oryol {
 OryolClassImpl(MeshLoaderBase);
 
 //------------------------------------------------------------------------------
-bool
-MeshLoaderBase::Supports(GfxResourceType::Code resType) const {
-    return GfxResourceType::Mesh == resType;
-}
-
-//------------------------------------------------------------------------------
-bool
-MeshLoaderBase::Accepts(const SetupAndStream<MeshSetup>& input) const {
-    return false;
-}
-
-//------------------------------------------------------------------------------
-SetupAndStream<MeshSetup>
-MeshLoaderBase::Load(const SetupAndStream<MeshSetup>& input) const {
-    return input;
+void
+MeshLoaderBase::Prepare(const Id& id_, const MeshSetup& setup_) {
+    o_assert_dbg(!this->id.IsValid());
+    this->id = id_;
+    this->setup = setup_;
 }
 
 } // namespace Oryol

@@ -43,6 +43,7 @@ ioRequestRouter::Put(const Ptr<Message>& msg) {
         Ptr<IOProtocol::Request> req = msg.dynamicCast<IOProtocol::Request>();
         if (req.isValid()) {
             const int32 laneIndex = req->GetLane() % this->numLanes;
+            req->SetActualLane(laneIndex);
             this->ioLanes[laneIndex]->Put(msg);
             return true;
         }

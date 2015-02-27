@@ -13,6 +13,7 @@ fips_begin_module(IO)
         IOQueue.cc IOQueue.h
         IOSetup.h
         IOStatus.cc IOStatus.h
+        IOLoader.cc IOLoader.h
         OpenMode.cc OpenMode.h
         URL.cc URL.h
         URLBuilder.cc URLBuilder.h

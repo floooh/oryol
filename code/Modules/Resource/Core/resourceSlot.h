@@ -13,7 +13,7 @@ namespace Oryol {
 template<class RESOURCE, class SETUP> class resourceSlot {
 public:
     /// assign a resource to the slot
-    RESOURCE& Assign(const Id& id, const SETUP& setup);
+    RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
     /// unassign the resource
     void Unassign();
     
@@ -23,18 +23,18 @@ public:
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> RESOURCE&
-resourceSlot<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup) {
-    o_assert(ResourceState::Initial == this->Resource.State);
+resourceSlot<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceState::Code state) {
+    o_assert_dbg(ResourceState::Initial == this->Resource.State);
     this->Resource.Id = id;
     this->Resource.Setup = setup;
-    this->Resource.State = ResourceState::Setup;
+    this->Resource.State = state;
     return this->Resource;
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
 resourceSlot<RESOURCE,SETUP>::Unassign() {
-    o_assert(ResourceState::Initial != this->Resource.State);
+    o_assert_dbg(ResourceState::Initial != this->Resource.State);
     this->Resource.State = ResourceState::Initial;
 }
 

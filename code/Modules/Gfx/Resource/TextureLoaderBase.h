@@ -5,22 +5,20 @@
     @ingroup Gfx
     @brief base class for Gfx texture loaders
 */
-#include "Resource/Core/ResourceLoader.h"
-#include "Resource/Core/SetupAndStream.h"
-#include "Gfx/Core/Enums.h"
+#include "IO/Core/IOLoader.h"
 #include "Gfx/Setup/TextureSetup.h"
 
 namespace Oryol {
 
-class TextureLoaderBase : public ResourceLoader {
+class TextureLoaderBase : public IOLoader {
     OryolClassDecl(TextureLoaderBase);
 public:
-    /// indicate supported resource types
-    bool Supports(GfxResourceType::Code resType) const;
-    /// test if a resource loading request would be accepted
-    virtual bool Accepts(const SetupAndStream<TextureSetup>& input) const;
-    /// perform loading
-    virtual SetupAndStream<TextureSetup> Load(const SetupAndStream<TextureSetup>& input) const;
+    /// prepare texture loader (called on main thread)
+    virtual void Prepare(const Id& id, const TextureSetup& setup);
+
+protected:
+    TextureSetup setup;
+    Id id;
 };
 
 } // namespace Oryol

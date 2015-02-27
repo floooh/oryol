@@ -38,7 +38,7 @@ public:
     Id AllocId(uint8 resourceLabel);
     
     /// assign a resource to a free slot
-    RESOURCE& Assign(const Id& id, const SETUP& setup);
+    RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// unassign all slots matching label by label (iterates over entire pool)
@@ -147,12 +147,12 @@ ResourcePool<RESOURCE,SETUP>::freeId(const Id& id) {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> RESOURCE&
-ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup) {
+ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceState::Code state) {
     o_assert_dbg(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
-    slot.Assign(id, setup);
+    slot.Assign(id, setup, state);
     return slot.Resource;
 }
 

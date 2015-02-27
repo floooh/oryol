@@ -5,17 +5,19 @@
     @ingroup Assets
     @brief standard texture loader for most block-compressed texture file formats
 */
+#include "Core/Creator.h"
 #include "Gfx/Resource/TextureLoaderBase.h"
 
 namespace Oryol {
 
 class TextureLoader : public TextureLoaderBase {
     OryolClassDecl(TextureLoader);
+    OryolClassCreator(TextureLoaderBase);   // not a bug, creator returns Ptr<TextureLoaderBase>
 public:
-    /// test if a resource loading request would be accepted
-    virtual bool Accepts(const SetupAndStream<TextureSetup>& input) const;
-    /// perform loading
-    virtual SetupAndStream<TextureSetup> Load(const SetupAndStream<TextureSetup>& input) const;
+    /// data is ready, perform loading (can be called from other thread!)
+    virtual void Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes);
+    /// loading has failed
+    virtual void Failed(const URL& url, IOStatus::Code ioStatus);
 };
 
 } // namespace Oryol

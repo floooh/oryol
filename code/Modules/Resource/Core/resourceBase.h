@@ -18,6 +18,7 @@
 #include "Core/Assertion.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceState.h"
+#include <atomic>
 
 namespace Oryol {
     
@@ -30,10 +31,10 @@ public:
     
     /// the resource id
     class Id Id;
-    /// the resource state
-    ResourceState::Code State;
     /// the setup object
     SETUP Setup;
+    /// the resource state
+    ResourceState::Code State;
     
     /// clear the resource
     void Clear();

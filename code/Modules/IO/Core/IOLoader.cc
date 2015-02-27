@@ -1,23 +1,23 @@
 //------------------------------------------------------------------------------
-//  TextureLoader.cc
+//  IOLoader.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "TextureLoader.h"
+#include "IOLoader.h"
 
 namespace Oryol {
 
-OryolClassImpl(TextureLoader);
+OryolClassImpl(IOLoader);
 
 //------------------------------------------------------------------------------
 void
-TextureLoader::Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes) {
-    return TextureLoaderBase::Loaded(url, ioLane, data, numBytes);
+IOLoader::Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes) {
+    // implement in subclass!
 }
 
 //------------------------------------------------------------------------------
 void
-TextureLoader::Failed(const URL& url, IOStatus::Code ioStatus) {
-    return TextureLoaderBase::Failed(url, ioStatus);
+IOLoader::Failed(const URL& url, IOStatus::Code ioStatus) {
+    // implement in subclass!
 }
 
 } // namespace Oryol

@@ -2,6 +2,7 @@
 //  GfxResourceContainer.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "IO/IO.h"
 #include "GfxResourceContainer.h"
 #include "Core/Core.h"
 
@@ -47,15 +48,6 @@ GfxResourceContainer::discard() {
     
     resourceContainerBase::discard();
 
-    for (const auto& loader : this->meshLoaders) {
-        loader->OnDetach();
-    }
-    this->meshLoaders.Clear();
-    for (const auto& loader : this->textureLoaders) {
-        loader->OnDetach();
-    }
-    this->textureLoaders.Clear();
-    
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
     this->texturePool.Discard();
@@ -81,7 +73,7 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
     }
     else {
         resId = this->meshPool.AllocId(this->peekLabel());
-        mesh& res = this->meshPool.Assign(resId, setup);
+        mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
         this->meshFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
@@ -101,7 +93,7 @@ GfxResourceContainer::Create(const SetupAndStream<MeshSetup>& setupAndStream) {
     }
     else {
         resId = this->meshPool.AllocId(this->peekLabel());
-        mesh& res = this->meshPool.Assign(resId, setup);
+        mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
         this->meshFactory.SetupResource(res, data);
         this->registry.Add(setup.Locator, resId);
     }
@@ -119,7 +111,7 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
     }
     else {
         resId = this->texturePool.AllocId(this->peekLabel());
-        texture& res = this->texturePool.Assign(resId, setup);
+        texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
         this->textureFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
@@ -139,7 +131,7 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
     }
     else {
         resId = this->texturePool.AllocId(this->peekLabel());
-        texture& res = this->texturePool.Assign(resId, setup);
+        texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
         this->textureFactory.SetupResource(res, data);
         this->registry.Add(setup.Locator, resId);
     }
@@ -148,7 +140,7 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Load(const TextureSetup& setup) {
+GfxResourceContainer::Load(const TextureSetup& setup, std::function<Ptr<TextureLoaderBase>()> loaderCreator) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(setup.ShouldSetupFromFile());
     Id resId = this->registry.Lookup(setup.Locator);
@@ -159,36 +151,45 @@ GfxResourceContainer::Load(const TextureSetup& setup) {
         Log::Info("GfxResourceContainer::Load(): LOADING TEXTURE!!!\n");
         resId = this->texturePool.AllocId(this->peekLabel());
         this->registry.Add(setup.Locator, resId);
-        /*
-        this->texturePool.Prepare(resId, setup);
-        this->ioQueue.Add(setup.Locator.Location, [this,resId](const Ptr<Stream>& stream) {
-            // this is executed when the file has finished (down)-loading
-         
-            // find pending resource object, it could have been deleted
-            // while the file was loading, we're only interested in the 
-            // original setup object
-            texture* tex = this->texturePool.Get(resId);
-            if (tex) {
-                o_assert(ResourceState::Pending == pendingTex->State)
-                SetupAndData input(tex->Setup, stream);
-                for (const auto& loader : this->textureLoaders) {
-                    if (loader->Accepts(input)) {
-                        SetupAndStream<TextureSetup> result = loader->Load(input);
-                        this->texturePool.Assign(resId, result.setup);
-                        this->textureFactory.SetupResource(*tex, result.stream);
-                        break;
-                    }
-                }
-            }
-            else {
-                // the resource was destroyed while it was loading
-            }
-        });
-        */
+        this->texturePool.Assign(resId, setup, ResourceState::Pending);
+        
+        auto loader = loaderCreator();
+        loader->Prepare(resId, setup);
+        Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
+        ioReq->SetURL(setup.Locator.Location());
+        ioReq->SetLoader(loader);
+        IO::Put(ioReq);
+
         return resId;
     }
 }
+
+//------------------------------------------------------------------------------
+template<> ResourceStreamTarget
+GfxResourceContainer::BeginStreaming(const Id& id, const MeshSetup& meshSetup) {
+    // FIXME FIXME FIXME
+    Log::Info("GfxResourceContainer::BeginStreaming() called (mesh)\n");
+    return ResourceStreamTarget();
+}
+
+//------------------------------------------------------------------------------
+template<> ResourceStreamTarget
+GfxResourceContainer::BeginStreaming(const Id& id, const TextureSetup& texSetup) {
+    // FIXME FIXME FIXME
+    Log::Info("GfxResourceContainer::BeginStreaming() called (texture)\n");
+    /*
     
+    */
+    return ResourceStreamTarget();
+}
+
+//------------------------------------------------------------------------------
+void
+GfxResourceContainer::EndStreaming(const Id& id) {
+    // FIXME FIXME FIXME
+    Log::Info("GfxResourceContainer::EndStreaming() called\n");
+}
+
 //------------------------------------------------------------------------------
 template<> Id
 GfxResourceContainer::Create(const ShaderSetup& setup) {
@@ -199,7 +200,7 @@ GfxResourceContainer::Create(const ShaderSetup& setup) {
     }
     else {
         resId = this->shaderPool.AllocId(this->peekLabel());
-        shader& res = this->shaderPool.Assign(resId, setup);
+        shader& res = this->shaderPool.Assign(resId, setup, ResourceState::Setup);
         this->shaderFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
@@ -216,7 +217,7 @@ GfxResourceContainer::Create(const ProgramBundleSetup& setup) {
     }
     else {
         resId = this->programBundlePool.AllocId(this->peekLabel());
-        programBundle& res = this->programBundlePool.Assign(resId, setup);
+        programBundle& res = this->programBundlePool.Assign(resId, setup, ResourceState::Setup);
         this->programBundleFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }
@@ -233,7 +234,7 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
     }
     else {
         resId = this->drawStatePool.AllocId(this->peekLabel());
-        drawState& res = this->drawStatePool.Assign(resId, setup);
+        drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
         this->drawStateFactory.SetupResource(res);
         this->registry.Add(setup.Locator, resId);
     }

@@ -5,22 +5,20 @@
     @ingroup Gfx
     @brief base class for Gfx mesh loaders
 */
-#include "Resource/Core/ResourceLoader.h"
-#include "Resource/Core/SetupAndStream.h"
-#include "Gfx/Core/Enums.h"
+#include "IO/Core/IOLoader.h"
 #include "Gfx/Setup/MeshSetup.h"
 
 namespace Oryol {
 
-class MeshLoaderBase : public ResourceLoader {
+class MeshLoaderBase : public IOLoader {
     OryolClassDecl(MeshLoaderBase);
 public:
-    /// indicate supported resource types
-    bool Supports(GfxResourceType::Code resType) const;
-    /// test if a resource loading request would be accepted
-    virtual bool Accepts(const SetupAndStream<MeshSetup>& input) const;
-    /// perform loading
-    virtual SetupAndStream<MeshSetup> Load(const SetupAndStream<MeshSetup>& input) const;
+    /// prepare the loader
+    virtual void Prepare(const Id& id, const MeshSetup& setup);
+    
+protected:
+    MeshSetup setup;
+    Id id;
 };
 
 } // namespace Oryol

@@ -53,18 +53,24 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
     response->SetStatus(IOStatus::OK);
 
-    // create a MemoryStream object and fill it with the received data
-    Ptr<MemoryStream> responseBody = MemoryStream::Create();
-    responseBody->SetURL(req->GetURL());
-    responseBody->Open(OpenMode::WriteOnly);
-    responseBody->Write(buffer, size);
-    responseBody->Close();
-    response->SetBody(responseBody);
+    // write response body
+    const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
+    const Ptr<IOLoader>& loader = ioReq->GetLoader();
+    if (loader.isValid()) {
+        loader->Loaded(ioReq->GetURL(), ioReq->GetActualLane(), buffer, size);
+    }
+    else {
+        Ptr<MemoryStream> responseBody = MemoryStream::Create();
+        responseBody->SetURL(req->GetURL());
+        responseBody->Open(OpenMode::WriteOnly);
+        responseBody->Write(buffer, size);
+        responseBody->Close();
+        response->SetBody(responseBody);
+    }
 
     // set the response on the request, mark the request as handled
     // also fill the embedded IORequest object
     req->SetResponse(response);
-    auto ioReq = req->GetIoRequest();
     if (ioReq) {
         auto httpResponse = req->GetResponse();
         ioReq->SetStatus(httpResponse->GetStatus());
@@ -87,11 +93,16 @@ emscURLLoader::onFailed(void* userData) {
 
     // hmm we don't know why it failed, so make something up, we should definitely
     // fix this somehow (looks like the wget2 functions also pass a HTTP status code)
+    const IOStatus::Code ioStatus = IOStatus::NotFound;
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
-    response->SetStatus(IOStatus::NotFound);
+    response->SetStatus(ioStatus);
     req->SetResponse(response);
     auto ioReq = req->GetIoRequest();
     if (ioReq) {
+        const Ptr<IOLoader>& loader = ioReq->GetLoader();
+        if (loader.isValid()) {
+            loader->Failed(ioReq->GetURL(), ioStatus);
+        }
         auto httpResponse = req->GetResponse();
         ioReq->SetStatus(httpResponse->GetStatus());
         ioReq->SetHandled();

@@ -97,7 +97,6 @@ DDSTextureLoadingApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
     Gfx::Setup(gfxSetup);
-    Gfx::Resource().AttachLoader(TextureLoader::Create());
 
     // setup resources
     TextureSetup texBluePrint;
@@ -124,7 +123,7 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        this->texId[i] = Gfx::Resource().Load(TextureSetup::FromFile(paths[i], texBluePrint));
+        this->texId[i] = Gfx::Resource().Load(TextureSetup::FromFile(paths[i], texBluePrint), TextureLoader::Creator());
     }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));

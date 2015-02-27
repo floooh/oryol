@@ -6,6 +6,7 @@ headers:
     - Core/Ptr.h
     - IO/Core/URL.h
     - IO/Core/IOStatus.h
+    - IO/Core/IOLoader.h
     - IO/Stream/MemoryStream.h
 messages:
     - name: Request
@@ -14,11 +15,15 @@ messages:
         - { name: Lane, type: int32 }
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
-        - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
-        - { name: ErrorDesc, type: String, dir: out }
-        - { name: Stream, type: Ptr<MemoryStream>, dir: out }
         - { name: StartOffset, type: int32, default: 0 }
         - { name: EndOffset, type: int32, default: 0 }
+        # optional Loader object, if set, no Stream object will be returned
+        - { name: Loader, type: 'Ptr<IOLoader>' }
+        - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
+        - { name: ErrorDesc, type: String, dir: out }
+        # stream object with loaded data (only valid if no loader was set)
+        - { name: Stream, type: Ptr<MemoryStream>, dir: out }
+        - { name: ActualLane, type: int32, dir: out }
     - name: notifyLanes
       attrs:
         - { name: Scheme, type: StringAtom }
