@@ -11,12 +11,16 @@
     for a mesh, the pointers would point to vertex and index buffers.
 */
 #include "Core/Containers/StaticArray.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
 
 class ResourceStreamTarget {
 public:
     static const int32 MaxNumEntries = 16;
+
+    /// resource state set by factory (Valid or Failed)
+    ResourceState::Code State = ResourceState::InvalidState;
 
     /// add a pointer/size pair
     void Add(void* ptr, int32 size);

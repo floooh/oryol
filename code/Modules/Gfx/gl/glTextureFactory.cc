@@ -2,6 +2,7 @@
 //  glTextureFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Core.h"
 #include "glTextureFactory.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
@@ -35,6 +36,8 @@ glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, textureP
     o_assert_dbg(nullptr != rendr);
     o_assert_dbg(nullptr != displayMgr_);
     o_assert_dbg(nullptr != texPool_);
+    o_assert_dbg(Core::IsMainThread());
+
     this->isValid = true;
     this->renderer = rendr;
     this->displayManager = displayMgr_;
@@ -45,6 +48,8 @@ glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, textureP
 void
 glTextureFactory::Discard() {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(Core::IsMainThread());
+
     this->isValid = false;
     this->renderer = nullptr;
     this->displayManager = nullptr;
@@ -57,36 +62,56 @@ glTextureFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(ResourceState::Setup == tex.State);
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
+    o_assert_dbg(Core::IsMainThread());
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
-        this->createRenderTarget(tex);
-        o_assert_dbg((ResourceState::Valid == tex.State) || (ResourceState::Failed == tex.State));
+        return this->createRenderTarget(tex);
     }
     else {
         o_error("FIXME FIXME FIXME");
+        return false;
     }
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(ResourceState::Setup == tex.State);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
+    o_assert_dbg(Core::IsMainThread());
     
     if (tex.Setup.ShouldSetupFromPixelData()) {
-        this->createFromPixelData(tex, data);
-        o_assert_dbg(ResourceState::Valid == tex.State);
+        return this->createFromPixelData(tex, data);
     }
     else {
         o_error("FIXME FIXME FIXME");
+        return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+glTextureFactory::InitResourceThreaded(int32 threadIndex, texture& tex, const Ptr<Stream>& data) {
+    o_assert_dbg(!Core::IsMainThread());
+    o_assert(nullptr != this->displayManager);
+    o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
+    
+    // make sure the thread-local GL context if set to current
+    this->displayManager->notifyThread(threadIndex);
+    
+    if (tex.Setup.ShouldSetupFromPixelData()) {
+        return this->createFromPixelData(tex, data);
+    }
+    else {
+        o_error("FIXME FIXME FIXME");
+        return false;
     }
 }
 
@@ -94,6 +119,7 @@ glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
 void
 glTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
 
@@ -118,7 +144,6 @@ glTextureFactory::DestroyResource(texture& tex) {
     }
     
     tex.Clear();
-    tex.State = ResourceState::Setup;
 }
 
 //------------------------------------------------------------------------------
@@ -126,13 +151,13 @@ glTextureFactory::DestroyResource(texture& tex) {
  @todo: support for depth texture (depends on depth_texture extension), support
  for multiple color texture attachments.
 */
-void
+bool
 glTextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(ResourceState::Setup == tex.State);
     o_assert_dbg(0 == tex.glTex);
     o_assert_dbg(0 == tex.glFramebuffer);
     o_assert_dbg(0 == tex.glDepthRenderbuffer);
     o_assert_dbg(0 == tex.glDepthTexture);
+    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
@@ -259,17 +284,20 @@ glTextureFactory::createRenderTarget(texture& tex) {
     tex.glFramebuffer = glFramebuffer;
     tex.glDepthRenderbuffer = glDepthRenderBuffer;
     tex.glTarget = GL_TEXTURE_2D;
-    tex.State = ResourceState::Valid;
     
     // bind the default frame buffer
     ::glBindFramebuffer(GL_FRAMEBUFFER, glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
+    
+    return true;
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
-    o_assert(ResourceState::Setup == tex.State);
+    // NOTE: this method can be called from a resource creation thread,
+    // this is only important inside glGenAndBindTexture() (which must
+    // not reset the state cache if not on the main thread)
 
     const TextureSetup& setup = tex.Setup;
     const int32 width = setup.Width;
@@ -305,6 +333,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     o_assert_dbg(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.ColorFormat));
     
     // setup the image data in the texture
+    // FIXME: MIPMAPS!
     o_assert2_dbg(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
     GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
     GLenum glTexImageInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
@@ -336,14 +365,20 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     tex.textureAttrs = attrs;
     tex.glTex = glTex;
     tex.glTarget = GL_TEXTURE_2D;
-    tex.State = ResourceState::Valid;
+
+    return false;
 }
 
 //------------------------------------------------------------------------------
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert_dbg(this->isValid);
-    this->renderer->invalidateTextureState();
+    o_assert_dbg(Core::IsMainThread());
+    
+    // if we are on the main thread, need to invalidate the texture cache
+    if (Core::IsMainThread()) {
+        this->renderer->invalidateTextureState();
+    }
     GLuint glTex = 0;
     ::glGenTextures(1, &glTex);
     ::glActiveTexture(GL_TEXTURE0);

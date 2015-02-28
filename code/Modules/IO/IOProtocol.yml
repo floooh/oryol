@@ -22,7 +22,7 @@ messages:
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
         # stream object with loaded data (only valid if no loader was set)
-        - { name: Stream, type: Ptr<MemoryStream>, dir: out }
+        - { name: Stream, type: Ptr<Stream>, dir: out }
         - { name: ActualLane, type: int32, dir: out }
     - name: notifyLanes
       attrs:

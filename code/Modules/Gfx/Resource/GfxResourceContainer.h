@@ -4,10 +4,15 @@
     @class Oryol::GfxResourceContainer
     @brief resource container implementation of the Gfx module
 */
+#include "Core/Core.h"
+#include "Core/RunLoop.h"
+#include "Core/Threading/RWLock.h"
+#include "Core/Containers/Array.h"
+#include "Core/Containers/KeyValuePair.h"
+#include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/Core/SetupAndStream.h"
 #include "Resource/Core/ResourceStreamTarget.h"
-#include "Core/RunLoop.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/meshPool.h"
 #include "Gfx/Resource/meshFactory.h"
@@ -33,6 +38,9 @@ class GfxResourceContainer : public resourceContainerBase {
 public:
     /// constructor
     GfxResourceContainer();
+    
+    /// per-frame update for pending/deferred resource creation and destruction
+    void UpdatePending();
 
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
@@ -40,17 +48,17 @@ public:
     template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& stream);
     /// create a resource object with data
     template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
-    /// streaming-load resource object
+    /// asynchronously load resource object
     template<class SETUP, class LOADER> Id Load(const SETUP& setup, std::function<Ptr<LOADER>()> loader);
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
     void Destroy(uint8 label);
     
-    /// begin streaming resource setup, usually called by loaders (can be called from other thread)
-    template<class SETUP> ResourceStreamTarget BeginStreaming(const Id& id, const SETUP& setup);
-    /// finish streaming resource setup, usually called by loaders (can be called from other thread)
-    void EndStreaming(const Id& id);
+    /// initialize resource from a different thread (usually called during Load())
+    template<class SETUP> void initResourceFromThread(int32 threadIndex, const Id& resId, const SetupAndStream<SETUP>& setupAndStream);
+    /// notify Gfx that threaded resource creation has failed
+    void failResourceFromThread(int32 threadIndex, const Id& resId);
     
 private:
     friend class Gfx;
@@ -80,11 +88,17 @@ private:
     class _priv::programBundlePool programBundlePool;
     class _priv::texturePool texturePool;
     class _priv::drawStatePool drawStatePool;
+    RunLoop::Id runLoopId;
+    Array<Id> pendingDestroys;
+    RWLock pendingCreateLock;
+    Array<KeyValuePair<Id, ResourceState::Code>> pendingCreates;
 };
 
 //------------------------------------------------------------------------------
 template<class SETUP> Id
 GfxResourceContainer::Create(const SETUP& setup, const Ptr<Stream>& stream) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(Core::IsMainThread());
     return this->Create(SetupAndStream<SETUP>(setup, stream));
 }
 
@@ -92,6 +106,7 @@ GfxResourceContainer::Create(const SETUP& setup, const Ptr<Stream>& stream) {
 inline _priv::mesh*
 GfxResourceContainer::lookupMesh(const Id& resId) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(Core::IsMainThread());
     return this->meshPool.Lookup(resId);
 }
 
@@ -99,6 +114,7 @@ GfxResourceContainer::lookupMesh(const Id& resId) {
 inline _priv::programBundle*
 GfxResourceContainer::lookupProgramBundle(const Id& resId) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(Core::IsMainThread());
     return this->programBundlePool.Lookup(resId);
 }
 
@@ -106,6 +122,7 @@ GfxResourceContainer::lookupProgramBundle(const Id& resId) {
 inline _priv::texture*
 GfxResourceContainer::lookupTexture(const Id& resId) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(Core::IsMainThread());
     return this->texturePool.Lookup(resId);
 }
 
@@ -113,6 +130,7 @@ GfxResourceContainer::lookupTexture(const Id& resId) {
 inline _priv::drawState*
 GfxResourceContainer::lookupDrawState(const Id& resId) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(Core::IsMainThread());
     return this->drawStatePool.Lookup(resId);
 }
     

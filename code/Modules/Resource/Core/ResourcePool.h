@@ -40,13 +40,13 @@ public:
     /// assign a resource to a free slot
     RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
     /// unassign/free a resource slot
-    void Unassign(const Id& id);
-    /// unassign all slots matching label by label (iterates over entire pool)
-    void UnassignByLabel(uint8 label);
+    void Unassign(const Id& id, ResourceState::Code state);
     /// return pointer to resource object, may return placeholder or nullptr
     RESOURCE* Lookup(const Id& id) const;
     /// lookup 'raw' resource, may return nullptr
     RESOURCE* Get(const Id& id) const;
+    /// update the resource state of a contained resource
+    void UpdateState(const Id& id, ResourceState::Code newState);
     /// query the loading state of a contained resource
     ResourceState::Code QueryState(const Id& id) const;
     
@@ -91,9 +91,12 @@ ResourcePool<RESOURCE,SETUP>::Setup(uint8 resType, int32 poolSize) {
     o_assert_dbg(Id::InvalidType != resType);
     o_assert_dbg(poolSize > 0);
     
+    // NOTE: it is extremely important that resource slots remain pinned at
+    // their address (because other threads may access the pool), thus
+    // ALWAYS prevent array growing!!!
     this->resourceType = resType;
     this->slots.Reserve(poolSize);
-    this->slots.SetAllocStrategy(0, 0);    // make this a fixed-size array
+    this->slots.SetAllocStrategy(0, 0);    // disable growing
     this->freeSlots.Reserve(poolSize);
     
     // setup empty slots
@@ -141,7 +144,7 @@ ResourcePool<RESOURCE,SETUP>::freeId(const Id& id) {
     o_assert_dbg(this->isValid);
     
     const uint16 slotIndex = id.SlotIndex();
-    o_assert(ResourceState::Initial == this->slots[slotIndex].Resource.State);
+    o_assert(ResourceState::Initial == this->slots[slotIndex].State);
     this->freeSlots.Enqueue(slotIndex);
 }
 
@@ -158,27 +161,13 @@ ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceS
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id) {
+ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id, ResourceState::Code state) {
     o_assert_dbg(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex()];
     if (id == slot.Resource.Id) {
-        slot.Unassign();
+        slot.Unassign(state);
         this->freeId(id);
-    }
-}
-
-//------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::UnassignByLabel(uint8 label) {
-    o_assert_dbg(this->isValid);
-    
-    for (auto& slot : this->slots) {
-        const Id id = slot.Resource.Id;
-        if (id.Label() == label) {
-            slot.Unassign();
-            this->freeId(id);
-        }        
     }
 }
 
@@ -191,7 +180,7 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
     if (id == slot.Resource.Id) {
-        if (ResourceState::Valid == slot.Resource.State) {
+        if (ResourceState::Valid == slot.State) {
             // resource exists and is valid, all ok
             return (RESOURCE*) &slot.Resource;
         }
@@ -218,6 +207,17 @@ ResourcePool<RESOURCE,SETUP>::Get(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> void
+ResourcePool<RESOURCE, SETUP>::UpdateState(const Id& id, ResourceState::Code newState) {
+    o_assert_dbg(this->isValid);
+    const uint16 slotIndex = id.SlotIndex();
+    auto& slot = this->slots[slotIndex];
+    if (id == slot.Resource.Id) {
+        slot.State = newState;
+    }
+}
+
+//------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> ResourceState::Code
 ResourcePool<RESOURCE,SETUP>::QueryState(const Id& id) const {
     o_assert_dbg(this->isValid);
@@ -226,7 +226,7 @@ ResourcePool<RESOURCE,SETUP>::QueryState(const Id& id) const {
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
     if (id == slot.Resource.Id) {
-        return slot.Resource.State;
+        return slot.State;
     }
     else {
         return ResourceState::InvalidState;

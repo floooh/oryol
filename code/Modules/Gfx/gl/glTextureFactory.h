@@ -7,6 +7,7 @@
 */
 #include "IO/Stream/Stream.h"
 #include "Gfx/Resource/texture.h"
+#include "Resource/Core/ResourceStreamTarget.h"
 
 namespace Oryol {
 namespace _priv {
@@ -31,10 +32,12 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource, continue calling until res state is not Pending
-    void SetupResource(texture& tex);
-    /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(texture& tex, const Ptr<Stream>& data);
+    /// setup resource
+    bool SetupResource(texture& tex);
+    /// setup with input data
+    bool SetupResource(texture& tex, const Ptr<Stream>& data);
+    /// multi-threaded resource setup
+    bool InitResourceThreaded(int32 threadIndex, texture& tex, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -43,9 +46,9 @@ public:
 
 private:
     /// create a render target
-    void createRenderTarget(texture& tex);
+    bool createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    void createFromPixelData(texture& tex, const Ptr<Stream>& data);
+    bool createFromPixelData(texture& tex, const Ptr<Stream>& data);
 
     class renderer* renderer;
     displayMgr* displayManager;

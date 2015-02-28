@@ -46,20 +46,17 @@ drawStateFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 drawStateFactory::SetupResource(drawState& ds) {
-    o_assert(ResourceState::Setup == ds.State);
     ds.mesh = this->meshPool->Lookup(ds.Setup.Mesh);
     ds.programBundle = this->programBundlePool->Lookup(ds.Setup.Program);
-    ds.State = ResourceState::Valid;
+    return true;
 }
 
 //------------------------------------------------------------------------------
 void
 drawStateFactory::DestroyResource(drawState& ds) {
-    o_assert(ResourceState::Valid == ds.State);
     ds.Clear();
-    ds.State = ResourceState::Setup;
 }
 
 } // namespace _priv

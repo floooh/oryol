@@ -28,7 +28,7 @@ public:
     bool IsValid() const;
 
     /// setup shader resource (directly setup shader, no loaders)
-    void SetupResource(shader& shd);
+    bool SetupResource(shader& shd);
     /// destroy the shader
     void DestroyResource(shader& shd);
     

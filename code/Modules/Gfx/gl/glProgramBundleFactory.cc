@@ -58,10 +58,9 @@ glProgramBundleFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(ResourceState::Setup == progBundle.State);
     this->renderer->invalidateProgramState();
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
@@ -156,9 +155,8 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         
         // if linking failed, stop the app
         if (!linkStatus) {
-            o_error("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
-            progBundle.State = ResourceState::Failed;
-            return;
+            Log::Warn("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
+            return false;
         }
         
         // linking succeeded, store GL program
@@ -193,8 +191,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     }
     this->renderer->invalidateProgramState();
     
-    // at this point the whole programBundle object has been successfully setup
-    progBundle.State = ResourceState::Valid;
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -212,7 +209,6 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
         }
     }
     progBundle.Clear();
-    progBundle.State = ResourceState::Setup;
 }
     
 } // namespace _priv

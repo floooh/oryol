@@ -29,7 +29,7 @@ public:
     bool IsValid() const;
     
     /// setup programBundle resource
-    void SetupResource(programBundle& progBundle);
+    bool SetupResource(programBundle& progBundle);
     /// destroy the shader
     void DestroyResource(programBundle& progBundle);
 

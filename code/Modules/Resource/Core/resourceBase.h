@@ -17,42 +17,20 @@
 */
 #include "Core/Assertion.h"
 #include "Resource/Id.h"
-#include "Resource/ResourceState.h"
-#include <atomic>
 
 namespace Oryol {
     
 template<class SETUP> class resourceBase {
 public:
-    /// constructor
-    resourceBase();
-    /// destructor
-    ~resourceBase();
-    
     /// the resource id
     class Id Id;
     /// the setup object
     SETUP Setup;
-    /// the resource state
-    ResourceState::Code State;
     
     /// clear the resource
     void Clear();
 };
 
-//------------------------------------------------------------------------------
-template<class SETUP>
-resourceBase<SETUP>::resourceBase() :
-State(ResourceState::Initial) {
-    // empty
-}
-    
-//------------------------------------------------------------------------------
-template<class SETUP>
-resourceBase<SETUP>::~resourceBase() {
-    o_assert(ResourceState::Valid != this->State);
-}
-    
 //------------------------------------------------------------------------------
 template<class SETUP> void
 resourceBase<SETUP>::Clear() {

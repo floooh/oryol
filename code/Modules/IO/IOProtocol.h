@@ -131,10 +131,10 @@ public:
         const String& GetErrorDesc() const {
             return this->errordesc;
         };
-        void SetStream(const Ptr<MemoryStream>& val) {
+        void SetStream(const Ptr<Stream>& val) {
             this->stream = val;
         };
-        const Ptr<MemoryStream>& GetStream() const {
+        const Ptr<Stream>& GetStream() const {
             return this->stream;
         };
         void SetActualLane(int32 val) {
@@ -153,7 +153,7 @@ private:
         Ptr<IOLoader> loader;
         IOStatus::Code status;
         String errordesc;
-        Ptr<MemoryStream> stream;
+        Ptr<Stream> stream;
         int32 actuallane;
     };
     class notifyLanes : public Message {

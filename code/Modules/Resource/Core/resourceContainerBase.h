@@ -53,6 +53,8 @@ protected:
     bool isValid() const;
     /// peek top of label stack
     uint8 peekLabel() const;
+    /// return true if currently on main thread
+    bool isMainThread() const;
     
     Array<uint8> labelStack;
     _priv::resourceRegistry registry;

@@ -26,7 +26,7 @@ public:
     /// data is ready, perform loading (can be called from other thread!)
     virtual void Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes);
     /// loading has failed
-    virtual void Failed(const URL& url, IOStatus::Code ioStatus);
+    virtual void Failed(const URL& url, int32 ioLane, IOStatus::Code ioStatus);
 };
 
 } // namespace Oryol

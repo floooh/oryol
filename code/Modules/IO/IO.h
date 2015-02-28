@@ -56,8 +56,6 @@ private:
     /// get access to schemeRegistry (FIXME: hacky...)
     static _priv::schemeRegistry* getSchemeRegistry();
     
-    /// test if we are on the main thread
-    static bool isMainThread();
     /// the per-frame update method (attached to the main-thread runloop)
     static void doWork();
 
@@ -65,7 +63,6 @@ private:
         _priv::assignRegistry assignReg;
         _priv::schemeRegistry schemeReg;
         int32 runLoopId = 0;
-        std::thread::id mainThreadId;
         Ptr<_priv::ioRequestRouter> requestRouter;
     };
     static _state* state;

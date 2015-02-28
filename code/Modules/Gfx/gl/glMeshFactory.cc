@@ -53,20 +53,17 @@ glMeshFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glMeshFactory::SetupResource(mesh& msh) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((ResourceState::Setup == msh.State) || (ResourceState::Pending == msh.State));
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (msh.Setup.ShouldSetupEmpty()) {
-        this->createEmptyMesh(msh);
-        o_assert_dbg((ResourceState::Valid == msh.State) || (ResourceState::Failed == msh.State));
+        return this->createEmptyMesh(msh);
     }
     else if (msh.Setup.ShouldSetupFullScreenQuad()) {
         o_assert_dbg(!msh.Setup.InstanceMesh.IsValid());
-        this->createFullscreenQuad(msh);
-        o_assert_dbg(ResourceState::Valid == msh.State);
+        return this->createFullscreenQuad(msh);
     }
     else {
         o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
@@ -74,10 +71,10 @@ glMeshFactory::SetupResource(mesh& msh) {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
     o_assert_dbg(msh.Setup.ShouldSetupFromStream());
-    this->createFromStream(msh, data);
+    return this->createFromStream(msh, data);
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +100,6 @@ glMeshFactory::DestroyResource(mesh& mesh) {
         ::glDeleteBuffers(1, &mesh.glIndexBuffer);
     }
     mesh.Clear();
-    mesh.State = ResourceState::Setup;
 }
 
 //------------------------------------------------------------------------------
@@ -174,7 +170,6 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupVertexLayout(mesh& mesh) {
-    o_assert_dbg(ResourceState::Valid != mesh.State);
     o_assert_dbg(nullptr != this->renderer);
     
     // create and initialize vertex array object
@@ -374,7 +369,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
     o_assert_dbg(!mesh.Setup.InstanceMesh.IsValid());
     
@@ -413,11 +408,11 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.State = ResourceState::Valid;
+    return true;
 }
 
 //------------------------------------------------------------------------------
-void
+bool
 glMeshFactory::createEmptyMesh(mesh& mesh) {
     
     const MeshSetup& setup = mesh.Setup;
@@ -470,13 +465,12 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    mesh.State = ResourceState::Valid;
+    return true;
 }
     
 //------------------------------------------------------------------------------
-void
+bool
 glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
-    o_assert_dbg(ResourceState::Setup == mesh.State);
     const MeshSetup& setup = mesh.Setup;
     
     // open stream and get pointer to contained data
@@ -524,16 +518,15 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         this->attachInstanceBuffer(mesh);
         this->setupVertexLayout(mesh);
         
-        // set mesh to valid, and return
-        mesh.State = ResourceState::Valid;
-        
         data->UnmapRead();
         data->Close();
+        
+        return true;
     }
     else {
         // this shouldn't happen
         o_error("glMeshFactory::createFromStream(): failed to open stream!\n");
-        mesh.State = ResourceState::Failed;
+        return false;
     }
 }
 

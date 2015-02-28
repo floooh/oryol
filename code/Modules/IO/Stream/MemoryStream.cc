@@ -75,12 +75,18 @@ MemoryStream::alloc(int32 newCapacity) {
 
 //------------------------------------------------------------------------------
 void
-MemoryStream::makeRoom(int32 numBytes) {
+MemoryStream::makeRoom(int32 numBytes, bool noSpare) {
     o_assert(numBytes > 0);
     o_assert((this->writePosition + numBytes) > this->capacity);
 
     int32 bytesNeeded = (this->writePosition + numBytes) - this->capacity;
-    int32 growBy = this->capacity >> 1;
+    int32 growBy;
+    if (noSpare) {
+        growBy = 0;
+    }
+    else {
+        growBy = this->capacity >> 1;
+    }
     if (growBy < this->minGrow) {
         growBy = this->minGrow;
     }
@@ -121,6 +127,12 @@ MemoryStream::Capacity() const {
 
 //------------------------------------------------------------------------------
 void
+MemoryStream::Reserve(int32 numBytes) {
+    this->makeRoom(numBytes, true);
+}
+
+//------------------------------------------------------------------------------
+void
 MemoryStream::DiscardContent() {
     o_assert(!this->isOpen);
     if (nullptr != this->buffer) {
@@ -152,7 +164,7 @@ MemoryStream::Write(const void* ptr, int32 numBytes) {
     if (numBytes > 0) {
         // need to make room?
         if (!this->hasRoom(numBytes)) {
-            this->makeRoom(numBytes);
+            this->makeRoom(numBytes, false);
         }
         
         // write data to stream and update write cursor and size
@@ -176,7 +188,7 @@ MemoryStream::MapWrite(int32 numBytes) {
     
     // need to make room?
     if  (!this->hasRoom(numBytes)) {
-        this->makeRoom(numBytes);
+        this->makeRoom(numBytes, false);
     }
     
     uint8* ptr = this->buffer + this->writePosition;

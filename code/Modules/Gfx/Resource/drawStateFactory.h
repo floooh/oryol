@@ -24,7 +24,7 @@ public:
     /// discard the factory
     void Discard();
     /// setup shader resource
-    void SetupResource(drawState& ds);
+    bool SetupResource(drawState& ds);
     /// destroy the shader
     void DestroyResource(drawState& ds);
     

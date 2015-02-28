@@ -19,7 +19,6 @@ IO::Setup(const IOSetup& setup) {
     o_assert(!IsValid());
     
     state = new _state();
-    state->mainThreadId = std::this_thread::get_id();
     state->requestRouter = ioRequestRouter::Create(setup.NumIOLanes);
     
     // setup initial assigns
@@ -55,17 +54,10 @@ IO::IsValid() {
 void
 IO::doWork() {
     o_assert_dbg(IsValid());
-    o_assert_dbg(isMainThread());
+    o_assert_dbg(Core::IsMainThread());
     if (state->requestRouter.isValid()) {
         state->requestRouter->DoWork();
     }
-}
-
-//------------------------------------------------------------------------------
-bool
-IO::isMainThread() {
-    o_assert_dbg(IsValid());
-    return std::this_thread::get_id() == state->mainThreadId;
 }
 
 //------------------------------------------------------------------------------

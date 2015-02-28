@@ -30,9 +30,9 @@ public:
     bool IsValid() const;
 
     /// setup resource
-    void SetupResource(mesh& mesh);
+    bool SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    void SetupResource(mesh& mesh, const Ptr<Stream>& data);
+    bool SetupResource(mesh& mesh, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
@@ -45,11 +45,11 @@ public:
     /// helper method to create platform-specific vertex layout
     void setupVertexLayout(mesh& mesh);
     /// helper method to setup a mesh object as fullscreen quad
-    void createFullscreenQuad(mesh& mesh);
+    bool createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
-    void createEmptyMesh(mesh& mesh);
+    bool createEmptyMesh(mesh& mesh);
     /// create from stream data
-    void createFromStream(mesh& mesh, const Ptr<Stream>& data);
+    bool createFromStream(mesh& mesh, const Ptr<Stream>& data);
     
 private:
     /// setup a Mesh's GL vertex attributes

@@ -70,7 +70,7 @@ Core::PostRunLoop() {
 
 //------------------------------------------------------------------------------
 bool
-Core::isMainThread() {
+Core::IsMainThread() {
     #if ORYOL_HAS_THREADS
     o_assert_dbg(IsValid());
     return state->mainThreadId == std::this_thread::get_id();

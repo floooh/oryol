@@ -143,7 +143,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             const Ptr<IOProtocol::Request> ioReq = req->GetIoRequest();
             const Ptr<IOLoader>& loader = ioReq->GetLoader();
             if (loader.isValid()) {
-                loader->Failed(ioReq->GetURL(), ioStatus);
+                loader->Failed(ioReq->GetURL(), ioReq->GetActualLane(), ioStatus);
             }
             Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
             response->SetStatus((IOStatus::Code) ioStatus);
