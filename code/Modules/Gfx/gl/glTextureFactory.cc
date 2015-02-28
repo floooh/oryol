@@ -6,6 +6,7 @@
 #include "glTextureFactory.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
+#include "Gfx/gl/glExt.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/texture.h"
 #include "Gfx/Resource/texturePool.h"
@@ -272,7 +273,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     attrs.TextureUsage = Usage::Immutable;
     attrs.Width = width;
     attrs.Height = height;
-    attrs.HasMipmaps = false;
+    attrs.NumMipMaps = 1;
     attrs.IsRenderTarget = true;
     attrs.HasDepthBuffer = setup.HasDepth();
     attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
@@ -303,13 +304,19 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     const int32 width = setup.Width;
     const int32 height = setup.Height;
     
+    // test if the texture format is actually supported
+    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+        return false;
+    }
+    
     // create a texture object
-    const GLuint glTex = this->glGenAndBindTexture(GL_TEXTURE_2D);
+    GLenum glTextureTarget = setup.Type;
+    const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
     
     // setup texture params
     GLenum glMinFilter = setup.MinFilter;
     GLenum glMagFilter = setup.MagFilter;
-    if (!setup.HasMipMaps()) {
+    if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
         #endif
@@ -322,58 +329,101 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     }
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    if (setup.Type == TextureType::TextureCube) {
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    else {
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    }
     ORYOL_GL_CHECK_ERROR();
     
     // get pointer to image data
     data->Open(OpenMode::ReadOnly);
     const uint8* endPtr = nullptr;
     const uint8* srcPtr = data->MapRead(&endPtr);
-    o_assert_dbg(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.ColorFormat));
-    
-    // setup the image data in the texture
-    // FIXME: MIPMAPS!
-    o_assert2_dbg(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
-    GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+    const int32 numMipMaps = setup.NumMipMaps;
+    const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
     GLenum glTexImageInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
-    GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.ColorFormat);
-    ::glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   glTexImageInternalFormat,
-                   width,
-                   height,
-                   0,
-                   glTexImageFormat,
-                   glTexImageType,
-                   srcPtr);
-    ORYOL_GL_CHECK_ERROR();
+    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        
+        GLenum glImgTarget;
+        if (TextureType::TextureCube == setup.Type) {
+            switch (faceIndex) {
+                case 0: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+                case 1: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+                case 2: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+                case 3: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+                case 4: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+                default: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
+            }
+        }
+        else {
+            glImgTarget = glTextureTarget;
+        }
+    
+        for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+            o_assert_dbg(setup.ImageSizes[faceIndex][mipIndex] > 0);
+            int32 mipWidth = width >> mipIndex;
+            if (mipWidth == 0) mipWidth = 1;
+            int32 mipHeight = height >> mipIndex;
+            if (mipHeight == 0) mipHeight = 1;
+            if (isCompressed) {
+                // compressed texture data
+                ::glCompressedTexImage2D(glImgTarget,
+                                         mipIndex,
+                                         glTexImageInternalFormat,
+                                         mipWidth,
+                                         mipHeight,
+                                         0,
+                                         setup.ImageSizes[faceIndex][mipIndex],
+                                         srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                ORYOL_GL_CHECK_ERROR();
+            }
+            else {
+                // uncompressed texture data
+                GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+                GLenum glTexImageType = glTypes::AsGLTexImageType(setup.ColorFormat);
+                ::glTexImage2D(glImgTarget,
+                               mipIndex,
+                               glTexImageInternalFormat,
+                               mipWidth,
+                               mipHeight,
+                               0,
+                               glTexImageFormat,
+                               glTexImageType,
+                               srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                ORYOL_GL_CHECK_ERROR();
+            }
+        }
+    }
     data->UnmapRead();
     data->Close();
     
     // setup texture attributes
     TextureAttrs attrs;
     attrs.Locator = setup.Locator;
-    attrs.Type = TextureType::Texture2D;
+    attrs.Type = setup.Type;
     attrs.ColorFormat = setup.ColorFormat;
     attrs.TextureUsage = Usage::Immutable;
     attrs.Width = width;
     attrs.Height = height;
-    attrs.HasMipmaps = setup.HasMipMaps();
+    attrs.NumMipMaps = setup.NumMipMaps;
     
     // setup texture
     tex.textureAttrs = attrs;
     tex.glTex = glTex;
-    tex.glTarget = GL_TEXTURE_2D;
+    tex.glTarget = setup.Type;
 
-    return false;
+    return true;
 }
 
 //------------------------------------------------------------------------------
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(Core::IsMainThread());
     
     // if we are on the main thread, need to invalidate the texture cache
     if (Core::IsMainThread()) {

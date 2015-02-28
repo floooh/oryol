@@ -26,7 +26,7 @@ public:
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> RESOURCE&
 resourceSlot<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceState::Code state) {
-    o_assert_dbg(ResourceState::Initial == this->State);
+    o_assert_dbg(ResourceState::Valid != this->State);
     this->State = state;
     this->Resource.Id = id;
     this->Resource.Setup = setup;

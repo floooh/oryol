@@ -60,11 +60,12 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     Memory::Copy(Sheet::Pixels, ptr, Sheet::NumBytes);
     pixelData->UnmapWrite();
     pixelData->Close();
-    auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, false, PixelFormat::RGBA8);
+    auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.ImageSizes[0][0] = Sheet::NumBytes;
     this->texture = Gfx::Resource().Create(texSetup, pixelData);
     
     // initialize the tile map

@@ -178,11 +178,12 @@ debugTextRenderer::setupFontTexture() {
     data->Close();
     
     // setup texture, pixel format is 8bpp uncompressed
-    TextureSetup setup = TextureSetup::FromPixelData(imgWidth, imgHeight, false, PixelFormat::L8);
+    TextureSetup setup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);
     setup.MinFilter = TextureFilterMode::Nearest;
     setup.MagFilter = TextureFilterMode::Nearest;
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
+    setup.ImageSizes[0][0] = imgDataSize;
     this->fontTexture = Gfx::Resource().Create(setup, data);
     o_assert(this->fontTexture.IsValid());
     o_assert(Gfx::Resource().QueryState(this->fontTexture) == ResourceState::Valid);

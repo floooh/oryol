@@ -26,7 +26,7 @@ public:
 
 private:
     /// convert gliml context attrs into a TextureSetup object
-    TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx);
+    TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data);
     /// return Stream containing loaded data
     Ptr<Stream> buildStream(const void* data, int32 numBytes);
 };

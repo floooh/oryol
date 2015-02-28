@@ -25,7 +25,7 @@ TextureLoader::Loaded(const URL& url, int32 ioLane, const void* data, int32 numB
     ctx.enable_pvrtc(true);
     ctx.enable_etc2(true);
     if (ctx.load(data, numBytes)) {
-        TextureSetup texSetup = this->buildSetup(this->setup, &ctx);
+        TextureSetup texSetup = this->buildSetup(this->setup, &ctx, (const uint8*) data);
         Ptr<Stream> stream = this->buildStream(data, numBytes);
         SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
         Gfx::Resource().initResourceFromThread(ioLane, this->id, setupAndStream);
@@ -40,10 +40,11 @@ TextureLoader::Failed(const URL& url, int32 ioLane, IOStatus::Code ioStatus) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx) {
+TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data) {
     const int32 w = ctx->image_width(0, 0);
     const int32 h = ctx->image_height(0, 0);
-    bool hasMipmaps = ctx->num_mipmaps(0) > 0;
+    const int32 numFaces = ctx->num_faces();
+    const int32 numMips = ctx->num_mipmaps(0);
     PixelFormat::Code pixelFormat = PixelFormat::InvalidPixelFormat;
     switch(ctx->image_internal_format()) {
         case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -73,20 +74,62 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
         case GLIML_GL_COMPRESSED_SRGB8_ETC2:
             pixelFormat = PixelFormat::ETC2_SRGB8;
             break;
+        case GLIML_GL_RGB:
+            if (ctx->image_type() == GLIML_GL_UNSIGNED_BYTE) {
+                pixelFormat = PixelFormat::RGB8;
+            }
+            else if (ctx->image_type() == GLIML_GL_UNSIGNED_SHORT_5_6_5) {
+                pixelFormat = PixelFormat::R5G6B5;
+            }
+            break;
+            
+        case GLIML_GL_RGBA:
+            switch (ctx->image_type()) {
+                case GLIML_GL_UNSIGNED_BYTE:
+                    pixelFormat = PixelFormat::RGBA8;
+                    break;
+                case GLIML_GL_UNSIGNED_SHORT_4_4_4_4:
+                    pixelFormat = PixelFormat::RGBA4;
+                    break;
+                case GLIML_GL_UNSIGNED_SHORT_5_5_5_1:
+                    pixelFormat = PixelFormat::R5G5B5A1;
+                    break;
+                default:
+                    break;
+            }
+            break;
+            
         default:
-            o_error("Unknown compressed pixel format!\n");
             break;
     }
-    TextureSetup setup = TextureSetup::FromPixelData(w, h, hasMipmaps, pixelFormat);
+    o_assert(PixelFormat::InvalidPixelFormat != pixelFormat);
+    TextureType::Code type = TextureType::InvalidTextureType;
+    switch (ctx->texture_target()) {
+        case GLIML_GL_TEXTURE_2D:
+            type = TextureType::Texture2D;
+            break;
+        case GLIML_GL_TEXTURE_3D:
+            type = TextureType::Texture3D;
+            break;
+        case GLIML_GL_TEXTURE_CUBE_MAP:
+            type = TextureType::TextureCube;
+            break;
+        default:
+            o_error("Unknown texture type!\n");
+            break;
+    }
+    TextureSetup newSetup = TextureSetup::FromPixelData(w, h, numMips, type, pixelFormat, this->setup);
     
     // setup mipmap offsets
     o_assert_dbg(TextureSetup::MaxNumMipMaps >= ctx->num_mipmaps(0));
-    const uint8* start = (const uint8*) ctx->image_data(0, 0);
-    for (int32 i = 0; i < ctx->num_mipmaps(0); i++) {
-        const uint8* cur = (const uint8*) ctx->image_data(0, i);
-        setup.MipMapOffsets[i] = int32(cur - start);
+    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
+            const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);
+            newSetup.ImageOffsets[faceIndex][mipIndex] = int32(cur - data);
+            newSetup.ImageSizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
+        }
     }
-    return setup;
+    return newSetup;
 }
 
 //------------------------------------------------------------------------------

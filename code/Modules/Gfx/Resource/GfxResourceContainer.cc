@@ -160,7 +160,7 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Load(const TextureSetup& setup, std::function<Ptr<TextureLoaderBase>()> loaderCreator) {
+GfxResourceContainer::Load(const TextureSetup& setup, int32 ioLane, std::function<Ptr<TextureLoaderBase>()> loaderCreator) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(setup.ShouldSetupFromFile());
@@ -179,6 +179,7 @@ GfxResourceContainer::Load(const TextureSetup& setup, std::function<Ptr<TextureL
         loader->Prepare(resId, setup);
         Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
         ioReq->SetURL(setup.Locator.Location());
+        ioReq->SetLane(ioLane);
         ioReq->SetLoader(loader);
         IO::Put(ioReq);
 
@@ -399,7 +400,7 @@ GfxResourceContainer::UpdatePending() {
                 this->meshPool.UpdateState(resId, state);
                 break;
             case GfxResourceType::Texture:
-                this->meshPool.UpdateState(resId, state);
+                this->texturePool.UpdateState(resId, state);
                 break;
             default:
                 o_error("Invalid resource type!");

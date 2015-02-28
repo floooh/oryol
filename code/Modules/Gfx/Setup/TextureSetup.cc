@@ -8,10 +8,12 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
+Type(TextureType::Texture2D),
 Width(0),
 Height(0),
 RelWidth(0.0f),
 RelHeight(0.0f),
+NumMipMaps(1),
 ColorFormat(PixelFormat::RGBA8),
 DepthFormat(PixelFormat::None),
 WrapU(TextureWrapMode::Repeat),
@@ -27,7 +29,12 @@ setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
-    this->MipMapOffsets.Fill(0);
+    for (auto& offsets : this->ImageOffsets) {
+        offsets.Fill(0);
+    }
+    for (auto& sizes : this->ImageSizes) {
+        sizes.Fill(0);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -45,6 +52,9 @@ TextureSetup
 TextureSetup::FromFile(const class Locator& loc, TextureSetup blueprint, Id placeholder) {
     TextureSetup setup(blueprint);
     setup.setupFromFile = true;
+    setup.setupFromImageFileData = false;
+    setup.setupFromPixelData = false;
+    setup.setupAsRenderTarget = false;
     setup.Locator = loc;
     setup.Placeholder = placeholder;
     return setup;
@@ -70,23 +80,32 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 TextureSetup
 TextureSetup::FromImageFileData(TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
+    setup.setupFromFile = false;
     setup.setupFromImageFileData = true;
+    setup.setupFromPixelData = false;
+    setup.setupAsRenderTarget = false;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData(int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt) {
+TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert(!PixelFormat::IsCompressedFormat(fmt));
+    o_assert((numMipMaps > 0) && (numMipMaps < MaxNumMipMaps));
     
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
+    setup.setupFromFile = false;
+    setup.setupFromImageFileData = false;
     setup.setupFromPixelData = true;
-    setup.hasMipMaps = hasMipMaps;
+    setup.setupAsRenderTarget = false;
+    
+    setup.setupFromPixelData = true;
+    setup.Type = type;
     setup.Width = w;
     setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
     return setup;
 }
@@ -163,12 +182,6 @@ TextureSetup::HasDepth() const {
 bool
 TextureSetup::HasSharedDepth() const {
     return this->hasSharedDepth;
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureSetup::HasMipMaps() const {
-    return this->hasMipMaps;
 }
 
 } // namespace Oryol

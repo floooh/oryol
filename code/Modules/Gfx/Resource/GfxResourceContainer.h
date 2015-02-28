@@ -49,7 +49,7 @@ public:
     /// create a resource object with data
     template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
     /// asynchronously load resource object
-    template<class SETUP, class LOADER> Id Load(const SETUP& setup, std::function<Ptr<LOADER>()> loader);
+    template<class SETUP, class LOADER> Id Load(const SETUP& setup, int32 ioLane, std::function<Ptr<LOADER>()> loader);
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label

@@ -22,7 +22,7 @@ public:
     /// setup a texture from a image file data in stream
     static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data
-    static TextureSetup FromPixelData(int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt);
+    static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint=TextureSetup());
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int32 w, int32 h);
     /// setup as render target with size relative to current display size
@@ -46,9 +46,9 @@ public:
     bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
-    /// return true if texture should be generated with mipmaps (only when created from raw pixel data)
-    bool HasMipMaps() const;
-        
+    
+    /// texture type (default is Texture2D)
+    TextureType::Code Type;
     /// the width in pixels (only if absolute-size render target)
     int32 Width;
     /// the height in pixels (only if absolute-size render target)
@@ -57,6 +57,8 @@ public:
     float32 RelWidth;
     /// display-relative height (only if screen render target)
     float32 RelHeight;
+    /// number of mipmaps (default is 1, only for FromPixelData)
+    int32 NumMipMaps;
     /// the color pixel format (only if render target)
     PixelFormat::Code ColorFormat;
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
@@ -81,10 +83,14 @@ public:
     /// resource placeholder (only used for load-async)
     Id Placeholder;
     
-    /// max number of mipmaps (for 
+    /// max number of faces
+    static const int32 MaxNumFaces = 6;
+    /// max number of mipmaps
     static const int32 MaxNumMipMaps = 12;
-    /// pixel data mipmap offsets
-    StaticArray<int32, MaxNumMipMaps> MipMapOffsets;
+    /// pixel data mipmap image offsets
+    StaticArray<StaticArray<int32, MaxNumMipMaps>, MaxNumFaces> ImageOffsets;
+    /// pixel data mipmap image sizes
+    StaticArray<StaticArray<int32, MaxNumMipMaps>, MaxNumFaces> ImageSizes;
     
 private:
     bool setupFromFile : 1;

@@ -94,6 +94,35 @@ glExt::IsValid() {
 }
 
 //------------------------------------------------------------------------------
+bool
+glExt::IsTextureFormatSupported(PixelFormat::Code fmt) {
+    if (PixelFormat::IsCompressedFormat(fmt)) {
+        switch (fmt) {
+            case PixelFormat::DXT1:
+            case PixelFormat::DXT3:
+            case PixelFormat::DXT5:
+                return glExt::HasExtension(TextureCompressionDXT);
+            case PixelFormat::PVRTC2_RGB:
+            case PixelFormat::PVRTC4_RGB:
+            case PixelFormat::PVRTC2_RGBA:
+            case PixelFormat::PVRTC4_RGBA:
+                return glExt::HasExtension(TextureCompressionPVRTC);
+            #if ORYOL_OPENGLES3
+            case PixelFormat::ETC2_RGB8:
+            case PixelFormat::ETC2_SRGB8:
+                return true;
+            #endif
+            default:
+                return false;
+        }
+    }
+    else {
+        // non compressed format, always supported
+        return true;
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_EMSCRIPTEN
