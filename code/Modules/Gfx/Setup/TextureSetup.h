@@ -6,6 +6,7 @@
     @brief setup object for textures and render targets
     @todo setup from file, setup from stream, multiple rendertarget support, mipmap generation mode...?
 */
+#include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
@@ -79,6 +80,11 @@ public:
     class Locator Locator;
     /// resource placeholder (only used for load-async)
     Id Placeholder;
+    
+    /// max number of mipmaps (for 
+    static const int32 MaxNumMipMaps = 12;
+    /// pixel data mipmap offsets
+    StaticArray<int32, MaxNumMipMaps> MipMapOffsets;
     
 private:
     bool setupFromFile : 1;

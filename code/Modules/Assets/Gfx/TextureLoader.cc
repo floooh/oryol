@@ -41,8 +41,52 @@ TextureLoader::Failed(const URL& url, int32 ioLane, IOStatus::Code ioStatus) {
 //------------------------------------------------------------------------------
 TextureSetup
 TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx) {
-    o_error("FIXME FIXME FIXME");
-    return blueprint;
+    const int32 w = ctx->image_width(0, 0);
+    const int32 h = ctx->image_height(0, 0);
+    bool hasMipmaps = ctx->num_mipmaps(0) > 0;
+    PixelFormat::Code pixelFormat = PixelFormat::InvalidPixelFormat;
+    switch(ctx->image_internal_format()) {
+        case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            pixelFormat = PixelFormat::DXT1;
+            break;
+        case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            pixelFormat = PixelFormat::DXT3;
+            break;
+        case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            pixelFormat = PixelFormat::DXT5;
+            break;
+        case GLIML_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+            pixelFormat = PixelFormat::PVRTC4_RGB;
+            break;
+        case GLIML_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+            pixelFormat = PixelFormat::PVRTC2_RGB;
+            break;
+        case GLIML_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+            pixelFormat = PixelFormat::PVRTC4_RGBA;
+            break;
+        case GLIML_GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+            pixelFormat = PixelFormat::PVRTC2_RGBA;
+            break;
+        case GLIML_GL_COMPRESSED_RGB8_ETC2:
+            pixelFormat = PixelFormat::ETC2_RGB8;
+            break;
+        case GLIML_GL_COMPRESSED_SRGB8_ETC2:
+            pixelFormat = PixelFormat::ETC2_SRGB8;
+            break;
+        default:
+            o_error("Unknown compressed pixel format!\n");
+            break;
+    }
+    TextureSetup setup = TextureSetup::FromPixelData(w, h, hasMipmaps, pixelFormat);
+    
+    // setup mipmap offsets
+    o_assert_dbg(TextureSetup::MaxNumMipMaps >= ctx->num_mipmaps(0));
+    const uint8* start = (const uint8*) ctx->image_data(0, 0);
+    for (int32 i = 0; i < ctx->num_mipmaps(0); i++) {
+        const uint8* cur = (const uint8*) ctx->image_data(0, i);
+        setup.MipMapOffsets[i] = int32(cur - start);
+    }
+    return setup;
 }
 
 //------------------------------------------------------------------------------

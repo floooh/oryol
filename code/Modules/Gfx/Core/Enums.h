@@ -106,8 +106,12 @@ public:
         D16,            ///< 16-bit depth
         D32,            ///< 32-bit depth
         D24S8,          ///< 24-bit depth, 8-bit stencil
-        PVRTC2,         ///< PVRTC2 compressed format
-        PVRTC4,         ///< PVRTC4 compressed format
+        PVRTC2_RGB,     ///< PVRTC2 compressed format (RGB)
+        PVRTC4_RGB,     ///< PVRTC4 compressed format (RGB)
+        PVRTC2_RGBA,    ///< PVRTC2 compressed format (RGBA)
+        PVRTC4_RGBA,    ///< PVRTC4 compressed format (RGBA)
+        ETC2_RGB8,      ///< ETC2 compressed format (RGB8)
+        ETC2_SRGB8,     ///< ETC2 compressed format (SRGB8)
         
         NumPixelFormats,            ///< number of pixel formats
         InvalidPixelFormat,         ///< invalid pixel format value
@@ -176,8 +180,12 @@ public:
             case DXT1:
             case DXT3:
             case DXT5:
-            case PVRTC2:
-            case PVRTC4:
+            case PVRTC2_RGB:
+            case PVRTC4_RGB:
+            case PVRTC2_RGBA:
+            case PVRTC4_RGBA:
+            case ETC2_RGB8:
+            case ETC2_SRGB8:
                 return true;
             default:
                 return false;

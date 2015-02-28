@@ -27,7 +27,7 @@ setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
-    // empty
+    this->MipMapOffsets.Fill(0);
 }
 
 //------------------------------------------------------------------------------
