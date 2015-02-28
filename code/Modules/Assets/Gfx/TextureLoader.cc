@@ -137,6 +137,8 @@ Ptr<Stream>
 TextureLoader::buildStream(const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != data);
     o_assert_dbg(0 < numBytes);
+    // FIXME: MemoryStream should have a 'view' mode where the
+    // stream object only points to, but doesn't own, a chunk of memory!
     Ptr<MemoryStream> stream = MemoryStream::Create();
     stream->Reserve(numBytes);
     stream->Open(OpenMode::WriteOnly);
