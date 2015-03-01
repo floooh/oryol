@@ -170,7 +170,6 @@ GfxResourceContainer::Load(const TextureSetup& setup, int32 ioLane, std::functio
         return resId;
     }
     else {
-        Log::Info("GfxResourceContainer::Load(): LOADING TEXTURE!!!\n");
         resId = this->texturePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         this->texturePool.Assign(resId, setup, ResourceState::Pending);
