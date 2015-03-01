@@ -49,12 +49,12 @@ resourceRegistry::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
-resourceRegistry::Add(const Locator& loc, const Id& id) {
+resourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
     
-    this->entries.Add(loc, id);
+    this->entries.Add(loc, id, label);
     if (loc.IsShared()) {
         o_assert(!this->locatorIndexMap.Contains(loc));
         this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
@@ -77,7 +77,7 @@ resourceRegistry::findEntryByLocator(const Locator& loc) const {
 
 //------------------------------------------------------------------------------
 const resourceRegistry::Entry*
-resourceRegistry::findEntryById(const Id& id) const {
+resourceRegistry::findEntryById(Id id) const {
     const int32 mapIndex = this->idIndexMap.FindIndex(id);
     if (InvalidIndex != mapIndex) {
         const int32 entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
@@ -88,7 +88,7 @@ resourceRegistry::findEntryById(const Id& id) const {
 
 //------------------------------------------------------------------------------
 bool
-resourceRegistry::Contains(const Id& id) const {
+resourceRegistry::Contains(Id id) const {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     return this->idIndexMap.Contains(id);
@@ -109,7 +109,7 @@ resourceRegistry::Lookup(const Locator& loc) const {
 
 //------------------------------------------------------------------------------
 Array<Id>
-resourceRegistry::Remove(uint8 label) {
+resourceRegistry::Remove(ResourceLabel label) {
     o_assert(this->isValid);
     Array<Id> removed;
     removed.Reserve(this->entries.Size() < 256 ? this->entries.Size() : 256);
@@ -119,7 +119,7 @@ resourceRegistry::Remove(uint8 label) {
     // FIXME: this can be slow if many resource are live!
     int32 entryIndex = this->entries.Size() - 1;
     for (; entryIndex >= 0; entryIndex--) {
-        if ((Id::LabelAll == label) || (this->entries[entryIndex].id.Label() == label)) {
+        if ((ResourceLabel::All == label) || (this->entries[entryIndex].label == label)) {
             Id id = this->entries[entryIndex].id;
             Locator loc = this->entries[entryIndex].locator;
             removed.Add(id);
@@ -159,7 +159,7 @@ resourceRegistry::Remove(uint8 label) {
 
 //------------------------------------------------------------------------------
 const Locator&
-resourceRegistry::GetLocator(const Id& id) const {
+resourceRegistry::GetLocator(Id id) const {
     o_assert(this->isValid);
     o_assert(id.IsValid());
     

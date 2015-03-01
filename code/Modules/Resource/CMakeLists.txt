@@ -9,6 +9,7 @@ fips_begin_module(Resource)
     )
     fips_dir(Core)
     fips_files(
+        ResourceLabel.h
         ResourcePool.h
         ResourceStreamTarget.cc ResourceStreamTarget.h
         SetupAndStream.h

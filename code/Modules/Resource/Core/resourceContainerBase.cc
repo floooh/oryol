@@ -28,7 +28,7 @@ resourceContainerBase::setup(int32 labelStackCapacity, int32 registryCapacity) {
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);
     this->valid = true;
-    this->PushLabel(Id::LabelDefault);
+    this->PushLabel(ResourceLabel::Default);
 }
 
 //------------------------------------------------------------------------------
@@ -49,11 +49,11 @@ resourceContainerBase::isValid() const {
 }
 
 //------------------------------------------------------------------------------
-uint8
+ResourceLabel
 resourceContainerBase::PushLabel() {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(this->curLabelCount < Id::LabelDefault);
+    o_assert_dbg(this->curLabelCount < ResourceLabel::Default);
     uint8 label = this->curLabelCount++;
     this->labelStack.Add(label);
     return label;
@@ -61,24 +61,24 @@ resourceContainerBase::PushLabel() {
 
 //------------------------------------------------------------------------------
 void
-resourceContainerBase::PushLabel(uint8 label) {
+resourceContainerBase::PushLabel(ResourceLabel label) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     this->labelStack.Add(label);
 }
 
 //------------------------------------------------------------------------------
-uint8
+ResourceLabel
 resourceContainerBase::PopLabel() {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    uint8 label = this->labelStack.Back();
+    ResourceLabel label = this->labelStack.Back();
     this->labelStack.Erase(this->labelStack.Size() - 1);
     return label;
 }
 
 //------------------------------------------------------------------------------
-uint8
+ResourceLabel
 resourceContainerBase::peekLabel() const {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());

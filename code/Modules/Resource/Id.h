@@ -18,13 +18,7 @@ public:
     /// invalid slot index constant
     static const uint16 InvalidSlotIndex = 0xFFFF;
     /// invalid type constant
-    static const uint8 InvalidType = 0xFF;
-    /// invalid label constant
-    static const uint8 InvalidLabel = 0xFF;
-    /// special label meaning 'all resources'
-    static const uint8 LabelAll = 0xFF;
-    /// default resource label
-    static const uint8 LabelDefault = 0xFE;
+    static const uint16 InvalidType = 0xFFFF;
 
     /// returns an invalid resource id
     static Id InvalidId();
@@ -32,7 +26,7 @@ public:
     /// default constructor, constructs invalid id
     Id();
     /// create with uniqueStamp, slotIndex and type
-    Id(uint32 uniqueStamp, uint16 slotIndex, uint8 type, uint8 label);
+    Id(uint32 uniqueStamp, uint16 slotIndex, uint8 type);
     /// copy constructor
     Id(const Id& rhs);
     
@@ -53,9 +47,7 @@ public:
     /// get the slot index
     uint16 SlotIndex() const;
     /// get the type
-    uint8 Type() const;
-    /// get the label
-    uint8 Label() const;
+    uint16 Type() const;
     /// get the unique-stamp
     uint32 UniqueStamp() const;
     
@@ -66,8 +58,7 @@ private:
     union {
         struct {
             uint16 slotIndex;
-            uint8 type;
-            uint8 label;
+            uint16 type;
             uint32 uniqueStamp;
         };
         uint64 id;
@@ -89,10 +80,9 @@ id(invalidId) {
 
 //------------------------------------------------------------------------------
 inline
-Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint8 type_, uint8 label_) :
+Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint8 type_) :
 slotIndex(slotIndex_),
 type(type_),
-label(label_),
 uniqueStamp(uniqueStamp_) {
     // empty
 }
@@ -137,15 +127,9 @@ Id::SlotIndex() const {
 }
 
 //------------------------------------------------------------------------------
-inline uint8
+inline uint16
 Id::Type() const {
     return this->type;
-}
-
-//------------------------------------------------------------------------------
-inline uint8
-Id::Label() const {
-    return this->label;
 }
 
 //------------------------------------------------------------------------------

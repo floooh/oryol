@@ -17,6 +17,7 @@
 */
 #include "Core/Assertion.h"
 #include "Resource/Id.h"
+#include "Resource/Core/ResourceLabel.h"
 
 namespace Oryol {
     

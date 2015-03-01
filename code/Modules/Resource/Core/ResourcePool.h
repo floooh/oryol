@@ -35,7 +35,7 @@ public:
     void Update();
     
     /// allocate a resource id
-    Id AllocId(uint8 resourceLabel);
+    Id AllocId();
     
     /// assign a resource to a free slot
     RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
@@ -132,10 +132,10 @@ ResourcePool<RESOURCE,SETUP>::IsValid() const {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> Id
-ResourcePool<RESOURCE,SETUP>::AllocId(uint8 resourceLabel) {
+ResourcePool<RESOURCE,SETUP>::AllocId() {
     o_assert_dbg(this->isValid);
     o_assert_dbg(Id::InvalidType != this->resourceType);
-    return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType, resourceLabel);
+    return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
 }
 
 //------------------------------------------------------------------------------

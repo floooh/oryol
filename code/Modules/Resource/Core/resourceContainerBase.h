@@ -25,6 +25,7 @@
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
 #include "Resource/Core/resourceRegistry.h"
+#include "Resource/Core/ResourceLabel.h"
 
 namespace Oryol {
 
@@ -36,11 +37,11 @@ public:
     ~resourceContainerBase();
     
     /// generate new resource label and push on label stack
-    uint8 PushLabel();
+    ResourceLabel PushLabel();
     /// push explicit resource label on label stack
-    void PushLabel(uint8 label);
+    void PushLabel(ResourceLabel label);
     /// pop resource label from label stack
-    uint8 PopLabel();
+    ResourceLabel PopLabel();
     /// lookup a resource Id by Locator
     Id Lookup(const Locator& locator) const;
     
@@ -52,13 +53,13 @@ protected:
     /// return true if valid
     bool isValid() const;
     /// peek top of label stack
-    uint8 peekLabel() const;
+    ResourceLabel peekLabel() const;
     /// return true if currently on main thread
     bool isMainThread() const;
     
-    Array<uint8> labelStack;
+    Array<ResourceLabel> labelStack;
     _priv::resourceRegistry registry;
-    uint8 curLabelCount;
+    uint32 curLabelCount;
     bool valid;
 };
 

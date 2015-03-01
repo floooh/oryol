@@ -53,7 +53,7 @@ public:
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
-    void Destroy(uint8 label);
+    void Destroy(ResourceLabel label);
     
     /// initialize resource from a different thread (usually called during Load())
     template<class SETUP> void initResourceFromThread(int32 threadIndex, const Id& resId, const SetupAndStream<SETUP>& setupAndStream);
