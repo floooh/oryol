@@ -5,13 +5,20 @@
 #include "osxURLLoader.h"
 #include "IO/Stream/MemoryStream.h"
 #include <Foundation/Foundation.h>
+#include <atomic>
 
 namespace Oryol {
 namespace _priv {
 
+std::atomic_flag osxURLLoader_sharedCacheSet{false};
+
 //------------------------------------------------------------------------------
 osxURLLoader::osxURLLoader() {
-    // empty
+    // disable the 'magic cache' to prevent memory growth
+    if (!osxURLLoader_sharedCacheSet.test_and_set()) {
+        [NSURLCache setSharedURLCache:[[[NSURLCache alloc] initWithMemoryCapacity:0
+         diskCapacity:0 diskPath:nil] autorelease]];
+    }
 }
 
 //------------------------------------------------------------------------------
