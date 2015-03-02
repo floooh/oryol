@@ -57,11 +57,13 @@ TextureLoader::Continue() {
             ctx.enable_pvrtc(true);
             ctx.enable_etc2(true);
             if (ctx.load(data, numBytes)) {
+                stream->Close();
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
                 SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
                 result = Gfx::Resource().initAsync(this->resId, setupAndStream);
             }
             else {
+                stream->Close();
                 result = Gfx::Resource().failedAsync(this->resId);
             }
         }

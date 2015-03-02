@@ -34,7 +34,7 @@ private:
     };
     glm::mat4 computeMVP(const Object& obj);
     
-    static const int32 MaxNumObjects = 256;
+    static const int32 MaxNumObjects = 1024;
     uint32 frameCount = 0;
     Id prog;
     Map<uint32, Object> objects;
@@ -154,7 +154,7 @@ ResourceStressApp::createObjects() {
         glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
         obj.modelTransform = glm::translate(glm::mat4(), pos);
         obj.startFrame = this->frameCount;
-        uint32 endFrame = obj.startFrame + 200;
+        uint32 endFrame = obj.startFrame + 1024;
         this->objects.Add(endFrame, obj);
         Gfx::Resource().PopLabel();
     }

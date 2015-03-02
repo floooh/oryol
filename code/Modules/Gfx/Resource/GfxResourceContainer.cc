@@ -280,7 +280,6 @@ GfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
     else {
         this->pendingLoaders.Add(loader);
         resId = loader->Start();
-        this->registry.Add(loader->Locator(), resId, this->peekLabel());
         return resId;
     }
 }
@@ -393,7 +392,8 @@ GfxResourceContainer::updatePending() {
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
         const auto& loader = this->pendingLoaders[i];
-        if (ResourceState::Pending != loader->Continue()) {
+        ResourceState::Code state = loader->Continue();
+        if (ResourceState::Pending != state) {
             this->pendingLoaders.Erase(i);
         }
     }
