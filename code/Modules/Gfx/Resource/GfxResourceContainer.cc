@@ -475,4 +475,30 @@ GfxResourceContainer::QueryState(const Id& resId) const {
     return ResourceState::InvalidState;
 }
 
+//------------------------------------------------------------------------------
+int32
+GfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
+
+    switch (resourceType) {
+        case GfxResourceType::Texture:
+            return this->texturePool.GetNumFreeSlots();
+        case GfxResourceType::Mesh:
+            return this->meshPool.GetNumFreeSlots();
+        case GfxResourceType::Shader:
+            return this->shaderPool.GetNumFreeSlots();
+        case GfxResourceType::ProgramBundle:
+            return this->programBundlePool.GetNumFreeSlots();
+        case GfxResourceType::ConstantBlock:
+            o_assert2(false, "FIXME!!!\n");
+            break;
+        case GfxResourceType::DrawState:
+            return this->drawStatePool.GetNumFreeSlots();
+        default:
+            o_assert(false);
+            break;
+    }
+}
+
 } // namespace Oryol

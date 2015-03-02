@@ -21,9 +21,8 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    void deleteObjects();
     void createObjects();
-    void moveObjects();
+    void updateObjects();
 
     struct Object {
         Id drawState;
@@ -31,13 +30,14 @@ private:
         ResourceLabel label;
         glm::mat4 modelTransform;
         uint32 startFrame = 0;
+        uint32 endFrame = 0;
     };
     glm::mat4 computeMVP(const Object& obj);
     
     static const int32 MaxNumObjects = 1024;
     uint32 frameCount = 0;
     Id prog;
-    Map<uint32, Object> objects;
+    Array<Object> objects;
     glm::mat4 view;
     glm::mat4 proj;
     TextureSetup texBlueprint;
@@ -50,14 +50,12 @@ ResourceStressApp::OnRunning() {
 
     // delete and create objects
     this->frameCount++;
-    this->deleteObjects();
+    this->updateObjects();
     this->createObjects();
-    this->moveObjects();
 
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    for (const auto& entry : this->objects) {
-        const Object& obj = entry.Value();
+    for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
         if (Gfx::Resource().QueryState(obj.texture) == ResourceState::Valid) {
             glm::mat4 mvp = this->proj * this->view * obj.modelTransform;
@@ -118,23 +116,10 @@ ResourceStressApp::OnCleanup() {
 
 //------------------------------------------------------------------------------
 void
-ResourceStressApp::deleteObjects() {
-    // delete objects which have reached their end-frame
-    // the objects with the smallest end-frame are at the front of the map
-    if (!this->objects.Empty()) {
-        while (this->objects.KeyAtIndex(0) == this->frameCount) {
-            // ok delete this object
-            const Object& obj = this->objects.ValueAtIndex(0);
-            Gfx::Resource().Destroy(obj.label);
-            this->objects.EraseIndex(0);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 ResourceStressApp::createObjects() {
-    if (this->objects.Size() < MaxNumObjects) {
+    if ((this->objects.Size() < MaxNumObjects) &&
+        (Gfx::Resource().QueryFreeSlots(GfxResourceType::Mesh) > 0) &&
+        (Gfx::Resource().QueryFreeSlots(GfxResourceType::Texture) > 0)) {
         // create a cube object
         // NOTE: we're deliberatly not sharing resources to actually
         // put some stress on the resource system
@@ -154,15 +139,34 @@ ResourceStressApp::createObjects() {
         glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
         obj.modelTransform = glm::translate(glm::mat4(), pos);
         obj.startFrame = this->frameCount;
-        uint32 endFrame = obj.startFrame + 1024;
-        this->objects.Add(endFrame, obj);
+        obj.endFrame = this->frameCount + 256;
+        this->objects.Add(obj);
         Gfx::Resource().PopLabel();
     }
 }
 
 //------------------------------------------------------------------------------
 void
-ResourceStressApp::moveObjects() {
-
+ResourceStressApp::updateObjects() {
+    for (int32 i = this->objects.Size() - 1; i >= 0; i--) {
+        Object& obj = this->objects[i];
+        bool destroyMe = false;
+        const ResourceState::Code texState = Gfx::Resource().QueryState(obj.texture);
+        if (ResourceState::Pending == texState) {
+            obj.endFrame = this->frameCount + 256;
+        }
+        else if (ResourceState::Failed == texState) {
+            destroyMe = true;
+        }
+        else if (ResourceState::Valid == texState) {
+            if (this->frameCount >= obj.endFrame) {
+                destroyMe = true;
+            }
+        }
+        if (destroyMe) {
+            Gfx::Resource().Destroy(obj.label);
+            this->objects.Erase(i);
+        }
+    }
 }
 

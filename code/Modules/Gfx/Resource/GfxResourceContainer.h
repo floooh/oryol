@@ -46,6 +46,8 @@ public:
     template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
     /// asynchronously load resource object
     Id Load(const Ptr<ResourceLoader>& loader);
+    /// query number of free slots for resource type
+    int32 QueryFreeSlots(GfxResourceType::Code resourceType) const;
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
