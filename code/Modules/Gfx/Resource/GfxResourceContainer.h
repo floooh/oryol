@@ -12,7 +12,6 @@
 #include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/Core/SetupAndStream.h"
-#include "Resource/Core/ResourceStreamTarget.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/meshPool.h"
 #include "Gfx/Resource/meshFactory.h"
@@ -39,9 +38,6 @@ public:
     /// constructor
     GfxResourceContainer();
     
-    /// per-frame update for pending/deferred resource creation and destruction
-    void UpdatePending();
-
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
@@ -49,16 +45,18 @@ public:
     /// create a resource object with data
     template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
     /// asynchronously load resource object
-    template<class SETUP, class LOADER> Id Load(const SETUP& setup, int32 ioLane, std::function<Ptr<LOADER>()> loader);
+    Id Load(const Ptr<ResourceLoader>& loader);
     /// query current resource state
     ResourceState::Code QueryState(const Id& id) const;
     /// destroy resources by label
     void Destroy(ResourceLabel label);
     
-    /// initialize resource from a different thread (usually called during Load())
-    template<class SETUP> void initResourceFromThread(int32 threadIndex, const Id& resId, const SetupAndStream<SETUP>& setupAndStream);
-    /// notify Gfx that threaded resource creation has failed
-    void failResourceFromThread(int32 threadIndex, const Id& resId);
+    /// prepare async creation (usually called at start of async Load)
+    template<class SETUP> Id prepareAsync(const SETUP& setup);
+    /// setup async resource (usually called during async Load)
+    template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SetupAndStream<SETUP>& setupAndStream);
+    /// notify resource container that async creation had failed
+    ResourceState::Code failedAsync(const Id& resId);
     
 private:
     friend class Gfx;
@@ -75,6 +73,8 @@ private:
     _priv::texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
     _priv::drawState* lookupDrawState(const Id& resId);
+    /// update pending loaders (called by runloop), and deferred-destroy resources
+    void updatePending();
     
     class _priv::renderer* renderer;
     class _priv::displayMgr* displayMgr;
@@ -89,9 +89,8 @@ private:
     class _priv::texturePool texturePool;
     class _priv::drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
+    Array<Ptr<ResourceLoader>> pendingLoaders;
     Array<Id> pendingDestroys;
-    RWLock pendingCreateLock;
-    Array<KeyValuePair<Id, ResourceState::Code>> pendingCreates;
 };
 
 //------------------------------------------------------------------------------

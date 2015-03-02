@@ -122,22 +122,25 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             const void* responseBytes = [responseData bytes];
             const int responseLength = (const int) [responseData length];
             if (responseLength > 0) {
-                const Ptr<IOProtocol::Request> ioReq = req->GetIoRequest();
+                Ptr<MemoryStream> responseBody = MemoryStream::Create();
+                responseBody->SetURL(req->GetURL());
+                responseBody->Open(OpenMode::WriteOnly);
+                const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
                 const Ptr<IOLoader>& loader = ioReq->GetLoader();
                 if (loader.isValid()) {
-                    loader->Loaded(ioReq->GetURL(), ioReq->GetActualLane(), responseBytes, responseLength);
+                    loader->StartLoad(responseBody, responseLength);
+                    loader->Load(responseBytes, responseLength);
+                    loader->FinishLoad();
                 }
                 else {
-                    Ptr<MemoryStream> responseBody = MemoryStream::Create();
-                    responseBody->SetURL(req->GetURL());
-                    responseBody->Open(OpenMode::WriteOnly);
+                    responseBody->Reserve(responseLength);
                     responseBody->Write(responseBytes, responseLength);
-                    responseBody->Close();
-                    if (responseContentType.IsValid()) {
-                        responseBody->SetContentType(responseContentType);
-                    }
-                    response->SetBody(responseBody);
                 }
+                responseBody->Close();
+                if (responseContentType.IsValid()) {
+                    responseBody->SetContentType(responseContentType);
+                }
+                response->SetBody(responseBody);
             }
             req->SetResponse(response);
         }
@@ -147,10 +150,10 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             if (nil != urlResponse) {
                 ioStatus = (IOStatus::Code) [urlResponse statusCode];
             }
-            const Ptr<IOProtocol::Request> ioReq = req->GetIoRequest();
+            const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
             const Ptr<IOLoader>& loader = ioReq->GetLoader();
             if (loader.isValid()) {
-                loader->Failed(ioReq->GetURL(), ioReq->GetActualLane(), ioStatus);
+                loader->LoadFailed(ioReq->GetURL(), ioReq->GetActualLane(), ioStatus);
             }
             Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
             response->SetStatus((IOStatus::Code) ioStatus);

@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "TextureLoader.h"
+#include "IO/IO.h"
 #include "Gfx/Gfx.h"
 #include "IO/Stream/Stream.h"
 #define GLIML_ASSERT(x) o_assert(x)
@@ -13,29 +14,64 @@ namespace Oryol {
 OryolClassImpl(TextureLoader);
 
 //------------------------------------------------------------------------------
-void
-TextureLoader::Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes) {
-    // NOTE: this is running on a thread!
-    o_assert(this->id.IsValid());
-    
-    // parse the data with gliml, just accept all texture formats,
-    // GL will complain later if this is not supported
-    gliml::context ctx;
-    ctx.enable_dxt(true);
-    ctx.enable_pvrtc(true);
-    ctx.enable_etc2(true);
-    if (ctx.load(data, numBytes)) {
-        TextureSetup texSetup = this->buildSetup(this->setup, &ctx, (const uint8*) data);
-        Ptr<Stream> stream = this->buildStream(data, numBytes);
-        SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
-        Gfx::Resource().initResourceFromThread(ioLane, this->id, setupAndStream);
-    }
+TextureLoader::TextureLoader(const TextureSetup& setup_, int32 ioLane_) :
+TextureLoaderBase(setup_, ioLane_) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
-void
-TextureLoader::Failed(const URL& url, int32 ioLane, IOStatus::Code ioStatus) {
-    Gfx::Resource().failResourceFromThread(ioLane, this->id);
+Id
+TextureLoader::Start() {
+    
+    // prepare the Gfx resource
+    this->resId = Gfx::Resource().prepareAsync(this->setup);
+    
+    // fire IO request to start loading the texture data
+    this->ioRequest = IOProtocol::Request::Create();
+    this->ioRequest->SetURL(setup.Locator.Location());
+    this->ioRequest->SetLane(this->ioLane);
+    IO::Put(this->ioRequest);
+    
+    return resId;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+TextureLoader::Continue() {
+    o_assert_dbg(this->resId.IsValid());
+    o_assert_dbg(this->ioRequest.isValid());
+    
+    ResourceState::Code result = ResourceState::Pending;
+    
+    if (this->ioRequest->Handled()) {
+        if (this->ioRequest->GetStatus() == IOStatus::OK) {
+            // yeah, IO is done, let gliml parse the texture data
+            // and create the texture resource
+            const Ptr<Stream>& stream = this->ioRequest->GetStream();
+            stream->Open(OpenMode::ReadOnly);
+            const uint8* data = stream->MapRead(nullptr);
+            const int32 numBytes = stream->Size();
+            
+            gliml::context ctx;
+            ctx.enable_dxt(true);
+            ctx.enable_pvrtc(true);
+            ctx.enable_etc2(true);
+            if (ctx.load(data, numBytes)) {
+                TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
+                SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
+                result = Gfx::Resource().initAsync(this->resId, setupAndStream);
+            }
+            else {
+                result = Gfx::Resource().failedAsync(this->resId);
+            }
+        }
+        else {
+            // IO had failed
+            result = Gfx::Resource().failedAsync(this->resId);
+        }
+        this->ioRequest = nullptr;
+    }
+    return result;
 }
 
 //------------------------------------------------------------------------------
@@ -130,21 +166,6 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
         }
     }
     return newSetup;
-}
-
-//------------------------------------------------------------------------------
-Ptr<Stream>
-TextureLoader::buildStream(const void* data, int32 numBytes) {
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(0 < numBytes);
-    // FIXME: MemoryStream should have a 'view' mode where the
-    // stream object only points to, but doesn't own, a chunk of memory!
-    Ptr<MemoryStream> stream = MemoryStream::Create();
-    stream->Reserve(numBytes);
-    stream->Open(OpenMode::WriteOnly);
-    stream->Write(data, numBytes);
-    stream->Close();
-    return stream;
 }
 
 } // namespace Oryol

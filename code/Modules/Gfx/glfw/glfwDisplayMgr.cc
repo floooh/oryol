@@ -59,9 +59,6 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
     // setup the GLFW main window
     this->createMainWindow(setup);
     
-    // setup the shared GL contexts (for threaded resource creation)
-    this->createThreadContexts(setup);
-
     // and make the window's GL context current
     glfwMakeContextCurrent(glfwWindow);
     glfwSwapInterval(1);
@@ -101,7 +98,6 @@ glfwDisplayMgr::DiscardDisplay() {
     o_assert(nullptr != glfwWindow);
     o_assert_dbg(Core::IsMainThread());
     
-    this->destroyThreadContexts();
     this->destroyMainWindow();
     glfwTerminate();
     glExt::Discard();
@@ -207,55 +203,6 @@ glfwDisplayMgr::destroyMainWindow() {
     o_assert_dbg(nullptr != glfwDisplayMgr::glfwWindow);
     glfwDestroyWindow(glfwWindow);
     glfwWindow = nullptr;
-}
-
-//------------------------------------------------------------------------------
-void
-glfwDisplayMgr::createThreadContexts(const GfxSetup& setup) {
-    o_assert_dbg(nullptr != glfwDisplayMgr::glfwWindow);
-    
-    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    this->threadContexts.Reserve(setup.NumResourceCreationThreads);
-    this->threadContexts.SetAllocStrategy(0, 0);
-    for (int32 i = 0; i < setup.NumResourceCreationThreads; i++) {
-        ThreadContext ctx;
-        ctx.glfwWindow = glfwCreateWindow(1, 1, "oryol", NULL, glfwDisplayMgr::glfwWindow);
-        this->threadContexts.Add(ctx);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glfwDisplayMgr::destroyThreadContexts() {
-    this->threadContextLock.LockWrite();
-    for (auto& ctx : this->threadContexts) {
-        glfwDestroyWindow(ctx.glfwWindow);
-        ctx.glfwWindow = nullptr;
-    }
-    this->threadContexts.Clear();
-    this->threadContextLock.UnlockWrite();
-}
-
-//------------------------------------------------------------------------------
-void
-glfwDisplayMgr::notifyThread(int32 threadIndex) {
-    o_assert_dbg(!Core::IsMainThread());
-
-    // this is called by a resource creation thread to make sure that
-    // the thread-specific GL context for this thread is current
-    this->threadContextLock.LockWrite();
-    std::thread::id myThreadId = std::this_thread::get_id();
-    auto& ctx = this->threadContexts[threadIndex];
-    if (ctx.makeCurrentCalled) {
-        o_assert(myThreadId == ctx.threadId);
-    }
-    else {
-        o_assert(nullptr != ctx.glfwWindow);
-        ctx.threadId = myThreadId;
-        glfwMakeContextCurrent(ctx.glfwWindow);
-        ctx.makeCurrentCalled = true;
-    }
-    this->threadContextLock.UnlockWrite();
 }
 
 } // namespace _priv

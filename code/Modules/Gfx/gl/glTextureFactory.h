@@ -7,7 +7,6 @@
 */
 #include "IO/Stream/Stream.h"
 #include "Gfx/Resource/texture.h"
-#include "Resource/Core/ResourceStreamTarget.h"
 
 namespace Oryol {
 namespace _priv {
@@ -36,8 +35,6 @@ public:
     bool SetupResource(texture& tex);
     /// setup with input data
     bool SetupResource(texture& tex, const Ptr<Stream>& data);
-    /// multi-threaded resource setup
-    bool InitResourceThreaded(int32 threadIndex, texture& tex, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
     

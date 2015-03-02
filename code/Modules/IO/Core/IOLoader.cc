@@ -10,13 +10,25 @@ OryolClassImpl(IOLoader);
 
 //------------------------------------------------------------------------------
 void
-IOLoader::Loaded(const URL& url, int32 ioLane, const void* data, int32 numBytes) {
+IOLoader::StartLoad(const Ptr<Stream>& /*dstStream*/, int32 /*expectedLoadSize*/) {
     // implement in subclass!
 }
 
 //------------------------------------------------------------------------------
 void
-IOLoader::Failed(const URL& url, int32 ioLane, IOStatus::Code ioStatus) {
+IOLoader::Load(const void* /*data*/, int32 /*numBytes*/) {
+    // implement in subclass!
+}
+
+//------------------------------------------------------------------------------
+void
+IOLoader::FinishLoad() {
+    // implement in subclass!
+}
+
+//------------------------------------------------------------------------------
+void
+IOLoader::LoadFailed(const URL& url, int32 ioLane, IOStatus::Code ioStatus) {
     // implement in subclass!
 }
 

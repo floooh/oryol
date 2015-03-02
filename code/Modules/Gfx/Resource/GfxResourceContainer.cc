@@ -41,7 +41,7 @@ GfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
-        this->UpdatePending();
+        this->updatePending();
     });
     
     resourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
@@ -160,63 +160,52 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Load(const TextureSetup& setup, int32 ioLane, std::function<Ptr<TextureLoaderBase>()> loaderCreator) {
+GfxResourceContainer::prepareAsync(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(setup.ShouldSetupFromFile());
     
-    Id resId = this->registry.Lookup(setup.Locator);
-    if (resId.IsValid()) {
-        return resId;
-    }
-    else {
-        resId = this->texturePool.AllocId();
-        this->registry.Add(setup.Locator, resId, this->peekLabel());
-        this->texturePool.Assign(resId, setup, ResourceState::Pending);
-        
-        auto loader = loaderCreator();
-        loader->Prepare(resId, setup);
-        Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
-        ioReq->SetURL(setup.Locator.Location());
-        ioReq->SetLane(ioLane);
-        ioReq->SetLoader(loader);
-        IO::Put(ioReq);
-
-        return resId;
-    }
+    Id resId = this->texturePool.AllocId();
+    this->registry.Add(setup.Locator, resId, this->peekLabel());
+    this->texturePool.Assign(resId, setup, ResourceState::Pending);
+    return resId;
 }
 
 //------------------------------------------------------------------------------
-template<> void
-GfxResourceContainer::initResourceFromThread(int32 threadIndex, const Id& resId, const SetupAndStream<TextureSetup>& setupAndStream) {
-    // NOTE: this is running on a resource creation thread on target platforms
-    // that support threading!
-    o_assert(this->isValid());
-    o_assert(this->texturePool.QueryState(resId) == ResourceState::Pending);
+template<> ResourceState::Code 
+GfxResourceContainer::initAsync(const Id& resId, const SetupAndStream<TextureSetup>& setupAndStream) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
     
-    // create resource and return ResourceStreamTarget
-    texture& tex = this->texturePool.Assign(resId, setupAndStream.Setup, ResourceState::Pending);
-    bool success = this->textureFactory.InitResourceThreaded(threadIndex, tex, setupAndStream.Stream);
-    
-    // tell the main thread that this resource has finished creation
-    this->pendingCreateLock.LockWrite();
-    this->pendingCreates.Add(resId, success ? ResourceState::Valid : ResourceState::Failed);
-    this->pendingCreateLock.UnlockWrite();
+    const TextureSetup& setup = setupAndStream.Setup;
+    const Ptr<Stream>& data = setupAndStream.Stream;
+    texture& res = this->texturePool.Assign(resId, setup, ResourceState::Pending);
+    ResourceState::Code newState = this->textureFactory.SetupResource(res, data) ? ResourceState::Valid : ResourceState::Failed;
+    this->texturePool.UpdateState(resId, newState);
+    return newState;
 }
 
 //------------------------------------------------------------------------------
-void
-GfxResourceContainer::failResourceFromThread(int32 threadIndex, const Id& resId) {
-    // NOTE: this is running on a resource creation thread on target platforms
-    // that support threading!
-    o_assert(this->isValid());
-    o_assert(this->texturePool.QueryState(resId) == ResourceState::Pending);
+ResourceState::Code
+GfxResourceContainer::failedAsync(const Id& resId) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
     
-    // tell the main thread that resource creation had failed
-    this->pendingCreateLock.LockWrite();
-    this->pendingCreates.Add(resId, ResourceState::Failed);
-    this->pendingCreateLock.UnlockWrite();
+    switch (resId.Type()) {
+        case GfxResourceType::Mesh:
+            this->meshPool.UpdateState(resId, ResourceState::Failed);
+            break;
+            
+        case GfxResourceType::Texture:
+            this->meshPool.UpdateState(resId, ResourceState::Failed);
+            break;
+            
+        default:
+            o_error("Invalid resource type for async creation!");
+            break;
+    }
+    return ResourceState::Failed;
 }
+
 
 //------------------------------------------------------------------------------
 template<> Id
@@ -278,6 +267,24 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
     return resId;
 }
     
+//------------------------------------------------------------------------------
+Id
+GfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
+
+    Id resId = this->registry.Lookup(loader->Locator());
+    if (resId.IsValid()) {
+        return resId;
+    }
+    else {
+        this->pendingLoaders.Add(loader);
+        resId = loader->Start();
+        this->registry.Add(loader->Locator(), resId, this->peekLabel());
+        return resId;
+    }
+}
+
 //------------------------------------------------------------------------------
 void
 GfxResourceContainer::Destroy(ResourceLabel label) {
@@ -375,41 +382,22 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
     
 //------------------------------------------------------------------------------
 /**
-    Called once per frame to check whether asynchronously setup 
-    resources have finished and to deferred-destroy resources (resources
-    can only be destroyed if they are not currently pending for asynchronous
-    loading).
+    Called once per frame, first triggers pending async loaders, then
+    defer-destroy resources that were pending in their destroy call.
 */
 void
-GfxResourceContainer::UpdatePending() {
+GfxResourceContainer::updatePending() {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
-    // first check for asynchronously loaded resource that have finished loading
-    this->pendingCreateLock.LockWrite();
-    for (int32 i = this->pendingCreates.Size() - 1; i >= 0; i--) {
-        const Id& resId = this->pendingCreates[i].Key();
-        ResourceState::Code state = this->pendingCreates[i].Value();
-        o_assert_dbg((ResourceState::Valid == state) || (ResourceState::Failed == state));
-
-        // resource has finished async loading (succeeded or failed),
-        // update the resource state in the resource pool
-        switch (resId.Type()) {
-            case GfxResourceType::Mesh:
-                this->meshPool.UpdateState(resId, state);
-                break;
-            case GfxResourceType::Texture:
-                this->texturePool.UpdateState(resId, state);
-                break;
-            default:
-                o_error("Invalid resource type!");
-                break;
+    // trigger loaders, and remove from pending array if finished
+    for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
+        const auto& loader = this->pendingLoaders[i];
+        if (ResourceState::Pending != loader->Continue()) {
+            this->pendingLoaders.Erase(i);
         }
-        // remove entry since it is handled now
-        this->pendingCreates.Erase(i);
     }
-    this->pendingCreateLock.UnlockWrite();
-    
+
     // next check for resources that need to be destroyed, only resources
     // that are not currently asynchronously loading must be touched
     for (int32 i = this->pendingDestroys.Size() - 1; i >= 0; i--) {

@@ -11,8 +11,6 @@
 */
 #include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
-#include "Core/Threading/RWLock.h"
-#include <thread>
 
 struct GLFWwindow;
 
@@ -42,8 +40,6 @@ public:
     
     /// private: get glfwWindow handle
     static GLFWwindow* getGlfwWindow();
-    /// make sure the right GL context is current for thread
-    void notifyThread(int32 threadIndex);
     
 private:
     /// error callback for GLFW
@@ -54,21 +50,9 @@ private:
     void createMainWindow(const GfxSetup& setup);
     /// destroy the main window
     void destroyMainWindow();
-    /// create resource creation thread GL contexts
-    void createThreadContexts(const GfxSetup& setup);
-    /// destroy resource creation thread GL contexts
-    void destroyThreadContexts();
 
     static glfwDisplayMgr* self;
     static GLFWwindow* glfwWindow;
-    
-    struct ThreadContext {
-        GLFWwindow* glfwWindow;
-        std::thread::id threadId;
-        bool makeCurrentCalled = false;
-    };
-    RWLock threadContextLock;
-    Array<ThreadContext> threadContexts;
 };
     
 } // namespace _priv

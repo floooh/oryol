@@ -97,26 +97,6 @@ glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
 }
 
 //------------------------------------------------------------------------------
-bool
-glTextureFactory::InitResourceThreaded(int32 threadIndex, texture& tex, const Ptr<Stream>& data) {
-    o_assert_dbg(!Core::IsMainThread());
-    o_assert(nullptr != this->displayManager);
-    o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
-    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
-    
-    // make sure the thread-local GL context if set to current
-    this->displayManager->notifyThread(threadIndex);
-    
-    if (tex.Setup.ShouldSetupFromPixelData()) {
-        return this->createFromPixelData(tex, data);
-    }
-    else {
-        o_error("FIXME FIXME FIXME");
-        return false;
-    }
-}
-
-//------------------------------------------------------------------------------
 void
 glTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
@@ -296,9 +276,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
 //------------------------------------------------------------------------------
 bool
 glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
-    // NOTE: this method can be called from a resource creation thread,
-    // this is only important inside glGenAndBindTexture() (which must
-    // not reset the state cache if not on the main thread)
+    o_assert_dbg(Core::IsMainThread());
 
     const TextureSetup& setup = tex.Setup;
     const int32 width = setup.Width;
@@ -424,11 +402,9 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert_dbg(this->isValid);
-    
-    // if we are on the main thread, need to invalidate the texture cache
-    if (Core::IsMainThread()) {
-        this->renderer->invalidateTextureState();
-    }
+    o_assert_dbg(Core::IsMainThread());
+
+    this->renderer->invalidateTextureState();
     GLuint glTex = 0;
     ::glGenTextures(1, &glTex);
     ::glActiveTexture(GL_TEXTURE0);

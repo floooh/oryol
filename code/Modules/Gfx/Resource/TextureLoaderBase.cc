@@ -3,19 +3,22 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "TextureLoaderBase.h"
-#include "Core/Core.h"
 
 namespace Oryol {
 
 OryolClassImpl(TextureLoaderBase);
 
 //------------------------------------------------------------------------------
-void
-TextureLoaderBase::Prepare(const Id& id_, const TextureSetup& setup_) {
-    o_assert_dbg(!this->id.IsValid());
-    o_assert_dbg(Core::IsMainThread());
-    this->id = id_;
-    this->setup = setup_;
+TextureLoaderBase::TextureLoaderBase(const TextureSetup& setup_, int32 ioLane_) :
+setup(setup_),
+ioLane(ioLane_) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+const class Locator&
+TextureLoaderBase::Locator() const {
+    return this->setup.Locator;
 }
 
 } // namespace Oryol
