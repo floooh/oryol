@@ -10,6 +10,7 @@
 #include "Synth/Core/opBundle.h"
 #include "Synth/Core/SynthSetup.h"
 #include "Resource/Id.h"
+#include "Resource/Core/ResourceLabel.h"
 
 namespace Oryol {
 namespace _priv {
@@ -33,7 +34,7 @@ public:
     
 private:
     bool isValid;
-    uint8 resourceLabel;
+    ResourceLabel resourceLabel;
     Id renderTarget;
     Id drawState;
 };

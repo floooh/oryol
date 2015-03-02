@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Resource/Id.h"
+#include "Resource/Core/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
 #include "Gfx/Core/VertexLayout.h"
@@ -73,7 +74,7 @@ private:
     Id textDrawState;
     StringBuilder stringBuilder;
     bool valid;
-    uint8 resourceLabel;
+    ResourceLabel resourceLabel;
     
     // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)
     uint32 vertexData[MaxNumVertices][2];

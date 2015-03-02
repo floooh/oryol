@@ -13,8 +13,7 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 gpuSynthesizer::gpuSynthesizer() :
-isValid(false),
-resourceLabel(Id::InvalidLabel) {
+isValid(false) {
     // empty
 }
 

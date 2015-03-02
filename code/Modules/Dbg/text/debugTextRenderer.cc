@@ -15,8 +15,7 @@ extern const char *kc85_4_Font;
 //------------------------------------------------------------------------------
 debugTextRenderer::debugTextRenderer() :
 textScale(1.0f, 1.0f),
-valid(false),
-resourceLabel(Id::InvalidLabel) {
+valid(false) {
     // NOTE: text rendering will be setup lazily when the text rendering
     // method is called first
     this->stringBuilder.Reserve(MaxNumChars * 2);
