@@ -67,6 +67,7 @@ glMeshFactory::SetupResource(mesh& msh) {
     }
     else {
         o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
+        return false;
     }
 }
 

@@ -5,12 +5,12 @@
     @ingroup Gfx
     @brief base class for Gfx mesh loaders
 */
-#include "IO/Core/IOLoader.h"
+#include "Resource/Core/ResourceLoader.h"
 #include "Gfx/Setup/MeshSetup.h"
 
 namespace Oryol {
 
-class MeshLoaderBase : public IOLoader {
+class MeshLoaderBase : public ResourceLoader {
     OryolClassDecl(MeshLoaderBase);
 public:
     /// prepare the loader

@@ -492,12 +492,12 @@ GfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
             return this->programBundlePool.GetNumFreeSlots();
         case GfxResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
-            break;
+            return 0;
         case GfxResourceType::DrawState:
             return this->drawStatePool.GetNumFreeSlots();
         default:
             o_assert(false);
-            break;
+            return 0;
     }
 }
 
