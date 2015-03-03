@@ -10,7 +10,6 @@
 #include "Core/Ptr.h"
 #include "IO/Core/URL.h"
 #include "IO/Core/IOStatus.h"
-#include "IO/Core/IOLoader.h"
 #include "IO/Stream/MemoryStream.h"
 
 namespace Oryol {
@@ -113,12 +112,6 @@ public:
         int32 GetEndOffset() const {
             return this->endoffset;
         };
-        void SetLoader(const Ptr<IOLoader>& val) {
-            this->loader = val;
-        };
-        const Ptr<IOLoader>& GetLoader() const {
-            return this->loader;
-        };
         void SetStatus(const IOStatus::Code& val) {
             this->status = val;
         };
@@ -150,7 +143,6 @@ private:
         bool cachewriteenabled;
         int32 startoffset;
         int32 endoffset;
-        Ptr<IOLoader> loader;
         IOStatus::Code status;
         String errordesc;
         Ptr<Stream> stream;

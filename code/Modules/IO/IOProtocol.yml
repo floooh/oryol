@@ -6,7 +6,6 @@ headers:
     - Core/Ptr.h
     - IO/Core/URL.h
     - IO/Core/IOStatus.h
-    - IO/Core/IOLoader.h
     - IO/Stream/MemoryStream.h
 messages:
     - name: Request
@@ -17,7 +16,6 @@ messages:
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
         - { name: StartOffset, type: int32, default: 0 }
         - { name: EndOffset, type: int32, default: 0 }
-        - { name: Loader, type: 'Ptr<IOLoader>' }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
         - { name: Stream, type: Ptr<Stream>, dir: out }
