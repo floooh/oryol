@@ -125,17 +125,8 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 Ptr<MemoryStream> responseBody = MemoryStream::Create();
                 responseBody->SetURL(req->GetURL());
                 responseBody->Open(OpenMode::WriteOnly);
-                const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
-                const Ptr<IOLoader>& loader = ioReq->GetLoader();
-                if (loader.isValid()) {
-                    loader->StartLoad(responseBody, responseLength);
-                    loader->Load(responseBytes, responseLength);
-                    loader->FinishLoad();
-                }
-                else {
-                    responseBody->Reserve(responseLength);
-                    responseBody->Write(responseBytes, responseLength);
-                }
+                responseBody->Reserve(responseLength);
+                responseBody->Write(responseBytes, responseLength);
                 responseBody->Close();
                 if (responseContentType.IsValid()) {
                     responseBody->SetContentType(responseContentType);
@@ -149,11 +140,6 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             IOStatus::Code ioStatus = IOStatus::InvalidIOStatus;
             if (nil != urlResponse) {
                 ioStatus = (IOStatus::Code) [urlResponse statusCode];
-            }
-            const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
-            const Ptr<IOLoader>& loader = ioReq->GetLoader();
-            if (loader.isValid()) {
-                loader->LoadFailed(ioReq->GetURL(), ioReq->GetActualLane(), ioStatus);
             }
             Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
             response->SetStatus((IOStatus::Code) ioStatus);
