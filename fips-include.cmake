@@ -6,11 +6,6 @@ if (FIPS_PROFILING)
     add_definitions(-DORYOL_PROFILING=1)
 endif()
 
-# debugging config?
-if (FIPS_DEBUG)
-    add_definitions(-DORYOL_DEBUG=1)
-endif()
-
 # POSIX platforms
 if (FIPS_POSIX)
     set(ORYOL_OPENGL 1)

@@ -5,6 +5,10 @@
     @brief global configuration defines
 */
 
+#if _DEBUG
+#define ORYOL_DEBUG (1)
+#endif
+
 // does the platform have std::thread and/or thread-local compiler support?
 #if ORYOL_FORCE_NO_THREADS
 #define ORYOL_HAS_THREADS (0)
