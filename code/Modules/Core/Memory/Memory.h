@@ -14,6 +14,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Config.h"
+#include <utility>
 
 namespace Oryol {
     
@@ -37,6 +38,16 @@ public:
     static void* Align(void* ptr, int32 byteSize);
     /// round-up a value to the next multiple of byteSize
     static int32 RoundUp(int32 val, int32 byteSize);
+    /// replacement for new() going through Memory::Alloc without overriding new
+    template<class TYPE, typename... ARGS> static TYPE* New(ARGS&&... args) {
+        TYPE* ptr = (TYPE*) Memory::Alloc(sizeof(TYPE));
+        return new(ptr) TYPE(std::forward<ARGS>(args)...);
+    };
+    /// replacement delete (see Memory::New())
+    template<class TYPE> static void Delete(TYPE* ptr) {
+        ptr->~TYPE();
+        Memory::Free(ptr);
+    };
 };
 
 //------------------------------------------------------------------------------

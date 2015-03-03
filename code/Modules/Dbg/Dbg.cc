@@ -14,14 +14,14 @@ struct Dbg::_state* Dbg::state = nullptr;
 void
 Dbg::Setup() {
     o_assert(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
 }
 
 //------------------------------------------------------------------------------
 void
 Dbg::Discard() {
     o_assert(IsValid());
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 

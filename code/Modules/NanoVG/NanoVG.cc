@@ -21,7 +21,7 @@ NanoVG::_state* NanoVG::state = nullptr;
 void
 NanoVG::Setup() {
     o_assert(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
     if (!Gfx::IsValid()) {
         o_error("Render module must be setuo before NanoVG!\n");
     }
@@ -31,7 +31,7 @@ NanoVG::Setup() {
 void
 NanoVG::Discard() {
     o_assert(IsValid());
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 

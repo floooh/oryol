@@ -15,7 +15,7 @@ Gfx::_state* Gfx::state = nullptr;
 void
 Gfx::Setup(const class GfxSetup& setup) {
     o_assert_dbg(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
     state->gfxSetup = setup;
     state->displayManager.SetupDisplay(setup);
     state->renderer.setup();
@@ -34,7 +34,7 @@ Gfx::Discard() {
     state->renderer.discard();
     state->resourceContainer.discard();
     state->displayManager.DiscardDisplay();
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 

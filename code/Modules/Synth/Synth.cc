@@ -12,7 +12,7 @@ Synth::_state* Synth::state = nullptr;
 void
 Synth::Setup(const SynthSetup& setupAttrs) {
     o_assert(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
     state->soundManager.Setup(setupAttrs);
 }
 
@@ -21,7 +21,7 @@ void
 Synth::Discard() {
     o_assert(IsValid());
     state->soundManager.Discard();
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 

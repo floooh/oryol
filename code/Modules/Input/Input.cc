@@ -2,6 +2,7 @@
 //  Input.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Memory/Memory.h"
 #include "Input.h"
 
 namespace Oryol {
@@ -12,7 +13,7 @@ struct Input::_state* Input::state = nullptr;
 void
 Input::Setup(const InputSetup& setup) {
     o_assert(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
     state->inputManager.setup(setup);
 }
 
@@ -21,7 +22,7 @@ void
 Input::Discard() {
     o_assert(IsValid());
     state->inputManager.discard();
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 

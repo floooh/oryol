@@ -16,7 +16,7 @@ ORYOL_THREADLOCAL_PTR(RunLoop) Core::threadPostRunLoop = nullptr;
 void
 Core::Setup() {
     o_assert(!IsValid());
-    state = new _state();
+    state = Memory::New<_state>();
     state->mainThreadId = std::this_thread::get_id();
     
     // setup the before-frame runloop
@@ -41,7 +41,7 @@ Core::Discard() {
     threadPreRunLoop = nullptr;
     threadPostRunLoop->release();
     threadPostRunLoop = nullptr;
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 
     // do NOT destroy the thread-local string atom table to

@@ -12,8 +12,12 @@ ORYOL_THREADLOCAL_PTR(stringAtomTable) stringAtomTable::ptr = nullptr;
 //------------------------------------------------------------------------------
 stringAtomTable*
 stringAtomTable::threadLocalPtr() {
+    // NOTE: this object can never be released, even if a thread is left
+    // since StringAtom object can move to other threads, thus memory
+    // leak detectors will complain about these allocations on program
+    // exit
     if (!ptr) {
-        ptr = new stringAtomTable();
+        ptr = Memory::New<stringAtomTable>();
     }
     return ptr;
 }

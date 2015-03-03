@@ -18,7 +18,7 @@ void
 IO::Setup(const IOSetup& setup) {
     o_assert(!IsValid());
     
-    state = new _state();
+    state = Memory::New<_state>();
     state->requestRouter = ioRequestRouter::Create(setup.NumIOLanes);
     
     // setup initial assigns
@@ -40,7 +40,7 @@ IO::Discard() {
     o_assert(IsValid());
     Core::PreRunLoop()->Remove(state->runLoopId);
     state->requestRouter = 0;
-    delete state;
+    Memory::Delete(state);
     state = nullptr;
 }
 
