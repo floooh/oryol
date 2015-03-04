@@ -17,6 +17,8 @@ imports:
         git: https://github.com/floooh/fips-libcurl.git
     fips-remotery:
         git: https://github.com/floooh/fips-remotery.git
+    fips-vld:
+        git: https://github.com/floooh/fips-vld.git
 
 exports:
     header-dirs :
@@ -31,7 +33,7 @@ exports:
         HTTP :          code/Modules/HTTP
         Gfx :           code/Modules/Gfx
         Resource :      code/Modules/Resource
-        Asset :         code/Modules/Asset
+        Assets :         code/Modules/Assets
         Time :          code/Modules/Time
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
