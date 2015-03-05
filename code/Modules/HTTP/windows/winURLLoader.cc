@@ -172,6 +172,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     
                         // convert from wide and split the header fields
                         this->stringBuilder.Set(StringConverter::WideToUTF8((const wchar_t*) headerBuffer, dwSize / sizeof(wchar_t)));
+                        Memory::Free(headerBuffer);
                         Array<String> tokens;
                         this->stringBuilder.Tokenize("\r\n", tokens);
                         Map<String, String> fields;
