@@ -35,7 +35,6 @@ emscURLLoader::startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     // NOTE: we can only load from our own HTTP server, so the host part of 
     // the URL is completely irrelevant...
     String urlPath = req->GetURL().PathToEnd();
-    Log::Dbg("emscURLLoader::startRequest(): %s\n", urlPath.AsCStr());
     emscripten_async_wget_data(urlPath.AsCStr(), (void*) reqPtr, emscURLLoader::onLoaded, emscURLLoader::onFailed);
 }
 
@@ -49,7 +48,6 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     // user data is a HTTPRequest ptr, put it back into a smart pointer
     Ptr<HTTPProtocol::HTTPRequest> req = userData;
     req->release();
-    Log::Dbg("emscURLLoader::onLoaded(url=%s, size=%d)\n", req->GetURL().AsCStr(), size);
 
     // create a HTTPResponse and fill it out
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
