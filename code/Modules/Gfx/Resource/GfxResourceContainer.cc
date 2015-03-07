@@ -435,7 +435,7 @@ GfxResourceContainer::QueryResourceInfo(const Id& resId) const {
             return this->programBundlePool.QueryResourceInfo(resId);
         case GfxResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
-            break;
+            return ResourceInfo();
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryResourceInfo(resId);
         default:
@@ -461,7 +461,7 @@ GfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->programBundlePool.QueryPoolInfo();
         case GfxResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
-            break;
+            return ResourcePoolInfo();
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryPoolInfo();
         default:
