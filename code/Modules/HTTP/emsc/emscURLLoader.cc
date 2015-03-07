@@ -57,18 +57,12 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
 
     // write response body
     const Ptr<IOProtocol::Request>& ioReq = req->GetIoRequest();
-    const Ptr<IOLoader>& loader = ioReq->GetLoader();
-    if (loader.isValid()) {
-        loader->Loaded(ioReq->GetURL(), ioReq->GetActualLane(), buffer, size);
-    }
-    else {
-        Ptr<MemoryStream> responseBody = MemoryStream::Create();
-        responseBody->SetURL(req->GetURL());
-        responseBody->Open(OpenMode::WriteOnly);
-        responseBody->Write(buffer, size);
-        responseBody->Close();
-        response->SetBody(responseBody);
-    }
+    Ptr<MemoryStream> responseBody = MemoryStream::Create();
+    responseBody->SetURL(req->GetURL());
+    responseBody->Open(OpenMode::WriteOnly);
+    responseBody->Write(buffer, size);
+    responseBody->Close();
+    response->SetBody(responseBody);
 
     // set the response on the request, mark the request as handled
     // also fill the embedded IORequest object
@@ -101,10 +95,6 @@ emscURLLoader::onFailed(void* userData) {
     req->SetResponse(response);
     auto ioReq = req->GetIoRequest();
     if (ioReq) {
-        const Ptr<IOLoader>& loader = ioReq->GetLoader();
-        if (loader.isValid()) {
-            loader->Failed(ioReq->GetURL(), ioStatus);
-        }
         auto httpResponse = req->GetResponse();
         ioReq->SetStatus(httpResponse->GetStatus());
         ioReq->SetHandled();
