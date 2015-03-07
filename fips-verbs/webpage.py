@@ -7,7 +7,7 @@ import subprocess
 import glob
 from string import Template
 
-from mod import log, util, project
+from mod import log, util, project, emscripten, android, nacl
 from tools import texexport
 
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
@@ -62,34 +62,36 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
     # generate emscripten HTML pages
-    emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-make-release'.format(ws_dir)
-    for sample in samples :
-        name = sample['name']
-        if name != '__end__' and 'emscripten' in sample['type'] :
-            log.info('> generate emscripten HTML page: {}'.format(name))
-            for ext in ['js', 'html.mem'] :
-                shutil.copy('{}/{}.{}'.format(emsc_deploy_dir, name, ext), webpage_dir)
-            with open(proj_dir + '/web/emsc.html', 'r') as f :
-                templ = Template(f.read())
-            src_url = GitHubSamplesURL + sample['src'];
-            html = templ.safe_substitute(name=name, source=src_url)
-            with open('{}/{}.html'.format(webpage_dir, name), 'w') as f :
-                f.write(html)
+    if emscripten.check_exists(fips_dir) :
+        emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-make-release'.format(ws_dir)
+        for sample in samples :
+            name = sample['name']
+            if name != '__end__' and 'emscripten' in sample['type'] :
+                log.info('> generate emscripten HTML page: {}'.format(name))
+                for ext in ['js', 'html.mem'] :
+                    shutil.copy('{}/{}.{}'.format(emsc_deploy_dir, name, ext), webpage_dir)
+                with open(proj_dir + '/web/emsc.html', 'r') as f :
+                    templ = Template(f.read())
+                src_url = GitHubSamplesURL + sample['src'];
+                html = templ.safe_substitute(name=name, source=src_url)
+                with open('{}/{}.html'.format(webpage_dir, name), 'w') as f :
+                    f.write(html)
 
     # copy PNaCl HTML pages
-    pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
-    for sample in samples :
-        name = sample['name']
-        if name != '__end__' and 'pnacl' in sample['type'] :
-            log.info('> generate PNaCl HTML page: {}'.format(name))
-            for ext in ['nmf', 'pexe'] :
-                shutil.copy('{}/{}.{}'.format(pnacl_deploy_dir, name, ext), webpage_dir)
-            with open(proj_dir + '/web/pnacl.html', 'r') as f :
-                templ = Template(f.read())
-            src_url = GitHubSamplesURL + sample['src'];
-            html = templ.safe_substitute(name=name, source=src_url)
-            with open('{}/{}_pnacl.html'.format(webpage_dir, name), 'w') as f :
-                f.write(html)
+    if nacl.check_exists(fips_dir) :
+        pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
+        for sample in samples :
+            name = sample['name']
+            if name != '__end__' and 'pnacl' in sample['type'] :
+                log.info('> generate PNaCl HTML page: {}'.format(name))
+                for ext in ['nmf', 'pexe'] :
+                    shutil.copy('{}/{}.{}'.format(pnacl_deploy_dir, name, ext), webpage_dir)
+                with open(proj_dir + '/web/pnacl.html', 'r') as f :
+                    templ = Template(f.read())
+                src_url = GitHubSamplesURL + sample['src'];
+                html = templ.safe_substitute(name=name, source=src_url)
+                with open('{}/{}_pnacl.html'.format(webpage_dir, name), 'w') as f :
+                    f.write(html)
 
     # copy the screenshots
     for sample in samples :
@@ -101,11 +103,12 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 shutil.copy(img_path, webpage_dir + '/' + tail)
 
     # copy the Android sample files over
-    android_deploy_dir = '{}/fips-deploy/oryol/android-make-release'.format(ws_dir)
-    for sample in samples :
-        if sample['name'] != '__end__' and 'android' in sample['type'] :
-            log.info('> copy android sample files: {}'.format(sample['name']))
-            shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
+    if android.check_exists(fips_dir) :
+        android_deploy_dir = '{}/fips-deploy/oryol/android-make-release'.format(ws_dir)
+        for sample in samples :
+            if sample['name'] != '__end__' and 'android' in sample['type'] :
+                log.info('> copy android sample files: {}'.format(sample['name']))
+                shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
 
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
@@ -129,9 +132,15 @@ def build_deploy_webpage(fips_dir, proj_dir) :
     os.makedirs(webpage_dir)
 
     # compile emscripten, pnacl and android samples
-    project.build(fips_dir, proj_dir, 'emsc-make-release')
-    project.build(fips_dir, proj_dir, 'pnacl-make-release')
-    project.build(fips_dir, proj_dir, 'android-make-release')
+    if emscripten.check_exists(fips_dir) :
+        project.gen(fips_dir, proj_dir, 'emsc-make-release')
+        project.build(fips_dir, proj_dir, 'emsc-make-release')
+    if nacl.check_exists(fips_dir) :
+        project.gen(fips_dir, proj_dir, 'pnacl-make-release')
+        project.build(fips_dir, proj_dir, 'pnacl-make-release')
+    if android.check_exists(fips_dir) :
+        project.gen(fips_dir, proj_dir, 'android-make-release')
+        project.build(fips_dir, proj_dir, 'android-make-release')
     
     # export sample assets
     export_assets(fips_dir, proj_dir, webpage_dir)
