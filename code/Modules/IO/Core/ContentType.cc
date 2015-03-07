@@ -226,7 +226,7 @@ ContentType::Params() const {
             }
             else {
                 // hmmm, a key without a value, this is now allowed, skip it
-                Log::Warn("ContentType: param without value in '%s'; ignored!\n", this->content.AsCStr());
+                o_warn("ContentType: param without value in '%s'; ignored!\n", this->content.AsCStr());
             }
             kvpStartIndex = kvpEndIndex + 1;
         }
@@ -252,7 +252,7 @@ ContentType::crack() {
         this->indices[typeStart] = 0;
         this->indices[typeEnd] = builder.FindFirstOf(0, EndOfString, "/");
         if (EndOfString == this->indices[typeEnd]) {
-            Log::Warn("ContentType::crack(): '%s' is not a valid content type!\n", this->content.AsCStr());
+            o_warn("ContentType::crack(): '%s' is not a valid content type!\n", this->content.AsCStr());
             this->clearIndices();
             return;
         }

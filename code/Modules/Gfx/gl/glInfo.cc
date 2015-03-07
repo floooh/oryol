@@ -114,7 +114,7 @@ glInfo::printString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLin
         Log::Info("%s: %s\n", name, str.AsCStr());
     }
     else {
-        Log::Warn("::glGetString() returned nullptr!\n");
+        o_warn("::glGetString() returned nullptr!\n");
     }
 }
 

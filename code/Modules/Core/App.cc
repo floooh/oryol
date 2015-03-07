@@ -162,7 +162,7 @@ App::onFrame() {
                 this->curState = AppState::InvalidAppState;
                 break;
             default:
-                Log::Warn("App::onFrame(): UNHANDLED APP STATE '%s'!\n", AppState::ToString(this->curState));
+                o_warn("App::onFrame(): UNHANDLED APP STATE '%s'!\n", AppState::ToString(this->curState));
                 break;
         }
         o_trace_end();

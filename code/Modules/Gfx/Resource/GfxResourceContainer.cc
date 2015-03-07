@@ -53,6 +53,10 @@ GfxResourceContainer::discard() {
     o_assert_dbg(this->isValid());
     
     Core::PostRunLoop()->Remove(this->runLoopId);
+    for (const auto& loader : this->pendingLoaders) {
+        loader->Cancel();
+    }
+    this->pendingLoaders.Clear();
     
     resourceContainerBase::discard();
 
@@ -85,7 +89,8 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
         resId = this->meshPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->meshFactory.SetupResource(res) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->meshFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
     }
     return resId;
@@ -108,7 +113,8 @@ GfxResourceContainer::Create(const SetupAndStream<MeshSetup>& setupAndStream) {
         resId = this->meshPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->meshFactory.SetupResource(res, data) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
     }
     return resId;
@@ -129,7 +135,8 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
         resId = this->texturePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->textureFactory.SetupResource(res) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->textureFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
     }
     return resId;
@@ -152,7 +159,8 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
         resId = this->texturePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->textureFactory.SetupResource(res, data) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
     }
     return resId;
@@ -176,12 +184,22 @@ GfxResourceContainer::initAsync(const Id& resId, const SetupAndStream<TextureSet
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
-    const TextureSetup& setup = setupAndStream.Setup;
-    const Ptr<Stream>& data = setupAndStream.Stream;
-    texture& res = this->texturePool.Assign(resId, setup, ResourceState::Pending);
-    ResourceState::Code newState = this->textureFactory.SetupResource(res, data) ? ResourceState::Valid : ResourceState::Failed;
-    this->texturePool.UpdateState(resId, newState);
-    return newState;
+    // the prepared resource may have been destroyed while it was loading
+    if (this->texturePool.Contains(resId)) {
+        const TextureSetup& setup = setupAndStream.Setup;
+        const Ptr<Stream>& data = setupAndStream.Stream;
+        texture& res = this->texturePool.Assign(resId, setup, ResourceState::Pending);
+        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
+        this->texturePool.UpdateState(resId, newState);
+        return newState;
+    }
+    else {
+        // the prepared texture object was destroyed before it was loaded
+        o_warn("GfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
+            resId.Type(), resId.SlotIndex());
+        return ResourceState::InvalidState;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -190,20 +208,26 @@ GfxResourceContainer::failedAsync(const Id& resId) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
-    switch (resId.Type()) {
-        case GfxResourceType::Mesh:
-            this->meshPool.UpdateState(resId, ResourceState::Failed);
-            break;
-            
-        case GfxResourceType::Texture:
-            this->meshPool.UpdateState(resId, ResourceState::Failed);
-            break;
-            
-        default:
-            o_error("Invalid resource type for async creation!");
-            break;
+    // the prepared resource may have been destroyed while it was loading
+    if (this->texturePool.Contains(resId)) {
+        switch (resId.Type()) {
+            case GfxResourceType::Mesh:
+                this->meshPool.UpdateState(resId, ResourceState::Failed);
+                break;
+                
+            case GfxResourceType::Texture:
+                this->meshPool.UpdateState(resId, ResourceState::Failed);
+                break;
+                
+            default:
+                o_error("Invalid resource type for async creation!");
+                break;
+        }
+        return ResourceState::Failed;
     }
-    return ResourceState::Failed;
+    else {
+        return ResourceState::InvalidState;
+    }
 }
 
 
@@ -221,7 +245,8 @@ GfxResourceContainer::Create(const ShaderSetup& setup) {
         resId = this->shaderPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         shader& res = this->shaderPool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->shaderFactory.SetupResource(res) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->shaderFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->shaderPool.UpdateState(resId, newState);
     }
     return resId;
@@ -241,7 +266,8 @@ GfxResourceContainer::Create(const ProgramBundleSetup& setup) {
         resId = this->programBundlePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         programBundle& res = this->programBundlePool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->programBundleFactory.SetupResource(res) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->programBundleFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->programBundlePool.UpdateState(resId, newState);
     }
     return resId;
@@ -261,7 +287,8 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
-        ResourceState::Code newState = this->drawStateFactory.SetupResource(res) ? ResourceState::Valid : ResourceState::Failed;
+        const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
         this->drawStatePool.UpdateState(resId, newState);
     }
     return resId;
@@ -292,43 +319,28 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
     
     Array<Id> ids = this->registry.Remove(label);
     for (const Id& id : ids) {
-        // NOTE: all resources are currently loading (can only be textures
-        // and meshes) are added to the pendingDestroys array for deferred
-        // destruction after loading has finished
         switch (id.Type()) {
             case GfxResourceType::Texture:
             {
-                ResourceState::Code state = this->texturePool.QueryState(id);
-                if (ResourceState::Pending == state) {
-                    this->pendingDestroys.Add(id);
-                }
-                else {
-                    if (ResourceState::Valid == state) {
-                        texture* tex = this->texturePool.Lookup(id);
-                        if (tex) {
-                            this->textureFactory.DestroyResource(*tex);
-                        }
+                if (ResourceState::Valid == this->texturePool.QueryState(id)) {
+                    texture* tex = this->texturePool.Lookup(id);
+                    if (tex) {
+                        this->textureFactory.DestroyResource(*tex);
                     }
-                    this->texturePool.Unassign(id, ResourceState::Initial);
                 }
+                this->texturePool.Unassign(id);
             }
             break;
                 
             case GfxResourceType::Mesh:
             {
-                ResourceState::Code state = this->meshPool.QueryState(id);
-                if (ResourceState::Pending == state) {
-                    this->pendingDestroys.Add(id);
-                }
-                else {
-                    if (ResourceState::Valid == state) {
-                        mesh* msh = this->meshPool.Lookup(id);
-                        if (msh) {
-                            this->meshFactory.DestroyResource(*msh);
-                        }
+                if (ResourceState::Valid == this->meshPool.QueryState(id)) {
+                    mesh* msh = this->meshPool.Lookup(id);
+                    if (msh) {
+                        this->meshFactory.DestroyResource(*msh);
                     }
-                    this->meshPool.Unassign(id, ResourceState::Initial);
                 }
+                this->meshPool.Unassign(id);
             }
             break;
                 
@@ -340,7 +352,7 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
                         this->shaderFactory.DestroyResource(*shd);
                     }
                 }
-                this->shaderPool.Unassign(id, ResourceState::Initial);
+                this->shaderPool.Unassign(id);
             }
             break;
                 
@@ -352,7 +364,7 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
                         this->programBundleFactory.DestroyResource(*prog);
                     }
                 }
-                this->programBundlePool.Unassign(id, ResourceState::Initial);
+                this->programBundlePool.Unassign(id);
             }
             break;
                 
@@ -368,7 +380,7 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
                         this->drawStateFactory.DestroyResource(*ds);
                     }
                 }
-                this->drawStatePool.Unassign(id, ResourceState::Initial);
+                this->drawStatePool.Unassign(id);
             }
             break;
                 
@@ -389,6 +401,13 @@ GfxResourceContainer::updatePending() {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
+    /// call update method on resource pools (this is cheap)
+    this->meshPool.Update();
+    this->shaderPool.Update();
+    this->programBundlePool.Update();
+    this->texturePool.Update();
+    this->drawStatePool.Update();
+    
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
         const auto& loader = this->pendingLoaders[i];
@@ -397,82 +416,58 @@ GfxResourceContainer::updatePending() {
             this->pendingLoaders.Erase(i);
         }
     }
-
-    // next check for resources that need to be destroyed, only resources
-    // that are not currently asynchronously loading must be touched
-    for (int32 i = this->pendingDestroys.Size() - 1; i >= 0; i--) {
-        bool removeMe = false;
-        const Id& resId = this->pendingDestroys[i];
-        switch (resId.Type()) {
-            case GfxResourceType::Texture:
-            {
-                ResourceState::Code state = this->texturePool.QueryState(resId);
-                if (ResourceState::Pending != state) {
-                    removeMe = true;
-                    if (ResourceState::Valid == state) {
-                        texture* tex = this->texturePool.Lookup(resId);
-                        if (tex) {
-                            this->textureFactory.DestroyResource(*tex);
-                        }
-                    }
-                    this->texturePool.Unassign(resId, ResourceState::Initial);
-                }
-            }
-            break;
-            
-            case GfxResourceType::Mesh:
-            {
-                ResourceState::Code state = this->meshPool.QueryState(resId);
-                if (ResourceState::Pending != state) {
-                    removeMe = true;
-                    if (ResourceState::Valid == state) {
-                        mesh* msh = this->meshPool.Lookup(resId);
-                        if (msh) {
-                            this->meshFactory.DestroyResource(*msh);
-                        }
-                    }
-                    this->meshPool.Unassign(resId, ResourceState::Initial);
-                }
-            }
-            break;
-                
-            default:
-                o_assert(false);
-                break;
-        }
-        
-        // remove destroy requests that have been handled
-        if (removeMe) {
-            this->pendingDestroys.Erase(i);
-        }
-    }
 }
 
 //------------------------------------------------------------------------------
-ResourceState::Code
-GfxResourceContainer::QueryState(const Id& resId) const {
+ResourceInfo
+GfxResourceContainer::QueryResourceInfo(const Id& resId) const {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
     switch (resId.Type()) {
         case GfxResourceType::Texture:
-            return this->texturePool.QueryState(resId);
+            return this->texturePool.QueryResourceInfo(resId);
         case GfxResourceType::Mesh:
-            return this->meshPool.QueryState(resId);
+            return this->meshPool.QueryResourceInfo(resId);
         case GfxResourceType::Shader:
-            return this->shaderPool.QueryState(resId);
+            return this->shaderPool.QueryResourceInfo(resId);
         case GfxResourceType::ProgramBundle:
-            return this->programBundlePool.QueryState(resId);
+            return this->programBundlePool.QueryResourceInfo(resId);
         case GfxResourceType::ConstantBlock:
             o_assert2(false, "FIXME!!!\n");
             break;
         case GfxResourceType::DrawState:
-            return this->drawStatePool.QueryState(resId);
+            return this->drawStatePool.QueryResourceInfo(resId);
         default:
             o_assert(false);
-            break;
+            return ResourceInfo();
     }
-    return ResourceState::InvalidState;
+}
+
+//------------------------------------------------------------------------------
+ResourcePoolInfo
+GfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
+    
+    switch (resType) {
+        case GfxResourceType::Texture:
+            return this->texturePool.QueryPoolInfo();
+        case GfxResourceType::Mesh:
+            return this->meshPool.QueryPoolInfo();
+        case GfxResourceType::Shader:
+            return this->shaderPool.QueryPoolInfo();
+        case GfxResourceType::ProgramBundle:
+            return this->programBundlePool.QueryPoolInfo();
+        case GfxResourceType::ConstantBlock:
+            o_assert2(false, "FIXME!!!\n");
+            break;
+        case GfxResourceType::DrawState:
+            return this->drawStatePool.QueryPoolInfo();
+        default:
+            o_assert(false);
+            return ResourcePoolInfo();
+    }
 }
 
 //------------------------------------------------------------------------------

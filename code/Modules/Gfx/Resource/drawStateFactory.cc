@@ -46,11 +46,11 @@ drawStateFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 drawStateFactory::SetupResource(drawState& ds) {
     ds.mesh = this->meshPool->Lookup(ds.Setup.Mesh);
     ds.programBundle = this->programBundlePool->Lookup(ds.Setup.Program);
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

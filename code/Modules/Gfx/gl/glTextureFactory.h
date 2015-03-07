@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of textureFactory
 */
+#include "Resource/ResourceState.h"
 #include "IO/Stream/Stream.h"
 #include "Gfx/Resource/texture.h"
 
@@ -32,9 +33,9 @@ public:
     bool IsValid() const;
 
     /// setup resource
-    bool SetupResource(texture& tex);
+    ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
-    bool SetupResource(texture& tex, const Ptr<Stream>& data);
+    ResourceState::Code SetupResource(texture& tex, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -43,9 +44,9 @@ public:
 
 private:
     /// create a render target
-    bool createRenderTarget(texture& tex);
+    ResourceState::Code createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    bool createFromPixelData(texture& tex, const Ptr<Stream>& data);
+    ResourceState::Code createFromPixelData(texture& tex, const Ptr<Stream>& data);
 
     class renderer* renderer;
     displayMgr* displayManager;

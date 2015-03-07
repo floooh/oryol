@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief factory class for drawState resources
 */
+#include "Resource/ResourceState.h"
 #include "Gfx/Resource/drawState.h"
 
 namespace Oryol {
@@ -24,7 +25,7 @@ public:
     /// discard the factory
     void Discard();
     /// setup shader resource
-    bool SetupResource(drawState& ds);
+    ResourceState::Code SetupResource(drawState& ds);
     /// destroy the shader
     void DestroyResource(drawState& ds);
     

@@ -61,6 +61,9 @@ public:
 OryolClassPoolAllocImpl(pnaclRequestWrapper);
 
 //------------------------------------------------------------------------------
+// FIXME FIXME FIXME
+// Properly handle cancelled messages.
+// 
 void
 pnaclURLLoader::doWork() {
     while (!this->requestQueue.Empty()) {

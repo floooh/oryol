@@ -63,7 +63,7 @@ glTextureFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
@@ -75,12 +75,12 @@ glTextureFactory::SetupResource(texture& tex) {
     }
     else {
         o_error("FIXME FIXME FIXME");
-        return false;
+        return ResourceState::InvalidState;
     }
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
@@ -92,7 +92,7 @@ glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
     }
     else {
         o_error("FIXME FIXME FIXME");
-        return false;
+        return ResourceState::InvalidState;
     }
 }
 
@@ -132,7 +132,7 @@ glTextureFactory::DestroyResource(texture& tex) {
  @todo: support for depth texture (depends on depth_texture extension), support
  for multiple color texture attachments.
 */
-bool
+ResourceState::Code
 glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(0 == tex.glTex);
     o_assert_dbg(0 == tex.glFramebuffer);
@@ -240,7 +240,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // check framebuffer completeness
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        Log::Warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
+        o_warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
     }
     this->renderer->invalidateTextureState();
     
@@ -270,11 +270,11 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ::glBindFramebuffer(GL_FRAMEBUFFER, glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
     
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     o_assert_dbg(Core::IsMainThread());
 
@@ -284,7 +284,8 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     
     // test if the texture format is actually supported
     if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
-        return false;
+        o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
     }
     
     // create a texture object
@@ -395,7 +396,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     tex.glTex = glTex;
     tex.glTarget = setup.Type;
 
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

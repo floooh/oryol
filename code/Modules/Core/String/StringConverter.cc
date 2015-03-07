@@ -18,7 +18,7 @@ DumpWarning(ConversionResult convRes) {
     if (sourceExhausted == convRes) err = "sourceExhausted";
     else if (targetExhausted == convRes) err = "targetExhausted";
     else if (sourceIllegal == convRes) err = "sourceIllegal";
-    Log::Warn("StringConverter: conversion failed with '%s'\n", err);
+    o_warn("StringConverter: conversion failed with '%s'\n", err);
 }
 
 //------------------------------------------------------------------------------

@@ -69,7 +69,7 @@ DDSTextureLoadingApp::OnRunning() {
     for (int32 i = 0; i < NumTextures; i++) {
         const Id& tex = this->texId[i];
         if (tex.IsValid()) {
-            const auto resState = Gfx::Resource().QueryState(tex);
+            const auto resState = Gfx::Resource().QueryResourceInfo(tex).State;
             if (resState == ResourceState::Valid) {
                 glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
                 Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));

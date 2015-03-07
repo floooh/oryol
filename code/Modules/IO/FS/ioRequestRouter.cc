@@ -49,7 +49,7 @@ ioRequestRouter::Put(const Ptr<Message>& msg) {
         }
     }
     // fallthrough: unrecognized message
-    Log::Warn("ioRequestRouter::Put(): unrecognized message received!\n");
+    o_warn("ioRequestRouter::Put(): unrecognized message received!\n");
     return false;
 }
 

@@ -73,10 +73,10 @@ glExt::Setup() {
 
     // put warnings to the console for extensions that we expect but are not provided
     if (!extensions[VertexArrayObject]) {
-        Log::Warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
+        o_warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
     }
     if (!extensions[InstancedArrays]) {
-        Log::Warn("glExt::Setup(): instanced_arrays extension not found!\n");
+        o_warn("glExt::Setup(): instanced_arrays extension not found!\n");
     }
 }
 

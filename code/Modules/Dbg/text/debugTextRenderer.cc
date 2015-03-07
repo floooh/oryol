@@ -185,7 +185,7 @@ debugTextRenderer::setupFontTexture() {
     setup.ImageSizes[0][0] = imgDataSize;
     this->fontTexture = Gfx::Resource().Create(setup, data);
     o_assert(this->fontTexture.IsValid());
-    o_assert(Gfx::Resource().QueryState(this->fontTexture) == ResourceState::Valid);
+    o_assert(Gfx::Resource().QueryResourceInfo(this->fontTexture).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ debugTextRenderer::setupTextMesh() {
     setup.Layout = this->vertexLayout;
     this->textMesh = Gfx::Resource().Create(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(Gfx::Resource().QueryState(this->textMesh) == ResourceState::Valid);
+    o_assert(Gfx::Resource().QueryResourceInfo(this->textMesh).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------

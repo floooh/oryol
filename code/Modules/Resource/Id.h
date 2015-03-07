@@ -26,7 +26,7 @@ public:
     /// default constructor, constructs invalid id
     Id();
     /// create with uniqueStamp, slotIndex and type
-    Id(uint32 uniqueStamp, uint16 slotIndex, uint8 type);
+    Id(uint32 uniqueStamp, uint16 slotIndex, uint16 type);
     /// copy constructor
     Id(const Id& rhs);
     
@@ -80,7 +80,7 @@ id(invalidId) {
 
 //------------------------------------------------------------------------------
 inline
-Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint8 type_) :
+Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint16 type_) :
 slotIndex(slotIndex_),
 type(type_),
 uniqueStamp(uniqueStamp_) {

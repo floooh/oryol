@@ -24,20 +24,25 @@ osxURLLoader::osxURLLoader() {
 //------------------------------------------------------------------------------
 void
 osxURLLoader::doWork() {
+
     while (!this->requestQueue.Empty()) {
-        Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
-        this->doOneRequest(req);
-        
-        // transfer result to embedded IoRequest and set to handled
-        auto ioReq = req->GetIoRequest();
-        if (ioReq) {
-            auto httpResponse = req->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
-            ioReq->SetStream(httpResponse->GetBody());
-            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
-            ioReq->SetHandled();
+        // don't process any cancelled requests
+        Ptr<HTTPProtocol::HTTPRequest> httpReq = this->requestQueue.Dequeue();
+        if (!baseURLLoader::handleCancelled(httpReq)) {
+            // process the request
+            this->doOneRequest(httpReq);
+            
+            // transfer result to embedded IoRequest and set to handled
+            auto ioReq = httpReq->GetIoRequest();
+            if (ioReq) {
+                auto httpResponse = httpReq->GetResponse();
+                ioReq->SetStatus(httpResponse->GetStatus());
+                ioReq->SetStream(httpResponse->GetBody());
+                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                ioReq->SetHandled();
+            }
+            httpReq->SetHandled();
         }
-        req->SetHandled();
     }
 }
 

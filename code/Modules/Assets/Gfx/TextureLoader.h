@@ -20,10 +20,14 @@ class TextureLoader : public TextureLoaderBase {
 public:
     /// constructor
     TextureLoader(const TextureSetup& setup, int32 ioLane);
+    /// destructor
+    virtual ~TextureLoader();
     /// start loading, return a resource id
     virtual Id Start();
     /// continue loading, return resource state (Pending, Valid, Failed)
     virtual ResourceState::Code Continue();
+    /// cancel the load process
+    virtual void Cancel();
 
 private:
     /// convert gliml context attrs into a TextureSetup object

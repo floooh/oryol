@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of programBundleFactory
 */
+#include "Resource/ResourceState.h"
 #include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
@@ -29,7 +30,7 @@ public:
     bool IsValid() const;
     
     /// setup programBundle resource
-    bool SetupResource(programBundle& progBundle);
+    ResourceState::Code SetupResource(programBundle& progBundle);
     /// destroy the shader
     void DestroyResource(programBundle& progBundle);
 

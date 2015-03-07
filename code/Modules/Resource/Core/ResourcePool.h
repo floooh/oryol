@@ -12,6 +12,8 @@
 #include "Core/Containers/Map.h"
 #include "Resource/Id.h"
 #include "Resource/Core/resourceSlot.h"
+#include "Resource/ResourceInfo.h"
+#include "Resource/ResourcePoolInfo.h"
 
 namespace Oryol {
     
@@ -26,7 +28,7 @@ public:
     ~ResourcePool();
     
     /// setup the resource pool
-    void Setup(uint8 resourceType, int32 poolSize);
+    void Setup(uint16 resourceType, int32 poolSize);
     /// discard the resource pool
     void Discard();
     /// return true if the pool has been setup
@@ -40,15 +42,21 @@ public:
     /// assign a resource to a free slot
     RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
     /// unassign/free a resource slot
-    void Unassign(const Id& id, ResourceState::Code state);
+    void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder or nullptr
     RESOURCE* Lookup(const Id& id) const;
     /// lookup 'raw' resource, may return nullptr
     RESOURCE* Get(const Id& id) const;
     /// update the resource state of a contained resource
     void UpdateState(const Id& id, ResourceState::Code newState);
+    /// test if the pool contains a slot with resource id (regardless of state)
+    bool Contains(const Id& id) const;
     /// query the loading state of a contained resource
     ResourceState::Code QueryState(const Id& id) const;
+    /// query additional info about a contained resource
+    ResourceInfo QueryResourceInfo(const Id& id) const;
+    /// query additional info about the pool (slow)
+    ResourcePoolInfo QueryPoolInfo() const;
     
     /// get number of slots in pool
     int32 GetNumSlots() const;
@@ -60,10 +68,11 @@ public:
 protected:
     /// free a resource id
     void freeId(const Id& id);
-
+    
     bool isValid;
+    int32 frameCounter;
     int32 uniqueCounter;
-    uint8 resourceType;
+    uint16 resourceType;
     
     Array<resourceSlot<RESOURCE,SETUP>> slots;
     Queue<uint16> freeSlots;
@@ -73,6 +82,7 @@ protected:
 template<class RESOURCE, class SETUP>
 ResourcePool<RESOURCE,SETUP>::ResourcePool() :
 isValid(false),
+frameCounter(0),
 uniqueCounter(0),
 resourceType(0xFF) {
     // empty
@@ -86,14 +96,11 @@ ResourcePool<RESOURCE,SETUP>::~ResourcePool() {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Setup(uint8 resType, int32 poolSize) {
+ResourcePool<RESOURCE,SETUP>::Setup(uint16 resType, int32 poolSize) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(Id::InvalidType != resType);
     o_assert_dbg(poolSize > 0);
     
-    // NOTE: it is extremely important that resource slots remain pinned at
-    // their address (because other threads may access the pool), thus
-    // ALWAYS prevent array growing!!!
     this->resourceType = resType;
     this->slots.Reserve(poolSize);
     this->slots.SetAllocStrategy(0, 0);    // disable growing
@@ -131,20 +138,32 @@ ResourcePool<RESOURCE,SETUP>::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> void
+ResourcePool<RESOURCE, SETUP>::Update() {
+    o_assert_dbg(this->isValid);
+    this->frameCounter++;
+}
+
+//------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> Id
 ResourcePool<RESOURCE,SETUP>::AllocId() {
     o_assert_dbg(this->isValid);
     o_assert_dbg(Id::InvalidType != this->resourceType);
-    return Id(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
+    Id newId(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
+    #if ORYOL_DEBUG
+        uint32 slotIndex = newId.SlotIndex();
+        const auto& slot = this->slots[slotIndex];
+        o_assert_dbg(ResourceState::Initial == slot.State);
+    #endif
+    return newId;
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
 ResourcePool<RESOURCE,SETUP>::freeId(const Id& id) {
     o_assert_dbg(this->isValid);
-    
     const uint16 slotIndex = id.SlotIndex();
-    o_assert(ResourceState::Initial == this->slots[slotIndex].State);
+    o_assert_dbg(ResourceState::Initial == this->slots[slotIndex].State);
     this->freeSlots.Enqueue(slotIndex);
 }
 
@@ -155,19 +174,24 @@ ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceS
     
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
-    slot.Assign(id, setup, state);
+    o_assert_dbg(ResourceState::Valid != slot.State);
+    slot.Assign(id, setup, state, this->frameCounter);
     return slot.Resource;
 }
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id, ResourceState::Code state) {
+ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id) {
     o_assert_dbg(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex()];
     if (id == slot.Resource.Id) {
-        slot.Unassign(state);
+        o_assert_dbg(ResourceState::Initial != slot.State);
+        slot.Unassign();
         this->freeId(id);
+    }
+    else {
+        o_warn("ResourcePool::Unassign(): id not in pool (type: '%d', slot: '%d')\n", id.Type(), id.SlotIndex());
     }
 }
 
@@ -183,6 +207,9 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
         if (ResourceState::Valid == slot.State) {
             // resource exists and is valid, all ok
             return (RESOURCE*) &slot.Resource;
+        }
+        else {
+            o_warn("ResourcePool::Lookup(): looked up resource is not valid!\n");
         }
     }
     // FALLTHROUGH: no valid resource (doesn't exist, is pending, failed etc...)
@@ -213,8 +240,20 @@ ResourcePool<RESOURCE, SETUP>::UpdateState(const Id& id, ResourceState::Code new
     const uint16 slotIndex = id.SlotIndex();
     auto& slot = this->slots[slotIndex];
     if (id == slot.Resource.Id) {
-        slot.State = newState;
+        slot.UpdateState(newState, this->frameCounter);
     }
+    else {
+        o_warn("ResourcePool::UpdateState(): id not in pool (type: '%d', slot: '%d')\n", id.Type(), id.SlotIndex());
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> bool
+ResourcePool<RESOURCE, SETUP>::Contains(const Id& id) const {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type() == this->resourceType);    
+    const uint16 slotIndex = id.SlotIndex();
+    return id == this->slots[slotIndex].Resource.Id;
 }
 
 //------------------------------------------------------------------------------
@@ -224,13 +263,47 @@ ResourcePool<RESOURCE,SETUP>::QueryState(const Id& id) const {
     o_assert_dbg(id.Type() == this->resourceType);
     
     const uint16 slotIndex = id.SlotIndex();
-    auto& slot = this->slots[slotIndex];
+    const auto& slot = this->slots[slotIndex];
     if (id == slot.Resource.Id) {
         return slot.State;
     }
     else {
         return ResourceState::InvalidState;
     }
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> ResourceInfo
+ResourcePool<RESOURCE, SETUP>::QueryResourceInfo(const Id& id) const {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type() == this->resourceType);
+    
+    ResourceInfo info;
+    const uint16 slotIndex = id.SlotIndex();
+    const auto& slot = this->slots[slotIndex];
+    if (id == slot.Resource.Id) {
+        info.State = slot.State;
+        info.StateAge = this->frameCounter - slot.StateStartFrame;
+    }
+    return info;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> ResourcePoolInfo
+ResourcePool<RESOURCE, SETUP>::QueryPoolInfo() const {
+    o_assert_dbg(this->isValid);
+    
+    ResourcePoolInfo poolInfo;
+    poolInfo.ResourceType = this->resourceType;
+    poolInfo.NumSlots = this->GetNumSlots();
+    poolInfo.NumUsedSlots = this->GetNumUsedSlots();
+    poolInfo.NumFreeSlots = this->GetNumFreeSlots();
+    for (const auto& slot : this->slots) {
+        if (ResourceState::InvalidState != slot.State) {
+            poolInfo.NumSlotsByState[slot.State]++;
+        }
+    }
+    return poolInfo;
 }
 
 //------------------------------------------------------------------------------
@@ -242,7 +315,7 @@ ResourcePool<RESOURCE,SETUP>::GetNumSlots() const {
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> int32
 ResourcePool<RESOURCE,SETUP>::GetNumUsedSlots() const {
-    return this->slots.Size() - this->freeSlots.Size() - this->pendingSlots.Size();
+    return this->slots.Size() - this->freeSlots.Size();
 }
 
 //------------------------------------------------------------------------------

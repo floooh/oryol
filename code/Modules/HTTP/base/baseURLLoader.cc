@@ -21,5 +21,25 @@ baseURLLoader::doWork() {
     o_error("baseURLLoader::doWork() called!\n");
 }
 
+//------------------------------------------------------------------------------
+bool
+baseURLLoader::handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+    const auto& ioReq = httpReq->GetIoRequest();
+    if (ioReq.isValid()) {
+        if (ioReq->Cancelled()) {
+            ioReq->SetStatus(IOStatus::Cancelled);
+            ioReq->Handled();
+            httpReq->SetCancelled();
+            httpReq->Handled();
+            return true;
+        }
+    }
+    if (httpReq->Cancelled()) {
+        httpReq->Handled();
+        return true;
+    }
+    return false;
+}
+
 } // namespace _priv
 } // namespace Oryol

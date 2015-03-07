@@ -21,6 +21,8 @@ public:
     virtual Id Start();
     /// continue loading, return resource state (Pending, Valid, Failed)
     virtual ResourceState::Code Continue();
+    /// cancel the resource loading process
+    virtual void Cancel();
 };
 
 } // namespace Oryol

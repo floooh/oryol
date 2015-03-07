@@ -26,4 +26,10 @@ ResourceLoader::Continue() {
     return ResourceState::InvalidState;
 }
 
+//------------------------------------------------------------------------------
+void
+ResourceLoader::Cancel() {
+    // empty
+}
+
 } // namespace Oryol

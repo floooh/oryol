@@ -5,6 +5,7 @@
 #include "Core/App.h"
 #include "IO/IO.h"
 #include "Gfx/Gfx.h"
+#include "Dbg/Dbg.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Assets/Gfx/TextureLoader.h"
@@ -23,14 +24,13 @@ public:
 private:
     void createObjects();
     void updateObjects();
+    void showInfo();
 
     struct Object {
         Id drawState;
         Id texture;
         ResourceLabel label;
         glm::mat4 modelTransform;
-        uint32 startFrame = 0;
-        uint32 endFrame = 0;
     };
     glm::mat4 computeMVP(const Object& obj);
     
@@ -52,12 +52,13 @@ ResourceStressApp::OnRunning() {
     this->frameCount++;
     this->updateObjects();
     this->createObjects();
+    this->showInfo();
 
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
-        if (Gfx::Resource().QueryState(obj.texture) == ResourceState::Valid) {
+        if (Gfx::Resource().QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             glm::mat4 mvp = this->proj * this->view * obj.modelTransform;
             Gfx::ApplyDrawState(obj.drawState);
             Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
@@ -65,6 +66,7 @@ ResourceStressApp::OnRunning() {
             Gfx::Draw(0);
         }
     }
+    Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     
     // quit or keep running?
@@ -89,6 +91,9 @@ ResourceStressApp::OnInit() {
     gfxSetup.SetPoolSize(GfxResourceType::Shader, 8);
     Gfx::Setup(gfxSetup);
     
+    // setup debug text rendering
+    Dbg::Setup();    
+    
     // setup the shader that is used by all objects
     this->prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
 
@@ -109,6 +114,7 @@ ResourceStressApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 ResourceStressApp::OnCleanup() {
+    Dbg::Discard();
     Gfx::Discard();
     IO::Discard();
     return App::OnCleanup();
@@ -117,32 +123,37 @@ ResourceStressApp::OnCleanup() {
 //------------------------------------------------------------------------------
 void
 ResourceStressApp::createObjects() {
-    if ((this->objects.Size() < MaxNumObjects) &&
-        (Gfx::Resource().QueryFreeSlots(GfxResourceType::Mesh) > 0) &&
-        (Gfx::Resource().QueryFreeSlots(GfxResourceType::Texture) > 0)) {
-        // create a cube object
-        // NOTE: we're deliberatly not sharing resources to actually
-        // put some stress on the resource system
-        Object obj;
-        obj.label = Gfx::Resource().PushLabel();
-        ShapeBuilder shapeBuilder;
-        shapeBuilder.Layout
-            .Add(VertexAttr::Position, VertexFormat::Float3)
-            .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-        shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1).Build();
-        Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-        obj.drawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(mesh, this->prog));
-        obj.texture = Gfx::Resource().Load(
-            TextureLoader::Create(
-                TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint),
-                this->frameCount));
-        glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
-        obj.modelTransform = glm::translate(glm::mat4(), pos);
-        obj.startFrame = this->frameCount;
-        obj.endFrame = this->frameCount + 256;
-        this->objects.Add(obj);
-        Gfx::Resource().PopLabel();
+
+    if (this->objects.Size() >= MaxNumObjects) {
+        return;
     }
+    if (Gfx::Resource().QueryFreeSlots(GfxResourceType::Mesh) == 0) {
+        return;
+    }
+    if (Gfx::Resource().QueryFreeSlots(GfxResourceType::Texture) == 0) {
+        return;
+    }
+
+    // create a cube object
+    // NOTE: we're deliberatly not sharing resources to actually
+    // put some stress on the resource system
+    Object obj;
+    obj.label = Gfx::Resource().PushLabel();
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.Layout
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1).Build();
+    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
+    obj.drawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(mesh, this->prog));
+    obj.texture = Gfx::Resource().Load(
+        TextureLoader::Create(
+            TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint),
+            this->frameCount));
+    glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
+    obj.modelTransform = glm::translate(glm::mat4(), pos);
+    this->objects.Add(obj);
+    Gfx::Resource().PopLabel();
 }
 
 //------------------------------------------------------------------------------
@@ -150,23 +161,53 @@ void
 ResourceStressApp::updateObjects() {
     for (int32 i = this->objects.Size() - 1; i >= 0; i--) {
         Object& obj = this->objects[i];
-        bool destroyMe = false;
-        const ResourceState::Code texState = Gfx::Resource().QueryState(obj.texture);
-        if (ResourceState::Pending == texState) {
-            obj.endFrame = this->frameCount + 256;
-        }
-        else if (ResourceState::Failed == texState) {
-            destroyMe = true;
-        }
-        else if (ResourceState::Valid == texState) {
-            if (this->frameCount >= obj.endFrame) {
-                destroyMe = true;
-            }
-        }
-        if (destroyMe) {
+        
+        // check if object should be destroyed (it will be
+        // destroyed after the texture object had been valid for
+        // at least 3 seconds, or if it failed to load)
+        const auto info = Gfx::Resource().QueryResourceInfo(obj.texture);
+        if ((info.State == ResourceState::Failed) ||
+            ((info.State == ResourceState::Valid) && (info.StateAge > (20 * 60)))) {
+
             Gfx::Resource().Destroy(obj.label);
             this->objects.Erase(i);
         }
     }
 }
 
+//------------------------------------------------------------------------------
+void
+ResourceStressApp::showInfo() {
+    ResourcePoolInfo texPoolInfo = Gfx::Resource().QueryPoolInfo(GfxResourceType::Texture);
+    ResourcePoolInfo mshPoolInfo = Gfx::Resource().QueryPoolInfo(GfxResourceType::Mesh);
+    
+    Dbg::PrintF("texture pool\r\n"
+                "  num slots: %d, free: %d, used: %d\r\n"
+                "  by state:\r\n"
+                "    initial: %d\r\n"
+                "    setup:   %d\r\n"
+                "    pending: %d\r\n"
+                "    valid:   %d\r\n"
+                "    failed:  %d\r\n\n",
+                texPoolInfo.NumSlots, texPoolInfo.NumFreeSlots, texPoolInfo.NumUsedSlots,
+                texPoolInfo.NumSlotsByState[ResourceState::Initial],
+                texPoolInfo.NumSlotsByState[ResourceState::Setup],
+                texPoolInfo.NumSlotsByState[ResourceState::Pending],
+                texPoolInfo.NumSlotsByState[ResourceState::Valid],
+                texPoolInfo.NumSlotsByState[ResourceState::Failed]);
+    
+    Dbg::PrintF("mesh pool\r\n"
+                "  num slots: %d, free: %d, used: %d\r\n"
+                "  by state:\r\n"
+                "    initial: %d\r\n"
+                "    setup:   %d\r\n"
+                "    pending: %d\r\n"
+                "    valid:   %d\r\n"
+                "    failed:  %d",
+                mshPoolInfo.NumSlots, mshPoolInfo.NumFreeSlots, mshPoolInfo.NumUsedSlots,
+                mshPoolInfo.NumSlotsByState[ResourceState::Initial],
+                mshPoolInfo.NumSlotsByState[ResourceState::Setup],
+                mshPoolInfo.NumSlotsByState[ResourceState::Pending],
+                mshPoolInfo.NumSlotsByState[ResourceState::Valid],
+                mshPoolInfo.NumSlotsByState[ResourceState::Failed]);
+}

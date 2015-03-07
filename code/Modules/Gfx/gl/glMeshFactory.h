@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
+#include "Resource/ResourceState.h"
 #include "Gfx/Resource/mesh.h"
 #include "IO/Stream/Stream.h"
 
@@ -30,9 +31,9 @@ public:
     bool IsValid() const;
 
     /// setup resource
-    bool SetupResource(mesh& mesh);
+    ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    bool SetupResource(mesh& mesh, const Ptr<Stream>& data);
+    ResourceState::Code SetupResource(mesh& mesh, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
@@ -45,11 +46,11 @@ public:
     /// helper method to create platform-specific vertex layout
     void setupVertexLayout(mesh& mesh);
     /// helper method to setup a mesh object as fullscreen quad
-    bool createFullscreenQuad(mesh& mesh);
+    ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
-    bool createEmptyMesh(mesh& mesh);
+    ResourceState::Code createEmptyMesh(mesh& mesh);
     /// create from stream data
-    bool createFromStream(mesh& mesh, const Ptr<Stream>& data);
+    ResourceState::Code createFromStream(mesh& mesh, const Ptr<Stream>& data);
     
 private:
     /// setup a Mesh's GL vertex attributes

@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of class shaderFactory
 */
+#include "Resource/ResourceState.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/Enums.h"
 
@@ -28,7 +29,7 @@ public:
     bool IsValid() const;
 
     /// setup shader resource (directly setup shader, no loaders)
-    bool SetupResource(shader& shd);
+    ResourceState::Code SetupResource(shader& shd);
     /// destroy the shader
     void DestroyResource(shader& shd);
     

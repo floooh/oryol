@@ -20,6 +20,20 @@ TextureLoaderBase(setup_, ioLane_) {
 }
 
 //------------------------------------------------------------------------------
+TextureLoader::~TextureLoader() {
+    o_assert_dbg(!this->ioRequest);
+}
+
+//------------------------------------------------------------------------------
+void
+TextureLoader::Cancel() {
+    if (this->ioRequest) {
+        this->ioRequest->SetCancelled();
+        this->ioRequest = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
 Id
 TextureLoader::Start() {
     
@@ -32,7 +46,7 @@ TextureLoader::Start() {
     this->ioRequest->SetLane(this->ioLane);
     IO::Put(this->ioRequest);
     
-    return resId;
+    return this->resId;
 }
 
 //------------------------------------------------------------------------------
@@ -60,6 +74,10 @@ TextureLoader::Continue() {
                 stream->Close();
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
                 SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
+                // NOTE: the prepared texture resource might have already been
+                // destroyed at this point, if this happens, initAsync will
+                // silently fail and return ResourceState::InvalidState
+                // (the same for failedAsync)
                 result = Gfx::Resource().initAsync(this->resId, setupAndStream);
             }
             else {

@@ -54,9 +54,8 @@ resourceContainerBase::PushLabel() {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(this->curLabelCount < ResourceLabel::Default);
-    uint8 label = this->curLabelCount++;
-    this->labelStack.Add(label);
-    return label;
+    this->labelStack.Add(this->curLabelCount++);
+    return this->labelStack.Back();
 }
 
 //------------------------------------------------------------------------------

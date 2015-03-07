@@ -120,10 +120,10 @@ glRenderer::setup() {
     this->valid = true;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
-    Log::Warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
+    o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
     #endif
     #if ORYOL_GL_DISABLE_VERTEXARRAYOBJECT
-    Log::Warn("glStateWrapper: ORYOL_GL_DISABLE_VERTEXARRAYOBJECT is ON\n!");
+    o_warn("glStateWrapper: ORYOL_GL_DISABLE_VERTEXARRAYOBJECT is ON\n!");
     #endif
     
     // in case we are on a Core Profile, create a global Vertex Array Object

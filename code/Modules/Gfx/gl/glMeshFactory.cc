@@ -53,7 +53,7 @@ glMeshFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glMeshFactory::SetupResource(mesh& msh) {
     o_assert_dbg(this->isValid);
     
@@ -67,12 +67,12 @@ glMeshFactory::SetupResource(mesh& msh) {
     }
     else {
         o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
-        return false;
+        return ResourceState::InvalidState;
     }
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
     o_assert_dbg(msh.Setup.ShouldSetupFromStream());
     return this->createFromStream(msh, data);
@@ -370,7 +370,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
     o_assert_dbg(!mesh.Setup.InstanceMesh.IsValid());
     
@@ -409,11 +409,11 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glMeshFactory::createEmptyMesh(mesh& mesh) {
     
     const MeshSetup& setup = mesh.Setup;
@@ -466,11 +466,11 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     this->attachInstanceBuffer(mesh);
     this->setupVertexLayout(mesh);
     
-    return true;
+    return ResourceState::Valid;
 }
     
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
     const MeshSetup& setup = mesh.Setup;
     
@@ -522,12 +522,12 @@ glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
         data->UnmapRead();
         data->Close();
         
-        return true;
+        return ResourceState::Valid;
     }
     else {
         // this shouldn't happen
         o_error("glMeshFactory::createFromStream(): failed to open stream!\n");
-        return false;
+        return ResourceState::InvalidState;
     }
 }
 

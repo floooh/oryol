@@ -23,7 +23,7 @@ FileSystem::~FileSystem() {
 void
 FileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
     // implement in subclass!
-    Log::Warn("FileSystem::onRequest(): message not handled by FileSystem!\n");
+    o_warn("FileSystem::onRequest(): message not handled by FileSystem!\n");
 }
 
 //------------------------------------------------------------------------------

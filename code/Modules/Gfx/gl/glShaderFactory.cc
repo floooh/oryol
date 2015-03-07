@@ -45,7 +45,7 @@ glShaderFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     ORYOL_GL_CHECK_ERROR();
@@ -66,15 +66,15 @@ glShaderFactory::SetupResource(shader& shd) {
     
     // if compilation has failed, stop the program
     if (0 == glShader) {
-        Log::Warn("Failed to compile shader '%s'\n", setup.Locator.Location().AsCStr());
-        return false;
+        o_warn("Failed to compile shader '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
     }
     
     // all ok, shader has been successfully compiled
     shd.shaderType = setup.Type;
     shd.glShd = glShader;
     
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

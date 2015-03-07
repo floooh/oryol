@@ -10,6 +10,8 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+// FIXME FIXME FIXME
+// Properly handle cancelled messages.
 void
 emscURLLoader::doWork() {
     while (!this->requestQueue.Empty()) {

@@ -421,10 +421,10 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTr
         this->BuildVertexColors(shape, startVertexIndex);
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildBox() binormals not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildBox() binormals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildBox() tangents not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildBox() tangents not implemented yet!\n");
     }
     
     // write indices
@@ -510,10 +510,10 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int32 curVertexIndex, int32 cu
         this->BuildVertexColors(shape, startVertexIndex);
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildSphere() binormals not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildSphere() binormals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildSphere() tangents not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildSphere() tangents not implemented yet!\n");
     }
     
     // north-pole triangles
@@ -656,13 +656,13 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int32 curVertexIndex, int32 
         this->BuildVertexColors(shape, startVertexIndex);
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildCylinder() binormals not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildCylinder() binormals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildCylinder() tangents not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildCylinder() tangents not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildCylinder() texcoord not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildCylinder() texcoord not implemented yet!\n");
     }
     
     // north cap triangles
@@ -762,13 +762,13 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int32 curVertexIndex, int32 cur
         this->BuildVertexColors(shape, startVertexIndex);
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildTorus() binormals not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildTorus() binormals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildTorus() tangents not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildTorus() tangents not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::TexCoord0)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildTorus() texcoord not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildTorus() texcoord not implemented yet!\n");
     }
     
     // triangles
@@ -844,10 +844,10 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int32 curVertexIndex, int32 cur
         this->BuildVertexColors(shape, startVertexIndex);
     }
     if (vertexLayout.Contains(VertexAttr::Binormal)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildPlane() binormals not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildPlane() binormals not implemented yet!\n");
     }
     if (vertexLayout.Contains(VertexAttr::Tangent)) {
-        Log::Warn("FIXME: ShapeBuilder::BuildPlane() tangents not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::BuildPlane() tangents not implemented yet!\n");
     }
 
     // write indices

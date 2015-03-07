@@ -12,6 +12,7 @@
 #include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/Core/SetupAndStream.h"
+#include "Resource/ResourceInfo.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/meshPool.h"
 #include "Gfx/Resource/meshFactory.h"
@@ -48,8 +49,10 @@ public:
     Id Load(const Ptr<ResourceLoader>& loader);
     /// query number of free slots for resource type
     int32 QueryFreeSlots(GfxResourceType::Code resourceType) const;
-    /// query current resource state
-    ResourceState::Code QueryState(const Id& id) const;
+    /// query resource info (fast)
+    ResourceInfo QueryResourceInfo(const Id& id) const;
+    /// query resource pool info (slow)
+    ResourcePoolInfo QueryPoolInfo(GfxResourceType::Code resType) const;
     /// destroy resources by label
     void Destroy(ResourceLabel label);
     
@@ -92,7 +95,6 @@ private:
     class _priv::drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
-    Array<Id> pendingDestroys;
 };
 
 //------------------------------------------------------------------------------

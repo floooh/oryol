@@ -58,7 +58,7 @@ glProgramBundleFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-bool
+ResourceState::Code
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
     this->renderer->invalidateProgramState();
@@ -155,8 +155,8 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         
         // if linking failed, stop the app
         if (!linkStatus) {
-            Log::Warn("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
-            return false;
+            o_warn("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
+            return ResourceState::Failed;
         }
         
         // linking succeeded, store GL program
@@ -191,7 +191,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     }
     this->renderer->invalidateProgramState();
     
-    return true;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
