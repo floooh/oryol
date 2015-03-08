@@ -6,8 +6,8 @@
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
-#include "Gfx/Util/TextureLoader.h"
+#include "Assets/Gfx/ShapeBuilder.h"
+#include "Assets/Gfx/TextureLoader.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -23,8 +23,8 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
-    GfxId drawState;
-    GfxId tex;
+    Id drawState;
+    Id tex;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -46,7 +46,7 @@ DDSCubeMapApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading
-    if (Gfx::QueryResourceState(this->tex) == ResourceState::Valid) {
+    if (Gfx::Resource().QueryResourceInfo(this->tex).State == ResourceState::Valid) {
         Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
         Gfx::ApplyVariable(Shaders::Main::Texture, this->tex);
         Gfx::Draw(0);
@@ -69,7 +69,6 @@ DDSCubeMapApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
-    gfxSetup.Loaders.Add(TextureLoader::Creator());
     Gfx::Setup(gfxSetup);
 
     // create resources
@@ -78,24 +77,26 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.MagFilter = TextureFilterMode::Linear;
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
+    StringAtom texPath;
     if (Gfx::Supports(GfxFeature::TextureCompressionPVRTC)) {
-        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_bpp2.pvr", 0, texBluePrint));
+        texPath = "tex:romechurch_bpp2.pvr";
     }
     else {
-        this->tex = Gfx::CreateResource(TextureSetup::FromFile("tex:romechurch_dxt1.dds", 0, texBluePrint));
+        texPath = "tex:romechurch_dxt1.dds";
     }
+    this->tex = Gfx::Resource().Load(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
-    GfxId mesh = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -110,8 +111,6 @@ DDSCubeMapApp::OnInit() {
 AppState::Code
 DDSCubeMapApp::OnCleanup() {
     // cleanup everything
-    this->tex.Release();
-    this->drawState.Release();
     Gfx::Discard();
     IO::Discard();
     
