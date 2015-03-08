@@ -78,8 +78,8 @@ private:
     _priv::texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
     _priv::drawState* lookupDrawState(const Id& resId);
-    /// update pending loaders (called by runloop), and deferred-destroy resources
-    void updatePending();
+    /// per-frame update (update resource pools and pending loader
+    void update();
     
     class _priv::renderer* renderer;
     class _priv::displayMgr* displayMgr;

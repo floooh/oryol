@@ -41,7 +41,7 @@ GfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
-        this->updatePending();
+        this->update();
     });
     
     resourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
@@ -392,12 +392,8 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
 }
     
 //------------------------------------------------------------------------------
-/**
-    Called once per frame, first triggers pending async loaders, then
-    defer-destroy resources that were pending in their destroy call.
-*/
 void
-GfxResourceContainer::updatePending() {
+GfxResourceContainer::update() {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
