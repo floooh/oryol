@@ -16,21 +16,20 @@ TEST(MeshSetupTest) {
     CHECK(s0.Locator == "s0");
     CHECK(s0.VertexUsage == Usage::Immutable);
     CHECK(s0.IndexUsage == Usage::Immutable);
-    CHECK(s0.IOLane == 0);
     CHECK(s0.NumVertices == 0);
     CHECK(s0.NumIndices == 0);
     CHECK(s0.Layout.Empty());
     CHECK(s0.IndicesType == IndexType::None);
     
-    const MeshSetup s1 = MeshSetup::FromFile("s1", 1, Usage::Stream, Usage::Dynamic);
+    const MeshSetup s1 = MeshSetup::FromFile("s1");
     CHECK(s1.ShouldSetupFromFile());
     CHECK(!s1.ShouldSetupFromStream());
     CHECK(!s1.ShouldSetupEmpty());
     CHECK(s1.Locator == "s1");
-    CHECK(s1.VertexUsage == Usage::Stream);
-    CHECK(s1.IndexUsage == Usage::Dynamic);
-    CHECK(s1.IOLane == 1);
+    CHECK(s1.VertexUsage == Usage::Immutable);
+    CHECK(s1.IndexUsage == Usage::Immutable);
     
+    /* FIXME: needs blueprint setup
     const MeshSetup s2 = MeshSetup::FromFile("s2", s1);
     CHECK(s2.ShouldSetupFromFile());
     CHECK(!s2.ShouldSetupFromStream());
@@ -38,7 +37,7 @@ TEST(MeshSetupTest) {
     CHECK(s2.Locator == "s2");
     CHECK(s2.VertexUsage == Usage::Stream);
     CHECK(s2.IndexUsage == Usage::Dynamic);
-    CHECK(s2.IOLane == 1);
+    */
     
     const MeshSetup s3 = MeshSetup::FromStream();
     CHECK(!s3.ShouldSetupFromFile());
@@ -47,7 +46,6 @@ TEST(MeshSetupTest) {
     CHECK(s3.Locator == Locator::NonShared());
     CHECK(s3.VertexUsage == Usage::Immutable);
     CHECK(s3.IndexUsage == Usage::Immutable);
-    CHECK(s0.IOLane == 0);
     
     const MeshSetup s4 = MeshSetup::FromStream(Usage::Stream, Usage::Dynamic);
     CHECK(!s4.ShouldSetupFromFile());
@@ -56,7 +54,6 @@ TEST(MeshSetupTest) {
     CHECK(s4.Locator == Locator::NonShared());
     CHECK(s4.VertexUsage == Usage::Stream);
     CHECK(s4.IndexUsage == Usage::Dynamic);
-    CHECK(s4.IOLane == 0);
     
     const MeshSetup s5 = MeshSetup::FromStream(s4);
     CHECK(!s5.ShouldSetupFromFile());
@@ -65,7 +62,6 @@ TEST(MeshSetupTest) {
     CHECK(s5.Locator == Locator::NonShared());
     CHECK(s5.VertexUsage == Usage::Stream);
     CHECK(s5.IndexUsage == Usage::Dynamic);
-    CHECK(s5.IOLane == 0);
     
     MeshSetup s6 = MeshSetup::Empty(128, Usage::Stream);
     s6.Layout
@@ -77,7 +73,6 @@ TEST(MeshSetupTest) {
     CHECK(s6.Locator == Locator::NonShared());
     CHECK(s6.VertexUsage == Usage::Stream);
     CHECK(s6.IndexUsage == Usage::InvalidUsage);
-    CHECK(s6.IOLane == 0);
     CHECK(s6.NumVertices == 128);
     CHECK(s6.NumIndices == 0);
     CHECK(s6.IndicesType == IndexType::None);
@@ -98,7 +93,6 @@ TEST(MeshSetupTest) {
     CHECK(s7.Locator == Locator::NonShared());
     CHECK(s7.VertexUsage == Usage::Dynamic);
     CHECK(s7.IndexUsage == Usage::Stream);
-    CHECK(s7.IOLane == 0);
     CHECK(s7.NumVertices == 256);
     CHECK(s7.NumIndices == 512);
     CHECK(s7.IndicesType == IndexType::Index16);

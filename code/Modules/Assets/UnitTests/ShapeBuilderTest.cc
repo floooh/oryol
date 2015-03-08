@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/meshFactory.h"
-#include "Gfx/Core/meshPool.h"
+#include "Gfx/Resource/meshFactory.h"
+#include "Gfx/Resource/meshPool.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/displayMgr.h"
 #include <cstring>
@@ -43,9 +43,8 @@ TEST(ShapeBuilderTest) {
     
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
-    simpleCube.setSetup(shapeBuilder.GetMeshSetup());
-    simpleCube.setState(ResourceState::Setup);
-    factory.SetupResource(simpleCube, shapeBuilder.GetStream());
+    simpleCube.Setup = shapeBuilder.Result().Setup;
+    factory.SetupResource(simpleCube, shapeBuilder.Result().Stream);
     CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
     CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
     CHECK(simpleCube.vertexBufferAttrs.Layout.ByteSize() == 12);

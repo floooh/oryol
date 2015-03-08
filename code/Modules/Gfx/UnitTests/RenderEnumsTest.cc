@@ -12,7 +12,7 @@ using namespace Oryol;
 
 //------------------------------------------------------------------------------
 TEST(PixelFormatTest) {
-    CHECK(PixelFormat::NumPixelFormats == 16);
+    CHECK(PixelFormat::NumPixelFormats == 20);
 }
 
 //------------------------------------------------------------------------------

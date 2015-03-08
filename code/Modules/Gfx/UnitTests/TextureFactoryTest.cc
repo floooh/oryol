@@ -3,9 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Core/textureFactory.h"
+#include "Gfx/Resource/textureFactory.h"
+#include "Gfx/Resource/texturePool.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Core/texturePool.h"
 #include "Gfx/Core/renderer.h"
 
 #if ORYOL_OPENGL
@@ -34,9 +34,8 @@ TEST(RenderTargetCreationTest) {
     auto texSetup = TextureSetup::RenderTarget(320, 256);
     texSetup.ColorFormat = PixelFormat::RGBA8;
     texture tex0;
-    tex0.setSetup(texSetup);
+    tex0.Setup = texSetup;
     factory.SetupResource(tex0);
-    CHECK(tex0.GetState() == ResourceState::Valid);
     CHECK(tex0.glTex != 0);
     CHECK(tex0.glFramebuffer != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
@@ -50,7 +49,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs0.Width == 320);
     CHECK(attrs0.Height == 256);
     CHECK(attrs0.Depth == 0);
-    CHECK(!attrs0.HasMipmaps);
+    CHECK(1 == attrs0.NumMipMaps);
     CHECK(attrs0.IsRenderTarget);
     CHECK(!attrs0.HasDepthBuffer);
     CHECK(!attrs0.HasSharedDepthBuffer);
@@ -61,9 +60,8 @@ TEST(RenderTargetCreationTest) {
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D24S8;
     texture tex1;
-    tex1.setSetup(rtSetup);
+    tex1.Setup = rtSetup;
     factory.SetupResource(tex1);
-    CHECK(tex1.GetState() == ResourceState::Valid);
     CHECK(tex1.glTex != 0);
     CHECK(tex1.glFramebuffer != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
@@ -77,7 +75,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.Width == 640);
     CHECK(attrs1.Height == 480);
     CHECK(attrs1.Depth == 0);
-    CHECK(!attrs1.HasMipmaps);
+    CHECK(1 == attrs1.NumMipMaps);
     CHECK(attrs1.IsRenderTarget);
     CHECK(attrs1.HasDepthBuffer);
     CHECK(!attrs1.HasSharedDepthBuffer);
@@ -88,9 +86,8 @@ TEST(RenderTargetCreationTest) {
     rtSetup.ColorFormat = PixelFormat::R5G6B5;
     rtSetup.DepthFormat = PixelFormat::D16;
     texture tex2;
-    tex2.setSetup(rtSetup);
+    tex2.Setup = rtSetup;
     factory.SetupResource(tex2);
-    CHECK(tex2.GetState() == ResourceState::Valid);
     CHECK(tex2.glTex != 0);
     CHECK(tex2.glFramebuffer != 0);
     CHECK(tex2.glDepthRenderbuffer != 0);
@@ -104,7 +101,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs2.Width == 400);
     CHECK(attrs2.Height == 300);
     CHECK(attrs2.Depth == 0);
-    CHECK(!attrs2.HasMipmaps);
+    CHECK(1 == attrs2.NumMipMaps);
     CHECK(attrs2.IsRenderTarget);
     CHECK(attrs2.HasDepthBuffer);
     CHECK(!attrs2.HasSharedDepthBuffer);
@@ -112,16 +109,13 @@ TEST(RenderTargetCreationTest) {
     
     // cleanup
     factory.DestroyResource(tex1);
-    CHECK(tex1.GetState() == ResourceState::Setup);
     CHECK(tex1.glTex == 0);
     CHECK(tex1.glFramebuffer == 0);
     CHECK(tex1.glDepthRenderbuffer == 0);
     CHECK(tex1.glDepthTexture == 0);
     
     factory.DestroyResource(tex0);
-    CHECK(tex0.GetState() == ResourceState::Setup);
     factory.DestroyResource(tex2);
-    CHECK(tex2.GetState() == ResourceState::Setup);
     factory.Discard();
     renderer.discard();
     displayManager.DiscardDisplay();

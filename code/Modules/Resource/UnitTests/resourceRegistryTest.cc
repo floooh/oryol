@@ -6,6 +6,7 @@
 #include "Resource/Core/ResourceRegistry.h"
 
 using namespace Oryol;
+using namespace Oryol::_priv;
 
 TEST(ResourceRegistryTest) {
 
@@ -17,61 +18,57 @@ TEST(ResourceRegistryTest) {
     const Id blobId(4, 4, 1);
     Array<Id> removed;
 
-    ResourceRegistry reg;
+    resourceRegistry reg;
     CHECK(!reg.IsValid());
     reg.Setup(256);
     CHECK(reg.IsValid());
     
     // check the empty registry
-    CHECK(!reg.LookupResource(blaLoc).IsValid());
-    CHECK(!reg.HasResourceById(blaId));
+    CHECK(!reg.Lookup(blaLoc).IsValid());
+    CHECK(!reg.Contains(blaId));
     CHECK(reg.GetNumResources() == 0);
     
     // add a shared resource
-    reg.AddResource(blaLoc, blaId);
-    reg.UseResource(blaId);
+    reg.Add(blaLoc, blaId, 123);
     CHECK(reg.GetNumResources() == 1);
     CHECK(reg.GetIdByIndex(0) == blaId);
-    CHECK(reg.HasResourceById(blaId));
-    CHECK(reg.GetUseCount(blaId) == 1);
+    CHECK(reg.Contains(blaId));
     CHECK(reg.GetLocator(blaId) == blaLoc);
-    CHECK(reg.LookupResource(blaLoc) == blaId);
-    reg.UseResource(blaId);
-    CHECK(reg.GetUseCount(blaId) == 2);
-    CHECK(!reg.ReleaseResource(blaId));
-    CHECK(reg.GetUseCount(blaId) == 1);
+    CHECK(reg.Lookup(blaLoc) == blaId);
+    removed = reg.Remove(123);
+    CHECK(removed.Size() == 1);
+    CHECK(removed[0] == blaId);
+    CHECK(reg.GetNumResources() == 0);
     
     // add another shared resource (bla with signature)
-    reg.AddResource(blaSigLoc, blaSigId);
-    reg.UseResource(blaSigId);
+    reg.Add(blaLoc, blaId, 124);
+    reg.Add(blaSigLoc, blaSigId, 124);
     CHECK(reg.GetNumResources() == 2);
     CHECK(reg.GetIdByIndex(0) == blaId);
     CHECK(reg.GetIdByIndex(1) == blaSigId);
-    CHECK(reg.HasResourceById(blaSigId));
-    CHECK(reg.GetUseCount(blaSigId) == 1);
+    CHECK(reg.Contains(blaSigId));
     CHECK(reg.GetLocator(blaSigId) == blaSigLoc);
     CHECK(reg.GetLocator(blaSigId) != blaLoc);
     
-    CHECK(reg.ReleaseResource(blaId));
-    CHECK(reg.ReleaseResource(blaSigId));
+    removed = reg.Remove(124);
+    CHECK(removed.Size() == 2);
     CHECK(reg.GetNumResources() == 0);
-    CHECK(!reg.HasResourceById(blaId));
-    CHECK(!reg.HasResourceById(blaSigId));
-    CHECK(!reg.LookupResource(blaLoc).IsValid());
-    CHECK(!reg.LookupResource(blaSigLoc).IsValid());
+    CHECK(!reg.Contains(blaId));
+    CHECK(!reg.Contains(blaSigId));
+    CHECK(!reg.Lookup(blaLoc).IsValid());
+    CHECK(!reg.Lookup(blaSigLoc).IsValid());
     
     // add a non-shared resource locator, this cannot be looked up,
     // but properly released (but since it will not be shared, it's
     // use-count will always be 1)
-    reg.AddResource(blobLoc, blobId);
-    reg.UseResource(blobId);
+    reg.Add(blobLoc, blobId, 125);
     CHECK(reg.GetNumResources() == 1);
     CHECK(reg.GetIdByIndex(0) == blobId);
-    CHECK(reg.HasResourceById(blobId));
-    CHECK(reg.GetUseCount(blobId) == 1);
+    CHECK(reg.Contains(blobId));
     CHECK(reg.GetLocator(blobId) == blobLoc);
-    CHECK(!reg.LookupResource(blobLoc).IsValid());
-    CHECK(reg.ReleaseResource(blobId));
+    CHECK(!reg.Lookup(blobLoc).IsValid());
+    removed = reg.Remove(125);
+    CHECK(removed.Size() == 1);
     CHECK(reg.GetNumResources() == 0);
 
     reg.Discard();

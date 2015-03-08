@@ -148,6 +148,8 @@ fips_begin_unittest(Gfx)
         glTypesTest.cc
     )
     fips_generate(TYPE Shader FROM TestShaderLibrary.shd)
-    fips_deps(HTTP Gfx Asset)
+    # FIXME: hmm strange, why doesn't recursive dependency resolution work here
+    # (have to explicitely link with Gfx)
+    fips_deps(HTTP Gfx Assets)
 fips_end_unittest()
 

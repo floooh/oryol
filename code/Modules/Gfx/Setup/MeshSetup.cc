@@ -28,6 +28,8 @@ setupFullScreenQuad(false) {
 MeshSetup
 MeshSetup::FromFile(const class Locator& loc, Id placeholder) {
     MeshSetup setup;
+    setup.VertexUsage = Usage::Immutable;
+    setup.IndexUsage = Usage::Immutable;
     setup.Locator = loc;
     setup.Placeholder = placeholder;
     setup.setupFromFile = true;

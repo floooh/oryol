@@ -5,7 +5,6 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Resource/Core/ResourcePool.h"
 #include "Resource/Core/resourceBase.h"
-#include "Resource/Core/simpleFactory.h"
 
 using namespace Oryol;
 
@@ -21,92 +20,69 @@ public:
     int32 blub = 0;
 };
 
-class myFactory : public simpleFactory<myResource> {
-public:
-    uint16 GetResourceType() const {
-        return 12;
-    };
-    void SetupResource(myResource& res) {
-        res.blub = res.GetSetup().bla;
-        res.setState(ResourceState::Valid);
-    };
-    void DestroyResource(myResource& res) {
-        res.blub = 0;
-        // FIXME: factory::DestroyResource should have to change the state
-        res.setState(ResourceState::Setup);
-    };
-};
-
-class myResourcePool : public ResourcePool<myResource, mySetup, myFactory> { };
+class myResourcePool : public ResourcePool<myResource, mySetup> { };
 
 TEST(ResourcePoolTest) {
-    myFactory factory;
+    const uint16 myResourceType = 12;
+    const int32 poolSize = 256;
     myResourcePool resourcePool;
-    resourcePool.Setup(&factory, 256, 0, 'XYZW');
+    resourcePool.Setup(myResourceType, poolSize);
     CHECK(resourcePool.IsValid());
     CHECK(resourcePool.GetNumSlots() == 256);
     CHECK(resourcePool.GetNumFreeSlots() == 256);
     CHECK(resourcePool.GetNumUsedSlots() == 0);
-    CHECK(resourcePool.GetNumPendingSlots() == 0);
     
-    Id resId = resourcePool.AllocId(8);
+    Id resId = resourcePool.AllocId();
     CHECK(resId.IsValid());
-    CHECK(resId.Label() == 8);
     CHECK(resId.Type() == 12);
     CHECK(resId.SlotIndex() == 0);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId));
     
-    resourcePool.Assign(resId, mySetup(123));
+    resourcePool.Assign(resId, mySetup(123), ResourceState::Valid);
     CHECK(resourcePool.GetNumFreeSlots() == 255);
     CHECK(resourcePool.GetNumUsedSlots() == 1);
-    CHECK(resourcePool.GetNumPendingSlots() == 0);
     CHECK(ResourceState::Valid == resourcePool.QueryState(resId));
     
-    myResource* res = resourcePool.Lookup(resId);
+    const myResource* res = resourcePool.Lookup(resId);
     CHECK(nullptr != res);
-    CHECK(res->GetId() == resId);
-    CHECK(res->GetState() == ResourceState::Valid);
-    CHECK(res->GetSetup().bla == 123);
-    CHECK(res->blub == 123);
+    CHECK(res->Id == resId);
+    CHECK(resourcePool.QueryResourceInfo(resId).State == ResourceState::Valid);
+    CHECK(res->Setup.bla == 123);
     
-    Id resId1 = resourcePool.AllocId(9);
+    Id resId1 = resourcePool.AllocId();
     CHECK(resId1.IsValid());
-    CHECK(resId1.Label() == 9);
     CHECK(resId1.Type() == 12);
     CHECK(resId1.SlotIndex() == 1);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId1));
     
-    resourcePool.Assign(resId1, mySetup(12345));
+    resourcePool.Assign(resId1, mySetup(12345), ResourceState::Valid);
     CHECK(resourcePool.GetNumFreeSlots() == 254);
     CHECK(resourcePool.GetNumUsedSlots() == 2);
-    CHECK(resourcePool.GetNumPendingSlots() == 0);
     CHECK(ResourceState::Valid == resourcePool.QueryState(resId));
     
-    myResource* res1 = resourcePool.Lookup(resId1);
+    const myResource* res1 = resourcePool.Lookup(resId1);
     CHECK(nullptr != res1);
-    CHECK(res1->GetId() == resId1);
-    CHECK(res1->GetState() == ResourceState::Valid);
-    CHECK(res1->GetSetup().bla == 12345);
-    CHECK(res1->blub == 12345);
+    CHECK(res1->Id == resId1);
+    CHECK(resourcePool.QueryResourceInfo(resId1).State == ResourceState::Valid);
+    CHECK(res1->Setup.bla == 12345);
+    
+    const ResourcePoolInfo poolInfo = resourcePool.QueryPoolInfo();
+    CHECK(poolInfo.ResourceType == myResourceType);
+    CHECK(poolInfo.NumSlots == 256);
+    CHECK(poolInfo.NumUsedSlots == 2);
+    CHECK(poolInfo.NumFreeSlots == 254);
     
     resourcePool.Unassign(resId);
     CHECK(resourcePool.GetNumFreeSlots() == 255);
     CHECK(resourcePool.GetNumUsedSlots() == 1);
-    CHECK(resourcePool.GetNumPendingSlots() == 0);
-    // FIXME: this is inconsistent, what should really happen to
-    // unassigned slots (well, they will be re-assigned with
-    // another resource...)
-    CHECK(res->GetState() == ResourceState::Initial);
-    CHECK(res->blub == 0);
-    CHECK(res->GetSetup().bla == 123);
+    CHECK(resourcePool.QueryState(resId) == ResourceState::InvalidState);
+    CHECK(res->Setup.bla == 123);
     
     resourcePool.Unassign(resId1);
     CHECK(resourcePool.GetNumFreeSlots() == 256);
     CHECK(resourcePool.GetNumUsedSlots() == 0);
-    CHECK(resourcePool.GetNumPendingSlots() == 0);
-    CHECK(res1->GetState() == ResourceState::Initial);
-    CHECK(res1->blub == 0);
-    CHECK(res1->GetSetup().bla == 12345);
+    CHECK(resourcePool.QueryState(resId1) == ResourceState::InvalidState);
+    CHECK(res1->Setup.bla == 12345);
     
     resourcePool.Discard();
     CHECK(!resourcePool.IsValid());

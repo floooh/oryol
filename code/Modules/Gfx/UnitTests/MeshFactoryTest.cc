@@ -4,11 +4,11 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/meshFactory.h"
-#include "Gfx/Core/meshPool.h"
+#include "Gfx/Resource/meshFactory.h"
+#include "Gfx/Resource/meshPool.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Asset/Util/MeshBuilder.h"
+#include "Assets/Gfx/MeshBuilder.h"
 
 #if ORYOL_OPENGL
 #include "Gfx/gl/gl_impl.h"
@@ -56,14 +56,13 @@ TEST(MeshFactoryTest) {
         .End();
     
     // setup the mesh
-    const Ptr<Stream>& meshData = mb.GetStream();
+    const Ptr<Stream>& meshData = mb.Result().Stream;
     mesh mesh;
-    mesh.setSetup(mb.GetMeshSetup());
+    mesh.Setup = mb.Result().Setup;
     
     factory.SetupResource(mesh, meshData);
-    CHECK(mesh.GetState() == ResourceState::Valid);
-    CHECK(!mesh.GetId().IsValid());
-    CHECK(mesh.GetSetup().Locator == Locator::NonShared());
+    CHECK(!mesh.Id.IsValid());
+    CHECK(mesh.Setup.Locator == Locator::NonShared());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 4);
     CHECK(mesh.vertexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(mesh.vertexBufferAttrs.Layout.NumComponents() == 2);
@@ -121,8 +120,7 @@ TEST(MeshFactoryTest) {
     #endif
     
     factory.DestroyResource(mesh);
-    CHECK(mesh.GetState() == ResourceState::Setup);
-    CHECK(!mesh.GetId().IsValid());
+    CHECK(!mesh.Id.IsValid());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 0);
     CHECK(mesh.vertexBufferAttrs.BufferUsage == Usage::InvalidUsage);
     CHECK(mesh.vertexBufferAttrs.Layout.NumComponents() == 0);

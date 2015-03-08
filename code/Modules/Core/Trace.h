@@ -61,7 +61,7 @@ struct emscScopedTrace {
 #define o_trace_end_frame() emscripten_trace_record_frame_end()
 #define o_trace_begin(name) emscripten_trace_enter_context(#name)
 #define o_trace_end(name) emscripten_trace_exit_context()
-#define o_trace_scoped(name) emscScopedTrace emscScoptedTrace##name(#name)
+#define o_trace_scoped(name) emscScopedTrace emscScopedTrace##name(#name)
 #else
 #define o_trace_begin_frame() ((void)0)
 #define o_trace_end_frame() ((void)0)

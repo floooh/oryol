@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Asset/Util/MeshBuilder.h"
+#include "Assets/Gfx/MeshBuilder.h"
 #include <cstring>
 
 using namespace Oryol;
@@ -40,9 +40,9 @@ TEST(MeshBuilderTest) {
         .End();
 
     // get the resulting stream object
-    const Ptr<Stream>& stream = mb.GetStream();
+    const Ptr<Stream>& stream = mb.Result().Stream;
     CHECK(!stream->IsOpen());
-    const MeshSetup& meshSetup = mb.GetMeshSetup();
+    const MeshSetup& meshSetup = mb.Result().Setup;
     CHECK(meshSetup.ShouldSetupFromStream());
     
     // check MeshSetup
