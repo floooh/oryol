@@ -5,8 +5,9 @@
     @ingroup _priv
     @brief private: GL implementation of textureFactory
 */
-#include "Gfx/base/renderLoaderFactory.h"
-#include "Gfx/Core/texture.h"
+#include "Resource/ResourceState.h"
+#include "IO/Stream/Stream.h"
+#include "Gfx/Resource/texture.h"
 
 namespace Oryol {
 namespace _priv {
@@ -17,7 +18,7 @@ class textureLoaderBase;
 class displayMgr;
 class texturePool;
     
-class glTextureFactory : public renderLoaderFactory<texture, textureLoaderBase, ResourceType::Texture> {
+class glTextureFactory {
 public:
     /// constructor
     glTextureFactory();
@@ -31,10 +32,10 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource, continue calling until res state is not Pending
-    void SetupResource(texture& tex);
-    /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(texture& tex, const Ptr<Stream>& data);
+    /// setup resource
+    ResourceState::Code SetupResource(texture& tex);
+    /// setup with input data
+    ResourceState::Code SetupResource(texture& tex, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -43,9 +44,9 @@ public:
 
 private:
     /// create a render target
-    void createRenderTarget(texture& tex);
+    ResourceState::Code createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    void createFromPixelData(texture& tex, const Ptr<Stream>& data);
+    ResourceState::Code createFromPixelData(texture& tex, const Ptr<Stream>& data);
 
     class renderer* renderer;
     displayMgr* displayManager;

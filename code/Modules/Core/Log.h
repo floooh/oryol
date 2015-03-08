@@ -60,4 +60,15 @@ private:
     /// generic vprint-style method
     static void vprint(Level l, const char* msg, va_list args) __attribute__((format(printf, 2, 0)));
 };
+
+/// shortcut for Log::Dbg()
+#define o_dbg(...) do { Oryol::Log::Dbg(__VA_ARGS__); } while(0)
+/// shortcut for Log::Info()
+#define o_info(...) do { Oryol::Log::Info(__VA_ARGS__); } while(0)
+/// shortcut for Log::Warn()
+#define o_warn(...) do { Oryol::Log::Warn(__VA_ARGS__); } while(0)
+/// shortcut for Log::Error()
+#define o_error(...) do { Oryol::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
+
+
 } // namespace Oryol

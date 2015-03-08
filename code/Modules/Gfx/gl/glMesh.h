@@ -6,7 +6,7 @@
     @brief GL implement of Mesh
 */
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/base/meshBase.h"
+#include "Gfx/Resource/meshBase.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
@@ -24,7 +24,7 @@ public:
     static const int32 MaxNumSlots = 4;
 
     /// clear the object
-    void clear();
+    void Clear();
     
     /// number of vertex buffer slots
     uint8 numVertexBufferSlots;

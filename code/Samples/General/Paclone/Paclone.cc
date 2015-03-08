@@ -23,8 +23,8 @@ private:
     Direction getInput();
     void applyViewPort();
 
-    GfxId canvasRenderTarget;
-    GfxId crtEffect;
+    Id canvasRenderTarget;
+    Id crtEffect;
     canvas spriteCanvas;
     game gameState;
     int32 tick;
@@ -52,10 +52,10 @@ PacloneApp::OnInit() {
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
-    this->canvasRenderTarget = Gfx::CreateResource(rtSetup);
-    GfxId mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    GfxId prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
-    this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    this->canvasRenderTarget = Gfx::Resource().Create(rtSetup);
+    Id mesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
+    Id prog = Gfx::Resource().Create(Shaders::CRT::CreateSetup());
+    this->crtEffect = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(mesh, prog));
 
     return App::OnInit();
 }
@@ -105,8 +105,6 @@ PacloneApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PacloneApp::OnCleanup() {
-    this->canvasRenderTarget.Release();
-    this->crtEffect.Release();
     this->gameState.Cleanup();
     this->spriteCanvas.Discard();
     Dbg::Discard();

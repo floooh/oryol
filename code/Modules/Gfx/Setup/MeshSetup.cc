@@ -8,13 +8,14 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 MeshSetup::MeshSetup() :
-Locator(Locator::NonShared()),
 VertexUsage(Usage::InvalidUsage),
 IndexUsage(Usage::InvalidUsage),
-IOLane(0),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
+Locator(Locator::NonShared()),
+StreamVertexOffset(0),
+StreamIndexOffset(InvalidIndex),
 numPrimGroups(0),
 setupFromFile(false),
 setupFromStream(false),
@@ -25,21 +26,10 @@ setupFullScreenQuad(false) {
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromFile(const class Locator& loc, int32 ioLane, Usage::Code vbUsage, Usage::Code ibUsage) {
+MeshSetup::FromFile(const class Locator& loc, Id placeholder) {
     MeshSetup setup;
     setup.Locator = loc;
-    setup.IOLane = ioLane;
-    setup.VertexUsage = vbUsage;
-    setup.IndexUsage = ibUsage;
-    setup.setupFromFile = true;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup
-MeshSetup::FromFile(const class Locator& loc, const MeshSetup& blueprint) {
-    MeshSetup setup(blueprint);
-    setup.Locator = loc;
+    setup.Placeholder = placeholder;
     setup.setupFromFile = true;
     return setup;
 }

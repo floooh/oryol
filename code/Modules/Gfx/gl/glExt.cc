@@ -73,10 +73,10 @@ glExt::Setup() {
 
     // put warnings to the console for extensions that we expect but are not provided
     if (!extensions[VertexArrayObject]) {
-        Log::Warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
+        o_warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
     }
     if (!extensions[InstancedArrays]) {
-        Log::Warn("glExt::Setup(): instanced_arrays extension not found!\n");
+        o_warn("glExt::Setup(): instanced_arrays extension not found!\n");
     }
 }
 
@@ -91,6 +91,35 @@ glExt::Discard() {
 bool
 glExt::IsValid() {
     return isValid;
+}
+
+//------------------------------------------------------------------------------
+bool
+glExt::IsTextureFormatSupported(PixelFormat::Code fmt) {
+    if (PixelFormat::IsCompressedFormat(fmt)) {
+        switch (fmt) {
+            case PixelFormat::DXT1:
+            case PixelFormat::DXT3:
+            case PixelFormat::DXT5:
+                return glExt::HasExtension(TextureCompressionDXT);
+            case PixelFormat::PVRTC2_RGB:
+            case PixelFormat::PVRTC4_RGB:
+            case PixelFormat::PVRTC2_RGBA:
+            case PixelFormat::PVRTC4_RGBA:
+                return glExt::HasExtension(TextureCompressionPVRTC);
+            #if ORYOL_OPENGLES3
+            case PixelFormat::ETC2_RGB8:
+            case PixelFormat::ETC2_SRGB8:
+                return true;
+            #endif
+            default:
+                return false;
+        }
+    }
+    else {
+        // non compressed format, always supported
+        return true;
+    }
 }
 
 //------------------------------------------------------------------------------

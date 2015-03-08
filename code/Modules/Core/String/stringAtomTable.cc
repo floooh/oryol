@@ -4,6 +4,9 @@
 #include "Pre.h"
 #include <cstring>
 #include "stringAtomTable.h"
+#if ORYOL_USE_VLD
+#include "vld.h"
+#endif
 
 namespace Oryol {
 
@@ -12,8 +15,18 @@ ORYOL_THREADLOCAL_PTR(stringAtomTable) stringAtomTable::ptr = nullptr;
 //------------------------------------------------------------------------------
 stringAtomTable*
 stringAtomTable::threadLocalPtr() {
+    // NOTE: this object can never be released, even if a thread is left
+    // since StringAtom object can move to other threads, thus memory
+    // leak detectors will complain about these allocations on program
+    // exit
     if (!ptr) {
-        ptr = new stringAtomTable();
+        #if ORYOL_USE_VLD
+        VLDDisable();
+        #endif
+        ptr = Memory::New<stringAtomTable>();
+        #if ORYOL_USE_VLD
+        VLDEnable();
+        #endif
     }
     return ptr;
 }
@@ -41,14 +54,21 @@ stringAtomTable::Add(int32 hash, const char* str) {
     
     #if ORYOL_DEBUG
     o_assert(nullptr == this->Find(hash, str));
+    #endif    
+    #if ORYOL_USE_VLD
+    VLDDisable();
     #endif
-    
+
     // add new string to the string buffer
     const stringAtomBuffer::Header* newHeader = this->buffer.AddString(this, hash, str);
     o_assert(nullptr != newHeader);
     
     // add new entry to our lookup table
     this->table.Add(Entry(newHeader));
+
+    #if ORYOL_USE_VLD
+    VLDEnable();
+    #endif
     return newHeader;
 }
 

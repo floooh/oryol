@@ -169,7 +169,7 @@ URL::crack(String urlString) {
         this->indices[schemeStart] = 0;
         this->indices[schemeEnd] = builder.FindSubString(0, 8, "://");
         if (EndOfString == this->indices[schemeEnd]) {
-            Log::Warn("URL::crack(): '%s' is not a valid URL!\n", this->content.AsCStr());
+            o_warn("URL::crack(): '%s' is not a valid URL!\n", this->content.AsCStr());
             this->clearIndices();
             return;
         }

@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/MeshBuilder.h"
+#include "Assets/Gfx/MeshBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -15,7 +15,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    GfxId drawState;
+    Id drawState;
 };
 OryolMain(TriangleApp);
 
@@ -55,9 +55,9 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
         .End();
-    GfxId mesh = Gfx::CreateResource(meshBuilder.GetMeshSetup(), meshBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
-    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    Id mesh = Gfx::Resource().Create(meshBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Triangle::CreateSetup());
+    this->drawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(mesh, prog));
 
     return App::OnInit();
 }
@@ -65,7 +65,6 @@ TriangleApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 TriangleApp::OnCleanup() {
-    this->drawState.Release();
     Gfx::Discard();
     return App::OnCleanup();
 }

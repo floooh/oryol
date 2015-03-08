@@ -127,18 +127,20 @@ void
 curlURLLoader::doWork() {
     while (!this->requestQueue.Empty()) {
         Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
-        this->doOneRequest(req);
+        if (!baseURLLoader::handleCancelled(req)) {
+            this->doOneRequest(req);
 
-        // transfer result to embedded IoRequest object
-        auto ioReq = req->GetIoRequest();
-        if (ioReq) {
-            auto httpResponse = req->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
-            ioReq->SetStream(httpResponse->GetBody());
-            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
-            ioReq->SetHandled();
+            // transfer result to embedded IoRequest object
+            auto ioReq = req->GetIoRequest();
+            if (ioReq) {
+                auto httpResponse = req->GetResponse();
+                ioReq->SetStatus(httpResponse->GetStatus());
+                ioReq->SetStream(httpResponse->GetBody());
+                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                ioReq->SetHandled();
+            }
+            req->SetHandled();
         }
-        req->SetHandled();
     }
 }
 

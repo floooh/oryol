@@ -10,6 +10,7 @@
 */
 #include "Gfx/gl/gl_decl.h"
 #include "Core/Assertion.h"
+#include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {
@@ -39,6 +40,8 @@ public:
     static bool IsValid();
     /// test if an extension is supported
     static bool HasExtension(Code c);
+    /// test if a texture format is supported
+    static bool IsTextureFormatSupported(PixelFormat::Code fmt);
 
     /// glGenVertexArrays
     static void GenVertexArrays(GLsizei n, GLuint* arrays);

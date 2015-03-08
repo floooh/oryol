@@ -117,9 +117,9 @@ Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
     Oryol::WideString cmdLine = ::GetCommandLineW(); \
     OryolArgs = Oryol::Args(cmdLine); \
-    clazz* app = new clazz(); \
+    clazz* app = Memory::New<clazz>(); \
     app->StartMainLoop(); \
-    delete(app); \
+    Memory::Delete<clazz>(app); \
     return 0; \
 }
 #elif ORYOL_ANDROID
@@ -129,9 +129,9 @@ Oryol::Args OryolArgs; \
 void android_main(struct android_app* app_) { \
     app_dummy(); \
     OryolAndroidAppState = app_; \
-    clazz* app = new clazz(); \
+    clazz* app = Memory::New<clazz>(); \
     app->StartMainLoop(); \
-    delete(app); \
+    Memory::Delete<clazz>(app); \
 }
 #elif ORYOL_PNACL
 #define OryolMain(clazz) \
@@ -139,11 +139,11 @@ namespace pp \
 { \
     Module* CreateModule() \
     { \
-        return new Oryol::_priv::pnaclModule(); \
+        return Memory::New<Oryol::_priv::pnaclModule>(); \
     }; \
 } \
 void PNaclAppCreator() {\
-    static clazz* app = new clazz(); \
+    static clazz* app = Memory::New<clazz>(); \
     app->StartMainLoop(); \
 }
 #else
@@ -151,9 +151,9 @@ void PNaclAppCreator() {\
 Oryol::Args OryolArgs; \
 int main(int argc, const char** argv) { \
     OryolArgs = Oryol::Args(argc, argv); \
-    clazz* app = new clazz(); \
+    clazz* app = Memory::New<clazz>(); \
     app->StartMainLoop(); \
-    delete(app); \
+    Memory::Delete(app); \
     return 0; \
 }
 #endif

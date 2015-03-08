@@ -1,0 +1,22 @@
+@vs vs
+@uniform mat4 mvp ModelViewProjection
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+void main() {
+    $position = mvp * position;
+    uv = texcoord0;
+}
+@end
+
+@fs fs
+@uniform sampler2D tex Texture
+@in vec2 uv
+void main() {
+    $color = vec4($texture2D(tex, uv).xyz, 1.0);
+}
+@end
+
+@bundle Main
+@program vs fs
+@end

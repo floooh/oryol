@@ -2,14 +2,15 @@
 //  glTextureFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Core.h"
 #include "glTextureFactory.h"
-#include "Gfx/base/textureLoaderBase.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
+#include "Gfx/gl/glExt.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/texture.h"
+#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/texturePool.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Core/texturePool.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
@@ -26,16 +27,18 @@ isValid(false) {
 
 //------------------------------------------------------------------------------
 glTextureFactory::~glTextureFactory() {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
 glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, texturePool* texPool_) {
-    o_assert(!this->isValid);
-    o_assert(nullptr != rendr);
-    o_assert(nullptr != displayMgr_);
-    o_assert(nullptr != texPool_);
+    o_assert_dbg(!this->isValid);
+    o_assert_dbg(nullptr != rendr);
+    o_assert_dbg(nullptr != displayMgr_);
+    o_assert_dbg(nullptr != texPool_);
+    o_assert_dbg(Core::IsMainThread());
+
     this->isValid = true;
     this->renderer = rendr;
     this->displayManager = displayMgr_;
@@ -45,7 +48,9 @@ glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, textureP
 //------------------------------------------------------------------------------
 void
 glTextureFactory::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(Core::IsMainThread());
+
     this->isValid = false;
     this->renderer = nullptr;
     this->displayManager = nullptr;
@@ -58,48 +63,44 @@ glTextureFactory::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
+ResourceState::Code
 glTextureFactory::SetupResource(texture& tex) {
-    o_assert(this->isValid);
-    o_assert((tex.GetState() == ResourceState::Setup) || (tex.GetState() == ResourceState::Pending));
-    o_assert(!tex.GetSetup().ShouldSetupFromPixelData());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
+    o_assert_dbg(Core::IsMainThread());
     
     // decide whether a loader needs to take over, or whether we handle this right here
-    if (tex.GetSetup().ShouldSetupAsRenderTarget()) {
-        this->createRenderTarget(tex);
-        o_assert((tex.GetState() == ResourceState::Valid) || (tex.GetState() == ResourceState::Failed));
+    if (tex.Setup.ShouldSetupAsRenderTarget()) {
+        return this->createRenderTarget(tex);
     }
     else {
-        // let a loader take over, parent class will take care of this
-        o_assert(tex.GetSetup().ShouldSetupFromFile());
-        loaderFactory<texture, textureLoaderBase>::SetupResource(tex);
+        o_error("FIXME FIXME FIXME");
+        return ResourceState::InvalidState;
     }
 }
 
 //------------------------------------------------------------------------------
-void
+ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
-    o_assert(this->isValid);
-    o_assert(tex.GetState() == ResourceState::Setup);
-    o_assert(!tex.GetSetup().ShouldSetupAsRenderTarget());
-    o_assert(!tex.GetSetup().ShouldSetupFromFile());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
+    o_assert_dbg(Core::IsMainThread());
     
-    if (tex.GetSetup().ShouldSetupFromPixelData()) {
-        this->createFromPixelData(tex, data);
-        o_assert(tex.GetState() == ResourceState::Valid);
+    if (tex.Setup.ShouldSetupFromPixelData()) {
+        return this->createFromPixelData(tex, data);
     }
     else {
-        o_assert(tex.GetSetup().ShouldSetupFromImageFileData());
-        loaderFactory<texture, textureLoaderBase>::SetupResource(tex, data);
+        o_error("FIXME FIXME FIXME");
+        return ResourceState::InvalidState;
     }
 }
 
 //------------------------------------------------------------------------------
 void
 glTextureFactory::DestroyResource(texture& tex) {
-    o_assert(this->isValid);
-    
-    loaderFactory::DestroyResource(tex);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
 
@@ -123,8 +124,7 @@ glTextureFactory::DestroyResource(texture& tex) {
         ORYOL_GL_CHECK_ERROR();
     }
     
-    tex.clear();
-    tex.setState(ResourceState::Setup);
+    tex.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -132,21 +132,21 @@ glTextureFactory::DestroyResource(texture& tex) {
  @todo: support for depth texture (depends on depth_texture extension), support
  for multiple color texture attachments.
 */
-void
+ResourceState::Code
 glTextureFactory::createRenderTarget(texture& tex) {
-    o_assert(tex.GetState() == ResourceState::Setup);
-    o_assert(0 == tex.glTex);
-    o_assert(0 == tex.glFramebuffer);
-    o_assert(0 == tex.glDepthRenderbuffer);
-    o_assert(0 == tex.glDepthTexture);
+    o_assert_dbg(0 == tex.glTex);
+    o_assert_dbg(0 == tex.glFramebuffer);
+    o_assert_dbg(0 == tex.glDepthRenderbuffer);
+    o_assert_dbg(0 == tex.glDepthTexture);
+    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
     ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
     
-    const TextureSetup& setup = tex.GetSetup();
-    o_assert(setup.ShouldSetupAsRenderTarget());
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.ShouldSetupAsRenderTarget());
 
     // get size of new render target
     int32 width, height;
@@ -159,8 +159,8 @@ glTextureFactory::createRenderTarget(texture& tex) {
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget.Id());
-        o_assert(nullptr != sharedDepthProvider);
+        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
     }
@@ -168,12 +168,12 @@ glTextureFactory::createRenderTarget(texture& tex) {
         width = setup.Width;
         height = setup.Height;
     }
-    o_assert((width > 0) && (height > 0));
+    o_assert_dbg((width > 0) && (height > 0));
     
     // create new framebuffer object
     GLuint glFramebuffer = 0;
     ::glGenFramebuffers(1, &glFramebuffer);
-    o_assert(0 != glFramebuffer);
+    o_assert_dbg(0 != glFramebuffer);
     ORYOL_GL_CHECK_ERROR();
     ::glBindFramebuffer(GL_FRAMEBUFFER, glFramebuffer);
     ORYOL_GL_CHECK_ERROR();
@@ -207,11 +207,11 @@ glTextureFactory::createRenderTarget(texture& tex) {
     if (setup.HasDepth()) {
         if (!setup.HasSharedDepth()) {
             // FIXME: optionally create a depth texture instead of a render buffer here...
-            o_assert(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
+            o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
             
             ::glGenRenderbuffers(1, &glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
-            o_assert(0 != glDepthRenderBuffer);
+            o_assert_dbg(0 != glDepthRenderBuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
             GLint glDepthFormat = glTypes::AsGLRenderbufferFormat(setup.DepthFormat);
@@ -226,12 +226,12 @@ glTextureFactory::createRenderTarget(texture& tex) {
         }
         else {
             // use shared depth buffer
-            o_assert(nullptr != sharedDepthProvider);
+            o_assert_dbg(nullptr != sharedDepthProvider);
             GLuint glSharedDepthBuffer = sharedDepthProvider->glDepthRenderbuffer;
-            o_assert(0 != glSharedDepthBuffer);
+            o_assert_dbg(0 != glSharedDepthBuffer);
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
             ORYOL_GL_CHECK_ERROR();
-            if (PixelFormat::IsDepthStencilFormat(sharedDepthProvider->GetSetup().DepthFormat)) {
+            if (PixelFormat::IsDepthStencilFormat(sharedDepthProvider->Setup.DepthFormat)) {
                 ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
                 ORYOL_GL_CHECK_ERROR();
             }
@@ -240,7 +240,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // check framebuffer completeness
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        Log::Warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
+        o_warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
     }
     this->renderer->invalidateTextureState();
     
@@ -253,7 +253,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     attrs.TextureUsage = Usage::Immutable;
     attrs.Width = width;
     attrs.Height = height;
-    attrs.HasMipmaps = false;
+    attrs.NumMipMaps = 1;
     attrs.IsRenderTarget = true;
     attrs.HasDepthBuffer = setup.HasDepth();
     attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
@@ -265,29 +265,37 @@ glTextureFactory::createRenderTarget(texture& tex) {
     tex.glFramebuffer = glFramebuffer;
     tex.glDepthRenderbuffer = glDepthRenderBuffer;
     tex.glTarget = GL_TEXTURE_2D;
-    tex.setState(ResourceState::Valid);
     
     // bind the default frame buffer
     ::glBindFramebuffer(GL_FRAMEBUFFER, glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
+    
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
-void
+ResourceState::Code
 glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
-    o_assert(tex.GetState() == ResourceState::Setup);
+    o_assert_dbg(Core::IsMainThread());
 
-    const TextureSetup& setup = tex.GetSetup();
+    const TextureSetup& setup = tex.Setup;
     const int32 width = setup.Width;
     const int32 height = setup.Height;
     
+    // test if the texture format is actually supported
+    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+        o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
+    }
+    
     // create a texture object
-    const GLuint glTex = this->glGenAndBindTexture(GL_TEXTURE_2D);
+    GLenum glTextureTarget = setup.Type;
+    const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
     
     // setup texture params
     GLenum glMinFilter = setup.MinFilter;
     GLenum glMagFilter = setup.MagFilter;
-    if (!setup.HasMipMaps()) {
+    if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
         #endif
@@ -300,55 +308,103 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     }
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    if (setup.Type == TextureType::TextureCube) {
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    else {
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    }
     ORYOL_GL_CHECK_ERROR();
     
     // get pointer to image data
     data->Open(OpenMode::ReadOnly);
     const uint8* endPtr = nullptr;
     const uint8* srcPtr = data->MapRead(&endPtr);
-    o_assert(endPtr == srcPtr + width * height * PixelFormat::ByteSize(setup.ColorFormat));
-    
-    // setup the image data in the texture
-    o_assert2(!setup.HasMipMaps(), "Creating mipmap textures from pixel data not yet supported");
-    GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+    const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+    const int32 numMipMaps = setup.NumMipMaps;
+    const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
     GLenum glTexImageInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
-    GLenum glTexImageType   = glTypes::AsGLTexImageType(setup.ColorFormat);
-    ::glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   glTexImageInternalFormat,
-                   width,
-                   height,
-                   0,
-                   glTexImageFormat,
-                   glTexImageType,
-                   srcPtr);
-    ORYOL_GL_CHECK_ERROR();
+    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        
+        GLenum glImgTarget;
+        if (TextureType::TextureCube == setup.Type) {
+            switch (faceIndex) {
+                case 0: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+                case 1: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+                case 2: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+                case 3: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+                case 4: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+                default: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
+            }
+        }
+        else {
+            glImgTarget = glTextureTarget;
+        }
+    
+        for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+            o_assert_dbg(setup.ImageSizes[faceIndex][mipIndex] > 0);
+            int32 mipWidth = width >> mipIndex;
+            if (mipWidth == 0) mipWidth = 1;
+            int32 mipHeight = height >> mipIndex;
+            if (mipHeight == 0) mipHeight = 1;
+            if (isCompressed) {
+                // compressed texture data
+                ::glCompressedTexImage2D(glImgTarget,
+                                         mipIndex,
+                                         glTexImageInternalFormat,
+                                         mipWidth,
+                                         mipHeight,
+                                         0,
+                                         setup.ImageSizes[faceIndex][mipIndex],
+                                         srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                ORYOL_GL_CHECK_ERROR();
+            }
+            else {
+                // uncompressed texture data
+                GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
+                GLenum glTexImageType = glTypes::AsGLTexImageType(setup.ColorFormat);
+                ::glTexImage2D(glImgTarget,
+                               mipIndex,
+                               glTexImageInternalFormat,
+                               mipWidth,
+                               mipHeight,
+                               0,
+                               glTexImageFormat,
+                               glTexImageType,
+                               srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                ORYOL_GL_CHECK_ERROR();
+            }
+        }
+    }
     data->UnmapRead();
     data->Close();
     
     // setup texture attributes
     TextureAttrs attrs;
     attrs.Locator = setup.Locator;
-    attrs.Type = TextureType::Texture2D;
+    attrs.Type = setup.Type;
     attrs.ColorFormat = setup.ColorFormat;
     attrs.TextureUsage = Usage::Immutable;
     attrs.Width = width;
     attrs.Height = height;
-    attrs.HasMipmaps = setup.HasMipMaps();
+    attrs.NumMipMaps = setup.NumMipMaps;
     
     // setup texture
     tex.textureAttrs = attrs;
     tex.glTex = glTex;
-    tex.glTarget = GL_TEXTURE_2D;
-    tex.setState(ResourceState::Valid);
+    tex.glTarget = setup.Type;
+
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(Core::IsMainThread());
+
     this->renderer->invalidateTextureState();
     GLuint glTex = 0;
     ::glGenTextures(1, &glTex);

@@ -2,25 +2,22 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::MeshSetup
-    @ingroup Gfx
+    @ingroup Assets
     @brief setup attributes for meshes
 */
-#include "Resource/Locator.h"
 #include "Resource/Id.h"
+#include "Resource/Locator.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/GfxId.h"
 #include <limits>
 
 namespace Oryol {
     
 class MeshSetup {
 public:
-    /// setup from file with creation parameters
-    static MeshSetup FromFile(const Locator& loc, int32 ioLane=0, Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
-    /// setup from file with blueprint
-    static MeshSetup FromFile(const Locator& loc, const MeshSetup& blueprint);
+    /// asynchronously load from file
+    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
     /// setup from from data provided in separate stream object
     static MeshSetup FromStream(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from data with blueprint
@@ -32,7 +29,7 @@ public:
     
     /// default constructor
     MeshSetup();
-    /// check if should setup from file
+    /// check if should load asynchronously
     bool ShouldSetupFromFile() const;
     /// check if should setup from stream with file-data
     bool ShouldSetupFromStream() const;
@@ -41,14 +38,10 @@ public:
     /// check if should setup fullscreen quad mesh
     bool ShouldSetupFullScreenQuad() const;
     
-    /// resource locator (default is non-shared)
-    class Locator Locator;
     /// vertex-data usage
     Usage::Code VertexUsage;
     /// index-data usage
     Usage::Code IndexUsage;
-    /// ioLane index
-    int32 IOLane;
 
     /// vertex layout
     VertexLayout Layout;
@@ -68,7 +61,17 @@ public:
     const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
     
     /// optional instance data mesh
-    GfxId InstanceMesh;
+    Id InstanceMesh;
+    
+    /// resource locator (only for LoadFromFile)
+    class Locator Locator;
+    /// placeholder Id (only for LoadFromFile)
+    Id Placeholder;
+    
+    /// vertex data byte offset in stream (default: 0)
+    int32 StreamVertexOffset;
+    /// index data byte offset in stream (default: InvalidIndex)
+    int32 StreamIndexOffset;
     
 private:
     static const int32 MaxNumPrimGroups = 8;

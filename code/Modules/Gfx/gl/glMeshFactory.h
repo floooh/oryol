@@ -5,8 +5,9 @@
     @ingroup _priv
     @brief GL implementation of MeshFactory
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/mesh.h"
+#include "Resource/ResourceState.h"
+#include "Gfx/Resource/mesh.h"
+#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace _priv {
@@ -15,7 +16,7 @@ class renderer;
 class meshPool;
 class mesh;
 
-class glMeshFactory : public renderSimpleFactory<mesh, ResourceType::Mesh> {
+class glMeshFactory {
 public:
     /// constructor
     glMeshFactory();
@@ -29,10 +30,10 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource, continue calling until res state is not Pending
-    void SetupResource(mesh& mesh);
-    /// setup with input data, continue calling until res state is not Pending
-    void SetupResource(mesh& mesh, const Ptr<Stream>& data);
+    /// setup resource
+    ResourceState::Code SetupResource(mesh& mesh);
+    /// setup with 'raw' data
+    ResourceState::Code SetupResource(mesh& mesh, const Ptr<Stream>& data);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
@@ -45,11 +46,11 @@ public:
     /// helper method to create platform-specific vertex layout
     void setupVertexLayout(mesh& mesh);
     /// helper method to setup a mesh object as fullscreen quad
-    void createFullscreenQuad(mesh& mesh);
+    ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
-    void createEmptyMesh(mesh& mesh);
+    ResourceState::Code createEmptyMesh(mesh& mesh);
     /// create from stream data
-    void createFromStream(mesh& mesh, const Ptr<Stream>& data);
+    ResourceState::Code createFromStream(mesh& mesh, const Ptr<Stream>& data);
     
 private:
     /// setup a Mesh's GL vertex attributes

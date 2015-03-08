@@ -20,6 +20,9 @@ public:
     /// process enqueued requests
     void doWork();
 protected:
+    /// handle cancelled messages, return true if was handled
+    bool handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& req);
+
     Queue<Ptr<HTTPProtocol::HTTPRequest>> requestQueue;
 };
 } // namespace _priv

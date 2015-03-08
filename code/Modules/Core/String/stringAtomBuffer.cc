@@ -6,6 +6,9 @@
 #include "stringAtomBuffer.h"
 #include "Core/Memory/Memory.h"
 #include "Core/Assertion.h"
+#if ORYOL_USE_VLD
+#include "vld.h"
+#endif
 
 namespace Oryol {
     
@@ -22,6 +25,8 @@ stringAtomBuffer::~stringAtomBuffer() {
 //------------------------------------------------------------------------------
 void
 stringAtomBuffer::allocChunk() {
+    // need to turn off leak detection for the string atom system, since
+    // string atom buffer are never released
     int8* newChunk = (int8*) Memory::Alloc(this->chunkSize);
     this->chunks.Add(newChunk);
     this->curPointer = newChunk;

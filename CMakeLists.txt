@@ -10,11 +10,10 @@ include("${FIPS_ROOT_DIR}/cmake/fips.cmake")
 
 option(ORYOL_SAMPLES "Build Oryol samples" ON)
 
-fips_setup()
+fips_setup(PROJECT oryol)
 fips_include_directories(code)
 fips_include_directories(code/Modules)
 fips_include_directories(code/Ext)
-fips_project(oryol)
 fips_add_subdirectory(code/Hello)
 fips_ide_group(Modules)
 fips_add_subdirectory(code/Modules)

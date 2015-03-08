@@ -52,10 +52,17 @@ public:
     uint32 UniqueStamp() const;
     
 private:
-    /// make id from uniqueStamp, slotIndex and type
-    uint64 makeId(uint32 uniqueStamp, uint16 slotIndex, uint16 type);
+    /// invalid id value
+    static const uint64 invalidId = 0xFFFFFFFFFFFFFFFF;
 
-    uint64 id;
+    union {
+        struct {
+            uint16 slotIndex;
+            uint16 type;
+            uint32 uniqueStamp;
+        };
+        uint64 id;
+    };
 };
 
 //------------------------------------------------------------------------------
@@ -65,27 +72,19 @@ Id::InvalidId() {
 }
 
 //------------------------------------------------------------------------------
-inline uint64
-Id::makeId(uint32 uniqueStamp, uint16 slotIndex, uint16 type) {
-    // type must be most-signifant, then uniqueStamp, then slotIndex
-    uint64 result = type;
-    result <<= 32;
-    result |= uniqueStamp;
-    result <<= 16;
-    result |= slotIndex;
-    return result;
+inline
+Id::Id() :
+id(invalidId) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-Id::Id() {
-    this->id = this->makeId(InvalidUniqueStamp, InvalidSlotIndex, InvalidType);
-}
-
-//------------------------------------------------------------------------------
-inline
-Id::Id(uint32 uniqueStamp, uint16 slotIndex, uint16 type) {
-    this->id = this->makeId(uniqueStamp, slotIndex, type);
+Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint16 type_) :
+slotIndex(slotIndex_),
+type(type_),
+uniqueStamp(uniqueStamp_) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -124,31 +123,31 @@ Id::operator<(const Id& rhs) const {
 //------------------------------------------------------------------------------
 inline uint16
 Id::SlotIndex() const {
-    return this->id & 0xFFFF;
+    return this->slotIndex;
 }
 
 //------------------------------------------------------------------------------
 inline uint16
 Id::Type() const {
-    return (this->id >> 48) & 0xFFFF;
+    return this->type;
 }
 
 //------------------------------------------------------------------------------
 inline uint32
 Id::UniqueStamp() const {
-    return (this->id >> 16) & 0xFFFFFFFF;
+    return this->uniqueStamp;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::IsValid() const {
-    return InvalidUniqueStamp != this->UniqueStamp();
+    return InvalidUniqueStamp != this->uniqueStamp;
 }
 
 //------------------------------------------------------------------------------
 inline void
 Id::Invalidate() {
-    this->id = this->makeId(InvalidUniqueStamp, InvalidSlotIndex, InvalidType);
+    this->id = invalidId;
 }
 
 } // namespace Oryol

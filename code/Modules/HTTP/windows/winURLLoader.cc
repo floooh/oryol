@@ -44,18 +44,20 @@ void
 winURLLoader::doWork() {
     while (!this->requestQueue.Empty()) {
         Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
-        this->doOneRequest(req);
+        if (!baseURLLoader::handleCancelled(req)) {
+            this->doOneRequest(req);
 
-        // transfer result to embedded ioRequest and set to handled
-        auto ioReq = req->GetIoRequest();
-        if (ioReq) {
-            auto httpResponse = req->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
-            ioReq->SetStream(httpResponse->GetBody());
-            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
-            ioReq->SetHandled();
+            // transfer result to embedded ioRequest and set to handled
+            auto ioReq = req->GetIoRequest();
+            if (ioReq) {
+                auto httpResponse = req->GetResponse();
+                ioReq->SetStatus(httpResponse->GetStatus());
+                ioReq->SetStream(httpResponse->GetBody());
+                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                ioReq->SetHandled();
+            }
+            req->SetHandled();
         }
-        req->SetHandled();
     }
     this->garbageCollectConnections();
 }
@@ -172,6 +174,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     
                         // convert from wide and split the header fields
                         this->stringBuilder.Set(StringConverter::WideToUTF8((const wchar_t*) headerBuffer, dwSize / sizeof(wchar_t)));
+                        Memory::Free(headerBuffer);
                         Array<String> tokens;
                         this->stringBuilder.Tokenize("\r\n", tokens);
                         Map<String, String> fields;

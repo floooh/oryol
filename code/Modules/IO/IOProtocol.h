@@ -61,9 +61,10 @@ public:
             this->lane = 0;
             this->cachereadenabled = true;
             this->cachewriteenabled = true;
-            this->status = IOStatus::InvalidIOStatus;
             this->startoffset = 0;
             this->endoffset = 0;
+            this->status = IOStatus::InvalidIOStatus;
+            this->actuallane = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -99,24 +100,6 @@ public:
         bool GetCacheWriteEnabled() const {
             return this->cachewriteenabled;
         };
-        void SetStatus(const IOStatus::Code& val) {
-            this->status = val;
-        };
-        const IOStatus::Code& GetStatus() const {
-            return this->status;
-        };
-        void SetErrorDesc(const String& val) {
-            this->errordesc = val;
-        };
-        const String& GetErrorDesc() const {
-            return this->errordesc;
-        };
-        void SetStream(const Ptr<MemoryStream>& val) {
-            this->stream = val;
-        };
-        const Ptr<MemoryStream>& GetStream() const {
-            return this->stream;
-        };
         void SetStartOffset(int32 val) {
             this->startoffset = val;
         };
@@ -129,16 +112,41 @@ public:
         int32 GetEndOffset() const {
             return this->endoffset;
         };
+        void SetStatus(const IOStatus::Code& val) {
+            this->status = val;
+        };
+        const IOStatus::Code& GetStatus() const {
+            return this->status;
+        };
+        void SetErrorDesc(const String& val) {
+            this->errordesc = val;
+        };
+        const String& GetErrorDesc() const {
+            return this->errordesc;
+        };
+        void SetStream(const Ptr<Stream>& val) {
+            this->stream = val;
+        };
+        const Ptr<Stream>& GetStream() const {
+            return this->stream;
+        };
+        void SetActualLane(int32 val) {
+            this->actuallane = val;
+        };
+        int32 GetActualLane() const {
+            return this->actuallane;
+        };
 private:
         URL url;
         int32 lane;
         bool cachereadenabled;
         bool cachewriteenabled;
-        IOStatus::Code status;
-        String errordesc;
-        Ptr<MemoryStream> stream;
         int32 startoffset;
         int32 endoffset;
+        IOStatus::Code status;
+        String errordesc;
+        Ptr<Stream> stream;
+        int32 actuallane;
     };
     class notifyLanes : public Message {
         OryolClassPoolAllocDecl(notifyLanes);

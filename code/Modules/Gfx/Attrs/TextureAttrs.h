@@ -22,7 +22,7 @@ struct TextureAttrs {
     int32 Width{0};
     int32 Height{0};
     int32 Depth{0};
-    bool HasMipmaps{false};
+    int32 NumMipMaps{1};
     bool IsRenderTarget{false};
     bool HasDepthBuffer{false};
     bool HasSharedDepthBuffer{false};

@@ -45,27 +45,28 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
-    this->mesh = Gfx::CreateResource(meshSetup);
-    this->prog = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
+    this->mesh = Gfx::Resource().Create(meshSetup);
+    this->prog = Gfx::Resource().Create(Shaders::Canvas::CreateSetup());
     auto dsSetup = DrawStateSetup::FromMeshAndProg(this->mesh, this->prog, 0);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->drawState = Gfx::CreateResource(dsSetup);
+    this->drawState = Gfx::Resource().Create(dsSetup);
     
     // setup sprite texture
-    auto pixelData = MemoryStream::Create();
+    Ptr<Stream> pixelData = MemoryStream::Create();
     pixelData->Open(OpenMode::WriteOnly);
     void* ptr = pixelData->MapWrite(Sheet::NumBytes);
     Memory::Copy(Sheet::Pixels, ptr, Sheet::NumBytes);
     pixelData->UnmapWrite();
     pixelData->Close();
-    auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, false, PixelFormat::RGBA8);
+    auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    this->texture = Gfx::CreateResource(texSetup, pixelData);
+    texSetup.ImageSizes[0][0] = Sheet::NumBytes;
+    this->texture = Gfx::Resource().Create(texSetup, pixelData);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -83,10 +84,6 @@ void
 canvas::Discard() {
     o_assert(this->isValid);
     this->isValid = false;
-    this->drawState.Release();
-    this->prog.Release();
-    this->mesh.Release();
-    this->texture.Release();
 }
 
 //------------------------------------------------------------------------------

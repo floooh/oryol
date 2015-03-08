@@ -54,7 +54,7 @@ private:
     /// check if there is enough room for writing numBytes
     bool hasRoom(int32 numBytes) const;
     /// grow to make room for at least numBytes
-    void makeRoom(int32 numBytes);
+    void makeRoom(int32 numBytes, bool noSpare);
     /// (re-)allocate to a new capacity
     void alloc(int32 newCapacity);
     /// increment writePosition, and probably size

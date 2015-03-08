@@ -10,14 +10,13 @@
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/GfxId.h"
 
 namespace Oryol {
 
 class DrawStateSetup {
 public:
     /// construct from mesh and prog
-    static DrawStateSetup FromMeshAndProg(const GfxId& mesh, const GfxId& prog, uint32 progSelMask=0);
+    static DrawStateSetup FromMeshAndProg(const Id& mesh, const Id& prog, uint32 progSelMask=0);
 
     /// default constructor
     DrawStateSetup();
@@ -31,9 +30,9 @@ public:
     /// rasterizer state
     class RasterizerState RasterizerState;
     /// mesh
-    GfxId Mesh;
+    Id Mesh;
     /// program bundle
-    GfxId Program;
+    Id Program;
     /// program bundle selection mask
     uint32 ProgramSelectionMask;
 };

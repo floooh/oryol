@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief GL implementation of texture class
 */
-#include "Gfx/base/textureBase.h"
+#include "Gfx/Resource/textureBase.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
@@ -19,7 +19,7 @@ public:
     ~glTexture();
     
     /// clear the object
-    void clear();
+    void Clear();
 
     /// GL texture object
     GLuint glTex;

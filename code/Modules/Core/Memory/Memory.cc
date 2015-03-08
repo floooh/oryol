@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <cstring>
 #include "Memory.h"
+#if ORYOL_USE_VLD
+#include "vld.h"
+#endif
 
 namespace Oryol {
     

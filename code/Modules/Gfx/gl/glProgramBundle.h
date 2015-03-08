@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of program bundle
 */
-#include "Gfx/base/programBundleBase.h"
+#include "Gfx/Resource/programBundleBase.h"
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_decl.h"
 
@@ -20,7 +20,7 @@ public:
     ~glProgramBundle();
     
     /// clear the object
-    void clear();
+    void Clear();
     
     /// set GL program object by mask
     int32 addProgram(uint32 mask, GLuint glProg);

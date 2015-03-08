@@ -35,11 +35,10 @@ public:
     static void EnterThread();
     /// called before a thread is left
     static void LeaveThread();
+    /// test if we are on the main thread
+    static bool IsMainThread();
 
 private:
-    /// return true if main thread
-    static bool isMainThread();
-    
     static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop;
     static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop;
     struct _state {

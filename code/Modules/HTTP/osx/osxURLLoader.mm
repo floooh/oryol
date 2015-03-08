@@ -5,27 +5,44 @@
 #include "osxURLLoader.h"
 #include "IO/Stream/MemoryStream.h"
 #include <Foundation/Foundation.h>
+#include <atomic>
 
 namespace Oryol {
 namespace _priv {
 
+std::atomic_flag osxURLLoader_sharedCacheSet{false};
+
+//------------------------------------------------------------------------------
+osxURLLoader::osxURLLoader() {
+    // disable the 'magic cache' to prevent memory growth
+    if (!osxURLLoader_sharedCacheSet.test_and_set()) {
+        [NSURLCache setSharedURLCache:[[[NSURLCache alloc] initWithMemoryCapacity:0
+         diskCapacity:0 diskPath:nil] autorelease]];
+    }
+}
+
 //------------------------------------------------------------------------------
 void
 osxURLLoader::doWork() {
+
     while (!this->requestQueue.Empty()) {
-        Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
-        this->doOneRequest(req);
-        
-        // transfer result to embedded IoRequest and set to handled
-        auto ioReq = req->GetIoRequest();
-        if (ioReq) {
-            auto httpResponse = req->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
-            ioReq->SetStream(httpResponse->GetBody());
-            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
-            ioReq->SetHandled();
+        // don't process any cancelled requests
+        Ptr<HTTPProtocol::HTTPRequest> httpReq = this->requestQueue.Dequeue();
+        if (!baseURLLoader::handleCancelled(httpReq)) {
+            // process the request
+            this->doOneRequest(httpReq);
+            
+            // transfer result to embedded IoRequest and set to handled
+            auto ioReq = httpReq->GetIoRequest();
+            if (ioReq) {
+                auto httpResponse = httpReq->GetResponse();
+                ioReq->SetStatus(httpResponse->GetStatus());
+                ioReq->SetStream(httpResponse->GetBody());
+                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                ioReq->SetHandled();
+            }
+            httpReq->SetHandled();
         }
-        req->SetHandled();
     }
 }
 
@@ -113,6 +130,7 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 Ptr<MemoryStream> responseBody = MemoryStream::Create();
                 responseBody->SetURL(req->GetURL());
                 responseBody->Open(OpenMode::WriteOnly);
+                responseBody->Reserve(responseLength);
                 responseBody->Write(responseBytes, responseLength);
                 responseBody->Close();
                 if (responseContentType.IsValid()) {
@@ -124,10 +142,12 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         }
         else {
             // an error occurred
-            Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
+            IOStatus::Code ioStatus = IOStatus::InvalidIOStatus;
             if (nil != urlResponse) {
-                response->SetStatus((IOStatus::Code) [urlResponse statusCode]);
+                ioStatus = (IOStatus::Code) [urlResponse statusCode];
             }
+            Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
+            response->SetStatus((IOStatus::Code) ioStatus);
             if (nil != urlError) {
                 response->SetErrorDesc([[urlError localizedDescription] UTF8String]);
             }

@@ -40,7 +40,7 @@ public:
         set(rhs.p);
     };
     /// copy-construct from Ptr<OTHER>
-    template<class U> Ptr(const Ptr<U>& rhs) {
+    template<class U> explicit Ptr(const Ptr<U>& rhs) {
         set(static_cast<T*>(rhs.getUnsafe()));
     };
 

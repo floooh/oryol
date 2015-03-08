@@ -56,10 +56,3 @@
 #define o_assert_range_dbg(val, max) o_assert_dbg((val >= 0) && (val < max))
 #endif
 
-#if ORYOL_POSIX
-/// print a critical error and abort execution
-#define o_error(...) do { Oryol::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
-#else
-#define o_error(...) do { Oryol::Log::Error(__VA_ARGS__); ORYOL_TRAP(); } while(0)
-#endif
-

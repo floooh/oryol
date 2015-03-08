@@ -42,6 +42,25 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
             return GL_DEPTH_STENCIL;
             #endif
             
+        case PixelFormat::DXT1:
+            return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+        case PixelFormat::DXT3:
+            return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+        case PixelFormat::DXT5:
+            return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+        case PixelFormat::PVRTC2_RGB:
+            return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+        case PixelFormat::PVRTC4_RGB:
+            return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+        case PixelFormat::PVRTC2_RGBA:
+            return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+        case PixelFormat::PVRTC4_RGBA:
+            return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+        case PixelFormat::ETC2_RGB8:
+            return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
+        case PixelFormat::ETC2_SRGB8:
+            return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
+
         default:
             // FIXME: add missing values
             o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
@@ -78,6 +97,25 @@ glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
             return GL_DEPTH24_STENCIL8;
         case PixelFormat::R5G6B5:
             return GL_RGB5;
+        case PixelFormat::DXT1:
+            return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+        case PixelFormat::DXT3:
+            return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+        case PixelFormat::DXT5:
+            return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+        case PixelFormat::PVRTC2_RGB:
+            return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+        case PixelFormat::PVRTC4_RGB:
+            return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+        case PixelFormat::PVRTC2_RGBA:
+            return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+        case PixelFormat::PVRTC4_RGBA:
+            return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+        case PixelFormat::ETC2_RGB8:
+            return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
+        case PixelFormat::ETC2_SRGB8:
+            return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
+            
         default:
             // FIXME: add missing values
             o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");

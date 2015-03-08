@@ -9,7 +9,7 @@
     Linux). It uses GLFW ( https://github.com/glfw/glfw ) for window and
     GL context management, and consuming window input events.
 */
-#include "Gfx/base/displayMgrBase.h"
+#include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
 
 struct GLFWwindow;
@@ -46,6 +46,10 @@ private:
     static void glfwErrorCallback(int error, const char* desc);
     /// framebuffer size changed callback for GLFW
     static void glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height);
+    /// create the main window
+    void createMainWindow(const GfxSetup& setup);
+    /// destroy the main window
+    void destroyMainWindow();
 
     static glfwDisplayMgr* self;
     static GLFWwindow* glfwWindow;

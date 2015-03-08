@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
-#include "Asset/Util/ShapeBuilder.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
@@ -22,8 +22,8 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    GfxId renderTargets[2];
-    GfxId drawState;
+    Id renderTargets[2];
+    Id drawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -79,15 +79,15 @@ InfiniteSpheresApp::OnInit() {
     Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample"));
 
     // create resources
+    auto rtSetup = TextureSetup::RenderTarget(512, 512);
+    rtSetup.ColorFormat = PixelFormat::RGB8;
+    rtSetup.DepthFormat = PixelFormat::D16;
+    rtSetup.MinFilter = TextureFilterMode::Linear;
+    rtSetup.MagFilter = TextureFilterMode::Linear;
+    rtSetup.WrapU = TextureWrapMode::Repeat;
+    rtSetup.WrapV = TextureWrapMode::Repeat;
     for (int32 i = 0; i < 2; i++) {
-        auto rtSetup = TextureSetup::RenderTarget(512, 512);
-        rtSetup.ColorFormat = PixelFormat::RGB8;
-        rtSetup.DepthFormat = PixelFormat::D16;
-        rtSetup.MinFilter = TextureFilterMode::Linear;
-        rtSetup.MagFilter = TextureFilterMode::Linear;
-        rtSetup.WrapU = TextureWrapMode::Repeat;
-        rtSetup.WrapV = TextureWrapMode::Repeat;
-        this->renderTargets[i] = Gfx::CreateResource(rtSetup);
+        this->renderTargets[i] = Gfx::Resource().Create(rtSetup);
     }
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
@@ -95,12 +95,12 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72, 40).Build();
-    GfxId sphere = Gfx::CreateResource(shapeBuilder.GetMeshSetup(), shapeBuilder.GetStream());
-    GfxId prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id sphere = Gfx::Resource().Create(shapeBuilder.Result());
+    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState = Gfx::Resource().Create(dss);
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -115,11 +115,6 @@ InfiniteSpheresApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 InfiniteSpheresApp::OnCleanup() {
-    // cleanup everything
-    this->drawState.Release();
-    for (int32 i = 0; i < 2; i++) {
-        this->renderTargets[i].Release();
-    }
     Gfx::Discard();
     return App::OnCleanup();
 }

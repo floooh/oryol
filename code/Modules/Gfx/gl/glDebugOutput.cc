@@ -40,8 +40,8 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
         case GL_DEBUG_SEVERITY_MEDIUM_ARB:  sevStr = "MEDIUM"; break;
         case GL_DEBUG_SEVERITY_HIGH_ARB:    sevStr = "HIGH"; break;
         default:                            sevStr = "<unknown>"; break;
-}
-    Log::Warn("##### OpenGL Debug Message:\n"
+    }
+    o_warn("##### OpenGL Debug Message:\n"
         "type: %s, id: %d, severity: %s\nmsg: %s\n",
         typeStr, id, sevStr, message);
 }

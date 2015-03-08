@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief private: GL implementation of programBundleFactory
 */
-#include "Gfx/base/renderSimpleFactory.h"
-#include "Gfx/Core/programBundle.h"
+#include "Resource/ResourceState.h"
+#include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
 namespace _priv {
@@ -15,7 +15,7 @@ class renderer;
 class shaderPool;
 class shaderFactory;
     
-class glProgramBundleFactory : public renderSimpleFactory<programBundle, ResourceType::ProgramBundle> {
+class glProgramBundleFactory {
 public:
     /// constructor
     glProgramBundleFactory();
@@ -30,7 +30,7 @@ public:
     bool IsValid() const;
     
     /// setup programBundle resource
-    void SetupResource(programBundle& progBundle);
+    ResourceState::Code SetupResource(programBundle& progBundle);
     /// destroy the shader
     void DestroyResource(programBundle& progBundle);
 

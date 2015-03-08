@@ -14,14 +14,16 @@ TEST(IdTest) {
     CHECK(Id::InvalidUniqueStamp == id.UniqueStamp());
     CHECK(Id::InvalidSlotIndex == id.SlotIndex());
     CHECK(Id::InvalidType == id.Type());
+    CHECK(Id::InvalidLabel == id.Label());
     CHECK(id == Id::InvalidId());
     
-    Id id1(1, 2, 3);
+    Id id1(1, 2, 3, 4);
     CHECK(id1.IsValid());
     CHECK(id != id1);
     CHECK(id1.UniqueStamp() == 1);
     CHECK(id1.SlotIndex() == 2);
     CHECK(id1.Type() == 3);
+    CHECK(id1.Label() == 4);
     
     // copy-constructor
     Id id2(id1);
@@ -30,6 +32,7 @@ TEST(IdTest) {
     CHECK(id2.UniqueStamp() == 1);
     CHECK(id2.SlotIndex() == 2);
     CHECK(id2.Type() == 3);
+    CHECK(id2.Label() == 4);
     
     // assignment
     Id id3;
@@ -39,6 +42,7 @@ TEST(IdTest) {
     CHECK(id3.UniqueStamp() == 1);
     CHECK(id3.SlotIndex() == 2);
     CHECK(id3.Type() == 3);
+    CHECK(id3.Label() == 4);
     
     // invalidation
     id3.Invalidate();
@@ -46,13 +50,15 @@ TEST(IdTest) {
     CHECK(Id::InvalidUniqueStamp == id3.UniqueStamp());
     CHECK(Id::InvalidSlotIndex == id3.SlotIndex());
     CHECK(Id::InvalidType == id3.Type());
+    CHECK(Id::InvalidLabel == id3.Label());
     CHECK(id3 == Id::InvalidId());
 
     // comparison
-    id3 = Id(0, 1, 2);
+    id3 = Id(0, 1, 2, 3);
     CHECK(id3.IsValid());
     CHECK(id3.UniqueStamp() == 0);
     CHECK(id3.SlotIndex() == 1);
     CHECK(id3.Type() == 2);
+    CHECK(id3.Label() == 3);
     CHECK(id3 < id2);
 }

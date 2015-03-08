@@ -15,8 +15,6 @@
 #include "Core/Containers/Array.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
-#include "Gfx/base/loaderBase.h"
-#include <functional>
 
 namespace Oryol {
     
@@ -46,21 +44,21 @@ public:
     /// window title
     String Title = "Oryol";
     
-    /// resource loaders
-    Array<std::function<Ptr<_priv::loaderBase>()>> Loaders;
-    
     /// tweak resource pool size for a rendering resource type
-    void SetPoolSize(ResourceType::Code type, int32 poolSize);
+    void SetPoolSize(GfxResourceType::Code type, int32 poolSize);
     /// get resource pool size for a rendering resource type
-    int32 PoolSize(ResourceType::Code type) const;
+    int32 PoolSize(GfxResourceType::Code type) const;
     /// tweak resource throttling value for a resource type, 0 means unthrottled
-    void SetThrottling(ResourceType::Code type, int32 maxCreatePerFrame);
+    void SetThrottling(GfxResourceType::Code type, int32 maxCreatePerFrame);
     /// get resource throttling value
-    int32 Throttling(ResourceType::Code type) const;
-    /// tweak the resource registry initial capacity (this can reduce memory re-allocations)
-    void SetResourceRegistryCapacity(int32 capacity);
-    /// get the resource registry initial capacity
-    int32 ResourceRegistryCapacity() const;
+    int32 Throttling(GfxResourceType::Code type) const;
+    
+    /// initial resource label stack capacity
+    int32 ResourceLabelStackCapacity = 256;
+    /// initial resource registry capacity
+    int32 ResourceRegistryCapacity = 256;
+    /// number of resource creation threads (must be == number of IO lanes)
+    int32 NumResourceCreationThreads = 4;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
@@ -71,9 +69,8 @@ public:
 private:
     static const int32 DefaultPoolSize = 128;
     
-    int32 poolSizes[ResourceType::NumResourceTypes];
-    int32 throttling[ResourceType::NumResourceTypes];
-    int32 registryCapacity;
+    int32 poolSizes[GfxResourceType::NumResourceTypes];
+    int32 throttling[GfxResourceType::NumResourceTypes];
 };
     
 } // namespace Oryol

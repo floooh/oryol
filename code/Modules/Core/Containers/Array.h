@@ -110,7 +110,7 @@ public:
     /// erase element at index, always swap-in from front (destroys element ordering)
     void EraseSwapFront(int32 index);
     
-    /// find element index with slow linear search
+    /// find element index with slow linear search, return InvalidIndex if not found
     int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) const;
     
     /// C++ conform begin

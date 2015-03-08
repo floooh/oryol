@@ -6,6 +6,13 @@ if (FIPS_PROFILING)
     add_definitions(-DORYOL_PROFILING=1)
 endif()
 
+# use Visual Leak Detector?
+# see https://github.com/floooh/fips-vld
+if (FIPS_USE_VLD)
+    add_definitions(-DORYOL_USE_VLD=1)
+endif()
+
+
 # POSIX platforms
 if (FIPS_POSIX)
     set(ORYOL_OPENGL 1)

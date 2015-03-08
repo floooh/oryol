@@ -67,7 +67,7 @@ ioLane::fileSystemForURL(const URL& url) {
         return this->fileSystems[scheme];
     }
     else {
-        Log::Warn("ioLane::fileSystemForURL: no filesystem registered for URL scheme '%s'!\n", scheme.AsCStr());
+        o_warn("ioLane::fileSystemForURL: no filesystem registered for URL scheme '%s'!\n", scheme.AsCStr());
         return Ptr<FileSystem>();
     }
 }

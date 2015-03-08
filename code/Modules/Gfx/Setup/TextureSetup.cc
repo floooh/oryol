@@ -8,12 +8,12 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
-Locator(Locator::NonShared()),
-IOLane(0),
+Type(TextureType::Texture2D),
 Width(0),
 Height(0),
 RelWidth(0.0f),
 RelHeight(0.0f),
+NumMipMaps(1),
 ColorFormat(PixelFormat::RGBA8),
 DepthFormat(PixelFormat::None),
 WrapU(TextureWrapMode::Repeat),
@@ -21,14 +21,43 @@ WrapV(TextureWrapMode::Repeat),
 WrapW(TextureWrapMode::Repeat),
 MagFilter(TextureFilterMode::Nearest),
 MinFilter(TextureFilterMode::Nearest),
-shouldSetupFromFile(false),
-shouldSetupFromImageFileData(false),
-shouldSetupFromPixelData(false),
-shouldSetupAsRenderTarget(false),
+Locator(Locator::NonShared()),
+setupFromFile(false),
+setupFromImageFileData(false),
+setupFromPixelData(false),
+setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
-    // empty
+    for (auto& offsets : this->ImageOffsets) {
+        offsets.Fill(0);
+    }
+    for (auto& sizes : this->ImageSizes) {
+        sizes.Fill(0);
+    }
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
+    TextureSetup setup;
+    setup.setupFromFile = true;
+    setup.Locator = loc;
+    setup.Placeholder = placeholder;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromFile(const class Locator& loc, TextureSetup blueprint, Id placeholder) {
+    TextureSetup setup(blueprint);
+    setup.setupFromFile = true;
+    setup.setupFromImageFileData = false;
+    setup.setupFromPixelData = false;
+    setup.setupAsRenderTarget = false;
+    setup.Locator = loc;
+    setup.Placeholder = placeholder;
+    return setup;
 }
 
 //------------------------------------------------------------------------------
@@ -38,7 +67,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
     o_assert(h > 0);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -49,35 +78,34 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromFile(const class Locator& loc, int32 ioLane, TextureSetup bluePrint) {
-    TextureSetup setup(bluePrint);
-    setup.shouldSetupFromFile = true;
-    setup.IOLane = ioLane;
-    setup.Locator = loc;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup
 TextureSetup::FromImageFileData(TextureSetup bluePrint) {
     TextureSetup setup(bluePrint);
-    setup.shouldSetupFromImageFileData = true;
+    setup.setupFromFile = false;
+    setup.setupFromImageFileData = true;
+    setup.setupFromPixelData = false;
+    setup.setupAsRenderTarget = false;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData(int32 w, int32 h, bool hasMipMaps, PixelFormat::Code fmt) {
+TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert(!PixelFormat::IsCompressedFormat(fmt));
+    o_assert((numMipMaps > 0) && (numMipMaps < MaxNumMipMaps));
     
-    TextureSetup setup;
-    setup.shouldSetupFromPixelData = true;
-    setup.hasMipMaps = hasMipMaps;
+    TextureSetup setup(blueprint);
+    setup.setupFromFile = false;
+    setup.setupFromImageFileData = false;
+    setup.setupFromPixelData = true;
+    setup.setupAsRenderTarget = false;
+    
+    setup.setupFromPixelData = true;
+    setup.Type = type;
     setup.Width = w;
     setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
     return setup;
 }
@@ -89,7 +117,7 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
     o_assert(relHeight > 0.0f);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.isRelSizeRenderTarget = true;
     setup.RelWidth = relWidth;
     setup.RelHeight = relHeight;
@@ -101,11 +129,11 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::SharedDepthRenderTarget(const GfxId& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Id().Type() == ResourceType::Texture);
+TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
+    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == GfxResourceType::Texture);
 
     TextureSetup setup;
-    setup.shouldSetupAsRenderTarget = true;
+    setup.setupAsRenderTarget = true;
     setup.hasSharedDepth = true;
     setup.DepthRenderTarget = depthRenderTarget;
     setup.WrapU = TextureWrapMode::ClampToEdge;
@@ -117,25 +145,25 @@ TextureSetup::SharedDepthRenderTarget(const GfxId& depthRenderTarget) {
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromFile() const {
-    return this->shouldSetupFromFile;
+    return this->setupFromFile;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromImageFileData() const {
-    return this->shouldSetupFromImageFileData;
+    return this->setupFromImageFileData;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromPixelData() const {
-    return this->shouldSetupFromPixelData;
+    return this->setupFromPixelData;
 }
 
 //------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupAsRenderTarget() const {
-    return this->shouldSetupAsRenderTarget;
+    return this->setupAsRenderTarget;
 }
 
 //------------------------------------------------------------------------------
@@ -154,12 +182,6 @@ TextureSetup::HasDepth() const {
 bool
 TextureSetup::HasSharedDepth() const {
     return this->hasSharedDepth;
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureSetup::HasMipMaps() const {
-    return this->hasMipMaps;
 }
 
 } // namespace Oryol

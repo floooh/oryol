@@ -24,14 +24,14 @@ glMesh::~glMesh() {
     o_assert_dbg(0 == this->glIndexBuffer);
     o_assert_dbg(nullptr == this->instanceMesh);
     for (uint32 i = 0; i < MaxNumSlots; i++) {
-        o_assert_dbg(0 == this->glVertexBuffer[i]);
-        o_assert_dbg(0 == this->glVAO[i]);
+        o_assert_dbg(0 == this->glVertexBuffers[i]);
+        o_assert_dbg(0 == this->glVAOs[i]);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-glMesh::clear() {
+glMesh::Clear() {
     this->numVertexBufferSlots = 1;
     this->activeVertexBufferSlot = 0;
     this->numVAOSlots = 1;
@@ -45,7 +45,7 @@ glMesh::clear() {
             this->glAttrs[slotIndex][i] = glVertexAttr();
         }
     }
-    meshBase::clear();
+    meshBase::Clear();
 }
 
 } // namespace _priv

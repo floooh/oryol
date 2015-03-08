@@ -35,16 +35,16 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
     // setup an OpenAL context and make it current
     this->alcDevice = alcOpenDevice(NULL);
     if (NULL == this->alcDevice) {
-        Log::Warn("alcOpenDevice() failed!\n");
+        o_warn("alcOpenDevice() failed!\n");
         return;
     }
     this->alcContext = alcCreateContext(this->alcDevice, NULL);
     if (NULL == this->alcContext) {
-        Log::Warn("alcCreateContext() failed!\n");
+        o_warn("alcCreateContext() failed!\n");
         return;
     }
     if (!alcMakeContextCurrent(this->alcContext)) {
-        Log::Warn("alcMakeContextCurrent() failed!\n");
+        o_warn("alcMakeContextCurrent() failed!\n");
         return;
     }
     this->PrintALInfo();

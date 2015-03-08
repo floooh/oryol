@@ -14,11 +14,12 @@ messages:
         - { name: Lane, type: int32 }
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
-        - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
-        - { name: ErrorDesc, type: String, dir: out }
-        - { name: Stream, type: Ptr<MemoryStream>, dir: out }
         - { name: StartOffset, type: int32, default: 0 }
         - { name: EndOffset, type: int32, default: 0 }
+        - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
+        - { name: ErrorDesc, type: String, dir: out }
+        - { name: Stream, type: Ptr<Stream>, dir: out }
+        - { name: ActualLane, type: int32, dir: out }
     - name: notifyLanes
       attrs:
         - { name: Scheme, type: StringAtom }
