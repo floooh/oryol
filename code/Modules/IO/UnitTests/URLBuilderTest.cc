@@ -10,71 +10,68 @@ using namespace Oryol;
 TEST(URLBuilderTest) {
     
     URLBuilder urlBuilder;
-    CHECK(urlBuilder.GetScheme().Empty());
-    CHECK(urlBuilder.GetUser().Empty());
-    CHECK(urlBuilder.GetPassword().Empty());
-    CHECK(urlBuilder.GetHost().Empty());
-    CHECK(urlBuilder.GetPort().Empty());
-    CHECK(urlBuilder.GetPath().Empty());
-    CHECK(urlBuilder.GetFragment().Empty());
-    CHECK(urlBuilder.GetQuery().Empty());
+    CHECK(urlBuilder.Scheme.Empty());
+    CHECK(urlBuilder.User.Empty());
+    CHECK(urlBuilder.Password.Empty());
+    CHECK(urlBuilder.Host.Empty());
+    CHECK(urlBuilder.Port.Empty());
+    CHECK(urlBuilder.Path.Empty());
+    CHECK(urlBuilder.Fragment.Empty());
+    CHECK(urlBuilder.Query.Empty());
     
     const URL srcUrl("http://www.flohofwoe.net/demos.html");
-    urlBuilder.SetURL(srcUrl);
-    CHECK(urlBuilder.GetScheme() == "http");
-    CHECK(urlBuilder.GetUser().Empty());
-    CHECK(urlBuilder.GetPassword().Empty());
-    CHECK(urlBuilder.GetHost() == "www.flohofwoe.net");
-    CHECK(urlBuilder.GetPort().Empty());
-    CHECK(urlBuilder.GetPath() == "demos.html");
-    CHECK(urlBuilder.GetFragment().Empty());
-    CHECK(urlBuilder.GetQuery().Empty());
+    urlBuilder.ParseURL(srcUrl);
+    CHECK(urlBuilder.Scheme == "http");
+    CHECK(urlBuilder.User.Empty());
+    CHECK(urlBuilder.Password.Empty());
+    CHECK(urlBuilder.Host == "www.flohofwoe.net");
+    CHECK(urlBuilder.Port.Empty());
+    CHECK(urlBuilder.Path == "demos.html");
+    CHECK(urlBuilder.Fragment.Empty());
+    CHECK(urlBuilder.Query.Empty());
     URL url(urlBuilder.BuildURL());
     CHECK(url == srcUrl);
     CHECK(url.Get() == srcUrl.Get());
     CHECK(url.Get() == "http://www.flohofwoe.net/demos.html");
     
     // add a user-name
-    urlBuilder.SetUser("floh");
+    urlBuilder.User = "floh";
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh@www.flohofwoe.net/demos.html");
     
     // add a password
-    urlBuilder.SetPassword("pwd");
+    urlBuilder.Password = "pwd";
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh:pwd@www.flohofwoe.net/demos.html");
     
     // add a port-number
-    urlBuilder.SetPort("8080");
+    urlBuilder.Port = "8080";
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh:pwd@www.flohofwoe.net:8080/demos.html");
     
     // add a fragment
-    urlBuilder.SetFragment("bla");
+    urlBuilder.Fragment = "bla";
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh:pwd@www.flohofwoe.net:8080/demos.html#bla");
     
     // add a query
-    Map<String, String> query;
-    query.Add("key0", "value0");
-    query.Add("key1", "value1");
-    urlBuilder.SetQuery(query);
+    urlBuilder.Query.Add("key0", "value0");
+    urlBuilder.Query.Add("key1", "value1");
     url = urlBuilder.BuildURL();
     CHECK(url.Get() == "http://floh:pwd@www.flohofwoe.net:8080/demos.html?key0=value0&key1=value1#bla");
     
     // construct from URL
     URLBuilder urlBuilder1(url);
-    CHECK(urlBuilder1.GetScheme() == "http");
-    CHECK(urlBuilder1.GetUser() == "floh");
-    CHECK(urlBuilder1.GetPassword() == "pwd");
-    CHECK(urlBuilder1.GetHost() == "www.flohofwoe.net");
-    CHECK(urlBuilder1.GetPort() == "8080");
-    CHECK(urlBuilder1.GetPath() == "demos.html");
-    CHECK(urlBuilder1.GetFragment() == "bla");
-    const Map<String, String>& query1 = urlBuilder.GetQuery();
-    CHECK(query1.Size() == 2);
-    CHECK(query1["key0"] == "value0");
-    CHECK(query1["key1"] == "value1");
+    CHECK(urlBuilder1.Scheme == "http");
+    CHECK(urlBuilder1.User == "floh");
+    CHECK(urlBuilder1.Password == "pwd");
+    CHECK(urlBuilder1.Host == "www.flohofwoe.net");
+    CHECK(urlBuilder1.Port == "8080");
+    CHECK(urlBuilder1.Path == "demos.html");
+    CHECK(urlBuilder1.Fragment == "bla");
+    CHECK(urlBuilder.Query.Size() == 2);
+    CHECK(urlBuilder.Query["key0"] == "value0");
+    CHECK(urlBuilder.Query["key1"] == "value1");
     URL url1(urlBuilder1.BuildURL());
     CHECK(url1 == url);
 }
