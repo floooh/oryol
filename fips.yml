@@ -35,7 +35,7 @@ exports:
         HTTP :          code/Modules/HTTP
         Gfx :           code/Modules/Gfx
         Resource :      code/Modules/Resource
-        Assets :         code/Modules/Assets
+        Assets :        code/Modules/Assets
         Time :          code/Modules/Time
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
