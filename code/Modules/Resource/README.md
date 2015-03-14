@@ -244,8 +244,8 @@ Resource building block classes, the resource type is just a number that is
 dragged along in the resource Id
 - a 32 bit **unique stamp**: this is a unique number that is incremented for each
 created resource of a resource type, the sole purpose of this is to prevent
-dangling resource Ids which was originally pointing to a resource slow that 
-has been initialized with a new resource
+dangling resource Ids which was originally pointing to a resource pool slot that 
+has been initialized with a new resource in the mean time
 
 ### Resource Factories
 
