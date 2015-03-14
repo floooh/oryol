@@ -1,4 +1,4 @@
-# Oryol Resources Handling
+# Oryol Resource Handling
 
 Oryol doesn't provide a centralized resource management system, instead modules
 implement their own local resource management using the helper classes
