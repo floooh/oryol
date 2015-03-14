@@ -7,7 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Resource/Id.h"
-#include "Resource/Core/ResourceLabel.h"
+#include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
 #include "Gfx/Core/VertexLayout.h"

@@ -42,8 +42,8 @@ ProgramBundleSetup::obtainEntry(uint32 mask) {
 void
 ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
     o_assert(this->numProgramEntries < MaxNumProgramEntries);
-    o_assert(vs.IsValid() && vs.Type() == GfxResourceType::Shader);
-    o_assert(fs.IsValid() && fs.Type() == GfxResourceType::Shader);
+    o_assert(vs.IsValid() && vs.Type == GfxResourceType::Shader);
+    o_assert(fs.IsValid() && fs.Type == GfxResourceType::Shader);
     
     programEntry& entry = this->obtainEntry(mask);
     entry.vertexShader = vs;

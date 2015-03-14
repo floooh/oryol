@@ -130,7 +130,7 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type() == GfxResourceType::Texture);
+    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type == GfxResourceType::Texture);
 
     TextureSetup setup;
     setup.setupAsRenderTarget = true;

@@ -3,7 +3,7 @@
 /**
     @class Oryol::Locator
     @ingroup Resources
-    @brief
+    @brief resource string name for sharing and locating resources
     
     A Locator describes where the source data for a resource
     is located. It usually contains a string that can be resolved

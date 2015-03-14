@@ -4,6 +4,7 @@
     @file Core/Macros.h
     @brief various low-level helper macros
 */
+#include <cstring>
 
 /// to-string / from-string helper macros
 #define __ORYOL_FROMSTRING(code) if (0 == std::strcmp(#code, str)) return code

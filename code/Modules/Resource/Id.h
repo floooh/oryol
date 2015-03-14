@@ -13,12 +13,19 @@ namespace Oryol {
     
 class Id {
 public:
+    /// unique-stamp type (sizeof all types must remain 64 bit)
+    typedef uint32 UniqueStampT;
+    /// slot-index type
+    typedef uint16 SlotIndexT;
+    /// resource type type
+    typedef uint16 TypeT;
+
     /// invalid unique stamp constant
-    static const uint32 InvalidUniqueStamp = 0xFFFFFFFF;
+    static const UniqueStampT InvalidUniqueStamp = 0xFFFFFFFF;
     /// invalid slot index constant
-    static const uint16 InvalidSlotIndex = 0xFFFF;
+    static const SlotIndexT InvalidSlotIndex = 0xFFFF;
     /// invalid type constant
-    static const uint16 InvalidType = 0xFFFF;
+    static const TypeT InvalidType = 0xFFFF;
 
     /// returns an invalid resource id
     static Id InvalidId();
@@ -26,7 +33,7 @@ public:
     /// default constructor, constructs invalid id
     Id();
     /// create with uniqueStamp, slotIndex and type
-    Id(uint32 uniqueStamp, uint16 slotIndex, uint16 type);
+    Id(UniqueStampT uniqueStamp, SlotIndexT slotIndex, TypeT type);
     /// copy constructor
     Id(const Id& rhs);
     
@@ -44,25 +51,20 @@ public:
     bool IsValid() const;
     /// invalidate the id
     void Invalidate();
-    /// get the slot index
-    uint16 SlotIndex() const;
-    /// get the type
-    uint16 Type() const;
-    /// get the unique-stamp
-    uint32 UniqueStamp() const;
+    
+    /// component access
+    union {
+        struct {
+            SlotIndexT SlotIndex;
+            TypeT Type;
+            UniqueStampT UniqueStamp;
+        };
+        uint64 Value;
+    };
     
 private:
     /// invalid id value
     static const uint64 invalidId = 0xFFFFFFFFFFFFFFFF;
-
-    union {
-        struct {
-            uint16 slotIndex;
-            uint16 type;
-            uint32 uniqueStamp;
-        };
-        uint64 id;
-    };
 };
 
 //------------------------------------------------------------------------------
@@ -74,23 +76,23 @@ Id::InvalidId() {
 //------------------------------------------------------------------------------
 inline
 Id::Id() :
-id(invalidId) {
+Value(invalidId) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-Id::Id(uint32 uniqueStamp_, uint16 slotIndex_, uint16 type_) :
-slotIndex(slotIndex_),
-type(type_),
-uniqueStamp(uniqueStamp_) {
+Id::Id(UniqueStampT uniqueStamp_, SlotIndexT slotIndex_, TypeT type_) :
+SlotIndex(slotIndex_),
+Type(type_),
+UniqueStamp(uniqueStamp_) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
 Id::Id(const Id& rhs) :
-id(rhs.id) {
+Value(rhs.Value) {
     // empty
 }
 
@@ -98,56 +100,38 @@ id(rhs.id) {
 inline void
 Id::operator=(const Id& rhs) {
     if (this != &rhs) {
-        this->id = rhs.id;
+        this->Value = rhs.Value;
     }
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator==(const Id& rhs) const {
-    return this->id == rhs.id;
+    return this->Value == rhs.Value;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator!=(const Id& rhs) const {
-    return this->id != rhs.id;
+    return this->Value != rhs.Value;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::operator<(const Id& rhs) const {
-    return this->id < rhs.id;
-}
-
-//------------------------------------------------------------------------------
-inline uint16
-Id::SlotIndex() const {
-    return this->slotIndex;
-}
-
-//------------------------------------------------------------------------------
-inline uint16
-Id::Type() const {
-    return this->type;
-}
-
-//------------------------------------------------------------------------------
-inline uint32
-Id::UniqueStamp() const {
-    return this->uniqueStamp;
+    return this->Value < rhs.Value;
 }
 
 //------------------------------------------------------------------------------
 inline bool
 Id::IsValid() const {
-    return InvalidUniqueStamp != this->uniqueStamp;
+    return InvalidUniqueStamp != this->UniqueStamp;
 }
 
 //------------------------------------------------------------------------------
 inline void
 Id::Invalidate() {
-    this->id = invalidId;
+    this->Value = invalidId;
 }
 
 } // namespace Oryol

@@ -17,7 +17,7 @@
 */
 #include "Core/Assertion.h"
 #include "Resource/Id.h"
-#include "Resource/Core/ResourceLabel.h"
+#include "Resource/ResourceState.h"
 
 namespace Oryol {
     
@@ -25,10 +25,14 @@ template<class SETUP> class resourceBase {
 public:
     /// the resource id
     class Id Id;
+    /// current resource state
+    ResourceState::Code State;
+    /// frame count of last state change
+    int32 StateStartFrame = 0;
     /// the setup object
     SETUP Setup;
     
-    /// clear the resource
+    /// clear the resource (does not reset Id or state)
     void Clear();
 };
 

@@ -3,14 +3,11 @@
 /**
     @class Oryol:resourceRegistry
     @ingroup _priv
-    @brief registry for shared, use-counted assets
-    
-    The resourceRegistry maps resource names (Locators) to use-counted
-    resource Ids.
+    @brief map resource locators to resource ids for resource sharing
 */
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
-#include "Resource/Core/ResourceLabel.h"
+#include "Resource/ResourceLabel.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Map.h"
 
@@ -31,28 +28,26 @@ public:
     /// return true if the registry has been setup
     bool IsValid() const;
     
-    /// add a new asset to the registry
+    /// add a new resource id to the registry
     void Add(const Locator& loc, Id id, ResourceLabel label);
-    /// lookup asset by locator
+    /// lookup resource Id by locator
     Id Lookup(const Locator& loc) const;
     /// remove all resource matching label from registry, returns removed Ids
     Array<Id> Remove(ResourceLabel label);
     
-    /// check if asset is registered by AssetId
+    /// check if resource is in registry
     bool Contains(Id id) const;
-    /// (debug) get the locator of an asset (fail hard if asset doesn't exist)
+    /// (debug) get the locator of a resource (fail hard if resource doesn't exist)
     const Locator& GetLocator(Id id) const;
+    /// (debug) get the resource label of a resource (fail hard if resource doesn't exist)
+    ResourceLabel GetLabel(Id id) const;
     
-    /// (debug) get number of assets in the registry
+    /// (debug) get number of resources in the registry
     int32 GetNumResources() const;
-    /// (debug) get asset id by index
+    /// (debug) get resource id by index
     Id GetIdByIndex(int32 index) const;
     
 private:
-    /// increment use count of asset
-    void incrUseCount(Id id);
-    /// decrement use count of resource and dependents, return 0-usecount resources
-    bool decrUseCount(Id id);
     #if ORYOL_DEBUG
     /// validate integrity of internal data structures
     bool checkIntegrity() const;

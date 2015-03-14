@@ -34,8 +34,8 @@ TEST(ResourcePoolTest) {
     
     Id resId = resourcePool.AllocId();
     CHECK(resId.IsValid());
-    CHECK(resId.Type() == 12);
-    CHECK(resId.SlotIndex() == 0);
+    CHECK(resId.Type == 12);
+    CHECK(resId.SlotIndex == 0);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId));
     
     resourcePool.Assign(resId, mySetup(123), ResourceState::Valid);
@@ -51,8 +51,8 @@ TEST(ResourcePoolTest) {
     
     Id resId1 = resourcePool.AllocId();
     CHECK(resId1.IsValid());
-    CHECK(resId1.Type() == 12);
-    CHECK(resId1.SlotIndex() == 1);
+    CHECK(resId1.Type == 12);
+    CHECK(resId1.SlotIndex == 1);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId1));
     
     resourcePool.Assign(resId1, mySetup(12345), ResourceState::Valid);

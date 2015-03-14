@@ -8,24 +8,11 @@
     discard for different types of related resources. Modules like
     the Gfx module typically derive a single ResourceContainer subclass
     to wrap their different resource types.
-    
-    A resource container subclass should offer the following interface:
-    
-    void AttachLoader(const Ptr<ResourceLoader>& loader);
-    void DetachLoader(const Ptr<ResourceLoader>& loader);
-    void PushLabel(uint8 label);
-    uint8 PopLabel();
-    template<SETUP> Id Create(const SETUP& setup);
-    template<SETUP> Id Create(const SetupAndStream<SETUP> setupAndStream);
-    template<SETUP> Id Load(const SETUP& setup);
-    Id Lookup(const Locator& locator);
-    ResourceState::Code QueryState(const Id& id);
-    void Destroy(uint8 label);
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
 #include "Resource/Core/resourceRegistry.h"
-#include "Resource/Core/ResourceLabel.h"
+#include "Resource/ResourceLabel.h"
 
 namespace Oryol {
 

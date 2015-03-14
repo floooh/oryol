@@ -3,9 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ResourceState.h"
-#include "Core/Macros.h"
 #include "Core/Assertion.h"
-#include <cstring>
+#include "Core/Macros.h"
 
 namespace Oryol {
     

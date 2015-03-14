@@ -15,14 +15,14 @@ isValid(false) {
 
 //------------------------------------------------------------------------------
 resourceRegistry::~resourceRegistry() {
-    o_assert(!this->isValid);
-    o_assert(this->entries.Empty());
+    o_assert_dbg(!this->isValid);
+    o_assert_dbg(this->entries.Empty());
 }
 
 //------------------------------------------------------------------------------
 void
 resourceRegistry::Setup(int32 reserveSize) {
-    o_assert(!this->isValid);
+    o_assert_dbg(!this->isValid);
     
     this->isValid = true;
     this->entries.Reserve(reserveSize);
@@ -33,7 +33,7 @@ resourceRegistry::Setup(int32 reserveSize) {
 //------------------------------------------------------------------------------
 void
 resourceRegistry::Discard() {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     
     this->entries.Clear();
     this->locatorIndexMap.Clear();
@@ -50,13 +50,13 @@ resourceRegistry::IsValid() const {
 //------------------------------------------------------------------------------
 void
 resourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
-    o_assert(this->isValid);
-    o_assert(id.IsValid());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
     
     this->entries.Add(loc, id, label);
     if (loc.IsShared()) {
-        o_assert(!this->locatorIndexMap.Contains(loc));
+        o_assert_dbg(!this->locatorIndexMap.Contains(loc));
         this->locatorIndexMap.Add(loc, this->entries.Size() - 1);
     }
     this->idIndexMap.Add(id, this->entries.Size() - 1);
@@ -89,15 +89,15 @@ resourceRegistry::findEntryById(Id id) const {
 //------------------------------------------------------------------------------
 bool
 resourceRegistry::Contains(Id id) const {
-    o_assert(this->isValid);
-    o_assert(id.IsValid());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.IsValid());
     return this->idIndexMap.Contains(id);
 }
 
 //------------------------------------------------------------------------------
 Id
 resourceRegistry::Lookup(const Locator& loc) const {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     if (loc.IsShared()) {
         const Entry* entry = this->findEntryByLocator(loc);
         if (nullptr != entry) {
@@ -110,7 +110,7 @@ resourceRegistry::Lookup(const Locator& loc) const {
 //------------------------------------------------------------------------------
 Array<Id>
 resourceRegistry::Remove(ResourceLabel label) {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     Array<Id> removed;
     removed.Reserve(this->entries.Size() < 256 ? this->entries.Size() : 256);
     
@@ -160,25 +160,36 @@ resourceRegistry::Remove(ResourceLabel label) {
 //------------------------------------------------------------------------------
 const Locator&
 resourceRegistry::GetLocator(Id id) const {
-    o_assert(this->isValid);
-    o_assert(id.IsValid());
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.IsValid());
     
     const Entry* entry = this->findEntryById(id);
-    o_assert(nullptr != entry);
+    o_assert_dbg(nullptr != entry);
     return entry->locator;
+}
+
+//------------------------------------------------------------------------------
+ResourceLabel
+resourceRegistry::GetLabel(Id id) const {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.IsValid());
+    
+    const Entry* entry = this->findEntryById(id);
+    o_assert_dbg(nullptr != entry);
+    return entry->label;
 }
 
 //------------------------------------------------------------------------------
 int32
 resourceRegistry::GetNumResources() const {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     return this->entries.Size();
 }
 
 //------------------------------------------------------------------------------
 Id
 resourceRegistry::GetIdByIndex(int32 index) const {
-    o_assert(this->isValid);
+    o_assert_dbg(this->isValid);
     return this->entries[index].id;
 }
 
@@ -202,8 +213,8 @@ resourceRegistry::checkIntegrity() const {
         const Id& entryId = this->entries[entryIndex].id;
         if (entryId != id) {
             o_error("ResourceRegistry:: id mismatch at index '%d' (%d,%d,%d != %d,%d,%d)\n",
-                    entryIndex, entryId.UniqueStamp(), entryId.SlotIndex(), entryId.Type(),
-                    id.UniqueStamp(), id.SlotIndex(), id.Type());
+                    entryIndex, entryId.UniqueStamp, entryId.SlotIndex, entryId.Type,
+                    id.UniqueStamp, id.SlotIndex, id.Type);
             return false;
         }
     }

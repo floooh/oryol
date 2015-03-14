@@ -197,7 +197,7 @@ GfxResourceContainer::initAsync(const Id& resId, const SetupAndStream<TextureSet
     else {
         // the prepared texture object was destroyed before it was loaded
         o_warn("GfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
-            resId.Type(), resId.SlotIndex());
+            resId.Type, resId.SlotIndex);
         return ResourceState::InvalidState;
     }
 }
@@ -210,7 +210,7 @@ GfxResourceContainer::failedAsync(const Id& resId) {
     
     // the prepared resource may have been destroyed while it was loading
     if (this->texturePool.Contains(resId)) {
-        switch (resId.Type()) {
+        switch (resId.Type) {
             case GfxResourceType::Mesh:
                 this->meshPool.UpdateState(resId, ResourceState::Failed);
                 break;
@@ -319,7 +319,7 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
     
     Array<Id> ids = this->registry.Remove(label);
     for (const Id& id : ids) {
-        switch (id.Type()) {
+        switch (id.Type) {
             case GfxResourceType::Texture:
             {
                 if (ResourceState::Valid == this->texturePool.QueryState(id)) {
@@ -420,7 +420,7 @@ GfxResourceContainer::QueryResourceInfo(const Id& resId) const {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
-    switch (resId.Type()) {
+    switch (resId.Type) {
         case GfxResourceType::Texture:
             return this->texturePool.QueryResourceInfo(resId);
         case GfxResourceType::Mesh:
