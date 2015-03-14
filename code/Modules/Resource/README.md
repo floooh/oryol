@@ -1,16 +1,14 @@
-# Oryol Resources
-
-### The Resource Module
+# Oryol Resources Handling
 
 Oryol doesn't provide a centralized resource management system, instead modules
-implement their own, localized resource management using the helper classes
+implement their own local resource management using the helper classes
 in the Resource module as building blocks.
 
 ### Resource Management Overview
 
 This is a very general overview of the resource management philosophy in
 Oryol. Modules are completely free to implement their own resource
-management and don't need to adhere to the basic philosophy, or not
+management and don't need to adhere to this basic philosophy, or not
 use the Resource classes at all. This overview is more a record of what
 did and didn't work in previous attempts, and why the Resource module
 classes ended up the way they are.
@@ -18,44 +16,47 @@ classes ended up the way they are.
 For specific information on how to create and use resources, please read
 the particular module documentation (like the Gfx module doc page).
 
-### Oryol's View of a Resource (What's a Resource)
+### Oryol's Definition of Resources (or: What's a Resource)
 
 A resource is a very slim proxy object that adds a standardized interface 
 for **creation**, **destruction**, **sharing** and **lifetime management** to some
-other object or generally 'piece of data' (e.g. a 3D API resource
-like textures, shaders, vertex buffers, or something simple like
-a simple memory buffer).
+other external object or generally 'piece of data' (e.g. 3D API resources
+like textures, shaders, vertex buffers, or even something simple like
+a memory buffer with animation data).
 
 ### Resource Sharing
 
 Safe resource sharing is implemented through resource **Locators** and 
 resource **Ids**. A **Locator** is (in its usual form) a string name 
 that serves as a human-readable sharing identifier, and (for resources
-that are loaded from a filesystem) also as an URL. 
+that are loaded from a filesystem) also as an URL. Don't worry too much
+about the 'string' part being inefficient, these are actually string atom objects 
+where the string data only exist once in memory and where copy and comparison 
+are always simple pointer operations.
 
 A resource **Id** is  a 64-bit identifier that serves as a safe handle to 
 a resource object.  Both Locators and Ids are described in detail further down.
 
 The core of resource sharing is the **Lookup** operation, which takes
-a Locator object, and returns an Id object (which may be 'invalid' if the
-resource doesn't exist or isn't shareable).
+a Locator object, and returns an Id object, which can be 'invalid' if the
+resource doesn't exist.
 
 There is one interesting feature of Locators besides the string name, which 
 is the additional **Signature**. A Locator signature is a 32-bit number
 which is used to restrict sharing. Two Locators are only identical if both
 the string name and signature match. This can be used to supress resource
-sharing even if the string name (e.g. the filename) of two resource matches.
+sharing even if the string name (e.g. the filename) of two Locators matches.
 
 This is for instance useful if a resource (like a mesh, or a texture) must
 be loaded from the same data file, but has different usage scenarios (e.g.
-one instance of a mesh is used as static geometry for rendering, but
-the other instance must be readable by the CPU but is never rendered, but 
-both meshes have the same filename).
+one instance of a mesh is used as static geometry for rendering, and
+another instance must be readable by the CPU, but both meshes must be
+loaded from the same file on disk).
 
 There is one special "NonShared" signature which disables sharing of
-a resource completely, and makes the resource object unique, no matter 
+a resource completely, and always makes the resource object unique, no matter 
 how many other shared or non-shared resources with the same name exist, this
-is most useful to enforce private ownership and use of a resource without
+is most useful to enforce private ownership of a resource without
 having to care about name collisions.
 
 
@@ -80,7 +81,8 @@ other resources are created at the start of a map (or entering a zone), and
 destroyed when the map (or zone) is left, or when a subsystem is created
 or destroyed.
 
-A fine-grained per-resource use-count system seems like overkill.
+A fine-grained per-resource use-count system seems like overkill for this
+usage scenario.
 
 The new resource lifetime management system in Oryol works like this:
 
@@ -88,12 +90,12 @@ Before creating a number of related resources, the creating code pushes
 a ResourceLabel on the 'label stack'. All created resources get the label
 from the top of the label stack assigned. After the group of related
 resources have been created, the label is popped from the label stack and
-the creating code keeps a record of the label, because it is needed later
-for destruction.
+the creating code keeps the label around for later when the resources
+should be destroyed.
 
-When this specific set of resources is no longer needed, a single
-destroy call (taking a resource label as argument) is all that's needed
-to destroy all resources with that label.
+When the batch of resources is no longer needed, a single Destroy call which
+takes a resource label as arguments destroys all resources matching
+the label at once.
 
 All resources with that label are **gone** now, any code still trying to use
 a resource Id from this batch will fail. What 'fail' exactly means depends
@@ -105,8 +107,7 @@ could for instance throw an assert, or silently ignore the invalid Id.
 
 ### Resource States
 
-A resource object is always in one of the following states (if some
-states are unclear yet, read on, details are explained further down):
+A resource object is always in one of the following states:
 
 * **Initial**: the resource is in its initial 'uninitalized' state, 
 application code usually never sees or has to deal with a resource in the 
@@ -120,7 +121,8 @@ code can check whether a resource is in pending state, but usually doesn't
 need to deal with this (nothing bad will happen if a pending resource is used)
 * **Valid**: the resource has been initialized and can be used, this is the
 common state of a resource during its lifetime
-* **Failed**: resource creation has failed
+* **Failed**: resource creation has failed, again, nothing bad should happen
+if an application tries to use a resource in Failed state
 
 
 ### Resource Creation and Loading
@@ -135,10 +137,10 @@ over how the resource is actually created.
 There is a distinction between Creation and Loading:
 
 * **Creation** always means the resource is created instantly and synchronously
-(although please note that 'synchronously' part may
-change in later versions when more modern desktop 3D APIs are supported which
+(but please note that the 'synchronously' part may
+change in later versions when more modern 3D APIs are supported which
 make it easier to setup resources in separate threads)
-* **Loading** always means that an asynchronous loading operation is involed
+* **Loading** always means that an asynchronous loading operation is involved
 (e.g. loading resource data from disk or web)
 
 There may be a 3rd creation type in the future (**Streaming**) which would
@@ -159,17 +161,17 @@ object.
 
 **A short interlude on Setup objects:**
 
-Setup objects are very small and simple data objects that describe in detail 
+Setup objects are simple data objects that describe in detail 
 how a resource should be created. Typically each resource type has its own
 setup class (e.g. in the Gfx module there are classes like TextureSetup
 or MeshSetup).
 
-Setup objects exist along with the resource object they describe (the idea is, 
+Setup objects exist along with the resource object they described (the idea is, 
 that this will help to restore a 'lost' resource object, although this has not
-yet been implemented, and there are some open design issue when generated
-data is involved).
+yet been implemented, and there are some open design issue when procedurally 
+generated data is involved).
 
-A resource **Load** operation is always delegated to a loader object which
+A resource **Loading** operation is always delegated to a loader object which
 knows how to asynchronously setup a resource. The Loader object takes a similar
 role to the Setup object for synchronous creation, but a Loader object isn't
 a simple data container, but also contains actual loading code (loader objects
@@ -182,7 +184,7 @@ Creating a resource through async loading also always follows a simple pattern:
 Id Load(const Ptr<Loader>& loader);
 ```
 
-A Load method takes a pointer to a loader object, and immediately returns
+A Load function takes a pointer to a loader object, and immediately returns
 a resource Id. The resource Id can be used right away even though the
 resource may still be loading in the background. A resource object that
 is still loading is in the Pending state. What happens when a pending
@@ -195,7 +197,7 @@ use publically available resource creation functions of a module, this
 is not enforced anywhere, but it can help to make the required loading code 
 simpler and more orthogonal. 
 
-For  instance, a in a former version of the Oryol Gfx resource system, loader 
+For instance, in a former version of the Oryol Gfx resource system, loader 
 classes directly made use of OpenGL functionality, which means loader classes
 would have to be duplicated for each resource file format **and**
 internally supported 3D API.
@@ -206,7 +208,7 @@ Actual resource objects are private and opaque, application code will
 usually not have direct access to a resource object in form of a
 pointer.
 
-Getting information about a resource back is wrapped in one or more
+Getting back information about a resource is wrapped in one or more
 Query operations, taking a resource Id and returning a result (simple
 value or a struct):
 
@@ -228,21 +230,22 @@ is an implementation detail that may change). Resource objects
 are never C++ constructed or destructed while the pool is alive, instead
 they only change their resource state (the actual API resource behind the
 private resource objects may be created and destroyed though, this depends
-on the actual resource implementation in modules).
+on the actual implementation of the resource system).
 
 A **resource Id** consists of 3 components which together form a 64-bit integer:
 
-- a 16 bit index into the resource pool (meaning that at 64k entries is the
+- a 16 bit **pool index**: this is simply a direct index in the
+resource pool of this resource type (meaning that at 64k entries is the
 maximum size of a resource pool)
-- a 16 bit resource type, there is no global resource type enum, instead 
+- a 16 bit **resource type**: there is no global resource type enum, instead 
 resource types are per-module (e.g. the Gfx module has the GfxResourceType
 enum, but the values may collide with other modules), from the view of the
 Resource building block classes, the resource type is just a number that is
 dragged along in the resource Id
-- a 32 bit 'unique stamp': this is a unique number that is incremented for each
+- a 32 bit **unique stamp**: this is a unique number that is incremented for each
 created resource of a resource type, the sole purpose of this is to prevent
-dangling resource Ids pointing to new resource in the same resource 
-pool slot as an old resource the Id was orginally pointing to
+dangling resource Ids which was originally pointing to a resource slow that 
+has been initialized with a new resource
 
 ### Resource Factories
 
