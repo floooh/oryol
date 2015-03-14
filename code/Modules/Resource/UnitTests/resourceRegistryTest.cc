@@ -34,6 +34,7 @@ TEST(ResourceRegistryTest) {
     CHECK(reg.GetIdByIndex(0) == blaId);
     CHECK(reg.Contains(blaId));
     CHECK(reg.GetLocator(blaId) == blaLoc);
+    CHECK(reg.GetLabel(blaId) == 123);
     CHECK(reg.Lookup(blaLoc) == blaId);
     removed = reg.Remove(123);
     CHECK(removed.Size() == 1);
@@ -49,6 +50,7 @@ TEST(ResourceRegistryTest) {
     CHECK(reg.Contains(blaSigId));
     CHECK(reg.GetLocator(blaSigId) == blaSigLoc);
     CHECK(reg.GetLocator(blaSigId) != blaLoc);
+    CHECK(reg.GetLabel(blaSigId) == 124);
     
     removed = reg.Remove(124);
     CHECK(removed.Size() == 2);
@@ -66,6 +68,7 @@ TEST(ResourceRegistryTest) {
     CHECK(reg.GetIdByIndex(0) == blobId);
     CHECK(reg.Contains(blobId));
     CHECK(reg.GetLocator(blobId) == blobLoc);
+    CHECK(reg.GetLabel(blobId) == 125);
     CHECK(!reg.Lookup(blobLoc).IsValid());
     removed = reg.Remove(125);
     CHECK(removed.Size() == 1);
