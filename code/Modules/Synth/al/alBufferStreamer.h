@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::alBufferStreamer.h
+    @class Oryol::_priv::alBufferStreamer
     @ingroup _priv
     @brief manage buffer queueing and reuse
     

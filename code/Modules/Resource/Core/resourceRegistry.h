@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol:resourceRegistry
+    @class Oryol::resourceRegistry
     @ingroup _priv
     @brief map resource locators to resource ids for resource sharing
 */

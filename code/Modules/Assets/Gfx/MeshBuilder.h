@@ -67,7 +67,7 @@ public:
     
     /// begin writing vertex and index data
     MeshBuilder& Begin();
-    /// write D component vertex data
+    /// write 1D component vertex data
     MeshBuilder& Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x);
     /// write 2D vertex data
     MeshBuilder& Vertex(uint32 vertexIndex, VertexAttr::Code attr, float32 x, float32 y);
