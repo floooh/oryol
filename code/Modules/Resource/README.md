@@ -249,7 +249,7 @@ has been initialized with a new resource in the mean time
 
 ### Resource Factories
 
-Resource object are typically initialized by resource **Factories** which
+Resource objects are typically initialized by resource **Factories** which
 know how to turn a resource from Setup state into Valid (or Failed) state and 
 also know how to destroy a resource (bringing it back from the Valid or
 Failed state into Initial state).
