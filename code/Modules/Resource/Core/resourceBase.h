@@ -26,7 +26,7 @@ public:
     /// the resource id
     class Id Id;
     /// current resource state
-    ResourceState::Code State;
+    ResourceState::Code State = ResourceState::Initial;
     /// frame count of last state change
     int32 StateStartFrame = 0;
     /// the setup object
