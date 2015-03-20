@@ -19,8 +19,6 @@ imports:
         git: https://github.com/floooh/fips-remotery.git
     fips-vld:
         git: https://github.com/floooh/fips-vld.git
-    oryol-tools:
-        git: https://github.com/floooh/oryol-tools.git
 
 exports:
     header-dirs :
