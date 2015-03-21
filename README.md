@@ -34,6 +34,12 @@ git clone https://github.com/floooh/oryol.git oryol
 
 [How to Build](doc/BUILD.md)
 
+## _Videos_
+
+[Coding a triangle from scratch](http://www.youtube.com/watch?v=B5R0uE5IMZs)
+[Building a standalone app](https://www.youtube.com/watch?v=z8nwrGh2Zsc)
+[Compiling and debugging in QtCreator and CLion](https://www.youtube.com/watch?v=Sp5TywYeNzE)
+
 #### Enjoy! ####
 
 
