@@ -83,45 +83,45 @@ tbOryolBitmap::Bind() {
 //------------------------------------------------------------------------------
 void tbOryolRenderer::BeginPaint(int render_target_w, int render_target_h)
 {
-	TBRendererBatcher::BeginPaint(render_target_w, render_target_h);
+    TBRendererBatcher::BeginPaint(render_target_w, render_target_h);
     
     // FIXME!
     /*
-	g_current_texture = (GLuint)-1;
-	g_current_batch = nullptr;
+    g_current_texture = (GLuint)-1;
+    g_current_batch = nullptr;
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	Ortho2D(0, (GLfloat)render_target_w, (GLfloat)render_target_h, 0);
-	glMatrixMode(GL_MODELVIEW);
-	glViewport(0, 0, render_target_w, render_target_h);
-	glScissor(0, 0, render_target_w, render_target_h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    Ortho2D(0, (GLfloat)render_target_w, (GLfloat)render_target_h, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glViewport(0, 0, render_target_w, render_target_h);
+    glScissor(0, 0, render_target_w, render_target_h);
 
-	glEnable(GL_BLEND);
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_SCISSOR_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_SCISSOR_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
     */
 }
 
 //------------------------------------------------------------------------------
 void tbOryolRenderer::EndPaint()
 {
-	TBRendererBatcher::EndPaint();
+    TBRendererBatcher::EndPaint();
 }
 
 //------------------------------------------------------------------------------
 tb::TBBitmap *
 tbOryolRenderer::CreateBitmap(int width, int height, uint32 *data)
 {
-	tbOryolBitmap *bitmap = new tbOryolBitmap(this);
+    tbOryolBitmap *bitmap = new tbOryolBitmap(this);
     bitmap->Init(width, height, data);
-	return bitmap;
+    return bitmap;
 }
 
 //------------------------------------------------------------------------------
@@ -129,18 +129,18 @@ void tbOryolRenderer::RenderBatch(Batch *batch)
 {
     // FIXME!
     /*
-	// Bind texture and array pointers
-	BindBitmap(batch->bitmap);
-	if (g_current_batch != batch)
-	{
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (void *) &batch->vertex[0].r);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].u);
-		glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].x);
-		g_current_batch = batch;
-	}
+    // Bind texture and array pointers
+    BindBitmap(batch->bitmap);
+    if (g_current_batch != batch)
+    {
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (void *) &batch->vertex[0].r);
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].u);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].x);
+        g_current_batch = batch;
+    }
 
-	// Flush
-	glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
+    // Flush
+    glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
     */
 }
 

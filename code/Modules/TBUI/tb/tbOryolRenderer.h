@@ -22,17 +22,17 @@ class tbOryolBitmap : public tb::TBBitmap
 {
 public:
     /// bitmap wrapper constructor
-	tbOryolBitmap(tbOryolRenderer *renderer);
+    tbOryolBitmap(tbOryolRenderer *renderer);
     /// bitmap wrapper destructor
-	~tbOryolBitmap();
+    ~tbOryolBitmap();
     /// initialize bitmap with data
-	bool Init(int width, int height, tb::uint32 *data);
+    bool Init(int width, int height, tb::uint32 *data);
     /// return width
-	virtual int Width() { return this->width; }
+    virtual int Width() { return this->width; }
     /// return height
-	virtual int Height() { return this->height; }
+    virtual int Height() { return this->height; }
     /// initialize with new data
-	virtual void SetData(tb::uint32 *data);
+    virtual void SetData(tb::uint32 *data);
     
     /// bind the bitmap (set shader param)
     void Bind();
@@ -43,12 +43,12 @@ private:
     /// create texture
     void CreateTexture(tb::uint32* data);
     
-	tbOryolRenderer *renderer;
+    tbOryolRenderer *renderer;
     int32 width;
     int32 height;
     
     ResourceLabel label;
-	Id texture;
+    Id texture;
 };
 
 //------------------------------------------------------------------------------
@@ -56,16 +56,16 @@ class tbOryolRenderer : public tb::TBRendererBatcher
 {
 public:
     /// begin painting
-	virtual void BeginPaint(int render_target_w, int render_target_h);
+    virtual void BeginPaint(int render_target_w, int render_target_h);
     /// end painting
-	virtual void EndPaint();
+    virtual void EndPaint();
     /// create a new bitmap object
-	virtual tb::TBBitmap *CreateBitmap(int width, int height, tb::uint32 *data);
+    virtual tb::TBBitmap *CreateBitmap(int width, int height, tb::uint32 *data);
 
     /// render a batch
-	virtual void RenderBatch(Batch *batch);
+    virtual void RenderBatch(Batch *batch);
     /// set clip rect
-	virtual void SetClipRect(const tb::TBRect &rect);
+    virtual void SetClipRect(const tb::TBRect &rect);
 };
 
 }   // namespace _priv
