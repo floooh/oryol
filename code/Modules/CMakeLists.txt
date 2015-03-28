@@ -13,3 +13,5 @@ fips_add_subdirectory(Dbg)
 fips_add_subdirectory(Input)
 fips_add_subdirectory(Synth)
 fips_add_subdirectory(NanoVG)
+fips_add_subdirectory(TBUI)
+
