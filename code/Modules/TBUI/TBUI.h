@@ -5,6 +5,7 @@
     @brief facade class for Oryol TurboBadgerUI wrapper module
 */
 #include "Core/Types.h"
+#include "TBUI/tb/tbMgr.h"
 
 namespace Oryol {
 
@@ -19,7 +20,7 @@ public:
     
 private:
     struct _state {
-    
+        _priv::tbMgr mgr;
     };
     static _state* state;
 };
