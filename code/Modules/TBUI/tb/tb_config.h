@@ -88,28 +88,22 @@
 
 // == Setting some defaults for platform implementations ==========================
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-#define TB_FILE_POSIX
+#if ORYOL_WINDOWS
+//#define TB_FILE_POSIX
 #define TB_TARGET_WINDOWS
 #define TB_CLIPBOARD_WINDOWS
 #define TB_SYSTEM_WINDOWS
-#endif
-
-#if defined(__linux) || defined(__linux__)
-#define TB_FILE_POSIX
+#elif ORYOL_LINUX
+// #define TB_FILE_POSIX
 #define TB_TARGET_LINUX
 #define TB_SYSTEM_LINUX
 #define TB_CLIPBOARD_GLFW
-#endif
-
-#ifdef MACOSX
-#define TB_FILE_POSIX
+#elif ORYOL_OSX
+// #define TB_FILE_POSIX
 #define TB_TARGET_MACOSX
 #define TB_SYSTEM_LINUX
 #define TB_CLIPBOARD_GLFW
-#endif
-
-#if defined(ANDROID) || defined(__ANDROID__)
+#elif ORYOL_ANDROID
 #define TB_SYSTEM_ANDROID
 #define TB_CLIPBOARD_DUMMY
 #endif

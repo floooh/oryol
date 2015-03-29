@@ -12,9 +12,10 @@ TBUI::_state* TBUI::state = nullptr;
 
 //-----------------------------------------------------------------------------
 void
-TBUI::Setup() {
+TBUI::Setup(const TBUISetup& setup) {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
+    
 }
 
 //-----------------------------------------------------------------------------
