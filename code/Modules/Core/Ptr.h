@@ -164,7 +164,7 @@ public:
         return nullptr != p;
     };
     /// invalidate the ptr (equivalent with assigning nullptr)
-    void Invalidate() {
+    void invalidate() {
         del();
     };
 

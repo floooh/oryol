@@ -95,13 +95,13 @@ TEST(Rtti) {
     CHECK(a3->GetRefCount() == 3);
     CHECK(a4 == ab);
     
-    a.Invalidate();
-    aa.Invalidate();
-    ab.Invalidate();
+    a.invalidate();
+    aa.invalidate();
+    ab.invalidate();
     
-    a1.Invalidate();
-    a2.Invalidate();
-    a3.Invalidate();
-    a4.Invalidate();
+    a1.invalidate();
+    a2.invalidate();
+    a3.invalidate();
+    a4.invalidate();
     
 }
