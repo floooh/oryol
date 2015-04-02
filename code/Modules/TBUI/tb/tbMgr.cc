@@ -13,7 +13,7 @@ namespace _priv {
 
 //-----------------------------------------------------------------------------
 tbMgr::tbMgr() {
-	TBWidgetsAnimationManager::Init();
+    TBWidgetsAnimationManager::Init();
     this->runLoopId = Core::PreRunLoop()->Add([this] {
         this->update();
     });
@@ -22,15 +22,15 @@ tbMgr::tbMgr() {
 //-----------------------------------------------------------------------------
 tbMgr::~tbMgr() {
     Core::PreRunLoop()->Remove(this->runLoopId);
-	TBWidgetsAnimationManager::Shutdown();
+    TBWidgetsAnimationManager::Shutdown();
 }
 
 //-----------------------------------------------------------------------------
 void
 tbMgr::update() {
-	TBAnimationManager::Update();
-	this->rootWidget.InvokeProcessStates();
-	this->rootWidget.InvokeProcess();
+    TBAnimationManager::Update();
+    this->rootWidget.InvokeProcessStates();
+    this->rootWidget.InvokeProcess();
 }
 
 } // namespace _priv
