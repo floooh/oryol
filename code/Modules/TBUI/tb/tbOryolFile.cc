@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 tb::TBFile*
 tb::TBFile::Open(const char* filename, TBFileMode mode) {
-    Oryol::Ptr<Oryol::Stream> data = Oryol::TBUI::Resource().lookupByResName(filename);
+    Oryol::Ptr<Oryol::Stream> data = Oryol::TBUI::Resource().lookupResource(filename);
     if (data.isValid()) {
         data->Open(Oryol::OpenMode::ReadOnly);
         Oryol::_priv::tbOryolFile* obj = new Oryol::_priv::tbOryolFile();
