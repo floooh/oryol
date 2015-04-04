@@ -32,6 +32,10 @@ IOQueue::Start() {
 //------------------------------------------------------------------------------
 void
 IOQueue::Stop() {
+    // FIXME: it should be possible to Stop the IOQueue from within
+    // its success or fail func (currently this crashes because the
+    // update loop is confused)
+
     o_assert(this->isStarted);
     this->isStarted = false;
     Core::PreRunLoop()->Remove(this->runLoopId);
