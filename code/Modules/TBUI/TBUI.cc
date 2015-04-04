@@ -43,4 +43,11 @@ TBUI::InitTurboBadger() {
     state->mgr.Setup(state->setup);
 }
 
+//-----------------------------------------------------------------------------
+_priv::tbOryolRootWidget*
+TBUI::getRootWidget() {
+    o_assert_dbg(IsValid());
+    return state->mgr.GetRootWidget();
+}
+
 } // namespace Oryol

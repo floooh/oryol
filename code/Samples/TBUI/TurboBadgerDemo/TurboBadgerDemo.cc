@@ -8,6 +8,7 @@
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
 #include "TBUI/TBUI.h"
+#include "MainWindow.h"
 
 using namespace Oryol;
 
@@ -24,6 +25,7 @@ private:
     void loadInitResources(const TBUISetup& setup, IOQueue::GroupSuccessFunc onLoaded);
 
     IOQueue ioQueue;
+    Ptr<MainWindow> mainWindow;
 };
 OryolMain(TurboBadgerDemoApp);
 
@@ -37,7 +39,7 @@ TurboBadgerDemoApp::OnInit() {
     ioSetup.Assigns.Add("ui:", "res:tbui/");
     IO::Setup(ioSetup);
 
-    Gfx::Setup(GfxSetup::Window(512, 256, "TurboBadger UI Demo"));
+    Gfx::Setup(GfxSetup::Window(640, 480, "TurboBadger UI Demo"));
     
     TBUISetup tbuiSetup;
     tbuiSetup.Locale = "ui:language/lng_en.tb.txt";
@@ -55,6 +57,8 @@ TurboBadgerDemoApp::OnInit() {
             TBUI::Resource().Add(stream);
         }
         TBUI::InitTurboBadger();
+        this->mainWindow = MainWindow::Create();
+        this->mainWindow->Open();
     });
     
     return AppState::Running;
@@ -72,6 +76,7 @@ TurboBadgerDemoApp::OnRunning() {
 //-----------------------------------------------------------------------------
 AppState::Code
 TurboBadgerDemoApp::OnCleanup() {
+    this->mainWindow = nullptr;
     this->ioQueue.Stop();
     TBUI::Discard();
     Gfx::Discard();

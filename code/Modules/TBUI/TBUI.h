@@ -11,6 +11,10 @@
 
 namespace Oryol {
 
+namespace _priv {
+class tbOryolRootWidget;
+}
+
 class TBUI {
 public:
     /// setup the TurboBadger UI module
@@ -27,6 +31,11 @@ public:
     static void InitTurboBadger();
     
 private:
+    friend class TBUIWindow;
+    
+    /// get pointer to root window
+    static _priv::tbOryolRootWidget* getRootWidget();
+
     struct _state {
         TBUISetup setup;
         _priv::tbMgr mgr;

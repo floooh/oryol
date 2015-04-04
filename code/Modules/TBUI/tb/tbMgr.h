@@ -28,6 +28,9 @@ public:
     /// return true if object has been setup
     bool IsValid() const;
     
+    /// get pointer to root widget
+    tbOryolRootWidget* GetRootWidget();
+    
 private:
     /// per-frame update
     void update();

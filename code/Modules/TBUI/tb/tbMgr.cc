@@ -88,6 +88,13 @@ tbMgr::update() {
     this->rootWidget.InvokeProcess();
 }
 
+//-----------------------------------------------------------------------------
+tbOryolRootWidget*
+tbMgr::GetRootWidget() {
+    o_assert_dbg(this->IsValid());
+    return &this->rootWidget;
+}
+
 } // namespace _priv
 } // namespace Oryol
 

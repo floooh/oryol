@@ -3,6 +3,7 @@ fips_begin_module(TBUI)
         TBUI.h TBUI.cc
         TBUISetup.h
         TBUIFontInfo.h
+        TBUIWindow.cc TBUIWindow.h
     )
     fips_dir(tb)
     fips_files(
