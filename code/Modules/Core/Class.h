@@ -31,11 +31,11 @@ template<class TEMPLATE_TYPE> Oryol::_priv::poolAllocator<CLASS_TYPE<TEMPLATE_TY
 #define OryolClassDecl(TYPE) \
 protected:\
 virtual void destroy() {\
-    Memory::Delete(this);\
+    Oryol::Memory::Delete(this);\
 };\
 public:\
 template<typename... ARGS> static Oryol::Ptr<TYPE> Create(ARGS&&... args) {\
-    return Oryol::Ptr<TYPE>(Memory::New<TYPE>(std::forward<ARGS>(args)...));\
+    return Oryol::Ptr<TYPE>(Oryol::Memory::New<TYPE>(std::forward<ARGS>(args)...));\
 };
 
 /// implementation-side macro for Oryol class without pool allocator (located in .cc source file)
