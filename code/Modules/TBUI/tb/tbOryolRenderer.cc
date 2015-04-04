@@ -51,13 +51,15 @@ tbOryolBitmap::CreateTexture(tb::uint32* data) {
     o_assert_dbg(!this->texture.IsValid());
 
     // hmm this kinda sucks, a 'view mode' stream would be nice
+    const int byteSize = this->width * this->height * sizeof(tb::uint32);
     auto stream = MemoryStream::Create();
     stream->Open(OpenMode::WriteOnly);
-    stream->Write(data, this->width * this->height * sizeof(tb::uint32));
+    stream->Write(data, byteSize);
     stream->Close();
     
     this->label = Gfx::Resource().PushLabel();
     auto texSetup = TextureSetup::FromPixelData(this->width, this->height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
+    texSetup.ImageSizes[0][0] = byteSize;
     this->texture = Gfx::Resource().Create(texSetup, stream);
     Gfx::Resource().PopLabel();
 }

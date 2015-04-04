@@ -21,9 +21,19 @@ public:
     /// font infos
     Array<TBUIFontInfo> Fonts;
     /// default font name (must be one from 'Fonts')
-    URL DefaultFontName;
+    String DefaultFontName;
     /// default font size
     int32 DefaultFontSize = 14;
+    /// initial glyph set to prevent excessive reconstruction of font texture
+    StringAtom GlyphSet = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·";
+    /// x position of root widget
+    int32 RootWidgetX = 0;
+    /// y position of root widget
+    int32 RootWidgetY = 0;
+    /// width of root widget
+    int32 RootWidgetWidth = 640;
+    /// height of root widget
+    int32 RootWidgetHeight = 480;
 
     /// resource pool size
     int32 ResourcePoolSize = 256;

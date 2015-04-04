@@ -35,7 +35,7 @@ private:
     bool isValid;
     RunLoop::Id runLoopId = RunLoop::InvalidId;
     tbOryolRenderer* renderer = nullptr;
-    tbOryolRootWidget* rootWidget = nullptr;
+    tbOryolRootWidget rootWidget;
 };
 
 } // namespace _priv

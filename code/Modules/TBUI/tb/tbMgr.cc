@@ -24,6 +24,9 @@ tbMgr::~tbMgr() {
 void
 tbMgr::Setup(const TBUISetup& setup) {
     o_assert_dbg(!this->IsValid());
+    o_assert_dbg(setup.DefaultSkin.IsValid());
+    o_assert_dbg(!setup.Fonts.Empty());
+    o_assert_dbg(setup.DefaultFontName.IsValid());
     
     // initialize turbobadger
     this->renderer = Memory::New<tbOryolRenderer>();
@@ -45,6 +48,13 @@ tbMgr::Setup(const TBUISetup& setup) {
     fontDesc.SetID(TBIDC(setup.DefaultFontName.AsCStr()));
     fontDesc.SetSize(g_tb_skin->GetDimensionConverter()->DpToPx(setup.DefaultFontSize));
     g_font_manager->SetDefaultFontDescription(fontDesc);
+    TBFontFace* font = g_font_manager->CreateFontFace(g_font_manager->GetDefaultFontDescription());
+    if (font) {
+        font->RenderGlyphs(setup.GlyphSet.AsCStr());
+    }
+    
+    // setup root widget
+    this->rootWidget.SetRect(TBRect(setup.RootWidgetX, setup.RootWidgetY, setup.RootWidgetWidth, setup.RootWidgetHeight));
 
     TBWidgetsAnimationManager::Init();
     this->runLoopId = Core::PreRunLoop()->Add([this] {
@@ -73,11 +83,9 @@ tbMgr::IsValid() const {
 //-----------------------------------------------------------------------------
 void
 tbMgr::update() {
-    o_assert_dbg(this->rootWidget);
-
     TBAnimationManager::Update();
-    this->rootWidget->InvokeProcessStates();
-    this->rootWidget->InvokeProcess();
+    this->rootWidget.InvokeProcessStates();
+    this->rootWidget.InvokeProcess();
 }
 
 } // namespace _priv
