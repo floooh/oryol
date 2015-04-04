@@ -150,6 +150,7 @@ IOQueue::update() {
                 }
                 curItem.successFunc(result);
             }
+            this->groupItems.Erase(i);
         }
         
     }
