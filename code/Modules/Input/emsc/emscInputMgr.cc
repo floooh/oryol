@@ -6,6 +6,7 @@
 #include "Core/Core.h"
 #include "Time/Clock.h"
 #include "glm/glm.hpp"
+#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -170,6 +171,11 @@ emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* 
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonDown(btn);
+        
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetDown(true);
+        self->notifyHandlers(msg);
     }
     return true;
 }
@@ -182,6 +188,11 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonUp(btn);
+
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetUp(true);
+        self->notifyHandlers(msg);
     }
     return true;
 }
@@ -201,6 +212,12 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
         self->mouse.onPosMov(pos);
     }
+
+    auto msg = InputProtocol::MouseMove::Create();
+    msg->SetMovement(self->mouse.Movement);
+    msg->SetPosition(self->mouse.Position);
+    self->notifyHandlers(msg);
+
     return true;    
 }
 

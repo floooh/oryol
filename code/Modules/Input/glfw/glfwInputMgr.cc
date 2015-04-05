@@ -155,7 +155,7 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
             default:                        btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
-            Ptr<InputProtocol::MouseButton> msg = InputProtocol::MouseButton::Create();
+            auto msg = InputProtocol::MouseButton::Create();
             msg->SetMouseButton(btn);
             if (glfwAction == GLFW_PRESS) {
                 self->mouse.onButtonDown(btn);
@@ -176,7 +176,7 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)glfwX, (float32)glfwY);
         self->mouse.onPosMov(pos);
-        Ptr<InputProtocol::MouseMove> msg = InputProtocol::MouseMove::Create();
+        auto msg = InputProtocol::MouseMove::Create();
         msg->SetMovement(self->mouse.Movement);
         msg->SetPosition(self->mouse.Position);
         self->notifyHandlers(msg);
@@ -189,7 +189,7 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
         self->mouse.Scroll = scroll;
-        Ptr<InputProtocol::MouseScroll> msg = InputProtocol::MouseScroll::Create();
+        auto msg = InputProtocol::MouseScroll::Create();
         msg->SetScroll(scroll);
         self->notifyHandlers(msg);
     }

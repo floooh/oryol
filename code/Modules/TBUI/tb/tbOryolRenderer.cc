@@ -105,6 +105,7 @@ void tbOryolRenderer::EndPaint()
             -1.0f, 1.0f);
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
         
+        Gfx::ApplyScissorRect(this->m_screen_rect.x, this->m_screen_rect.y, this->m_screen_rect.w, this->m_screen_rect.h);
         Gfx::UpdateVertices(this->mesh, vertexDataSize, this->vertexData);
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
