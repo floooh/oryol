@@ -59,7 +59,6 @@ TBUIWindow::Open() {
         TBUI::Resource().PopLabel();
         this->OnResourcesLoaded();
     });
-
 }
 
 //------------------------------------------------------------------------------

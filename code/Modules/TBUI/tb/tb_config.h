@@ -7,14 +7,17 @@
 /** Enable for some handy runtime debugging, enabled by modifying
 	the various settings in g_tb_debug. A settings window can be
 	shown by calling ShowDebugInfoSettingsWindow. */
-#ifndef FIPS_DEBUG
+/*
+#if FIPS_DEBUG
 #define TB_RUNTIME_DEBUG_INFO
 #endif
+*/
 
-#ifndef FIPS_DEBUG
-/** Enable compilation of unit tests. */
-//#define TB_UNIT_TESTING
+/*
+#if FIPS_DEBUG
+#define TB_UNIT_TESTING
 #endif
+*/
 
 /** Enable if the focus state should automatically be set on edit fields even
 	when using the pointer. It is normally set only while moving focus by keyboard. */
@@ -89,21 +92,15 @@
 // == Setting some defaults for platform implementations ==========================
 
 #if ORYOL_WINDOWS
-//#define TB_FILE_POSIX
 #define TB_TARGET_WINDOWS
-#define TB_CLIPBOARD_WINDOWS
-//#define TB_SYSTEM_WINDOWS
+#define TB_CLIPBOARD_DUMMY
 #elif ORYOL_LINUX
-// #define TB_FILE_POSIX
 #define TB_TARGET_LINUX
-//#define TB_SYSTEM_LINUX
-#define TB_CLIPBOARD_GLFW
+#define TB_CLIPBOARD_DUMMY
 #elif ORYOL_OSX
-// #define TB_FILE_POSIX
 #define TB_TARGET_MACOSX
-//#define TB_SYSTEM_LINUX
-#define TB_CLIPBOARD_GLFW
-#elif ORYOL_ANDROID
-//#define TB_SYSTEM_ANDROID
+#define TB_CLIPBOARD_DUMMY
+#else
 #define TB_CLIPBOARD_DUMMY
 #endif
+

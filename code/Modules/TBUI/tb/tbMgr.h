@@ -27,6 +27,8 @@ public:
     void Discard();
     /// return true if object has been setup
     bool IsValid() const;
+    /// draw one frame
+    void Draw();
     
     /// get pointer to root widget
     tbOryolRootWidget* GetRootWidget();
@@ -36,7 +38,6 @@ private:
     void update();
 
     bool isValid;
-    RunLoop::Id runLoopId = RunLoop::InvalidId;
     tbOryolRenderer* renderer = nullptr;
     tbOryolRootWidget rootWidget;
 };

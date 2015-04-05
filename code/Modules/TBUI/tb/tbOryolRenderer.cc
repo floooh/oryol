@@ -4,153 +4,153 @@
 #include "Pre.h"
 #include "Core/Memory/Memory.h"
 #include "tbOryolRenderer.h"
+#include "TBUI/tb/tbOryolBitmap.h"
 #include "tb_bitmap_fragment.h"
 #include "tb_system.h"
+#include "TBUI/tb/TBUIShaders.h"
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-tbOryolBitmap::tbOryolBitmap(tbOryolRenderer* rnd) :
-renderer(rnd),
-width(0),
-height(0),
-label(ResourceLabel::Invalid) {
+tbOryolRenderer::tbOryolRenderer() :
+isValid(false),
+curBatchIndex(0),
+curVertexIndex(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-tbOryolBitmap::~tbOryolBitmap() {
-    if (this->texture.IsValid()) {
-        this->DestroyTexture();
-    }
-}
-
-//------------------------------------------------------------------------------
-bool
-tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
-    o_assert_dbg(tb::TBGetNearestPowerOfTwo(w) == w);
-    o_assert_dbg(tb::TBGetNearestPowerOfTwo(h) == h);
-    this->width = w;
-    this->height = h;
-    this->CreateTexture(data);
-    return true;
+tbOryolRenderer::~tbOryolRenderer() {
+    o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::SetData(uint32* data) {
-    o_assert_dbg(this->texture.IsValid());
-    this->DestroyTexture();
-    this->CreateTexture(data);
-}
-
-//------------------------------------------------------------------------------
-void
-tbOryolBitmap::CreateTexture(tb::uint32* data) {
-    o_assert_dbg(!this->texture.IsValid());
-
-    // hmm this kinda sucks, a 'view mode' stream would be nice
-    const int byteSize = this->width * this->height * sizeof(tb::uint32);
-    auto stream = MemoryStream::Create();
-    stream->Open(OpenMode::WriteOnly);
-    stream->Write(data, byteSize);
-    stream->Close();
-    
-    this->label = Gfx::Resource().PushLabel();
-    auto texSetup = TextureSetup::FromPixelData(this->width, this->height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.ImageSizes[0][0] = byteSize;
-    this->texture = Gfx::Resource().Create(texSetup, stream);
+tbOryolRenderer::Setup() {
+    o_assert_dbg(!this->isValid);
+    this->resLabel = Gfx::Resource().PushLabel();
+    this->setupMesh();
+    this->setupDrawState();
     Gfx::Resource().PopLabel();
+    this->isValid = true;
 }
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::DestroyTexture() {
-    o_assert_dbg(this->texture.IsValid());
-    this->renderer->FlushBitmap(this);
-    Gfx::Resource().Destroy(this->label);
-    this->texture.Invalidate();
-    this->label = ResourceLabel::Invalid;
+tbOryolRenderer::Discard() {
+    o_assert_dbg(this->isValid);
+    this->isValid = false;
+    Gfx::Resource().Destroy(this->resLabel);
 }
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::Bind() {
-    o_assert_dbg(this->texture.IsValid());
+tbOryolRenderer::setupMesh() {
+    o_assert_dbg(!this->mesh.IsValid());
     
-    // FIXME!
+    this->vertexLayout
+        .Add(VertexAttr::Position, VertexFormat::Float2)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
+        .Add(VertexAttr::Color0, VertexFormat::UByte4);
+    o_assert(sizeof(this->vertexData) == MaxNumVertices * this->vertexLayout.ByteSize());
+    
+    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
+    setup.Layout = this->vertexLayout;
+    this->mesh = Gfx::Resource().Create(setup);
+    o_assert(this->mesh.IsValid());
+    o_assert(Gfx::Resource().QueryResourceInfo(this->mesh).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
-void tbOryolRenderer::BeginPaint(int render_target_w, int render_target_h)
+void
+tbOryolRenderer::setupDrawState() {
+    o_assert_dbg(this->mesh.IsValid());
+    o_assert_dbg(!this->drawState.IsValid());
+    
+    Id prog = Gfx::Resource().Create(Shaders::TBUIShader::CreateSetup());
+    
+    auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, prog);
+    dss.DepthStencilState.DepthWriteEnabled = false;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    dss.BlendState.BlendEnabled = true;
+    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+//    dss.RasterizerState.ScissorTestEnabled = true;
+    this->drawState = Gfx::Resource().Create(dss);
+}
+
+//------------------------------------------------------------------------------
+void
+tbOryolRenderer::BeginPaint(int render_target_w, int render_target_h)
 {
+    o_assert_dbg(this->isValid);
+
     TBRendererBatcher::BeginPaint(render_target_w, render_target_h);
-    
-    // FIXME!
-    /*
-    g_current_texture = (GLuint)-1;
-    g_current_batch = nullptr;
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    Ortho2D(0, (GLfloat)render_target_w, (GLfloat)render_target_h, 0);
-    glMatrixMode(GL_MODELVIEW);
-    glViewport(0, 0, render_target_w, render_target_h);
-    glScissor(0, 0, render_target_w, render_target_h);
-
-    glEnable(GL_BLEND);
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_SCISSOR_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    */
+    this->curVertexIndex = 0;
+    this->curBatchIndex = 0;
 }
 
 //------------------------------------------------------------------------------
 void tbOryolRenderer::EndPaint()
 {
+    o_assert_dbg(this->isValid);
+
+    if (this->curVertexIndex > 0) {
+    
+        const glm::mat4 ortho = glm::ortho(0.0f, float(this->m_screen_rect.w),
+            (float)this->m_screen_rect.h, 0.0f,
+            -1.0f, 1.0f);
+        const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
+        
+        Gfx::UpdateVertices(this->mesh, vertexDataSize, this->vertexData);
+        Gfx::ApplyDrawState(this->drawState);
+        Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
+        for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
+            const tbOryolBatch& batch = this->batches[batchIndex];
+            Gfx::ApplyVariable(Shaders::TBUIShader::Texture, batch.texture);
+            Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
+        }
+    }
+
     TBRendererBatcher::EndPaint();
+}
+
+//------------------------------------------------------------------------------
+void tbOryolRenderer::RenderBatch(Batch *tbBatch)
+{
+    o_assert_dbg(this->isValid);
+    o_assert((this->curVertexIndex + tbBatch->vertex_count) < MaxNumVertices);
+    o_assert(this->curBatchIndex < MaxNumBatches);
+
+    const int size = this->vertexLayout.ByteSize() * tbBatch->vertex_count;
+    Memory::Copy(&tbBatch->vertex[0], &this->vertexData[this->curVertexIndex], size);
+
+    tbOryolBatch& batch = this->batches[this->curBatchIndex++];
+    batch.startIndex = this->curVertexIndex;
+    batch.numVertices = tbBatch->vertex_count;
+    batch.texture = ((tbOryolBitmap*)tbBatch->bitmap)->GetTexture();
+
+    this->curVertexIndex += tbBatch->vertex_count;
 }
 
 //------------------------------------------------------------------------------
 tb::TBBitmap *
 tbOryolRenderer::CreateBitmap(int width, int height, uint32 *data)
 {
+    Log::Info("tbOryolRenderer::CreateBitmap() called\n");
+
     tbOryolBitmap *bitmap = new tbOryolBitmap(this);
     bitmap->Init(width, height, data);
     return bitmap;
 }
 
 //------------------------------------------------------------------------------
-void tbOryolRenderer::RenderBatch(Batch *batch)
-{
-    // FIXME!
-    /*
-    // Bind texture and array pointers
-    BindBitmap(batch->bitmap);
-    if (g_current_batch != batch)
-    {
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (void *) &batch->vertex[0].r);
-        glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].u);
-        glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (void *) &batch->vertex[0].x);
-        g_current_batch = batch;
-    }
-
-    // Flush
-    glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
-    */
-}
-
-//------------------------------------------------------------------------------
 void tbOryolRenderer::SetClipRect(const tb::TBRect &rect)
 {
-    // FIXME!
-//      glScissor(m_clip_rect.x, m_screen_rect.h - (m_clip_rect.y + m_clip_rect.h), m_clip_rect.w, m_clip_rect.h);
+    // FIXME
 }
 
 } // namespace _priv

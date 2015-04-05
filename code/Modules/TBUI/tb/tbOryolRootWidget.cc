@@ -11,7 +11,7 @@ namespace _priv {
 //-----------------------------------------------------------------------------
 void
 tbOryolRootWidget::OnInvalid() {
-    Log::Info("tbOryolRootWidget::OnInvalid() called!\n");
+//    Log::Info("tbOryolRootWidget::OnInvalid() called!\n");
 }
 
 } // namespace _priv

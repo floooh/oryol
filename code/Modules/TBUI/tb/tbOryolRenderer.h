@@ -15,46 +15,21 @@
 namespace Oryol {
 namespace _priv {
 
-class tbOryolRenderer;
-
-//------------------------------------------------------------------------------
-class tbOryolBitmap : public tb::TBBitmap
-{
-public:
-    /// bitmap wrapper constructor
-    tbOryolBitmap(tbOryolRenderer *renderer);
-    /// bitmap wrapper destructor
-    ~tbOryolBitmap();
-    /// initialize bitmap with data
-    bool Init(int width, int height, tb::uint32 *data);
-    /// return width
-    virtual int Width() { return this->width; }
-    /// return height
-    virtual int Height() { return this->height; }
-    /// initialize with new data
-    virtual void SetData(tb::uint32 *data);
-    
-    /// bind the bitmap (set shader param)
-    void Bind();
-    
-private:
-    /// destroy texture
-    void DestroyTexture();
-    /// create texture
-    void CreateTexture(tb::uint32* data);
-    
-    tbOryolRenderer *renderer;
-    int32 width;
-    int32 height;
-    
-    ResourceLabel label;
-    Id texture;
-};
-
-//------------------------------------------------------------------------------
 class tbOryolRenderer : public tb::TBRendererBatcher
 {
 public:
+    /// constructor
+    tbOryolRenderer();
+    /// destructor
+    virtual ~tbOryolRenderer();
+
+    /// setup the renderer
+    void Setup();
+    /// discard the renderer
+    void Discard();
+    /// return true if object has been setup
+    bool IsValid() const;
+
     /// begin painting
     virtual void BeginPaint(int render_target_w, int render_target_h);
     /// end painting
@@ -66,6 +41,33 @@ public:
     virtual void RenderBatch(Batch *batch);
     /// set clip rect
     virtual void SetClipRect(const tb::TBRect &rect);
+    
+private:
+    /// setup the dynamic mesh
+    void setupMesh();
+    /// setup the draw state
+    void setupDrawState();
+    
+    static const int MaxNumVertices = 16 * 1024;
+    static const int MaxNumBatches = 1024;
+
+    bool isValid;
+    ResourceLabel resLabel;
+    VertexLayout vertexLayout;
+    Id mesh;
+    Id drawState;
+    int curBatchIndex;
+    uint16 curVertexIndex;
+    struct tbOryolVertex {
+        float32 pos[2];
+        float32 uv[2];
+        uint32 color;
+    } vertexData[MaxNumVertices];
+    struct tbOryolBatch {
+        uint16 startIndex = 0;
+        uint16 numVertices = 0;
+        Id texture;
+    } batches[MaxNumBatches];
 };
 
 }   // namespace _priv

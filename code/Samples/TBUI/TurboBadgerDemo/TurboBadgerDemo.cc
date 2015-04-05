@@ -7,8 +7,10 @@
 #include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
+#include "Dbg/Dbg.h"
 #include "TBUI/TBUI.h"
 #include "MainWindow.h"
+#include "Time/Clock.h"
 
 using namespace Oryol;
 
@@ -26,6 +28,7 @@ private:
 
     IOQueue ioQueue;
     Ptr<MainWindow> mainWindow;
+    TimePoint lastFrameTimePoint;
 };
 OryolMain(TurboBadgerDemoApp);
 
@@ -39,8 +42,9 @@ TurboBadgerDemoApp::OnInit() {
     ioSetup.Assigns.Add("ui:", "res:tbui/");
     IO::Setup(ioSetup);
 
-    Gfx::Setup(GfxSetup::Window(640, 480, "TurboBadger UI Demo"));
-    
+    Gfx::Setup(GfxSetup::Window(800, 768, "TurboBadger UI Demo"));
+    Dbg::Setup();
+
     TBUISetup tbuiSetup;
     tbuiSetup.Locale = "ui:language/lng_en.tb.txt";
     tbuiSetup.DefaultSkin = "ui:default_skin/skin.tb.txt";
@@ -60,16 +64,23 @@ TurboBadgerDemoApp::OnInit() {
         this->mainWindow = MainWindow::Create();
         this->mainWindow->Open();
     });
-    
+
     return AppState::Running;
 }
 
 //-----------------------------------------------------------------------------
 AppState::Code
 TurboBadgerDemoApp::OnRunning() {
+
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.0f, 1.0f, 1.0f));
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    TBUI::Draw();
+    Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    Dbg::PrintF("\n frame=%.3fms\n\r", frameTime.AsMilliSeconds());
+
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
@@ -79,6 +90,7 @@ TurboBadgerDemoApp::OnCleanup() {
     this->mainWindow = nullptr;
     this->ioQueue.Stop();
     TBUI::Discard();
+    Dbg::Discard();
     Gfx::Discard();
     IO::Discard();
     return App::OnCleanup();

@@ -5,6 +5,7 @@
 #include "tbMgr.h"
 #include "Core/Core.h"
 #include "IO/Core/URLBuilder.h"
+#include "Gfx/Gfx.h"
 #include "animation/tb_widget_animation.h"
 #include "tb_font_renderer.h"
 
@@ -30,6 +31,7 @@ tbMgr::Setup(const TBUISetup& setup) {
     
     // initialize turbobadger
     this->renderer = Memory::New<tbOryolRenderer>();
+    this->renderer->Setup();
 	tb_core_init(this->renderer, setup.Locale.AsCStr());
     
     // initialize turbobadger skin
@@ -53,13 +55,7 @@ tbMgr::Setup(const TBUISetup& setup) {
         font->RenderGlyphs(setup.GlyphSet.AsCStr());
     }
     
-    // setup root widget
-    this->rootWidget.SetRect(TBRect(setup.RootWidgetX, setup.RootWidgetY, setup.RootWidgetWidth, setup.RootWidgetHeight));
-
     TBWidgetsAnimationManager::Init();
-    this->runLoopId = Core::PreRunLoop()->Add([this] {
-        this->update();
-    });
 
     this->isValid = true;
 }
@@ -68,9 +64,11 @@ tbMgr::Setup(const TBUISetup& setup) {
 void
 tbMgr::Discard() {
     o_assert_dbg(this->IsValid());
-
-    Core::PreRunLoop()->Remove(this->runLoopId);
+    
     TBWidgetsAnimationManager::Shutdown();
+    this->renderer->Discard();
+    Memory::Delete(this->renderer);
+    
     this->isValid = false;
 }
 
@@ -82,10 +80,25 @@ tbMgr::IsValid() const {
 
 //-----------------------------------------------------------------------------
 void
-tbMgr::update() {
+tbMgr::Draw() {
+    o_assert_dbg(this->IsValid());
+    o_assert_dbg(this->renderer);
+
+    const DisplayAttrs& disp = Gfx::RenderTargetAttrs();
+    this->rootWidget.SetRect(TBRect(0, 0, disp.FramebufferWidth, disp.FramebufferHeight));
+
     TBAnimationManager::Update();
     this->rootWidget.InvokeProcessStates();
     this->rootWidget.InvokeProcess();
+    
+    this->renderer->BeginPaint(disp.FramebufferWidth, disp.FramebufferHeight);
+    this->rootWidget.InvokePaint(TBWidget::PaintProps());
+    this->renderer->EndPaint();
+
+    // if animations are running, reinvalidate immediately
+    if (TBAnimationManager::HasAnimationsRunning()) {
+        this->rootWidget.Invalidate();
+    }
 }
 
 //-----------------------------------------------------------------------------

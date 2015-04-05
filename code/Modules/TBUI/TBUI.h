@@ -29,6 +29,8 @@ public:
     
     /// initialize TurboBadger, call after setup resources have been loaded
     static void InitTurboBadger();
+    /// draw one frame, call this before Gfx::Commit
+    static void Draw();
     
 private:
     friend class TBUIWindow;

@@ -4,5 +4,5 @@ fips_begin_app(TurboBadgerDemo windowed)
         MainWindow.cc MainWindow.h
     )
     fips_dir(tbdemo)
-    fips_deps(Gfx HTTP TBUI)
+    fips_deps(Gfx HTTP Dbg TBUI)
 fips_end_app()

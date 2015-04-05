@@ -44,6 +44,15 @@ TBUI::InitTurboBadger() {
 }
 
 //-----------------------------------------------------------------------------
+void
+TBUI::Draw() {
+    o_assert_dbg(IsValid());
+    if (state->mgr.IsValid()) {
+        state->mgr.Draw();
+    }
+}
+
+//-----------------------------------------------------------------------------
 _priv::tbOryolRootWidget*
 TBUI::getRootWidget() {
     o_assert_dbg(IsValid());
