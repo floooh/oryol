@@ -6,6 +6,7 @@
 #include "Core/Core.h"
 #include "IO/Core/URLBuilder.h"
 #include "Gfx/Gfx.h"
+#include "Input/Input.h"
 #include "animation/tb_widget_animation.h"
 #include "tb_font_renderer.h"
 
@@ -54,9 +55,38 @@ tbMgr::Setup(const TBUISetup& setup) {
     if (font) {
         font->RenderGlyphs(setup.GlyphSet.AsCStr());
     }
+
+    // setup input handler
+    this->inputHandler = Dispatcher<InputProtocol>::Create();
+    this->inputHandler->Subscribe<InputProtocol::MouseMove>([this](const Ptr<InputProtocol::MouseMove>& msg) {
+        this->mouseX = (int) msg->GetPosition().x;
+        this->mouseY = (int) msg->GetPosition().y;
+        this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+    });
+    this->inputHandler->Subscribe<InputProtocol::MouseButton>([this](const Ptr<InputProtocol::MouseButton>& msg) {
+        const Mouse::Button mouseButton = msg->GetMouseButton();
+        if (mouseButton == Mouse::LMB) {
+            if (msg->GetDown()) {
+                this->rootWidget.InvokePointerDown(this->mouseX, this->mouseY, 1, this->modifierKeys, false);
+            }
+            else {
+                this->rootWidget.InvokePointerUp(this->mouseX, this->mouseY, this->modifierKeys, false);
+            }
+        }
+        else if (mouseButton == Mouse::RMB) {
+            this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+            if (TBWidget::hovered_widget)
+            {
+                TBWidget::hovered_widget->ConvertFromRoot(this->mouseX, this->mouseY);
+                TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU, this->mouseX, this->mouseY, false, this->modifierKeys);
+                TBWidget::hovered_widget->InvokeEvent(ev);
+            }
+        }
+    });
+    Input::AttachInputHandler(this->inputHandler);
     
     TBWidgetsAnimationManager::Init();
-
+    
     this->isValid = true;
 }
 

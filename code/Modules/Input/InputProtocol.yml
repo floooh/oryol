@@ -1,0 +1,19 @@
+---
+name: InputProtocol
+id: IPPT
+headers:
+    - glm/vec2.hpp
+    - Input/Core/Mouse.h
+messages:
+    - name: MouseMove
+      attrs:
+        - { name: Movement, type: 'glm::vec2' }
+        - { name: Position, type: 'glm::vec2' }
+    - name: MouseButton
+      attrs:
+        - { name: MouseButton, type: 'Mouse::Button' }
+        - { name: Down, type: bool }
+        - { name: Up, type: bool }
+    - name: MouseScroll
+      attrs:
+        - { name: Scroll, type: 'glm::vec2' }

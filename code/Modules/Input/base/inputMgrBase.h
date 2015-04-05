@@ -16,6 +16,7 @@
 #include "Input/touch/tapDetector.h"
 #include "Input/touch/panDetector.h"
 #include "Input/touch/pinchDetector.h"
+#include "Messaging/Port.h"
 
 namespace Oryol {
 namespace _priv {
@@ -37,6 +38,11 @@ public:
     void reset();
     /// get the input setup object
     const InputSetup& getInputSetup() const;
+    
+    /// attach input event handler
+    void attachInputHandler(const Ptr<Port>& handler);
+    /// detach input event handler
+    void detachInputHandler(const Ptr<Port>& handler);
 
     /// get keyboard state
     const class Keyboard& Keyboard() const;
@@ -63,6 +69,9 @@ public:
     void onTouchEvent(const touchEvent& event);
     
 protected:
+    /// distribute input event to attached event handlers
+    void notifyHandlers(const Ptr<Message>& msg);
+
     static const int32 MaxNumGamepads = 4;
     bool valid;
     InputSetup inputSetup;
@@ -75,7 +84,8 @@ protected:
     tapDetector doubleTapDetector;
     class panDetector panDetector;
     class pinchDetector pinchDetector;        
-    CursorMode::Code cursorMode;    
+    CursorMode::Code cursorMode;
+    Array<Ptr<Port>> handlers;
 };
 
 //------------------------------------------------------------------------------

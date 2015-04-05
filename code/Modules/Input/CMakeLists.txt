@@ -3,6 +3,7 @@
 #-------------------------------------------------------------------------------
 fips_begin_module(Input)
     fips_files(Input.cc Input.h)
+    fips_generate(TYPE MessageProtocol FROM InputProtocol.yml)
     fips_dir(Core)
     fips_files(
         CursorMode.h
@@ -50,6 +51,6 @@ fips_begin_module(Input)
         fips_files(glfwInputMgr.cc glfwInputMgr.h)
         fips_deps(glfw3)
     endif()
-    fips_deps(Core Gfx Time)
+    fips_deps(Core Messaging Gfx Time)
 fips_end_module()
 

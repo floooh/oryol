@@ -7,6 +7,7 @@
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "GLFW/glfw3.h"
+#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -154,12 +155,17 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
             default:                        btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
+            Ptr<InputProtocol::MouseButton> msg = InputProtocol::MouseButton::Create();
+            msg->SetMouseButton(btn);
             if (glfwAction == GLFW_PRESS) {
                 self->mouse.onButtonDown(btn);
+                msg->SetDown(true);
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->mouse.onButtonUp(btn);
+                msg->SetUp(true);
             }
+            self->notifyHandlers(msg);
         }
     }
 }
@@ -170,6 +176,10 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)glfwX, (float32)glfwY);
         self->mouse.onPosMov(pos);
+        Ptr<InputProtocol::MouseMove> msg = InputProtocol::MouseMove::Create();
+        msg->SetMovement(self->mouse.Movement);
+        msg->SetPosition(self->mouse.Position);
+        self->notifyHandlers(msg);
     }
 }
 
@@ -179,6 +189,9 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
         self->mouse.Scroll = scroll;
+        Ptr<InputProtocol::MouseScroll> msg = InputProtocol::MouseScroll::Create();
+        msg->SetScroll(scroll);
+        self->notifyHandlers(msg);
     }
 }
 

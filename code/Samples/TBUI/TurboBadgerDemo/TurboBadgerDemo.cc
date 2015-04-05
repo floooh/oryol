@@ -8,6 +8,7 @@
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
+#include "Input/Input.h"
 #include "TBUI/TBUI.h"
 #include "MainWindow.h"
 #include "Time/Clock.h"
@@ -44,6 +45,7 @@ TurboBadgerDemoApp::OnInit() {
 
     Gfx::Setup(GfxSetup::Window(800, 768, "TurboBadger UI Demo"));
     Dbg::Setup();
+    Input::Setup();
 
     TBUISetup tbuiSetup;
     tbuiSetup.Locale = "ui:language/lng_en.tb.txt";
@@ -73,7 +75,7 @@ AppState::Code
 TurboBadgerDemoApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.0f, 1.0f, 1.0f));
     TBUI::Draw();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
@@ -91,6 +93,7 @@ TurboBadgerDemoApp::OnCleanup() {
     this->ioQueue.Stop();
     TBUI::Discard();
     Dbg::Discard();
+    Input::Discard();
     Gfx::Discard();
     IO::Discard();
     return App::OnCleanup();

@@ -17,5 +17,5 @@ fips_begin_module(TBUI)
         TBUIResourceContainer.cc TBUIResourceContainer.h
     )
     fips_generate(FROM TBUIShaders.shd TYPE Shader)
-    fips_deps(Gfx Time turbobadger)
+    fips_deps(Gfx Input Time turbobadger)
 fips_end_module()

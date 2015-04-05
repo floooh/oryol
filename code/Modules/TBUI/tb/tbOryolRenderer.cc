@@ -78,7 +78,7 @@ tbOryolRenderer::setupDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-//    dss.RasterizerState.ScissorTestEnabled = true;
+    dss.RasterizerState.ScissorTestEnabled = true;
     this->drawState = Gfx::Resource().Create(dss);
 }
 
@@ -150,7 +150,12 @@ tbOryolRenderer::CreateBitmap(int width, int height, uint32 *data)
 //------------------------------------------------------------------------------
 void tbOryolRenderer::SetClipRect(const tb::TBRect &rect)
 {
-    // FIXME
+    // NOTE: this is an internal method called by parent class!
+    int32 x = this->m_clip_rect.x;
+    int32 y = this->m_screen_rect.h - (this->m_clip_rect.y + this->m_clip_rect.h);
+    int32 w = this->m_clip_rect.w;
+    int32 h = this->m_clip_rect.h;
+    Gfx::ApplyScissorRect(x, y, w, h);
 }
 
 } // namespace _priv

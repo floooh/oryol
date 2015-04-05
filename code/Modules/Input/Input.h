@@ -25,6 +25,11 @@ public:
     /// check if Input module is valid
     static bool IsValid();
     
+    /// attach an input event handler
+    static void AttachInputHandler(const Ptr<Port>& handler);
+    /// detach an input event handler
+    static void DetachInputHandler(const Ptr<Port>& handler);
+    
     /// get keyboard state
     static const class Keyboard& Keyboard();
     /// get mouse state

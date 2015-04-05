@@ -12,7 +12,7 @@ struct Input::_state* Input::state = nullptr;
 //------------------------------------------------------------------------------
 void
 Input::Setup(const InputSetup& setup) {
-    o_assert(!IsValid());
+    o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
     state->inputManager.setup(setup);
 }
@@ -20,7 +20,7 @@ Input::Setup(const InputSetup& setup) {
 //------------------------------------------------------------------------------
 void
 Input::Discard() {
-    o_assert(IsValid());
+    o_assert_dbg(IsValid());
     state->inputManager.discard();
     Memory::Delete(state);
     state = nullptr;
@@ -30,6 +30,20 @@ Input::Discard() {
 bool
 Input::IsValid() {
     return nullptr != state;
+}
+
+//------------------------------------------------------------------------------
+void
+Input::AttachInputHandler(const Ptr<Port>& handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.attachInputHandler(handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::DetachInputHandler(const Ptr<Port>& handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.detachInputHandler(handler);
 }
 
 //------------------------------------------------------------------------------

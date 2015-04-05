@@ -11,6 +11,8 @@
 #include "TBUI/tb/tbOryolRenderer.h"
 #include "TBUI/tb/tbOryolRootWidget.h"
 #include "Resource/Core/resourceRegistry.h"
+#include "Input/InputProtocol.h"
+#include "Messaging/Dispatcher.h"
 #include "tb_skin.h"
 
 namespace Oryol {
@@ -38,6 +40,10 @@ private:
     void update();
 
     bool isValid;
+    Ptr<Dispatcher<InputProtocol>> inputHandler;
+    tb::MODIFIER_KEYS modifierKeys = tb::TB_MODIFIER_NONE;
+    int mouseX = 0;
+    int mouseY = 0;
     tbOryolRenderer* renderer = nullptr;
     tbOryolRootWidget rootWidget;
 };
