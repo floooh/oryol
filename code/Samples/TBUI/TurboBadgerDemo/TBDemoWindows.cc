@@ -4,6 +4,9 @@
 #include "Pre.h"
 #include "TBDemoWindows.h"
 #include "tb_message_window.h"
+#include "animation/tb_widget_animation.h"
+#include "tb_select.h"
+#include "tb_inline_select.h"
 #include "tb_system.h"
 #include "TBUI/TBUI.h"
 
@@ -131,17 +134,21 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
                 "ui:demo/images/image_7.png",
                 "ui:demo/images/image_8.png",
                 "ui:demo/images/image_9.png"
-            }), [] () {
+            }), [] {
                 new ImageWindow();
             });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-page")) {
-            //new PageWindow();
+            TBUI::DoAfter(PageWindow::GetMainResource(), [] {
+                new PageWindow();
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-animations")) {
-            //new AnimationsWindow();
+            TBUI::DoAfter(AnimationsWindow::GetMainResource(), [] {
+                new AnimationsWindow();
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-scroll-container")) {
@@ -197,6 +204,81 @@ bool ImageWindow::OnEvent(const TBWidgetEvent &ev) {
         image->GetParent()->RemoveChild(image);
         delete image;
         return true;
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//------------------------------------------------------------------------------
+PageWindow::PageWindow() {
+    this->LoadResourceFile(GetMainResource());
+
+    // Listen to the pagers scroller
+    if (TBWidget *pager = GetWidgetByID(TBIDC("page-scroller")))
+        pager->GetScroller()->SetSnapListener(this);
+}
+
+//------------------------------------------------------------------------------
+URL
+PageWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_scroller_snap.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+void
+PageWindow::OnScrollSnap(TBWidget *target_widget, int &target_x, int &target_y) {
+    int page_w = target_widget->GetPaddingRect().w;
+    int target_page = (target_x + page_w / 2) / page_w;
+    target_x = target_page * page_w;
+}
+
+//------------------------------------------------------------------------------
+AnimationsWindow::AnimationsWindow() {
+    this->LoadResourceFile(GetMainResource());
+    this->Animate();
+}
+
+//------------------------------------------------------------------------------
+URL
+AnimationsWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_animations.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+void
+AnimationsWindow::Animate() {
+    // Abort any still unfinished animations.
+    TBWidgetsAnimationManager::AbortAnimations(this);
+
+    ANIMATION_CURVE curve = ANIMATION_CURVE_SLOW_DOWN;
+    double duration = 500;
+    bool fade = true;
+
+    if (TBSelectList *curve_select = GetWidgetByIDAndType<TBSelectList>("curve")) {
+        curve = static_cast<ANIMATION_CURVE>(curve_select->GetValue());
+    }
+    if (TBInlineSelect *duration_select = GetWidgetByIDAndType<TBInlineSelect>("duration")) {
+        duration = duration_select->GetValueDouble();
+    }
+    if (TBCheckBox *fade_check = GetWidgetByIDAndType<TBCheckBox>("fade")) {
+        fade = fade_check->GetValue() ? true : false;
+    }
+
+    // Start move animation
+    if (TBAnimationObject *anim = new TBWidgetAnimationRect(this, GetRect().Offset(-GetRect().x - GetRect().w, 0), GetRect())) {
+        TBAnimationManager::StartAnimation(anim, curve, duration);
+    }
+    // Start fade animation
+    if (fade) {
+        if (TBAnimationObject *anim = new TBWidgetAnimationOpacity(this, TB_ALMOST_ZERO_OPACITY, 1, false)) {
+            TBAnimationManager::StartAnimation(anim, ANIMATION_CURVE_SLOW_DOWN, duration);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+bool AnimationsWindow::OnEvent(const TBWidgetEvent &ev) {
+    if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("Animate!")) {
+        Animate();
     }
     return TBUIWindow::OnEvent(ev);
 }
