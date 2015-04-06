@@ -226,8 +226,13 @@ EM_BOOL
 emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
+    const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
     self->mouse.Scroll = scroll;
+
+    auto msg = InputProtocol::MouseScroll::Create();
+    msg->SetScroll(scroll);
+    self->notifyHandlers(msg);
+
     return true;
 }
 

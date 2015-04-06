@@ -83,6 +83,11 @@ tbMgr::Setup(const TBUISetup& setup) {
             }
         }
     });
+    this->inputHandler->Subscribe<InputProtocol::MouseScroll>([this](const Ptr<InputProtocol::MouseScroll>& msg) {
+        int wheelX = msg->GetScroll().x;
+        int wheelY = -msg->GetScroll().y;
+        this->rootWidget.InvokeWheel(this->mouseX, this->mouseY, wheelX, wheelY, this->modifierKeys);
+    });
     Input::AttachInputHandler(this->inputHandler);
     
     TBWidgetsAnimationManager::Init();
