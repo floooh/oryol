@@ -73,6 +73,11 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/Gfx/GPUParticles/GPUParticles.jpg
   src: Gfx/GPUParticles/GPUParticles.cc
+- name: ResourceStress
+  desc: Resource loading stresstest
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/ResourceStress/none
+  src: Gfx/ResourceStress/ResourceStress.cc
 - name: HTTPClientSample
   desc: Low-level HTTP loading sample
   type: emscripten,pnack,android
@@ -118,3 +123,8 @@
   type: emscripten,pnacl
   image: /Users/floh/projects/oryol/code/Samples/IO/IOQueueSample/none
   src: IO/IOQueueSample/IOQueueSample.cc
+- name: TurboBadgerDemo
+  desc: Turbobadger UI integration
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/TBUI/TurboBadgerDemo/none
+  src: TBUI/TurboBadgerDemo/TurboBadgerDemo.cc
