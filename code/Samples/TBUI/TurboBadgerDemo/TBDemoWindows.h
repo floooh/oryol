@@ -7,6 +7,7 @@
 #include "TBUI/TBUIWindow.h"
 #include "tb_msg.h"
 
+//------------------------------------------------------------------------------
 class MainWindow : public Oryol::TBUIWindow, public tb::TBMessageHandler {
 public:
     /// constructor
@@ -18,5 +19,17 @@ public:
     virtual bool OnEvent(const tb::TBWidgetEvent &ev);
     /// message handler callback
     virtual void OnMessageReceived(tb::TBMessage *msg);
+};
+
+//------------------------------------------------------------------------------
+class ImageWindow : public Oryol::TBUIWindow {
+public:
+    /// constructor
+    ImageWindow();
+    /// get the URL of the main resource file
+    static Oryol::URL GetMainResource();
+
+    /// event handler callback
+    virtual bool OnEvent(const tb::TBWidgetEvent &ev);
 };
 

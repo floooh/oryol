@@ -41,12 +41,20 @@ public:
     virtual void RenderBatch(Batch *batch);
     /// set clip rect
     virtual void SetClipRect(const tb::TBRect &rect);
-    
+
 private:
+    friend class tbOryolBitmap;
+
+    /// setup white texture used for untextured areas
+    void setupWhiteTexture();
     /// setup the dynamic mesh
     void setupMesh();
     /// setup the draw state
     void setupDrawState();
+    /// add texture to be defer-deleted in EndPaint()
+    void deferDeleteTexture(ResourceLabel label);
+    /// delete textures added with deferDeleteTexture
+    void deleteTextures();
     
     static const int MaxNumVertices = 16 * 1024;
     static const int MaxNumBatches = 1024;
@@ -54,8 +62,11 @@ private:
     bool isValid;
     ResourceLabel resLabel;
     VertexLayout vertexLayout;
+    tb::TBRect tbClipRect;
+    Id whiteTexture;
     Id mesh;
     Id drawState;
+    Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;
     uint16 curVertexIndex;
     struct tbOryolVertex {
@@ -67,6 +78,7 @@ private:
         uint16 startIndex = 0;
         uint16 numVertices = 0;
         Id texture;
+        tb::TBRect clipRect;
     } batches[MaxNumBatches];
 };
 

@@ -64,6 +64,7 @@ tbOryolBitmap::CreateTexture(tb::uint32* data) {
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = byteSize;
     this->texture = Gfx::Resource().Create(texSetup, stream);
+    
     Gfx::Resource().PopLabel();
 }
 
@@ -71,8 +72,7 @@ tbOryolBitmap::CreateTexture(tb::uint32* data) {
 void
 tbOryolBitmap::DestroyTexture() {
     o_assert_dbg(this->texture.IsValid());
-    this->renderer->FlushBitmap(this);
-    Gfx::Resource().Destroy(this->label);
+    this->renderer->deferDeleteTexture(this->label);
     this->texture.Invalidate();
     this->label = ResourceLabel::Invalid;
 }

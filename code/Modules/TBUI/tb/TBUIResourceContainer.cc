@@ -47,10 +47,15 @@ void
 TBUIResourceContainer::Add(const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid());
     Locator loc(data->GetURL().Get());
-    o_assert_dbg(!this->registry.Lookup(loc).IsValid());
-    Id newId(this->uniqueCounter++, this->freeSlots.Dequeue(), 0);
-    this->registry.Add(loc, newId, this->peekLabel());
-    this->resPool[newId.SlotIndex] = data;
+    Id id = this->registry.Lookup(loc);
+    if (id.IsValid()) {
+        Log::Warn("TBUIResourceContainer::Add(): resource '%s' already exists!\n", loc.Location().AsCStr());
+    }
+    else {
+        Id newId(this->uniqueCounter++, this->freeSlots.Dequeue(), 0);
+        this->registry.Add(loc, newId, this->peekLabel());
+        this->resPool[newId.SlotIndex] = data;
+    }
 }
 
 //------------------------------------------------------------------------------

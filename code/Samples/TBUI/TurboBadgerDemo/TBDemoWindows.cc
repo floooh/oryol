@@ -5,6 +5,7 @@
 #include "TBDemoWindows.h"
 #include "tb_message_window.h"
 #include "tb_system.h"
+#include "TBUI/TBUI.h"
 
 using namespace Oryol;
 using namespace tb;
@@ -42,7 +43,7 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
         else if (ev.target->GetID() == TBIDC("busymsg")) {
             if (ev.target->GetValue() == 1) {
                 // Post the first "busy" message when we check the checkbox.
-                assert(!this->GetMessageByID(TBIDC("busy")));
+                o_assert_dbg(!this->GetMessageByID(TBIDC("busy")));
                 if (!this->GetMessageByID(TBIDC("busy"))) {
                     this->PostMessage(TBIDC("busy"), nullptr);
                     TBMessageWindow *msg_win = new TBMessageWindow(this, TBIDC("test_dialog"));
@@ -52,7 +53,7 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
             }
             else {
                 // Remove any pending "busy" message when we uncheck the checkbox.
-                assert(this->GetMessageByID(TBIDC("busy")));
+                o_assert_dbg(this->GetMessageByID(TBIDC("busy")));
                 if (TBMessage *busymsg = this->GetMessageByID(TBIDC("busy"))) {
                     this->DeleteMessage(busymsg);
                 }
@@ -119,7 +120,20 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-image")) {
-            //new ImageWindow();
+            TBUI::DoAfter(Array<URL>({
+                ImageWindow::GetMainResource(),
+                "ui:demo/images/image_1.png",
+                "ui:demo/images/image_2.png",
+                "ui:demo/images/image_3.png",
+                "ui:demo/images/image_4.png",
+                "ui:demo/images/image_5.png",
+                "ui:demo/images/image_6.png",
+                "ui:demo/images/image_7.png",
+                "ui:demo/images/image_8.png",
+                "ui:demo/images/image_9.png"
+            }), [] () {
+                new ImageWindow();
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-page")) {
@@ -165,3 +179,24 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
     return TBUIWindow::OnEvent(ev);
 }
 
+//------------------------------------------------------------------------------
+ImageWindow::ImageWindow() {
+    this->LoadResourceFile(GetMainResource());
+}
+
+//------------------------------------------------------------------------------
+URL
+ImageWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_image_widget.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+bool ImageWindow::OnEvent(const TBWidgetEvent &ev) {
+    if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("remove")) {
+        TBWidget *image = ev.target->GetParent();
+        image->GetParent()->RemoveChild(image);
+        delete image;
+        return true;
+    }
+    return TBUIWindow::OnEvent(ev);
+}

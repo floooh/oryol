@@ -3,13 +3,18 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "tbOryolFile.h"
+#include "IO/IO.h"
 #include "TBUI/TBUI.h"
 #include "Core/Log.h"
 
 //------------------------------------------------------------------------------
 tb::TBFile*
 tb::TBFile::Open(const char* filename, TBFileMode mode) {
-    Oryol::Ptr<Oryol::Stream> data = Oryol::TBUI::resources().lookupResource(filename);
+    o_assert_dbg(filename);
+
+    // make sure that assigns have been resolved
+    Oryol::String resolvedPath = Oryol::IO::ResolveAssigns(filename);
+    Oryol::Ptr<Oryol::Stream> data = Oryol::TBUI::resources().lookupResource(resolvedPath.AsCStr());
     if (data.isValid()) {
         data->Open(Oryol::OpenMode::ReadOnly);
         Oryol::_priv::tbOryolFile* obj = new Oryol::_priv::tbOryolFile();

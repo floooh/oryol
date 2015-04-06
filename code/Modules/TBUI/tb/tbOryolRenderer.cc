@@ -32,6 +32,7 @@ void
 tbOryolRenderer::Setup() {
     o_assert_dbg(!this->isValid);
     this->resLabel = Gfx::Resource().PushLabel();
+    this->setupWhiteTexture();
     this->setupMesh();
     this->setupDrawState();
     Gfx::Resource().PopLabel();
@@ -42,8 +43,32 @@ tbOryolRenderer::Setup() {
 void
 tbOryolRenderer::Discard() {
     o_assert_dbg(this->isValid);
+    this->deleteTextures();
     this->isValid = false;
     Gfx::Resource().Destroy(this->resLabel);
+}
+
+//------------------------------------------------------------------------------
+void
+tbOryolRenderer::setupWhiteTexture() {
+    o_assert_dbg(!this->whiteTexture.IsValid());
+    
+    const int w = 4;
+    const int h = 4;
+    uint32 pixels[w * h];
+    Memory::Fill(pixels, sizeof(pixels), 0xFF);
+    auto stream = MemoryStream::Create();
+    stream->Open(OpenMode::WriteOnly);
+    stream->Write(pixels, sizeof(pixels));
+    stream->Close();
+    
+    auto texSetup = TextureSetup::FromPixelData(w, h, 1, TextureType::Texture2D, PixelFormat::RGBA8);
+    texSetup.WrapU = TextureWrapMode::Repeat;
+    texSetup.WrapV = TextureWrapMode::Repeat;
+    texSetup.MinFilter = TextureFilterMode::Nearest;
+    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.ImageSizes[0][0] = sizeof(pixels);
+    this->whiteTexture = Gfx::Resource().Create(texSetup, stream);
 }
 
 //------------------------------------------------------------------------------
@@ -84,6 +109,23 @@ tbOryolRenderer::setupDrawState() {
 
 //------------------------------------------------------------------------------
 void
+tbOryolRenderer::deferDeleteTexture(ResourceLabel label) {
+    this->texturesForDeletion.Add(label);
+}
+
+//------------------------------------------------------------------------------
+void
+tbOryolRenderer::deleteTextures() {
+    if (!this->texturesForDeletion.Empty()) {
+        for (ResourceLabel label : this->texturesForDeletion) {
+            Gfx::Resource().Destroy(label);
+        }
+        this->texturesForDeletion.Clear();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 tbOryolRenderer::BeginPaint(int render_target_w, int render_target_h)
 {
     o_assert_dbg(this->isValid);
@@ -105,18 +147,26 @@ void tbOryolRenderer::EndPaint()
             -1.0f, 1.0f);
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
         
+        this->tbClipRect = this->m_screen_rect;
         Gfx::ApplyScissorRect(this->m_screen_rect.x, this->m_screen_rect.y, this->m_screen_rect.w, this->m_screen_rect.h);
         Gfx::UpdateVertices(this->mesh, vertexDataSize, this->vertexData);
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const tbOryolBatch& batch = this->batches[batchIndex];
+            Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
             if (batch.texture.IsValid()) {
                 Gfx::ApplyVariable(Shaders::TBUIShader::Texture, batch.texture);
+            }
+            else {
+                Gfx::ApplyVariable(Shaders::TBUIShader::Texture, this->whiteTexture);
             }
             Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
         }
     }
+    
+    // defer-delete this frame's textures
+    this->deleteTextures();
 
     TBRendererBatcher::EndPaint();
 }
@@ -140,6 +190,7 @@ void tbOryolRenderer::RenderBatch(Batch *tbBatch)
     else {
         batch.texture.Invalidate();
     }
+    batch.clipRect = this->tbClipRect;
 
     this->curVertexIndex += tbBatch->vertex_count;
 }
@@ -158,12 +209,10 @@ tbOryolRenderer::CreateBitmap(int width, int height, uint32 *data)
 //------------------------------------------------------------------------------
 void tbOryolRenderer::SetClipRect(const tb::TBRect &rect)
 {
-    // NOTE: this is an internal method called by parent class!
-    int32 x = this->m_clip_rect.x;
-    int32 y = this->m_screen_rect.h - (this->m_clip_rect.y + this->m_clip_rect.h);
-    int32 w = this->m_clip_rect.w;
-    int32 h = this->m_clip_rect.h;
-    Gfx::ApplyScissorRect(x, y, w, h);
+    this->tbClipRect.x = this->m_clip_rect.x;
+    this->tbClipRect.y = this->m_screen_rect.h - (this->m_clip_rect.y + this->m_clip_rect.h);
+    this->tbClipRect.w = this->m_clip_rect.w;
+    this->tbClipRect.h = this->m_clip_rect.h;
 }
 
 } // namespace _priv
