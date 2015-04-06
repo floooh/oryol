@@ -96,9 +96,12 @@ tbMgr::Discard() {
     o_assert_dbg(this->IsValid());
     
     TBWidgetsAnimationManager::Shutdown();
+
+    tb_core_shutdown();
+
     this->renderer->Discard();
     Memory::Delete(this->renderer);
-    
+        
     this->isValid = false;
 }
 

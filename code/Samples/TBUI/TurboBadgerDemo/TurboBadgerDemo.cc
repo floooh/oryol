@@ -4,13 +4,12 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "IO/IO.h"
-#include "IO/Core/IOQueue.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
 #include "TBUI/TBUI.h"
-#include "MainWindow.h"
+#include "TBDemoWindows.h"
 #include "Time/Clock.h"
 
 using namespace Oryol;
@@ -24,11 +23,9 @@ public:
     /// on cleanup frame method
     virtual AppState::Code OnCleanup();
 private:
-    /// load initial resources, then call callback
-    void loadInitResources(const TBUISetup& setup, IOQueue::GroupSuccessFunc onLoaded);
+    /// return array of initial resource URLs
+    Array<URL> getInitResources(const TBUISetup& setup);
 
-    IOQueue ioQueue;
-    Ptr<MainWindow> mainWindow;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(TurboBadgerDemoApp);
@@ -57,14 +54,11 @@ TurboBadgerDemoApp::OnInit() {
     tbuiSetup.Fonts.Add("ui:demo/fonts/orangutang.tb.txt", "Orangutang");
     tbuiSetup.Fonts.Add("ui:demo/fonts/orange.tb.txt", "Orange");
     TBUI::Setup(tbuiSetup);
-    
-    this->loadInitResources(tbuiSetup, [this](const Array<Ptr<Stream>>& streams)  {
-        for (const auto& stream : streams) {
-            TBUI::Resource().Add(stream);
-        }
+    TBUI::DoAfter(this->getInitResources(tbuiSetup), [this]() {
         TBUI::InitTurboBadger();
-        this->mainWindow = MainWindow::Create();
-        this->mainWindow->Open();
+        TBUI::DoAfter(MainWindow::GetMainResource(), []() {
+            new MainWindow;
+        });
     });
 
     return AppState::Running;
@@ -89,8 +83,6 @@ TurboBadgerDemoApp::OnRunning() {
 //-----------------------------------------------------------------------------
 AppState::Code
 TurboBadgerDemoApp::OnCleanup() {
-    this->mainWindow = nullptr;
-    this->ioQueue.Stop();
     TBUI::Discard();
     Dbg::Discard();
     Input::Discard();
@@ -100,8 +92,8 @@ TurboBadgerDemoApp::OnCleanup() {
 }
 
 //-----------------------------------------------------------------------------
-void
-TurboBadgerDemoApp::loadInitResources(const TBUISetup& setup, IOQueue::GroupSuccessFunc onLoaded) {
+Array<URL>
+TurboBadgerDemoApp::getInitResources(const TBUISetup& setup) {
 
     // FIXME: some sort of resource bundling would be nice here...
     Array<URL> urls({
@@ -187,7 +179,6 @@ TurboBadgerDemoApp::loadInitResources(const TBUISetup& setup, IOQueue::GroupSucc
     for (const auto& font : setup.Fonts) {
         urls.Add(font.Location);
     }
-    this->ioQueue.AddGroup(urls, onLoaded);
-    this->ioQueue.Start();
+    return urls;
 }
 

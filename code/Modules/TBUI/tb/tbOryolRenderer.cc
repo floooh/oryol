@@ -54,7 +54,7 @@ tbOryolRenderer::setupMesh() {
     this->vertexLayout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
-        .Add(VertexAttr::Color0, VertexFormat::UByte4);
+        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert(sizeof(this->vertexData) == MaxNumVertices * this->vertexLayout.ByteSize());
     
     MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
@@ -111,7 +111,9 @@ void tbOryolRenderer::EndPaint()
         Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const tbOryolBatch& batch = this->batches[batchIndex];
-            Gfx::ApplyVariable(Shaders::TBUIShader::Texture, batch.texture);
+            if (batch.texture.IsValid()) {
+                Gfx::ApplyVariable(Shaders::TBUIShader::Texture, batch.texture);
+            }
             Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
         }
     }
@@ -132,7 +134,12 @@ void tbOryolRenderer::RenderBatch(Batch *tbBatch)
     tbOryolBatch& batch = this->batches[this->curBatchIndex++];
     batch.startIndex = this->curVertexIndex;
     batch.numVertices = tbBatch->vertex_count;
-    batch.texture = ((tbOryolBitmap*)tbBatch->bitmap)->GetTexture();
+    if (tbBatch->bitmap) {
+        batch.texture = ((tbOryolBitmap*)tbBatch->bitmap)->GetTexture();
+    }
+    else {
+        batch.texture.Invalidate();
+    }
 
     this->curVertexIndex += tbBatch->vertex_count;
 }

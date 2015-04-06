@@ -28,7 +28,7 @@ const char* fs_100_src =
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = _TEXTURE2D(tex, uv) * color;\n"
 "}\n"
 ;
 const char* vs_120_src = 
@@ -54,7 +54,7 @@ const char* fs_120_src =
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = _TEXTURE2D(tex, uv) * color;\n"
 "}\n"
 ;
 const char* vs_150_src = 
@@ -81,7 +81,7 @@ const char* fs_150_src =
 "in vec4 color;\n"
 "out vec4 _FragColor;\n"
 "void main() {\n"
-"_COLOR = _TEXTURE2D(tex, uv);\n"
+"_COLOR = _TEXTURE2D(tex, uv) * color;\n"
 "}\n"
 ;
 ProgramBundleSetup TBUIShader::CreateSetup() {

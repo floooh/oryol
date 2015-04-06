@@ -23,6 +23,9 @@ TBUI::Setup(const TBUISetup& setup) {
 void
 TBUI::Discard() {
     o_assert_dbg(IsValid());
+    if (state->ioQueue.IsStarted()) {
+        state->ioQueue.Stop();
+    }
     state->resourceContainer.discard();
     state->mgr.Discard();
     Memory::Delete(state);
@@ -30,10 +33,37 @@ TBUI::Discard() {
 }
 
 //-----------------------------------------------------------------------------
-TBUIResourceContainer&
-TBUI::Resource() {
+void
+TBUI::DoAfter(const URL& url, DoAfterFunc doAfterFunc) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer;
+    
+    // FIXME: we should only load resources that are not currently loading
+    state->ioQueue.Add(url, [doAfterFunc](const Ptr<Stream>& stream) {
+        o_assert_dbg(IsValid());
+        state->resourceContainer.Add(stream);
+        doAfterFunc();
+    });
+    if (!state->ioQueue.IsStarted()) {
+        state->ioQueue.Start();
+    }
+}
+
+//-----------------------------------------------------------------------------
+void
+TBUI::DoAfter(const Array<URL>& urls, DoAfterFunc doAfterFunc) {
+    o_assert_dbg(IsValid());
+
+    // FIXME: we should only load resources that are not currently loading
+    state->ioQueue.AddGroup(urls, [doAfterFunc](const Array<Ptr<Stream>>& streams) {
+        o_assert_dbg(IsValid());
+        for (const auto& stream : streams) {
+            state->resourceContainer.Add(stream);
+        }
+        doAfterFunc();
+    });
+    if (!state->ioQueue.IsStarted()) {
+        state->ioQueue.Start();
+    }    
 }
 
 //-----------------------------------------------------------------------------
@@ -57,6 +87,13 @@ _priv::tbOryolRootWidget*
 TBUI::getRootWidget() {
     o_assert_dbg(IsValid());
     return state->mgr.GetRootWidget();
+}
+
+//-----------------------------------------------------------------------------
+TBUIResourceContainer&
+TBUI::resources() {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer;
 }
 
 } // namespace Oryol
