@@ -40,7 +40,7 @@ TurboBadgerDemoApp::OnInit() {
     ioSetup.Assigns.Add("ui:", "res:tbui/");
     IO::Setup(ioSetup);
 
-    Gfx::Setup(GfxSetup::Window(800, 768, "TurboBadger UI Demo"));
+    Gfx::Setup(GfxSetup::Window(1000, 650, "TurboBadger UI Demo"));
     Dbg::Setup();
     Input::Setup();
 
@@ -54,10 +54,13 @@ TurboBadgerDemoApp::OnInit() {
     tbuiSetup.Fonts.Add("ui:demo/fonts/orangutang.tb.txt", "Orangutang");
     tbuiSetup.Fonts.Add("ui:demo/fonts/orange.tb.txt", "Orange");
     TBUI::Setup(tbuiSetup);
-    TBUI::DoAfter(this->getInitResources(tbuiSetup), [this]() {
+    TBUI::DoAfter(this->getInitResources(tbuiSetup), [] {
         TBUI::InitTurboBadger();
-        TBUI::DoAfter(MainWindow::GetMainResource(), []() {
+        TBUI::DoAfter(MainWindow::GetMainResource(), [] {
             new MainWindow;
+        });
+        TBUI::DoAfter(TabContainerWindow::GetMainResource(), [] {
+            new TabContainerWindow;
         });
     });
 

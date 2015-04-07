@@ -7,6 +7,7 @@
 #include "animation/tb_widget_animation.h"
 #include "tb_select.h"
 #include "tb_inline_select.h"
+#include "tb_tab_container.h"
 #include "tb_system.h"
 #include "TBUI/TBUI.h"
 
@@ -279,6 +280,53 @@ AnimationsWindow::Animate() {
 bool AnimationsWindow::OnEvent(const TBWidgetEvent &ev) {
     if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("Animate!")) {
         Animate();
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//------------------------------------------------------------------------------
+TabContainerWindow::TabContainerWindow()
+{
+    LoadResourceFile(GetMainResource());
+}
+
+//------------------------------------------------------------------------------
+URL
+TabContainerWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_tabcontainer01.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+bool
+TabContainerWindow::OnEvent(const TBWidgetEvent &ev)
+{
+    if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("set_align")) {
+        if (TBTabContainer *tc = GetWidgetByIDAndType<TBTabContainer>(TBIDC("tabcontainer"))) {
+            tc->SetAlignment(static_cast<TB_ALIGN>(ev.target->data.GetInt()));
+        }
+        ResizeToFitContent(RESIZE_FIT_CURRENT_OR_NEEDED);
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("toggle_tab_axis")) {
+        static AXIS axis = AXIS_X;
+        axis = axis == AXIS_X ? AXIS_Y : AXIS_X;
+        if (TBTabContainer *tc = GetWidgetByIDAndType<TBTabContainer>(TBIDC("tabcontainer"))) {
+            for (TBWidget *child = tc->GetTabLayout()->GetFirstChild(); child; child = child->GetNext()) {
+                if (TBButton *button = TBSafeCast<TBButton>(child)) {
+                    button->SetAxis(axis);
+                }
+            }
+        }
+        ResizeToFitContent(RESIZE_FIT_CURRENT_OR_NEEDED);
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("start_spinner")) {
+        if (TBProgressSpinner *spinner = GetWidgetByIDAndType<TBProgressSpinner>(TBIDC("spinner"))) {
+            spinner->SetValue(1);
+        }
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("stop_spinner")) {
+        if (TBProgressSpinner *spinner = GetWidgetByIDAndType<TBProgressSpinner>(TBIDC("spinner"))) {
+            spinner->SetValue(0);
+        }
     }
     return TBUIWindow::OnEvent(ev);
 }

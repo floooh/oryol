@@ -4,6 +4,11 @@
     @file tb_config.h
     @brief override for TurboBadgers default tb_config.h
 */
+// this is required on PNaCl
+#ifdef __STRICT_ANSI__
+#undef __STRICT_ANSI__
+#endif
+
 /** Enable for some handy runtime debugging, enabled by modifying
 	the various settings in g_tb_debug. A settings window can be
 	shown by calling ShowDebugInfoSettingsWindow. */

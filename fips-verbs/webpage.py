@@ -12,6 +12,10 @@ from tools import texexport
 
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
+BuildEmscripten = True
+BuildPNaCl = True
+BuildAndroid = True
+
 #-------------------------------------------------------------------------------
 def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
     """builds the final webpage under under fips-deploy/oryol-webpage"""
@@ -62,7 +66,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
     # generate emscripten HTML pages
-    if emscripten.check_exists(fips_dir) :
+    if BuildEmscripten and emscripten.check_exists(fips_dir) :
         emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-make-release'.format(ws_dir)
         for sample in samples :
             name = sample['name']
@@ -78,7 +82,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                     f.write(html)
 
     # copy PNaCl HTML pages
-    if nacl.check_exists(fips_dir) :
+    if BuildPNaCl and nacl.check_exists(fips_dir) :
         pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
         for sample in samples :
             name = sample['name']
@@ -103,12 +107,13 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 shutil.copy(img_path, webpage_dir + '/' + tail)
 
     # copy the Android sample files over
-    if android.check_exists(fips_dir) :
+    if BuildAndroid and android.check_exists(fips_dir) :
         android_deploy_dir = '{}/fips-deploy/oryol/android-make-release'.format(ws_dir)
         for sample in samples :
             if sample['name'] != '__end__' and 'android' in sample['type'] :
                 log.info('> copy android sample files: {}'.format(sample['name']))
                 shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
+
 
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
@@ -121,7 +126,10 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
         shutil.copy(dataFile, webpage_dir)
     for dataFile in glob.glob(proj_dir + '/data/*.txt') :
         shutil.copy(dataFile, webpage_dir)
-    
+    tbui_from = '{}/data/tbui'.format(proj_dir)
+    tbui_to   = '{}/tbui'.format(webpage_dir)
+    shutil.copytree(tbui_from, tbui_to)
+
 #-------------------------------------------------------------------------------
 def build_deploy_webpage(fips_dir, proj_dir) :
     # if webpage dir exists, clear it first
@@ -132,13 +140,13 @@ def build_deploy_webpage(fips_dir, proj_dir) :
     os.makedirs(webpage_dir)
 
     # compile emscripten, pnacl and android samples
-    if emscripten.check_exists(fips_dir) :
+    if BuildEmscripten and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'emsc-make-release')
         project.build(fips_dir, proj_dir, 'emsc-make-release')
-    if nacl.check_exists(fips_dir) :
+    if BuildPNaCl and nacl.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'pnacl-make-release')
         project.build(fips_dir, proj_dir, 'pnacl-make-release')
-    if android.check_exists(fips_dir) :
+    if BuildAndroid and android.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'android-make-release')
         project.build(fips_dir, proj_dir, 'android-make-release')
     

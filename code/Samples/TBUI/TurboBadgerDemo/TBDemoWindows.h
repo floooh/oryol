@@ -60,3 +60,14 @@ public:
     virtual bool OnEvent(const tb::TBWidgetEvent &ev);
 };
 
+//------------------------------------------------------------------------------
+class TabContainerWindow : public Oryol::TBUIWindow {
+public:
+    /// constructor
+    TabContainerWindow();
+    /// get the main resource file URL
+    static Oryol::URL GetMainResource();
+    
+    /// event callback
+    virtual bool OnEvent(const tb::TBWidgetEvent &ev);
+};
