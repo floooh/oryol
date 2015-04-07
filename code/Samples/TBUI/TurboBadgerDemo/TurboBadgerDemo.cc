@@ -27,8 +27,29 @@ private:
     Array<URL> getInitResources(const TBUISetup& setup);
 
     TimePoint lastFrameTimePoint;
+    AdvancedItemSource advanced_source;
+    tb::TBGenericStringItemSource name_source;
 };
 OryolMain(TurboBadgerDemoApp);
+
+const char *girl_names[] = {
+    "Maja", "Alice", "Julia", "Linnéa", "Wilma", "Ella", "Elsa", "Emma", "Alva", "Olivia", "Molly", "Ebba", "Klara", "Nellie", "Agnes",
+    "Isabelle", "Ida", "Elin", "Ellen", "Moa", "Emilia", "Nova", "Alma", "Saga", "Amanda", "Isabella", "Lilly", "Alicia", "Astrid",
+    "Matilda", "Tuva", "Tilde", "Stella", "Felicia", "Elvira", "Tyra", "Hanna", "Sara", "Vera", "Thea", "Freja", "Lova", "Selma",
+    "Meja", "Signe", "Ester", "Lovisa", "Ellie", "Lea", "Tilda", "Tindra", "Sofia", "Nora", "Nathalie", "Leia", "Filippa", "Siri",
+    "Emelie", "Inez", "Edith", "Stina", "Liv", "Lisa", "Linn", "Tove", "Emmy", "Livia", "Jasmine", "Evelina", "Cornelia", "Märta",
+    "Svea", "Ingrid", "My", "Rebecca", "Joline", "Mira", "Ronja", "Hilda", "Melissa", "Anna", "Frida", "Maria", "Iris", "Josefine",
+    "Elise", "Elina", "Greta", "Vilda", "Minna", "Lina", "Hedda", "Nicole", "Kajsa", "Majken", "Sofie", "Annie", "Juni", "Novalie", "Hedvig", 0 };
+const char *boy_names[] = {
+    "Oscar", "William", "Lucas", "Elias", "Alexander", "Hugo", "Oliver", "Theo", "Liam", "Leo", "Viktor", "Erik", "Emil",
+    "Isak", "Axel", "Filip", "Anton", "Gustav", "Edvin", "Vincent", "Arvid", "Albin", "Ludvig", "Melvin", "Noah", "Charlie", "Max",
+    "Elliot", "Viggo", "Alvin", "Alfred", "Theodor", "Adam", "Olle", "Wilmer", "Benjamin", "Simon", "Nils", "Noel", "Jacob", "Leon",
+    "Rasmus", "Kevin", "Linus", "Casper", "Gabriel", "Jonathan", "Milo", "Melker", "Felix", "Love", "Ville", "Sebastian", "Sixten",
+    "Carl", "Malte", "Neo", "David", "Joel", "Adrian", "Valter", "Josef", "Jack", "Hampus", "Samuel", "Mohammed", "Alex", "Tim",
+    "Daniel", "Vilgot", "Wilhelm", "Harry", "Milton", "Maximilian", "Robin", "Sigge", "Måns", "Eddie", "Elton", "Vidar", "Hjalmar",
+    "Loke", "Elis", "August", "John", "Hannes", "Sam", "Frank", "Svante", "Marcus", "Mio", "Otto", "Ali", "Johannes", "Fabian",
+    "Ebbe", "Aron", "Julian", "Elvin", "Ivar", 0 };
+
 
 //-----------------------------------------------------------------------------
 AppState::Code
@@ -43,7 +64,27 @@ TurboBadgerDemoApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(1000, 650, "TurboBadger UI Demo"));
     Dbg::Setup();
     Input::Setup();
-
+    
+    // TBSelectList and TBSelectDropdown widgets have a default item source that are fed with any items
+    // specified in the resource files. But it is also possible to set any source which can save memory
+    // and improve performance. Then you don't have to populate each instance with its own set of items,
+    // for widgets that occur many times in a UI, always with the same items.
+    // Here we prepare the name source, that is used in a few places.
+    for (int i = 0; boy_names[i]; i++) {
+        this->advanced_source.AddItem(new AdvancedItem(boy_names[i++], tb::TBIDC("boy_item"), true));
+    }
+    for (int i = 0; girl_names[i]; i++) {
+        this->advanced_source.AddItem(new AdvancedItem(girl_names[i++], tb::TBIDC("girl_item"), false));
+    }
+    for (int i = 0; girl_names[i]; i++) {
+        this->name_source.AddItem(new tb::TBGenericStringItem(girl_names[i++], tb::TBIDC("girl_item")));
+    }
+    for (int i = 0; boy_names[i]; i++) {
+        this->name_source.AddItem(new tb::TBGenericStringItem(boy_names[i++], tb::TBIDC("boy_item")));
+    }
+    advanced_source.SetSort(tb::TB_SORT_ASCENDING);
+    name_source.SetSort(tb::TB_SORT_ASCENDING);
+    
     TBUISetup tbuiSetup;
     tbuiSetup.Locale = "ui:language/lng_en.tb.txt";
     tbuiSetup.DefaultSkin = "ui:default_skin/skin.tb.txt";
@@ -54,7 +95,7 @@ TurboBadgerDemoApp::OnInit() {
     tbuiSetup.Fonts.Add("ui:demo/fonts/orangutang.tb.txt", "Orangutang");
     tbuiSetup.Fonts.Add("ui:demo/fonts/orange.tb.txt", "Orange");
     TBUI::Setup(tbuiSetup);
-    TBUI::DoAfter(this->getInitResources(tbuiSetup), [] {
+    TBUI::DoAfter(this->getInitResources(tbuiSetup), [this] {
         TBUI::InitTurboBadger();
         TBUI::DoAfter(MainWindow::GetMainResource(), [] {
             new MainWindow;
@@ -62,6 +103,13 @@ TurboBadgerDemoApp::OnInit() {
         TBUI::DoAfter(TabContainerWindow::GetMainResource(), [] {
             new TabContainerWindow;
         });
+        TBUI::DoAfter(AdvancedListWindow::GetResources(), [this] {
+            new AdvancedListWindow(&this->advanced_source);
+        });
+        TBUI::DoAfter(ListWindow::GetMainResource(), [this] {
+            new ListWindow(&this->name_source);
+        });
+        
     });
 
     return AppState::Running;

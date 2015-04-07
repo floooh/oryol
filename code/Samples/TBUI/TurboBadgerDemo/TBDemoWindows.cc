@@ -9,12 +9,13 @@
 #include "tb_inline_select.h"
 #include "tb_tab_container.h"
 #include "tb_system.h"
+#include "tb_widgets_reader.h"
 #include "TBUI/TBUI.h"
 
 using namespace Oryol;
 using namespace tb;
 
-//------------------------------------------------------------------------------
+//==============================================================================
 MainWindow::MainWindow() {
     this->LoadResourceFile(GetMainResource());
     this->SetOpacity(0.97f);
@@ -187,7 +188,7 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
     return TBUIWindow::OnEvent(ev);
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 ImageWindow::ImageWindow() {
     this->LoadResourceFile(GetMainResource());
 }
@@ -209,7 +210,7 @@ bool ImageWindow::OnEvent(const TBWidgetEvent &ev) {
     return TBUIWindow::OnEvent(ev);
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 PageWindow::PageWindow() {
     this->LoadResourceFile(GetMainResource());
 
@@ -232,7 +233,7 @@ PageWindow::OnScrollSnap(TBWidget *target_widget, int &target_x, int &target_y) 
     target_x = target_page * page_w;
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 AnimationsWindow::AnimationsWindow() {
     this->LoadResourceFile(GetMainResource());
     this->Animate();
@@ -284,7 +285,7 @@ bool AnimationsWindow::OnEvent(const TBWidgetEvent &ev) {
     return TBUIWindow::OnEvent(ev);
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 TabContainerWindow::TabContainerWindow()
 {
     LoadResourceFile(GetMainResource());
@@ -327,6 +328,141 @@ TabContainerWindow::OnEvent(const TBWidgetEvent &ev)
         if (TBProgressSpinner *spinner = GetWidgetByIDAndType<TBProgressSpinner>(TBIDC("spinner"))) {
             spinner->SetValue(0);
         }
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//==============================================================================
+AdvancedItemWidget::AdvancedItemWidget(AdvancedItem *item, AdvancedItemSource *source,
+    TBSelectItemViewer *source_viewer, int index)
+    : m_source(source)
+    , m_source_viewer(source_viewer)
+    , m_index(index)
+{
+    this->SetSkinBg(TBIDC("TBSelectItem"));
+    this->SetLayoutDistribution(LAYOUT_DISTRIBUTION_GRAVITY);
+    this->SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
+    this->SetPaintOverflowFadeout(false);
+
+    g_widgets_reader->LoadFile(this->GetContentRoot(), "ui:demo/ui_resources/test_list_item.tb.txt");
+    TBCheckBox *checkbox = this->GetWidgetByIDAndType<TBCheckBox>(TBIDC("check"));
+    TBTextField *name = this->GetWidgetByIDAndType<TBTextField>(TBIDC("name"));
+    TBTextField *info = this->GetWidgetByIDAndType<TBTextField>(TBIDC("info"));
+    checkbox->SetValue(item->GetChecked() ? true : false);
+    name->SetText(item->str);
+    info->SetText(item->GetMale() ? "Male" : "Female");
+}
+
+//------------------------------------------------------------------------------
+bool
+AdvancedItemWidget::OnEvent(const TBWidgetEvent &ev)
+{
+    if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("check")) {
+        AdvancedItem *item = m_source->GetItem(m_index);
+        item->SetChecked(ev.target->GetValue() ? true : false);
+        m_source->InvokeItemChanged(m_index, m_source_viewer);
+        return true;
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("delete")) {
+        m_source->DeleteItem(m_index);
+        return true;
+    }
+    return TBLayout::OnEvent(ev);
+}
+
+//==============================================================================
+bool
+AdvancedItemSource::Filter(int index, const char *filter) {
+    // Override this method so we can return hits for our extra data too.
+    if (TBSelectItemSource::Filter(index, filter)) {
+        return true;
+    }
+
+    AdvancedItem *item = this->GetItem(index);
+    return stristr(item->GetMale() ? "Male" : "Female", filter) ? true : false;
+}
+
+//------------------------------------------------------------------------------
+TBWidget*
+AdvancedItemSource::CreateItemWidget(int index, TBSelectItemViewer *viewer) {
+    if (TBLayout *layout = new AdvancedItemWidget(this->GetItem(index), this, viewer, index)) {
+        return layout;
+    }
+    return nullptr;
+}
+
+//==============================================================================
+ListWindow::ListWindow(TBSelectItemSource *source) {
+    this->LoadResourceFile(GetMainResource());
+    if (TBSelectList *select = this->GetWidgetByIDAndType<TBSelectList>("list")) {
+        select->SetSource(source);
+        select->GetScrollContainer()->SetScrollMode(SCROLL_MODE_Y_AUTO);
+    }
+}
+
+//------------------------------------------------------------------------------
+URL
+ListWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_select.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+bool
+ListWindow::OnEvent(const TBWidgetEvent &ev)
+{
+    if (ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("filter")) {
+        if (TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list")) {
+            select->SetFilter(ev.target->GetText());
+        }
+        return true;
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//==============================================================================
+AdvancedListWindow::AdvancedListWindow(AdvancedItemSource *source)
+: m_source(source) {
+    this->LoadResourceFile(GetMainResource());
+    if (TBSelectList *select = GetWidgetByIDAndType<TBSelectList>("list")) {
+        select->SetSource(source);
+        select->GetScrollContainer()->SetScrollMode(SCROLL_MODE_X_AUTO_Y_AUTO);
+    }
+}
+
+//------------------------------------------------------------------------------
+URL
+AdvancedListWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_select_advanced.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+Array<URL>
+AdvancedListWindow::GetResources() {
+    return Array<URL>({
+        "ui:demo/ui_resources/test_select_advanced.tb.txt",
+        "ui:demo/ui_resources/test_list_item.tb.txt"
+    });
+}
+
+//------------------------------------------------------------------------------
+bool
+AdvancedListWindow::OnEvent(const TBWidgetEvent &ev)
+{
+    TBSelectList *select = this->GetWidgetByIDAndType<TBSelectList>("list");
+    if (select && ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("filter")) {
+        select->SetFilter(ev.target->GetText());
+        return true;
+    }
+    else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("add")) {
+        TBStr name = GetTextByID(TBIDC("add_name"));
+        if (!name.IsEmpty()) {
+            m_source->AddItem(new AdvancedItem(name, TBIDC("boy_item"), true));
+        }
+        return true;
+    }
+    else if (select && ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("delete all")) {
+        m_source->DeleteAllItems();
+        return true;
     }
     return TBUIWindow::OnEvent(ev);
 }

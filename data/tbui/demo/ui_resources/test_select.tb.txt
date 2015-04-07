@@ -1,6 +1,6 @@
 WindowInfo
 	title List and filter
-	position 1100 50
+	position 1100 300
 TBLayout
 	axis y
 	distribution gravity
