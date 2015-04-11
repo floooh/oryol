@@ -9,6 +9,7 @@
 #include "Messaging/Protocol.h"
 #include "glm/vec2.hpp"
 #include "Input/Core/Mouse.h"
+#include "Input/Core/Key.h"
 
 namespace Oryol {
 class InputProtocol {
@@ -22,6 +23,8 @@ public:
             MouseMoveId = Protocol::MessageId::NumMessageIds, 
             MouseButtonId,
             MouseScrollId,
+            KeyId,
+            WCharId,
             NumMessageIds
         };
         static const char* ToString(MessageIdType c) {
@@ -29,6 +32,8 @@ public:
                 case MouseMoveId: return "MouseMoveId";
                 case MouseButtonId: return "MouseButtonId";
                 case MouseScrollId: return "MouseScrollId";
+                case KeyId: return "KeyId";
+                case WCharId: return "WCharId";
                 default: return "InvalidMessageId";
             }
         };
@@ -36,6 +41,8 @@ public:
             if (std::strcmp("MouseMoveId", str) == 0) return MouseMoveId;
             if (std::strcmp("MouseButtonId", str) == 0) return MouseButtonId;
             if (std::strcmp("MouseScrollId", str) == 0) return MouseScrollId;
+            if (std::strcmp("KeyId", str) == 0) return KeyId;
+            if (std::strcmp("WCharId", str) == 0) return WCharId;
             return InvalidMessageId;
         };
     };
@@ -95,10 +102,10 @@ private:
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetMouseButton(const Mouse::Button& val) {
+        void SetMouseButton(const Oryol::Mouse::Button& val) {
             this->mousebutton = val;
         };
-        const Mouse::Button& GetMouseButton() const {
+        const Oryol::Mouse::Button& GetMouseButton() const {
             return this->mousebutton;
         };
         void SetDown(bool val) {
@@ -114,7 +121,7 @@ private:
             return this->up;
         };
 private:
-        Mouse::Button mousebutton;
+        Oryol::Mouse::Button mousebutton;
         bool down;
         bool up;
     };
@@ -142,6 +149,81 @@ private:
         };
 private:
         glm::vec2 scroll;
+    };
+    class Key : public Message {
+        OryolClassPoolAllocDecl(Key);
+    public:
+        Key() {
+            this->msgId = MessageId::KeyId;
+            this->key = Oryol::Key::InvalidKey;
+            this->down = false;
+            this->up = false;
+            this->repeat = false;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::KeyId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetKey(const Oryol::Key::Code& val) {
+            this->key = val;
+        };
+        const Oryol::Key::Code& GetKey() const {
+            return this->key;
+        };
+        void SetDown(bool val) {
+            this->down = val;
+        };
+        bool GetDown() const {
+            return this->down;
+        };
+        void SetUp(bool val) {
+            this->up = val;
+        };
+        bool GetUp() const {
+            return this->up;
+        };
+        void SetRepeat(bool val) {
+            this->repeat = val;
+        };
+        bool GetRepeat() const {
+            return this->repeat;
+        };
+private:
+        Oryol::Key::Code key;
+        bool down;
+        bool up;
+        bool repeat;
+    };
+    class WChar : public Message {
+        OryolClassPoolAllocDecl(WChar);
+    public:
+        WChar() {
+            this->msgId = MessageId::WCharId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::WCharId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetWChar(const wchar_t& val) {
+            this->wchar = val;
+        };
+        const wchar_t& GetWChar() const {
+            return this->wchar;
+        };
+private:
+        wchar_t wchar;
     };
 };
 }

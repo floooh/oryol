@@ -4,6 +4,7 @@ id: IPPT
 headers:
     - glm/vec2.hpp
     - Input/Core/Mouse.h
+    - Input/Core/Key.h
 messages:
     - name: MouseMove
       attrs:
@@ -11,9 +12,20 @@ messages:
         - { name: Position, type: 'glm::vec2' }
     - name: MouseButton
       attrs:
-        - { name: MouseButton, type: 'Mouse::Button' }
+        - { name: MouseButton, type: 'Oryol::Mouse::Button' }
         - { name: Down, type: bool }
         - { name: Up, type: bool }
     - name: MouseScroll
       attrs:
         - { name: Scroll, type: 'glm::vec2' }
+    - name: Key
+      attrs:
+        - { name: Key, type: 'Oryol::Key::Code', default: 'Oryol::Key::InvalidKey' }
+        - { name: Down, type: bool }
+        - { name: Up, type: bool }
+        - { name: Repeat, type: bool }
+    - name: WChar
+      attrs:
+        - { name: WChar, type: wchar_t, default: 0 }
+        
+        

@@ -8,10 +8,14 @@ namespace Oryol {
 OryolClassPoolAllocImpl(InputProtocol::MouseMove);
 OryolClassPoolAllocImpl(InputProtocol::MouseButton);
 OryolClassPoolAllocImpl(InputProtocol::MouseScroll);
+OryolClassPoolAllocImpl(InputProtocol::Key);
+OryolClassPoolAllocImpl(InputProtocol::WChar);
 InputProtocol::CreateCallback InputProtocol::jumpTable[InputProtocol::MessageId::NumMessageIds] = { 
     &InputProtocol::MouseMove::FactoryCreate,
     &InputProtocol::MouseButton::FactoryCreate,
     &InputProtocol::MouseScroll::FactoryCreate,
+    &InputProtocol::Key::FactoryCreate,
+    &InputProtocol::WChar::FactoryCreate,
 };
 Ptr<Message>
 InputProtocol::Factory::Create(MessageIdType id) {

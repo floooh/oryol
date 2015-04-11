@@ -33,6 +33,13 @@ Keyboard::onKeyUp(Key::Code key) {
 
 //------------------------------------------------------------------------------
 void
+Keyboard::onKeyRepeat(Key::Code key) {
+    o_assert_range_dbg(key, Key::NumKeys);
+    this->repeat[key] = true;
+}
+
+//------------------------------------------------------------------------------
+void
 Keyboard::onChar(wchar_t c) {
     if (this->textCapturing) {
         if (this->charIndex < MaxNumChars) {
@@ -63,6 +70,7 @@ void
 Keyboard::reset() {
     this->down.reset();
     this->up.reset();
+    this->repeat.reset();
 }
 
 } // namespace Oryol

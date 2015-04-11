@@ -105,9 +105,17 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
     o_assert_dbg(self);
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
-        if (!e->repeat) {
-            self->keyboard.onKeyDown(key);
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        if (e->repeat) {
+            self->keyboard.onKeyRepeat(key);
+            msg->SetDown(true);
         }
+        else {
+            self->keyboard.onKeyDown(key);
+            msg->SetRepeat(true);
+        }
+        self->notifyHandlers(msg);
         if (self->keyboard.IsCapturingText()) {
             // returning false enables keypress events, but also lets the
             // browser react to Tab, Backspace, etc... thus we need to 
@@ -138,6 +146,10 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        msg->SetUp(true);
+        self->notifyHandlers(msg);
         return true;
     }
     return false;
@@ -149,6 +161,9 @@ emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
     self->keyboard.onChar((wchar_t)e->charCode);    
+    auto msg = InputProtocol::WChar::Create();
+    msg->SetWChar((wchar_t)e->charCode);
+    self->notifyHandlers(msg);
     return true;
 }
 

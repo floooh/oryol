@@ -122,15 +122,22 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
     if (nullptr != self) {
         Key::Code key = self->mapKey(glfwKey);
         if (Key::InvalidKey != key) {
+            auto msg = InputProtocol::Key::Create();
+            msg->SetKey(key);
             if (glfwAction == GLFW_PRESS) {
                 self->keyboard.onKeyDown(key);
+                msg->SetDown(true);
+                self->notifyHandlers(msg);
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->keyboard.onKeyUp(key);
+                msg->SetUp(true);
             }
             else {
-                // GLFW_REPEAT: we don't handle this (yet?)
+                self->keyboard.onKeyRepeat(key);
+                msg->SetRepeat(true);
             }
+            self->notifyHandlers(msg);
         }
     }
 }
@@ -140,6 +147,9 @@ void
 glfwInputMgr::charCallback(GLFWwindow* win, unsigned int unicode) {
     if (nullptr != self) {
         self->keyboard.onChar((wchar_t)unicode);
+        auto msg = InputProtocol::WChar::Create();
+        msg->SetWChar((wchar_t) unicode);
+        self->notifyHandlers(msg);
     }
 }
 
