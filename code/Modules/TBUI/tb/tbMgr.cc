@@ -59,34 +59,19 @@ tbMgr::Setup(const TBUISetup& setup) {
     // setup input handler
     this->inputHandler = Dispatcher<InputProtocol>::Create();
     this->inputHandler->Subscribe<InputProtocol::MouseMove>([this](const Ptr<InputProtocol::MouseMove>& msg) {
-        this->mouseX = (int) msg->GetPosition().x;
-        this->mouseY = (int) msg->GetPosition().y;
-        this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+        this->onMouseMove(msg->GetPosition().x, msg->GetPosition().y);
     });
     this->inputHandler->Subscribe<InputProtocol::MouseButton>([this](const Ptr<InputProtocol::MouseButton>& msg) {
-        const Mouse::Button mouseButton = msg->GetMouseButton();
-        if (mouseButton == Mouse::LMB) {
-            if (msg->GetDown()) {
-                this->rootWidget.InvokePointerDown(this->mouseX, this->mouseY, 1, this->modifierKeys, false);
-            }
-            else {
-                this->rootWidget.InvokePointerUp(this->mouseX, this->mouseY, this->modifierKeys, false);
-            }
-        }
-        else if (mouseButton == Mouse::RMB) {
-            this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
-            if (TBWidget::hovered_widget)
-            {
-                TBWidget::hovered_widget->ConvertFromRoot(this->mouseX, this->mouseY);
-                TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU, this->mouseX, this->mouseY, false, this->modifierKeys);
-                TBWidget::hovered_widget->InvokeEvent(ev);
-            }
-        }
+        this->onMouseButton(msg->GetMouseButton(), msg->GetDown());
     });
     this->inputHandler->Subscribe<InputProtocol::MouseScroll>([this](const Ptr<InputProtocol::MouseScroll>& msg) {
-        int wheelX = msg->GetScroll().x;
-        int wheelY = -msg->GetScroll().y;
-        this->rootWidget.InvokeWheel(this->mouseX, this->mouseY, wheelX, wheelY, this->modifierKeys);
+        this->onScroll(msg->GetScroll().x, -msg->GetScroll().y);
+    });
+    this->inputHandler->Subscribe<InputProtocol::WChar>([this](const Ptr<InputProtocol::WChar>& msg) {
+        this->onWChar(msg->GetWChar());
+    });
+    this->inputHandler->Subscribe<InputProtocol::Key>([this](const Ptr<InputProtocol::Key>& msg) {
+        this->onKey(msg->GetKey(), msg->GetDown() | msg->GetRepeat(), msg->GetUp());
     });
     Input::AttachInputHandler(this->inputHandler);
     
@@ -144,6 +129,221 @@ tbOryolRootWidget*
 tbMgr::GetRootWidget() {
     o_assert_dbg(this->IsValid());
     return &this->rootWidget;
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onMouseMove(int posX, int posY) {
+    this->mouseX = posX;
+    this->mouseY = posY;
+    this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onMouseButton(Mouse::Button btn, bool down) {
+        if (btn == Mouse::LMB) {
+            if (down) {
+                this->rootWidget.InvokePointerDown(this->mouseX, this->mouseY, 1, this->modifierKeys, false);
+            }
+            else {
+                this->rootWidget.InvokePointerUp(this->mouseX, this->mouseY, this->modifierKeys, false);
+            }
+        }
+        else if (btn == Mouse::RMB) {
+            this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+            if (TBWidget::hovered_widget)
+            {
+                TBWidget::hovered_widget->ConvertFromRoot(this->mouseX, this->mouseY);
+                TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU, this->mouseX, this->mouseY, false, this->modifierKeys);
+                TBWidget::hovered_widget->InvokeEvent(ev);
+            }
+        }
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onScroll(int wheelX, int wheelY) {
+    this->rootWidget.InvokeWheel(this->mouseX, this->mouseY, wheelX, wheelY, this->modifierKeys);
+}
+
+//-----------------------------------------------------------------------------
+static int
+toupr_ascii(int ascii)
+{
+    if (ascii >= 'a' && ascii <= 'z') {
+        return ascii + 'A' - 'a';
+    }
+    return ascii;
+}
+
+//-----------------------------------------------------------------------------
+static bool
+invokeShortcut(int key, SPECIAL_KEY specialKey, MODIFIER_KEYS modifierKeys, bool down) {
+
+    #ifdef FIPS_OSX
+    bool shortcut_key = (modifierKeys & TB_SUPER) ? true : false;
+    #else
+    bool shortcut_key = (modifierKeys & TB_CTRL) ? true : false;
+    #endif
+    if (!TBWidget::focused_widget || !down || !shortcut_key) {
+        return false;
+    }
+    bool reverse_key = (modifierKeys & TB_SHIFT) ? true : false;
+    int upper_key = toupr_ascii(key);
+    TBID id;
+    if (upper_key == 'X') {
+        id = TBIDC("cut");
+    }
+    else if (upper_key == 'C' || specialKey == TB_KEY_INSERT) {
+        id = TBIDC("copy");
+    }
+    else if (upper_key == 'V' || (specialKey == TB_KEY_INSERT && reverse_key)) {
+        id = TBIDC("paste");
+    }
+    else if (upper_key == 'A') {
+        id = TBIDC("selectall");
+    }
+    else if (upper_key == 'Z' || upper_key == 'Y') {
+        bool undo = upper_key == 'Z';
+        if (reverse_key) {
+            undo = !undo;
+        }
+        id = undo ? TBIDC("undo") : TBIDC("redo");
+    }
+    else if (upper_key == 'N') {
+        id = TBIDC("new");
+    }
+    else if (upper_key == 'O') {
+        id = TBIDC("open");
+    }
+    else if (upper_key == 'S') {
+        id = TBIDC("save");
+    }
+    else if (upper_key == 'W') {
+        id = TBIDC("close");
+    }
+    else if (specialKey == TB_KEY_PAGE_UP) {
+        id = TBIDC("prev_doc");
+    }
+    else if (specialKey == TB_KEY_PAGE_DOWN) {
+        id = TBIDC("next_doc");
+    }
+    else {
+        return false;
+    }
+
+    TBWidgetEvent ev(EVENT_TYPE_SHORTCUT);
+    ev.modifierkeys = modifierKeys;
+    ev.ref_id = id;
+    return TBWidget::focused_widget->InvokeEvent(ev);
+}
+
+//-----------------------------------------------------------------------------
+static bool
+invokeKey(tbOryolRootWidget* rootWidget, unsigned int key, SPECIAL_KEY specialKey, MODIFIER_KEYS modifierKeys, bool down)
+{
+    if (invokeShortcut(key, specialKey, modifierKeys, down)) {
+        return true;
+    }
+    rootWidget->InvokeKey(key, specialKey, modifierKeys, down);
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onWChar(wchar_t c) {
+    if ((c >= 0xE000) && (c <= 0xF8FF)) {
+        return;
+    }
+    invokeKey(&this->rootWidget, c, TB_KEY_UNDEFINED, this->modifierKeys, true);
+    invokeKey(&this->rootWidget, c, TB_KEY_UNDEFINED, this->modifierKeys, false);
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onKey(Key::Code key, bool down, bool up) {
+
+    SPECIAL_KEY tbKey = TB_KEY_UNDEFINED;
+    switch (key)
+    {
+        case Key::F1:       tbKey = TB_KEY_F1; break;
+        case Key::F2:       tbKey = TB_KEY_F2; break;
+        case Key::F3:       tbKey = TB_KEY_F3; break;
+        case Key::F4:       tbKey = TB_KEY_F4; break;
+        case Key::F5:       tbKey = TB_KEY_F5; break;
+        case Key::F6:       tbKey = TB_KEY_F6; break;
+        case Key::F7:       tbKey = TB_KEY_F7; break;
+        case Key::F8:       tbKey = TB_KEY_F8; break;
+        case Key::F9:       tbKey = TB_KEY_F9; break;
+        case Key::F10:      tbKey = TB_KEY_F10; break;
+        case Key::F11:      tbKey = TB_KEY_F11; break;
+        case Key::F12:      tbKey = TB_KEY_F12; break;
+        case Key::Left:     tbKey = TB_KEY_LEFT; break;
+        case Key::Up:       tbKey = TB_KEY_UP; break;
+        case Key::Right:    tbKey = TB_KEY_RIGHT; break;
+        case Key::Down:     tbKey = TB_KEY_DOWN; break;
+        case Key::PageUp:   tbKey = TB_KEY_PAGE_UP; break;
+        case Key::PageDown: tbKey = TB_KEY_PAGE_DOWN; break;
+        case Key::Home:     tbKey = TB_KEY_HOME; break;
+        case Key::End:      tbKey = TB_KEY_END; break;
+        case Key::Insert:   tbKey = TB_KEY_INSERT; break;
+        case Key::Tab:      tbKey = TB_KEY_TAB; break;
+        case Key::Delete:   tbKey = TB_KEY_DELETE; break;
+        case Key::BackSpace:    tbKey = TB_KEY_BACKSPACE; break;
+        case Key::Enter:
+        case Key::NumEnter:
+            tbKey = TB_KEY_ENTER; break;
+        case Key::Escape:   tbKey = TB_KEY_ESC; break;
+        case Key::Menu:
+            if (TBWidget::focused_widget && !down) {
+                TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU);
+                ev.modifierkeys = modifierKeys;
+                TBWidget::focused_widget->InvokeEvent(ev);
+            }
+            break;
+        case Key::LeftShift:
+        case Key::RightShift:
+            if (down) {
+                this->modifierKeys |= TB_SHIFT;
+            }
+            else {
+                this->modifierKeys &= ~TB_SHIFT;
+            }
+            break;
+        case Key::LeftControl:
+        case Key::RightControl:
+            if (down) {
+                this->modifierKeys |= TB_CTRL;
+            }
+            else {
+                this->modifierKeys &= ~TB_CTRL;
+            }
+            break;
+        case Key::LeftAlt:
+        case Key::RightAlt:
+            if (down) {
+                this->modifierKeys |= TB_ALT;
+            }
+            else {
+                this->modifierKeys &= ~TB_ALT;
+            }
+            break;
+        case Key::LeftSuper:
+        case Key::RightSuper:
+            if (down) {
+                this->modifierKeys |= TB_SUPER;
+            }
+            else {
+                this->modifierKeys &= ~TB_SUPER;
+            }
+            break;
+        default:
+            break;
+    }
+    if (TB_KEY_UNDEFINED != tbKey) {
+        invokeKey(&this->rootWidget, 0, tbKey, this->modifierKeys, down);
+    }
 }
 
 } // namespace _priv

@@ -67,6 +67,7 @@ TurboBadgerDemoApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(1000, 650, "TurboBadger UI Demo"));
     Dbg::Setup();
     Input::Setup();
+    Input::BeginCaptureText();
     
     // TBSelectList and TBSelectDropdown widgets have a default item source that are fed with any items
     // specified in the resource files. But it is also possible to set any source which can save memory

@@ -38,6 +38,16 @@ public:
 private:
     /// per-frame update
     void update();
+    /// mouse move input handler
+    void onMouseMove(int posX, int posY);
+    /// mouse button input handler
+    void onMouseButton(Mouse::Button btn, bool down);
+    /// mouse scroll input handler
+    void onScroll(int wheelX, int wheelY);
+    /// character input handler
+    void onWChar(wchar_t c);
+    /// key up/down handler
+    void onKey(Key::Code key, bool down, bool up);
 
     bool isValid;
     Ptr<Dispatcher<InputProtocol>> inputHandler;
