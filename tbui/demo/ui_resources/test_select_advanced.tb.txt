@@ -1,6 +1,6 @@
 WindowInfo
 	title Customized list items
-	position 770 50
+	position 770 0
 	size 300 300
 TBLayout
 	axis y

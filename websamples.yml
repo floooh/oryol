@@ -126,5 +126,5 @@
 - name: TurboBadgerDemo
   desc: Turbobadger UI integration
   type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/TBUI/TurboBadgerDemo/none
+  image: /Users/floh/projects/oryol/code/Samples/TBUI/TurboBadgerDemo/TurboBadgerDemo.jpg
   src: TBUI/TurboBadgerDemo/TurboBadgerDemo.cc
