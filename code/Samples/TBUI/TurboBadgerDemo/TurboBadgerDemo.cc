@@ -13,6 +13,7 @@
 #include "Time/Clock.h"
 
 using namespace Oryol;
+using namespace tb;
 
 class TurboBadgerDemoApp : public App {
 public:
@@ -27,10 +28,12 @@ private:
     Array<URL> getInitResources(const TBUISetup& setup);
 
     TimePoint lastFrameTimePoint;
-    AdvancedItemSource advanced_source;
-    tb::TBGenericStringItemSource name_source;
 };
 OryolMain(TurboBadgerDemoApp);
+
+AdvancedItemSource advanced_source;
+TBGenericStringItemSource name_source;
+TBGenericStringItemSource popup_menu_source;
 
 const char *girl_names[] = {
     "Maja", "Alice", "Julia", "Linnéa", "Wilma", "Ella", "Elsa", "Emma", "Alva", "Olivia", "Molly", "Ebba", "Klara", "Nellie", "Agnes",
@@ -71,20 +74,29 @@ TurboBadgerDemoApp::OnInit() {
     // for widgets that occur many times in a UI, always with the same items.
     // Here we prepare the name source, that is used in a few places.
     for (int i = 0; boy_names[i]; i++) {
-        this->advanced_source.AddItem(new AdvancedItem(boy_names[i++], tb::TBIDC("boy_item"), true));
+        advanced_source.AddItem(new AdvancedItem(boy_names[i++], TBIDC("boy_item"), true));
     }
     for (int i = 0; girl_names[i]; i++) {
-        this->advanced_source.AddItem(new AdvancedItem(girl_names[i++], tb::TBIDC("girl_item"), false));
+        advanced_source.AddItem(new AdvancedItem(girl_names[i++], TBIDC("girl_item"), false));
     }
     for (int i = 0; girl_names[i]; i++) {
-        this->name_source.AddItem(new tb::TBGenericStringItem(girl_names[i++], tb::TBIDC("girl_item")));
+        name_source.AddItem(new TBGenericStringItem(girl_names[i++], TBIDC("girl_item")));
     }
     for (int i = 0; boy_names[i]; i++) {
-        this->name_source.AddItem(new tb::TBGenericStringItem(boy_names[i++], tb::TBIDC("boy_item")));
+        name_source.AddItem(new TBGenericStringItem(boy_names[i++], TBIDC("boy_item")));
     }
-    advanced_source.SetSort(tb::TB_SORT_ASCENDING);
-    name_source.SetSort(tb::TB_SORT_ASCENDING);
+    advanced_source.SetSort(TB_SORT_ASCENDING);
+    name_source.SetSort(TB_SORT_ASCENDING);
     
+    // Prepare a source with submenus (with eternal recursion) so we can test sub menu support.
+    popup_menu_source.AddItem(new TBGenericStringItem("Option 1", TBIDC("opt 1")));
+    popup_menu_source.AddItem(new TBGenericStringItem("Option 2", TBIDC("opt 2")));
+    popup_menu_source.AddItem(new TBGenericStringItem("-"));
+    popup_menu_source.AddItem(new TBGenericStringItem("Same submenu", &popup_menu_source));
+    popup_menu_source.AddItem(new TBGenericStringItem("Long submenu", &name_source));
+    // Give the first item a skin image
+    popup_menu_source.GetItem(0)->SetSkinImage(TBIDC("Icon16"));
+
     TBUISetup tbuiSetup;
     tbuiSetup.Locale = "ui:language/lng_en.tb.txt";
     tbuiSetup.DefaultSkin = "ui:default_skin/skin.tb.txt";
@@ -104,12 +116,14 @@ TurboBadgerDemoApp::OnInit() {
             new TabContainerWindow;
         });
         TBUI::DoAfter(AdvancedListWindow::GetResources(), [this] {
-            new AdvancedListWindow(&this->advanced_source);
+            new AdvancedListWindow(&advanced_source);
         });
         TBUI::DoAfter(ListWindow::GetMainResource(), [this] {
-            new ListWindow(&this->name_source);
+            new ListWindow(&name_source);
         });
-        
+        TBUI::DoAfter(EditWindow::GetResources(), [] {
+            new EditWindow;
+        });
     });
 
     return AppState::Running;

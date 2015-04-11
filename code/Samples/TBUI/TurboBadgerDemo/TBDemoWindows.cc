@@ -2,7 +2,6 @@
 //  TBDemoWindows.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "TBDemoWindows.h"
 #include "tb_message_window.h"
 #include "animation/tb_widget_animation.h"
 #include "tb_select.h"
@@ -10,10 +9,17 @@
 #include "tb_tab_container.h"
 #include "tb_system.h"
 #include "tb_widgets_reader.h"
+#include "tb_menu_window.h"
+#include "tb_tempbuffer.h"
 #include "TBUI/TBUI.h"
+#include "TBDemoWindows.h"
 
 using namespace Oryol;
 using namespace tb;
+
+extern AdvancedItemSource advanced_source;
+extern TBGenericStringItemSource name_source;
+extern TBGenericStringItemSource popup_menu_source;
 
 //==============================================================================
 MainWindow::MainWindow() {
@@ -108,20 +114,24 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
                 "Does everything look fine?");
             return true;
         }
-        else if (ev.target->GetID() == TBIDC("test-layout")) {
-        /*
-            TBStr resource_file("Demo/demo01/ui_resources/");
+        else if (ev.target->GetID() == TBIDC("test-layout")) {            
+            TBStr resource_file("ui:demo/ui_resources/");
             resource_file.Append(ev.target->data.GetString());
-            new LayoutWindow(resource_file);
-        */
+            TBUI::DoAfter(resource_file.CStr(), [resource_file] () {
+                new LayoutWindow(resource_file);
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-connections")) {
-            //new ConnectionWindow();
+            TBUI::DoAfter(ConnectionWindow::GetMainResource(), [] () {
+                new ConnectionWindow();
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-list")) {
-            //new AdvancedListWindow(&advanced_source);
+            TBUI::DoAfter(AdvancedListWindow::GetMainResource(), [] () {
+                new AdvancedListWindow(&advanced_source);
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-image")) {
@@ -154,22 +164,32 @@ MainWindow::OnEvent(const TBWidgetEvent& ev) {
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-scroll-container")) {
-            //new ScrollContainerWindow();
+            TBUI::DoAfter(ScrollContainerWindow::GetMainResources(), [] {
+                new ScrollContainerWindow();            
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-skin-conditions")) {
-            /*
-            (new DemoWindow())->LoadResourceFile("Demo/demo01/ui_resources/test_skin_conditions01.tb.txt");
-            (new DemoWindow())->LoadResourceFile("Demo/demo01/ui_resources/test_skin_conditions02.tb.txt");
-            */
+            TBUI::DoAfter(Array<URL>({
+                "ui:demo/ui_resources/test_skin_conditions01.tb.txt",
+                "ui:demo/ui_resources/test_skin_conditions02.tb.txt"}), [] {
+                
+                TBUIWindow* w0 = new TBUIWindow();
+                TBUIWindow* w1 = new TBUIWindow();
+                w0->LoadResourceFile("ui:demo/ui_resources/test_skin_conditions01.tb.txt");
+                w1->LoadResourceFile("ui:demo/ui_resources/test_skin_conditions02.tb.txt");
+            });
             return true;
         }
         else if (ev.target->GetID() == TBIDC("test-resource-edit")) {
-            /*
-            ResourceEditWindow *res_edit_win = new ResourceEditWindow();
-            res_edit_win->Load("Demo/demo01/ui_resources/resource_edit_test.tb.txt");
-            this->GetParent()->AddChild(res_edit_win);
-            */
+            TBUI::DoAfter(Array<URL>({
+                "ui:demo/ui_resources/resource_edit_test.tb.txt",
+                "ui:demo/ui_resources/resource_edit_window.tb.txt" }), [this] {
+                
+                ResourceEditWindow *res_edit_win = new ResourceEditWindow();
+                res_edit_win->Load("ui:demo/ui_resources/resource_edit_test.tb.txt");
+                //this->GetParent()->AddChild(res_edit_win);
+            });
             return true;
         }
         else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("debug settings")) {
@@ -299,8 +319,7 @@ TabContainerWindow::GetMainResource() {
 
 //------------------------------------------------------------------------------
 bool
-TabContainerWindow::OnEvent(const TBWidgetEvent &ev)
-{
+TabContainerWindow::OnEvent(const TBWidgetEvent &ev) {
     if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("set_align")) {
         if (TBTabContainer *tc = GetWidgetByIDAndType<TBTabContainer>(TBIDC("tabcontainer"))) {
             tc->SetAlignment(static_cast<TB_ALIGN>(ev.target->data.GetInt()));
@@ -330,6 +349,160 @@ TabContainerWindow::OnEvent(const TBWidgetEvent &ev)
         }
     }
     return TBUIWindow::OnEvent(ev);
+}
+
+//==============================================================================
+LayoutWindow::LayoutWindow(const char* filename) {
+    LoadResourceFile(filename);
+}
+
+//------------------------------------------------------------------------------
+bool
+LayoutWindow::OnEvent(const TBWidgetEvent& ev) {
+    if (ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("select position")) {
+        LAYOUT_POSITION pos = LAYOUT_POSITION_CENTER;
+        if (TBSelectDropdown *select = GetWidgetByIDAndType<TBSelectDropdown>(TBIDC("select position"))) {
+            pos = static_cast<LAYOUT_POSITION>(select->GetValue());
+        }
+        for (int i = 0; i < 3; i++) {
+            if (TBLayout *layout = GetWidgetByIDAndType<TBLayout>(i + 1)) {
+                layout->SetLayoutPosition(pos);
+            }
+        }
+        return true;
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("toggle axis")) {
+        static AXIS axis = AXIS_Y;
+        for (int i = 0; i < 3; i++) {
+            if (TBLayout *layout = GetWidgetByIDAndType<TBLayout>(i + 1)) {
+                layout->SetAxis(axis);
+            }
+        }
+        axis = axis == AXIS_X ? AXIS_Y : AXIS_X;
+        if (TBLayout *layout = GetWidgetByIDAndType<TBLayout>(TBIDC("switch_layout"))) {
+            layout->SetAxis(axis);
+        }
+        ResizeToFitContent(RESIZE_FIT_CURRENT_OR_NEEDED);
+        return true;
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//==============================================================================
+ConnectionWindow::ConnectionWindow()
+{
+    LoadResourceFile(GetMainResource());
+}
+
+//------------------------------------------------------------------------------
+URL
+ConnectionWindow::GetMainResource() {
+    return "ui:demo/ui_resources/test_connections.tb.txt";
+}
+
+//------------------------------------------------------------------------------
+bool
+ConnectionWindow::OnEvent(const TBWidgetEvent &ev)
+{
+    if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("reset-master-volume")) {
+        if (TBWidgetValue *val = g_value_group.GetValue(TBIDC("master-volume"))) {
+            val->SetInt(50);
+        }
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("reset-user-name")) {
+        if (TBWidgetValue *val = g_value_group.GetValue(TBIDC("user-name"))) {
+            val->SetText("");
+        }
+    }
+	return TBUIWindow::OnEvent(ev);
+}
+
+//==============================================================================
+ScrollContainerWindow::ScrollContainerWindow() {
+    LoadResourceFile(GetMainResources()[0]);
+    if (TBSelectDropdown *select = GetWidgetByIDAndType<TBSelectDropdown>(TBIDC("name dropdown"))) {
+        select->SetSource(&name_source);
+    }
+    if (TBSelectDropdown *select = GetWidgetByIDAndType<TBSelectDropdown>(TBIDC("advanced dropdown"))) {
+        select->SetSource(&advanced_source);
+    }
+}
+
+//------------------------------------------------------------------------------
+Array<URL>
+ScrollContainerWindow::GetMainResources() {
+    return Array<URL>({
+        "ui:demo/ui_resources/test_scrollcontainer.tb.txt",
+        "ui:demo/fonts/orange_30.png",
+        "ui:default_font/segoe_white_with_shadow_28.png"});
+}
+
+//------------------------------------------------------------------------------
+bool
+ScrollContainerWindow::OnEvent(const TBWidgetEvent &ev) {
+    if (ev.type == EVENT_TYPE_CLICK) {
+        if (ev.target->GetID() == TBIDC("add img")) {
+            TBButton *button = TBSafeCast<TBButton>(ev.target);
+            TBSkinImage *skin_image = new TBSkinImage;
+            skin_image->SetSkinBg(TBIDC("Icon16"));
+            button->GetContentRoot()->AddChild(skin_image, WIDGET_Z_BOTTOM);
+            return true;
+        }
+        else if (ev.target->GetID() == TBIDC("new buttons")) {
+            for(int i = 0; i < ev.target->data.GetInt(); i++) {
+                TBStr str;
+                str.SetFormatted("Remove %d", i);
+                TBButton *button = new TBButton;
+                button->SetID(TBIDC("remove button"));
+                button->SetText(str);
+                ev.target->GetParent()->AddChild(button);
+            }
+            return true;
+		}
+        else if (ev.target->GetID() == TBIDC("new buttons delayed")) {
+            for(int i = 0; i < ev.target->data.GetInt(); i++) {
+                TBMessageData *data = new TBMessageData();
+                data->id1 = ev.target->GetParent()->GetID();
+                data->v1.SetInt(i);
+                PostMessageDelayed(TBIDC("new button"), data, 100 + i * 500);
+            }
+            return true;
+        }
+        else if (ev.target->GetID() == TBIDC("remove button")) {
+            ev.target->GetParent()->RemoveChild(ev.target);
+            delete ev.target;
+            return true;
+        }
+        else if (ev.target->GetID() == TBIDC("showpopupmenu1")) {
+            if (TBMenuWindow *menu = new TBMenuWindow(ev.target, TBIDC("popupmenu1"))) {
+                menu->Show(&popup_menu_source, TBPopupAlignment());
+            }
+            return true;
+        }
+        else if (ev.target->GetID() == TBIDC("popupmenu1")) {
+            TBStr str;
+            str.SetFormatted("Menu event received!\nref_id: %d", (int)ev.ref_id);
+            TBMessageWindow *msg_win = new TBMessageWindow(this, TBIDC("popup_dialog"));
+            msg_win->Show("Info", str);
+            return true;
+        }
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//------------------------------------------------------------------------------
+void
+ScrollContainerWindow::OnMessageReceived(TBMessage *msg) {
+    if (msg->message == TBIDC("new button") && msg->data) {
+        if (TBWidget *target = GetWidgetByID(msg->data->id1)) {
+            TBStr str;
+            str.SetFormatted("Remove %d", msg->data->v1.GetInt());
+            TBButton *button = new TBButton;
+            button->SetID(TBIDC("remove button"));
+            button->SetText(str);
+            target->AddChild(button);
+        }
+    }
 }
 
 //==============================================================================
@@ -440,7 +613,7 @@ Array<URL>
 AdvancedListWindow::GetResources() {
     return Array<URL>({
         "ui:demo/ui_resources/test_select_advanced.tb.txt",
-        "ui:demo/ui_resources/test_list_item.tb.txt"
+        "ui:demo/ui_resources/test_list_item.tb.txt",
     });
 }
 
@@ -466,3 +639,257 @@ AdvancedListWindow::OnEvent(const TBWidgetEvent &ev)
     }
     return TBUIWindow::OnEvent(ev);
 }
+
+//==============================================================================
+ResourceItem::ResourceItem(TBWidget *widget, const char *str)
+    : TBGenericStringItem(str)
+    , m_widget(widget) {
+}
+
+//==============================================================================
+ResourceEditWindow::ResourceEditWindow()
+    : m_widget_list(nullptr)
+    , m_scroll_container(nullptr)
+    , m_build_container(nullptr)
+    , m_source_edit(nullptr) {
+    
+    // Register as global listener to intercept events in the build container
+    TBWidgetListener::AddGlobalListener(this);
+
+    g_widgets_reader->LoadFile(this, "ui:demo/ui_resources/resource_edit_window.tb.txt");
+
+    m_scroll_container = GetWidgetByIDAndType<TBScrollContainer>(TBIDC("scroll_container"));
+    m_build_container = m_scroll_container->GetContentRoot();
+    m_source_edit = GetWidgetByIDAndType<TBEditField>(TBIDC("source_edit"));
+
+    m_widget_list = GetWidgetByIDAndType<TBSelectList>(TBIDC("widget_list"));
+    m_widget_list->SetSource(&m_widget_list_source);
+
+    SetRect(TBRect(100, 50, 900, 600));
+}
+
+//------------------------------------------------------------------------------
+ResourceEditWindow::~ResourceEditWindow() {
+    TBWidgetListener::RemoveGlobalListener(this);
+
+    // avoid assert
+    m_widget_list->SetSource(nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::Load(const char *resource_file) {
+    m_resource_filename.Set(resource_file);
+    SetText(resource_file);
+
+    // Set the text of the source view
+    m_source_edit->SetText("");
+
+    if (TBFile *file = TBFile::Open(m_resource_filename, TBFile::MODE_READ)) {
+        TBTempBuffer buffer;
+        if (buffer.Reserve(file->Size())) {
+            uint32 size_read = file->Read(buffer.GetData(), 1, buffer.GetCapacity());
+            m_source_edit->SetText(buffer.GetData(), size_read);
+        }
+        delete file;
+    }
+    else {
+        // Error, show message
+        TBStr text;
+        text.SetFormatted("Could not load file %s", resource_file);
+        if (TBMessageWindow *msg_win = new TBMessageWindow(GetParentRoot(), TBIDC(""))) {
+            msg_win->Show("Error loading resource", text);
+        }
+    }
+
+    RefreshFromSource();
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::RefreshFromSource() {
+    // Clear old widgets
+    while (TBWidget *child = m_build_container->GetFirstChild()) {
+        m_build_container->RemoveChild(child);
+        delete child;
+    }
+
+    // Create new widgets from source
+    g_widgets_reader->LoadData(m_build_container, m_source_edit->GetText());
+
+    // Force focus back in case the edited resource has autofocus.
+    // FIX: It would be better to prevent the focus change instead!
+    m_source_edit->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::UpdateWidgetList(bool immediately) {
+    if (!immediately) {
+        TBID id = TBIDC("update_widget_list");
+        if (!GetMessageByID(id)) {
+            PostMessage(id, nullptr);
+        }
+    }
+    else {
+        m_widget_list_source.DeleteAllItems();
+        AddWidgetListItemsRecursive(m_build_container, 0);
+        m_widget_list->InvalidateList();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::AddWidgetListItemsRecursive(TBWidget *widget, int depth) {
+    if (depth > 0) {
+        // Ignore the root
+        // Add a new ResourceItem for this widget
+        TBStr str;
+        const char *classname = widget->GetClassName();
+        if (!*classname) {
+            classname = "<Unknown widget type>";
+        }
+        str.SetFormatted("% *s%s", depth - 1, "", classname);
+
+        if (ResourceItem *item = new ResourceItem(widget, str)) {
+            m_widget_list_source.AddItem(item);
+        }
+    }
+    for (TBWidget *child = widget->GetFirstChild(); child; child = child->GetNext()) {
+        AddWidgetListItemsRecursive(child, depth + 1);
+    }
+}
+
+//------------------------------------------------------------------------------
+ResourceEditWindow::ITEM_INFO
+ResourceEditWindow::GetItemFromWidget(TBWidget *widget) {
+    ITEM_INFO item_info = { nullptr, -1 };
+    for (int i = 0; i < m_widget_list_source.GetNumItems(); i++) {
+        if (m_widget_list_source.GetItem(i)->GetWidget() == widget) {
+            item_info.index = i;
+            item_info.item = m_widget_list_source.GetItem(i);
+            break;
+        }
+    }
+    return item_info;
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::SetSelectedWidget(TBWidget *widget) {
+    m_selected_widget.Set(widget);
+    ITEM_INFO item_info = GetItemFromWidget(widget);
+    if (item_info.item) {
+        m_widget_list->SetValue(item_info.index);
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+ResourceEditWindow::OnEvent(const TBWidgetEvent &ev) {
+    if (ev.type == EVENT_TYPE_CHANGED && ev.target->GetID() == TBIDC("widget_list_search")) {
+        m_widget_list->SetFilter(ev.target->GetText());
+        return true;
+    }
+    else if (ev.type == EVENT_TYPE_CHANGED && ev.target == m_widget_list) {
+        if (m_widget_list->GetValue() >= 0 && m_widget_list->GetValue() < m_widget_list_source.GetNumItems())
+            if (ResourceItem *item = m_widget_list_source.GetItem(m_widget_list->GetValue()))
+                SetSelectedWidget(item->GetWidget());
+    }
+    else if (ev.type == EVENT_TYPE_CHANGED && ev.target == m_source_edit) {
+        RefreshFromSource();
+        return true;
+    }
+    else if (ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("test")) {
+        // Create a window containing the current layout, resize and center it.
+        if (TBWindow *win = new TBWindow()) {
+            win->SetText("Test window");
+            g_widgets_reader->LoadData(win->GetContentRoot(), m_source_edit->GetText());
+            TBRect bounds(0, 0, GetParent()->GetRect().w, GetParent()->GetRect().h);
+            win->SetRect(win->GetResizeToFitContentRect().CenterIn(bounds).MoveIn(bounds).Clip(bounds));
+            GetParent()->AddChild(win);
+        }
+        return true;
+    }
+    else if (ev.target->GetID() == TBIDC("constrained")) {
+        m_scroll_container->SetAdaptContentSize(ev.target->GetValue() ? true : false);
+        return true;
+    }
+    else if (ev.type == EVENT_TYPE_FILE_DROP) {
+        return OnDropFileEvent(ev);
+    }
+    return TBUIWindow::OnEvent(ev);
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::OnPaintChildren(const PaintProps &paint_props) {
+    TBWindow::OnPaintChildren(paint_props);
+
+    // Paint the selection of the selected widget
+    if (TBWidget *selected_widget = GetSelectedWidget()) {
+        TBRect widget_rect(0, 0, selected_widget->GetRect().w, selected_widget->GetRect().h);
+        selected_widget->ConvertToRoot(widget_rect.x, widget_rect.y);
+        ConvertFromRoot(widget_rect.x, widget_rect.y);
+        g_renderer->DrawRect(widget_rect, TBColor(255, 205, 0));
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::OnMessageReceived(TBMessage *msg) {
+    if (msg->message == TBIDC("update_widget_list")) {
+        UpdateWidgetList(true);
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+ResourceEditWindow::OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) {
+    // Intercept all events to widgets in the build container
+    if (m_build_container->IsAncestorOf(ev.target)) {
+        // Let events through if alt is pressed so we can test some
+        // functionality right in the editor (like toggle hidden UI).
+        if (ev.modifierkeys & TB_ALT) {
+            return false;
+        }
+
+        // Select widget when clicking
+        if (ev.type == EVENT_TYPE_POINTER_DOWN) {
+            SetSelectedWidget(ev.target);
+        }
+
+        if (ev.type == EVENT_TYPE_FILE_DROP) {
+            OnDropFileEvent(ev);
+        }
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::OnWidgetAdded(TBWidget *parent, TBWidget *child) {
+    if (m_build_container && m_build_container->IsAncestorOf(child)) {
+        UpdateWidgetList(false);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+ResourceEditWindow::OnWidgetRemove(TBWidget *parent, TBWidget *child) {
+    if (m_build_container && m_build_container->IsAncestorOf(child)) {
+        UpdateWidgetList(false);
+    }
+}
+
+//------------------------------------------------------------------------------
+bool
+ResourceEditWindow::OnDropFileEvent(const TBWidgetEvent &ev) {
+    const TBWidgetEventFileDrop *fd_event = TBSafeCast<TBWidgetEventFileDrop>(&ev);
+    if (fd_event->files.GetNumItems() > 0) {
+        Load(*fd_event->files.Get(0));
+    }
+    return true;
+}
+

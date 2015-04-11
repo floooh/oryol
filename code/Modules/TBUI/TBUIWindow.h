@@ -19,7 +19,6 @@ public:
     /// destructor
     virtual ~TBUIWindow();
 
-protected:
     /// load resource file (must be preloaded, calls LoadResource())
     void LoadResourceFile(const URL& url);
     /// generic load resource
