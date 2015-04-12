@@ -29,14 +29,11 @@ public:
     virtual int Height() { return this->height; }
     /// initialize with new data
     virtual void SetData(tb::uint32 *data);
-    /// get texture id
-    Id GetTexture() const;
     
-private:
     /// destroy texture
-    void DestroyTexture();
+    void destroyTexture();
     /// create texture
-    void CreateTexture(tb::uint32* data);
+    void createTexture(tb::uint32* data);
     
     tbOryolRenderer *renderer;
     int32 width;

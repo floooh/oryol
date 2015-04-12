@@ -185,7 +185,7 @@ void tbOryolRenderer::RenderBatch(Batch *tbBatch)
     batch.startIndex = this->curVertexIndex;
     batch.numVertices = tbBatch->vertex_count;
     if (tbBatch->bitmap) {
-        batch.texture = ((tbOryolBitmap*)tbBatch->bitmap)->GetTexture();
+        batch.texture = ((tbOryolBitmap*)tbBatch->bitmap)->texture;
     }
     else {
         batch.texture.Invalidate();

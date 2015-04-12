@@ -21,7 +21,7 @@ label(ResourceLabel::Invalid) {
 //------------------------------------------------------------------------------
 tbOryolBitmap::~tbOryolBitmap() {
     if (this->texture.IsValid()) {
-        this->DestroyTexture();
+        this->destroyTexture();
     }
 }
 
@@ -32,7 +32,7 @@ tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
     o_assert_dbg(tb::TBGetNearestPowerOfTwo(h) == h);
     this->width = w;
     this->height = h;
-    this->CreateTexture(data);
+    this->createTexture(data);
     return true;
 }
 
@@ -40,13 +40,13 @@ tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
 void
 tbOryolBitmap::SetData(uint32* data) {
     o_assert_dbg(this->texture.IsValid());
-    this->DestroyTexture();
-    this->CreateTexture(data);
+    this->destroyTexture();
+    this->createTexture(data);
 }
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::CreateTexture(tb::uint32* data) {
+tbOryolBitmap::createTexture(tb::uint32* data) {
     o_assert_dbg(!this->texture.IsValid());
 
     // hmm this kinda sucks, a 'view mode' stream would be nice
@@ -70,17 +70,11 @@ tbOryolBitmap::CreateTexture(tb::uint32* data) {
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::DestroyTexture() {
+tbOryolBitmap::destroyTexture() {
     o_assert_dbg(this->texture.IsValid());
     this->renderer->deferDeleteTexture(this->label);
     this->texture.Invalidate();
     this->label = ResourceLabel::Invalid;
-}
-
-//------------------------------------------------------------------------------
-Id
-tbOryolBitmap::GetTexture() const {
-    return this->texture;
 }
 
 } // namespace _priv
