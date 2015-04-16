@@ -8,7 +8,7 @@
 #include "Core/RunLoop.h"
 #include "IO/Core/IOQueue.h"
 #include "TBUI/TBUISetup.h"
-#include "TBUI/tb/tbOryolRenderer.h"
+#include "TBUI/tb/tbOryolBatchRenderer.h"
 #include "TBUI/tb/tbOryolRootWidget.h"
 #include "Resource/Core/resourceRegistry.h"
 #include "Input/InputProtocol.h"
@@ -54,7 +54,7 @@ private:
     tb::MODIFIER_KEYS modifierKeys = tb::TB_MODIFIER_NONE;
     int mouseX = 0;
     int mouseY = 0;
-    tbOryolRenderer* renderer = nullptr;
+    tbOryolBatchRenderer* renderer = nullptr;
     tbOryolRootWidget rootWidget;
 };
 

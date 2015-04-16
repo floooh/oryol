@@ -3,14 +3,14 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "tbOryolBitmap.h"
-#include "tbOryolRenderer.h"
+#include "tbOryolBatchRenderer.h"
 #include "tb_bitmap_fragment.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-tbOryolBitmap::tbOryolBitmap(tbOryolRenderer* rnd) :
+tbOryolBitmap::tbOryolBitmap(tbOryolBatchRenderer* rnd) :
 renderer(rnd),
 width(0),
 height(0),

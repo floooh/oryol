@@ -11,7 +11,6 @@ fips_begin_module(TBUI)
         tbMgr.cc tbMgr.h
         tbOryolRootWidget.cc tbOryolRootWidget.h
         tbOryolBitmap.cc tbOryolBitmap.h
-        tbOryolRenderer.cc tbOryolRenderer.h
         tbOryolBatchRenderer.cc tbOryolBatchRenderer.h
         tbOryolFile.cc tbOryolFile.h
         tbOryolSystem.cc

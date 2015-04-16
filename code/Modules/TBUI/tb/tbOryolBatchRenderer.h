@@ -24,7 +24,7 @@ public:
     void Discard();
     /// return true if object has been setup
     bool IsValid() const;
-
+    
     /// begin rendering a frame
     virtual void BeginPaint(int renderTargetWidth, int renderTargetHeight);
     /// finish rendering a frame
@@ -54,7 +54,9 @@ public:
     virtual void FlushBitmap(tb::TBBitmap* bitmap);
     virtual void FlushBitmapFragment(tb::TBBitmapFragment* bitmapFragment);
 
-private:
+    /// create a new bitmap object
+    virtual tb::TBBitmap *CreateBitmap(int width, int height, tb::uint32 *data);
+    
     struct Batch {
         uint16 startIndex = 0;
         uint16 numVertices = 0;
@@ -80,6 +82,7 @@ private:
     /// draw this frame's patches
     void drawBatches();
 
+private:
     bool isValid;
     
     float fOpacitity;
@@ -92,7 +95,7 @@ private:
     uint32 batchId;
     bool inFlushBatch;
     
-    static const int MaxNumVertices = 16 * 1024;
+    static const int MaxNumVertices = 64 * 1024;
     static const int MaxNumBatches = 1024;
     
     ResourceLabel resLabel;

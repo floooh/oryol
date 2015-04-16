@@ -133,6 +133,7 @@ void
 tbOryolBatchRenderer::deleteTextures() {
     if (!this->texturesForDeletion.Empty()) {
         for (ResourceLabel label : this->texturesForDeletion) {
+            Log::Info("tbOryolBatchRenderer: texture deleted\n");
             Gfx::Resource().Destroy(label);
         }
         this->texturesForDeletion.Clear();
@@ -185,6 +186,8 @@ tbOryolBatchRenderer::GetOpacity() {
 tb::TBRect
 tbOryolBatchRenderer::SetClipRect(const TBRect &rect, bool addToCurrent) {
 
+    this->flushBatch();
+
     TBRect oldClipRect = this->clipRect;
     this->clipRect = rect;
     this->clipRect.x += this->translationX;
@@ -192,8 +195,6 @@ tbOryolBatchRenderer::SetClipRect(const TBRect &rect, bool addToCurrent) {
     if (addToCurrent) {
         this->clipRect = this->clipRect.Clip(oldClipRect);
     }
-    this->flushBatch();
-
     oldClipRect.x -= this->translationX;
     oldClipRect.y -= this->translationY;
     return oldClipRect;
@@ -286,7 +287,7 @@ tbOryolBatchRenderer::FlushBitmap(TBBitmap* bitmap) {
     // Flush the batch if it's using this bitmap (that is about to change or be deleted)
     if (this->curBatchIndex < MaxNumBatches) {
         const Batch& curBatch = this->batches[this->curBatchIndex];
-        tbOryolBitmap* oryolBitmap = (tbOryolBitmap*) bitmap;
+        auto* oryolBitmap = (tbOryolBitmap*) bitmap;
         if (oryolBitmap && (oryolBitmap->texture == curBatch.texture)) {
             this->flushBatch();
         }
@@ -321,7 +322,7 @@ tbOryolBatchRenderer::addQuad(const TBRect& dstRect, const TBRect& srcRect, uint
     }
     
     Batch* curBatch = &(this->batches[this->curBatchIndex]);
-    tbOryolBitmap* oryolBitmap = (tbOryolBitmap*) bitmap;
+    auto* oryolBitmap = (tbOryolBitmap*) bitmap;
     if (oryolBitmap) {
         if (curBatch->texture != oryolBitmap->texture) {
             curBatch = this->flushBatch();
@@ -398,20 +399,26 @@ tbOryolBatchRenderer::flushBatch() {
     o_assert_dbg(this->curBatchIndex < MaxNumBatches);
     Batch* curBatch = &(this->batches[this->curBatchIndex]);
 
+    // empty batch?
+    const int numVerts = this->curVertexIndex - curBatch->startIndex;
+    if (0 == numVerts) {
+        return curBatch;
+    }
+    
     // prevent re-entrancy
     // FIXME: does this actually ever happen?
     if (this->inFlushBatch) {
         return curBatch;
     }
     this->inFlushBatch = true;
-    
     if (curBatch->fragment) {
         // Now it's time to ensure the bitmap data is up to date. A call to GetBitmap
         // with TB_VALIDATE_ALWAYS should guarantee that its data is validated.
         curBatch->fragment->GetBitmap(TB_VALIDATE_ALWAYS);
     }
-    
-    curBatch->numVertices = this->curVertexIndex - curBatch->startIndex;
+    this->inFlushBatch = false;
+        
+    curBatch->numVertices = numVerts;
     curBatch->clipRect.x = this->clipRect.x;
     curBatch->clipRect.y = this->screenRect.h - (this->clipRect.y + this->clipRect.h);
     curBatch->clipRect.w = this->clipRect.w;
@@ -419,7 +426,6 @@ tbOryolBatchRenderer::flushBatch() {
     
     this->curBatchIndex++;
     this->batchId++;
-    this->inFlushBatch = false;
     
     if (this->curBatchIndex < MaxNumBatches) {
         // initialize the new batch
@@ -440,7 +446,8 @@ tbOryolBatchRenderer::flushBatch() {
 void
 tbOryolBatchRenderer::drawBatches() {
 
-    if (this->curBatchIndex > 0) {
+    // NOTE: curBatchIndex is always one-past-end
+    if (this->curBatchIndex > 1) {
     
         const glm::mat4 ortho = glm::ortho(0.0f, float(this->screenRect.w),
             (float)this->screenRect.h, 0.0f,
@@ -448,7 +455,6 @@ tbOryolBatchRenderer::drawBatches() {
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
         
         this->tbClipRect = this->screenRect;
-        Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);
         Gfx::UpdateVertices(this->mesh, vertexDataSize, this->vertexData);
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
@@ -463,8 +469,20 @@ tbOryolBatchRenderer::drawBatches() {
             }
             Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
         }
+        Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);
     }
 }
 
+//------------------------------------------------------------------------------
+tb::TBBitmap *
+tbOryolBatchRenderer::CreateBitmap(int width, int height, uint32 *data)
+{
+    Log::Info("tbOryolBatchRenderer::CreateBitmap() called\n");
+    
+    auto *bitmap = new tbOryolBitmap(this);
+    bitmap->Init(width, height, data);
+    return bitmap;
+}
+    
 } // namespace _priv
 } // namespace Oryol

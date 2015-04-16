@@ -12,13 +12,13 @@
 namespace Oryol {
 namespace _priv {
 
-class tbOryolRenderer;
+class tbOryolBatchRenderer;
 
 class tbOryolBitmap : public tb::TBBitmap
 {
 public:
     /// bitmap wrapper constructor
-    tbOryolBitmap(tbOryolRenderer *renderer);
+    tbOryolBitmap(tbOryolBatchRenderer *renderer);
     /// bitmap wrapper destructor
     ~tbOryolBitmap();
     /// initialize bitmap with data
@@ -35,7 +35,7 @@ public:
     /// create texture
     void createTexture(tb::uint32* data);
     
-    tbOryolRenderer *renderer;
+    tbOryolBatchRenderer *renderer;
     int32 width;
     int32 height;
     

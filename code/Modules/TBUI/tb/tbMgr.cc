@@ -31,7 +31,7 @@ tbMgr::Setup(const TBUISetup& setup) {
     o_assert_dbg(setup.DefaultFontName.IsValid());
     
     // initialize turbobadger
-    this->renderer = Memory::New<tbOryolRenderer>();
+    this->renderer = Memory::New<tbOryolBatchRenderer>();
     this->renderer->Setup();
 	tb_core_init(this->renderer, setup.Locale.AsCStr());
     
