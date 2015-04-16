@@ -53,7 +53,7 @@
 /** Enable to get TBRendererBatcher, an helper class for renderers that
 	implements batching of draw operations. Subclasses of TBRendererBatcher
 	can be done super easily, and still do batching. */
-#define TB_RENDERER_BATCHER
+// #define TB_RENDERER_BATCHER
 
 /** Enable renderer using OpenGL. This renderer depends on TB_RENDERER_BATCHER.
 	It is using GL version 1.1, */
