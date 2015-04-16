@@ -127,7 +127,6 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
             if (glfwAction == GLFW_PRESS) {
                 self->keyboard.onKeyDown(key);
                 msg->SetDown(true);
-                self->notifyHandlers(msg);
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->keyboard.onKeyUp(key);
