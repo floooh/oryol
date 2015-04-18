@@ -5,6 +5,8 @@
 #include "pnaclInputMgr.h"
 #include "Core/Core.h"
 #include "Core/pnacl/pnaclInstance.h"
+#include "Input/InputProtocol.h"
+#include "Core/String/StringConverter.h"
 
 namespace Oryol {
 namespace _priv {
@@ -97,6 +99,12 @@ pnaclInputMgr::onMouseDown(const pp::MouseInputEvent& ie) {
     Mouse::Button btn = this->mapMouseButton(ie.GetButton());
     if (Mouse::InvalidButton != btn) {
         this->mouse.onButtonDown(btn);
+
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetDown(true);
+        this->notifyHandlers(msg);
+
         return true;
     }
     return false;
@@ -108,6 +116,12 @@ pnaclInputMgr::onMouseUp(const pp::MouseInputEvent& ie) {
     Mouse::Button btn = this->mapMouseButton(ie.GetButton());
     if (Mouse::InvalidButton != btn) {
         this->mouse.onButtonUp(btn);
+        
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetUp(true);
+        this->notifyHandlers(msg);
+        
         return true;
     }
     return false;
@@ -120,6 +134,12 @@ pnaclInputMgr::onMouseMove(const pp::MouseInputEvent& ie) {
     pp::Point mov = ie.GetMovement();
     this->mouse.Position = glm::vec2(pos.x(), pos.y());
     this->mouse.Movement = glm::vec2(mov.x(), mov.y());
+    
+    auto msg = InputProtocol::MouseMove::Create();
+    msg->SetMovement(this->mouse.Movement);
+    msg->SetPosition(this->mouse.Position);
+    this->notifyHandlers(msg);
+    
     return true;
 }
 
@@ -142,6 +162,11 @@ bool
 pnaclInputMgr::onWheel(const pp::WheelInputEvent& ie) {
     const pp::FloatPoint pos = ie.GetDelta();
     this->mouse.Scroll = glm::vec2(pos.x(), pos.y()); 
+    
+    auto msg = InputProtocol::MouseScroll::Create();
+    msg->SetScroll(this->mouse.Scroll);
+    this->notifyHandlers(msg);
+    
     return true;
 }
 
@@ -151,6 +176,12 @@ pnaclInputMgr::onKeyDown(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
         this->keyboard.onKeyDown(key);
+
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        msg->SetDown(true);
+        this->notifyHandlers(msg);
+
         return true;
     }
     Log::Info("unhandled key code: %d\n", ie.GetKeyCode());
@@ -163,6 +194,12 @@ pnaclInputMgr::onKeyUp(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
         this->keyboard.onKeyUp(key);
+
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        msg->SetUp(true);
+        this->notifyHandlers(msg);
+
         return true;
     }
     return false;
@@ -171,7 +208,18 @@ pnaclInputMgr::onKeyUp(const pp::KeyboardInputEvent& ie) {
 //------------------------------------------------------------------------------
 bool
 pnaclInputMgr::onChar(const pp::KeyboardInputEvent& ie) {
-    Log::Info("FIXME: onChar()\n");
+    std::string str = ie.GetCharacterText().AsString();
+    const size_t len = str.length();
+    if (len > 0) {
+        static wchar_t wide[32] = { 0 };
+        const unsigned char* src = (const unsigned char*) str.c_str();
+        const int32 wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
+        if (wlen > 0) {
+            auto msg = InputProtocol::WChar::Create();
+            msg->SetWChar(wide[0]);
+            this->notifyHandlers(msg);
+        }
+    }
     return false;
 }
 
