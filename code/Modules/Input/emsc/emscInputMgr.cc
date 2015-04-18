@@ -109,11 +109,11 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
         msg->SetKey(key);
         if (e->repeat) {
             self->keyboard.onKeyRepeat(key);
-            msg->SetDown(true);
+            msg->SetRepeat(true);
         }
         else {
             self->keyboard.onKeyDown(key);
-            msg->SetRepeat(true);
+            msg->SetDown(true);
         }
         self->notifyHandlers(msg);
         if (self->keyboard.IsCapturingText()) {
