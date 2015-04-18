@@ -41,4 +41,19 @@ template<typename... ARGS> static Oryol::Ptr<TYPE> Create(ARGS&&... args) {\
 /// implementation-side macro for Oryol class without pool allocator (located in .cc source file)
 #define OryolClassImpl(TYPE)
 
+/// add simple RTTI system to a class, inspired by turbobadger's RTTI system
+namespace Oryol {
+    typedef void* TypeId;
+}
+#define OryolBaseTypeDecl(CLASS)\
+protected:\
+    template<class T> static TypeId getTypeId() { static char _type_id; return &_type_id; };\
+    virtual bool isOfType(const TypeId t) const { return t == getTypeId<CLASS>(); };\
+public:\
+    template<class T> bool IsA() const { return this->isOfType(getTypeId<T>()); };\
+    template<class T> T* DynamicCast() const { return (T*) (this->isOfType(getTypeId<T>()) ? this : nullptr); };\
+
+#define OryolTypeDecl(CLASS, BASECLASS)\
+protected:\
+    virtual bool isOfType(const TypeId t) const { return t == getTypeId<CLASS>() ? true : BASECLASS::isOfType(t); };\
 

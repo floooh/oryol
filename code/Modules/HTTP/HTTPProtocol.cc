@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
-// #version:8# machine generated, do not edit!
+// #version:10# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "HTTPProtocol.h"
 
 namespace Oryol {
-OryolClassPoolAllocImpl(HTTPProtocol::HTTPResponse);
-OryolClassPoolAllocImpl(HTTPProtocol::HTTPRequest);
+OryolClassImpl(HTTPProtocol::HTTPResponse);
+OryolClassImpl(HTTPProtocol::HTTPRequest);
 HTTPProtocol::CreateCallback HTTPProtocol::jumpTable[HTTPProtocol::MessageId::NumMessageIds] = { 
     &HTTPProtocol::HTTPResponse::FactoryCreate,
     &HTTPProtocol::HTTPRequest::FactoryCreate,

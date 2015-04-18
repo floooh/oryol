@@ -1,15 +1,15 @@
 //-----------------------------------------------------------------------------
-// #version:8# machine generated, do not edit!
+// #version:10# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOProtocol.h"
 
 namespace Oryol {
-OryolClassPoolAllocImpl(IOProtocol::Request);
-OryolClassPoolAllocImpl(IOProtocol::notifyLanes);
-OryolClassPoolAllocImpl(IOProtocol::notifyFileSystemRemoved);
-OryolClassPoolAllocImpl(IOProtocol::notifyFileSystemReplaced);
-OryolClassPoolAllocImpl(IOProtocol::notifyFileSystemAdded);
+OryolClassImpl(IOProtocol::Request);
+OryolClassImpl(IOProtocol::notifyLanes);
+OryolClassImpl(IOProtocol::notifyFileSystemRemoved);
+OryolClassImpl(IOProtocol::notifyFileSystemReplaced);
+OryolClassImpl(IOProtocol::notifyFileSystemAdded);
 IOProtocol::CreateCallback IOProtocol::jumpTable[IOProtocol::MessageId::NumMessageIds] = { 
     &IOProtocol::Request::FactoryCreate,
     &IOProtocol::notifyLanes::FactoryCreate,

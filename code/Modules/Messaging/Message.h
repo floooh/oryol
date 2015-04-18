@@ -13,6 +13,7 @@ namespace Oryol {
 
 class Message : public RefCounted {
     OryolClassDecl(Message);
+    OryolBaseTypeDecl(Message);
 public:
     /// constructor
     Message();

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -54,7 +54,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class Request : public Message {
-        OryolClassPoolAllocDecl(Request);
+        OryolClassDecl(Request);
+        OryolTypeDecl(Request,Message);
     public:
         Request() {
             this->msgId = MessageId::RequestId;
@@ -149,7 +150,8 @@ private:
         int32 actuallane;
     };
     class notifyLanes : public Message {
-        OryolClassPoolAllocDecl(notifyLanes);
+        OryolClassDecl(notifyLanes);
+        OryolTypeDecl(notifyLanes,Message);
     public:
         notifyLanes() {
             this->msgId = MessageId::notifyLanesId;
@@ -174,7 +176,8 @@ private:
         StringAtom scheme;
     };
     class notifyFileSystemRemoved : public notifyLanes {
-        OryolClassPoolAllocDecl(notifyFileSystemRemoved);
+        OryolClassDecl(notifyFileSystemRemoved);
+        OryolTypeDecl(notifyFileSystemRemoved,notifyLanes);
     public:
         notifyFileSystemRemoved() {
             this->msgId = MessageId::notifyFileSystemRemovedId;
@@ -192,7 +195,8 @@ private:
 private:
     };
     class notifyFileSystemReplaced : public notifyLanes {
-        OryolClassPoolAllocDecl(notifyFileSystemReplaced);
+        OryolClassDecl(notifyFileSystemReplaced);
+        OryolTypeDecl(notifyFileSystemReplaced,notifyLanes);
     public:
         notifyFileSystemReplaced() {
             this->msgId = MessageId::notifyFileSystemReplacedId;
@@ -210,7 +214,8 @@ private:
 private:
     };
     class notifyFileSystemAdded : public notifyLanes {
-        OryolClassPoolAllocDecl(notifyFileSystemAdded);
+        OryolClassDecl(notifyFileSystemAdded);
+        OryolTypeDecl(notifyFileSystemAdded,notifyLanes);
     public:
         notifyFileSystemAdded() {
             this->msgId = MessageId::notifyFileSystemAddedId;

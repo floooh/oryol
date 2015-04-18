@@ -1,15 +1,15 @@
 //-----------------------------------------------------------------------------
-// #version:8# machine generated, do not edit!
+// #version:10# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "InputProtocol.h"
 
 namespace Oryol {
-OryolClassPoolAllocImpl(InputProtocol::MouseMove);
-OryolClassPoolAllocImpl(InputProtocol::MouseButton);
-OryolClassPoolAllocImpl(InputProtocol::MouseScroll);
-OryolClassPoolAllocImpl(InputProtocol::Key);
-OryolClassPoolAllocImpl(InputProtocol::WChar);
+OryolClassImpl(InputProtocol::MouseMove);
+OryolClassImpl(InputProtocol::MouseButton);
+OryolClassImpl(InputProtocol::MouseScroll);
+OryolClassImpl(InputProtocol::Key);
+OryolClassImpl(InputProtocol::WChar);
 InputProtocol::CreateCallback InputProtocol::jumpTable[InputProtocol::MessageId::NumMessageIds] = { 
     &InputProtocol::MouseMove::FactoryCreate,
     &InputProtocol::MouseButton::FactoryCreate,

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -53,7 +53,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class MouseMove : public Message {
-        OryolClassPoolAllocDecl(MouseMove);
+        OryolClassDecl(MouseMove);
+        OryolTypeDecl(MouseMove,Message);
     public:
         MouseMove() {
             this->msgId = MessageId::MouseMoveId;
@@ -85,7 +86,8 @@ private:
         glm::vec2 position;
     };
     class MouseButton : public Message {
-        OryolClassPoolAllocDecl(MouseButton);
+        OryolClassDecl(MouseButton);
+        OryolTypeDecl(MouseButton,Message);
     public:
         MouseButton() {
             this->msgId = MessageId::MouseButtonId;
@@ -126,7 +128,8 @@ private:
         bool up;
     };
     class MouseScroll : public Message {
-        OryolClassPoolAllocDecl(MouseScroll);
+        OryolClassDecl(MouseScroll);
+        OryolTypeDecl(MouseScroll,Message);
     public:
         MouseScroll() {
             this->msgId = MessageId::MouseScrollId;
@@ -151,7 +154,8 @@ private:
         glm::vec2 scroll;
     };
     class Key : public Message {
-        OryolClassPoolAllocDecl(Key);
+        OryolClassDecl(Key);
+        OryolTypeDecl(Key,Message);
     public:
         Key() {
             this->msgId = MessageId::KeyId;
@@ -201,7 +205,8 @@ private:
         bool repeat;
     };
     class WChar : public Message {
-        OryolClassPoolAllocDecl(WChar);
+        OryolClassDecl(WChar);
+        OryolTypeDecl(WChar,Message);
     public:
         WChar() {
             this->msgId = MessageId::WCharId;

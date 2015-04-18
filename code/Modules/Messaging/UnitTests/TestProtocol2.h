@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -38,7 +38,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class TestMsgEx : public TestProtocol::TestMsg1 {
-        OryolClassPoolAllocDecl(TestMsgEx);
+        OryolClassDecl(TestMsgEx);
+        OryolTypeDecl(TestMsgEx,TestProtocol::TestMsg1);
     public:
         TestMsgEx() {
             this->msgId = MessageId::TestMsgExId;
