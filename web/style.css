@@ -179,6 +179,10 @@ a.thumb-link:hover, a.thumb-link:active {
     border: 0px none;
     display: block;
 }
+.game:-webkit-full-screen {
+    width: 100%;
+    height: 100%;
+}
 .game-output {
     background-color: #BAE3FF;
     font-family: courier;

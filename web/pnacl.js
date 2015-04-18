@@ -1,5 +1,6 @@
 /** pnacl wrapper page Javascript functions **/
-
+var origWidth = 0;
+var origHeight = 0;
 var progressCount = 0;
 function updateProgress(percent) {
     var progress = document.getElementById('progress');
@@ -49,9 +50,29 @@ function handleMessage(msg) {
       putText('unknown msg received: ' + msg_json.msg + '\n');
   }
 }
+function switchToFullscreen() {
+    // don't need to care about non-Chrome browsers
+    var canvas = document.getElementById("pnacl-module");
+    origWidth = canvas.width;
+    origHeight = canvas.height;
+    canvas.webkitRequestFullscreen();
+}
+function fullscreenChanged() {
+    canvas = document.getElementById("pnacl-module");
+    if (document.webkitIsFullscreen) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    else {
+        canvas.width = origWidth;
+        canvas.height = origHeight;
+    }
+    console.log("fullscreen change event received, new size: " + canvas.width + " " + canvas.height + "\n");
+}
 var naclModule = document.getElementById('pnacl-module');
 naclModule.addEventListener('progress', handleProgress, true);
 naclModule.addEventListener('load', handleLoad, true);
 naclModule.addEventListener('error', handleError, true);
 naclModule.addEventListener('crash', handleCrash, true);
 naclModule.addEventListener('message', handleMessage, true);
+document.addEventListener('webkitfullscreenchange', fullscreenChanged);
