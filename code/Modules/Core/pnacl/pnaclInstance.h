@@ -39,10 +39,10 @@ public:
     /// post-message callback
     virtual void HandleMessage(const pp::Var& message);
 
-    /// get current framebuffer width
-    int32 GetFramebufferWidth() const;
-    /// get current framebuffer height
-    int32 GetFramebufferHeight() const;
+    /// get current canvas width
+    int32 GetCanvasWidth() const;
+    /// get current canvas height
+    int32 GetCanvasHeight() const;
 
     /// this will be called by App::StartMainLoop
     void startMainLoop(App* app);
@@ -54,9 +54,13 @@ public:
     /// disable input (called by Input module)
     void disableInput();
 
-private:
+    /// enable view event handling (called by graphics system)
+    void enableViewEvents(std::function<bool(const pp::View&)> handlerFunc);
+    /// disable view event handling
+    void disableViewEvents();
     /// initialize the GL context
-    bool initGL();
+    bool initGL(const int32_t* attribList);
+private:
     /// this is the per-frame function, it will schedule itself to implement the frame loop
     void doOneFrame(int32_t dummy);
     /// flush messages (called from within doOneFrame)
@@ -72,6 +76,7 @@ private:
     Queue<pp::Var> msgQueue;
     static const int32 MaxQueuedEvents = 64;
     std::function<bool(const pp::InputEvent&)> inputEventFunc;
+    std::function<bool(const pp::View&)> viewEventFunc;
 };
 
 } // namespace _priv

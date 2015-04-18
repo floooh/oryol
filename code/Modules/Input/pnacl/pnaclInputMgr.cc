@@ -31,8 +31,9 @@ pnaclInputMgr::setup(const InputSetup& setup) {
     this->setupKeyTable();
 
     using namespace std::placeholders;    
-    pnaclInstance::Instance()->enableInput(std::function<bool(const pp::InputEvent&)>(std::bind(&pnaclInputMgr::handleEvent, this, _1)));
-
+    pnaclInstance::Instance()->enableInput([this] (const pp::InputEvent& e) {
+        return this->handleEvent(e);
+    });
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 

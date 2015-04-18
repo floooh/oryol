@@ -35,7 +35,19 @@ function handleCrash() {
   putText(msg);
 }
 function handleMessage(msg) {
-  putText(msg.data);
+  var msg_json = JSON.parse(msg.data);
+  if (msg_json.msg == 'log') {
+    putText(msg_json.val + '\n');
+  }
+  else if (msg_json.msg == 'resize') {
+    console.log(msg_json);
+    var canvas = document.getElementById('pnacl-module');
+    canvas.width = msg_json.w;
+    canvas.height = msg_json.h;
+  }
+  else {
+      putText('unknown msg received: ' + msg_json.msg + '\n');
+  }
 }
 var naclModule = document.getElementById('pnacl-module');
 naclModule.addEventListener('progress', handleProgress, true);

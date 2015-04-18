@@ -19,7 +19,7 @@
 #endif
 
 #if ORYOL_WINDOWS || ORYOL_PNACL
-const Oryol::int32 LogBufSize = 8096;
+const Oryol::int32 LogBufSize = 1024;
 #endif
 
 namespace Oryol {
@@ -137,12 +137,21 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
             #if ORYOL_WINDOWS || ORYOL_PNACL
                 char buf[LogBufSize];
                 std::vsnprintf(buf, sizeof(buf), msg, argsCopy);
-                buf[LogBufSize - 1] = 0;
                 #if ORYOL_WINDOWS
+                    buf[LogBufSize - 1] = 0;
                     OutputDebugString(buf);
                 #elif ORYOL_PNACL
+                    // replace non-jsonable characters 
+                    char* p = buf;
+                    do {
+                        if (*p == '"') *p = '\'';
+                        else if (*p == '\n') *p = ' ';
+                    }
+                    while (*p++);
+                    char json[LogBufSize + 64];
+                    std::snprintf(json, sizeof(json), "{\"msg\":\"log\",\"val\":\"%s\"}", buf); 
                     if (pnaclInstance::HasInstance()) {
-                        pnaclInstance::Instance()->putMsg(buf);
+                        pnaclInstance::Instance()->putMsg(json);
                     }
                 #endif
             #endif
@@ -176,7 +185,7 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, 
             #elif ORYOL_PNACL
                 if (pnaclInstance::HasInstance()) {
                     char buf[LogBufSize];
-                    std::snprintf(buf, sizeof(buf), "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
+                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\"}",
                                   cond, msg ? msg : "none", file, line, func);
                     buf[LogBufSize - 1] = 0;                
                     pnaclInstance::Instance()->putMsg(buf);
