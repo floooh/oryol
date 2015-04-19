@@ -27,7 +27,9 @@ TBUI::Discard() {
         state->ioQueue.Stop();
     }
     state->resourceContainer.discard();
-    state->mgr.Discard();
+    if (state->mgr.IsValid()) {
+        state->mgr.Discard();
+    }
     Memory::Delete(state);
     state = nullptr;
 }

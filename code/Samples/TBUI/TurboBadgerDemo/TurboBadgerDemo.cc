@@ -60,7 +60,7 @@ TurboBadgerDemoApp::OnInit() {
 
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("res:", "http://localhost:8000/");
+    ioSetup.Assigns.Add("res:", ORYOL_SAMPLE_URL);
     ioSetup.Assigns.Add("ui:", "res:tbui/");
     IO::Setup(ioSetup);
 
