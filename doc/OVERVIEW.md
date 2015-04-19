@@ -130,7 +130,7 @@ For the 'crash and dump as much information as possible', exceptions are surpris
 What I need is a callstack from the location where the exception was thrown,
 and some local information of what went wrong and where, like, for instance
 a print-out of the failed condition, a filename and a line number. On GCC one 
-can hijack __cxa_throw and generate a stack trace there, but why implement
+can hijack \_\_cxa\_throw and generate a stack trace there, but why implement
 such hacks on top of an already complex system which is useless anyway, when asserts
 do a much better job with infinitely less complexity?
 
@@ -152,7 +152,7 @@ Oryol has its own containers (after all, 3d engines and games need non-standard
 containers anyway, like ring buffers or trees), but these are mostly compatible 
 with the rest of std.
 
-I think that the behaviour of dynamic_cast is broken (returning a null-pointer
+I think that the behaviour of dynamic\_cast is broken (returning a null-pointer
 on a failed cast instead of terminating the app, there should be a '.isa' to
 check for type compatibility), but it's the only sensible way to do downcasts
 (from parent class down to derived class) without writing my own RTTI system 
@@ -160,12 +160,15 @@ check for type compatibility), but it's the only sensible way to do downcasts
 as possible. I would be happier if I would not need any RTTI at all (neither standard
 or self-made).
 
+*UPDATE*: as of 19-Apr-2015 C++ RTTI is no longer required for Oryol and
+has been disabled.
+
 The whole C++ iostream stuff isn't used (this includes std::cout and std::cin).
 The code bloat this introduces is incredible (most importantly in emscripten). 
 
 The rest of the std lib is mostly ok to use, but there's some stuff I'd like
 to use, but compilers just aren't ready yet: constexpr isn't supported in 
-Visual Studio, thread_local is a mess, chrono::high_resolution_clock isn't
+Visual Studio, thread\_local is a mess, chrono::high_resolution_clock isn't
 high-resolution on Windows (unless millisecond accuracy is considered 'high-resolution').
 
 Ok, enough C++ ranting, just keep in mind that not everything offered by

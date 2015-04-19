@@ -197,6 +197,96 @@ Ptr<MyClass> myObj = creator();
 auto myObj = creator(); 
 ```
 
+### RTTI
+
+Runtime Type Information in Oryol is optional and per-class. The standard
+C++ RTTI language feature is not used and by default disabled (it can be enabled with
+the cmake option 'FIPS\_RTTI').
+
+RTTI is usually only necessary for safe downcasting from a parent class pointer
+to a subclass pointer and thus is rarely needed. If RTTI is needed,
+classes have to be annotated with the **OryolTypeDecl** and **OryolBaseTypeDecl**
+macros. The latter is needed in thr root class of an RTTI-enabled class
+hierarchy, and the former in derived classes, e.g.:
+
+```cpp
+// a base class in an RTTI-enabled class hierarchy:
+class A : public RefCounted {
+    OryolClassDecl(A);
+    OryolBaseTypeDecl(A);
+    ...
+};
+
+// an RTTI-enabled subclass of A
+class B : public A {
+    OryolClassDecl(B);
+    OryolTypeDecl(B, A);
+public:
+    ...
+};
+
+// another RTTI-enabled subclass of A
+class C : public A {
+    OryolClassDecl(C);
+    OryolTypeDecl(C, A);
+public:
+    ...
+```
+
+You can test whether an object is type-compatible (same class or parent class)
+with the **IsA()** template method:
+
+```cpp
+auto a = A::Create();
+auto b = B::Create();
+auto c = C::Create();
+
+// this is true since B is a subclass of A:
+if (b->IsA<A>()) {
+    // yep
+}
+
+// this is also true since C is a subclass of A:
+if (c->IsA<A>()) {
+    // yep
+}
+
+// this is false since B and C are not related:
+if (b->IsA<C>()) {
+    // nope
+}
+
+// this is false since A is not derived from B
+if (a->IsA<B>()) {
+    // nope
+}
+
+// testing for the actual class is also true of course
+if (a->IsA<A>()) {
+    // yep
+}
+```
+
+For safe downcasting, use the **DynamicCast()** method, currently this
+behaves like a standard *dynamic\_cast()* by returning a nullptr if the
+cast is not valid (NOTE: this may change in the future, and a fatal
+error may be thrown on an incompatible downcast):
+
+```cpp
+// assign Ptr<B> to a Ptr<A> and safely downcast back to a Ptr<B>
+Ptr<A> ab = b;                      // this is an implicit static cast checked at compile-time
+Ptr<B> bb = ab->DynamicCast<B>();   // performs a runtime check
+o_assert(bb);                       // this checks out
+
+// assign Ptr<B> to a Ptr<A>, and try to cast to Ptr<C>, which fails
+Ptr<A> ab = b;
+Ptr<C> cb = ab->DynamicCast<C>();   
+o_assert(cb);                       // this will fail
+```
+
+Oryol's RTTI system is small and fast, there's one byte of static storage added
+per RTTI-enabled class, and an RTTI check only involves a pointer-comparisions.
+
 ### Logging
 
 Oryol contains a central logging class **Log** with static logging methods. All Oryol text output goes through
