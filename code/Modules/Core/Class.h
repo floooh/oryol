@@ -47,13 +47,13 @@ namespace Oryol {
 }
 #define OryolBaseTypeDecl(CLASS)\
 protected:\
-    template<class T> static TypeId getTypeId() { static char _type_id; return &_type_id; };\
-    virtual bool isOfType(const TypeId t) const { return t == getTypeId<CLASS>(); };\
+    template<class T> static Oryol::TypeId getTypeId() { static char _type_id; return &_type_id; };\
+    virtual bool isOfType(const Oryol::TypeId t) const { return t == getTypeId<CLASS>(); };\
 public:\
     template<class T> bool IsA() const { return this->isOfType(getTypeId<T>()); };\
-    template<class T> T* DynamicCast() const { return (T*) (this->isOfType(getTypeId<T>()) ? this : nullptr); };\
+    template<class T> Oryol::Ptr<T> DynamicCast() const { return (T*) (this->isOfType(getTypeId<T>()) ? this : nullptr); };\
 
 #define OryolTypeDecl(CLASS, BASECLASS)\
 protected:\
-    virtual bool isOfType(const TypeId t) const { return t == getTypeId<CLASS>() ? true : BASECLASS::isOfType(t); };\
+    virtual bool isOfType(const Oryol::TypeId t) const { return t == getTypeId<CLASS>() ? true : BASECLASS::isOfType(t); };\
 

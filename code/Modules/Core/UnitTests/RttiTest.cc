@@ -51,17 +51,17 @@ OryolClassImpl(AB);
 //------------------------------------------------------------------------------
 TEST(Rtti) {
     
-    Ptr<A> a = A::Create();
+    auto a = A::Create();
     CHECK(a->GetRefCount() == 1);
     CHECK(a->IsA<A>());
     CHECK(!a->IsA<AA>());
     CHECK(!a->IsA<AB>());
-    Ptr<AA> aa = AA::Create();
+    auto aa = AA::Create();
     CHECK(aa->GetRefCount() == 1);
     CHECK(aa->IsA<A>());
     CHECK(aa->IsA<AA>());
     CHECK(!aa->IsA<AB>());
-    Ptr<AB> ab = AB::Create();
+    auto ab = AB::Create();
     CHECK(ab->GetRefCount() == 1);
     CHECK(ab->IsA<A>());
     CHECK(!ab->IsA<AA>());
@@ -93,23 +93,23 @@ TEST(Rtti) {
     CHECK(a3->GetRefCount() == 3);
     CHECK(a4 == ab);
 
-    Ptr<AA> a5 = a1->DynamicCast<AA>();
+    auto a5 = a1->DynamicCast<AA>();
     CHECK(a5.isValid());
     CHECK(a5->IsA<A>());
     CHECK(a5->IsA<AA>());
     CHECK(!a5->IsA<AB>());
 
-    Ptr<AB> a6 = a2->DynamicCast<AB>();
+    auto a6 = a2->DynamicCast<AB>();
     CHECK(a6.isValid());
     CHECK(a6->IsA<A>());
     CHECK(!a6->IsA<AA>());
     CHECK(a6->IsA<AB>());
 
-    Ptr<A> a7 = a->DynamicCast<A>();
-    Ptr<AA> a8 = a->DynamicCast<AA>();
-    Ptr<AB> a9 = a->DynamicCast<AB>();
-    Ptr<AA> a10 = ab->DynamicCast<AA>();
-    Ptr<AB> a11 = aa->DynamicCast<AB>();
+    auto a7 = a->DynamicCast<A>();
+    auto a8 = a->DynamicCast<AA>();
+    auto a9 = a->DynamicCast<AB>();
+    auto a10 = ab->DynamicCast<AA>();
+    auto a11 = aa->DynamicCast<AB>();
     CHECK(a7.isValid());
     CHECK(!a8.isValid());
     CHECK(!a9.isValid());
@@ -132,3 +132,5 @@ TEST(Rtti) {
     a10.invalidate();
     a11.invalidate();
 }
+
+
