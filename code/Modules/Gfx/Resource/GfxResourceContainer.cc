@@ -216,7 +216,7 @@ GfxResourceContainer::failedAsync(const Id& resId) {
                 break;
                 
             case GfxResourceType::Texture:
-                this->meshPool.UpdateState(resId, ResourceState::Failed);
+                this->texturePool.UpdateState(resId, ResourceState::Failed);
                 break;
                 
             default:

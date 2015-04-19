@@ -6,6 +6,7 @@
 #include "Core/Core.h"
 #include "Time/Clock.h"
 #include "glm/glm.hpp"
+#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -104,9 +105,17 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
     o_assert_dbg(self);
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
-        if (!e->repeat) {
-            self->keyboard.onKeyDown(key);
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        if (e->repeat) {
+            self->keyboard.onKeyRepeat(key);
+            msg->SetRepeat(true);
         }
+        else {
+            self->keyboard.onKeyDown(key);
+            msg->SetDown(true);
+        }
+        self->notifyHandlers(msg);
         if (self->keyboard.IsCapturingText()) {
             // returning false enables keypress events, but also lets the
             // browser react to Tab, Backspace, etc... thus we need to 
@@ -137,6 +146,10 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
+        auto msg = InputProtocol::Key::Create();
+        msg->SetKey(key);
+        msg->SetUp(true);
+        self->notifyHandlers(msg);
         return true;
     }
     return false;
@@ -148,6 +161,9 @@ emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
     self->keyboard.onChar((wchar_t)e->charCode);    
+    auto msg = InputProtocol::WChar::Create();
+    msg->SetWChar((wchar_t)e->charCode);
+    self->notifyHandlers(msg);
     return true;
 }
 
@@ -170,6 +186,11 @@ emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* 
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonDown(btn);
+        
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetDown(true);
+        self->notifyHandlers(msg);
     }
     return true;
 }
@@ -182,6 +203,11 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonUp(btn);
+
+        auto msg = InputProtocol::MouseButton::Create();
+        msg->SetMouseButton(btn);
+        msg->SetUp(true);
+        self->notifyHandlers(msg);
     }
     return true;
 }
@@ -201,6 +227,12 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
         const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
         self->mouse.onPosMov(pos);
     }
+
+    auto msg = InputProtocol::MouseMove::Create();
+    msg->SetMovement(self->mouse.Movement);
+    msg->SetPosition(self->mouse.Position);
+    self->notifyHandlers(msg);
+
     return true;    
 }
 
@@ -209,8 +241,13 @@ EM_BOOL
 emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const glm::vec2 scroll((float32)e->deltaX, (float32)e->deltaY);
+    const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
     self->mouse.Scroll = scroll;
+
+    auto msg = InputProtocol::MouseScroll::Create();
+    msg->SetScroll(scroll);
+    self->notifyHandlers(msg);
+
     return true;
 }
 

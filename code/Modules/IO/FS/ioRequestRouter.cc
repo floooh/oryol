@@ -32,7 +32,7 @@ ioRequestRouter::~ioRequestRouter() {
 bool
 ioRequestRouter::Put(const Ptr<Message>& msg) {
     // is it a notify message for all lanes?
-    Ptr<IOProtocol::notifyLanes> notifyMsg = msg.dynamicCast<IOProtocol::notifyLanes>();
+    Ptr<IOProtocol::notifyLanes> notifyMsg = msg->DynamicCast<IOProtocol::notifyLanes>();
     if (notifyMsg.isValid()) {
         for (const auto& lane : this->ioLanes) {
             lane->Put(msg);
@@ -40,7 +40,7 @@ ioRequestRouter::Put(const Ptr<Message>& msg) {
         return true;
     }
     else {
-        Ptr<IOProtocol::Request> req = msg.dynamicCast<IOProtocol::Request>();
+        Ptr<IOProtocol::Request> req = msg->DynamicCast<IOProtocol::Request>();
         if (req.isValid()) {
             const int32 laneIndex = req->GetLane() % this->numLanes;
             req->SetActualLane(laneIndex);

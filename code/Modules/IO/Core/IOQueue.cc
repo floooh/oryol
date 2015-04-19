@@ -32,10 +32,15 @@ IOQueue::Start() {
 //------------------------------------------------------------------------------
 void
 IOQueue::Stop() {
+    // FIXME: it should be possible to Stop the IOQueue from within
+    // its success or fail func (currently this crashes because the
+    // update loop is confused)
+
     o_assert(this->isStarted);
     this->isStarted = false;
     Core::PreRunLoop()->Remove(this->runLoopId);
-    this->ioRequests.Clear();
+    this->items.Clear();
+    this->groupItems.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -47,13 +52,13 @@ IOQueue::IsStarted() const {
 //------------------------------------------------------------------------------
 bool
 IOQueue::Empty() const {
-    return this->ioRequests.Empty();
+    return this->items.Empty();
 }
 
 //------------------------------------------------------------------------------
 void
 IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
-    o_assert(onSuccess);
+    o_assert_dbg(onSuccess);
 
     // create IO request and push into IO facade
     Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
@@ -61,7 +66,25 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     IO::Put(ioReq);
     
     // add to our queue if pending requests
-    this->ioRequests.Add(item{ ioReq, onSuccess, onFail });
+    this->items.Add(item{ ioReq, onSuccess, onFail });
+}
+
+//------------------------------------------------------------------------------
+void
+IOQueue::AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc onFail) {
+    o_assert_dbg(onSuccess);
+    
+    groupItem item;
+    item.ioRequests.Reserve(urls.Size());
+    for (const URL& url : urls) {
+        Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
+        ioReq->SetURL(url);
+        IO::Put(ioReq);
+        item.ioRequests.Add(ioReq);
+        item.successFunc = onSuccess;
+        item.failFunc = onFail;
+    }
+    this->groupItems.Add(item);
 }
 
 //------------------------------------------------------------------------------
@@ -70,28 +93,70 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
 */
 void
 IOQueue::update() {
-    for (int32 i = this->ioRequests.Size() - 1; i >= 0; --i) {
-        const auto& cur = this->ioRequests[i];
-        const auto& req = cur.ioRequest;
-        if (req->Handled()) {
+
+    // check single items
+    for (int i = this->items.Size() - 1; i >= 0; --i) {
+        const item& curItem = this->items[i];
+        const auto& ioReq = curItem.ioRequest;
+        if (ioReq->Handled()) {
             // io request has been handled
-            if (IOStatus::OK == req->GetStatus()) {
+            if (IOStatus::OK == ioReq->GetStatus()) {
                 // io request was successful
-                cur.successFunc(req->GetStream());
+                curItem.successFunc(ioReq->GetStream());
             }
             else {
                 // io request failed
-                if (cur.failFunc) {
-                    cur.failFunc(req->GetURL(), req->GetStatus());
+                if (curItem.failFunc) {
+                    curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
                 }
                 else {
                     // no fail handler was set, error out
-                    o_error("IOQueue::Update(): failed to load file '%s'\n", req->GetURL().AsCStr());
+                    o_error("IOQueue::update(): failed to load file '%s'\n", ioReq->GetURL().AsCStr());
                 }
             }
             // remove the handled io request from the queue
-            this->ioRequests.Erase(i);
+            this->items.Erase(i);
         }
+    }
+    
+    // check group items
+    for (int i = this->groupItems.Size() - 1; i >= 0; --i) {
+        const groupItem& curItem = this->groupItems[i];
+        bool allHandled = true;
+        bool anyFailed = false;
+        for (const auto& ioReq : curItem.ioRequests) {
+            if (ioReq->Handled()) {
+                if (IOStatus::OK != ioReq->GetStatus()) {
+                    anyFailed = true;
+                    if (curItem.failFunc) {
+                        curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
+                    }
+                    else {
+                        // no fail handler was set, throw fatal error
+                        o_error("IOQueue::update(): failed to load file '%s'\n", ioReq->GetURL().AsCStr());
+                    }
+                }
+            }
+            else {
+                allHandled = false;
+                break;
+            }
+        }
+        
+        // if all request in this group have been handled, remove item, and
+        // if all were successful, call the successFunc
+        if (allHandled) {
+            if (!anyFailed) {
+                Array<Ptr<Stream>> result;
+                result.Reserve(curItem.ioRequests.Size());
+                for (const auto& ioReq : curItem.ioRequests) {
+                    result.Add(ioReq->GetStream());
+                }
+                curItem.successFunc(result);
+            }
+            this->groupItems.Erase(i);
+        }
+        
     }
 }
 

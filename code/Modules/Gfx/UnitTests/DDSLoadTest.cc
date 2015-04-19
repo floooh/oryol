@@ -143,7 +143,7 @@ TEST(DDSLoadTest) {
     
     // FIXME: RGBA, LUM
 
-    req.Invalidate();
+    req.invalidate();
     IO::Discard();
 #endif
 }

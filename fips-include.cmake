@@ -1,6 +1,10 @@
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
 
+# for TurboBadger UI support, override the search path for the 
+# tb_config.h overriden header file
+include_directories(code/Modules/TBUI/tb)
+
 # profiling enabled?
 if (FIPS_PROFILING)
     add_definitions(-DORYOL_PROFILING=1)

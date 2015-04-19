@@ -41,7 +41,7 @@ MeshBuilder::Clear() {
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
     this->setupAndStream.Setup = MeshSetup::FromStream();
-    this->setupAndStream.Stream.Invalidate();
+    this->setupAndStream.Stream.invalidate();
 }
 
 //------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -48,7 +48,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class HTTPResponse : public Message {
-        OryolClassPoolAllocDecl(HTTPResponse);
+        OryolClassDecl(HTTPResponse);
+        OryolTypeDecl(HTTPResponse,Message);
     public:
         HTTPResponse() {
             this->msgId = MessageId::HTTPResponseId;
@@ -95,7 +96,8 @@ private:
         String errordesc;
     };
     class HTTPRequest : public Message {
-        OryolClassPoolAllocDecl(HTTPRequest);
+        OryolClassDecl(HTTPRequest);
+        OryolTypeDecl(HTTPRequest,Message);
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;

@@ -1,13 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:8# machine generated, do not edit!
+// #version:10# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "GfxProtocol.h"
 
 namespace Oryol {
-OryolClassPoolAllocImpl(GfxProtocol::DisplaySetup);
-OryolClassPoolAllocImpl(GfxProtocol::DisplayDiscarded);
-OryolClassPoolAllocImpl(GfxProtocol::DisplayModified);
+OryolClassImpl(GfxProtocol::DisplaySetup);
+OryolClassImpl(GfxProtocol::DisplayDiscarded);
+OryolClassImpl(GfxProtocol::DisplayModified);
 GfxProtocol::CreateCallback GfxProtocol::jumpTable[GfxProtocol::MessageId::NumMessageIds] = { 
     &GfxProtocol::DisplaySetup::FactoryCreate,
     &GfxProtocol::DisplayDiscarded::FactoryCreate,

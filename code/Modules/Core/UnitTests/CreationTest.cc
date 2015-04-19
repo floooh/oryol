@@ -59,7 +59,7 @@ TEST(CreateShared) {
     CHECK(ptr2->Get() == 128);
     
     // invalidation
-    ptr0.Invalidate();
+    ptr0.invalidate();
     CHECK(!bool(ptr0));
     CHECK(bool(ptr1));
     CHECK(ptr1->GetRefCount() == 1);

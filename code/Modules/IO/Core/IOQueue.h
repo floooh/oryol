@@ -27,6 +27,8 @@ public:
 
     /// callback function signature for success
     typedef std::function<void(const Ptr<Stream>&)> SuccessFunc;
+    /// callback function signature for success when loading URL groups
+    typedef std::function<void(const Array<Ptr<Stream>>&)> GroupSuccessFunc;
     /// callback function signature for failure
     typedef std::function<void(const URL& url, IOStatus::Code ioStatus)> FailFunc;
 
@@ -39,6 +41,8 @@ public:
     
     /// add a file load request to the queue
     void Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail=FailFunc());
+    /// add a file group request to the queue
+    void AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc onFail=FailFunc());
     /// return true if queue is empty
     bool Empty() const;
     
@@ -53,7 +57,13 @@ private:
         SuccessFunc successFunc;
         FailFunc failFunc;
     };
-    Array<item> ioRequests;
+    Array<item> items;
+    struct groupItem {
+        Array<Ptr<IOProtocol::Request>> ioRequests;
+        GroupSuccessFunc successFunc;
+        FailFunc failFunc;
+    };
+    Array<groupItem> groupItems;
 };
     
 } // namespace Oryol

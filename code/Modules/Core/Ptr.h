@@ -137,17 +137,6 @@ public:
     template<class U, class=typename std::enable_if<std::is_convertible<T*,U*>::value>::type> operator const Ptr<U>&() const {
         return *(const Ptr<U>*)this;
     };
-    /// perform dynamic cast
-    template<class U> Ptr<U> dynamicCast() const {
-        if (nullptr != this->p) {
-            U* castPtr = dynamic_cast<U*>(this->p);
-            if (nullptr != castPtr) {
-                return Ptr<U>(castPtr);
-            }
-        }
-        // fallthrough: either we're not valid, or the dynamic_cast failed
-        return Ptr<U>();
-    };
     /// operator*
     T& operator*() const {
         o_assert_dbg(nullptr != p);
@@ -164,7 +153,7 @@ public:
         return nullptr != p;
     };
     /// invalidate the ptr (equivalent with assigning nullptr)
-    void Invalidate() {
+    void invalidate() {
         del();
     };
 

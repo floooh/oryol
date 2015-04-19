@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -47,7 +47,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class TestMsg1 : public Message {
-        OryolClassPoolAllocDecl(TestMsg1);
+        OryolClassDecl(TestMsg1);
+        OryolTypeDecl(TestMsg1,Message);
     public:
         TestMsg1() {
             this->msgId = MessageId::TestMsg1Id;
@@ -145,7 +146,8 @@ private:
         float64 float64val;
     };
     class TestMsg2 : public TestMsg1 {
-        OryolClassPoolAllocDecl(TestMsg2);
+        OryolClassDecl(TestMsg2);
+        OryolTypeDecl(TestMsg2,TestMsg1);
     public:
         TestMsg2() {
             this->msgId = MessageId::TestMsg2Id;
@@ -178,7 +180,8 @@ private:
         StringAtom stringatomval;
     };
     class TestArrayMsg : public Message {
-        OryolClassPoolAllocDecl(TestArrayMsg);
+        OryolClassDecl(TestArrayMsg);
+        OryolTypeDecl(TestArrayMsg,Message);
     public:
         TestArrayMsg() {
             this->msgId = MessageId::TestArrayMsgId;

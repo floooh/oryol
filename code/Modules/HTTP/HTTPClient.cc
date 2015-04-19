@@ -22,7 +22,7 @@ HTTPClient::~HTTPClient() {
 bool
 HTTPClient::Put(const Ptr<Message>& msg) {
     o_assert(msg->IsMemberOf(HTTPProtocol::GetProtocolId()));
-    Ptr<HTTPProtocol::HTTPRequest> req = msg.dynamicCast<HTTPProtocol::HTTPRequest>();
+    Ptr<HTTPProtocol::HTTPRequest> req = msg->DynamicCast<HTTPProtocol::HTTPRequest>();
     o_assert(req.isValid());
     this->loader.putRequest(req);
     return true;

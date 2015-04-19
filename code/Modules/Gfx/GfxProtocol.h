@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:8#
+/* #version:10#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -44,7 +44,8 @@ public:
         static Ptr<Message> Create(MessageIdType id);
     };
     class DisplaySetup : public Message {
-        OryolClassPoolAllocDecl(DisplaySetup);
+        OryolClassDecl(DisplaySetup);
+        OryolTypeDecl(DisplaySetup,Message);
     public:
         DisplaySetup() {
             this->msgId = MessageId::DisplaySetupId;
@@ -62,7 +63,8 @@ public:
 private:
     };
     class DisplayDiscarded : public Message {
-        OryolClassPoolAllocDecl(DisplayDiscarded);
+        OryolClassDecl(DisplayDiscarded);
+        OryolTypeDecl(DisplayDiscarded,Message);
     public:
         DisplayDiscarded() {
             this->msgId = MessageId::DisplayDiscardedId;
@@ -80,7 +82,8 @@ private:
 private:
     };
     class DisplayModified : public Message {
-        OryolClassPoolAllocDecl(DisplayModified);
+        OryolClassDecl(DisplayModified);
+        OryolTypeDecl(DisplayModified,Message);
     public:
         DisplayModified() {
             this->msgId = MessageId::DisplayModifiedId;

@@ -7,7 +7,7 @@ import sys
 import yaml
 import genutil as util
 
-Version = 8 
+Version = 10 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -187,7 +187,8 @@ def writeMessageClasses(f, desc) :
         msgClassName = msg['name']
         msgParentClassName = msg.get('parent', 'Message')
         f.write('    class ' + msgClassName + ' : public ' + msgParentClassName + ' {\n')
-        f.write('        OryolClassPoolAllocDecl(' + msgClassName + ');\n')
+        f.write('        OryolClassDecl(' + msgClassName + ');\n')
+        f.write('        OryolTypeDecl(' + msgClassName + ',' + msgParentClassName + ');\n')
         f.write('    public:\n')
 
         # write constructor
@@ -344,7 +345,7 @@ def generateSource(desc, absSourcePath) :
     f.write('namespace Oryol {\n')
     for msg in desc['messages'] :
         msgClassName = msg['name']
-        f.write('OryolClassPoolAllocImpl(' + protocol + '::' + msgClassName + ');\n')
+        f.write('OryolClassImpl(' + protocol + '::' + msgClassName + ');\n')
         
     writeFactoryClassImpl(f, desc)
     writeSerializeMethods(f, desc)

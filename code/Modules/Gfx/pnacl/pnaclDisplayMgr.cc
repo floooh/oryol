@@ -6,6 +6,9 @@
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/gl_impl.h"
+#include "Gfx/GfxProtocol.h"
+#include "Core/String/StringBuilder.h"
+#include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 namespace Oryol {
 namespace _priv {
@@ -32,21 +35,54 @@ pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup) {
     Log::Info("pnaclDisplayMgr::SetupDisplay() called!\n");
     displayMgrBase::SetupDisplay(gfxSetup);
 
-    // FIXME: create a new Graphics3D context with the actually 
-    // requested setup attributes
+    // const int32_t numSampleBuffers = gfxSetup.Samples > 1 ? 1 : 0;
+    const int32_t attribList[] = {
+        PP_GRAPHICS3DATTRIB_RED_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Red),
+        PP_GRAPHICS3DATTRIB_GREEN_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Green),
+        PP_GRAPHICS3DATTRIB_BLUE_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Blue),
+        PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 0,
+        PP_GRAPHICS3DATTRIB_DEPTH_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Depth),
+        PP_GRAPHICS3DATTRIB_STENCIL_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Stencil),
+        PP_GRAPHICS3DATTRIB_WIDTH, gfxSetup.Width,
+        PP_GRAPHICS3DATTRIB_HEIGHT, gfxSetup.Height,
+        /*
+        MSAA currently broken: https://code.google.com/p/chromium/issues/detail?id=285475
+        PP_GRAPHICS3DATTRIB_SAMPLES, gfxSetup.Samples,
+        PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, numSampleBuffers,
+        */
+        PP_GRAPHICS3DATTRIB_SWAP_BEHAVIOR, PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED,
+        PP_GRAPHICS3DATTRIB_NONE
+    };
+    pnaclInstance::Instance()->initGL(attribList);
+
+    // check if we need to resize the canvas
+    const int32 reqWidth = gfxSetup.Width;
+    const int32 reqHeight = gfxSetup.Height;
+    const int32 canvasWidth = pnaclInstance::Instance()->GetCanvasWidth();
+    const int32 canvasHeight = pnaclInstance::Instance()->GetCanvasHeight();
+    if ((reqWidth != canvasWidth) || (reqHeight != canvasHeight)) {
+        this->requestCanvasResize(reqWidth, reqHeight);
+    }
 
     // setup platform constants and extensions
     glInfo::Setup();
     glExt::Setup();
     
-    // update the displayAttrs with the actual frame buffer size
-    this->glFramebufferWidth = pnaclInstance::Instance()->GetFramebufferWidth();
-    this->glFramebufferHeight = pnaclInstance::Instance()->GetFramebufferHeight();
-    Log::Info("pnaclDisplayMgr: actual framebuffer size w=%d, h=%d\n", this->glFramebufferWidth, this->glFramebufferHeight);
+    // NOTE: we put in the requested framebuffer size regardless of the
+    // actual size, the framebuffer will be resized in the next frame
+    // on the web page
+    this->glFramebufferWidth = reqWidth; 
+    this->glFramebufferHeight = reqHeight;
     this->displayAttrs.FramebufferWidth = this->glFramebufferWidth;
     this->displayAttrs.FramebufferHeight = this->glFramebufferHeight;
     this->displayAttrs.WindowWidth = this->glFramebufferWidth;
     this->displayAttrs.WindowHeight = this->glFramebufferHeight;
+
+    // register DidChangeView event handler
+    Log::Info("registering DidChangeView handler\n");
+    pnaclInstance::Instance()->enableViewEvents([this] (const pp::View& e) {
+        return this->handleViewEvent(e);
+    });
 }
 
 //------------------------------------------------------------------------------
@@ -72,6 +108,39 @@ void
 pnaclDisplayMgr::glBindDefaultFramebuffer() {
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclDisplayMgr::requestCanvasResize(int32 newWidth, int32 newHeight) {
+    StringBuilder strBuilder;
+    strBuilder.Format(128, "{\"msg\":\"resize\", \"w\":%d, \"h\":%d}", newWidth, newHeight);
+    pnaclInstance::Instance()->putMsg(strBuilder.AsCStr());
+}
+
+//------------------------------------------------------------------------------
+bool
+pnaclDisplayMgr::handleViewEvent(const pp::View& view) {
+
+    const int32 newWidth = pnaclInstance::Instance()->GetCanvasWidth();
+    const int32 newHeight = pnaclInstance::Instance()->GetCanvasHeight();
+    if ((newWidth != this->glFramebufferWidth) || (newHeight != this->glFramebufferHeight)) {
+
+        this->glFramebufferWidth = newWidth;
+        this->glFramebufferHeight = newHeight;
+
+        // update display attributes
+        this->displayAttrs.FramebufferWidth = this->glFramebufferWidth;
+        this->displayAttrs.FramebufferHeight = this->glFramebufferHeight;
+        this->displayAttrs.WindowWidth = this->glFramebufferWidth;
+        this->displayAttrs.WindowHeight = this->glFramebufferHeight;
+    
+        // notify event handlers
+        this->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
+
+        Log::Info("framebuffer size changed to w=%d, h=%d\n", newWidth, newHeight);
+    }
+    return true;
 }
 
 } // namespace _priv

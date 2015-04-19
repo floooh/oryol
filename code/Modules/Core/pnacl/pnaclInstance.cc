@@ -50,30 +50,24 @@ pnaclInstance::Instance() {
 //------------------------------------------------------------------------------
 bool
 pnaclInstance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    // FIXME: convert command line args
+    if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) {
+        Log::Error("Unable to initialize GL PPAPI!\n");
+        return false;
+    }
+    PNaclAppCreator();
     return true;
 }
 
 //------------------------------------------------------------------------------
 void
 pnaclInstance::DidChangeView(const pp::View& view) {
-    int32_t newWidth = view.GetRect().width();
-    int32_t newHeight = view.GetRect().height();
-
-    if (this->context.is_null()) {
-        // first call, setup everything and call the Oryol main function
-        this->width = newWidth;
-        this->height = newHeight;
-        if (!this->initGL()) {
-            // GL initialization failed
-            return;
-        }
-        PNaclAppCreator();
+    this->width = view.GetRect().width();
+    this->height = view.GetRect().height();
+    if (!this->context.is_null()) {
+        this->context.ResizeBuffers(this->width, this->height);
     }
-    else {
-        // FIXME: a resize happened
-        this->width = newWidth;
-        this->height = newHeight;
+    if (this->viewEventFunc) {
+        this->viewEventFunc(view);
     }
 }
 
@@ -110,21 +104,7 @@ pnaclInstance::HandleMessage(const pp::Var& message) {
 
 //------------------------------------------------------------------------------
 bool
-pnaclInstance::initGL() {
-    o_assert((this->width > 0) && (this->height > 0));
-
-    if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) {
-        Log::Error("Unable to initial GL PPAPI!\n");
-        return false;
-    }
-    const int32_t attribList[] = {
-        PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 0,
-        PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
-        PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
-        PP_GRAPHICS3DATTRIB_WIDTH, this->width,
-        PP_GRAPHICS3DATTRIB_HEIGHT, this->height,
-        PP_GRAPHICS3DATTRIB_NONE
-    };
+pnaclInstance::initGL(const int32_t* attribList) {
     this->context = pp::Graphics3D(this, attribList);
     if (!this->BindGraphics(this->context)) {
         Log::Error("Unable to bind 3D context!\n");
@@ -157,13 +137,13 @@ pnaclInstance::doOneFrame(int32_t) {
 
 //------------------------------------------------------------------------------
 int32
-pnaclInstance::GetFramebufferWidth() const {
+pnaclInstance::GetCanvasWidth() const {
     return this->width;
 }
 
 //------------------------------------------------------------------------------
 int32
-pnaclInstance::GetFramebufferHeight() const {
+pnaclInstance::GetCanvasHeight() const {
     return this->height;
 }
 
@@ -205,6 +185,18 @@ void
 pnaclInstance::disableInput() {
     this->RequestInputEvents(0);
     this->inputEventFunc = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInstance::enableViewEvents(std::function<bool(const pp::View&)> func) {
+    this->viewEventFunc = func;
+}
+
+//------------------------------------------------------------------------------
+void
+pnaclInstance::disableViewEvents() {
+    this->viewEventFunc = nullptr;
 }
 
 } // namespace _priv

@@ -14,6 +14,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Config.h"
+#include <new>
 #include <utility>
 
 namespace Oryol {

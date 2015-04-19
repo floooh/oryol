@@ -1,13 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:8# machine generated, do not edit!
+// #version:10# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "TestProtocol.h"
 
 namespace Oryol {
-OryolClassPoolAllocImpl(TestProtocol::TestMsg1);
-OryolClassPoolAllocImpl(TestProtocol::TestMsg2);
-OryolClassPoolAllocImpl(TestProtocol::TestArrayMsg);
+OryolClassImpl(TestProtocol::TestMsg1);
+OryolClassImpl(TestProtocol::TestMsg2);
+OryolClassImpl(TestProtocol::TestArrayMsg);
 TestProtocol::CreateCallback TestProtocol::jumpTable[TestProtocol::MessageId::NumMessageIds] = { 
     &TestProtocol::TestMsg1::FactoryCreate,
     &TestProtocol::TestMsg2::FactoryCreate,

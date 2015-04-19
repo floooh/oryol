@@ -30,6 +30,11 @@ public:
     void glBindDefaultFramebuffer();
 
 private:
+    /// handle a view-change event from the pnaclInstance
+    bool handleViewEvent(const pp::View& view);
+    /// send a request canvas size event to the web page
+    void requestCanvasResize(int32 newWidth, int32 newHeight);
+
     int32 glFramebufferWidth;
     int32 glFramebufferHeight;
 };

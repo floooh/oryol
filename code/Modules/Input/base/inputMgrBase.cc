@@ -45,6 +45,30 @@ inputMgrBase::isValid() const {
 
 //------------------------------------------------------------------------------
 void
+inputMgrBase::attachInputHandler(const Ptr<Port>& handler) {
+    o_assert(InvalidIndex == this->handlers.FindIndexLinear(handler));
+    this->handlers.Add(handler);
+}
+
+//------------------------------------------------------------------------------
+void
+inputMgrBase::detachInputHandler(const Ptr<Port>& handler) {
+    int32 index = this->handlers.FindIndexLinear(handler);
+    if (InvalidIndex != index) {
+        this->handlers.Erase(index);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+inputMgrBase::notifyHandlers(const Ptr<Message>& msg) {
+    for (const auto& handler : this->handlers) {
+        handler->Put(msg);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 inputMgrBase::reset() {
     if (this->keyboard.Attached) {
         this->keyboard.reset();

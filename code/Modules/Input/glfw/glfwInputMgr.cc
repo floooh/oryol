@@ -7,6 +7,7 @@
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "GLFW/glfw3.h"
+#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -121,15 +122,21 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
     if (nullptr != self) {
         Key::Code key = self->mapKey(glfwKey);
         if (Key::InvalidKey != key) {
+            auto msg = InputProtocol::Key::Create();
+            msg->SetKey(key);
             if (glfwAction == GLFW_PRESS) {
                 self->keyboard.onKeyDown(key);
+                msg->SetDown(true);
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->keyboard.onKeyUp(key);
+                msg->SetUp(true);
             }
             else {
-                // GLFW_REPEAT: we don't handle this (yet?)
+                self->keyboard.onKeyRepeat(key);
+                msg->SetRepeat(true);
             }
+            self->notifyHandlers(msg);
         }
     }
 }
@@ -139,6 +146,9 @@ void
 glfwInputMgr::charCallback(GLFWwindow* win, unsigned int unicode) {
     if (nullptr != self) {
         self->keyboard.onChar((wchar_t)unicode);
+        auto msg = InputProtocol::WChar::Create();
+        msg->SetWChar((wchar_t) unicode);
+        self->notifyHandlers(msg);
     }
 }
 
@@ -154,12 +164,17 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
             default:                        btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
+            auto msg = InputProtocol::MouseButton::Create();
+            msg->SetMouseButton(btn);
             if (glfwAction == GLFW_PRESS) {
                 self->mouse.onButtonDown(btn);
+                msg->SetDown(true);
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->mouse.onButtonUp(btn);
+                msg->SetUp(true);
             }
+            self->notifyHandlers(msg);
         }
     }
 }
@@ -170,6 +185,10 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)glfwX, (float32)glfwY);
         self->mouse.onPosMov(pos);
+        auto msg = InputProtocol::MouseMove::Create();
+        msg->SetMovement(self->mouse.Movement);
+        msg->SetPosition(self->mouse.Position);
+        self->notifyHandlers(msg);
     }
 }
 
@@ -179,6 +198,9 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
         self->mouse.Scroll = scroll;
+        auto msg = InputProtocol::MouseScroll::Create();
+        msg->SetScroll(scroll);
+        self->notifyHandlers(msg);
     }
 }
 

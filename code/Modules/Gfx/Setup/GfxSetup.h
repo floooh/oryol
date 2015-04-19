@@ -57,8 +57,6 @@ public:
     int32 ResourceLabelStackCapacity = 256;
     /// initial resource registry capacity
     int32 ResourceRegistryCapacity = 256;
-    /// number of resource creation threads (must be == number of IO lanes)
-    int32 NumResourceCreationThreads = 4;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
