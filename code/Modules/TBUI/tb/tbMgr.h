@@ -49,7 +49,7 @@ private:
     /// key up/down handler
     void onKey(Key::Code key, bool down, bool up);
 
-    bool isValid;
+    bool isValid = false;
     Ptr<Dispatcher<InputProtocol>> inputHandler;
     tb::MODIFIER_KEYS modifierKeys = tb::TB_MODIFIER_NONE;
     int mouseX = 0;
