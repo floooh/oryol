@@ -1,7 +1,7 @@
 #pragma
 //-----------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::tbMgr.h
+    @class Oryol::_priv::tbMgr
     @brief global TurboBadger UI wrapper
 */
 #include "Core/Types.h"

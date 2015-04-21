@@ -21,7 +21,9 @@ imports:
         git: https://github.com/floooh/fips-vld.git
     fips-turbobadger:
         git: https://github.com/fungos/fips-turbobadger.git
-    
+    fips-imgui:
+        git: https://github.com/fungos/fips-imgui.git
+
 exports:
     header-dirs :
         - code
