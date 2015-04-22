@@ -1,0 +1,30 @@
+//------------------------------------------------------------------------------
+//  IMUIShaders.shd
+//------------------------------------------------------------------------------
+
+@vs vs
+@uniform mat4 ortho Ortho
+@in vec4 position
+@in vec2 texcoord0
+@in vec4 color0
+@out vec2 uv
+@out vec4 color
+void main() {
+    $position = ortho * position;
+    uv = texcoord0;
+    color = color0;
+}
+@end
+
+@fs fs
+@uniform sampler2D tex Texture
+@in vec2 uv
+@in vec4 color
+void main() {
+    $color = $texture2D(tex, uv) * color;
+}
+@end
+
+@bundle IMUIShader
+@program vs fs
+@end

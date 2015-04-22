@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "IMUI/IMUISetup.h"
+#include "IMUI/imguiWrapper.h"
 
 namespace Oryol {
 
@@ -18,13 +19,13 @@ public:
     static void Discard();
     /// test if IMUI module has been setup
     static bool IsValid();
-
-    /// draw one frame, call before Gfx::Commit()
-    static void Draw();
+    /// call this before issuing ImGui commands
+    static void NewFrame();
 
 private:
     struct _state {
         IMUISetup setup;
+        _priv::imguiWrapper imguiWrapper;
     };
     static _state* state;
 };

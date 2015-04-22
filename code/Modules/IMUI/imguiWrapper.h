@@ -11,6 +11,7 @@
 #include "Input/InputProtocol.h"
 #include "Messaging/Dispatcher.h"
 #include "Gfx/Gfx.h"
+#include "imgui.h"
 
 namespace Oryol {
 namespace _priv {
@@ -23,8 +24,8 @@ public:
     void Discard();
     /// return true if wrapper is valid
     bool IsValid() const;
-    /// draw one frame
-    void Draw();
+    /// call before issuing ImGui commands
+    void NewFrame();
 
 private:
     /// setup dynamic mesh
@@ -33,14 +34,20 @@ private:
     void setupFontTexture();
     /// setup draw state
     void setupDrawState();
+    /// imgui's draw callback
+    static void imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
+
+    static const int MaxNumVertices = 64 * 1024;    
+
+    static imguiWrapper* self;
 
     bool isValid = false;
-    Ptr<Dispatcher<InputProtocol>> inputHandler;
     ResourceLabel resLabel;
     VertexLayout vertexLayout;
     Id fontTexture;
     Id mesh;
     Id drawState;
+    ImDrawVert vertexData[MaxNumVertices];
 };
 
 } // namespace _priv
