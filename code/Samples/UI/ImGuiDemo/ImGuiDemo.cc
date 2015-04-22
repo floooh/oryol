@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Core/App.h"
 #include "Gfx/Gfx.h"
+#include "Input/Input.h"
 #include "IMUI/IMUI.h"
 
 using namespace Oryol;
@@ -23,6 +24,7 @@ OryolMain(ImGuiDemoApp);
 AppState::Code
 ImGuiDemoApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(1000, 650, "Oryol ImGui Demo"));
+    Input::Setup();
     IMUI::Setup(IMUISetup());
 
     return AppState::Running;
@@ -37,7 +39,7 @@ ImGuiDemoApp::OnRunning() {
 
     bool show_test_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImColor(114, 144, 154);
+    static ImVec4 clear_color = ImColor(114, 144, 154);
 
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
@@ -74,6 +76,7 @@ ImGuiDemoApp::OnRunning() {
 AppState::Code
 ImGuiDemoApp::OnCleanup() {
     IMUI::Discard();
+    Input::Discard();
     Gfx::Discard();
     return App::OnCleanup();
 }

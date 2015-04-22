@@ -21,7 +21,7 @@ void main() {
 @in vec2 uv
 @in vec4 color
 void main() {
-    $color = $texture2D(tex, uv) * color;
+    $color = $texture2D(tex, uv).xxxx * color;
 }
 @end
 

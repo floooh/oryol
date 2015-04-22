@@ -154,6 +154,16 @@ imguiWrapper::NewFrame() {
     io.DisplaySize = ImVec2((float)dispAttrs.FramebufferWidth, (float)dispAttrs.FramebufferHeight);
     io.DeltaTime = 1.0f/60.0f;  // FIXME
 
+    // input
+    if (Input::IsValid()) {
+        const Mouse& mouse = Input::Mouse();
+        io.MousePos.x = mouse.Position.x;
+        io.MousePos.y = mouse.Position.y;
+        for (int btn = 0; btn < 3; btn++) {
+            io.MouseDown[btn] = mouse.ButtonPressed((Mouse::Button)btn);
+        }
+    }
+
     // FIXME!
     // INPUT
 
