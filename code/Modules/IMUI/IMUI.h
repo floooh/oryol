@@ -6,7 +6,6 @@
     Why IMUI not IMGUI? Because of filename collisions.
 */
 #include "Core/Types.h"
-#include "IMUI/IMUISetup.h"
 #include "IMUI/imguiWrapper.h"
 
 namespace Oryol {
@@ -14,17 +13,16 @@ namespace Oryol {
 class IMUI {
 public:
     /// setup the IMUI module
-    static void Setup(const IMUISetup& setup);
+    static void Setup();
     /// shutdown the IMUI module
     static void Discard();
     /// test if IMUI module has been setup
     static bool IsValid();
     /// call this before issuing ImGui commands
-    static void NewFrame();
+    static void NewFrame(Duration frameDuration);
 
 private:
     struct _state {
-        IMUISetup setup;
         _priv::imguiWrapper imguiWrapper;
     };
     static _state* state;

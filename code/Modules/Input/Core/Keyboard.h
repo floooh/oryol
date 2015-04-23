@@ -31,7 +31,7 @@ public:
     bool IsCapturingText() const;
     /// get current captured text
     const wchar_t* CapturedText() const;
-    
+
     /// call when key down event happens
     void onKeyDown(Key::Code key);
     /// call when key up event happens
@@ -46,7 +46,9 @@ public:
     void beginCaptureText();
     /// end text capturing
     void endCaptureText();
-    
+    /// clear captured text (called in beginCaptureText() and reset())
+    void clearCapturedText();
+
 private:
     std::bitset<Key::NumKeys> down;
     std::bitset<Key::NumKeys> up;

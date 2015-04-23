@@ -12,11 +12,10 @@ IMUI::_state* IMUI::state = nullptr;
 
 //------------------------------------------------------------------------------
 void
-IMUI::Setup(const IMUISetup& setup) {
+IMUI::Setup() {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
-    state->setup = setup;
-    state->imguiWrapper.Setup(setup);
+    state->imguiWrapper.Setup();
 }
 
 //------------------------------------------------------------------------------
@@ -30,9 +29,9 @@ IMUI::Discard() {
 
 //------------------------------------------------------------------------------
 void
-IMUI::NewFrame() {
+IMUI::NewFrame(Duration frameDuration) {
     o_assert_dbg(IsValid());
-    state->imguiWrapper.NewFrame();
+    state->imguiWrapper.NewFrame(frameDuration);
 }
 
 } // namespace Oryol

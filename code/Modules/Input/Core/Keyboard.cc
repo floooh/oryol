@@ -51,11 +51,17 @@ Keyboard::onChar(wchar_t c) {
 
 //------------------------------------------------------------------------------
 void
+Keyboard::clearCapturedText() {
+    this->chars[0] = 0;
+    this->charIndex = 0;
+}
+
+//------------------------------------------------------------------------------
+void
 Keyboard::beginCaptureText() {
     o_assert(!this->textCapturing);
     this->textCapturing = true;
-    this->chars[0] = 0;
-    this->charIndex = 0;
+    this->clearCapturedText();
 }
 
 //------------------------------------------------------------------------------
@@ -71,6 +77,7 @@ Keyboard::reset() {
     this->down.reset();
     this->up.reset();
     this->repeat.reset();
+    this->clearCapturedText();
 }
 
 } // namespace Oryol

@@ -5,12 +5,12 @@
     @brief imgui wrapper class for Oryol
 */
 #include "Core/Types.h"
-#include "IMUI/IMUISetup.h"
 #include "Input/Core/Mouse.h"
 #include "Input/Core/Key.h"
 #include "Input/InputProtocol.h"
 #include "Messaging/Dispatcher.h"
 #include "Gfx/Gfx.h"
+#include "Time/Duration.h"
 #include "imgui.h"
 
 namespace Oryol {
@@ -19,13 +19,13 @@ namespace _priv {
 class imguiWrapper {
 public:
     /// setup the wrapper
-    void Setup(const IMUISetup& setup);
+    void Setup();
     /// discard the wrapper
     void Discard();
     /// return true if wrapper is valid
     bool IsValid() const;
     /// call before issuing ImGui commands
-    void NewFrame();
+    void NewFrame(Duration frameDuration);
 
 private:
     /// setup dynamic mesh
@@ -43,7 +43,6 @@ private:
 
     bool isValid = false;
     ResourceLabel resLabel;
-    VertexLayout vertexLayout;
     Id fontTexture;
     Id mesh;
     Id drawState;

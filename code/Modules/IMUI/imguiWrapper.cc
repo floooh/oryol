@@ -15,12 +15,9 @@ namespace _priv {
 
 imguiWrapper* imguiWrapper::self = nullptr;
 
-static const char* imguiGetClipboardText();
-static void imguiSetClipboardText(const char* text);
-
 //------------------------------------------------------------------------------
 void
-imguiWrapper::Setup(const IMUISetup& setup) {
+imguiWrapper::Setup() {
     o_assert_dbg(!this->IsValid());
     self = this;
 
@@ -47,8 +44,6 @@ imguiWrapper::Setup(const IMUISetup& setup) {
     io.KeyMap[ImGuiKey_Z] = Key::Z;
 
     io.RenderDrawListsFn = imguiRenderDrawLists;
-    io.SetClipboardTextFn = imguiSetClipboardText;
-    io.GetClipboardTextFn = imguiGetClipboardText;
 
     // create gfx resources
     this->resLabel = Gfx::Resource().PushLabel();
@@ -112,14 +107,13 @@ void
 imguiWrapper::setupMesh() {
     o_assert_dbg(!this->mesh.IsValid());
 
-    this->vertexLayout
+    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
+    setup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
         .Add(VertexAttr::Color0, VertexFormat::UByte4N);
-    o_assert_dbg(this->vertexLayout.ByteSize() == sizeof(ImDrawVert));
+    o_assert_dbg(setup.Layout.ByteSize() == sizeof(ImDrawVert));
 
-    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
-    setup.Layout = this->vertexLayout;
     this->mesh = Gfx::Resource().Create(setup);
     o_assert(this->mesh.IsValid());
     o_assert(Gfx::Resource().QueryResourceInfo(this->mesh).State == ResourceState::Valid);
@@ -146,27 +140,43 @@ imguiWrapper::setupDrawState() {
 
 //------------------------------------------------------------------------------
 void
-imguiWrapper::NewFrame() {
+imguiWrapper::NewFrame(Duration frameDuration) {
 
     ImGuiIO& io = ImGui::GetIO();
     DisplayAttrs dispAttrs = Gfx::RenderTargetAttrs();
     o_assert_dbg((dispAttrs.FramebufferWidth > 0) && (dispAttrs.FramebufferHeight > 0));
     io.DisplaySize = ImVec2((float)dispAttrs.FramebufferWidth, (float)dispAttrs.FramebufferHeight);
-    io.DeltaTime = 1.0f/60.0f;  // FIXME
+    io.DeltaTime = frameDuration.AsSeconds();
 
-    // input
+    // transfer input
     if (Input::IsValid()) {
+
         const Mouse& mouse = Input::Mouse();
         io.MousePos.x = mouse.Position.x;
         io.MousePos.y = mouse.Position.y;
+        io.MouseWheel = mouse.Scroll.y;
         for (int btn = 0; btn < 3; btn++) {
-            io.MouseDown[btn] = mouse.ButtonPressed((Mouse::Button)btn);
+            io.MouseDown[btn] = mouse.ButtonDown((Mouse::Button)btn) || mouse.ButtonPressed((Mouse::Button)btn);
+        }
+
+        const Keyboard& kbd = Input::Keyboard();
+        const wchar_t* text = kbd.CapturedText();
+        while (wchar_t c = *text++) {
+            io.AddInputCharacter((unsigned short)c);
+        }
+        io.KeyCtrl  = kbd.KeyPressed(Key::LeftControl) || kbd.KeyPressed(Key::RightControl);
+        io.KeyShift = kbd.KeyPressed(Key::LeftShift) || kbd.KeyPressed(Key::RightShift);
+        io.KeyAlt   = kbd.KeyPressed(Key::LeftAlt) || kbd.KeyPressed(Key::RightAlt);
+
+        const static Key::Code keys[] = {
+            Key::Tab, Key::Left, Key::Right, Key::Up, Key::Down, Key::Home, Key::End,
+            Key::Delete, Key::BackSpace, Key::Enter, Key::Escape,
+            Key::A, Key::C, Key::V, Key::X, Key::Y, Key::Z
+        };
+        for (auto key : keys) {
+            io.KeysDown[key] = kbd.KeyPressed(key);
         }
     }
-
-    // FIXME!
-    // INPUT
-
     ImGui::NewFrame();
 }
 
@@ -183,59 +193,46 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
     const float height = ImGui::GetIO().DisplaySize.y;
     const glm::mat4 ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
 
-    // copy over vertices
+    // copy over vertices into single vertex buffer
     int numVertices = 0;
     int numCmdLists;
     for (numCmdLists = 0; numCmdLists < cmd_lists_count; numCmdLists++) {
         const ImDrawList* cmd_list = cmd_lists[numCmdLists];
         const int cmdListNumVerts = cmd_list->vtx_buffer.size();
         if ((numVertices + cmdListNumVerts) <= imguiWrapper::MaxNumVertices) {
-            Memory::Copy(&cmd_list->vtx_buffer[0], &self->vertexData[numVertices], cmdListNumVerts * sizeof(ImDrawVert));
+            Memory::Copy(&(cmd_list->vtx_buffer[0]), &(self->vertexData[numVertices]), cmdListNumVerts * sizeof(ImDrawVert));
             numVertices += cmdListNumVerts;
         }
         else {
             break;
         }
     }
+
+    // draw command lists
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
-    Gfx::UpdateVertices(self->mesh, vertexDataSize, self->vertexData);
+    Gfx::UpdateVertices(self->mesh, vertexDataSize, &(self->vertexData[0]));
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyVariable(Shaders::IMUIShader::Ortho, ortho);
-    int cmd_offset = 0;
+    Gfx::ApplyVariable(Shaders::IMUIShader::Texture, self->fontTexture);
+    int vtx_offset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = cmd_lists[cmdListIndex];
-        int vtx_offset = cmd_offset;
         const ImDrawCmd* pcmd_end = cmd_list->commands.end();
         for (const ImDrawCmd* pcmd = cmd_list->commands.begin(); pcmd != pcmd_end; pcmd++)
         {
             if (pcmd->user_callback)
             {
-                // FIXME: what's that?
                 pcmd->user_callback(cmd_list, pcmd);
             }
             else
             {
-                Gfx::ApplyVariable(Shaders::IMUIShader::Texture, self->fontTexture);
                 Gfx::ApplyScissorRect((int)pcmd->clip_rect.x, (int)(height - pcmd->clip_rect.w), (int)(pcmd->clip_rect.z - pcmd->clip_rect.x), (int)(pcmd->clip_rect.w - pcmd->clip_rect.y));
                 Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, vtx_offset, pcmd->vtx_count));
             }
             vtx_offset += pcmd->vtx_count;
         }
-        cmd_offset += vtx_offset;
     }
     Gfx::ApplyScissorRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
-}
-
-//------------------------------------------------------------------------------
-const char*
-imguiGetClipboardText() {
-    return "";
-}
-
-//------------------------------------------------------------------------------
-void
-imguiSetClipboardText(const char* /*text*/) {
-    // empty
 }
 
 } // namespace _priv
