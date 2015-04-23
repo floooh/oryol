@@ -108,11 +108,6 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/General/Paclone/Paclone.jpg
   src: General/Paclone/Paclone.cc
-- name: TestNanoVG
-  desc: NanoVG integration
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/General/TestNanoVG/TestNanoVG.jpg
-  src: General/TestNanoVG/TestNanoVG.cc
 - name: SynthTest
   desc: Most simple Synth audio sample
   type: emscripten
@@ -126,5 +121,15 @@
 - name: TurboBadgerDemo
   desc: Turbobadger UI integration
   type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/TBUI/TurboBadgerDemo/TurboBadgerDemo.jpg
-  src: TBUI/TurboBadgerDemo/TurboBadgerDemo.cc
+  image: /Users/floh/projects/oryol/code/Samples/UI/TurboBadgerDemo/TurboBadgerDemo.jpg
+  src: UI/TurboBadgerDemo/TurboBadgerDemo.cc
+- name: TestNanoVG
+  desc: NanoVG integration
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/UI/TestNanoVG/TestNanoVG.jpg
+  src: UI/TestNanoVG/TestNanoVG.cc
+- name: ImGuiDemo
+  desc: ImGui UI integration
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/UI/ImGuiDemo/ImGuiDemo.jpg
+  src: UI/ImGuiDemo/ImGuiDemo.cc
