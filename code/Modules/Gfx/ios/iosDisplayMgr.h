@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief display manager for IOS
 */
-#include "Gfx/base/displayMgrBase.h"
+#include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Core/ios/iosBridge.h"
 
