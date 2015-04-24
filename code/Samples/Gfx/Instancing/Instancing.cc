@@ -149,7 +149,7 @@ InstancingApp::OnInit() {
     // create dynamic instance data mesh
     auto instanceMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->instanceMesh = Gfx::Resource().Create(instanceMeshSetup);
+    this->instanceMesh = Gfx::CreateResource(instanceMeshSetup);
     
     // setup static draw state
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -161,13 +161,13 @@ InstancingApp::OnInit() {
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
     shapeBuilderResult.Setup.InstanceMesh = this->instanceMesh;
-    Id mesh = Gfx::Resource().Create(shapeBuilderResult);
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilderResult);
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

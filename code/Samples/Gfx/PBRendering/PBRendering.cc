@@ -64,12 +64,12 @@ PBRenderingApp::OnInit() {
     shapeBuilder.Sphere(0.5f, 36, 20, true)
         .Plane(5.0f, 5.0f, 1, true)
         .Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -78,12 +78,12 @@ VertexTextureApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::Resource().Create(rtSetup);
+    this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
-    Id fsQuadMesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
-    Id plasmaProg = Gfx::Resource().Create(Shaders::Plasma::CreateSetup());
-    this->plasmaDrawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg));
+    Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    Id plasmaProg = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
+    this->plasmaDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg));
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
@@ -91,12 +91,12 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
-    Id planeMesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id planeProg = Gfx::Resource().Create(Shaders::Plane::CreateSetup());
+    Id planeMesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id planeProg = Gfx::CreateResource(Shaders::Plane::CreateSetup());
     auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->planeDrawState = Gfx::Resource().Create(dsPlane);
+    this->planeDrawState = Gfx::CreateResource(dsPlane);
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

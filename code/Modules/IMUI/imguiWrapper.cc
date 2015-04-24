@@ -46,11 +46,11 @@ imguiWrapper::Setup() {
     io.RenderDrawListsFn = imguiRenderDrawLists;
 
     // create gfx resources
-    this->resLabel = Gfx::Resource().PushLabel();
+    this->resLabel = Gfx::PushResourceLabel();
     this->setupFontTexture();
     this->setupMesh();
     this->setupDrawState();
-    Gfx::Resource().PopLabel();
+    Gfx::PopResourceLabel();
 
     this->isValid = true;
 }
@@ -61,7 +61,7 @@ imguiWrapper::Discard() {
     o_assert_dbg(this->IsValid());
     ImGui::GetIO().Fonts->TexID = 0;
     ImGui::Shutdown();
-    Gfx::Resource().Destroy(this->resLabel);
+    Gfx::DestroyResources(this->resLabel);
     this->isValid = false;
     self = nullptr;
 }
@@ -95,7 +95,7 @@ imguiWrapper::setupFontTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
-    this->fontTexture = Gfx::Resource().Create(texSetup, stream);
+    this->fontTexture = Gfx::CreateResource(texSetup, stream);
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
@@ -114,9 +114,9 @@ imguiWrapper::setupMesh() {
         .Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert_dbg(setup.Layout.ByteSize() == sizeof(ImDrawVert));
 
-    this->mesh = Gfx::Resource().Create(setup);
+    this->mesh = Gfx::CreateResource(setup);
     o_assert(this->mesh.IsValid());
-    o_assert(Gfx::Resource().QueryResourceInfo(this->mesh).State == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceInfo(this->mesh).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ imguiWrapper::setupDrawState() {
     o_assert_dbg(!this->drawState.IsValid());
     o_assert_dbg(this->mesh.IsValid());
 
-    Id prog = Gfx::Resource().Create(Shaders::IMUIShader::CreateSetup());
+    Id prog = Gfx::CreateResource(Shaders::IMUIShader::CreateSetup());
     
     auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = false;
@@ -135,7 +135,7 @@ imguiWrapper::setupDrawState() {
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
     dss.RasterizerState.ScissorTestEnabled = true;
     dss.RasterizerState.CullFaceEnabled = false;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
 }
 
 //------------------------------------------------------------------------------

@@ -40,6 +40,12 @@ Gfx::Discard() {
 
 //------------------------------------------------------------------------------
 bool
+Gfx::IsValid() {
+    return nullptr != state;
+}
+
+//------------------------------------------------------------------------------
+bool
 Gfx::QuitRequested() {
     o_assert_dbg(IsValid());
     return state->displayManager.QuitRequested();
@@ -106,6 +112,104 @@ Gfx::ApplyDrawState(const Id& id) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
     state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
+}
+
+//------------------------------------------------------------------------------
+bool
+Gfx::Supports(GfxFeature::Code feat) {
+    o_assert_dbg(IsValid());
+    return state->renderer.supports(feat);
+}
+
+//------------------------------------------------------------------------------
+ResourceLabel
+Gfx::PushResourceLabel() {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.PushLabel();
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::PushResourceLabel(ResourceLabel label) {
+    o_assert_dbg(IsValid());
+    state->resourceContainer.PushLabel(label);
+}
+
+//------------------------------------------------------------------------------
+ResourceLabel
+Gfx::PopResourceLabel() {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.PopLabel();
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::LoadResource(const Ptr<ResourceLoader>& loader) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.Load(loader);
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::LookupResource(const Locator& locator) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.Lookup(locator);
+}
+
+//------------------------------------------------------------------------------
+int32
+Gfx::QueryFreeResourceSlots(GfxResourceType::Code resourceType) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.QueryFreeSlots(resourceType);
+}
+
+//------------------------------------------------------------------------------
+ResourceInfo
+Gfx::QueryResourceInfo(const Id& id) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.QueryResourceInfo(id);
+}
+
+//------------------------------------------------------------------------------
+ResourcePoolInfo
+Gfx::QueryResourcePoolInfo(GfxResourceType::Code resType) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.QueryPoolInfo(resType);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::DestroyResources(ResourceLabel label) {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer.Destroy(label);
+}
+
+//------------------------------------------------------------------------------
+GfxResourceContainer&
+Gfx::resource() {
+    o_assert_dbg(IsValid());
+    return state->resourceContainer;
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
+    o_assert_dbg(IsValid());
+    state->renderer.applyViewPort(x, y, width, height);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
+    o_assert_dbg(IsValid());
+    state->renderer.applyScissorRect(x, y, width, height);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
+    o_assert_dbg(IsValid());
+    state->renderer.applyBlendColor(blendColor);
 }
 
 //------------------------------------------------------------------------------

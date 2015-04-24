@@ -38,7 +38,7 @@ Id
 TextureLoader::Start() {
     
     // prepare the Gfx resource
-    this->resId = Gfx::Resource().prepareAsync(this->setup);
+    this->resId = Gfx::resource().prepareAsync(this->setup);
     
     // fire IO request to start loading the texture data
     this->ioRequest = IOProtocol::Request::Create();
@@ -78,16 +78,16 @@ TextureLoader::Continue() {
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState
                 // (the same for failedAsync)
-                result = Gfx::Resource().initAsync(this->resId, setupAndStream);
+                result = Gfx::resource().initAsync(this->resId, setupAndStream);
             }
             else {
                 stream->Close();
-                result = Gfx::Resource().failedAsync(this->resId);
+                result = Gfx::resource().failedAsync(this->resId);
             }
         }
         else {
             // IO had failed
-            result = Gfx::Resource().failedAsync(this->resId);
+            result = Gfx::resource().failedAsync(this->resId);
         }
         this->ioRequest = nullptr;
     }

@@ -47,9 +47,31 @@ public:
     /// test if an optional feature is supported
     static bool Supports(GfxFeature::Code feat);
     
-    /// resource management
-    static GfxResourceContainer& Resource();
-    
+    /// generate new resource label and push on label stack
+    static ResourceLabel PushResourceLabel();
+    /// push explicit resource label on label stack
+    static void PushResourceLabel(ResourceLabel label);
+    /// pop resource label from label stack
+    static ResourceLabel PopResourceLabel();
+    /// create a resource object
+    template<class SETUP> static Id CreateResource(const SETUP& setup);
+    /// create a resource object with data
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& stream);
+    /// create a resource object with data
+    template<class SETUP> static Id CreateResource(const SetupAndStream<SETUP>& setupAndStream);
+    /// asynchronously load resource object
+    static Id LoadResource(const Ptr<ResourceLoader>& loader);
+    /// lookup a resource Id by Locator
+    static Id LookupResource(const Locator& locator);
+    /// query number of free slots for resource type
+    static int32 QueryFreeResourceSlots(GfxResourceType::Code resourceType);
+    /// query resource info (fast)
+    static ResourceInfo QueryResourceInfo(const Id& id);
+    /// query resource pool info (slow)
+    static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
+    /// destroy one or several resources by matching label
+    static void DestroyResources(ResourceLabel label);
+
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();
     /// apply an offscreen render target
@@ -91,7 +113,10 @@ public:
     static void CommitFrame();
     /// reset internal state (must be called when directly rendering through GL; FIXME: better name?)
     static void ResetStateCache();
-    
+
+    /// direct access to resource container (private interface for resource loaders)
+    static GfxResourceContainer& resource();
+
 private:
     struct _state {
         class GfxSetup gfxSetup;
@@ -102,12 +127,6 @@ private:
     };
     static _state* state;
 };
-
-//------------------------------------------------------------------------------
-inline bool
-Gfx::IsValid() {
-    return nullptr != state;
-}
 
 //------------------------------------------------------------------------------
 template<> inline void
@@ -132,38 +151,24 @@ Gfx::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
 }
 
 //------------------------------------------------------------------------------
-inline bool
-Gfx::Supports(GfxFeature::Code feat) {
+template<class SETUP> inline Id
+Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
-    return state->renderer.supports(feat);
+    return state->resourceContainer.Create(setup);
 }
 
 //------------------------------------------------------------------------------
-inline GfxResourceContainer&
-Gfx::Resource() {
+template<class SETUP> inline Id
+Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& stream) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer;
+    return state->resourceContainer.Create(setup, stream);
 }
 
 //------------------------------------------------------------------------------
-inline void
-Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
+template<class SETUP> inline Id
+Gfx::CreateResource(const SetupAndStream<SETUP>& setupAndStream) {
     o_assert_dbg(IsValid());
-    state->renderer.applyViewPort(x, y, width, height);
-}
-
-//------------------------------------------------------------------------------
-inline void
-Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
-    o_assert_dbg(IsValid());
-    state->renderer.applyScissorRect(x, y, width, height);
-}
-
-//------------------------------------------------------------------------------
-inline void
-Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
-    o_assert_dbg(IsValid());
-    state->renderer.applyBlendColor(blendColor);
+    return state->resourceContainer.Create(setupAndStream);
 }
 
 } // namespace Oryol

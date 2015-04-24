@@ -77,7 +77,7 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.WrapV = TextureWrapMode::Repeat;
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
-    this->renderTarget = Gfx::Resource().Create(rtSetup);
+    this->renderTarget = Gfx::CreateResource(rtSetup);
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
@@ -85,7 +85,7 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
-    Id torus = Gfx::Resource().Create(shapeBuilder.Result());
+    Id torus = Gfx::CreateResource(shapeBuilder.Result());
     
     // create a sphere mesh with normals and uv coords
     shapeBuilder.Clear();
@@ -94,21 +94,21 @@ SimpleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.5f, 72, 40).Build();
-    Id sphere = Gfx::Resource().Create(shapeBuilder.Result());
+    Id sphere = Gfx::CreateResource(shapeBuilder.Result());
 
     // create shaders
-    Id offScreenProg = Gfx::Resource().Create(Shaders::RenderTarget::CreateSetup());
-    Id dispProg = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id offScreenProg = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
+    Id dispProg = Gfx::CreateResource(Shaders::Main::CreateSetup());
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     auto offdsSetup = DrawStateSetup::FromMeshAndProg(torus, offScreenProg);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->offscreenDrawState = Gfx::Resource().Create(offdsSetup);
+    this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
     auto dispdsSetup = DrawStateSetup::FromMeshAndProg(sphere, dispProg);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->displayDrawState = Gfx::Resource().Create(dispdsSetup);
+    this->displayDrawState = Gfx::CreateResource(dispdsSetup);
     
     // setup static transform matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

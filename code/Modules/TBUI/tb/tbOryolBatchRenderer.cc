@@ -44,11 +44,11 @@ tbOryolBatchRenderer::Setup() {
     o_assert_dbg(!this->isValid);
     
     // create gfx resources
-    this->resLabel = Gfx::Resource().PushLabel();
+    this->resLabel = Gfx::PushResourceLabel();
     this->setupWhiteTexture();
     this->setupMesh();
     this->setupDrawState();
-    Gfx::Resource().PopLabel();
+    Gfx::PopResourceLabel();
     
     this->isValid = true;
 }
@@ -59,7 +59,7 @@ tbOryolBatchRenderer::Discard() {
     o_assert_dbg(this->isValid);
     
     this->deleteTextures();
-    Gfx::Resource().Destroy(this->resLabel);
+    Gfx::DestroyResources(this->resLabel);
     this->isValid = false;
 }
 
@@ -83,7 +83,7 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = sizeof(pixels);
-    this->whiteTexture = Gfx::Resource().Create(texSetup, stream);
+    this->whiteTexture = Gfx::CreateResource(texSetup, stream);
 }
 
 //------------------------------------------------------------------------------
@@ -99,9 +99,9 @@ tbOryolBatchRenderer::setupMesh() {
     
     MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->mesh = Gfx::Resource().Create(setup);
+    this->mesh = Gfx::CreateResource(setup);
     o_assert(this->mesh.IsValid());
-    o_assert(Gfx::Resource().QueryResourceInfo(this->mesh).State == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceInfo(this->mesh).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ tbOryolBatchRenderer::setupDrawState() {
     o_assert_dbg(this->mesh.IsValid());
     o_assert_dbg(!this->drawState.IsValid());
     
-    Id prog = Gfx::Resource().Create(Shaders::TBUIShader::CreateSetup());
+    Id prog = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
     
     auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = false;
@@ -119,7 +119,7 @@ tbOryolBatchRenderer::setupDrawState() {
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
     dss.RasterizerState.ScissorTestEnabled = true;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
 }
 
 //------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ tbOryolBatchRenderer::deleteTextures() {
     if (!this->texturesForDeletion.Empty()) {
         for (ResourceLabel label : this->texturesForDeletion) {
             Log::Info("tbOryolBatchRenderer: texture deleted\n");
-            Gfx::Resource().Destroy(label);
+            Gfx::DestroyResources(label);
         }
         this->texturesForDeletion.Clear();
     }

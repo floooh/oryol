@@ -150,13 +150,13 @@ DrawCallPerfApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -78,13 +78,13 @@ PackedNormalsApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::PackedNormals::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::PackedNormals::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
 
     // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

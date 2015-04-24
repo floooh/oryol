@@ -46,7 +46,7 @@ DDSCubeMapApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading
-    if (Gfx::Resource().QueryResourceInfo(this->tex).State == ResourceState::Valid) {
+    if (Gfx::QueryResourceInfo(this->tex).State == ResourceState::Valid) {
         Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
         Gfx::ApplyVariable(Shaders::Main::Texture, this->tex);
         Gfx::Draw(0);
@@ -84,19 +84,19 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->tex = Gfx::Resource().Load(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
+    this->tex = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

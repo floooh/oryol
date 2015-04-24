@@ -69,7 +69,7 @@ DDSTextureLoadingApp::OnRunning() {
     for (int32 i = 0; i < NumTextures; i++) {
         const Id& tex = this->texId[i];
         if (tex.IsValid()) {
-            const auto resState = Gfx::Resource().QueryResourceInfo(tex).State;
+            const auto resState = Gfx::QueryResourceInfo(tex).State;
             if (resState == ResourceState::Valid) {
                 glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
                 Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
@@ -123,7 +123,7 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        this->texId[i] = Gfx::Resource().Load(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint), i));
+        this->texId[i] = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint), i));
     }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -132,12 +132,12 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4).Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

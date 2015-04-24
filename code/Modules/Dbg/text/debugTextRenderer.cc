@@ -44,11 +44,11 @@ debugTextRenderer::getTextScale() const {
 void
 debugTextRenderer::setup() {
     o_assert(!this->valid);
-    this->resourceLabel = Gfx::Resource().PushLabel();
+    this->resourceLabel = Gfx::PushResourceLabel();
     this->setupFontTexture();
     this->setupTextMesh();
     this->setupTextDrawState();
-    Gfx::Resource().PopLabel();
+    Gfx::PopResourceLabel();
     this->valid = true;
 }
 
@@ -57,7 +57,7 @@ void
 debugTextRenderer::discard() {
     o_assert(this->valid);
     this->valid = false;
-    Gfx::Resource().Destroy(this->resourceLabel);
+    Gfx::DestroyResources(this->resourceLabel);
 }
 
 //------------------------------------------------------------------------------
@@ -183,9 +183,9 @@ debugTextRenderer::setupFontTexture() {
     setup.WrapU = TextureWrapMode::ClampToEdge;
     setup.WrapV = TextureWrapMode::ClampToEdge;
     setup.ImageSizes[0][0] = imgDataSize;
-    this->fontTexture = Gfx::Resource().Create(setup, data);
+    this->fontTexture = Gfx::CreateResource(setup, data);
     o_assert(this->fontTexture.IsValid());
-    o_assert(Gfx::Resource().QueryResourceInfo(this->fontTexture).State == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceInfo(this->fontTexture).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -202,9 +202,9 @@ debugTextRenderer::setupTextMesh() {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh = Gfx::Resource().Create(setup);
+    this->textMesh = Gfx::CreateResource(setup);
     o_assert(this->textMesh.IsValid());
-    o_assert(Gfx::Resource().QueryResourceInfo(this->textMesh).State == ResourceState::Valid);
+    o_assert(Gfx::QueryResourceInfo(this->textMesh).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id prog = Gfx::Resource().Create(Shaders::TextShader::CreateSetup());
+    Id prog = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
@@ -223,7 +223,7 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->textDrawState = Gfx::Resource().Create(dss);
+    this->textDrawState = Gfx::CreateResource(dss);
 }
 
 //------------------------------------------------------------------------------

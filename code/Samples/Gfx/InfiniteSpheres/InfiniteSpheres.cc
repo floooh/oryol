@@ -87,7 +87,7 @@ InfiniteSpheresApp::OnInit() {
     rtSetup.WrapU = TextureWrapMode::Repeat;
     rtSetup.WrapV = TextureWrapMode::Repeat;
     for (int32 i = 0; i < 2; i++) {
-        this->renderTargets[i] = Gfx::Resource().Create(rtSetup);
+        this->renderTargets[i] = Gfx::CreateResource(rtSetup);
     }
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
@@ -95,12 +95,12 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72, 40).Build();
-    Id sphere = Gfx::Resource().Create(shapeBuilder.Result());
-    Id prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    Id sphere = Gfx::CreateResource(shapeBuilder.Result());
+    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::Resource().Create(dss);
+    this->drawState = Gfx::CreateResource(dss);
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

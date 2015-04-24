@@ -9,7 +9,7 @@ render state setup out of the render loop and into the initialization phase.
 
 In the initialization phase, the Gfx module itself is setup and graphics
 resources likes textures, meshes and shaders are created. In the render
-loop resources and state required for the next draw call is applied, and
+loop, resources and state required for the next draw call is applied, and
 one of the draw methods is called to actually submit a draw call. Finally
 the Gfx::CommitFrame() method is called which marks the end of the rendering
 frame.
@@ -89,20 +89,10 @@ For more Gfx module setup options, see the [GfxSetup header](https://github.com/
 
 Resources are opaque data objects required for rendering, like textures, meshes or shaders.
 
-The Oryol resource system is very simple on the outside, but fairly advanced on the inside.
+The resource system of the Oryol Gfx system is accessed through the Gfx::Resource() method
+which returns the folling interface:
 
-The entire resource management is wrapped in 3 Gfx methods:
-
-```cpp
-class Gfx {
-    /// create a resource, or return existing shared resource
-    template<class SETUP> static GfxId CreateResource(const SETUP& setup);
-    /// lookup a resource by resource locator
-    static GfxId LookupResource(const Locator& locator);
-    /// get the loading state of a resource
-    static ResourceState::Code QueryResourceState(const GfxId& gfxId);
-}
-```
+FIXME FIXME FIXME
 
 The most important method is *Gfx::CreateResource()*, this takes a *Setup Object*,
 and returns a *GfxId* resource handle which represents the created resource object.

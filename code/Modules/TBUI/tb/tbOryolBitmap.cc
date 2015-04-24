@@ -56,16 +56,16 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
     stream->Write(data, byteSize);
     stream->Close();
     
-    this->label = Gfx::Resource().PushLabel();
+    this->label = Gfx::PushResourceLabel();
     auto texSetup = TextureSetup::FromPixelData(this->width, this->height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
     texSetup.WrapU = TextureWrapMode::Repeat;
     texSetup.WrapV = TextureWrapMode::Repeat;
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = byteSize;
-    this->texture = Gfx::Resource().Create(texSetup, stream);
+    this->texture = Gfx::CreateResource(texSetup, stream);
     
-    Gfx::Resource().PopLabel();
+    Gfx::PopResourceLabel();
 }
 
 //------------------------------------------------------------------------------

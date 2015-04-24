@@ -28,16 +28,16 @@ gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     
-    this->resourceLabel = Gfx::Resource().PushLabel();
+    this->resourceLabel = Gfx::PushResourceLabel();
     const int32 rtWidth  = (synth::BufferNumSamples / 2) / 8;
     const int32 rtHeight = 8;
     auto rtSetup = TextureSetup::RenderTarget(rtWidth, rtHeight);
-    this->renderTarget = Gfx::Resource().Create(rtSetup);
+    this->renderTarget = Gfx::CreateResource(rtSetup);
     
-    Id fsqMesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
-    Id prog = Gfx::Resource().Create(Shaders::Synth::CreateSetup());
-    this->drawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fsqMesh, prog));
-    Gfx::Resource().PopLabel();
+    Id fsqMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    Id prog = Gfx::CreateResource(Shaders::Synth::CreateSetup());
+    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsqMesh, prog));
+    Gfx::PopResourceLabel();
 }
 
 //------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ void
 gpuSynthesizer::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    Gfx::Resource().Destroy(this->resourceLabel);
+    Gfx::DestroyResources(this->resourceLabel);
 }
 
 //------------------------------------------------------------------------------

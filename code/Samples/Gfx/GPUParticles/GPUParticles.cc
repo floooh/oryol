@@ -141,20 +141,20 @@ GPUParticlesApp::OnInit() {
     particleBufferSetup.ColorFormat = PixelFormat::RGBA32F;
     particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
     particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
-    this->particleBuffer[0] = Gfx::Resource().Create(particleBufferSetup);
+    this->particleBuffer[0] = Gfx::CreateResource(particleBufferSetup);
     particleBufferSetup.Locator = "pong";
-    this->particleBuffer[1] = Gfx::Resource().Create(particleBufferSetup);
+    this->particleBuffer[1] = Gfx::CreateResource(particleBufferSetup);
     
     // a fullscreen mesh for the particle init- and update-shaders
-    Id fullscreenMesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
+    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     
     // particle initialization and update draw states
-    Id initProg = Gfx::Resource().Create(Shaders::InitParticles::CreateSetup());
-    this->initParticles = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg));
-    Id updateProg = Gfx::Resource().Create(Shaders::UpdateParticles::CreateSetup());
+    Id initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
+    this->initParticles = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg));
+    Id updateProg = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
     auto updateSetup = DrawStateSetup::FromMeshAndProg(fullscreenMesh, updateProg);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = Gfx::Resource().Create(updateSetup);
+    this->updateParticles = Gfx::CreateResource(updateSetup);
     
     // a vertex buffer with the particleIds, this would not be needed if
     // ANGLE_instanced_arrays would support gl_InstanceID
@@ -165,7 +165,7 @@ GPUParticlesApp::OnInit() {
     }
     auto particleIdSetup = MeshSetup::Empty(MaxNumParticles, Usage::Static);
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
-    this->particleIdMesh = Gfx::Resource().Create(particleIdSetup);
+    this->particleIdMesh = Gfx::CreateResource(particleIdSetup);
     Gfx::UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
     Memory::Free(particleIdData);
     
@@ -179,15 +179,15 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
     shapeBuilderResult.Setup.InstanceMesh = this->particleIdMesh;
-    this->shapeMesh = Gfx::Resource().Create(shapeBuilderResult);
+    this->shapeMesh = Gfx::CreateResource(shapeBuilderResult);
     
     // particle rendering draw state
-    Id drawProg = Gfx::Resource().Create(Shaders::DrawParticles::CreateSetup());
+    Id drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
     auto drawSetup = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
     drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles = Gfx::Resource().Create(drawSetup);
+    this->drawParticles = Gfx::CreateResource(drawSetup);
     
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

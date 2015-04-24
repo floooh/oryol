@@ -58,7 +58,7 @@ ResourceStressApp::OnRunning() {
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
-        if (Gfx::Resource().QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
+        if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             glm::mat4 mvp = this->proj * this->view * obj.modelTransform;
             Gfx::ApplyDrawState(obj.drawState);
             Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
@@ -95,7 +95,7 @@ ResourceStressApp::OnInit() {
     Dbg::Setup();    
     
     // setup the shader that is used by all objects
-    this->prog = Gfx::Resource().Create(Shaders::Main::CreateSetup());
+    this->prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
 
     // setup matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -127,10 +127,10 @@ ResourceStressApp::createObjects() {
     if (this->objects.Size() >= MaxNumObjects) {
         return;
     }
-    if (Gfx::Resource().QueryFreeSlots(GfxResourceType::Mesh) == 0) {
+    if (Gfx::QueryFreeResourceSlots(GfxResourceType::Mesh) == 0) {
         return;
     }
-    if (Gfx::Resource().QueryFreeSlots(GfxResourceType::Texture) == 0) {
+    if (Gfx::QueryFreeResourceSlots(GfxResourceType::Texture) == 0) {
         return;
     }
 
@@ -138,22 +138,22 @@ ResourceStressApp::createObjects() {
     // NOTE: we're deliberatly not sharing resources to actually
     // put some stress on the resource system
     Object obj;
-    obj.label = Gfx::Resource().PushLabel();
+    obj.label = Gfx::PushResourceLabel();
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1).Build();
-    Id mesh = Gfx::Resource().Create(shapeBuilder.Result());
-    obj.drawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(mesh, this->prog));
-    obj.texture = Gfx::Resource().Load(
+    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, this->prog));
+    obj.texture = Gfx::LoadResource(
         TextureLoader::Create(
             TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint),
             this->frameCount));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);
-    Gfx::Resource().PopLabel();
+    Gfx::PopResourceLabel();
 }
 
 //------------------------------------------------------------------------------
@@ -165,11 +165,11 @@ ResourceStressApp::updateObjects() {
         // check if object should be destroyed (it will be
         // destroyed after the texture object had been valid for
         // at least 3 seconds, or if it failed to load)
-        const auto info = Gfx::Resource().QueryResourceInfo(obj.texture);
+        const auto info = Gfx::QueryResourceInfo(obj.texture);
         if ((info.State == ResourceState::Failed) ||
             ((info.State == ResourceState::Valid) && (info.StateAge > (20 * 60)))) {
 
-            Gfx::Resource().Destroy(obj.label);
+            Gfx::DestroyResources(obj.label);
             this->objects.Erase(i);
         }
     }
@@ -178,8 +178,8 @@ ResourceStressApp::updateObjects() {
 //------------------------------------------------------------------------------
 void
 ResourceStressApp::showInfo() {
-    ResourcePoolInfo texPoolInfo = Gfx::Resource().QueryPoolInfo(GfxResourceType::Texture);
-    ResourcePoolInfo mshPoolInfo = Gfx::Resource().QueryPoolInfo(GfxResourceType::Mesh);
+    ResourcePoolInfo texPoolInfo = Gfx::QueryResourcePoolInfo(GfxResourceType::Texture);
+    ResourcePoolInfo mshPoolInfo = Gfx::QueryResourcePoolInfo(GfxResourceType::Mesh);
     
     Dbg::PrintF("texture pool\r\n"
                 "  num slots: %d, free: %d, used: %d\r\n"

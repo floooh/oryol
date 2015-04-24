@@ -76,18 +76,18 @@ TextureFloatApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::Resource().Create(rtSetup);
+    this->renderTarget = Gfx::CreateResource(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = Gfx::Resource().Create(MeshSetup::FullScreenQuad());
+    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
 
     // setup draw state for offscreen rendering to float render target
-    Id offscreenProg = Gfx::Resource().Create(Shaders::Offscreen::CreateSetup());
-    this->offscreenDrawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
+    Id offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
+    this->offscreenDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
     
     // fullscreen-copy mesh, shader and draw state
-    Id copyProg = Gfx::Resource().Create(Shaders::Copy::CreateSetup());
-    this->copyDrawState = Gfx::Resource().Create(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
+    Id copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
+    this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -45,13 +45,13 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
-    this->mesh = Gfx::Resource().Create(meshSetup);
-    this->prog = Gfx::Resource().Create(Shaders::Canvas::CreateSetup());
+    this->mesh = Gfx::CreateResource(meshSetup);
+    this->prog = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
     auto dsSetup = DrawStateSetup::FromMeshAndProg(this->mesh, this->prog, 0);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    this->drawState = Gfx::Resource().Create(dsSetup);
+    this->drawState = Gfx::CreateResource(dsSetup);
     
     // setup sprite texture
     Ptr<Stream> pixelData = MemoryStream::Create();
@@ -66,7 +66,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    this->texture = Gfx::Resource().Create(texSetup, pixelData);
+    this->texture = Gfx::CreateResource(texSetup, pixelData);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
