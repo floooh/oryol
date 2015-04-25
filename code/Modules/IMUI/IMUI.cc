@@ -31,7 +31,14 @@ IMUI::Discard() {
 void
 IMUI::NewFrame(Duration frameDuration) {
     o_assert_dbg(IsValid());
-    state->imguiWrapper.NewFrame(frameDuration);
+    state->imguiWrapper.NewFrame(frameDuration.AsSeconds());
+}
+
+//------------------------------------------------------------------------------
+void
+IMUI::NewFrame() {
+    o_assert_dbg(IsValid());
+    state->imguiWrapper.NewFrame(1.0f / 60.0f);
 }
 
 } // namespace Oryol

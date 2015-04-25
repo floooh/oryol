@@ -18,8 +18,10 @@ public:
     static void Discard();
     /// test if IMUI module has been setup
     static bool IsValid();
-    /// call this before issuing ImGui commands
+    /// start new ImGui frame, with frame time
     static void NewFrame(Duration frameDuration);
+    /// start new ImGui frame, with fixed 1/60sec frametime
+    static void NewFrame();
 
 private:
     struct _state {

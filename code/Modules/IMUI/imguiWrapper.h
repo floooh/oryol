@@ -25,7 +25,7 @@ public:
     /// return true if wrapper is valid
     bool IsValid() const;
     /// call before issuing ImGui commands
-    void NewFrame(Duration frameDuration);
+    void NewFrame(float32 frameDurationInSeconds);
 
 private:
     /// setup dynamic mesh

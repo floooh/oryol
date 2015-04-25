@@ -135,13 +135,13 @@ imguiWrapper::setupDrawState() {
 
 //------------------------------------------------------------------------------
 void
-imguiWrapper::NewFrame(Duration frameDuration) {
+imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
 
     ImGuiIO& io = ImGui::GetIO();
     DisplayAttrs dispAttrs = Gfx::RenderTargetAttrs();
     o_assert_dbg((dispAttrs.FramebufferWidth > 0) && (dispAttrs.FramebufferHeight > 0));
     io.DisplaySize = ImVec2((float)dispAttrs.FramebufferWidth, (float)dispAttrs.FramebufferHeight);
-    io.DeltaTime = frameDuration.AsSeconds();
+    io.DeltaTime = frameDurationInSeconds;
 
     // transfer input
     if (Input::IsValid()) {
