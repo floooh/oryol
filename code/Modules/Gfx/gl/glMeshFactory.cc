@@ -73,9 +73,9 @@ glMeshFactory::SetupResource(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glMeshFactory::SetupResource(mesh& msh, const Ptr<Stream>& data) {
-    o_assert_dbg(msh.Setup.ShouldSetupFromStream());
-    return this->createFromStream(msh, data);
+glMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
+    o_assert_dbg(msh.Setup.ShouldSetupFromData());
+    return this->createFromData(msh, data, size);
 }
 
 //------------------------------------------------------------------------------
@@ -471,64 +471,56 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     
 //------------------------------------------------------------------------------
 ResourceState::Code
-glMeshFactory::createFromStream(mesh& mesh, const Ptr<Stream>& data) {
+glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
+
     const MeshSetup& setup = mesh.Setup;
     
     // open stream and get pointer to contained data
-    if (data->Open(OpenMode::ReadOnly)) {
-        const uint8* endPtr = nullptr;
-        const uint8* ptr = data->MapRead(&endPtr);
-        o_assert_dbg(nullptr != ptr);
-        
-        // setup vertex buffer attrs
-        VertexBufferAttrs vbAttrs;
-        vbAttrs.NumVertices = setup.NumVertices;
-        vbAttrs.BufferUsage = setup.VertexUsage;
-        vbAttrs.Layout = setup.Layout;
-        mesh.vertexBufferAttrs = vbAttrs;
-        
-        // setup index buffer attrs
-        IndexBufferAttrs ibAttrs;
-        ibAttrs.NumIndices = setup.NumIndices;
-        ibAttrs.Type = setup.IndicesType;
-        ibAttrs.BufferUsage = setup.IndexUsage;
-        mesh.indexBufferAttrs = ibAttrs;
-        
-        // setup primitive groups
-        const int32 numPrimGroups = setup.NumPrimitiveGroups();
-        mesh.numPrimGroups = numPrimGroups;
-        o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
-        for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.primGroups[i] = setup.PrimitiveGroup(i);
-        }
-        
-        // setup the mesh object
-        const uint8* vertices = ptr + setup.StreamVertexOffset;
-        const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
-        o_assert_dbg(endPtr >= (vertices + verticesByteSize));
-        mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
-        if (setup.IndicesType != IndexType::None) {
-            o_assert_dbg(setup.StreamIndexOffset != InvalidIndex);
-            o_assert_dbg(setup.StreamIndexOffset >= verticesByteSize);
-            const uint8* indices = ((const uint8*)ptr) + setup.StreamIndexOffset;
-            const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
-            o_assert_dbg(endPtr >= (indices + indicesByteSize));
-            mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
-        }
-        
-        this->attachInstanceBuffer(mesh);
-        this->setupVertexLayout(mesh);
-        
-        data->UnmapRead();
-        data->Close();
-        
-        return ResourceState::Valid;
+    const uint8* ptr = (const uint8*) data;
+    const uint8* endPtr = ptr + size;
+
+    // setup vertex buffer attrs
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.NumVertices = setup.NumVertices;
+    vbAttrs.BufferUsage = setup.VertexUsage;
+    vbAttrs.Layout = setup.Layout;
+    mesh.vertexBufferAttrs = vbAttrs;
+    
+    // setup index buffer attrs
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.NumIndices = setup.NumIndices;
+    ibAttrs.Type = setup.IndicesType;
+    ibAttrs.BufferUsage = setup.IndexUsage;
+    mesh.indexBufferAttrs = ibAttrs;
+    
+    // setup primitive groups
+    const int32 numPrimGroups = setup.NumPrimitiveGroups();
+    mesh.numPrimGroups = numPrimGroups;
+    o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
+    for (int32 i = 0; i < numPrimGroups; i++) {
+        mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }
-    else {
-        // this shouldn't happen
-        o_error("glMeshFactory::createFromStream(): failed to open stream!\n");
-        return ResourceState::InvalidState;
+    
+    // setup the mesh object
+    const uint8* vertices = ptr + setup.DataVertexOffset;
+    const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
+    o_assert_dbg(endPtr >= (vertices + verticesByteSize));
+    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
+    if (setup.IndicesType != IndexType::None) {
+        o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
+        o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
+        const uint8* indices = ((const uint8*)ptr) + setup.DataIndexOffset;
+        const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
+        o_assert_dbg(endPtr >= (indices + indicesByteSize));
+        mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
     }
+    
+    this->attachInstanceBuffer(mesh);
+    this->setupVertexLayout(mesh);
+
+    return ResourceState::Valid;
 }
 
 } // namespace _priv

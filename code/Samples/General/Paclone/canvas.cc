@@ -5,7 +5,6 @@
 #include "canvas.h"
 #include "shaders.h"
 #include "Gfx/Gfx.h"
-#include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
 
@@ -54,19 +53,13 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     this->drawState = Gfx::CreateResource(dsSetup);
     
     // setup sprite texture
-    Ptr<Stream> pixelData = MemoryStream::Create();
-    pixelData->Open(OpenMode::WriteOnly);
-    void* ptr = pixelData->MapWrite(Sheet::NumBytes);
-    Memory::Copy(Sheet::Pixels, ptr, Sheet::NumBytes);
-    pixelData->UnmapWrite();
-    pixelData->Close();
     auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    this->texture = Gfx::CreateResource(texSetup, pixelData);
+    this->texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -98,7 +91,7 @@ canvas::Render() {
     o_assert(this->isValid);
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
-    Gfx::UpdateVertices(this->mesh, numBytes, data);
+    Gfx::UpdateVertices(this->mesh, data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyVariable(Shaders::Canvas::Texture, this->texture);
     Gfx::Draw(0);

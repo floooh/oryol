@@ -2,8 +2,8 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::SetupAndStream
-    @ingroup Gfx
-    @brief a typle which holds a setup and a stream object
+    @ingroup Resource
+    @brief holds a setup and a stream object
     
     This is used to transfer both a resource setup object and 
     a stream object to resource creation functions.

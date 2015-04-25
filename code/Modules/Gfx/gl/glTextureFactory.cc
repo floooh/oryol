@@ -81,14 +81,14 @@ glTextureFactory::SetupResource(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glTextureFactory::SetupResource(texture& tex, const Ptr<Stream>& data) {
+glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
     o_assert_dbg(Core::IsMainThread());
     
     if (tex.Setup.ShouldSetupFromPixelData()) {
-        return this->createFromPixelData(tex, data);
+        return this->createFromPixelData(tex, data, size);
     }
     else {
         o_error("FIXME FIXME FIXME");
@@ -275,8 +275,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
+glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
     o_assert_dbg(Core::IsMainThread());
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
 
     const TextureSetup& setup = tex.Setup;
     const int32 width = setup.Width;
@@ -319,9 +321,7 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
     ORYOL_GL_CHECK_ERROR();
     
     // get pointer to image data
-    data->Open(OpenMode::ReadOnly);
-    const uint8* endPtr = nullptr;
-    const uint8* srcPtr = data->MapRead(&endPtr);
+    const uint8* srcPtr = (const uint8*) data;
     const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
     const int32 numMipMaps = setup.NumMipMaps;
     const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
@@ -378,8 +378,6 @@ glTextureFactory::createFromPixelData(texture& tex, const Ptr<Stream>& data) {
             }
         }
     }
-    data->UnmapRead();
-    data->Close();
     
     // setup texture attributes
     TextureAttrs attrs;

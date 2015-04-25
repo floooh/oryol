@@ -59,7 +59,7 @@ InstancingApp::OnRunning() {
         updTime = Clock::Since(updStart);
 
         TimePoint bufStart = Clock::Now();
-        Gfx::UpdateVertices(this->instanceMesh, this->curNumParticles * sizeof(glm::vec4), this->positions);
+        Gfx::UpdateVertices(this->instanceMesh, this->positions, this->curNumParticles * sizeof(glm::vec4));
         bufTime = Clock::Since(bufStart);
     }
     

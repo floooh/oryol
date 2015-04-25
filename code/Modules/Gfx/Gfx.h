@@ -55,10 +55,12 @@ public:
     static ResourceLabel PopResourceLabel();
     /// create a resource object
     template<class SETUP> static Id CreateResource(const SETUP& setup);
-    /// create a resource object with data
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& stream);
-    /// create a resource object with data
+    /// create a resource object with data in stream object
     template<class SETUP> static Id CreateResource(const SetupAndStream<SETUP>& setupAndStream);
+    /// create a resource object with data in stream object
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& stream);
+    /// create a resource object with pointer to non-owned data
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int32 size);
     /// asynchronously load resource object
     static Id LoadResource(const Ptr<ResourceLoader>& loader);
     /// lookup a resource Id by Locator
@@ -92,9 +94,9 @@ public:
     template<class T> static void ApplyVariableArray(int32 index, const T* values, int32 numValues);
     
     /// update dynamic vertex data (only complete replace possible at the moment)
-    static void UpdateVertices(const Id& id, int32 numBytes, const void* data);
+    static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
     /// update dynamic index data (only complete replace possible at the moment)
-    static void UpdateIndices(const Id& id, int32 numBytes, const void* data);
+    static void UpdateIndices(const Id& id, const void* data, int32 numBytes);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     
@@ -129,7 +131,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-template<> inline void
+template<> void
 Gfx::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(IsValid());
     _priv::texture* tex = state->resourceContainer.lookupTexture(texResId);
@@ -137,38 +139,53 @@ Gfx::ApplyVariable(int32 index, const Id& texResId) {
 }
 
 //------------------------------------------------------------------------------
-template<class T> inline void
+template<class T> void
 Gfx::ApplyVariable(int32 index, const T& value) {
     o_assert_dbg(IsValid());
     state->renderer.applyVariable(index, value);
 }
 
 //------------------------------------------------------------------------------
-template<class T> inline void
+template<class T> void
 Gfx::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
     o_assert_dbg(IsValid());
     state->renderer.applyVariableArray(index, values, numValues);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
+template<class SETUP> Id
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
     return state->resourceContainer.Create(setup);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
+template<class SETUP> Id
 Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& stream) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer.Create(setup, stream);
+    stream->Open(OpenMode::ReadOnly);
+    const void* data = stream->MapRead(nullptr);
+    const int32 size = stream->Size();
+    Id id = state->resourceContainer.Create(setup, data, size);
+    stream->UnmapRead();
+    stream->Close();
+    return id;
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> inline Id
+template<class SETUP> Id
 Gfx::CreateResource(const SetupAndStream<SETUP>& setupAndStream) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer.Create(setupAndStream);
+    return CreateResource(setupAndStream.Setup, setupAndStream.Stream);
+}
+
+//------------------------------------------------------------------------------
+template<class SETUP> Id
+Gfx::CreateResource(const SETUP& setup, const void* data, int32 size) {
+    o_assert_dbg(IsValid());
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
+    return state->resourceContainer.Create(setup, data, size);
 }
 
 } // namespace Oryol

@@ -82,12 +82,7 @@ imguiWrapper::setupFontTexture() {
     unsigned char* pixels;
     int width, height;
     io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-
     const int imgSize = width * height * sizeof(uint8);
-    auto stream = MemoryStream::Create();
-    stream->Open(OpenMode::WriteOnly);
-    stream->Write(pixels, imgSize);
-    stream->Close();
 
     auto texSetup = TextureSetup::FromPixelData(width, height, 1, TextureType::Texture2D, PixelFormat::L8);
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
@@ -95,7 +90,7 @@ imguiWrapper::setupFontTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
-    this->fontTexture = Gfx::CreateResource(texSetup, stream);
+    this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
@@ -210,7 +205,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
 
     // draw command lists
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
-    Gfx::UpdateVertices(self->mesh, vertexDataSize, &(self->vertexData[0]));
+    Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyVariable(Shaders::IMUIShader::Ortho, ortho);
     Gfx::ApplyVariable(Shaders::IMUIShader::Texture, self->fontTexture);

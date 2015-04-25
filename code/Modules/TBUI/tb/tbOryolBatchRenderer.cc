@@ -72,10 +72,6 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     const int h = 4;
     uint32 pixels[w * h];
     Memory::Fill(pixels, sizeof(pixels), 0xFF);
-    auto stream = MemoryStream::Create();
-    stream->Open(OpenMode::WriteOnly);
-    stream->Write(pixels, sizeof(pixels));
-    stream->Close();
     
     auto texSetup = TextureSetup::FromPixelData(w, h, 1, TextureType::Texture2D, PixelFormat::RGBA8);
     texSetup.WrapU = TextureWrapMode::Repeat;
@@ -83,7 +79,7 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = sizeof(pixels);
-    this->whiteTexture = Gfx::CreateResource(texSetup, stream);
+    this->whiteTexture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
 }
 
 //------------------------------------------------------------------------------
@@ -455,7 +451,7 @@ tbOryolBatchRenderer::drawBatches() {
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
         
         this->tbClipRect = this->screenRect;
-        Gfx::UpdateVertices(this->mesh, vertexDataSize, this->vertexData);
+        Gfx::UpdateVertices(this->mesh, this->vertexData, vertexDataSize);
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyVariable(Shaders::TBUIShader::Ortho, ortho);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {

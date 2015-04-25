@@ -166,7 +166,7 @@ GPUParticlesApp::OnInit() {
     auto particleIdSetup = MeshSetup::Empty(MaxNumParticles, Usage::Static);
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
     this->particleIdMesh = Gfx::CreateResource(particleIdSetup);
-    Gfx::UpdateVertices(this->particleIdMesh, particleIdSize, particleIdData);
+    Gfx::UpdateVertices(this->particleIdMesh, particleIdData, particleIdSize);
     Memory::Free(particleIdData);
     
     // the geometry of a single particle

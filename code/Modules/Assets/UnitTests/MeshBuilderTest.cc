@@ -43,7 +43,7 @@ TEST(MeshBuilderTest) {
     const Ptr<Stream>& stream = mb.Result().Stream;
     CHECK(!stream->IsOpen());
     const MeshSetup& meshSetup = mb.Result().Setup;
-    CHECK(meshSetup.ShouldSetupFromStream());
+    CHECK(meshSetup.ShouldSetupFromData());
     
     // check MeshSetup
     CHECK(meshSetup.NumVertices == 4);

@@ -7,7 +7,6 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Resource/mesh.h"
-#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace _priv {
@@ -33,7 +32,7 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    ResourceState::Code SetupResource(mesh& mesh, const Ptr<Stream>& data);
+    ResourceState::Code SetupResource(mesh& mesh, const void* data, int32 size);
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
@@ -49,8 +48,8 @@ public:
     ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
     ResourceState::Code createEmptyMesh(mesh& mesh);
-    /// create from stream data
-    ResourceState::Code createFromStream(mesh& mesh, const Ptr<Stream>& data);
+    /// create from data
+    ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
     
 private:
     /// setup a Mesh's GL vertex attributes

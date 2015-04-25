@@ -10,7 +10,6 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
-#include <limits>
 
 namespace Oryol {
     
@@ -18,10 +17,10 @@ class MeshSetup {
 public:
     /// asynchronously load from file
     static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
-    /// setup from from data provided in separate stream object
-    static MeshSetup FromStream(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
-    /// setup from data with blueprint
-    static MeshSetup FromStream(const MeshSetup& blueprint);
+    /// setup from from data in memory
+    static MeshSetup FromData(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
+    /// setup from data in memory with blueprint
+    static MeshSetup FromData(const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
     static MeshSetup Empty(int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
@@ -31,8 +30,8 @@ public:
     MeshSetup();
     /// check if should load asynchronously
     bool ShouldSetupFromFile() const;
-    /// check if should setup from stream with file-data
-    bool ShouldSetupFromStream() const;
+    /// check if should setup from data in memory
+    bool ShouldSetupFromData() const;
     /// check if should setup empty mesh
     bool ShouldSetupEmpty() const;
     /// check if should setup fullscreen quad mesh
@@ -68,10 +67,10 @@ public:
     /// placeholder Id (only for LoadFromFile)
     Id Placeholder;
     
-    /// vertex data byte offset in stream (default: 0)
-    int32 StreamVertexOffset;
-    /// index data byte offset in stream (default: InvalidIndex)
-    int32 StreamIndexOffset;
+    /// vertex data byte offset in data (default: 0)
+    int32 DataVertexOffset;
+    /// index data byte offset in data (default: InvalidIndex)
+    int32 DataIndexOffset;
     
 private:
     static const int32 MaxNumPrimGroups = 8;
@@ -79,7 +78,7 @@ private:
     int32 numPrimGroups;
     class PrimitiveGroup primGroups[MaxNumPrimGroups];
     bool setupFromFile : 1;
-    bool setupFromStream : 1;
+    bool setupFromData : 1;
     bool setupEmpty : 1;
     bool setupFullScreenQuad : 1;
 };

@@ -14,11 +14,11 @@ NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
 Locator(Locator::NonShared()),
-StreamVertexOffset(0),
-StreamIndexOffset(InvalidIndex),
+DataVertexOffset(0),
+DataIndexOffset(InvalidIndex),
 numPrimGroups(0),
 setupFromFile(false),
-setupFromStream(false),
+setupFromData(false),
 setupEmpty(false),
 setupFullScreenQuad(false) {
     // empty
@@ -38,19 +38,19 @@ MeshSetup::FromFile(const class Locator& loc, Id placeholder) {
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromStream(Usage::Code vbUsage, Usage::Code ibUsage) {
+MeshSetup::FromData(Usage::Code vbUsage, Usage::Code ibUsage) {
     MeshSetup setup;
     setup.VertexUsage = vbUsage;
     setup.IndexUsage = ibUsage;
-    setup.setupFromStream = true;
+    setup.setupFromData = true;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FromStream(const MeshSetup& blueprint) {
+MeshSetup::FromData(const MeshSetup& blueprint) {
     MeshSetup setup(blueprint);
-    setup.setupFromStream = true;
+    setup.setupFromData = true;
     return setup;
 }
 
@@ -90,8 +90,8 @@ MeshSetup::ShouldSetupFromFile() const {
 
 //------------------------------------------------------------------------------
 bool
-MeshSetup::ShouldSetupFromStream() const {
-    return this->setupFromStream;
+MeshSetup::ShouldSetupFromData() const {
+    return this->setupFromData;
 }
 
 //------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ MeshSetup::ShouldSetupFullScreenQuad() const {
 //------------------------------------------------------------------------------
 void
 MeshSetup::AddPrimitiveGroup(const class PrimitiveGroup& primGroup) {
-    o_assert(this->setupEmpty || this->setupFromStream);
+    o_assert(this->setupEmpty || this->setupFromData);
     o_assert(this->numPrimGroups < MaxNumPrimGroups);
     this->primGroups[this->numPrimGroups++] = primGroup;
 }

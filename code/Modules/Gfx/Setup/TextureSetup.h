@@ -4,7 +4,6 @@
     @class Oryol::TextureSetup
     @ingroup Gfx
     @brief setup object for textures and render targets
-    @todo setup from file, setup from stream, multiple rendertarget support, mipmap generation mode...?
 */
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
@@ -19,7 +18,7 @@ public:
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, TextureSetup blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
-    /// setup a texture from a image file data in stream
+    /// setup a texture from a image file data in memory
     static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint=TextureSetup());
@@ -34,7 +33,7 @@ public:
     TextureSetup();
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
-    /// return true if texture should be setup from image file data in stream
+    /// return true if texture should be setup from image file data in memory
     bool ShouldSetupFromImageFileData() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;

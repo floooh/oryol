@@ -11,7 +11,7 @@ TEST(MeshSetupTest) {
     
     const MeshSetup s0 = MeshSetup::FromFile("s0");
     CHECK(s0.ShouldSetupFromFile());
-    CHECK(!s0.ShouldSetupFromStream());
+    CHECK(!s0.ShouldSetupFromData());
     CHECK(!s0.ShouldSetupEmpty());
     CHECK(s0.Locator == "s0");
     CHECK(s0.VertexUsage == Usage::Immutable);
@@ -23,7 +23,7 @@ TEST(MeshSetupTest) {
     
     const MeshSetup s1 = MeshSetup::FromFile("s1");
     CHECK(s1.ShouldSetupFromFile());
-    CHECK(!s1.ShouldSetupFromStream());
+    CHECK(!s1.ShouldSetupFromData());
     CHECK(!s1.ShouldSetupEmpty());
     CHECK(s1.Locator == "s1");
     CHECK(s1.VertexUsage == Usage::Immutable);
@@ -39,26 +39,26 @@ TEST(MeshSetupTest) {
     CHECK(s2.IndexUsage == Usage::Dynamic);
     */
     
-    const MeshSetup s3 = MeshSetup::FromStream();
+    const MeshSetup s3 = MeshSetup::FromData();
     CHECK(!s3.ShouldSetupFromFile());
     CHECK(!s3.ShouldSetupEmpty());
-    CHECK(s3.ShouldSetupFromStream());
+    CHECK(s3.ShouldSetupFromData());
     CHECK(s3.Locator == Locator::NonShared());
     CHECK(s3.VertexUsage == Usage::Immutable);
     CHECK(s3.IndexUsage == Usage::Immutable);
     
-    const MeshSetup s4 = MeshSetup::FromStream(Usage::Stream, Usage::Dynamic);
+    const MeshSetup s4 = MeshSetup::FromData(Usage::Stream, Usage::Dynamic);
     CHECK(!s4.ShouldSetupFromFile());
     CHECK(!s4.ShouldSetupEmpty());
-    CHECK(s4.ShouldSetupFromStream());
+    CHECK(s4.ShouldSetupFromData());
     CHECK(s4.Locator == Locator::NonShared());
     CHECK(s4.VertexUsage == Usage::Stream);
     CHECK(s4.IndexUsage == Usage::Dynamic);
     
-    const MeshSetup s5 = MeshSetup::FromStream(s4);
+    const MeshSetup s5 = MeshSetup::FromData(s4);
     CHECK(!s5.ShouldSetupFromFile());
     CHECK(!s5.ShouldSetupEmpty());
-    CHECK(s5.ShouldSetupFromStream());
+    CHECK(s5.ShouldSetupFromData());
     CHECK(s5.Locator == Locator::NonShared());
     CHECK(s5.VertexUsage == Usage::Stream);
     CHECK(s5.IndexUsage == Usage::Dynamic);
@@ -68,7 +68,7 @@ TEST(MeshSetupTest) {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     CHECK(!s6.ShouldSetupFromFile());
-    CHECK(!s6.ShouldSetupFromStream());
+    CHECK(!s6.ShouldSetupFromData());
     CHECK(s6.ShouldSetupEmpty());
     CHECK(s6.Locator == Locator::NonShared());
     CHECK(s6.VertexUsage == Usage::Stream);
@@ -88,7 +88,7 @@ TEST(MeshSetupTest) {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     s7.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, 64));
     CHECK(!s7.ShouldSetupFromFile());
-    CHECK(!s7.ShouldSetupFromStream());
+    CHECK(!s7.ShouldSetupFromData());
     CHECK(s7.ShouldSetupEmpty());
     CHECK(s7.Locator == Locator::NonShared());
     CHECK(s7.VertexUsage == Usage::Dynamic);

@@ -231,11 +231,11 @@ Gfx::ResetStateCache() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::UpdateVertices(const Id& id, int32 numBytes, const void* data) {
+Gfx::UpdateVertices(const Id& id, const void* data, int32 numBytes) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
     mesh* msh = state->resourceContainer.lookupMesh(id);
-    state->renderer.updateVertices(msh, numBytes, data);
+    state->renderer.updateVertices(msh, data, numBytes);
 }
 
 //------------------------------------------------------------------------------

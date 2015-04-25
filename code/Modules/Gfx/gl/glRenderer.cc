@@ -822,7 +822,7 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::updateVertices(mesh* msh, int32 numBytes, const void* data) {
+glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != msh);

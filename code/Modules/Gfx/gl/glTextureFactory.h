@@ -6,7 +6,6 @@
     @brief private: GL implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
-#include "IO/Stream/Stream.h"
 #include "Gfx/Resource/texture.h"
 
 namespace Oryol {
@@ -35,7 +34,7 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
-    ResourceState::Code SetupResource(texture& tex, const Ptr<Stream>& data);
+    ResourceState::Code SetupResource(texture& tex, const void* data, int32 size);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -46,7 +45,7 @@ private:
     /// create a render target
     ResourceState::Code createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    ResourceState::Code createFromPixelData(texture& tex, const Ptr<Stream>& data);
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
 
     class renderer* renderer;
     displayMgr* displayManager;

@@ -134,7 +134,7 @@ debugTextRenderer::drawTextBuffer() {
         const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         const glm::vec2 glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
     
-        Gfx::UpdateVertices(this->textMesh, numVertices * this->vertexLayout.ByteSize(), this->vertexData);
+        Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->textDrawState);
         Gfx::ApplyVariable(Shaders::TextShader::GlyphSize, glyphSize);
         Gfx::ApplyVariable(Shaders::TextShader::Texture, this->fontTexture);

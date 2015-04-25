@@ -40,7 +40,7 @@ MeshBuilder::Clear() {
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
-    this->setupAndStream.Setup = MeshSetup::FromStream();
+    this->setupAndStream.Setup = MeshSetup::FromData();
     this->setupAndStream.Stream.invalidate();
 }
 
@@ -56,7 +56,7 @@ MeshBuilder::Begin() {
 
     // setup MeshSetup object
     MeshSetup& meshSetup = this->setupAndStream.Setup;
-    meshSetup = MeshSetup::FromStream(this->VertexUsage, this->IndexUsage);
+    meshSetup = MeshSetup::FromData(this->VertexUsage, this->IndexUsage);
     meshSetup.Layout = this->Layout;
     meshSetup.NumVertices = this->NumVertices;
     meshSetup.NumIndices = this->NumIndices;
@@ -69,9 +69,9 @@ MeshBuilder::Begin() {
     const int32 vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
     const int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
     int32 allSize = vbSize + ibSize;
-    meshSetup.StreamVertexOffset = 0;
+    meshSetup.DataVertexOffset = 0;
     if (ibSize > 0) {
-        meshSetup.StreamIndexOffset = vbSize;
+        meshSetup.DataIndexOffset = vbSize;
     }
     
     // setup the memory stream object

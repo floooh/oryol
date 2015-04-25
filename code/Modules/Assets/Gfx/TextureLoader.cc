@@ -73,12 +73,11 @@ TextureLoader::Continue() {
             if (ctx.load(data, numBytes)) {
                 stream->Close();
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
-                SetupAndStream<TextureSetup> setupAndStream(texSetup, stream);
                 // NOTE: the prepared texture resource might have already been
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState
                 // (the same for failedAsync)
-                result = Gfx::resource().initAsync(this->resId, setupAndStream);
+                result = Gfx::resource().initAsync(this->resId, texSetup, data, numBytes);
             }
             else {
                 stream->Close();

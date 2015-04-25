@@ -73,7 +73,7 @@ public:
     /// submit a draw call for instanced rendering with direct primitive group
     void drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
     /// update vertex data
-    void updateVertices(mesh* msh, int32 numBytes, const void* data);
+    void updateVertices(mesh* msh, const void* data, int32 numBytes);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes);
     

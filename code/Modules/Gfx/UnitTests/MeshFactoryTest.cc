@@ -56,11 +56,14 @@ TEST(MeshFactoryTest) {
         .End();
     
     // setup the mesh
-    const Ptr<Stream>& meshData = mb.Result().Stream;
     mesh mesh;
     mesh.Setup = mb.Result().Setup;
-    
-    factory.SetupResource(mesh, meshData);
+    auto stream = mb.Result().Stream;
+    stream->Open(OpenMode::ReadOnly);
+    const void* data = stream->MapRead(nullptr);
+    const int32 size = stream->Size();
+
+    factory.SetupResource(mesh, data, size);
     CHECK(!mesh.Id.IsValid());
     CHECK(mesh.Setup.Locator == Locator::NonShared());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 4);
@@ -118,7 +121,9 @@ TEST(MeshFactoryTest) {
         }
     }
     #endif
-    
+
+    stream->UnmapRead();
+    stream->Close();
     factory.DestroyResource(mesh);
     CHECK(!mesh.Id.IsValid());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 0);

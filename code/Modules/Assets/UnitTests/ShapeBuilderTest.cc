@@ -40,11 +40,16 @@ TEST(ShapeBuilderTest) {
     shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Build();
-    
+
+    auto stream = shapeBuilder.Result().Stream;
+    stream->Open(OpenMode::ReadOnly);
+    const void* data = stream->MapRead(nullptr);
+    const int32 size = stream->Size();
+
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
     simpleCube.Setup = shapeBuilder.Result().Setup;
-    factory.SetupResource(simpleCube, shapeBuilder.Result().Stream);
+    factory.SetupResource(simpleCube, data, size);
     CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
     CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
     CHECK(simpleCube.vertexBufferAttrs.Layout.ByteSize() == 12);
@@ -84,7 +89,9 @@ TEST(ShapeBuilderTest) {
         }
     }
     #endif
-    
+
+    stream->UnmapRead();
+    stream->Close();
     factory.DestroyResource(simpleCube);
     factory.Discard();
     renderer.discard();

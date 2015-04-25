@@ -98,11 +98,11 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const SetupAndStream<MeshSetup>& setupAndStream) {
+GfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
-    const MeshSetup& setup = setupAndStream.Setup;
-    const Ptr<Stream>& data = setupAndStream.Stream;
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
     o_assert_dbg(!setup.ShouldSetupFromFile());
 
     Id resId = this->registry.Lookup(setup.Locator);
@@ -113,7 +113,7 @@ GfxResourceContainer::Create(const SetupAndStream<MeshSetup>& setupAndStream) {
         resId = this->meshPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data);
+        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
     }
@@ -144,13 +144,13 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream) {
+GfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
-
-    const TextureSetup& setup = setupAndStream.Setup;
-    const Ptr<Stream>& data = setupAndStream.Stream;
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
     o_assert_dbg(!setup.ShouldSetupFromFile());
+
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
         return resId;
@@ -159,7 +159,7 @@ GfxResourceContainer::Create(const SetupAndStream<TextureSetup>& setupAndStream)
         resId = this->texturePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data);
+        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
     }
@@ -180,16 +180,14 @@ GfxResourceContainer::prepareAsync(const TextureSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-GfxResourceContainer::initAsync(const Id& resId, const SetupAndStream<TextureSetup>& setupAndStream) {
+GfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
     // the prepared resource may have been destroyed while it was loading
     if (this->texturePool.Contains(resId)) {
-        const TextureSetup& setup = setupAndStream.Setup;
-        const Ptr<Stream>& data = setupAndStream.Stream;
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Pending);
-        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data);
+        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
         return newState;

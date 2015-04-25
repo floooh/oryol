@@ -42,9 +42,7 @@ public:
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
-    template<class SETUP> Id Create(const SETUP& setup, const Ptr<Stream>& stream);
-    /// create a resource object with data
-    template<class SETUP> Id Create(const SetupAndStream<SETUP>& setupAndStream);
+    template<class SETUP> Id Create(const SETUP& setup, const void* data, int32 size);
     /// asynchronously load resource object
     Id Load(const Ptr<ResourceLoader>& loader);
     /// query number of free slots for resource type
@@ -59,7 +57,7 @@ public:
     /// prepare async creation (usually called at start of async Load)
     template<class SETUP> Id prepareAsync(const SETUP& setup);
     /// setup async resource (usually called during async Load)
-    template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SetupAndStream<SETUP>& setupAndStream);
+    template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SETUP& setup, const void* data, int32 size);
     /// notify resource container that async creation had failed
     ResourceState::Code failedAsync(const Id& resId);
     
@@ -96,14 +94,6 @@ private:
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
 };
-
-//------------------------------------------------------------------------------
-template<class SETUP> Id
-GfxResourceContainer::Create(const SETUP& setup, const Ptr<Stream>& stream) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
-    return this->Create(SetupAndStream<SETUP>(setup, stream));
-}
 
 //------------------------------------------------------------------------------
 inline _priv::mesh*
