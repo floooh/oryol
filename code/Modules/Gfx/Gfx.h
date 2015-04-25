@@ -131,7 +131,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-template<> void
+template<> inline void
 Gfx::ApplyVariable(int32 index, const Id& texResId) {
     o_assert_dbg(IsValid());
     _priv::texture* tex = state->resourceContainer.lookupTexture(texResId);
@@ -139,28 +139,28 @@ Gfx::ApplyVariable(int32 index, const Id& texResId) {
 }
 
 //------------------------------------------------------------------------------
-template<class T> void
+template<class T> inline void
 Gfx::ApplyVariable(int32 index, const T& value) {
     o_assert_dbg(IsValid());
     state->renderer.applyVariable(index, value);
 }
 
 //------------------------------------------------------------------------------
-template<class T> void
+template<class T> inline void
 Gfx::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
     o_assert_dbg(IsValid());
     state->renderer.applyVariableArray(index, values, numValues);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Id
+template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
     return state->resourceContainer.Create(setup);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Id
+template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& stream) {
     o_assert_dbg(IsValid());
     stream->Open(OpenMode::ReadOnly);
@@ -173,14 +173,14 @@ Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& stream) {
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Id
+template<class SETUP> inline Id
 Gfx::CreateResource(const SetupAndStream<SETUP>& setupAndStream) {
     o_assert_dbg(IsValid());
     return CreateResource(setupAndStream.Setup, setupAndStream.Stream);
 }
 
 //------------------------------------------------------------------------------
-template<class SETUP> Id
+template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup, const void* data, int32 size) {
     o_assert_dbg(IsValid());
     o_assert_dbg(nullptr != data);
