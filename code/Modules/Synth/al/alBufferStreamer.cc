@@ -46,6 +46,7 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
     // generate a single playback source
     alGenSources(1, &this->source);
     ORYOL_AL_CHECK_ERROR();
+    alSourcef(this->source, AL_GAIN, setupAttrs.InitialVolume);
 }
 
 //------------------------------------------------------------------------------
@@ -73,6 +74,13 @@ alBufferStreamer::Discard() {
 bool
 alBufferStreamer::IsValid() const {
     return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+void
+alBufferStreamer::UpdateVolume(float32 v) {
+    o_assert_dbg( 0 != this->source);
+    alSourcef(this->source, AL_GAIN, v);
 }
 
 //------------------------------------------------------------------------------

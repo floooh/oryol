@@ -33,6 +33,13 @@ Synth::IsValid() {
 
 //------------------------------------------------------------------------------
 void
+Synth::UpdateVolume(float32 vol) {
+    o_assert_dbg(IsValid());
+    state->soundManager.UpdateVolume(vol);
+}
+
+//------------------------------------------------------------------------------
+void
 Synth::Update() {
     o_assert_dbg(IsValid());
     state->soundManager.Update();

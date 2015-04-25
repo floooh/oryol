@@ -7,6 +7,7 @@ fips_begin_module(Synth)
     fips_dir(Core)
     fips_files(
         SynthOp.h
+        SynthSetup.h
         cpuSynthesizer.cc cpuSynthesizer.h
         gpuSynthesizer.cc gpuSynthesizer.h
         opBundle.h

@@ -27,7 +27,9 @@ public:
     void Discard();
     /// return true if has been setup
     bool IsValid() const;
-    
+
+    /// update the main volume (0.0f .. 1.0f)
+    void UpdateVolume(float32 vol);    
     /// update the sound system
     void Update();
     

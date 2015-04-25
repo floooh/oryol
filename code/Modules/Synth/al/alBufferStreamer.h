@@ -43,7 +43,9 @@ public:
     void Discard();
     /// return true if streamer object has been setup
     bool IsValid() const;
-    
+
+    /// set new volume (0.0f .. 1.0f)
+    void UpdateVolume(float32 v);
     /// update the streamer, returns true if new data is needed
     bool Update();
     /// enqueue new data into the streamer

@@ -65,6 +65,12 @@ soundMgrBase::IsValid() const {
 
 //------------------------------------------------------------------------------
 void
+soundMgrBase::UpdateVolume(float32 /*vol*/) {
+    o_assert_dbg(this->isValid);
+}
+
+//------------------------------------------------------------------------------
+void
 soundMgrBase::Update() {
     o_assert_dbg(this->isValid);
 }

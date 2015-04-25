@@ -23,6 +23,8 @@ public:
     void Setup(const SynthSetup& setupAttrs);
     /// discard the sound system
     void Discard();
+    /// update the main volume (0.0f .. 1.0f)
+    void UpdateVolume(float32 vol);
     /// update the sound system
     void Update();
     

@@ -106,6 +106,12 @@ alSoundMgr::PrintALInfo() {
 
 //------------------------------------------------------------------------------
 void
+alSoundMgr::UpdateVolume(float32 vol) {
+    this->streamer.UpdateVolume(vol);
+}
+
+//------------------------------------------------------------------------------
+void
 alSoundMgr::Update() {
     soundMgrBase::Update();
     if (this->streamer.Update()) {

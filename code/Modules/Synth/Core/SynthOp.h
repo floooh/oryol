@@ -20,7 +20,7 @@ namespace Oryol {
 class SynthOp {
 public:
     /// operation to perform on accumulated value
-    enum OpT {
+    enum OpT : int32 {
         Nop,            // simply pass-thru accumulated value (default)
         Modulate,       // multiply with accumulated value
         Add,            // add-saturate with accumulated value
@@ -29,7 +29,7 @@ public:
     } Op = Nop;
 
     /// oscillator waveform
-    enum WaveT {
+    enum WaveT : int32 {
         Const,          // output a constant Amplitude, Frequency not used (default)
         Sine,           // sine wave
         SawTooth,       // sawtooth wave
@@ -45,7 +45,7 @@ public:
         Custom6,
         Custom7,
         
-        NumWaves
+        NumWaves,
     } Wave = Const;
     /// amplitude (MinSampleVal .. MaxSampleVal)
     int32 Amp = _priv::synth::MaxSampleVal;
