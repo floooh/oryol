@@ -51,7 +51,9 @@ public:
     int32 NumIndices;
     /// index type (only CreateEmpty)
     IndexType::Code IndicesType;
-    
+
+    /// maximum number of primitive groups for one mesh
+    static const int32 MaxNumPrimGroups = 8;
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups
@@ -73,8 +75,6 @@ public:
     int32 DataIndexOffset;
     
 private:
-    static const int32 MaxNumPrimGroups = 8;
-
     int32 numPrimGroups;
     class PrimitiveGroup primGroups[MaxNumPrimGroups];
     bool setupFromFile : 1;

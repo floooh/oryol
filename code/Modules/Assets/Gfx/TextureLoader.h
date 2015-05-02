@@ -6,7 +6,6 @@
     @brief standard texture loader for most block-compressed texture file formats
 */
 #include "Gfx/Resource/TextureLoaderBase.h"
-#include "IO/Stream/Stream.h"
 #include "IO/IOProtocol.h"
 
 namespace gliml {

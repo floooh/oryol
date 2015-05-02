@@ -5,6 +5,8 @@ fips_begin_module(Assets)
         ShapeBuilder.cc ShapeBuilder.h
         VertexWriter.cc VertexWriter.h
         TextureLoader.cc TextureLoader.h
+        OmshParser.cc OmshParser.h
+        MeshLoader.cc MeshLoader.h
     )
     fips_deps(Gfx)
 fips_end_module()

@@ -9,11 +9,16 @@ namespace Oryol {
 OryolClassImpl(MeshLoaderBase);
 
 //------------------------------------------------------------------------------
-void
-MeshLoaderBase::Prepare(const Id& id_, const MeshSetup& setup_) {
-    o_assert_dbg(!this->id.IsValid());
-    this->id = id_;
-    this->setup = setup_;
+MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_, int32 ioLane_) :
+setup(setup_),
+ioLane(ioLane_) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+const class Locator&
+MeshLoaderBase::Locator() const {
+    return this->setup.Locator;
 }
 
 } // namespace Oryol

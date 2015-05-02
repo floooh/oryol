@@ -13,12 +13,14 @@ namespace Oryol {
 class MeshLoaderBase : public ResourceLoader {
     OryolClassDecl(MeshLoaderBase);
 public:
-    /// prepare the loader
-    virtual void Prepare(const Id& id, const MeshSetup& setup);
-    
+    /// constructor
+    MeshLoaderBase(const MeshSetup& setup, int32 ioLane);
+    /// return resource locator
+    virtual const class Locator& Locator() const;
+
 protected:
     MeshSetup setup;
-    Id id;
+    int32 ioLane;
 };
 
 } // namespace Oryol

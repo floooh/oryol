@@ -168,6 +168,40 @@ GfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 
 
 //------------------------------------------------------------------------------
 template<> Id
+GfxResourceContainer::prepareAsync(const MeshSetup& setup) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
+    
+    Id resId = this->meshPool.AllocId();
+    this->registry.Add(setup.Locator, resId, this->peekLabel());
+    this->meshPool.Assign(resId, setup, ResourceState::Pending);
+    return resId;
+}
+
+//------------------------------------------------------------------------------
+template<> ResourceState::Code 
+GfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(Core::IsMainThread());
+    
+    // the prepared resource may have been destroyed while it was loading
+    if (this->meshPool.Contains(resId)) {
+        mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Pending);
+        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data, size);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
+        this->meshPool.UpdateState(resId, newState);
+        return newState;
+    }
+    else {
+        // the prepared mesh object was destroyed before it was loaded
+        o_warn("GfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
+            resId.Type, resId.SlotIndex);
+        return ResourceState::InvalidState;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<> Id
 GfxResourceContainer::prepareAsync(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());

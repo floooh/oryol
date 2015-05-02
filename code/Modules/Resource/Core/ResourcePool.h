@@ -201,12 +201,12 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
     
     auto& slot = this->slots[id.SlotIndex];
     if (id == slot.Id) {
-        if (ResourceState::Valid == slot.State) {
-            // resource exists and is valid, all ok
+        if ((ResourceState::Valid == slot.State) || (ResourceState::Pending == slot.State)) {
+            // resource exists and is valid or pending, all ok
             return const_cast<RESOURCE*>(&slot);
         }
         else {
-            o_warn("ResourcePool::Lookup(): looked up resource is not valid!\n");
+            o_warn("ResourcePool::Lookup(): looked up resource is not valid or pending!\n");
         }
     }
     // FALLTHROUGH: no valid resource (doesn't exist, is pending, failed etc...)

@@ -5,7 +5,6 @@
 #include "TextureLoader.h"
 #include "IO/IO.h"
 #include "Gfx/Gfx.h"
-#include "IO/Stream/Stream.h"
 #define GLIML_ASSERT(x) o_assert(x)
 #include "gliml.h"
 
