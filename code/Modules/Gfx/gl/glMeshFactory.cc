@@ -479,7 +479,6 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     
     // open stream and get pointer to contained data
     const uint8* ptr = (const uint8*) data;
-    const uint8* endPtr = ptr + size;
 
     // setup vertex buffer attrs
     VertexBufferAttrs vbAttrs;
@@ -506,14 +505,14 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     // setup the mesh object
     const uint8* vertices = ptr + setup.DataVertexOffset;
     const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
-    o_assert_dbg(endPtr >= (vertices + verticesByteSize));
+    o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));
     mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
     if (setup.IndicesType != IndexType::None) {
         o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
         o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
         const uint8* indices = ((const uint8*)ptr) + setup.DataIndexOffset;
         const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
-        o_assert_dbg(endPtr >= (indices + indicesByteSize));
+        o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
         mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
     }
     
