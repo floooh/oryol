@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//  MeshLoading.cc
+//  MeshViewer.cc
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/App.h"
@@ -16,7 +16,7 @@
 
 using namespace Oryol;
 
-class MeshLoadingApp : public App {
+class MeshViewerApp : public App {
 public:
     AppState::Code OnInit();
     AppState::Code OnRunning();
@@ -59,11 +59,11 @@ private:
     const float maxCamHeight = 5.0f;
     bool autoOrbit = true;
 };
-OryolMain(MeshLoadingApp);
+OryolMain(MeshViewerApp);
 
 //-----------------------------------------------------------------------------
 AppState::Code
-MeshLoadingApp::OnInit() {
+MeshViewerApp::OnInit() {
 
     // setup IO system
     IOSetup ioSetup;
@@ -72,7 +72,7 @@ MeshLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering and input system
-    Gfx::Setup(GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Loading Sample"));
+    Gfx::Setup(GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Viewer"));
     Input::Setup();
 
     // setup IMUI ui system
@@ -94,7 +94,7 @@ MeshLoadingApp::OnInit() {
 
 //-----------------------------------------------------------------------------
 AppState::Code
-MeshLoadingApp::OnRunning() {
+MeshViewerApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
 
     this->frameCount++;
@@ -115,7 +115,7 @@ MeshLoadingApp::OnRunning() {
 
 //-----------------------------------------------------------------------------
 AppState::Code
-MeshLoadingApp::OnCleanup() {
+MeshViewerApp::OnCleanup() {
     IMUI::Discard();
     Input::Discard();
     Gfx::Discard();
@@ -125,7 +125,7 @@ MeshLoadingApp::OnCleanup() {
 
 //-----------------------------------------------------------------------------
 void
-MeshLoadingApp::handleInput() {
+MeshViewerApp::handleInput() {
     if (!ImGui::IsMouseHoveringAnyWindow()) {
         const Mouse& mouse = Input::Mouse();
         if (mouse.Attached) {
@@ -140,7 +140,7 @@ MeshLoadingApp::handleInput() {
 
 //------------------------------------------------------------------------------
 void
-MeshLoadingApp::updateCamera() {
+MeshViewerApp::updateCamera() {
     if (this->autoOrbit) {
         this->orbital.y += 0.01f;
         if (this->orbital.y > glm::radians(360.0f)) {
@@ -155,7 +155,7 @@ MeshLoadingApp::updateCamera() {
 
 //-----------------------------------------------------------------------------
 void
-MeshLoadingApp::drawUI() {
+MeshViewerApp::drawUI() {
     const char* state = "Loaded";
     switch (Gfx::QueryResourceInfo(this->mesh).State) {
         case ResourceState::Valid: state = "Valid"; break;
@@ -191,7 +191,7 @@ MeshLoadingApp::drawUI() {
 
 //-----------------------------------------------------------------------------
 void
-MeshLoadingApp::loadMesh(const char* path) {
+MeshViewerApp::loadMesh(const char* path) {
 
     // unload current mesh
     if (this->curResLabel.IsValid()) {

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //  shaders.shd
-//  Annotated GLSL shaders for MeshLoading sample
+//  Annotated GLSL shaders for MeshViewer sample
 //------------------------------------------------------------------------------
 
 @vs vs
