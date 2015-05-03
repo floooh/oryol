@@ -7,20 +7,27 @@
 */
 #include "Resource/Core/ResourceLoader.h"
 #include "Gfx/Setup/MeshSetup.h"
+#include <functional>
 
 namespace Oryol {
 
 class MeshLoaderBase : public ResourceLoader {
     OryolClassDecl(MeshLoaderBase);
 public:
+    /// optional callback when loading has succeeded
+    typedef std::function<void(MeshSetup&)> LoadedFunc;
+
     /// constructor
     MeshLoaderBase(const MeshSetup& setup, int32 ioLane);
+    /// constructor with success callback
+    MeshLoaderBase(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
     /// return resource locator
     virtual const class Locator& Locator() const;
 
 protected:
     MeshSetup setup;
     int32 ioLane;
+    std::function<void(MeshSetup&)> onLoaded;
 };
 
 } // namespace Oryol

@@ -16,6 +16,14 @@ ioLane(ioLane_) {
 }
 
 //------------------------------------------------------------------------------
+MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_, int32 ioLane_, LoadedFunc loadedFunc) :
+setup(setup_),
+ioLane(ioLane_),
+onLoaded(loadedFunc) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 const class Locator&
 MeshLoaderBase::Locator() const {
     return this->setup.Locator;

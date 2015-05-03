@@ -16,8 +16,10 @@ namespace Oryol {
 class MeshLoader : public MeshLoaderBase {
     OryolClassDecl(MeshLoader);
 public:
-    /// constructor
+    /// constructor without success-callback
     MeshLoader(const MeshSetup& setup, int32 ioLane);
+    /// constructor with success callback
+    MeshLoader(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
     /// destructor
     virtual ~MeshLoader();
     /// start loading, return a resource id

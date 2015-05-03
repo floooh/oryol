@@ -18,6 +18,12 @@ MeshLoaderBase(setup_, ioLane_) {
 }
 
 //------------------------------------------------------------------------------
+MeshLoader::MeshLoader(const MeshSetup& setup_, int32 ioLane_, LoadedFunc loadedFunc_) :
+MeshLoaderBase(setup_, ioLane_, loadedFunc_) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 MeshLoader::~MeshLoader() {
     o_assert_dbg(!this->ioRequest);
 }
@@ -67,7 +73,15 @@ MeshLoader::Continue() {
             MeshSetup meshSetup = MeshSetup::FromData(this->setup);
             if (OmshParser::Parse(data, numBytes, meshSetup)) {
                 stream->Close();
-                // NOTE: the prepared texture resource might have already been
+
+                // call the Loaded callback if defined, this
+                // gives the app a chance to look at the
+                // setup object, and possibly modify it
+                if (this->onLoaded) {
+                    this->onLoaded(meshSetup);
+                }
+
+                // NOTE: the prepared resource might have already been
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState
                 // (the same for failedAsync)
