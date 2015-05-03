@@ -49,15 +49,16 @@ private:
         "msh:teapot.omsh"
     };
     float camDist = 8.0f;
+    glm::vec2 orbital = glm::vec2(glm::radians(25.0f), 0.0f);
+    float camHeight = 1.0f;
+    bool autoOrbit = true;
+
     const float minCamDist = 1.0f;
     const float maxCamDist = 20.0f;
     const float minLatitude = -85.0f;
     const float maxLatitude = 85.0f;
-    glm::vec2 orbital = glm::vec2(glm::radians(25.0f), 0.0f);
-    float camHeight = 1.0f;
     const float minCamHeight = -2.0f;
     const float maxCamHeight = 5.0f;
-    bool autoOrbit = true;
 };
 OryolMain(MeshViewerApp);
 
@@ -79,8 +80,14 @@ MeshViewerApp::OnInit() {
     IMUI::Setup();
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.0f, 0.5f, 1.0f, 0.7f);
-    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.5f, 1.0f, 0.20f);
+    ImVec4 defaultBlue(0.0f, 0.5f, 1.0f, 0.7f);
+    style.Colors[ImGuiCol_TitleBg] = defaultBlue;
+    style.Colors[ImGuiCol_TitleBgCollapsed] = defaultBlue;
+    style.Colors[ImGuiCol_SliderGrab] = defaultBlue;
+    style.Colors[ImGuiCol_SliderGrabActive] = defaultBlue;
+    style.Colors[ImGuiCol_Button] = defaultBlue;
+    style.Colors[ImGuiCol_ButtonHovered] = defaultBlue;
+    style.Colors[ImGuiCol_ButtonActive] = defaultBlue;
 
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
@@ -156,22 +163,25 @@ MeshViewerApp::updateCamera() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::drawUI() {
-    const char* state = "Loaded";
+    const char* state;
     switch (Gfx::QueryResourceInfo(this->mesh).State) {
-        case ResourceState::Valid: state = "Valid"; break;
-        case ResourceState::Failed: state = "Failed"; break;
-        case ResourceState::Pending: state = "Pending"; break;
+        case ResourceState::Valid: state = "Loaded"; break;
+        case ResourceState::Failed: state = "Load Failed"; break;
+        case ResourceState::Pending: state = "Loading..."; break;
         default: state = "Invalid"; break;
     }
     IMUI::NewFrame();
-    ImGui::Begin("Controls", nullptr, ImVec2(200, 300), 0.25f, 0);
-    if (ImGui::Combo("Mesh", (int*) &this->curMeshIndex, this->meshNames, numMeshes)) {
+    ImGui::Begin("Mesh Viewer", nullptr, ImVec2(200, 300), 0.25f, ImGuiWindowFlags_NoResize|ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("Mesh:\n");
+    if (ImGui::Combo("##mesh", (int*) &this->curMeshIndex, this->meshNames, numMeshes)) {
         this->loadMesh(this->meshPaths[this->curMeshIndex]);
     }
     ImGui::Text("state: %s\n", state);
-    ImGui::Text("primitive groups:\n");
-    for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
-        ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
+    if (this->curMeshSetup.NumPrimitiveGroups() > 0) {
+        ImGui::Text("primitive groups:\n");
+        for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
+            ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
+        }
     }
     ImGui::Separator();
     ImGui::Text("Camera:\n");
@@ -196,13 +206,11 @@ MeshViewerApp::loadMesh(const char* path) {
     // unload current mesh
     if (this->curResLabel.IsValid()) {
         Gfx::DestroyResources(this->curResLabel);
-        this->curResLabel.Invalidate();
-        this->drawState.Invalidate();
-        this->mesh.Invalidate();
         this->curMeshSetup = MeshSetup();
     }
 
-    // load new mesh
+    // load new mesh, use 'onloaded' callback to capture the mesh setup
+    // object of the loaded mesh
     this->curResLabel = Gfx::PushResourceLabel();
     this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), 0, [this](MeshSetup& setup) {
         this->curMeshSetup = setup;
