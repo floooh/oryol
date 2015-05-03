@@ -240,26 +240,29 @@ GfxResourceContainer::failedAsync(const Id& resId) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
-    // the prepared resource may have been destroyed while it was loading
-    if (this->texturePool.Contains(resId)) {
-        switch (resId.Type) {
-            case GfxResourceType::Mesh:
+    switch (resId.Type) {
+        case GfxResourceType::Mesh:
+            // the prepared resource may have been destroyed while it was loading
+            if (this->meshPool.Contains(resId)) {
                 this->meshPool.UpdateState(resId, ResourceState::Failed);
-                break;
-                
-            case GfxResourceType::Texture:
+                return ResourceState::Failed;
+            }
+            break;
+            
+        case GfxResourceType::Texture:
+            // the prepared resource may have been destroyed while it was loading
+            if (this->texturePool.Contains(resId)) {
                 this->texturePool.UpdateState(resId, ResourceState::Failed);
-                break;
-                
-            default:
-                o_error("Invalid resource type for async creation!");
-                break;
-        }
-        return ResourceState::Failed;
+                return ResourceState::Failed;
+            }
+            break;
+            
+        default:
+            o_error("Invalid resource type for async creation!");
+            break;
     }
-    else {
-        return ResourceState::InvalidState;
-    }
+    // fallthrough: resource was already destroyed while still loading
+    return ResourceState::InvalidState;
 }
 
 
