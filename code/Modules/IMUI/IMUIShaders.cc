@@ -6,7 +6,7 @@
 
 namespace Oryol {
 namespace Shaders {
-const char* vs_100_src = 
+const char* vsIMUI_100_src = 
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
 "attribute vec4 position;\n"
@@ -20,7 +20,7 @@ const char* vs_100_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fs_100_src = 
+const char* fsIMUI_100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
@@ -31,7 +31,7 @@ const char* fs_100_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vs_120_src = 
+const char* vsIMUI_120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
@@ -46,7 +46,7 @@ const char* vs_120_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fs_120_src = 
+const char* fsIMUI_120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
@@ -57,7 +57,7 @@ const char* fs_120_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vs_150_src = 
+const char* vsIMUI_150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
@@ -72,7 +72,7 @@ const char* vs_150_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fs_150_src = 
+const char* fsIMUI_150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "#define _TEXTURE2D texture\n"
@@ -86,9 +86,9 @@ const char* fs_150_src =
 ;
 ProgramBundleSetup IMUIShader::CreateSetup() {
     ProgramBundleSetup setup("IMUIShader");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vs_100_src, fs_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vs_120_src, fs_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vs_150_src, fs_150_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsIMUI_100_src, fsIMUI_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsIMUI_120_src, fsIMUI_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsIMUI_150_src, fsIMUI_150_src);
     setup.AddUniform("ortho", Ortho);
     setup.AddTextureUniform("tex", Texture);
     return setup;
