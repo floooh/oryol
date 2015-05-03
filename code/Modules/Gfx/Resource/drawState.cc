@@ -9,22 +9,21 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 drawState::drawState() :
-mesh(nullptr),
-programBundle(nullptr) {
+prog(nullptr) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 drawState::~drawState() {
-    o_assert(nullptr == this->mesh);
-    o_assert(nullptr == this->programBundle);
+    o_assert(!this->msh.IsValid());
+    o_assert(nullptr == this->prog);
 }
 
 //------------------------------------------------------------------------------
 void
 drawState::Clear() {
-    this->mesh = nullptr;
-    this->programBundle = nullptr;
+    this->msh.Invalidate();
+    this->prog = nullptr;
     resourceBase::Clear();
 }
 

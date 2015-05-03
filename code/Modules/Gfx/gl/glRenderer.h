@@ -17,6 +17,7 @@
 namespace Oryol {
 namespace _priv {
 
+class meshPool;
 class displayMgr;
 class texture;
 class drawState;
@@ -31,7 +32,7 @@ public:
     ~glRenderer();
     
     /// setup the renderer
-    void setup();
+    void setup(meshPool* mshPool);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -117,6 +118,7 @@ private:
     void applyMesh(const mesh* msh, const programBundle* progBundle);
 
     bool valid;
+    meshPool* mshPool;
     #if ORYOL_MACOS // FIXME: should be a new 'ORYOL_GL_ISCOREPROFILE' define
     GLuint globalVAO;
     #endif

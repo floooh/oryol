@@ -18,7 +18,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     state = Memory::New<_state>();
     state->gfxSetup = setup;
     state->displayManager.SetupDisplay(setup);
-    state->renderer.setup();
+    state->renderer.setup(&state->resourceContainer.meshPool);
     state->resourceContainer.setup(setup, &state->renderer, &state->displayManager);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();

@@ -68,11 +68,9 @@ MeshLoadingApp::OnRunning() {
     this->updateCamera();
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    if (ResourceState::Valid == Gfx::QueryResourceInfo(this->mesh).State) {
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-        Gfx::Draw(0);
-    }
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+    Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

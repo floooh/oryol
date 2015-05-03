@@ -13,6 +13,7 @@
 #include "Gfx/Resource/programBundle.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/meshPool.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -79,6 +80,7 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glRenderer::glRenderer() :
 valid(false),
+mshPool(nullptr),
 #if ORYOL_MACOS
 globalVAO(0),
 #endif
@@ -113,11 +115,13 @@ glRenderer::~glRenderer() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setup() {
+glRenderer::setup(meshPool* mshPool_) {
     o_assert_dbg(!this->valid);
+    o_assert_dbg(mshPool_);
     o_assert_dbg(Core::IsMainThread());
     
     this->valid = true;
+    this->mshPool = mshPool_;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -155,6 +159,7 @@ glRenderer::discard() {
     this->globalVAO = 0;
     #endif
 
+    this->mshPool = nullptr;
     this->valid = false;
 }
 
@@ -335,16 +340,13 @@ void
 glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    
+    o_assert_dbg(nullptr != msh);
+
     // bind the mesh
-    if (nullptr == msh) {
-        this->invalidateMeshState();
-    }
-    else {
-        // FIXME: record and compare against a 'current mesh pointer' whether
-        // mesh state must be reapplied
-        const uint8 vaoIndex = msh->getActiveVAOSlot();
-        
+    // FIXME: record and compare against a 'current mesh pointer' whether
+    // mesh state must be reapplied
+    const uint8 vaoIndex = msh->getActiveVAOSlot();
+
     #if ORYOL_GL_USE_GETATTRIBLOCATION
         // FIXME: UNTESTED
         // This is the code path which uses glGetAttribLocation instead of
@@ -414,7 +416,6 @@ glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
             }
         }
     #endif
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -423,10 +424,11 @@ glRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != ds);
+    o_assert_dbg(this->mshPool);
     
     this->curDrawState = ds;
-    this->curProgramBundle = ds->programBundle;
-    this->curMesh = ds->mesh;
+    this->curProgramBundle = ds->prog;
+    this->curMesh = this->mshPool->Lookup(ds->msh); // NOTE: curMesh can be nullptr now if mesh still loading!
     
     const DrawStateSetup& setup = ds->Setup;
     if (setup.DepthStencilState != this->depthStencilState) {
@@ -438,9 +440,10 @@ glRenderer::applyDrawState(drawState* ds) {
     if (setup.RasterizerState != this->rasterizerState) {
         this->applyRasterizerState(setup.RasterizerState);
     }
-    programBundle* pb = ds->programBundle;
-    this->applyProgramBundle(pb, setup.ProgramSelectionMask);
-    this->applyMesh(ds->mesh, pb);
+    this->applyProgramBundle(this->curProgramBundle, setup.ProgramSelectionMask);
+    if (this->curMesh) {
+        this->applyMesh(this->curMesh, this->curProgramBundle);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -743,22 +746,23 @@ void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    ORYOL_GL_CHECK_ERROR();
-    
-    const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
-    if (indexType != IndexType::None) {
-        // indexed geometry
-        const int32 indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
+
+    if (this->curMesh) {
+        ORYOL_GL_CHECK_ERROR();
+        const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
+        if (indexType != IndexType::None) {
+            // indexed geometry
+            const int32 indexByteSize = IndexType::ByteSize(indexType);
+            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+            ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
+        }
+        else {
+            // non-indexed geometry
+            ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
+        }
+        ORYOL_GL_CHECK_ERROR();
     }
-    else {
-        // non-indexed geometry
-        ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
-    }
-    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -766,17 +770,18 @@ void
 glRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    
-    if (primGroupIndex >= this->curMesh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
+
+    if (this->curMesh) {
+        if (primGroupIndex >= this->curMesh->numPrimGroups) {
+            // this may happen if trying to render a placeholder which doesn't
+            // have as many materials as the original mesh, anyway, this isn't
+            // a serious error
+            return;
+        }
+        const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
+        this->draw(primGroup);
     }
-    const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
-    this->draw(primGroup);
 }
 
 //------------------------------------------------------------------------------
@@ -784,22 +789,23 @@ void
 glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    
-    ORYOL_GL_CHECK_ERROR();
-    const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
-    if (indexType != IndexType::None) {
-        // indexed geometry
-        const int32 indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
+
+    if (this->curMesh) {
+        ORYOL_GL_CHECK_ERROR();
+        const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
+        if (indexType != IndexType::None) {
+            // indexed geometry
+            const int32 indexByteSize = IndexType::ByteSize(indexType);
+            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+            glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
+        }
+        else {
+            // non-indexed geometry
+            glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
+        }
+        ORYOL_GL_CHECK_ERROR();
     }
-    else {
-        // non-indexed geometry
-        glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
-    }
-    ORYOL_GL_CHECK_ERROR();
 }
     
 //------------------------------------------------------------------------------
@@ -807,17 +813,18 @@ void
 glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(nullptr != this->curMesh);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    
-    if (primGroupIndex >= this->curMesh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
+
+    if (this->curMesh) {
+        if (primGroupIndex >= this->curMesh->numPrimGroups) {
+            // this may happen if trying to render a placeholder which doesn't
+            // have as many materials as the original mesh, anyway, this isn't
+            // a serious error
+            return;
+        }
+        const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
+        this->drawInstanced(primGroup, numInstances);
     }
-    const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
