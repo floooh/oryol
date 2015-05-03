@@ -39,6 +39,14 @@ public:
     bool operator!=(const ResourceLabel& rhs) const {
         return this->Value != rhs.Value;
     };
+    /// check if label has a valid value
+    bool IsValid() const {
+        return this->Value != Invalid;
+    };
+    /// invalidate the label
+    void Invalidate() {
+        this->Value = Invalid;
+    };
     /// label value
     uint32 Value;
 };
