@@ -6,7 +6,7 @@
 
 namespace Oryol {
 namespace Shaders {
-const char* vsText_100_src = 
+const char* vsDbgText_100_src = 
 "#define _POSITION gl_Position\n"
 "uniform vec2 glyphSize;\n"
 "attribute vec4 position;\n"
@@ -22,7 +22,7 @@ const char* vsText_100_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsText_100_src = 
+const char* fsDbgText_100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
@@ -33,7 +33,7 @@ const char* fsText_100_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vsText_120_src = 
+const char* vsDbgText_120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform vec2 glyphSize;\n"
@@ -50,7 +50,7 @@ const char* vsText_120_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsText_120_src = 
+const char* fsDbgText_120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
@@ -61,7 +61,7 @@ const char* fsText_120_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vsText_150_src = 
+const char* vsDbgText_150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform vec2 glyphSize;\n"
@@ -78,7 +78,7 @@ const char* vsText_150_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsText_150_src = 
+const char* fsDbgText_150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "#define _TEXTURE2D texture\n"
@@ -92,9 +92,9 @@ const char* fsText_150_src =
 ;
 ProgramBundleSetup TextShader::CreateSetup() {
     ProgramBundleSetup setup("TextShader");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsText_100_src, fsText_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsText_120_src, fsText_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsText_150_src, fsText_150_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsDbgText_100_src, fsDbgText_100_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsDbgText_120_src, fsDbgText_120_src);
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsDbgText_150_src, fsDbgText_150_src);
     setup.AddUniform("glyphSize", GlyphSize);
     setup.AddTextureUniform("tex", Texture);
     return setup;

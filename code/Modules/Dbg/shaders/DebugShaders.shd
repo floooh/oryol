@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 //  text vertex shader 
 //
-@vs vsText
+@vs vsDbgText
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display
 @in vec4 position   // x: cursorX, y: cursorY, z: fontX, w: fontY
 @in vec4 color0
@@ -24,7 +24,7 @@ void main() {
 //------------------------------------------------------------------------------
 //  text fragment shader
 //
-@fs fsText
+@fs fsDbgText
 @uniform sampler2D tex Texture
 @in vec2 uv
 @in vec4 color
@@ -34,5 +34,5 @@ void main() {
 @end
 
 @bundle TextShader
-@program vsText fsText
+@program vsDbgText fsDbgText
 @end
