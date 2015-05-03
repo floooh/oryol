@@ -1,6 +1,6 @@
 fips_begin_app(MeshLoading windowed)
     fips_files(MeshLoading.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets HTTP)
+    fips_deps(Assets HTTP Input IMUI)
     oryol_add_web_sample(MeshLoading "Load and render .omsh mesh file" "emscripten,pnacl" none "Gfx/MeshLoading/MeshLoading.cc")
 fips_end_app()
