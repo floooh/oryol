@@ -78,6 +78,11 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/Gfx/ResourceStress/none
   src: Gfx/ResourceStress/ResourceStress.cc
+- name: MeshViewer
+  desc: Load and render .omsh mesh files
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Gfx/MeshViewer/MeshViewer.jpg
+  src: Gfx/MeshViewer/MeshViewer.cc
 - name: HTTPClientSample
   desc: Low-level HTTP loading sample
   type: emscripten,pnack,android
