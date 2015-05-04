@@ -121,7 +121,7 @@ MeshViewerApp::OnInit() {
     style.Colors[ImGuiCol_ButtonActive] = defaultBlue;
 
     this->shaders[0] = Gfx::CreateResource(Shaders::Normals::CreateSetup());
-    this->shaders[1] = Gfx::CreateResource(Shaders::LambertVertex::CreateSetup());
+    this->shaders[1] = Gfx::CreateResource(Shaders::Lambert::CreateSetup());
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices
@@ -332,11 +332,11 @@ MeshViewerApp::applyVariables(int matIndex) {
             break;
         case Lambert:
             // Lambert shader
-            Gfx::ApplyVariable(Shaders::LambertVertex::ModelViewProjection, this->modelViewProj);
-            Gfx::ApplyVariable(Shaders::LambertVertex::Model, this->model);
-            Gfx::ApplyVariable(Shaders::LambertVertex::LightColor, this->lightColor * this->lightIntensity);
-            Gfx::ApplyVariable(Shaders::LambertVertex::LightDir, this->lightDir);
-            Gfx::ApplyVariable(Shaders::LambertVertex::MatDiffuse, this->materials[matIndex].diffuse);
+            Gfx::ApplyVariable(Shaders::Lambert::ModelViewProjection, this->modelViewProj);
+            Gfx::ApplyVariable(Shaders::Lambert::Model, this->model);
+            Gfx::ApplyVariable(Shaders::Lambert::LightColor, this->lightColor * this->lightIntensity);
+            Gfx::ApplyVariable(Shaders::Lambert::LightDir, this->lightDir);
+            Gfx::ApplyVariable(Shaders::Lambert::MatDiffuse, this->materials[matIndex].diffuse);
             break;
         default:
             o_error("Unknown shader index, FIXME!");

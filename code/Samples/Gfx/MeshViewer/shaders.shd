@@ -38,9 +38,9 @@ void main() {
 @end
 
 //------------------------------------------------------------------------------
-//  per-vertex lambert shader
+//  lambert shader
 //
-@vs lambertVertexVS
+@vs lambertVS
 @uniform mat4 mvp ModelViewProjection
 @uniform mat4 model Model
 @uniform vec3 lightDir LightDir
@@ -55,7 +55,7 @@ void main() {
 }
 @end
 
-@fs lambertVertexFS
+@fs lambertFS
 @use Util
 @uniform vec4 lightColor LightColor
 @uniform vec4 matDiffuse MatDiffuse
@@ -69,8 +69,8 @@ void main() {
 }
 @end
 
-@bundle LambertVertex
-@program lambertVertexVS lambertVertexFS
+@bundle Lambert
+@program lambertVS lambertFS
 @end
 
 
