@@ -26,16 +26,18 @@ private:
     void handleInput();
     void updateCamera();
     void drawUI();
+    void createMaterials();
     void loadMesh(const char* path);
+    void applyVariables(int materialIndex);
 
     int32 frameCount = 0;
-    ResourceLabel curResLabel;
+    ResourceLabel curMeshLabel;
     Id mesh;
-    Id drawState;
     MeshSetup curMeshSetup;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 modelViewProj;
+
     int32 curMeshIndex = 0;
     static const int32 numMeshes = 3;
     const char* meshNames[numMeshes] = {
@@ -48,10 +50,31 @@ private:
         "msh:opelblitz.omsh",
         "msh:teapot.omsh"
     };
+
+    static const int32 numShaders = 2;
+    const char* shaderNames[numShaders] = {
+        "Normals",
+        "Lambert"
+    };
+    enum {
+        Normals = 0,
+        Lambert,
+    };
+    Id shaders[numShaders];
+    ResourceLabel curMaterialLabel;
+    int numMaterials = 0;
+    struct {
+        int32 shaderIndex = 0;
+        Id drawState;
+        glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    } materials[MeshSetup::MaxNumPrimGroups];
+
     float camDist = 8.0f;
     glm::vec2 orbital = glm::vec2(glm::radians(25.0f), 0.0f);
     float camHeight = 1.0f;
     bool autoOrbit = true;
+
+    StringBuilder strBuilder;
 
     const float minCamDist = 1.0f;
     const float maxCamDist = 20.0f;
@@ -89,6 +112,8 @@ MeshViewerApp::OnInit() {
     style.Colors[ImGuiCol_ButtonHovered] = defaultBlue;
     style.Colors[ImGuiCol_ButtonActive] = defaultBlue;
 
+    this->shaders[0] = Gfx::CreateResource(Shaders::Normals::CreateSetup());
+    this->shaders[1] = Gfx::CreateResource(Shaders::Lambert::CreateSetup());
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices
@@ -110,9 +135,9 @@ MeshViewerApp::OnRunning() {
     this->drawUI();
 
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
-    for (int i = 0; i < this->curMeshSetup.NumPrimitiveGroups(); i++) {
+    for (int i = 0; i < this->numMaterials; i++) {
+        Gfx::ApplyDrawState(this->materials[i].drawState);
+        this->applyVariables(i);
         Gfx::Draw(i);
     }
     ImGui::Render();
@@ -196,7 +221,38 @@ MeshViewerApp::drawUI() {
         this->orbital = glm::vec2(0.0f, 0.0f);
         this->autoOrbit = false;
     }
+    ImGui::Separator();
+    ImGui::Text("Materials:\n");
+    for (int i = 0; i < this->numMaterials; i++) {
+        this->strBuilder.Format(32, "##mat%d", i);
+        if (ImGui::Combo(strBuilder.AsCStr(), &this->materials[i].shaderIndex, this->shaderNames, numShaders)) {
+            this->createMaterials();
+        }
+        if (Lambert == this->materials[i].shaderIndex) {
+            this->strBuilder.Format(32, "diffuse##%d", i);
+            ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->materials[i].diffuse.x);
+        }
+    }
     ImGui::End();
+}
+
+//-----------------------------------------------------------------------------
+void
+MeshViewerApp::createMaterials() {
+    o_assert_dbg(this->mesh.IsValid());
+    if (this->curMaterialLabel.IsValid()) {
+        Gfx::DestroyResources(this->curMaterialLabel);
+    }
+
+    this->curMaterialLabel = Gfx::PushResourceLabel();
+    for (int i = 0; i < this->numMaterials; i++) {
+        auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, this->shaders[this->materials[i].shaderIndex]);
+        dss.DepthStencilState.DepthWriteEnabled = true;
+        dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+        dss.RasterizerState.CullFaceEnabled = true;
+        this->materials[i].drawState = Gfx::CreateResource(dss);
+    }
+    Gfx::PopResourceLabel();
 }
 
 //-----------------------------------------------------------------------------
@@ -204,22 +260,38 @@ void
 MeshViewerApp::loadMesh(const char* path) {
 
     // unload current mesh
-    if (this->curResLabel.IsValid()) {
-        Gfx::DestroyResources(this->curResLabel);
+    if (this->curMeshLabel.IsValid()) {
+        Gfx::DestroyResources(this->curMeshLabel);
         this->curMeshSetup = MeshSetup();
     }
 
     // load new mesh, use 'onloaded' callback to capture the mesh setup
     // object of the loaded mesh
-    this->curResLabel = Gfx::PushResourceLabel();
+    this->numMaterials = 0;
+    this->curMeshLabel = Gfx::PushResourceLabel();
     this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), 0, [this](MeshSetup& setup) {
         this->curMeshSetup = setup;
+        this->numMaterials = setup.NumPrimitiveGroups();
+        this->createMaterials();
     }));
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, prog);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
     Gfx::PopResourceLabel();
+}
+
+//-----------------------------------------------------------------------------
+void
+MeshViewerApp::applyVariables(int matIndex) {
+    switch (this->materials[matIndex].shaderIndex) {
+        case Normals:
+            // Normals shader
+            Gfx::ApplyVariable(Shaders::Normals::ModelViewProjection, this->modelViewProj);
+            break;
+        case Lambert:
+            // Lambert shader
+            Gfx::ApplyVariable(Shaders::Lambert::ModelViewProjection, this->modelViewProj);
+            Gfx::ApplyVariable(Shaders::Lambert::Diffuse, this->materials[matIndex].diffuse);
+            break;
+        default:
+            o_error("Unknown shader index, FIXME!");
+            break;
+    }
 }
