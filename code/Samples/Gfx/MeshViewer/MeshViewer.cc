@@ -25,6 +25,7 @@ public:
 private:
     void handleInput();
     void updateCamera();
+    void updateLight();
     void drawUI();
     void createMaterials();
     void loadMesh(const char* path);
@@ -36,6 +37,7 @@ private:
     MeshSetup curMeshSetup;
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 model;
     glm::mat4 modelViewProj;
 
     int32 curMeshIndex = 0;
@@ -70,9 +72,15 @@ private:
     } materials[MeshSetup::MaxNumPrimGroups];
 
     float camDist = 8.0f;
-    glm::vec2 orbital = glm::vec2(glm::radians(25.0f), 0.0f);
+    glm::vec2 camOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
     float camHeight = 1.0f;
-    bool autoOrbit = true;
+    bool camAutoOrbit = true;
+
+    glm::vec2 lightOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
+    glm::vec3 lightDir;
+    glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    float lightIntensity = 1.0f;
+    bool lightAutoOrbit = false;
 
     StringBuilder strBuilder;
 
@@ -113,7 +121,7 @@ MeshViewerApp::OnInit() {
     style.Colors[ImGuiCol_ButtonActive] = defaultBlue;
 
     this->shaders[0] = Gfx::CreateResource(Shaders::Normals::CreateSetup());
-    this->shaders[1] = Gfx::CreateResource(Shaders::Lambert::CreateSetup());
+    this->shaders[1] = Gfx::CreateResource(Shaders::LambertVertex::CreateSetup());
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices
@@ -132,6 +140,7 @@ MeshViewerApp::OnRunning() {
     this->frameCount++;
     this->handleInput();
     this->updateCamera();
+    this->updateLight();
     this->drawUI();
 
     Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -158,12 +167,23 @@ MeshViewerApp::OnCleanup() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::handleInput() {
-    if (!ImGui::IsMouseHoveringAnyWindow()) {
+
+    // dragging flag on/off
+    static bool dragging = false;
+    if (ImGui::IsMouseHoveringAnyWindow() && ImGui::IsMouseDragging()) {
+        dragging = true;
+    }
+    if (!ImGui::IsMouseDragging()) {
+        dragging = false;
+    }
+
+    // rotate camera with mouse if not UI-dragging
+    if (!(dragging || ImGui::IsMouseHoveringAnyWindow())) {
         const Mouse& mouse = Input::Mouse();
         if (mouse.Attached) {
             if (mouse.ButtonPressed(Mouse::LMB)) {
-                this->orbital.y -= mouse.Movement.x * 0.01f;
-                this->orbital.x = glm::clamp(this->orbital.x + mouse.Movement.y * 0.01f, glm::radians(minLatitude), glm::radians(maxLatitude));            
+                this->camOrbital.y -= mouse.Movement.x * 0.01f;
+                this->camOrbital.x = glm::clamp(this->camOrbital.x + mouse.Movement.y * 0.01f, glm::radians(minLatitude), glm::radians(maxLatitude));
             }
             this->camDist = glm::clamp(this->camDist + mouse.Scroll.y * 0.1f, minCamDist, maxCamDist);
         }
@@ -173,16 +193,28 @@ MeshViewerApp::handleInput() {
 //------------------------------------------------------------------------------
 void
 MeshViewerApp::updateCamera() {
-    if (this->autoOrbit) {
-        this->orbital.y += 0.01f;
-        if (this->orbital.y > glm::radians(360.0f)) {
-            this->orbital.y = 0.0f;
+    if (this->camAutoOrbit) {
+        this->camOrbital.y += 0.01f;
+        if (this->camOrbital.y > glm::radians(360.0f)) {
+            this->camOrbital.y = 0.0f;
         }
     }
-    glm::vec3 eucl = glm::euclidean(this->orbital) * this->camDist;
+    glm::vec3 pos = glm::euclidean(this->camOrbital) * this->camDist;
     glm::vec3 poi  = glm::vec3(0.0f, this->camHeight, 0.0f);
-    this->view = glm::lookAt(eucl + poi, poi, glm::vec3(0.0f, 1.0f, 0.0f));
+    this->view = glm::lookAt(pos + poi, poi, glm::vec3(0.0f, 1.0f, 0.0f));
     this->modelViewProj = this->proj * this->view;
+}
+
+//-----------------------------------------------------------------------------
+void
+MeshViewerApp::updateLight() {
+    if (this->lightAutoOrbit) {
+        this->lightOrbital.y += 0.01f;
+        if (this->lightOrbital.y > glm::radians(360.0f)) {
+            this->lightOrbital.y = 0.0f;
+        }
+    }
+    this->lightDir = glm::euclidean(this->lightOrbital);
 }
 
 //-----------------------------------------------------------------------------
@@ -196,8 +228,7 @@ MeshViewerApp::drawUI() {
         default: state = "Invalid"; break;
     }
     IMUI::NewFrame();
-    ImGui::Begin("Mesh Viewer", nullptr, ImVec2(200, 300), 0.25f, ImGuiWindowFlags_NoResize|ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("Mesh:\n");
+    ImGui::Begin("Mesh Viewer", nullptr, ImVec2(200, 300), 0.25f, 0);
     if (ImGui::Combo("##mesh", (int*) &this->curMeshIndex, this->meshNames, numMeshes)) {
         this->loadMesh(this->meshPaths[this->curMeshIndex]);
     }
@@ -208,29 +239,43 @@ MeshViewerApp::drawUI() {
             ImGui::Text("%d: %d triangles\n", i, this->curMeshSetup.PrimitiveGroup(i).NumElements / 3);
         }
     }
-    ImGui::Separator();
-    ImGui::Text("Camera:\n");
-    ImGui::SliderFloat("Dist", &this->camDist, minCamDist, maxCamDist);
-    ImGui::SliderFloat("Height", &this->camHeight, minCamHeight, maxCamHeight);
-    ImGui::SliderAngle("Long", &this->orbital.y, 0, 360.0f);
-    ImGui::SliderAngle("Lat", &this->orbital.x, minLatitude, maxLatitude);
-    ImGui::Checkbox("Auto Orbit", &this->autoOrbit);
-    if (ImGui::Button("Reset")) {
-        this->camDist = 8.0f;
-        this->camHeight = 1.0f;
-        this->orbital = glm::vec2(0.0f, 0.0f);
-        this->autoOrbit = false;
-    }
-    ImGui::Separator();
-    ImGui::Text("Materials:\n");
-    for (int i = 0; i < this->numMaterials; i++) {
-        this->strBuilder.Format(32, "##mat%d", i);
-        if (ImGui::Combo(strBuilder.AsCStr(), &this->materials[i].shaderIndex, this->shaderNames, numShaders)) {
-            this->createMaterials();
+    if (ImGui::CollapsingHeader("Camera")) {
+        ImGui::SliderFloat("Dist##cam", &this->camDist, minCamDist, maxCamDist);
+        ImGui::SliderFloat("Height##cam", &this->camHeight, minCamHeight, maxCamHeight);
+        ImGui::SliderAngle("Long##cam", &this->camOrbital.y, 0.0f, 360.0f);
+        ImGui::SliderAngle("Lat##cam", &this->camOrbital.x, minLatitude, maxLatitude);
+        ImGui::Checkbox("Auto Orbit##cam", &this->camAutoOrbit);
+        if (ImGui::Button("Reset##cam")) {
+            this->camDist = 8.0f;
+            this->camHeight = 1.0f;
+            this->camOrbital = glm::vec2(0.0f, 0.0f);
+            this->camAutoOrbit = false;
         }
-        if (Lambert == this->materials[i].shaderIndex) {
-            this->strBuilder.Format(32, "diffuse##%d", i);
-            ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->materials[i].diffuse.x);
+    }
+    if (ImGui::CollapsingHeader("Light")) {
+        ImGui::SliderAngle("Long##light", &this->lightOrbital.y, 0.0f, 360.0f);
+        ImGui::SliderAngle("Lat##light", &this->lightOrbital.x, minLatitude, maxLatitude);
+        ImGui::ColorEdit3("Color##light", &this->lightColor.x);
+        ImGui::SliderFloat("Intensity##light", &this->lightIntensity, 0.0f, 5.0f);
+        ImGui::Checkbox("Auto Orbit##light", &this->lightAutoOrbit);
+        if (ImGui::Button("Reset##light")) {
+            this->lightOrbital = glm::vec2(glm::radians(25.0f), 0.0f);
+            this->lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            this->lightIntensity = 1.0f;
+            this->lightAutoOrbit = false;
+        }
+    }
+    for (int i = 0; i < this->numMaterials; i++) {
+        this->strBuilder.Format(32, "Material %d", i);
+        if (ImGui::CollapsingHeader(this->strBuilder.AsCStr())) {
+            this->strBuilder.Format(32, "##mat%d", i);
+            if (ImGui::Combo(strBuilder.AsCStr(), &this->materials[i].shaderIndex, this->shaderNames, numShaders)) {
+                this->createMaterials();
+            }
+            if (Lambert == this->materials[i].shaderIndex) {
+                this->strBuilder.Format(32, "diffuse##%d", i);
+                ImGui::ColorEdit3(this->strBuilder.AsCStr(), &this->materials[i].diffuse.x);
+            }
         }
     }
     ImGui::End();
@@ -287,8 +332,11 @@ MeshViewerApp::applyVariables(int matIndex) {
             break;
         case Lambert:
             // Lambert shader
-            Gfx::ApplyVariable(Shaders::Lambert::ModelViewProjection, this->modelViewProj);
-            Gfx::ApplyVariable(Shaders::Lambert::Diffuse, this->materials[matIndex].diffuse);
+            Gfx::ApplyVariable(Shaders::LambertVertex::ModelViewProjection, this->modelViewProj);
+            Gfx::ApplyVariable(Shaders::LambertVertex::Model, this->model);
+            Gfx::ApplyVariable(Shaders::LambertVertex::LightColor, this->lightColor * this->lightIntensity);
+            Gfx::ApplyVariable(Shaders::LambertVertex::LightDir, this->lightDir);
+            Gfx::ApplyVariable(Shaders::LambertVertex::MatDiffuse, this->materials[matIndex].diffuse);
             break;
         default:
             o_error("Unknown shader index, FIXME!");

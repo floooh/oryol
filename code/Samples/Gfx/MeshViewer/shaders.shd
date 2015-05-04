@@ -4,6 +4,15 @@
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+//  common utility functions
+//
+@block Util 
+vec4 gamma(vec4 c) {
+    return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);
+}
+@end
+
+//------------------------------------------------------------------------------
 //  normal visualization shader
 //
 @vs normalsVS
@@ -29,29 +38,39 @@ void main() {
 @end
 
 //------------------------------------------------------------------------------
-//  lambert shader
+//  per-vertex lambert shader
 //
-@vs lambertVS
+@vs lambertVertexVS
 @uniform mat4 mvp ModelViewProjection
+@uniform mat4 model Model
+@uniform vec3 lightDir LightDir
 @in vec4 position
-@in vec4 normal
-@out vec4 nrm
+@in vec3 normal
+@out vec3 L
+@out vec3 N
 void main() {
     $position = mvp * position;
-    nrm = mvp * normal;
+    L = lightDir;
+    N = vec4(model * vec4(normal, 0.0)).xyz;
 }
 @end
 
-@fs lambertFS
-@in vec4 nrm
-@uniform vec4 diffuse Diffuse
+@fs lambertVertexFS
+@use Util
+@uniform vec4 lightColor LightColor
+@uniform vec4 matDiffuse MatDiffuse
+@in vec3 L
+@in vec3 N
 void main() {
-    $color = diffuse;
+    vec3 l = normalize(L);
+    vec3 n = normalize(N);
+    float n_dot_l = clamp(dot(n, l), 0.0, 1.0);
+    $color = gamma(vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0));
 }
 @end
 
-@bundle Lambert
-@program lambertVS lambertFS
+@bundle LambertVertex
+@program lambertVertexVS lambertVertexFS
 @end
 
 
