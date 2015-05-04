@@ -15,6 +15,18 @@ namespace Shaders {
         static const int32 MatDiffuse = 4;
         static ProgramBundleSetup CreateSetup();
     };
+    class Phong {
+    public:
+        static const int32 ModelViewProjection = 0;
+        static const int32 Model = 1;
+        static const int32 EyePos = 2;
+        static const int32 LightDir = 3;
+        static const int32 LightColor = 4;
+        static const int32 MatDiffuse = 5;
+        static const int32 MatSpecular = 6;
+        static const int32 MatSpecularPower = 7;
+        static ProgramBundleSetup CreateSetup();
+    };
     class Normals {
     public:
         static const int32 ModelViewProjection = 0;
