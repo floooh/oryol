@@ -59,6 +59,7 @@ const char* phongFS_100_src =
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
 "uniform vec4 matSpecular;\n"
+"uniform bool gammaCorrect;\n"
 "uniform float matSpecularPower;\n"
 "varying vec3 P;\n"
 "varying vec3 N;\n"
@@ -69,13 +70,17 @@ const char* phongFS_100_src =
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
 "vec3 v = normalize(eyePos - P);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"vec3 diffuse = matDiffuse.xyz * n_dot_l;\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
 "vec3 r = reflect(-l, n);\n"
-"float r_dot_v = clamp(dot(r, v), 0.0, 1.0);\n"
-"vec3 specular = matSpecular.xyz * pow(r_dot_v, matSpecularPower);\n"
-"vec3 col = lightColor.xyz * (specular + diffuse);\n"
-"_COLOR = gamma(vec4(col, 1.0));\n"
+"float r_dot_v = max(dot(r, v), 0.0);\n"
+"float diff = n_dot_l;\n"
+"float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;\n"
+"vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"} else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 const char* lambertFS_100_src = 
@@ -84,6 +89,7 @@ const char* lambertFS_100_src =
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
+"uniform bool gammaCorrect;\n"
 "varying vec3 N;\n"
 "vec4 gamma(vec4 c) {\n"
 "return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);\n"
@@ -91,8 +97,14 @@ const char* lambertFS_100_src =
 "void main() {\n"
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"_COLOR = gamma(vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0));\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
+"vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"}\n"
+"else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 const char* normalsVS_120_src = 
@@ -151,6 +163,7 @@ const char* phongFS_120_src =
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
 "uniform vec4 matSpecular;\n"
+"uniform bool gammaCorrect;\n"
 "uniform float matSpecularPower;\n"
 "varying vec3 P;\n"
 "varying vec3 N;\n"
@@ -161,13 +174,17 @@ const char* phongFS_120_src =
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
 "vec3 v = normalize(eyePos - P);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"vec3 diffuse = matDiffuse.xyz * n_dot_l;\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
 "vec3 r = reflect(-l, n);\n"
-"float r_dot_v = clamp(dot(r, v), 0.0, 1.0);\n"
-"vec3 specular = matSpecular.xyz * pow(r_dot_v, matSpecularPower);\n"
-"vec3 col = lightColor.xyz * (specular + diffuse);\n"
-"_COLOR = gamma(vec4(col, 1.0));\n"
+"float r_dot_v = max(dot(r, v), 0.0);\n"
+"float diff = n_dot_l;\n"
+"float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;\n"
+"vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"} else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 const char* lambertFS_120_src = 
@@ -176,6 +193,7 @@ const char* lambertFS_120_src =
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
+"uniform bool gammaCorrect;\n"
 "varying vec3 N;\n"
 "vec4 gamma(vec4 c) {\n"
 "return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);\n"
@@ -183,8 +201,14 @@ const char* lambertFS_120_src =
 "void main() {\n"
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"_COLOR = gamma(vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0));\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
+"vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"}\n"
+"else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 const char* normalsVS_150_src = 
@@ -244,6 +268,7 @@ const char* phongFS_150_src =
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
 "uniform vec4 matSpecular;\n"
+"uniform bool gammaCorrect;\n"
 "uniform float matSpecularPower;\n"
 "in vec3 P;\n"
 "in vec3 N;\n"
@@ -255,13 +280,17 @@ const char* phongFS_150_src =
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
 "vec3 v = normalize(eyePos - P);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"vec3 diffuse = matDiffuse.xyz * n_dot_l;\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
 "vec3 r = reflect(-l, n);\n"
-"float r_dot_v = clamp(dot(r, v), 0.0, 1.0);\n"
-"vec3 specular = matSpecular.xyz * pow(r_dot_v, matSpecularPower);\n"
-"vec3 col = lightColor.xyz * (specular + diffuse);\n"
-"_COLOR = gamma(vec4(col, 1.0));\n"
+"float r_dot_v = max(dot(r, v), 0.0);\n"
+"float diff = n_dot_l;\n"
+"float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;\n"
+"vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"} else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 const char* lambertFS_150_src = 
@@ -270,6 +299,7 @@ const char* lambertFS_150_src =
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
 "uniform vec4 matDiffuse;\n"
+"uniform bool gammaCorrect;\n"
 "in vec3 N;\n"
 "out vec4 _FragColor;\n"
 "vec4 gamma(vec4 c) {\n"
@@ -278,8 +308,14 @@ const char* lambertFS_150_src =
 "void main() {\n"
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
-"float n_dot_l = clamp(dot(n, l), 0.0, 1.0);\n"
-"_COLOR = gamma(vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0));\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
+"vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"}\n"
+"else {\n"
+"_COLOR = col;\n"
+"}\n"
 "}\n"
 ;
 ProgramBundleSetup Lambert::CreateSetup() {
@@ -292,6 +328,7 @@ ProgramBundleSetup Lambert::CreateSetup() {
     setup.AddUniform("lightDir", LightDir);
     setup.AddUniform("lightColor", LightColor);
     setup.AddUniform("matDiffuse", MatDiffuse);
+    setup.AddUniform("gammaCorrect", GammaCorrect);
     return setup;
 }
 ProgramBundleSetup Phong::CreateSetup() {
@@ -306,6 +343,7 @@ ProgramBundleSetup Phong::CreateSetup() {
     setup.AddUniform("lightColor", LightColor);
     setup.AddUniform("matDiffuse", MatDiffuse);
     setup.AddUniform("matSpecular", MatSpecular);
+    setup.AddUniform("gammaCorrect", GammaCorrect);
     setup.AddUniform("matSpecularPower", MatSpecularPower);
     return setup;
 }

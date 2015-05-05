@@ -13,6 +13,7 @@ namespace Shaders {
         static const int32 LightDir = 2;
         static const int32 LightColor = 3;
         static const int32 MatDiffuse = 4;
+        static const int32 GammaCorrect = 5;
         static ProgramBundleSetup CreateSetup();
     };
     class Phong {
@@ -24,7 +25,8 @@ namespace Shaders {
         static const int32 LightColor = 4;
         static const int32 MatDiffuse = 5;
         static const int32 MatSpecular = 6;
-        static const int32 MatSpecularPower = 7;
+        static const int32 GammaCorrect = 7;
+        static const int32 MatSpecularPower = 8;
         static ProgramBundleSetup CreateSetup();
     };
     class Normals {

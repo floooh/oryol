@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 //  common utility functions
 //
-@block Util 
+@block Util
 vec4 gamma(vec4 c) {
     return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);
 }
@@ -57,12 +57,19 @@ void main() {
 @uniform vec3 lightDir LightDir     // light dir in global space
 @uniform vec4 lightColor LightColor
 @uniform vec4 matDiffuse MatDiffuse
+@uniform bool gammaCorrect GammaCorrect
 @in vec3 N
 void main() {
     vec3 l = lightDir;
     vec3 n = normalize(N);
-    float n_dot_l = clamp(dot(n, l), 0.0, 1.0);
-    $color = gamma(vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0));
+    float n_dot_l = max(dot(n, l), 0.0);
+    vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);
+    if (gammaCorrect) {
+        $color = gamma(col);
+    }
+    else {
+        $color = col;
+    }
 }
 @end
 
@@ -94,6 +101,7 @@ void main() {
 @uniform vec4 lightColor LightColor
 @uniform vec4 matDiffuse MatDiffuse
 @uniform vec4 matSpecular MatSpecular
+@uniform bool gammaCorrect GammaCorrect
 @uniform float matSpecularPower MatSpecularPower
 @in vec3 P
 @in vec3 N
@@ -101,13 +109,18 @@ void main() {
     vec3 l = lightDir;
     vec3 n = normalize(N);
     vec3 v = normalize(eyePos - P);
-    float n_dot_l = clamp(dot(n, l), 0.0, 1.0);
-    vec3 diffuse = matDiffuse.xyz * n_dot_l;
+    float n_dot_l = max(dot(n, l), 0.0);
     vec3 r = reflect(-l, n);
-    float r_dot_v = clamp(dot(r, v), 0.0, 1.0);
-    vec3 specular = matSpecular.xyz * pow(r_dot_v, matSpecularPower);
-    vec3 col = lightColor.xyz * (specular + diffuse);
-    $color = gamma(vec4(col, 1.0));
+    float r_dot_v = max(dot(r, v), 0.0);
+
+    float diff = n_dot_l;
+    float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;
+    vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);
+    if (gammaCorrect) {
+        $color = gamma(col);
+    } else {
+        $color = col;
+    }
 }
 @end
 
