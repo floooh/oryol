@@ -21,7 +21,6 @@ const char* phongVS_100_src =
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
-"uniform vec3 eyePos;\n"
 "attribute vec4 position;\n"
 "attribute vec4 normal;\n"
 "varying vec3 N;\n"
@@ -113,7 +112,6 @@ const char* phongVS_120_src =
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
-"uniform vec3 eyePos;\n"
 "attribute vec4 position;\n"
 "attribute vec4 normal;\n"
 "varying vec3 N;\n"
@@ -206,7 +204,6 @@ const char* phongVS_150_src =
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
-"uniform vec3 eyePos;\n"
 "in vec4 position;\n"
 "in vec4 normal;\n"
 "out vec3 N;\n"
@@ -304,8 +301,8 @@ ProgramBundleSetup Phong::CreateSetup() {
     setup.AddProgramFromSources(0, ShaderLang::GLSL150, phongVS_150_src, phongFS_150_src);
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddUniform("model", Model);
-    setup.AddUniform("eyePos", EyePos);
     setup.AddUniform("lightDir", LightDir);
+    setup.AddUniform("eyePos", EyePos);
     setup.AddUniform("lightColor", LightColor);
     setup.AddUniform("matDiffuse", MatDiffuse);
     setup.AddUniform("matSpecular", MatSpecular);

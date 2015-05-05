@@ -76,7 +76,6 @@ void main() {
 @vs phongVS
 @uniform mat4 mvp ModelViewProjection
 @uniform mat4 model Model
-@uniform vec3 eyePos EyePos         // eye pos in global space
 @in vec4 position
 @in vec4 normal
 @out vec3 N
