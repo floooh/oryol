@@ -11,6 +11,16 @@ OryolClassImpl(HTTPFileSystem);
 //------------------------------------------------------------------------------
 HTTPFileSystem::HTTPFileSystem() {
     this->httpClient = HTTPClient::Create();
+
+    // add standard request headers:
+    //  User-Agent: need a 'standard' user-agent, otherwise some HTTP servers
+    //              won't accept Connection: keep-alive
+    //  Connection: keep-alive, don't open/close the connection all the time
+    //  Accept-Encoding:    gzip, deflate
+    //
+    this->requestHeaders.Add("User-Agent", "Mozilla/5.0");
+    this->requestHeaders.Add("Connection", "keep-alive");
+    this->requestHeaders.Add("Accept-Encoding", "gzip, deflate");
 }
 
 //------------------------------------------------------------------------------
@@ -29,11 +39,14 @@ HTTPFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
         httpReq->SetURL(msg->GetURL());
         httpReq->SetIoRequest(msg);
         if (msg->GetEndOffset() != 0) {
-            Map<String,String> requestHeaders;
+            Map<String,String> reqHeaders = this->requestHeaders;
             // need to add a Range header
             this->stringBuilder.Format(64, "bytes=%d-%d", msg->GetStartOffset(), msg->GetEndOffset());
-            requestHeaders.Add("Range", this->stringBuilder.GetString()); 
-            httpReq->SetRequestHeaders(requestHeaders);
+            reqHeaders.Add("Range", this->stringBuilder.GetString());
+            httpReq->SetRequestHeaders(reqHeaders);
+        }
+        else {
+            httpReq->SetRequestHeaders(this->requestHeaders);
         }
         this->httpClient->Put(httpReq);
     }

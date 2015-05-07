@@ -8,6 +8,7 @@
     
     @todo: HTTPFileSystem description
 */
+#include "Core/Containers/Map.h"
 #include "IO/FS/FileSystem.h"
 #include "HTTP/HTTPProtocol.h"
 #include "HTTP/HTTPClient.h"
@@ -33,6 +34,7 @@ public:
 private:
     StringBuilder stringBuilder;
     Ptr<HTTPClient> httpClient;
+    Map<String, String> requestHeaders;
 };
     
 } // namespace Oryol
