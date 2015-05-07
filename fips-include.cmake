@@ -1,5 +1,14 @@
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
+if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
+    option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" ON)
+else() 
+    option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" OFF)
+endif()
+
+if (ORYOL_USE_LIBCURL)
+    add_definitions(-DORYOL_USE_LIBCURL=1)
+endif()
 
 # for TurboBadger UI support, override the search path for the 
 # tb_config.h overriden header file

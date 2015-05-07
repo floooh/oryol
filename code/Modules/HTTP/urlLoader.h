@@ -6,7 +6,13 @@
     @brief private: processes a HTTP request and returns HTTP response    
     @see HTTPClient
 */
-#if ORYOL_OSX
+#if ORYOL_USE_LIBCURL
+#include "HTTP/curl/curlURLLoader.h"
+namespace Oryol {
+namespace _priv {
+class urlLoader : public curlURLLoader {};
+} }
+#elif ORYOL_OSX
 #include "HTTP/osx/osxURLLoader.h"
 namespace Oryol {
 namespace _priv {
@@ -17,12 +23,6 @@ class urlLoader : public osxURLLoader {};
 namespace Oryol {
 namespace _priv {
 class urlLoader : public winURLLoader {};
-} }
-#elif (ORYOL_LINUX || ORYOL_ANDROID)
-#include "HTTP/curl/curlURLLoader.h"
-namespace Oryol {
-namespace _priv {
-class urlLoader : public curlURLLoader {};
 } }
 #elif ORYOL_EMSCRIPTEN
 #include "HTTP/emsc/emscURLLoader.h"
