@@ -43,23 +43,10 @@ private:
 
     int32 curMeshIndex = 0;
     static const int32 numMeshes = 3;
-    const char* meshNames[numMeshes] = {
-        "Tiger",
-        "Blitz",
-        "Teapot"
-    };
-    const char* meshPaths[numMeshes] = {
-        "msh:tiger.omsh",
-        "msh:opelblitz.omsh",
-        "msh:teapot.omsh"
-    };
-
+    static const char* meshNames[numMeshes];
+    static const char* meshPaths[numMeshes];
     static const int32 numShaders = 3;
-    const char* shaderNames[numShaders] = {
-        "Normals",
-        "Lambert",
-        "Phong"
-    };
+    static const char* shaderNames[numShaders];
     enum {
         Normals = 0,
         Lambert,
@@ -68,7 +55,7 @@ private:
     Id shaders[numShaders];
     ResourceLabel curMaterialLabel;
     int numMaterials = 0;
-    struct {
+    struct Material {
         int32 shaderIndex = Phong;
         Id drawState;
         glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
@@ -102,6 +89,23 @@ private:
 };
 OryolMain(MeshViewerApp);
 
+const char* MeshViewerApp::meshNames[numMeshes] = {
+    "Tiger",
+    "Blitz",
+    "Teapot"
+};
+const char* MeshViewerApp::meshPaths[numMeshes] = {
+    "msh:tiger.omsh",
+    "msh:opelblitz.omsh",
+    "msh:teapot.omsh"
+};
+
+const char* MeshViewerApp::shaderNames[numShaders] = {
+    "Normals",
+    "Lambert",
+    "Phong"
+};
+
 //-----------------------------------------------------------------------------
 AppState::Code
 MeshViewerApp::OnInit() {
@@ -109,7 +113,7 @@ MeshViewerApp::OnInit() {
     // setup IO system
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("msh:", "http://localhost:8000/");
+    ioSetup.Assigns.Add("msh:", ORYOL_SAMPLE_URL);
     IO::Setup(ioSetup);
 
     // setup rendering and input system
