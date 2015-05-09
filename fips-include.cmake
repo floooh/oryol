@@ -25,6 +25,12 @@ if (FIPS_USE_VLD)
     add_definitions(-DORYOL_USE_VLD=1)
 endif()
 
+# use OpenAL?
+if (FIPS_OSX OR FIPS_EMSCRIPTEN)
+    set(ORYOL_OPENAL 1)
+else()
+    set(ORYOL_OPENAL 0)
+endif()
 
 # POSIX platforms
 if (FIPS_POSIX)
@@ -84,6 +90,11 @@ if (ORYOL_OPENGL)
     if (ORYOL_OPENGL_CORE_PROFILE)
         add_definitions(-DORYOL_OPENGL_CORE_PROFILE=1)
     endif()
+endif()
+
+# OpenAL defines
+if (ORYOL_OPENAL)
+    add_definitions(-DORYOL_OPENAL=1)
 endif()
 
 # misc defines
