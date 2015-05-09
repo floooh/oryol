@@ -8,7 +8,6 @@
 #include "Resource/Core/resourceBase.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include "Gfx/Setup/TextureSetup.h"
-#include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {

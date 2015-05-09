@@ -5,14 +5,12 @@
     @ingroup _priv
     @brief private: base class for platform-specific mesh implementations
 */
-#include "Core/Assertion.h"
-#include "Core/Containers/StaticArray.h"
 #include "Resource/Core/resourceBase.h"
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/Attrs/VertexBufferAttrs.h"
 #include "Gfx/Attrs/IndexBufferAttrs.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {

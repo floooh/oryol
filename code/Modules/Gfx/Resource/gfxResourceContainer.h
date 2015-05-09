@@ -76,7 +76,7 @@ public:
     /// lookup draw-state object
     _priv::drawState* lookupDrawState(const Id& resId);
 
-    /// per-frame update (update resource pools and pending loader
+    /// per-frame update (update resource pools and pending loaders)
     void update();
     
     class _priv::renderer* renderer;
