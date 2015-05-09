@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @defgroup Gfx Gfx
-    @brief 3D rendering
+    @brief low-level 3D rendering module
 
     @class Oryol::Gfx
     @ingroup Gfx
@@ -11,7 +11,7 @@
 #include "Core/RunLoop.h"
 #include "Gfx/Core/displayMgr.h"
 #include "IO/Stream/Stream.h"
-#include "Resource/GfxResourceContainer.h"
+#include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
@@ -117,7 +117,7 @@ public:
     static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)
-    static GfxResourceContainer& resource();
+    static _priv::gfxResourceContainer& resource();
 
 private:
     struct _state {
@@ -125,7 +125,7 @@ private:
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::displayMgr displayManager;
         class _priv::renderer renderer;
-        GfxResourceContainer resourceContainer;
+        _priv::gfxResourceContainer resourceContainer;
     };
     static _state* state;
 };

@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::panDetector
+    @ingroup _priv
     @brief panning gesture detector
 */
 #include "Input/touch/touchEvent.h"

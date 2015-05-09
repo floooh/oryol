@@ -1,8 +1,11 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Assets Assets
+    @brief asset creation and loading umbrella module
+
     @class Oryol::MeshBuilder
-    @ingroup Asset
+    @ingroup Assets
     @brief build mesh data programmatically
     
     The MeshBuilder class simplifies creating mesh data from scratch with

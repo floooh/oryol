@@ -42,7 +42,7 @@ TBUI::DoAfter(const URL& url, DoAfterFunc doAfterFunc) {
     // FIXME: we should only load resources that are not currently loading
     state->ioQueue.Add(url, [doAfterFunc](const Ptr<Stream>& stream) {
         o_assert_dbg(IsValid());
-        state->resourceContainer.Add(stream);
+        state->resourceContainer.add(stream);
         doAfterFunc();
     });
     if (!state->ioQueue.IsStarted()) {
@@ -59,7 +59,7 @@ TBUI::DoAfter(const Array<URL>& urls, DoAfterFunc doAfterFunc) {
     state->ioQueue.AddGroup(urls, [doAfterFunc](const Array<Ptr<Stream>>& streams) {
         o_assert_dbg(IsValid());
         for (const auto& stream : streams) {
-            state->resourceContainer.Add(stream);
+            state->resourceContainer.add(stream);
         }
         doAfterFunc();
     });
@@ -92,7 +92,7 @@ TBUI::getRootWidget() {
 }
 
 //-----------------------------------------------------------------------------
-TBUIResourceContainer&
+_priv::tbResourceContainer&
 TBUI::resources() {
     o_assert_dbg(IsValid());
     return state->resourceContainer;

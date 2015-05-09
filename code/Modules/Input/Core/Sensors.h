@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Sensors
+    @ingroup Input
     @brief returns device sensory data
 */
 #include "glm/vec3.hpp"

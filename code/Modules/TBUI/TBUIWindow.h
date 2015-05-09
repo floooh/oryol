@@ -4,7 +4,7 @@
     @class Oryol::TBUIWindow
     @brief base class for TBUI module windows
  
-    @FIXME: document creating new TBUIWindow subclasses.
+    @TODO: document creating new TBUIWindow subclasses.
 */
 #include "Core/Types.h"
 #include "IO/Core/URL.h"

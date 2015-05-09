@@ -1,22 +1,21 @@
 //------------------------------------------------------------------------------
-//  TBUIResourceContainer.cc
+//  tbResourceContainer.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "TBUIResourceContainer.h"
+#include "tbResourceContainer.h"
 
 namespace Oryol {
-
-using namespace _priv;
+namespace _priv {
 
 //------------------------------------------------------------------------------
-TBUIResourceContainer::TBUIResourceContainer() :
+tbResourceContainer::tbResourceContainer() :
 uniqueCounter(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-TBUIResourceContainer::setup(const TBUISetup& setup) {
+tbResourceContainer::setup(const TBUISetup& setup) {
     o_assert_dbg(!this->isValid());
     
     this->resPool.Reserve(setup.ResourcePoolSize);
@@ -33,7 +32,7 @@ TBUIResourceContainer::setup(const TBUISetup& setup) {
 
 //------------------------------------------------------------------------------
 void
-TBUIResourceContainer::discard() {
+tbResourceContainer::discard() {
     o_assert_dbg(this->isValid());
 
     this->resPool.Clear();
@@ -44,7 +43,7 @@ TBUIResourceContainer::discard() {
 
 //------------------------------------------------------------------------------
 void
-TBUIResourceContainer::Add(const Ptr<Stream>& data) {
+tbResourceContainer::add(const Ptr<Stream>& data) {
     o_assert_dbg(this->isValid());
     Locator loc(data->GetURL().Get());
     Id id = this->registry.Lookup(loc);
@@ -60,7 +59,7 @@ TBUIResourceContainer::Add(const Ptr<Stream>& data) {
 
 //------------------------------------------------------------------------------
 void
-TBUIResourceContainer::Remove(ResourceLabel label) {
+tbResourceContainer::remove(ResourceLabel label) {
     o_assert_dbg(this->isValid());
 
     Array<Id> ids = this->registry.Remove(label);
@@ -72,7 +71,7 @@ TBUIResourceContainer::Remove(ResourceLabel label) {
 
 //------------------------------------------------------------------------------
 Ptr<Stream>
-TBUIResourceContainer::lookupResource(const Locator& loc) {
+tbResourceContainer::lookupResource(const Locator& loc) {
     o_assert_dbg(this->isValid());
     
     Id id = this->registry.Lookup(loc);
@@ -84,4 +83,5 @@ TBUIResourceContainer::lookupResource(const Locator& loc) {
     }
 }
 
+} // namespace _priv
 } // namespace Oryol

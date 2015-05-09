@@ -69,7 +69,7 @@ fips_begin_module(Gfx)
         programBundleBase.h
         shaderBase.cc shaderBase.h
         textureBase.cc textureBase.h
-        GfxResourceContainer.cc GfxResourceContainer.h
+        gfxResourceContainer.cc gfxResourceContainer.h
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
     )

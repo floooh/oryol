@@ -1,6 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup HTTP HTTP
+    @brief HTTP services, and a HTTP based filesystem
+
     @class Oryol::HTTPFileSystem
     @ingroup HTTP
     @brief implements a simple HTTP-based filesystem

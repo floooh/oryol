@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::InputSetup
+    @ingroup Input
     @brief configure the Input module
 */
 #include "Core/Types.h"

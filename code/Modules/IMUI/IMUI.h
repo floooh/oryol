@@ -1,6 +1,10 @@
 //------------------------------------------------------------------------------
 /**
+    @defgroup IMGUI IMGUI
+    @brief Ocornut's ImGUI Wrapper Module
+
     @class Oryol::IMUI
+    @ingroup IMUI
     @brief facade of the ImGUI module
     
     Why IMUI not IMGUI? Because of filename collisions.

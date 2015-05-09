@@ -1,6 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Time Time
+    @brief time measurement and computations
+
     @class Oryol::Clock
     @ingroup Time
     @brief high-resolution time source

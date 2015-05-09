@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @defgroup NanoVG NanoVG
-    @brief nanovg wrapper module
+    @brief NanoVG Wrapper Module
     
     @class Oryol::NanoVG
     @ingroup NanoVG

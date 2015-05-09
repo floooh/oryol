@@ -1,18 +1,17 @@
 //------------------------------------------------------------------------------
-//  GfxResourceContainer.cc
+//  gfxResourceContainer.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
 #include "IO/IO.h"
-#include "GfxResourceContainer.h"
+#include "gfxResourceContainer.h"
 #include "Gfx/Core/displayMgr.h"
 
 namespace Oryol {
-
-using namespace _priv;
+namespace _priv {
 
 //------------------------------------------------------------------------------
-GfxResourceContainer::GfxResourceContainer() :
+gfxResourceContainer::gfxResourceContainer() :
 renderer(nullptr),
 displayMgr(nullptr),
 runLoopId(RunLoop::InvalidId) {
@@ -21,7 +20,7 @@ runLoopId(RunLoop::InvalidId) {
 
 //------------------------------------------------------------------------------
 void
-GfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class displayMgr* dspMgr) {
+gfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class displayMgr* dspMgr) {
     o_assert(!this->isValid());
     o_assert(nullptr != rendr);
     o_assert(nullptr != dspMgr);
@@ -49,7 +48,7 @@ GfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
 
 //------------------------------------------------------------------------------
 void
-GfxResourceContainer::discard() {
+gfxResourceContainer::discard() {
     o_assert_dbg(this->isValid());
     
     Core::PostRunLoop()->Remove(this->runLoopId);
@@ -76,7 +75,7 @@ GfxResourceContainer::discard() {
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const MeshSetup& setup) {
+gfxResourceContainer::Create(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(!setup.ShouldSetupFromFile());
@@ -98,7 +97,7 @@ GfxResourceContainer::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != data);
@@ -122,7 +121,7 @@ GfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 siz
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const TextureSetup& setup) {
+gfxResourceContainer::Create(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(!setup.ShouldSetupFromFile());
@@ -144,7 +143,7 @@ GfxResourceContainer::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != data);
@@ -168,7 +167,7 @@ GfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::prepareAsync(const MeshSetup& setup) {
+gfxResourceContainer::prepareAsync(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -180,7 +179,7 @@ GfxResourceContainer::prepareAsync(const MeshSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-GfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -194,7 +193,7 @@ GfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
     }
     else {
         // the prepared mesh object was destroyed before it was loaded
-        o_warn("GfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
+        o_warn("gfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
             resId.Type, resId.SlotIndex);
         return ResourceState::InvalidState;
     }
@@ -202,7 +201,7 @@ GfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::prepareAsync(const TextureSetup& setup) {
+gfxResourceContainer::prepareAsync(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -214,7 +213,7 @@ GfxResourceContainer::prepareAsync(const TextureSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-GfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -228,7 +227,7 @@ GfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, cons
     }
     else {
         // the prepared texture object was destroyed before it was loaded
-        o_warn("GfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
+        o_warn("gfxResourceContainer::initAsync(): resource destroyed before initAsync (type: %d, slot: %d!)\n",
             resId.Type, resId.SlotIndex);
         return ResourceState::InvalidState;
     }
@@ -236,7 +235,7 @@ GfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, cons
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-GfxResourceContainer::failedAsync(const Id& resId) {
+gfxResourceContainer::failedAsync(const Id& resId) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -268,7 +267,7 @@ GfxResourceContainer::failedAsync(const Id& resId) {
 
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const ShaderSetup& setup) {
+gfxResourceContainer::Create(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
 
@@ -289,7 +288,7 @@ GfxResourceContainer::Create(const ShaderSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const ProgramBundleSetup& setup) {
+gfxResourceContainer::Create(const ProgramBundleSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -310,7 +309,7 @@ GfxResourceContainer::Create(const ProgramBundleSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-GfxResourceContainer::Create(const DrawStateSetup& setup) {
+gfxResourceContainer::Create(const DrawStateSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -331,7 +330,7 @@ GfxResourceContainer::Create(const DrawStateSetup& setup) {
     
 //------------------------------------------------------------------------------
 Id
-GfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
+gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
 
@@ -348,7 +347,7 @@ GfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
 
 //------------------------------------------------------------------------------
 void
-GfxResourceContainer::Destroy(ResourceLabel label) {
+gfxResourceContainer::Destroy(ResourceLabel label) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -428,7 +427,7 @@ GfxResourceContainer::Destroy(ResourceLabel label) {
     
 //------------------------------------------------------------------------------
 void
-GfxResourceContainer::update() {
+gfxResourceContainer::update() {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -451,7 +450,7 @@ GfxResourceContainer::update() {
 
 //------------------------------------------------------------------------------
 ResourceInfo
-GfxResourceContainer::QueryResourceInfo(const Id& resId) const {
+gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -477,7 +476,7 @@ GfxResourceContainer::QueryResourceInfo(const Id& resId) const {
 
 //------------------------------------------------------------------------------
 ResourcePoolInfo
-GfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
+gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
     
@@ -503,7 +502,7 @@ GfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
 
 //------------------------------------------------------------------------------
 int32
-GfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
+gfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
     o_assert_dbg(this->isValid());
     o_assert_dbg(Core::IsMainThread());
 
@@ -527,4 +526,5 @@ GfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
     }
 }
 
+} // namespace _priv
 } // namespace Oryol

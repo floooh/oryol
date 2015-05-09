@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::touchEvent
+    @ingroup _priv
     @brief internal touch event
 */
 #include "Core/Types.h"

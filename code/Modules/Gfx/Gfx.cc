@@ -185,7 +185,7 @@ Gfx::DestroyResources(ResourceLabel label) {
 }
 
 //------------------------------------------------------------------------------
-GfxResourceContainer&
+_priv::gfxResourceContainer&
 Gfx::resource() {
     o_assert_dbg(IsValid());
     return state->resourceContainer;

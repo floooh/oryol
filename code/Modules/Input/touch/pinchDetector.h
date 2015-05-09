@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::pinchDetector
+    @ingroup _priv
     @brief 2-finger-pinch gesture detector
 */
 #include "Input/touch/touchEvent.h"

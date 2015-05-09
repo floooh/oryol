@@ -1,6 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Messaging Messaging
+    @brief send, receive and handle messages
+
     @class Oryol::Port
     @ingroup Messaging
     @brief base class for message ports

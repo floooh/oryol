@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::tapDetector
+    @ingroup _priv
     @brief singletap- and multitap-gesture recognizer
 */
 #include "Input/touch/touchEvent.h"

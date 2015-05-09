@@ -1,12 +1,16 @@
 #pragma once
 //-----------------------------------------------------------------------------
 /**
+    @defgroup TBUI TBUI
+    @brief TurboBadger UI Wrapper Module
+
     @class Oryol::TBUI
+    @ingroup TBUI
     @brief facade class for Oryol TurboBadgerUI wrapper module
 */
 #include "Core/Types.h"
 #include "TBUI/tb/tbMgr.h"
-#include "TBUI/tb/TBUIResourceContainer.h"
+#include "TBUI/tb/tbResourceContainer.h"
 #include "TBUI/TBUISetup.h"
 #include "IO/Core/IOQueue.h"
 
@@ -49,13 +53,13 @@ private:
     /// get pointer to root window
     static _priv::tbOryolRootWidget* getRootWidget();
     /// access to resource container object
-    static TBUIResourceContainer& resources();
+    static _priv::tbResourceContainer& resources();
 
     struct _state {
         TBUISetup setup;
         IOQueue ioQueue;
         _priv::tbMgr mgr;
-        TBUIResourceContainer resourceContainer;
+        _priv::tbResourceContainer resourceContainer;
     };
     static _state* state;
 };

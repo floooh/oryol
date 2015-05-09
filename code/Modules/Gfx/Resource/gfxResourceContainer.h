@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::GfxResourceContainer
+    @class Oryol::gfxResourceContainer
+    @ingroup _priv
     @brief resource container implementation of the Gfx module
 */
 #include "Core/Core.h"
@@ -28,16 +29,21 @@
 #include "Gfx/Resource/TextureLoaderBase.h"
 
 namespace Oryol {
-    
+
 namespace _priv {
+    
 class renderer;
 class displayMgr;
-}
-    
-class GfxResourceContainer : public resourceContainerBase {
+
+class gfxResourceContainer : public resourceContainerBase {
 public:
     /// constructor
-    GfxResourceContainer();
+    gfxResourceContainer();
+
+    /// setup the resource container
+    void setup(const GfxSetup& setup, _priv::renderer* rendr, _priv::displayMgr* dspMgr);
+    /// discard the resource manager
+    void discard();
     
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
@@ -60,14 +66,7 @@ public:
     template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SETUP& setup, const void* data, int32 size);
     /// notify resource container that async creation had failed
     ResourceState::Code failedAsync(const Id& resId);
-    
-private:
-    friend class Gfx;
 
-    /// setup the resource container
-    void setup(const GfxSetup& setup, _priv::renderer* rendr, _priv::displayMgr* dspMgr);
-    /// discard the resource manager
-    void discard();
     /// lookup mesh object
     _priv::mesh* lookupMesh(const Id& resId);
     /// lookup program bundle object
@@ -76,6 +75,7 @@ private:
     _priv::texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
     _priv::drawState* lookupDrawState(const Id& resId);
+
     /// per-frame update (update resource pools and pending loader
     void update();
     
@@ -97,7 +97,7 @@ private:
 
 //------------------------------------------------------------------------------
 inline _priv::mesh*
-GfxResourceContainer::lookupMesh(const Id& resId) {
+gfxResourceContainer::lookupMesh(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     return this->meshPool.Lookup(resId);
@@ -105,7 +105,7 @@ GfxResourceContainer::lookupMesh(const Id& resId) {
 
 //------------------------------------------------------------------------------
 inline _priv::programBundle*
-GfxResourceContainer::lookupProgramBundle(const Id& resId) {
+gfxResourceContainer::lookupProgramBundle(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     return this->programBundlePool.Lookup(resId);
@@ -113,7 +113,7 @@ GfxResourceContainer::lookupProgramBundle(const Id& resId) {
 
 //------------------------------------------------------------------------------
 inline _priv::texture*
-GfxResourceContainer::lookupTexture(const Id& resId) {
+gfxResourceContainer::lookupTexture(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     return this->texturePool.Lookup(resId);
@@ -121,10 +121,11 @@ GfxResourceContainer::lookupTexture(const Id& resId) {
 
 //------------------------------------------------------------------------------
 inline _priv::drawState*
-GfxResourceContainer::lookupDrawState(const Id& resId) {
+gfxResourceContainer::lookupDrawState(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
     return this->drawStatePool.Lookup(resId);
 }
-    
+
+} // namespace _priv
 } // namespace Oryol

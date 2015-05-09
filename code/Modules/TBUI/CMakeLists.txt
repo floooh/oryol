@@ -14,7 +14,7 @@ fips_begin_module(TBUI)
         tbOryolBatchRenderer.cc tbOryolBatchRenderer.h
         tbOryolFile.cc tbOryolFile.h
         tbOryolSystem.cc
-        TBUIResourceContainer.cc TBUIResourceContainer.h
+        tbResourceContainer.cc tbResourceContainer.h
     )
     fips_generate(FROM TBUIShaders.shd TYPE Shader)
     fips_deps(Gfx Input Time turbobadger)

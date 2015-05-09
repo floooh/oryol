@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @defgroup Core Core
-    @brief Core module
+    @brief Oryol core functionality
 
     @class Oryol::Core
     @ingroup Core

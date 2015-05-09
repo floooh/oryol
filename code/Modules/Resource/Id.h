@@ -1,6 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
+    @defgroup Resource Resource
+    @brief resource management building blocks
+
     @class Oryol::Id
     @ingroup Resource
     @brief a generic resource identifier

@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::_priv::gestureState
+    @ingroup _priv
     @brief result of a gesture detector
 */
 

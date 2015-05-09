@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @defgroup IO IO
-    @brief IO module
+    @brief loading data asynchronously through pluggable filesystems
 
     @class Oryol::IO
     @ingroup IO
