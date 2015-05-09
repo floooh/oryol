@@ -77,9 +77,9 @@ public:
     /// minification sample filter
     TextureFilterMode::Code MinFilter;
 
-    /// resource locator (only used for load-async)
+    /// resource locator
     class Locator Locator;
-    /// resource placeholder (only used for load-async)
+    /// resource placeholder
     Id Placeholder;
     
     /// max number of faces

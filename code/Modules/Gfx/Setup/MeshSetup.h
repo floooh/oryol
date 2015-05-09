@@ -64,9 +64,9 @@ public:
     /// optional instance data mesh
     Id InstanceMesh;
     
-    /// resource locator (only for LoadFromFile)
+    /// resource locator
     class Locator Locator;
-    /// placeholder Id (only for LoadFromFile)
+    /// placeholder Id
     Id Placeholder;
     
     /// vertex data byte offset in data (default: 0)
