@@ -1,3 +1,0 @@
-fips_add_subdirectory(TurboBadgerDemo)
-fips_add_subdirectory(TestNanoVG)
-fips_add_subdirectory(ImGuiDemo)

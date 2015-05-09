@@ -12,6 +12,7 @@ namespace _priv {
 class soundMgr : public alSoundMgr { };
 } }
 #else
+#include "Sound/Core/soundMgrBase.h"
 namespace Oryol {
 namespace _priv {
 class soundMgr : public soundMgrBase { };
