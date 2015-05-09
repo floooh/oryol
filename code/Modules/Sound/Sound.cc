@@ -17,7 +17,7 @@ Sound::Setup(const SoundSetup& setup) {
 
     state = Memory::New<_state>();
     state->soundSetup = setup;
-    state->soundMgr.setup(setup, &state->resourceContainer.soundEffectPool);
+    state->soundMgr.setup(setup, &state->resourceContainer.effectPool);
     state->resourceContainer.setup(setup);
 }
 

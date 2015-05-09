@@ -6,13 +6,14 @@
     @brief setup object for a canned sound effect
 */
 #include "Core/Types.h"
+#include "Resource/Locator.h"
 
 namespace Oryol {
 
 class SoundEffectSetup {
 public:
-    // FIXME!
-
+    /// resource locator
+    class Locator Locator;
 };
 
 } // namespace Oryol

@@ -1,0 +1,5 @@
+fips_begin_app(SoundTest windowed)
+    fips_files(SoundTest.cc)
+    fips_deps(Gfx Sound)
+    oryol_add_web_sample(SoundTest "Test Sound module functionality" "emscripten" none "SoundTest/SoundTest.cc")
+fips_end_app()

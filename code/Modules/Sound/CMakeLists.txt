@@ -9,6 +9,8 @@ fips_begin_module(Sound)
         soundEffect.h
         soundMgrBase.cc soundMgrBase.h
         soundMgr.h
+        soundEffectFactoryBase.cc soundEffectFactoryBase.h
+        soundEffectFactory.h
     )
     if (ORYOL_OPENAL)
         fips_dir(al)
@@ -16,6 +18,7 @@ fips_begin_module(Sound)
             sound_al.h
             alSoundEffect.cc alSoundEffect.h
             alSoundMgr.cc alSoundMgr.h
+            alSoundEffectFactory.cc alSoundEffectFactory.h
         )
     endif()
     fips_deps(Core IO Resource)
