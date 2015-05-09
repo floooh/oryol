@@ -8,6 +8,37 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+soundEffectFactoryBase::soundEffectFactoryBase() :
+valid(false) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+soundEffectFactoryBase::~soundEffectFactoryBase() {
+    o_assert_dbg(!this->isValid());
+}
+
+//------------------------------------------------------------------------------
+void
+soundEffectFactoryBase::setup(const SoundSetup& /*setup*/) {
+    o_assert_dbg(!this->isValid());
+    this->valid = true;
+}
+
+//------------------------------------------------------------------------------
+void
+soundEffectFactoryBase::discard() {
+    o_assert_dbg(this->isValid());
+    this->valid = false;
+}
+
+//------------------------------------------------------------------------------
+bool
+soundEffectFactoryBase::isValid() const {
+    return this->valid;
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 soundEffectFactoryBase::setupResource(soundEffect& /*effect*/) {
     return ResourceState::Valid;

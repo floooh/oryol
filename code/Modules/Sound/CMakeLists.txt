@@ -3,7 +3,7 @@ fips_begin_module(Sound)
     fips_dir(Core)
     fips_files(
         SoundSetup.h
-        SoundEffectSetup.h
+        SoundEffectSetup.cc SoundEffectSetup.h
         soundResourceContainer.cc soundResourceContainer.h
         soundEffectBase.cc soundEffectBase.h
         soundEffect.h

@@ -82,4 +82,14 @@ Sound::DestroyResources(ResourceLabel label) {
     return state->resourceContainer.Destroy(label);
 }
 
+//------------------------------------------------------------------------------
+void
+Sound::Play(Id resId, int32 loopCount, int32 freqShift) {
+    o_assert_dbg(IsValid());
+    soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
+    if (sndEffect) {
+        state->soundMgr.play(sndEffect, loopCount, freqShift);
+    }
+}
+
 } // namespace Oryol

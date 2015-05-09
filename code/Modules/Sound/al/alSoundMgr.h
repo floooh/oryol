@@ -6,6 +6,7 @@
     @brief OpenAL implementation of soundMgr
 */
 #include "Sound/Core/soundMgrBase.h"
+#include "Sound/Core/soundEffect.h"
 #include "Sound/al/sound_al.h"
 
 namespace Oryol {
@@ -22,6 +23,9 @@ public:
     void setup(const SoundSetup& setup, soundEffectPool* sndEffectPool);
     /// discard the sound manager
     void discard();
+
+    /// play a sound effect
+    void play(soundEffect* effect, int32 loopCount, int32 freqShift);
 
 private:
     /// print info about OpenAL implementation

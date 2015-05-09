@@ -8,9 +8,27 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+alSoundEffect::alSoundEffect() :
+alBuffer(0),
+nextSourceIndex(0) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+alSoundEffect::~alSoundEffect() {
+    o_assert_dbg(0 == this->alBuffer);
+    for (int i = 0; i < NumSources; i++) {
+        o_assert_dbg(0 == this->alSources[i]);
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 alSoundEffect::Clear() {
-    o_error("FIXME (alSoundEffect::Clear())!");
+    this->alBuffer = 0;
+    this->nextSourceIndex = 0;
+    this->alSources.Fill(0);
+    soundEffectBase::Clear();
 }
 
 } // namespace _priv

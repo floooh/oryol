@@ -46,5 +46,11 @@ soundMgrBase::isValid() const {
     return this->valid;
 }
 
+//------------------------------------------------------------------------------
+void
+soundMgrBase::play(soundEffect* /*effect*/, int32 /*loopCount*/, int32 freqShift) {
+    // empty
+}
+
 } // namespace _priv
 } // namespace Oryol

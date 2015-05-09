@@ -101,5 +101,23 @@ alSoundMgr::printALInfo() {
     }
 }
 
+//------------------------------------------------------------------------------
+void
+alSoundMgr::play(soundEffect* effect, int32 loopCount, int32 freqShift) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(nullptr != effect);
+    o_assert_dbg(effect->State == ResourceState::Valid);
+    o_assert_dbg(effect->nextSourceIndex < alSoundEffect::NumSources);
+
+    // get next source, round-robin
+    ALuint src = effect->alSources[effect->nextSourceIndex++];
+    if (effect->nextSourceIndex == alSoundEffect::NumSources) {
+        effect->nextSourceIndex = 0;
+    }
+    o_assert_dbg(0 != src);
+    alSourcePlay(src);
+    ORYOL_SOUND_AL_CHECK_ERROR();
+}
+
 } // namespace _priv
 } // namespace Oryol

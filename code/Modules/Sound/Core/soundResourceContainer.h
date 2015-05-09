@@ -29,6 +29,9 @@ public:
     /// destroy resources by label
     void Destroy(ResourceLabel label);
 
+    /// lookup soundEffect, return 0 if not exists or valid
+    soundEffect* lookupSoundEffect(const Id& resId);
+
     _priv::soundEffectPool effectPool;
     _priv::soundEffectFactory effectFactory;
 };
