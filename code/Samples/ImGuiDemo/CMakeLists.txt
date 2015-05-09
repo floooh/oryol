@@ -3,5 +3,5 @@ fips_begin_app(ImGuiDemo windowed)
         ImGuiDemo.cc
     )
     fips_deps(Gfx HTTP Dbg IMUI)
-    oryol_add_web_sample(ImGuiDemo "ImGui UI integration" "emscripten,pnacl" ImGuiDemo.jpg "UI/ImGuiDemo/ImGuiDemo.cc")
+    oryol_add_web_sample(ImGuiDemo "ImGui UI integration" "emscripten,pnacl" ImGuiDemo.jpg "ImGuiDemo/ImGuiDemo.cc")
 fips_end_app()

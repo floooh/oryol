@@ -1,5 +1,5 @@
 fips_begin_app(IOQueueSample windowed)
     fips_files(IOQueueSample.cc)
     fips_deps(IO HTTP)
-    oryol_add_web_sample(IOQueueSample "Asynchronous file loading with IOQueue" "emscripten,pnacl" none "IO/IOQueueSample/IOQueueSample.cc")
+    oryol_add_web_sample(IOQueueSample "Asynchronous file loading with IOQueue" "emscripten,pnacl" none "IOQueueSample/IOQueueSample.cc")
 fips_end_app()

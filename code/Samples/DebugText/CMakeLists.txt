@@ -1,5 +1,5 @@
 fips_begin_app(DebugText windowed)
     fips_files(DebugText.cc)
     fips_deps(Core Gfx Dbg)
-    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" "emscripten,pnacl,android" DebugText.jpg "Debug/DebugText/DebugText.cc")
+    oryol_add_web_sample(DebugText "Demonstrate debug text rendering" "emscripten,pnacl,android" DebugText.jpg "DebugText/DebugText.cc")
 fips_end_app()

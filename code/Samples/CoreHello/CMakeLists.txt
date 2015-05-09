@@ -1,5 +1,5 @@
 fips_begin_app(CoreHello windowed)
     fips_files(CoreHello.cc)
     fips_deps(Core)
-    oryol_add_web_sample(CoreHello "Low-level hello world sample" "emscripten" none "Core/CoreHello/CoreHello.cc")
+    oryol_add_web_sample(CoreHello "Low-level hello world sample" "emscripten" none "CoreHello/CoreHello.cc")
 fips_end_app()
