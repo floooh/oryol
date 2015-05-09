@@ -29,7 +29,6 @@
 #include "Gfx/Resource/TextureLoaderBase.h"
 
 namespace Oryol {
-
 namespace _priv {
     
 class renderer;
@@ -41,7 +40,7 @@ public:
     gfxResourceContainer();
 
     /// setup the resource container
-    void setup(const GfxSetup& setup, _priv::renderer* rendr, _priv::displayMgr* dspMgr);
+    void setup(const GfxSetup& setup, renderer* rendr, displayMgr* dspMgr);
     /// discard the resource manager
     void discard();
     
@@ -68,35 +67,35 @@ public:
     ResourceState::Code failedAsync(const Id& resId);
 
     /// lookup mesh object
-    _priv::mesh* lookupMesh(const Id& resId);
+    mesh* lookupMesh(const Id& resId);
     /// lookup program bundle object
-    _priv::programBundle* lookupProgramBundle(const Id& resId);
+    programBundle* lookupProgramBundle(const Id& resId);
     /// lookup texture object
-    _priv::texture* lookupTexture(const Id& resId);
+    texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
-    _priv::drawState* lookupDrawState(const Id& resId);
+    drawState* lookupDrawState(const Id& resId);
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
     
-    class _priv::renderer* renderer;
-    class _priv::displayMgr* displayMgr;
-    class _priv::meshFactory meshFactory;
-    class _priv::shaderFactory shaderFactory;
-    class _priv::programBundleFactory programBundleFactory;
-    class _priv::textureFactory textureFactory;
-    class _priv::drawStateFactory drawStateFactory;
-    class _priv::meshPool meshPool;
-    class _priv::shaderPool shaderPool;
-    class _priv::programBundlePool programBundlePool;
-    class _priv::texturePool texturePool;
-    class _priv::drawStatePool drawStatePool;
+    class renderer* renderer;
+    class displayMgr* displayMgr;
+    class meshFactory meshFactory;
+    class shaderFactory shaderFactory;
+    class programBundleFactory programBundleFactory;
+    class textureFactory textureFactory;
+    class drawStateFactory drawStateFactory;
+    class meshPool meshPool;
+    class shaderPool shaderPool;
+    class programBundlePool programBundlePool;
+    class texturePool texturePool;
+    class drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
 };
 
 //------------------------------------------------------------------------------
-inline _priv::mesh*
+inline mesh*
 gfxResourceContainer::lookupMesh(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
@@ -104,7 +103,7 @@ gfxResourceContainer::lookupMesh(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline _priv::programBundle*
+inline programBundle*
 gfxResourceContainer::lookupProgramBundle(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
@@ -112,7 +111,7 @@ gfxResourceContainer::lookupProgramBundle(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline _priv::texture*
+inline texture*
 gfxResourceContainer::lookupTexture(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
@@ -120,7 +119,7 @@ gfxResourceContainer::lookupTexture(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline _priv::drawState*
+inline drawState*
 gfxResourceContainer::lookupDrawState(const Id& resId) {
     o_assert_dbg(this->valid);
     o_assert_dbg(Core::IsMainThread());
