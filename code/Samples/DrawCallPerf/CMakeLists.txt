@@ -1,6 +1,6 @@
 fips_begin_app(DrawCallPerf windowed)
     fips_files(DrawCallPerf.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets Time Dbg Input)
+    fips_deps(Gfx Assets Time Dbg Input)
     oryol_add_web_sample(DrawCallPerf "Measure draw call performance" "emscripten,pnacl,android" DrawCallPerf.jpg "DrawCallPerf/DrawCallPerf.cc")
 fips_end_app()

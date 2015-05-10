@@ -1,6 +1,6 @@
 fips_begin_app(ResourceStress windowed)
     fips_files(ResourceStress.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets HTTP Dbg)
+    fips_deps(Gfx Assets HTTP Dbg)
     oryol_add_web_sample(ResourceStress "Resource loading stresstest" "emscripten,pnacl,android" none "ResourceStress/ResourceStress.cc")
 fips_end_app()

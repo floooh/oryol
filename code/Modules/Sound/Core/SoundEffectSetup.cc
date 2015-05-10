@@ -8,7 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 SoundEffectSetup
-SoundEffectSetup::FromSampleFunc(int32 duration, SampleFuncT sampleFunc) {
+SoundEffectSetup::FromSampleFunc(float32 duration, SampleFuncT sampleFunc) {
     SoundEffectSetup setup;
     setup.Duration = duration;
     setup.SampleFunc = sampleFunc;

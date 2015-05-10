@@ -27,7 +27,8 @@ SoundTestApp::OnInit() {
     Input::Setup();
     Sound::Setup(SoundSetup());
 
-    this->sound = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2000, [](float t, float dt, int16* samples, int numSamples) {
+    this->sound = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2.0f, [](float dt, int16* samples, int numSamples) {
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt * 4000.0f) {
             const int16 sample = int16(glm::sin(t) * 32767);
             samples[i] = sample;

@@ -13,15 +13,14 @@ alSoundEffectFactory::setupResource(soundEffect& effect) {
     o_assert_dbg(this->isValid());
 
     // compute number of samples
-    const int32 numSamples = (effect.Setup.Duration * effect.Setup.Frequency) / 1000;
+    const int32 numSamples = int32(effect.Setup.Duration * effect.Setup.BufferFrequency);
     o_assert_dbg(numSamples > 0);
     o_assert2(numSamples <= MaxNumBufferSamples, "Too many samples in sound effect!\n");
 
     // call optional the sample-func to generate samples
     if (effect.Setup.SampleFunc) {
-        float32 t = 0.0f;
-        float32 dt = 1.0f / effect.Setup.Frequency; // FIXME: will we run into precision problems with big buffers?
-        effect.Setup.SampleFunc(t, dt, this->sampleBuffer, numSamples);
+        const float32 dt = 1.0f / effect.Setup.BufferFrequency; // FIXME: will we run into precision problems with big buffers?
+        effect.Setup.SampleFunc(dt, this->sampleBuffer, numSamples);
     }
     else {
         // if no sample-func is provided, just fill the buffer with silence
@@ -71,7 +70,7 @@ alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16* s
     effect.nextSourceIndex = 0;
     if (numSamples > 0) {
         o_assert_dbg(nullptr != samples);
-        alBufferData(effect.alBuffer, AL_FORMAT_MONO16, samples, numSamples * sizeof(int16), effect.Setup.Frequency);
+        alBufferData(effect.alBuffer, AL_FORMAT_MONO16, samples, numSamples * sizeof(int16), effect.Setup.BufferFrequency);
         ORYOL_SOUND_AL_CHECK_ERROR();
     }
 

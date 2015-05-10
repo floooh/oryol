@@ -1,6 +1,6 @@
 fips_begin_app(InfiniteSpheres windowed)
     fips_files(InfiniteSpheres.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets)
+    fips_deps(Gfx Assets)
     oryol_add_web_sample(InfiniteSpheres "Infinite recursive spheres" "emscripten,android,pnacl" InfiniteSpheres.jpg "InfiniteSpheres/InfiniteSpheres.cc")
 fips_end_app()

@@ -1,6 +1,6 @@
 fips_begin_app(Sensors windowed)
     fips_files(Sensors.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets Dbg Input)
+    fips_deps(Gfx Assets Dbg Input)
     oryol_add_web_sample(Sensors "Device sensors sample" "emscripten,android" none "Sensors/Sensors.cc")
 fips_end_app()

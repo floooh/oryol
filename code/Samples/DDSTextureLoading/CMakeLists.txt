@@ -1,6 +1,6 @@
 fips_begin_app(DDSTextureLoading windowed)
     fips_files(DDSTextureLoading.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
-    fips_deps(Assets HTTP)
+    fips_deps(Gfx Assets HTTP)
     oryol_add_web_sample(DDSTextureLoading "Load and render various DDS texture formats" "emscripten,pnacl,android" DDSTextureLoading.jpg "DDSTextureLoading/DDSTextureLoading.cc")
 fips_end_app()
