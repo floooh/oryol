@@ -19,7 +19,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
 
-    Id sound;
+    Id waka;
 };
 OryolMain(SoundTestApp);
 
@@ -30,21 +30,24 @@ SoundTestApp::OnInit() {
     Input::Setup();
     Sound::Setup(SoundSetup());
 
-    this->sound = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(0.25f, 22050, [](float dt, int16* samples, int numSamples) {
+    this->waka = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(0.25f, 22050, [](float dt, int16* samples, int numSamples) {
         int32 wacka[32] = {
             // Pacman wave2
             7, 10, 12, 13, 14, 13, 12, 10,  7,  4,  2,  1,  0,  1,  2,  4,
             7, 11, 13, 14, 13, 11,  7,  3,  1,  0,  1,  3,  7,  14,  7, 0
         };
         Freq freq(dt);
-        float f = 400.0f;
+        const float32 maxFreq = 500.0f;
+        const float32 minFreq = 50.0f;
+        const float32 freqStep = ((maxFreq - minFreq) / numSamples) * 2.0f;
+        float32 f = maxFreq;
         float32 t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (t < 0.125f) {
-                f -= 0.1f;
+                f -= freqStep;
             }
             else {
-                f += 0.1f;
+                f += freqStep;
             }
             float32 pos = freq.Step(f);
             int32 wackaIndex = int32(31.0f * pos);
@@ -65,7 +68,7 @@ SoundTestApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(PixelChannel::All, glm::vec4(0.75f, 0.75f, 0.75f, 1.0f));
     if (Input::Keyboard().KeyDown(Key::Space)) {
-        Sound::Play(this->sound);
+        Sound::Play(this->waka);
     }
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
