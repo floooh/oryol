@@ -8,6 +8,7 @@ fips_begin_module(Core)
         Args.cc Args.h
         Assertion.h
         Class.h
+        Command.cc Command.h
         Config.h
         Core.cc Core.h
         Creator.h
