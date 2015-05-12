@@ -45,9 +45,9 @@ private:
 	const String _name;
 	const unsigned int _flags;
 
-	float _floatValue;
-	int _intValue;
-	long _longValue;
+	float32 _floatValue;
+	int32 _intValue;
+	int64 _longValue;
 	String _value;
 	bool _dirty;
 
@@ -78,32 +78,32 @@ public:
 	 * @return the bitmask of flags for this var
 	 * @note See the existing @c CV_ ints
 	 */
-	int getFlags() const;
+	unsigned int getFlags() const;
 	/**
 	 * @return the value of the variable as @c int.
 	 *
 	 * @note There is no conversion happening here - this is done in @c Var::setVal
 	 */
-	int intVal() const;
+	int32 intVal() const;
 	/**
 	 * @return the value of the variable as @c unsigned int.
 	 *
 	 * @note There is no conversion happening here - this is done in @c Var::setVal
 	 */
-	unsigned int uintVal() const;
+	uint32 uintVal() const;
 	/**
 	 * @return the value of the variable as @c long.
 	 *
 	 * @note There is no conversion happening here - this is done in @c Var::setVal
 	 */
-	long longVal() const;
+	int64 longVal() const;
 	unsigned long ulongVal() const;
 	/**
 	 * @return the value of the variable as @c float.
 	 *
 	 * @note There is no conversion happening here - this is done in @c Var::setVal
 	 */
-	float floatVal() const;
+	float32 floatVal() const;
 	/**
 	 * @return the value of the variable as @c bool. @c true if the string value is either @c 1 or @c true, @c false otherwise
 	 */
@@ -125,15 +125,15 @@ public:
 	bool isDirty() const;
 };
 
-inline float Var::floatVal() const {
+inline float32 Var::floatVal() const {
 	return _floatValue;
 }
 
-inline int Var::intVal() const {
+inline int32 Var::intVal() const {
 	return _intValue;
 }
 
-inline long Var::longVal() const {
+inline int64 Var::longVal() const {
 	return _longValue;
 }
 
@@ -157,12 +157,12 @@ inline bool Var::isDirty() const {
 	return _dirty;
 }
 
-inline int Var::getFlags() const {
+inline unsigned int Var::getFlags() const {
 	return _flags;
 }
 
-inline unsigned int Var::uintVal() const {
-	return static_cast<unsigned int>(_intValue);
+inline uint32 Var::uintVal() const {
+	return static_cast<uint32>(_intValue);
 }
 
 }

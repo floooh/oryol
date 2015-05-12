@@ -1,5 +1,6 @@
 #include "Var.h"
 #include "Log.h"
+#include "String/StringConverter.h"
 #include <cstdlib>
 
 namespace Oryol {
@@ -28,9 +29,9 @@ VarPtr Var::get(const String& name, const String& value, unsigned int flags) {
 
 Var::Var(const String& name, const String& value, unsigned int flags) :
 		_name(name), _flags(flags), _value(value), _dirty(false) {
-	_intValue = atoi(_value.AsCStr());
-	_longValue = atol(_value.AsCStr());
-	_floatValue = atof(_value.AsCStr());
+	_intValue = StringConverter::FromString<int32>(_value);
+	_longValue = StringConverter::FromString<int64>(_value.AsCStr());
+	_floatValue = StringConverter::FromString<float32>(_value.AsCStr());
 }
 
 Var::~Var() {
@@ -44,9 +45,9 @@ bool Var::setVal(const String& value) {
 	_dirty = _value != value;
 	if (_dirty) {
 		_value = value;
-		_intValue = atoi(_value.AsCStr());
-		_longValue = atol(_value.AsCStr());
-		_floatValue = atof(_value.AsCStr());
+		_intValue = StringConverter::FromString<int32>(_value);
+		_longValue = StringConverter::FromString<int64>(_value.AsCStr());
+		_floatValue = StringConverter::FromString<float32>(_value.AsCStr());
 	}
 
 	return _dirty;
