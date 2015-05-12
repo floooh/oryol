@@ -18,6 +18,7 @@ fips_begin_module(Core)
         RefCounted.cc RefCounted.h
         RunLoop.cc RunLoop.h
         Types.h
+        Var.cc Var.h
         precompiled.h
     )
     fips_dir(Containers)
