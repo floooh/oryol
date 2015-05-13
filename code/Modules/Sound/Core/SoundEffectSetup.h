@@ -23,7 +23,7 @@ public:
     static SoundEffectSetup FromSampleFunc(float32 duration, int32 bufferFreq, SampleFuncT sampleFunc);
 
     /// resource locator
-    class Locator Locator;
+    class Locator Locator = Locator::NonShared();
     /// frequency of samples in effect buffer (number of samples per seconds)
     int32 BufferFrequency = 22050;
     /// duration in seconds
