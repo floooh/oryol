@@ -10,7 +10,7 @@ fips_begin_module(Assets)
     )
     fips_dir(Sound)
     fips_files(
-        Freq.h Wave.h
+        SoundGen.cc SoundGen.h
     )
 fips_end_module()
 
