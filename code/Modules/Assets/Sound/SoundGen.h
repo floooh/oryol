@@ -13,6 +13,87 @@ namespace SoundGen {
 
 //------------------------------------------------------------------------------
 /**
+    @class Oryol::SoundGen::Sample
+    @ingroup Assets
+    @brief general sample math helper functions
+*/
+class Sample {
+public:
+    /// return 
+
+    /// clamp float value to -1.0..+1.0
+    static float32 Float32(float32 val) {
+        if (val < -1.0f) {
+            return -1.0f;
+        }
+        else if (val > 1.0f) {
+            return 1.0f;
+        }
+        else {
+            return val;
+        }
+    };
+    /// clamp float value to -1.0..+1.0 and convert to int16 sample value
+    static int16 Int16(float32 val) {
+        int32 ival = val * 32768;
+        if (ival < -32768) {
+            ival = -32768;
+        }
+        else if (ival > 32767) {
+            ival = 32767;
+        }
+        return (int16) ival;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::SoundGen::Range
+    @ingroup Assets
+    @brief define time range and test time against range
+*/
+class Range {
+public:
+    /// start time
+    float32 Begin = 0.0f;
+    /// stop time
+    float32 End = 0.0f;
+
+    /// test if t is in [t0, t1], if yes return true and init Start/Stop
+    bool In(float32 t, float32 t0, float32 t1) {
+        if ((t >= t0) && (t < t1)) {
+            this->Begin = t0;
+            this->End = t1;
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    /// test if t < t0, if yes, return true, if no, return false and set Begin to t0
+    bool BeforeBegin(float32 t, float32 t0) {
+        if (t < t0) {
+            return true;
+        }
+        else {
+            this->Begin = t0;
+            return false;
+        }
+    };
+    /// test if t >= t0, if yes, return true and set Begin to t0
+    bool AfterBegin(float32 t, float32 t0) {
+        if (t >= t0) {
+            this->Begin = t0;
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
     @class Oryol::SoundGen::Freq
     @ingroup Assets
     @brief maintain sample position for frequency
@@ -117,44 +198,79 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::SoundGen::Fade
+    @class Oryol::SoundGen::Mod
     @ingroup Assets
-    @brief fade-in/out modulator for sound sample generation
-    
-    FIXME: this should give more options then just linear fading
-    (e.g. http://easings.net/ )
+    @brief volume and frequency modulation helper functions
 */
-class Fade {
+class Mod {
 public:
-    /// initialize with effect duration, fade-in and fade-out in seconds
-    Fade(float32 bufferDuration, float32 fadeInDuration, float32 fadeOutDuration) {
-        o_assert_dbg(bufferDuration > 0.0f);
-        o_assert_dbg(fadeInDuration >= 0.0f);
-        o_assert_dbg(fadeOutDuration >= 0.0f);
-        this->duration = bufferDuration;
-        this->fadeInPos = fadeInDuration;
-        this->fadeOutPos = this->duration - fadeOutDuration;
-        this->fadeInMul = 1.0f / fadeInDuration;
-        this->fadeOutMul = 1.0f / fadeOutDuration;
-    };
-    /// get curren modulator (0.0 .. 1.0) at time position
-    float32 Value(float32 t) const {
-        if (t < this->fadeInPos) {
-            return t * this->fadeInMul;
+    /// linear fade-in, return value between 0.0 and 1.0
+    /// @param t current sample time
+    /// @param t0 start time where result is 0.0
+    /// @param t1 end time where result is 1.0
+    static float32 FadeIn(float32 t, float32 t0, float32 t1) {
+        o_assert_dbg(t1 > t0);
+        if (t < t0) {
+            return 0.0f;
         }
-        else if (t >= this->fadeOutPos) {
-            return 1.0f - ((t - this->fadeOutPos) * this->fadeOutMul);
-        }
-        else {
+        else if (t > t1) {
             return 1.0f;
         }
+        else {
+            return (t - t0) / (t1 - t0);
+        }
     };
-private:
-    float32 duration;
-    float32 fadeInPos;
-    float32 fadeOutPos;
-    float32 fadeInMul;
-    float32 fadeOutMul;
+    /// linear fade-out, return value between 1.0 and 0.0
+    /// @param t current sample time
+    /// @param t0 start time where result is 1.0
+    /// @param t1 end time where result is 0.0
+    static float32 FadeOut(float32 t, float32 t0, float32 t1) {
+        o_assert_dbg(t1 > t0);
+        if (t < t0) {
+            return 1.0f;
+        }
+        else if (t > t1) {
+            return 0.0f;
+        }
+        else {
+            return 1.0f - ((t - t0) / (t1 - t0));
+        }
+    };
+    /// fade-in squared (start slow and accelerate)
+    /// @param t current sample time
+    /// @param t0 start time where result is 0.0
+    /// @param t1 end time where result is 1.0
+    static float32 FadeInSq(float32 t, float32 t0, float32 t1) {
+        float32 v = FadeIn(t, t0, t1);
+        return v * v;
+    };
+    /// fade-out squared (fast decay at start)
+    /// @param t current sample time
+    /// @param t0 start time where result is 1.0
+    /// @param t1 end time where result is 0.0
+    static float32 FadeOutSq(float32 t, float32 t0, float32 t1) {
+        float32 v = FadeOut(t, t0, t1);
+        return v * v;
+    };
+    /// linear-interpolate from v0 at t0 to v1 at t1
+    /// @param t current sample time
+    /// @param t0 start time where result is v0
+    /// @param t1 end time where result is v1
+    /// @param v0 start value
+    /// @param v1 end value
+    static float32 Lerp(float32 t, float32 t0, float32 t1, float32 v0, float32 v1) {
+        o_assert_dbg(t1 > t0);
+        if (t < t0) {
+            return v0;
+        }
+        else if (t > t1) {
+            return v1;
+        }
+        else {
+            return v0 + (v1 - v0) * ((t - t0) / (t1 - t0));
+        }
+    };
+
 };
 
 //------------------------------------------------------------------------------
@@ -172,7 +288,7 @@ private:
 class NamcoVoice {
 public:
     /// waveform Ids from the Pacman ROM:
-    enum Wave {
+    enum WaveForm {
         Pacman0 = 0,
         Pacman1,
         Pacman2,
@@ -183,43 +299,36 @@ public:
         Pacman7,
         Pacman8,
 
-        NumWaves
+        NumWaveForms
     };
 
     /// the number of samples in a wave form
     static const int NumWaveSamples = 32;
     /// the actual waveform data (see SoundGen.cc)
-    static const char WaveData[NumWaves][NumWaveSamples];
+    static const char WaveData[NumWaveForms][NumWaveSamples];
+
+    /// current wave
+    WaveForm Wave = Pacman0;
+    /// current volume
+    float32 Volume = 1.0f;
+    /// current frequency
+    float32 Frequency = 440.0f;
 
     /// construct from WaveForm, sample duration, frequency and volume
-    NamcoVoice(Wave wave_, float32 dt_, float32 freq, float32 vol) {
-        this->wave = wave_;
+    NamcoVoice(float32 dt_, WaveForm wave) {
         this->dt = dt_;
-        this->step = this->dt * freq;
         this->pos = 0.0f;
-        this->volume = vol;
+        this->Wave = wave;
     };
 
-    /// set new wave form
-    void SetWave(Wave wave_) {
-        o_assert_range_dbg(wave, NumWaves);
-        this->wave = wave_;
-    };
-    /// set new frequency
-    void SetFrequency(float32 freq) {
-        this->step = this->dt * freq;
-    };
-    /// set new volume
-    void SetVolume(float32 vol) {
-        this->volume = vol;
-    };
     /// step the voice generator, return new sample value in range -1.0f..1.0f
     float32 Step() {
-        if (this->volume > 0.0f) {
+        o_assert_range_dbg(this->Wave, NumWaveForms);
+        if (this->Volume > 0.0f) {
             int32 waveIndex = int32(32.0f * this->pos);
-            float32 s = ((float32(WaveData[this->wave][waveIndex]) / 8.0f) - 1.0f);
-            s *= this->volume;
-            this->pos += this->step;
+            float32 s = ((float32(WaveData[this->Wave][waveIndex]) / 8.0f) - 1.0f);
+            s *= this->Volume;
+            this->pos += this->dt * this->Frequency;
             if (this->pos >= 1.0f) {
                 this->pos = std::fmod(this->pos, 1.0f);
             }
@@ -231,11 +340,8 @@ public:
     };
 
 private:
-    Wave wave;
     float32 dt;
-    float32 step;
     float32 pos;
-    float32 volume;
 };
 
 } // namespace Oryol

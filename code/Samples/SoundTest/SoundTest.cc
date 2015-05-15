@@ -73,22 +73,19 @@ SoundTestApp::OnInit() {
 
         const float32 maxFreq = 500.0f;
         const float32 minFreq = 50.0f;
-        const float32 freqStep = ((maxFreq - minFreq) / numSamples) * 2.0f;
-        float32 f = maxFreq;
-        NamcoVoice voice(NamcoVoice::Pacman2, dt, f, 1.0f);
+        NamcoVoice voice(dt, NamcoVoice::Pacman2);
         float32 t = 0.0f;
+        Range range;
         for (int i = 0; i < numSamples; i++, t += dt) {
-            voice.SetFrequency(f);
+            if (range.In(t, 0.0f, 0.1f)) {
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, maxFreq, minFreq);
+            }
+            else if (range.In(t, 0.15f, 0.25f)) {
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, minFreq, maxFreq);
+            }
             float32 s = voice.Step() * 0.5f;
-            const int16 i16 = int16(s * 32767);
-            samples[i] = i16;
-            floatSamples[i] = s;
-            if (t < 0.125f) {
-                f -= freqStep;
-            }
-            else {
-                f += freqStep;
-            }
+            samples[i] = Sample::Int16(s);
+            floatSamples[i] = Sample::Float32(s);
         }
     }));
 
@@ -97,243 +94,207 @@ SoundTestApp::OnInit() {
         using namespace SoundGen;
         float* floatSamples = this->effects[Song1].Alloc(numSamples);
 
-        NamcoVoice voice0(NamcoVoice::Pacman2, dt, 65.0f, 0.0f);
-        NamcoVoice voice1(NamcoVoice::Pacman0, dt, 440.0f, 0.0f);
-
+        NamcoVoice voice0(dt, NamcoVoice::Pacman2);
+        NamcoVoice voice1(dt, NamcoVoice::Pacman0);
+        Range range;
         float32 t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
 
             float val;
 
             // voice0 is the 'bass'
-            float vol;
-            if (t < 0.4f) {
-                vol = 1.0f - (t / 0.4f);
-                vol = vol * vol;
-                voice0.SetVolume(vol);
-                voice0.SetFrequency(65.0f);
+            if (range.In(t, 0.0f, 0.4f)) {
+                voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                voice0.Frequency = 65.0f;
             }
-            else if (t < 0.933f) {
-                if (t < 0.53f) {
-                    vol = 1.0f - ((t - 0.4f) / (0.933f - 0.4f));
-                    voice0.SetFrequency(96.0f);
+            else if (range.In(t, 0.4f, 0.933f)) {
+                if (range.BeforeBegin(t, 0.53f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 96.0f;
                 }
                 else {
-                    vol = 1.0f - ((t - 0.53f) / (0.933f - 0.53f));
-                    voice0.SetFrequency(66.0f);
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 66.0f;
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 0.933f) && (t < 1.466f)) {
-                if (t < 1.07f) {
-                    vol = 1.0f - ((t - 0.933f) / (1.466f - 0.933f));
-                    voice0.SetFrequency(100.0f);
+            else if (range.In(t, 0.933f, 1.466f)) {
+                if (range.BeforeBegin(t, 1.07f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 100.0f;
                 }
                 else {
-                    vol = 1.0f - ((t - 1.07f) / (1.466f - 1.07f));
-                    voice0.SetFrequency(72.0f);
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 72.0f;
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 1.466f) && (t < 2.0f)) {
-                if (t < 1.6f) {
-                    vol = 1.0f - ((t - 1.466f) / (2.0f - 1.466f));
-                    voice0.SetFrequency(102.0f);
+            else if (range.In(t, 1.466f, 2.0f)) {
+                if (range.BeforeBegin(t, 1.6f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 102.0f;
                 }
                 else {
-                    vol = 1.0f - ((t - 1.6f) / (2.0f - 1.6f));
-                    voice0.SetFrequency(72.0f);
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 72.0f;
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 2.0f) && (t < 2.53f)) {
-                if (t < 2.134f) {
-                    vol = 1.0f - ((t - 2.0f) / (2.53f - 2.0f));
-                    voice0.SetFrequency(103.0f);
+            else if (range.In(t, 2.0f, 2.53f)) {
+                if (range.BeforeBegin(t, 2.134f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 103.0f;
                 }
                 else {
-                    vol = 1.0f - ((t - 2.134f) / (2.53 - 2.134f));
-                    voice0.SetFrequency(66.0f);
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 66.0f;
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 2.53f) && (t < 2.933f)) {
-                if (t < 2.667f) {
-                    vol = 1.0f - ((t - 2.53f) / (2.933f - 2.53f));
-                    voice0.SetFrequency(99.0f);
+            else if (range.In(t, 2.53f, 2.933f)) {
+                if (range.BeforeBegin(t, 2.667f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 99.0f;
                 }
                 else {
-                    vol = 1.0f - ((t - 2.667f) / (2.933f - 2.667f));
-                    voice0.SetFrequency(65.0f);
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
+                    voice0.Frequency = 65.0f;
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 3.067f) && (t < 3.467f)) {
-                voice0.SetFrequency(84.0f);
-                if (t < 3.2f) {
-                    vol = 1.0f - ((t - 3.067f) / (3.467f - 3.067f));
+            else if (range.In(t, 3.067f, 3.467f)) {
+                voice0.Frequency = 84.0f;
+                if (range.BeforeBegin(t, 3.2f)) {
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
                 }
                 else {
-                    vol = 1.0f - ((t - 3.2f) / (3.467f - 3.2f));
+                    voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
                 }
-                vol = vol * vol;
-                voice0.SetVolume(vol);
             }
-            else if ((t >= 3.467f) && (t < 3.734f)) {
-                voice0.SetFrequency(105.0f);
-                vol = 1.0f - ((t - 3.467f) / (3.734f - 3.467f));
-                vol = vol * vol;
-                voice0.SetVolume(vol);
+            else if (range.In(t, 3.467f, 3.734f)) {
+                voice0.Frequency = 105.0f;
+                voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
             }
-            else if ((t >= 3.734f) && (t < 4.0f)) {
-                voice0.SetFrequency(118.0f);
-                vol = 1.0f - ((t - 3.734f) / (4.0f - 3.734f));
-                vol = vol * vol;
-                voice0.SetVolume(vol);
+            else if (range.In(t, 3.734f, 4.0f)) {
+                voice0.Frequency = 118.0f;
+                voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
             }
-            else if ((t >= 4.0f) && (t < 4.28f)) {
-                voice0.SetFrequency(135.0f);
-                vol = 1.0f - ((t - 4.0f) / (4.28f - 4.0f));
-                vol = vol * vol;
-                voice0.SetVolume(vol);
+            else if (range.In(t, 4.0f, 4.28f)) {
+                voice0.Frequency = 135.0f;
+                voice0.Volume = Mod::FadeOutSq(t, range.Begin, range.End);
             }
             else {
-                voice0.SetVolume(0.0f);
+                voice0.Volume = 0.0f;
             }
 
             // the 'bleeps' are on voice1
-            if (t < 0.067) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(540.0f);
+            if (range.In(t, 0.0f, 0.067)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 540.0f;
             }
-            else if ((t >= 0.134f) && (t < 0.200f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(1080.0f);
+            else if (range.In(t, 0.134f, 0.200f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 1080.0f;
             }
-            else if ((t >= 0.266f) && (t < 0.335f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(810.0f);
+            else if (range.In(t, 0.266f, 0.335f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 810.0f;
             }
-            else if ((t >= 0.4f) && (t < 0.465f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(700.0f);
+            else if (range.In(t, 0.4f, 0.465f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 700.0f;
             }
-            else if ((t >= 0.533) && (t < 0.667f)) {
-                voice1.SetVolume(1.0f);
+            else if (range.In(t, 0.533, 0.667f)) {
+                voice1.Volume = 1.0f;
                 if (t < 0.6f) {
-                    voice1.SetFrequency(1085.0f);
+                    voice1.Frequency = 1085.0f;
                 }
                 else {
-                    voice1.SetFrequency(810.0f);
+                    voice1.Frequency = 810.0f;
                 }
             }
-            else if ((t >= 0.8f) && (t < 0.933f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(722.0f);
+            else if (range.In(t, 0.8f, 0.933f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 722.0f;
             }
-            else if ((t >= 1.07f) && (t < 1.134f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(570.0f);
+            else if (range.In(t, 1.07f, 1.134f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 570.0f;
             }
-            else if ((t >= 1.2f) && (t < 1.267f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(1160.0f);
+            else if (range.In(t, 1.2f, 1.267f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 1160.0f;
             }
-            else if ((t >= 1.334f) && (t < 1.4f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(860.0f);
+            else if (range.In(t, 1.334f, 1.4f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 860.0f;
             }
-            else if ((t >= 1.466) && (t < 1.535f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(717.0f);
+            else if (range.In(t, 1.466, 1.535f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 717.0f;
             }
-            else if ((t >= 1.6f) && (t < 1.735f)) {
-                voice1.SetVolume(1.0f);
+            else if (range.In(t, 1.6f, 1.735f)) {
+                voice1.Volume = 1.0f;
                 if (t < 1.667f) {
-                    voice1.SetFrequency(1141.0f);
+                    voice1.Frequency = 1141.0f;
                 }
                 else {
-                    voice1.SetFrequency(865.0f);
+                    voice1.Frequency = 865.0f;
                 }
             }
-            else if ((t >= 1.866f) && (t < 2.0f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(720.0f);
+            else if (range.In(t, 1.866f, 2.0f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 720.0f;
             }
-            else if ((t >= 2.135f) && (t < 2.2f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(537.0f);
+            else if (range.In(t, 2.135f, 2.2f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 537.0f;
             }
-            else if ((t >= 2.267f) && (t < 2.334f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(1086.0f);
+            else if (range.In(t, 2.267f, 2.334f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 1086.0f;
             }
-            else if ((t >= 2.4f) && (t < 2.467)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(809.0f);
+            else if (range.In(t, 2.4f, 2.467)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 809.0f;
             }
-            else if ((t >= 2.53f) && (t < 2.60f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(676.0f);
+            else if (range.In(t, 2.53f, 2.60f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 676.0f;
             }
-            else if ((t >= 2.667) && (t < 2.8f)) {
-                voice1.SetVolume(1.0f);
+            else if (range.In(t, 2.667, 2.8f)) {
+                voice1.Volume = 1.0f;
                 if (t < 2.733f) {
-                    voice1.SetFrequency(1084.0f);
+                    voice1.Frequency = 1084.0f;
                 }
                 else {
-                    voice1.SetFrequency(809.0f);
+                    voice1.Frequency = 809.0f;
                 }
             }
-            else if ((t >= 2.933f) && (t < 3.067f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(680.0f);
+            else if (range.In(t, 2.933f, 3.067f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 680.0f;
             }
-            else if ((t >= 3.2f) && (t < 3.4f)) {
-                voice1.SetVolume(1.0f);
-                float f0 = 637.0f;
-                float f1 = 725.0f;
-                float f = f0 + (f1 - f0) * ((t - 3.2f) / (3.4f - 3.2f));
-                voice1.SetFrequency(f);
+            else if (range.In(t, 3.2f, 3.4f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = Mod::Lerp(t, range.Begin, range.End, 637.0f, 725.0f);
             }
-            else if ((t >= 3.467f) && (t < 3.668f)) {
-                voice1.SetVolume(1.0f);
-                float f0 = 720.0f;
-                float f1 = 806.0f;
-                float f = f0 + (f1 - f0) * ((t - 3.467) / (3.668f - 3.467f));
-                voice1.SetFrequency(f);
+            else if (range.In(t, 3.467f, 3.668f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = Mod::Lerp(t, range.Begin, range.End, 720.0f, 806.0f);
             }
-            else if ((t >= 3.734f) && (t < 3.934f)) {
-                voice1.SetVolume(1.0f);
-                float f0 = 804.0f;
-                float f1 = 908.0f;
-                float f = f0 + (f1 - f0) * ((t - 3.734f) / (3.934f - 3.734f));
-                voice1.SetFrequency(f);
+            else if (range.In(t, 3.734f, 3.934f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = Mod::Lerp(t, range.Begin, range.End, 804.0f, 908.0f);
             }
-            else if ((t >= 4.0f) && (t < 4.134f)) {
-                voice1.SetVolume(1.0f);
-                voice1.SetFrequency(1084.0f);
+            else if (range.In(t, 4.0f, 4.134f)) {
+                voice1.Volume = 1.0f;
+                voice1.Frequency = 1084.0f;
             }
             else {
-                voice1.SetVolume(0.0f);
+                voice1.Volume = 0.0f;
             }
-            val = voice0.Step() * 0.5f;
-            val += voice1.Step() * 0.5f;
-            if (val > 1.0f) {
-                val = 1.0f;
-            }
-            else if (val < -1.0f) {
-                val = -1.0f;
-            }
+            val = voice0.Step();
+            val += voice1.Step();
+            val *= 0.5f;
 
-            const int16 i16 = int16(val * 32767);
-            floatSamples[i] = val;
-            samples[i] = i16;
+            floatSamples[i] = Sample::Float32(val);
+            samples[i] = Sample::Int16(val);
         }
     }));
 

@@ -8,7 +8,7 @@ namespace Oryol {
 namespace SoundGen {
 
 // see here: http://www.lomont.org/Software/Games/PacMan/PacmanEmulation.pdf
-const char NamcoVoice::WaveData[NamcoVoice::NumWaves][NamcoVoice::NumWaveSamples] = {
+const char NamcoVoice::WaveData[NamcoVoice::NumWaveForms][NamcoVoice::NumWaveSamples] = {
     {
         // Pacman wave0
         7, 9, 10, 11, 12, 13, 13, 14, 14, 14, 13, 13, 12, 11, 10, 9,
