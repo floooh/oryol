@@ -45,6 +45,7 @@ public:
     enum EffectId {
         Waka = 0,
         Song1,
+        Power1,
 
         NumEffects
     };
@@ -53,7 +54,8 @@ public:
     int uiCurEffect = Song1;
     const char* uiEffectNames[NumEffects] = {
         "Waka",
-        "Song1"
+        "Song1",
+        "Power1"
     };
 };
 OryolMain(SoundTestApp);
@@ -291,6 +293,51 @@ SoundTestApp::OnInit() {
             }
             val = voice0.Step();
             val += voice1.Step();
+            val *= 0.5f;
+
+            floatSamples[i] = Sample::Float32(val);
+            samples[i] = Sample::Int16(val);
+        }
+    }));
+
+    this->effects[Power1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(0.734f, 44100, [this](float dt, int16* samples, int numSamples) {
+        using namespace SoundGen;
+
+        float* floatSamples = this->effects[Power1].Alloc(numSamples);
+        NamcoVoice voice(dt, NamcoVoice::Pacman4);
+        Range range;
+        float32 t = 0.0f;
+        for (int i = 0; i < numSamples; i++, t += dt) {
+            float val;
+
+            if (range.In(t, 0.0f, 0.066)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 166.0f, 250.0f);
+            }
+            else if (range.In(t, 0.066f, 0.2f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
+            }
+            else if (range.In(t, 0.2f, 0.333f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
+            }
+            else if (range.In(t, 0.334f, 0.467f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
+            }
+            else if (range.In(t, 0.467f, 0.6f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
+            }
+            else if (range.In(t, 0.6f, 0.734f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
+            }
+            else {
+                voice.Volume = 0.0f;
+            }
+            val = voice.Step();
             val *= 0.5f;
 
             floatSamples[i] = Sample::Float32(val);
