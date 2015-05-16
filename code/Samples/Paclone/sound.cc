@@ -238,7 +238,12 @@ sound::CreateSoundEffects() {
             else {
                 voice1.Volume = 0.0f;
             }
-            samples[i] = Sample::Int16((voice0.Step() + voice1.Step()) * 0.5f);
+            // do a slight fade-in/fade-out on the bleeps to reduce clicking
+            float val1 = voice1.Step();
+            val1 *= Mod::FadeIn(t, range.Begin, range.Begin+0.01f);
+            val1 *= Mod::FadeOut(t, range.End-0.01f, range.End);
+
+            samples[i] = Sample::Int16((voice0.Step() + val1) * 0.5f);
         }
     }));
 
