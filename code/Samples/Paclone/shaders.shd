@@ -63,7 +63,8 @@ float hardPix=-2.0;
 // 0.0 = none
 // 1.0/8.0 = extreme
 //vec2 warp=vec2(1.0/32.0,1.0/32.0);
-vec2 warp=vec2(1.0/24.0,1.0/16.0);
+//vec2 warp=vec2(1.0/24.0,1.0/16.0);
+vec2 warp=vec2(1.0/32.0,1.0/24.0);
 
 // Amount of shadow mask.
 float maskDark=0.75;

@@ -11,7 +11,9 @@
 #include "Core/Types.h"
 #include "canvas.h"
 #include "state.h"
+#include "sound.h"
 #include "func.h"
+#include "sound.h"
 
 namespace Paclone {
 
@@ -20,10 +22,10 @@ public:
     /// constructor
     game();
     
-    /// initiliaze (called once)
-    void Init(canvas* canvas);
+    /// initialize (called once)
+    void Init(canvas* canvas, sound* sound);
     /// update the game (called per frame)
-    void Update(int tick, canvas* canvas, Direction input);
+    void Update(int tick, canvas* canvas, sound* sound, Direction input);
     /// cleanup (called once)
     void Cleanup();
     
@@ -39,18 +41,20 @@ private:
         actor.distToMid.y = TileMidY - actor.pixelPos.y % TileSize;
     };
 
-    void setupTiles();
-    void setupActors();
-    void setupEnergizers();
+    void initTiles();
+    void initActors();
+    void initEnergizers();
     bool checkNewRound() const;
-    void startNewRound();
+    void startNewRound(canvas* canvas, sound* sound);
+    bool checkLifeLost() const;
+    void startNewLife(sound* sound);
     void updateActors(Direction input);
     void move(Actor& actor, bool allowCornering) const;
-    void handleCollide(canvas* canvas);
-    void eatDot(canvas* canvas);
-    void eatEnergizer(Energizer& energizer);
+    void handleCollide(canvas* canvas, sound* sound);
+    void eatDot(canvas* canvas, sound* sound);
+    void eatEnergizer(Energizer& energizer, sound* sound);
     void killPacman();
-    void killGhost(Actor& ghost);
+    void killGhost(Actor& ghost, sound* sound);
     void updateCounters();
     void updateGhostDirection(Actor& ghost) const;
     void updateHouseDirection(Actor& ghost) const;
@@ -58,6 +62,7 @@ private:
     void updateLeaveHouseDirection(Actor& ghost) const;
     void updateGhostState(Actor& ghost);
     void updateGhostDotCounters();
+    void updateGhostSounds(sound* sound);
     void addScore(int val);
 
     class state state;

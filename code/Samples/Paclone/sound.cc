@@ -1,103 +1,50 @@
 //------------------------------------------------------------------------------
-//  SoundTest.cc
+//  sound.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
-#include "Gfx/Gfx.h"
-#include "Input/Input.h"
+#include "sound.h"
 #include "Sound/Sound.h"
-#include "IMUI/IMUI.h"
 #include "Assets/Sound/SoundGen.h"
-#include "glm/trigonometric.hpp"
 
 using namespace Oryol;
+using namespace SoundGen;
 
-class SoundTestApp : public App {
-public:
-    AppState::Code OnInit();
-    AppState::Code OnRunning();
-    AppState::Code OnCleanup();
-
-    struct Effect {
-        Id id;
-        float* samples = nullptr;   // duplicate for visualization via imgui!
-        int numSamples = 0;
-        int uiOffset = 0;
-        int uiNum = 0;
-
-        ~Effect() {
-            if (this->samples) {
-                Memory::Free(this->samples);
-                this->samples = nullptr;
-            }
-        };
-        float* Alloc(int numSamples_) {
-            o_assert(nullptr == this->samples);
-            o_assert(numSamples_ > 0);
-            this->uiOffset = 0;
-            this->uiNum = numSamples_;
-            this->numSamples = numSamples_;
-            this->samples = (float*) Memory::Alloc(this->numSamples * sizeof(float));
-            return this->samples;
-        };
-    };
-
-    enum EffectId {
-        Waka = 0,
-        Song1,
-        Power1,
-        EatGhost,
-
-        NumEffects
-    };
-
-    Effect effects[NumEffects];
-    int uiCurEffect = Song1;
-    const char* uiEffectNames[NumEffects] = {
-        "Waka",
-        "Song1",
-        "Power1",
-        "EatGhost"
-    };
-};
-OryolMain(SoundTestApp);
+namespace Paclone {
 
 //------------------------------------------------------------------------------
-AppState::Code
-SoundTestApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(1024, 480, "Sound Test"));
-    Input::Setup();
-    Sound::Setup(SoundSetup());
-    IMUI::Setup();
+void
+sound::CreateSoundEffects() {
 
-    this->effects[Waka].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.25f, 44100, [this](float dt, int16* samples, int numSamples) {
-
-        using namespace SoundGen;
-        float* floatSamples = this->effects[Waka].Alloc(numSamples);
-
+    // the waka wake sound effect
+    this->wa = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16* samples, int numSamples) {
         const float32 maxFreq = 500.0f;
         const float32 minFreq = 50.0f;
         NamcoVoice voice(dt, NamcoVoice::Pacman2);
         float32 t = 0.0f;
         Range range;
         for (int i = 0; i < numSamples; i++, t += dt) {
-            if (range.In(t, 0.0f, 0.1f)) {
+            if (range.In(t, 0.0f, 0.125f)) {
                 voice.Frequency = Mod::Lerp(t, range.Begin, range.End, maxFreq, minFreq);
             }
-            else if (range.In(t, 0.15f, 0.25f)) {
+            samples[i] = Sample::Int16(voice.Step() * 0.3f);
+        }
+    }));
+    this->ka = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16* samples, int numSamples) {
+        const float32 maxFreq = 500.0f;
+        const float32 minFreq = 50.0f;
+        NamcoVoice voice(dt, NamcoVoice::Pacman2);
+        float32 t = 0.0f;
+        Range range;
+        for (int i = 0; i < numSamples; i++, t += dt) {
+            if (range.In(t, 0.0f, 0.125f)) {
                 voice.Frequency = Mod::Lerp(t, range.Begin, range.End, minFreq, maxFreq);
             }
-            float32 s = voice.Step() * 0.5f;
-            samples[i] = Sample::Int16(s);
-            floatSamples[i] = Sample::Float32(s);
+            samples[i] = Sample::Int16(voice.Step() * 0.3f);
         }
     }));
 
-    this->effects[Song1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [this](float dt, int16* samples, int numSamples) {
-
-        using namespace SoundGen;
-        float* floatSamples = this->effects[Song1].Alloc(numSamples);
-
+    // the intro song
+    this->introSong = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [](float dt, int16* samples, int numSamples) {
         NamcoVoice voice0(dt, NamcoVoice::Pacman2);
         NamcoVoice voice1(dt, NamcoVoice::Pacman0);
         Range range;
@@ -291,62 +238,77 @@ SoundTestApp::OnInit() {
             else {
                 voice1.Volume = 0.0f;
             }
-            float val = voice0.Step();
-            val += voice1.Step();
-            val *= 0.5f;
-
-            floatSamples[i] = Sample::Float32(val);
-            samples[i] = Sample::Int16(val);
+            samples[i] = Sample::Int16((voice0.Step() + voice1.Step()) * 0.5f);
         }
     }));
 
-    this->effects[Power1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.734f, 44100, [this](float dt, int16* samples, int numSamples) {
-        using namespace SoundGen;
-
-        float* floatSamples = this->effects[Power1].Alloc(numSamples);
+    // ghost frightened effect
+    this->ghostFrightened = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.1333f, 44100, [](float dt, int16* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
         float32 t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
-            if (range.In(t, 0.0f, 0.066)) {
-                voice.Volume = 1.0f;
-                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 166.0f, 250.0f);
-            }
-            else if (range.In(t, 0.066f, 0.2f)) {
-                voice.Volume = 1.0f;
-                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
-            }
-            else if (range.In(t, 0.2f, 0.333f)) {
-                voice.Volume = 1.0f;
-                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
-            }
-            else if (range.In(t, 0.334f, 0.467f)) {
-                voice.Volume = 1.0f;
-                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
-            }
-            else if (range.In(t, 0.467f, 0.6f)) {
-                voice.Volume = 1.0f;
-                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
-            }
-            else if (range.In(t, 0.6f, 0.734f)) {
+            if (range.In(t, 0.0f, 0.1333f)) {
                 voice.Volume = 1.0f;
                 voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 50.0f, 250.0f);
             }
             else {
                 voice.Volume = 0.0f;
             }
-            float val = voice.Step();
-            val *= 0.5f;
-
-            floatSamples[i] = Sample::Float32(val);
-            samples[i] = Sample::Int16(val);
+            samples[i] = Sample::Int16(voice.Step() * 0.5f);
         }
     }));
 
-    this->effects[EatGhost].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512, 44100, [this](float dt, int16* samples, int numSamples) {
-        using namespace SoundGen;
+    /// ghost normal background loop
+    this->ghostNormal = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.4f, 44100, [] (float dt, int16* samples, int numSamples) {
+        NamcoVoice voice(dt, NamcoVoice::Pacman6);
+        Range range;
+        const float32 minFreq = 440.0f;
+        const float32 maxFreq = 900.0f;
+        float32 t = 0.0f;
+        for (int i = 0; i < numSamples; i++, t += dt) {
+            if (range.In(t, 0.0f, 0.2f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, minFreq, maxFreq);
+            }
+            else if (range.In(t, 0.2f, 0.4f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, maxFreq, minFreq);
+            }
+            else {
+                voice.Volume = 0.0f;
+            }
+            float val = voice.Step();
+            val *= Mod::FadeIn(t, 0.0f, 0.01f);
+            val *= Mod::FadeOut(t, 0.39f, 0.4f);
+            samples[i] = Sample::Int16(val * 0.3f);
+        }
+    }));
 
-        float* floatSamples = this->effects[EatGhost].Alloc(numSamples);
+    /// ghost alarm loop
+    this->ghostAlarm = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.25f, 44100, [] (float dt, int16* samples, int numSamples) {
+        NamcoVoice voice(dt, NamcoVoice::Pacman0);
+        Range range;
+        const float32 maxFreq = 2500.0f;
+        const float32 minFreq = 600.0f;
+        float t = 0.0f;
+        for (int i = 0; i < numSamples; i++, t += dt) {
+            if (range.In(t, 0.0f, 0.25f)) {
+                voice.Volume = 1.0f;
+                voice.Frequency = Mod::Lerp(t, range.Begin, range.End, maxFreq, minFreq);
+            }
+            else {
+                voice.Volume = 0.0f;
+            }
+            float val = voice.Step();
+            val *= Mod::FadeIn(t, 0.0f, 0.01f);
+            val *= Mod::FadeOut(t, 0.24f, 0.25f);
+            samples[i] = Sample::Int16(val * 0.4f);
+        }
+    }));
+
+    // eat ghost effect
+    this->eatGhost = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512, 44100, [this](float dt, int16* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
         float32 t = 0.0f;
@@ -358,48 +320,68 @@ SoundTestApp::OnInit() {
             else {
                 voice.Volume = 0.0f;
             }
-            float val = voice.Step() * 0.75f;
-            floatSamples[i] = Sample::Float32(val);
-            samples[i] = Sample::Int16(val);
+            samples[i] = Sample::Int16(voice.Step() * 0.75f);
         }
     }));
-
-    return AppState::Running;
 }
 
 //------------------------------------------------------------------------------
-AppState::Code
-SoundTestApp::OnRunning() {
-    Gfx::ApplyDefaultRenderTarget();
-    IMUI::NewFrame();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.75f, 0.75f, 0.75f, 1.0f));
+void
+sound::Reset() {
+    this->ghostFrightenedTick = 0;
+    this->ghostNormalTick = -GhostNormalLengthTicks;
+    this->ghostAlarmTick = 0;
+}
 
-    // draw UI
-    ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::Begin("SoundTest", nullptr, ImVec2(1024, 400));
-    if (ImGui::Button("Play!")) {
-        Sound::Play(this->effects[this->uiCurEffect].id);
+//------------------------------------------------------------------------------
+void
+sound::IntroSong() {
+    Sound::Play(this->introSong);
+}
+
+//------------------------------------------------------------------------------
+void
+sound::Wa() {
+    Sound::Play(this->wa);
+}
+
+//------------------------------------------------------------------------------
+void
+sound::Ka() {
+    Sound::Play(this->ka);
+}
+
+//------------------------------------------------------------------------------
+void
+sound::GhostFrightened(int tick) {
+    if ((tick - this->ghostFrightenedTick) >= GhostFrightenedLengthTicks) {
+        this->ghostFrightenedTick = tick;
+        Sound::Play(this->ghostFrightened);
     }
-    ImGui::SameLine();
-    ImGui::Combo("Effect", &this->uiCurEffect, this->uiEffectNames, NumEffects);
-    Effect& effect = this->effects[this->uiCurEffect];
-    ImGui::PlotLines("##samples", effect.samples + effect.uiOffset, effect.uiNum, 0, nullptr, -1.0f, 1.0f, ImVec2(990, 80));
-    ImGui::SliderInt("offset", &effect.uiOffset, 0, effect.numSamples - effect.uiNum);
-    ImGui::SliderInt("num", &effect.uiNum, 1, effect.numSamples - effect.uiOffset);
-    ImGui::End();
-
-    ImGui::Render();
-    Gfx::CommitFrame();
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
-AppState::Code
-SoundTestApp::OnCleanup() {
-    IMUI::Discard();
-    Sound::Discard();
-    Input::Discard();
-    Gfx::Discard();
-    return AppState::Destroy;
+void
+sound::GhostNormal(int tick) {
+    if ((tick - this->ghostNormalTick) >= GhostNormalLengthTicks) {
+        this->ghostNormalTick = tick;
+        Sound::Play(this->ghostNormal);
+    }
 }
 
+//------------------------------------------------------------------------------
+void
+sound::GhostAlarm(int tick) {
+    if ((tick - this->ghostAlarmTick) >= GhostAlarmLengthTicks) {
+        this->ghostAlarmTick = tick;
+        Sound::Play(this->ghostAlarm);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+sound::EatGhost() {
+    Sound::Play(this->eatGhost);
+}
+
+} // namespace Paclone

@@ -8,13 +8,14 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 SoundEffectSetup
-SoundEffectSetup::FromSampleFunc(float32 dur, int32 freq, SampleFuncT sampleFunc) {
+SoundEffectSetup::FromSampleFunc(int numVoices, float32 dur, int32 freq, SampleFuncT sampleFunc) {
     o_assert_dbg(dur > 0.0f);
     o_assert_dbg(freq > 0);
     SoundEffectSetup setup;
     setup.Duration = dur;
     setup.BufferFrequency = freq;
     setup.SampleFunc = sampleFunc;
+    setup.NumVoices = numVoices;
     return setup;
 }
 

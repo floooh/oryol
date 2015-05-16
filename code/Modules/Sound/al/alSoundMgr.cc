@@ -107,11 +107,11 @@ alSoundMgr::play(soundEffect* effect, int32 loopCount, int32 freqShift) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != effect);
     o_assert_dbg(effect->State == ResourceState::Valid);
-    o_assert_dbg(effect->nextSourceIndex < alSoundEffect::NumSources);
+    o_assert_dbg(effect->nextSourceIndex < effect->numSources);
 
     // get next source, round-robin
     ALuint src = effect->alSources[effect->nextSourceIndex++];
-    if (effect->nextSourceIndex == alSoundEffect::NumSources) {
+    if (effect->nextSourceIndex == effect->numSources) {
         effect->nextSourceIndex = 0;
     }
     o_assert_dbg(0 != src);

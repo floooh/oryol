@@ -103,8 +103,9 @@ class state {
 public:
 
     int gameTick = 0;
+    int roundCounter = 0;   // each new life is a 'round'
     int blockCounter = 0;   // game 'freezes' as long as blockCounter > 0
-    int dotCounter = 0;
+    int dotCounter = 0;     // number of dots eaten by pacman
     int noDotFrames = 0;    // number of frames since last dot eaten
     int score = 0;
     int hiscore = 0;

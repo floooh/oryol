@@ -12,7 +12,7 @@ namespace Paclone {
 
 //------------------------------------------------------------------------------
 void
-draw::setupMap(const state& state, canvas* canvas) {
+draw::initMap(const state& state, canvas* canvas) {
     o_assert_dbg(canvas);
     canvas->CopyCharMap(0, 0, Width, Height, state.charMap);
 }

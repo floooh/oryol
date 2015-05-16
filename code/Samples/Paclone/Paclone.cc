@@ -6,6 +6,7 @@
 #include "Gfx/Gfx.h"
 #include "Input/Input.h"
 #include "Dbg/Dbg.h"
+#include "Sound/Sound.h"
 #include "canvas.h"
 #include "game.h"
 #include "shaders.h"
@@ -27,6 +28,7 @@ private:
     Id crtEffect;
     canvas spriteCanvas;
     game gameState;
+    sound sounds;
     int32 tick;
 };
 OryolMain(PacloneApp);
@@ -42,11 +44,13 @@ PacloneApp::OnInit() {
     const int dispHeight = canvasHeight * 2;
     Gfx::Setup(GfxSetup::Window(dispWidth, dispHeight, "Oryol Pacman Clone Sample"));
     Input::Setup();
+    Sound::Setup(SoundSetup());
     Dbg::Setup();
     
     // setup canvas and game state
     this->spriteCanvas.Setup(Width, Height, 8, 8, NumSprites);
-    this->gameState.Init(&this->spriteCanvas);
+    this->sounds.CreateSoundEffects();
+    this->gameState.Init(&this->spriteCanvas, &this->sounds);
     
     // setup a offscreen render target and copy-shader
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
@@ -78,8 +82,8 @@ AppState::Code
 PacloneApp::OnRunning() {
 
     Direction input = this->getInput();
-    this->gameState.Update(this->tick, &this->spriteCanvas, input);
-    
+    this->gameState.Update(this->tick, &this->spriteCanvas, &this->sounds, input);
+
     // render into offscreen render target
     Gfx::ApplyOffscreenRenderTarget(this->canvasRenderTarget);
     Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
@@ -108,6 +112,7 @@ PacloneApp::OnCleanup() {
     this->gameState.Cleanup();
     this->spriteCanvas.Discard();
     Dbg::Discard();
+    Sound::Discard();
     Input::Discard();
     Gfx::Discard();
     return App::OnCleanup();

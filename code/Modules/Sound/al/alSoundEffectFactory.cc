@@ -11,6 +11,7 @@ namespace _priv {
 ResourceState::Code
 alSoundEffectFactory::setupResource(soundEffect& effect) {
     o_assert_dbg(this->isValid());
+    o_assert_dbg(effect.Setup.NumVoices <= SoundEffectSetup::MaxNumVoices);
 
     // compute number of samples
     const int32 numSamples = int32(effect.Setup.Duration * effect.Setup.BufferFrequency);
@@ -28,6 +29,7 @@ alSoundEffectFactory::setupResource(soundEffect& effect) {
     }
 
     // create the alBuffer and alSources
+    effect.numSources = effect.Setup.NumVoices;
     this->createBufferAndSources(effect, this->sampleBuffer, numSamples);
 
     return ResourceState::Valid;
@@ -47,7 +49,7 @@ alSoundEffectFactory::destroyResource(soundEffect& effect) {
 
     ORYOL_SOUND_AL_CHECK_ERROR();
     if (0 != effect.alSources[0]) {
-        alDeleteSources(soundEffect::NumSources, &(effect.alSources[0]));
+        alDeleteSources(effect.numSources, &(effect.alSources[0]));
         ORYOL_SOUND_AL_CHECK_ERROR();
     }
     if (0 != effect.alBuffer) {
@@ -65,7 +67,7 @@ alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16* s
     alGenBuffers(1, &effect.alBuffer);
     o_assert_dbg(0 != effect.alBuffer);
     ORYOL_SOUND_AL_CHECK_ERROR();
-    alGenSources(alSoundEffect::NumSources, &(effect.alSources[0]));
+    alGenSources(effect.numSources, &(effect.alSources[0]));
     ORYOL_SOUND_AL_CHECK_ERROR();
     effect.nextSourceIndex = 0;
     if (numSamples > 0) {
@@ -75,7 +77,7 @@ alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16* s
     }
 
     // attach buffer to sources
-    for (int i = 0; i < alSoundEffect::NumSources; i++) {
+    for (int i = 0; i < effect.numSources; i++) {
         o_assert_dbg(0 != effect.alSources[i]);
         alSourcei(effect.alSources[i], AL_BUFFER, effect.alBuffer);
         ORYOL_SOUND_AL_CHECK_ERROR();

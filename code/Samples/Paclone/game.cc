@@ -17,19 +17,18 @@ game::game() {
 
 //------------------------------------------------------------------------------
 void
-game::Init(canvas* canvas) {
-    draw::setupMap(state, canvas);
+game::Init(canvas* canvas, sound* sound) {
     state.gameTick = 0;
-    state.blockCounter = 180;
-    state.dotCounter = 0;
-    state.noDotFrames = 0;
+    state.roundCounter = 0;
     state.score = 0;
     state.hiscore = 0;
     state.lives = NumLives;
+    state.blockCounter = 0;
+    state.dotCounter = 0;
+    state.noDotFrames = 0;
     state.ghostKillCounter = 0;
-    this->setupTiles();
-    this->setupActors();
-    this->setupEnergizers();
+
+    this->startNewRound(canvas, sound);
 }
 
 //------------------------------------------------------------------------------
@@ -40,14 +39,18 @@ game::Cleanup() {
 
 //------------------------------------------------------------------------------
 void
-game::Update(int tick, canvas* canvas, Direction input) {
-    this->updateCounters();
+game::Update(int tick, canvas* canvas, sound* sound, Direction input) {
     if (this->checkNewRound()) {
-        this->startNewRound();
+        this->startNewRound(canvas, sound);
     }
+    if (this->checkLifeLost()) {
+        this->startNewLife(sound);
+    }
+    this->updateCounters();
     if (state.blockCounter == 0) {
         this->updateActors(input);
-        this->handleCollide(canvas);
+        this->updateGhostSounds(sound);
+        this->handleCollide(canvas, sound);
         state.gameTick++;
         state.noDotFrames++;
     }
@@ -71,7 +74,7 @@ game::updateCounters() {
 
 //------------------------------------------------------------------------------
 void
-game::setupTiles() {
+game::initTiles() {
     for (int y = 0; y < Height; y++) {
         for (int x = 0; x < Width; x++) {
             char c = state.charMap[y * Width + x];
@@ -89,7 +92,7 @@ game::setupTiles() {
 
 //------------------------------------------------------------------------------
 void
-game::setupEnergizers() {
+game::initEnergizers() {
     for (int i = 0; i < NumEnergizers; i++) {
         state.energizers[i].tilePos = state.energizerPos[i];
         state.energizers[i].spriteIndex = i;
@@ -99,7 +102,7 @@ game::setupEnergizers() {
 
 //------------------------------------------------------------------------------
 void
-game::setupActors() {
+game::initActors() {
     
     // FIXME: split into level init and round init!
     
@@ -135,23 +138,48 @@ game::setupActors() {
 //------------------------------------------------------------------------------
 bool
 game::checkNewRound() const {
-    return 1 == state.actors[Pacman].killedTicks;
+    // a new round starts when all dots have been eaten
+    return 240 == state.dotCounter;
 }
 
 //------------------------------------------------------------------------------
 void
-game::startNewRound() {
-    o_assert_dbg(this->checkNewRound());
+game::startNewRound(canvas* canvas, sound* sound) {
+    o_assert_dbg(sound);
+
+    state.blockCounter = sound::IntroSongLengthTicks;
+    state.dotCounter = 0;
+    state.noDotFrames = 0;
+    state.ghostKillCounter = 0;
+
+    draw::initMap(state, canvas);
+    this->initTiles();
+    this->initActors();
+    this->initEnergizers();
+    sound->Reset();
+    sound->IntroSong();
+}
+
+//------------------------------------------------------------------------------
+bool
+game::checkLifeLost() const {
+    return (1 == state.actors[Pacman].killedTicks);
+}
+
+//------------------------------------------------------------------------------
+void
+game::startNewLife(sound* sound) {
+    o_assert_dbg(this->checkLifeLost());
 
     // pacman has lost a life, start new life
     state.lives--;
+    sound->Reset();
     if (state.lives <= 0) {
         // no more lifes left
         state.lives = 0;
     }
     state.gameTick = 0;
     state.blockCounter = 180;
-    state.dotCounter = 0;
     state.noDotFrames = 0;
     state.ghostKillCounter = 0;
     for (Actor& actor : state.actors) {
@@ -426,6 +454,39 @@ game::updateEnterHouseDirection(Actor& ghost) const {
 
 //------------------------------------------------------------------------------
 void
+game::updateGhostSounds(sound* sound) {
+    // decide what sound to play
+    bool frightened = false;
+    bool hollowed = false;
+    for (const Actor& actor : state.actors) {
+        if (Hollow == actor.state) {
+            hollowed = true;
+            break;
+        }
+    }
+    if (!hollowed) {
+        for (const Actor& actor : state.actors) {
+            if (Frightened == actor.state) {
+                frightened = true;
+                break;
+            }
+        }
+    }
+
+    // play ghost state sound
+    if (hollowed) {
+        sound->GhostAlarm(state.gameTick);
+    }
+    else if (frightened) {
+        sound->GhostFrightened(state.gameTick);
+    }
+    else {
+        sound->GhostNormal(state.gameTick);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 game::move(Actor& actor, bool allowCornering) const {
     const Int2& dir = state.dirVec[actor.dir];
     actor.pixelPos.x += dir.x;
@@ -460,13 +521,13 @@ game::move(Actor& actor, bool allowCornering) const {
     dots.
 */
 void
-game::handleCollide(canvas* canvas) {
+game::handleCollide(canvas* canvas, sound* sound) {
     const Int2 pacPos = state.actors[Pacman].tilePos;
 
     // check for energizer overlap
     for (Energizer& enrg : state.energizers) {
         if (enrg.active && func::equal(pacPos, enrg.tilePos)) {
-            this->eatEnergizer(enrg);
+            this->eatEnergizer(enrg, sound);
         }
     }
     
@@ -482,7 +543,7 @@ game::handleCollide(canvas* canvas) {
                         break;
                     case Frightened:
                         // Ghost dies
-                        this->killGhost(actor);
+                        this->killGhost(actor, sound);
                         break;
                     default:
                         break;
@@ -493,7 +554,7 @@ game::handleCollide(canvas* canvas) {
     
     // check for dot
     if (func::tileType(pacPos) == Dot) {
-        this->eatDot(canvas);
+        this->eatDot(canvas, sound);
     }
 }
 
@@ -525,18 +586,25 @@ game::updateGhostDotCounters() {
 
 //------------------------------------------------------------------------------
 void
-game::eatDot(canvas* canvas) {
+game::eatDot(canvas* canvas, sound* sound) {
     const Int2& pacPos = state.actors[Pacman].tilePos;
     this->setTile(pacPos, Empty);
     canvas->SetTile(Sheet::Space, pacPos.x, pacPos.y);
     this->updateGhostDotCounters();
     this->addScore(1);
     state.noDotFrames = 0;
+    state.dotCounter++;
+    if (state.dotCounter & 1) {
+        sound->Ka();
+    }
+    else {
+        sound->Wa();
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-game::eatEnergizer(Energizer& energizer) {
+game::eatEnergizer(Energizer& energizer, sound* sound) {
     energizer.active = false;
     state.ghostKillCounter = 0;
     for (Actor& actor : state.actors) {
@@ -560,7 +628,7 @@ game::killPacman() {
 
 //------------------------------------------------------------------------------
 void
-game::killGhost(Actor& ghost) {
+game::killGhost(Actor& ghost, sound* sound) {
     ghost.state = Hollow;
     ghost.frightenedTick = 0;
     ghost.killedCount = ++state.ghostKillCounter;
@@ -574,6 +642,7 @@ game::killGhost(Actor& ghost) {
         default: score = 160; break;
     }
     this->addScore(score);
+    sound->EatGhost();
 }
 
 } // namespace Paclone

@@ -19,14 +19,14 @@ public:
     /// destructor
     ~alSoundEffect();
 
-    static const int32 NumSources = 16;
-
     /// the alBuffer object
     ALuint alBuffer;
     /// the next source index to grab for playback
     int32 nextSourceIndex;
+    /// number of valid sources
+    int32 numSources;
     /// alSource objects, used round-robin for playback
-    StaticArray<ALuint, NumSources> alSources;
+    StaticArray<ALuint, SoundEffectSetup::MaxNumVoices> alSources;
 
     /// clear the object
     void Clear();

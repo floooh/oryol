@@ -20,7 +20,7 @@ public:
     typedef std::function<void(float32 dt, int16* sampleBuffer, int32 numSamples)> SampleFuncT;
 
     /// create with number of samples and SampleFunc
-    static SoundEffectSetup FromSampleFunc(float32 duration, int32 bufferFreq, SampleFuncT sampleFunc);
+    static SoundEffectSetup FromSampleFunc(int32 numVoices, float32 duration, int32 bufferFreq, SampleFuncT sampleFunc);
 
     /// resource locator
     class Locator Locator = Locator::NonShared();
@@ -30,6 +30,10 @@ public:
     float32 Duration;
     /// optional callback function to setup sample buffer
     SampleFuncT SampleFunc;
+    /// max number of parallel voices for this sound effect
+    static const int32 MaxNumVoices = 16;
+    /// number of parallel voices this sound can play
+    int32 NumVoices = MaxNumVoices;
 };
 
 } // namespace Oryol
