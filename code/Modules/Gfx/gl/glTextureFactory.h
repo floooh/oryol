@@ -13,7 +13,6 @@ namespace _priv {
 
 class renderer;
 class texture;
-class textureLoaderBase;
 class displayMgr;
 class texturePool;
     
