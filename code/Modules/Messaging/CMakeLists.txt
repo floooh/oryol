@@ -2,6 +2,7 @@
 #   oryol Messaging module
 #-------------------------------------------------------------------------------
 fips_begin_module(Messaging)
+    fips_vs_warning_level(3)
     fips_files(
         AsyncQueue.cc AsyncQueue.h
         Broadcaster.cc Broadcaster.h
@@ -17,6 +18,7 @@ fips_begin_module(Messaging)
 fips_end_module()
 
 fips_begin_unittest(Messaging)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
         AsyncQueueTest.cc

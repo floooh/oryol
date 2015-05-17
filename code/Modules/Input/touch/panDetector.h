@@ -28,7 +28,7 @@ public:
     
 private:
     /// check if distance between 2 points is less then
-    bool distLess(const glm::vec2& pos0, const glm::vec2& pos1, float dist) const;
+    bool distLess(const glm::vec2& pos0, const glm::vec2& pos1, int32 dist) const;
     
     touchEvent startEvent;
     bool panning = false;

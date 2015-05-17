@@ -19,7 +19,7 @@ panDetector::reset() {
 
 //------------------------------------------------------------------------------
 bool
-panDetector::distLess(const glm::vec2& pos0, const glm::vec2& pos1, float dist) const {
+panDetector::distLess(const glm::vec2& pos0, const glm::vec2& pos1, int32 dist) const {
     float dx = pos1.x - pos0.x;
     float dy = pos1.y - pos0.y;
     return (dx * dx + dy * dy) < (dist * dist);

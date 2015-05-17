@@ -2,6 +2,7 @@
 #   oryol Input module
 #-------------------------------------------------------------------------------
 fips_begin_module(Input)
+    fips_vs_warning_level(3)
     fips_files(Input.cc Input.h)
     fips_generate(TYPE MessageProtocol FROM InputProtocol.yml)
     fips_dir(Core)

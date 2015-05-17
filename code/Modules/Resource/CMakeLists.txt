@@ -2,6 +2,7 @@
 #   oryol Resource module
 #-------------------------------------------------------------------------------
 fips_begin_module(Resource)
+    fips_vs_warning_level(3)
     fips_files(
         Id.h
         Locator.cc Locator.h
@@ -21,6 +22,7 @@ fips_begin_module(Resource)
 fips_end_module()
 
 fips_begin_unittest(Resource)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
         IdTest.cc

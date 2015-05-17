@@ -32,6 +32,7 @@ endif()
 endif() # ORYOL_OPENGL
 
 fips_begin_module(Gfx)
+    fips_vs_warning_level(3)
     fips_files(Gfx.cc Gfx.h)
     fips_generate(TYPE MessageProtocol FROM GfxProtocol.yml)
     fips_dir(Attrs)
@@ -148,6 +149,7 @@ fips_begin_module(Gfx)
 fips_end_module()
 
 fips_begin_unittest(Gfx)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
         DDSLoadTest.cc

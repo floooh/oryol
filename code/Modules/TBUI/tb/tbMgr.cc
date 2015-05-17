@@ -59,13 +59,13 @@ tbMgr::Setup(const TBUISetup& setup) {
     // setup input handler
     this->inputHandler = Dispatcher<InputProtocol>::Create();
     this->inputHandler->Subscribe<InputProtocol::MouseMove>([this](const Ptr<InputProtocol::MouseMove>& msg) {
-        this->onMouseMove(msg->GetPosition().x, msg->GetPosition().y);
+        this->onMouseMove((int)msg->GetPosition().x, (int)msg->GetPosition().y);
     });
     this->inputHandler->Subscribe<InputProtocol::MouseButton>([this](const Ptr<InputProtocol::MouseButton>& msg) {
         this->onMouseButton(msg->GetMouseButton(), msg->GetDown());
     });
     this->inputHandler->Subscribe<InputProtocol::MouseScroll>([this](const Ptr<InputProtocol::MouseScroll>& msg) {
-        this->onScroll(msg->GetScroll().x, -msg->GetScroll().y);
+        this->onScroll((int)msg->GetScroll().x, (int)-msg->GetScroll().y);
     });
     this->inputHandler->Subscribe<InputProtocol::WChar>([this](const Ptr<InputProtocol::WChar>& msg) {
         this->onWChar(msg->GetWChar());

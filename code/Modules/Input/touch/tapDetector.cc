@@ -25,7 +25,7 @@ tapDetector::withinTimeout(const touchEvent& newEvent, const touchEvent& oldEven
 
 //------------------------------------------------------------------------------
 bool
-tapDetector::withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, float maxDist) const {
+tapDetector::withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int32 maxDist) const {
 
     // FIXME: take device DPI into account
 

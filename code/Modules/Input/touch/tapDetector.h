@@ -34,7 +34,7 @@ public:
     
 private:
     /// check if 2 touch events are within the tap max distance
-    bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, float maxDist) const;
+    bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int32 maxDist) const;
     /// check if 2 touch events are within a timeout
     bool withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int32 timeOutMs) const;
     

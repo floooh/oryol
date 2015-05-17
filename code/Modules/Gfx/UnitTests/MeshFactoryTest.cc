@@ -28,9 +28,9 @@ TEST(MeshFactoryTest) {
     displayManager.SetupDisplay(gfxSetup);
     
     // setup a meshFactory object
-    class renderer renderer;
-    renderer.setup();
     meshPool meshPool;
+    class renderer renderer;
+    renderer.setup(&meshPool);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     

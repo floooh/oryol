@@ -2,6 +2,7 @@
 #   oryol IO module
 #-------------------------------------------------------------------------------
 fips_begin_module(IO)
+    fips_vs_warning_level(3)
     fips_files(
         IO.cc IO.h
     )
@@ -38,6 +39,7 @@ fips_begin_module(IO)
 fips_end_module()
 
 fips_begin_unittest(IO)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
         BinaryStreamReaderWriterTest.cc

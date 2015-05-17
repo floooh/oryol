@@ -2,6 +2,7 @@
 #   oryol HTTP module
 #-------------------------------------------------------------------------------
 fips_begin_module(HTTP)
+    fips_vs_warning_level(3)
     fips_files(
         HTTPClient.cc HTTPClient.h
         HTTPFileSystem.cc HTTPFileSystem.h
@@ -41,6 +42,7 @@ fips_begin_module(HTTP)
 fips_end_module()
 
 fips_begin_unittest(HTTP)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(HTTPClientTest.cc HTTPFileSystemTest.cc HTTPMethodTest.cc)
     fips_deps(IO Messaging HTTP Core)

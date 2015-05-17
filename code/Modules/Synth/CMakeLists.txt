@@ -3,6 +3,7 @@
 #-------------------------------------------------------------------------------
 
 fips_begin_module(Synth)
+    fips_vs_warning_level(3)
     fips_files(Synth.cc Synth.h)
     fips_dir(Core)
     fips_files(

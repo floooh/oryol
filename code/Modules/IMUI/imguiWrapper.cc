@@ -227,7 +227,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
             vtx_offset += pcmd->vtx_count;
         }
     }
-    Gfx::ApplyScissorRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+    Gfx::ApplyScissorRect(0, 0, (int32)ImGui::GetIO().DisplaySize.x, (int32)ImGui::GetIO().DisplaySize.y);
 }
 
 } // namespace _priv

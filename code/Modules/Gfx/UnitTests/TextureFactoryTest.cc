@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/texturePool.h"
+#include "Gfx/Resource/meshPool.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/renderer.h"
 
@@ -25,8 +26,9 @@ TEST(RenderTargetCreationTest) {
     
     // setup a meshFactory object
     texturePool texPool;
+    meshPool meshPool;
     class renderer renderer;
-    renderer.setup();
+    renderer.setup(&meshPool);
     textureFactory factory;
     factory.Setup(&renderer, &displayManager, &texPool);
     

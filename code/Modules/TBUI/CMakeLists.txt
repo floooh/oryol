@@ -1,4 +1,5 @@
 fips_begin_module(TBUI)
+    fips_vs_warning_level(3)
     fips_files(
         TBUI.h TBUI.cc
         TBUISetup.h

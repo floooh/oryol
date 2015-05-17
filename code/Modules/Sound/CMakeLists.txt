@@ -1,4 +1,5 @@
 fips_begin_module(Sound)
+    fips_vs_warning_level(3)
     fips_files(Sound.cc Sound.h)
     fips_dir(Core)
     fips_files(
