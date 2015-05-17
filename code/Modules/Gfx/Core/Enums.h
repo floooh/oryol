@@ -39,7 +39,7 @@ public:
 /**
     @class Oryol::PixelChannel
     @ingroup Gfx
-    @brief RGBA/Depth/Stencil channel bits and cominations
+    @brief RGBA/Depth/Stencil channel bits and combinations
  */
 class PixelChannel {
 public:
