@@ -193,7 +193,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
     int numCmdLists;
     for (numCmdLists = 0; numCmdLists < cmd_lists_count; numCmdLists++) {
         const ImDrawList* cmd_list = cmd_lists[numCmdLists];
-        const int cmdListNumVerts = cmd_list->vtx_buffer.size();
+        const int cmdListNumVerts = (const int) cmd_list->vtx_buffer.size();
         if ((numVertices + cmdListNumVerts) <= imguiWrapper::MaxNumVertices) {
             Memory::Copy(&(cmd_list->vtx_buffer[0]), &(self->vertexData[numVertices]), cmdListNumVerts * sizeof(ImDrawVert));
             numVertices += cmdListNumVerts;

@@ -47,7 +47,7 @@ tbOryolFile::Size() {
 //------------------------------------------------------------------------------
 size_t
 tbOryolFile::Read(void* buf, size_t elemSize, size_t count) {
-    return this->content->Read(buf, elemSize * count);
+    return this->content->Read(buf, int32(elemSize * count));
 }
 
 } // namespace _priv

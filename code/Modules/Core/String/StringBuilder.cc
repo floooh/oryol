@@ -186,12 +186,7 @@ StringBuilder::Append(const char* ptr, int32 startIndex, int32 endIndex) {
         o_assert(ptr);
         this->ensureRoom(length);
         o_assert(this->buffer);
-        #if ORYOL_WINDOWS
-        errno_t res = strncpy_s(this->buffer + this->size, length + 1, ptr + startIndex, length);
-        o_assert(0 == res);
-        #else
         std::strncpy(this->buffer + this->size, ptr + startIndex, length);
-        #endif
         this->size += length;
         this->buffer[this->size] = 0;
     }
@@ -336,12 +331,7 @@ StringBuilder::substituteCommon(char* occur, int32 matchLen, int32 substLen, con
     
     // copy substitute into hole
     if (substLen > 0) {
-        #if ORYOL_WINDOWS
-        errno_t res = strncpy_s(occur, substLen+1, subst, substLen);
-        o_assert(0 == res);
-        #else
         std::strncpy(occur, subst, substLen);
-        #endif
     }    
 }
 

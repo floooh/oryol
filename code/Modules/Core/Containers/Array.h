@@ -164,7 +164,7 @@ template<class TYPE>
 Array<TYPE>::Array(std::initializer_list<TYPE> l) :
 minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-    this->Reserve(l.size());
+    this->Reserve(int32(l.size()));
     for (const auto& elm : l) {
         this->Add(elm);
     }

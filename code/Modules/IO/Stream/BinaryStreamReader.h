@@ -43,7 +43,7 @@ BinaryStreamReader::Read(TYPE& val) {
     if (srcPtr != nullptr) {
         const uint8* endPtr = Serializer::Decode<TYPE>(srcPtr, maxValidPtr, val);
         if (endPtr != nullptr) {
-            const int32 numBytesDecoded = endPtr - srcPtr;
+            const int32 numBytesDecoded = (const int32)(endPtr - srcPtr);
             o_assert(numBytesDecoded == Serializer::EncodedSize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;
@@ -65,7 +65,7 @@ BinaryStreamReader::Read(Array<TYPE>& val) {
     if (nullptr != srcPtr) {
         const uint8* endPtr = Serializer::DecodeArray<TYPE>(srcPtr, maxValidPtr, val);
         if (nullptr != endPtr) {
-            const int32 numBytesDecoded = endPtr - srcPtr;
+            const int32 numBytesDecoded = (const int32)(endPtr - srcPtr);
             o_assert(numBytesDecoded == Serializer::EncodedArraySize<TYPE>(val));
             this->stream->MoveReadPosition(numBytesDecoded);
             retval = true;

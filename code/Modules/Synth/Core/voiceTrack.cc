@@ -25,7 +25,7 @@ voiceTrack::AddOp(const SynthOp& op) {
     // find insertion position, and truncate the track (discard any ops after it)
     if (!this->track.Empty()) {
         auto ptr = std::lower_bound(this->track.begin(), this->track.end(), op);
-        int32 index = ptr - this->track.begin();
+        int32 index = int32(ptr - this->track.begin());
         while (index < this->track.Size()) {
             this->track.Erase(this->track.Size() - 1);
             // o_warn("voiceTrack::Add(): track was truncated\n");

@@ -1,5 +1,6 @@
 fips_begin_module(TBUI)
     fips_vs_warning_level(3)
+    fips_vs_disable_warnings(4267)   # converting from 64-bit to 32-bit values, this happens often in Turbobadger source
     fips_files(
         TBUI.h TBUI.cc
         TBUISetup.h

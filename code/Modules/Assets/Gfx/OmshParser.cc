@@ -88,7 +88,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     if (u32CheckSize > u32Size) {
         return false;
     }
-    outSetup.DataVertexOffset = (u32Ptr - u32StartPtr) << 2;
+    outSetup.DataVertexOffset = int32(u32Ptr - u32StartPtr) << 2;
     u32Ptr += u32VertexDataSize;
 
     // check if enough data for indices (index block is padded
@@ -103,7 +103,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     if (u32CheckSize > u32Size) {
         return false;
     }
-    outSetup.DataIndexOffset = (u32Ptr - u32StartPtr) << 2;
+    outSetup.DataIndexOffset = int32(u32Ptr - u32StartPtr) << 2;
     u32Ptr += u32IndexDataSize;
 
     // cleanly reached the end?

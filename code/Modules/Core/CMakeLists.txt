@@ -3,6 +3,9 @@
 #-------------------------------------------------------------------------------
 fips_begin_module(Core)
     fips_vs_warning_level(3)
+    if (FIPS_MSVC)
+        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    endif()
     fips_files(
         App.cc App.h
         AppState.cc AppState.h
