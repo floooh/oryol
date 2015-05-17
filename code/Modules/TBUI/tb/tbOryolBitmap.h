@@ -20,7 +20,7 @@ public:
     /// bitmap wrapper constructor
     tbOryolBitmap(tbOryolBatchRenderer *renderer);
     /// bitmap wrapper destructor
-    ~tbOryolBitmap();
+    virtual ~tbOryolBitmap();
     /// initialize bitmap with data
     bool Init(int width, int height, tb::uint32 *data);
     /// return width
