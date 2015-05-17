@@ -5,9 +5,6 @@
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
 #include "cpuSynthesizer.h"
-#if ORYOL_WINDOWS
-#define _USE_MATH_DEFINES
-#endif
 #include <cmath>
 #include <cstdlib>
 
@@ -103,7 +100,7 @@ cpuSynthesizer::setupWaves() {
     // sine wave
     for (int32 i = 0; i < NumWaveSamples; i++) {
         float32 t = float32(i) / NumWaveSamples;
-        float32 s = std::sin(t * M_PI * 2.0f) * synth::MaxSampleVal;
+        float32 s = std::sin(t * 3.14159265358979323846f * 2.0f) * synth::MaxSampleVal;
         this->waves[SynthOp::Sine][i] = int32(s);
     }
     

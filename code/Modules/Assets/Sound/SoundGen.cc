@@ -7,6 +7,8 @@
 namespace Oryol {
 namespace SoundGen {
 
+const float Wave::pi = 3.14159265358979323846f;
+
 // see here: http://www.lomont.org/Software/Games/PacMan/PacmanEmulation.pdf
 const char NamcoVoice::WaveData[NamcoVoice::NumWaveForms][NamcoVoice::NumWaveSamples] = {
     {

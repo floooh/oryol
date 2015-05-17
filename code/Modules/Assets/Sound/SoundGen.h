@@ -161,10 +161,12 @@ private:
     a full second).
 */
 class Wave {
+private:
+    static const float pi;
 public:
     /// get next sine wave value at normalized sample position
     static float32 Sine(float32 p) {
-        return std::sin(p * M_PI * 2.0f);
+        return std::sin(p * pi * 2.0f);
     };
     /// get next square wave value at normalized sample position
     static float32 Square(float32 p) {
