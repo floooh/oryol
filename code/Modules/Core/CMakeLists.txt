@@ -2,6 +2,7 @@
 #   oryol core module
 #-------------------------------------------------------------------------------
 fips_begin_module(Core)
+    fips_vs_warning_level(3)
     fips_files(
         App.cc App.h
         AppState.cc AppState.h
@@ -92,6 +93,7 @@ if (FIPS_USE_VLD)
 endif()
 
 fips_begin_unittest(Core)
+    fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
         ArgsTest.cc

@@ -59,8 +59,13 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     head->hash = hash;
     head->length  = strLen;
     head->str  = (char*) this->curPointer + sizeof(Header);
+    #if ORYOL_WINDOWS
+    errno_t res = strcpy_s((char*)head->str, strLen + 1, str);
+    o_assert(0 == res);
+    #else
     std::strcpy((char*)head->str, str);
-    
+    #endif
+
     // set curPointer to the next aligned position
     this->curPointer = (int8*) Memory::Align(this->curPointer + requiredSize, sizeof(Header));
     
