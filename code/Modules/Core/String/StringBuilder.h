@@ -52,11 +52,11 @@ public:
     /// printf-style formatting, max string length must be provided, returns false if resulting string is too long
     bool Format(int32 maxLength, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
     /// printf-style formatting with existing va_list
-    bool Format(int32 maxLength, const char* fmt, va_list args);
+    bool FormatVAList(int32 maxLength, const char* fmt, va_list args);
     /// same as Format, but append to existing content
     bool AppendFormat(int32 maxLength, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
     /// same as Format with va_list, but append to existing content
-    bool AppendFormat(int32 maxLength, const char* fmt, va_list args);
+    bool AppendFormatVAList(int32 maxLength, const char* fmt, va_list args);
     
     /// (re)set to raw null-terminated string
     void Set(const char* str);

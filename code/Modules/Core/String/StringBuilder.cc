@@ -669,7 +669,7 @@ StringBuilder::Format(int32 maxLength, const char* fmt, ...) {
 
 //------------------------------------------------------------------------------
 bool
-StringBuilder::Format(int32 maxLength, const char* fmt, va_list args) {
+StringBuilder::FormatVAList(int32 maxLength, const char* fmt, va_list args) {
     return this->format(maxLength, false, fmt, args);
 }
 
@@ -685,7 +685,7 @@ StringBuilder::AppendFormat(int32 maxLength, const char* fmt, ...) {
 
 //------------------------------------------------------------------------------
 bool
-StringBuilder::AppendFormat(int32 maxLength, const char* fmt, va_list args) {
+StringBuilder::AppendFormatVAList(int32 maxLength, const char* fmt, va_list args) {
     return this->format(maxLength, true, fmt, args);
 }
 
