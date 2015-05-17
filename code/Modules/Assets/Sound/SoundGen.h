@@ -35,7 +35,7 @@ public:
     };
     /// clamp float value to -1.0..+1.0 and convert to int16 sample value
     static int16 Int16(float32 val) {
-        int32 ival = val * 32768;
+        int32 ival = int32(val * 32768);
         if (ival < -32768) {
             ival = -32768;
         }

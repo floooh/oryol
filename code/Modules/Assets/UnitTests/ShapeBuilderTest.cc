@@ -27,9 +27,9 @@ TEST(ShapeBuilderTest) {
     displayManager.SetupDisplay(GfxSetup::Window(400, 300, "Oryol Test"));
     
     // setup a meshFactory object
-    class renderer renderer;
-    renderer.setup();
     meshPool meshPool;
+    class renderer renderer;
+    renderer.setup(&meshPool);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     
