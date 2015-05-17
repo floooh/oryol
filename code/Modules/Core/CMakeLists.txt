@@ -8,6 +8,7 @@ fips_begin_module(Core)
         Args.cc Args.h
         Assertion.h
         Class.h
+        Command.cc Command.h
         Config.h
         Core.cc Core.h
         Creator.h
@@ -18,6 +19,7 @@ fips_begin_module(Core)
         RefCounted.cc RefCounted.h
         RunLoop.cc RunLoop.h
         Types.h
+        Var.cc Var.h
         precompiled.h
     )
     fips_dir(Containers)

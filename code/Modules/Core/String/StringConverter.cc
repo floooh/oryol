@@ -223,4 +223,10 @@ StringConverter::FromString(const String& str) {
     return (float32) std::atof(str.AsCStr());
 }
 
+//------------------------------------------------------------------------------
+template<> int64
+StringConverter::FromString(const String& str) {
+    return (int64) std::atol(str.AsCStr());
+}
+
 } // namespace Oryol
