@@ -11,9 +11,13 @@
 namespace Oryol {
 namespace _priv {
 class textureFactory : public glTextureFactory { };
+} }
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11TextureFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureFactory : public d3d11TextureFactory { };
+}}
 #else
 #error "Platform not supported yet!"
 #endif
-
-} // namespace _priv
-} // namespace Oryol

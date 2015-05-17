@@ -112,6 +112,11 @@ fips_begin_module(Gfx)
         fips_files(
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
             d3d11Enums.h
+            d3d11MeshFactory.cc d3d11MeshFactory.h
+            d3d11ShaderFactory.cc d3d11ShaderFactory.h
+            d3d11ProgramBundleFactory.cc d3d11ProgramBundleFactory.h
+            d3d11TextureFactory.cc d3d11TextureFactory.h
+            d3d11Renderer.cc d3d11Renderer.h
         )
     endif()
     if (FIPS_ANDROID)

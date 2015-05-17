@@ -18,6 +18,12 @@ namespace _priv {
 class programBundle : public glProgramBundle { };
 } // namespace _priv
 } // namespace Oryol
+#elif ORYOL_D3D11
+#include "Gfx/Resource/programBundleBase.h"
+namespace Oryol {
+namespace _priv {
+class programBundle : public programBundleBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

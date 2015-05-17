@@ -13,8 +13,13 @@
 namespace Oryol {
 namespace _priv {
 class shader : public glShader { };
-} // namespace _priv
-} // namespace Oryol
+} }
+#elif ORYOL_D3D11
+#include "Gfx/Resource/shaderBase.h"
+namespace Oryol {
+namespace _priv {
+class shader : public shaderBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

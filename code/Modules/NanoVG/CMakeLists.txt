@@ -1,6 +1,8 @@
 #-------------------------------------------------------------------------------
 #   oryol nanovg integration wrapper
 #-------------------------------------------------------------------------------
+if (ORYOL_OPENGL)
+
 add_definitions(-DNVG_NO_STDIO=1)
 add_definitions(-DNVG_NO_STB_ASSERTS=1)
 
@@ -19,3 +21,4 @@ fips_begin_module(NanoVG)
     fips_deps(Core IO Gfx)
 fips_end_module()
 
+endif()

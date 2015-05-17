@@ -10,8 +10,13 @@
 namespace Oryol {
 namespace _priv {
 class programBundleFactory : public glProgramBundleFactory { };
-} // namespace _priv
-} // namespace Oryol
+} }
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11ProgramBundleFactory.h"
+namespace Oryol {
+namespace _priv {
+class programBundleFactory : public d3d11ProgramBundleFactory { };
+} }
 #else
 #error "Platform not yet supported!"
 #endif

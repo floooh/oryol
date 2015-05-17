@@ -10,8 +10,13 @@
 namespace Oryol {
 namespace _priv {
 class shaderFactory : public glShaderFactory { };
-} // namespace _priv
-} // namespace Oryol
+} }
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11ShaderFactory.h"
+namespace Oryol {
+namespace _priv {
+class shaderFactory : public d3d11ShaderFactory { };
+} }
 #else
 #error "Platform not yet supported!"
 #endif

@@ -15,6 +15,12 @@ namespace Oryol {
 namespace _priv {
 class mesh : public glMesh { };
 } }
+#elif ORYOL_D3D11
+#include "Gfx/Resource/meshBase.h"
+namespace Oryol {
+namespace _priv {
+class mesh : public meshBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif
