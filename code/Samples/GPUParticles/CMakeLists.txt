@@ -1,4 +1,5 @@
 fips_begin_app(GPUParticles windowed)
+    fips_vs_warning_level(3)
     fips_files(GPUParticles.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
     fips_deps(Gfx Assets Time Dbg)

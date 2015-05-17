@@ -1,4 +1,5 @@
 fips_begin_app(DDSCubeMap windowed)
+    fips_vs_warning_level(3)
     fips_files(DDSCubeMap.cc)
     fips_generate(TYPE Shader FROM shaders.shd SOURCE shaders.cc HEADER shaders.h)
     fips_deps(Gfx Assets HTTP)

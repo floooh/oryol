@@ -1,4 +1,5 @@
 fips_begin_app(SynthTest windowed)
+    fips_vs_warning_level(3)
     fips_files(SynthTest.cc)
     fips_deps(IMUI Synth)
     oryol_add_web_sample(SynthTest "Most simple Synth audio sample" "emscripten" SynthTest.jpg "SynthTest/SynthTest.cc")

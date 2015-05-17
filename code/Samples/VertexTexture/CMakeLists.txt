@@ -1,4 +1,5 @@
 fips_begin_app(VertexTexture windowed)
+    fips_vs_warning_level(3)
     fips_files(VertexTexture.cc)
     fips_generate(TYPE Shader FROM shaders.shd)
     fips_deps(Gfx Assets Time Dbg)

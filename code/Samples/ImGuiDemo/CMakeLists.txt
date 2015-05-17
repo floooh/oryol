@@ -1,4 +1,5 @@
 fips_begin_app(ImGuiDemo windowed)
+    fips_vs_warning_level(3)
     fips_files(
         ImGuiDemo.cc
     )

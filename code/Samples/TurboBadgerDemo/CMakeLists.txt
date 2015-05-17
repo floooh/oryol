@@ -1,4 +1,5 @@
 fips_begin_app(TurboBadgerDemo windowed)
+    fips_vs_warning_level(3)
     fips_files(
         TurboBadgerDemo.cc
         TBDemoWindows.cc TBDemoWindows.h

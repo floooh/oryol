@@ -1,4 +1,5 @@
 fips_begin_app(SoundTest windowed)
+    fips_vs_warning_level(3)
     fips_files(SoundTest.cc)
     fips_deps(Gfx Assets Sound Input IMUI)
     oryol_add_web_sample(SoundTest "Test Sound module functionality" "emscripten" none "SoundTest/SoundTest.cc")

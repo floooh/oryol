@@ -1,4 +1,5 @@
 fips_begin_app(Paclone windowed)
+    fips_vs_warning_level(3)
     fips_files(
         Paclone.cc Paclone.jpg
         canvas.cc canvas.h

@@ -185,7 +185,7 @@ SoundTestApp::OnInit() {
             }
 
             // the 'bleeps' are on voice1
-            if (range.In(t, 0.0f, 0.067)) {
+            if (range.In(t, 0.0f, 0.067f)) {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 540.0f;
             }
@@ -201,7 +201,7 @@ SoundTestApp::OnInit() {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 700.0f;
             }
-            else if (range.In(t, 0.533, 0.667f)) {
+            else if (range.In(t, 0.533f, 0.667f)) {
                 voice1.Volume = 1.0f;
                 if (t < 0.6f) {
                     voice1.Frequency = 1085.0f;
@@ -226,7 +226,7 @@ SoundTestApp::OnInit() {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 860.0f;
             }
-            else if (range.In(t, 1.466, 1.535f)) {
+            else if (range.In(t, 1.466f, 1.535f)) {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 717.0f;
             }
@@ -251,7 +251,7 @@ SoundTestApp::OnInit() {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 1086.0f;
             }
-            else if (range.In(t, 2.4f, 2.467)) {
+            else if (range.In(t, 2.4f, 2.467f)) {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 809.0f;
             }
@@ -259,7 +259,7 @@ SoundTestApp::OnInit() {
                 voice1.Volume = 1.0f;
                 voice1.Frequency = 676.0f;
             }
-            else if (range.In(t, 2.667, 2.8f)) {
+            else if (range.In(t, 2.667f, 2.8f)) {
                 voice1.Volume = 1.0f;
                 if (t < 2.733f) {
                     voice1.Frequency = 1084.0f;
@@ -308,7 +308,7 @@ SoundTestApp::OnInit() {
         Range range;
         float32 t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
-            if (range.In(t, 0.0f, 0.066)) {
+            if (range.In(t, 0.0f, 0.066f)) {
                 voice.Volume = 1.0f;
                 voice.Frequency = Mod::Lerp(t, range.Begin, range.End, 166.0f, 250.0f);
             }
@@ -343,7 +343,7 @@ SoundTestApp::OnInit() {
         }
     }));
 
-    this->effects[EatGhost].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->effects[EatGhost].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512f, 44100, [this](float dt, int16* samples, int numSamples) {
         using namespace SoundGen;
 
         float* floatSamples = this->effects[EatGhost].Alloc(numSamples);

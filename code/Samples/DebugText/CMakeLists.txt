@@ -1,4 +1,5 @@
 fips_begin_app(DebugText windowed)
+    fips_vs_warning_level(3)
     fips_files(DebugText.cc)
     fips_deps(Core Gfx Dbg)
     oryol_add_web_sample(DebugText "Demonstrate debug text rendering" "emscripten,pnacl,android" DebugText.jpg "DebugText/DebugText.cc")
