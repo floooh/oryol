@@ -15,7 +15,7 @@ namespace Oryol {
 namespace _priv {
 class displayMgr : public d3d11DisplayMgr { };
 } }
-#if (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
+#elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Gfx/glfw/glfwDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
