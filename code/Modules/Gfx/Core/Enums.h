@@ -8,6 +8,8 @@
 #include "Core/Assertion.h"
 #if ORYOL_OPENGL
 #include "Gfx/gl/glEnums.h"
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11Enums.h"
 #endif
 
 namespace Oryol {
@@ -20,6 +22,10 @@ namespace Oryol {
 */
 #if ORYOL_OPENGL
 class IndexType : public _priv::glIndexType {
+#elif ORYOL_D3D11
+class IndexType : public _priv::d3d11IndexType {
+#else
+#error "Unsupported platform"
 #endif
 public:
     /// get byte size of index type
@@ -301,6 +307,10 @@ public:
 */
 #if ORYOL_OPENGL
 class PrimitiveType : public _priv::glPrimitiveType { };
+#elif ORYOL_D3D11
+class PrimitiveType : public _priv::d3d11PrimitiveType { };
+#else
+#error "Unsupported platform"
 #endif
 
 //------------------------------------------------------------------------------
@@ -336,6 +346,10 @@ public:
 */
 #if ORYOL_OPENGL
 class ShaderType : public _priv::glShaderType { };
+#elif ORYOL_D3D11
+class ShaderType : public _priv::d3d11ShaderType { };
+#else
+#error "Unsupported platform"
 #endif
 
 //------------------------------------------------------------------------------
@@ -346,6 +360,10 @@ class ShaderType : public _priv::glShaderType { };
 */
 #if ORYOL_OPENGL
 class TextureFilterMode  : public _priv::glTextureFilterMode { };
+#elif ORYOL_D3D11
+class TextureFilterMode : public _priv::d3d11TextureFilterMode { };
+#else
+#error "Unsupported platform"
 #endif
    
 //------------------------------------------------------------------------------
@@ -356,6 +374,10 @@ class TextureFilterMode  : public _priv::glTextureFilterMode { };
 */
 #if ORYOL_OPENGL
 class TextureType : public _priv::glTextureType { };
+#elif ORYOL_D3D11
+class TextureType : public _priv::d3d11TextureType { };
+#else
+#error "Unsupported platform"
 #endif
 
 //------------------------------------------------------------------------------
@@ -366,6 +388,10 @@ class TextureType : public _priv::glTextureType { };
 */
 #if ORYOL_OPENGL
 class TextureWrapMode : public _priv::glTextureWrapMode { };
+#elif ORYOL_D3D11
+class TextureWrapMode : public _priv::d3d11TextureWrapMode { };
+#else
+#error "Unsupported platform"
 #endif
 
 //------------------------------------------------------------------------------
@@ -376,6 +402,10 @@ class TextureWrapMode : public _priv::glTextureWrapMode { };
 */
 #if ORYOL_OPENGL
 class Usage : public _priv::glUsage { };
+#elif ORYOL_D3D11
+class Usage : public _priv::d3d11Usage { };
+#else
+#error "Unsupported platform"
 #endif
 
 //------------------------------------------------------------------------------
@@ -509,7 +539,8 @@ public:
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
         GLSL120,        ///< OpenGL 2.1
         GLSL150,        ///< OpenGL 3.0
-    
+        HLSL5,          ///< D3D11 HLSL
+
         NumShaderLangs,
         InvalidShaderLang
     };

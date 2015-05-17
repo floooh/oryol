@@ -67,8 +67,22 @@ endif()
 
 # Windows platforms
 if (FIPS_WINDOWS)
-    set(ORYOL_OPENGL 1)
-    set(ORYOL_OPENGL_CORE_PROFILE 1)
+
+    option(ORYOL_WINDOWS_USE_OPENGL "Use OpenGL on Windows (default)" ON)
+    option(ORYOL_WINDOWS_USE_D3D11  "Use D3D11 on Windows" OFF)
+    
+    if (ORYOL_WINDOWS_USE_OPENGL AND ORYOL_WINDOWS_USE_D3D11)
+        message(FATAL_ERROR "OpenGL and D3D11 can't both be enabled!")
+    endif()
+
+    if (ORYOL_WINDOWS_USE_OPENGL) 
+        set(ORYOL_OPENGL 1)
+        set(ORYOL_OPENGL_CORE_PROFILE 1)
+    endif()
+    if (ORYOL_WINDOWS_USE_D3D11)
+        set(ORYOL_D3D11 1)
+    endif()
+        
     add_definitions(-DORYOL_WINDOWS=1)
     if (FIPS_WIN32)
         add_definitions(-DORYOL_WIN32=1)
@@ -90,6 +104,11 @@ if (ORYOL_OPENGL)
     if (ORYOL_OPENGL_CORE_PROFILE)
         add_definitions(-DORYOL_OPENGL_CORE_PROFILE=1)
     endif()
+endif()
+
+# D3D11 defines
+if (ORYOL_D3D11)
+    add_definitions(-DORYOL_D3D11=1)
 endif()
 
 # OpenAL defines

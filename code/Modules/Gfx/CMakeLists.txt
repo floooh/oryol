@@ -2,6 +2,7 @@
 #   oryol Gfx module
 #-------------------------------------------------------------------------------
 
+if (ORYOL_OPENGL)
 # 
 # This option forces the use of glGetAttribLocation() instead of
 # glBindAttribLocation() to bind vertex components to shader 
@@ -28,6 +29,7 @@ if (ORYOL_GL_DISABLE_VERTEXARRAYOBJECT)
 else()
     add_definitions(-DORYOL_GL_DISABLE_VERTEXARRAYOBJECT=0)
 endif()
+endif() # ORYOL_OPENGL
 
 fips_begin_module(Gfx)
     fips_files(Gfx.cc Gfx.h)
@@ -82,26 +84,35 @@ fips_begin_module(Gfx)
         ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
     )
-    fips_dir(gl)
-    fips_files(
-        glDebugOutput.cc glDebugOutput.h
-        glEnums.h
-        glExt.cc glExt.h
-        glInfo.cc glInfo.h
-        glMesh.cc glMesh.h
-        glMeshFactory.cc glMeshFactory.h
-        glProgramBundle.cc glProgramBundle.h
-        glProgramBundleFactory.cc glProgramBundleFactory.h
-        glRenderer.cc glRenderer.h
-        glShader.cc glShader.h
-        glShaderFactory.cc glShaderFactory.h
-        glTexture.cc glTexture.h
-        glTextureFactory.cc glTextureFactory.h
-        glTypes.cc glTypes.h
-        glVertexAttr.h
-        gl_decl.h
-        gl_impl.h
-    )
+    if (ORYOL_OPENGL)
+        fips_dir(gl)
+        fips_files(
+            glDebugOutput.cc glDebugOutput.h
+            glEnums.h
+            glExt.cc glExt.h
+            glInfo.cc glInfo.h
+            glMesh.cc glMesh.h
+            glMeshFactory.cc glMeshFactory.h
+            glProgramBundle.cc glProgramBundle.h
+            glProgramBundleFactory.cc glProgramBundleFactory.h
+            glRenderer.cc glRenderer.h
+            glShader.cc glShader.h
+            glShaderFactory.cc glShaderFactory.h
+            glTexture.cc glTexture.h
+            glTextureFactory.cc glTextureFactory.h
+            glTypes.cc glTypes.h
+            glVertexAttr.h
+            gl_decl.h
+            gl_impl.h
+        )
+    endif()
+    if (ORYOL_D3D11)
+        fips_dir(d3d11)
+        fips_files(
+            d3d11DisplayMgr.cc d3d11DisplayMgr.h
+            d3d11Enums.h
+        )
+    endif()
     if (FIPS_ANDROID)
         fips_dir(egl)
         fips_files(eglDisplayMgr.cc eglDisplayMgr.h)
@@ -119,16 +130,18 @@ fips_begin_module(Gfx)
         fips_dir(pnacl)
         fips_files(pnaclDisplayMgr.cc pnaclDisplayMgr.h)
     endif()
-    if (FIPS_MACOS OR FIPS_WINDOWS OR FIPS_LINUX)
-        fips_dir(glfw)
-        fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
-        fips_deps(glfw3 flextgl)
-        if (FIPS_WINDOWS)
-            fips_libs(opengl32)
-        endif()
-        if (FIPS_LINUX)
-            # FIXME: should these go into the fips-glfw CMakeLists file?
-            fips_libs(X11 Xrandr Xi Xinerama Xxf86vm Xcursor GL)
+    if (ORYOL_OPENGL)
+        if (FIPS_MACOS OR FIPS_WINDOWS OR FIPS_LINUX)
+            fips_dir(glfw)
+            fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
+            fips_deps(glfw3 flextgl)
+            if (FIPS_WINDOWS)
+                fips_libs(opengl32)
+            endif()
+            if (FIPS_LINUX)
+                # FIXME: should these go into the fips-glfw CMakeLists file?
+                fips_libs(X11 Xrandr Xi Xinerama Xxf86vm Xcursor GL)
+            endif()
         endif()
     endif()
     fips_deps(Resource Messaging IO Core)
