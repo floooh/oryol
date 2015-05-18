@@ -9,24 +9,24 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11ShaderFactory::d3d11ShaderFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ShaderFactory::d3d11ShaderFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 d3d11ShaderFactory::~d3d11ShaderFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ShaderFactory::~d3d11ShaderFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11ShaderFactory::Setup() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ShaderFactory::Setup()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11ShaderFactory::Discard() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ShaderFactory::Discard()\n");
 }
 
 //------------------------------------------------------------------------------

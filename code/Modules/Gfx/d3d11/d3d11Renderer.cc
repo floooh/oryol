@@ -10,24 +10,24 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11Renderer::d3d11Renderer() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::d3d11Renderer()\n");
 }
 
 //------------------------------------------------------------------------------
 d3d11Renderer::~d3d11Renderer() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::~d3d11Renderer()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::setup(meshPool* mshPool) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::setup()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::discard() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::discard()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ d3d11Renderer::supports(GfxFeature::Code feat) const {
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::commitFrame() {
-    o_error("FIXME!\n");
+    Log::Info("COMMIT FRAME!\n");
 }
 
 //------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ d3d11Renderer::renderTargetAttrs() const {
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
-    o_error("FIXME!\n");
+    // FIXME!
 }
 
 //------------------------------------------------------------------------------
@@ -235,7 +235,8 @@ d3d11Renderer::applyVariableArray(int32 index, const glm::mat2* values, int32 nu
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
-    o_error("FIXME!\n");
+    // FIXME!
+    Log::Info("CLEAR!\n");
 }
 
 //------------------------------------------------------------------------------

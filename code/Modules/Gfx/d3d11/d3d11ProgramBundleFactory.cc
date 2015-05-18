@@ -9,24 +9,24 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11ProgramBundleFactory::d3d11ProgramBundleFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ProgramBundleFactory::d3d11ProgramBundleFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 d3d11ProgramBundleFactory::~d3d11ProgramBundleFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ProgramBundleFactory::~d3d11ProgramBundleFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11ProgramBundleFactory::Setup(class renderer* rendr, shaderPool* shdPool, shaderFactory* shdFactory) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ProgramBundleFactory::Setup()\n");
 }
 
 //------------------------------------------------------------------------------
 void 
 d3d11ProgramBundleFactory::Discard() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11ProgramBundleFactory::Discard()\n");
 }
 
 //------------------------------------------------------------------------------

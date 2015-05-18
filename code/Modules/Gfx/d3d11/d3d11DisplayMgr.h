@@ -4,6 +4,8 @@
     @class Oryol::_priv::d3d11DisplayMgr
     @ingroup _priv
     @brief display manager implementation for D3D11
+
+    NOTE: the guts of window management are taken from GLFW3!
 */
 #include "Gfx/Core/displayMgrBase.h"
 
@@ -27,6 +29,25 @@ public:
     void Present();
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
+
+private:
+    /// register the window class
+    void registerWindowClass();
+    /// unregister the window class
+    void unregisterWindowClass();
+    /// create the application window
+    void createWindow(const GfxSetup& gfxSetup);
+    /// destroy the application window
+    void destroyWindow();
+    /// compute actual window size from client rect size plus window chrome
+    void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
+    /// custom winproc
+    static LRESULT CALLBACK winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    bool quitRequested;
+    HWND hwnd;
+    DWORD dwStyle;
+    DWORD dwExStyle;
 };
 
 } // namespace _priv

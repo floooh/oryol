@@ -9,24 +9,24 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11MeshFactory::d3d11MeshFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11MeshFactory::d3d11MeshFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 d3d11MeshFactory::~d3d11MeshFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11MeshFactory::~d3d11MeshFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::Setup(renderer* rendr, meshPool* mshPool) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11MeshFactory::Setup()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::Discard() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11MeshFactory::Discard()\n");
 }
 
 //------------------------------------------------------------------------------

@@ -9,24 +9,24 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11TextureFactory::d3d11TextureFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11TextureFactory::d3d11TextureFactory()\n");
 }
-
+    
 //------------------------------------------------------------------------------
 d3d11TextureFactory::~d3d11TextureFactory() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11TextureFactory::~d3d11TextureFactory()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11TextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11TextureFactory::Setup()\n");
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11TextureFactory::Discard() {
-    o_error("FIXME!\n");
+    Log::Info("d3d11TextureFactory::Discard()\n");
 }
 
 //------------------------------------------------------------------------------
