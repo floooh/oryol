@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11DisplayMgr.h"
+#include "d3d11Types.h"
 #include "Core/String/StringConverter.h"
 #include <WinUser.h>
 
@@ -13,11 +14,21 @@ static d3d11DisplayMgr* self = nullptr;
 
 //------------------------------------------------------------------------------
 d3d11DisplayMgr::d3d11DisplayMgr() :
+d3d11Device(nullptr),
+d3d11DeviceContext(nullptr),
+dxgiSwapChain(nullptr),
+featureLevel(D3D_FEATURE_LEVEL_9_1),    // will be overwritten at device creation
+backBuffer(nullptr),
+renderTargetView(nullptr),
+depthStencilBuffer(nullptr),
+depthStencilView(nullptr),
 quitRequested(false),
 hwnd(0),
 dwStyle(0),
 dwExStyle(0) {
     self = this;
+    Memory::Clear(&this->dxgiSwapChainDesc, sizeof(this->dxgiSwapChainDesc));
+    Memory::Clear(&this->depthStencilDesc, sizeof(this->depthStencilDesc));
 }
 
 //------------------------------------------------------------------------------
@@ -37,12 +48,43 @@ d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup) {
 
     this->registerWindowClass();
     this->createWindow(setup);
+    this->createDeviceAndSwapChain(setup);
+    this->createDefaultRenderTarget(setup);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11DisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
+
+    if (this->backBuffer) {
+        this->backBuffer->Release();
+        this->backBuffer = nullptr;
+    }
+    if (this->renderTargetView) {
+        this->renderTargetView->Release();
+        this->renderTargetView = nullptr;
+    }
+    if (this->depthStencilBuffer) {
+        this->depthStencilBuffer->Release();
+        this->depthStencilBuffer = nullptr;
+    }
+    if (this->depthStencilView) {
+        this->depthStencilView->Release();
+        this->depthStencilView = nullptr;
+    }
+    if (this->dxgiSwapChain) {
+        this->dxgiSwapChain->Release();
+        this->dxgiSwapChain = nullptr;
+    }
+    if (this->d3d11Device) {
+        this->d3d11Device->Release();
+        this->d3d11Device = nullptr;
+    }
+    if (this->d3d11DeviceContext) {
+        this->d3d11DeviceContext->Release();
+        this->d3d11DeviceContext = nullptr;
+    }
 
     this->destroyWindow();
     this->unregisterWindowClass();
@@ -83,6 +125,99 @@ d3d11DisplayMgr::ProcessSystemEvents() {
 
     // FIXME
     displayMgrBase::ProcessSystemEvents();
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup) {
+    o_assert_dbg(nullptr == this->d3d11Device);
+    o_assert_dbg(nullptr == this->d3d11DeviceContext);
+    o_assert_dbg(nullptr == this->dxgiSwapChain);
+    o_assert_dbg(0 != this->hwnd);
+
+    int createFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+    #if ORYOL_DEBUG
+        createFlags |= D3D11_CREATE_DEVICE_DEBUG;
+    #endif
+
+    this->dxgiSwapChainDesc.BufferDesc.Width = setup.Width;
+    this->dxgiSwapChainDesc.BufferDesc.Height = setup.Height;
+    this->dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(setup.ColorFormat);
+    this->dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+    this->dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+    this->dxgiSwapChainDesc.SampleDesc.Count = setup.Samples < 2 ? 1 : setup.Samples;
+    this->dxgiSwapChainDesc.SampleDesc.Quality = setup.Samples < 2 ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
+    this->dxgiSwapChainDesc.BufferCount = 1;
+    this->dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    this->dxgiSwapChainDesc.OutputWindow = this->hwnd;
+    this->dxgiSwapChainDesc.Windowed = setup.Windowed;
+    this->dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    this->dxgiSwapChainDesc.Flags = 0;
+
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(
+        NULL,                           // pAdapter (use default adapter)
+        D3D_DRIVER_TYPE_HARDWARE,       // DriverType
+        NULL,                           // Software
+        createFlags,                    // Flags
+        NULL,                           // pFeatureLevels
+        0,                              // FeatureLevels
+        D3D11_SDK_VERSION,              // SDKVersion
+        &this->dxgiSwapChainDesc,       // pSwapChainDesc
+        &this->dxgiSwapChain,           // ppSwapChain
+        &this->d3d11Device,             // ppDevice
+        &this->featureLevel,            // pFeatureLevel
+        &this->d3d11DeviceContext);     // ppImmediateContext
+    o_assert2(SUCCEEDED(hr), "Failed to create D3D11 device and swap chain1\n");
+    o_assert(this->d3d11Device);
+    o_assert(this->d3d11DeviceContext);
+    o_assert(this->dxgiSwapChain);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup) {
+    o_assert_dbg(this->d3d11Device);
+    o_assert_dbg(this->dxgiSwapChain);
+    o_assert_dbg(nullptr == this->backBuffer);
+    o_assert_dbg(nullptr == this->renderTargetView);
+    o_assert_dbg(nullptr == this->depthStencilBuffer);
+    o_assert_dbg(nullptr == this->depthStencilView);
+    HRESULT hr;
+
+    // setup color buffer (obtain from swap chain and create render target view)
+    hr = this->dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &this->backBuffer);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(this->backBuffer);
+    hr = this->d3d11Device->CreateRenderTargetView(this->backBuffer, NULL, &this->renderTargetView);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(this->renderTargetView);
+
+    // setup depth/stencil buffer (if required)
+    if (PixelFormat::None != setup.DepthFormat) {
+
+        this->depthStencilDesc.Width = setup.Width;
+        this->depthStencilDesc.Height = setup.Height;
+        this->depthStencilDesc.MipLevels = 1;
+        this->depthStencilDesc.ArraySize = 1;
+        this->depthStencilDesc.Format = d3d11Types::asTextureFormat(setup.DepthFormat);
+        this->depthStencilDesc.SampleDesc = this->dxgiSwapChainDesc.SampleDesc;
+        this->depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+        this->depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        this->depthStencilDesc.CPUAccessFlags = 0;
+        this->depthStencilDesc.MiscFlags = 0;
+        hr = this->d3d11Device->CreateTexture2D(&this->depthStencilDesc, NULL, &this->depthStencilBuffer);
+        o_assert(SUCCEEDED(hr));
+        o_assert_dbg(this->depthStencilBuffer);
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+        Memory::Clear(&dsvDesc, sizeof(dsvDesc));
+        dsvDesc.Format = this->depthStencilDesc.Format;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Texture2D.MipSlice = 0;
+        hr = this->d3d11Device->CreateDepthStencilView(this->depthStencilBuffer, &dsvDesc, &this->depthStencilView);
+        o_assert(SUCCEEDED(hr));
+        o_assert_dbg(this->depthStencilView);
+    }
 }
 
 //------------------------------------------------------------------------------
