@@ -46,7 +46,6 @@ glfwDisplayMgr::getGlfwWindow() {
 void
 glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
     o_assert(!this->IsDisplayValid());
-    o_assert_dbg(Core::IsMainThread());
     
     displayMgrBase::SetupDisplay(setup);
     
@@ -96,7 +95,6 @@ void
 glfwDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     o_assert(nullptr != glfwWindow);
-    o_assert_dbg(Core::IsMainThread());
     
     this->destroyMainWindow();
     glfwTerminate();
@@ -110,7 +108,6 @@ glfwDisplayMgr::DiscardDisplay() {
 bool
 glfwDisplayMgr::QuitRequested() const {
     o_assert(nullptr != glfwWindow);
-    o_assert_dbg(Core::IsMainThread());
     
     return glfwWindowShouldClose(glfwWindow) != 0;
 }
@@ -119,7 +116,6 @@ glfwDisplayMgr::QuitRequested() const {
 void
 glfwDisplayMgr::ProcessSystemEvents() {
     o_assert(nullptr != glfwWindow);
-    o_assert_dbg(Core::IsMainThread());
     
     glfwPollEvents();
     displayMgrBase::ProcessSystemEvents();
@@ -129,7 +125,6 @@ glfwDisplayMgr::ProcessSystemEvents() {
 void
 glfwDisplayMgr::Present() {
     o_assert(nullptr != glfwWindow);
-    o_assert_dbg(Core::IsMainThread());
     
     glfwSwapBuffers(glfwWindow);
     displayMgrBase::Present();
@@ -138,8 +133,6 @@ glfwDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::glBindDefaultFramebuffer() {
-    o_assert_dbg(Core::IsMainThread());
-
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ORYOL_GL_CHECK_ERROR();
 }

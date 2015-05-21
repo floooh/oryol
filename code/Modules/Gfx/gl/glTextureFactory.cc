@@ -37,7 +37,6 @@ glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, textureP
     o_assert_dbg(nullptr != rendr);
     o_assert_dbg(nullptr != displayMgr_);
     o_assert_dbg(nullptr != texPool_);
-    o_assert_dbg(Core::IsMainThread());
 
     this->isValid = true;
     this->renderer = rendr;
@@ -49,7 +48,6 @@ glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, textureP
 void
 glTextureFactory::Discard() {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(Core::IsMainThread());
 
     this->isValid = false;
     this->renderer = nullptr;
@@ -67,7 +65,6 @@ ResourceState::Code
 glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
-    o_assert_dbg(Core::IsMainThread());
     
     // decide whether a loader needs to take over, or whether we handle this right here
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
@@ -85,7 +82,6 @@ glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
-    o_assert_dbg(Core::IsMainThread());
     
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
@@ -100,7 +96,6 @@ glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
 void
 glTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
 
@@ -138,7 +133,6 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(0 == tex.glFramebuffer);
     o_assert_dbg(0 == tex.glDepthRenderbuffer);
     o_assert_dbg(0 == tex.glDepthTexture);
-    o_assert_dbg(Core::IsMainThread());
     
     this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
@@ -276,7 +270,6 @@ glTextureFactory::createRenderTarget(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
 
@@ -401,7 +394,6 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
 GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(Core::IsMainThread());
 
     this->renderer->invalidateTextureState();
     GLuint glTex = 0;

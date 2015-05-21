@@ -98,7 +98,6 @@ public:
 inline mesh*
 gfxResourceContainer::lookupMesh(const Id& resId) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     return this->meshPool.Lookup(resId);
 }
 
@@ -106,7 +105,6 @@ gfxResourceContainer::lookupMesh(const Id& resId) {
 inline programBundle*
 gfxResourceContainer::lookupProgramBundle(const Id& resId) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     return this->programBundlePool.Lookup(resId);
 }
 
@@ -114,7 +112,6 @@ gfxResourceContainer::lookupProgramBundle(const Id& resId) {
 inline texture*
 gfxResourceContainer::lookupTexture(const Id& resId) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     return this->texturePool.Lookup(resId);
 }
 
@@ -122,7 +119,6 @@ gfxResourceContainer::lookupTexture(const Id& resId) {
 inline drawState*
 gfxResourceContainer::lookupDrawState(const Id& resId) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     return this->drawStatePool.Lookup(resId);
 }
 

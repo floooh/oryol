@@ -77,7 +77,6 @@ gfxResourceContainer::discard() {
 template<> Id
 gfxResourceContainer::Create(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(!setup.ShouldSetupFromFile());
 
     Id resId = this->registry.Lookup(setup.Locator);
@@ -99,7 +98,6 @@ gfxResourceContainer::Create(const MeshSetup& setup) {
 template<> Id
 gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(!setup.ShouldSetupFromFile());
@@ -123,7 +121,6 @@ gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 siz
 template<> Id
 gfxResourceContainer::Create(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(!setup.ShouldSetupFromFile());
 
     Id resId = this->registry.Lookup(setup.Locator);
@@ -145,7 +142,6 @@ gfxResourceContainer::Create(const TextureSetup& setup) {
 template<> Id
 gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(!setup.ShouldSetupFromFile());
@@ -169,7 +165,6 @@ gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 
 template<> Id
 gfxResourceContainer::prepareAsync(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     Id resId = this->meshPool.AllocId();
     this->registry.Add(setup.Locator, resId, this->peekLabel());
@@ -181,7 +176,6 @@ gfxResourceContainer::prepareAsync(const MeshSetup& setup) {
 template<> ResourceState::Code 
 gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     // the prepared resource may have been destroyed while it was loading
     if (this->meshPool.Contains(resId)) {
@@ -203,7 +197,6 @@ gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
 template<> Id
 gfxResourceContainer::prepareAsync(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     Id resId = this->texturePool.AllocId();
     this->registry.Add(setup.Locator, resId, this->peekLabel());
@@ -215,7 +208,6 @@ gfxResourceContainer::prepareAsync(const TextureSetup& setup) {
 template<> ResourceState::Code 
 gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     // the prepared resource may have been destroyed while it was loading
     if (this->texturePool.Contains(resId)) {
@@ -237,7 +229,6 @@ gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, cons
 ResourceState::Code
 gfxResourceContainer::failedAsync(const Id& resId) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     switch (resId.Type) {
         case GfxResourceType::Mesh:
@@ -269,7 +260,6 @@ gfxResourceContainer::failedAsync(const Id& resId) {
 template<> Id
 gfxResourceContainer::Create(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
 
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -290,7 +280,6 @@ gfxResourceContainer::Create(const ShaderSetup& setup) {
 template<> Id
 gfxResourceContainer::Create(const ProgramBundleSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -311,7 +300,6 @@ gfxResourceContainer::Create(const ProgramBundleSetup& setup) {
 template<> Id
 gfxResourceContainer::Create(const DrawStateSetup& setup) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     Id resId = this->registry.Lookup(setup.Locator);
     if (resId.IsValid()) {
@@ -332,7 +320,6 @@ gfxResourceContainer::Create(const DrawStateSetup& setup) {
 Id
 gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
 
     Id resId = this->registry.Lookup(loader->Locator());
     if (resId.IsValid()) {
@@ -349,7 +336,6 @@ gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
 void
 gfxResourceContainer::Destroy(ResourceLabel label) {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     Array<Id> ids = this->registry.Remove(label);
     for (const Id& id : ids) {
@@ -429,7 +415,6 @@ gfxResourceContainer::Destroy(ResourceLabel label) {
 void
 gfxResourceContainer::update() {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     /// call update method on resource pools (this is cheap)
     this->meshPool.Update();
@@ -452,7 +437,6 @@ gfxResourceContainer::update() {
 ResourceInfo
 gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     switch (resId.Type) {
         case GfxResourceType::Texture:
@@ -478,7 +462,6 @@ gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
 ResourcePoolInfo
 gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
     
     switch (resType) {
         case GfxResourceType::Texture:
@@ -504,7 +487,6 @@ gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
 int32
 gfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
     o_assert_dbg(this->isValid());
-    o_assert_dbg(Core::IsMainThread());
 
     switch (resourceType) {
         case GfxResourceType::Texture:
