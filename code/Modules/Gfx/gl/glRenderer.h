@@ -64,7 +64,7 @@ public:
     /// apply a shader variable array
     template<class T> void applyVariableArray(int32 index, const T* values, int32 numValues);
     /// clear currently assigned render target
-    void clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    void clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

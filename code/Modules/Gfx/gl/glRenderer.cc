@@ -152,6 +152,7 @@ glRenderer::discard() {
     this->invalidateProgramState();
     this->invalidateTextureState();
     this->curRenderTarget = nullptr;
+    this->curDrawState = nullptr;
     this->curMesh = nullptr;
     this->curProgramBundle = nullptr;
     
@@ -218,6 +219,7 @@ void
 glRenderer::commitFrame() {
     o_assert_dbg(this->valid);    
     this->rtValid = false;
+    this->curRenderTarget = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -244,7 +246,6 @@ glRenderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->dispMgr);
     
-    // also update view port to cover full render target
     if (nullptr == rt) {
         this->rtAttrs = this->dispMgr->GetDisplayAttrs();
     }
@@ -661,25 +662,23 @@ glRenderer::applyVariableArray(int32 index, const glm::mat2* values, int32 numVa
 
 //------------------------------------------------------------------------------
 void
-glRenderer::clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
+    o_assert2_dbg(this->rtValid, "No render target set!\n");
+    o_assert2_dbg((clearFlags & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
     
     GLbitfield clearMask = 0;
     
     // update GL state
-    if ((channels & PixelChannel::RGBA) != 0) {
+    if (clearFlags & ClearTarget::Color) {
         clearMask |= GL_COLOR_BUFFER_BIT;
         ::glClearColor(color.x, color.y, color.z, color.w);
-        if ((channels & PixelChannel::RGBA) != this->blendState.ColorWriteMask) {
-            this->blendState.ColorWriteMask = channels & PixelChannel::RGBA;
-            ::glColorMask((channels & PixelChannel::R) != 0,
-                          (channels & PixelChannel::G) != 0,
-                          (channels & PixelChannel::B) != 0,
-                          (channels & PixelChannel::A) != 0);
+        if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
+            this->blendState.ColorWriteMask = PixelChannel::RGBA;
+            ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
     }
-    if ((channels & PixelChannel::Depth) != 0) {
+    if (clearFlags & ClearTarget::Depth) {
         clearMask |= GL_DEPTH_BUFFER_BIT;
         #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
         ::glClearDepthf(depth);
@@ -691,7 +690,7 @@ glRenderer::clear(PixelChannel::Mask channels, const glm::vec4& color, float32 d
             ::glDepthMask(GL_TRUE);
         }
     }
-    if ((channels & PixelChannel::Stencil) != 0) {
+    if (clearFlags & ClearTarget::Stencil) {
         clearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(stencil);
         if ((this->depthStencilState.StencilFront.StencilWriteMask != 0xFF) ||

@@ -75,7 +75,7 @@ SensorsApp::OnRunning() {
     
     const Sensors& sensors = Input::Sensors();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     Gfx::ApplyDrawState(this->drawState);
     glm::mat4 mvp = this->computeMVP(sensors);
     Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);

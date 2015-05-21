@@ -86,7 +86,7 @@ PacloneApp::OnRunning() {
 
     // render into offscreen render target
     Gfx::ApplyOffscreenRenderTarget(this->canvasRenderTarget);
-    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     this->spriteCanvas.Render();
     Dbg::DrawTextBuffer();
     

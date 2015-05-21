@@ -42,7 +42,7 @@ DDSCubeMapApp::OnRunning() {
     
     // apply state and draw
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading

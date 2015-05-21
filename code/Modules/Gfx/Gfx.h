@@ -101,7 +101,7 @@ public:
     static void ReadPixels(void* ptr, int32 numBytes);
     
     /// clear the currently assigned render target (default depth value is 1.0f, default stencil value is 0)
-    static void Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth=1.0f, uint8 stencil=0);
+    static void Clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth=1.0f, uint8 stencil=0);
     /// submit a draw call with primitive group index in current mesh
     static void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

@@ -63,7 +63,7 @@ DrawCallPerfApp::OnRunning() {
     // render block
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
     for (int32 i = 0; i < this->curNumParticles; i++) {

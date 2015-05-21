@@ -70,7 +70,7 @@ ImGuiDemoApp::OnRunning() {
         ImGui::ShowTestWindow(&showTestWindow);
     }
 
-    Gfx::Clear(PixelChannel::All, glm::vec4(this->clearColor.x, this->clearColor.y, this->clearColor.z, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(this->clearColor.x, this->clearColor.y, this->clearColor.z, 1.0f));
     ImGui::Render();
     Gfx::CommitFrame();
 

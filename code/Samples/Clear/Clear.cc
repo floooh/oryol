@@ -26,7 +26,7 @@ ClearApp::OnRunning() {
 
     // render one frame
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, this->clearColor);
+    Gfx::Clear(ClearTarget::All, this->clearColor);
     Gfx::CommitFrame();
     
     this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);

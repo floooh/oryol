@@ -84,7 +84,7 @@ GPUParticlesApp::OnRunning() {
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
     Gfx::ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);

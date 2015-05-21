@@ -71,7 +71,7 @@ AppState::Code
 SynthTestApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f));
 
     static const char* waveFormNames[SynthOp::NumWaves] = {
         "Const", "Sine", "SawTooth", "Triangle", "Square", "Noise",

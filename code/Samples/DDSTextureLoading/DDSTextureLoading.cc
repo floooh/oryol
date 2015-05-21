@@ -40,7 +40,7 @@ DDSTextureLoadingApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f));
     
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {

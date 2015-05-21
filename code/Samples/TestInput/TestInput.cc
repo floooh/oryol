@@ -406,7 +406,7 @@ TestInputApp::OnRunning() {
     
     // draw frame
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, this->getClearColor(touchpad), 1.0f, 0);
+    Gfx::Clear(ClearTarget::All, this->getClearColor(touchpad), 1.0f, 0);
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

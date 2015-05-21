@@ -372,7 +372,7 @@ AppState::Code
 SoundTestApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     IMUI::NewFrame();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.75f, 0.75f, 0.75f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.75f, 0.75f, 0.75f, 1.0f));
 
     // draw UI
     ImGui::SetNextWindowPos(ImVec2(0, 0));

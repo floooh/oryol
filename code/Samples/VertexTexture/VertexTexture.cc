@@ -47,7 +47,7 @@ VertexTextureApp::OnRunning() {
     
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->planeDrawState);
     const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
     Gfx::ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);

@@ -37,7 +37,7 @@ PackedNormalsApp::OnRunning() {
     
     // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     
     // draw shape primitive groups
     static const glm::vec3 positions[] = {

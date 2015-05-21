@@ -168,7 +168,7 @@ MeshViewerApp::OnRunning() {
     this->updateLight();
     this->drawUI();
 
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     for (int i = 0; i < this->numMaterials; i++) {
         Gfx::ApplyDrawState(this->materials[i].drawState);
         this->applyVariables(i);

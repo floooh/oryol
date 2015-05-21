@@ -35,7 +35,7 @@ AppState::Code
 NanoVGApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.3f), 1.0f, 0);
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.3f), 1.0f, 0);
 
     const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
     const int32 h = Gfx::DisplayAttrs().FramebufferHeight;

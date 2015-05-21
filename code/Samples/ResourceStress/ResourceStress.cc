@@ -55,7 +55,7 @@ ResourceStressApp::OnRunning() {
     this->showInfo();
 
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {

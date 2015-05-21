@@ -135,7 +135,7 @@ AppState::Code
 TurboBadgerDemoApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.5f, 0.0f, 1.0f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.0f, 1.0f, 1.0f));
     TBUI::Draw();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

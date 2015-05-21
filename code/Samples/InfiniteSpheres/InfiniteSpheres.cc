@@ -50,7 +50,7 @@ InfiniteSpheresApp::OnRunning() {
     // render sphere to offscreen render target, using the other render target as
     // source texture
     Gfx::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
     Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
@@ -59,7 +59,7 @@ InfiniteSpheresApp::OnRunning() {
     
     // ...and again to display
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.25f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     mvp = this->computeMVP(this->displayProj, model);
     Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);

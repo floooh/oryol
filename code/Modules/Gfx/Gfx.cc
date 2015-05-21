@@ -248,9 +248,9 @@ Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::Clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
+Gfx::Clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(IsValid());
-    state->renderer.clear(channels, color, depth, stencil);
+    state->renderer.clear(clearMask, color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------

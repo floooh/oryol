@@ -35,7 +35,7 @@ PBRenderingApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Clear(PixelChannel::All, glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+    Gfx::Clear(ClearTarget::All, glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
     
     this->applyDirLight();
     this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));

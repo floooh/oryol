@@ -87,7 +87,28 @@ public:
         All = R|G|B|A|D|S,
     };
 };
-    
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::ClearTarget
+    @ingroup Gfx
+    @brief what to clear in Gfx::Clear(), Color, Depth and/or Stencil
+*/
+class ClearTarget {
+public:
+    typedef uint32 Mask;
+    // NOTE: set the bits high, so that they don't collide with
+    // PixelChannel, this allows to assert-check that the two don't get
+    // confused (Visual Studio doesn't warn about the different enum types)
+    enum Bits {
+        Color = (1<<6),      // clear color buffer
+        Depth = (1<<7),      // clear depth buffer
+        Stencil = (1<<8),    // clear stencil buffer
+
+        All = Color | Depth | Stencil
+    };
+};
+
 //------------------------------------------------------------------------------
 /**
     @class Oryol::PixelFormat
