@@ -72,6 +72,7 @@ GfxSetup::GetDisplayAttrs() const {
     attrs.Samples           = this->Samples;
     attrs.Windowed          = this->Windowed;
     attrs.WindowTitle       = this->Title;
+    attrs.SwapInterval      = this->SwapInterval;
     return attrs;
 }
 

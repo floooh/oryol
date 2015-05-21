@@ -41,6 +41,8 @@ public:
     int32 Samples = 0;
     /// windowed vs Fullscreen
     bool Windowed = true;
+    /// swap interval (0 => no vsync, default is 1)
+    int32 SwapInterval = 1;
     /// window title
     String Title = "Oryol";
     

@@ -18,7 +18,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     state = Memory::New<_state>();
     state->gfxSetup = setup;
     state->displayManager.SetupDisplay(setup);
-    state->renderer.setup(&state->resourceContainer.meshPool);
+    state->renderer.setup(&state->displayManager, &state->resourceContainer.meshPool);
     state->resourceContainer.setup(setup, &state->renderer, &state->displayManager);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();
@@ -92,7 +92,7 @@ Gfx::RenderTargetAttrs() {
 void
 Gfx::ApplyDefaultRenderTarget() {
     o_assert_dbg(IsValid());
-    state->renderer.applyRenderTarget(&state->displayManager, nullptr);
+    state->renderer.applyRenderTarget(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ Gfx::ApplyOffscreenRenderTarget(const Id& id) {
 
     texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
-    state->renderer.applyRenderTarget(&state->displayManager, renderTarget);
+    state->renderer.applyRenderTarget(renderTarget);
 }
 
 //------------------------------------------------------------------------------

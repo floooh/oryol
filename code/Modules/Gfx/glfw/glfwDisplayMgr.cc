@@ -61,7 +61,7 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
     
     // and make the window's GL context current
     glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(1);
+    glfwSwapInterval(setup.SwapInterval);
 
     // setup extensions and platform-dependent constants
     ORYOL_GL_CHECK_ERROR();

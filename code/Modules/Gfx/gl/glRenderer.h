@@ -32,7 +32,7 @@ public:
     ~glRenderer();
     
     /// setup the renderer
-    void setup(meshPool* mshPool);
+    void setup(displayMgr* dispMgr, meshPool* mshPool);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -48,7 +48,7 @@ public:
     const DisplayAttrs& renderTargetAttrs() const;
 
     /// apply a render target (default or offscreen)
-    void applyRenderTarget(displayMgr* displayManager, texture* rt);
+    void applyRenderTarget(texture* rt);
     /// apply viewport
     void applyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect
@@ -118,6 +118,7 @@ private:
     void applyMesh(const mesh* msh, const programBundle* progBundle);
 
     bool valid;
+    displayMgr* dispMgr;
     meshPool* mshPool;
     #if ORYOL_MACOS // FIXME: should be a new 'ORYOL_GL_ISCOREPROFILE' define
     GLuint globalVAO;

@@ -80,6 +80,7 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glRenderer::glRenderer() :
 valid(false),
+dispMgr(nullptr),
 mshPool(nullptr),
 #if ORYOL_MACOS
 globalVAO(0),
@@ -115,13 +116,14 @@ glRenderer::~glRenderer() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setup(meshPool* mshPool_) {
+glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_) {
     o_assert_dbg(!this->valid);
+    o_assert_dbg(dispMgr_);
     o_assert_dbg(mshPool_);
-    o_assert_dbg(Core::IsMainThread());
     
     this->valid = true;
     this->mshPool = mshPool_;
+    this->dispMgr = dispMgr_;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -145,7 +147,6 @@ glRenderer::setup(meshPool* mshPool_) {
 void
 glRenderer::discard() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     this->invalidateMeshState();
     this->invalidateProgramState();
@@ -160,6 +161,7 @@ glRenderer::discard() {
     #endif
 
     this->mshPool = nullptr;
+    this->dispMgr = nullptr;
     this->valid = false;
 }
 
@@ -173,7 +175,6 @@ glRenderer::isValid() const {
 void
 glRenderer::resetStateCache() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     this->setupDepthStencilState();
     this->setupBlendState();
@@ -187,7 +188,6 @@ glRenderer::resetStateCache() {
 bool
 glRenderer::supports(GfxFeature::Code feat) const {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     switch (feat) {
         case GfxFeature::TextureCompressionDXT:
@@ -216,9 +216,7 @@ glRenderer::supports(GfxFeature::Code feat) const {
 //------------------------------------------------------------------------------
 void
 glRenderer::commitFrame() {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
-    
+    o_assert_dbg(this->valid);    
     this->rtValid = false;
 }
 
@@ -226,7 +224,6 @@ glRenderer::commitFrame() {
 void
 glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if ((x != this->viewPortX) ||
         (y != this->viewPortY) ||
@@ -243,14 +240,13 @@ glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
+glRenderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
-    o_assert_dbg(displayManager);
+    o_assert_dbg(this->dispMgr);
     
     // also update view port to cover full render target
     if (nullptr == rt) {
-        this->rtAttrs = displayManager->GetDisplayAttrs();
+        this->rtAttrs = this->dispMgr->GetDisplayAttrs();
     }
     else {
         // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
@@ -272,7 +268,7 @@ glRenderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
     if (rt != this->curRenderTarget) {
         // default render target?
         if (nullptr == rt) {
-            displayManager->glBindDefaultFramebuffer();
+            this->dispMgr->glBindDefaultFramebuffer();
         }
         else {
             ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glFramebuffer);
@@ -296,7 +292,6 @@ glRenderer::applyRenderTarget(displayMgr* displayManager, texture* rt) {
 void
 glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if ((x != this->scissorX) ||
         (y != this->scissorY) ||
@@ -315,7 +310,6 @@ glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 void
 glRenderer::applyBlendColor(const glm::vec4& c) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (c != this->blendColor) {
         this->blendColor = c;
@@ -327,7 +321,6 @@ glRenderer::applyBlendColor(const glm::vec4& c) {
 void
 glRenderer::applyProgramBundle(programBundle* progBundle, uint32 mask) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     progBundle->selectProgram(mask);
     GLuint glProg = progBundle->getProgram();
@@ -339,7 +332,6 @@ glRenderer::applyProgramBundle(programBundle* progBundle, uint32 mask) {
 void
 glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != msh);
 
     // bind the mesh
@@ -422,7 +414,6 @@ glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
 void
 glRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != ds);
     o_assert_dbg(this->mshPool);
     
@@ -450,7 +441,6 @@ glRenderer::applyDrawState(drawState* ds) {
 void
 glRenderer::applyTexture(int32 index, const texture* tex) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(this->curProgramBundle);
     o_assert_dbg(tex);
     
@@ -464,7 +454,6 @@ glRenderer::applyTexture(int32 index, const texture* tex) {
 template<> void
 glRenderer::applyVariable(int32 index, const float32& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform1f(glLoc, val);
@@ -474,7 +463,6 @@ glRenderer::applyVariable(int32 index, const float32& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::vec2& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform2f(glLoc, val.x, val.y);
@@ -484,7 +472,6 @@ glRenderer::applyVariable(int32 index, const glm::vec2& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::vec3& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform3f(glLoc, val.x, val.y, val.z);
@@ -494,7 +481,6 @@ glRenderer::applyVariable(int32 index, const glm::vec3& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::vec4& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
@@ -504,7 +490,6 @@ glRenderer::applyVariable(int32 index, const glm::vec4& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const int32& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform1i(glLoc, val);
@@ -514,7 +499,6 @@ glRenderer::applyVariable(int32 index, const int32& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::ivec2& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform2i(glLoc, val.x, val.y);
@@ -524,7 +508,6 @@ glRenderer::applyVariable(int32 index, const glm::ivec2& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::ivec3& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform3i(glLoc, val.x, val.y, val.z);
@@ -534,7 +517,6 @@ glRenderer::applyVariable(int32 index, const glm::ivec3& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::ivec4& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniform4i(glLoc, val.x, val.y, val.z, val.w);
@@ -544,7 +526,6 @@ glRenderer::applyVariable(int32 index, const glm::ivec4& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::mat4& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
@@ -554,7 +535,6 @@ glRenderer::applyVariable(int32 index, const glm::mat4& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::mat3& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
@@ -564,7 +544,6 @@ glRenderer::applyVariable(int32 index, const glm::mat3& val) {
 template<> void
 glRenderer::applyVariable(int32 index, const glm::mat2& val) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
     ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
@@ -574,7 +553,6 @@ glRenderer::applyVariable(int32 index, const glm::mat2& val) {
 template<> void
 glRenderer::applyVariableArray(int32 index, const float32* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -585,7 +563,6 @@ glRenderer::applyVariableArray(int32 index, const float32* values, int32 numValu
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::vec2* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -596,7 +573,6 @@ glRenderer::applyVariableArray(int32 index, const glm::vec2* values, int32 numVa
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::vec3* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -607,7 +583,6 @@ glRenderer::applyVariableArray(int32 index, const glm::vec3* values, int32 numVa
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::vec4* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -618,7 +593,6 @@ glRenderer::applyVariableArray(int32 index, const glm::vec4* values, int32 numVa
 template<> void
 glRenderer::applyVariableArray(int32 index, const int32* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -629,7 +603,6 @@ glRenderer::applyVariableArray(int32 index, const int32* values, int32 numValues
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::ivec2* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -640,7 +613,6 @@ glRenderer::applyVariableArray(int32 index, const glm::ivec2* values, int32 numV
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::ivec3* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -651,7 +623,6 @@ glRenderer::applyVariableArray(int32 index, const glm::ivec3* values, int32 numV
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::ivec4* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -662,7 +633,6 @@ glRenderer::applyVariableArray(int32 index, const glm::ivec4* values, int32 numV
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::mat4* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -673,7 +643,6 @@ glRenderer::applyVariableArray(int32 index, const glm::mat4* values, int32 numVa
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::mat3* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -684,7 +653,6 @@ glRenderer::applyVariableArray(int32 index, const glm::mat3* values, int32 numVa
 template<> void
 glRenderer::applyVariableArray(int32 index, const glm::mat2* values, int32 numValues) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != this->curProgramBundle);
     o_assert_dbg(values && (numValues > 0));
     GLint glLoc = this->curProgramBundle->getUniformLocation(index);
@@ -695,7 +663,6 @@ glRenderer::applyVariableArray(int32 index, const glm::mat2* values, int32 numVa
 void
 glRenderer::clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert2_dbg(this->rtValid, "No render target set!");
     
     GLbitfield clearMask = 0;
@@ -745,7 +712,6 @@ glRenderer::clear(PixelChannel::Mask channels, const glm::vec4& color, float32 d
 void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert2_dbg(this->rtValid, "No render target set!");
 
     if (this->curMesh) {
@@ -769,7 +735,6 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
 void
 glRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert2_dbg(this->rtValid, "No render target set!");
 
     if (this->curMesh) {
@@ -788,7 +753,6 @@ glRenderer::draw(int32 primGroupIndex) {
 void
 glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert2_dbg(this->rtValid, "No render target set!");
 
     if (this->curMesh) {
@@ -812,7 +776,6 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
 void
 glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert2_dbg(this->rtValid, "No render target set!");
 
     if (this->curMesh) {
@@ -831,7 +794,6 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 void
 glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(nullptr != msh);
     o_assert(numBytes > 0);
     
@@ -862,7 +824,6 @@ glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 void
 glRenderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_dbg(displayManager);
     o_assert_dbg((nullptr != buf) && (bufNumBytes > 0));
     
@@ -894,7 +855,6 @@ glRenderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes)
 void
 glRenderer::invalidateMeshState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (glExt::HasExtension(glExt::VertexArrayObject)) {
         // NOTE: it is essential that the current vertex array object
@@ -913,7 +873,6 @@ glRenderer::invalidateMeshState() {
 void
 glRenderer::bindVertexBuffer(GLuint vb) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (vb != this->vertexBuffer) {
         this->vertexArrayObject = 0;
@@ -927,7 +886,6 @@ glRenderer::bindVertexBuffer(GLuint vb) {
 void
 glRenderer::bindIndexBuffer(GLuint ib) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (ib != this->indexBuffer) {
         this->vertexArrayObject = 0;
@@ -941,7 +899,6 @@ glRenderer::bindIndexBuffer(GLuint ib) {
 void
 glRenderer::bindVertexArrayObject(GLuint vao) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (vao != this->vertexArrayObject) {
         this->vertexBuffer = 0;
@@ -956,7 +913,6 @@ glRenderer::bindVertexArrayObject(GLuint vao) {
 void
 glRenderer::invalidateProgramState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     ::glUseProgram(0);
     ORYOL_GL_CHECK_ERROR();
@@ -967,7 +923,6 @@ glRenderer::invalidateProgramState() {
 void
 glRenderer::useProgram(GLuint prog) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     if (prog != this->program) {
         this->program = prog;
@@ -980,7 +935,6 @@ glRenderer::useProgram(GLuint prog) {
 void
 glRenderer::invalidateTextureState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     for (int32 i = 0; i < MaxTextureSamplers; i++) {
         this->samplers2D[i] = 0;
@@ -992,7 +946,6 @@ glRenderer::invalidateTextureState() {
 void
 glRenderer::bindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     o_assert_range_dbg(samplerIndex, MaxTextureSamplers);
     o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP));
     
@@ -1010,7 +963,6 @@ glRenderer::bindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
 void
 glRenderer::setupDepthStencilState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     this->depthStencilState = DepthStencilState();
     
@@ -1028,7 +980,6 @@ glRenderer::setupDepthStencilState() {
 void
 glRenderer::applyStencilState(const StencilState& newState, const StencilState& curState, GLenum glFace) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     const CompareFunc::Code cmpFunc = newState.StencilCmpFunc;
     const uint32 readMask = newState.StencilReadMask;
@@ -1058,7 +1009,6 @@ glRenderer::applyStencilState(const StencilState& newState, const StencilState& 
 void
 glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     const DepthStencilState& curState = this->depthStencilState;
     
@@ -1113,7 +1063,6 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
 void
 glRenderer::setupBlendState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     this->blendState = BlendState();
     ::glDisable(GL_BLEND);
@@ -1127,7 +1076,6 @@ glRenderer::setupBlendState() {
 void
 glRenderer::applyBlendState(const BlendState& bs) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     if (bs.BlendEnabled != this->blendState.BlendEnabled) {
         if (bs.BlendEnabled) {
@@ -1177,7 +1125,6 @@ glRenderer::applyBlendState(const BlendState& bs) {
 void
 glRenderer::setupRasterizerState() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
     
     this->rasterizerState = RasterizerState();
     
@@ -1197,7 +1144,6 @@ glRenderer::setupRasterizerState() {
 void
 glRenderer::applyRasterizerState(const RasterizerState& newState) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(Core::IsMainThread());
 
     const RasterizerState& curState = this->rasterizerState;
     
