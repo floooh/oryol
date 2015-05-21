@@ -665,21 +665,21 @@ void
 glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!\n");
-    o_assert2_dbg((clearFlags & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
+    o_assert2_dbg((clearMask & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
     
-    GLbitfield clearMask = 0;
+    GLbitfield glClearMask = 0;
     
     // update GL state
-    if (clearFlags & ClearTarget::Color) {
-        clearMask |= GL_COLOR_BUFFER_BIT;
+    if (clearMask & ClearTarget::Color) {
+        glClearMask |= GL_COLOR_BUFFER_BIT;
         ::glClearColor(color.x, color.y, color.z, color.w);
         if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
             this->blendState.ColorWriteMask = PixelChannel::RGBA;
             ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
     }
-    if (clearFlags & ClearTarget::Depth) {
-        clearMask |= GL_DEPTH_BUFFER_BIT;
+    if (clearMask & ClearTarget::Depth) {
+        glClearMask |= GL_DEPTH_BUFFER_BIT;
         #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
         ::glClearDepthf(depth);
         #else
@@ -690,8 +690,8 @@ glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 d
             ::glDepthMask(GL_TRUE);
         }
     }
-    if (clearFlags & ClearTarget::Stencil) {
-        clearMask |= GL_STENCIL_BUFFER_BIT;
+    if (clearMask & ClearTarget::Stencil) {
+        glClearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(stencil);
         if ((this->depthStencilState.StencilFront.StencilWriteMask != 0xFF) ||
             (this->depthStencilState.StencilBack.StencilWriteMask != 0xFF)) {
@@ -703,7 +703,7 @@ glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 d
     }
     
     // finally do the actual clear
-    ::glClear(clearMask);
+    ::glClear(glClearMask);
     ORYOL_GL_CHECK_ERROR();
 }
     
