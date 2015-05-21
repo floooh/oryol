@@ -69,8 +69,8 @@ d3d11DisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 void
 d3d11DisplayMgr::Present() {
-    Log::Info("PRESENT!\n");
-    Sleep(100);
+    o_assert_dbg(this->dxgiSwapChain);
+    this->dxgiSwapChain->Present(this->gfxSetup.SwapInterval, 0);
 }
 
 //------------------------------------------------------------------------------

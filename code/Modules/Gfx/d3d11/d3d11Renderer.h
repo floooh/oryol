@@ -32,7 +32,7 @@ public:
     ~d3d11Renderer();
     
     /// setup the renderer
-    void setup(meshPool* mshPool);
+    void setup(displayMgr* dispMgr, meshPool* mshPool);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -48,7 +48,7 @@ public:
     const DisplayAttrs& renderTargetAttrs() const;
 
     /// apply a render target (default or offscreen)
-    void applyRenderTarget(displayMgr* displayManager, texture* rt);
+    void applyRenderTarget(texture* rt);
     /// apply viewport
     void applyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect
@@ -64,7 +64,7 @@ public:
     /// apply a shader variable array
     template<class T> void applyVariableArray(int32 index, const T* values, int32 numValues);
     /// clear currently assigned render target
-    void clear(PixelChannel::Mask channels, const glm::vec4& color, float32 depth, uint8 stencil);
+    void clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -77,6 +77,27 @@ public:
     void updateVertices(mesh* msh, const void* data, int32 numBytes);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes);
+
+private:
+    bool valid;
+    displayMgr* dispMgr;
+    meshPool* mshPool;
+    ID3D11Device* d3d11Device;
+    ID3D11DeviceContext* d3d11DeviceContext;
+    ID3D11RenderTargetView* defaultRenderTargetView;
+    ID3D11DepthStencilView* defaultDepthStencilView;
+
+    bool rtValid;
+    DisplayAttrs rtAttrs;
+    
+    // high-level state cache
+    texture* curRenderTarget;
+    drawState* curDrawState;
+    mesh* curMesh;
+    programBundle* curProgramBundle;
+
+    ID3D11RenderTargetView* curRenderTargetView;
+    ID3D11DepthStencilView* curDepthStencilView;
 };
 
 } // namespace _priv
