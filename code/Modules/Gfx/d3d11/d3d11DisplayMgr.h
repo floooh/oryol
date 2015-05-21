@@ -71,8 +71,12 @@ private:
     void destroyWindow();
     /// create swap chain and d3d device
     void createDeviceAndSwapChain(const GfxSetup& gfxSetup);
+    /// destroy the d3d device and swap chain
+    void destroyDeviceAndSwapChain();
     /// create the default render target
     void createDefaultRenderTarget(const GfxSetup& gfxSetup);
+    /// destroy the default render target
+    void destroyDefaultRenderTarget();
     /// compute actual window size from client rect size plus window chrome
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
     /// custom winproc

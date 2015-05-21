@@ -57,34 +57,8 @@ void
 d3d11DisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
 
-    if (this->backBuffer) {
-        this->backBuffer->Release();
-        this->backBuffer = nullptr;
-    }
-    if (this->renderTargetView) {
-        this->renderTargetView->Release();
-        this->renderTargetView = nullptr;
-    }
-    if (this->depthStencilBuffer) {
-        this->depthStencilBuffer->Release();
-        this->depthStencilBuffer = nullptr;
-    }
-    if (this->depthStencilView) {
-        this->depthStencilView->Release();
-        this->depthStencilView = nullptr;
-    }
-    if (this->dxgiSwapChain) {
-        this->dxgiSwapChain->Release();
-        this->dxgiSwapChain = nullptr;
-    }
-    if (this->d3d11Device) {
-        this->d3d11Device->Release();
-        this->d3d11Device = nullptr;
-    }
-    if (this->d3d11DeviceContext) {
-        this->d3d11DeviceContext->Release();
-        this->d3d11DeviceContext = nullptr;
-    }
+    this->destroyDefaultRenderTarget();
+    this->destroyDeviceAndSwapChain();
 
     this->destroyWindow();
     this->unregisterWindowClass();
@@ -175,6 +149,23 @@ d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup) {
 
 //------------------------------------------------------------------------------
 void
+d3d11DisplayMgr::destroyDeviceAndSwapChain() {
+    if (this->dxgiSwapChain) {
+        this->dxgiSwapChain->Release();
+        this->dxgiSwapChain = nullptr;
+    }
+    if (this->d3d11Device) {
+        this->d3d11Device->Release();
+        this->d3d11Device = nullptr;
+    }
+    if (this->d3d11DeviceContext) {
+        this->d3d11DeviceContext->Release();
+        this->d3d11DeviceContext = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup) {
     o_assert_dbg(this->d3d11Device);
     o_assert_dbg(this->dxgiSwapChain);
@@ -217,6 +208,27 @@ d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup) {
         hr = this->d3d11Device->CreateDepthStencilView(this->depthStencilBuffer, &dsvDesc, &this->depthStencilView);
         o_assert(SUCCEEDED(hr));
         o_assert_dbg(this->depthStencilView);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::destroyDefaultRenderTarget() {
+    if (this->backBuffer) {
+        this->backBuffer->Release();
+        this->backBuffer = nullptr;
+    }
+    if (this->renderTargetView) {
+        this->renderTargetView->Release();
+        this->renderTargetView = nullptr;
+    }
+    if (this->depthStencilBuffer) {
+        this->depthStencilBuffer->Release();
+        this->depthStencilBuffer = nullptr;
+    }
+    if (this->depthStencilView) {
+        this->depthStencilView->Release();
+        this->depthStencilView = nullptr;
     }
 }
 
