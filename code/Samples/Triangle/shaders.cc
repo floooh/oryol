@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:17# machine generated, do not edit!
+// #version:18# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -70,6 +70,28 @@ const char* fs_glsl150_src =
 "#define _COLOR _FragColor\n"
 "in vec4 color;\n"
 "out vec4 _FragColor;\n"
+"void main() {\n"
+"_COLOR = color;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* vs_hlsl5_src = 
+"#define _POSITION _oPosition\n"
+"void main(\n"
+"in vec4 position : position,\n"
+"in vec4 color0 : color0\n"
+"out vec4 color : color\n"
+") {\n"
+"_POSITION = position;\n"
+"color = color0;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* fs_hlsl5_src = 
+"#define _COLOR _oColor\n"
+"varying vec4 color;\n"
 "void main() {\n"
 "_COLOR = color;\n"
 "}\n"

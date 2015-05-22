@@ -2,14 +2,18 @@
 Code generator for shader libraries.
 '''
 
-Version = 17
+Version = 18
 
 import os
 import sys
 import glob
+import platform
 from pprint import pprint
 import genutil as util
 from util import glslcompiler
+
+if platform.system() == 'Windows' :
+    from util import hlslcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
 slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'hlsl5' ]
@@ -95,6 +99,15 @@ slMacros = {
         '_TEXTURECUBELOD': 'FIXME_TEXTURECUBELOD'
     },
 }
+
+validVsInNames = [
+    'position', 'normal', 'texcoord0', 'texcoord1', 'texcoord2', 'texcoord3',
+    'tangent', 'binormal', 'weights', 'indices', 'color0', 'color1',
+    'instance0', 'instance1', 'instance2', 'instance3'
+]
+validInOutTypes = [
+    'float', 'vec2', 'vec3', 'vec4'
+]
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -412,6 +425,11 @@ class Parser :
             util.fmtError("@in must have 2 args (type name)")
         type = args[0]
         name = args[1]
+        if type not in validInOutTypes :
+            util.fmtError("invalid 'in' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes)))
+        if self.current.getTag() == 'vs' :
+            if name not in validVsInNames :
+                util.fmtError("invalid input attribute name '{}', must be one of '{}'!".format(name, ','.join(validVsInNames)))
         if checkListDup(name, self.current.inputs) :
             util.fmtError("@in '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
@@ -424,6 +442,8 @@ class Parser :
             util.fmtError("@out must have 2 args (type name)")
         type = args[0]
         name = args[1]
+        if type not in validInOutTypes :
+            util.fmtError("invalid 'out' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes))) 
         if checkListDup(name, self.current.outputs) :
             util.fmtError("@out '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
@@ -477,6 +497,8 @@ class Parser :
             util.fmtError("@end must come after @block, @vs, @fs or @bundle!")
         if len(args) != 0:
             util.fmtError("@end must not have arguments")
+        if self.current.getTag() in ['block', 'vs', 'fs'] and len(self.current.lines) == 0 :
+            util.fmtError("no source code lines in @block, @vs or @fs section")
         self.current = None
 
     #---------------------------------------------------------------------------
@@ -604,7 +626,7 @@ class GLSLGenerator :
 
         # write uniforms
         for uniform in vs.uniforms :
-            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind), uniform.filePath, uniform.lineNumber))
+            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
 
         # write vertex shader inputs
         for input in vs.inputs :
@@ -625,9 +647,102 @@ class GLSLGenerator :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
 
         # write vertex shader function
-        lines.append(Line('void main() {'))
+        lines.append(Line('void main() {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLines(lines, vs.lines)
-        lines.append(Line('}'))
+        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
+        vs.generatedSource[slVersion] = lines
+
+    #---------------------------------------------------------------------------
+    def genFragmentShaderSource(self, fs, slVersion) :
+        lines = []
+
+        # version tag
+        if glslVersionNumber[slVersion] > 100 :
+            lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
+
+        # precision modifiers
+        if slVersion == 'glsl100' :
+            lines.append(Line('precision mediump float;'))
+            if fs.highPrecision :
+                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                for type in fs.highPrecision :
+                    lines.append(Line('precision highp {};'.format(type)))
+                lines.append(Line('#endif'))
+
+        # write macros
+        for macro in fs.macros :
+            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
+
+        # write uniforms
+        for uniform in fs.uniforms :
+            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+
+        # write fragment shader inputs
+        for input in fs.inputs :
+            if glslVersionNumber[slVersion] < 130 :
+                lines.append(Line('varying {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
+            else :
+                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
+
+        # write the fragcolor output
+        if glslVersionNumber[slVersion] >= 130 :
+            lines.append(Line('out vec4 _FragColor;'))
+
+        # write blocks the fs depends on
+        for dep in fs.resolvedDeps :
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+
+        # write fragment shader function
+        lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
+        lines = self.genLines(lines, fs.lines)
+        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
+        fs.generatedSource[slVersion] = lines
+
+#-------------------------------------------------------------------------------
+class HLSLGenerator :
+    '''
+    Generate vertex and fragment shader source code for HLSL dialects
+    '''
+    def __init__(self, shaderLib) :
+        self.shaderLib = shaderLib
+
+    #---------------------------------------------------------------------------
+    def genLines(self, dstLines, srcLines) :
+        for srcLine in srcLines :
+            dstLines.append(srcLine)
+        return dstLines
+
+    #---------------------------------------------------------------------------
+    def genVertexShaderSource(self, vs, slVersion) :
+        lines = []
+        
+        # write macros
+        for macro in vs.macros :
+            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
+
+        # write uniforms (globals)
+        # FIXME: add proper support for constant buffers
+        for uniform in vs.uniforms :
+            lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+
+        # write blocks the vs depends on
+        for dep in vs.resolvedDeps :
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+
+        lines.append(Line('void main(', vs.lines[0].path, vs.lines[0].lineNumber))
+        for input in vs.inputs :
+            l = 'in {} {} : {}'.format(input.type, input.name, input.name)
+            if input != vs.inputs[-1] :
+                l += ','
+            lines.append(Line(l, input.filePath, input.lineNumber))
+        for output in vs.outputs :
+            l = 'out {} {} : {}'.format(output.type, output.name, output.name)
+            if output != vs.outputs[-1] :
+                l += ','
+            lines.append(Line(l, output.filePath, output.lineNumber))
+        lines.append(Line(') {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines = self.genLines(lines, vs.lines)
+        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
         vs.generatedSource[slVersion] = lines
 
     #---------------------------------------------------------------------------
@@ -671,9 +786,9 @@ class GLSLGenerator :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
 
         # write fragment shader function
-        lines.append(Line('void main() {'))
+        lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLines(lines, fs.lines)
-        lines.append(Line('}'))
+        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
         fs.generatedSource[slVersion] = lines
 
 #-------------------------------------------------------------------------------
@@ -835,6 +950,18 @@ class ShaderLibrary :
                 for fs in self.fragmentShaders.values() :
                     gen.genFragmentShaderSource(fs, slVersion)
 
+    def generateShaderSourcesHLSL(self) :
+        '''
+        Generates vertex- and fragment-shader source for HLSL
+        '''
+        gen = HLSLGenerator(self)
+        for slVersion in slVersions :
+            if isHLSL[slVersion] :
+                for vs in self.vertexShaders.values() :
+                    gen.genVertexShaderSource(vs, slVersion)
+                for fs in self.fragmentShaders.values() :
+                    gen.genFragmentShaderSource(fs, slVersion)
+
     def validateShadersGLSL(self) :
         '''
         Run the shader sources through the GLSL reference compiler
@@ -847,6 +974,19 @@ class ShaderLibrary :
                 for fs in self.fragmentShaders.values() :
                     srcLines = fs.generatedSource[slVersion]
                     glslcompiler.validate(srcLines, 'fs', slVersion)
+
+    def validateShadersHLSL(self) :
+        '''
+        Run the shader sources through the HLSL reference compiler
+        '''
+        for slVersion in slVersions :
+            if isHLSL[slVersion] :
+                for vs in self.vertexShaders.values() :
+                    srcLines = vs.generatedSource[slVersion]
+                    hlslcompiler.validate(srcLines, 'vs', slVersion)
+                for fs in self.fragmentShaders.values() :
+                    srcLines = fs.generatedSource[slVersion]
+                    hlslcompiler.validate(srcLines, 'fs', slVersion)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -910,7 +1050,7 @@ def writeVertexShaderSource(f, shdLib, vs, slVersion) :
     elif isHLSL[slVersion] :
         f.write('#if ORYOL_D3D11\n')
     else :
-        f.write('#error "unsupporred shader language!"\n')
+        f.write('#error "unsupported shader language!"\n')
     f.write('const char* {}_{}_src = \n'.format(vs.name, slVersion))
     for line in vs.generatedSource[slVersion] :
         f.write('"{}\\n"\n'.format(line.content))
@@ -924,7 +1064,7 @@ def writeFragmentShaderSource(f, shdLib, fs, slVersion) :
     elif isHLSL[slVersion] :
         f.write('#if ORYOL_D3D11\n')
     else :
-        f.write('#error "unsupporred shader language!"\n')
+        f.write('#error "unsupported shader language!"\n')
     f.write('const char* {}_{}_src = \n'.format(fs.name, slVersion))
     for line in fs.generatedSource[slVersion] :
         f.write('"{}\\n"\n'.format(line.content))
@@ -961,11 +1101,10 @@ def generateSource(absSourcePath, shdLib) :
     f = open(absSourcePath, 'w')  
     writeSourceTop(f, absSourcePath, shdLib)
     for slVersion in slVersions :
-        if isGLSL[slVersion] :
-            for vs in shdLib.vertexShaders.values() :
-                writeVertexShaderSource(f, shdLib, vs, slVersion)
-            for fs in shdLib.fragmentShaders.values() :
-                writeFragmentShaderSource(f, shdLib, fs, slVersion)
+        for vs in shdLib.vertexShaders.values() :
+            writeVertexShaderSource(f, shdLib, vs, slVersion)
+        for fs in shdLib.fragmentShaders.values() :
+            writeFragmentShaderSource(f, shdLib, fs, slVersion)
     for bundle in shdLib.bundles.values() :
         writeBundleSource(f, shdLib, bundle)            
     writeSourceBottom(f, shdLib)  
@@ -979,6 +1118,9 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.validateShadersGLSL()
+        if platform.system() == 'Windows' :
+            shaderLibrary.generateShaderSourcesHLSL()
+            shaderLibrary.validateShadersHLSL()
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
 
