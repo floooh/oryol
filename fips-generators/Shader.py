@@ -1119,14 +1119,31 @@ def generateSource(absSourcePath, shdLib) :
 
 #-------------------------------------------------------------------------------
 def generate(input, out_src, out_hdr) :
+
+    '''
+    FIXME FIXME FIXME
+
+    Once we generate HLSL binary code we cannot write this into 
+    the shaders.cc/shaders.h pair, since this compilation would
+    only work on Windows. Instead write he shader code into
+    a separate header (shaders_hlsl.h) and conditionally include
+    this if compiling for D3D11.
+
+    Then, if the code generation runs on a non-Windows-platform,
+    only the shader.cc/shader.h files will be overwritten, 
+    and the shaders_hlsl.h file will not be touched (thus 
+    checking in the generated files into version control
+    will work fine regardless of platform).
+    '''
+
     if util.isDirty(Version, [input], [out_src, out_hdr]) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.validateShadersGLSL()
+        shaderLibrary.generateShaderSourcesHLSL()
         if platform.system() == 'Windows' :
-            shaderLibrary.generateShaderSourcesHLSL()
             shaderLibrary.validateShadersHLSL()
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)

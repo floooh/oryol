@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:18# machine generated, do not edit!
+// #version:19# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -8,6 +8,7 @@ namespace Oryol {
 namespace Shaders {
 #if ORYOL_OPENGL
 const char* normalsVS_glsl100_src = 
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "attribute vec4 position;\n"
@@ -21,6 +22,7 @@ const char* normalsVS_glsl100_src =
 #endif
 #if ORYOL_OPENGL
 const char* phongVS_glsl100_src = 
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -37,6 +39,7 @@ const char* phongVS_glsl100_src =
 #endif
 #if ORYOL_OPENGL
 const char* lambertVS_glsl100_src = 
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -52,6 +55,7 @@ const char* lambertVS_glsl100_src =
 #if ORYOL_OPENGL
 const char* normalsFS_glsl100_src = 
 "precision mediump float;\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 nrm;\n"
 "void main() {\n"
@@ -62,6 +66,7 @@ const char* normalsFS_glsl100_src =
 #if ORYOL_OPENGL
 const char* phongFS_glsl100_src = 
 "precision mediump float;\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec3 eyePos;\n"
@@ -96,6 +101,7 @@ const char* phongFS_glsl100_src =
 #if ORYOL_OPENGL
 const char* lambertFS_glsl100_src = 
 "precision mediump float;\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
@@ -122,6 +128,7 @@ const char* lambertFS_glsl100_src =
 #if ORYOL_OPENGL
 const char* normalsVS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "attribute vec4 position;\n"
@@ -136,6 +143,7 @@ const char* normalsVS_glsl120_src =
 #if ORYOL_OPENGL
 const char* phongVS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -153,6 +161,7 @@ const char* phongVS_glsl120_src =
 #if ORYOL_OPENGL
 const char* lambertVS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -168,6 +177,7 @@ const char* lambertVS_glsl120_src =
 #if ORYOL_OPENGL
 const char* normalsFS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 nrm;\n"
 "void main() {\n"
@@ -178,6 +188,7 @@ const char* normalsFS_glsl120_src =
 #if ORYOL_OPENGL
 const char* phongFS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec3 eyePos;\n"
@@ -212,6 +223,7 @@ const char* phongFS_glsl120_src =
 #if ORYOL_OPENGL
 const char* lambertFS_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
@@ -238,6 +250,7 @@ const char* lambertFS_glsl120_src =
 #if ORYOL_OPENGL
 const char* normalsVS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "in vec4 position;\n"
@@ -252,6 +265,7 @@ const char* normalsVS_glsl150_src =
 #if ORYOL_OPENGL
 const char* phongVS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -269,6 +283,7 @@ const char* phongVS_glsl150_src =
 #if ORYOL_OPENGL
 const char* lambertVS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -284,6 +299,7 @@ const char* lambertVS_glsl150_src =
 #if ORYOL_OPENGL
 const char* normalsFS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR _FragColor\n"
 "in vec4 nrm;\n"
 "out vec4 _FragColor;\n"
@@ -295,6 +311,7 @@ const char* normalsFS_glsl150_src =
 #if ORYOL_OPENGL
 const char* phongFS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR _FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec3 eyePos;\n"
@@ -330,6 +347,7 @@ const char* phongFS_glsl150_src =
 #if ORYOL_OPENGL
 const char* lambertFS_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR _FragColor\n"
 "uniform vec3 lightDir;\n"
 "uniform vec4 lightColor;\n"
@@ -341,6 +359,158 @@ const char* lambertFS_glsl150_src =
 "return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);\n"
 "}\n"
 "void main() {\n"
+"vec3 l = lightDir;\n"
+"vec3 n = normalize(N);\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
+"vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"}\n"
+"else {\n"
+"_COLOR = col;\n"
+"}\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* normalsVS_hlsl5_src = 
+"#define _POSITION _oPosition\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"mat4 mvp;\n"
+"void main(\n"
+"in vec4 position : position,\n"
+"in vec4 normal : normal,\n"
+"out vec4 nrm : nrm,\n"
+"out vec4 _oPosition : SV_POSITION) {\n"
+"_POSITION = mvp * position;\n"
+"nrm = normal;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* phongVS_hlsl5_src = 
+"#define _POSITION _oPosition\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"mat4 mvp;\n"
+"mat4 model;\n"
+"void main(\n"
+"in vec4 position : position,\n"
+"in vec4 normal : normal,\n"
+"out vec3 N : N,\n"
+"out vec3 P : P,\n"
+"out vec4 _oPosition : SV_POSITION) {\n"
+"_POSITION = mvp * position;\n"
+"P = vec4(model * position).xyz;\n"
+"N = vec4(model * vec4(normal.xyz, 0.0)).xyz;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* lambertVS_hlsl5_src = 
+"#define _POSITION _oPosition\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"mat4 mvp;\n"
+"mat4 model;\n"
+"void main(\n"
+"in vec4 position : position,\n"
+"in vec3 normal : normal,\n"
+"out vec3 N : N,\n"
+"out vec4 _oPosition : SV_POSITION) {\n"
+"_POSITION = mvp * position;\n"
+"N = vec4(model * vec4(normal, 0.0)).xyz;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* normalsFS_hlsl5_src = 
+"#define _COLOR _oColor\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"void main(\n"
+"in vec4 nrm : nrm,\n"
+"out vec4 _oColor : SV_TARGET) {\n"
+"_COLOR = nrm * 0.5 + 0.5;\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* phongFS_hlsl5_src = 
+"#define _COLOR _oColor\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"vec3 lightDir;\n"
+"vec3 eyePos;\n"
+"vec4 lightColor;\n"
+"vec4 matDiffuse;\n"
+"vec4 matSpecular;\n"
+"bool gammaCorrect;\n"
+"float matSpecularPower;\n"
+"vec4 gamma(vec4 c) {\n"
+"return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);\n"
+"}\n"
+"void main(\n"
+"in vec3 P : P,\n"
+"in vec3 N : N,\n"
+"out vec4 _oColor : SV_TARGET) {\n"
+"vec3 l = lightDir;\n"
+"vec3 n = normalize(N);\n"
+"vec3 v = normalize(eyePos - P);\n"
+"float n_dot_l = max(dot(n, l), 0.0);\n"
+"vec3 r = reflect(-l, n);\n"
+"float r_dot_v = max(dot(r, v), 0.0);\n"
+"float diff = n_dot_l;\n"
+"float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;\n"
+"vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);\n"
+"if (gammaCorrect) {\n"
+"_COLOR = gamma(col);\n"
+"} else {\n"
+"_COLOR = col;\n"
+"}\n"
+"}\n"
+;
+#endif
+#if ORYOL_D3D11
+const char* lambertFS_hlsl5_src = 
+"#define _COLOR _oColor\n"
+"#define mat4 float4x4\n"
+"#define mat2 float2x2\n"
+"#define mat3 float3x3\n"
+"#define vec4 float4\n"
+"#define vec2 float2\n"
+"#define vec3 float3\n"
+"vec3 lightDir;\n"
+"vec4 lightColor;\n"
+"vec4 matDiffuse;\n"
+"bool gammaCorrect;\n"
+"vec4 gamma(vec4 c) {\n"
+"return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);\n"
+"}\n"
+"void main(\n"
+"in vec3 N : N,\n"
+"out vec4 _oColor : SV_TARGET) {\n"
 "vec3 l = lightDir;\n"
 "vec3 n = normalize(N);\n"
 "float n_dot_l = max(dot(n, l), 0.0);\n"

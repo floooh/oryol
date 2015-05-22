@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:18# machine generated, do not edit!
+// #version:19# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
@@ -23,6 +23,7 @@ const char* vs_glsl100_src =
 #if ORYOL_OPENGL
 const char* fs_glsl100_src = 
 "precision mediump float;\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
 "void main() {\n"
@@ -48,6 +49,7 @@ const char* vs_glsl120_src =
 #if ORYOL_OPENGL
 const char* fs_glsl120_src = 
 "#version 120\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
 "void main() {\n"
@@ -73,6 +75,7 @@ const char* vs_glsl150_src =
 #if ORYOL_OPENGL
 const char* fs_glsl150_src = 
 "#version 150\n"
+"#define mul(v,m) (m * v)\n"
 "#define _COLOR _FragColor\n"
 "in vec4 color;\n"
 "out vec4 _FragColor;\n"
