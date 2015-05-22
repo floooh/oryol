@@ -8,17 +8,13 @@
 @in vec4 color0
 @in vec4 instance0
 @out vec4 color
-void main() {
-    $position = mvp * (position + instance0); 
+    $out_position = mvp * (position + instance0); 
     color = color0;
-}
 @end
 
 @fs fs
 @in vec4 color
-void main() {
-    $color = color;
-}
+    $out_color = color;
 @end
 
 @bundle Main

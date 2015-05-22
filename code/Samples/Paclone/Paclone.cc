@@ -93,7 +93,7 @@ PacloneApp::OnRunning() {
     // copy offscreen render target into backbuffer
     glm::vec2 dispRes(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.0f));
+    Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyVariable(Shaders::CRT::Canvas, this->canvasRenderTarget);

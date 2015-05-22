@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "IMUIShaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* vsIMUI_100_src = 
+#if ORYOL_OPENGL
+const char* vsIMUI_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
 "attribute vec4 position;\n"
@@ -20,10 +21,12 @@ const char* vsIMUI_100_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsIMUI_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsIMUI_glsl100_src = 
 "precision mediump float;\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
+"#define _COLOR gl_FragColor\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
@@ -31,7 +34,9 @@ const char* fsIMUI_100_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vsIMUI_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* vsIMUI_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
@@ -46,10 +51,12 @@ const char* vsIMUI_120_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsIMUI_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsIMUI_glsl120_src = 
 "#version 120\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
+"#define _COLOR gl_FragColor\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "varying vec4 color;\n"
@@ -57,7 +64,9 @@ const char* fsIMUI_120_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
-const char* vsIMUI_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* vsIMUI_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 ortho;\n"
@@ -72,10 +81,12 @@ const char* vsIMUI_150_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsIMUI_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsIMUI_glsl150_src = 
 "#version 150\n"
-"#define _COLOR _FragColor\n"
 "#define _TEXTURE2D texture\n"
+"#define _COLOR _FragColor\n"
 "uniform sampler2D tex;\n"
 "in vec2 uv;\n"
 "in vec4 color;\n"
@@ -84,11 +95,21 @@ const char* fsIMUI_150_src =
 "_COLOR = _TEXTURE2D(tex, uv).xxxx * color;\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup IMUIShader::CreateSetup() {
     ProgramBundleSetup setup("IMUIShader");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsIMUI_100_src, fsIMUI_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsIMUI_120_src, fsIMUI_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsIMUI_150_src, fsIMUI_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vsIMUI_glsl100_src, fsIMUI_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vsIMUI_glsl120_src, fsIMUI_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vsIMUI_glsl150_src, fsIMUI_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, vsIMUI_hlsl5_src, fsIMUI_hlsl5_src);
+    #endif
     setup.AddUniform("ortho", Ortho);
     setup.AddTextureUniform("tex", Texture);
     return setup;

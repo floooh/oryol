@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* copyVS_100_src = 
+#if ORYOL_OPENGL
+const char* copyVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
 "attribute vec2 texcoord0;\n"
@@ -16,7 +17,9 @@ const char* copyVS_100_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* offscreenVS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
 "attribute vec2 texcoord0;\n"
@@ -26,17 +29,21 @@ const char* offscreenVS_100_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* copyFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* copyFS_glsl100_src = 
 "precision mediump float;\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
+"#define _COLOR gl_FragColor\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
 "_COLOR = _TEXTURE2D(tex, uv) * 0.01;\n"
 "}\n"
 ;
-const char* offscreenFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenFS_glsl100_src = 
 "precision mediump float;\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 "precision highp float;\n"
@@ -100,7 +107,9 @@ const char* offscreenFS_100_src =
 "_COLOR = vec4(red, green, blue, 0.0) * 100.0;\n"
 "}\n"
 ;
-const char* copyVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* copyVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
@@ -111,7 +120,9 @@ const char* copyVS_120_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* offscreenVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
@@ -122,17 +133,21 @@ const char* offscreenVS_120_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* copyFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* copyFS_glsl120_src = 
 "#version 120\n"
-"#define _COLOR gl_FragColor\n"
 "#define _TEXTURE2D texture2D\n"
+"#define _COLOR gl_FragColor\n"
 "uniform sampler2D tex;\n"
 "varying vec2 uv;\n"
 "void main() {\n"
 "_COLOR = _TEXTURE2D(tex, uv) * 0.01;\n"
 "}\n"
 ;
-const char* offscreenFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "uniform float time;\n"
@@ -193,7 +208,9 @@ const char* offscreenFS_120_src =
 "_COLOR = vec4(red, green, blue, 0.0) * 100.0;\n"
 "}\n"
 ;
-const char* copyVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* copyVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "in vec4 position;\n"
@@ -204,7 +221,9 @@ const char* copyVS_150_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* offscreenVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "in vec4 position;\n"
@@ -215,10 +234,12 @@ const char* offscreenVS_150_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* copyFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* copyFS_glsl150_src = 
 "#version 150\n"
-"#define _COLOR _FragColor\n"
 "#define _TEXTURE2D texture\n"
+"#define _COLOR _FragColor\n"
 "uniform sampler2D tex;\n"
 "in vec2 uv;\n"
 "out vec4 _FragColor;\n"
@@ -226,7 +247,9 @@ const char* copyFS_150_src =
 "_COLOR = _TEXTURE2D(tex, uv) * 0.01;\n"
 "}\n"
 ;
-const char* offscreenFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* offscreenFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "uniform float time;\n"
@@ -288,19 +311,38 @@ const char* offscreenFS_150_src =
 "_COLOR = vec4(red, green, blue, 0.0) * 100.0;\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup Offscreen::CreateSetup() {
     ProgramBundleSetup setup("Offscreen");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, offscreenVS_100_src, offscreenFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, offscreenVS_120_src, offscreenFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, offscreenVS_150_src, offscreenFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, offscreenVS_glsl100_src, offscreenFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, offscreenVS_glsl120_src, offscreenFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, offscreenVS_glsl150_src, offscreenFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, offscreenVS_hlsl5_src, offscreenFS_hlsl5_src);
+    #endif
     setup.AddUniform("time", Time);
     return setup;
 }
 ProgramBundleSetup Copy::CreateSetup() {
     ProgramBundleSetup setup("Copy");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, copyVS_100_src, copyFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, copyVS_120_src, copyFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, copyVS_150_src, copyFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, copyVS_glsl100_src, copyFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, copyVS_glsl120_src, copyFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, copyVS_glsl150_src, copyFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, copyVS_hlsl5_src, copyFS_hlsl5_src);
+    #endif
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }

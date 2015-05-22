@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* planeVS_100_src = 
+#if ORYOL_OPENGL
+const char* planeVS_glsl100_src = 
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -21,7 +22,9 @@ const char* planeVS_100_src =
 "_POSITION = mvp * pos;\n"
 "}\n"
 ;
-const char* plasmaVS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
 "attribute vec2 texcoord0;\n"
@@ -31,7 +34,9 @@ const char* plasmaVS_100_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* planeFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* planeFS_glsl100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
@@ -39,7 +44,9 @@ const char* planeFS_100_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* plasmaFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaFS_glsl100_src = 
 "precision mediump float;\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 "precision highp float;\n"
@@ -107,7 +114,9 @@ const char* plasmaFS_100_src =
 "_COLOR = vec4(red, green, blue, height * 0.2);\n"
 "}\n"
 ;
-const char* planeVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* planeVS_glsl120_src = 
 "#version 120\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"
@@ -123,7 +132,9 @@ const char* planeVS_120_src =
 "_POSITION = mvp * pos;\n"
 "}\n"
 ;
-const char* plasmaVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
@@ -134,7 +145,9 @@ const char* plasmaVS_120_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* planeFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* planeFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
@@ -142,7 +155,9 @@ const char* planeFS_120_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* plasmaFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "uniform float time;\n"
@@ -207,7 +222,9 @@ const char* plasmaFS_120_src =
 "_COLOR = vec4(red, green, blue, height * 0.2);\n"
 "}\n"
 ;
-const char* planeVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* planeVS_glsl150_src = 
 "#version 150\n"
 "#define _TEXTURE2D texture\n"
 "#define _POSITION gl_Position\n"
@@ -223,7 +240,9 @@ const char* planeVS_150_src =
 "_POSITION = mvp * pos;\n"
 "}\n"
 ;
-const char* plasmaVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "in vec4 position;\n"
@@ -234,7 +253,9 @@ const char* plasmaVS_150_src =
 "uv = texcoord0;\n"
 "}\n"
 ;
-const char* planeFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* planeFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "in vec4 color;\n"
@@ -243,7 +264,9 @@ const char* planeFS_150_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* plasmaFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* plasmaFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "uniform float time;\n"
@@ -309,20 +332,39 @@ const char* plasmaFS_150_src =
 "_COLOR = vec4(red, green, blue, height * 0.2);\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup Plane::CreateSetup() {
     ProgramBundleSetup setup("Plane");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, planeVS_100_src, planeFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, planeVS_120_src, planeFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, planeVS_150_src, planeFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, planeVS_glsl100_src, planeFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, planeVS_glsl120_src, planeFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, planeVS_glsl150_src, planeFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, planeVS_hlsl5_src, planeFS_hlsl5_src);
+    #endif
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddTextureUniform("tex", Texture);
     return setup;
 }
 ProgramBundleSetup Plasma::CreateSetup() {
     ProgramBundleSetup setup("Plasma");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, plasmaVS_100_src, plasmaFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, plasmaVS_120_src, plasmaFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, plasmaVS_150_src, plasmaFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, plasmaVS_glsl100_src, plasmaFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, plasmaVS_glsl120_src, plasmaFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, plasmaVS_glsl150_src, plasmaFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, plasmaVS_hlsl5_src, plasmaFS_hlsl5_src);
+    #endif
     setup.AddUniform("time", Time);
     return setup;
 }

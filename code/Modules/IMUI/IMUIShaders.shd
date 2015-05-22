@@ -9,20 +9,16 @@
 @in vec4 color0
 @out vec2 uv
 @out vec4 color
-void main() {
-    $position = ortho * position;
+    $out_position = ortho * position;
     uv = texcoord0;
     color = color0;
-}
 @end
 
 @fs fsIMUI
 @uniform sampler2D tex Texture
 @in vec2 uv
 @in vec4 color
-void main() {
-    $color = $texture2D(tex, uv).xxxx * color;
-}
+    $out_color = $texture2D(tex, uv).xxxx * color;
 @end
 
 @bundle IMUIShader

@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* drawVS_100_src = 
+#if ORYOL_OPENGL
+const char* drawVS_glsl100_src = 
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
@@ -35,14 +36,18 @@ const char* drawVS_100_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsqVS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsqVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
 "void main() {\n"
 "_POSITION = position;\n"
 "}\n"
 ;
-const char* initFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* initFS_glsl100_src = 
 "precision mediump float;\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 "precision highp float;\n"
@@ -119,7 +124,9 @@ const char* initFS_100_src =
 "}\n"
 "}\n"
 ;
-const char* updateFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* updateFS_glsl100_src = 
 "precision mediump float;\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 "precision highp float;\n"
@@ -173,7 +180,9 @@ const char* updateFS_100_src =
 "}\n"
 "}\n"
 ;
-const char* drawFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* drawFS_glsl100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
@@ -181,7 +190,9 @@ const char* drawFS_100_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* drawVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* drawVS_glsl120_src = 
 "#version 120\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _POSITION gl_Position\n"
@@ -208,7 +219,9 @@ const char* drawVS_120_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsqVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsqVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "attribute vec4 position;\n"
@@ -216,7 +229,9 @@ const char* fsqVS_120_src =
 "_POSITION = position;\n"
 "}\n"
 ;
-const char* initFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* initFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec2 bufDims;\n"
@@ -290,7 +305,9 @@ const char* initFS_120_src =
 "}\n"
 "}\n"
 ;
-const char* updateFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* updateFS_glsl120_src = 
 "#version 120\n"
 "#define _TEXTURE2D texture2D\n"
 "#define _COLOR gl_FragColor\n"
@@ -341,7 +358,9 @@ const char* updateFS_120_src =
 "}\n"
 "}\n"
 ;
-const char* drawFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* drawFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 color;\n"
@@ -349,7 +368,9 @@ const char* drawFS_120_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* drawVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* drawVS_glsl150_src = 
 "#version 150\n"
 "#define _TEXTURE2D texture\n"
 "#define _POSITION gl_Position\n"
@@ -376,7 +397,9 @@ const char* drawVS_150_src =
 "color = color0;\n"
 "}\n"
 ;
-const char* fsqVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fsqVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "in vec4 position;\n"
@@ -384,7 +407,9 @@ const char* fsqVS_150_src =
 "_POSITION = position;\n"
 "}\n"
 ;
-const char* initFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* initFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "uniform vec2 bufDims;\n"
@@ -459,7 +484,9 @@ const char* initFS_150_src =
 "}\n"
 "}\n"
 ;
-const char* updateFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* updateFS_glsl150_src = 
 "#version 150\n"
 "#define _TEXTURE2D texture\n"
 "#define _COLOR _FragColor\n"
@@ -511,7 +538,9 @@ const char* updateFS_150_src =
 "}\n"
 "}\n"
 ;
-const char* drawFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* drawFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "in vec4 color;\n"
@@ -520,20 +549,39 @@ const char* drawFS_150_src =
 "_COLOR = color;\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup InitParticles::CreateSetup() {
     ProgramBundleSetup setup("InitParticles");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_100_src, initFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_120_src, initFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_150_src, initFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_glsl100_src, initFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_glsl120_src, initFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_glsl150_src, initFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, fsqVS_hlsl5_src, initFS_hlsl5_src);
+    #endif
     setup.AddUniform("bufDims", BufferDims);
     setup.AddUniform("time", Time);
     return setup;
 }
 ProgramBundleSetup DrawParticles::CreateSetup() {
     ProgramBundleSetup setup("DrawParticles");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, drawVS_100_src, drawFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, drawVS_120_src, drawFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, drawVS_150_src, drawFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, drawVS_glsl100_src, drawFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, drawVS_glsl120_src, drawFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, drawVS_glsl150_src, drawFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, drawVS_hlsl5_src, drawFS_hlsl5_src);
+    #endif
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddUniform("bufDims", BufferDims);
     setup.AddTextureUniform("particleTex", ParticleState);
@@ -541,9 +589,18 @@ ProgramBundleSetup DrawParticles::CreateSetup() {
 }
 ProgramBundleSetup UpdateParticles::CreateSetup() {
     ProgramBundleSetup setup("UpdateParticles");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_100_src, updateFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_120_src, updateFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_150_src, updateFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, fsqVS_glsl100_src, updateFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, fsqVS_glsl120_src, updateFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, fsqVS_glsl150_src, updateFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, fsqVS_hlsl5_src, updateFS_hlsl5_src);
+    #endif
     setup.AddUniform("bufDims", BufferDims);
     setup.AddTextureUniform("prevState", PrevState);
     setup.AddUniform("numParticles", NumParticles);

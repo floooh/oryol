@@ -7,18 +7,14 @@
 @in vec4 position
 @in vec3 normal
 @out vec3 nrm
-void main() {
-    $position = mvp * position;
+    $out_position = mvp * position;
     nrm = normal;
-}
 @end
 
 @fs fs
 @uniform samplerCube tex Texture
 @in vec3 nrm
-void main() {
-    $color = $textureCube(tex, nrm);
-}
+    $out_color = $textureCube(tex, nrm);
 @end
 
 @bundle Main

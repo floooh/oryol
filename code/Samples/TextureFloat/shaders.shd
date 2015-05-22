@@ -84,10 +84,8 @@ float snoise(vec2 v)
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-void main() {
-    $position = position;
+    $out_position = position;
     uv = texcoord0;
-}
 @end
 
 @fs offscreenFS
@@ -95,7 +93,7 @@ void main() {
 @use NoiseUtil
 @uniform float time Time
 @in vec2 uv
-void main() {
+
     vec2 dx = vec2(time, 0.0);
     vec2 dy = vec2(0.0, time);
     vec2 dxy = vec2(time, time);
@@ -116,8 +114,7 @@ void main() {
     blue += snoise((uv * 5.0) - dxy) * 0.15;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    $color = vec4(red, green, blue, 0.0) * 100.0;
-}
+    $out_color = vec4(red, green, blue, 0.0) * 100.0;
 @end
 
 @bundle Offscreen
@@ -131,19 +128,15 @@ void main() {
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-void main() {
-    $position = position;
+    $out_position = position;
     uv = texcoord0;
-}
 @end
 
 @fs copyFS
 @uniform sampler2D tex Texture
 @in vec2 uv
-void main() {
     // scale back to 0..1
-    $color = $texture2D(tex, uv) * 0.01;
-}
+    $out_color = $texture2D(tex, uv) * 0.01;
 @end
 
 @bundle Copy

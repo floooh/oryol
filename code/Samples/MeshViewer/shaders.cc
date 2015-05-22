@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* normalsVS_100_src = 
+#if ORYOL_OPENGL
+const char* normalsVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "attribute vec4 position;\n"
@@ -17,7 +18,9 @@ const char* normalsVS_100_src =
 "nrm = normal;\n"
 "}\n"
 ;
-const char* phongVS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -31,7 +34,9 @@ const char* phongVS_100_src =
 "N = vec4(model * vec4(normal.xyz, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* lambertVS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertVS_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
 "uniform mat4 model;\n"
@@ -43,7 +48,9 @@ const char* lambertVS_100_src =
 "N = vec4(model * vec4(normal, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* normalsFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* normalsFS_glsl100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 nrm;\n"
@@ -51,7 +58,9 @@ const char* normalsFS_100_src =
 "_COLOR = nrm * 0.5 + 0.5;\n"
 "}\n"
 ;
-const char* phongFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongFS_glsl100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -83,7 +92,9 @@ const char* phongFS_100_src =
 "}\n"
 "}\n"
 ;
-const char* lambertFS_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertFS_glsl100_src = 
 "precision mediump float;\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -107,7 +118,9 @@ const char* lambertFS_100_src =
 "}\n"
 "}\n"
 ;
-const char* normalsVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* normalsVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -119,7 +132,9 @@ const char* normalsVS_120_src =
 "nrm = normal;\n"
 "}\n"
 ;
-const char* phongVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -134,7 +149,9 @@ const char* phongVS_120_src =
 "N = vec4(model * vec4(normal.xyz, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* lambertVS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertVS_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -147,7 +164,9 @@ const char* lambertVS_120_src =
 "N = vec4(model * vec4(normal, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* normalsFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* normalsFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec4 nrm;\n"
@@ -155,7 +174,9 @@ const char* normalsFS_120_src =
 "_COLOR = nrm * 0.5 + 0.5;\n"
 "}\n"
 ;
-const char* phongFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -187,7 +208,9 @@ const char* phongFS_120_src =
 "}\n"
 "}\n"
 ;
-const char* lambertFS_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertFS_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -211,7 +234,9 @@ const char* lambertFS_120_src =
 "}\n"
 "}\n"
 ;
-const char* normalsVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* normalsVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -223,7 +248,9 @@ const char* normalsVS_150_src =
 "nrm = normal;\n"
 "}\n"
 ;
-const char* phongVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -238,7 +265,9 @@ const char* phongVS_150_src =
 "N = vec4(model * vec4(normal.xyz, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* lambertVS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertVS_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform mat4 mvp;\n"
@@ -251,7 +280,9 @@ const char* lambertVS_150_src =
 "N = vec4(model * vec4(normal, 0.0)).xyz;\n"
 "}\n"
 ;
-const char* normalsFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* normalsFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "in vec4 nrm;\n"
@@ -260,7 +291,9 @@ const char* normalsFS_150_src =
 "_COLOR = nrm * 0.5 + 0.5;\n"
 "}\n"
 ;
-const char* phongFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* phongFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -293,7 +326,9 @@ const char* phongFS_150_src =
 "}\n"
 "}\n"
 ;
-const char* lambertFS_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* lambertFS_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "uniform vec3 lightDir;\n"
@@ -318,11 +353,21 @@ const char* lambertFS_150_src =
 "}\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup Lambert::CreateSetup() {
     ProgramBundleSetup setup("Lambert");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, lambertVS_100_src, lambertFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, lambertVS_120_src, lambertFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, lambertVS_150_src, lambertFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, lambertVS_glsl100_src, lambertFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, lambertVS_glsl120_src, lambertFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, lambertVS_glsl150_src, lambertFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, lambertVS_hlsl5_src, lambertFS_hlsl5_src);
+    #endif
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddUniform("model", Model);
     setup.AddUniform("lightDir", LightDir);
@@ -333,9 +378,18 @@ ProgramBundleSetup Lambert::CreateSetup() {
 }
 ProgramBundleSetup Phong::CreateSetup() {
     ProgramBundleSetup setup("Phong");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, phongVS_100_src, phongFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, phongVS_120_src, phongFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, phongVS_150_src, phongFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, phongVS_glsl100_src, phongFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, phongVS_glsl120_src, phongFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, phongVS_glsl150_src, phongFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, phongVS_hlsl5_src, phongFS_hlsl5_src);
+    #endif
     setup.AddUniform("mvp", ModelViewProjection);
     setup.AddUniform("model", Model);
     setup.AddUniform("lightDir", LightDir);
@@ -349,9 +403,18 @@ ProgramBundleSetup Phong::CreateSetup() {
 }
 ProgramBundleSetup Normals::CreateSetup() {
     ProgramBundleSetup setup("Normals");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, normalsVS_100_src, normalsFS_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, normalsVS_120_src, normalsFS_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, normalsVS_150_src, normalsFS_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, normalsVS_glsl100_src, normalsFS_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, normalsVS_glsl120_src, normalsFS_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, normalsVS_glsl150_src, normalsFS_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, normalsVS_hlsl5_src, normalsFS_hlsl5_src);
+    #endif
     setup.AddUniform("mvp", ModelViewProjection);
     return setup;
 }

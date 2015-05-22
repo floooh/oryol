@@ -1,12 +1,13 @@
 //-----------------------------------------------------------------------------
-// #version:15# machine generated, do not edit!
+// #version:17# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "shaders.h"
 
 namespace Oryol {
 namespace Shaders {
-const char* vs_100_src = 
+#if ORYOL_OPENGL
+const char* vs_glsl100_src = 
 "#define _POSITION gl_Position\n"
 "uniform float time;\n"
 "attribute vec4 position;\n"
@@ -38,7 +39,9 @@ const char* vs_100_src =
 "sinTime.w = sin(time * 0.125);\n"
 "}\n"
 ;
-const char* fs_100_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fs_glsl100_src = 
 "precision mediump float;\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 "precision highp float;\n"
@@ -111,7 +114,9 @@ const char* fs_100_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* vs_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* vs_glsl120_src = 
 "#version 120\n"
 "#define _POSITION gl_Position\n"
 "uniform float time;\n"
@@ -144,7 +149,9 @@ const char* vs_120_src =
 "sinTime.w = sin(time * 0.125);\n"
 "}\n"
 ;
-const char* fs_120_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fs_glsl120_src = 
 "#version 120\n"
 "#define _COLOR gl_FragColor\n"
 "varying vec2 uv;\n"
@@ -214,7 +221,9 @@ const char* fs_120_src =
 "_COLOR = color;\n"
 "}\n"
 ;
-const char* vs_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* vs_glsl150_src = 
 "#version 150\n"
 "#define _POSITION gl_Position\n"
 "uniform float time;\n"
@@ -247,7 +256,9 @@ const char* vs_150_src =
 "sinTime.w = sin(time * 0.125);\n"
 "}\n"
 ;
-const char* fs_150_src = 
+#endif
+#if ORYOL_OPENGL
+const char* fs_glsl150_src = 
 "#version 150\n"
 "#define _COLOR _FragColor\n"
 "in vec2 uv;\n"
@@ -318,11 +329,21 @@ const char* fs_150_src =
 "_COLOR = color;\n"
 "}\n"
 ;
+#endif
 ProgramBundleSetup Main::CreateSetup() {
     ProgramBundleSetup setup("Main");
-    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vs_100_src, fs_100_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vs_120_src, fs_120_src);
-    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vs_150_src, fs_150_src);
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL100, vs_glsl100_src, fs_glsl100_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL120, vs_glsl120_src, fs_glsl120_src);
+    #endif
+    #if ORYOL_OPENGL
+    setup.AddProgramFromSources(0, ShaderLang::GLSL150, vs_glsl150_src, fs_glsl150_src);
+    #endif
+    #if ORYOL_D3D11
+    setup.AddProgramFromSources(0, ShaderLang::HLSL5, vs_hlsl5_src, fs_hlsl5_src);
+    #endif
     setup.AddUniform("time", Time);
     return setup;
 }

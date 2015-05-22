@@ -6,19 +6,15 @@
 @in vec2 position
 @in vec2 texcoord0
 @out vec2 uv
-void main() {
-    $position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
-    $position.y = -$position.y;
+    $out_position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
+    $out_position.y = -$out_position.y;
     uv = texcoord0;
-}
 @end
 
 @fs canvasFS
 @in vec2 uv
 @uniform sampler2D tex Texture
-void main() {
-    $color = $texture2D(tex, uv);
-}
+    $out_color = $texture2D(tex, uv);
 @end
 
 @bundle Canvas
@@ -168,10 +164,8 @@ vec4 tl_crt(vec2 uv) {
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-void main() {
-    $position = position;
+    $out_position = position;
     uv = texcoord0;
-}
 @end
 
 @fs crtFS
@@ -179,13 +173,11 @@ void main() {
 @in vec2 uv
 @uniform vec2 iResolution Resolution
 @uniform sampler2D iChannel0 Canvas
-void main() {
     #if 1
-    $color = tl_crt(uv);
+    $out_color = tl_crt(uv);
     #else
-    $color = $texture2D(iChannel0, uv);
+    $out_color = $texture2D(iChannel0, uv);
     #endif
-}
 @end
 
 @bundle CRT

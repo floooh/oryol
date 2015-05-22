@@ -128,9 +128,7 @@ float snoise(vec2 v)
 //
 @vs fsqVS
 @in vec4 position
-void main() {
-    $position = position;
-}
+    $out_position = position;
 @end
 
 //------------------------------------------------------------------------------
@@ -147,10 +145,9 @@ void main() {
 @use FSUtil
 @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @uniform float time Time
-void main() {
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
-        $color = vec4(0.0, 0.0, 0.0, 0.0);
+        $out_color = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
@@ -160,9 +157,8 @@ void main() {
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
         rnd *= 0.5;
         rnd.y += 2.0; // skew velocity upwards
-        $color = vec4(rnd, 0.0);
+        $out_color = vec4(rnd, 0.0);
     }
-}
 @end
 
 @bundle InitParticles
@@ -180,7 +176,6 @@ void main() {
 @uniform sampler2D prevState PrevState
 @uniform float numParticles NumParticles
 @in vec2 uv
-void main() {
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
@@ -200,7 +195,7 @@ void main() {
     if (atPos) {
         // update position
         pos += vel * frameTime;
-        $color = pos;
+        $out_color = pos;
     }
     else {
         // update velocity
@@ -212,9 +207,8 @@ void main() {
             vel.y = -vel.y;
             vel *= 0.8;
         }
-        $color = vel;
+        $out_color = vel;
     }
-}
 @end
 
 @bundle UpdateParticles
@@ -239,22 +233,18 @@ void main() {
 @in vec4 color0
 @in float instance0
 @out vec4 color
-void main() {
     float particleId = instance0;
     vec2 posUv = posUvFromParticleId(particleId, bufDims);
     vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
 
-    $position = mvp * (position + particlePos);
+    $out_position = mvp * (position + particlePos);
     color = color0;
-}
 @end
 
 
 @fs drawFS
 @in vec4 color
-void main() {
-    $color = color;
-}
+    $out_color = color;
 @end
 
 @bundle DrawParticles

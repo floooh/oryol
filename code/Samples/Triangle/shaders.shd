@@ -8,18 +8,14 @@
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-void main() {
-    $position = position;
+    $out_position = position;
     color = color0;
-}
 @end
 
 //------------------------------------------------------------------------------
 @fs fs
 @in vec4 color
-void main() {
-    $color = color;
-}
+    $out_color = color;
 @end
 
 //------------------------------------------------------------------------------
