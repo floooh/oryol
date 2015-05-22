@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 18
+Version = 19
 
 import os
 import sys
@@ -109,13 +109,17 @@ validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
 
+glslFuncdefs = {
+    'mul(v,m)': '(m * v)'
+}
+
 hlslTypedefs = {
     'vec2':     'float2',
     'vec3':     'float3',
     'vec4':     'float4',
     'mat2':     'float2x2',
     'mat3':     'float3x3',
-    'mat4':     'float4x3'
+    'mat4':     'float4x4'
 }
 
 #-------------------------------------------------------------------------------
@@ -620,6 +624,10 @@ class GLSLGenerator :
         if glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
+        # write emulated functions macros (for HLSL compatibility)
+        for func in glslFuncdefs :
+            lines.append(Line('#define {} {}'.format(func, glslFuncdefs[func])))
+
         # write macros
         for macro in vs.macros :
             lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
@@ -677,6 +685,10 @@ class GLSLGenerator :
                 for type in fs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
                 lines.append(Line('#endif'))
+
+        # write emulated functions macros (for HLSL compatibility)
+        for func in glslFuncdefs :
+            lines.append(Line('#define {} {}'.format(func, glslFuncdefs[func])))
 
         # write macros
         for macro in fs.macros :
@@ -740,7 +752,7 @@ class HLSLGenerator :
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
-            lines = self.genlines(lines, self.shaderlib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
     
         # write the main() function
         lines.append(Line('void main(', vs.lines[0].path, vs.lines[0].lineNumber))
@@ -774,7 +786,7 @@ class HLSLGenerator :
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            lines = self.genlines(lines, self.shaderlib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
         
         # write the main function
         lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))

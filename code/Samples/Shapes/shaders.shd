@@ -8,7 +8,7 @@
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-    $out_position = mvp * position;
+    $out_position = mul(position, mvp);
     color = color0;
 @end
 

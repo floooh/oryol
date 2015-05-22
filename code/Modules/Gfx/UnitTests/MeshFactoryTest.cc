@@ -30,7 +30,7 @@ TEST(MeshFactoryTest) {
     // setup a meshFactory object
     meshPool meshPool;
     class renderer renderer;
-    renderer.setup(&meshPool);
+    renderer.setup(&displayManager, &meshPool);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     

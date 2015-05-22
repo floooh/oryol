@@ -28,7 +28,7 @@ TEST(RenderTargetCreationTest) {
     texturePool texPool;
     meshPool meshPool;
     class renderer renderer;
-    renderer.setup(&meshPool);
+    renderer.setup(&displayManager, &meshPool);
     textureFactory factory;
     factory.Setup(&renderer, &displayManager, &texPool);
     
