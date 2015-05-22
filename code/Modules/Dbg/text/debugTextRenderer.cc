@@ -78,7 +78,7 @@ debugTextRenderer::print(const char* txt) {
 void
 debugTextRenderer::printf(const char* text, std::va_list args) {
     this->rwLock.LockWrite();
-    this->stringBuilder.AppendFormat(1024, text, args);
+    this->stringBuilder.AppendFormatVAList(1024, text, args);
     this->rwLock.UnlockWrite();
 }
 
