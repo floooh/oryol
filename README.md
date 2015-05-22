@@ -6,6 +6,8 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
+- **22-May-2015**: master branch might be broken a bit in the next couple days, don't panic, if I get back to a somewhat stable state I'll move the remaining D3D11 work into a branch (•_•) / ( •_•)>⌐■-■ / (⌐■_■)
+
 - **17-Jan-2015**: I have switched the Oryol master branch over to use 
 [fips](http://floooh.github.com/fips) as 
 build system, 'fips' is the former Oryol build system moved into its
