@@ -95,7 +95,6 @@ def parseOutput(output, lines) :
         colNr = int(outLine[colStartIndex:colEndIndex])
         lineNr = int(outLine[lineStartIndex:lineEndIndex])
         msg = outLine[msgStartIndex:]
-        print("PARSED: line {}, col {}, msg {}\n".format(lineNr, colNr, msg))
 
         # map to original location
         lineIndex = lineNr - 1
@@ -107,7 +106,6 @@ def parseOutput(output, lines) :
         # and output...
         util.setErrorLocation(srcPath, srcLineNr)
         util.fmtError(msg, False)
-        print("MAPPED: SRC PATH: {}, LINE: {}, MSG: {}\n".format(srcPath, srcLineNr, msg))
 
     if hasError :
         for line in lines :
@@ -129,7 +127,7 @@ def validate(lines, type, slVersion) :
     }
     profile = {
         'vs': 'vs_5_0',
-        'ps': 'ps_5_0'
+        'fs': 'ps_5_0'
     }
 
     f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
@@ -137,7 +135,6 @@ def validate(lines, type, slVersion) :
     f.close()
 
     cmd = [fxcPath, '/T', profile[type], '/O3', '/WX', f.name]
-    print('FXC COMMAND: {}\n'.format(cmd));
     output = callFxc(cmd)
     os.unlink(f.name)
     parseOutput(output, lines)

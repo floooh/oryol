@@ -109,6 +109,15 @@ validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
 
+hlslTypedefs = {
+    'vec2':     'float2',
+    'vec3':     'float3',
+    'vec4':     'float4',
+    'mat2':     'float2x2',
+    'mat3':     'float3x3',
+    'mat4':     'float4x3'
+}
+
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
     pprint(vars(obj))
@@ -720,6 +729,10 @@ class HLSLGenerator :
         for macro in vs.macros :
             lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
 
+        # write typedefs
+        for type in hlslTypedefs :
+            lines.append(Line('#define {} {}'.format(type, hlslTypedefs[type])))
+
         # write uniforms (globals)
         # FIXME: add proper support for constant buffers
         for uniform in vs.uniforms :
@@ -727,20 +740,17 @@ class HLSLGenerator :
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
-
+            lines = self.genlines(lines, self.shaderlib.blocks[dep].lines)
+    
+        # write the main() function
         lines.append(Line('void main(', vs.lines[0].path, vs.lines[0].lineNumber))
         for input in vs.inputs :
-            l = 'in {} {} : {}'.format(input.type, input.name, input.name)
-            if input != vs.inputs[-1] :
-                l += ','
+            l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
         for output in vs.outputs :
-            l = 'out {} {} : {}'.format(output.type, output.name, output.name)
-            if output != vs.outputs[-1] :
-                l += ','
+            l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
-        lines.append(Line(') {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
         vs.generatedSource[slVersion] = lines
@@ -749,44 +759,29 @@ class HLSLGenerator :
     def genFragmentShaderSource(self, fs, slVersion) :
         lines = []
 
-        # version tag
-        if glslVersionNumber[slVersion] > 100 :
-            lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
-
-        # precision modifiers
-        if slVersion == 'glsl100' :
-            lines.append(Line('precision mediump float;'))
-            if fs.highPrecision :
-                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
-                for type in fs.highPrecision :
-                    lines.append(Line('precision highp {};'.format(type)))
-                lines.append(Line('#endif'))
-
         # write macros
         for macro in fs.macros :
             lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
 
-        # write uniforms
+        # write typedefs
+        for type in hlslTypedefs :
+            lines.append(Line('#define {} {}'.format(type, hlslTypedefs[type])))
+
+        # write uniforms (globals)
+        # FIXME: add proper support for constant buffers
         for uniform in fs.uniforms :
-            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name, uniform.bind), uniform.filePath, uniform.lineNumber))
-
-        # write fragment shader inputs
-        for input in fs.inputs :
-            if glslVersionNumber[slVersion] < 130 :
-                lines.append(Line('varying {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-            else :
-                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-
-        # write the fragcolor output
-        if glslVersionNumber[slVersion] >= 130 :
-            lines.append(Line('out vec4 _FragColor;'))
+            lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
-
-        # write fragment shader function
-        lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
+            lines = self.genlines(lines, self.shaderlib.blocks[dep].lines)
+        
+        # write the main function
+        lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))
+        for input in fs.inputs :
+            l = 'in {} {} : {},'.format(input.type, input.name, input.name)
+            lines.append(Line(l, input.filePath, input.lineNumber))
+        lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
         fs.generatedSource[slVersion] = lines
