@@ -5,7 +5,14 @@
     @ingroup _priv
     @brief frontend inputMgr class
 */
-#if (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
+#if ORYOL_D3D11
+// FIXME FIXME FIXME
+#include "Input/base/inputMgrBase.h"
+namespace Oryol {
+namespace _priv {
+class inputMgr : public inputMgrBase { };
+} }
+#elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Input/glfw/glfwInputMgr.h"
 namespace Oryol {
 namespace _priv {
