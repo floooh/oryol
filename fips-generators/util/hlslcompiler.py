@@ -71,6 +71,7 @@ def parseOutput(output, lines) :
     an error message compatible with Xcode or VStudio
     '''
     hasError = False
+    hasWarning = False
     outLines = output.splitlines()
 
     for outLine in outLines :
@@ -91,7 +92,6 @@ def parseOutput(output, lines) :
         if msgStartIndex == -1 :
             continue
 
-        hasError = True
         colNr = int(outLine[colStartIndex:colEndIndex])
         lineNr = int(outLine[lineStartIndex:lineEndIndex])
         msg = outLine[msgStartIndex:]
@@ -105,11 +105,17 @@ def parseOutput(output, lines) :
         
         # and output...
         util.setErrorLocation(srcPath, srcLineNr)
-        util.fmtError(msg, False)
+        if 'error' in outLine :
+            hasError = True
+            util.fmtError(msg, False)
+        elif 'warning' in outLine :
+            hasWarning = True
+            util.fmtWarning(msg)
 
-    if hasError :
+    if hasError or hasWarning:
         for line in lines :
             print "{}, {}: {}".format(line.path, line.lineNumber, line.content)
+    if hasError :
         util.fmtError("Aborting.")
 
 #-------------------------------------------------------------------------------
@@ -134,7 +140,7 @@ def validate(lines, type, slVersion) :
     writeFile(f, lines)
     f.close()
 
-    cmd = [fxcPath, '/T', profile[type], '/O3', '/WX', f.name]
+    cmd = [fxcPath, '/T', profile[type], '/O3', f.name]
     output = callFxc(cmd)
     os.unlink(f.name)
     parseOutput(output, lines)

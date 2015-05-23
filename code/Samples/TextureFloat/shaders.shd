@@ -84,7 +84,7 @@ float snoise(vec2 v)
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    $out_position = position;
+    _position = position;
     uv = texcoord0;
 @end
 
@@ -114,7 +114,7 @@ float snoise(vec2 v)
     blue += snoise((uv * 5.0) - dxy) * 0.15;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    $out_color = vec4(red, green, blue, 0.0) * 100.0;
+    _color = vec4(red, green, blue, 0.0) * 100.0;
 @end
 
 @bundle Offscreen
@@ -128,7 +128,7 @@ float snoise(vec2 v)
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    $out_position = position;
+    _position = position;
     uv = texcoord0;
 @end
 
@@ -136,7 +136,7 @@ float snoise(vec2 v)
 @uniform sampler2D tex Texture
 @in vec2 uv
     // scale back to 0..1
-    $out_color = $texture2D(tex, uv) * 0.01;
+    _color = tex2D(tex, uv) * 0.01;
 @end
 
 @bundle Copy

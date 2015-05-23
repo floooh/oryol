@@ -9,7 +9,7 @@
 @in vec4 color0
 @out vec2 uv
 @out vec4 color
-    $out_position = ortho * position;
+    _position = mul(position, ortho);
     uv = texcoord0;
     color = color0;
 @end
@@ -18,7 +18,7 @@
 @uniform sampler2D tex Texture
 @in vec2 uv
 @in vec4 color
-    $out_color = $texture2D(tex, uv) * color;
+    _color = tex2D(tex, uv) * color;
 @end
 
 @bundle TBUIShader

@@ -14,7 +14,7 @@
     vec2 screenPos = position.xy * glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
-    $out_position = vec4(screenPos, 0.0, 1.0);
+    _position = vec4(screenPos, 0.0, 1.0);
     uv = position.zw * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
     color = color0;
 @end
@@ -26,7 +26,7 @@
 @uniform sampler2D tex Texture
 @in vec2 uv
 @in vec4 color
-    $out_color = $texture2D(tex, uv).xxxx * color;
+    _color = tex2D(tex, uv).xxxx * color;
 @end
 
 @bundle TextShader

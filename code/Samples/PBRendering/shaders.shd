@@ -12,16 +12,17 @@
 @in vec3 normal
 @out vec3 viewSpacePos
 @out vec3 viewSpaceNormal
-    $out_position = modelViewProj * position;
-    viewSpacePos = vec3(modelView * position);
-    viewSpaceNormal = vec3(modelView * vec4(normal, 0.0));
+    _position = mul(position, modelViewProj);
+    viewSpacePos = mul(position, modelView).xyz;
+    viewSpaceNormal = mul(vec4(normal, 0.0), modelView).xyz;
 @end
 
 //------------------------------------------------------------------------------
 //  perform gamma correction
 @block Util
 vec4 gamma(vec4 c) {
-    return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);
+    float p = 1.0/2.2;
+    return vec4(pow(abs(c.xyz), vec3(p, p, p)), c.w);
 }
 @end
 
@@ -34,8 +35,8 @@ vec4 gamma(vec4 c) {
 //  D(h)
 //  Trowbridge-Reitz
 //
-const float PI = 3.14159265358979323846;
-const float c = 0.4;   // roughness
+static const float PI = 3.14159265358979323846;
+static const float c = 0.4;   // roughness
 
 float square(float x) {
     return x * x;
@@ -52,7 +53,7 @@ D_TrowbridgeReitz(vec3 L, vec3 V, vec3 N) {
     float D = TrowbridgeReitz(c, dot(N, H));
     // normalize
     D *= 1.0 / (c*c*PI);
-    return vec3(D);
+    return vec3(D, D, D);
 }
 
 //------------------------------------------------------------------------------
@@ -68,14 +69,14 @@ float GGX(float c, float cosThetaM) {
 vec3 D_GGX(vec3 L, vec3 V, vec3 N) {
     vec3 H = normalize(L + V);
     float D = GGX(c, dot(N, H));
-    return vec3(D);
+    return vec3(D, D, D);
 }
 
 //------------------------------------------------------------------------------
 //  G(l,v,h)
 //  Schlick
 //
-const float m = 0.25;
+static const float m = 0.25;
 
 float Gsch(float v, float m) {
     float k = sqrt(2.0 * m * m / PI);
@@ -86,7 +87,7 @@ G_Schlick(vec3 L, vec3 V, vec3 N) {
     float n_dot_l = dot(N, L);
     float n_dot_v = dot(N, V);
     float G = Gsch(n_dot_l, m) * Gsch(n_dot_v, m);
-    return vec3(G);
+    return vec3(G, G, G);
 }
 
 float Gue4(float v, float k) {
@@ -99,7 +100,7 @@ G_UE4(vec3 L, vec3 V, vec3 N) {
     float n_dot_l = dot(N, L);
     float n_dot_v = dot(N, V);
     float G = Gue4(n_dot_l, k) * Gue4(n_dot_v, k);
-    return vec3(G);
+    return vec3(G, G, G);
 }
 
 @end
@@ -125,7 +126,7 @@ G_UE4(vec3 L, vec3 V, vec3 N) {
     vec3 spec = D * G;
 
     vec3 c = spec;// + clamp(n_dot_l, 0.0, 1.0) * vec3(0.2, 0.1, 0.1);
-    $out_color = gamma(vec4(c, 1.0));
+    _color = gamma(vec4(c, 1.0));
 @end
 
 @bundle Main

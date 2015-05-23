@@ -128,7 +128,7 @@ float snoise(vec2 v)
 //
 @vs fsqVS
 @in vec4 position
-    $out_position = position;
+    _position = position;
 @end
 
 //------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ float snoise(vec2 v)
 @uniform float time Time
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
-        $out_color = vec4(0.0, 0.0, 0.0, 0.0);
+        _color = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
@@ -157,7 +157,7 @@ float snoise(vec2 v)
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
         rnd *= 0.5;
         rnd.y += 2.0; // skew velocity upwards
-        $out_color = vec4(rnd, 0.0);
+        _color = vec4(rnd, 0.0);
     }
 @end
 
@@ -190,16 +190,16 @@ float snoise(vec2 v)
     // load previous position and velocity
     vec2 posUv, velUv;
     getParticleStateUvs(atPos, bufDims.xy, gl_FragCoord.xy, posUv, velUv);
-    vec4 pos = $texture2D(prevState, posUv);
-    vec4 vel = $texture2D(prevState, velUv);
+    vec4 pos = tex2D(prevState, posUv);
+    vec4 vel = tex2D(prevState, velUv);
     if (atPos) {
         // update position
         pos += vel * frameTime;
-        $out_color = pos;
+        _color = pos;
     }
     else {
         // update velocity
-        vec4 vel = $texture2D(prevState, velUv);
+        vec4 vel = tex2D(prevState, velUv);
         vel.y -= 1.0 * frameTime;
         
         // check for collision
@@ -207,7 +207,7 @@ float snoise(vec2 v)
             vel.y = -vel.y;
             vel *= 0.8;
         }
-        $out_color = vel;
+        _color = vel;
     }
 @end
 
@@ -235,16 +235,16 @@ float snoise(vec2 v)
 @out vec4 color
     float particleId = instance0;
     vec2 posUv = posUvFromParticleId(particleId, bufDims);
-    vec4 particlePos = vec4($texture2D(particleTex, posUv).xyz, 0.0);
+    vec4 particlePos = vec4(tex2Dvs(particleTex, posUv).xyz, 0.0);
 
-    $out_position = mvp * (position + particlePos);
+    _position = mul((position + particlePos), mvp);
     color = color0;
 @end
 
 
 @fs drawFS
 @in vec4 color
-    $out_color = color;
+    _color = color;
 @end
 
 @bundle DrawParticles

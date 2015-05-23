@@ -8,7 +8,8 @@
 //
 @block Util
 vec4 gamma(vec4 c) {
-    return vec4(pow(c.xyz, vec3(1.0/2.2)), c.w);
+    float p = 1.0/2.2;
+    return vec4(pow(c.xyz, vec3(p, p, p)), c.w);
 }
 @end
 
@@ -20,13 +21,13 @@ vec4 gamma(vec4 c) {
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    $out_position = mvp * position;
+    _position = mul(position, mvp);
     nrm = normal;
 @end
 
 @fs normalsFS
 @in vec4 nrm
-    $out_color = nrm * 0.5 + 0.5;
+    _color = nrm * 0.5 + 0.5;
 @end
 
 @bundle Normals
@@ -42,8 +43,8 @@ vec4 gamma(vec4 c) {
 @in vec4 position
 @in vec3 normal
 @out vec3 N
-    $out_position = mvp * position;
-    N = vec4(model * vec4(normal, 0.0)).xyz;
+    _position = mul(position, mvp);
+    N = mul(vec4(normal, 0.0), model).xyz;
 @end
 
 @fs lambertFS
@@ -58,10 +59,10 @@ vec4 gamma(vec4 c) {
     float n_dot_l = max(dot(n, l), 0.0);
     vec4 col = vec4(lightColor.xyz * matDiffuse.xyz * n_dot_l, 1.0);
     if (gammaCorrect) {
-        $out_color = gamma(col);
+        _color = gamma(col);
     }
     else {
-        $out_color = col;
+        _color = col;
     }
 @end
 
@@ -79,9 +80,9 @@ vec4 gamma(vec4 c) {
 @in vec4 normal
 @out vec3 N
 @out vec3 P
-    $out_position = mvp * position;
-    P = vec4(model * position).xyz;
-    N = vec4(model * vec4(normal.xyz, 0.0)).xyz;
+    _position = mul(position, mvp);
+    P = mul(position, model).xyz;
+    N = mul(vec4(normal.xyz, 0.0), model).xyz;
 @end
 
 @fs phongFS
@@ -106,9 +107,9 @@ vec4 gamma(vec4 c) {
     float spec = pow(r_dot_v, matSpecularPower) * n_dot_l;
     vec4 col = vec4(lightColor.xyz * (matSpecular.xyz*spec + matDiffuse.xyz*diff), 1.0);
     if (gammaCorrect) {
-        $out_color = gamma(col);
+        _color = gamma(col);
     } else {
-        $out_color = col;
+        _color = col;
     }
 @end
 

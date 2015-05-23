@@ -9,7 +9,7 @@
 @in vec2 texcoord0
 @out vec4 nrm
 @out vec2 uv
-    $out_position = mvp * position;
+    _position = mul(position, mvp);
     nrm = normal;
     uv = texcoord0;
 @end
@@ -18,8 +18,8 @@
 @uniform sampler2D tex Texture
 @in vec4 nrm
 @in vec2 uv
-    vec4 texColor = $texture2D(tex, uv * vec2(5.0, 3.0));
-    $out_color = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;
+    vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));
+    _color = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;
 @end
 
 @bundle Main

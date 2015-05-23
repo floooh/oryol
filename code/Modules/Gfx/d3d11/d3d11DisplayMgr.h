@@ -32,17 +32,6 @@ public:
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
 
-    /// get pointer to d3d11 device
-    ID3D11Device* getD3D11Device() const;
-    /// get pointer to d3d11 device context
-    ID3D11DeviceContext* getD3D11DeviceContext() const;
-    /// get pointer to swap chain
-    IDXGISwapChain* getDXGISwapChain() const;
-    /// get pointer to render target view (back buffer render target)
-    ID3D11RenderTargetView* getRenderTargetView() const;
-    /// get pointer to depth/stencil buffer view of default render target
-    ID3D11DepthStencilView* getDepthStencilView() const;
-    
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;
     /// pointer to immediate mode device context
@@ -90,27 +79,6 @@ private:
     DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
     D3D11_TEXTURE2D_DESC depthStencilDesc;
 };
-
-//------------------------------------------------------------------------------
-inline ID3D11Device*
-d3d11DisplayMgr::getD3D11Device() const {
-    o_assert_dbg(this->d3d11Device);
-    return this->d3d11Device;
-}
-
-//------------------------------------------------------------------------------
-inline ID3D11DeviceContext*
-d3d11DisplayMgr::getD3D11DeviceContext() const {
-    o_assert_dbg(this->d3d11DeviceContext);
-    return this->d3d11DeviceContext;
-}
-
-//------------------------------------------------------------------------------
-inline IDXGISwapChain*
-d3d11DisplayMgr::getDXGISwapChain() const {
-    o_assert_dbg(this->dxgiSwapChain);
-    return this->dxgiSwapChain;
-}
 
 } // namespace _priv
 } // namespace Oryol

@@ -6,15 +6,15 @@
 @in vec2 position
 @in vec2 texcoord0
 @out vec2 uv
-    $out_position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
-    $out_position.y = -$out_position.y;
+    _position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
+    _position.y = -_position.y;
     uv = texcoord0;
 @end
 
 @fs canvasFS
 @in vec2 uv
 @uniform sampler2D tex Texture
-    $out_color = $texture2D(tex, uv);
+    _color = tex2D(tex, uv);
 @end
 
 @bundle Canvas
@@ -83,10 +83,10 @@ vec3 ToSrgb(vec3 c){return vec3(ToSrgb1(c.r),ToSrgb1(c.g),ToSrgb1(c.b));}
 vec3 Fetch(vec2 pos,vec2 off){
     pos=floor(pos*res+off)/res;
     if(max(abs(pos.x-0.5),abs(pos.y-0.5))>0.5)return vec3(0.0,0.0,0.0);
-    return ToLinear($texture2D(iChannel0,pos.xy,-16.0).rgb);}
+    return ToLinear(tex2D(iChannel0,pos.xy).rgb);}
 
 // Distance in emulated pixels to nearest texel.
-vec2 Dist(vec2 pos){pos=pos*res;return -((pos-floor(pos))-vec2(0.5));}
+vec2 Dist(vec2 pos){pos=pos*res;return -((pos-floor(pos))-vec2(0.5,0.5));}
 
 // 1D Gaussian.
 float Gaus(float pos,float scale){return exp2(scale*pos*pos);}  
@@ -164,7 +164,7 @@ vec4 tl_crt(vec2 uv) {
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    $out_position = position;
+    _position = position;
     uv = texcoord0;
 @end
 
@@ -174,9 +174,9 @@ vec4 tl_crt(vec2 uv) {
 @uniform vec2 iResolution Resolution
 @uniform sampler2D iChannel0 Canvas
     #if 1
-    $out_color = tl_crt(uv);
+    _color = tl_crt(uv);
     #else
-    $out_color = $texture2D(iChannel0, uv);
+    _color = $texture2D(iChannel0, uv);
     #endif
 @end
 

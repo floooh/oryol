@@ -8,13 +8,13 @@
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    $out_position = mvp * position;
+    _position = mul(position, mvp);
     nrm = normal;
 @end
 
 @fs fs
 @in vec4 nrm
-    $out_color = nrm * 0.5 + 0.5;
+    _color = nrm * 0.5 + 0.5;
 @end
 
 @bundle PackedNormals

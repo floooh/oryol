@@ -84,7 +84,7 @@ float snoise(vec2 v)
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    $out_position = position;
+    _position = position;
     uv = texcoord0;
 @end
 
@@ -118,7 +118,7 @@ float snoise(vec2 v)
     height += snoise(uv * 20.0 - dy) * 0.1;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    $out_color = vec4(red, green, blue, height * 0.2);
+    _color = vec4(red, green, blue, height * 0.2);
 @end
 
 @bundle Plasma
@@ -132,15 +132,15 @@ float snoise(vec2 v)
 @in vec4 position
 @in vec2 texcoord0
 @out vec4 color
-    color = $texture2D(tex, texcoord0);
+    color = tex2Dvs(tex, texcoord0);
     vec4 pos = position;
     pos.y = color.w;
-    $out_position = mvp * pos;
+    _position = mul(pos, mvp);
 @end
 
 @fs planeFS
 @in vec4 color
-    $out_color = color;
+    _color = color;
 @end
 
 @bundle Plane

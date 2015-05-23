@@ -36,7 +36,7 @@ void lookat(in vec3 eye, in vec3 center, inout vec3 up, out vec3 right, out vec3
 @out vec3 right
 @out vec3 fwd
 @out vec4 sinTime
-    $out_position = position;
+    _position = position;
     uv = texcoord0 * 2.0 - 1.0;
     vec3 center = vec3(0.0, 0.0, 0.0);
     eye = eyePos(center);
@@ -92,25 +92,25 @@ float opI(float d1, float d2) {
 //------------------------------------------------------------------------------
 //  distance function for the whole scene
 //
-float dScene(vec3 p) {
+float dScene(vec4 sinTime, vec3 p) {
     vec3 boxPos = p;
     vec3 spherePos0 = p + vec3(-sinTime.x, 0.0, 0.0) * 2.0;
 
     // infinite spheres
     float c = 0.25;
     vec3 q = mod(p, c) - 0.5*c;
-    return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0)), 0.2));
+    return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0,1.0,1.0)), 0.2));
 }
 
 
 //------------------------------------------------------------------------------
 //  normal estimation function
 //
-vec3 normal(vec3 p) {
+vec3 normal(vec4 sinTime, vec3 p) {
     const float eps = 0.01;
-    float x = dScene(p + vec3(eps, 0, 0)) - dScene(p - vec3(eps, 0, 0));
-    float y = dScene(p + vec3(0, eps, 0)) - dScene(p - vec3(0, eps, 0));
-    float z = dScene(p + vec3(0, 0, eps)) - dScene(p - vec3(0, 0, eps));
+    float x = dScene(sinTime, p + vec3(eps, 0, 0)) - dScene(sinTime, p - vec3(eps, 0, 0));
+    float y = dScene(sinTime, p + vec3(0, eps, 0)) - dScene(sinTime, p - vec3(0, eps, 0));
+    float z = dScene(sinTime, p + vec3(0, 0, eps)) - dScene(sinTime, p - vec3(0, 0, eps));
     return normalize(vec3(x, y, z));
 }
 @end
@@ -139,16 +139,16 @@ vec3 normal(vec3 p) {
     const int maxSteps = 64;
     for (int i = 0; i < maxSteps; i++) {
         vec3 p = rayOrigin + rayDirection * t;
-        float d = dScene(p);
+        float d = dScene(sinTime, p);
         if (d < epsilon) {
-            vec3 nrm = normal(p) * 0.5 + 0.5;
+            vec3 nrm = normal(sinTime, p) * 0.5 + 0.5;
             color = vec4(nrm, 1);
             break;
         }
         t += d;
     }
 
-    $out_color = color;
+    _color = color;
 @end
 
 //------------------------------------------------------------------------------

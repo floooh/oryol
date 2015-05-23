@@ -8,13 +8,13 @@
 @in vec4 color0
 @in vec4 instance0
 @out vec4 color
-    $out_position = mvp * (position + instance0); 
+    _position = mul((position + instance0), mvp); 
     color = color0;
 @end
 
 @fs fs
 @in vec4 color
-    $out_color = color;
+    _color = color;
 @end
 
 @bundle Main

@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 19
+Version = 22
 
 import os
 import sys
@@ -46,58 +46,51 @@ glslVersionNumber = {
     'hlsl5': None
 }
 
-macroKeywords = {
-    '$out_position': '_POSITION',
-    '$out_color': '_COLOR',
-    '$texture2DProjLod': '_TEXTURE2DPROJLOD',
-    '$texture2DProj': '_TEXTURE2DPROJ',
-    '$texture2DLod': '_TEXTURE2DLOD',
-    '$textureCubeLod': '_TEXTURECUBELOD',
-    '$textureCube': '_TEXTURECUBE',
-    '$texture2D': '_TEXTURE2D'
-}
-
+# map HLSL functions to GLSL versions
 slMacros = {
     'glsl100': {
-        '_POSITION': 'gl_Position',
-        '_COLOR': 'gl_FragColor',
-        '_TEXTURE2D': 'texture2D',
-        '_TEXTURE2DPROJ': 'texture2DProj',
-        '_TEXTURE2DLOD': 'texture2DLod',
-        '_TEXTURE2DPROJLOD': 'texture2DProjLod',
-        '_TEXTURECUBE': 'textureCube',
-        '_TEXTURECUBELOD': 'textureCubeLod'
+        '_position': 'gl_Position',
+        '_color': 'gl_FragColor',
+        'static': '',
+        'mul(v,m)': '(m * v)',
+        'tex2D(s, t)': 'texture2D(s, t)',
+        'texCUBE(s, t)': 'textureCube(s, t)',
+        'tex2Dvs(s, t)': 'texture2D(s, t)'
     },
     'glsl120': {
-        '_POSITION': 'gl_Position',
-        '_COLOR': 'gl_FragColor',
-        '_TEXTURE2D': 'texture2D',
-        '_TEXTURE2DPROJ': 'texture2DProj',
-        '_TEXTURE2DLOD': 'texture2DLod',
-        '_TEXTURE2DPROJLOD': 'texture2DProjLod',
-        '_TEXTURECUBE': 'textureCube',
-        '_TEXTURECUBELOD': 'textureCubeLod'
+        '_position': 'gl_Position',
+        '_color': 'gl_FragColor',
+        'static': '',
+        'mul(v,m)': '(m * v)',
+        'tex2D(s, t)': 'texture2D(s, t)',
+        'texCUBE(s, t)': 'textureCube(s, t)',
+        'tex2Dvs(s, t)': 'texture2D(s, t)'
     },
     'glsl150': {
-        '_POSITION': 'gl_Position',
-        '_COLOR': '_FragColor', 
-        '_TEXTURE2D': 'texture',
-        '_TEXTURE2DPROJ': 'textureProj',
-        '_TEXTURE2DLOD': 'textureLod',
-        '_TEXTURE2DPROJLOD': 'textureProj',
-        '_TEXTURECUBE': 'texture',
-        '_TEXTURECUBELOD': 'texture'
+        '_position': 'gl_Position',
+        '_color': '_FragColor',
+        'static': '',
+        'mul(v,m)': '(m * v)',
+        'tex2D(s, t)': 'texture(s, t)',
+        'texCUBE(s, t)': 'texture(s, t)',
+        'tex2Dvs(s, t)': 'texture(s, t)'
     },
     'hlsl5': {
-        '_POSITION': '_oPosition',
-        '_COLOR': '_oColor',
-        '_TEXTURE2D': 'FIXME_TEXTURE2D',
-        '_TEXTURE2DPROJ': 'FIXME_TEXTURE2DPROJ',
-        '_TEXTURE2DLOD': 'FIXME_TEXTURE2DLOD',
-        '_TEXTURE2DPROJLOD': 'FIXME_TEXTURE2DPROJLOD',
-        '_TEXTURECUBE': 'FIXME_TEXTURECUBE',
-        '_TEXTURECUBELOD': 'FIXME_TEXTURECUBELOD'
-    },
+        '_position': '_oPosition',
+        '_color': '_oColor',
+        'vec2': 'float2',
+        'vec3': 'float3',
+        'vec4': 'float4',
+        'mat2': 'float2x2',
+        'mat3': 'float3x3',
+        'mat4': 'float4x4',
+        'tex2D(s, t)': 's.Sample(s ## _sampler, t)',
+        'texCUBE(s, t)': 's.Sample(s ## _sampler, t)',
+        'tex2Dvs(s, t)': 's.Load(int3(t.x, t.y, 0))',
+        'mix(a,b,c)': 'lerp(a,b,c)',
+        'mod(x,y)': '(x-y*floor(x/y))',
+        'fract(x)': 'frac(x)'
+    }
 }
 
 validVsInNames = [
@@ -108,19 +101,9 @@ validVsInNames = [
 validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
-
-glslFuncdefs = {
-    'mul(v,m)': '(m * v)'
-}
-
-hlslTypedefs = {
-    'vec2':     'float2',
-    'vec3':     'float3',
-    'vec4':     'float4',
-    'mat2':     'float2x2',
-    'mat3':     'float3x3',
-    'mat4':     'float4x4'
-}
+validUniformTypes = [
+    'bool', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube'
+]
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -139,10 +122,6 @@ def findByName(name, objList) :
         if name == obj.name :
             return obj
     return None
-
-#-------------------------------------------------------------------------------
-def getMacroValue(macro, slVersion) :
-    return slMacros[slVersion][macro]
 
 #-------------------------------------------------------------------------------
 class Line :
@@ -164,7 +143,6 @@ class Snippet :
         self.name = None
         self.lines = []
         self.dependencies = []
-        self.macros = []
 
     def dump(self) :
         dumpObj(self)
@@ -481,6 +459,8 @@ class Parser :
         type = args[0]
         name = args[1]
         bind = args[2]
+        if type not in validUniformTypes :
+            util.fmtError("invalid 'uniform' type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.uniforms.append(Uniform(type, name, bind, self.fileName, self.lineNumber))
@@ -554,22 +534,6 @@ class Parser :
                 util.fmtError("unrecognized @ tag '{}'".format(tag))
             return ''
 
-        # handle any $ macros
-        for macro in macroKeywords :
-            startIndex = line.find(macro)
-            if startIndex != -1 :
-                if self.current is not None:
-                    line = line.replace(macro, macroKeywords[macro])
-                    if macroKeywords[macro] not in self.current.macros :
-                        self.current.macros.append(macroKeywords[macro])
-                else :
-                    util.fmtError('$ tag must come after @block, @vs, @fs and before @end')
-
-        # if there are still $ characters in the line, it must be an 
-        # unrecognized macro keyword (typo?)
-        if '$' in line :
-            util.fmtError('unrecognized $ keyword!')
-
         return line
 
     #---------------------------------------------------------------------------
@@ -624,13 +588,9 @@ class GLSLGenerator :
         if glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
-        # write emulated functions macros (for HLSL compatibility)
-        for func in glslFuncdefs :
-            lines.append(Line('#define {} {}'.format(func, glslFuncdefs[func])))
-
-        # write macros
-        for macro in vs.macros :
-            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # precision modifiers 
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
@@ -686,13 +646,9 @@ class GLSLGenerator :
                     lines.append(Line('precision highp {};'.format(type)))
                 lines.append(Line('#endif'))
 
-        # write emulated functions macros (for HLSL compatibility)
-        for func in glslFuncdefs :
-            lines.append(Line('#define {} {}'.format(func, glslFuncdefs[func])))
-
-        # write macros
-        for macro in fs.macros :
-            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniforms
         for uniform in fs.uniforms :
@@ -737,18 +693,21 @@ class HLSLGenerator :
     def genVertexShaderSource(self, vs, slVersion) :
         lines = []
         
-        # write macros
-        for macro in vs.macros :
-            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
-
-        # write typedefs
-        for type in hlslTypedefs :
-            lines.append(Line('#define {} {}'.format(type, hlslTypedefs[type])))
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniforms (globals)
         # FIXME: add proper support for constant buffers
         for uniform in vs.uniforms :
-            lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+            if uniform.type == 'sampler2D' :
+                lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+            elif uniform.type == 'samplerCube' :
+                lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+            else :
+                lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
@@ -771,18 +730,21 @@ class HLSLGenerator :
     def genFragmentShaderSource(self, fs, slVersion) :
         lines = []
 
-        # write macros
-        for macro in fs.macros :
-            lines.append(Line('#define {} {}'.format(macro, getMacroValue(macro, slVersion))))
-
-        # write typedefs
-        for type in hlslTypedefs :
-            lines.append(Line('#define {} {}'.format(type, hlslTypedefs[type])))
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniforms (globals)
         # FIXME: add proper support for constant buffers
         for uniform in fs.uniforms :
-            lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+            if uniform.type == 'sampler2D' :
+                lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+            elif uniform.type == 'samplerCube' :
+                lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+            else :
+                lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -912,15 +874,6 @@ class ShaderLibrary :
             for uniform in self.fragmentShaders[program.fs].uniforms :
                 self.checkAddUniform(uniform, bundle.uniforms)
 
-    def resolveMacros(self, shd) :
-        '''
-        Adds any macros used by dependent blocks to the shader.
-        '''
-        for dep in shd.resolvedDeps :
-            for macro in self.blocks[dep].macros :
-                if macro not in shd.macros :
-                    shd.macros.append(macro)
-
     def resolveAllDependencies(self) :
         '''
         Resolve block and uniform dependencies for vertex- and fragment shaders.
@@ -931,12 +884,10 @@ class ShaderLibrary :
             for dep in vs.dependencies :
                 self.resolveDeps(vs, dep)
             self.removeDuplicateDeps(vs)
-            self.resolveMacros(vs)
         for fs in self.fragmentShaders.values() :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
-            self.resolveMacros(fs)
         for vs in self.vertexShaders.values() :
             self.resolveShaderUniforms(vs)
         for fs in self.fragmentShaders.values() :
@@ -1141,8 +1092,8 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSourcesGLSL()
-        shaderLibrary.validateShadersGLSL()
         shaderLibrary.generateShaderSourcesHLSL()
+        shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
             shaderLibrary.validateShadersHLSL()
         generateSource(out_src, shaderLibrary)
