@@ -36,7 +36,7 @@ DebugTextApp::OnRunning() {
     this->drawText();
     
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(PixelChannel::RGBA, glm::vec4(0.5f), 1.0f, 0);
+    Gfx::Clear(ClearTarget::Color, glm::vec4(0.5f), 1.0f, 0);
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     

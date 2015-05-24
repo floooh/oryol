@@ -31,7 +31,7 @@ vec4 myColor(vec4 nrm, vec4 texColor)
 @in vec2 texcoord0
 @out vec4 nrm
 @out vec2 uv
-    $out_position = myTransform(position);
+    _position = myTransform(position);
     nrm = normal;
     uv  = texcoord0;
 @end
@@ -42,8 +42,8 @@ vec4 myColor(vec4 nrm, vec4 texColor)
 @uniform sampler2D tex Texture
 @in vec4 nrm
 @in vec2 uv
-    vec4 texColor = $texture2D(tex, uv * vec2(5.0, 3.0));
-    $out_color = myColor(nrm, texColor);
+    vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));
+    _color = myColor(nrm, texColor);
 @end
 
 @bundle MyShader
