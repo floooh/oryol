@@ -1,7 +1,7 @@
 fips_begin_app(Shapes windowed)
     fips_vs_warning_level(3)
     fips_files(Shapes.cc)
-    fips_generate(TYPE Shader FROM shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Assets)
     oryol_add_web_sample(Shapes "Shapes with random vertex colors, created with ShapeBuilder class" "emscripten,pnacl,android" Shapes.jpg "Shapes/Shapes.cc")
 fips_end_app()

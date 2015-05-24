@@ -1,7 +1,7 @@
 fips_begin_app(TextureFloat windowed)
     fips_vs_warning_level(3)
     fips_files(TextureFloat.cc)
-    fips_generate(TYPE Shader FROM shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Time Dbg)
     oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten,android,pnacl" TextureFloat.jpg "TextureFloat/TextureFloat.cc")
 fips_end_app()

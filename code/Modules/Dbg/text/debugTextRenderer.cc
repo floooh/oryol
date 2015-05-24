@@ -5,7 +5,7 @@
 #include "debugTextRenderer.h"
 #include "Gfx/Gfx.h"
 #include "IO/Stream/MemoryStream.h"
-#include "Dbg/shaders/DebugShaders.h"
+#include "DebugShaders.h"
 
 namespace Oryol {
 namespace _priv {

@@ -1,7 +1,7 @@
 fips_begin_app(DDSCubeMap windowed)
     fips_vs_warning_level(3)
     fips_files(DDSCubeMap.cc)
-    fips_generate(TYPE Shader FROM shaders.shd SOURCE shaders.cc HEADER shaders.h)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Assets HTTP)
     oryol_add_web_sample(DDSCubeMap "Load and display DDS DXT1 cube map" "emscripten,pnacl" DDSCubeMap.jpg "DDSCubeMap/DDSCubeMap.cc")
 fips_end_app()

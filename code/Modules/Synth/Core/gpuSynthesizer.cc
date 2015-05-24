@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "gpuSynthesizer.h"
 #include "Core/Assertion.h"
-#include "Synth/shaders/SynthShaders.h"
+#include "SynthShaders.h"
 #include "Gfx/Gfx.h"
 #include "Core/Log.h"
 

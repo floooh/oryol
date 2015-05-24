@@ -1,7 +1,7 @@
 fips_begin_app(PackedNormals windowed)
     fips_vs_warning_level(3)
     fips_files(PackedNormals.cc)
-    fips_generate(TYPE Shader FROM shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Assets)
     oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" "emscripten,android,pnacl" PackedNormals.jpg "PackedNormals/PackedNormals.cc")
 fips_end_app()

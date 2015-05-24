@@ -18,6 +18,6 @@ fips_begin_module(TBUI)
         tbOryolSystem.cc
         tbResourceContainer.cc tbResourceContainer.h
     )
-    fips_generate(FROM TBUIShaders.shd TYPE Shader)
+    oryol_shader(TBUIShaders.shd)
     fips_deps(Gfx Input Time turbobadger)
 fips_end_module()

@@ -5,6 +5,7 @@
 fips_begin_module(Synth)
     fips_vs_warning_level(3)
     fips_files(Synth.cc Synth.h)
+    oryol_shader(SynthShaders.shd)
     fips_dir(Core)
     fips_files(
         SynthOp.h
@@ -19,8 +20,6 @@ fips_begin_module(Synth)
     )
     fips_dir(base)
     fips_files(soundMgrBase.cc soundMgrBase.h)
-    fips_dir(shaders)
-    fips_generate(TYPE Shader FROM SynthShaders.shd)
     if (FIPS_OSX OR FIPS_EMSCRIPTEN)
         fips_dir(al)
         fips_files(

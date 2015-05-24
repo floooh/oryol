@@ -5,7 +5,7 @@
 #include "imguiWrapper.h"
 #include "Core/Assertion.h"
 #include "Input/Input.h"
-#include "IMUI/IMUIShaders.h"
+#include "IMUIShaders.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 

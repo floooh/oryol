@@ -7,6 +7,6 @@ fips_begin_module(IMUI)
         IMUI.h IMUI.cc
         imguiWrapper.h imguiWrapper.cc
     )
-    fips_generate(FROM IMUIShaders.shd TYPE Shader)
+    oryol_shader(IMUIShaders.shd)
     fips_deps(Gfx Input imgui)
 fips_end_module()

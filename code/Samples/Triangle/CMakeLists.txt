@@ -1,7 +1,7 @@
 fips_begin_app(Triangle windowed)
     fips_vs_warning_level(3)
     fips_files(Triangle.cc)
-    fips_generate(TYPE Shader FROM shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Assets)
     oryol_add_web_sample(Triangle "The canonical triangle demo" "emscripten,android,pnacl" Triangle.jpg "Triangle/Triangle.cc")
 fips_end_app()

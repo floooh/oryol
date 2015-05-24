@@ -13,7 +13,7 @@ fips_begin_app(Paclone windowed)
         sound.cc sound.h
     )
     fips_generate(FROM sprites.py)
-    fips_generate(TYPE Shader FROM shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Core Gfx Input Dbg Sound Assets)
     oryol_add_web_sample(Paclone "Simple Pacman clone (work in progress!" "emscripten,pnacl,android" Paclone.jpg "Paclone/Paclone.cc")
 fips_end_app()

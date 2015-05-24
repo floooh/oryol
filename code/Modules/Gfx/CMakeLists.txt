@@ -171,7 +171,7 @@ fips_begin_unittest(Gfx)
         VertexLayoutTest.cc
         glTypesTest.cc
     )
-    fips_generate(TYPE Shader FROM TestShaderLibrary.shd)
+    oryol_shader(TestShaderLibrary.shd)
     # FIXME: hmm strange, why doesn't recursive dependency resolution work here
     # (have to explicitely link with Gfx)
     fips_deps(HTTP Gfx Assets)

@@ -6,7 +6,7 @@
 #include "TBUI/tb/tbOryolBitmap.h"
 #include "tb_bitmap_fragment.h"
 #include "tb_system.h"
-#include "TBUI/tb/TBUIShaders.h"
+#include "TBUIShaders.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
