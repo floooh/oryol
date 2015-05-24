@@ -1003,31 +1003,17 @@ def writeSourceBottom(f, shdLib) :
 
 #-------------------------------------------------------------------------------
 def writeVertexShaderSource(f, shdLib, vs, slVersion) :
-    if isGLSL[slVersion] :
-        f.write('#if ORYOL_OPENGL\n')
-    elif isHLSL[slVersion] :
-        f.write('#if ORYOL_D3D11\n')
-    else :
-        f.write('#error "unsupported shader language!"\n')
     f.write('const char* {}_{}_src = \n'.format(vs.name, slVersion))
     for line in vs.generatedSource[slVersion] :
         f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
-    f.write('#endif\n')
 
 #-------------------------------------------------------------------------------
 def writeFragmentShaderSource(f, shdLib, fs, slVersion) :
-    if isGLSL[slVersion] :
-        f.write('#if ORYOL_OPENGL\n')
-    elif isHLSL[slVersion] :
-        f.write('#if ORYOL_D3D11\n')
-    else :
-        f.write('#error "unsupported shader language!"\n')
     f.write('const char* {}_{}_src = \n'.format(fs.name, slVersion))
     for line in fs.generatedSource[slVersion] :
         f.write('"{}\\n"\n'.format(line.content))
     f.write(';\n')
-    f.write('#endif\n')
 
 #-------------------------------------------------------------------------------
 def writeBundleSource(f, shdLib, bundle) :
@@ -1056,17 +1042,39 @@ def writeBundleSource(f, shdLib, bundle) :
 
 #-------------------------------------------------------------------------------
 def generateSource(absSourcePath, shdLib) :
-    f = open(absSourcePath, 'w')  
-    writeSourceTop(f, absSourcePath, shdLib)
+    glslPath = os.path.splitext(absSourcePath)[0] + '_glsl.h'
+    hlslPath = os.path.splitext(absSourcePath)[0] + '_hlsl.h'
+    
+    f_src = open(absSourcePath, 'w') 
+    f_glsl = open(glslPath, 'w')
+    f_hlsl = open(hlslPath, 'w')
+
+    # shader sources in separate files for GLSL and HLSL
     for slVersion in slVersions :
+        if isGLSL[slVersion] :
+            f = f_glsl
+        else :
+            f = f_hlsl
         for vs in shdLib.vertexShaders.values() :
             writeVertexShaderSource(f, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :
             writeFragmentShaderSource(f, shdLib, fs, slVersion)
+   
+    # generic source file
+    writeSourceTop(f_src, absSourcePath, shdLib)
+    f_src.write('#if ORYOL_OPENGL\n')
+    f_src.write('#include \"{}\"\n'.format(glslPath))
+    f_src.write('#endif\n')
+    f_src.write('#if ORYOL_D3D11\n')
+    f_src.write('#include \"{}\"\n'.format(hlslPath))
+    f_src.write('#endif\n')
     for bundle in shdLib.bundles.values() :
-        writeBundleSource(f, shdLib, bundle)            
-    writeSourceBottom(f, shdLib)  
-    f.close()
+        writeBundleSource(f_src, shdLib, bundle)            
+    writeSourceBottom(f_src, shdLib)  
+    
+    f_hlsl.close()
+    f_glsl.close()
+    f_src.close()
 
 #-------------------------------------------------------------------------------
 def generate(input, out_src, out_hdr) :
