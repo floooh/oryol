@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11Types.h"
+#include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -39,6 +40,34 @@ d3d11Types::asTextureFormat(PixelFormat::Code pf) {
             // RGB8 (not at all), RGBA4, R5G6B5, R5G5B5A1 (no until D3D11 on Win8) 
             o_error("d3d11Types::asTextureFormat: invalid pixel format for D3D11 texture!\n");
             return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_USAGE
+d3d11Types::asBufferUsage(Usage::Code usage) {
+    switch (usage) {
+        case Usage::Immutable:  return D3D11_USAGE_IMMUTABLE;
+        case Usage::Static:     return D3D11_USAGE_DEFAULT;
+        case Usage::Dynamic:    return D3D11_USAGE_DYNAMIC;
+        case Usage::Stream:     return D3D11_USAGE_DYNAMIC;
+        default:
+            o_error("invalid usage\n");
+            return D3D11_USAGE_IMMUTABLE;
+    }
+}
+
+//------------------------------------------------------------------------------
+uint32
+d3d11Types::asBufferCPUAccessFlag(Usage::Code usage) {
+    switch (usage) {
+        case Usage::Immutable:  return 0;
+        case Usage::Static:     return D3D11_CPU_ACCESS_WRITE;
+        case Usage::Dynamic:    return D3D11_CPU_ACCESS_WRITE;
+        case Usage::Stream:     return D3D11_CPU_ACCESS_WRITE;
+        default:
+            o_error("invalid usage\n");
+            return 0;
     }
 }
 

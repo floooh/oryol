@@ -13,6 +13,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include <glm/vec4.hpp>
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -78,12 +79,18 @@ public:
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes);
 
+    /// invalidate bound mesh state
+    void invalidateMeshState();
+
+    /// pointer to d3d11 device
+    ID3D11Device* d3d11Device;
+    /// pointer to immediate mode device context
+    ID3D11DeviceContext* d3d11DeviceContext;
+
 private:
     bool valid;
     displayMgr* dispMgr;
     meshPool* mshPool;
-    ID3D11Device* d3d11Device;
-    ID3D11DeviceContext* d3d11DeviceContext;
     ID3D11RenderTargetView* defaultRenderTargetView;
     ID3D11DepthStencilView* defaultDepthStencilView;
 

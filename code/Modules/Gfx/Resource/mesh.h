@@ -16,10 +16,10 @@ namespace _priv {
 class mesh : public glMesh { };
 } }
 #elif ORYOL_D3D11
-#include "Gfx/Resource/meshBase.h"
+#include "Gfx/d3d11/d3d11Mesh.h"
 namespace Oryol {
 namespace _priv {
-class mesh : public meshBase { };
+class mesh : public d3d11Mesh { };
 } }
 #else
 #error "Target platform not yet supported!"

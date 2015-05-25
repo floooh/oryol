@@ -6,7 +6,6 @@
     @brief Gfx module enums mapped to their D3D11 values
 */
 #include "Core/Types.h"
-#include <d3d11.h>
 
 namespace Oryol {
 namespace _priv {
@@ -20,8 +19,8 @@ class d3d11IndexType {
 public:
     enum Code {
         None = 0,
-        Index16 = DXGI_FORMAT_R16_UINT,
-        Index32 = DXGI_FORMAT_R32_UINT,
+        Index16 = 57,       // DXGI_FORMAT_R16_UINT
+        Index32 = 42,       // DXGI_FORMAT_R32_UINT
 
         NumIndexTypes = 3,
         InvalidIndexType = 0xFFFFFFFF
@@ -37,11 +36,11 @@ class d3d11PrimitiveType {
 public:
     /// primitive type enum (don't change order, append to end!)
     enum Code {
-        Points = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED,
-        Lines = D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
-        LineStrip = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP,
-        Triangles = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-        TriangleStrip = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+        Points = 1,         // D3D11_PRIMITIVE_TOPOLOGY_POINTLIST
+        Lines = 2,          // D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
+        LineStrip = 3,      // D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP 
+        Triangles = 4,      // D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+        TriangleStrip = 5,  // D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP
 
         NumPrimitiveTypes = 5,
         InvalidPrimitiveType = 0xFFFFFFFF,
@@ -116,9 +115,9 @@ class d3d11TextureWrapMode {
 public:
     /// wrap modes
     enum Code {
-        ClampToEdge = D3D11_TEXTURE_ADDRESS_CLAMP,
-        Repeat = D3D11_TEXTURE_ADDRESS_WRAP,
-        MirroredRepeat = D3D11_TEXTURE_ADDRESS_MIRROR,
+        ClampToEdge = 3,        // D3D11_TEXTURE_ADDRESS_CLAMP
+        Repeat = 1,             // D3D11_TEXTURE_ADDRESS_WRAP
+        MirroredRepeat = 2,     // D3D11_TEXTURE_ADDRESS_MIRROR
 
         NumTextureWrapModes = 3,
         InvalidTextureWrapMode = 0xFFFFFFFF,

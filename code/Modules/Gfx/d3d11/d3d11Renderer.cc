@@ -7,17 +7,18 @@
 #include "Gfx/Resource/texture.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include <glm/mat4x4.hpp>
+#include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11Renderer::d3d11Renderer() :
+d3d11Device(nullptr),
+d3d11DeviceContext(nullptr),
 valid(false),
 dispMgr(nullptr),
 mshPool(nullptr),
-d3d11Device(nullptr),
-d3d11DeviceContext(nullptr),
 defaultRenderTargetView(nullptr),
 defaultDepthStencilView(nullptr),
 rtValid(false),
@@ -378,6 +379,12 @@ d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 void 
 d3d11Renderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes) {
     o_error("FIXME!\n");
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::invalidateMeshState() {
+    Log::Info("d3d11Renderer::invalidateMeshState()\n");
 }
 
 } // namespace _priv

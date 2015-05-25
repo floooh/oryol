@@ -9,7 +9,7 @@
 */
 #include "Gfx/Core/displayMgrBase.h"
 #include "Core/Assertion.h"
-#include <d3d11.h>
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -38,8 +38,6 @@ public:
     ID3D11DeviceContext* d3d11DeviceContext;
     /// pointer to swap chain
     IDXGISwapChain* dxgiSwapChain;
-    /// d3d feature level
-    D3D_FEATURE_LEVEL featureLevel;
     /// pointer to default render target back buffer texture
     ID3D11Texture2D* backBuffer;
     /// pointer to default render target view
@@ -49,7 +47,6 @@ public:
     /// pointer to default default depth/stencil view
     ID3D11DepthStencilView* depthStencilView;
 
-private:
     /// register the window class
     void registerWindowClass();
     /// unregister the window class
@@ -59,25 +56,20 @@ private:
     /// destroy the application window
     void destroyWindow();
     /// create swap chain and d3d device
-    void createDeviceAndSwapChain(const GfxSetup& gfxSetup);
+    void createDeviceAndSwapChain(const GfxSetup& gfxSetup, DXGI_SWAP_CHAIN_DESC& outSwapChainDesc);
     /// destroy the d3d device and swap chain
     void destroyDeviceAndSwapChain();
     /// create the default render target
-    void createDefaultRenderTarget(const GfxSetup& gfxSetup);
+    void createDefaultRenderTarget(const GfxSetup& gfxSetup, const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
     /// destroy the default render target
     void destroyDefaultRenderTarget();
     /// compute actual window size from client rect size plus window chrome
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
-    /// custom winproc
-    static LRESULT CALLBACK winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     bool quitRequested;
     HWND hwnd;
     DWORD dwStyle;
     DWORD dwExStyle;
-    
-    DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-    D3D11_TEXTURE2D_DESC depthStencilDesc;
 };
 
 } // namespace _priv

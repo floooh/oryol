@@ -110,6 +110,7 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D11)
         fips_dir(d3d11)
         fips_files(
+            d3d11_impl.h d3d11_decl.h
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
             d3d11Enums.h
             d3d11Types.cc d3d11Types.h
@@ -118,6 +119,7 @@ fips_begin_module(Gfx)
             d3d11ProgramBundleFactory.cc d3d11ProgramBundleFactory.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
             d3d11Renderer.cc d3d11Renderer.h
+            d3d11Mesh.cc d3d11Mesh.h
         )
     endif()
     if (FIPS_ANDROID)

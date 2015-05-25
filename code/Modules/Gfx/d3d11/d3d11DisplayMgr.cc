@@ -5,11 +5,12 @@
 #include "d3d11DisplayMgr.h"
 #include "d3d11Types.h"
 #include "Core/String/StringConverter.h"
-#include <WinUser.h>
+#include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
+static LRESULT CALLBACK winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static d3d11DisplayMgr* self = nullptr;
 
 //------------------------------------------------------------------------------
@@ -17,7 +18,6 @@ d3d11DisplayMgr::d3d11DisplayMgr() :
 d3d11Device(nullptr),
 d3d11DeviceContext(nullptr),
 dxgiSwapChain(nullptr),
-featureLevel(D3D_FEATURE_LEVEL_9_1),    // will be overwritten at device creation
 backBuffer(nullptr),
 renderTargetView(nullptr),
 depthStencilBuffer(nullptr),
@@ -27,8 +27,6 @@ hwnd(0),
 dwStyle(0),
 dwExStyle(0) {
     self = this;
-    Memory::Clear(&this->dxgiSwapChainDesc, sizeof(this->dxgiSwapChainDesc));
-    Memory::Clear(&this->depthStencilDesc, sizeof(this->depthStencilDesc));
 }
 
 //------------------------------------------------------------------------------
@@ -48,8 +46,9 @@ d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup) {
 
     this->registerWindowClass();
     this->createWindow(setup);
-    this->createDeviceAndSwapChain(setup);
-    this->createDefaultRenderTarget(setup);
+    DXGI_SWAP_CHAIN_DESC inOutSwapChainDesc;
+    this->createDeviceAndSwapChain(setup, inOutSwapChainDesc);
+    this->createDefaultRenderTarget(setup, inOutSwapChainDesc);
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +102,7 @@ d3d11DisplayMgr::ProcessSystemEvents() {
 
 //------------------------------------------------------------------------------
 void
-d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup) {
+d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup, DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) {
     o_assert_dbg(nullptr == this->d3d11Device);
     o_assert_dbg(nullptr == this->d3d11DeviceContext);
     o_assert_dbg(nullptr == this->dxgiSwapChain);
@@ -114,20 +113,22 @@ d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup) {
         createFlags |= D3D11_CREATE_DEVICE_DEBUG;
     #endif
 
-    this->dxgiSwapChainDesc.BufferDesc.Width = setup.Width;
-    this->dxgiSwapChainDesc.BufferDesc.Height = setup.Height;
-    this->dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(setup.ColorFormat);
-    this->dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-    this->dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    this->dxgiSwapChainDesc.SampleDesc.Count = setup.Samples < 2 ? 1 : setup.Samples;
-    this->dxgiSwapChainDesc.SampleDesc.Quality = setup.Samples < 2 ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
-    this->dxgiSwapChainDesc.BufferCount = 1;
-    this->dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    this->dxgiSwapChainDesc.OutputWindow = this->hwnd;
-    this->dxgiSwapChainDesc.Windowed = setup.Windowed;
-    this->dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    this->dxgiSwapChainDesc.Flags = 0;
+    Memory::Clear(&outSwapChainDesc, sizeof(outSwapChainDesc));
+    outSwapChainDesc.BufferDesc.Width = setup.Width;
+    outSwapChainDesc.BufferDesc.Height = setup.Height;
+    outSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(setup.ColorFormat);
+    outSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+    outSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+    outSwapChainDesc.SampleDesc.Count = setup.Samples < 2 ? 1 : setup.Samples;
+    outSwapChainDesc.SampleDesc.Quality = setup.Samples < 2 ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
+    outSwapChainDesc.BufferCount = 1;
+    outSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    outSwapChainDesc.OutputWindow = this->hwnd;
+    outSwapChainDesc.Windowed = setup.Windowed;
+    outSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    outSwapChainDesc.Flags = 0;
 
+    D3D_FEATURE_LEVEL d3dFeatureLevel;
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
         NULL,                           // pAdapter (use default adapter)
         D3D_DRIVER_TYPE_HARDWARE,       // DriverType
@@ -136,10 +137,10 @@ d3d11DisplayMgr::createDeviceAndSwapChain(const GfxSetup& setup) {
         NULL,                           // pFeatureLevels
         0,                              // FeatureLevels
         D3D11_SDK_VERSION,              // SDKVersion
-        &this->dxgiSwapChainDesc,       // pSwapChainDesc
+        &outSwapChainDesc,                 // pSwapChainDesc
         &this->dxgiSwapChain,           // ppSwapChain
         &this->d3d11Device,             // ppDevice
-        &this->featureLevel,            // pFeatureLevel
+        &d3dFeatureLevel,               // pFeatureLevel
         &this->d3d11DeviceContext);     // ppImmediateContext
     o_assert2(SUCCEEDED(hr), "Failed to create D3D11 device and swap chain1\n");
     o_assert(this->d3d11Device);
@@ -166,7 +167,7 @@ d3d11DisplayMgr::destroyDeviceAndSwapChain() {
 
 //------------------------------------------------------------------------------
 void
-d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup) {
+d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup, const DXGI_SWAP_CHAIN_DESC& swapChainDesc) {
     o_assert_dbg(this->d3d11Device);
     o_assert_dbg(this->dxgiSwapChain);
     o_assert_dbg(nullptr == this->backBuffer);
@@ -185,24 +186,26 @@ d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup) {
 
     // setup depth/stencil buffer (if required)
     if (PixelFormat::None != setup.DepthFormat) {
-
-        this->depthStencilDesc.Width = setup.Width;
-        this->depthStencilDesc.Height = setup.Height;
-        this->depthStencilDesc.MipLevels = 1;
-        this->depthStencilDesc.ArraySize = 1;
-        this->depthStencilDesc.Format = d3d11Types::asTextureFormat(setup.DepthFormat);
-        this->depthStencilDesc.SampleDesc = this->dxgiSwapChainDesc.SampleDesc;
-        this->depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-        this->depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        this->depthStencilDesc.CPUAccessFlags = 0;
-        this->depthStencilDesc.MiscFlags = 0;
-        hr = this->d3d11Device->CreateTexture2D(&this->depthStencilDesc, NULL, &this->depthStencilBuffer);
+        
+        D3D11_TEXTURE2D_DESC depthStencilDesc;
+        Memory::Clear(&depthStencilDesc, sizeof(depthStencilDesc));
+        depthStencilDesc.Width = setup.Width;
+        depthStencilDesc.Height = setup.Height;
+        depthStencilDesc.MipLevels = 1;
+        depthStencilDesc.ArraySize = 1;
+        depthStencilDesc.Format = d3d11Types::asTextureFormat(setup.DepthFormat);
+        depthStencilDesc.SampleDesc = swapChainDesc.SampleDesc;
+        depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        depthStencilDesc.CPUAccessFlags = 0;
+        depthStencilDesc.MiscFlags = 0;
+        hr = this->d3d11Device->CreateTexture2D(&depthStencilDesc, NULL, &this->depthStencilBuffer);
         o_assert(SUCCEEDED(hr));
         o_assert_dbg(this->depthStencilBuffer);
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
         Memory::Clear(&dsvDesc, sizeof(dsvDesc));
-        dsvDesc.Format = this->depthStencilDesc.Format;
+        dsvDesc.Format = depthStencilDesc.Format;
         dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
         dsvDesc.Texture2D.MipSlice = 0;
         hr = this->d3d11Device->CreateDepthStencilView(this->depthStencilBuffer, &dsvDesc, &this->depthStencilView);
@@ -312,7 +315,7 @@ void
 d3d11DisplayMgr::destroyWindow() {
     o_assert(this->hwnd);
 
-    DestroyWindow(this->hwnd);
+    DestroyWindow((HWND)this->hwnd);
     this->hwnd = 0;
 }
 
@@ -327,7 +330,7 @@ d3d11DisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWi
 
 //------------------------------------------------------------------------------
 LRESULT CALLBACK 
-d3d11DisplayMgr::winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_SYSCOMMAND:
             switch (wParam & 0xfff0) {

@@ -1,0 +1,35 @@
+//------------------------------------------------------------------------------
+//  d3d11Mesh.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "d3d11Mesh.h"
+
+namespace Oryol {
+namespace _priv {
+
+//------------------------------------------------------------------------------
+d3d11Mesh::d3d11Mesh() :
+d3d11VertexBuffer(nullptr),
+d3d11IndexBuffer(nullptr),
+instanceMesh(nullptr) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+d3d11Mesh::~d3d11Mesh() {
+    o_assert_dbg(nullptr == this->d3d11VertexBuffer);
+    o_assert_dbg(nullptr == this->d3d11IndexBuffer);
+    o_assert_dbg(nullptr == this->instanceMesh);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Mesh::Clear() {
+    this->d3d11VertexBuffer = nullptr;
+    this->d3d11IndexBuffer = nullptr;
+    this->instanceMesh = nullptr;
+    meshBase::Clear();
+}
+
+} // namespace _priv
+} // namespace Oryol

@@ -1,6 +1,3 @@
-# FIXME: some turbobadger method names currently clash with Windows defines (e.g. PostMessage)
-if (NOT ORYOL_D3D11)
-
 fips_begin_app(TurboBadgerDemo windowed)
     fips_vs_warning_level(3)
     fips_vs_disable_warnings(4267)   # converting from 64-bit to 32-bit values, this happens often in Turbobadger source
@@ -12,5 +9,3 @@ fips_begin_app(TurboBadgerDemo windowed)
     fips_deps(Gfx HTTP Dbg TBUI)
     oryol_add_web_sample(TurboBadgerDemo "Turbobadger UI integration" "emscripten,pnacl" TurboBadgerDemo.jpg "TurboBadgerDemo/TurboBadgerDemo.cc")
 fips_end_app()
-
-endif()

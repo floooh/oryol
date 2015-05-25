@@ -35,6 +35,24 @@ public:
     ResourceState::Code SetupResource(mesh& mesh, const void* data, int32 size);
     /// discard the resource
     void DestroyResource(mesh& mesh);
+
+    /// helper method to setup a mesh object as fullscreen quad
+    ResourceState::Code createFullscreenQuad(mesh& mesh);
+    /// helper method to create empty mesh
+    ResourceState::Code createEmptyMesh(mesh& mesh);
+    /// create from data
+    ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
+
+private:
+    /// helper method to create vertex or index buffer
+    ID3D11Buffer* createBuffer(const void* vertexData, uint32 vertexDataSize, uint32 d3d11BindFlags, Usage::Code usage);
+    /// lookup and attach instance buffer to mesh
+    void attachInstanceBuffer(mesh& mesh);
+
+    class renderer* renderer;
+    class meshPool* meshPool;
+    ID3D11Device* d3d11Device;
+    bool isValid;
 };
 
 } // namespace _priv

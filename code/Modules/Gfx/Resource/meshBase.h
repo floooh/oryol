@@ -29,7 +29,7 @@ public:
     IndexBufferAttrs indexBufferAttrs;
     /// number of primitive groups
     int32 numPrimGroups;
-    /// primitive groups (FIXME: replace with StaticArray<>)
+    /// primitive groups
     StaticArray<PrimitiveGroup, MaxNumPrimGroups> primGroups;
     
     /// clear the object
