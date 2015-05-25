@@ -56,8 +56,6 @@ glMeshFactory::IsValid() const {
 ResourceState::Code
 glMeshFactory::SetupResource(mesh& msh) {
     o_assert_dbg(this->isValid);
-    
-    // decide whether a loader needs to take over, or whether we handle this right here
     if (msh.Setup.ShouldSetupEmpty()) {
         return this->createEmptyMesh(msh);
     }
@@ -374,6 +372,22 @@ ResourceState::Code
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
     o_assert_dbg(!mesh.Setup.InstanceMesh.IsValid());
     
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.NumVertices = 4;
+    vbAttrs.BufferUsage = Usage::Immutable;
+    vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    mesh.vertexBufferAttrs = vbAttrs;
+
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.NumIndices = 6;
+    ibAttrs.Type = IndexType::Index16;
+    ibAttrs.BufferUsage = Usage::Immutable;
+    mesh.indexBufferAttrs = ibAttrs;
+
+    mesh.numPrimGroups = 1;
+    mesh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+
     // vertices
     float32 vertices[] = {
         -1.0f, +1.0f, 0.0f, 0.0f, 1.0f,     // top-left corner
@@ -381,29 +395,14 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
         +1.0f, -1.0f, 0.0f, 1.0f, 0.0f,     // bottom-right corner
         -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,     // bottom-left corner
     };
-    VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = 4;
-    vbAttrs.BufferUsage = Usage::Immutable;
-    VertexLayout layout;
-    layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    vbAttrs.Layout = layout;
-    mesh.vertexBufferAttrs = vbAttrs;
-    
+
     // indices
-    IndexBufferAttrs ibAttrs;
     uint16 indices[] = {
         0, 2, 1,            // topleft -> bottomright -> topright
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
-    ibAttrs.NumIndices = 6;
-    ibAttrs.Type = IndexType::Index16;
-    ibAttrs.BufferUsage = Usage::Immutable;
-    mesh.indexBufferAttrs = ibAttrs;
     
-    // primitive grous
-    mesh.numPrimGroups = 1;
-    mesh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    // create vertex and index buffer
     mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
     mesh.glIndexBuffer = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
     this->attachInstanceBuffer(mesh);
@@ -415,36 +414,28 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 glMeshFactory::createEmptyMesh(mesh& mesh) {
+    o_assert_dbg(0 < mesh.Setup.NumVertices);
     
     const MeshSetup& setup = mesh.Setup;
-    o_assert_dbg(setup.NumVertices > 0);
-    
-    const int32 numVertices = setup.NumVertices;
-    const VertexLayout& layout = setup.Layout;
-    const int32 vbSize = numVertices * layout.ByteSize();
-    
+
     VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = numVertices;
-    vbAttrs.Layout = layout;
+    vbAttrs.NumVertices = setup.NumVertices;
+    vbAttrs.Layout = setup.Layout;
     vbAttrs.BufferUsage = setup.VertexUsage;
     mesh.vertexBufferAttrs = vbAttrs;
-    
-    const int32 numIndices = setup.NumIndices;
-    const IndexType::Code indexType = setup.IndicesType;
-    const int32 ibSize = numIndices * IndexType::ByteSize(indexType);
+    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
     
     IndexBufferAttrs ibAttrs;
     ibAttrs.NumIndices = setup.NumIndices;
     ibAttrs.Type = setup.IndicesType;
     ibAttrs.BufferUsage = setup.IndexUsage;
     mesh.indexBufferAttrs = ibAttrs;
+    const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
     
-    const int32 numPrimGroups = setup.NumPrimitiveGroups();
-    if (numPrimGroups > 0) {
-        mesh.numPrimGroups = numPrimGroups;
-        for (int32 i = 0; i < numPrimGroups; i++) {
-            mesh.primGroups[i] = setup.PrimitiveGroup(i);
-        }
+    mesh.numPrimGroups = setup.NumPrimitiveGroups();
+    o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
+    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
+        mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }
     
     // if this is a stream update mesh, we actually create 2 vertex buffers for double-buffered updated
@@ -460,7 +451,7 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
         // normal static or dynamic mesh, no double-buffering
         mesh.glVertexBuffers[0] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
     }
-    if (indexType != IndexType::None) {
+    if (IndexType::None != ibAttrs.Type) {
         mesh.glIndexBuffer = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
     }
     this->attachInstanceBuffer(mesh);
@@ -477,9 +468,6 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
 
     const MeshSetup& setup = mesh.Setup;
     
-    // open stream and get pointer to contained data
-    const uint8* ptr = (const uint8*) data;
-
     // setup vertex buffer attrs
     VertexBufferAttrs vbAttrs;
     vbAttrs.NumVertices = setup.NumVertices;
@@ -495,14 +483,14 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     mesh.indexBufferAttrs = ibAttrs;
     
     // setup primitive groups
-    const int32 numPrimGroups = setup.NumPrimitiveGroups();
-    mesh.numPrimGroups = numPrimGroups;
+    mesh.numPrimGroups = setup.NumPrimitiveGroups();
     o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
-    for (int32 i = 0; i < numPrimGroups; i++) {
+    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
         mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }
     
     // setup the mesh object
+    const uint8* ptr = (const uint8*)data;
     const uint8* vertices = ptr + setup.DataVertexOffset;
     const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));

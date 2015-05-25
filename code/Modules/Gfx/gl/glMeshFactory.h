@@ -36,14 +36,6 @@ public:
     /// discard the resource
     void DestroyResource(mesh& mesh);
     
-    /// helper method to create vertex buffer in mesh
-    GLuint createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage);
-    /// helper method to create index buffer in mesh
-    GLuint createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage);
-    /// lookup and attach instance buffer to mesh
-    void attachInstanceBuffer(mesh& mesh);
-    /// helper method to create platform-specific vertex layout
-    void setupVertexLayout(mesh& mesh);
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// helper method to create empty mesh
@@ -52,6 +44,14 @@ public:
     ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
     
 private:
+    /// helper method to create vertex buffer in mesh
+    GLuint createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage);
+    /// helper method to create index buffer in mesh
+    GLuint createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage);
+    /// lookup and attach instance buffer to mesh
+    void attachInstanceBuffer(mesh& mesh);
+    /// helper method to create platform-specific vertex layout
+    void setupVertexLayout(mesh& mesh);
     /// setup a Mesh's GL vertex attributes
     void glSetupVertexAttrs(mesh& mesh);
 

@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::glMesh
     @ingroup _priv
-    @brief GL implement of Mesh
+    @brief GL implementation of mesh
 */
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Resource/meshBase.h"
@@ -23,7 +23,7 @@ public:
 
     static const int32 MaxNumSlots = 4;
 
-    /// clear the object
+    /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
     
     /// number of vertex buffer slots
