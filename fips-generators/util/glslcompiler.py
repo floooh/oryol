@@ -77,8 +77,6 @@ def parseOutput(output, lines) :
             util.fmtError(msg, False)
             
     if hasError :
-        for line in lines :
-            print "{}\n".format(line.content)
         util.fmtError("Aborting.")
 
 def validate(lines, type, glslVersion) :

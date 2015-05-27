@@ -27,6 +27,8 @@ public:
     void AddProgram(uint32 mask, const Id& vertexShader, const Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource);
+    /// add a program from precompiled shader byte code
+    void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
     /// bind a shader uniform name to a variable slot
     void AddUniform(const String& uniformName, int16 slotIndex);
     /// bind a shader uniform name to a texture variable slot

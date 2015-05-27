@@ -64,6 +64,13 @@ ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, c
 
 //------------------------------------------------------------------------------
 void
+ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
+    // FIXME
+    o_error("ProgramBundleSetup::AddProgramFromByteCode: FIXME!\n");
+}
+
+//------------------------------------------------------------------------------
+void
 ProgramBundleSetup::AddUniform(const String& uniformName, int16 slotIndex) {
     o_assert(this->numUniformEntries < MaxNumUniformEntries);
     o_assert(uniformName.IsValid());

@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 22
+Version = 23
 
 import os
 import sys
@@ -933,18 +933,24 @@ class ShaderLibrary :
                     srcLines = fs.generatedSource[slVersion]
                     glslcompiler.validate(srcLines, 'fs', slVersion)
 
-    def validateShadersHLSL(self) :
+    def validateAndWriteShadersHLSL(self, absHdrPath) :
         '''
-        Run the shader sources through the HLSL reference compiler
+        Run the shader sources through the HLSL compiler,
+        and let HLSL generate shader byte code in header file
         '''
+        rootPath = os.path.splitext(absHdrPath)[0]
         for slVersion in slVersions :
             if isHLSL[slVersion] :
                 for vs in self.vertexShaders.values() :
                     srcLines = vs.generatedSource[slVersion]
-                    hlslcompiler.validate(srcLines, 'vs', slVersion)
+                    cName = vs.name + '_' + slVersion + '_src'
+                    outPath = rootPath + '_' + cName + '_vs.h'
+                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName)
                 for fs in self.fragmentShaders.values() :
                     srcLines = fs.generatedSource[slVersion]
-                    hlslcompiler.validate(srcLines, 'fs', slVersion)
+                    cName = fs.name + '_' + slVersion + '_src'
+                    outPath = rootPath + '_' + cName + '_fs.h'
+                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -994,6 +1000,9 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('\n')
     f.write('namespace Oryol {\n')
     f.write('namespace Shaders {\n')
+    f.write('#if ORYOL_D3D11\n')
+    f.write('typedef unsigned char BYTE;\n')
+    f.write('#endif\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
@@ -1002,18 +1011,41 @@ def writeSourceBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeVertexShaderSource(f, shdLib, vs, slVersion) :
-    f.write('const char* {}_{}_src = \n'.format(vs.name, slVersion))
-    for line in vs.generatedSource[slVersion] :
-        f.write('"{}\\n"\n'.format(line.content))
-    f.write(';\n')
+def writeVertexShaderSource(f, absPath, shdLib, vs, slVersion) :
+    if isGLSL[slVersion] :
+        # GLSL source code is directly inlined for runtime-compilation
+        f.write('#if ORYOL_OPENGL\n')
+        f.write('const char* {}_{}_src = \n'.format(vs.name, slVersion))
+        for line in vs.generatedSource[slVersion] :
+            f.write('"{}\\n"\n'.format(line.content))
+        f.write(';\n')
+        f.write('#endif\n')
+    elif isHLSL[slVersion] :
+        # for HLSL, the actual shader code has been compiled into a header by FXC
+        f.write('#if ORYOL_D3D11\n')
+        rootPath = os.path.splitext(absPath)[0]
+        f.write('#include "{}_{}_{}_src_vs.h"\n'.format(rootPath, vs.name, slVersion))
+        f.write('#endif\n')
+    else :
+        util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
-def writeFragmentShaderSource(f, shdLib, fs, slVersion) :
-    f.write('const char* {}_{}_src = \n'.format(fs.name, slVersion))
-    for line in fs.generatedSource[slVersion] :
-        f.write('"{}\\n"\n'.format(line.content))
-    f.write(';\n')
+def writeFragmentShaderSource(f, absPath, shdLib, fs, slVersion) :
+    if isGLSL[slVersion] :
+        f.write('#if ORYOL_OPENGL\n')
+        f.write('const char* {}_{}_src = \n'.format(fs.name, slVersion))
+        for line in fs.generatedSource[slVersion] :
+            f.write('"{}\\n"\n'.format(line.content))
+        f.write(';\n')
+        f.write('#endif\n')
+    elif isHLSL[slVersion] :
+        # for HLSL, the actual shader code has been compiled into a header by FXC
+        f.write('#if ORYOL_D3D11\n')
+        rootPath = os.path.splitext(absPath)[0]
+        f.write('#include "{}_{}_{}_src_fs.h"\n'.format(rootPath, fs.name, slVersion))
+        f.write('#endif\n')
+    else :
+        util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
 def writeBundleSource(f, shdLib, bundle) :
@@ -1030,7 +1062,11 @@ def writeBundleSource(f, shdLib, bundle) :
             slangType = slSlangTypes[slVersion]
             vsSource = '{}_{}_src'.format(vsName, slVersion)
             fsSource = '{}_{}_src'.format(fsName, slVersion)
-            f.write('    setup.AddProgramFromSources({}, {}, {}, {});\n'.format(i, slangType, vsSource, fsSource));
+            if isGLSL[slVersion] :
+                f.write('    setup.AddProgramFromSources({}, {}, {}, {});\n'.format(i, slangType, vsSource, fsSource));
+            elif isHLSL[slVersion] :
+                f.write('    setup.AddProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                    i, slangType, vsSource, vsSource, fsSource, fsSource))
             f.write('    #endif\n');
     for uniform in bundle.uniforms :
         if uniform.type.startswith('sampler') :
@@ -1042,59 +1078,22 @@ def writeBundleSource(f, shdLib, bundle) :
 
 #-------------------------------------------------------------------------------
 def generateSource(absSourcePath, shdLib) :
-    glslPath = os.path.splitext(absSourcePath)[0] + '_glsl.h'
-    hlslPath = os.path.splitext(absSourcePath)[0] + '_hlsl.h'
-    
-    f_src = open(absSourcePath, 'w') 
-    f_glsl = open(glslPath, 'w')
-    f_hlsl = open(hlslPath, 'w')
-
-    # shader sources in separate files for GLSL and HLSL
+    f = open(absSourcePath, 'w') 
+    writeSourceTop(f, absSourcePath, shdLib)
     for slVersion in slVersions :
-        if isGLSL[slVersion] :
-            f = f_glsl
-        else :
-            f = f_hlsl
         for vs in shdLib.vertexShaders.values() :
-            writeVertexShaderSource(f, shdLib, vs, slVersion)
+            writeVertexShaderSource(f, absSourcePath, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :
-            writeFragmentShaderSource(f, shdLib, fs, slVersion)
-   
-    # generic source file
-    writeSourceTop(f_src, absSourcePath, shdLib)
-    f_src.write('#if ORYOL_OPENGL\n')
-    f_src.write('#include \"{}\"\n'.format(glslPath))
-    f_src.write('#endif\n')
-    f_src.write('#if ORYOL_D3D11\n')
-    f_src.write('#include \"{}\"\n'.format(hlslPath))
-    f_src.write('#endif\n')
+            writeFragmentShaderSource(f, absSourcePath, shdLib, fs, slVersion)
+
     for bundle in shdLib.bundles.values() :
-        writeBundleSource(f_src, shdLib, bundle)            
-    writeSourceBottom(f_src, shdLib)  
+        writeBundleSource(f, shdLib, bundle)            
+    writeSourceBottom(f, shdLib)  
     
-    f_hlsl.close()
-    f_glsl.close()
-    f_src.close()
+    f.close()
 
 #-------------------------------------------------------------------------------
 def generate(input, out_src, out_hdr) :
-
-    '''
-    FIXME FIXME FIXME
-
-    Once we generate HLSL binary code we cannot write this into 
-    the shaders.cc/shaders.h pair, since this compilation would
-    only work on Windows. Instead write he shader code into
-    a separate header (shaders_hlsl.h) and conditionally include
-    this if compiling for D3D11.
-
-    Then, if the code generation runs on a non-Windows-platform,
-    only the shader.cc/shader.h files will be overwritten, 
-    and the shaders_hlsl.h file will not be touched (thus 
-    checking in the generated files into version control
-    will work fine regardless of platform).
-    '''
-
     if util.isDirty(Version, [input], [out_src, out_hdr]) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
@@ -1103,7 +1102,7 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.generateShaderSourcesHLSL()
         shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
-            shaderLibrary.validateShadersHLSL()
+            shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
 

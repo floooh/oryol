@@ -66,7 +66,7 @@ def callFxc(cmd) :
 #-------------------------------------------------------------------------------
 def parseOutput(output, lines) :
     '''
-    Parse error output lines from the GLSL reference compiler,
+    Parse error output lines from FXC, 
     map them to the original source code location and output
     an error message compatible with Xcode or VStudio
     '''
@@ -112,14 +112,11 @@ def parseOutput(output, lines) :
             hasWarning = True
             util.fmtWarning(msg)
 
-    if hasError or hasWarning:
-        for line in lines :
-            print "{}, {}: {}".format(line.path, line.lineNumber, line.content)
     if hasError :
         util.fmtError("Aborting.")
 
 #-------------------------------------------------------------------------------
-def validate(lines, type, slVersion) :
+def validate(lines, type, slVersion, outPath, cName) :
     '''
     Validate a vertex-/fragment-shader pair.
     '''
@@ -140,7 +137,7 @@ def validate(lines, type, slVersion) :
     writeFile(f, lines)
     f.close()
 
-    cmd = [fxcPath, '/T', profile[type], '/O3', f.name]
+    cmd = [fxcPath, '/T', profile[type], '/O3', '/Fh', outPath, '/Vn', cName, f.name]
     output = callFxc(cmd)
     os.unlink(f.name)
     parseOutput(output, lines)
