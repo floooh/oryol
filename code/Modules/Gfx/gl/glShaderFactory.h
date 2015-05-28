@@ -6,13 +6,15 @@
     @brief private: GL implementation of class shaderFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/Enums.h"
+#include "Core/String/String.h"
+#include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {
     
 class shader;
+class renderer;
     
 class glShaderFactory {
 public:
@@ -22,7 +24,7 @@ public:
     ~glShaderFactory();
     
     /// setup the factory
-    void Setup();
+    void Setup(renderer* rendr);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup

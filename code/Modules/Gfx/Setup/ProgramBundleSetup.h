@@ -46,6 +46,10 @@ public:
     const String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
     const String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    /// get program vertex shader byte code, returns nullptr if no byte code exists
+    void VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
+    /// get program fragment shader byte code, returns nullptr if no byte code exists
+    void FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
     
     /// get number of uniforms
     int32 NumUniforms() const;
@@ -61,12 +65,17 @@ private:
     static const int32 MaxNumUniformEntries = 16;
 
     struct programEntry {
-        programEntry() : mask(0) {};
-        uint32 mask;
+        uint32 mask = 0;
         Id vertexShader;
         Id fragmentShader;
         String vsSources[ShaderLang::NumShaderLangs];
         String fsSources[ShaderLang::NumShaderLangs];
+        struct byteCodeEntry {
+            const void* ptr = nullptr;
+            uint32 size = 0;
+        };
+        byteCodeEntry vsByteCode[ShaderLang::NumShaderLangs];
+        byteCodeEntry fsByteCode[ShaderLang::NumShaderLangs];
     };
 
     /// obtain an existing entry with matching mask or new entry

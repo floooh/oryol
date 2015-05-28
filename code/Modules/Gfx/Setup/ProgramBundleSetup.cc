@@ -41,9 +41,9 @@ ProgramBundleSetup::obtainEntry(uint32 mask) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
-    o_assert(this->numProgramEntries < MaxNumProgramEntries);
-    o_assert(vs.IsValid() && vs.Type == GfxResourceType::Shader);
-    o_assert(fs.IsValid() && fs.Type == GfxResourceType::Shader);
+    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(vs.IsValid() && vs.Type == GfxResourceType::Shader);
+    o_assert_dbg(fs.IsValid() && fs.Type == GfxResourceType::Shader);
     
     programEntry& entry = this->obtainEntry(mask);
     entry.vertexShader = vs;
@@ -53,9 +53,9 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
-    o_assert(this->numProgramEntries < MaxNumProgramEntries);
-    o_assert(vsSource.IsValid() && fsSource.IsValid());
-    o_assert_range(slang, ShaderLang::NumShaderLangs);
+    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
+    o_assert_range_dbg(slang, ShaderLang::NumShaderLangs);
     
     programEntry& entry = this->obtainEntry(mask);
     entry.vsSources[slang] = vsSource;
@@ -65,8 +65,16 @@ ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, c
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
-    // FIXME
-    o_error("ProgramBundleSetup::AddProgramFromByteCode: FIXME!\n");
+    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(vsByteCode && (vsNumBytes > 0));
+    o_assert_dbg(fsByteCode && (fsNumBytes > 0));
+    o_assert_range_dbg(slang, ShaderLang::NumShaderLangs);
+
+    programEntry& entry = this->obtainEntry(mask);
+    entry.vsByteCode[slang].ptr = vsByteCode;
+    entry.vsByteCode[slang].size = vsNumBytes;
+    entry.fsByteCode[slang].ptr = fsByteCode;
+    entry.fsByteCode[slang].size = fsNumBytes;
 }
 
 //------------------------------------------------------------------------------
@@ -134,6 +142,24 @@ ProgramBundleSetup::FragmentShaderSource(int32 progIndex, ShaderLang::Code slang
     o_assert_range(progIndex, this->numProgramEntries);
     o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->programEntries[progIndex].fsSources[slang];
+}
+
+//------------------------------------------------------------------------------
+void
+ProgramBundleSetup::VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    o_assert_range(slang, ShaderLang::NumShaderLangs);
+    outPtr = this->programEntries[progIndex].vsByteCode[slang].ptr;
+    outSize = this->programEntries[progIndex].vsByteCode[slang].size;
+}
+
+//------------------------------------------------------------------------------
+void
+ProgramBundleSetup::FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+    o_assert_range(progIndex, this->numProgramEntries);
+    o_assert_range(slang, ShaderLang::NumShaderLangs);
+    outPtr = this->programEntries[progIndex].fsByteCode[slang].ptr;
+    outSize = this->programEntries[progIndex].fsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------

@@ -6,12 +6,12 @@
     @brief D3D11 implementation of shader factory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/mesh.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
+class renderer;
 class shader;
 
 class d3d11ShaderFactory {
@@ -22,7 +22,7 @@ public:
     ~d3d11ShaderFactory();
 
     /// setup the factory
-    void Setup();
+    void Setup(renderer* rendr);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -32,6 +32,10 @@ public:
     ResourceState::Code SetupResource(shader& shd);
     /// destroy the shader
     void DestroyResource(shader& shd);
+
+private:
+    ID3D11Device* d3d11Device;
+    bool isValid;
 };
 
 } // namespace _priv

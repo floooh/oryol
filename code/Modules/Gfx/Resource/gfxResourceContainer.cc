@@ -30,7 +30,7 @@ gfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
     
     this->meshFactory.Setup(this->renderer, &this->meshPool);
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->shaderFactory.Setup();
+    this->shaderFactory.Setup(this->renderer);
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
     this->programBundleFactory.Setup(this->renderer, &this->shaderPool, &this->shaderFactory);
     this->programBundlePool.Setup(GfxResourceType::ProgramBundle, setup.PoolSize(GfxResourceType::ProgramBundle));

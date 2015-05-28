@@ -6,7 +6,8 @@
     @brief GL implementation of MeshFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/gl/gl_decl.h"
+#include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {

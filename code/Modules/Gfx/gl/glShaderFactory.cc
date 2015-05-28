@@ -26,7 +26,7 @@ glShaderFactory::~glShaderFactory() {
 
 //------------------------------------------------------------------------------
 void
-glShaderFactory::Setup() {
+glShaderFactory::Setup(renderer* /*rendr*/) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
 }

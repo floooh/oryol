@@ -22,13 +22,21 @@ public:
     class Locator Locator;
     /// shader type
     ShaderType::Code Type;
-    /// add a source code of a shader language syntax
+    /// add shader source code of a shader language syntax
     void AddSource(ShaderLang::Code slang, const String& source);
-    /// get the shader sources by shader language version (may return empty string)
+    /// get the shader sources by shader language
     const String& Source(ShaderLang::Code slang) const;
+    /// add shader byte code (data must be static and remain at position in memory)
+    void AddByteCode(ShaderLang::Code slang, const void* ptr, uint32 byteSize);
+    /// get shader byte code by shader language, outPtr will be nullptr if no byte code exists
+    void ByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outByteSize) const;
     
 private:
     String sources[ShaderLang::NumShaderLangs];
+    struct byteCodeEntry {
+        const void* ptr = nullptr;
+        uint32 size = 0;
+    } byteCode[ShaderLang::NumShaderLangs];
 };
     
 } // namespace Oryol
