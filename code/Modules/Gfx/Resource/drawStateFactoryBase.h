@@ -1,27 +1,29 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::drawStateFactory
+    @class Oryol::_priv::drawStateFactoryBase
     @ingroup _priv
-    @brief factory class for drawState resources
+    @brief base class for drawStateFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/drawState.h"
 
 namespace Oryol {
 namespace _priv {
 
+class renderer;
 class meshPool;
 class programBundlePool;
+class drawState;
 
-class drawStateFactory {
+class drawStateFactoryBase {
 public:
     /// constructor
-    drawStateFactory();
+    drawStateFactoryBase();
     /// destructor
-    ~drawStateFactory();
+    ~drawStateFactoryBase();
+
     /// setup the factory
-    void Setup(meshPool* mshPool, programBundlePool* pbPool);
+    void Setup(renderer* rendr, meshPool* mshPool, programBundlePool* pbPool);
     /// discard the factory
     void Discard();
     /// setup shader resource
@@ -29,7 +31,8 @@ public:
     /// destroy the shader
     void DestroyResource(drawState& ds);
     
-private:
+protected:
+    class renderer* renderer;
     class meshPool* meshPool;
     class programBundlePool* programBundlePool;
 };

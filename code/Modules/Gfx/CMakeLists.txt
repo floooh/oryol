@@ -53,8 +53,10 @@ fips_begin_module(Gfx)
     )
     fips_dir(Resource)
     fips_files(
-        drawState.cc drawState.h
-        drawStateFactory.cc drawStateFactory.h
+        drawStateBase.h drawStateBase.cc
+        drawState.h
+        drawStateFactoryBase.cc drawStateFactoryBase.h
+        drawStateFactory.h
         drawStatePool.h
         mesh.h
         meshFactory.h
@@ -122,6 +124,8 @@ fips_begin_module(Gfx)
             d3d11Mesh.cc d3d11Mesh.h
             d3d11Shader.cc d3d11Shader.h
             d3d11ProgramBundle.cc d3d11ProgramBundle.h
+            d3d11DrawState.h d3d11DrawState.cc
+            d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
         )
     endif()
     if (FIPS_ANDROID)

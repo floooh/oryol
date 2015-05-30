@@ -24,6 +24,7 @@ struct ID3D11DepthStencilView;
 struct ID3D11Buffer;
 struct ID3D11VertexShader;
 struct ID3D11PixelShader;
+struct ID3D11InputLayout;
 
 enum D3D11_USAGE;
 typedef enum DXGI_FORMAT DXGI_FORMAT;

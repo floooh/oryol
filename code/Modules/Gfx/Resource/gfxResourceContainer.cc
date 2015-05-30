@@ -36,7 +36,7 @@ gfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class 
     this->programBundlePool.Setup(GfxResourceType::ProgramBundle, setup.PoolSize(GfxResourceType::ProgramBundle));
     this->textureFactory.Setup(this->renderer, this->displayMgr, &this->texturePool);
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->drawStateFactory.Setup(&this->meshPool, &this->programBundlePool);
+    this->drawStateFactory.Setup(this->renderer, &this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {

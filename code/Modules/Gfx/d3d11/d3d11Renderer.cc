@@ -179,7 +179,7 @@ d3d11Renderer::applyBlendColor(const glm::vec4& color) {
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::applyDrawState(drawState* ds) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::applyDrawState()");
 }
 
 //------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float3
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::draw(int32 primGroupIndex) {
-    o_error("FIXME!\n");
+    Log::Info("d3d11Renderer::draw()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -391,6 +391,12 @@ d3d11Renderer::invalidateMeshState() {
 void
 d3d11Renderer::invalidateProgramState() {
     Log::Info("d3d11Renderer::invalidateProgramState()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::invalidateInputLayoutState() {
+    Log::Info("d3d11Renderer::invalidateInputLayoutState()\n");
 }
 
 } // namespace _priv

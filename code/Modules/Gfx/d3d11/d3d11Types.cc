@@ -71,5 +71,81 @@ d3d11Types::asBufferCPUAccessFlag(Usage::Code usage) {
     }
 }
 
+//------------------------------------------------------------------------------
+const char*
+d3d11Types::asSemanticName(VertexAttr::Code attr) {
+    switch (attr) {
+        case VertexAttr::Position:  
+            return "POSITION";
+        case VertexAttr::Normal:   
+            return "NORMAL";
+        case VertexAttr::TexCoord0:
+        case VertexAttr::TexCoord1:
+        case VertexAttr::TexCoord2:
+        case VertexAttr::TexCoord3:
+            return "TEXCOORD";
+        case VertexAttr::Tangent:
+            return "TANGENT";
+        case VertexAttr::Binormal:
+            return "BINORMAL";
+        case VertexAttr::Weights:
+            return "BLENDWEIGHT";
+        case VertexAttr::Indices:
+            return "BLENDINDICES";
+        case VertexAttr::Color0:
+        case VertexAttr::Color1:
+            return "COLOR";
+        case VertexAttr::Instance0:
+        case VertexAttr::Instance1:
+        case VertexAttr::Instance2:
+        case VertexAttr::Instance3:
+            return "INSTANCE";
+        default:
+            o_error("d3d11Types::asSemanticName: invalid vertex attr!'n");
+            return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+uint32 
+d3d11Types::asSemanticIndex(VertexAttr::Code attr) {
+    switch (attr) {
+    case VertexAttr::TexCoord1:
+    case VertexAttr::Color1:
+    case VertexAttr::Instance1:
+        return 1;
+    case VertexAttr::TexCoord2:
+    case VertexAttr::Instance2:
+        return 2;
+    case VertexAttr::TexCoord3:
+    case VertexAttr::Instance3:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+DXGI_FORMAT
+d3d11Types::asInputElementFormat(VertexFormat::Code fmt) {
+    switch (fmt) {
+        case VertexFormat::Float:   return DXGI_FORMAT_R32_FLOAT;
+        case VertexFormat::Float2:  return DXGI_FORMAT_R32G32_FLOAT;
+        case VertexFormat::Float3:  return DXGI_FORMAT_R32G32B32_FLOAT;
+        case VertexFormat::Float4:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case VertexFormat::Byte4:   return DXGI_FORMAT_R8G8B8A8_SINT;
+        case VertexFormat::Byte4N:  return DXGI_FORMAT_R8G8B8A8_SNORM;
+        case VertexFormat::UByte4:  return DXGI_FORMAT_R8G8B8A8_UINT;
+        case VertexFormat::UByte4N: return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case VertexFormat::Short2:  return DXGI_FORMAT_R16G16_SINT;
+        case VertexFormat::Short2N: return DXGI_FORMAT_R16G16_SNORM;
+        case VertexFormat::Short4:  return DXGI_FORMAT_R16G16B16A16_SINT;
+        case VertexFormat::Short4N: return DXGI_FORMAT_R16G16B16A16_SNORM;
+        default:
+            o_error("d3d11Types::asInputElementFormat: invalid vertex format!'n");
+            return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

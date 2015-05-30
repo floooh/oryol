@@ -5,29 +5,18 @@
     @ingroup _priv
     @brief bundles pre-compiled state for drawing operations
 */
-#include "Resource/Core/resourceBase.h"
-#include "Gfx/Setup/DrawStateSetup.h"
-
+#if ORYOL_OPENGL
+#include "Gfx/Resource/drawStateBase.h"
 namespace Oryol {
 namespace _priv {
-
-class programBundle;
-
-class drawState : public resourceBase<DrawStateSetup> {
-public:
-    /// constructor
-    drawState();
-    /// destructor
-    ~drawState();
-    
-    /// clear the object
-    void Clear();
-    
-    /// mesh resource Id (cannot be a pointer since meshes might be loaded async)
-    class Id msh;
-    /// program bundle pointer
-    programBundle* prog;
-};
-
-} // namespace _priv
-} // namespace Oryol
+class drawState : public drawStateBase { };
+} }
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11DrawState.h"
+namespace Oryol {
+namespace _priv {
+class drawState : public d3d11DrawState { };
+} }
+#else
+#error "Target platform not yet supported!"
+#endif

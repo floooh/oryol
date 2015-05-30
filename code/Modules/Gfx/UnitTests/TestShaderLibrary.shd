@@ -11,7 +11,7 @@ Bla Bla Bla
 @uniform mat4 mvp ModelViewProj
 vec4 myTransform(vec4 pos)
 {
-    return mvp * pos;
+    return mul(pos, mvp);
 }
 @end
 

@@ -35,11 +35,11 @@ public:
     int32 ComponentByteOffset(int32 componentIndex) const;
     /// test if the layout contains a specific vertex attribute
     bool Contains(VertexAttr::Code attr) const;
-    
-private:
+
     /// maximum number of components in layout
     static const int32 MaxNumVertexComponents = 16;
 
+private:
     VertexComponent comps[MaxNumVertexComponents];
     int32 byteOffsets[MaxNumVertexComponents];
     int32 numComps;

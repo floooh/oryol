@@ -28,9 +28,9 @@ public:
     /// get the current selection mask
     uint32 getSelectionMask() const;
     /// get the currently selected vertex shader
-    ID3D11VertexShader* getVertexShader() const;
+    ID3D11VertexShader* getSelectedVertexShader() const;
     /// get the currently selected pixel shader
-    ID3D11PixelShader* getPixelShader() const;
+    ID3D11PixelShader* getSelectedPixelShader() const;
 
     /// get number of programs
     int32 getNumPrograms() const;
@@ -39,9 +39,9 @@ public:
     /// get pixel shader at program index
     ID3D11PixelShader* getPixelShaderAtIndex(int32 index) const;
 
-private:
     static const int32 MaxNumPrograms = 8;
 
+private:
     struct programEntry {
         uint32 mask;
         ID3D11VertexShader* vertexShader;
@@ -77,13 +77,13 @@ d3d11ProgramBundle::select(uint32 mask) {
 
 //------------------------------------------------------------------------------
 inline ID3D11VertexShader*
-d3d11ProgramBundle::getVertexShader() const {
+d3d11ProgramBundle::getSelectedVertexShader() const {
     return this->programEntries[this->selIndex].vertexShader;
 }
 
 //------------------------------------------------------------------------------
 inline ID3D11PixelShader*
-d3d11ProgramBundle::getPixelShader() const {
+d3d11ProgramBundle::getSelectedPixelShader() const {
     return this->programEntries[this->selIndex].pixelShader;
 }
 

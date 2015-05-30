@@ -79,10 +79,12 @@ public:
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes);
 
-    /// invalidate bound mesh state
+    /// invalidate currently bound mesh state
     void invalidateMeshState();
-    /// invalidate shader program state
+    /// invalidate currently bound shader program state
     void invalidateProgramState();
+    /// invalidate currently bound input layout
+    void invalidateInputLayoutState();
 
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;
