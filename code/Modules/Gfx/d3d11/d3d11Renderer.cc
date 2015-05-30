@@ -387,5 +387,11 @@ d3d11Renderer::invalidateMeshState() {
     Log::Info("d3d11Renderer::invalidateMeshState()\n");
 }
 
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::invalidateProgramState() {
+    Log::Info("d3d11Renderer::invalidateProgramState()\n");
+}
+
 } // namespace _priv
 } // namespace Oryol

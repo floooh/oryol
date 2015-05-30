@@ -121,6 +121,7 @@ fips_begin_module(Gfx)
             d3d11Renderer.cc d3d11Renderer.h
             d3d11Mesh.cc d3d11Mesh.h
             d3d11Shader.cc d3d11Shader.h
+            d3d11ProgramBundle.cc d3d11ProgramBundle.h
         )
     endif()
     if (FIPS_ANDROID)

@@ -81,6 +81,8 @@ public:
 
     /// invalidate bound mesh state
     void invalidateMeshState();
+    /// invalidate shader program state
+    void invalidateProgramState();
 
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;

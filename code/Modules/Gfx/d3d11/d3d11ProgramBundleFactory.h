@@ -7,6 +7,7 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Resource/programBundle.h"
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -33,6 +34,11 @@ public:
     ResourceState::Code SetupResource(programBundle& progBundle);
     /// destroy the shader
     void DestroyResource(programBundle& progBundle);
+
+private:
+    class renderer* renderer;
+    ID3D11Device* d3d11Device;
+    bool isValid;
 };
     
 } // namespace _priv
