@@ -28,8 +28,7 @@ glProgramBundle::Clear() {
     this->selMask = 0xFFFFFFFF;
     this->selIndex = 0;
     this->numProgramEntries = 0;
-    for (int32 progIndex = 0; progIndex < MaxNumPrograms; progIndex++) {
-        programEntry& entry = this->programEntries[progIndex];
+    for (auto& entry : this->programEntries) {
         entry.mask = 0;
         entry.program = 0;
         for (int32 i = 0; i < MaxNumUniforms; i++) {

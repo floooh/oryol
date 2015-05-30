@@ -70,9 +70,9 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
+    const ProgramBundleSetup& setup = progBundle.Setup;
 
     // for each program in the bundle...
-    const ProgramBundleSetup& setup = progBundle.Setup;
     const int32 numProgs = setup.NumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         
