@@ -28,6 +28,18 @@ public:
     static uint32 asSemanticIndex(VertexAttr::Code attr);
     /// convert vertex component format to d3d11 input element DXGI_FORMAT
     static DXGI_FORMAT asInputElementFormat(VertexFormat::Code fmt);
+    /// convert polygon face to d3d11 cull mode
+    static D3D11_CULL_MODE asCullMode(Face::Code face);
+    /// convert CompareFunc to d3d11 comparison func
+    static D3D11_COMPARISON_FUNC asComparisonFunc(CompareFunc::Code func);
+    /// convert stencil-op to d3d11 stencil-op
+    static D3D11_STENCIL_OP asStencilOp(StencilOp::Code op);
+    /// convert blend factor to d3d11 blend factor
+    static D3D11_BLEND asBlendFactor(BlendFactor::Code b);
+    /// convert blend operation to d3d11 blend op
+    static D3D11_BLEND_OP asBlendOp(BlendOperation::Code op);
+    /// convert PixelChannel::Mask to d3d11 color write mask
+    static uint8 asColorWriteMask(PixelChannel::Mask mask);
 };
 
 } // namespace _priv 

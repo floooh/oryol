@@ -101,7 +101,7 @@ d3d11Types::asSemanticName(VertexAttr::Code attr) {
         case VertexAttr::Instance3:
             return "INSTANCE";
         default:
-            o_error("d3d11Types::asSemanticName: invalid vertex attr!'n");
+            o_error("d3d11Types::asSemanticName: invalid vertex attr!\n");
             return nullptr;
     }
 }
@@ -142,9 +142,97 @@ d3d11Types::asInputElementFormat(VertexFormat::Code fmt) {
         case VertexFormat::Short4:  return DXGI_FORMAT_R16G16B16A16_SINT;
         case VertexFormat::Short4N: return DXGI_FORMAT_R16G16B16A16_SNORM;
         default:
-            o_error("d3d11Types::asInputElementFormat: invalid vertex format!'n");
+            o_error("d3d11Types::asInputElementFormat: invalid vertex format!\n");
             return DXGI_FORMAT_UNKNOWN;
     }
+}
+
+//------------------------------------------------------------------------------
+D3D11_CULL_MODE
+d3d11Types::asCullMode(Face::Code face) {
+    // fixme: are these actually inverted meaning?
+    switch (face) {
+        case Face::Front:   return D3D11_CULL_FRONT;
+        case Face::Back:    return D3D11_CULL_BACK;
+        default:            return D3D11_CULL_NONE;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_COMPARISON_FUNC
+d3d11Types::asComparisonFunc(CompareFunc::Code func) {
+    switch (func) {
+        case CompareFunc::Never:        return D3D11_COMPARISON_NEVER;    
+        case CompareFunc::Less:         return D3D11_COMPARISON_LESS;
+        case CompareFunc::Equal:        return D3D11_COMPARISON_EQUAL;
+        case CompareFunc::LessEqual:    return D3D11_COMPARISON_LESS_EQUAL;  
+        case CompareFunc::Greater:      return D3D11_COMPARISON_GREATER;
+        case CompareFunc::NotEqual:     return D3D11_COMPARISON_NOT_EQUAL;
+        case CompareFunc::GreaterEqual: return D3D11_COMPARISON_GREATER_EQUAL;
+        default:                        return D3D11_COMPARISON_ALWAYS;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_STENCIL_OP
+d3d11Types::asStencilOp(StencilOp::Code op) {
+    switch (op) {
+        case StencilOp::Keep:       return D3D11_STENCIL_OP_KEEP;   
+        case StencilOp::Zero:       return D3D11_STENCIL_OP_ZERO;
+        case StencilOp::Replace:    return D3D11_STENCIL_OP_REPLACE;
+        case StencilOp::IncrClamp:  return D3D11_STENCIL_OP_INCR_SAT;
+        case StencilOp::DecrClamp:  return D3D11_STENCIL_OP_DECR_SAT;
+        case StencilOp::Invert:     return D3D11_STENCIL_OP_INVERT;
+        case StencilOp::IncrWrap:   return D3D11_STENCIL_OP_INCR;
+        default:                    return D3D11_STENCIL_OP_DECR;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_BLEND
+d3d11Types::asBlendFactor(BlendFactor::Code b) {
+    switch (b) {
+        case BlendFactor::Zero:                 return D3D11_BLEND_ZERO;
+        case BlendFactor::One:                  return D3D11_BLEND_ONE;
+        case BlendFactor::SrcColor:             return D3D11_BLEND_SRC_COLOR;
+        case BlendFactor::OneMinusSrcColor:     return D3D11_BLEND_INV_SRC_COLOR;
+        case BlendFactor::SrcAlpha:             return D3D11_BLEND_SRC_ALPHA;
+        case BlendFactor::OneMinusSrcAlpha:     return D3D11_BLEND_INV_SRC_ALPHA;
+        case BlendFactor::DstColor:             return D3D11_BLEND_DEST_COLOR;
+        case BlendFactor::OneMinusDstColor:     return D3D11_BLEND_INV_DEST_COLOR;
+        case BlendFactor::DstAlpha:             return D3D11_BLEND_DEST_ALPHA;
+        case BlendFactor::OneMinusDstAlpha:     return D3D11_BLEND_INV_DEST_ALPHA;
+        case BlendFactor::SrcAlphaSaturated:    return D3D11_BLEND_SRC_ALPHA_SAT;
+        case BlendFactor::BlendColor:           return D3D11_BLEND_BLEND_FACTOR;
+        case BlendFactor::OneMinusBlendColor:   return D3D11_BLEND_INV_BLEND_FACTOR;
+        // FIXME FIXME FIXME:
+        case BlendFactor::BlendAlpha:           return D3D11_BLEND_BLEND_FACTOR;
+        case BlendFactor::OneMinusBlendAlpha:   return D3D11_BLEND_INV_BLEND_FACTOR;
+        default: return D3D11_BLEND_ONE;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_BLEND_OP
+d3d11Types::asBlendOp(BlendOperation::Code op) {
+    // FIXME: D3D11 also has MIN and MAX
+    switch (op) {
+        case BlendOperation::Add:               return D3D11_BLEND_OP_ADD;   
+        case BlendOperation::Subtract:          return D3D11_BLEND_OP_SUBTRACT;
+        case BlendOperation::ReverseSubtract:   return D3D11_BLEND_OP_REV_SUBTRACT;
+        default: return D3D11_BLEND_OP_ADD;
+    }
+}
+
+//------------------------------------------------------------------------------
+uint8
+d3d11Types::asColorWriteMask(PixelChannel::Mask mask) {
+    uint8 res = 0;
+    if (mask & PixelChannel::Red)   res |= D3D11_COLOR_WRITE_ENABLE_RED;
+    if (mask & PixelChannel::Green) res |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+    if (mask & PixelChannel::Blue)  res |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+    if (mask & PixelChannel::Alpha) res |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+    return res;
 }
 
 } // namespace _priv

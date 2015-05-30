@@ -24,6 +24,12 @@ public:
 
     /// pointer to input layout objects (same number and order as programBundle variations)
     ID3D11InputLayout* d3d11InputLayouts[d3d11ProgramBundle::MaxNumPrograms];
+    /// rasterize state object
+    ID3D11RasterizerState* d3d11RasterizerState;
+    /// depth-stencil state object
+    ID3D11DepthStencilState* d3d11DepthStencilState;
+    /// blend state object
+    ID3D11BlendState* d3d11BlendState;
 };
 
 } // namespace _priv

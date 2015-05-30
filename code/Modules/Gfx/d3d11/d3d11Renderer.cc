@@ -395,8 +395,8 @@ d3d11Renderer::invalidateProgramState() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::invalidateInputLayoutState() {
-    Log::Info("d3d11Renderer::invalidateInputLayoutState()\n");
+d3d11Renderer::invalidateDrawState() {
+    Log::Info("d3d11Renderer::invalidateDrawState()\n");
 }
 
 } // namespace _priv

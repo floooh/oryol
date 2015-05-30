@@ -83,8 +83,8 @@ public:
     void invalidateMeshState();
     /// invalidate currently bound shader program state
     void invalidateProgramState();
-    /// invalidate currently bound input layout
-    void invalidateInputLayoutState();
+    /// invalidate currently bound draw state 
+    void invalidateDrawState();
 
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;
