@@ -16,13 +16,13 @@ public:
     union {
         struct {
             bool StencilEnabled : 1;
-            StencilOp::Code StencilFailOp : 4;
+            StencilOp::Code FailOp : 4;
             StencilOp::Code DepthFailOp : 4;
-            StencilOp::Code DepthStencilPassOp : 4;
-            CompareFunc::Code StencilCmpFunc : 4;
-            unsigned int StencilReadMask : 8;
-            unsigned int StencilWriteMask : 8;
-            unsigned int StencilRef : 8;
+            StencilOp::Code PassOp : 4;
+            CompareFunc::Code CmpFunc : 4;
+            unsigned int ReadMask : 8;
+            unsigned int WriteMask : 8;
+            unsigned int Ref : 8;
         };
         uint64 Hash;
     };
@@ -31,13 +31,13 @@ public:
     StencilState() {
         this->Hash = 0;
         this->StencilEnabled = false;
-        this->StencilFailOp = StencilOp::Keep;
+        this->FailOp = StencilOp::Keep;
         this->DepthFailOp = StencilOp::Keep;
-        this->DepthStencilPassOp = StencilOp::Keep;
-        this->StencilCmpFunc = CompareFunc::Always;
-        this->StencilReadMask = 0xFF;
-        this->StencilWriteMask = 0xFF;
-        this->StencilRef = 0;
+        this->PassOp = StencilOp::Keep;
+        this->CmpFunc = CompareFunc::Always;
+        this->ReadMask = 0xFF;
+        this->WriteMask = 0xFF;
+        this->Ref = 0;
     }
     
     /// equality

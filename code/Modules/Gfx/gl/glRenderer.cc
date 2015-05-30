@@ -693,11 +693,11 @@ glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 d
     if (clearMask & ClearTarget::Stencil) {
         glClearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(stencil);
-        if ((this->depthStencilState.StencilFront.StencilWriteMask != 0xFF) ||
-            (this->depthStencilState.StencilBack.StencilWriteMask != 0xFF)) {
+        if ((this->depthStencilState.StencilFront.WriteMask != 0xFF) ||
+            (this->depthStencilState.StencilBack.WriteMask != 0xFF)) {
             
-            this->depthStencilState.StencilFront.StencilWriteMask = 0xFF;
-            this->depthStencilState.StencilBack.StencilWriteMask = 0xFF;
+            this->depthStencilState.StencilFront.WriteMask = 0xFF;
+            this->depthStencilState.StencilBack.WriteMask = 0xFF;
             ::glStencilMask(0xFF);
         }
     }
@@ -980,26 +980,26 @@ void
 glRenderer::applyStencilState(const StencilState& newState, const StencilState& curState, GLenum glFace) {
     o_assert_dbg(this->valid);
     
-    const CompareFunc::Code cmpFunc = newState.StencilCmpFunc;
-    const uint32 readMask = newState.StencilReadMask;
-    const int32 stencilRef = newState.StencilRef;
-    if ((cmpFunc != curState.StencilCmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
+    const CompareFunc::Code cmpFunc = newState.CmpFunc;
+    const uint32 readMask = newState.ReadMask;
+    const int32 stencilRef = newState.Ref;
+    if ((cmpFunc != curState.CmpFunc) || (readMask != curState.ReadMask) || (stencilRef != curState.Ref)) {
         o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
     
-    const StencilOp::Code sFailOp = newState.StencilFailOp;
+    const StencilOp::Code sFailOp = newState.FailOp;
     const StencilOp::Code dFailOp = newState.DepthFailOp;
-    const StencilOp::Code passOp = newState.DepthStencilPassOp;
-    if ((sFailOp != curState.StencilFailOp) || (dFailOp != curState.DepthFailOp) || (passOp  != curState.DepthStencilPassOp)) {
+    const StencilOp::Code passOp = newState.PassOp;
+    if ((sFailOp != curState.FailOp) || (dFailOp != curState.DepthFailOp) || (passOp  != curState.PassOp)) {
         o_assert_range_dbg(sFailOp, StencilOp::NumStencilOperations);
         o_assert_range_dbg(dFailOp, StencilOp::NumStencilOperations);
         o_assert_range_dbg(passOp, StencilOp::NumStencilOperations);
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
-    const uint32 writeMask = newState.StencilWriteMask;
-    if (writeMask != curState.StencilWriteMask) {
+    const uint32 writeMask = newState.WriteMask;
+    if (writeMask != curState.WriteMask) {
         ::glStencilMaskSeparate(glFace, writeMask);
     }
 }
