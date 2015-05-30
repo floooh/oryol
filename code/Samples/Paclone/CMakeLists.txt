@@ -1,5 +1,5 @@
 # FIXME: pixel shader currently depends on gl_FragCoord
-if (ORYOL_OPENGL)
+if (ORYOL_OPENGL AND NOT FIPS_WINDOWS)
 
 fips_begin_app(Paclone windowed)
     fips_vs_warning_level(3)
