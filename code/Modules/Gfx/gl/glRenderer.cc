@@ -693,11 +693,8 @@ glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 d
     if (clearMask & ClearTarget::Stencil) {
         glClearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(stencil);
-        if ((this->depthStencilState.StencilFront.WriteMask != 0xFF) ||
-            (this->depthStencilState.StencilBack.WriteMask != 0xFF)) {
-            
-            this->depthStencilState.StencilFront.WriteMask = 0xFF;
-            this->depthStencilState.StencilBack.WriteMask = 0xFF;
+        if (this->depthStencilState.StencilWriteMask != 0xFF) {
+            this->depthStencilState.StencilWriteMask = 0xFF;
             ::glStencilMask(0xFF);
         }
     }
@@ -977,29 +974,32 @@ glRenderer::setupDepthStencilState() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyStencilState(const StencilState& newState, const StencilState& curState, GLenum glFace) {
+glRenderer::applyStencilState(const DepthStencilState& newState, const DepthStencilState& curState, GLenum glFace) {
     o_assert_dbg(this->valid);
     
-    const CompareFunc::Code cmpFunc = newState.CmpFunc;
-    const uint32 readMask = newState.ReadMask;
-    const int32 stencilRef = newState.Ref;
-    if ((cmpFunc != curState.CmpFunc) || (readMask != curState.ReadMask) || (stencilRef != curState.Ref)) {
+    const StencilState& newStencilState = (glFace == GL_FRONT) ? newState.StencilFront : newState.StencilBack;
+    const StencilState& curStencilState = (glFace == GL_FRONT) ? curState.StencilFront : curState.StencilBack;
+
+    const CompareFunc::Code cmpFunc = newStencilState.CmpFunc;
+    const uint32 readMask = newState.StencilReadMask;
+    const int32 stencilRef = newState.StencilRef;
+    if ((cmpFunc != curStencilState.CmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
         o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
-    
-    const StencilOp::Code sFailOp = newState.FailOp;
-    const StencilOp::Code dFailOp = newState.DepthFailOp;
-    const StencilOp::Code passOp = newState.PassOp;
-    if ((sFailOp != curState.FailOp) || (dFailOp != curState.DepthFailOp) || (passOp  != curState.PassOp)) {
+
+    const StencilOp::Code sFailOp = newStencilState.FailOp;
+    const StencilOp::Code dFailOp = newStencilState.DepthFailOp;
+    const StencilOp::Code passOp = newStencilState.PassOp;
+    if ((sFailOp != curStencilState.FailOp) || (dFailOp != curStencilState.DepthFailOp) || (passOp  != curStencilState.PassOp)) {
         o_assert_range_dbg(sFailOp, StencilOp::NumStencilOperations);
         o_assert_range_dbg(dFailOp, StencilOp::NumStencilOperations);
         o_assert_range_dbg(passOp, StencilOp::NumStencilOperations);
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
-    const uint32 writeMask = newState.WriteMask;
-    if (writeMask != curState.WriteMask) {
+    const uint32 writeMask = newState.StencilWriteMask;
+    if (writeMask != curState.StencilWriteMask) {
         ::glStencilMaskSeparate(glFace, writeMask);
     }
 }
@@ -1011,19 +1011,28 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     
     const DepthStencilState& curState = this->depthStencilState;
     
-    // apply depth state if changed
-    bool depthChanged = false;
-    if (curState.DepthStateHash != newState.DepthStateHash) {
+    // apply common depth-stencil state if changed
+    bool depthStencilChanged = false;
+    if (curState.StateHash != newState.StateHash) {
         const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
-        const bool depthWriteEnabled = newState.DepthWriteEnabled;
         if (depthCmpFunc != curState.DepthCmpFunc) {
             o_assert_range_dbg(depthCmpFunc, CompareFunc::NumCompareFuncs);
             ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
         }
+        const bool depthWriteEnabled = newState.DepthWriteEnabled;
         if (depthWriteEnabled != curState.DepthWriteEnabled) {
             ::glDepthMask(depthWriteEnabled);
         }
-        depthChanged = true;
+        const bool stencilEnabled = newState.StencilEnabled;
+        if (stencilEnabled != curState.StencilEnabled) {
+            if (stencilEnabled) {
+                ::glEnable(GL_STENCIL_TEST);
+            }
+            else {
+                ::glDisable(GL_STENCIL_TEST);
+            }
+        }
+        depthStencilChanged = true;
     }
     
     // apply front and back stencil state
@@ -1032,28 +1041,18 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     const StencilState& curFront = curState.StencilFront;
     if (curFront.Hash != newFront.Hash) {
         frontChanged = true;
-        this->applyStencilState(newFront, curFront, GL_FRONT);
+        this->applyStencilState(newState, curState, GL_FRONT);
     }
     bool backChanged = false;
     const StencilState& newBack = newState.StencilBack;
     const StencilState& curBack = curState.StencilBack;
     if (curBack.Hash != newBack.Hash) {
         backChanged = true;
-        this->applyStencilState(newBack, curBack, GL_BACK);
-    }
-    
-    // enable/disable stencil state?
-    if (frontChanged || backChanged) {
-        if (newFront.StencilEnabled || newBack.StencilEnabled) {
-            ::glEnable(GL_STENCIL_TEST);
-        }
-        else {
-            ::glDisable(GL_STENCIL_TEST);
-        }
+        this->applyStencilState(newState, curState, GL_BACK);
     }
     
     // update state cache
-    if (depthChanged || frontChanged || backChanged) {
+    if (depthStencilChanged || frontChanged || backChanged) {
         this->depthStencilState = newState;
     }
 }

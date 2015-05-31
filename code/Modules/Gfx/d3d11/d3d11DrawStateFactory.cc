@@ -137,9 +137,9 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     dsDesc.DepthWriteMask = dsState.DepthWriteEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     dsDesc.DepthFunc = d3d11Types::asComparisonFunc(dsState.DepthCmpFunc);
     // FIXME: move StencilEnabled, StencilReadMask, StencilWriteMask up, not per side
-    dsDesc.StencilEnable    = dsState.StencilFront.StencilEnabled;
-    dsDesc.StencilReadMask  = dsState.StencilFront.ReadMask;
-    dsDesc.StencilWriteMask = dsState.StencilFront.WriteMask;
+    dsDesc.StencilEnable    = dsState.StencilEnabled;
+    dsDesc.StencilReadMask  = dsState.StencilReadMask;
+    dsDesc.StencilWriteMask = dsState.StencilWriteMask;
     dsDesc.FrontFace.StencilFailOp = d3d11Types::asStencilOp(dsState.StencilFront.FailOp);
     dsDesc.FrontFace.StencilDepthFailOp = d3d11Types::asStencilOp(dsState.StencilFront.DepthFailOp);
     dsDesc.FrontFace.StencilPassOp = d3d11Types::asStencilOp(dsState.StencilFront.PassOp);

@@ -107,7 +107,7 @@ private:
     /// apply depth-stencil state to use for rendering
     void applyDepthStencilState(const DepthStencilState& dss);
     /// apply front/back side stencil state
-    void applyStencilState(const StencilState& state, const StencilState& curState, GLenum glFace);
+    void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
     /// apply blend state to use for rendering
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state

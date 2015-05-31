@@ -215,7 +215,7 @@ d3d11Renderer::applyDrawState(drawState* ds) {
 
     // apply state objects
     // FIXME: blend color should be an ApplyDrawState arg
-    const UINT stencilRef = ds->Setup.DepthStencilState.StencilFront.Ref;
+    const UINT stencilRef = ds->Setup.DepthStencilState.StencilRef;
     this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
     this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
     this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, this->d3d11BlendFactor, 0xFFFFFFFF);
