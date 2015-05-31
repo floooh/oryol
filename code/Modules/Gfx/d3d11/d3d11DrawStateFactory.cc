@@ -54,7 +54,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     drawStateFactoryBase::SetupResource(ds);
     const mesh* msh = this->meshPool->Lookup(ds.msh);
     o_assert(msh);
-    const VertexLayout& mshLayout = msh->Setup.Layout;
+    const VertexLayout& mshLayout = msh->vertexBufferAttrs.Layout;
 
     // create input layout objects
     // FIXME: this should be rewritten to enable shared input layouts 
@@ -87,7 +87,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
         }
         // append the vertex layout for the optional instance data
         if (msh->instanceMesh) {
-            const VertexLayout& instLayout = msh->instanceMesh->Setup.Layout;
+            const VertexLayout& instLayout = msh->instanceMesh->vertexBufferAttrs.Layout;
             for (int compIndex = 0; compIndex < instLayout.NumComponents(); compIndex++, d3d11CompIndex++) {
                 const VertexComponent& comp = instLayout.Component(compIndex);
                 D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];

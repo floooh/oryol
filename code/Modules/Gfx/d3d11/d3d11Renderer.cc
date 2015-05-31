@@ -230,20 +230,20 @@ d3d11Renderer::applyDrawState(drawState* ds) {
             this->curMesh->instanceMesh->d3d11VertexBuffer
         };
         UINT strides[2] = {
-            (UINT)this->curMesh->Setup.Layout.ByteSize(),
-            (UINT)this->curMesh->instanceMesh->Setup.Layout.ByteSize()
+            (UINT)this->curMesh->vertexBufferAttrs.Layout.ByteSize(),
+            (UINT)this->curMesh->instanceMesh->vertexBufferAttrs.Layout.ByteSize()
         };
         UINT offsets[2] = { 0, 0};
         this->d3d11DeviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
     }
     else {
         // non-instanced rendering
-        UINT stride = this->curMesh->Setup.Layout.ByteSize();
+        UINT stride = this->curMesh->vertexBufferAttrs.Layout.ByteSize();
         UINT offset = 0;
         this->d3d11DeviceContext->IASetVertexBuffers(0, 1, &this->curMesh->d3d11VertexBuffer, &stride, &offset);
     }
     if (this->curMesh->d3d11IndexBuffer) {
-        DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) this->curMesh->Setup.IndicesType;
+        DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) this->curMesh->indexBufferAttrs.Type;
         this->d3d11DeviceContext->IASetIndexBuffer(this->curMesh->d3d11IndexBuffer, d3d11IndexFormat, 0);
     }
     const uint32 selIndex = this->curProgramBundle->getSelectionIndex();
@@ -429,7 +429,7 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     if (this->curMesh) {
         D3D11_PRIMITIVE_TOPOLOGY primTop = (D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType;
         this->d3d11DeviceContext->IASetPrimitiveTopology(primTop);
-        const IndexType::Code indexType = this->curMesh->Setup.IndicesType;
+        const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
         if (indexType != IndexType::None) {
             // indexed geometry
             this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
