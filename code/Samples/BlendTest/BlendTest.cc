@@ -31,8 +31,8 @@ BlendTestApp::OnRunning() {
 
     // draw blended triangles
     float d = 1.0f / BlendFactor::NumBlendFactors;
-    for (int y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (int x = 0; x < BlendFactor::NumBlendFactors; x++) {
+    for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
+        for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
             float fx = ((d * x) + d*0.5f) * 2.0f - 1.0f;
             float fy = ((d * y) + d*0.5f) * 2.0f - 1.0f;
             glm::vec4 translate(fx, fy, 0.0f, 0.0f);
@@ -81,8 +81,8 @@ BlendTestApp::OnInit() {
     
     // setup one draw state for each blend factor combination
     const glm::vec4 blendColor(1.0f, 1.0f, 0.0f, 1.0f);
-    for (int y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (int x = 0; x < BlendFactor::NumBlendFactors; x++) {
+    for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
+        for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
             auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
             dss.BlendState.BlendEnabled = true;
             dss.BlendState.SrcFactorRGB = (BlendFactor::Code) x;

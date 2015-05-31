@@ -1084,10 +1084,10 @@ glRenderer::applyBlendState(const BlendState& bs) {
         (bs.SrcFactorAlpha != this->blendState.SrcFactorAlpha) ||
         (bs.DstFactorAlpha != this->blendState.DstFactorAlpha)) {
         
-        o_assert_range_dbg(bs.SrcFactorRGB, BlendFactor::NumBlendFactors);
-        o_assert_range_dbg(bs.DstFactorRGB, BlendFactor::NumBlendFactors);
-        o_assert_range_dbg(bs.SrcFactorAlpha, BlendFactor::NumBlendFactors);
-        o_assert_range_dbg(bs.DstFactorAlpha, BlendFactor::NumBlendFactors);
+        o_assert_dbg(bs.SrcFactorRGB < BlendFactor::NumBlendFactors);
+        o_assert_dbg(bs.DstFactorRGB < BlendFactor::NumBlendFactors);
+        o_assert_dbg(bs.SrcFactorAlpha < BlendFactor::NumBlendFactors);
+        o_assert_dbg(bs.DstFactorAlpha < BlendFactor::NumBlendFactors);
         
         ::glBlendFuncSeparate(mapBlendFactor[bs.SrcFactorRGB],
                               mapBlendFactor[bs.DstFactorRGB],
@@ -1097,8 +1097,8 @@ glRenderer::applyBlendState(const BlendState& bs) {
     if ((bs.OpRGB != this->blendState.OpRGB) ||
         (bs.OpAlpha != this->blendState.OpAlpha)) {
         
-        o_assert_range_dbg(bs.OpRGB, BlendOperation::NumBlendOperations);
-        o_assert_range_dbg(bs.OpAlpha, BlendOperation::NumBlendOperations);
+        o_assert_dbg(bs.OpRGB < BlendOperation::NumBlendOperations);
+        o_assert_dbg(bs.OpAlpha < BlendOperation::NumBlendOperations);
         
         ::glBlendEquationSeparate(mapBlendOp[bs.OpRGB], mapBlendOp[bs.OpAlpha]);
     }
