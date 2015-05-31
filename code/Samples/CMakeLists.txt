@@ -1,5 +1,6 @@
 fips_add_subdirectory(Clear)
 fips_add_subdirectory(Triangle)
+fips_add_subdirectory(BlendTest)
 fips_add_subdirectory(Shapes)
 fips_add_subdirectory(PackedNormals)
 fips_add_subdirectory(SimpleRenderTarget)
