@@ -5,6 +5,7 @@
 #include "d3d11DisplayMgr.h"
 #include "d3d11Types.h"
 #include "Core/String/StringConverter.h"
+#include "Core/String/StringBuilder.h"
 #include "d3d11_impl.h"
 
 namespace Oryol {
@@ -286,8 +287,10 @@ d3d11DisplayMgr::createWindow(const GfxSetup& setup) {
     
     int width, height;
     this->computeWindowSize(setup.Width, setup.Height, width, height);
-
-    WideString title = StringConverter::UTF8ToWide(setup.Title);
+    
+    StringBuilder strBuilder(setup.Title);
+    strBuilder.Append(" (D3D11)");
+    WideString title = StringConverter::UTF8ToWide(strBuilder.AsCStr());
 
     this->hwnd = CreateWindowExW(this->dwExStyle,   // dwExStyle 
                                  L"ORYOL",          // lpClassName

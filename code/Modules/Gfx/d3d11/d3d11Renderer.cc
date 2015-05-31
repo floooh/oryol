@@ -5,6 +5,10 @@
 #include "d3d11Renderer.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/meshPool.h"
+#include "Gfx/Resource/programBundle.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include <glm/mat4x4.hpp>
 #include "d3d11_impl.h"
@@ -28,7 +32,11 @@ curMesh(nullptr),
 curProgramBundle(nullptr),
 curRenderTargetView(nullptr),
 curDepthStencilView(nullptr) {
-    // empty
+
+    this->d3d11BlendFactor[0] = 1.0f;
+    this->d3d11BlendFactor[1] = 1.0f;
+    this->d3d11BlendFactor[2] = 1.0f;
+    this->d3d11BlendFactor[3] = 1.0f;
 }
 
 //------------------------------------------------------------------------------
@@ -116,6 +124,7 @@ void
 d3d11Renderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->dispMgr);
+    o_assert_dbg(this->d3d11DeviceContext);
 
     if (nullptr == rt) {
         this->rtAttrs = this->dispMgr->GetDisplayAttrs();
@@ -142,6 +151,9 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
 
     this->curRenderTarget = rt;
     this->rtValid = true;
+    
+    // actually set the render targets in the d3d11 device context
+    this->d3d11DeviceContext->OMSetRenderTargets(1, &this->curRenderTargetView, this->curDepthStencilView);
 
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight);
@@ -167,19 +179,82 @@ d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
-    o_error("FIXME!\n");
+    o_assert_dbg(this->d3d11DeviceContext);
+
+    D3D11_RECT rect;
+    rect.left = x;
+    rect.top = y;
+    rect.right = x + width;
+    rect.bottom = y + height;
+    this->d3d11DeviceContext->RSSetScissorRects(1, &rect);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::applyBlendColor(const glm::vec4& color) {
-    o_error("FIXME!\n");
+    this->d3d11BlendFactor[0] = color.x;
+    this->d3d11BlendFactor[1] = color.y;
+    this->d3d11BlendFactor[2] = color.z;
+    this->d3d11BlendFactor[3] = color.w;
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::applyDrawState(drawState* ds) {
-    Log::Info("d3d11Renderer::applyDrawState()");
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(nullptr != ds);
+    o_assert_dbg(this->mshPool);
+    o_assert_dbg(ds->d3d11DepthStencilState);
+    o_assert_dbg(ds->d3d11RasterizerState);
+    o_assert_dbg(ds->d3d11RasterizerState);
+
+    this->curDrawState = ds;
+    this->curProgramBundle = ds->prog;
+    this->curMesh = this->mshPool->Lookup(ds->msh);
+    this->curProgramBundle->select(ds->Setup.ProgramSelectionMask); // FIXME!
+
+    // apply state objects
+    // FIXME: blend color should be an ApplyDrawState arg
+    const UINT stencilRef = ds->Setup.DepthStencilState.StencilFront.Ref;
+    this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+    this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
+    this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, this->d3d11BlendFactor, 0xFFFFFFFF);
+
+    // apply input assembly state (except primitive topology)
+    o_assert_dbg(this->curMesh->d3d11VertexBuffer);
+    if (this->curMesh->instanceMesh) {
+        // instanced rendering
+        o_assert_dbg(this->curMesh->instanceMesh->d3d11VertexBuffer);
+        ID3D11Buffer* vertexBuffers[2] = { 
+            this->curMesh->d3d11VertexBuffer,
+            this->curMesh->instanceMesh->d3d11VertexBuffer
+        };
+        UINT strides[2] = {
+            (UINT)this->curMesh->Setup.Layout.ByteSize(),
+            (UINT)this->curMesh->instanceMesh->Setup.Layout.ByteSize()
+        };
+        UINT offsets[2] = { 0, 0};
+        this->d3d11DeviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+    }
+    else {
+        // non-instanced rendering
+        UINT stride = this->curMesh->Setup.Layout.ByteSize();
+        UINT offset = 0;
+        this->d3d11DeviceContext->IASetVertexBuffers(0, 1, &this->curMesh->d3d11VertexBuffer, &stride, &offset);
+    }
+    if (this->curMesh->d3d11IndexBuffer) {
+        DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) this->curMesh->Setup.IndicesType;
+        this->d3d11DeviceContext->IASetIndexBuffer(this->curMesh->d3d11IndexBuffer, d3d11IndexFormat, 0);
+    }
+    const uint32 selIndex = this->curProgramBundle->getSelectionIndex();
+    o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
+    this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
+
+    // apply vertex stage state
+    this->d3d11DeviceContext->VSSetShader(this->curProgramBundle->getSelectedVertexShader(), NULL, 0);
+
+    // apply pixel stage state
+    this->d3d11DeviceContext->PSSetShader(this->curProgramBundle->getSelectedPixelShader(), NULL, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -346,15 +421,38 @@ d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float3
 }
 
 //------------------------------------------------------------------------------
-void 
-d3d11Renderer::draw(int32 primGroupIndex) {
-    Log::Info("d3d11Renderer::draw()\n");
+void
+d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert2_dbg(this->rtValid, "No render target set!\n");
+
+    if (this->curMesh) {
+        D3D11_PRIMITIVE_TOPOLOGY primTop = (D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(primTop);
+        const IndexType::Code indexType = this->curMesh->Setup.IndicesType;
+        if (indexType != IndexType::None) {
+            // indexed geometry
+            this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
+        }
+        else {
+            this->d3d11DeviceContext->Draw(primGroup.NumElements, primGroup.BaseElement);        
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
-    o_error("FIXME!\n");
+d3d11Renderer::draw(int32 primGroupIndex) {
+    if (this->curMesh) {
+        if (primGroupIndex >= this->curMesh->numPrimGroups) {
+            // this may happen if trying to render a placeholder which doesn't
+            // have as many materials as the original mesh, anyway, this isn't
+            // a serious error
+            return;
+        }
+        const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
+        this->draw(primGroup);
+    }
 }
 
 //------------------------------------------------------------------------------

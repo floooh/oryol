@@ -109,6 +109,7 @@ private:
 
     ID3D11RenderTargetView* curRenderTargetView;
     ID3D11DepthStencilView* curDepthStencilView;
+    float32 d3d11BlendFactor[4];
 };
 
 } // namespace _priv

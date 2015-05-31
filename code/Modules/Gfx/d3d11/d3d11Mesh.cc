@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11Mesh.h"
+#include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {

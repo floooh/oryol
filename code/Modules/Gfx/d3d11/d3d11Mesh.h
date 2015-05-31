@@ -26,7 +26,7 @@ public:
 
     /// pointer to vertex buffer object
     ID3D11Buffer* d3d11VertexBuffer;
-    /// pointer to index buffer object
+    /// pointer to optional index buffer object (nullptr if no indices)
     ID3D11Buffer* d3d11IndexBuffer;
     /// optional instance data mesh
     const d3d11Mesh* instanceMesh;

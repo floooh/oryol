@@ -118,8 +118,8 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     D3D11_RASTERIZER_DESC rastDesc;
     Memory::Clear(&rastDesc, sizeof(rastDesc));
     rastDesc.FillMode = D3D11_FILL_SOLID;
-    rastDesc.CullMode = d3d11Types::asCullMode(rastState.CullFace);
-    rastDesc.FrontCounterClockwise = TRUE;  // ???
+    rastDesc.CullMode = d3d11Types::asCullMode(rastState.CullFaceEnabled, rastState.CullFace);
+    rastDesc.FrontCounterClockwise = FALSE;  // OpenGL convention
     rastDesc.DepthBias = 0;
     rastDesc.DepthBiasClamp = 0.0f;
     rastDesc.DepthClipEnable = TRUE;

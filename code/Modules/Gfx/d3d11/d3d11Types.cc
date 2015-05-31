@@ -149,12 +149,17 @@ d3d11Types::asInputElementFormat(VertexFormat::Code fmt) {
 
 //------------------------------------------------------------------------------
 D3D11_CULL_MODE
-d3d11Types::asCullMode(Face::Code face) {
-    // fixme: are these actually inverted meaning?
-    switch (face) {
-        case Face::Front:   return D3D11_CULL_FRONT;
-        case Face::Back:    return D3D11_CULL_BACK;
-        default:            return D3D11_CULL_NONE;
+d3d11Types::asCullMode(bool cullEnabled, Face::Code face) {
+    if (cullEnabled) {
+        if (Face::Front == face) {
+            return D3D11_CULL_FRONT;
+        }
+        else {
+            return D3D11_CULL_BACK;
+        }
+    }
+    else {
+        return D3D11_CULL_NONE;
     }
 }
 
