@@ -53,23 +53,19 @@ fips_begin_module(Gfx)
     )
     fips_dir(Resource)
     fips_files(
+        resourcePools.h
         drawStateBase.h drawStateBase.cc
         drawState.h
         drawStateFactoryBase.cc drawStateFactoryBase.h
         drawStateFactory.h
-        drawStatePool.h
         mesh.h
         meshFactory.h
-        meshPool.h
         programBundle.h
         programBundleFactory.h
-        programBundlePool.h
         shader.h
         shaderFactory.h
-        shaderPool.h
         texture.h
         textureFactory.h
-        texturePool.h
         meshBase.cc meshBase.h
         programBundleBase.h
         shaderBase.cc shaderBase.h

@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "drawStateFactoryBase.h"
 #include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/meshPool.h"
-#include "Gfx/Resource/programBundlePool.h"
+#include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {

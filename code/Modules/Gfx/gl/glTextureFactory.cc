@@ -8,8 +8,8 @@
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/Core/renderer.h"
+#include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/texture.h"
-#include "Gfx/Resource/texturePool.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 

@@ -13,6 +13,7 @@ namespace Oryol {
 class RasterizerState {
 public:
     union {
+        #pragma pack(push,1)
         struct {
             uint8 CullFaceEnabled : 1;
             uint8 DepthOffsetEnabled : 1;
@@ -21,6 +22,7 @@ public:
             uint8 MultisampleEnabled : 1;
             Face::Code CullFace : 3;
         };
+        #pragma pack(pop)
         uint8 Hash;
     };
 

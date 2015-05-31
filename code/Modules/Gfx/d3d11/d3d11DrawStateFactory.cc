@@ -6,9 +6,7 @@
 #include "d3d11_impl.h"
 #include "d3d11Types.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/programBundle.h"
-#include "Gfx/Resource/meshPool.h"
+#include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {

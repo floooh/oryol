@@ -4,11 +4,7 @@
 #include "Pre.h"
 #include "d3d11Renderer.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/texture.h"
-#include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/mesh.h"
-#include "Gfx/Resource/meshPool.h"
-#include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include <glm/mat4x4.hpp>
 #include "d3d11_impl.h"
