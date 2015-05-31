@@ -30,6 +30,7 @@ BlendTestApp::OnRunning() {
     Gfx::Draw(0);
 
     // draw blended triangles
+    Gfx::ApplyBlendColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
     float d = 1.0f / BlendFactor::NumBlendFactors;
     for (int y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (int x = 0; x < BlendFactor::NumBlendFactors; x++) {
