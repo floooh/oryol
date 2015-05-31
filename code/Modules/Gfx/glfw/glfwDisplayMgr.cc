@@ -10,6 +10,7 @@
 #include "Gfx/GfxProtocol.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
+#include "Core/String/StringBuilder.h"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
@@ -186,7 +187,9 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     }
     
     // now actually create the window
-    glfwDisplayMgr::glfwWindow = glfwCreateWindow(setup.Width, setup.Height, setup.Title.AsCStr(), glfwMonitor, 0);
+    StringBuilder strBuilder(setup.Title);
+    strBuilder.Append(" (GL)");
+    glfwDisplayMgr::glfwWindow = glfwCreateWindow(setup.Width, setup.Height, strBuilder.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwDisplayMgr::glfwWindow);
 }
 
