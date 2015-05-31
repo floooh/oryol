@@ -13,8 +13,9 @@ namespace Oryol {
 class BlendState {
 public:
     union {
+        #pragma pack(push,1)
         struct {
-            bool BlendEnabled:1;
+            uint32 BlendEnabled:1;
             BlendFactor::Code SrcFactorRGB:5;
             BlendFactor::Code DstFactorRGB:5;
             BlendOperation::Code OpRGB:3;
@@ -23,12 +24,14 @@ public:
             BlendOperation::Code OpAlpha:3;
             PixelChannel::Mask ColorWriteMask:4;
         };
+        #pragma pack(pop)
         /// hash code from merged state
         uint32 Hash;
     };
 
     /// constructor
     BlendState() {
+        static_assert(sizeof(BlendState) == 4, "sizeof(BlendState) is not 4, bitfield packing problem?");
         this->Hash = 0;
         this->BlendEnabled = false;
         this->SrcFactorRGB = BlendFactor::One;

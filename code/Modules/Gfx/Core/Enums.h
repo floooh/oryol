@@ -597,14 +597,14 @@ public:
 */
 class Face {
 public:
-    enum Code {
+    enum Code : uint8 {
         Front = 0,
         Back,
         Both,
         
         NumFaceCodes,
         NumSides = 2,
-        InvalidFace = -1
+        InvalidFace = 0xFF
     };
 };
 
@@ -616,7 +616,7 @@ public:
 */
 class CompareFunc {
 public:
-    enum Code {
+    enum Code : uint16 {
         Never = 0,
         Less,
         Equal,
@@ -639,7 +639,7 @@ public:
 */
 class StencilOp {
 public:
-    enum Code {
+    enum Code : uint16 {
         Keep,
         Zero,
         Replace,
@@ -662,7 +662,7 @@ public:
 */
 class BlendFactor {
 public:
-    enum Code {
+    enum Code : uint32 {
         Zero = 0,
         One,
         SrcColor,
@@ -692,7 +692,7 @@ public:
 */
 class BlendOperation {
 public:
-    enum Code {
+    enum Code : uint32 {
         Add = 0,
         Subtract,
         ReverseSubtract,

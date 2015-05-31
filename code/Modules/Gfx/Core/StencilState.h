@@ -14,17 +14,20 @@ class StencilState {
 public:
 
     union {
+        #pragma pack(push, 1)
         struct {
             StencilOp::Code FailOp : 4;
             StencilOp::Code DepthFailOp : 4;
             StencilOp::Code PassOp : 4;
             CompareFunc::Code CmpFunc : 4;
         };
+        #pragma pack(pop)
         uint16 Hash;
     };
 
     /// constructor
     StencilState() {
+        static_assert(sizeof(StencilState) == 2, "sizeof(StencilState) is not 2, bitfield packing problem?");
         this->Hash = 0;
         this->FailOp = StencilOp::Keep;
         this->DepthFailOp = StencilOp::Keep;

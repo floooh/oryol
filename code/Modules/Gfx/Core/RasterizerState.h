@@ -14,11 +14,11 @@ class RasterizerState {
 public:
     union {
         struct {
-            bool CullFaceEnabled : 1;
-            bool DepthOffsetEnabled : 1;
-            bool ScissorTestEnabled : 1;
-            bool DitherEnabled : 1;
-            bool MultisampleEnabled : 1;
+            uint8 CullFaceEnabled : 1;
+            uint8 DepthOffsetEnabled : 1;
+            uint8 ScissorTestEnabled : 1;
+            uint8 DitherEnabled : 1;
+            uint8 MultisampleEnabled : 1;
             Face::Code CullFace : 3;
         };
         uint8 Hash;
@@ -26,6 +26,7 @@ public:
 
     /// constructor
     RasterizerState() {
+        static_assert(sizeof(RasterizerState) == 1, "sizeof(RasterizerState) is not 1, bitfield packing problem?");
         this->Hash = 0;
         this->CullFaceEnabled = false;
         this->DepthOffsetEnabled = false;
