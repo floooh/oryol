@@ -82,8 +82,6 @@ public:
     static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
     static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height);
-    /// apply blend color (see DrawState.BlendState)
-    static void ApplyBlendColor(const glm::vec4& blendColor);
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
     /// apply a shader constant block

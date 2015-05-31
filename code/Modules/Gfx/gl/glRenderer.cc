@@ -94,7 +94,7 @@ scissorX(0),
 scissorY(0),
 scissorWidth(0),
 scissorHeight(0),
-blendColor(0.0f, 0.0f, 0.0f, 0.0f),
+blendColor(1.0f, 1.0f, 1.0f, 1.0f),
 viewPortX(0),
 viewPortY(0),
 viewPortWidth(0),
@@ -309,17 +309,6 @@ glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyBlendColor(const glm::vec4& c) {
-    o_assert_dbg(this->valid);
-
-    if (c != this->blendColor) {
-        this->blendColor = c;
-        ::glBlendColor(c.x, c.y, c.z, c.w);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::applyProgramBundle(programBundle* progBundle, uint32 mask) {
     o_assert_dbg(this->valid);
 
@@ -435,6 +424,10 @@ glRenderer::applyDrawState(drawState* ds) {
     this->applyProgramBundle(this->curProgramBundle, setup.ProgramSelectionMask);
     if (this->curMesh) {
         this->applyMesh(this->curMesh, this->curProgramBundle);
+    }
+    if (setup.BlendColor != this->blendColor) {
+        this->blendColor = setup.BlendColor;
+        ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
     }
 }
 
@@ -1067,6 +1060,8 @@ glRenderer::setupBlendState() {
     ::glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
     ::glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
     ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    this->blendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    ::glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
     ORYOL_GL_CHECK_ERROR();
 }
     

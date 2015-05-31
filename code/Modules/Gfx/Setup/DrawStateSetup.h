@@ -10,6 +10,7 @@
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 
@@ -25,6 +26,8 @@ public:
     class Locator Locator;
     /// blend state
     class BlendState BlendState;
+    /// blend color
+    glm::vec4 BlendColor;
     /// depth-stencil state
     class DepthStencilState DepthStencilState;
     /// rasterizer state

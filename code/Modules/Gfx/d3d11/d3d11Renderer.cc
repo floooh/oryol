@@ -32,11 +32,7 @@ curMesh(nullptr),
 curProgramBundle(nullptr),
 curRenderTargetView(nullptr),
 curDepthStencilView(nullptr) {
-
-    this->d3d11BlendFactor[0] = 1.0f;
-    this->d3d11BlendFactor[1] = 1.0f;
-    this->d3d11BlendFactor[2] = 1.0f;
-    this->d3d11BlendFactor[3] = 1.0f;
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -191,15 +187,6 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyBlendColor(const glm::vec4& color) {
-    this->d3d11BlendFactor[0] = color.x;
-    this->d3d11BlendFactor[1] = color.y;
-    this->d3d11BlendFactor[2] = color.z;
-    this->d3d11BlendFactor[3] = color.w;
-}
-
-//------------------------------------------------------------------------------
-void
 d3d11Renderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(nullptr != ds);
@@ -214,11 +201,16 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     this->curProgramBundle->select(ds->Setup.ProgramSelectionMask); // FIXME!
 
     // apply state objects
-    // FIXME: blend color should be an ApplyDrawState arg
     const UINT stencilRef = ds->Setup.DepthStencilState.StencilRef;
+    FLOAT d3d11BlendFactor[4] = {
+        ds->Setup.BlendColor.x,
+        ds->Setup.BlendColor.y,
+        ds->Setup.BlendColor.z,
+        ds->Setup.BlendColor.w
+    };
     this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
     this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
-    this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, this->d3d11BlendFactor, 0xFFFFFFFF);
+    this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, d3d11BlendFactor, 0xFFFFFFFF);
 
     // apply input assembly state (except primitive topology)
     o_assert_dbg(this->curMesh->d3d11VertexBuffer);

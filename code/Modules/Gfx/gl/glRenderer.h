@@ -53,8 +53,6 @@ public:
     void applyViewPort(int32 x, int32 y, int32 width, int32 height);
     /// apply scissor rect
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height);
-    /// apply blend color
-    void applyBlendColor(const glm::vec4& color);
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a texture sampler variable (special case)

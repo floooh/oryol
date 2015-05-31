@@ -10,6 +10,7 @@ namespace Oryol {
 //------------------------------------------------------------------------------
 DrawStateSetup::DrawStateSetup() :
 Locator(Locator::NonShared()),
+BlendColor(1.0f, 1.0f, 1.0f, 1.0f),
 ProgramSelectionMask(0) {
     // empty
 }

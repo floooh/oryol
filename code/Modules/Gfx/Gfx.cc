@@ -207,13 +207,6 @@ Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyBlendColor(const glm::vec4& blendColor) {
-    o_assert_dbg(IsValid());
-    state->renderer.applyBlendColor(blendColor);
-}
-
-//------------------------------------------------------------------------------
-void
 Gfx::CommitFrame() {
     o_trace_scoped(Gfx_CommitFrame);
     o_assert_dbg(IsValid());
