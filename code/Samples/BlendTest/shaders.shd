@@ -30,6 +30,13 @@
 //
 @vs triangleVS
 @uniform vec4 translate Translate
+
+@uniform_block bla Bla
+@uniform vec4 test Test
+@uniform vec4 blub Blub
+@uniform vec4 blob Blob
+@end
+
 @in vec4 position
 @in vec4 color0
 @out vec4 color

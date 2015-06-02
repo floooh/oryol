@@ -6,9 +6,8 @@
 //------------------------------------------------------------------------------
 
 @block VSFuncs
-@uniform float time Time
 // compute eye position
-vec3 eyePos(vec3 center) {
+vec3 eyePos(float time, vec3 center) {
     return center + vec3(sin(time * 0.1) * 5.0, 2.0, cos(time * 0.1) * 5.0);
 }
 
@@ -39,7 +38,7 @@ void lookat(in vec3 eye, in vec3 center, inout vec3 up, out vec3 right, out vec3
     _position = position;
     uv = texcoord0 * 2.0 - 1.0;
     vec3 center = vec3(0.0, 0.0, 0.0);
-    eye = eyePos(center);
+    eye = eyePos(time, center);
     up = vec3(0.0, 1.0, 0.0);
     lookat(eye, center, up, right, fwd);
     sinTime.x = sin(time);

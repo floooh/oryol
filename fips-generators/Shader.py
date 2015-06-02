@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 23
+Version = 24
 
 import os
 import sys
@@ -166,16 +166,12 @@ class Block(Snippet) :
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.uniforms = []
 
     def getTag(self) :
         return 'block'
 
     def dump(self) :
         Snippet.dump(self)
-        print 'Uniforms:'
-        for uniform in self.uniforms :
-            uniform.dump()
 
 #-------------------------------------------------------------------------------
 class Uniform :
@@ -191,6 +187,28 @@ class Uniform :
 
     def dump(self) :
         dumpObj(self)
+
+#-------------------------------------------------------------------------------
+class UniformBlock :
+    '''
+    A group of related uniforms, these are orthogonal to standalone-uniforms
+    (standalone uniforms will very likely go away when uniform blocks are
+    fully implemented).
+    '''
+    def __init__(self, name, bind, filePath, lineNumber) :
+        self.name = name
+        self.bind = bind
+        self.filePath = filePath
+        self.lineNumber = lineNumber
+        self.uniforms = []
+
+    def getTag(self) :
+        return 'uniform_block'
+    
+    def dump(self) :
+        dumpObj(self)
+        for uniform in self.uniforms :
+            uniform.dump()
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -216,6 +234,7 @@ class VertexShader(Snippet) :
         self.name = name
         self.highPrecision = []
         self.uniforms = []
+        self.uniformBlocks = []
         self.inputs = []
         self.outputs = []
         self.resolvedDeps = []
@@ -229,6 +248,9 @@ class VertexShader(Snippet) :
         print 'Uniforms:'
         for uniform in self.uniforms :
             uniform.dump()
+        print 'UniformBlocks:'
+        for uniformBlock in self.uniformBlocks :
+            uniformBlock.dump()
         print 'Inputs:'
         for input in self.inputs :
             input.dump()
@@ -246,6 +268,7 @@ class FragmentShader(Snippet) :
         self.name = name
         self.highPrecision = []
         self.uniforms = []
+        self.uniformBlocks = []
         self.inputs = []
         self.resolvedDeps = []        
         self.generatedSource = {}
@@ -258,6 +281,9 @@ class FragmentShader(Snippet) :
         print 'Uniforms:'
         for uniform in self.uniforms :
             uniform.dump()
+        print 'UniformBlocks:'
+        for uniformBlock in self.uniformBlocks :
+            uniformBlock.dump()
         print 'Inputs:'
         for input in self.inputs :
             input.dump()
@@ -288,6 +314,7 @@ class Bundle() :
         self.name = name
         self.programs = []
         self.uniforms = []
+        self.uniformBlocks = []
 
     def getTag(self) :
         return 'bundle'
@@ -306,6 +333,7 @@ class Parser :
         self.fileName = None
         self.lineNumber = 0
         self.current = None
+        self.stack = []
         self.inComment = False
 
     #---------------------------------------------------------------------------
@@ -357,6 +385,15 @@ class Parser :
         return line
 
     #---------------------------------------------------------------------------
+    def push(self, obj) :
+        self.stack.append(self.current)
+        self.current = obj
+
+    #---------------------------------------------------------------------------
+    def pop(self) :
+        self.current = self.stack.pop();
+
+    #---------------------------------------------------------------------------
     def onBlock(self, args) :
         if len(args) != 1 :
             util.fmtError("@block must have 1 arg (name)")
@@ -367,7 +404,7 @@ class Parser :
             util.fmtError("@block '{}' already defined".format(name))
         block = Block(name)
         self.shaderLib.blocks[name] = block
-        self.current = block
+        self.push(block)
 
     #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
@@ -380,7 +417,7 @@ class Parser :
             util.fmtError("@vs '{}' already defined".format(name))
         vs = VertexShader(name)
         self.shaderLib.vertexShaders[name] = vs
-        self.current = vs        
+        self.push(vs)        
 
     #---------------------------------------------------------------------------
     def onFragmentShader(self, args) :
@@ -393,7 +430,7 @@ class Parser :
             util.fmtError("@fs '{}' already defined!".format(name))
         fs = FragmentShader(name)
         self.shaderLib.fragmentShaders[name] = fs
-        self.current = fs
+        self.push(fs)
 
     #---------------------------------------------------------------------------
     def onBundle(self, args) :
@@ -406,7 +443,7 @@ class Parser :
             util.fmtError("@bundle '{}' already defined!".format(name))
         bundle = Bundle(name)
         self.shaderLib.bundles[name] = bundle
-        self.current = bundle            
+        self.push(bundle)          
 
     #---------------------------------------------------------------------------
     def onIn(self, args) :
@@ -452,8 +489,8 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def onUniform(self, args) :
-        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
-            util.fmtError("@uniform must come after @block, @vs or @fs tag!")
+        if not self.current or not self.current.getTag() in ['uniform_block', 'vs', 'fs'] :
+            util.fmtError("@uniform must come after @uniform_block, @vs or @fs tag!")
         if len(args) != 3:
             util.fmtError("@uniform must have 3 args (type name binding)")
         type = args[0]
@@ -464,6 +501,20 @@ class Parser :
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         self.current.uniforms.append(Uniform(type, name, bind, self.fileName, self.lineNumber))
+
+    #---------------------------------------------------------------------------
+    def onUniformBlock(self, args) :
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@uniform_block must come after @vs or @fs tag!")
+        if len(args) != 2:
+            util.fmtError("@uniform_block must have 2 args (name bind)")
+        name = args[0]
+        bind = args[1]
+        if checkListDup(name, self.current.uniformBlocks) :
+            util.fmtError("@uniform_block '{}' already defined in '{}'!".format(name, self.current.name))
+        uniformBlock = UniformBlock(name, bind, self.fileName, self.lineNumber)
+        self.current.uniformBlocks.append(uniformBlock)
+        self.push(uniformBlock)
 
     #---------------------------------------------------------------------------
     def onProgram(self, args) :
@@ -486,13 +537,13 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def onEnd(self, args) :
-        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs', 'bundle'] :
-            util.fmtError("@end must come after @block, @vs, @fs or @bundle!")
+        if not self.current or not self.current.getTag() in ['uniform_block', 'block', 'vs', 'fs', 'bundle'] :
+            util.fmtError("@end must come after @uniform_block, @block, @vs, @fs or @bundle!")
         if len(args) != 0:
             util.fmtError("@end must not have arguments")
         if self.current.getTag() in ['block', 'vs', 'fs'] and len(self.current.lines) == 0 :
             util.fmtError("no source code lines in @block, @vs or @fs section")
-        self.current = None
+        self.pop()
 
     #---------------------------------------------------------------------------
     def parseTags(self, line) :
@@ -524,6 +575,8 @@ class Parser :
                 self.onOut(args)
             elif tag == 'uniform':
                 self.onUniform(args)
+            elif tag == 'uniform_block':
+                self.onUniformBlock(args)
             elif tag == 'highp' :
                 self.onPrecision(args)
             elif tag == 'program':
@@ -846,17 +899,6 @@ class ShaderLibrary :
             list.append(uniform)
 
 
-    def resolveShaderUniforms(self, shd) :
-        '''
-        This adds and verifies uniforms from block 
-        dependencies to the vertex or fragment shader.
-        '''
-        for dep in shd.resolvedDeps :            
-            for uniform in self.blocks[dep].uniforms :
-                # if the uniform already exists, check
-                # whether type and binding are matching
-                self.checkAddUniform(uniform, shd.uniforms)
-
     def resolveBundleUniforms(self, bundle) :
         '''
         Gathers all uniforms from all shaders in the bundle.
@@ -888,10 +930,6 @@ class ShaderLibrary :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
-        for vs in self.vertexShaders.values() :
-            self.resolveShaderUniforms(vs)
-        for fs in self.fragmentShaders.values() :
-            self.resolveShaderUniforms(fs)
         for bundle in self.bundles.values() :
             self.resolveBundleUniforms(bundle)
 
