@@ -8,8 +8,7 @@ Bla Bla Bla
 
 //------------------------------------------------------------------------------
 @block TransformUtil
-@uniform mat4 mvp ModelViewProj
-vec4 myTransform(vec4 pos)
+vec4 myTransform(mat4 mvp, vec4 pos)
 {
     return mul(pos, mvp);
 }
@@ -26,12 +25,13 @@ vec4 myColor(vec4 nrm, vec4 texColor)
 //------------------------------------------------------------------------------
 @vs MyVertexShader
 @use TransformUtil
+@uniform mat4 mvp ModelViewProj
 @in vec4 position
 @in vec4 normal
 @in vec2 texcoord0
 @out vec4 nrm
 @out vec2 uv
-    _position = myTransform(position);
+    _position = myTransform(mvp, position);
     nrm = normal;
     uv  = texcoord0;
 @end
