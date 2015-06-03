@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 24
+Version = 25
 
 import os
 import sys
@@ -201,6 +201,7 @@ class UniformBlock :
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.uniforms = []
+        self.uniformsByType = {}
 
     def getTag(self) :
         return 'uniform_block'
@@ -208,7 +209,10 @@ class UniformBlock :
     def dump(self) :
         dumpObj(self)
         for uniform in self.uniforms :
-            uniform.dump()
+            dumpObj(uniform)
+        for type in self.uniformsByType :
+            for uniform in self.uniformsByType[type] :
+                dumpObj(uniform)
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -500,7 +504,13 @@ class Parser :
             util.fmtError("invalid 'uniform' type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.uniforms.append(Uniform(type, name, bind, self.fileName, self.lineNumber))
+        uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
+        self.current.uniforms.append(uniform)
+        if self.current.getTag() == 'uniform_block' :
+            # uniform_blocks group contained uniforms by type
+            if not type in self.current.uniformsByType :
+                self.current.uniformsByType[type] = []
+            self.current.uniformsByType[type].append(uniform)
 
     #---------------------------------------------------------------------------
     def onUniformBlock(self, args) :
@@ -634,6 +644,22 @@ class GLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
+    def genUniforms(self, vs, lines) :
+        for uniform in vs.uniforms :
+            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        return lines
+
+    #---------------------------------------------------------------------------
+    def genUniformBlocks(self, vs, lines) :
+        for uBlock in vs.uniformBlocks :
+            lines.append(Line('layout(std140) uniform {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+        return lines 
+
+    #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs, slVersion) :
         lines = []
 
@@ -655,8 +681,11 @@ class GLSLGenerator :
                 lines.append(Line('#endif'))
 
         # write uniforms
-        for uniform in vs.uniforms :
-            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        lines = self.genUniforms(vs, lines)
+
+        # write uniform blocks (only in glsl150)
+        if glslVersionNumber[slVersion] >= 150 :
+            lines = self.genUniformBlocks(vs, lines)
 
         # write vertex shader inputs
         for input in vs.inputs :
@@ -704,8 +733,11 @@ class GLSLGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniforms
-        for uniform in fs.uniforms :
-            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        lines = self.genUniforms(fs, lines)
+
+        # write uniform blocks (only in glsl150)
+        if glslVersionNumber[slVersion] >= 150 :
+            lines = self.genUniformBlocks(fs, lines)
 
         # write fragment shader inputs
         for input in fs.inputs :
@@ -1143,4 +1175,3 @@ def generate(input, out_src, out_hdr) :
             shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
-

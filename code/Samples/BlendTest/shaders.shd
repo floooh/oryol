@@ -34,6 +34,9 @@
 @uniform_block bla Bla
 @uniform vec4 test Test
 @uniform vec4 blub Blub
+@uniform vec2 blab Blab
+@uniform vec3 blaaa Blaaa
+@uniform float foo Foo
 @uniform vec4 blob Blob
 @end
 

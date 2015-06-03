@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import platform
 import os
+import sys
 import genutil as util
 
 def getToolsBinPath() :
@@ -77,7 +78,9 @@ def parseOutput(output, lines) :
             util.fmtError(msg, False)
             
     if hasError :
-        util.fmtError("Aborting.")
+        for line in lines :
+            print(line.content)
+        sys.exit(10) 
 
 def validate(lines, type, glslVersion) :
     '''
