@@ -101,8 +101,15 @@ validVsInNames = [
 validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
-validUniformTypes = [
+
+# NOTE: once uniform blocks are fully implemented, only samplers will be valid
+# standalone uniform types, all other types must be contained in uniform blocks
+validStandaloneUniformTypes = [
     'bool', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube'
+]
+
+validBlockUniformTypes = [
+    'bool', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4' 
 ]
 
 #-------------------------------------------------------------------------------
@@ -500,8 +507,13 @@ class Parser :
         type = args[0]
         name = args[1]
         bind = args[2]
-        if type not in validUniformTypes :
-            util.fmtError("invalid 'uniform' type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+        if self.current.getTag() == 'uniform_block' :
+            if type not in validBlockUniformTypes :
+                util.fmtError("invalid block uniform type '{}', must be one of '{}'!".format(type, ','.join(validBlockUniformTypes)))
+        else :
+            if type not in validStandaloneUniformTypes :
+                util.fmtError("unvalid standalone uniform type '{}', must be one of '{}'!".format(type, ','.join(validStandaloneUniformTypes)))
+
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
@@ -644,19 +656,28 @@ class GLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    def genUniforms(self, vs, lines) :
-        for uniform in vs.uniforms :
+    def genUniforms(self, shd, lines) :
+        # NOTE: in the future, only texture samplers will be standaline uniforms
+        for uniform in shd.uniforms :
             lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
         return lines
 
     #---------------------------------------------------------------------------
-    def genUniformBlocks(self, vs, lines) :
-        for uBlock in vs.uniformBlocks :
-            lines.append(Line('layout(std140) uniform {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+    def genUniformBlocks(self, shd, slVersion, lines) :
+        for uBlock in shd.uniformBlocks :
+            if glslVersionNumber[slVersion] >= 150 :
+                # on GLSL 1.50 and above, write actual uniform blocks
+                lines.append(Line('layout(std140) uniform {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+                for type in uBlock.uniformsByType :
+                    for uniform in uBlock.uniformsByType[type] :
+                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+            else :
+                # on old-school GLSL, pack the uniform block members into arrays by type
+                for type in uBlock.uniformsByType :
+                    name = '{}_{}'.format(uBlock.name, type)
+                    size = len(uBlock.uniformsByType[type])
+                    lines.append(Line('uniform {} {}[{}];'.format(type, name, size), uBlock.filePath, uBlock.lineNumber)) 
         return lines 
 
     #---------------------------------------------------------------------------
@@ -683,9 +704,8 @@ class GLSLGenerator :
         # write uniforms
         lines = self.genUniforms(vs, lines)
 
-        # write uniform blocks (only in glsl150)
-        if glslVersionNumber[slVersion] >= 150 :
-            lines = self.genUniformBlocks(vs, lines)
+        # write uniform blocks 
+        lines = self.genUniformBlocks(vs, slVersion, lines)
 
         # write vertex shader inputs
         for input in vs.inputs :
@@ -736,8 +756,7 @@ class GLSLGenerator :
         lines = self.genUniforms(fs, lines)
 
         # write uniform blocks (only in glsl150)
-        if glslVersionNumber[slVersion] >= 150 :
-            lines = self.genUniformBlocks(fs, lines)
+        lines = self.genUniformBlocks(fs, slVersion, lines)
 
         # write fragment shader inputs
         for input in fs.inputs :
@@ -775,16 +794,9 @@ class HLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    def genVertexShaderSource(self, vs, slVersion) :
-        lines = []
-        
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write uniforms (globals)
-        # FIXME: add proper support for constant buffers
-        for uniform in vs.uniforms :
+    def genUniforms(self, shd, lines) :
+        # only samplers and textures can be standalone uniforms in HLSL
+        for uniform in shd.uniforms :
             if uniform.type == 'sampler2D' :
                 lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
                 lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
@@ -792,7 +804,33 @@ class HLSLGenerator :
                 lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
                 lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
             else :
+                # FIXME: remove when uniform buffers are fully implemented
                 lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        return lines
+
+    #---------------------------------------------------------------------------
+    def genUniformBlocks(self, shd, lines) :
+        for uBlock in shd.uniformBlocks :
+            lines.append(Line('cbuffer {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+        return lines 
+    
+    #---------------------------------------------------------------------------
+    def genVertexShaderSource(self, vs, slVersion) :
+        lines = []
+        
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+
+        # write standalone uniforms (should only be texture samplers)
+        lines = self.genUniforms(vs, lines)
+
+        # write uniform blocks as cbuffers
+        lines = self.genUniformBlocks(vs, lines)
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
@@ -819,17 +857,11 @@ class HLSLGenerator :
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
-        # write uniforms (globals)
-        # FIXME: add proper support for constant buffers
-        for uniform in fs.uniforms :
-            if uniform.type == 'sampler2D' :
-                lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-            elif uniform.type == 'samplerCube' :
-                lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-            else :
-                lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        # write standalone uniforms (should only be texture samplers)
+        lines = self.genUniforms(fs, lines)
+
+        # write uniform blocks as cbuffers
+        lines = self.genUniformBlocks(fs, lines)
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1014,12 +1046,12 @@ class ShaderLibrary :
                 for vs in self.vertexShaders.values() :
                     srcLines = vs.generatedSource[slVersion]
                     cName = vs.name + '_' + slVersion + '_src'
-                    outPath = rootPath + '_' + cName + '_vs.h'
+                    outPath = rootPath + '_' + cName + '.h'
                     hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName)
                 for fs in self.fragmentShaders.values() :
                     srcLines = fs.generatedSource[slVersion]
                     cName = fs.name + '_' + slVersion + '_src'
-                    outPath = rootPath + '_' + cName + '_fs.h'
+                    outPath = rootPath + '_' + cName + '.h'
                     hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName)
 
 #-------------------------------------------------------------------------------
@@ -1081,38 +1113,28 @@ def writeSourceBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeVertexShaderSource(f, absPath, shdLib, vs, slVersion) :
+def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
+    # note: shd is either a VertexShader or FragmentShader object
     if isGLSL[slVersion] :
         # GLSL source code is directly inlined for runtime-compilation
         f.write('#if ORYOL_OPENGL\n')
-        f.write('const char* {}_{}_src = \n'.format(vs.name, slVersion))
-        for line in vs.generatedSource[slVersion] :
+        f.write('const char* {}_{}_src = \n'.format(shd.name, slVersion))
+        for line in shd.generatedSource[slVersion] :
             f.write('"{}\\n"\n'.format(line.content))
         f.write(';\n')
         f.write('#endif\n')
     elif isHLSL[slVersion] :
         # for HLSL, the actual shader code has been compiled into a header by FXC
+        # also write the generated shader source into a C comment as
+        # human-readable version
         f.write('#if ORYOL_D3D11\n')
+        f.write('/*\n')
+        f.write('{}_{}_src: \n\n'.format(shd.name, slVersion))
+        for line in shd.generatedSource[slVersion] :
+            f.write('{}\n'.format(line.content))
+        f.write('*/\n')
         rootPath = os.path.splitext(absPath)[0]
-        f.write('#include "{}_{}_{}_src_vs.h"\n'.format(rootPath, vs.name, slVersion))
-        f.write('#endif\n')
-    else :
-        util.fmtError("Invalid shader language id")
-
-#-------------------------------------------------------------------------------
-def writeFragmentShaderSource(f, absPath, shdLib, fs, slVersion) :
-    if isGLSL[slVersion] :
-        f.write('#if ORYOL_OPENGL\n')
-        f.write('const char* {}_{}_src = \n'.format(fs.name, slVersion))
-        for line in fs.generatedSource[slVersion] :
-            f.write('"{}\\n"\n'.format(line.content))
-        f.write(';\n')
-        f.write('#endif\n')
-    elif isHLSL[slVersion] :
-        # for HLSL, the actual shader code has been compiled into a header by FXC
-        f.write('#if ORYOL_D3D11\n')
-        rootPath = os.path.splitext(absPath)[0]
-        f.write('#include "{}_{}_{}_src_fs.h"\n'.format(rootPath, fs.name, slVersion))
+        f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
         f.write('#endif\n')
     else :
         util.fmtError("Invalid shader language id")
@@ -1152,9 +1174,9 @@ def generateSource(absSourcePath, shdLib) :
     writeSourceTop(f, absSourcePath, shdLib)
     for slVersion in slVersions :
         for vs in shdLib.vertexShaders.values() :
-            writeVertexShaderSource(f, absSourcePath, shdLib, vs, slVersion)
+            writeShaderSource(f, absSourcePath, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :
-            writeFragmentShaderSource(f, absSourcePath, shdLib, fs, slVersion)
+            writeShaderSource(f, absSourcePath, shdLib, fs, slVersion)
 
     for bundle in shdLib.bundles.values() :
         writeBundleSource(f, shdLib, bundle)            
