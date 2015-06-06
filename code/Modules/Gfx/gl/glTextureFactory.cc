@@ -251,7 +251,6 @@ glTextureFactory::createRenderTarget(texture& tex) {
     attrs.IsRenderTarget = true;
     attrs.HasDepthBuffer = setup.HasDepth();
     attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
-    attrs.IsDepthTexture = false;
     
     // setup the texture object
     tex.textureAttrs = attrs;
