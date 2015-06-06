@@ -10,9 +10,13 @@
 namespace Oryol {
 
 struct IndexBufferAttrs {
+    /// number of indices in the index buffer
     int32 NumIndices{0};
+    /// type of indices (16-bit or 32-bit)
     IndexType::Code Type{IndexType::InvalidIndexType};
+    /// buffer usage hint
     Usage::Code BufferUsage{Usage::InvalidUsage};
+    /// computes the byte size of index buffer data
     int32 ByteSize() const {
         return NumIndices * IndexType::ByteSize(Type);
     };
