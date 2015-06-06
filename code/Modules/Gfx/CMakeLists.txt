@@ -46,8 +46,8 @@ fips_begin_module(Gfx)
         PrimitiveGroup.h
         RasterizerState.h
         StencilState.h
-        VertexComponent.h
         VertexLayout.cc VertexLayout.h
+        UniformLayout.cc UniformLayout.h
         displayMgr.h
         renderer.h
     )

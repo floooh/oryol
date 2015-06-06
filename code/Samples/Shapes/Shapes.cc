@@ -21,6 +21,7 @@ private:
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
+    Shaders::Shapes::Params_Struct params;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -49,7 +50,8 @@ ShapeApp::OnRunning() {
     };
     int32 primGroupIndex = 0;
     for (const auto& pos : positions) {
-        Gfx::ApplyVariable(Shaders::Shapes::ModelViewProjection, this->computeMVP(pos));
+        this->params.ModelViewProjection = this->computeMVP(pos);
+        Gfx::ApplyUniformBlock(Shaders::Shapes::Params, this->params);
         Gfx::Draw(primGroupIndex++);
     }
     Gfx::CommitFrame();

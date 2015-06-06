@@ -54,8 +54,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs0.IsRenderTarget);
     CHECK(!attrs0.HasDepthBuffer);
     CHECK(!attrs0.HasSharedDepthBuffer);
-    CHECK(!attrs0.IsDepthTexture);
-    
+
     // create a render target with depth buffer
     auto rtSetup = TextureSetup::RenderTarget(640, 480);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
@@ -80,8 +79,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.IsRenderTarget);
     CHECK(attrs1.HasDepthBuffer);
     CHECK(!attrs1.HasSharedDepthBuffer);
-    CHECK(!attrs1.IsDepthTexture);
-    
+
     // create relative-size render target with depth buffer
     rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
     rtSetup.ColorFormat = PixelFormat::R5G6B5;
@@ -106,7 +104,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs2.IsRenderTarget);
     CHECK(attrs2.HasDepthBuffer);
     CHECK(!attrs2.HasSharedDepthBuffer);
-    CHECK(!attrs2.IsDepthTexture);
     
     // cleanup
     factory.DestroyResource(tex1);

@@ -6,6 +6,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
+#include "Resource/Id.h"
 #if ORYOL_OPENGL
 #include "Gfx/gl/glEnums.h"
 #elif ORYOL_D3D11
@@ -497,7 +498,7 @@ public:
     @class Oryol::VertexFormat
     @ingroup Gfx
     @brief vertex component formats
-    @see VertexComponent, VertexLayout
+    @see VertexLayout
 */
 class VertexFormat {
 public:
@@ -699,6 +700,50 @@ public:
         
         NumBlendOperations,
         InvalidBlendOperation,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::UniformType
+    @ingroup Gfx
+    @brief shader uniform types
+*/
+class UniformType {
+public:
+    enum Code : uint8 {
+        Float = 0,
+        Vec2,
+        Vec3,
+        Vec4,
+        Mat2,
+        Mat3,
+        Mat4,
+        Int,
+        Bool,
+        Texture,
+
+        NumUniformTypes,
+        InvalidUniformType,
+    };
+
+    /// get the byte size of a uniform type
+    static int32 ByteSize(Code c) {
+        switch (c) {
+            case Float:     return sizeof(float32);
+            case Vec2:      return 2 * sizeof(float32);
+            case Vec3:      return 3 * sizeof(float32);
+            case Vec4:      return 4 * sizeof(float32);
+            case Mat2:      return 2 * 2 * sizeof(float32);
+            case Mat3:      return 3 * 3 * sizeof(float32);
+            case Mat4:      return 4 * 4 * sizeof(float32);
+            case Int:       return sizeof(int32);
+            case Bool:      return 1;       // FIXME: is a bool guaranteed to be 1 byte in GLSL and HLSL
+            case Texture:   return sizeof(Id);
+            default:
+                o_error("invalid uniform type code!\n");
+                return 0;
+        }
     };
 };
 

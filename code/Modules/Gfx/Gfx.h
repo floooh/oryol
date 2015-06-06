@@ -84,13 +84,9 @@ public:
     static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height);
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
-    /// apply a shader constant block
-    static void ApplyConstantBlock(const Id& id);
-    /// apply a shader variable
-    template<class T> static void ApplyVariable(int32 index, const T& value);
-    /// apply a shader variable array
-    template<class T> static void ApplyVariableArray(int32 index, const T* values, int32 numValues);
-    
+    /// apply a uniform block
+    template<class T> static void ApplyUniformBlock(int32 index, const T& value);
+
     /// update dynamic vertex data (only complete replace possible at the moment)
     static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
     /// update dynamic index data (only complete replace possible at the moment)
@@ -129,25 +125,10 @@ private:
 };
 
 //------------------------------------------------------------------------------
-template<> inline void
-Gfx::ApplyVariable(int32 index, const Id& texResId) {
-    o_assert_dbg(IsValid());
-    _priv::texture* tex = state->resourceContainer.lookupTexture(texResId);
-    state->renderer.applyTexture(index, tex);
-}
-
-//------------------------------------------------------------------------------
 template<class T> inline void
-Gfx::ApplyVariable(int32 index, const T& value) {
+Gfx::ApplyUniformBlock(int32 index, const T& value) {
     o_assert_dbg(IsValid());
-    state->renderer.applyVariable(index, value);
-}
-
-//------------------------------------------------------------------------------
-template<class T> inline void
-Gfx::ApplyVariableArray(int32 index, const T* values, int32 numValues) {
-    o_assert_dbg(IsValid());
-    state->renderer.applyVariableArray(index, values, numValues);
+    state->renderer.applyUniformBlock(index, (const uint8*) &value, sizeof(value));
 }
 
 //------------------------------------------------------------------------------

@@ -156,7 +156,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x) {
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->Layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->Layout.Component(compIndex).Format, x);
+    VertexWriter::Write(ptr, this->Layout.ComponentAt(compIndex).Format, x);
     return *this;
 }
     
@@ -166,7 +166,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y)
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->Layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->Layout.Component(compIndex).Format, x, y);
+    VertexWriter::Write(ptr, this->Layout.ComponentAt(compIndex).Format, x, y);
     return *this;
 }
     
@@ -176,7 +176,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y,
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->Layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->Layout.Component(compIndex).Format, x, y, z);
+    VertexWriter::Write(ptr, this->Layout.ComponentAt(compIndex).Format, x, y, z);
     return *this;
 }
 
@@ -186,7 +186,7 @@ MeshBuilder::Vertex(uint32 vertexIndex, VertexAttr::Code attr, float x, float y,
     o_assert_dbg(this->inBegin);
     const int32 compIndex = this->Layout.ComponentIndexByVertexAttr(attr);
     uint8* ptr = this->vertexPointer + this->vertexByteOffset(vertexIndex, compIndex);
-    VertexWriter::Write(ptr, this->Layout.Component(compIndex).Format, x, y, z, w);
+    VertexWriter::Write(ptr, this->Layout.ComponentAt(compIndex).Format, x, y, z, w);
     return *this;
 }
 

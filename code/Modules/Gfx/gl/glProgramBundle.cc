@@ -31,9 +31,11 @@ glProgramBundle::Clear() {
     for (auto& entry : this->programEntries) {
         entry.mask = 0;
         entry.program = 0;
-        for (int32 i = 0; i < MaxNumUniforms; i++) {
-            entry.uniformMapping[i] = -1;
-            entry.samplerMapping[i] = -1;
+        for (int32 blockIndex = 0; blockIndex < MaxNumUniformBlocks; blockIndex++) {
+            for (int32 uniformIndex = 0; uniformIndex < MaxNumUniforms; uniformIndex++) {
+                entry.uniformMapping[blockIndex][uniformIndex] = -1;
+                entry.samplerMapping[blockIndex][uniformIndex] = -1;
+            }
         }
         #if ORYOL_GL_USE_GETATTRIBLOCATION
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
@@ -61,19 +63,21 @@ glProgramBundle::addProgram(uint32 mask, GLuint glProg) {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundle::bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation) {
+glProgramBundle::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation) {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
+    o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    this->programEntries[progIndex].uniformMapping[slotIndex] = glUniformLocation;
+    this->programEntries[progIndex].uniformMapping[blockIndex][slotIndex] = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------
 void
-glProgramBundle::bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex) {
+glProgramBundle::bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex) {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
+    o_assert_range_dbg(slotIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    this->programEntries[progIndex].uniformMapping[slotIndex] = glUniformLocation;
-    this->programEntries[progIndex].samplerMapping[slotIndex] = samplerIndex;
+    this->programEntries[progIndex].uniformMapping[blockIndex][slotIndex] = glUniformLocation;
+    this->programEntries[progIndex].samplerMapping[blockIndex][slotIndex] = samplerIndex;
 }
 
 //------------------------------------------------------------------------------

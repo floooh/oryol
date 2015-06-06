@@ -11,7 +11,7 @@ namespace Oryol {
 ProgramBundleSetup::ProgramBundleSetup() :
 Locator(Locator::NonShared()),
 numProgramEntries(0),
-numUniformEntries(0) {
+numUniformBlockEntries(0) {
     // empty
 }
 
@@ -19,7 +19,7 @@ numUniformEntries(0) {
 ProgramBundleSetup::ProgramBundleSetup(const class Locator& locator) :
 Locator(locator),
 numProgramEntries(0),
-numUniformEntries(0) {
+numUniformBlockEntries(0) {
     // empty
 }
 
@@ -55,8 +55,7 @@ void
 ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
     o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
-    o_assert_range_dbg(slang, ShaderLang::NumShaderLangs);
-    
+
     programEntry& entry = this->obtainEntry(mask);
     entry.vsSources[slang] = vsSource;
     entry.fsSources[slang] = fsSource;
@@ -68,7 +67,6 @@ ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, 
     o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
-    o_assert_range_dbg(slang, ShaderLang::NumShaderLangs);
 
     programEntry& entry = this->obtainEntry(mask);
     entry.vsByteCode[slang].ptr = vsByteCode;
@@ -79,26 +77,14 @@ ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, 
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddUniform(const String& uniformName, int16 slotIndex) {
-    o_assert(this->numUniformEntries < MaxNumUniformEntries);
-    o_assert(uniformName.IsValid());
+ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, int16 slotIndex) {
+    o_assert_dbg(name.IsValid());
+    o_assert_dbg(!layout.Empty());
 
-    uniformEntry& entry = this->uniformEntries[this->numUniformEntries++];
-    entry.uniformName = uniformName;
+    uniformBlockEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
+    entry.name = name;
+    entry.layout = layout;
     entry.slotIndex = slotIndex;
-    entry.isTexture = false;
-}
-
-//------------------------------------------------------------------------------
-void
-ProgramBundleSetup::AddTextureUniform(const String& uniformName, int16 slotIndex) {
-    o_assert(this->numUniformEntries < MaxNumUniformEntries);
-    o_assert(uniformName.IsValid());
-
-    uniformEntry& entry = this->uniformEntries[this->numUniformEntries++];
-    entry.uniformName = uniformName;
-    entry.slotIndex = slotIndex;
-    entry.isTexture = true;
 }
 
 //------------------------------------------------------------------------------
@@ -110,45 +96,36 @@ ProgramBundleSetup::NumPrograms() const {
 //------------------------------------------------------------------------------
 uint32
 ProgramBundleSetup::Mask(int32 progIndex) const {
-    o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].mask;
 }
 
 //------------------------------------------------------------------------------
 const Id&
 ProgramBundleSetup::VertexShader(int32 progIndex) const {
-    o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].vertexShader;
 }
 
 //------------------------------------------------------------------------------
 const Id&
 ProgramBundleSetup::FragmentShader(int32 progIndex) const {
-    o_assert_range(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].fragmentShader;
 }
 
 //------------------------------------------------------------------------------
 const String&
 ProgramBundleSetup::VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
-    o_assert_range(progIndex, this->numProgramEntries);
-    o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->programEntries[progIndex].vsSources[slang];
 }
 
 //------------------------------------------------------------------------------
 const String&
 ProgramBundleSetup::FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const {
-    o_assert_range(progIndex, this->numProgramEntries);
-    o_assert_range(slang, ShaderLang::NumShaderLangs);
     return this->programEntries[progIndex].fsSources[slang];
 }
 
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
-    o_assert_range(progIndex, this->numProgramEntries);
-    o_assert_range(slang, ShaderLang::NumShaderLangs);
     outPtr = this->programEntries[progIndex].vsByteCode[slang].ptr;
     outSize = this->programEntries[progIndex].vsByteCode[slang].size;
 }
@@ -156,37 +133,32 @@ ProgramBundleSetup::VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
-    o_assert_range(progIndex, this->numProgramEntries);
-    o_assert_range(slang, ShaderLang::NumShaderLangs);
     outPtr = this->programEntries[progIndex].fsByteCode[slang].ptr;
     outSize = this->programEntries[progIndex].fsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
 int32
-ProgramBundleSetup::NumUniforms() const {
-    return this->numUniformEntries;
+ProgramBundleSetup::NumUniformBlocks() const {
+    return this->numUniformBlockEntries;
 }
 
 //------------------------------------------------------------------------------
-const String&
-ProgramBundleSetup::UniformName(int32 uniformIndex) const {
-    o_assert_range(uniformIndex, this->numUniformEntries);
-    return this->uniformEntries[uniformIndex].uniformName;
+const StringAtom&
+ProgramBundleSetup::UniformBlockName(int32 uniformBlockIndex) const {
+    return this->uniformBlockEntries[uniformBlockIndex].name;
+}
+
+//------------------------------------------------------------------------------
+const UniformLayout&
+ProgramBundleSetup::UniformBlockLayout(int32 uniformBlockIndex) const {
+    return this->uniformBlockEntries[uniformBlockIndex].layout;
 }
 
 //------------------------------------------------------------------------------
 int16
-ProgramBundleSetup::UniformSlot(int32 uniformIndex) const {
-    o_assert_range(uniformIndex, this->numUniformEntries);
-    return this->uniformEntries[uniformIndex].slotIndex;
-}
-
-//------------------------------------------------------------------------------
-bool
-ProgramBundleSetup::IsTextureUniform(int32 uniformIndex) const {
-    o_assert_range(uniformIndex, this->numUniformEntries);
-    return this->uniformEntries[uniformIndex].isTexture;
+ProgramBundleSetup::UniformBlockSlot(int32 uniformBlockIndex) const {
+    return this->uniformBlockEntries[uniformBlockIndex].slotIndex;
 }
 
 } // namespace Oryol

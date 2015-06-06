@@ -77,10 +77,10 @@ TEST(MeshSetupTest) {
     CHECK(s6.NumIndices == 0);
     CHECK(s6.IndicesType == IndexType::None);
     CHECK(s6.Layout.NumComponents() == 2);
-    CHECK(s6.Layout.Component(0).Attr == VertexAttr::Position);
-    CHECK(s6.Layout.Component(0).Format == VertexFormat::Float3);
-    CHECK(s6.Layout.Component(1).Attr == VertexAttr::TexCoord0);
-    CHECK(s6.Layout.Component(1).Format == VertexFormat::Float2);
+    CHECK(s6.Layout.ComponentAt(0).Attr == VertexAttr::Position);
+    CHECK(s6.Layout.ComponentAt(0).Format == VertexFormat::Float3);
+    CHECK(s6.Layout.ComponentAt(1).Attr == VertexAttr::TexCoord0);
+    CHECK(s6.Layout.ComponentAt(1).Format == VertexFormat::Float2);
     
     MeshSetup s7 = MeshSetup::Empty(256, Usage::Dynamic, IndexType::Index16, 512, Usage::Stream);
     s7.Layout

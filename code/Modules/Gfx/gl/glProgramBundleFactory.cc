@@ -164,20 +164,23 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         
         // resolve user uniform locations
         this->renderer->useProgram(glProg);
-        int32 samplerIndex = 0;
-        const int32 numUniforms = setup.NumUniforms();
-        for (int32 i = 0; i < numUniforms; i++) {
-            const String& name = setup.UniformName(i);
-            const int16 slotIndex = setup.UniformSlot(i);
-            const GLint glLocation = ::glGetUniformLocation(glProg, name.AsCStr());
-            progBundle.bindUniform(progIndex, slotIndex, glLocation);
-            
-            // special case for texture samplers
-            if (setup.IsTextureUniform(i)) {
-                progBundle.bindSamplerUniform(progIndex, slotIndex, glLocation, samplerIndex);
-                
-                // set the sampler index in the shader program, this will never change
-                ::glUniform1i(glLocation, samplerIndex++);
+        const int32 numUniformBlocks = setup.NumUniformBlocks();
+        for (int32 uniformBlockIndex = 0; uniformBlockIndex < numUniformBlocks; uniformBlockIndex++) {
+            int32 samplerIndex = 0;
+            int32 slotIndex = 0;
+            const UniformLayout& layout = setup.UniformBlockLayout(uniformBlockIndex);
+            const int32 numUniforms = layout.NumComponents();
+            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+                const UniformLayout::Component& comp = layout.ComponentAt(uniformIndex);
+                const GLint glLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+                progBundle.bindUniform(progIndex, uniformBlockIndex, slotIndex, glLocation);
+                if (comp.Type == UniformType::Texture) {
+                    progBundle.bindSamplerUniform(progIndex, uniformBlockIndex, slotIndex, glLocation, samplerIndex);
+                    // set the sampler index in the shader program, this will never change
+                    ::glUniform1i(glLocation, samplerIndex);
+                    samplerIndex++;
+                }
+                slotIndex++;
             }
         }
         

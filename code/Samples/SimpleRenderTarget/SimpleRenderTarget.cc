@@ -28,6 +28,9 @@ private:
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
+    Shaders::RenderTarget::Params_Struct offscreenParams;
+    Shaders::Main::VSParams_Struct displayVSParams;
+    Shaders::Main::FSParams_Struct displayFSParams;
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -43,17 +46,17 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
     Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
     Gfx::ApplyDrawState(this->offscreenDrawState);
-    glm::mat4 donutMVP = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-    Gfx::ApplyVariable(Shaders::RenderTarget::ModelViewProjection, donutMVP);
+    this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
+    Gfx::ApplyUniformBlock(Shaders::RenderTarget::Params, this->offscreenParams);
     Gfx::Draw(0);
     
     // render sphere to display, with offscreen render target as texture
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.25f), 1.0f, 0);
     Gfx::ApplyDrawState(this->displayDrawState);
-    glm::mat4 sphereMVP = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, sphereMVP);
-    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTarget);
+    this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->displayVSParams);
+    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->displayFSParams);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -78,6 +81,7 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
     this->renderTarget = Gfx::CreateResource(rtSetup);
+    this->displayFSParams.Texture = this->renderTarget;
     
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;

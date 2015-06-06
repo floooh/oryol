@@ -25,9 +25,9 @@ public:
     /// set GL program object by mask
     int32 addProgram(uint32 mask, GLuint glProg);
     /// bind a uniform location to a slot index
-    void bindUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation);
+    void bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
-    void bindSamplerUniform(int32 progIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
+    void bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex);
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// bind a vertex attribute location
     void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
@@ -40,9 +40,9 @@ public:
     /// get the currently selected GL program
     GLuint getProgram() const;
     /// get uniform location by slot index in currently selected program (-1 if not exists)
-    GLint getUniformLocation(int32 slotIndex) const;
+    GLint getUniformLocation(int32 blockIndex, int32 slotIndex) const;
     /// get sampler location by slot index in currently selected program (-1 if not exists)
-    int32 getSamplerIndex(int32 slotIndex) const;
+    int32 getSamplerIndex(int32 blockIndex, int32 slotIndex) const;
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// get a vertex attribute location
     GLint getAttribLocation(VertexAttr::Code attrib) const;
@@ -54,14 +54,15 @@ public:
     GLuint getProgramAtIndex(int32 progIndex) const;
     
 private:
+    static const int32 MaxNumUniformBlocks = 4;
     static const int32 MaxNumUniforms = 16;
     static const int32 MaxNumPrograms = 8;
 
     struct programEntry {
         uint32 mask;
         GLuint program;
-        GLint uniformMapping[MaxNumUniforms];
-        int32 samplerMapping[MaxNumUniforms];
+        GLint uniformMapping[MaxNumUniformBlocks][MaxNumUniforms];
+        int32 samplerMapping[MaxNumUniformBlocks][MaxNumUniforms];
         #if ORYOL_GL_USE_GETATTRIBLOCATION
         GLint attribMapping[VertexAttr::NumVertexAttrs];
         #endif
@@ -102,16 +103,18 @@ glProgramBundle::getProgram() const {
 
 //------------------------------------------------------------------------------
 inline GLint
-glProgramBundle::getUniformLocation(int32 slotIndex) const {
+glProgramBundle::getUniformLocation(int32 blockIndex, int32 slotIndex) const {
+    o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    return this->programEntries[this->selIndex].uniformMapping[slotIndex];
+    return this->programEntries[this->selIndex].uniformMapping[blockIndex][slotIndex];
 }
 
 //------------------------------------------------------------------------------
 inline int32
-glProgramBundle::getSamplerIndex(int32 slotIndex) const {
+glProgramBundle::getSamplerIndex(int32 blockIndex, int32 slotIndex) const {
+    o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    return this->programEntries[this->selIndex].samplerMapping[slotIndex];
+    return this->programEntries[this->selIndex].samplerMapping[blockIndex][slotIndex];
 }
 
 //------------------------------------------------------------------------------

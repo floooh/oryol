@@ -12,12 +12,8 @@ void
 VertexLayout::Clear() {
     this->numComps = 0;
     this->byteSize = 0;
-    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        this->attrCompIndices[i] = InvalidIndex;
-    }
-    for (int32 i = 0; i < MaxNumVertexComponents; i++) {
-        this->byteOffsets[i] = 0;
-    }
+    this->attrCompIndices.Fill(InvalidIndex);
+    this->byteOffsets.Fill(0);
 }
     
 //------------------------------------------------------------------------------
@@ -27,8 +23,8 @@ VertexLayout::VertexLayout() {
 
 //------------------------------------------------------------------------------
 VertexLayout&
-VertexLayout::Add(const VertexComponent& comp) {
-    o_assert(this->numComps < MaxNumVertexComponents);
+VertexLayout::Add(const Component& comp) {
+    o_assert(this->numComps < MaxNumComponents);
     this->comps[this->numComps] = comp;
     this->attrCompIndices[comp.Attr] = this->numComps;
     this->byteOffsets[this->numComps] = this->byteSize;
@@ -40,7 +36,7 @@ VertexLayout::Add(const VertexComponent& comp) {
 //------------------------------------------------------------------------------
 VertexLayout&
 VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
-    return this->Add(VertexComponent(attr, format));
+    return this->Add(Component(attr, format));
 }
 
 } // namespace Oryol

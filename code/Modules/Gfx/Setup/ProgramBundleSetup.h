@@ -7,9 +7,12 @@
 */
 #include "Core/Types.h"
 #include "Core/String/String.h"
+#include "Core/String/StringAtom.h"
+#include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/UniformLayout.h"
 
 namespace Oryol {
     
@@ -29,10 +32,8 @@ public:
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// add a program from precompiled shader byte code
     void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
-    /// bind a shader uniform name to a variable slot
-    void AddUniform(const String& uniformName, int16 slotIndex);
-    /// bind a shader uniform name to a texture variable slot
-    void AddTextureUniform(const String& uniformName, int16 slotIndex);
+    /// bind a shader uniform block name to a variable slot
+    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, int16 slotIndex);
     
     /// get number of programs
     int32 NumPrograms() const;
@@ -51,18 +52,18 @@ public:
     /// get program fragment shader byte code, returns nullptr if no byte code exists
     void FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
     
-    /// get number of uniforms
-    int32 NumUniforms() const;
-    /// get uniform name at index
-    const String& UniformName(int32 uniformIndex) const;
-    /// return true if uniform is a texture
-    bool IsTextureUniform(int32 uniformIndex) const;
-    /// get uniform slot index
-    int16 UniformSlot(int32 uniformIndex) const;
+    /// get number of uniform blocks
+    int32 NumUniformBlocks() const;
+    /// get unform block name at index
+    const StringAtom& UniformBlockName(int32 uniformBlockIndex) const;
+    /// get uniform block layout at index
+    const UniformLayout& UniformBlockLayout(int32 uniformBlockIndex) const;
+    /// get uniform block slot index
+    int16 UniformBlockSlot(int32 uniformBlockIndex) const;
     
 private:
     static const int32 MaxNumProgramEntries = 8;
-    static const int32 MaxNumUniformEntries = 16;
+    static const int32 MaxNumUniformBlockEntries = 4;
 
     struct programEntry {
         uint32 mask = 0;
@@ -74,24 +75,22 @@ private:
             const void* ptr = nullptr;
             uint32 size = 0;
         };
-        byteCodeEntry vsByteCode[ShaderLang::NumShaderLangs];
-        byteCodeEntry fsByteCode[ShaderLang::NumShaderLangs];
+        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
+        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
+    };
+    struct uniformBlockEntry {
+        StringAtom name;
+        UniformLayout layout;
+        int16 slotIndex = InvalidIndex;
     };
 
     /// obtain an existing entry with matching mask or new entry
     programEntry& obtainEntry(uint32 mask);
-    
-    struct uniformEntry {
-        uniformEntry() : isTexture(false), slotIndex(InvalidIndex) {};
-        String uniformName;
-        bool isTexture;
-        int16 slotIndex;
-    };
-    
+
     int32 numProgramEntries;
-    int32 numUniformEntries;
-    programEntry programEntries[MaxNumProgramEntries];
-    uniformEntry uniformEntries[MaxNumUniformEntries];
+    int32 numUniformBlockEntries;
+    StaticArray<programEntry, MaxNumProgramEntries> programEntries;
+    StaticArray<uniformBlockEntry, MaxNumUniformBlockEntries> uniformBlockEntries;
 };
     
 } // namespace Oryol

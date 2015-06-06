@@ -22,6 +22,7 @@ private:
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
+    Shaders::PackedNormals::Params_Struct params;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -51,7 +52,8 @@ PackedNormalsApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     int32 primGroupIndex = 0;
     for (const auto& pos : positions) {
-        Gfx::ApplyVariable(Shaders::PackedNormals::ModelViewProjection, this->computeMVP(pos));
+        this->params.ModelViewProjection = this->computeMVP(pos);
+        Gfx::ApplyUniformBlock(Shaders::PackedNormals::Params, this->params);
         Gfx::Draw(primGroupIndex++);
     }
     

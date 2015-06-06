@@ -102,15 +102,37 @@ validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
 
-# NOTE: once uniform blocks are fully implemented, only samplers will be valid
-# standalone uniform types, all other types must be contained in uniform blocks
-validStandaloneUniformTypes = [
-    'bool', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube'
+validUniformTypes = [
+    'bool', 'int', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube' 
 ]
 
-validBlockUniformTypes = [
-    'bool', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4' 
-]
+uniformCType = {
+    'bool':         'bool',
+    'int':          'int32',
+    'float':        'float32',
+    'vec2':         'glm::vec2',
+    'vec3':         'glm::vec3',
+    'vec4':         'glm::vec4',
+    'mat2':         'glm::mat2',
+    'mat3':         'glm::mat3',
+    'mat4':         'glm::mat4',
+    'sampler2D':    'Id',
+    'samplerCube':  'Id',
+}
+
+uniformOryolType = {
+    'bool':         'UniformType::Bool',
+    'int':          'UniformType::Int',
+    'float':        'UniformType::Float',
+    'vec2':         'UniformType::Vec2',
+    'vec3':         'UniformType::Vec3',
+    'vec4':         'UniformType::Vec4',
+    'mat2':         'UniformType::Mat2',
+    'mat3':         'UniformType::Mat3',
+    'mat4':         'UniformType::Mat4',
+    'sampler2D':    'UniformType::Texture',
+    'samplerCube':  'UniformType::Texture'
+}
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -198,9 +220,7 @@ class Uniform :
 #-------------------------------------------------------------------------------
 class UniformBlock :
     '''
-    A group of related uniforms, these are orthogonal to standalone-uniforms
-    (standalone uniforms will very likely go away when uniform blocks are
-    fully implemented).
+    A group of related shader uniforms.
     '''
     def __init__(self, name, bind, filePath, lineNumber) :
         self.name = name
@@ -220,6 +240,22 @@ class UniformBlock :
         for type in self.uniformsByType :
             for uniform in self.uniformsByType[type] :
                 dumpObj(uniform)
+
+    def isEquivalent(self, other) :
+        if (self.name != other.name) :
+            return False
+        if (self.bind != other.bind) :
+            return False
+        for uniform in self.uniforms :
+            other_uniform = findByName(uniform.name, other.uniforms)
+            if not other_uniform :
+                return False
+            else :
+                if uniform.type != other_uniform.type :
+                    return False
+                elif uniform.bind != other_uniform.bind :
+                    return False
+        return True
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -244,7 +280,6 @@ class VertexShader(Snippet) :
         Snippet.__init__(self)
         self.name = name
         self.highPrecision = []
-        self.uniforms = []
         self.uniformBlocks = []
         self.inputs = []
         self.outputs = []
@@ -256,9 +291,6 @@ class VertexShader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
-        print 'Uniforms:'
-        for uniform in self.uniforms :
-            uniform.dump()
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
@@ -278,7 +310,6 @@ class FragmentShader(Snippet) :
         Snippet.__init__(self)
         self.name = name
         self.highPrecision = []
-        self.uniforms = []
         self.uniformBlocks = []
         self.inputs = []
         self.resolvedDeps = []        
@@ -289,9 +320,6 @@ class FragmentShader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
-        print 'Uniforms:'
-        for uniform in self.uniforms :
-            uniform.dump()
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
@@ -302,7 +330,7 @@ class FragmentShader(Snippet) :
 #-------------------------------------------------------------------------------
 class Program() :
     '''
-    A shader program, made of vertex/fragment shader and uniforms
+    A shader program, made of vertex/fragment shaders
     '''
     def __init__(self, vs, fs, filePath, lineNumber) :
         self.vs = vs
@@ -324,7 +352,6 @@ class Bundle() :
     def __init__(self, name) :
         self.name = name
         self.programs = []
-        self.uniforms = []
         self.uniformBlocks = []
 
     def getTag(self) :
@@ -500,29 +527,23 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def onUniform(self, args) :
-        if not self.current or not self.current.getTag() in ['uniform_block', 'vs', 'fs'] :
-            util.fmtError("@uniform must come after @uniform_block, @vs or @fs tag!")
+        if not self.current or self.current.getTag() != 'uniform_block' :
+            util.fmtError("@uniform must come after @uniform_block tag!")
         if len(args) != 3:
             util.fmtError("@uniform must have 3 args (type name binding)")
         type = args[0]
         name = args[1]
         bind = args[2]
-        if self.current.getTag() == 'uniform_block' :
-            if type not in validBlockUniformTypes :
-                util.fmtError("invalid block uniform type '{}', must be one of '{}'!".format(type, ','.join(validBlockUniformTypes)))
-        else :
-            if type not in validStandaloneUniformTypes :
-                util.fmtError("unvalid standalone uniform type '{}', must be one of '{}'!".format(type, ','.join(validStandaloneUniformTypes)))
+        if type not in validUniformTypes :
+            util.fmtError("invalid block uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
 
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
-        self.current.uniforms.append(uniform)
-        if self.current.getTag() == 'uniform_block' :
-            # uniform_blocks group contained uniforms by type
-            if not type in self.current.uniformsByType :
-                self.current.uniformsByType[type] = []
-            self.current.uniformsByType[type].append(uniform)
+        # uniform_blocks group contained uniforms by type
+        if not type in self.current.uniformsByType :
+            self.current.uniformsByType[type] = []
+        self.current.uniformsByType[type].append(uniform)
 
     #---------------------------------------------------------------------------
     def onUniformBlock(self, args) :
@@ -656,15 +677,9 @@ class GLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    def genUniforms(self, shd, lines) :
-        # NOTE: in the future, only texture samplers will be standaline uniforms
-        for uniform in shd.uniforms :
-            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-        return lines
-
-    #---------------------------------------------------------------------------
     def genUniformBlocks(self, shd, slVersion, lines) :
         for uBlock in shd.uniformBlocks :
+            '''
             if glslVersionNumber[slVersion] >= 150 :
                 # on GLSL 1.50 and above, write actual uniform blocks
                 lines.append(Line('layout(std140) uniform {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
@@ -678,6 +693,10 @@ class GLSLGenerator :
                     name = '{}_{}'.format(uBlock.name, type)
                     size = len(uBlock.uniformsByType[type])
                     lines.append(Line('uniform {} {}[{}];'.format(type, name, size), uBlock.filePath, uBlock.lineNumber)) 
+            '''
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
         return lines 
 
     #---------------------------------------------------------------------------
@@ -700,9 +719,6 @@ class GLSLGenerator :
                 for type in vs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
                 lines.append(Line('#endif'))
-
-        # write uniforms
-        lines = self.genUniforms(vs, lines)
 
         # write uniform blocks 
         lines = self.genUniformBlocks(vs, slVersion, lines)
@@ -752,9 +768,6 @@ class GLSLGenerator :
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
-        # write uniforms
-        lines = self.genUniforms(fs, lines)
-
         # write uniform blocks (only in glsl150)
         lines = self.genUniformBlocks(fs, slVersion, lines)
 
@@ -794,6 +807,7 @@ class HLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
+    '''
     def genUniforms(self, shd, lines) :
         # only samplers and textures can be standalone uniforms in HLSL
         for uniform in shd.uniforms :
@@ -807,6 +821,7 @@ class HLSLGenerator :
                 # FIXME: remove when uniform buffers are fully implemented
                 lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
         return lines
+    '''
 
     #---------------------------------------------------------------------------
     def genUniformBlocks(self, shd, lines) :
@@ -825,9 +840,6 @@ class HLSLGenerator :
         # write compatibility macros
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write standalone uniforms (should only be texture samplers)
-        lines = self.genUniforms(vs, lines)
 
         # write uniform blocks as cbuffers
         lines = self.genUniformBlocks(vs, lines)
@@ -856,9 +868,6 @@ class HLSLGenerator :
         # write compatibility macros
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write standalone uniforms (should only be texture samplers)
-        lines = self.genUniforms(fs, lines)
 
         # write uniform blocks as cbuffers
         lines = self.genUniformBlocks(fs, lines)
@@ -939,46 +948,37 @@ class ShaderLibrary :
         deps.reverse()
         shd.resolvedDeps = deps
 
-    def checkAddUniform(self, uniform, list) :
+    def checkAddUniformBlock(self, uniformBlock, list) :
         '''
-        Check if uniform already exists in list, if yes
-        check if type and binding matches, if not write error.
-        If uniform doesn't exist yet in list, add it.
+        Add uniform bundle to list with sanity checks.
         '''
-        listUniform = findByName(uniform.name, list)
-        if listUniform is not None:
-            # redundant uniform, check if type and binding name match
-            if listUniform.type != uniform.type :
-                util.setErrorLocation(uniform.filePath, uniform.lineNumber)
-                util.fmtError("uniform type mismatch '{}' vs '{}'".format(uniform.type, listUniform.type), False)
-                util.setErrorLocation(listUniform.filePath, listUniform.lineNumber)
-                util.fmtError("uniform type mismatch '{}' vs '{}'".format(listUniform.type, uniform.type))
-            if listUniform.bind != uniform.bind :
-                util.setErrorLocation(uniform.filePath, uniform.lineNumber)
-                util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(uniform.bind, listUniform.bind), False)
-                util.setErrorLocation(listUniform.filePath, listUniform.lineNumber)
-                util.fmtError("uniform bind name mismatch '{}' vs '{}'".format(listUniform.bind, uniform.bind))
+        listUniformBlock = findByName(uniformBlock.name, list)
+        if listUniformBlock :
+            if not uniformBlock.isEquivalent(listUniformBlock) :
+                util.setErrorLocation(uniformBlock.filePath, uniformBlock.lineNumber)
+                util.fmtError("uniform blocks named '{}' not equivalent".format(uniformBlock.name), False)
+                util.setErrorLocation(listUniformBlock.filePath, listUniformBlock.lineNumber)
+                util.fmtError("uniform blocks named '{}' not equivalent".format(uniformBlock.name), False)
         else :
-            # new uniform from block, add to list
-            list.append(uniform)
+            # new uniform block, add to list
+            list.append(uniformBlock)
 
-
-    def resolveBundleUniforms(self, bundle) :
+    def resolveBundleUniformBlocks(self, bundle) :
         '''
-        Gathers all uniforms from all shaders in the bundle.
+        Gathers all uniform blocks from all shaders in the bundle
         '''
         for program in bundle.programs :
             if program.vs not in self.vertexShaders :
                 util.setErrorLocation(program.filePath, program.lineNumber)
                 util.fmtError("unknown vertex shader '{}'".format(program.vs))
-            for uniform in self.vertexShaders[program.vs].uniforms :
-                self.checkAddUniform(uniform, bundle.uniforms)
+            for uniformBlock in self.vertexShaders[program.vs].uniformBlocks :
+                self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
 
             if program.fs not in self.fragmentShaders :
                 util.setErrorLocation(program.filePath, program.lineNumber)
                 util.fmtError("unknown fragment shader '{}'".format(program.fs))
-            for uniform in self.fragmentShaders[program.fs].uniforms :
-                self.checkAddUniform(uniform, bundle.uniforms)
+            for uniformBlock in self.fragmentShaders[program.fs].uniformBlocks :
+                self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
 
     def resolveAllDependencies(self) :
         '''
@@ -995,7 +995,7 @@ class ShaderLibrary :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
         for bundle in self.bundles.values() :
-            self.resolveBundleUniforms(bundle)
+            self.resolveBundleUniformBlocks(bundle)
 
     def generateShaderSourcesGLSL(self) :
         '''
@@ -1062,6 +1062,13 @@ def writeHeaderTop(f, shdLib) :
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
     f.write('#include "Gfx/Setup/ProgramBundleSetup.h"\n')
+    f.write('#include "glm/vec2.hpp"\n')
+    f.write('#include "glm/vec3.hpp"\n')
+    f.write('#include "glm/vec4.hpp"\n')
+    f.write('#include "glm/mat2x2.hpp"\n')
+    f.write('#include "glm/mat3x3.hpp"\n')
+    f.write('#include "glm/mat4x4.hpp"\n')
+    f.write('#include "Resource/Id.h"\n')
     f.write('namespace Oryol {\n')
     f.write('namespace Shaders {\n')
 
@@ -1075,8 +1082,18 @@ def writeHeaderBottom(f, shdLib) :
 def writeBundleHeader(f, shdLib, bundle) :
     f.write('    class ' + bundle.name + ' {\n')
     f.write('    public:\n')
-    for i in range(0, len(bundle.uniforms)) :
-        f.write('        static const int32 {} = {};\n'.format(bundle.uniforms[i].bind, i))
+    
+    # write uniform block slot index definitions
+    for i in range(0, len(bundle.uniformBlocks)) :
+        f.write('        static const int32 {} = {};\n'.format(bundle.uniformBlocks[i].bind, i))
+
+    # write uniform block structs
+    for uBlock in bundle.uniformBlocks :
+        f.write('        struct {}_Struct {{\n'.format(uBlock.bind))
+        for type in uBlock.uniformsByType :
+            for uniform in uBlock.uniformsByType[type] :
+                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bind))
+        f.write('        };\n')
     f.write('        static ProgramBundleSetup CreateSetup();\n')
     f.write('    };\n')
 
@@ -1141,6 +1158,8 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
 
 #-------------------------------------------------------------------------------
 def writeBundleSource(f, shdLib, bundle) :
+
+    # write the CreateSetup() function
     f.write('ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
     f.write('    ProgramBundleSetup setup("' + bundle.name + '");\n')
     for i in range(0, len(bundle.programs)) :
@@ -1160,11 +1179,13 @@ def writeBundleSource(f, shdLib, bundle) :
                 f.write('    setup.AddProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                     i, slangType, vsSource, vsSource, fsSource, fsSource))
             f.write('    #endif\n');
-    for uniform in bundle.uniforms :
-        if uniform.type.startswith('sampler') :
-            f.write('    setup.AddTextureUniform("{}", {});\n'.format(uniform.name, uniform.bind))
-        else :
-            f.write('    setup.AddUniform("{}", {});\n'.format(uniform.name, uniform.bind))
+    for uBlock in bundle.uniformBlocks :
+        layoutName = '{}_layout'.format(uBlock.bind)
+        f.write('    UniformLayout {};\n'.format(layoutName))
+        for type in uBlock.uniformsByType :
+            for uniform in uBlock.uniformsByType[type] :
+                f.write('    {}.Add("{}", {}, 1);\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+        f.write('    setup.AddUniformBlock("{}", {}, {});\n'.format(uBlock.name, layoutName, uBlock.bind))
     f.write('    return setup;\n')
     f.write('}\n')
 

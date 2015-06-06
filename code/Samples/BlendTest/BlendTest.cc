@@ -17,6 +17,7 @@ public:
 private:
     Id backgroundDrawState;
     Id drawStates[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
+    Shaders::Triangle::Params_Struct params;
 };
 OryolMain(BlendTestApp);
 
@@ -33,11 +34,10 @@ BlendTestApp::OnRunning() {
     float d = 1.0f / BlendFactor::NumBlendFactors;
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            float fx = ((d * x) + d*0.5f) * 2.0f - 1.0f;
-            float fy = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            glm::vec4 translate(fx, fy, 0.0f, 0.0f);
+            this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
+            this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
             Gfx::ApplyDrawState(this->drawStates[y][x]);
-            Gfx::ApplyVariable(Shaders::Triangle::Translate, translate);
+            Gfx::ApplyUniformBlock(Shaders::Triangle::Params, this->params);
             Gfx::Draw(0);
         }
     }

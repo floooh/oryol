@@ -82,6 +82,7 @@ glRenderer::glRenderer() :
 valid(false),
 dispMgr(nullptr),
 mshPool(nullptr),
+texPool(nullptr),
 #if ORYOL_MACOS
 globalVAO(0),
 #endif
@@ -116,13 +117,15 @@ glRenderer::~glRenderer() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_) {
+glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool_) {
     o_assert_dbg(!this->valid);
     o_assert_dbg(dispMgr_);
     o_assert_dbg(mshPool_);
+    o_assert_dbg(texPool_);
     
     this->valid = true;
     this->mshPool = mshPool_;
+    this->texPool = texPool_;
     this->dispMgr = dispMgr_;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
@@ -161,6 +164,7 @@ glRenderer::discard() {
     this->globalVAO = 0;
     #endif
 
+    this->texPool = nullptr;
     this->mshPool = nullptr;
     this->dispMgr = nullptr;
     this->valid = false;
@@ -429,228 +433,6 @@ glRenderer::applyDrawState(drawState* ds) {
         this->blendColor = setup.BlendColor;
         ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::applyTexture(int32 index, const texture* tex) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(this->curProgramBundle);
-    o_assert_dbg(tex);
-    
-    int32 samplerIndex = this->curProgramBundle->getSamplerIndex(index);
-    GLuint glTexture = tex->glTex;
-    GLenum glTarget = tex->glTarget;
-    this->bindTexture(samplerIndex, glTarget, glTexture);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const float32& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform1f(glLoc, val);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::vec2& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform2f(glLoc, val.x, val.y);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::vec3& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform3f(glLoc, val.x, val.y, val.z);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::vec4& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const int32& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform1i(glLoc, val);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::ivec2& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform2i(glLoc, val.x, val.y);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::ivec3& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform3i(glLoc, val.x, val.y, val.z);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::ivec4& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform4i(glLoc, val.x, val.y, val.z, val.w);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::mat4& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::mat3& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariable(int32 index, const glm::mat2& val) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const float32* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform1fv(glLoc, numValues, values);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::vec2* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform2fv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::vec3* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform3fv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::vec4* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform4fv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const int32* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform1iv(glLoc, numValues, values);
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::ivec2* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform2iv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::ivec3* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform3iv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::ivec4* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniform4iv(glLoc, numValues, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::mat4* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix4fv(glLoc, numValues, GL_FALSE, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::mat3* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix3fv(glLoc, numValues, GL_FALSE, glm::value_ptr(*values));
-}
-    
-//------------------------------------------------------------------------------
-template<> void
-glRenderer::applyVariableArray(int32 index, const glm::mat2* values, int32 numValues) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != this->curProgramBundle);
-    o_assert_dbg(values && (numValues > 0));
-    GLint glLoc = this->curProgramBundle->getUniformLocation(index);
-    ::glUniformMatrix2fv(glLoc, numValues, GL_FALSE, glm::value_ptr(*values));
 }
 
 //------------------------------------------------------------------------------
@@ -1194,6 +976,95 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
     #endif
     this->rasterizerState = newState;
     ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::applyUniformBlock(int32 blockIndex, const uint8* ptr, int32 byteSize) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != this->curProgramBundle);
+
+    // get the uniform layout object for this uniform block
+    const UniformLayout& layout = this->curProgramBundle->Setup.UniformBlockLayout(blockIndex);
+    // FIXME: it would be good to have some sort of layout-signature embedded in
+    // the struct pointer to by ptr, and in the UniformLayout, which could
+    // be checked here. Just checking the size is dangerous.
+    o_assert(layout.ByteSize() == byteSize);
+
+    // for each uniform in the uniform block:
+    int32 slotIndex = 0;
+    const int numComps = layout.NumComponents();
+    for (int compIndex = 0; compIndex < numComps; compIndex++) {
+        const auto& comp = layout.ComponentAt(compIndex);
+        const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
+        GLint glLoc = this->curProgramBundle->getUniformLocation(blockIndex, slotIndex);
+        switch (comp.Type) {
+            case UniformType::Float:
+                {
+                    float32 val = *(const float32*)valuePtr;
+                    ::glUniform1f(glLoc, val);
+                }
+                break;
+
+            case UniformType::Vec2:
+                {
+                    const glm::vec2& val = *(const glm::vec2*) valuePtr;
+                    ::glUniform2f(glLoc, val.x, val.y);
+                }
+                break;
+
+            case UniformType::Vec3:
+                {
+                    const glm::vec3& val = *(const glm::vec3*)valuePtr;
+                    ::glUniform3f(glLoc, val.x, val.y, val.z);
+                }
+                break;
+
+            case UniformType::Vec4:
+                {
+                    const glm::vec4& val = *(const glm::vec4*)valuePtr;
+                    ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                }
+                break;
+
+            case UniformType::Mat2:
+                {
+                    const glm::mat2& val = *(const glm::mat2*)valuePtr;
+                    ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                }
+                break;
+
+            case UniformType::Mat3:
+                {
+                    const glm::mat3& val = *(const glm::mat3*)valuePtr;
+                    ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                }
+                break;
+
+            case UniformType::Mat4:
+                {
+                    const glm::mat4& val = *(const glm::mat4*)valuePtr;
+                    ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                }
+                break;
+
+            case UniformType::Texture:
+                {
+                    const Id& resId = *(const Id*)valuePtr;
+                    texture* tex = this->texPool->Lookup(resId);
+                    o_assert_dbg(tex);
+                    int32 samplerIndex = this->curProgramBundle->getSamplerIndex(blockIndex, slotIndex);
+                    GLuint glTexture = tex->glTex;
+                    GLenum glTarget = tex->glTarget;
+                    this->bindTexture(samplerIndex, glTarget, glTexture);
+                }
+                break;
+
+            default:
+                o_error("FIXME: invalid uniform type!\n");
+                break;
+        }
+    }
 }
 
 } // namespace _priv

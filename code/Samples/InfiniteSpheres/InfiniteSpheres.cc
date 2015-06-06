@@ -30,6 +30,8 @@ private:
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
     int32 frameIndex = 0;
+    Shaders::Main::VSParams_Struct vsParams;
+    Shaders::Main::FSParams_Struct fsParams;
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -52,18 +54,20 @@ InfiniteSpheresApp::OnRunning() {
     Gfx::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    glm::mat4 mvp = this->computeMVP(this->offscreenProj, model);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index1]);
+    this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
+    this->fsParams.Texture = this->renderTargets[index1];
+    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->vsParams);
+    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->fsParams);
     Gfx::Draw(0);
     
     // ...and again to display
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    mvp = this->computeMVP(this->displayProj, model);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-    Gfx::ApplyVariable(Shaders::Main::Texture, this->renderTargets[index0]);
+    this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
+    this->fsParams.Texture = this->renderTargets[index0];
+    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->vsParams);
+    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->fsParams);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();

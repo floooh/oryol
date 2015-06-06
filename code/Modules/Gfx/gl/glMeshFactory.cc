@@ -161,7 +161,7 @@ glMeshFactory::attachInstanceBuffer(mesh& msh) {
         const VertexLayout& mshLayout = msh.vertexBufferAttrs.Layout;
         const VertexLayout& instLayout = instMesh->vertexBufferAttrs.Layout;
         for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
-            o_assert_dbg(!instLayout.Contains(mshLayout.Component(i).Attr));
+            o_assert_dbg(!instLayout.Contains(mshLayout.ComponentAt(i).Attr));
         }
         #endif
     }
@@ -264,7 +264,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                 const VertexLayout& layout = curMesh->vertexBufferAttrs.Layout;
                 const int32 numComps = layout.NumComponents();
                 for (int i = 0; i < numComps; i++) {
-                    const VertexComponent& comp = layout.Component(i);
+                    const VertexLayout::Component& comp = layout.ComponentAt(i);
                     glVertexAttr& glAttr = msh.glAttrs[vaoSlotIndex][comp.Attr];  // msh is not a bug
                     glAttr.enabled = GL_TRUE;
                     if (curMesh == &msh) {

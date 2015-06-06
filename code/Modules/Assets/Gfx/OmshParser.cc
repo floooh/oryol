@@ -63,7 +63,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
         return false;
     }
     for (uint32 i = 0; i < numVertexAttrs; i++) {
-        VertexComponent comp;
+        VertexLayout::Component comp;
         comp.Attr = (VertexAttr::Code) *u32Ptr++;
         comp.Format = (VertexFormat::Code) *u32Ptr++;
         outSetup.Layout.Add(comp);
