@@ -727,18 +727,18 @@ public:
         InvalidUniformType,
     };
 
-    /// get the byte size of a uniform type
+    /// get the byte size of a uniform type, see GL std140 layout spec for details
     static int32 ByteSize(Code c) {
         switch (c) {
             case Float:     return sizeof(float32);
             case Vec2:      return 2 * sizeof(float32);
-            case Vec3:      return 3 * sizeof(float32);
+            case Vec3:      return 4 * sizeof(float32);
             case Vec4:      return 4 * sizeof(float32);
             case Mat2:      return 2 * 2 * sizeof(float32);
-            case Mat3:      return 3 * 3 * sizeof(float32);
+            case Mat3:      return 3 * 3 * sizeof(float32); // FIXME!
             case Mat4:      return 4 * 4 * sizeof(float32);
             case Int:       return sizeof(int32);
-            case Bool:      return 1;       // FIXME: is a bool guaranteed to be 1 byte in GLSL and HLSL
+            case Bool:      return sizeof(int32);
             case Texture:   return sizeof(Id);
             default:
                 o_error("invalid uniform type code!\n");
