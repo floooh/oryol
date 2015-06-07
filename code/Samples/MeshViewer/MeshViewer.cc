@@ -400,7 +400,7 @@ MeshViewerApp::applyVariables(int matIndex) {
                 fsParams.MatDiffuse = this->materials[matIndex].diffuse;
                 fsParams.MatSpecular = this->materials[matIndex].specular;
                 fsParams.MatSpecularPower = this->materials[matIndex].specPower;
-                fsParams.GammaCorrect = this->gammaCorrect ? 1 : 0;
+                fsParams.GammaCorrect = this->gammaCorrect;
                 Gfx::ApplyUniformBlock(fsParams);
             }
             break;
