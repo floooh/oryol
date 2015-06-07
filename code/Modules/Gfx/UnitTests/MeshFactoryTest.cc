@@ -29,8 +29,9 @@ TEST(MeshFactoryTest) {
     
     // setup a meshFactory object
     meshPool meshPool;
+    texturePool texPool;
     class renderer renderer;
-    renderer.setup(&displayManager, &meshPool);
+    renderer.setup(&displayManager, &meshPool, &texPool);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     
