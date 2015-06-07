@@ -992,16 +992,15 @@ glRenderer::applyUniformBlock(int32 blockIndex, const uint8* ptr, int32 byteSize
     o_assert(layout.ByteSize() == byteSize);
 
     // for each uniform in the uniform block:
-    int32 slotIndex = 0;
     const int numComps = layout.NumComponents();
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-        GLint glLoc = this->curProgramBundle->getUniformLocation(blockIndex, slotIndex);
+        GLint glLoc = this->curProgramBundle->getUniformLocation(blockIndex, compIndex);
         switch (comp.Type) {
             case UniformType::Float:
                 {
-                    float32 val = *(const float32*)valuePtr;
+                    const float32 val = *(const float32*)valuePtr;
                     ::glUniform1f(glLoc, val);
                 }
                 break;
@@ -1048,12 +1047,20 @@ glRenderer::applyUniformBlock(int32 blockIndex, const uint8* ptr, int32 byteSize
                 }
                 break;
 
+            case UniformType::Bool:
+                {
+                    // NOTE: bools are actually stored as int32 in the uniform block struct
+                    const int32 val = *(const int32*)valuePtr;
+                    ::glUniform1i(glLoc, val);
+                }
+                break;
+
             case UniformType::Texture:
                 {
                     const Id& resId = *(const Id*)valuePtr;
                     texture* tex = this->texPool->Lookup(resId);
                     o_assert_dbg(tex);
-                    int32 samplerIndex = this->curProgramBundle->getSamplerIndex(blockIndex, slotIndex);
+                    int32 samplerIndex = this->curProgramBundle->getSamplerIndex(blockIndex, compIndex);
                     GLuint glTexture = tex->glTex;
                     GLenum glTarget = tex->glTarget;
                     this->bindTexture(samplerIndex, glTarget, glTexture);

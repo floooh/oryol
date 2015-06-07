@@ -85,7 +85,7 @@ public:
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
     /// apply a uniform block
-    template<class T> static void ApplyUniformBlock(int32 index, const T& value);
+    template<class T> static void ApplyUniformBlock(const T& value);
 
     /// update dynamic vertex data (only complete replace possible at the moment)
     static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
@@ -126,9 +126,9 @@ private:
 
 //------------------------------------------------------------------------------
 template<class T> inline void
-Gfx::ApplyUniformBlock(int32 index, const T& value) {
+Gfx::ApplyUniformBlock(const T& value) {
     o_assert_dbg(IsValid());
-    state->renderer.applyUniformBlock(index, (const uint8*) &value, sizeof(value));
+    state->renderer.applyUniformBlock(T::_blockIndex, (const uint8*) &value, sizeof(value));
 }
 
 //------------------------------------------------------------------------------
