@@ -2,13 +2,14 @@
 Code generator for shader libraries.
 '''
 
-Version = 25
+Version = 26
 
 import os
 import sys
 import glob
 import platform
 from pprint import pprint
+from collections import OrderedDict
 import genutil as util
 from util import glslcompiler
 
@@ -102,12 +103,17 @@ validInOutTypes = [
     'float', 'vec2', 'vec3', 'vec4'
 ]
 
+# NOTE: order is important, always go from greatest to smallest type,
+# and keep texture samplers at start!
 validUniformTypes = [
-    'bool', 'int', 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube' 
+    'sampler2D', 'samplerCube',
+    'mat4', 'mat3', 'mat2',
+    'vec4', 'vec3', 'vec2',
+    'float', 'int', 'bool'
 ]
 
 uniformCType = {
-    'bool':         'bool',
+    'bool':         'int32',
     'int':          'int32',
     'float':        'float32',
     'vec2':         'glm::vec2',
@@ -228,7 +234,11 @@ class UniformBlock :
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.uniforms = []
-        self.uniformsByType = {}
+        self.uniformsByType = OrderedDict()
+        # uniformsByType must be in the order of greatest to smallest
+        # type, with samplers at the start
+        for type in validUniformTypes :
+            self.uniformsByType[type] = []
 
     def getTag(self) :
         return 'uniform_block'
@@ -540,9 +550,6 @@ class Parser :
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
-        # uniform_blocks group contained uniforms by type
-        if not type in self.current.uniformsByType :
-            self.current.uniformsByType[type] = []
         self.current.uniformsByType[type].append(uniform)
 
     #---------------------------------------------------------------------------
@@ -1083,17 +1090,20 @@ def writeBundleHeader(f, shdLib, bundle) :
     f.write('    class ' + bundle.name + ' {\n')
     f.write('    public:\n')
     
-    # write uniform block slot index definitions
-    for i in range(0, len(bundle.uniformBlocks)) :
-        f.write('        static const int32 {} = {};\n'.format(bundle.uniformBlocks[i].bind, i))
-
     # write uniform block structs
-    for uBlock in bundle.uniformBlocks :
-        f.write('        struct {}_Struct {{\n'.format(uBlock.bind))
+    for slotIndex, uBlock in enumerate(bundle.uniformBlocks) :
+        f.write('        #pragma pack(push,1)\n')
+        f.write('        struct {} {{\n'.format(uBlock.bind))
+        f.write('            static const int32 _blockIndex = {};\n'.format(slotIndex))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
                 f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bind))
+                # for vec3's we need to add a padding field, FIXME: would be good
+                # to try filling the padding fields with float params!
+                if type == 'vec3' :
+                    f.write('            float32 _pad_{};\n'.format(uniform.bind))
         f.write('        };\n')
+        f.write('        #pragma pack(pop)\n')
     f.write('        static ProgramBundleSetup CreateSetup();\n')
     f.write('    };\n')
 
@@ -1185,7 +1195,7 @@ def writeBundleSource(f, shdLib, bundle) :
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
                 f.write('    {}.Add("{}", {}, 1);\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
-        f.write('    setup.AddUniformBlock("{}", {}, {});\n'.format(uBlock.name, layoutName, uBlock.bind))
+        f.write('    setup.AddUniformBlock("{}", {}, {}::_blockIndex);\n'.format(uBlock.name, layoutName, uBlock.bind))
     f.write('    return setup;\n')
     f.write('}\n')
 
