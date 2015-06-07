@@ -52,10 +52,10 @@ TEST(MeshBuilderTest) {
     CHECK(meshSetup.VertexUsage == Usage::Immutable);
     CHECK(meshSetup.IndexUsage == Usage::Immutable);
     CHECK(meshSetup.Layout.NumComponents() == 2);
-    CHECK(meshSetup.Layout.Component(0).Attr == VertexAttr::Position);
-    CHECK(meshSetup.Layout.Component(0).Format == VertexFormat::Float3);
-    CHECK(meshSetup.Layout.Component(1).Attr == VertexAttr::TexCoord0);
-    CHECK(meshSetup.Layout.Component(1).Format == VertexFormat::Float2);
+    CHECK(meshSetup.Layout.ComponentAt(0).Attr == VertexAttr::Position);
+    CHECK(meshSetup.Layout.ComponentAt(0).Format == VertexFormat::Float3);
+    CHECK(meshSetup.Layout.ComponentAt(1).Attr == VertexAttr::TexCoord0);
+    CHECK(meshSetup.Layout.ComponentAt(1).Format == VertexFormat::Float2);
     CHECK(meshSetup.NumPrimitiveGroups() == 1);
     CHECK(meshSetup.PrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
     CHECK(meshSetup.PrimitiveGroup(0).BaseElement == 0);

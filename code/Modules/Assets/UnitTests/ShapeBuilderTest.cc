@@ -28,8 +28,9 @@ TEST(ShapeBuilderTest) {
     
     // setup a meshFactory object
     meshPool meshPool;
+    texturePool texPool;
     class renderer renderer;
-    renderer.setup(&displayManager, &meshPool);
+    renderer.setup(&displayManager, &meshPool, &texPool);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     
@@ -53,10 +54,10 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
     CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
     CHECK(simpleCube.vertexBufferAttrs.Layout.ByteSize() == 12);
-    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).IsValid());
-    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).Attr == VertexAttr::Position);
-    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).Format == VertexFormat::Float3);
-    CHECK(simpleCube.vertexBufferAttrs.Layout.Component(0).ByteSize() == 12);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.ComponentAt(0).IsValid());
+    CHECK(simpleCube.vertexBufferAttrs.Layout.ComponentAt(0).Attr == VertexAttr::Position);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.ComponentAt(0).Format == VertexFormat::Float3);
+    CHECK(simpleCube.vertexBufferAttrs.Layout.ComponentAt(0).ByteSize() == 12);
     CHECK(simpleCube.indexBufferAttrs.NumIndices == 36);
     CHECK(simpleCube.indexBufferAttrs.Type == IndexType::Index16);
     CHECK(simpleCube.indexBufferAttrs.BufferUsage == Usage::Immutable);
