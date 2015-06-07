@@ -57,7 +57,7 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(int32 index, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// clear currently assigned render target
     void clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh

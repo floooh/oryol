@@ -128,7 +128,7 @@ private:
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& value) {
     o_assert_dbg(IsValid());
-    state->renderer.applyUniformBlock(T::_blockIndex, (const uint8*) &value, sizeof(value));
+    state->renderer.applyUniformBlock(T::_blockIndex, T::_layoutHash, (const uint8*) &value, sizeof(value));
 }
 
 //------------------------------------------------------------------------------

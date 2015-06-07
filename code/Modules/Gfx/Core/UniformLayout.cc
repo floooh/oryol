@@ -8,6 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 UniformLayout::UniformLayout() :
+TypeHash(0),
 numComps(0),
 byteSize(0) {
     // empty

@@ -980,16 +980,19 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(int32 blockIndex, const uint8* ptr, int32 byteSize) {
+glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(0 != layoutHash);
     o_assert_dbg(nullptr != this->curProgramBundle);
 
     // get the uniform layout object for this uniform block
     const UniformLayout& layout = this->curProgramBundle->Setup.UniformBlockLayout(blockIndex);
-    // FIXME: it would be good to have some sort of layout-signature embedded in
-    // the struct pointer to by ptr, and in the UniformLayout, which could
-    // be checked here. Just checking the size is dangerous.
-    o_assert(layout.ByteSize() == byteSize);
+
+    // check whether the provided struct is type-compatibel with the
+    // expected uniform-block-layout, the size-check shouldn't be necessary
+    // since the hash should already bail out, but it doesn't hurt either
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    o_assert_dbg(layout.ByteSize() == byteSize);
 
     // for each uniform in the uniform block:
     const int numComps = layout.NumComponents();

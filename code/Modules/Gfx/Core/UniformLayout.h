@@ -40,6 +40,10 @@ public:
     void Clear();
     /// return true if the layout is empty
     bool Empty() const;
+
+    /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
+    int64 TypeHash;
+
     /// add a uniform component to the layout
     UniformLayout& Add(const Component& comp);
     /// add a uniform component to the layout

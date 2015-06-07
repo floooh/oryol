@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 26
+Version = 30
 
 import os
 import sys
@@ -266,6 +266,16 @@ class UniformBlock :
                 elif uniform.bind != other_uniform.bind :
                     return False
         return True
+
+    def getHash(self) :
+        # returns an integer hash for the uniform block layout,
+        # this is used as runtime-type check in Gfx::ApplyUniformBlock
+        # to check whether a compatible block is set
+        hashString = ''
+        for type in self.uniformsByType :
+            for uniform in self.uniformsByType[type] :
+                hashString += type
+        return hash(hashString)
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -1095,6 +1105,7 @@ def writeBundleHeader(f, shdLib, bundle) :
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(uBlock.bind))
         f.write('            static const int32 _blockIndex = {};\n'.format(slotIndex))
+        f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
                 f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bind))
@@ -1192,6 +1203,7 @@ def writeBundleSource(f, shdLib, bundle) :
     for uBlock in bundle.uniformBlocks :
         layoutName = '{}_layout'.format(uBlock.bind)
         f.write('    UniformLayout {};\n'.format(layoutName))
+        f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
                 f.write('    {}.Add("{}", {}, 1);\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))

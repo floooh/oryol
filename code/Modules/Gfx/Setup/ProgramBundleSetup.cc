@@ -80,6 +80,7 @@ void
 ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, int16 slotIndex) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(!layout.Empty());
+    o_assert_dbg(0 != layout.TypeHash);
 
     uniformBlockEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
     entry.name = name;
