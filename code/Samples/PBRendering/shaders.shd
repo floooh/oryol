@@ -6,8 +6,10 @@
 //------------------------------------------------------------------------------
 
 @vs vs
-@uniform mat4 modelViewProj ModelViewProj
-@uniform mat4 modelView ModelView
+@uniform_block vsParams VSParams
+    @uniform mat4 modelViewProj ModelViewProj
+    @uniform mat4 modelView ModelView
+@end
 @in vec4 position
 @in vec3 normal
 @out vec3 viewSpacePos
@@ -107,7 +109,9 @@ G_UE4(vec3 L, vec3 V, vec3 N) {
 
 @fs fs
 @use Util BRDF
-@uniform vec3 lightVec LightVec // must be in view space already
+@uniform_block fsParams FSParams
+    @uniform vec3 lightVec LightVec // must be in view space already
+@end
 @in vec3 viewSpacePos
 @in vec3 viewSpaceNormal
     const vec3 eyePos = vec3(0.0, 0.0, 0.0);    // in view space, eye pos is at origin

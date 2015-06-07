@@ -17,7 +17,9 @@ vec4 gamma(vec4 c) {
 //  normal visualization shader
 //
 @vs normalsVS
-@uniform mat4 mvp ModelViewProjection
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+@end
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
@@ -38,8 +40,10 @@ vec4 gamma(vec4 c) {
 //  lambert shader
 //
 @vs lambertVS
-@uniform mat4 mvp ModelViewProjection
-@uniform mat4 model Model
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+    @uniform mat4 model Model
+@end
 @in vec4 position
 @in vec3 normal
 @out vec3 N
@@ -49,10 +53,12 @@ vec4 gamma(vec4 c) {
 
 @fs lambertFS
 @use Util
-@uniform vec3 lightDir LightDir     // light dir in global space
-@uniform vec4 lightColor LightColor
-@uniform vec4 matDiffuse MatDiffuse
-@uniform bool gammaCorrect GammaCorrect
+@uniform_block fsParams FSParams
+    @uniform vec3 lightDir LightDir     // light dir in global space
+    @uniform vec4 lightColor LightColor
+    @uniform vec4 matDiffuse MatDiffuse
+    @uniform bool gammaCorrect GammaCorrect
+@end
 @in vec3 N
     vec3 l = lightDir;
     vec3 n = normalize(N);
@@ -74,8 +80,10 @@ vec4 gamma(vec4 c) {
 //  phong shader
 //
 @vs phongVS
-@uniform mat4 mvp ModelViewProjection
-@uniform mat4 model Model
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+    @uniform mat4 model Model
+@end
 @in vec4 position
 @in vec4 normal
 @out vec3 N
@@ -87,13 +95,15 @@ vec4 gamma(vec4 c) {
 
 @fs phongFS
 @use Util
-@uniform vec3 lightDir LightDir     // light dir in global space
-@uniform vec3 eyePos EyePos
-@uniform vec4 lightColor LightColor
-@uniform vec4 matDiffuse MatDiffuse
-@uniform vec4 matSpecular MatSpecular
-@uniform bool gammaCorrect GammaCorrect
-@uniform float matSpecularPower MatSpecularPower
+@uniform_block fsParams FSParams
+    @uniform vec3 lightDir LightDir     // light dir in global space
+    @uniform vec3 eyePos EyePos
+    @uniform vec4 lightColor LightColor
+    @uniform vec4 matDiffuse MatDiffuse
+    @uniform vec4 matSpecular MatSpecular
+    @uniform bool gammaCorrect GammaCorrect
+    @uniform float matSpecularPower MatSpecularPower
+@end
 @in vec3 P
 @in vec3 N
     vec3 l = lightDir;

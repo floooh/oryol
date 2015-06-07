@@ -91,7 +91,9 @@ float snoise(vec2 v)
 @fs plasmaFS
 @highp float
 @use NoiseUtil
-@uniform float time Time
+@uniform_block fsParams FSParams
+    @uniform float time Time
+@end
 @in vec2 uv
     vec2 dx = vec2(time, 0.0);
     vec2 dy = vec2(0.0, time);
@@ -127,8 +129,10 @@ float snoise(vec2 v)
 
 //------------------------------------------------------------------------------
 @vs planeVS
-@uniform mat4 mvp ModelViewProjection
-@uniform sampler2D tex Texture
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+    @uniform sampler2D tex Texture
+@end
 @in vec4 position
 @in vec2 texcoord0
 @out vec4 color

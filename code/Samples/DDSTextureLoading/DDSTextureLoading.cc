@@ -29,6 +29,8 @@ private:
     StaticArray<Id, NumTextures> texId;
     glm::mat4 view;
     glm::mat4 proj;
+    Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSParams fsParams;
 };
 OryolMain(DDSTextureLoadingApp);
 
@@ -67,13 +69,14 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        const Id& tex = this->texId[i];
-        if (tex.IsValid()) {
-            const auto resState = Gfx::QueryResourceInfo(tex).State;
+        this->fsParams.Texture = this->texId[i];
+        if (this->fsParams.Texture.IsValid()) {
+            const auto resState = Gfx::QueryResourceInfo(this->fsParams.Texture).State;
             if (resState == ResourceState::Valid) {
                 glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-                Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(p));
-                Gfx::ApplyVariable(Shaders::Main::Texture, tex);
+                this->vsParams.ModelViewProjection = this->computeMVP(p);
+                Gfx::ApplyUniformBlock(this->vsParams);
+                Gfx::ApplyUniformBlock(this->fsParams);
                 Gfx::Draw(0);
             }
         }

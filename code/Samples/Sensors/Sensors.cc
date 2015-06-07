@@ -27,6 +27,7 @@ private:
     Id drawState;
     glm::mat4 proj;
     TimePoint lastFrameTimePoint;
+    Shaders::Main::VSParams vsParams;
 };
 OryolMain(SensorsApp);
 
@@ -77,8 +78,8 @@ SensorsApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     Gfx::ApplyDrawState(this->drawState);
-    glm::mat4 mvp = this->computeMVP(sensors);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+    this->vsParams.ModelViewProjection = this->computeMVP(sensors);
+    Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
     if (!Input::Sensors().Attached) {
         Dbg::Print("\n Please run on mobile device!\n\r");

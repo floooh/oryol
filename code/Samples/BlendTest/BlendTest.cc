@@ -17,7 +17,7 @@ public:
 private:
     Id backgroundDrawState;
     Id drawStates[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
-    Shaders::Triangle::Params_Struct params;
+    Shaders::Triangle::Params params;
 };
 OryolMain(BlendTestApp);
 
@@ -37,7 +37,7 @@ BlendTestApp::OnRunning() {
             this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
             this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
             Gfx::ApplyDrawState(this->drawStates[y][x]);
-            Gfx::ApplyUniformBlock(Shaders::Triangle::Params, this->params);
+            Gfx::ApplyUniformBlock(this->params);
             Gfx::Draw(0);
         }
     }

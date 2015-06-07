@@ -18,12 +18,14 @@ public:
     virtual AppState::Code OnCleanup();
     
 private:
-    void applyTransforms(const glm::vec3& pos) const;
-    void applyDirLight() const;
+    void applyTransforms(const glm::vec3& pos);
+    void applyDirLight();
 
     Id drawState;
     glm::mat4 proj;
     glm::mat4 view;
+    Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSParams fsParams;
 };
 OryolMain(PBRenderingApp);
 
@@ -90,19 +92,18 @@ PBRenderingApp::OnCleanup() {
 
 //------------------------------------------------------------------------------
 void
-PBRenderingApp::applyDirLight() const {
+PBRenderingApp::applyDirLight() {
     // compute directional light vector in view space (vector TOWARDS light)
     glm::vec4 worldLightDir(glm::normalize(glm::vec4(1.0, 1.0, 1.0, 0.0)));
-    glm::vec3 viewSpaceLightDir = glm::vec3(this->view * worldLightDir);
-    Gfx::ApplyVariable(Shaders::Main::LightVec, viewSpaceLightDir);
+    this->fsParams.LightVec = glm::vec3(this->view * worldLightDir);
+    Gfx::ApplyUniformBlock(this->fsParams);
 }
 
 //------------------------------------------------------------------------------
 void
-PBRenderingApp::applyTransforms(const glm::vec3& pos) const {
+PBRenderingApp::applyTransforms(const glm::vec3& pos) {
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    glm::mat4 modelView = this->view * modelTform;
-    glm::mat4 modelViewProj = this->proj * this->view * modelTform;
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProj, modelViewProj);
-    Gfx::ApplyVariable(Shaders::Main::ModelView, modelView);
+    this->vsParams.ModelView = this->view * modelTform;
+    this->vsParams.ModelViewProj = this->proj * this->view * modelTform;
+    Gfx::ApplyUniformBlock(this->vsParams);
 }

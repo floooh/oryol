@@ -1,5 +1,7 @@
 @vs vs
-@uniform mat4 mvp ModelViewProjection
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+@end
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
@@ -8,7 +10,9 @@
 @end
 
 @fs fs
-@uniform sampler2D tex Texture
+@uniform_block fsParams FSParams
+    @uniform sampler2D tex Texture
+@end
 @in vec2 uv
     _color = vec4(tex2D(tex, uv).xyz, 1.0);
 @end

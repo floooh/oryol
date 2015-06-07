@@ -31,7 +31,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    glm::mat4 modelViewProj;
+    Shaders::Main::VSParams vsParams;
     bool updateEnabled = true;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
@@ -68,7 +68,7 @@ InstancingApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+    Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
     
@@ -99,7 +99,7 @@ InstancingApp::updateCamera() {
     float32 angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->modelViewProj = this->proj * this->view * this->model;
+    this->vsParams.ModelViewProjection = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
@@ -173,7 +173,6 @@ InstancingApp::OnInit() {
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->modelViewProj = this->proj * this->view * this->model;
     
     return App::OnInit();
 }

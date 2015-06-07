@@ -130,17 +130,17 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        Shaders::TextShader::VSParams_Struct vsParams;
+        Shaders::TextShader::VSParams vsParams;
+        Shaders::TextShader::FSParams fsParams;
         const float w = 8.0f / Gfx::RenderTargetAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
-        Shaders::TextShader::FSParams_Struct fsParams;
         fsParams.Texture = this->fontTexture;
     
         Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->textDrawState);
-        Gfx::ApplyUniformBlock(Shaders::TextShader::VSParams, vsParams);
-        Gfx::ApplyUniformBlock(Shaders::TextShader::FSParams, fsParams);
+        Gfx::ApplyUniformBlock(vsParams);
+        Gfx::ApplyUniformBlock(fsParams);
         Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
     }
 }

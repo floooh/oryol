@@ -28,9 +28,9 @@ private:
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    Shaders::RenderTarget::Params_Struct offscreenParams;
-    Shaders::Main::VSParams_Struct displayVSParams;
-    Shaders::Main::FSParams_Struct displayFSParams;
+    Shaders::RenderTarget::Params offscreenParams;
+    Shaders::Main::VSParams displayVSParams;
+    Shaders::Main::FSParams displayFSParams;
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -47,7 +47,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
-    Gfx::ApplyUniformBlock(Shaders::RenderTarget::Params, this->offscreenParams);
+    Gfx::ApplyUniformBlock(this->offscreenParams);
     Gfx::Draw(0);
     
     // render sphere to display, with offscreen render target as texture
@@ -55,8 +55,8 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::Clear(ClearTarget::All, glm::vec4(0.25f), 1.0f, 0);
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
-    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->displayVSParams);
-    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->displayFSParams);
+    Gfx::ApplyUniformBlock(this->displayVSParams);
+    Gfx::ApplyUniformBlock(this->displayFSParams);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();

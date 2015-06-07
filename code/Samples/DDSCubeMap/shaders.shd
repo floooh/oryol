@@ -3,7 +3,9 @@
 //------------------------------------------------------------------------------
 
 @vs vs
-@uniform mat4 mvp ModelViewProjection
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+@end
 @in vec4 position
 @in vec3 normal
 @out vec3 nrm
@@ -12,7 +14,9 @@
 @end
 
 @fs fs
-@uniform samplerCube tex Texture
+@uniform_block fsParams FSParams
+    @uniform samplerCube tex Texture
+@end
 @in vec3 nrm
     _color = texCUBE(tex, nrm);
 @end

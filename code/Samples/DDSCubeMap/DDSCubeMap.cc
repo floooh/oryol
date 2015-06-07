@@ -24,11 +24,12 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     Id drawState;
-    Id tex;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
+    Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSParams fsParams;
 };
 OryolMain(DDSCubeMapApp);
 
@@ -46,9 +47,10 @@ DDSCubeMapApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading
-    if (Gfx::QueryResourceInfo(this->tex).State == ResourceState::Valid) {
-        Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f)));
-        Gfx::ApplyVariable(Shaders::Main::Texture, this->tex);
+    if (Gfx::QueryResourceInfo(this->fsParams.Texture).State == ResourceState::Valid) {
+        this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+        Gfx::ApplyUniformBlock(this->vsParams);
+        Gfx::ApplyUniformBlock(this->fsParams);
         Gfx::Draw(0);
     }
     Gfx::CommitFrame();
@@ -84,7 +86,7 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->tex = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
+    this->fsParams.Texture = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout

@@ -30,8 +30,8 @@ private:
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
     int32 frameIndex = 0;
-    Shaders::Main::VSParams_Struct vsParams;
-    Shaders::Main::FSParams_Struct fsParams;
+    Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSParams fsParams;
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -56,8 +56,8 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     this->fsParams.Texture = this->renderTargets[index1];
-    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->vsParams);
-    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->fsParams);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyUniformBlock(this->fsParams);
     Gfx::Draw(0);
     
     // ...and again to display
@@ -66,8 +66,8 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     this->fsParams.Texture = this->renderTargets[index0];
-    Gfx::ApplyUniformBlock(Shaders::Main::VSParams, this->vsParams);
-    Gfx::ApplyUniformBlock(Shaders::Main::FSParams, this->fsParams);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyUniformBlock(this->fsParams);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();

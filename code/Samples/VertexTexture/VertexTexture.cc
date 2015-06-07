@@ -22,13 +22,13 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
-    Id renderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
-    float32 time = 0.0f;
+    Shaders::Plane::VSParams planeVSParams;
+    Shaders::Plasma::FSParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(VertexTextureApp);
@@ -37,21 +37,20 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnRunning() {
     
-    this->time += 1.0f / 60.0f;
-    
+    this->plasmaFSParams.Time += 1.0f / 60.0f;
+    this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
+
     // render plasma to offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::ApplyOffscreenRenderTarget(this->planeVSParams.Texture);
     Gfx::ApplyDrawState(this->plasmaDrawState);
-    Gfx::ApplyVariable(Shaders::Plasma::Time, this->time);
+    Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
     
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->planeDrawState);
-    const glm::mat4 mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
-    Gfx::ApplyVariable(Shaders::Plane::ModelViewProjection, mvp);
-    Gfx::ApplyVariable(Shaders::Plane::Texture, this->renderTarget);
+    Gfx::ApplyUniformBlock(this->planeVSParams);
     Gfx::Draw(0);
     
     Dbg::DrawTextBuffer();
@@ -78,7 +77,7 @@ VertexTextureApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::CreateResource(rtSetup);
+    this->planeVSParams.Texture = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
     Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
@@ -103,7 +102,8 @@ VertexTextureApp::OnInit() {
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    
+    this->plasmaFSParams.Time = 0.0f;
+
     return App::OnInit();
 }
 

@@ -59,7 +59,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    this->texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->canvasParams.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -93,7 +93,7 @@ canvas::Render() {
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Canvas::Texture, this->texture);
+    Gfx::ApplyUniformBlock(this->canvasParams);
     Gfx::Draw(0);
 }
 

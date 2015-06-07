@@ -3,8 +3,12 @@
 //------------------------------------------------------------------------------
 
 @vs vs
-@uniform mat4 mvp ModelViewProjection
-@uniform vec4 particleTranslate ParticleTranslate
+@uniform_block perFrameParams PerFrameParams
+    @uniform mat4 mvp ModelViewProjection
+@end
+@uniform_block perParticleParams PerParticleParams
+    @uniform vec4 particleTranslate Translate
+@end
 @in vec4 position
 @in vec4 color0
 @out vec4 color

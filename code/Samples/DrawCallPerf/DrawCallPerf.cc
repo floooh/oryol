@@ -30,8 +30,9 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    glm::mat4 modelViewProj;
-    bool updateEnabled = true;    
+    Shaders::Main::PerFrameParams perFrameParams;
+    Shaders::Main::PerParticleParams perParticleParams;
+    bool updateEnabled = true;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
     TimePoint lastFrameTimePoint;
@@ -65,9 +66,10 @@ DrawCallPerfApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, this->modelViewProj);
+    Gfx::ApplyUniformBlock(this->perFrameParams);
     for (int32 i = 0; i < this->curNumParticles; i++) {
-        Gfx::ApplyVariable(Shaders::Main::ParticleTranslate, this->particles[i].pos);
+        this->perParticleParams.Translate = this->particles[i].pos;
+        Gfx::ApplyUniformBlock(this->perParticleParams);
         Gfx::Draw(0);
     }
     drawTime = Clock::Since(drawStart);
@@ -101,7 +103,7 @@ DrawCallPerfApp::updateCamera() {
     float32 angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->modelViewProj = this->proj * this->view * this->model;
+    this->perFrameParams.ModelViewProjection = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
@@ -164,7 +166,6 @@ DrawCallPerfApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();
-    this->modelViewProj = this->proj * this->view * this->model;
     
     return App::OnInit();
 }

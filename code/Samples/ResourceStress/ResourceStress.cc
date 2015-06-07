@@ -54,15 +54,18 @@ ResourceStressApp::OnRunning() {
     this->createObjects();
     this->showInfo();
 
+    Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSParams fsParams;
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
-            glm::mat4 mvp = this->proj * this->view * obj.modelTransform;
+            vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
+            fsParams.Texture = obj.texture;
             Gfx::ApplyDrawState(obj.drawState);
-            Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
-            Gfx::ApplyVariable(Shaders::Main::Texture, obj.texture);
+            Gfx::ApplyUniformBlock(vsParams);
+            Gfx::ApplyUniformBlock(fsParams);
             Gfx::Draw(0);
         }
     }

@@ -16,7 +16,8 @@ public:
     
 private:
     Id drawState;
-    float time = 0.0f;
+    Shaders::Main::Params params;
+
 };
 OryolMain(FullscreenQuadApp);
 
@@ -24,10 +25,10 @@ OryolMain(FullscreenQuadApp);
 AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
-    this->time += 1.0f / 60.0f;
+    this->params.Time += 1.0f / 60.0f;
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Main::Time, this->time);
+    Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     
@@ -42,6 +43,7 @@ FullscreenQuadApp::OnInit() {
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    this->params.Time = 0.0f;
     return App::OnInit();
 }
 

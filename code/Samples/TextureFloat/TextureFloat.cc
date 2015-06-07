@@ -19,13 +19,13 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    Id renderTarget;
     Id offscreenDrawState;
     Id copyDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
-    float32 time = 0.0f;
+    Shaders::Offscreen::FSParams offscreenFSParams;
+    Shaders::Copy::FSParams copyFSParams;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(TextureFloatApp);
@@ -34,18 +34,18 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnRunning() {
     
-    this->time += 1.0f / 60.0f;
+    this->offscreenFSParams.Time += 1.0f / 60.0f;
     
     // render plasma to offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::ApplyOffscreenRenderTarget(this->copyFSParams.Texture);
     Gfx::ApplyDrawState(this->offscreenDrawState);
-    Gfx::ApplyVariable(Shaders::Offscreen::Time, this->time);
+    Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::ApplyVariable(Shaders::Copy::Texture, this->renderTarget);
+    Gfx::ApplyUniformBlock(this->copyFSParams);
     Gfx::Draw(0);
     
     Dbg::DrawTextBuffer();
@@ -76,7 +76,7 @@ TextureFloatApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::CreateResource(rtSetup);
+    this->copyFSParams.Texture = Gfx::CreateResource(rtSetup);
     
     // fullscreen mesh, we'll reuse this several times
     Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
@@ -84,7 +84,8 @@ TextureFloatApp::OnInit() {
     // setup draw state for offscreen rendering to float render target
     Id offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
     this->offscreenDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
-    
+    this->offscreenFSParams.Time = 0.0f;
+
     // fullscreen-copy mesh, shader and draw state
     Id copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
@@ -94,7 +95,7 @@ TextureFloatApp::OnInit() {
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
-    
+
     return App::OnInit();
 }
 

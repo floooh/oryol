@@ -184,10 +184,6 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
         return;
     }
 
-    const float width = ImGui::GetIO().DisplaySize.x;
-    const float height = ImGui::GetIO().DisplaySize.y;
-    const glm::mat4 ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
-
     // copy over vertices into single vertex buffer
     int numVertices = 0;
     int numCmdLists;
@@ -204,11 +200,18 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
     }
 
     // draw command lists
+    Shaders::IMUIShader::VSParams vsParams;
+    Shaders::IMUIShader::FSParams fsParams;
+    const float width  = ImGui::GetIO().DisplaySize.x;
+    const float height = ImGui::GetIO().DisplaySize.y;
+    vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+    fsParams.Texture = self->fontTexture;
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
+
     Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
     Gfx::ApplyDrawState(self->drawState);
-    Gfx::ApplyVariable(Shaders::IMUIShader::Ortho, ortho);
-    Gfx::ApplyVariable(Shaders::IMUIShader::Texture, self->fontTexture);
+    Gfx::ApplyUniformBlock(vsParams);
+    Gfx::ApplyUniformBlock(fsParams);
     int vtx_offset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = cmd_lists[cmdListIndex];

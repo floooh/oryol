@@ -3,7 +3,9 @@
 //------------------------------------------------------------------------------
 
 @vs vs
-@uniform mat4 mvp ModelViewProjection
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+@end
 @in vec4 position
 @in vec4 color0
 @in vec4 instance0

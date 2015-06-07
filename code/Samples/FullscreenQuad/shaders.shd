@@ -26,7 +26,9 @@ void lookat(in vec3 eye, in vec3 center, inout vec3 up, out vec3 right, out vec3
 //
 @vs vs
 @use VSFuncs
-@uniform float time Time
+@uniform_block params Params
+    @uniform float time Time
+@end
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv

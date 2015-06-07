@@ -37,14 +37,16 @@ private:
     Id updateParticles;
     Id drawParticles;
     
-    glm::vec2 particleBufferDims{ ParticleBufferWidth, ParticleBufferHeight };
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    glm::mat4 modelViewProj;
     int32 frameCount = 0;
     TimePoint lastFrameTimePoint;
     int32 curNumParticles = 0;
+
+    Shaders::InitParticles::FSParams initFSParams;
+    Shaders::UpdateParticles::FSParams updFSParams;
+    Shaders::DrawParticles::VSParams drawVSParams;
 };
 OryolMain(GPUParticlesApp);
 
@@ -75,9 +77,9 @@ GPUParticlesApp::OnRunning() {
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
     Gfx::ApplyDrawState(this->updateParticles);
-    Gfx::ApplyVariable(Shaders::UpdateParticles::NumParticles, (float32) this->curNumParticles);
-    Gfx::ApplyVariable(Shaders::UpdateParticles::BufferDims, this->particleBufferDims);
-    Gfx::ApplyVariable(Shaders::UpdateParticles::PrevState, this->particleBuffer[readIndex]);
+    this->updFSParams.NumParticles = (float32) this->curNumParticles;
+    this->updFSParams.PrevState = this->particleBuffer[readIndex];
+    Gfx::ApplyUniformBlock(this->updFSParams);
     Gfx::Draw(0);
     
     // now the actual particle shape rendering:
@@ -86,9 +88,8 @@ GPUParticlesApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawParticles);
-    Gfx::ApplyVariable(Shaders::DrawParticles::ModelViewProjection, this->modelViewProj);
-    Gfx::ApplyVariable(Shaders::DrawParticles::BufferDims, this->particleBufferDims);
-    Gfx::ApplyVariable(Shaders::DrawParticles::ParticleState, this->particleBuffer[drawIndex]);
+    this->drawVSParams.ParticleState = this->particleBuffer[drawIndex];
+    Gfx::ApplyUniformBlock(this->drawVSParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     
     Dbg::DrawTextBuffer();
@@ -107,7 +108,7 @@ GPUParticlesApp::updateCamera() {
     float32 angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->modelViewProj = this->proj * this->view * this->model;
+    this->drawVSParams.ModelViewProjection = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
@@ -155,7 +156,7 @@ GPUParticlesApp::OnInit() {
     auto updateSetup = DrawStateSetup::FromMeshAndProg(fullscreenMesh, updateProg);
     updateSetup.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Gfx::CreateResource(updateSetup);
-    
+
     // a vertex buffer with the particleIds, this would not be needed if
     // ANGLE_instanced_arrays would support gl_InstanceID
     const int32 particleIdSize = MaxNumParticles * sizeof(float32);
@@ -188,20 +189,26 @@ GPUParticlesApp::OnInit() {
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = Gfx::CreateResource(drawSetup);
-    
+
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
-    
+
+    // setup initial shader params
+    const glm::vec2 bufferDims(ParticleBufferWidth, ParticleBufferHeight);
+    this->initFSParams.BufferDims = bufferDims;
+    this->updFSParams.BufferDims = bufferDims;
+    this->drawVSParams.BufferDims = bufferDims;
+
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[0]);
     Gfx::ApplyDrawState(this->initParticles);
-    Gfx::ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
+    Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);
     Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[1]);
     Gfx::ApplyDrawState(this->initParticles);
-    Gfx::ApplyVariable(Shaders::InitParticles::BufferDims, this->particleBufferDims);
+    Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);
     
     return App::OnInit();

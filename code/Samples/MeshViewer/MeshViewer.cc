@@ -363,28 +363,46 @@ MeshViewerApp::applyVariables(int matIndex) {
     switch (this->materials[matIndex].shaderIndex) {
         case Normals:
             // Normals shader
-            Gfx::ApplyVariable(Shaders::Normals::ModelViewProjection, this->modelViewProj);
+            {
+                Shaders::Normals::VSParams vsParams;
+                vsParams.ModelViewProjection = this->modelViewProj;
+                Gfx::ApplyUniformBlock(vsParams);
+            }
             break;
         case Lambert:
             // Lambert shader
-            Gfx::ApplyVariable(Shaders::Lambert::ModelViewProjection, this->modelViewProj);
-            Gfx::ApplyVariable(Shaders::Lambert::Model, this->model);
-            Gfx::ApplyVariable(Shaders::Lambert::LightColor, this->lightColor * this->lightIntensity);
-            Gfx::ApplyVariable(Shaders::Lambert::LightDir, this->lightDir);
-            Gfx::ApplyVariable(Shaders::Lambert::MatDiffuse, this->materials[matIndex].diffuse);
-            Gfx::ApplyVariable(Shaders::Lambert::GammaCorrect, this->gammaCorrect ? 1 : 0);
+            {
+                Shaders::Lambert::VSParams vsParams;
+                vsParams.ModelViewProjection = this->modelViewProj;
+                vsParams.Model = this->model;
+                Gfx::ApplyUniformBlock(vsParams);
+
+                Shaders::Lambert::FSParams fsParams;
+                fsParams.LightColor = this->lightColor * this->lightIntensity;
+                fsParams.LightDir = this->lightDir;
+                fsParams.MatDiffuse = this->materials[matIndex].diffuse;
+                fsParams.GammaCorrect = this->gammaCorrect;
+                Gfx::ApplyUniformBlock(fsParams);
+            }
             break;
         case Phong:
             // Phong shader
-            Gfx::ApplyVariable(Shaders::Phong::ModelViewProjection, this->modelViewProj);
-            Gfx::ApplyVariable(Shaders::Phong::Model, this->model);
-            Gfx::ApplyVariable(Shaders::Phong::EyePos, this->eyePos);
-            Gfx::ApplyVariable(Shaders::Phong::LightColor, this->lightColor * this->lightIntensity);
-            Gfx::ApplyVariable(Shaders::Phong::LightDir, this->lightDir);
-            Gfx::ApplyVariable(Shaders::Phong::MatDiffuse, this->materials[matIndex].diffuse);
-            Gfx::ApplyVariable(Shaders::Phong::MatSpecular, this->materials[matIndex].specular);
-            Gfx::ApplyVariable(Shaders::Phong::MatSpecularPower, this->materials[matIndex].specPower);
-            Gfx::ApplyVariable(Shaders::Phong::GammaCorrect, this->gammaCorrect ? 1 : 0);
+            {
+                Shaders::Phong::VSParams vsParams;
+                vsParams.ModelViewProjection = this->modelViewProj;
+                vsParams.Model = this->model;
+                Gfx::ApplyUniformBlock(vsParams);
+
+                Shaders::Phong::FSParams fsParams;
+                fsParams.EyePos = this->eyePos;
+                fsParams.LightColor = this->lightColor * this->lightIntensity;
+                fsParams.LightDir = this->lightDir;
+                fsParams.MatDiffuse = this->materials[matIndex].diffuse;
+                fsParams.MatSpecular = this->materials[matIndex].specular;
+                fsParams.MatSpecularPower = this->materials[matIndex].specPower;
+                fsParams.GammaCorrect = this->gammaCorrect ? 1 : 0;
+                Gfx::ApplyUniformBlock(fsParams);
+            }
             break;
             
         default:

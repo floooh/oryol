@@ -380,9 +380,10 @@ TestInputApp::handleTouchInput(const Touchpad& touchpad) {
 //------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() const {
-    glm::mat4 mvp = this->proj * this->view;
+    Shaders::Main::VSParams vsParams;
+    vsParams.ModelViewProjection = this->proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyVariable(Shaders::Main::ModelViewProjection, mvp);
+    Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw(0);
 }
 

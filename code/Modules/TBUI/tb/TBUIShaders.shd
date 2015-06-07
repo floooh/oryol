@@ -3,7 +3,9 @@
 //------------------------------------------------------------------------------
 
 @vs vs
-@uniform mat4 ortho Ortho
+@uniform_block vsParams VSParams
+    @uniform mat4 ortho Ortho
+@end
 @in vec4 position
 @in vec2 texcoord0
 @in vec4 color0
@@ -15,7 +17,9 @@
 @end
 
 @fs fs
-@uniform sampler2D tex Texture
+@uniform_block fsParams FSParams
+    @uniform sampler2D tex Texture
+@end
 @in vec2 uv
 @in vec4 color
     _color = tex2D(tex, uv) * color;

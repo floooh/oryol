@@ -143,8 +143,9 @@ float snoise(vec2 v)
 @highp float
 @use Noise
 @use FSUtil
-@uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
-@uniform float time Time
+@uniform_block fsParams FSParams
+    @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
+@end
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
         _color = vec4(0.0, 0.0, 0.0, 0.0);
@@ -172,9 +173,11 @@ float snoise(vec2 v)
 @fs updateFS
 @highp float
 @use FSUtil
-@uniform vec2 bufDims BufferDims
-@uniform sampler2D prevState PrevState
-@uniform float numParticles NumParticles
+@uniform_block fsParams FSParams
+    @uniform vec2 bufDims BufferDims
+    @uniform sampler2D prevState PrevState
+    @uniform float numParticles NumParticles
+@end
 @in vec2 uv
     const float frameTime = 1.0 / 60.0;
 
@@ -226,9 +229,11 @@ float snoise(vec2 v)
 @vs drawVS
 @highp sampler2D
 @use VSUtil
-@uniform mat4 mvp ModelViewProjection
-@uniform vec2 bufDims BufferDims
-@uniform sampler2D particleTex ParticleState
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+    @uniform vec2 bufDims BufferDims
+    @uniform sampler2D particleTex ParticleState
+@end
 @in vec4 position
 @in vec4 color0
 @in float instance0

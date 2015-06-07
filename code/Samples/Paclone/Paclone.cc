@@ -24,8 +24,8 @@ private:
     Direction getInput();
     void applyViewPort();
 
-    Id canvasRenderTarget;
     Id crtEffect;
+    Shaders::CRT::FSParams crtParams;
     canvas spriteCanvas;
     game gameState;
     sound sounds;
@@ -56,7 +56,7 @@ PacloneApp::OnInit() {
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
-    this->canvasRenderTarget = Gfx::CreateResource(rtSetup);
+    this->crtParams.Canvas = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     Id prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
@@ -85,19 +85,18 @@ PacloneApp::OnRunning() {
     this->gameState.Update(this->tick, &this->spriteCanvas, &this->sounds, input);
 
     // render into offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->canvasRenderTarget);
+    Gfx::ApplyOffscreenRenderTarget(this->crtParams.Canvas);
     Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     this->spriteCanvas.Render();
     Dbg::DrawTextBuffer();
     
     // copy offscreen render target into backbuffer
-    glm::vec2 dispRes(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
+    this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
-    Gfx::ApplyVariable(Shaders::CRT::Canvas, this->canvasRenderTarget);
-    Gfx::ApplyVariable(Shaders::CRT::Resolution, dispRes);
+    Gfx::ApplyUniformBlock(this->crtParams);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     this->tick++;

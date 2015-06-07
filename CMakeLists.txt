@@ -20,8 +20,11 @@ fips_add_subdirectory(code/Modules)
 fips_ide_group(Ext)
 fips_add_subdirectory(code/Ext)
 if (ORYOL_SAMPLES)
-   fips_ide_group(Samples)
-   fips_add_subdirectory(code/Samples)
+    fips_ide_group(Samples)
+    fips_include_directories(code/Samples)
+    # also find out-of-source generated headers
+    fips_include_directories(${CMAKE_BINARY_DIR}/code/Samples)
+    fips_add_subdirectory(code/Samples)
 endif()
 fips_finish()
 
