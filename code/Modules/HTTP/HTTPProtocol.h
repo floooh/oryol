@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:10#
+/* #version:11#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -61,7 +61,7 @@ public:
         static MessageIdType ClassMessageId() {
             return MessageId::HTTPResponseId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'HTPR') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -109,7 +109,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::HTTPRequestId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'HTPR') return true;
             else return Message::IsMemberOf(protId);
         };

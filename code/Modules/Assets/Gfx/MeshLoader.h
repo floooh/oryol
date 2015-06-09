@@ -23,11 +23,11 @@ public:
     /// destructor
     virtual ~MeshLoader();
     /// start loading, return a resource id
-    virtual Id Start();
+    virtual Id Start() override;
     /// continue loading, return resource state (Pending, Valid, Failed)
-    virtual ResourceState::Code Continue();
+    virtual ResourceState::Code Continue() override;
     /// cancel the load process
-    virtual void Cancel();
+    virtual void Cancel() override;
 private:
     Id resId;
     Ptr<IOProtocol::Request> ioRequest;

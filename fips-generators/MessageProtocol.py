@@ -7,7 +7,7 @@ import sys
 import yaml
 import genutil as util
 
-Version = 10 
+Version = 11 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -212,7 +212,7 @@ def writeMessageClasses(f, desc) :
         f.write('        };\n')
 
         # virtual method which checks whether the method belongs to a protocol
-        f.write('        virtual bool IsMemberOf(ProtocolIdType protId) const {\n')
+        f.write('        virtual bool IsMemberOf(ProtocolIdType protId) const override {\n')
         f.write("            if (protId == '" + protocolId + "') return true;\n")
         f.write('            else return ' + msgParentClassName + '::IsMemberOf(protId);\n')
         f.write('        };\n') 

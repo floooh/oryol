@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:10#
+/* #version:11#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -51,7 +51,7 @@ public:
         static MessageIdType ClassMessageId() {
             return MessageId::TestMsgExId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'TSP2') return true;
             else return TestProtocol::TestMsg1::IsMemberOf(protId);
         };

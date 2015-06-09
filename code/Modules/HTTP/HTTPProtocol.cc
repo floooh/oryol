@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// #version:10# machine generated, do not edit!
+// #version:11# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "HTTPProtocol.h"

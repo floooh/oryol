@@ -30,9 +30,9 @@ public:
     virtual ~HTTPFileSystem();
 
     /// per-frame update
-    virtual void DoWork();
+    virtual void DoWork() override;
     /// called when the IOProtocol::Request message is received
-    virtual void onRequest(const Ptr<IOProtocol::Request>& msg);
+    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override;
 
 private:
     StringBuilder stringBuilder;

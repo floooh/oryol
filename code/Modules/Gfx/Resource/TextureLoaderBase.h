@@ -16,7 +16,7 @@ public:
     /// constructor
     TextureLoaderBase(const TextureSetup& setup, int32 ioLane);
     /// return resource locator
-    virtual const class Locator& Locator() const;
+    virtual const class Locator& Locator() const override;
 
 protected:
     TextureSetup setup;

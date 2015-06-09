@@ -30,7 +30,7 @@ public:
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;
     /// perform work, this will be invoked on downstream ports
-    virtual void DoWork();
+    virtual void DoWork() override;
     
 protected:
     Array<Ptr<Port>> subscribers;

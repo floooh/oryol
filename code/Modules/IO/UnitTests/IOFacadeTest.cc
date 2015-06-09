@@ -19,7 +19,7 @@ class TestFileSystem : public FileSystem {
     OryolClassCreator(TestFileSystem);
 public:
     /// called when the IOProtocol::Get message is received
-    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) {
+    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override {
         Log::Info("TestFileSystem::onRequest() called!\n");
         numRequestsHandled++;
         

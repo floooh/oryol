@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:10#
+/* #version:11#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -65,7 +65,7 @@ public:
         static MessageIdType ClassMessageId() {
             return MessageId::MouseMoveId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -100,7 +100,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::MouseButtonId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -140,7 +140,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::MouseScrollId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -170,7 +170,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::KeyId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -217,7 +217,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::WCharId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IPPT') return true;
             else return Message::IsMemberOf(protId);
         };

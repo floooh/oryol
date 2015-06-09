@@ -11,7 +11,7 @@
 private:\
 static Oryol::_priv::poolAllocator<TYPE> allocator;\
 protected:\
-virtual void destroy() {\
+virtual void destroy() override {\
     TYPE::allocator.Destroy(this);\
 };\
 public:\
@@ -28,9 +28,20 @@ Oryol::_priv::poolAllocator<TYPE> TYPE::allocator;
 template<class TEMPLATE_TYPE> Oryol::_priv::poolAllocator<CLASS_TYPE<TEMPLATE_TYPE>> CLASS_TYPE<TEMPLATE_TYPE>::allocator;
 
 /// declare an Oryol class without pool allocator (located inside class declaration)
-#define OryolClassDecl(TYPE) \
+#define OryolBaseClassDecl(TYPE) \
 protected:\
 virtual void destroy() {\
+    Oryol::Memory::Delete(this);\
+};\
+public:\
+template<typename... ARGS> static Oryol::Ptr<TYPE> Create(ARGS&&... args) {\
+    return Oryol::Ptr<TYPE>(Oryol::Memory::New<TYPE>(std::forward<ARGS>(args)...));\
+};
+
+/// declare an Oryol class without pool allocator (located inside class declaration)
+#define OryolClassDecl(TYPE) \
+protected:\
+virtual void destroy() override {\
     Oryol::Memory::Delete(this);\
 };\
 public:\
@@ -55,5 +66,5 @@ public:\
 
 #define OryolTypeDecl(CLASS, BASECLASS)\
 protected:\
-    virtual bool isOfType(const Oryol::TypeId t) const { return t == getTypeId<CLASS>() ? true : BASECLASS::isOfType(t); };\
+    virtual bool isOfType(const Oryol::TypeId t) const override { return t == getTypeId<CLASS>() ? true : BASECLASS::isOfType(t); };\
 

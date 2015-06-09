@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:10#
+/* #version:11#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -69,7 +69,7 @@ public:
         static MessageIdType ClassMessageId() {
             return MessageId::TestMsg1Id;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -159,7 +159,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::TestMsg2Id;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'TSTP') return true;
             else return TestMsg1::IsMemberOf(protId);
         };
@@ -192,7 +192,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::TestArrayMsgId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };

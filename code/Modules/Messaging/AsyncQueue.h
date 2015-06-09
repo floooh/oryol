@@ -30,7 +30,7 @@ public:
     int32 GetNumQueuedMessages() const;
     
     /// this only forwards the DoWork() call to the forwarding port
-    virtual void DoWork();
+    virtual void DoWork() override;
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;
     /// explicitly forward queued messages

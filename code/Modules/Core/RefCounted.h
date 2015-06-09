@@ -19,7 +19,7 @@
 namespace Oryol {
     
 class RefCounted {
-    OryolClassDecl(RefCounted);
+    OryolBaseClassDecl(RefCounted);
 public:
     /// destructor
     virtual ~RefCounted();

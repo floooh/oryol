@@ -33,7 +33,7 @@ class CreatorDerivedClass : public CreatorTestClass {
 public:
     CreatorDerivedClass() : v0(0) {};
     CreatorDerivedClass(int64 v0_) : v0(v0_) {};
-    virtual int32 Bla() const {
+    virtual int32 Bla() const override {
         return 1;
     };
     

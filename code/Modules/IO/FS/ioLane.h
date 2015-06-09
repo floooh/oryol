@@ -30,9 +30,9 @@ private:
     /// called in thread on thread-entry
     virtual void onThreadEnter() override;
     /// called in thread before thread is left
-    virtual void onThreadLeave() override;
+    virtual void onThreadLeave() override ;
     /// called after messages are processed, and on each tick (if a TickDuration is set)
-    virtual void onTick();
+    virtual void onTick() override;
     /// callback for IOProtocol::Request
     void onRequest(const Ptr<IOProtocol::Request>& msg);
     /// callback for IOProtocol::notifyFileSystemAdded

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:10#
+/* #version:11#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -73,7 +73,7 @@ public:
         static MessageIdType ClassMessageId() {
             return MessageId::RequestId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IOPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -162,7 +162,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::notifyLanesId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IOPT') return true;
             else return Message::IsMemberOf(protId);
         };
@@ -188,7 +188,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemRemovedId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
@@ -207,7 +207,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemReplacedId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
@@ -226,7 +226,7 @@ private:
         static MessageIdType ClassMessageId() {
             return MessageId::notifyFileSystemAddedId;
         };
-        virtual bool IsMemberOf(ProtocolIdType protId) const {
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };

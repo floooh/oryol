@@ -22,7 +22,7 @@ public:
     /// constructor with success callback
     MeshLoaderBase(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
     /// return resource locator
-    virtual const class Locator& Locator() const;
+    virtual const class Locator& Locator() const override;
 
 protected:
     MeshSetup setup;
