@@ -258,13 +258,13 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
     // setup glVertexAttr arrays
     for (uint8 vaoSlotIndex = 0; vaoSlotIndex < numVAOSlots; vaoSlotIndex++) {
         const glMesh* meshes[2] = { &msh, instMesh };
-        for (int32 i = 0; i < 2; i++) {
-            const glMesh* curMesh = meshes[i];
+        for (int32 meshIndex = 0; meshIndex < 2; meshIndex++) {
+            const glMesh* curMesh = meshes[meshIndex];
             if (nullptr != curMesh) {
                 const VertexLayout& layout = curMesh->vertexBufferAttrs.Layout;
                 const int32 numComps = layout.NumComponents();
-                for (int i = 0; i < numComps; i++) {
-                    const VertexLayout::Component& comp = layout.ComponentAt(i);
+                for (int compIndex = 0; compIndex < numComps; compIndex++) {
+                    const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                     glVertexAttr& glAttr = msh.glAttrs[vaoSlotIndex][comp.Attr];  // msh is not a bug
                     glAttr.enabled = GL_TRUE;
                     if (curMesh == &msh) {
@@ -361,7 +361,7 @@ glMeshFactory::glSetupVertexAttrs(mesh& msh) {
                             break;
                     }
                     glAttr.stride = layout.ByteSize();
-                    glAttr.offset = layout.ComponentByteOffset(i);
+                    glAttr.offset = layout.ComponentByteOffset(compIndex);
                 }
             }
         }
