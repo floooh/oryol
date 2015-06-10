@@ -747,4 +747,18 @@ public:
     };
 };
 
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::VertexStepRate
+    @ingroup Gfx
+    @brief classify vertices in a buffer as per-vertex or per-instance data
+*/
+class VertexStepRate {
+public:
+    enum Code {
+        PerVertex = 0,
+        PerInstance = 1,
+    };
+};
+
 } // namespace Oryol

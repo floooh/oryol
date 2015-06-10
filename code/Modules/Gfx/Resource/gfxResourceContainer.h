@@ -73,6 +73,11 @@ public:
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
+
+    /// query overall state of drawstate dependencies (state of input meshes)
+    ResourceState::Code queryDrawStateDependenciesState(const drawState* ds);
+    /// handle pending draw states, this is called once per frame
+    void handlePendingDrawStates();
     
     class renderer* renderer;
     class displayMgr* displayMgr;
@@ -88,6 +93,7 @@ public:
     class drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
+    Array<Id> pendingDrawStates;
 };
 
 //------------------------------------------------------------------------------

@@ -309,13 +309,92 @@ gfxResourceContainer::Create(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
-        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
-        this->drawStatePool.UpdateState(resId, newState);
+
+        // check if all referenced resources are loaded, if not defer draw state creation
+        const ResourceState::Code resState = this->queryDrawStateDependenciesState(&res);
+        if (resState == ResourceState::Pending)
+        {
+            this->pendingDrawStates.Add(resId);
+            this->drawStatePool.UpdateState(resId, ResourceState::Pending);
+        }
+        else {
+            const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
+            o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
+            this->drawStatePool.UpdateState(resId, newState);
+        }
     }
     return resId;
 }
-    
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+gfxResourceContainer::queryDrawStateDependenciesState(const drawState* ds) {
+    o_assert_dbg(ds);
+
+    // this returns an overall state of the meshes attached to
+    // a draw state (failed, pending, valid)
+//    for (const Id& meshId : ds->Setup.Meshes) {
+const Id meshId = ds->Setup.Mesh;
+        if (meshId.IsValid()) {
+            const mesh* msh = this->meshPool.Get(meshId);
+            if (msh) {
+                switch (msh->State) {
+                    case ResourceState::Failed:
+                        // at least one mesh has failed loading
+                        return ResourceState::Failed;
+                    case ResourceState::Pending:
+                        // at least one mesh has not finished loading
+                        return ResourceState::Pending;
+                    case ResourceState::Initial:
+                    case ResourceState::Setup:
+                        // this cannot happen
+                        o_error("can't happen!\n");
+                        return ResourceState::InvalidState;
+                    default:
+                        break;
+                }
+            }
+            else {
+                // the required mesh no longer exists
+                return ResourceState::Failed;
+            }
+        }
+//    }
+    // fallthough means: all mesh dependencies are valid
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+void
+gfxResourceContainer::handlePendingDrawStates() {
+
+    // this goes through all pending draw states (where meshes are still
+    // loading), checks whether meshes have finished loading (or failed to load)
+    // and finishes the draw state creation
+    for (int i = this->pendingDrawStates.Size() - 1; i >= 0; i--) {
+        const Id& resId = this->pendingDrawStates[i];
+        o_assert_dbg(resId.IsValid());
+        drawState* ds = this->drawStatePool.Get(resId);
+        if (ds) {
+            const ResourceState::Code state = this->queryDrawStateDependenciesState(ds);
+            if (state != ResourceState::Pending) {
+                this->pendingDrawStates.Erase(i);
+                if (state == ResourceState::Valid) {
+                    // all ok, can setup draw state
+                    const ResourceState::Code newState = this->drawStateFactory.SetupResource(*ds);
+                    o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
+                    this->drawStatePool.UpdateState(resId, newState);
+                }
+                else {
+                    // oops, a mesh has failed loading, also set draw state to failed
+                    o_assert_dbg(state == ResourceState::Failed);
+                    this->drawStatePool.UpdateState(resId, state);
+                }
+            }
+        }
+    }
+}
+
 //------------------------------------------------------------------------------
 Id
 gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
@@ -422,7 +501,7 @@ gfxResourceContainer::update() {
     this->programBundlePool.Update();
     this->texturePool.Update();
     this->drawStatePool.Update();
-    
+
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
         const auto& loader = this->pendingLoaders[i];
@@ -431,6 +510,9 @@ gfxResourceContainer::update() {
             this->pendingLoaders.Erase(i);
         }
     }
+
+    // handle drawstates with pending dependendies
+    this->handlePendingDrawStates();
 }
 
 //------------------------------------------------------------------------------

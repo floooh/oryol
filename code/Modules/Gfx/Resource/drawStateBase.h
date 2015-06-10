@@ -12,6 +12,7 @@ namespace Oryol {
 namespace _priv {
 
 class programBundle;
+class mesh;
 
 class drawStateBase : public resourceBase<DrawStateSetup> {
 public:
@@ -23,8 +24,8 @@ public:
     /// clear the object
     void Clear();
     
-    /// mesh resource Id (cannot be a pointer since meshes might be loaded async)
-    class Id msh;
+    /// mesh pointer;
+    mesh* msh;
     /// program bundle pointer
     programBundle* prog;
 };

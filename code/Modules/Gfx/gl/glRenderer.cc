@@ -408,30 +408,39 @@ glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
 void
 glRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != ds);
     o_assert_dbg(this->mshPool);
-    
-    this->curDrawState = ds;
-    this->curProgramBundle = ds->prog;
-    this->curMesh = this->mshPool->Lookup(ds->msh); // NOTE: curMesh can be nullptr now if mesh still loading!
-    
-    const DrawStateSetup& setup = ds->Setup;
-    if (setup.DepthStencilState != this->depthStencilState) {
-        this->applyDepthStencilState(setup.DepthStencilState);
+
+    if (nullptr == ds) {
+        // the draw state has not been loaded yet, invalidate rendering
+        this->curDrawState = nullptr;
+        this->curProgramBundle = nullptr;
+        this->curMesh = nullptr;
     }
-    if (setup.BlendState != this->blendState) {
-        this->applyBlendState(setup.BlendState);
-    }
-    if (setup.RasterizerState != this->rasterizerState) {
-        this->applyRasterizerState(setup.RasterizerState);
-    }
-    this->applyProgramBundle(this->curProgramBundle, setup.ProgramSelectionMask);
-    if (this->curMesh) {
-        this->applyMesh(this->curMesh, this->curProgramBundle);
-    }
-    if (setup.BlendColor != this->blendColor) {
-        this->blendColor = setup.BlendColor;
-        ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
+    else {
+        // draw state is valid, ready for rendering
+        this->curDrawState = ds;
+        this->curProgramBundle = ds->prog;
+        this->curMesh = ds->msh;
+        o_assert_dbg(this->curMesh);
+        
+        const DrawStateSetup& setup = ds->Setup;
+        if (setup.DepthStencilState != this->depthStencilState) {
+            this->applyDepthStencilState(setup.DepthStencilState);
+        }
+        if (setup.BlendState != this->blendState) {
+            this->applyBlendState(setup.BlendState);
+        }
+        if (setup.RasterizerState != this->rasterizerState) {
+            this->applyRasterizerState(setup.RasterizerState);
+        }
+        this->applyProgramBundle(this->curProgramBundle, setup.ProgramSelectionMask);
+        if (this->curMesh) {
+            this->applyMesh(this->curMesh, this->curProgramBundle);
+        }
+        if (setup.BlendColor != this->blendColor) {
+            this->blendColor = setup.BlendColor;
+            ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
+        }
     }
 }
 
@@ -983,7 +992,11 @@ void
 glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
-    o_assert_dbg(nullptr != this->curProgramBundle);
+    if (!this->curProgramBundle) {
+        // currently not in a valid state for rendering,
+        // the last applied draw state was not ready yet
+        return;
+    }
 
     // get the uniform layout object for this uniform block
     const UniformLayout& layout = this->curProgramBundle->Setup.UniformBlockLayout(blockIndex);

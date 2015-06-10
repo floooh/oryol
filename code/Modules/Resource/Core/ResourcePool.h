@@ -43,6 +43,8 @@ public:
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder or nullptr
     RESOURCE* Lookup(const Id& id) const;
+    /// get pointer to resource by resource id, only return nullptr if resource is not contained
+    RESOURCE* Get(const Id& id) const;
     /// update the resource state of a contained resource
     void UpdateState(const Id& id, ResourceState::Code newState);
     /// test if the pool contains a slot with resource id (regardless of state)
@@ -208,6 +210,21 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
         // FIXME: return placeholder if one is defined
     }
     return nullptr;
+}
+
+//------------------------------------------------------------------------------
+template<class RESOURCE, class SETUP> RESOURCE*
+ResourcePool<RESOURCE,SETUP>::Get(const Id& id) const {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(id.Type == this->resourceType);
+    const auto& slot = this->slots[id.SlotIndex];
+    if (id == slot.Id) {
+        return const_cast<RESOURCE*>(&slot);
+    }
+    else {
+        // dangling Id, resource slot has been re-occupied
+        return nullptr;
+    }
 }
 
 //------------------------------------------------------------------------------

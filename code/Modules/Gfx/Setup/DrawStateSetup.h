@@ -5,6 +5,7 @@
     @ingroup Gfx
     @brief setup object for DrawState resources
 */
+#include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/BlendState.h"
@@ -18,10 +19,12 @@ class DrawStateSetup {
 public:
     /// construct from mesh and prog
     static DrawStateSetup FromMeshAndProg(const Id& mesh, const Id& prog, uint32 progSelMask=0);
+    /// max number of input meshes
+    static const int32 MaxInputMeshes = 4;
 
     /// default constructor
     DrawStateSetup();
-    
+
     /// resource locator
     class Locator Locator;
     /// blend state
@@ -32,7 +35,8 @@ public:
     class DepthStencilState DepthStencilState;
     /// rasterizer state
     class RasterizerState RasterizerState;
-    /// mesh
+    /// FIXME: input mesh(es)
+    /// StaticArray<Id, MaxInputMeshes> Meshes;
     Id Mesh;
     /// program bundle
     Id Program;

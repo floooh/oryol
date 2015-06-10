@@ -54,8 +54,10 @@ drawStateFactoryBase::Discard() {
 //------------------------------------------------------------------------------
 ResourceState::Code
 drawStateFactoryBase::SetupResource(drawState& ds) {
-    ds.msh = ds.Setup.Mesh;
+    ds.msh = this->meshPool->Lookup(ds.Setup.Mesh);
+    o_assert_dbg(ds.msh && (ResourceState::Valid == ds.msh->State));
     ds.prog = this->programBundlePool->Lookup(ds.Setup.Program);
+    o_assert_dbg(ds.prog && (ResourceState::Valid == ds.prog->State));
     return ResourceState::Valid;
 }
 

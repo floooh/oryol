@@ -44,7 +44,9 @@ public:
 
     /// vertex layout
     VertexLayout Layout;
-    
+    /// vertex step rate (per-vertex or per-instance
+    VertexStepRate::Code StepRate;
+
     /// number of vertices (only CreateEmpty)
     int32 NumVertices;
     /// number of indices (only CreateEmpty)
