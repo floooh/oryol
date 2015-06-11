@@ -53,14 +53,16 @@ public:
 
     Effect effects[NumEffects];
     int uiCurEffect = Song1;
-    const char* uiEffectNames[NumEffects] = {
-        "Waka",
-        "Song1",
-        "Power1",
-        "EatGhost"
-    };
+    static const char* uiEffectNames[NumEffects];
 };
 OryolMain(SoundTestApp);
+
+const char* SoundTestApp::uiEffectNames[SoundTestApp::NumEffects] = {
+    "Waka",
+    "Song1",
+    "Power1",
+    "EatGhost"
+};
 
 //------------------------------------------------------------------------------
 AppState::Code
