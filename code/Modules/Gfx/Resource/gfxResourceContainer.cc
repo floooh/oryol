@@ -392,6 +392,12 @@ gfxResourceContainer::handlePendingDrawStates() {
                 }
             }
         }
+        else {
+            // the drawState object was destroyed before everything was loaded,
+            // still need to remove the entry from the pending array
+            o_warn("gfxResourceContainer::handlePendingDrawStates(): drawState destroyed before dependencies loaded!\n");
+            this->pendingDrawStates.Erase(i);
+        }
     }
 }
 
