@@ -18,16 +18,6 @@ else()
     add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=0)    
 endif()
 
-#
-# Enable/disable use of GL vertex array objects.
-#
-option(ORYOL_GL_USE_VERTEXARRAYOBJECT "Use GL vertex array objects" OFF)
-if (ORYOL_GL_USE_VERTEXARRAYOBJECT)
-    add_definitions(-DORYOL_GL_USE_VERTEXARRAYOBJECT=1)
-else()
-    add_definitions(-DORYOL_GL_USE_VERTEXARRAYOBJECT=0)
-endif()
-
 endif() # ORYOL_OPENGL
 
 fips_begin_module(Gfx)

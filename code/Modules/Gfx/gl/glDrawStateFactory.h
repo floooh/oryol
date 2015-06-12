@@ -23,11 +23,6 @@ private:
     /// setup the GL vertex attribute declaration
     void glSetupVertexAttrs(drawState& ds);
 
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    /// setup GL vertex array object
-    void glSetupVertexArrayObject(drawState& ds);
-    #endif
-
     /// table to convert VertexFormat to GL vertex attr size, type, normalized
     static const struct VertexFormatTable {
         GLint size;

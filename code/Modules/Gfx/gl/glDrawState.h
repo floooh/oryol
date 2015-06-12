@@ -14,16 +14,8 @@ namespace _priv {
 
 class glDrawState : public drawStateBase {
 public:
-    /// constructor
-    glDrawState();
-    /// destructor
-    ~glDrawState();
-
     /// clear the object (called from drawStateFactory::DestroyResource()
     void Clear();
-
-    /// GL vertex-array-object id
-    GLuint glVAO;
     /// GL vertex attributes
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
 };

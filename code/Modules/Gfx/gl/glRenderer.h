@@ -80,11 +80,7 @@ public:
     void bindVertexBuffer(GLuint vb);
     /// bind index buffer with state caching
     void bindIndexBuffer(GLuint ib);
-    /// bind vertex array object with state caching
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    void bindVertexArrayObject(GLuint vao);
-    #endif
-    
+
     /// invalidate program state
     void invalidateProgramState();
     /// invoke glUseProgram (if changed)
@@ -114,8 +110,6 @@ private:
     void applyProgramBundle(programBundle* progBundle, uint32 progSelMask);
     /// apply mesh state
     void applyMeshState(const drawState* ds);
-    /// apply mesh to use for rendering
-//    void applyMesh(const mesh* msh, const programBundle* progBundle);
 
     bool valid;
     displayMgr* dispMgr;
@@ -157,9 +151,6 @@ private:
     
     GLuint vertexBuffer;
     GLuint indexBuffer;
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    GLuint vertexArrayObject;
-    #endif
     GLuint program;
     
     static const int32 MaxTextureSamplers = 16;

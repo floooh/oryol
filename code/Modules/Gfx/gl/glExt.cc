@@ -29,14 +29,12 @@ glExt::Setup() {
     #endif
     
     #if ORYOL_OPENGL_CORE_PROFILE
-    extensions[VertexArrayObject] = true;
     extensions[TextureCompressionDXT] = true;
     extensions[InstancedArrays] = true;
     extensions[TextureFloat] = true;
     #endif
     
     #if !ORYOL_OPENGL_CORE_PROFILE
-    extensions[VertexArrayObject] = strBuilder.Contains("_vertex_array_object");
     extensions[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                         strBuilder.Contains("_compressed_texture_s3tc") ||
                                         strBuilder.Contains("_texture_compression_dxt1");
@@ -57,24 +55,10 @@ glExt::Setup() {
     #endif
 
     #if ORYOL_OPENGLES3
-    extensions[VertexArrayObject] = true;
     extensions[InstancedArrays] = true;
     #endif
     
-    #if !ORYOL_GL_USE_VERTEXARRAYOBJECT
-    extensions[VertexArrayObject] = false;
-    #endif
-    
-    #if ORYOL_GL_USE_GETATTRIBLOCATION
-    // If forced to use GetAttribLocation, VertexArrayObject must be disabled as
-    // well since VertexArrayObject code path depends on BindAttribLocation
-    extensions[VertexArrayObject] = false;
-    #endif
-
     // put warnings to the console for extensions that we expect but are not provided
-    if (!extensions[VertexArrayObject]) {
-        o_warn("glExt::Setup(): vertex_array_object extension not found or disabled!\n");
-    }
     if (!extensions[InstancedArrays]) {
         o_warn("glExt::Setup(): instanced_arrays extension not found!\n");
     }
@@ -121,48 +105,6 @@ glExt::IsTextureFormatSupported(PixelFormat::Code fmt) {
         return true;
     }
 }
-
-//------------------------------------------------------------------------------
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-void
-glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
-    #if ORYOL_EMSCRIPTEN
-        ::glGenVertexArrays(n, arrays);
-    #elif ORYOL_OPENGLES2
-        ::glGenVertexArraysOES(n, arrays);
-    #else
-        ::glGenVertexArrays(n, arrays);
-    #endif
-}
-#endif
-
-//------------------------------------------------------------------------------
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-void
-glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
-    #if ORYOL_EMSCRIPTEN
-        ::glDeleteVertexArrays(n, arrays);
-    #elif ORYOL_OPENGLES2
-        ::glDeleteVertexArraysOES(n, arrays);
-    #else
-        ::glDeleteVertexArrays(n, arrays);
-    #endif
-}
-#endif
-
-//------------------------------------------------------------------------------
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-void
-glExt::BindVertexArray(GLuint array) {
-    #if ORYOL_EMSCRIPTEN
-        ::glBindVertexArray(array);
-    #elif ORYOL_OPENGLES2
-        ::glBindVertexArrayOES(array);
-    #else
-        ::glBindVertexArray(array);
-    #endif
-}
-#endif
 
 //------------------------------------------------------------------------------
 void

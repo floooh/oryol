@@ -100,9 +100,6 @@ viewPortWidth(0),
 viewPortHeight(0),
 vertexBuffer(0),
 indexBuffer(0),
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-vertexArrayObject(0),
-#endif
 program(0) {
     for (int32 i = 0; i < MaxTextureSamplers; i++) {
         this->samplers2D[i] = 0;
@@ -134,10 +131,7 @@ glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
     #endif
-    #if ORYOL_GL_DISABLE_VERTEXARRAYOBJECT
-    o_warn("glStateWrapper: ORYOL_GL_DISABLE_VERTEXARRAYOBJECT is ON\n!");
-    #endif
-    
+
     // in case we are on a Core Profile, create a global Vertex Array Object
     #if ORYOL_MACOS
     ::glGenVertexArrays(1, &this->globalVAO);
@@ -332,60 +326,37 @@ glRenderer::applyMeshState(const drawState* ds) {
     o_assert_dbg(nullptr != ds->meshes[0]);
 
     ORYOL_GL_CHECK_ERROR();
+    this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
+    for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+        const glVertexAttr& attr = ds->glAttrs[attrIndex];
+        glVertexAttr& curAttr = this->glAttrs[attrIndex];
+        const mesh* msh = ds->meshes[attr.vbIndex];
+        const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
 
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        o_assert_dbg(ds->glVAO);
-        this->bindVertexArrayObject(ds->glVAO);
-
-        // if the draw-state has double-buffered dynamic-streaming meshes, need to
-        // re-apply the vertex attributes here which use dynamic-streaming input meshes
-        if (ds->hasStreamingMeshes) {
-            for (const auto& attr : ds->glAttrs) {
-                if (attr.enabled && attr.streaming) {
-                    const mesh* msh = ds->meshes[attr.vbIndex];
-                    const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
-                    this->bindVertexBuffer(glVB);
-                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                }
-            }
-        }
-    }
-    else
-    #endif
-    {
-        this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
-        for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-            const glVertexAttr& attr = ds->glAttrs[attrIndex];
-            glVertexAttr& curAttr = this->glAttrs[attrIndex];
-            const mesh* msh = ds->meshes[attr.vbIndex];
-            const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
-
-            bool vbChanged = (glVB != this->glAttrVBs[attrIndex]);
-            bool attrChanged = (attr != curAttr);
-            if (vbChanged || attrChanged) {
-                if (attr.enabled) {
-                    this->glAttrVBs[attrIndex] = glVB;
-                    this->bindVertexBuffer(glVB);
-                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+        bool vbChanged = (glVB != this->glAttrVBs[attrIndex]);
+        bool attrChanged = (attr != curAttr);
+        if (vbChanged || attrChanged) {
+            if (attr.enabled) {
+                this->glAttrVBs[attrIndex] = glVB;
+                this->bindVertexBuffer(glVB);
+                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                ORYOL_GL_CHECK_ERROR();
+                if (!curAttr.enabled) {
+                    ::glEnableVertexAttribArray(attr.index);
                     ORYOL_GL_CHECK_ERROR();
-                    if (!curAttr.enabled) {
-                        ::glEnableVertexAttribArray(attr.index);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                    if (curAttr.divisor != attr.divisor) {
-                        glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
                 }
-                else {
-                    if (curAttr.enabled) {
-                        ::glDisableVertexAttribArray(attr.index);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
+                if (curAttr.divisor != attr.divisor) {
+                    glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                    ORYOL_GL_CHECK_ERROR();
                 }
-                curAttr = attr;
             }
+            else {
+                if (curAttr.enabled) {
+                    ::glDisableVertexAttribArray(attr.index);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+            }
+            curAttr = attr;
         }
     }
     ORYOL_GL_CHECK_ERROR();
@@ -397,11 +368,6 @@ void
 glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
-
-    // bind the mesh
-    // FIXME: record and compare against a 'current mesh pointer' whether
-    // mesh state must be reapplied
-    const uint8 vaoIndex = msh->getActiveVAOSlot();
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
         // FIXME: UNTESTED
@@ -440,35 +406,28 @@ glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
             ::glDisableVertexAttribArray(i);
         }
     #else
-        if (glExt::HasExtension(glExt::VertexArrayObject)) {
-            GLuint vao = msh->glVAOs[vaoIndex];
-            o_assert_dbg(0 != vao);
-            this->bindVertexArrayObject(vao);
-        }
-        else {
-            GLuint vb = 0;
-            const GLuint ib = msh->glIndexBuffer;
-            this->bindIndexBuffer(ib);
-            ORYOL_GL_CHECK_ERROR();
-            for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-                const glVertexAttr& attr = msh->glAttrs[vaoIndex][attrIndex];
-                if (attr.enabled) {
-                    o_assert_dbg(attr.vertexBuffer);
-                    if (attr.vertexBuffer != vb) {
-                        vb = attr.vertexBuffer;
-                        this->bindVertexBuffer(vb);
-                    }
-                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                    ORYOL_GL_CHECK_ERROR();
-                    glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                    ORYOL_GL_CHECK_ERROR();
-                    ::glEnableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
+        GLuint vb = 0;
+        const GLuint ib = msh->glIndexBuffer;
+        this->bindIndexBuffer(ib);
+        ORYOL_GL_CHECK_ERROR();
+        for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+            const glVertexAttr& attr = msh->glAttrs[vaoIndex][attrIndex];
+            if (attr.enabled) {
+                o_assert_dbg(attr.vertexBuffer);
+                if (attr.vertexBuffer != vb) {
+                    vb = attr.vertexBuffer;
+                    this->bindVertexBuffer(vb);
                 }
-                else {
-                    ::glDisableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
-                }
+                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                ORYOL_GL_CHECK_ERROR();
+                glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                ORYOL_GL_CHECK_ERROR();
+                ::glEnableVertexAttribArray(attr.index);
+                ORYOL_GL_CHECK_ERROR();
+            }
+            else {
+                ::glDisableVertexAttribArray(attr.index);
+                ORYOL_GL_CHECK_ERROR();
             }
         }
     #endif
@@ -709,15 +668,6 @@ void
 glRenderer::invalidateMeshState() {
     o_assert_dbg(this->valid);
 
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        // NOTE: it is essential that the current vertex array object
-        // is unbound before modifying the GL_ELEMENT_ARRAY_BUFFER as this
-        // would bind the next index buffer to the previous VAO!
-        glExt::BindVertexArray(0);
-    }
-    this->vertexArrayObject = 0;
-    #endif
     ::glBindBuffer(GL_ARRAY_BUFFER, 0);
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->vertexBuffer = 0;
@@ -752,22 +702,6 @@ glRenderer::bindIndexBuffer(GLuint ib) {
     }
 }
     
-//------------------------------------------------------------------------------
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-void
-glRenderer::bindVertexArrayObject(GLuint vao) {
-    o_assert_dbg(this->valid);
-
-    if (vao != this->vertexArrayObject) {
-        this->vertexBuffer = 0;
-        this->indexBuffer = 0;
-        this->vertexArrayObject = vao;
-        glExt::BindVertexArray(vao);
-        ORYOL_GL_CHECK_ERROR();
-    }
-}
-#endif
-
 //------------------------------------------------------------------------------
 void
 glRenderer::invalidateProgramState() {

@@ -19,7 +19,6 @@ class glExt {
 public:
     /// extension enums
     enum Code {
-        VertexArrayObject = 0,
         TextureCompressionDXT,
         TextureCompressionPVRTC,
         TextureCompressionATC,
@@ -43,15 +42,6 @@ public:
     /// test if a texture format is supported
     static bool IsTextureFormatSupported(PixelFormat::Code fmt);
 
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    /// glGenVertexArrays
-    static void GenVertexArrays(GLsizei n, GLuint* arrays);
-    /// glDeleteVertexArrays
-    static void DeleteVertexArrays(GLsizei n, const GLuint* arrays);
-    /// glBindVertexArray
-    static void BindVertexArray(GLuint array);
-    #endif
-    
     /// glVertexAttribDivisor
     static void VertexAttribDivisor(GLuint index, GLuint divisor);
     /// glDrawArraysInstanced

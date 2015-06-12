@@ -36,12 +36,6 @@ glDrawStateFactory::SetupResource(drawState& ds) {
 
     drawStateFactoryBase::SetupResource(ds);
     this->glSetupVertexAttrs(ds);
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        this->glSetupVertexArrayObject(ds);
-    }
-    #endif
-
 
     return ResourceState::Valid;
 }
@@ -52,14 +46,6 @@ glDrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->renderer);
 
     this->renderer->invalidateMeshState();
-
-    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
-    if (glExt::HasExtension(glExt::VertexArrayObject)) {
-        if (0 != ds.glVAO) {
-            glExt::DeleteVertexArrays(1, &ds.glVAO);
-        }
-    }
-    #endif
 
     ds.Clear();
 }
@@ -105,47 +91,6 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
         }
     }
 }
-
-//------------------------------------------------------------------------------
-#if ORYOL_GL_USE_VERTEXARRAYOBJECT
-void
-glDrawStateFactory::glSetupVertexArrayObject(drawState& ds) {
-    o_assert_dbg(glExt::HasExtension(glExt::VertexArrayObject));
-    o_assert_dbg(0 == ds.glVAO);
-
-    // NOTE: if dynamic meshes with double-buffering are involved,
-    // vertex attributes need to be re-bound during rendering,
-    // since the actually bound vertex buffers will change after
-    // each update.
-    //
-    // This would actually be a good reason to not use VAOs
-    // at all since there are known performance issues
-    // with VAOs on desktop, but on web platforms, with their
-    // high call-overhead into GL, VAOs might still make sense!
-    //
-    GLuint curVB = 0;
-    this->renderer->invalidateMeshState();
-    glExt::GenVertexArrays(1, &ds.glVAO);
-    this->renderer->bindVertexArrayObject(ds.glVAO);
-    this->renderer->bindIndexBuffer(ds.meshes[0]->glIndexBuffer);   // can be 0
-    for (const auto& attr : ds.glAttrs) {
-        if (attr.enabled) {
-            const mesh* msh = ds.meshes[attr.vbIndex];
-            const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
-            if (glVB != curVB) {
-                curVB = glVB;
-                this->renderer->bindVertexBuffer(glVB);
-            }
-            ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-            glExt::VertexAttribDivisor(attr.index, attr.divisor);
-            ::glEnableVertexAttribArray(attr.index);
-        }
-        else {
-            ::glDisableVertexAttribArray(attr.index);
-        }
-    }
-}
-#endif
 
 } // namespace _priv
 } // namespace Oryol
