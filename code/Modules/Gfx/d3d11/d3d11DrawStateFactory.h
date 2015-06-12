@@ -26,9 +26,9 @@ public:
     void Setup(class renderer* rendr, class meshPool* mshPool, class programBundlePool* pbPool);
     /// discard the factory
     void Discard();
-    /// setup shader resource
+    /// setup drawState resource
     ResourceState::Code SetupResource(drawState& ds);
-    /// destroy the shader
+    /// destroy the drawState
     void DestroyResource(drawState& ds);
 
 private:
