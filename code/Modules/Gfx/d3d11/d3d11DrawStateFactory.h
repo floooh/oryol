@@ -11,10 +11,6 @@
 */
 #include "Gfx/Resource/drawStateFactoryBase.h"
 #include "Gfx/d3d11/d3d11_decl.h"
-#include "Core/Containers/Map.h"
-#include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/DepthStencilState.h"
-#include "Gfx/Core/BlendState.h"
 
 namespace Oryol {
 namespace _priv {
