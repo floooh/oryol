@@ -22,6 +22,7 @@ color(1.0f, 1.0f, 1.0f, 1.0f) {
 //------------------------------------------------------------------------------
 void
 ShapeBuilder::Clear() {
+    this->Layout.Clear();
     this->RandomColors = false;
     this->curPrimGroupBaseElement = 0;
     this->curPrimGroupNumElements = 0;
