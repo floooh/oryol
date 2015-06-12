@@ -19,7 +19,7 @@ ProgramSelectionMask(0) {
 DrawStateSetup
 DrawStateSetup::FromMeshAndProg(const Id& msh, const Id& prg, uint32 selMask) {
     DrawStateSetup setup;
-    setup.Mesh = msh;
+    setup.Meshes[0] = msh;
     setup.Program = prg;
     setup.ProgramSelectionMask = selMask;
     return setup;

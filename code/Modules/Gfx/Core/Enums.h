@@ -749,11 +749,11 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::VertexStepRate
+    @class Oryol::VertexStepFunction
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
 */
-class VertexStepRate {
+class VertexStepFunction {
 public:
     enum Code {
         PerVertex = 0,

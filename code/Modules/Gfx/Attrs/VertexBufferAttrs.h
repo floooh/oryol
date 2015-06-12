@@ -12,11 +12,15 @@ namespace Oryol {
     
 struct VertexBufferAttrs {
     /// number of vertices in the vertex buffer
-    int32 NumVertices{0};
+    int32 NumVertices = 0;
     /// describes the vertex layout of a vertex in the buffer
     VertexLayout Layout;
     /// buffer usage hint
-    Usage::Code BufferUsage{Usage::InvalidUsage};
+    Usage::Code BufferUsage = Usage::InvalidUsage;
+    /// vertex data step function (per-vertex or per-instance)
+    VertexStepFunction::Code StepFunction = VertexStepFunction::PerVertex;
+    /// vertex data step rate
+    int32 StepRate = 1;
     /// computes the byte size of the contained vertex buffer data
     int32 ByteSize() const {
         return NumVertices * Layout.ByteSize();

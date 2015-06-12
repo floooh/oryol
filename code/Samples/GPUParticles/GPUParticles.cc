@@ -165,6 +165,8 @@ GPUParticlesApp::OnInit() {
         particleIdData[i] = (float32) i;
     }
     auto particleIdSetup = MeshSetup::Empty(MaxNumParticles, Usage::Static);
+    particleIdSetup.StepFunction = VertexStepFunction::PerInstance;
+    particleIdSetup.StepRate = 1;
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
     this->particleIdMesh = Gfx::CreateResource(particleIdSetup);
     Gfx::UpdateVertices(this->particleIdMesh, particleIdData, particleIdSize);
@@ -178,13 +180,12 @@ GPUParticlesApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    auto shapeBuilderResult = shapeBuilder.Result();
-    shapeBuilderResult.Setup.InstanceMesh = this->particleIdMesh;
-    this->shapeMesh = Gfx::CreateResource(shapeBuilderResult);
+    this->shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
     
     // particle rendering draw state
     Id drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
     auto drawSetup = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
+    drawSetup.Meshes[1] = this->particleIdMesh;
     drawSetup.RasterizerState.CullFaceEnabled = true;
     drawSetup.DepthStencilState.DepthWriteEnabled = true;
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;

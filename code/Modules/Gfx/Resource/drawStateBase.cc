@@ -9,22 +9,28 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 drawStateBase::drawStateBase() :
-msh(nullptr),
+hasStreamingMeshes(false),
 prog(nullptr) {
+    this->meshes.Fill(nullptr);
     // empty
 }
 
 //------------------------------------------------------------------------------
 drawStateBase::~drawStateBase() {
-    o_assert(nullptr == this->msh);
-    o_assert(nullptr == this->prog);
+    o_assert_dbg(nullptr == this->prog);
+    #if ORYOL_DEBUG
+    for (const mesh* msh : this->meshes) {
+        o_assert_dbg(nullptr == msh);
+    }
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 drawStateBase::Clear() {
-    this->msh = nullptr;
+    this->meshes.Fill(nullptr);
     this->prog = nullptr;
+    this->hasStreamingMeshes = false;
     resourceBase::Clear();
 }
 

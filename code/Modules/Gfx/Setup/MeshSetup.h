@@ -44,8 +44,10 @@ public:
 
     /// vertex layout
     VertexLayout Layout;
-    /// vertex step rate (per-vertex or per-instance
-    VertexStepRate::Code StepRate;
+    /// vertex step function (per-vertex or per-instance)
+    VertexStepFunction::Code StepFunction;
+    /// vertex step rate (1 or greater for VertexStepFunction::PerInstance)
+    int32 StepRate;
 
     /// number of vertices (only CreateEmpty)
     int32 NumVertices;
@@ -62,9 +64,6 @@ public:
     int32 NumPrimitiveGroups() const;
     /// get primitive group at index
     const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
-    
-    /// optional instance data mesh
-    Id InstanceMesh;
     
     /// resource locator
     class Locator Locator;

@@ -333,8 +333,7 @@ gfxResourceContainer::queryDrawStateDependenciesState(const drawState* ds) {
 
     // this returns an overall state of the meshes attached to
     // a draw state (failed, pending, valid)
-//    for (const Id& meshId : ds->Setup.Meshes) {
-const Id meshId = ds->Setup.Mesh;
+    for (const Id& meshId : ds->Setup.Meshes) {
         if (meshId.IsValid()) {
             const mesh* msh = this->meshPool.Get(meshId);
             if (msh) {
@@ -359,7 +358,7 @@ const Id meshId = ds->Setup.Mesh;
                 return ResourceState::Failed;
             }
         }
-//    }
+    }
     // fallthough means: all mesh dependencies are valid
     return ResourceState::Valid;
 }

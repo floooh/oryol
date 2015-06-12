@@ -24,10 +24,13 @@ public:
     /// clear the object
     void Clear();
     
-    /// mesh pointer;
-    mesh* msh;
+    /// input mesh pointers
+    StaticArray<mesh*, DrawStateSetup::MaxInputMeshes> meshes;
+    /// true if any of the input-meshes is dynamic-streaming
+    bool hasStreamingMeshes;
     /// program bundle pointer
     programBundle* prog;
+
 };
 
 } // namespace _priv

@@ -35,9 +35,8 @@ public:
     class DepthStencilState DepthStencilState;
     /// rasterizer state
     class RasterizerState RasterizerState;
-    /// FIXME: input mesh(es)
-    /// StaticArray<Id, MaxInputMeshes> Meshes;
-    Id Mesh;
+    /// input mesh(es)
+    StaticArray<Id, MaxInputMeshes> Meshes;
     /// program bundle
     Id Program;
     /// program bundle selection mask

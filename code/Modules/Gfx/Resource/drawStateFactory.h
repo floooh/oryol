@@ -6,10 +6,10 @@
     @brief factory class for drawState resource objects
 */
 #if ORYOL_OPENGL
-#include "Gfx/Resource/drawStateFactoryBase.h"
+#include "Gfx/gl/glDrawStateFactory.h"
 namespace Oryol {
 namespace _priv {
-class drawStateFactory : public drawStateFactoryBase { };
+class drawStateFactory : public glDrawStateFactory { };
 } }
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11drawStateFactory.h"

@@ -10,7 +10,8 @@ namespace Oryol {
 MeshSetup::MeshSetup() :
 VertexUsage(Usage::InvalidUsage),
 IndexUsage(Usage::InvalidUsage),
-StepRate(VertexStepRate::PerVertex),
+StepFunction(VertexStepFunction::PerVertex),
+StepRate(1),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),

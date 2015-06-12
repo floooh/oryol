@@ -12,6 +12,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/gl/gl_decl.h"
+#include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
 
 namespace Oryol {
@@ -75,12 +76,14 @@ public:
     
     /// invalidate bound mesh state
     void invalidateMeshState();
-    /// bind vertex buffer
+    /// bind vertex buffer with state caching
     void bindVertexBuffer(GLuint vb);
-    /// bind index buffer
+    /// bind index buffer with state caching
     void bindIndexBuffer(GLuint ib);
-    /// bind vertex array object
+    /// bind vertex array object with state caching
+    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
     void bindVertexArrayObject(GLuint vao);
+    #endif
     
     /// invalidate program state
     void invalidateProgramState();
@@ -109,8 +112,10 @@ private:
     void applyRasterizerState(const RasterizerState& rs);
     /// apply program to use for rendering
     void applyProgramBundle(programBundle* progBundle, uint32 progSelMask);
+    /// apply mesh state
+    void applyMeshState(const drawState* ds);
     /// apply mesh to use for rendering
-    void applyMesh(const mesh* msh, const programBundle* progBundle);
+//    void applyMesh(const mesh* msh, const programBundle* progBundle);
 
     bool valid;
     displayMgr* dispMgr;
@@ -132,9 +137,7 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
-    mesh* curMesh;
-    programBundle* curProgramBundle;
-    
+
     // GL state cache
     BlendState blendState;
     DepthStencilState depthStencilState;
@@ -154,12 +157,16 @@ private:
     
     GLuint vertexBuffer;
     GLuint indexBuffer;
+    #if ORYOL_GL_USE_VERTEXARRAYOBJECT
     GLuint vertexArrayObject;
+    #endif
     GLuint program;
     
     static const int32 MaxTextureSamplers = 16;
     GLuint samplers2D[MaxTextureSamplers];
     GLuint samplersCube[MaxTextureSamplers];
+    glVertexAttr glAttrs[VertexAttr::NumVertexAttrs];
+    GLuint glAttrVBs[VertexAttr::NumVertexAttrs];
 };
 
 //------------------------------------------------------------------------------

@@ -12,7 +12,6 @@ if (ORYOL_OPENGL)
 # is mutually exclusive with vertex array objects.
 #
 option(ORYOL_GL_USE_GETATTRIBLOCATION "Use glGetAttribLocation instead of glBindAttribLocation" OFF)
-
 if (ORYOL_GL_USE_GETATTRIBLOCATION)
     add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=1)
 else()
@@ -20,15 +19,15 @@ else()
 endif()
 
 #
-# Disable vertex_array_object even if the extension is available.
-# Useful for debugging the non-VAO code.
+# Enable/disable use of GL vertex array objects.
 #
-option(ORYOL_GL_DISABLE_VERTEXARRAYOBJECT "Disable use of vertex_array_object extension" OFF)
-if (ORYOL_GL_DISABLE_VERTEXARRAYOBJECT)
-    add_definitions(-DORYOL_GL_DISABLE_VERTEXARRAYOBJECT=1)
+option(ORYOL_GL_USE_VERTEXARRAYOBJECT "Use GL vertex array objects" OFF)
+if (ORYOL_GL_USE_VERTEXARRAYOBJECT)
+    add_definitions(-DORYOL_GL_USE_VERTEXARRAYOBJECT=1)
 else()
-    add_definitions(-DORYOL_GL_DISABLE_VERTEXARRAYOBJECT=0)
+    add_definitions(-DORYOL_GL_USE_VERTEXARRAYOBJECT=0)
 endif()
+
 endif() # ORYOL_OPENGL
 
 fips_begin_module(Gfx)
@@ -90,6 +89,8 @@ fips_begin_module(Gfx)
             glEnums.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
+            glDrawState.cc glDrawState.h
+            glDrawStateFactory.cc glDrawStateFactory.h
             glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
             glProgramBundle.cc glProgramBundle.h

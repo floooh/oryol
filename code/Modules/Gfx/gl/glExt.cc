@@ -61,7 +61,7 @@ glExt::Setup() {
     extensions[InstancedArrays] = true;
     #endif
     
-    #if ORYOL_GL_DISABLE_VERTEXARRAYOBJECT
+    #if !ORYOL_GL_USE_VERTEXARRAYOBJECT
     extensions[VertexArrayObject] = false;
     #endif
     
@@ -123,6 +123,7 @@ glExt::IsTextureFormatSupported(PixelFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_GL_USE_VERTEXARRAYOBJECT
 void
 glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
     #if ORYOL_EMSCRIPTEN
@@ -133,8 +134,10 @@ glExt::GenVertexArrays(GLsizei n, GLuint* arrays) {
         ::glGenVertexArrays(n, arrays);
     #endif
 }
+#endif
 
 //------------------------------------------------------------------------------
+#if ORYOL_GL_USE_VERTEXARRAYOBJECT
 void
 glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
     #if ORYOL_EMSCRIPTEN
@@ -145,8 +148,10 @@ glExt::DeleteVertexArrays(GLsizei n, const GLuint* arrays) {
         ::glDeleteVertexArrays(n, arrays);
     #endif
 }
+#endif
 
 //------------------------------------------------------------------------------
+#if ORYOL_GL_USE_VERTEXARRAYOBJECT
 void
 glExt::BindVertexArray(GLuint array) {
     #if ORYOL_EMSCRIPTEN
@@ -157,6 +162,7 @@ glExt::BindVertexArray(GLuint array) {
         ::glBindVertexArray(array);
     #endif
 }
+#endif
 
 //------------------------------------------------------------------------------
 void

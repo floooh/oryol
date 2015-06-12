@@ -6,10 +6,10 @@
     @brief bundles pre-compiled state for drawing operations
 */
 #if ORYOL_OPENGL
-#include "Gfx/Resource/drawStateBase.h"
+#include "Gfx/gl/glDrawState.h"
 namespace Oryol {
 namespace _priv {
-class drawState : public drawStateBase { };
+class drawState : public glDrawState { };
 } }
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11DrawState.h"

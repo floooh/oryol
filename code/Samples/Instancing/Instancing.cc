@@ -149,6 +149,8 @@ InstancingApp::OnInit() {
     // create dynamic instance data mesh
     auto instanceMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
+    instanceMeshSetup.StepFunction = VertexStepFunction::PerInstance;
+    instanceMeshSetup.StepRate = 1;
     this->instanceMesh = Gfx::CreateResource(instanceMeshSetup);
     
     // setup static draw state
@@ -160,10 +162,10 @@ InstancingApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
-    shapeBuilderResult.Setup.InstanceMesh = this->instanceMesh;
     Id mesh = Gfx::CreateResource(shapeBuilderResult);
     Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    dss.Meshes[1] = this->instanceMesh;
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

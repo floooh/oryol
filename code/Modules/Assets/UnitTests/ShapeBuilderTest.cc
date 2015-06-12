@@ -68,27 +68,6 @@ TEST(ShapeBuilderTest) {
     #if ORYOL_OPENGL
     CHECK(simpleCube.glVertexBuffers[0] != 0);
     CHECK(simpleCube.glIndexBuffer != 0);
-    CHECK(simpleCube.glVAOs[0] != 0);
-    for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = simpleCube.glAttrs[0][i];
-        CHECK(glAttr.index == i);
-        if (VertexAttr::Position == i) {
-            CHECK(glAttr.enabled == GL_TRUE);
-            CHECK(glAttr.size == 3);
-            CHECK(glAttr.stride == 12);
-            CHECK(glAttr.offset == 0);
-            CHECK(glAttr.type == GL_FLOAT);
-            CHECK(glAttr.normalized == GL_FALSE);
-        }
-        else {
-            CHECK(glAttr.enabled == GL_FALSE);
-            CHECK(glAttr.size == 0);
-            CHECK(glAttr.stride == 0);
-            CHECK(glAttr.offset == 0);
-            CHECK(glAttr.type == 0);
-            CHECK(glAttr.normalized == GL_FALSE);
-        }
-    }
     #endif
 
     stream->UnmapRead();

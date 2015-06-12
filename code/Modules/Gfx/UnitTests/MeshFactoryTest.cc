@@ -92,35 +92,6 @@ TEST(MeshFactoryTest) {
     #if ORYOL_OPENGL
     CHECK(mesh.glVertexBuffers[0] != 0);
     CHECK(mesh.glIndexBuffer != 0);
-    CHECK(mesh.glVAOs[0] != 0);
-    for (uint32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        const glVertexAttr& glAttr = mesh.glAttrs[0][i];
-        CHECK(glAttr.index == i);
-        if (VertexAttr::Position == i) {
-            CHECK(glAttr.enabled == GL_TRUE);
-            CHECK(glAttr.size == 3);
-            CHECK(glAttr.stride == 20);
-            CHECK(glAttr.offset == 0);
-            CHECK(glAttr.type == GL_FLOAT);
-            CHECK(glAttr.normalized == GL_FALSE);
-        }
-        else if (VertexAttr::TexCoord0 == i) {
-            CHECK(glAttr.enabled == GL_TRUE);
-            CHECK(glAttr.size == 2);
-            CHECK(glAttr.stride == 20);
-            CHECK(glAttr.offset == 12);
-            CHECK(glAttr.type == GL_FLOAT);
-            CHECK(glAttr.normalized == GL_FALSE);
-        }
-        else {
-            CHECK(glAttr.enabled == GL_FALSE);
-            CHECK(glAttr.size == 0);
-            CHECK(glAttr.stride == 0);
-            CHECK(glAttr.offset == 0);
-            CHECK(glAttr.type == 0);
-            CHECK(glAttr.normalized == GL_FALSE);
-        }
-    }
     #endif
 
     stream->UnmapRead();
