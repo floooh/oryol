@@ -324,8 +324,12 @@ glRenderer::applyMeshState(const drawState* ds) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != ds);
     o_assert_dbg(nullptr != ds->meshes[0]);
-
+    o_assert_dbg(nullptr != ds->prog);
     ORYOL_GL_CHECK_ERROR();
+
+    #if !ORYOL_GL_USE_GETATTRIBLOCATION
+    // this is the default vertex attribute code path for most
+    // desktop and mobile platforms
     this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
@@ -339,7 +343,7 @@ glRenderer::applyMeshState(const drawState* ds) {
             if (attr.enabled) {
                 this->glAttrVBs[attrIndex] = glVB;
                 this->bindVertexBuffer(glVB);
-                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
+                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
                 ORYOL_GL_CHECK_ERROR();
                 if (!curAttr.enabled) {
                     ::glEnableVertexAttribArray(attr.index);
@@ -359,80 +363,42 @@ glRenderer::applyMeshState(const drawState* ds) {
             curAttr = attr;
         }
     }
+    #else
+    // this uses glGetAttribLocation for platforms which don't support
+    // glBindAttribLocation (e.g. RaspberryPi)
+    // FIXME: currently this doesn't use state-caching
+    o_assert_dbg(ds->prog);
+
+    this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
+    int maxUsedAttrib = 0;
+    for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+        const glVertexAttr& attr = ds->glAttrs[attrIndex];
+        const GLint glAttribIndex = ds->prog->getAttribLocation((VertexAttr::Code)attrIndex);
+        if (glAttribIndex >= 0) {
+            o_assert_dbg(attr.enabled);
+            const mesh* msh = ds->meshes[attr.vbIndex];
+            const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
+            this->bindVertexBuffer(glVB);
+            ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
+            ORYOL_GL_CHECK_ERROR();
+            ::glEnableVertexAttribArray(glAttribIndex);
+            ORYOL_GL_CHECK_ERROR();
+            glExt::VertexAttribDivisor(glAttribIndex, attr.divisor);
+            ORYOL_GL_CHECK_ERROR();
+            maxUsedAttrib++;
+        }
+    }
+    int maxNumAttribs = glInfo::Int(glInfo::MaxVertexAttribs);
+    if (VertexAttr::NumVertexAttrs < maxNumAttribs) {
+        maxNumAttribs = VertexAttr::NumVertexAttrs;
+    }
+    for (int i = maxUsedAttrib; i < maxNumAttribs; i++) {
+        ::glDisableVertexAttribArray(i);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    #endif
     ORYOL_GL_CHECK_ERROR();
 }
-
-//------------------------------------------------------------------------------
-/*
-void
-glRenderer::applyMesh(const mesh* msh, const programBundle* progBundle) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != msh);
-
-    #if ORYOL_GL_USE_GETATTRIBLOCATION
-        // FIXME: UNTESTED
-        // This is the code path which uses glGetAttribLocation instead of
-        // glBindAttribLocation, which must be used if GL_MAX_VERTEX_ATTRIBS is smaller
-        // then VertexAttr::NumVertexAttrs. The only currently known platform
-        // where this applies is the Raspberry Pi where GL_MAX_VERTEX_ATTRIBS==8
-        o_assert_dbg(progBundle->getProgram() == this->curProgram);
-        const GLuint ib = msh->glGetIndexBuffer();
-        GLuint vb = 0;
-        this->BindIndexBuffer(ib);
-        int32 maxUsedAttrib = 0;
-        for (int8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-            const glVertexAttr& attr = msh->glAttr(vaoIndex, attrIndex);
-            const GLint glAttribIndex = progBundle->getAttribLocation((VertexAttr::Code)attrIndex);
-            if (-1 != glAttribIndex) {
-                o_assert_dbg(attr.vertexBuffer);
-                if (attr.vertexBuffer != vb) {
-                    vb = attr.vertexBuffer;
-                    this->BindVertexBuffer(vb);
-                }
-                ::glEnableVertexAttribArray(glAttribIndex);
-                ORYOL_GL_CHECK_ERROR();
-                glExt::VertexAttribDivisor(glAttribIndex, attr.divisor);
-                ORYOL_GL_CHECK_ERROR();
-                ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                ORYOL_GL_CHECK_ERROR();
-                maxUsedAttrib++;
-            }
-        }
-        int32 maxAttribs = glInfo::Int(glInfo::MaxVertexAttribs);
-        if (VertexAttr::NumVertexAttrs < maxAttribs) {
-            maxAttribs = VertexAttr::NumVertexAttrs;
-        }
-        for (int32 i = maxUsedAttrib; i < maxAttribs; i++) {
-            ::glDisableVertexAttribArray(i);
-        }
-    #else
-        GLuint vb = 0;
-        const GLuint ib = msh->glIndexBuffer;
-        this->bindIndexBuffer(ib);
-        ORYOL_GL_CHECK_ERROR();
-        for (uint8 attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-            const glVertexAttr& attr = msh->glAttrs[vaoIndex][attrIndex];
-            if (attr.enabled) {
-                o_assert_dbg(attr.vertexBuffer);
-                if (attr.vertexBuffer != vb) {
-                    vb = attr.vertexBuffer;
-                    this->bindVertexBuffer(vb);
-                }
-                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*) (GLintptr) attr.offset);
-                ORYOL_GL_CHECK_ERROR();
-                glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                ORYOL_GL_CHECK_ERROR();
-                ::glEnableVertexAttribArray(attr.index);
-                ORYOL_GL_CHECK_ERROR();
-            }
-            else {
-                ::glDisableVertexAttribArray(attr.index);
-                ORYOL_GL_CHECK_ERROR();
-            }
-        }
-    #endif
-}
-*/
 
 //------------------------------------------------------------------------------
 void
