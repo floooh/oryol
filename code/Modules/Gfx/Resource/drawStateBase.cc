@@ -9,10 +9,8 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 drawStateBase::drawStateBase() :
-hasStreamingMeshes(false),
 prog(nullptr) {
     this->meshes.Fill(nullptr);
-    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -30,7 +28,6 @@ void
 drawStateBase::Clear() {
     this->meshes.Fill(nullptr);
     this->prog = nullptr;
-    this->hasStreamingMeshes = false;
     resourceBase::Clear();
 }
 

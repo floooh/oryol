@@ -69,14 +69,10 @@ drawStateFactoryBase::SetupResource(drawState& ds) {
 //------------------------------------------------------------------------------
 void
 drawStateFactoryBase::resolveInputMeshes(drawState& ds) {
-    ds.hasStreamingMeshes = false;
     for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
         if (ds.Setup.Meshes[i].IsValid()) {
             ds.meshes[i] = this->meshPool->Get(ds.Setup.Meshes[i]);
             o_assert(ds.meshes[i]);
-            if (Usage::Stream == ds.meshes[i]->vertexBufferAttrs.BufferUsage) {
-                ds.hasStreamingMeshes = true;
-            }
         }
         else {
             ds.meshes[i] = nullptr;
