@@ -6,6 +6,8 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
+- **13-Jun-2015**: compiling the samples for PNaCl with the latest pepper_canary is currently broken because of this issue: https://code.google.com/p/nativeclient/issues/detail?id=4200
+
 - **22-May-2015**: master branch might be broken a bit in the next couple days, don't panic, if I get back to a somewhat stable state I'll move the remaining D3D11 work into a branch (•_•) / ( •_•)>⌐■-■ / (⌐■_■)
 
 - **17-Jan-2015**: I have switched the Oryol master branch over to use 
