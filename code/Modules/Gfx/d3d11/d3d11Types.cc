@@ -240,5 +240,11 @@ d3d11Types::asColorWriteMask(PixelChannel::Mask mask) {
     return res;
 }
 
+//------------------------------------------------------------------------------
+D3D11_INPUT_CLASSIFICATION
+d3d11Types::asInputClassification(VertexStepFunction::Code func) {
+    return func == VertexStepFunction::PerVertex ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
+}
+
 } // namespace _priv
 } // namespace Oryol

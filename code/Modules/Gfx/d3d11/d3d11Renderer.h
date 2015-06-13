@@ -19,6 +19,7 @@ namespace Oryol {
 namespace _priv {
 
 class meshPool;
+class texturePool;
 class displayMgr;
 class texture;
 class drawState;
@@ -33,7 +34,7 @@ public:
     ~d3d11Renderer();
     
     /// setup the renderer
-    void setup(displayMgr* dispMgr, meshPool* mshPool);
+    void setup(displayMgr* dispMgr, meshPool* mshPool, texturePool* texPool);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -56,12 +57,8 @@ public:
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height);
     /// apply draw state
     void applyDrawState(drawState* ds);
-    /// apply a texture sampler variable (special case)
-    void applyTexture(int32 index, const texture* tex);
-    /// apply a shader variable
-    template<class T> void applyVariable(int32 index, const T& value);
-    /// apply a shader variable array
-    template<class T> void applyVariableArray(int32 index, const T* values, int32 numValues);
+    /// apply a shader uniform block
+    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// clear currently assigned render target
     void clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
@@ -93,6 +90,7 @@ private:
     bool valid;
     displayMgr* dispMgr;
     meshPool* mshPool;
+    texturePool* texPool;
     ID3D11RenderTargetView* defaultRenderTargetView;
     ID3D11DepthStencilView* defaultDepthStencilView;
 
@@ -102,8 +100,6 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
-    mesh* curMesh;
-    programBundle* curProgramBundle;
 
     ID3D11RenderTargetView* curRenderTargetView;
     ID3D11DepthStencilView* curDepthStencilView;

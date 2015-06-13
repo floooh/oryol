@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import platform
 import os
+import sys
 import genutil as util
 import _winreg
 
@@ -113,7 +114,9 @@ def parseOutput(output, lines) :
             util.fmtWarning(msg)
 
     if hasError :
-        util.fmtError("Aborting.")
+        for line in lines :
+            print(line.content)
+        sys.exit(10) 
 
 #-------------------------------------------------------------------------------
 def validate(lines, type, slVersion, outPath, cName) :

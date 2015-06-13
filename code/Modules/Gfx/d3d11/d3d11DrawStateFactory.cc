@@ -50,55 +50,50 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     HRESULT hr;
 
     drawStateFactoryBase::SetupResource(ds);
-    const mesh* msh = this->meshPool->Lookup(ds.msh);
-    o_assert(msh);
-    const VertexLayout& mshLayout = msh->vertexBufferAttrs.Layout;
+    o_assert_dbg(ds.prog);
 
     // create input layout objects
     // FIXME: this should be rewritten to enable shared input layouts 
     // per shader signature/mesh signature pairs, which would reduce
     // the number of input layouts dramatically
-    o_assert_dbg(ds.prog);
     const int numProgEntries = ds.prog->getNumPrograms();
     for (int progIndex = 0; progIndex < numProgEntries; progIndex++) {
         o_assert_dbg(nullptr == ds.d3d11InputLayouts[progIndex]);
 
+        // lookup the vertex shader bytecode
         const void* vsByteCode = nullptr;
         uint32 vsSize = 0;
         ds.prog->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
         o_assert_dbg(vsByteCode && (vsSize > 0));
 
-        // build the vertex layout for mesh and optional instance data mesh
-        D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexLayout::MaxNumVertexComponents * 2];
-        Memory::Clear(d3d11Comps, sizeof(d3d11Comps));
+        D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
         int d3d11CompIndex = 0;
-        for (int compIndex = 0; compIndex < mshLayout.NumComponents(); compIndex++, d3d11CompIndex++) {
-            const VertexComponent& comp = mshLayout.Component(compIndex);
-            D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
-            d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
-            d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
-            d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
-            d3d11Comp.InputSlot = 0;
-            d3d11Comp.AlignedByteOffset = mshLayout.ComponentByteOffset(compIndex);
-            d3d11Comp.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            d3d11Comp.InstanceDataStepRate = 0;
-        }
-        // append the vertex layout for the optional instance data
-        if (msh->instanceMesh) {
-            const VertexLayout& instLayout = msh->instanceMesh->vertexBufferAttrs.Layout;
-            for (int compIndex = 0; compIndex < instLayout.NumComponents(); compIndex++, d3d11CompIndex++) {
-                const VertexComponent& comp = instLayout.Component(compIndex);
-                D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
-                d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
-                d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
-                d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
-                d3d11Comp.InputSlot = 1;
-                d3d11Comp.AlignedByteOffset = instLayout.ComponentByteOffset(compIndex);
-                d3d11Comp.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
-                d3d11Comp.InstanceDataStepRate = 1;
+        int d3d11InputSlot = 0;
+        for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+            const mesh* msh = ds.meshes[mshIndex];
+            if (msh) {
+                const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
+                for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
+                    const auto& comp = layout.ComponentAt(compIndex);
+                    o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
+                    D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
+                    d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
+                    d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
+                    d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
+                    d3d11Comp.InputSlot = d3d11InputSlot;
+                    d3d11Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
+                    d3d11Comp.InputSlotClass = d3d11Types::asInputClassification(msh->vertexBufferAttrs.StepFunction);
+                    if (VertexStepFunction::PerVertex == msh->vertexBufferAttrs.StepFunction) {
+                        d3d11Comp.InstanceDataStepRate = 0;
+                    }
+                    else {
+                        d3d11Comp.InstanceDataStepRate = msh->vertexBufferAttrs.StepRate;
+                    }
+                }
+                d3d11InputSlot++;
             }
         }
-
+    
         // create d3d11 input layout object
         hr = this->d3d11Device->CreateInputLayout(
             d3d11Comps,         // pInputElementDesc 
@@ -134,7 +129,6 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     dsDesc.DepthEnable = TRUE;      // FIXME: have DepthTestEnable in RasterizerState?
     dsDesc.DepthWriteMask = dsState.DepthWriteEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     dsDesc.DepthFunc = d3d11Types::asComparisonFunc(dsState.DepthCmpFunc);
-    // FIXME: move StencilEnabled, StencilReadMask, StencilWriteMask up, not per side
     dsDesc.StencilEnable    = dsState.StencilEnabled;
     dsDesc.StencilReadMask  = dsState.StencilReadMask;
     dsDesc.StencilWriteMask = dsState.StencilWriteMask;

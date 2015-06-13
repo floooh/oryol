@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 30
+Version = 31
 
 import os
 import sys
@@ -824,31 +824,31 @@ class HLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    '''
-    def genUniforms(self, shd, lines) :
-        # only samplers and textures can be standalone uniforms in HLSL
-        for uniform in shd.uniforms :
-            if uniform.type == 'sampler2D' :
-                lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-            elif uniform.type == 'samplerCube' :
-                lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-            else :
-                # FIXME: remove when uniform buffers are fully implemented
-                lines.append(Line('{} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-        return lines
-    '''
-
-    #---------------------------------------------------------------------------
     def genUniformBlocks(self, shd, lines) :
+        
+        # first write texture uniforms outside of cbuffers, and count
+        # non-texture uniforms
         for uBlock in shd.uniformBlocks :
-            lines.append(Line('cbuffer {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+            numBlockUniforms = 0
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
-                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
-        return lines 
+                    if type == 'sampler2D' :
+                        lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                    else :
+                        numBlockUniforms += 1
+            # if there are non-texture uniforms, groups the rest into a cbuffer
+            if numBlockUniforms > 0 :
+                lines.append(Line('cbuffer {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+                for type in uBlock.uniformsByType :
+                    if type not in ['sampler2D', 'samplerCube' ] :
+                        for uniform in uBlock.uniformsByType[type] :
+                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+        return lines
     
     #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs, slVersion) :

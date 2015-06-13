@@ -15,7 +15,7 @@ d3d11ProgramBundle::d3d11ProgramBundle() {
 
 //------------------------------------------------------------------------------
 d3d11ProgramBundle::~d3d11ProgramBundle() {
-#if !ORYOL_NO_ASSERT
+#if ORYOL_DEBUG
     for (int32 i = 0; i < this->numProgramEntries; i++) {
         o_assert_dbg(0 == this->programEntries[i].vertexShader);
         o_assert_dbg(0 == this->programEntries[i].pixelShader);

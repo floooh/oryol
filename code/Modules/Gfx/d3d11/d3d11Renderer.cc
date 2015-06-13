@@ -7,6 +7,7 @@
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "d3d11_impl.h"
 
 namespace Oryol {
@@ -19,13 +20,12 @@ d3d11DeviceContext(nullptr),
 valid(false),
 dispMgr(nullptr),
 mshPool(nullptr),
+texPool(nullptr),
 defaultRenderTargetView(nullptr),
 defaultDepthStencilView(nullptr),
 rtValid(false),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
-curMesh(nullptr),
-curProgramBundle(nullptr),
 curRenderTargetView(nullptr),
 curDepthStencilView(nullptr) {
     // empty
@@ -38,10 +38,11 @@ d3d11Renderer::~d3d11Renderer() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::setup(displayMgr* dispMgr_, meshPool* mshPool_) {
+d3d11Renderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool_) {
     o_assert_dbg(!this->valid);
     o_assert_dbg(dispMgr_);
     o_assert_dbg(mshPool_);
+    o_assert_dbg(texPool_);
     o_assert_dbg(dispMgr_->d3d11Device);
     o_assert_dbg(dispMgr_->d3d11DeviceContext);
     o_assert_dbg(dispMgr_->renderTargetView);
@@ -50,6 +51,7 @@ d3d11Renderer::setup(displayMgr* dispMgr_, meshPool* mshPool_) {
     this->valid = true;
     this->dispMgr = dispMgr_;
     this->mshPool = mshPool_;
+    this->texPool = texPool_;
     this->d3d11Device = this->dispMgr->d3d11Device;
     this->d3d11DeviceContext = this->dispMgr->d3d11DeviceContext;
     this->defaultRenderTargetView = this->dispMgr->renderTargetView;
@@ -66,14 +68,13 @@ d3d11Renderer::discard() {
 
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
-    this->curMesh = nullptr;
-    this->curProgramBundle = nullptr;
 
     this->defaultDepthStencilView = nullptr;
     this->defaultRenderTargetView = nullptr;
     this->d3d11DeviceContext = nullptr;
     this->d3d11Device = nullptr;
     
+    this->texPool = nullptr;
     this->mshPool = nullptr;
     this->dispMgr = nullptr;
     this->valid = false;
@@ -185,201 +186,69 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 void
 d3d11Renderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert_dbg(nullptr != ds);
     o_assert_dbg(this->mshPool);
     o_assert_dbg(ds->d3d11DepthStencilState);
     o_assert_dbg(ds->d3d11RasterizerState);
     o_assert_dbg(ds->d3d11RasterizerState);
 
-    this->curDrawState = ds;
-    this->curProgramBundle = ds->prog;
-    this->curMesh = this->mshPool->Lookup(ds->msh);
-    this->curProgramBundle->select(ds->Setup.ProgramSelectionMask); // FIXME!
-
-    // apply state objects
-    const UINT stencilRef = ds->Setup.DepthStencilState.StencilRef;
-    FLOAT d3d11BlendFactor[4] = {
-        ds->Setup.BlendColor.x,
-        ds->Setup.BlendColor.y,
-        ds->Setup.BlendColor.z,
-        ds->Setup.BlendColor.w
-    };
-    this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
-    this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
-    this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, d3d11BlendFactor, 0xFFFFFFFF);
-
-    // apply input assembly state (except primitive topology)
-    o_assert_dbg(this->curMesh->d3d11VertexBuffer);
-    if (this->curMesh->instanceMesh) {
-        // instanced rendering
-        o_assert_dbg(this->curMesh->instanceMesh->d3d11VertexBuffer);
-        ID3D11Buffer* vertexBuffers[2] = { 
-            this->curMesh->d3d11VertexBuffer,
-            this->curMesh->instanceMesh->d3d11VertexBuffer
-        };
-        UINT strides[2] = {
-            (UINT)this->curMesh->vertexBufferAttrs.Layout.ByteSize(),
-            (UINT)this->curMesh->instanceMesh->vertexBufferAttrs.Layout.ByteSize()
-        };
-        UINT offsets[2] = { 0, 0};
-        this->d3d11DeviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+    if (nullptr == ds) {
+        // the drawstate is still pending, invalidate rendering
+        this->curDrawState = nullptr;
     }
     else {
-        // non-instanced rendering
-        UINT stride = this->curMesh->vertexBufferAttrs.Layout.ByteSize();
-        UINT offset = 0;
-        this->d3d11DeviceContext->IASetVertexBuffers(0, 1, &this->curMesh->d3d11VertexBuffer, &stride, &offset);
-    }
-    if (this->curMesh->d3d11IndexBuffer) {
-        DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) this->curMesh->indexBufferAttrs.Type;
-        this->d3d11DeviceContext->IASetIndexBuffer(this->curMesh->d3d11IndexBuffer, d3d11IndexFormat, 0);
-    }
-    const uint32 selIndex = this->curProgramBundle->getSelectionIndex();
-    o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
-    this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
+        this->curDrawState = ds;
+        o_assert_dbg(ds->prog);
+        ds->prog->select(ds->Setup.ProgramSelectionMask);
 
-    // apply vertex stage state
-    this->d3d11DeviceContext->VSSetShader(this->curProgramBundle->getSelectedVertexShader(), NULL, 0);
+        // apply state objects
+        const UINT stencilRef = ds->Setup.DepthStencilState.StencilRef;
+        FLOAT d3d11BlendFactor[4] = {
+            ds->Setup.BlendColor.x,
+            ds->Setup.BlendColor.y,
+            ds->Setup.BlendColor.z,
+            ds->Setup.BlendColor.w
+        };
+        this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
+        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, d3d11BlendFactor, 0xFFFFFFFF);
 
-    // apply pixel stage state
-    this->d3d11DeviceContext->PSSetShader(this->curProgramBundle->getSelectedPixelShader(), NULL, 0);
+        // apply input assembly state (except primitive topology)
+        // FIXME: these arrays should be stored in the d3d11DrawState!
+        ID3D11Buffer* d3d11IABuffers[DrawStateSetup::MaxInputMeshes];
+        UINT d3d11IAStrides[DrawStateSetup::MaxInputMeshes];
+        UINT d3d11IAOffsets[DrawStateSetup::MaxInputMeshes];
+        int d3d11NumBuffers = 0;
+        for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+            const mesh* msh = ds->meshes[mshIndex];
+            if (msh) {
+                d3d11IABuffers[d3d11NumBuffers] = msh->d3d11VertexBuffer;
+                d3d11IAStrides[d3d11NumBuffers] = msh->vertexBufferAttrs.Layout.ByteSize();
+                d3d11IAOffsets[d3d11NumBuffers] = 0;
+                d3d11NumBuffers++;
+            }
+        }
+        this->d3d11DeviceContext->IASetVertexBuffers(0, d3d11NumBuffers, d3d11IABuffers, d3d11IAStrides, d3d11IAOffsets);
+
+        if (ds->meshes[0]->d3d11IndexBuffer) {
+            DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) ds->meshes[0]->indexBufferAttrs.Type;
+            this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
+        }
+
+        const uint32 selIndex = ds->prog->getSelectionIndex();
+        o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
+        this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
+
+        // apply vertex stage state
+        this->d3d11DeviceContext->VSSetShader(ds->prog->getSelectedVertexShader(), NULL, 0);
+
+        // apply pixel stage state
+        this->d3d11DeviceContext->PSSetShader(ds->prog->getSelectedPixelShader(), NULL, 0);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyTexture(int32 index, const texture* tex) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const float32& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::vec2& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::vec3& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::vec4& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const int32& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::ivec2& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::ivec3& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::ivec4& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::mat4& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::mat3& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariable(int32 index, const glm::mat2& val) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const float32* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::vec2* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::vec3* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::vec4* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const int32* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::ivec2* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::ivec3* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::ivec4* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::mat4* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::mat3* values, int32 numValues) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-template<> void
-d3d11Renderer::applyVariableArray(int32 index, const glm::mat2* values, int32 numValues) {
+d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_error("FIXME!\n");
 }
 
@@ -393,7 +262,7 @@ d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float3
 
     if (clearMask & ClearTarget::Color) {
         o_assert_dbg(this->curRenderTargetView);
-        this->d3d11DeviceContext->ClearRenderTargetView(this->curRenderTargetView, &(color.x));
+        this->d3d11DeviceContext->ClearRenderTargetView(this->curRenderTargetView, glm::value_ptr(color));
     }
     if (clearMask & (ClearTarget::Depth|ClearTarget::Stencil)) {
         o_assert_dbg(this->curDepthStencilView);
@@ -414,10 +283,13 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert2_dbg(this->rtValid, "No render target set!\n");
 
-    if (this->curMesh) {
+    // only render if a valid draw state had been set
+    if (this->curDrawState) {
+        o_assert_dbg(this->curDrawState->meshes[0]);
+
         D3D11_PRIMITIVE_TOPOLOGY primTop = (D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType;
         this->d3d11DeviceContext->IASetPrimitiveTopology(primTop);
-        const IndexType::Code indexType = this->curMesh->indexBufferAttrs.Type;
+        const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
         if (indexType != IndexType::None) {
             // indexed geometry
             this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
@@ -431,14 +303,18 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::draw(int32 primGroupIndex) {
-    if (this->curMesh) {
-        if (primGroupIndex >= this->curMesh->numPrimGroups) {
+    o_assert_dbg(this->valid);
+
+    // only render if a valid draw state had been set
+    if (this->curDrawState) {
+        o_assert_dbg(this->curDrawState->meshes[0]);
+        if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
             // this may happen if trying to render a placeholder which doesn't
             // have as many materials as the original mesh, anyway, this isn't
             // a serious error
             return;
         }
-        const PrimitiveGroup& primGroup = this->curMesh->primGroups[primGroupIndex];
+        const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
         this->draw(primGroup);
     }
 }

@@ -46,8 +46,6 @@ public:
 private:
     /// helper method to create vertex or index buffer
     ID3D11Buffer* createBuffer(const void* vertexData, uint32 vertexDataSize, uint32 d3d11BindFlags, Usage::Code usage);
-    /// lookup and attach instance buffer to mesh
-    void attachInstanceBuffer(mesh& mesh);
 
     class renderer* renderer;
     class meshPool* meshPool;

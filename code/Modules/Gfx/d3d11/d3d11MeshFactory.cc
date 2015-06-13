@@ -63,7 +63,6 @@ d3d11MeshFactory::SetupResource(mesh& msh) {
         return this->createEmptyMesh(msh);
     }
     else if (msh.Setup.ShouldSetupFullScreenQuad()) {
-        o_assert_dbg(!msh.Setup.InstanceMesh.IsValid());
         return this->createFullscreenQuad(msh);
     }
     else {
@@ -128,30 +127,8 @@ d3d11MeshFactory::createBuffer(const void* data, uint32 dataSize, uint32 d3d11Bi
 }
 
 //------------------------------------------------------------------------------
-void
-d3d11MeshFactory::attachInstanceBuffer(mesh& msh) {
-    const Id& instMeshId = msh.Setup.InstanceMesh;
-    if (instMeshId.IsValid()) {
-        o_assert_dbg(this->meshPool->QueryState(instMeshId) == ResourceState::Valid);
-        const mesh* instMesh = this->meshPool->Lookup(instMeshId);
-        o_assert_dbg(instMesh);
-        msh.instanceMesh = instMesh;
-
-        // verify that there are no colliding vertex components
-        #if ORYOL_DEBUG
-        const VertexLayout& mshLayout = msh.vertexBufferAttrs.Layout;
-        const VertexLayout& instLayout = instMesh->vertexBufferAttrs.Layout;
-        for (int32 i = 0; i < mshLayout.NumComponents(); i++) {
-            o_assert_dbg(!instLayout.Contains(mshLayout.Component(i).Attr));
-        }
-        #endif
-    }
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
-    o_assert_dbg(!mesh.Setup.InstanceMesh.IsValid());
     o_assert_dbg(nullptr == mesh.d3d11VertexBuffer);
     o_assert_dbg(nullptr == mesh.d3d11IndexBuffer);
 
@@ -160,6 +137,8 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     vbAttrs.BufferUsage = Usage::Immutable;
     vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    vbAttrs.StepFunction = VertexStepFunction::PerVertex;
+    vbAttrs.StepRate = 1;
     mesh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -188,7 +167,6 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     // create vertex and index buffer
     mesh.d3d11VertexBuffer = this->createBuffer(vertices, sizeof(vertices), D3D11_BIND_VERTEX_BUFFER, mesh.vertexBufferAttrs.BufferUsage);
     mesh.d3d11IndexBuffer = this->createBuffer(indices, sizeof(indices), D3D11_BIND_INDEX_BUFFER, mesh.indexBufferAttrs.BufferUsage);
-    this->attachInstanceBuffer(mesh);
 
     return ResourceState::Valid;
 }
@@ -206,6 +184,8 @@ d3d11MeshFactory::createEmptyMesh(mesh& mesh) {
     vbAttrs.NumVertices = setup.NumVertices;
     vbAttrs.Layout = setup.Layout;
     vbAttrs.BufferUsage = setup.VertexUsage;
+    vbAttrs.StepFunction = setup.StepFunction;
+    vbAttrs.StepRate = setup.StepRate;
     mesh.vertexBufferAttrs = vbAttrs;
     const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
 
@@ -226,7 +206,6 @@ d3d11MeshFactory::createEmptyMesh(mesh& mesh) {
     if (IndexType::None != ibAttrs.Type) {
         mesh.d3d11IndexBuffer  = this->createBuffer(nullptr, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);
     }
-    this->attachInstanceBuffer(mesh);
 
     return ResourceState::Valid;
 }
@@ -246,6 +225,8 @@ d3d11MeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     vbAttrs.NumVertices = setup.NumVertices;
     vbAttrs.BufferUsage = setup.VertexUsage;
     vbAttrs.Layout = setup.Layout;
+    vbAttrs.StepFunction = setup.StepFunction;
+    vbAttrs.StepRate = setup.StepRate;
     mesh.vertexBufferAttrs = vbAttrs;
 
     // setup index buffer attrs
@@ -276,7 +257,6 @@ d3d11MeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
         o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
         mesh.d3d11IndexBuffer = this->createBuffer(indices, indicesByteSize, D3D11_BIND_INDEX_BUFFER, setup.IndexUsage);
     }
-    this->attachInstanceBuffer(mesh);
     return ResourceState::Valid;
 }
 

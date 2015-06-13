@@ -40,6 +40,8 @@ public:
     static D3D11_BLEND_OP asBlendOp(BlendOperation::Code op);
     /// convert PixelChannel::Mask to d3d11 color write mask
     static uint8 asColorWriteMask(PixelChannel::Mask mask);
+    /// convert VertexStepFunction to d3d11 input classification
+    static D3D11_INPUT_CLASSIFICATION asInputClassification(VertexStepFunction::Code func);
 };
 
 } // namespace _priv 

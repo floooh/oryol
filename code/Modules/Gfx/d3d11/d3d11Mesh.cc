@@ -11,8 +11,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 d3d11Mesh::d3d11Mesh() :
 d3d11VertexBuffer(nullptr),
-d3d11IndexBuffer(nullptr),
-instanceMesh(nullptr) {
+d3d11IndexBuffer(nullptr) {
     // empty
 }
 
@@ -20,7 +19,6 @@ instanceMesh(nullptr) {
 d3d11Mesh::~d3d11Mesh() {
     o_assert_dbg(nullptr == this->d3d11VertexBuffer);
     o_assert_dbg(nullptr == this->d3d11IndexBuffer);
-    o_assert_dbg(nullptr == this->instanceMesh);
 }
 
 //------------------------------------------------------------------------------
@@ -28,7 +26,6 @@ void
 d3d11Mesh::Clear() {
     this->d3d11VertexBuffer = nullptr;
     this->d3d11IndexBuffer = nullptr;
-    this->instanceMesh = nullptr;
     meshBase::Clear();
 }
 
