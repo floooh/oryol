@@ -180,7 +180,7 @@ vec4 tl_crt(vec2 uv) {
     #if 1
     _color = tl_crt(uv);
     #else
-    _color = $texture2D(iChannel0, uv);
+    _color = tex2D(iChannel0, uv);
     #endif
 @end
 
