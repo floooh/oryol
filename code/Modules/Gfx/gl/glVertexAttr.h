@@ -21,10 +21,10 @@ public:
         streaming(false),
         divisor(0),
         stride(0),
-        offset(0),
         size(0),
-        type(0),
-        normalized(0) {
+        normalized(0),
+        offset(0),
+        type(0) {
         // empty
     };
     /// test for equality
@@ -35,18 +35,18 @@ public:
     bool operator!=(const glVertexAttr& rhs) const {
         return 0 != std::memcmp(this, &rhs, sizeof(glVertexAttr));
     };
-    
-    GLuint index;
-    GLboolean enabled;
-    int32 vbIndex;
-    bool streaming;
-    GLuint divisor;
-    GLsizei stride;
-    GLuint offset;
-    GLint size;
+
+    uint8 index;
+    uint8 enabled;
+    uint8 vbIndex;
+    uint8 streaming;
+    uint8 divisor;
+    uint8 stride;
+    uint8 size;
+    uint8 normalized;
+    uint32 offset;
     GLenum type;
-    GLboolean normalized;
 };
-    
+
 } // namespace _priv
 } // namespace Oryol
