@@ -47,10 +47,44 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(nullptr == ds.d3d11RasterizerState);
     o_assert_dbg(nullptr == ds.d3d11BlendState);
     o_assert_dbg(nullptr == ds.d3d11DepthStencilState);
+    o_assert_dbg(0 == ds.d3d11IANumSlots);
     HRESULT hr;
 
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.prog);
+
+    // setup the input layout
+    D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
+    int d3d11CompIndex = 0;
+    ds.d3d11IANumSlots = 0;
+    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+        const mesh* msh = ds.meshes[mshIndex];
+        if (msh) {
+            o_assert_dbg(msh->d3d11VertexBuffer);
+            ds.d3d11IAVertexBuffers[ds.d3d11IANumSlots] = msh->d3d11VertexBuffer;
+            const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
+            ds.d3d11IAStrides[ds.d3d11IANumSlots] = layout.ByteSize();
+            ds.d3d11IAOffsets[ds.d3d11IANumSlots] = 0;
+            for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
+                const auto& comp = layout.ComponentAt(compIndex);
+                o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
+                D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
+                d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
+                d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
+                d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
+                d3d11Comp.InputSlot = ds.d3d11IANumSlots;
+                d3d11Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
+                d3d11Comp.InputSlotClass = d3d11Types::asInputClassification(msh->vertexBufferAttrs.StepFunction);
+                if (VertexStepFunction::PerVertex == msh->vertexBufferAttrs.StepFunction) {
+                    d3d11Comp.InstanceDataStepRate = 0;
+                }
+                else {
+                    d3d11Comp.InstanceDataStepRate = msh->vertexBufferAttrs.StepRate;
+                }
+            }
+            ds.d3d11IANumSlots++;
+        }
+    }
 
     // create input layout objects
     // FIXME: this should be rewritten to enable shared input layouts 
@@ -65,34 +99,6 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
         uint32 vsSize = 0;
         ds.prog->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
         o_assert_dbg(vsByteCode && (vsSize > 0));
-
-        D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
-        int d3d11CompIndex = 0;
-        int d3d11InputSlot = 0;
-        for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
-            const mesh* msh = ds.meshes[mshIndex];
-            if (msh) {
-                const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
-                for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
-                    const auto& comp = layout.ComponentAt(compIndex);
-                    o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
-                    D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
-                    d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
-                    d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
-                    d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
-                    d3d11Comp.InputSlot = d3d11InputSlot;
-                    d3d11Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
-                    d3d11Comp.InputSlotClass = d3d11Types::asInputClassification(msh->vertexBufferAttrs.StepFunction);
-                    if (VertexStepFunction::PerVertex == msh->vertexBufferAttrs.StepFunction) {
-                        d3d11Comp.InstanceDataStepRate = 0;
-                    }
-                    else {
-                        d3d11Comp.InstanceDataStepRate = msh->vertexBufferAttrs.StepRate;
-                    }
-                }
-                d3d11InputSlot++;
-            }
-        }
     
         // create d3d11 input layout object
         hr = this->d3d11Device->CreateInputLayout(

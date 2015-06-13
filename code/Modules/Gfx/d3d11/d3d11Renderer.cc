@@ -187,53 +187,41 @@ void
 d3d11Renderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(this->mshPool);
-    o_assert_dbg(ds->d3d11DepthStencilState);
-    o_assert_dbg(ds->d3d11RasterizerState);
-    o_assert_dbg(ds->d3d11RasterizerState);
 
     if (nullptr == ds) {
         // the drawstate is still pending, invalidate rendering
         this->curDrawState = nullptr;
     }
     else {
+        o_assert_dbg(ds->d3d11DepthStencilState);
+        o_assert_dbg(ds->d3d11RasterizerState);
+        o_assert_dbg(ds->d3d11RasterizerState);
+        o_assert_dbg(ds->d3d11IANumSlots > 0);
+
         this->curDrawState = ds;
         o_assert_dbg(ds->prog);
         ds->prog->select(ds->Setup.ProgramSelectionMask);
 
         // apply state objects
-        const UINT stencilRef = ds->Setup.DepthStencilState.StencilRef;
-        FLOAT d3d11BlendFactor[4] = {
-            ds->Setup.BlendColor.x,
-            ds->Setup.BlendColor.y,
-            ds->Setup.BlendColor.z,
-            ds->Setup.BlendColor.w
-        };
         this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
-        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, stencilRef);
-        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, d3d11BlendFactor, 0xFFFFFFFF);
+        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
+        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
+        
+        // apply vertex buffers
+        this->d3d11DeviceContext->IASetVertexBuffers(
+            0,                          // StartSlot 
+            ds->d3d11IANumSlots,        // NumBuffers
+            ds->d3d11IAVertexBuffers,   // ppVertexBuffers
+            ds->d3d11IAStrides,         // pStrides
+            ds->d3d11IAOffsets);        // pOffsets
 
-        // apply input assembly state (except primitive topology)
-        // FIXME: these arrays should be stored in the d3d11DrawState!
-        ID3D11Buffer* d3d11IABuffers[DrawStateSetup::MaxInputMeshes];
-        UINT d3d11IAStrides[DrawStateSetup::MaxInputMeshes];
-        UINT d3d11IAOffsets[DrawStateSetup::MaxInputMeshes];
-        int d3d11NumBuffers = 0;
-        for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
-            const mesh* msh = ds->meshes[mshIndex];
-            if (msh) {
-                d3d11IABuffers[d3d11NumBuffers] = msh->d3d11VertexBuffer;
-                d3d11IAStrides[d3d11NumBuffers] = msh->vertexBufferAttrs.Layout.ByteSize();
-                d3d11IAOffsets[d3d11NumBuffers] = 0;
-                d3d11NumBuffers++;
-            }
-        }
-        this->d3d11DeviceContext->IASetVertexBuffers(0, d3d11NumBuffers, d3d11IABuffers, d3d11IAStrides, d3d11IAOffsets);
-
+        // apply instance buffer
         if (ds->meshes[0]->d3d11IndexBuffer) {
             DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) ds->meshes[0]->indexBufferAttrs.Type;
             this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
         }
 
+        // apply input layout
         const uint32 selIndex = ds->prog->getSelectionIndex();
         o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
         this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);

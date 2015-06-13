@@ -30,6 +30,15 @@ public:
     ID3D11DepthStencilState* d3d11DepthStencilState;
     /// blend state object
     ID3D11BlendState* d3d11BlendState;
+
+    /// number of input assembler stage vertex buffer bindings
+    int32 d3d11IANumSlots;
+    /// input assembler vertex buffer pointers
+    ID3D11Buffer* d3d11IAVertexBuffers[DrawStateSetup::MaxInputMeshes];
+    /// input assember vertex buffer strides
+    uint32 d3d11IAStrides[DrawStateSetup::MaxInputMeshes];
+    /// input assembler vertex buffer offsets
+    uint32 d3d11IAOffsets[DrawStateSetup::MaxInputMeshes];
 };
 
 } // namespace _priv
