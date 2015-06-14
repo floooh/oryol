@@ -83,7 +83,7 @@ valid(false),
 dispMgr(nullptr),
 mshPool(nullptr),
 texPool(nullptr),
-#if ORYOL_MACOS
+#if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
 rtValid(false),
@@ -133,7 +133,7 @@ glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool
     #endif
 
     // in case we are on a Core Profile, create a global Vertex Array Object
-    #if ORYOL_MACOS
+    #if !ORYOL_OPENGLES2
     ::glGenVertexArrays(1, &this->globalVAO);
     ::glBindVertexArray(this->globalVAO);
     #endif
@@ -155,7 +155,7 @@ glRenderer::discard() {
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
 
-    #if ORYOL_MACOS
+    #if !ORYOL_OPENGLES2
     ::glDeleteVertexArrays(1, &this->globalVAO);
     this->globalVAO = 0;
     #endif

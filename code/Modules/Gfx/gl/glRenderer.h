@@ -115,7 +115,7 @@ private:
     displayMgr* dispMgr;
     meshPool* mshPool;
     texturePool* texPool;
-    #if ORYOL_MACOS // FIXME: should be a new 'ORYOL_GL_ISCOREPROFILE' define
+    #if !ORYOL_OPENGLES2
     GLuint globalVAO;
     #endif
 
