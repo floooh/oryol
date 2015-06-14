@@ -103,6 +103,7 @@ private:
 
     ID3D11RenderTargetView* curRenderTargetView;
     ID3D11DepthStencilView* curDepthStencilView;
+    PrimitiveType::Code curPrimitiveTopology;
 };
 
 } // namespace _priv

@@ -27,7 +27,8 @@ rtValid(false),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
 curRenderTargetView(nullptr),
-curDepthStencilView(nullptr) {
+curDepthStencilView(nullptr),
+curPrimitiveTopology(PrimitiveType::InvalidPrimitiveType) {
     // empty
 }
 
@@ -283,7 +284,12 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
         int32 cbBindSlot = 0;
         ID3D11Buffer* cb = prog->getConstantBufferAt(blockIndex, cbStage, cbBindSlot);
         o_assert_dbg(cb);
-        this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);        
+        D3D11_MAPPED_SUBRESOURCE mapped;
+        HRESULT hr = this->d3d11DeviceContext->Map(cb, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+        intptr size = (ptr + byteSize) - cbufferPtr;
+        o_assert_dbg(size > 0);
+        std::memcpy(mapped.pData, cbufferPtr, size);
+        this->d3d11DeviceContext->Unmap(cb, 0);
     }
 }
 
@@ -322,8 +328,10 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     if (this->curDrawState) {
         o_assert_dbg(this->curDrawState->meshes[0]);
 
-        D3D11_PRIMITIVE_TOPOLOGY primTop = (D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(primTop);
+        if (primGroup.PrimType != this->curPrimitiveTopology) {
+            this->curPrimitiveTopology = primGroup.PrimType;
+            this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
+        }
         const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
         if (indexType != IndexType::None) {
             // indexed geometry

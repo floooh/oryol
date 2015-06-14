@@ -95,9 +95,9 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
         const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
 
         cbDesc.ByteWidth = layout.ByteSize();
-        cbDesc.Usage = D3D11_USAGE_DEFAULT;
+        cbDesc.Usage = D3D11_USAGE_DYNAMIC;
         cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbDesc.CPUAccessFlags = 0;
+        cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
         ID3D11Buffer* d3d11ConstantBuffer = nullptr;
         hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
