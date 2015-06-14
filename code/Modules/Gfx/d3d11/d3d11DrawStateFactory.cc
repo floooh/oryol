@@ -176,7 +176,7 @@ d3d11DrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(nullptr != this->renderer);
 
     this->renderer->invalidateDrawState();
-    for (int i = 0; i < programBundle::MaxNumPrograms; i++) {
+    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
         if (nullptr != ds.d3d11InputLayouts[i]) {
             ds.d3d11InputLayouts[i]->Release();
         }

@@ -11,7 +11,7 @@
 @in vec4 color0
 @out vec2 uv
 @out vec4 color
-    _position = mul(position, ortho);
+    _position = mul(ortho, position);
     uv = texcoord0;
     color = color0;
 @end

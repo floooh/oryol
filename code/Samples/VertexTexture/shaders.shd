@@ -139,7 +139,7 @@ float snoise(vec2 v)
     color = tex2Dvs(tex, texcoord0);
     vec4 pos = position;
     pos.y = color.w;
-    _position = mul(pos, mvp);
+    _position = mul(mvp, pos);
 @end
 
 @fs planeFS

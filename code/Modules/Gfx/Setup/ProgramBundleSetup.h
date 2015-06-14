@@ -18,6 +18,11 @@ namespace Oryol {
     
 class ProgramBundleSetup {
 public:
+    /// max number of shader programs
+    static const int32 MaxNumPrograms = 8;
+    /// max number of uniform blocks
+    static const int32 MaxNumUniformBlocks = 4;
+
     /// default constructor
     ProgramBundleSetup();
     /// construct with resource locator
@@ -33,7 +38,7 @@ public:
     /// add a program from precompiled shader byte code
     void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
     /// bind a shader uniform block name to a variable slot
-    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, int16 slotIndex);
+    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex);
     
     /// get number of programs
     int32 NumPrograms() const;
@@ -58,19 +63,18 @@ public:
     const StringAtom& UniformBlockName(int32 uniformBlockIndex) const;
     /// get uniform block layout at index
     const UniformLayout& UniformBlockLayout(int32 uniformBlockIndex) const;
+    /// get uniform block shader stage
+    ShaderType::Code UniformBlockShaderStage(int32 uniformBlockIndex) const;
     /// get uniform block slot index
-    int16 UniformBlockSlot(int32 uniformBlockIndex) const;
+    int32 UniformBlockSlot(int32 uniformBlockIndex) const;
     
 private:
-    static const int32 MaxNumProgramEntries = 8;
-    static const int32 MaxNumUniformBlockEntries = 4;
-
     struct programEntry {
         uint32 mask = 0;
         Id vertexShader;
         Id fragmentShader;
-        String vsSources[ShaderLang::NumShaderLangs];
-        String fsSources[ShaderLang::NumShaderLangs];
+        StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
+        StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
         struct byteCodeEntry {
             const void* ptr = nullptr;
             uint32 size = 0;
@@ -81,7 +85,8 @@ private:
     struct uniformBlockEntry {
         StringAtom name;
         UniformLayout layout;
-        int16 slotIndex = InvalidIndex;
+        ShaderType::Code shaderStage;
+        int32 slotIndex = InvalidIndex;
     };
 
     /// obtain an existing entry with matching mask or new entry
@@ -89,8 +94,8 @@ private:
 
     int32 numProgramEntries;
     int32 numUniformBlockEntries;
-    StaticArray<programEntry, MaxNumProgramEntries> programEntries;
-    StaticArray<uniformBlockEntry, MaxNumUniformBlockEntries> uniformBlockEntries;
+    StaticArray<programEntry, MaxNumPrograms> programEntries;
+    StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlockEntries;
 };
     
 } // namespace Oryol

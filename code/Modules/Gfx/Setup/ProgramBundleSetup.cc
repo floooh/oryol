@@ -41,7 +41,7 @@ ProgramBundleSetup::obtainEntry(uint32 mask) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
-    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
     o_assert_dbg(vs.IsValid() && vs.Type == GfxResourceType::Shader);
     o_assert_dbg(fs.IsValid() && fs.Type == GfxResourceType::Shader);
     
@@ -53,7 +53,7 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
-    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
 
     programEntry& entry = this->obtainEntry(mask);
@@ -64,7 +64,7 @@ ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, c
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
-    o_assert_dbg(this->numProgramEntries < MaxNumProgramEntries);
+    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
 
@@ -77,7 +77,7 @@ ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, 
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, int16 slotIndex) {
+ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(!layout.Empty());
     o_assert_dbg(0 != layout.TypeHash);
@@ -85,6 +85,7 @@ ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout&
     uniformBlockEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
     entry.name = name;
     entry.layout = layout;
+    entry.shaderStage = shaderStage;
     entry.slotIndex = slotIndex;
 }
 
@@ -157,9 +158,15 @@ ProgramBundleSetup::UniformBlockLayout(int32 uniformBlockIndex) const {
 }
 
 //------------------------------------------------------------------------------
-int16
+int32
 ProgramBundleSetup::UniformBlockSlot(int32 uniformBlockIndex) const {
     return this->uniformBlockEntries[uniformBlockIndex].slotIndex;
+}
+
+//------------------------------------------------------------------------------
+ShaderType::Code
+ProgramBundleSetup::UniformBlockShaderStage(int32 uniformBlockIndex) const {
+    return this->uniformBlockEntries[uniformBlockIndex].shaderStage;
 }
 
 } // namespace Oryol

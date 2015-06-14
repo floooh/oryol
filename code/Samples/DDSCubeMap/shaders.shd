@@ -9,7 +9,7 @@
 @in vec4 position
 @in vec3 normal
 @out vec3 nrm
-    _position = mul(position, mvp);
+    _position = mul(mvp, position);
     nrm = normal;
 @end
 

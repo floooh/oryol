@@ -14,9 +14,9 @@
 @in vec3 normal
 @out vec3 viewSpacePos
 @out vec3 viewSpaceNormal
-    _position = mul(position, modelViewProj);
-    viewSpacePos = mul(position, modelView).xyz;
-    viewSpaceNormal = mul(vec4(normal, 0.0), modelView).xyz;
+    _position = mul(modelViewProj, position);
+    viewSpacePos = mul(modelView, position).xyz;
+    viewSpaceNormal = mul(modelView, vec4(normal, 0.0)).xyz;
 @end
 
 //------------------------------------------------------------------------------

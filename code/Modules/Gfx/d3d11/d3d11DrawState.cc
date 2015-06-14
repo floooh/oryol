@@ -13,7 +13,7 @@ d3d11RasterizerState(nullptr),
 d3d11DepthStencilState(nullptr),
 d3d11BlendState(nullptr),
 d3d11IANumSlots(0) {
-    for (int i = 0; i < d3d11ProgramBundle::MaxNumPrograms; i++) {
+    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
         this->d3d11InputLayouts[i] = nullptr;
     }
     for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
@@ -26,7 +26,7 @@ d3d11IANumSlots(0) {
 //------------------------------------------------------------------------------
 d3d11DrawState::~d3d11DrawState() {
     #if ORYOL_DEBUG
-    for (int i = 0; i < d3d11ProgramBundle::MaxNumPrograms; i++) {
+    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
         o_assert_dbg(nullptr == this->d3d11InputLayouts[i]);
     }
     o_assert_dbg(nullptr == this->d3d11RasterizerState);
@@ -41,7 +41,7 @@ d3d11DrawState::~d3d11DrawState() {
 //------------------------------------------------------------------------------
 void
 d3d11DrawState::Clear() {
-    for (int i = 0; i < d3d11ProgramBundle::MaxNumPrograms; i++) {
+    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
         this->d3d11InputLayouts[i] = nullptr;
     }
     this->d3d11RasterizerState = nullptr;

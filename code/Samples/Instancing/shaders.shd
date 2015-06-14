@@ -10,7 +10,7 @@
 @in vec4 color0
 @in vec4 instance0
 @out vec4 color
-    _position = mul((position + instance0), mvp); 
+    _position = mul(mvp, (position + instance0)); 
     color = color0;
 @end
 

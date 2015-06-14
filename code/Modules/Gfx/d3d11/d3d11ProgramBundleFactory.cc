@@ -83,10 +83,29 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
         o_assert_dbg(ps);
 
         // add vertexshader/pixelshader pair to program bundle
-        progBundle.add(setup.Mask(progIndex), vs, ps);
-
-        // FIXME: resolve uniforms
+        progBundle.addShaders(setup.Mask(progIndex), vs, ps);
     }
+
+    // create constant buffers
+    D3D11_BUFFER_DESC cbDesc;
+    Memory::Clear(&cbDesc, sizeof(cbDesc));
+    for (int i = 0; i < setup.NumUniformBlocks(); i++) {
+        const UniformLayout& layout = setup.UniformBlockLayout(i);
+        const int32 bindSlotIndex = setup.UniformBlockSlot(i);
+        const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
+
+        cbDesc.ByteWidth = layout.ByteSize();
+        cbDesc.Usage = D3D11_USAGE_DEFAULT;
+        cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        cbDesc.CPUAccessFlags = 0;
+
+        ID3D11Buffer* d3d11ConstantBuffer = nullptr;
+        hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
+        o_assert(SUCCEEDED(hr));
+        o_assert_dbg(d3d11ConstantBuffer);
+        progBundle.addConstantBuffer(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
+    }
+
     return ResourceState::Valid;
 }
 
@@ -98,15 +117,26 @@ d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
 
     const int32 numProgs = progBundle.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        ID3D11VertexShader* vs = progBundle.getVertexShaderAtIndex(progIndex);
+        ID3D11VertexShader* vs = progBundle.getVertexShaderAt(progIndex);
         if (vs) {
             vs->Release();
         }
-        ID3D11PixelShader* ps = progBundle.getPixelShaderAtIndex(progIndex);
+        ID3D11PixelShader* ps = progBundle.getPixelShaderAt(progIndex);
         if (ps) {
             ps->Release();
         }
     }
+
+    int32 dummySlotIndex = 0;
+    ShaderType::Code dummyBindStage = ShaderType::InvalidShaderType;
+    const int32 numConstantBuffers = progBundle.getNumConstantBuffers();
+    for (int32 cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
+        ID3D11Buffer* cb = progBundle.getConstantBufferAt(cbIndex, dummyBindStage, dummySlotIndex);
+        if (cb) {
+            cb->Release();
+        }
+    }
+
     progBundle.Clear();
 }
 

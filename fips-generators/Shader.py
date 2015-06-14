@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 31
+Version = 32
 
 import os
 import sys
@@ -53,28 +53,28 @@ slMacros = {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         'static': '',
-        'mul(v,m)': '(m * v)',
-        'tex2D(s, t)': 'texture2D(s, t)',
-        'texCUBE(s, t)': 'textureCube(s, t)',
-        'tex2Dvs(s, t)': 'texture2D(s, t)'
+        'mul(m,v)': '(m*v)',
+        'tex2D(s, t)': 'texture2D(s,t)',
+        'texCUBE(s, t)': 'textureCube(s,t)',
+        'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl120': {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         'static': '',
-        'mul(v,m)': '(m * v)',
-        'tex2D(s, t)': 'texture2D(s, t)',
-        'texCUBE(s, t)': 'textureCube(s, t)',
-        'tex2Dvs(s, t)': 'texture2D(s, t)'
+        'mul(m,v)': '(m*v)',
+        'tex2D(s, t)': 'texture2D(s,t)',
+        'texCUBE(s, t)': 'textureCube(s,t)',
+        'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl150': {
         '_position': 'gl_Position',
         '_color': '_FragColor',
         'static': '',
-        'mul(v,m)': '(m * v)',
-        'tex2D(s, t)': 'texture(s, t)',
-        'texCUBE(s, t)': 'texture(s, t)',
-        'tex2Dvs(s, t)': 'texture(s, t)'
+        'mul(m,v)': '(m*v)',
+        'tex2D(s, t)': 'texture(s,t)',
+        'texCUBE(s, t)': 'texture(s,t)',
+        'tex2Dvs(s, t)': 'texture(s,t)'
     },
     'hlsl5': {
         '_position': '_oPosition',
@@ -85,9 +85,9 @@ slMacros = {
         'mat2': 'float2x2',
         'mat3': 'float3x3',
         'mat4': 'float4x4',
-        'tex2D(s, t)': 's.Sample(s ## _sampler, t)',
-        'texCUBE(s, t)': 's.Sample(s ## _sampler, t)',
-        'tex2Dvs(s, t)': 's.Load(int3(t.x, t.y, 0))',
+        'tex2D(s, t)': 's.Sample(s ## _sampler,t)',
+        'texCUBE(s, t)': 's.Sample(s ## _sampler,t)',
+        'tex2Dvs(s, t)': 's.Load(int3(t.x,t.y,0))',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
@@ -213,10 +213,11 @@ class Uniform :
     '''
     A shader uniform definition.
     '''
-    def __init__(self, type, name, bind, filePath, lineNumber) :
+    def __init__(self, type, name, bindName, filePath, lineNumber) :
         self.type = type
         self.name = name
-        self.bind = bind
+        self.bindName = bindName
+        self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
 
@@ -228,9 +229,11 @@ class UniformBlock :
     '''
     A group of related shader uniforms.
     '''
-    def __init__(self, name, bind, filePath, lineNumber) :
+    def __init__(self, name, bindName, shaderStage, filePath, lineNumber) :
         self.name = name
-        self.bind = bind
+        self.bindName = bindName
+        self.bindSlot = None
+        self.shaderStage = shaderStage
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.uniforms = []
@@ -252,9 +255,11 @@ class UniformBlock :
                 dumpObj(uniform)
 
     def isEquivalent(self, other) :
-        if (self.name != other.name) :
+        if self.name != other.name :
             return False
-        if (self.bind != other.bind) :
+        if self.bindName != other.bindName :
+            return False
+        if self.shaderStage != other.shaderStage :
             return False
         for uniform in self.uniforms :
             other_uniform = findByName(uniform.name, other.uniforms)
@@ -263,7 +268,7 @@ class UniformBlock :
             else :
                 if uniform.type != other_uniform.type :
                     return False
-                elif uniform.bind != other_uniform.bind :
+                elif uniform.bindName != other_uniform.bindName :
                     return False
         return True
 
@@ -570,9 +575,10 @@ class Parser :
             util.fmtError("@uniform_block must have 2 args (name bind)")
         name = args[0]
         bind = args[1]
+        shaderStage = self.current.getTag()
         if checkListDup(name, self.current.uniformBlocks) :
             util.fmtError("@uniform_block '{}' already defined in '{}'!".format(name, self.current.name))
-        uniformBlock = UniformBlock(name, bind, self.fileName, self.lineNumber)
+        uniformBlock = UniformBlock(name, bind, shaderStage, self.fileName, self.lineNumber)
         self.current.uniformBlocks.append(uniformBlock)
         self.push(uniformBlock)
 
@@ -829,20 +835,22 @@ class HLSLGenerator :
         # first write texture uniforms outside of cbuffers, and count
         # non-texture uniforms
         for uBlock in shd.uniformBlocks :
-            numBlockUniforms = 0
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
                     if type == 'sampler2D' :
-                        lines.append(Line('Texture2D {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('Texture2D {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
                     elif type == 'samplerCube' :
-                        lines.append(Line('TextureCube {};'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler;'.format(uniform.name), uniform.filePath, uniform.lineNumber))
-                    else :
-                        numBlockUniforms += 1
+                        lines.append(Line('TextureCube {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+
             # if there are non-texture uniforms, groups the rest into a cbuffer
-            if numBlockUniforms > 0 :
-                lines.append(Line('cbuffer {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+            if uBlock.bindSlot is not None :
+                lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
                 for type in uBlock.uniformsByType :
                     if type not in ['sampler2D', 'samplerCube' ] :
                         for uniform in uBlock.uniformsByType[type] :
@@ -997,6 +1005,29 @@ class ShaderLibrary :
             for uniformBlock in self.fragmentShaders[program.fs].uniformBlocks :
                 self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
 
+    def assignParamSlotIndices(self, bundle) :
+        '''
+        Assigns bindSlotIndex to uniform blocks and texture variables
+        in all slots, these are used on some platforms for shader parameter
+        binding instead of parameter names.
+        '''
+        uniformBlockSlot = 0
+        textureSlot = 0
+        for uBlock in bundle.uniformBlocks :
+            numBlockUniforms = 0
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type in ['sampler2D', 'samplerCube' ] :
+                        uniform.bindSlot = textureSlot
+                        textureSlot += 1;
+                    else :
+                        numBlockUniforms += 1
+
+            # if there are non-texture uniforms, groups the rest into a cbuffer
+            if numBlockUniforms > 0 :
+                uBlock.bindSlot = uniformBlockSlot
+                uniformBlockSlot += 1
+
     def resolveAllDependencies(self) :
         '''
         Resolve block and uniform dependencies for vertex- and fragment shaders.
@@ -1013,6 +1044,7 @@ class ShaderLibrary :
             self.removeDuplicateDeps(fs)
         for bundle in self.bundles.values() :
             self.resolveBundleUniformBlocks(bundle)
+            self.assignParamSlotIndices(bundle)
 
     def generateShaderSourcesGLSL(self) :
         '''
@@ -1101,20 +1133,31 @@ def writeBundleHeader(f, shdLib, bundle) :
     f.write('    public:\n')
     
     # write uniform block structs
-    for slotIndex, uBlock in enumerate(bundle.uniformBlocks) :
+    for blockIndex, uBlock in enumerate(bundle.uniformBlocks) :
+        if uBlock.shaderStage == 'vs' :
+            shaderStage = 'ShaderType::VertexShader'
+        else :
+            shaderStage = 'ShaderType::FragmentShader'
+        if uBlock.bindSlot is None :
+            bindSlotIndex = "InvalidIndex"
+        else :
+            bindSlotIndex = uBlock.bindSlot
         f.write('        #pragma pack(push,1)\n')
-        f.write('        struct {} {{\n'.format(uBlock.bind))
-        f.write('            static const int32 _blockIndex = {};\n'.format(slotIndex))
+        f.write('        struct {} {{\n'.format(uBlock.bindName))
+        f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
+        f.write('            static const int32 _bindSlotIndex = {};\n'.format(bindSlotIndex))
+        f.write('            static const ShaderType::Code _bindShaderStage = {};\n'.format(shaderStage))
         f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
-                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bind))
+                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
                 # for vec3's we need to add a padding field, FIXME: would be good
                 # to try filling the padding fields with float params!
                 if type == 'vec3' :
-                    f.write('            float32 _pad_{};\n'.format(uniform.bind))
+                    f.write('            float32 _pad_{};\n'.format(uniform.bindName))
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
+
     f.write('        static ProgramBundleSetup CreateSetup();\n')
     f.write('    };\n')
 
@@ -1201,13 +1244,14 @@ def writeBundleSource(f, shdLib, bundle) :
                     i, slangType, vsSource, vsSource, fsSource, fsSource))
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
-        layoutName = '{}_layout'.format(uBlock.bind)
+        layoutName = '{}_layout'.format(uBlock.bindName)
         f.write('    UniformLayout {};\n'.format(layoutName))
         f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
                 f.write('    {}.Add("{}", {}, 1);\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
-        f.write('    setup.AddUniformBlock("{}", {}, {}::_blockIndex);\n'.format(uBlock.name, layoutName, uBlock.bind))
+        f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+            uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
     f.write('    return setup;\n')
     f.write('}\n')
 

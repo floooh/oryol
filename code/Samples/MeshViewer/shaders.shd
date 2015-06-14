@@ -23,7 +23,7 @@ vec4 gamma(vec4 c) {
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    _position = mul(position, mvp);
+    _position = mul(mvp, position);
     nrm = normal;
 @end
 
@@ -47,8 +47,8 @@ vec4 gamma(vec4 c) {
 @in vec4 position
 @in vec3 normal
 @out vec3 N
-    _position = mul(position, mvp);
-    N = mul(vec4(normal, 0.0), model).xyz;
+    _position = mul(mvp, position);
+    N = mul(model, vec4(normal, 0.0)).xyz;
 @end
 
 @fs lambertFS
@@ -88,9 +88,9 @@ vec4 gamma(vec4 c) {
 @in vec4 normal
 @out vec3 N
 @out vec3 P
-    _position = mul(position, mvp);
-    P = mul(position, model).xyz;
-    N = mul(vec4(normal.xyz, 0.0), model).xyz;
+    _position = mul(mvp, position);
+    P = mul(model, position).xyz;
+    N = mul(model, vec4(normal.xyz, 0.0)).xyz;
 @end
 
 @fs phongFS

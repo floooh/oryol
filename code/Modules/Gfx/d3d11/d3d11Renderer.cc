@@ -226,18 +226,65 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
         this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
 
-        // apply vertex stage state
+        // apply shaders
         this->d3d11DeviceContext->VSSetShader(ds->prog->getSelectedVertexShader(), NULL, 0);
-
-        // apply pixel stage state
         this->d3d11DeviceContext->PSSetShader(ds->prog->getSelectedPixelShader(), NULL, 0);
+        
+        // apply constant buffers
+        ShaderType::Code cbStage = ShaderType::InvalidShaderType;
+        int32 cbBindSlot = 0;
+        const int numConstantBuffers = ds->prog->getNumConstantBuffers();
+        for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
+            ID3D11Buffer* cb = ds->prog->getConstantBufferAt(cbIndex, cbStage, cbBindSlot);
+            o_assert_dbg(cbBindSlot != InvalidIndex);
+            if (ShaderType::VertexShader == cbStage) {
+                this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
+            }
+            else {
+                this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
+            }
+        }
     }
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
-    o_error("FIXME!\n");
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(0 != layoutHash);
+    if (nullptr == this->curDrawState) {
+        // currently no valid draw state set
+        return;
+    }
+
+    // get the uniform-layout object for this uniform block
+    const programBundle* prog = this->curDrawState->prog;
+    o_assert_dbg(prog);
+    const UniformLayout& layout = prog->Setup.UniformBlockLayout(blockIndex);
+
+    // check whether the provided struct is type-compatible with the
+    // expected uniform block layout
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+
+    // FIXME: set textures and samplers
+    const uint8* cbufferPtr = nullptr;
+    const int numComps = layout.NumComponents();
+    for (int compIndex = 0; compIndex < numComps; compIndex++) {
+        const auto& comp = layout.ComponentAt(compIndex);
+        if (comp.Type != UniformType::Texture) {
+            // found the start of the cbuffer struct
+            cbufferPtr = ptr + layout.ComponentByteOffset(compIndex);
+        }
+    }
+
+    // apply optional uniform block
+    if (cbufferPtr) {
+        ShaderType::Code cbStage = ShaderType::InvalidShaderType;
+        int32 cbBindSlot = 0;
+        ID3D11Buffer* cb = prog->getConstantBufferAt(blockIndex, cbStage, cbBindSlot);
+        o_assert_dbg(cb);
+        this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);        
+    }
 }
 
 //------------------------------------------------------------------------------

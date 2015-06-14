@@ -207,7 +207,12 @@ d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup, const DXGI_SWA
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
         Memory::Clear(&dsvDesc, sizeof(dsvDesc));
         dsvDesc.Format = depthStencilDesc.Format;
-        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        if (setup.Samples > 1) {
+            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+        }
+        else {
+            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        }
         dsvDesc.Texture2D.MipSlice = 0;
         hr = this->d3d11Device->CreateDepthStencilView(this->depthStencilBuffer, &dsvDesc, &this->depthStencilView);
         o_assert(SUCCEEDED(hr));

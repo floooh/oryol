@@ -23,7 +23,7 @@ public:
     void Clear();
 
     /// pointer to input layout objects (same number and order as programBundle variations)
-    ID3D11InputLayout* d3d11InputLayouts[d3d11ProgramBundle::MaxNumPrograms];
+    ID3D11InputLayout* d3d11InputLayouts[ProgramBundleSetup::MaxNumPrograms];
     /// rasterize state object
     ID3D11RasterizerState* d3d11RasterizerState;
     /// depth-stencil state object

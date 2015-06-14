@@ -11,7 +11,7 @@
 @in vec2 texcoord0
 @out vec4 nrm
 @out vec2 uv
-    _position = mul(position, mvp);
+    _position = mul(mvp, position);
     nrm = normal;
     uv = texcoord0;
 @end
