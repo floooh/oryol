@@ -77,7 +77,12 @@ private:
     ResourceLabel resourceLabel;
     
     // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)
-    uint32 vertexData[MaxNumVertices][2];
+//    uint32 vertexData[MaxNumVertices][2];
+    struct Vertex {
+        float x, y, u, v;
+        uint32 color;
+    };
+    struct Vertex vertexData[MaxNumVertices];
 };
 
 } // namespace _priv

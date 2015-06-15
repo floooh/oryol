@@ -21,6 +21,7 @@ Dbg::Setup() {
 void
 Dbg::Discard() {
     o_assert(IsValid());
+    state->debugTextRenderer.discard();
     Memory::Delete(state);
     state = nullptr;
 }
