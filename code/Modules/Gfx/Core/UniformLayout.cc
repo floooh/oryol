@@ -41,4 +41,16 @@ UniformLayout::Add(const StringAtom& name, UniformType::Code type, uint8 num) {
     return this->Add(Component(name, type, num));
 }
 
+//------------------------------------------------------------------------------
+int32
+UniformLayout::ByteSizeWithoutTextures() const {
+    int32 byteSize = 0;
+    for (int i = 0; i < this->numComps; i++) {
+        if (this->comps[i].Type != UniformType::Texture) {
+            byteSize += this->comps[i].ByteSize();
+        }
+    }
+    return byteSize;
+}
+
 } // namespace Oryol

@@ -54,6 +54,8 @@ public:
     const Component& ComponentAt(int32 componentIndex) const;
     /// get the overall byte size of the uniform layout
     int32 ByteSize() const;
+    /// return the byte size without texture components
+    int32 ByteSizeWithoutTextures() const;
     /// get byte offset of a component
     int32 ComponentByteOffset(int32 componentIndex) const;
 
