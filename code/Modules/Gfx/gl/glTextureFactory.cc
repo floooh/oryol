@@ -138,6 +138,9 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.NumMipMaps == 1);
+    o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
     int32 width, height;
@@ -196,6 +199,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     // create depth buffer
     GLuint glDepthRenderBuffer = 0;
     if (setup.HasDepth()) {
+        o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
         if (!setup.HasSharedDepth()) {
             // FIXME: optionally create a depth texture instead of a render buffer here...
             o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
