@@ -574,7 +574,8 @@ void
 glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
-    o_assert(numBytes > 0);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(numBytes > 0);
     
     const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
     const Usage::Code vbUsage = attrs.BufferUsage;

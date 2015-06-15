@@ -29,8 +29,6 @@ public:
     GLuint glFramebuffer;
     /// GL depth render buffer
     GLuint glDepthRenderbuffer;
-    /// GL depth texture
-    GLuint glDepthTexture;
 };
 
 } // namespace _priv

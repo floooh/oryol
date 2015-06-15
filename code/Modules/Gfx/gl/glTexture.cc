@@ -12,8 +12,7 @@ glTexture::glTexture() :
 glTex(0),
 glTarget(0),
 glFramebuffer(0),
-glDepthRenderbuffer(0),
-glDepthTexture(0) {
+glDepthRenderbuffer(0) {
     // empty
 }
 
@@ -23,7 +22,6 @@ glTexture::~glTexture() {
     o_assert_dbg(0 == this->glTarget);
     o_assert_dbg(0 == this->glFramebuffer);
     o_assert_dbg(0 == this->glDepthRenderbuffer);
-    o_assert_dbg(0 == this->glDepthTexture);
 }
 
 //------------------------------------------------------------------------------
@@ -34,7 +32,6 @@ glTexture::Clear() {
     this->glTarget = 0;
     this->glFramebuffer = 0;
     this->glDepthRenderbuffer = 0;
-    this->glDepthTexture = 0;
 }
 
 } // namespace _priv

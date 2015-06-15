@@ -32,15 +32,15 @@ glTextureFactory::~glTextureFactory() {
 
 //------------------------------------------------------------------------------
 void
-glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr_, texturePool* texPool_) {
+glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool_) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != displayMgr_);
+    o_assert_dbg(nullptr != displayMgr);
     o_assert_dbg(nullptr != texPool_);
 
     this->isValid = true;
     this->renderer = rendr;
-    this->displayManager = displayMgr_;
+    this->displayManager = displayMgr;
     this->texPool = texPool_;
 }
 
@@ -52,6 +52,7 @@ glTextureFactory::Discard() {
     this->isValid = false;
     this->renderer = nullptr;
     this->displayManager = nullptr;
+    this->texPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -65,13 +66,13 @@ ResourceState::Code
 glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
-    
-    // decide whether a loader needs to take over, or whether we handle this right here
+    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
+
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
     else {
-        o_error("FIXME FIXME FIXME");
+        // here would go more ways to create textures without image data
         return ResourceState::InvalidState;
     }
 }
@@ -87,7 +88,7 @@ glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
         return this->createFromPixelData(tex, data, size);
     }
     else {
-        o_error("FIXME FIXME FIXME");
+        // here would go more ways to create textures with image data
         return ResourceState::InvalidState;
     }
 }
@@ -109,14 +110,11 @@ glTextureFactory::DestroyResource(texture& tex) {
         ORYOL_GL_CHECK_ERROR();
     }
     
-    if (0 != tex.glDepthRenderbuffer) {
-        ::glDeleteRenderbuffers(1, &tex.glDepthRenderbuffer);
-        ORYOL_GL_CHECK_ERROR();
-    }
-    
-    if (0 != tex.glDepthTexture) {
-        ::glDeleteTextures(1, &tex.glDepthTexture);
-        ORYOL_GL_CHECK_ERROR();
+    if (!tex.textureAttrs.HasSharedDepthBuffer) {
+        if (0 != tex.glDepthRenderbuffer) {
+            ::glDeleteRenderbuffers(1, &tex.glDepthRenderbuffer);
+            ORYOL_GL_CHECK_ERROR();
+        }
     }
     
     tex.Clear();
@@ -132,7 +130,6 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(0 == tex.glTex);
     o_assert_dbg(0 == tex.glFramebuffer);
     o_assert_dbg(0 == tex.glDepthRenderbuffer);
-    o_assert_dbg(0 == tex.glDepthTexture);
     
     this->renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
