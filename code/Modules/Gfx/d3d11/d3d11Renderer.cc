@@ -120,6 +120,7 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->dispMgr);
     o_assert_dbg(this->d3d11DeviceContext);
 
+    this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = this->dispMgr->GetDisplayAttrs();
         this->curRenderTargetView = this->defaultRenderTargetView;
@@ -140,7 +141,8 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
         this->rtAttrs.Windowed = false;
         this->rtAttrs.SwapInterval = 1;
 
-        o_error("FIXME: SET curRenderTargetView/curDepthStencilView!\n");
+        this->curRenderTargetView = rt->d3d11RenderTargetView;
+        this->curDepthStencilView = rt->d3d11DepthStencilView;
     }
 
     this->curRenderTarget = rt;
@@ -444,7 +446,11 @@ d3d11Renderer::invalidateDrawState() {
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateTextureState() {
-    Log::Info("d3d11Renderer::invalidateTextureState()\n");
+
+    // clear all texture bindings
+    ID3D11ShaderResourceView* const nullViews[UniformLayout::MaxNumComponents] = { 0 };
+    this->d3d11DeviceContext->PSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
+    this->d3d11DeviceContext->VSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
 }
 
 } // namespace _priv

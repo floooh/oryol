@@ -16,6 +16,8 @@ class d3d11Types {
 public:
     /// convert PixelFormat to a display DXGI format
     static DXGI_FORMAT asSwapChainFormat(PixelFormat::Code pixelFormat);
+    /// convert PixelFormat to a rendertarget DXGI format
+    static DXGI_FORMAT asRenderTargetFormat(PixelFormat::Code pixelFormat);
     /// convert PixelFormat to a D3D11 texture format
     static DXGI_FORMAT asTextureFormat(PixelFormat::Code pixelFormat);
     /// convert Usage to a d3d11 usage for buffers

@@ -42,6 +42,14 @@ private:
     ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture from pixel data in memory
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create d3d11 sampler state object in texture
+    ID3D11SamplerState* createSamplerState(const texture& tex);
+    /// create d3d11 shader-resource-view object
+    ID3D11ShaderResourceView* createShaderResourceView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
+    /// create d3d11 render-target-view object
+    ID3D11RenderTargetView* createRenderTargetView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
+    /// create d3d11 depth-stencil-view object
+    ID3D11DepthStencilView* createDepthStencilView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
 
     class renderer* renderer;
     displayMgr* displayManager;

@@ -23,6 +23,22 @@ d3d11Types::asSwapChainFormat(PixelFormat::Code pf) {
 
 //------------------------------------------------------------------------------
 DXGI_FORMAT
+d3d11Types::asRenderTargetFormat(PixelFormat::Code pf) {
+    switch (pf) {
+        case PixelFormat::RGBA8:    return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case PixelFormat::RGBA32F:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case PixelFormat::RGBA16F:  return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case PixelFormat::D16:      return DXGI_FORMAT_D16_UNORM;
+        case PixelFormat::D32:      return DXGI_FORMAT_D32_FLOAT;   // FIXME???
+        case PixelFormat::D24S8:    return DXGI_FORMAT_D24_UNORM_S8_UINT;
+        default:
+            o_error("d3d11Types::asRenderTargetFormat(): invalid pixel format!\n");
+            return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+//------------------------------------------------------------------------------
+DXGI_FORMAT
 d3d11Types::asTextureFormat(PixelFormat::Code pf) {
     switch(pf) {
         case PixelFormat::RGBA8:    return DXGI_FORMAT_R8G8B8A8_UNORM;

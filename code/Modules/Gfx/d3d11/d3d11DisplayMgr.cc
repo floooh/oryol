@@ -194,13 +194,13 @@ d3d11DisplayMgr::createDefaultRenderTarget(const GfxSetup& setup, const DXGI_SWA
         depthStencilDesc.Height = setup.Height;
         depthStencilDesc.MipLevels = 1;
         depthStencilDesc.ArraySize = 1;
-        depthStencilDesc.Format = d3d11Types::asTextureFormat(setup.DepthFormat);
+        depthStencilDesc.Format = d3d11Types::asRenderTargetFormat(setup.DepthFormat);
         depthStencilDesc.SampleDesc = swapChainDesc.SampleDesc;
         depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
         depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         depthStencilDesc.CPUAccessFlags = 0;
         depthStencilDesc.MiscFlags = 0;
-        hr = this->d3d11Device->CreateTexture2D(&depthStencilDesc, NULL, &this->depthStencilBuffer);
+        hr = this->d3d11Device->CreateTexture2D(&depthStencilDesc, nullptr, &this->depthStencilBuffer);
         o_assert(SUCCEEDED(hr));
         o_assert_dbg(this->depthStencilBuffer);
 

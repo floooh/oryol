@@ -29,6 +29,7 @@ struct ID3D11RasterizerState;
 struct ID3D11DepthStencilState;
 struct ID3D11BlendState;
 struct ID3D11SamplerState;
+typedef struct D3D11_TEXTURE2D_DESC D3D11_TEXTURE2D_DESC;
 
 enum D3D11_USAGE;
 typedef enum DXGI_FORMAT DXGI_FORMAT;

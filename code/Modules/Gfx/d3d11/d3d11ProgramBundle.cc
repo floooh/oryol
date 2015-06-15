@@ -79,7 +79,7 @@ void
 d3d11ProgramBundle::addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
     o_assert_dbg(this->numUniformBlockEntries < ProgramBundleSetup::MaxNumUniformBlocks);
     // NOTE: cb pointer can be 0!
-    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries];
+    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
     entry.constantBuffer = cb;
     entry.bindShaderStage = bindShaderStage;
     entry.bindSlotIndex = bindSlotIndex;
