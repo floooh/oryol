@@ -150,10 +150,6 @@ public:
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
             case RGBA8:
-            case RGB8:
-            case RGBA4:
-            case R5G6B5:
-            case R5G5B5A1:
             case RGBA32F:
             case RGBA16F:
                 return true;
