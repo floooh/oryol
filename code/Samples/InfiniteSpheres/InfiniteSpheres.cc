@@ -84,7 +84,7 @@ InfiniteSpheresApp::OnInit() {
 
     // create resources
     auto rtSetup = TextureSetup::RenderTarget(512, 512);
-    rtSetup.ColorFormat = PixelFormat::RGB8;
+    rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
