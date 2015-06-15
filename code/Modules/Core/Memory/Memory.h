@@ -62,8 +62,8 @@ Memory::Align(void* ptr, int32 byteSize) {
 
 //------------------------------------------------------------------------------
 inline int32
-Memory::RoundUp(int32 val, int32 byteSize) {
-    return (val + (byteSize - 1)) & ~(byteSize - 1);
+Memory::RoundUp(int32 val, int32 roundTo) {
+    return (val + (roundTo - 1)) & ~(roundTo - 1);
 }
     
 } // namespace oryol
