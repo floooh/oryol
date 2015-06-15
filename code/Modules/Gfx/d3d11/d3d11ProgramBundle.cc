@@ -20,8 +20,8 @@ d3d11ProgramBundle::~d3d11ProgramBundle() {
         o_assert_dbg(nullptr == this->programEntries[i].vertexShader);
         o_assert_dbg(nullptr == this->programEntries[i].pixelShader);
     }
-    for (int32 i = 0; i < this->numConstantBuffers; i++) {
-        o_assert_dbg(nullptr == this->cbEntries[i].constantBuffer);
+    for (int32 i = 0; i < this->numUniformBlockEntries; i++) {
+        o_assert_dbg(nullptr == this->uniformBlockEntries[i].constantBuffer);
     }
 #endif
 }
@@ -33,8 +33,8 @@ d3d11ProgramBundle::Clear() {
     this->selIndex = 0;
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
-    this->numConstantBuffers = 0;
-    this->cbEntries.Fill(cbEntry());
+    this->numUniformBlockEntries = 0;
+    this->uniformBlockEntries.Fill(ubEntry());
     programBundleBase::Clear();
 }
 
@@ -75,15 +75,14 @@ d3d11ProgramBundle::getPixelShaderAt(int32 index) const {
 }
 
 //------------------------------------------------------------------------------
-int32
-d3d11ProgramBundle::addConstantBuffer(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
-    o_assert_dbg(this->numConstantBuffers < ProgramBundleSetup::MaxNumUniformBlocks);
-    o_assert_dbg(cb);
-    cbEntry& entry = this->cbEntries[this->numConstantBuffers];
+void
+d3d11ProgramBundle::addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
+    o_assert_dbg(this->numUniformBlockEntries < ProgramBundleSetup::MaxNumUniformBlocks);
+    // NOTE: cb pointer can be 0!
+    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries];
     entry.constantBuffer = cb;
     entry.bindShaderStage = bindShaderStage;
     entry.bindSlotIndex = bindSlotIndex;
-    return this->numConstantBuffers++;
 }
 
 } // namespace _priv

@@ -246,5 +246,60 @@ d3d11Types::asInputClassification(VertexStepFunction::Code func) {
     return func == VertexStepFunction::PerVertex ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
 }
 
+//------------------------------------------------------------------------------
+D3D11_FILTER
+d3d11Types::asSamplerFilter(TextureFilterMode::Code magFilter, TextureFilterMode::Code minFilter) {
+    if (TextureFilterMode::Nearest == magFilter) {
+        switch (minFilter) {
+            case TextureFilterMode::Nearest:
+            case TextureFilterMode::NearestMipmapNearest:
+                return D3D11_FILTER_MIN_MAG_MIP_POINT;
+            case TextureFilterMode::Linear:
+            case TextureFilterMode::LinearMipmapNearest:
+                return D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+            case TextureFilterMode::NearestMipmapLinear:
+                return D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+            case TextureFilterMode::LinearMipmapLinear:
+                return D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+            default:
+                break;
+        }
+    }
+    else if (TextureFilterMode::Linear == magFilter) {
+        switch (magFilter) {
+            case TextureFilterMode::Nearest:
+            case TextureFilterMode::NearestMipmapNearest:
+                return D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+            case TextureFilterMode::Linear:
+            case TextureFilterMode::LinearMipmapNearest:
+                return D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+            case TextureFilterMode::NearestMipmapLinear:
+                return D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+            case TextureFilterMode::LinearMipmapLinear:
+                return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            default:
+                break;
+        }
+    }
+    // fallthrough: invalid filter combination
+    o_error("d3d11Types::asFilter(): invalid filter combination!\n");
+    return D3D11_FILTER_MIN_MAG_MIP_POINT;
+}
+
+//------------------------------------------------------------------------------
+D3D11_TEXTURE_ADDRESS_MODE
+d3d11Types::asTextureAddressMode(TextureWrapMode::Code mode) {
+    switch (mode) {
+        case TextureWrapMode::ClampToEdge:   
+            return D3D11_TEXTURE_ADDRESS_CLAMP;
+        case TextureWrapMode::Repeat:        
+            return D3D11_TEXTURE_ADDRESS_WRAP;
+        case TextureWrapMode::MirroredRepeat:
+            return D3D11_TEXTURE_ADDRESS_MIRROR;
+        default:
+            return D3D11_TEXTURE_ADDRESS_CLAMP;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

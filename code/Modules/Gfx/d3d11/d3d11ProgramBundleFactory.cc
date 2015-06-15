@@ -90,21 +90,30 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
     D3D11_BUFFER_DESC cbDesc;
     Memory::Clear(&cbDesc, sizeof(cbDesc));
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
-        const UniformLayout& layout = setup.UniformBlockLayout(i);
         const int32 bindSlotIndex = setup.UniformBlockSlot(i);
+        const UniformLayout& layout = setup.UniformBlockLayout(i);
         const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
 
-        cbDesc.ByteWidth = layout.ByteSize();
-        cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-        cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
         ID3D11Buffer* d3d11ConstantBuffer = nullptr;
-        hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
-        o_assert(SUCCEEDED(hr));
-        o_assert_dbg(d3d11ConstantBuffer);
-        progBundle.addConstantBuffer(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
+        if (bindSlotIndex != InvalidIndex) {
+
+            // NOTE: constant buffer size must be multiple of 16 bytes
+            o_assert_dbg(layout.ByteSizeWithoutTextures() > 0);
+            cbDesc.ByteWidth = Memory::RoundUp(layout.ByteSizeWithoutTextures(), 16);
+            cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+            cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+            hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
+            o_assert(SUCCEEDED(hr));
+            o_assert_dbg(d3d11ConstantBuffer);
+        }
+
+        // the d3d11ConstantBuffer ptr can be 0 at this point, if the
+        // uniform block only contains textures
+        progBundle.addUniformBlockEntry(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
     }
+    o_assert_dbg(progBundle.getNumUniformBlockEntries() == setup.NumUniformBlocks());
 
     return ResourceState::Valid;
 }
@@ -129,9 +138,9 @@ d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
 
     int32 dummySlotIndex = 0;
     ShaderType::Code dummyBindStage = ShaderType::InvalidShaderType;
-    const int32 numConstantBuffers = progBundle.getNumConstantBuffers();
+    const int32 numConstantBuffers = progBundle.getNumUniformBlockEntries();
     for (int32 cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-        ID3D11Buffer* cb = progBundle.getConstantBufferAt(cbIndex, dummyBindStage, dummySlotIndex);
+        ID3D11Buffer* cb = progBundle.getUniformBlockEntryAt(cbIndex, dummyBindStage, dummySlotIndex);
         if (cb) {
             cb->Release();
         }

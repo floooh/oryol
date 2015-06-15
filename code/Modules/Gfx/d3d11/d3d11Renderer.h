@@ -80,6 +80,8 @@ public:
     void invalidateProgramState();
     /// invalidate currently bound draw state 
     void invalidateDrawState();
+    /// invalidate currently bound texture state
+    void invalidateTextureState();
 
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;

@@ -47,12 +47,12 @@ public:
     /// get pixel shader at program index
     ID3D11PixelShader* getPixelShaderAt(int32 index) const;
 
-    /// add a constant buffer
-    int32 addConstantBuffer(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex);
-    /// get number of constant buffers
-    int32 getNumConstantBuffers() const;
-    /// get constant buffer at index
-    ID3D11Buffer* getConstantBufferAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const;
+    /// add a uniform block entry
+    void addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex);
+    /// get number of uniform block entries
+    int32 getNumUniformBlockEntries() const;
+    /// get uniform block at index
+    ID3D11Buffer* getUniformBlockEntryAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const;
 
 private:
     struct programEntry {
@@ -62,12 +62,14 @@ private:
         ID3D11VertexShader* vertexShader;
         ID3D11PixelShader* pixelShader;
     };
-    struct cbEntry {
-        cbEntry() : 
+    struct ubEntry {
+        ubEntry() : 
             constantBuffer(nullptr), 
             bindShaderStage(ShaderType::InvalidShaderType),
             bindSlotIndex(InvalidIndex) {};
 
+        // NOTE: the constantBuffer pointer can be 0 if
+        // the associated uniform-block has only texture params!
         ID3D11Buffer* constantBuffer;
         ShaderType::Code bindShaderStage;
         int32 bindSlotIndex;
@@ -76,8 +78,8 @@ private:
     int32 selIndex;
     int32 numPrograms;
     StaticArray<programEntry, ProgramBundleSetup::MaxNumPrograms> programEntries;
-    int32 numConstantBuffers;
-    StaticArray<cbEntry, ProgramBundleSetup::MaxNumUniformBlocks> cbEntries;
+    int32 numUniformBlockEntries;
+    StaticArray<ubEntry, ProgramBundleSetup::MaxNumUniformBlocks> uniformBlockEntries;
 };
 
 //------------------------------------------------------------------------------
@@ -122,14 +124,14 @@ d3d11ProgramBundle::getSelectedPixelShader() const {
 
 //------------------------------------------------------------------------------
 inline int32
-d3d11ProgramBundle::getNumConstantBuffers() const {
-    return this->numConstantBuffers;
+d3d11ProgramBundle::getNumUniformBlockEntries() const {
+    return this->numUniformBlockEntries;
 }
 
 //------------------------------------------------------------------------------
 inline ID3D11Buffer*
-d3d11ProgramBundle::getConstantBufferAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const {
-    const cbEntry& entry = this->cbEntries[index];
+d3d11ProgramBundle::getUniformBlockEntryAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const {
+    const ubEntry& entry = this->uniformBlockEntries[index];
     outBindShaderStage = entry.bindShaderStage;
     outBindSlotIndex = entry.bindSlotIndex;
     return entry.constantBuffer;

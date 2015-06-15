@@ -115,9 +115,9 @@ class d3d11TextureWrapMode {
 public:
     /// wrap modes
     enum Code {
-        ClampToEdge = 3,        // D3D11_TEXTURE_ADDRESS_CLAMP
-        Repeat = 1,             // D3D11_TEXTURE_ADDRESS_WRAP
-        MirroredRepeat = 2,     // D3D11_TEXTURE_ADDRESS_MIRROR
+        ClampToEdge,
+        Repeat,
+        MirroredRepeat,
 
         NumTextureWrapModes = 3,
         InvalidTextureWrapMode = 0xFFFFFFFF,

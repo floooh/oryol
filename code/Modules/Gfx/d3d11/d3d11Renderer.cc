@@ -234,15 +234,17 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         // apply constant buffers
         ShaderType::Code cbStage = ShaderType::InvalidShaderType;
         int32 cbBindSlot = 0;
-        const int numConstantBuffers = ds->prog->getNumConstantBuffers();
+        const int numConstantBuffers = ds->prog->getNumUniformBlockEntries();
         for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-            ID3D11Buffer* cb = ds->prog->getConstantBufferAt(cbIndex, cbStage, cbBindSlot);
-            o_assert_dbg(cbBindSlot != InvalidIndex);
-            if (ShaderType::VertexShader == cbStage) {
-                this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
-            }
-            else {
-                this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
+            ID3D11Buffer* cb = ds->prog->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
+            if (cb) {
+                o_assert_dbg(cbBindSlot != InvalidIndex);
+                if (ShaderType::VertexShader == cbStage) {
+                    this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
+                }
+                else {
+                    this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
+                }
             }
         }
     }
@@ -266,28 +268,50 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     // check whether the provided struct is type-compatible with the
     // expected uniform block layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    
+    // get the constant buffer entry from the program bundle
+    ShaderType::Code cbStage = ShaderType::InvalidShaderType;
+    int32 cbBindSlot = 0;
+    ID3D11Buffer* cb = prog->getUniformBlockEntryAt(blockIndex, cbStage, cbBindSlot);
 
-    // FIXME: set textures and samplers
+    // set textures and samplers
     const uint8* cbufferPtr = nullptr;
     const int numComps = layout.NumComponents();
+    int32 shaderSlotIndex = 0;
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type != UniformType::Texture) {
+        if (comp.Type == UniformType::Texture) {
+            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
+            const Id& resId = *(const Id*)valuePtr;
+            texture* tex = this->texPool->Lookup(resId);
+            o_assert_dbg(tex);
+            o_assert_dbg(tex->d3d11ShaderResourceView);
+            o_assert_dbg(tex->d3d11SamplerState);
+            if (ShaderType::VertexShader == cbStage) {
+                this->d3d11DeviceContext->VSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                this->d3d11DeviceContext->VSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+            }
+            else {
+                this->d3d11DeviceContext->PSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                this->d3d11DeviceContext->PSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+            }
+            shaderSlotIndex++;
+        }
+        else {
             // found the start of the cbuffer struct
             cbufferPtr = ptr + layout.ComponentByteOffset(compIndex);
+            break;
         }
     }
 
     // apply optional uniform block
-    if (cbufferPtr) {
-        ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-        int32 cbBindSlot = 0;
-        ID3D11Buffer* cb = prog->getConstantBufferAt(blockIndex, cbStage, cbBindSlot);
-        o_assert_dbg(cb);
+    if (cb) {
+        o_assert_dbg(cbufferPtr);
         D3D11_MAPPED_SUBRESOURCE mapped;
         HRESULT hr = this->d3d11DeviceContext->Map(cb, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
         intptr size = (ptr + byteSize) - cbufferPtr;
         o_assert_dbg(size > 0);
+        o_assert_dbg(layout.ByteSizeWithoutTextures() == size);
         std::memcpy(mapped.pData, cbufferPtr, size);
         this->d3d11DeviceContext->Unmap(cb, 0);
     }
@@ -334,7 +358,6 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
         }
         const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
         if (indexType != IndexType::None) {
-            // indexed geometry
             this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
         }
         else {
@@ -377,7 +400,21 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
-    o_error("FIXME!\n");
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(msh->d3d11VertexBuffer);
+    o_assert_dbg(numBytes > 0);
+
+    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
+    const Usage::Code vbUsage = attrs.BufferUsage;
+    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
+    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
+    
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    HRESULT hr = this->d3d11DeviceContext->Map(msh->d3d11VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    o_assert_dbg(SUCCEEDED(hr));
+    std::memcpy(mapped.pData, data, numBytes);
+    this->d3d11DeviceContext->Unmap(msh->d3d11VertexBuffer, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -402,6 +439,12 @@ d3d11Renderer::invalidateProgramState() {
 void
 d3d11Renderer::invalidateDrawState() {
     Log::Info("d3d11Renderer::invalidateDrawState()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::invalidateTextureState() {
+    Log::Info("d3d11Renderer::invalidateTextureState()\n");
 }
 
 } // namespace _priv

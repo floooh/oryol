@@ -36,6 +36,18 @@ public:
     ResourceState::Code SetupResource(texture& tex, const void* data, int32 size);
     /// discard the resource
     void DestroyResource(texture& tex);
+
+private:
+    /// create a render target texture
+    ResourceState::Code createRenderTarget(texture& tex);
+    /// create a texture from pixel data in memory
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+
+    class renderer* renderer;
+    displayMgr* displayManager;
+    texturePool* texPool;
+    ID3D11Device* d3d11Device;
+    bool isValid;
 };
     
 } // namespace _priv

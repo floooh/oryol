@@ -114,10 +114,6 @@ d3d11MeshFactory::createBuffer(const void* data, uint32 dataSize, uint32 d3d11Bi
         initData.pSysMem = data;
         initDataPtr = &initData;
     }
-    else {
-        // if no data is provided, usage must be immutable
-        o_assert_dbg(Usage::Immutable == usage);
-    }
     ID3D11Buffer* buf = nullptr;
     HRESULT hr = this->d3d11Device->CreateBuffer(&desc, initDataPtr, &buf);
     o_assert(SUCCEEDED(hr));

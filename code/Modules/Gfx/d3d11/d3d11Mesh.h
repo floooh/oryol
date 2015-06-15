@@ -4,9 +4,6 @@
     @class Oryol::_priv::d3d11Mesh
     @ingroup _priv
     @brief D3D11 implementation of mesh
-
-    NOTE: in the D3D11 renderer, the vertex layout (== input layout object)
-    is part of the drawState, since it needs to match the shader
 */
 #include "Gfx/Resource/meshBase.h"
 #include "Gfx/d3d11/d3d11_decl.h"

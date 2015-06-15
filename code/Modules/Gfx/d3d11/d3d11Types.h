@@ -42,6 +42,10 @@ public:
     static uint8 asColorWriteMask(PixelChannel::Mask mask);
     /// convert VertexStepFunction to d3d11 input classification
     static D3D11_INPUT_CLASSIFICATION asInputClassification(VertexStepFunction::Code func);
+    /// convert min/mag filters to d3d11 filter
+    static D3D11_FILTER asSamplerFilter(TextureFilterMode::Code magFilter, TextureFilterMode::Code minFilter);
+    /// convert texture wrap mode to d3d11 texture address mode
+    static D3D11_TEXTURE_ADDRESS_MODE asTextureAddressMode(TextureWrapMode::Code mode);
 };
 
 } // namespace _priv 
