@@ -137,6 +137,7 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
     int32 width, height;
@@ -203,6 +204,7 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
         }
         else {
             // create depth-buffer-texture
+            o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
             o_assert_dbg(setup.DepthFormat != PixelFormat::None);
             D3D11_TEXTURE2D_DESC depthDesc = texDesc;
             depthDesc.Format = d3d11Types::asRenderTargetFormat(setup.DepthFormat);

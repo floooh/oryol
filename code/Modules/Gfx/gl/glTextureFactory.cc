@@ -199,8 +199,9 @@ glTextureFactory::createRenderTarget(texture& tex) {
     // create depth buffer
     GLuint glDepthRenderBuffer = 0;
     if (setup.HasDepth()) {
-        o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
         if (!setup.HasSharedDepth()) {
+            o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
+
             // FIXME: optionally create a depth texture instead of a render buffer here...
             o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
             
