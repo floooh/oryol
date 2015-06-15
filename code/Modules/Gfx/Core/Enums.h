@@ -319,6 +319,47 @@ public:
         // fallthrough: unsupported combination
         return 0;        
     }
+    /// compute row-pitch (distance in bytes from one row of data to next)
+    static int32 RowPitch(PixelFormat::Code fmt, int32 width) {
+        int pitch;
+        switch (fmt) {
+            case PixelFormat::DXT1:
+            case PixelFormat::ETC2_RGB8:
+            case PixelFormat::ETC2_SRGB8:
+                pitch = ((width + 3) / 4) * 8;
+                pitch = pitch < 8 ? 8 : pitch;
+                break;
+            case PixelFormat::DXT3:
+            case PixelFormat::DXT5:
+                pitch = ((width + 3) / 4) * 16;
+                pitch = pitch < 16 ? 16 : pitch;
+                break;
+            case PixelFormat::PVRTC4_RGB:
+            case PixelFormat::PVRTC4_RGBA:
+                {
+                    const int32 blockSize = 4*4;
+                    const int32 bpp = 4;
+                    int32 widthBlocks = width / 4;
+                    widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
+                    pitch = widthBlocks * ((blockSize * bpp) / 8);
+                }
+                break;
+            case PixelFormat::PVRTC2_RGB:
+            case PixelFormat::PVRTC2_RGBA:
+                {
+                    const int32 blockSize = 8 * 4;
+                    const int32 bpp = 2;
+                    int32 widthBlocks = width / 4;
+                    widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
+                    pitch = widthBlocks * ((blockSize * bpp) / 8);
+                }
+                break;
+            default:
+                pitch = width * PixelFormat::ByteSize(fmt);
+                break;
+        }
+        return pitch;
+    }
 };
 
 //------------------------------------------------------------------------------
@@ -732,7 +773,7 @@ public:
         switch (c) {
             case Float:     return sizeof(float32);
             case Vec2:      return 2 * sizeof(float32);
-            case Vec3:      return 4 * sizeof(float32);
+            case Vec3:      return 4 * sizeof(float32); // NOT A BUG
             case Vec4:      return 4 * sizeof(float32);
             case Mat2:      return 2 * 2 * sizeof(float32);
             case Mat3:      return 3 * 3 * sizeof(float32); // FIXME!
