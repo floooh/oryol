@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 33
+Version = 34
 
 import os
 import sys
@@ -292,6 +292,12 @@ class Attr :
         self.name = name
         self.filePath = filePath
         self.lineNumber = lineNumber
+
+    def __eq__(self, other) :
+        return (self.type == other.type) and (self.name == other.name)
+
+    def __ne__(self, other) :
+        return (self.type != other.type) or (self.name != other.name)
 
     def dump(self) :
         dumpObj(self)
@@ -1046,6 +1052,40 @@ class ShaderLibrary :
             self.resolveBundleUniformBlocks(bundle)
             self.assignParamSlotIndices(bundle)
 
+    def validate(self) :
+        '''
+        Runs additional validation check after bundles are resolved and before
+        shader code is generated:
+
+        - check whether vertex shader output signatures match fragment
+        shader input signatures, this is a D3D11 requirement, signatures 
+        must match exactly, even if the fragment shader doesn't use all output
+        from the vertex shader
+        '''
+        for bundle in self.bundles.values() :
+            for prog in bundle.programs :
+                fatalError = False
+                vs = self.vertexShaders[prog.vs]
+                fs = self.fragmentShaders[prog.fs]
+                if len(vs.outputs) != len(fs.inputs) :
+                    if len(fs.inputs) > 0 :
+                        util.setErrorLocation(fs.inputs[0].filePath, fs.inputs[0].lineNumber)
+                        util.fmtError("number of fs inputs doesn't match number of vs outputs", False)
+                        fatalError = True
+                    if len(vs.outputs) > 0 :
+                        util.setErrorLocation(vs.outputs[0].filePath, vs.outputs[0].lineNumber)
+                        util.fmtError("number of vs outputs doesn't match number of fs inputs", False)
+                        fatalError = True
+                    if fatalError :
+                        sys.exit(10)
+                else :
+                    for index, outAttr in enumerate(vs.outputs) :
+                        if outAttr != fs.inputs[index] :
+                            util.setErrorLocation(fs.inputs[index].filePath, fs.inputs[index].lineNumber)
+                            util.fmtError("fs input doesn't match vs output (names, types and order must match)", False)
+                            util.setErrorLocation(outAttr.filePath, outAttr.lineNumber)
+                            util.fmtError("vs output doesn't match fs input (names, types and order must match)")
+
     def generateShaderSourcesGLSL(self) :
         '''
         This generates the vertex- and fragment-shader source 
@@ -1277,6 +1317,7 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
+        shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.generateShaderSourcesHLSL()
         shaderLibrary.validateShadersGLSL()

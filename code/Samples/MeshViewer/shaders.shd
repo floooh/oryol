@@ -104,8 +104,8 @@ vec4 gamma(vec4 c) {
     @uniform bool gammaCorrect GammaCorrect
     @uniform float matSpecularPower MatSpecularPower
 @end
-@in vec3 P
 @in vec3 N
+@in vec3 P
     vec3 l = lightDir;
     vec3 n = normalize(N);
     vec3 v = normalize(eyePos - P);
