@@ -241,7 +241,7 @@ float snoise(vec2 v)
     vec2 posUv = posUvFromParticleId(particleId, bufDims);
     vec4 particlePos = vec4(tex2Dvs(particleTex, posUv).xyz, 0.0);
 
-    _position = mul((position + particlePos), mvp);
+    _position = mul(mvp, (position + particlePos));
     color = color0;
 @end
 
