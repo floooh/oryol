@@ -164,12 +164,12 @@ GPUParticlesApp::OnInit() {
     for (int32 i = 0; i < MaxNumParticles; i++) {
         particleIdData[i] = (float32) i;
     }
-    auto particleIdSetup = MeshSetup::Empty(MaxNumParticles, Usage::Static);
+    auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
+    particleIdSetup.NumVertices = MaxNumParticles;
     particleIdSetup.StepFunction = VertexStepFunction::PerInstance;
     particleIdSetup.StepRate = 1;
     particleIdSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float);
-    this->particleIdMesh = Gfx::CreateResource(particleIdSetup);
-    Gfx::UpdateVertices(this->particleIdMesh, particleIdData, particleIdSize);
+    this->particleIdMesh = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
     Memory::Free(particleIdData);
     
     // the geometry of a single particle
