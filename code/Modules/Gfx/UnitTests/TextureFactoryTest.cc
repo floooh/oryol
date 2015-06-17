@@ -40,7 +40,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex0.glTex != 0);
     CHECK(tex0.glFramebuffer != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
-    CHECK(tex0.glDepthTexture == 0);
     const TextureAttrs& attrs0 = tex0.textureAttrs;
     CHECK(attrs0.Locator == Locator::NonShared());
     CHECK(attrs0.Type == TextureType::Texture2D);
@@ -65,7 +64,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex1.glTex != 0);
     CHECK(tex1.glFramebuffer != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
-    CHECK(tex1.glDepthTexture == 0);
     const TextureAttrs& attrs1 = tex1.textureAttrs;
     CHECK(attrs1.Locator == Locator::NonShared());
     CHECK(attrs1.Type == TextureType::Texture2D);
@@ -82,7 +80,7 @@ TEST(RenderTargetCreationTest) {
 
     // create relative-size render target with depth buffer
     rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
-    rtSetup.ColorFormat = PixelFormat::R5G6B5;
+    rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
     texture tex2;
     tex2.Setup = rtSetup;
@@ -90,11 +88,10 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex2.glTex != 0);
     CHECK(tex2.glFramebuffer != 0);
     CHECK(tex2.glDepthRenderbuffer != 0);
-    CHECK(tex2.glDepthTexture == 0);
     const TextureAttrs& attrs2 = tex2.textureAttrs;
     CHECK(attrs2.Locator == Locator::NonShared());
     CHECK(attrs2.Type == TextureType::Texture2D);
-    CHECK(attrs2.ColorFormat == PixelFormat::R5G6B5);
+    CHECK(attrs2.ColorFormat == PixelFormat::RGBA8);
     CHECK(attrs2.DepthFormat == PixelFormat::D16);
     CHECK(attrs2.TextureUsage == Usage::Immutable);
     CHECK(attrs2.Width == 400);
@@ -110,7 +107,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex1.glTex == 0);
     CHECK(tex1.glFramebuffer == 0);
     CHECK(tex1.glDepthRenderbuffer == 0);
-    CHECK(tex1.glDepthTexture == 0);
     
     factory.DestroyResource(tex0);
     factory.DestroyResource(tex2);

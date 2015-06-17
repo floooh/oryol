@@ -178,7 +178,6 @@ float snoise(vec2 v)
     @uniform sampler2D prevState PrevState
     @uniform float numParticles NumParticles
 @end
-@in vec2 uv
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
