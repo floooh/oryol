@@ -73,7 +73,9 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             if name != '__end__' and 'emscripten' in sample['type'] :
                 log.info('> generate emscripten HTML page: {}'.format(name))
                 for ext in ['js', 'html.mem'] :
-                    shutil.copy('{}/{}.{}'.format(emsc_deploy_dir, name, ext), webpage_dir)
+                    src_path = '{}/{}.{}'.format(emsc_deploy_dir, name, ext)
+                    if os.path.isfile(src_path) :
+                        shutil.copy(src_path, webpage_dir)
                 with open(proj_dir + '/web/emsc.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
