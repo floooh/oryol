@@ -96,8 +96,14 @@ d3d11Renderer::resetStateCache() {
 //------------------------------------------------------------------------------
 bool
 d3d11Renderer::supports(GfxFeature::Code feat) const {
-    o_error("FIXME!\n");
-    return false;
+    switch (feat) {
+        case GfxFeature::TextureCompressionDXT:
+        case GfxFeature::TextureFloat:
+        case GfxFeature::Instancing:
+            return true;
+        default:
+            return false;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -218,7 +224,7 @@ d3d11Renderer::applyDrawState(drawState* ds) {
             ds->d3d11IAStrides,         // pStrides
             ds->d3d11IAOffsets);        // pOffsets
 
-        // apply instance buffer
+        // apply optional index buffer
         if (ds->meshes[0]->d3d11IndexBuffer) {
             DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) ds->meshes[0]->indexBufferAttrs.Type;
             this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
@@ -349,22 +355,20 @@ void
 d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert2_dbg(this->rtValid, "No render target set!\n");
-
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        o_assert_dbg(this->curDrawState->meshes[0]);
-
-        if (primGroup.PrimType != this->curPrimitiveTopology) {
-            this->curPrimitiveTopology = primGroup.PrimType;
-            this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
-        }
-        const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-        if (indexType != IndexType::None) {
-            this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
-        }
-        else {
-            this->d3d11DeviceContext->Draw(primGroup.NumElements, primGroup.BaseElement);        
-        }
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroup.PrimType != this->curPrimitiveTopology) {
+        this->curPrimitiveTopology = primGroup.PrimType;
+        this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
+    }
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (indexType != IndexType::None) {
+        this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
+    }
+    else {
+        this->d3d11DeviceContext->Draw(primGroup.NumElements, primGroup.BaseElement);        
     }
 }
 
@@ -372,31 +376,58 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
 void 
 d3d11Renderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->draw(primGroup);
+}
 
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        o_assert_dbg(this->curDrawState->meshes[0]);
-        if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
-            // this may happen if trying to render a placeholder which doesn't
-            // have as many materials as the original mesh, anyway, this isn't
-            // a serious error
-            return;
-        }
-        const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
-        this->draw(primGroup);
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+    o_assert_dbg(this->valid);
+    o_assert2_dbg(this->rtValid, "No render target set!");
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroup.PrimType != this->curPrimitiveTopology) {
+        this->curPrimitiveTopology = primGroup.PrimType;
+        this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
+    }
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (indexType != IndexType::None) {
+        this->d3d11DeviceContext->DrawIndexedInstanced(primGroup.NumElements, numInstances, primGroup.BaseElement, 0, 0);
+    }
+    else {
+        this->d3d11DeviceContext->DrawInstanced(primGroup.NumElements, numInstances, 0, 0);
     }
 }
 
 //------------------------------------------------------------------------------
 void 
 d3d11Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
-    o_error("FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-void 
-d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
-    o_error("FIXME!\n");
+    o_assert_dbg(this->valid);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
