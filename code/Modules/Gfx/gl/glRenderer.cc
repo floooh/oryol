@@ -483,25 +483,23 @@ void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        o_assert_dbg(this->curDrawState->meshes[0]);
-
-        ORYOL_GL_CHECK_ERROR();
-        const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-        if (IndexType::None != indexType) {
-            // indexed geometry
-            const int32 indexByteSize = IndexType::ByteSize(indexType);
-            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-            ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
-        }
-        else {
-            // non-indexed geometry
-            ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
-        }
-        ORYOL_GL_CHECK_ERROR();
+    if (nullptr == this->curDrawState) {
+        return;
     }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    ORYOL_GL_CHECK_ERROR();
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (IndexType::None != indexType) {
+        // indexed geometry
+        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+        ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
+    }
+    else {
+        // non-indexed geometry
+        ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
+    }
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -509,19 +507,18 @@ void
 glRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        o_assert_dbg(this->curDrawState->meshes[0]);
-        if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
-            // this may happen if trying to render a placeholder which doesn't
-            // have as many materials as the original mesh, anyway, this isn't
-            // a serious error
-            return;
-        }
-        const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
-        this->draw(primGroup);
+    if (nullptr == this->curDrawState) {
+        return;
     }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->draw(primGroup);
 }
 
 //------------------------------------------------------------------------------
@@ -529,24 +526,23 @@ void
 glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        ORYOL_GL_CHECK_ERROR();
-        o_assert_dbg(this->curDrawState->meshes[0]);
-        const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-        if (IndexType::None != indexType) {
-            // indexed geometry
-            const int32 indexByteSize = IndexType::ByteSize(indexType);
-            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-            glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
-        }
-        else {
-            // non-indexed geometry
-            glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
-        }
-        ORYOL_GL_CHECK_ERROR();
+    if (nullptr == this->curDrawState) {
+        return;
     }
+    ORYOL_GL_CHECK_ERROR();
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (IndexType::None != indexType) {
+        // indexed geometry
+        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+        glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
+    }
+    else {
+        // non-indexed geometry
+        glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
+    }
+    ORYOL_GL_CHECK_ERROR();
 }
     
 //------------------------------------------------------------------------------
@@ -554,19 +550,18 @@ void
 glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-
-    // only render if a valid draw state had been set
-    if (this->curDrawState) {
-        o_assert_dbg(this->curDrawState->meshes[0]);
-        if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
-            // this may happen if trying to render a placeholder which doesn't
-            // have as many materials as the original mesh, anyway, this isn't
-            // a serious error
-            return;
-        }
-        const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
-        this->drawInstanced(primGroup, numInstances);
+    if (nullptr == this->curDrawState) {
+    
     }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
