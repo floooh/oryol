@@ -256,6 +256,11 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
         o_warn("d3d11TextureFactory: 3d textures not yet implemented\n");
         return ResourceState::Failed;
     }
+    DXGI_FORMAT d3d11PixelFormat = d3d11Types::asTextureFormat(setup.ColorFormat);
+    if (DXGI_FORMAT_UNKNOWN == d3d11PixelFormat) {
+        o_warn("d3d11TextureFactory: texture pixel format not supported in D3D11\n");
+        return ResourceState::Failed;     
+    }
 
     // create the 2D or Cube texture object with data
     D3D11_TEXTURE2D_DESC texDesc;
@@ -264,7 +269,7 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     texDesc.Height = setup.Height;
     texDesc.MipLevels = setup.NumMipMaps;
     texDesc.ArraySize = setup.Type == TextureType::TextureCube ? 6 : 1;
-    texDesc.Format = d3d11Types::asTextureFormat(setup.ColorFormat);
+    texDesc.Format = d3d11PixelFormat;
     texDesc.SampleDesc.Count = 1;
     texDesc.SampleDesc.Quality = 0;
     texDesc.Usage = D3D11_USAGE_IMMUTABLE;

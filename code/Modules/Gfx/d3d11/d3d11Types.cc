@@ -42,6 +42,9 @@ DXGI_FORMAT
 d3d11Types::asTextureFormat(PixelFormat::Code pf) {
     switch(pf) {
         case PixelFormat::RGBA8:    return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case PixelFormat::RGBA4:    return DXGI_FORMAT_B4G4R4A4_UNORM;
+        case PixelFormat::R5G6B5:   return DXGI_FORMAT_B5G6R5_UNORM;
+        case PixelFormat::R5G5B5A1: return DXGI_FORMAT_B5G5R5A1_UNORM;
         case PixelFormat::RGBA32F:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
         case PixelFormat::RGBA16F:  return DXGI_FORMAT_R16G16B16A16_FLOAT;
         case PixelFormat::L8:       return DXGI_FORMAT_R8_UNORM;
@@ -52,9 +55,6 @@ d3d11Types::asTextureFormat(PixelFormat::Code pf) {
         case PixelFormat::D32:      return DXGI_FORMAT_D32_FLOAT;   // FIXME???
         case PixelFormat::D24S8:    return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default:
-            // NOTE: a number of common pixel formats are not supported by D3D10, or D3D11 until Windows8:
-            // RGB8 (not at all), RGBA4, R5G6B5, R5G5B5A1 (no until D3D11 on Win8) 
-            o_error("d3d11Types::asTextureFormat: invalid pixel format for D3D11 texture!\n");
             return DXGI_FORMAT_UNKNOWN;
     }
 }

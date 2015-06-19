@@ -159,8 +159,6 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
 
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight);
-
-    // FIXME: reset scissor test (or rather: apply a default rasterizer state)
 }
 
 //------------------------------------------------------------------------------
