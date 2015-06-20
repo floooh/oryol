@@ -114,6 +114,7 @@ fips_begin_module(Gfx)
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
+            d3d11InputDefs.h
         )
     endif()
     if (FIPS_ANDROID)
