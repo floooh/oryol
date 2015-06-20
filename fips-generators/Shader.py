@@ -861,6 +861,9 @@ class HLSLGenerator :
                     if type not in ['sampler2D', 'samplerCube' ] :
                         for uniform in uBlock.uniformsByType[type] :
                             lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                            # pad vec3's to 16 bytes
+                            if type == 'vec3' :
+                                lines.append(Line('  float _pad_{};'.format(uniform.name)))
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines
     
