@@ -19,7 +19,7 @@ namespace Oryol {
 namespace _priv {
 
 static LRESULT CALLBACK winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-static d3d11DisplayMgr* self = nullptr;
+d3d11DisplayMgr* d3d11DisplayMgr::self = nullptr;
 
 //------------------------------------------------------------------------------
 d3d11DisplayMgr::d3d11DisplayMgr() :
@@ -42,6 +42,7 @@ iconified(false) {
     self = this;
     Memory::Clear(this->mouseButtons, sizeof(mouseButtons));
     Memory::Clear(this->keys, sizeof(keys));
+    Memory::Clear(&this->callbacks, sizeof(this->callbacks));
     this->setupKeyTranslationTable();
 }
 
@@ -57,7 +58,7 @@ d3d11DisplayMgr::~d3d11DisplayMgr() {
 void
 d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup) {
     o_assert(!this->IsDisplayValid());
-    
+
     displayMgrBase::SetupDisplay(setup);
 
     this->registerWindowClass();
@@ -74,7 +75,6 @@ d3d11DisplayMgr::DiscardDisplay() {
 
     this->destroyDefaultRenderTarget();
     this->destroyDeviceAndSwapChain();
-
     this->destroyWindow();
     this->unregisterWindowClass();
 
@@ -614,10 +614,43 @@ d3d11DisplayMgr::inputTranslateKey(WPARAM wParam, LPARAM lParam) {
     return this->publicKeys[HIWORD(lParam) & 0x1FF];
 }
 
+//------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::setCursorMode(int newMode) {
+
+    const int oldMode = this->cursorMode;
+    if (newMode != ORYOL_D3D11_CURSOR_NORMAL &&
+        newMode != ORYOL_D3D11_CURSOR_HIDDEN &&
+        newMode != ORYOL_D3D11_CURSOR_DISABLED) {
+        return;
+    }
+    if (oldMode == newMode) {
+        return;
+    }
+    this->cursorMode = newMode;
+    // FIXME: I have omitted some cursor positioning code from GLFW here
+    this->applyCursorMode();
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::setInputMode(int mode, int value)
+{
+    switch (mode)
+    {
+        case ORYOL_D3D11_CURSOR:
+            this->setCursorMode(value);
+            break;
+        default:
+            o_error("d3d11DisplayMgr::setInputMode(): invalid mode!\n");
+            break;
+    }
+}
 
 //------------------------------------------------------------------------------
 LRESULT CALLBACK 
 winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    d3d11DisplayMgr* self = d3d11DisplayMgr::self;
     switch (uMsg) {
         case WM_SETFOCUS:
             if (self) {

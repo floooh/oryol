@@ -40,7 +40,7 @@ glfwInputMgr::setup(const InputSetup& setup) {
     // first check that the Gfx module has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
     if (nullptr == glfwWindow) {
-        o_error("glfwInputMgr: Gfx module must be created before InputFacade!");
+        o_error("glfwInputMgr: Gfx::Setup must be called before Input::Setup!\n");
         return;
     }
     this->setupKeyTable();
@@ -66,7 +66,6 @@ glfwInputMgr::discard() {
     
     inputMgrBase::discard();
 }
-
 
 //------------------------------------------------------------------------------
 void

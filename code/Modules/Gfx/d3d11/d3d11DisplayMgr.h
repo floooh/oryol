@@ -69,6 +69,10 @@ public:
 
     /// setup the key translation table
     void setupKeyTranslationTable();
+    /// set input mode (called from d3d11InputMgr)
+    void setInputMode(int mode, int value);
+    /// set cursor mode (called from setInputMode)
+    void setCursorMode(int newMode);
     /// apply the current cursor mode
     void applyCursorMode();
     /// restore the mouse cursor
@@ -106,6 +110,7 @@ public:
     /// window has been iconified/restored
     void inputWindowIconify(bool iconified);
     
+    static d3d11DisplayMgr* self;
     bool quitRequested;
     HWND hwnd;
     DWORD dwStyle;
@@ -137,21 +142,21 @@ public:
     typedef void(*charmodsfun)(unsigned int, int);
 
     // callback pointers, these are usually populated by the Oryol Input module
-    struct {
-        windowposfun        pos = nullptr;
-        windowsizefun       size = nullptr;
-        windowclosefun      close = nullptr;
-        windowrefreshfun    refresh = nullptr;
-        windowfocusfun      focus = nullptr;
-        windowiconifyfun    iconify = nullptr;
-        framebuffersizefun  fbsize = nullptr;
-        mousebuttonfun      mouseButton = nullptr;
-        cursorposfun        cursorPos = nullptr;
-        cursorenterfun      cursorEnter = nullptr;
-        scrollfun           scroll = nullptr;
-        keyfun              key = nullptr;
-        charfun             character = nullptr;
-        charmodsfun         charmods = nullptr;
+    struct callbackTable {
+        windowposfun        pos;
+        windowsizefun       size;
+        windowclosefun      close;
+        windowrefreshfun    refresh;
+        windowfocusfun      focus;
+        windowiconifyfun    iconify;
+        framebuffersizefun  fbsize;
+        mousebuttonfun      mouseButton;
+        cursorposfun        cursorPos;
+        cursorenterfun      cursorEnter;
+        scrollfun           scroll;
+        keyfun              key;
+        charfun             character;
+        charmodsfun         charmods;
     } callbacks;
 };
 
