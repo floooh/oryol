@@ -636,8 +636,7 @@ d3d11DisplayMgr::setCursorMode(int newMode) {
 void
 d3d11DisplayMgr::setInputMode(int mode, int value)
 {
-    switch (mode)
-    {
+    switch (mode) {
         case ORYOL_D3D11_CURSOR:
             this->setCursorMode(value);
             break;
