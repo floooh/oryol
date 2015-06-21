@@ -147,11 +147,13 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     mesh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
 
     // vertices
+    const float32 topV = mesh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float32 botV = mesh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
     float32 vertices[] = {
-        -1.0f, +1.0f, 0.0f, 0.0f, 1.0f,     // top-left corner
-        +1.0f, +1.0f, 0.0f, 1.0f, 1.0f,     // top-right corner
-        +1.0f, -1.0f, 0.0f, 1.0f, 0.0f,     // bottom-right corner
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,     // bottom-left corner
+        -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
+        +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
+        +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
+        -1.0f, -1.0f, 0.0f, 0.0f, botV      // bottom-left corner
     };
 
     // indices

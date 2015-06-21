@@ -187,7 +187,7 @@ glRenderer::resetStateCache() {
 
 //------------------------------------------------------------------------------
 bool
-glRenderer::supports(GfxFeature::Code feat) const {
+glRenderer::queryFeature(GfxFeature::Code feat) const {
     o_assert_dbg(this->valid);
 
     switch (feat) {
@@ -209,6 +209,8 @@ glRenderer::supports(GfxFeature::Code feat) const {
             return glExt::HasExtension(glExt::TextureHalfFloat);
         case GfxFeature::Instancing:
             return glExt::HasExtension(glExt::InstancedArrays);
+        case GfxFeature::OriginBottomLeft:
+            return true;
         default:
             return false;
     }

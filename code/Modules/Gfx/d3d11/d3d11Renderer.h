@@ -43,7 +43,7 @@ public:
     /// reset the internal state cache
     void resetStateCache();
     /// test if a feature is supported
-    bool supports(GfxFeature::Code feat) const;
+    bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
     void commitFrame();
     /// get the current render target attributes

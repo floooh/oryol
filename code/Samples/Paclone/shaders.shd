@@ -156,9 +156,9 @@ vec3 Mask(vec2 pos){
     else mask.b=maskLight;
     return mask;}
 
-vec4 tl_crt(vec2 uv) {
+vec4 tl_crt(vec4 fragCoord, vec2 uv) {
     vec2 pos=Warp(uv);
-    return vec4(ToSrgb(Tri(pos) * Mask(gl_FragCoord.xy)), 1.0);}
+    return vec4(ToSrgb(Tri(pos) * Mask(fragCoord.xy)), 1.0);}
 @end
 
 //------------------------------------------------------------------------------
@@ -177,8 +177,8 @@ vec4 tl_crt(vec2 uv) {
     @uniform vec2 iResolution Resolution
     @uniform sampler2D iChannel0 Canvas
 @end
-    #if 1
-    _color = tl_crt(uv);
+    #if 0
+    _color = tl_crt(_fragcoord, uv);
     #else
     _color = tex2D(iChannel0, uv);
     #endif

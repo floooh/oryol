@@ -1,6 +1,3 @@
-# FIXME: pixel shader currently depends on gl_FragCoord
-if (ORYOL_OPENGL AND NOT FIPS_WINDOWS)
-
 fips_begin_app(Paclone windowed)
     fips_vs_warning_level(3)
     fips_files(
@@ -17,5 +14,3 @@ fips_begin_app(Paclone windowed)
     fips_deps(Core Gfx Input Dbg Sound Assets)
     oryol_add_web_sample(Paclone "Simple Pacman clone (work in progress!" "emscripten,pnacl,android" Paclone.jpg "Paclone/Paclone.cc")
 fips_end_app()
-
-endif()

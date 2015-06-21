@@ -116,9 +116,9 @@ Gfx::ApplyDrawState(const Id& id) {
 
 //------------------------------------------------------------------------------
 bool
-Gfx::Supports(GfxFeature::Code feat) {
+Gfx::QueryFeature(GfxFeature::Code feat) {
     o_assert_dbg(IsValid());
-    return state->renderer.supports(feat);
+    return state->renderer.queryFeature(feat);
 }
 
 //------------------------------------------------------------------------------

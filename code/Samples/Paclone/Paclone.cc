@@ -57,7 +57,7 @@ PacloneApp::OnInit() {
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
     this->crtParams.Canvas = Gfx::CreateResource(rtSetup);
-    Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
 

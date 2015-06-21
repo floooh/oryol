@@ -24,7 +24,7 @@ public:
     /// setup empty mesh (mostly for dynamic streaming)
     static MeshSetup Empty(int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
-    static MeshSetup FullScreenQuad();
+    static MeshSetup FullScreenQuad(bool flipV=false);
     
     /// default constructor
     MeshSetup();
@@ -55,6 +55,8 @@ public:
     int32 NumIndices;
     /// index type (only CreateEmpty)
     IndexType::Code IndicesType;
+    /// flip v coordinates for fullscreen quad (so that origin is top-left)
+    bool FullScreenQuadFlipV;
 
     /// maximum number of primitive groups for one mesh
     static const int32 MaxNumPrimGroups = 8;

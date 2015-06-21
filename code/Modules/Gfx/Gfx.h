@@ -44,8 +44,6 @@ public:
     static const struct DisplayAttrs& DisplayAttrs();
     /// get the current render target attributes (default or offscreen)
     static const struct DisplayAttrs& RenderTargetAttrs();
-    /// test if an optional feature is supported
-    static bool Supports(GfxFeature::Code feat);
     
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
@@ -65,14 +63,17 @@ public:
     static Id LoadResource(const Ptr<ResourceLoader>& loader);
     /// lookup a resource Id by Locator
     static Id LookupResource(const Locator& locator);
+    /// destroy one or several resources by matching label
+    static void DestroyResources(ResourceLabel label);
+
+    /// test if an optional feature is supported
+    static bool QueryFeature(GfxFeature::Code feat);
     /// query number of free slots for resource type
     static int32 QueryFreeResourceSlots(GfxResourceType::Code resourceType);
     /// query resource info (fast)
     static ResourceInfo QueryResourceInfo(const Id& id);
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
-    /// destroy one or several resources by matching label
-    static void DestroyResources(ResourceLabel label);
 
     /// make the default render target (backbuffer) current
     static void ApplyDefaultRenderTarget();

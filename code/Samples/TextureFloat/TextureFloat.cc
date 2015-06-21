@@ -66,7 +66,7 @@ TextureFloatApp::OnInit() {
     Dbg::Setup();
 
     // check required extensions
-    if (!Gfx::Supports(GfxFeature::TextureFloat)) {
+    if (!Gfx::QueryFeature(GfxFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
     

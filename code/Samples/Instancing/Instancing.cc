@@ -142,7 +142,7 @@ InstancingApp::OnInit() {
     Input::Setup();
     
     // check instancing extension
-    if (!Gfx::Supports(GfxFeature::Instancing)) {
+    if (!Gfx::QueryFeature(GfxFeature::Instancing)) {
         o_error("ERROR: instanced_arrays extension required!\n");
     }
 

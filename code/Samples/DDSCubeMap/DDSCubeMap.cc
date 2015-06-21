@@ -80,7 +80,7 @@ DDSCubeMapApp::OnInit() {
     texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
     texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
     StringAtom texPath;
-    if (Gfx::Supports(GfxFeature::TextureCompressionPVRTC)) {
+    if (Gfx::QueryFeature(GfxFeature::TextureCompressionPVRTC)) {
         texPath = "tex:romechurch_bpp2.pvr";
     }
     else {

@@ -95,11 +95,12 @@ d3d11Renderer::resetStateCache() {
 
 //------------------------------------------------------------------------------
 bool
-d3d11Renderer::supports(GfxFeature::Code feat) const {
+d3d11Renderer::queryFeature(GfxFeature::Code feat) const {
     switch (feat) {
         case GfxFeature::TextureCompressionDXT:
         case GfxFeature::TextureFloat:
         case GfxFeature::Instancing:
+        case GfxFeature::OriginTopLeft:
             return true;
         default:
             return false;

@@ -15,6 +15,7 @@ StepRate(1),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
+FullScreenQuadFlipV(false),
 Locator(Locator::NonShared()),
 DataVertexOffset(0),
 DataIndexOffset(InvalidIndex),
@@ -78,9 +79,10 @@ MeshSetup::Empty(int32 numVertices,
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::FullScreenQuad() {
+MeshSetup::FullScreenQuad(bool flipV) {
     MeshSetup setup;
     setup.setupFullScreenQuad = true;
+    setup.FullScreenQuadFlipV = flipV;
     return setup;
 }
 

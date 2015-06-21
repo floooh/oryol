@@ -50,6 +50,7 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    dsSetup.RasterizerState.CullFaceEnabled = false;
     this->drawState = Gfx::CreateResource(dsSetup);
     
     // setup sprite texture

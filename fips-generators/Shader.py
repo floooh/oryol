@@ -52,6 +52,7 @@ slMacros = {
     'glsl100': {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
+        '_fragcoord': 'gl_FragCoord',
         'static': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
@@ -61,6 +62,7 @@ slMacros = {
     'glsl120': {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
+        '_fragcoord': 'gl_FragCoord',
         'static': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
@@ -70,6 +72,7 @@ slMacros = {
     'glsl150': {
         '_position': 'gl_Position',
         '_color': '_FragColor',
+        '_fragcoord': 'gl_FragCoord',
         'static': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
@@ -911,10 +914,13 @@ class HLSLGenerator :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
         
         # write the main function
+        # FIXME: we always declare an SV_Position input parameter even if it 
+        # not used, find out if this incurs a performance hit...
         lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))
         for input in fs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
+        lines.append(Line('in float4 _fragcoord : SV_Position,'))
         lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))

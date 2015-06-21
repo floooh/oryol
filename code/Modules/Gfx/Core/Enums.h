@@ -614,13 +614,15 @@ public:
 class GfxFeature {
 public:
     enum Code {
-        TextureCompressionDXT,      ///< GPU supports DXT compressed textures
+        TextureCompressionDXT = 0,  ///< GPU supports DXT compressed textures
         TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
         TextureCompressionATC,      ///< GPU supports ATC compressed textures
         TextureCompressionETC2,     ///< GPU supports ETC2 compressed textures (OpenGLES3)
         TextureFloat,               ///< support for float textures
         TextureHalfFloat,           ///< support for half-float textures
         Instancing,                 ///< supports hardware-instanced rendering
+        OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
+        OriginTopLeft,              ///< image space origin is top-left (D3D-style)
         
         NumFeatures,
         InvalidFeature
