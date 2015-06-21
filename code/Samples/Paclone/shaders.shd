@@ -45,28 +45,28 @@
 //
 
 // hardcoded to Pacman original display resolution
-vec2 res = vec2(224, 288);
+static const vec2 res = vec2(224, 288);
 
 // Hardness of scanline.
 //  -8.0 = soft
 // -16.0 = medium
-float hardScan=-8.0;
+static const float hardScan=-8.0;
 
 // Hardness of pixels in scanline.
 // -2.0 = soft
 // -4.0 = hard
-float hardPix=-2.0;
+static const float hardPix=-2.0;
 
 // Display warp.
 // 0.0 = none
 // 1.0/8.0 = extreme
-//vec2 warp=vec2(1.0/32.0,1.0/32.0);
-//vec2 warp=vec2(1.0/24.0,1.0/16.0);
-vec2 warp=vec2(1.0/32.0,1.0/24.0);
+//static const vec2 warp=vec2(1.0/32.0,1.0/32.0);
+//static const vec2 warp=vec2(1.0/24.0,1.0/16.0);
+static const vec2 warp=vec2(1.0/32.0,1.0/24.0);
 
 // Amount of shadow mask.
-float maskDark=0.75;
-float maskLight=2.0;
+static const float maskDark=0.75;
+static const float maskLight=2.0;
 
 //------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ vec4 tl_crt(vec4 fragCoord, vec2 uv) {
     @uniform vec2 iResolution Resolution
     @uniform sampler2D iChannel0 Canvas
 @end
-    #if 0
+    #if 1
     _color = tl_crt(_fragcoord, uv);
     #else
     _color = tex2D(iChannel0, uv);
