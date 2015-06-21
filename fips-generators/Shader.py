@@ -914,8 +914,6 @@ class HLSLGenerator :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
         
         # write the main function
-        # FIXME: we always declare an SV_Position input parameter even if it 
-        # not used, find out if this incurs a performance hit...
         lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))
         for input in fs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
