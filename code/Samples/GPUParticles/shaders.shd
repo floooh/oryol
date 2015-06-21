@@ -146,13 +146,13 @@ float snoise(vec2 v)
 @uniform_block fsParams FSParams
     @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @end
-    if (atPosition(gl_FragCoord.xy)) {
+    if (atPosition(_fragcoord.xy)) {
         // position starts always at 0
         _color = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
-        float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
+        float particleId = getParticleId(bufDims.x, _fragcoord.xy);
         vec3 rnd = vec3(snoise(vec2(particleId, 0.0)),
                         snoise(vec2(0.0, particleId * 0.1)),
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
@@ -181,17 +181,17 @@ float snoise(vec2 v)
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
-    float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
+    float particleId = getParticleId(bufDims.x, _fragcoord.xy);
     if (particleId >= numParticles) {
         discard;
     }
     
     // current fragment a position or velocity?
-    bool atPos = atPosition(gl_FragCoord.xy);
+    bool atPos = atPosition(_fragcoord.xy);
 
     // load previous position and velocity
     vec2 posUv, velUv;
-    getParticleStateUvs(atPos, bufDims.xy, gl_FragCoord.xy, posUv, velUv);
+    getParticleStateUvs(atPos, bufDims.xy, _fragcoord.xy, posUv, velUv);
     vec4 pos = tex2D(prevState, posUv);
     vec4 vel = tex2D(prevState, velUv);
     if (atPos) {

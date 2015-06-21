@@ -119,10 +119,10 @@ GPUParticlesApp::OnInit() {
     Dbg::Setup();
 
     // check required extensions
-    if (!Gfx::Supports(GfxFeature::TextureFloat)) {
+    if (!Gfx::QueryFeature(GfxFeature::TextureFloat)) {
         o_error("ERROR: float_texture extension required!\n");
     }
-    if (!Gfx::Supports(GfxFeature::Instancing)) {
+    if (!Gfx::QueryFeature(GfxFeature::Instancing)) {
         o_error("ERROR: instances_arrays extension required!\n");
     }
     
