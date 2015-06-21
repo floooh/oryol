@@ -90,7 +90,7 @@ slMacros = {
         'mat4': 'float4x4',
         'tex2D(s, t)': 's.Sample(s ## _sampler,t)',
         'texCUBE(s, t)': 's.Sample(s ## _sampler,t)',
-        'tex2Dvs(s, t)': 's.Load(int3(t.x,t.y,0))',
+        'tex2Dvs(s, t)': 's.SampleLevel(s ## _sampler,t,0.0)',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
