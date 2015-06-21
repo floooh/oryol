@@ -166,9 +166,10 @@ void
 d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
     o_assert_dbg(this->d3d11DeviceContext);
 
+    // FIXME: UNTESTED!
     D3D11_VIEWPORT vp;
     vp.TopLeftX = (FLOAT) x;
-    vp.TopLeftY = (FLOAT) y;
+    vp.TopLeftY = (FLOAT) (this->rtAttrs.FramebufferHeight - (y + height));
     vp.Width    = (FLOAT) width;
     vp.Height   = (FLOAT) height;
     vp.MinDepth = 0.0f;
@@ -183,9 +184,9 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 
     D3D11_RECT rect;
     rect.left = x;
-    rect.top = y;
+    rect.top = this->rtAttrs.FramebufferHeight - (y + height);
     rect.right = x + width;
-    rect.bottom = y + height;
+    rect.bottom = this->rtAttrs.FramebufferHeight - y;
     this->d3d11DeviceContext->RSSetScissorRects(1, &rect);
 }
 
