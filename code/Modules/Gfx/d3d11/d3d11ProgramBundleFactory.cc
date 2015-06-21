@@ -100,9 +100,9 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
             // NOTE: constant buffer size must be multiple of 16 bytes
             o_assert_dbg(layout.ByteSizeWithoutTextures() > 0);
             cbDesc.ByteWidth = Memory::RoundUp(layout.ByteSizeWithoutTextures(), 16);
-            cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+            cbDesc.Usage = D3D11_USAGE_DEFAULT;
             cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-            cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            cbDesc.CPUAccessFlags = 0;
 
             hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
             o_assert(SUCCEEDED(hr));
@@ -123,6 +123,8 @@ void
 d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->d3d11Device);
+
+    this->renderer->invalidateProgramState();
 
     const int32 numProgs = progBundle.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {

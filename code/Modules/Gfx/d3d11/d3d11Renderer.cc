@@ -26,10 +26,22 @@ defaultDepthStencilView(nullptr),
 rtValid(false),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
-curRenderTargetView(nullptr),
-curDepthStencilView(nullptr),
+d3d11CurRenderTargetView(nullptr),
+d3d11CurDepthStencilView(nullptr),
+d3d11CurRasterizerState(nullptr),
+d3d11CurDepthStencilState(nullptr),
+d3d11CurBlendState(nullptr),
+d3d11CurIndexBuffer(nullptr),
+d3d11CurInputLayout(nullptr),
+d3d11CurVertexShader(nullptr),
+d3d11CurPixelShader(nullptr),
+curStencilRef(0xFFFF),
 curPrimitiveTopology(PrimitiveType::InvalidPrimitiveType) {
-    // empty
+    this->d3d11CurVSConstantBuffers.Fill(nullptr);
+    this->d3d11CurPSConstantBuffers.Fill(nullptr);
+    this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->curVertexStrides.Fill(0);
+    this->curVertexOffsets.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -64,8 +76,20 @@ void
 d3d11Renderer::discard() {
     o_assert_dbg(this->valid);
 
-    this->curRenderTargetView = nullptr;
-    this->curDepthStencilView = nullptr;
+    this->d3d11CurRenderTargetView = nullptr;
+    this->d3d11CurDepthStencilView = nullptr;
+    this->d3d11CurRasterizerState = nullptr;
+    this->d3d11CurDepthStencilState = nullptr;
+    this->d3d11CurBlendState = nullptr;
+    this->d3d11CurIndexBuffer = nullptr;
+    this->d3d11CurInputLayout = nullptr;
+    this->d3d11CurVertexShader = nullptr;
+    this->d3d11CurPixelShader = nullptr;
+    this->d3d11CurVSConstantBuffers.Fill(nullptr);
+    this->d3d11CurPSConstantBuffers.Fill(nullptr);
+    this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->curVertexStrides.Fill(0);
+    this->curVertexOffsets.Fill(0);
 
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
@@ -90,7 +114,28 @@ d3d11Renderer::isValid() const {
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::resetStateCache() {
-    o_error("FIXME!\n");
+    o_assert_dbg(this->d3d11DeviceContext);
+
+    // FIXME: untested
+    this->d3d11DeviceContext->ClearState();
+    this->curRenderTarget = nullptr;
+    this->curDrawState = nullptr;
+    this->d3d11CurRenderTargetView = nullptr;
+    this->d3d11CurDepthStencilView = nullptr;
+    this->d3d11CurDepthStencilState = nullptr;
+    this->d3d11CurBlendState = nullptr;
+    this->d3d11CurIndexBuffer = nullptr;
+    this->d3d11CurInputLayout = nullptr;
+    this->d3d11CurVertexShader = nullptr;
+    this->d3d11CurPixelShader = nullptr;
+    this->d3d11CurVSConstantBuffers.Fill(nullptr);
+    this->d3d11CurPSConstantBuffers.Fill(nullptr);
+    this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->curVertexStrides.Fill(0);
+    this->curVertexOffsets.Fill(0);
+    this->curStencilRef = 0xFFFF;
+    this->curBlendColor = glm::vec4(0.0f);
+    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
 }
 
 //------------------------------------------------------------------------------
@@ -130,8 +175,8 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
     this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = this->dispMgr->GetDisplayAttrs();
-        this->curRenderTargetView = this->defaultRenderTargetView;
-        this->curDepthStencilView = this->defaultDepthStencilView;
+        this->d3d11CurRenderTargetView = this->defaultRenderTargetView;
+        this->d3d11CurDepthStencilView = this->defaultDepthStencilView;
     }
     else {
         // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
@@ -148,15 +193,15 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
         this->rtAttrs.Windowed = false;
         this->rtAttrs.SwapInterval = 1;
 
-        this->curRenderTargetView = rt->d3d11RenderTargetView;
-        this->curDepthStencilView = rt->d3d11DepthStencilView;
+        this->d3d11CurRenderTargetView = rt->d3d11RenderTargetView;
+        this->d3d11CurDepthStencilView = rt->d3d11DepthStencilView;
     }
 
     this->curRenderTarget = rt;
     this->rtValid = true;
     
     // actually set the render targets in the d3d11 device context
-    this->d3d11DeviceContext->OMSetRenderTargets(1, &this->curRenderTargetView, this->curDepthStencilView);
+    this->d3d11DeviceContext->OMSetRenderTargets(1, &this->d3d11CurRenderTargetView, this->d3d11CurDepthStencilView);
 
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight);
@@ -205,53 +250,106 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         o_assert_dbg(ds->d3d11DepthStencilState);
         o_assert_dbg(ds->d3d11RasterizerState);
         o_assert_dbg(ds->d3d11RasterizerState);
-        o_assert_dbg(ds->d3d11IANumSlots > 0);
 
         this->curDrawState = ds;
         o_assert_dbg(ds->prog);
         ds->prog->select(ds->Setup.ProgramSelectionMask);
 
-        // apply state objects
-        this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
-        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
-        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
-        
-        // apply vertex buffers
-        this->d3d11DeviceContext->IASetVertexBuffers(
-            0,                          // StartSlot 
-            ds->d3d11IANumSlots,        // NumBuffers
-            ds->d3d11IAVertexBuffers,   // ppVertexBuffers
-            ds->d3d11IAStrides,         // pStrides
-            ds->d3d11IAOffsets);        // pOffsets
+        // apply state objects (if state has changed)
+        if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
+            this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
+            this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+        }
+        if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
+            (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
 
+            this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
+            this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
+            this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
+        }
+        if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
+            glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
+        
+            this->d3d11CurBlendState = ds->d3d11BlendState;
+            this->curBlendColor = ds->Setup.BlendColor;
+            this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
+        }
+
+        // apply vertex buffers
+        bool vbDirty = false;
+        const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
+        o_assert_dbg(vbNumSlots == this->d3d11CurVertexBuffers.Size());
+        for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
+            if (this->d3d11CurVertexBuffers[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
+                this->d3d11CurVertexBuffers[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
+                vbDirty = true;
+            }
+            if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
+                this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
+                vbDirty = true;
+            }
+            if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
+                this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
+                vbDirty = true;
+            }
+        }
+        if (vbDirty) {
+            this->d3d11DeviceContext->IASetVertexBuffers(
+                0,                                      // StartSlot 
+                vbNumSlots,                             // NumBuffers
+                &(this->d3d11CurVertexBuffers[0]),      // ppVertexBuffers
+                &(this->curVertexStrides[0]),           // pStrides
+                &(this->curVertexOffsets[0]));          // pOffsets
+        }
+
+        const UINT numBuffers = sizeof(ds->d3d11IAVertexBuffers) / sizeof(ID3D11Buffer*);
         // apply optional index buffer
-        if (ds->meshes[0]->d3d11IndexBuffer) {
-            DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT) ds->meshes[0]->indexBufferAttrs.Type;
+        if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
+            this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
+            DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT)ds->meshes[0]->indexBufferAttrs.Type;
             this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
         }
 
         // apply input layout
         const uint32 selIndex = ds->prog->getSelectionIndex();
         o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
-        this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
+        if (this->d3d11CurInputLayout != ds->d3d11InputLayouts[selIndex]) {
+            this->d3d11CurInputLayout = ds->d3d11InputLayouts[selIndex];
+            this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
+        }
 
         // apply shaders
-        this->d3d11DeviceContext->VSSetShader(ds->prog->getSelectedVertexShader(), NULL, 0);
-        this->d3d11DeviceContext->PSSetShader(ds->prog->getSelectedPixelShader(), NULL, 0);
+        ID3D11VertexShader* d3d11VS = ds->prog->getSelectedVertexShader();
+        if (this->d3d11CurVertexShader != d3d11VS) {
+            this->d3d11CurVertexShader = d3d11VS;
+            this->d3d11DeviceContext->VSSetShader(d3d11VS, NULL, 0);
+        }
+        ID3D11PixelShader* d3d11PS = ds->prog->getSelectedPixelShader();
+        if (this->d3d11CurPixelShader != d3d11PS) {
+            this->d3d11CurPixelShader = d3d11PS;
+            this->d3d11DeviceContext->PSSetShader(d3d11PS, NULL, 0);
+        }
         
         // apply constant buffers
         ShaderType::Code cbStage = ShaderType::InvalidShaderType;
         int32 cbBindSlot = 0;
         const int numConstantBuffers = ds->prog->getNumUniformBlockEntries();
+        o_assert_dbg(numConstantBuffers < ProgramBundleSetup::MaxNumUniformBlocks);
         for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
             ID3D11Buffer* cb = ds->prog->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
             if (cb) {
                 o_assert_dbg(cbBindSlot != InvalidIndex);
                 if (ShaderType::VertexShader == cbStage) {
-                    this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
+                    if (this->d3d11CurVSConstantBuffers[cbBindSlot] != cb) {
+                        this->d3d11CurVSConstantBuffers[cbBindSlot] = cb;
+                        this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
+                    }
                 }
                 else {
-                    this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
+                    if (this->d3d11CurPSConstantBuffers[cbBindSlot] != cb) {
+                        this->d3d11CurPSConstantBuffers[cbBindSlot] = cb;
+                        this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
+                    }
                 }
             }
         }
@@ -313,15 +411,10 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     }
 
     // apply optional uniform block
+    // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
     if (cb) {
         o_assert_dbg(cbufferPtr);
-        D3D11_MAPPED_SUBRESOURCE mapped;
-        HRESULT hr = this->d3d11DeviceContext->Map(cb, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-        intptr size = (ptr + byteSize) - cbufferPtr;
-        o_assert_dbg(size > 0);
-        o_assert_dbg(layout.ByteSizeWithoutTextures() == size);
-        std::memcpy(mapped.pData, cbufferPtr, size);
-        this->d3d11DeviceContext->Unmap(cb, 0);
+        this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);
     }
 }
 
@@ -334,11 +427,11 @@ d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float3
     o_assert2_dbg((clearMask & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
 
     if (clearMask & ClearTarget::Color) {
-        o_assert_dbg(this->curRenderTargetView);
-        this->d3d11DeviceContext->ClearRenderTargetView(this->curRenderTargetView, glm::value_ptr(color));
+        o_assert_dbg(this->d3d11CurRenderTargetView);
+        this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, glm::value_ptr(color));
     }
     if (clearMask & (ClearTarget::Depth|ClearTarget::Stencil)) {
-        o_assert_dbg(this->curDepthStencilView);
+        o_assert_dbg(this->d3d11CurDepthStencilView);
         UINT d3d11ClearFlags = 0;
         if (ClearTarget::Depth & clearMask) {
             d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
@@ -346,7 +439,7 @@ d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float3
         if (ClearTarget::Stencil & clearMask) {
             d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
         }
-        this->d3d11DeviceContext->ClearDepthStencilView(this->curDepthStencilView, d3d11ClearFlags, depth, stencil);
+        this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, depth, stencil);
     }
 }
 
@@ -459,25 +552,62 @@ d3d11Renderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumByt
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateMeshState() {
+    o_assert_dbg(this->d3d11DeviceContext);
+
     Log::Info("d3d11Renderer::invalidateMeshState()\n");
+
+    this->d3d11CurIndexBuffer = nullptr;
+    this->d3d11CurInputLayout = nullptr;
+    this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->curVertexStrides.Fill(0);
+    this->curVertexOffsets.Fill(0);
+    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
+    this->d3d11DeviceContext->IASetInputLayout(nullptr);
+    this->d3d11DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+    this->d3d11DeviceContext->IASetVertexBuffers(
+        0, 
+        this->d3d11CurVertexBuffers.Size(),
+        &(this->d3d11CurVertexBuffers[0]),
+        &(this->curVertexStrides[0]),
+        &(this->curVertexOffsets[0]));
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateProgramState() {
+    o_assert_dbg(this->d3d11DeviceContext);
+
     Log::Info("d3d11Renderer::invalidateProgramState()\n");
+
+    this->d3d11CurVertexShader = nullptr;
+    this->d3d11CurPixelShader = nullptr;
+    this->d3d11CurVSConstantBuffers.Fill(nullptr);
+    this->d3d11CurPSConstantBuffers.Fill(nullptr);
+    this->d3d11DeviceContext->VSSetShader(nullptr, nullptr, 0);
+    this->d3d11DeviceContext->PSSetShader(nullptr, nullptr, 0);
+    this->d3d11DeviceContext->VSSetConstantBuffers(0, ProgramBundleSetup::MaxNumUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
+    this->d3d11DeviceContext->PSSetConstantBuffers(0, ProgramBundleSetup::MaxNumUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateDrawState() {
+    o_assert_dbg(this->d3d11DeviceContext);
+
     Log::Info("d3d11Renderer::invalidateDrawState()\n");
+
+    this->d3d11CurBlendState = nullptr;
+    this->d3d11CurDepthStencilState = nullptr;
+    this->d3d11CurRasterizerState = nullptr;
+    this->d3d11DeviceContext->OMSetBlendState(nullptr, glm::value_ptr(this->curBlendColor), 0xFFFFFFFF);
+    this->d3d11DeviceContext->OMSetDepthStencilState(nullptr, 0xFF);
+    this->d3d11DeviceContext->RSSetState(nullptr);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateTextureState() {
-
+    o_assert_dbg(this->d3d11DeviceContext);
     // clear all texture bindings
     ID3D11ShaderResourceView* const nullViews[UniformLayout::MaxNumComponents] = { 0 };
     this->d3d11DeviceContext->PSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);

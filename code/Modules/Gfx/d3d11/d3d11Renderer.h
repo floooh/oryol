@@ -6,11 +6,14 @@
     @brief D3D11 implementation of renderer
 */
 #include "Core/Types.h"
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Setup/ProgramBundleSetup.h"
+#include "Gfx/Setup/DrawStateSetup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include <glm/vec4.hpp>
 #include "Gfx/d3d11/d3d11_decl.h"
@@ -103,8 +106,23 @@ private:
     texture* curRenderTarget;
     drawState* curDrawState;
 
-    ID3D11RenderTargetView* curRenderTargetView;
-    ID3D11DepthStencilView* curDepthStencilView;
+    ID3D11RenderTargetView* d3d11CurRenderTargetView;
+    ID3D11DepthStencilView* d3d11CurDepthStencilView;
+    ID3D11RasterizerState* d3d11CurRasterizerState;
+    ID3D11DepthStencilState* d3d11CurDepthStencilState;
+    ID3D11BlendState* d3d11CurBlendState;
+    ID3D11Buffer* d3d11CurIndexBuffer;
+    ID3D11InputLayout* d3d11CurInputLayout;
+    ID3D11VertexShader* d3d11CurVertexShader;
+    ID3D11PixelShader* d3d11CurPixelShader;
+    StaticArray<ID3D11Buffer*, ProgramBundleSetup::MaxNumUniformBlocks> d3d11CurVSConstantBuffers;
+    StaticArray<ID3D11Buffer*, ProgramBundleSetup::MaxNumUniformBlocks> d3d11CurPSConstantBuffers;
+    StaticArray<ID3D11Buffer*, DrawStateSetup::MaxInputMeshes> d3d11CurVertexBuffers;
+    StaticArray<uint32, DrawStateSetup::MaxInputMeshes> curVertexStrides;
+    StaticArray<uint32, DrawStateSetup::MaxInputMeshes> curVertexOffsets;
+
+    uint16 curStencilRef;
+    glm::vec4 curBlendColor;
     PrimitiveType::Code curPrimitiveTopology;
 };
 

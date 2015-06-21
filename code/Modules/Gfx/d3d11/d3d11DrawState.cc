@@ -11,16 +11,11 @@ namespace _priv {
 d3d11DrawState::d3d11DrawState() :
 d3d11RasterizerState(nullptr),
 d3d11DepthStencilState(nullptr),
-d3d11BlendState(nullptr),
-d3d11IANumSlots(0) {
-    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
-        this->d3d11InputLayouts[i] = nullptr;
-    }
-    for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
-        this->d3d11IAVertexBuffers[i] = nullptr;
-        this->d3d11IAStrides[i] = 0;
-        this->d3d11IAOffsets[i] = 0;
-    }
+d3d11BlendState(nullptr) {
+    this->d3d11InputLayouts.Fill(nullptr);
+    this->d3d11IAVertexBuffers.Fill(nullptr);
+    this->d3d11IAStrides.Fill(0);
+    this->d3d11IAOffsets.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -41,18 +36,13 @@ d3d11DrawState::~d3d11DrawState() {
 //------------------------------------------------------------------------------
 void
 d3d11DrawState::Clear() {
-    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
-        this->d3d11InputLayouts[i] = nullptr;
-    }
+    this->d3d11InputLayouts.Fill(nullptr);
     this->d3d11RasterizerState = nullptr;
     this->d3d11DepthStencilState = nullptr;
     this->d3d11BlendState = nullptr;
-    this->d3d11IANumSlots = 0;
-    for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
-        this->d3d11IAVertexBuffers[i] = nullptr;
-        this->d3d11IAStrides[i] = 0;
-        this->d3d11IAOffsets[i] = 0;
-    }
+    this->d3d11IAVertexBuffers.Fill(nullptr);
+    this->d3d11IAStrides.Fill(0);
+    this->d3d11IAOffsets.Fill(0);
     drawStateBase::Clear();
 }
 
