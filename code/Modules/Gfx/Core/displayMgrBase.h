@@ -11,6 +11,7 @@
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Core/Containers/Array.h"
 #include "Messaging/Port.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
@@ -23,7 +24,7 @@ public:
     ~displayMgrBase();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& setup);
+    void SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// return true if display is currently setup
@@ -52,6 +53,7 @@ protected:
     GfxSetup gfxSetup;
     DisplayAttrs displayAttrs;
     Array<Ptr<Port>> handlers;
+    gfxPointers pointers;
     bool displayValid;
 };
     

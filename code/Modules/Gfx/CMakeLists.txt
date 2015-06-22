@@ -39,6 +39,7 @@ fips_begin_module(Gfx)
         UniformLayout.cc UniformLayout.h
         displayMgr.h
         renderer.h
+        gfxPointers.h
     )
     fips_dir(Resource)
     fips_files(

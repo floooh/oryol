@@ -12,18 +12,17 @@
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Setup/ProgramBundleSetup.h"
 #include "Gfx/Setup/DrawStateSetup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include <glm/vec4.hpp>
 #include "Gfx/d3d11/d3d11_decl.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
 
-class meshPool;
-class texturePool;
-class displayMgr;
 class texture;
 class drawState;
 class mesh;
@@ -37,7 +36,7 @@ public:
     ~d3d11Renderer();
     
     /// setup the renderer
-    void setup(displayMgr* dispMgr, meshPool* mshPool, texturePool* texPool);
+    void setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -93,9 +92,7 @@ public:
 
 private:
     bool valid;
-    displayMgr* dispMgr;
-    meshPool* mshPool;
-    texturePool* texPool;
+    gfxPointers pointers;
     ID3D11RenderTargetView* defaultRenderTargetView;
     ID3D11DepthStencilView* defaultDepthStencilView;
 

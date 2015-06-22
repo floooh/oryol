@@ -12,31 +12,26 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 gfxResourceContainer::gfxResourceContainer() :
-renderer(nullptr),
-displayMgr(nullptr),
 runLoopId(RunLoop::InvalidId) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::setup(const GfxSetup& setup, class renderer* rendr, class displayMgr* dspMgr) {
+gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->isValid());
-    o_assert(nullptr != rendr);
-    o_assert(nullptr != dspMgr);
     
-    this->renderer = rendr;
-    this->displayMgr = dspMgr;
+    this->pointers = ptrs;
     
-    this->meshFactory.Setup(this->renderer, &this->meshPool);
+    this->meshFactory.Setup(this->pointers.renderer, &this->meshPool);
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->shaderFactory.Setup(this->renderer);
+    this->shaderFactory.Setup(this->pointers.renderer);
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
-    this->programBundleFactory.Setup(this->renderer, &this->shaderPool, &this->shaderFactory);
+    this->programBundleFactory.Setup(this->pointers.renderer, &this->shaderPool, &this->shaderFactory);
     this->programBundlePool.Setup(GfxResourceType::ProgramBundle, setup.PoolSize(GfxResourceType::ProgramBundle));
-    this->textureFactory.Setup(this->renderer, this->displayMgr, &this->texturePool);
+    this->textureFactory.Setup(this->pointers.renderer, this->pointers.displayMgr, &this->texturePool);
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->drawStateFactory.Setup(this->renderer, &this->meshPool, &this->programBundlePool);
+    this->drawStateFactory.Setup(this->pointers.renderer, &this->meshPool, &this->programBundlePool);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
@@ -69,8 +64,7 @@ gfxResourceContainer::discard() {
     this->shaderFactory.Discard();
     this->meshPool.Discard();
     this->meshFactory.Discard();
-    this->renderer = nullptr;
-    this->displayMgr = nullptr;
+    this->pointers = gfxPointers();
 }
 
 //------------------------------------------------------------------------------

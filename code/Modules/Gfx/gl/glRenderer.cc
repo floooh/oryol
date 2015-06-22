@@ -80,9 +80,6 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glRenderer::glRenderer() :
 valid(false),
-dispMgr(nullptr),
-mshPool(nullptr),
-texPool(nullptr),
 #if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
@@ -117,16 +114,11 @@ glRenderer::~glRenderer() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool_) {
+glRenderer::setup(const GfxSetup& /*setup*/, const gfxPointers& ptrs) {
     o_assert_dbg(!this->valid);
-    o_assert_dbg(dispMgr_);
-    o_assert_dbg(mshPool_);
-    o_assert_dbg(texPool_);
     
     this->valid = true;
-    this->mshPool = mshPool_;
-    this->texPool = texPool_;
-    this->dispMgr = dispMgr_;
+    this->pointers = ptrs;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -160,9 +152,7 @@ glRenderer::discard() {
     this->globalVAO = 0;
     #endif
 
-    this->texPool = nullptr;
-    this->mshPool = nullptr;
-    this->dispMgr = nullptr;
+    this->pointers = gfxPointers();
     this->valid = false;
 }
 
@@ -246,10 +236,9 @@ glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
 void
 glRenderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->dispMgr);
     
     if (nullptr == rt) {
-        this->rtAttrs = this->dispMgr->GetDisplayAttrs();
+        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
         // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
@@ -271,7 +260,7 @@ glRenderer::applyRenderTarget(texture* rt) {
     if (rt != this->curRenderTarget) {
         // default render target?
         if (nullptr == rt) {
-            this->dispMgr->glBindDefaultFramebuffer();
+            this->pointers.displayMgr->glBindDefaultFramebuffer();
         }
         else {
             ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glFramebuffer);
@@ -406,7 +395,6 @@ glRenderer::applyMeshState(const drawState* ds) {
 void
 glRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->mshPool);
 
     if (nullptr == ds) {
         // the draw state has not been loaded yet, invalidate rendering
@@ -1052,7 +1040,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
             case UniformType::Texture:
                 {
                     const Id& resId = *(const Id*)valuePtr;
-                    texture* tex = this->texPool->Lookup(resId);
+                    texture* tex = this->pointers.texturePool->Lookup(resId);
                     o_assert_dbg(tex);
                     int32 samplerIndex = prog->getSamplerIndex(blockIndex, compIndex);
                     GLuint glTexture = tex->glTex;

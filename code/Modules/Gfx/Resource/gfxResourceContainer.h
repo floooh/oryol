@@ -23,6 +23,7 @@
 #include "Gfx/Resource/drawStateFactory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"
 #include "Gfx/Resource/TextureLoaderBase.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
@@ -36,7 +37,7 @@ public:
     gfxResourceContainer();
 
     /// setup the resource container
-    void setup(const GfxSetup& setup, renderer* rendr, displayMgr* dspMgr);
+    void setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the resource manager
     void discard();
     
@@ -79,8 +80,7 @@ public:
     /// handle pending draw states, this is called once per frame
     void handlePendingDrawStates();
     
-    class renderer* renderer;
-    class displayMgr* displayMgr;
+    gfxPointers pointers;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;

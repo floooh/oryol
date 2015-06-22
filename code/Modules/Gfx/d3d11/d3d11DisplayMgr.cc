@@ -56,10 +56,10 @@ d3d11DisplayMgr::~d3d11DisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup) {
+d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
 
-    displayMgrBase::SetupDisplay(setup);
+    displayMgrBase::SetupDisplay(setup, ptrs);
 
     this->registerWindowClass();
     this->createWindow(setup);

@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Gfx.h"
 #include "Core/Core.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 
@@ -17,9 +18,19 @@ Gfx::Setup(const class GfxSetup& setup) {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
     state->gfxSetup = setup;
-    state->displayManager.SetupDisplay(setup);
-    state->renderer.setup(&state->displayManager, &state->resourceContainer.meshPool, &state->resourceContainer.texturePool);
-    state->resourceContainer.setup(setup, &state->renderer, &state->displayManager);
+
+    gfxPointers pointers;
+    pointers.displayMgr = &state->displayManager;
+    pointers.renderer = &state->renderer;
+    pointers.meshPool = &state->resourceContainer.meshPool;
+    pointers.shaderPool = &state->resourceContainer.shaderPool;
+    pointers.programBundlePool = &state->resourceContainer.programBundlePool;
+    pointers.texturePool = &state->resourceContainer.texturePool;
+    pointers.drawStatePool = &state->resourceContainer.drawStatePool;
+
+    state->displayManager.SetupDisplay(setup, pointers);
+    state->renderer.setup(setup, pointers);
+    state->resourceContainer.setup(setup, pointers);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();
     });

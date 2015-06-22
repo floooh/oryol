@@ -45,10 +45,10 @@ glfwDisplayMgr::getGlfwWindow() {
 
 //------------------------------------------------------------------------------
 void
-glfwDisplayMgr::SetupDisplay(const GfxSetup& setup) {
+glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
     
-    displayMgrBase::SetupDisplay(setup);
+    displayMgrBase::SetupDisplay(setup, ptrs);
     
     // setup GLFW
     if (!glfwInit()) {

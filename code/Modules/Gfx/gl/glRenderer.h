@@ -10,7 +10,9 @@
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
+#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
@@ -18,9 +20,6 @@
 namespace Oryol {
 namespace _priv {
 
-class meshPool;
-class texturePool;
-class displayMgr;
 class texture;
 class drawState;
 class mesh;
@@ -34,7 +33,7 @@ public:
     ~glRenderer();
     
     /// setup the renderer
-    void setup(displayMgr* dispMgr, meshPool* mshPool, texturePool* texPool);
+    void setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
@@ -112,9 +111,7 @@ private:
     void applyMeshState(const drawState* ds);
 
     bool valid;
-    displayMgr* dispMgr;
-    meshPool* mshPool;
-    texturePool* texPool;
+    gfxPointers pointers;
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
     #endif

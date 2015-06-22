@@ -23,7 +23,7 @@ public:
     ~d3d11DisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup);
+    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// process window system events (call near start of frame)

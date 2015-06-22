@@ -18,9 +18,6 @@ d3d11Renderer::d3d11Renderer() :
 d3d11Device(nullptr),
 d3d11DeviceContext(nullptr),
 valid(false),
-dispMgr(nullptr),
-mshPool(nullptr),
-texPool(nullptr),
 defaultRenderTargetView(nullptr),
 defaultDepthStencilView(nullptr),
 rtValid(false),
@@ -51,24 +48,15 @@ d3d11Renderer::~d3d11Renderer() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::setup(displayMgr* dispMgr_, meshPool* mshPool_, texturePool* texPool_) {
+d3d11Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(!this->valid);
-    o_assert_dbg(dispMgr_);
-    o_assert_dbg(mshPool_);
-    o_assert_dbg(texPool_);
-    o_assert_dbg(dispMgr_->d3d11Device);
-    o_assert_dbg(dispMgr_->d3d11DeviceContext);
-    o_assert_dbg(dispMgr_->renderTargetView);
-    o_assert_dbg(dispMgr_->depthStencilView);
 
     this->valid = true;
-    this->dispMgr = dispMgr_;
-    this->mshPool = mshPool_;
-    this->texPool = texPool_;
-    this->d3d11Device = this->dispMgr->d3d11Device;
-    this->d3d11DeviceContext = this->dispMgr->d3d11DeviceContext;
-    this->defaultRenderTargetView = this->dispMgr->renderTargetView;
-    this->defaultDepthStencilView = this->dispMgr->depthStencilView;
+    this->pointers = ptrs;
+    this->d3d11Device = this->pointers.displayMgr->d3d11Device;
+    this->d3d11DeviceContext = this->pointers.displayMgr->d3d11DeviceContext;
+    this->defaultRenderTargetView = this->pointers.displayMgr->renderTargetView;
+    this->defaultDepthStencilView = this->pointers.displayMgr->depthStencilView;
 }
 
 //------------------------------------------------------------------------------
@@ -99,9 +87,7 @@ d3d11Renderer::discard() {
     this->d3d11DeviceContext = nullptr;
     this->d3d11Device = nullptr;
     
-    this->texPool = nullptr;
-    this->mshPool = nullptr;
-    this->dispMgr = nullptr;
+    this->pointers = gfxPointers();
     this->valid = false;
 }
 
@@ -169,12 +155,11 @@ d3d11Renderer::renderTargetAttrs() const {
 void
 d3d11Renderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->dispMgr);
     o_assert_dbg(this->d3d11DeviceContext);
 
     this->invalidateTextureState();
     if (nullptr == rt) {
-        this->rtAttrs = this->dispMgr->GetDisplayAttrs();
+        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         this->d3d11CurRenderTargetView = this->defaultRenderTargetView;
         this->d3d11CurDepthStencilView = this->defaultDepthStencilView;
     }
@@ -240,7 +225,6 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
 void
 d3d11Renderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert_dbg(this->mshPool);
 
     if (nullptr == ds) {
         // the drawstate is still pending, invalidate rendering
@@ -388,7 +372,7 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
         if (comp.Type == UniformType::Texture) {
             const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
             const Id& resId = *(const Id*)valuePtr;
-            texture* tex = this->texPool->Lookup(resId);
+            texture* tex = this->pointers.texturePool->Lookup(resId);
             o_assert_dbg(tex);
             o_assert_dbg(tex->d3d11ShaderResourceView);
             o_assert_dbg(tex->d3d11SamplerState);
