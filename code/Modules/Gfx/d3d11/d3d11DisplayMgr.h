@@ -40,28 +40,28 @@ public:
     /// pointer to swap chain
     IDXGISwapChain* dxgiSwapChain;
     /// pointer to default render target back buffer texture
-    ID3D11Texture2D* backBuffer;
+    ID3D11Texture2D* d3d11RenderTarget;
     /// pointer to default render target view
-    ID3D11RenderTargetView* renderTargetView;
+    ID3D11RenderTargetView* d3d11RenderTargetView;
     /// pointer to default depth/stencil buffer texture
-    ID3D11Texture2D* depthStencilBuffer;
+    ID3D11Texture2D* d3d11DepthStencilBuffer;
     /// pointer to default default depth/stencil view
-    ID3D11DepthStencilView* depthStencilView;
+    ID3D11DepthStencilView* d3d11DepthStencilView;
 
     /// register the window class
     void registerWindowClass();
     /// unregister the window class
     void unregisterWindowClass();
     /// create the application window
-    void createWindow(const GfxSetup& gfxSetup);
+    void createWindow();
     /// destroy the application window
     void destroyWindow();
     /// create swap chain and d3d device
-    void createDeviceAndSwapChain(const GfxSetup& gfxSetup, DXGI_SWAP_CHAIN_DESC& outSwapChainDesc);
+    void createDeviceAndSwapChain();
     /// destroy the d3d device and swap chain
     void destroyDeviceAndSwapChain();
     /// create the default render target
-    void createDefaultRenderTarget(const GfxSetup& gfxSetup, const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
+    void createDefaultRenderTarget(int width, int height);
     /// destroy the default render target
     void destroyDefaultRenderTarget();
     /// compute actual window size from client rect size plus window chrome

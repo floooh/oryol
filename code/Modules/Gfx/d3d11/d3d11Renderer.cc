@@ -18,8 +18,6 @@ d3d11Renderer::d3d11Renderer() :
 d3d11Device(nullptr),
 d3d11DeviceContext(nullptr),
 valid(false),
-defaultRenderTargetView(nullptr),
-defaultDepthStencilView(nullptr),
 rtValid(false),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
@@ -55,8 +53,6 @@ d3d11Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->pointers = ptrs;
     this->d3d11Device = this->pointers.displayMgr->d3d11Device;
     this->d3d11DeviceContext = this->pointers.displayMgr->d3d11DeviceContext;
-    this->defaultRenderTargetView = this->pointers.displayMgr->renderTargetView;
-    this->defaultDepthStencilView = this->pointers.displayMgr->depthStencilView;
 }
 
 //------------------------------------------------------------------------------
@@ -82,8 +78,6 @@ d3d11Renderer::discard() {
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
 
-    this->defaultDepthStencilView = nullptr;
-    this->defaultRenderTargetView = nullptr;
     this->d3d11DeviceContext = nullptr;
     this->d3d11Device = nullptr;
     
@@ -160,8 +154,8 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
     this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        this->d3d11CurRenderTargetView = this->defaultRenderTargetView;
-        this->d3d11CurDepthStencilView = this->defaultDepthStencilView;
+        this->d3d11CurRenderTargetView = this->pointers.displayMgr->d3d11RenderTargetView;
+        this->d3d11CurDepthStencilView = this->pointers.displayMgr->d3d11DepthStencilView;
     }
     else {
         // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?

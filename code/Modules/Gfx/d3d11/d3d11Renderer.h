@@ -93,8 +93,6 @@ public:
 private:
     bool valid;
     gfxPointers pointers;
-    ID3D11RenderTargetView* defaultRenderTargetView;
-    ID3D11DepthStencilView* defaultDepthStencilView;
 
     bool rtValid;
     DisplayAttrs rtAttrs;
