@@ -20,7 +20,7 @@ public:
     ~eglDisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& GfxSetup);
+    void SetupDisplay(const GfxSetup& GfxSetup, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// present the current rendered frame

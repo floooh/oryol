@@ -33,11 +33,11 @@ iosDisplayMgr::~iosDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-iosDisplayMgr::SetupDisplay(const GfxSetup& GfxSetup) {
+iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
 
     Log::Info("iosDisplayMgr::SetupDisplay() called!\n");
-    displayMgrBase::SetupDisplay(GfxSetup);
+    displayMgrBase::SetupDisplay(gfxSetup, ptrs);
     
     // modify the color/depth/stencil format of the GLKView
     GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();

@@ -29,11 +29,11 @@ pnaclDisplayMgr::~pnaclDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup) {
+pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
 
     Log::Info("pnaclDisplayMgr::SetupDisplay() called!\n");
-    displayMgrBase::SetupDisplay(gfxSetup);
+    displayMgrBase::SetupDisplay(gfxSetup, ptrs);
 
     // const int32_t numSampleBuffers = gfxSetup.Samples > 1 ? 1 : 0;
     const int32_t attribList[] = {

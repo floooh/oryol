@@ -20,7 +20,7 @@ public:
     ~iosDisplayMgr();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup);
+    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// present the current rendered frame

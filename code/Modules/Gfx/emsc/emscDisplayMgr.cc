@@ -29,9 +29,9 @@ emscDisplayMgr::~emscDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup) {
+emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
-    displayMgrBase::SetupDisplay(renderSetup);
+    displayMgrBase::SetupDisplay(renderSetup, ptrs);
 
     emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
 

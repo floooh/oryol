@@ -37,13 +37,13 @@ eglDisplayMgr::~eglDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup) {
+eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
     o_assert(nullptr == this->eglDisplay);
 
     Log::Info("eglDisplayMgr::SetupDisplay() called!\n");
 
-    displayMgrBase::SetupDisplay(gfxSetup);
+    displayMgrBase::SetupDisplay(gfxSetup, ptrs);
 
     this->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     o_assert(nullptr != this->eglDisplay);
