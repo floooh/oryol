@@ -227,7 +227,7 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     else {
         o_assert_dbg(ds->d3d11DepthStencilState);
         o_assert_dbg(ds->d3d11RasterizerState);
-        o_assert_dbg(ds->d3d11RasterizerState);
+        o_assert_dbg(ds->d3d11BlendState);
 
         this->curDrawState = ds;
         o_assert_dbg(ds->prog);
