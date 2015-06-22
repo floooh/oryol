@@ -302,7 +302,6 @@ d3d11Renderer::applyDrawState(drawState* ds) {
                 &(this->curVertexOffsets[0]));          // pOffsets
         }
 
-        const UINT numBuffers = sizeof(ds->d3d11IAVertexBuffers) / sizeof(ID3D11Buffer*);
         // apply optional index buffer
         if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
             this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
