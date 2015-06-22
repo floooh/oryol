@@ -586,6 +586,11 @@ d3d11DisplayMgr::inputFramebufferSize(int width, int height) {
         this->createDefaultRenderTarget(width, height);
     }
 
+    this->displayAttrs.FramebufferWidth = width;
+    this->displayAttrs.FramebufferHeight = height;
+    this->displayAttrs.WindowWidth = width;
+    this->displayAttrs.WindowHeight = height;
+
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(width, height);
     }
