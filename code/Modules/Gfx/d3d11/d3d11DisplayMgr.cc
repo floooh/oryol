@@ -375,16 +375,16 @@ d3d11DisplayMgr::onWindowResize(int newWidth, int newHeight) {
         this->displayAttrs.FramebufferHeight = newHeight;
         this->displayAttrs.WindowWidth = newWidth;
         this->displayAttrs.WindowHeight = newHeight;
-    }
 
-    // resize the DXGI framebuffer (this requires that all state is unbound)
-    if (this->dxgiSwapChain) {
-        this->pointers.renderer->resetStateCache();
-        this->destroyDefaultRenderTarget();
-        DXGI_FORMAT d3d11Fmt = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
-        HRESULT hr = this->dxgiSwapChain->ResizeBuffers(1, newWidth, newHeight, d3d11Fmt, 0);
-        o_assert(SUCCEEDED(hr));
-        this->createDefaultRenderTarget(newWidth, newHeight);
+        // resize the DXGI framebuffer (this requires that all state is unbound)
+        if (this->dxgiSwapChain) {
+            this->pointers.renderer->resetStateCache();
+            this->destroyDefaultRenderTarget();
+            DXGI_FORMAT d3d11Fmt = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+            HRESULT hr = this->dxgiSwapChain->ResizeBuffers(1, newWidth, newHeight, d3d11Fmt, 0);
+            o_assert(SUCCEEDED(hr));
+            this->createDefaultRenderTarget(newWidth, newHeight);
+        }
     }
 }
 
