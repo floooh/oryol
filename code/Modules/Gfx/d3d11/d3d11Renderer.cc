@@ -96,13 +96,13 @@ void
 d3d11Renderer::resetStateCache() {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    // FIXME: untested
     this->d3d11DeviceContext->ClearState();
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
     this->d3d11CurRenderTargetView = nullptr;
     this->d3d11CurDepthStencilView = nullptr;
     this->d3d11CurDepthStencilState = nullptr;
+    this->d3d11CurRasterizerState = nullptr;
     this->d3d11CurBlendState = nullptr;
     this->d3d11CurIndexBuffer = nullptr;
     this->d3d11CurInputLayout = nullptr;
