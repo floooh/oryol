@@ -66,7 +66,8 @@ public:
     void destroyDefaultRenderTarget();
     /// compute actual window size from client rect size plus window chrome
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
-
+    /// react to WM_SIZE (resize frame buffer)
+    void onWindowResize(int newWidth, int newHeight);
     /// setup the key translation table
     void setupKeyTranslationTable();
     /// set input mode (called from d3d11InputMgr)

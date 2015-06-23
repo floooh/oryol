@@ -355,6 +355,32 @@ d3d11DisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWi
 }
 
 //------------------------------------------------------------------------------
+void
+d3d11DisplayMgr::onWindowResize(int newWidth, int newHeight) {
+    o_assert((0 != newWidth) && (0 != newHeight));
+
+    // NOTE: this method is not called when minimized, or restored from minimized
+    if ((newWidth != this->displayAttrs.FramebufferWidth) ||
+        (newWidth != this->displayAttrs.FramebufferHeight)) {
+    
+        this->displayAttrs.FramebufferWidth = newWidth;
+        this->displayAttrs.FramebufferHeight = newHeight;
+        this->displayAttrs.WindowWidth = newWidth;
+        this->displayAttrs.WindowHeight = newHeight;
+    }
+
+    // resize the DXGI framebuffer (this requires that all state is unbound)
+    if (this->dxgiSwapChain) {
+        this->pointers.renderer->resetStateCache();
+        this->destroyDefaultRenderTarget();
+        DXGI_FORMAT d3d11Fmt = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+        HRESULT hr = this->dxgiSwapChain->ResizeBuffers(1, newWidth, newHeight, d3d11Fmt, 0);
+        o_assert(SUCCEEDED(hr));
+        this->createDefaultRenderTarget(newWidth, newHeight);
+    }
+}
+
+//------------------------------------------------------------------------------
 int
 d3d11DisplayMgr::inputGetKeyMods() {
     int mods = 0;
@@ -575,22 +601,6 @@ d3d11DisplayMgr::inputWindowIconify(bool iconified) {
 //------------------------------------------------------------------------------
 void 
 d3d11DisplayMgr::inputFramebufferSize(int width, int height) {
-
-    // resize the DXGI framebuffer (this requires that all state is unbound)
-    if (this->dxgiSwapChain) {
-        this->pointers.renderer->resetStateCache();
-        this->destroyDefaultRenderTarget();
-        DXGI_FORMAT d3d11Fmt = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
-        HRESULT hr = this->dxgiSwapChain->ResizeBuffers(1, width, height, d3d11Fmt, 0);
-        o_assert(SUCCEEDED(hr));
-        this->createDefaultRenderTarget(width, height);
-    }
-
-    this->displayAttrs.FramebufferWidth = width;
-    this->displayAttrs.FramebufferHeight = height;
-    this->displayAttrs.WindowWidth = width;
-    this->displayAttrs.WindowHeight = height;
-
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(width, height);
     }
@@ -881,6 +891,9 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 else if (self->iconified && ((wParam == SIZE_RESTORED) || (wParam == SIZE_MAXIMIZED))) {
                     self->iconified = false;
                     self->inputWindowIconify(false);
+                }
+                else {
+                    self->onWindowResize(LOWORD(lParam), HIWORD(lParam));
                 }
                 self->inputFramebufferSize(LOWORD(lParam), HIWORD(lParam));
                 self->inputWindowSize(LOWORD(lParam), HIWORD(lParam));
