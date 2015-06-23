@@ -37,6 +37,7 @@ quitRequested(false),
 hwnd(0),
 dwStyle(0),
 dwExStyle(0),
+inCreateWindow(false),
 cursorMode(ORYOL_D3D11_CURSOR_NORMAL),
 cursorPosX(0.0),
 cursorPosY(0.0),
@@ -297,6 +298,12 @@ void
 d3d11DisplayMgr::createWindow() {
     o_assert(0 == this->hwnd);
 
+    // this is a flag for our WinProc message handling that we are currently
+    // within window setup, WinProc will then ignore some messages (for instance
+    // the initial WM_SIZE, which may report a different window size of the
+    // initial window doesn't fit the screen
+    this->inCreateWindow = true;
+
     // setup window style flags
     this->dwStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
     this->dwExStyle = WS_EX_APPWINDOW;
@@ -334,6 +341,7 @@ d3d11DisplayMgr::createWindow() {
     ::BringWindowToTop(this->hwnd);
     ::SetForegroundWindow(this->hwnd);
     ::SetFocus(this->hwnd);
+    this->inCreateWindow = false;
 }
 
 //------------------------------------------------------------------------------
@@ -880,7 +888,7 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
 
         case WM_SIZE:
-            if (self) {
+            if (self && !self->inCreateWindow) {
                 if (self->cursorMode == ORYOL_D3D11_CURSOR_DISABLED) {
                     self->updateClipRect();
                 }

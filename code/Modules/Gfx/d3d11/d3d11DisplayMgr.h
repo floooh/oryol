@@ -116,6 +116,7 @@ public:
     HWND hwnd;
     DWORD dwStyle;
     DWORD dwExStyle;
+    bool inCreateWindow;
 
     int cursorMode;
     double cursorPosX;
