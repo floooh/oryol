@@ -6,20 +6,16 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
+- **24-Jun-2015**: the D3D11 renderer should now be on feature parity with the GL renderer, only some small optimizations are missing. To give it a whirl (all samples should work, except the NanoVG demo):
+
+```bash
+> fips set config d3d11-win64-vs2015-release
+> fips build
+> fips run SimpleRenderTarget
+```
+ There are also configs for VS2013, look in the fips-configs directory.
+
 - **13-Jun-2015**: compiling the samples for PNaCl with the latest pepper_canary is currently broken because of this issue: https://code.google.com/p/nativeclient/issues/detail?id=4200
-
-- **22-May-2015**: master branch might be broken a bit in the next couple days, don't panic, if I get back to a somewhat stable state I'll move the remaining D3D11 work into a branch (•_•) / ( •_•)>⌐■-■ / (⌐■_■)
-
-- **17-Jan-2015**: I have switched the Oryol master branch over to use 
-[fips](http://floooh.github.com/fips) as 
-build system, 'fips' is the former Oryol build system moved into its
-own project, plus some goodies. Check the updated [BUILD.md](doc/BUILD.md) for
-details, the TL;DR is to run **./fips** instead of **./oryol**. Some subcommand
-names have changed, check **./fips help** for that!
-
-## _Try the Live Demos_
-
-http://floooh.github.io/oryol/
 
 ## _Read:_
 
