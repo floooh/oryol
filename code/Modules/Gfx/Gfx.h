@@ -80,9 +80,9 @@ public:
     /// apply an offscreen render target
     static void ApplyOffscreenRenderTarget(const Id& id);
     /// apply view port
-    static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height);
+    static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
-    static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height);
+    static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
     /// apply a uniform block

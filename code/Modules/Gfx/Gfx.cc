@@ -204,16 +204,16 @@ Gfx::resource() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height) {
+Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(IsValid());
-    state->renderer.applyViewPort(x, y, width, height);
+    state->renderer.applyViewPort(x, y, width, height, originTopLeft);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height) {
+Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(IsValid());
-    state->renderer.applyScissorRect(x, y, width, height);
+    state->renderer.applyScissorRect(x, y, width, height, originTopLeft);
 }
 
 //------------------------------------------------------------------------------

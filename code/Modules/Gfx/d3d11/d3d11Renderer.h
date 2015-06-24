@@ -54,9 +54,9 @@ public:
     /// apply a render target (default or offscreen)
     void applyRenderTarget(texture* rt);
     /// apply viewport
-    void applyViewPort(int32 x, int32 y, int32 width, int32 height);
+    void applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply scissor rect
-    void applyScissorRect(int32 x, int32 y, int32 width, int32 height);
+    void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block

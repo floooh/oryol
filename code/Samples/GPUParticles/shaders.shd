@@ -185,7 +185,7 @@ float snoise(vec2 v)
     if (particleId >= numParticles) {
         discard;
     }
-    
+
     // current fragment a position or velocity?
     bool atPos = atPosition(_fragcoord.xy);
 

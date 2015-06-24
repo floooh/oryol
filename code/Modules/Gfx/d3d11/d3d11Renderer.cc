@@ -183,18 +183,17 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
     this->d3d11DeviceContext->OMSetRenderTargets(1, &this->d3d11CurRenderTargetView, this->d3d11CurDepthStencilView);
 
     // set viewport to cover whole screen
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight);
+    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
 }
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
+d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    // FIXME: UNTESTED!
     D3D11_VIEWPORT vp;
     vp.TopLeftX = (FLOAT) x;
-    vp.TopLeftY = (FLOAT) (this->rtAttrs.FramebufferHeight - (y + height));
+    vp.TopLeftY = (FLOAT) (originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
     vp.Width    = (FLOAT) width;
     vp.Height   = (FLOAT) height;
     vp.MinDepth = 0.0f;
@@ -204,14 +203,14 @@ d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
+d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->d3d11DeviceContext);
 
     D3D11_RECT rect;
     rect.left = x;
-    rect.top = this->rtAttrs.FramebufferHeight - (y + height);
+    rect.top = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
     rect.right = x + width;
-    rect.bottom = this->rtAttrs.FramebufferHeight - y;
+    rect.bottom = originTopLeft ? (y + height) : (this->rtAttrs.FramebufferHeight - y);
     this->d3d11DeviceContext->RSSetScissorRects(1, &rect);
 }
 

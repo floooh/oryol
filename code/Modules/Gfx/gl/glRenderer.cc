@@ -216,8 +216,11 @@ glRenderer::commitFrame() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
+glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
+
+    // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
+    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
 
     if ((x != this->viewPortX) ||
         (y != this->viewPortY) ||
@@ -229,6 +232,27 @@ glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height) {
         this->viewPortWidth = width;
         this->viewPortHeight = height;
         ::glViewport(x, y, width, height);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+    o_assert_dbg(this->valid);
+
+    // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
+    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
+
+    if ((x != this->scissorX) ||
+        (y != this->scissorY) ||
+        (width != this->scissorWidth) ||
+        (height != this->scissorHeight)) {
+
+        this->scissorX = x;
+        this->scissorY = y;
+        this->scissorWidth = width;
+        this->scissorHeight = height;
+        ::glScissor(x, y, width, height);
     }
 }
 
@@ -271,30 +295,12 @@ glRenderer::applyRenderTarget(texture* rt) {
     this->rtValid = true;
     
     // set viewport to cover whole screen
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight);
+    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false);
     
     // reset scissor test
     if (this->rasterizerState.ScissorTestEnabled) {
         this->rasterizerState.ScissorTestEnabled = false;
         ::glDisable(GL_SCISSOR_TEST);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height) {
-    o_assert_dbg(this->valid);
-
-    if ((x != this->scissorX) ||
-        (y != this->scissorY) ||
-        (width != this->scissorWidth) ||
-        (height != this->scissorHeight)) {
-        
-        this->scissorX = x;
-        this->scissorY = y;
-        this->scissorWidth = width;
-        this->scissorHeight = height;
-        ::glScissor(x, y, width, height);
     }
 }
 

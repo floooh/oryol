@@ -75,7 +75,7 @@ GPUParticlesApp::OnRunning() {
     //   a bit more efficient
     Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight);
+    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updateParticles);
     this->updFSParams.NumParticles = (float32) this->curNumParticles;
     this->updFSParams.PrevState = this->particleBuffer[readIndex];
@@ -147,7 +147,7 @@ GPUParticlesApp::OnInit() {
     this->particleBuffer[1] = Gfx::CreateResource(particleBufferSetup);
     
     // a fullscreen mesh for the particle init- and update-shaders
-    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     
     // particle initialization and update draw states
     Id initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
