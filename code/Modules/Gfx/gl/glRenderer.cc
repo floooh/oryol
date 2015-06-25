@@ -346,16 +346,16 @@ glRenderer::applyMeshState(const drawState* ds) {
                     ::glEnableVertexAttribArray(attr.index);
                     ORYOL_GL_CHECK_ERROR();
                 }
-                if (curAttr.divisor != attr.divisor) {
-                    glExt::VertexAttribDivisor(attr.index, attr.divisor);
-                    ORYOL_GL_CHECK_ERROR();
-                }
             }
             else {
                 if (curAttr.enabled) {
                     ::glDisableVertexAttribArray(attr.index);
                     ORYOL_GL_CHECK_ERROR();
                 }
+            }
+            if (curAttr.divisor != attr.divisor) {
+                glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                ORYOL_GL_CHECK_ERROR();
             }
             curAttr = attr;
         }
