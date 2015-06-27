@@ -61,7 +61,7 @@ VertexLayout::Add(const Component& comp) {
     this->attrCompIndices[comp.Attr] = this->numComps;
     this->byteOffsets[this->numComps] = this->byteSize;
     this->byteSize += comp.ByteSize();
-    o_assert_dbg(this->byteSize < 256);
+    o_assert_dbg(this->byteSize < 128);
     this->numComps++;
     return *this;
 }
