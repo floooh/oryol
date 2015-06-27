@@ -29,7 +29,7 @@ VertexLayout::VertexLayout() {
 uint64
 VertexLayout::Hash() const {
     const uint64 seed = 0xABADFEED12345678;
-    uint64 hash = fasthash64(&this->comps[0], this->comps.Size(), seed);
+    uint64 hash = fasthash64(&this->comps[0], this->comps.Size() * sizeof(Component), seed);
     return hash;
 }
 
@@ -47,7 +47,7 @@ VertexLayout::CombinedHash(const VertexLayout& l0, const VertexLayout& l1) {
         combined[i++] = comp;
     }
     const uint64 seed = 0xABADFEED12345678;
-    uint64 hash = fasthash64(&combined[0], combined.Size(), seed);
+    uint64 hash = fasthash64(&combined[0], combined.Size() * sizeof(Component), seed);
     return hash;    
 }
 

@@ -503,7 +503,6 @@ public:
         NumVertexAttrs,
         InvalidVertexAttr,
     };
-    static_assert(NumVertexAttrs <= 16, "NumVertexAttrs must be <= 16");
 
     /// convert to string
     static const char* ToString(Code c) {
@@ -537,8 +536,6 @@ public:
     @ingroup Gfx
     @brief vertex component formats
     @see VertexLayout
-    
-    NOTE: number of vertex formats must remain <= 16!
 */
 class VertexFormat {
 public:
@@ -560,8 +557,7 @@ public:
         NumVertexFormats,       ///< number of vertex formats
         InvalidVertexFormat,    ///< the invalid vertex format value
     };
-    static_assert(NumVertexFormats <= 16, "NumVertexFormats must be <=16");
-    
+
     /// get the byte size of a vertex format code
     static int32 ByteSize(Code c) {
         switch (c) {

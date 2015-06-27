@@ -30,14 +30,14 @@ public:
         union {
             #pragma pack(push,1)
             struct {
-                VertexAttr::Code Attr : 4;
-                VertexFormat::Code Format : 4;
+                VertexAttr::Code Attr;
+                VertexFormat::Code Format;
             };
             #pragma pack(pop)
-            uint8 Hash;
+            uint16 Hash;
         };
     };
-    static_assert(sizeof(Component) == 1, "sizeof(VertexLayout::Component) is not one, bitfield packing problem!");
+    static_assert(sizeof(Component) == 2, "unexpected sizeof(VertexLayout::Component), bitfield packing problem!");
 
     /// constructor
     VertexLayout();
