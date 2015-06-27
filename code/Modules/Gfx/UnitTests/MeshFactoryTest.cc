@@ -114,8 +114,8 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::InvalidUsage);
     CHECK(mesh.numPrimGroups == 0);
     factory.Discard();
-    displayManager.DiscardDisplay();
     renderer.discard();
-    
+    displayManager.DiscardDisplay();
+
     #endif
 }
