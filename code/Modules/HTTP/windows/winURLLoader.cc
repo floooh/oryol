@@ -65,6 +65,8 @@ winURLLoader::doWork() {
 //------------------------------------------------------------------------------
 void
 winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
+    Log::Info("winURLLoader::doOneRequest() start: %s\n", req->GetURL().AsCStr());
+
     // obtain a connection
     HINTERNET hConn = this->obtainConnection(req->GetURL());
     if (NULL != hConn) {
@@ -247,6 +249,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             Log::Warn("winURLLoader: WinHttpOpenRequest() failed for '%s'\n", req->GetURL().AsCStr());
         }
     }
+    Log::Info("winURLLoader::doOneRequest() end: %s\n", req->GetURL().AsCStr());
 }
 
 //------------------------------------------------------------------------------
