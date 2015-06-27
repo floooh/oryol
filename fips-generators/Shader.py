@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 35
+Version = 36
 
 import os
 import sys
@@ -1312,6 +1312,7 @@ def writeBundleSource(f, shdLib, bundle) :
     for i, prog in enumerate(bundle.programs) :
         vs = shdLib.vertexShaders[prog.vs]
         fs = shdLib.fragmentShaders[prog.fs]
+        vsInputLayout = writeVertexLayout(f, vs)
         vsName = vs.name
         fsName = fs.name
         for slVersion in slVersions :
@@ -1322,7 +1323,6 @@ def writeBundleSource(f, shdLib, bundle) :
             slangType = slSlangTypes[slVersion]
             vsSource = '{}_{}_src'.format(vsName, slVersion)
             fsSource = '{}_{}_src'.format(fsName, slVersion)
-            vsInputLayout = writeVertexLayout(f, vs)
             if isGLSL[slVersion] :
                 f.write('    setup.AddProgramFromSources({}, {}, {}, {}, {});\n'.format(
                     i, slangType, vsInputLayout, vsSource, fsSource));
