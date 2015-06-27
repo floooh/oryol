@@ -35,6 +35,10 @@ curPrimitiveTopology(PrimitiveType::InvalidPrimitiveType) {
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurVSSamplerStates.Fill(nullptr);
+    this->d3d11CurPSSamplerStates.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
 }
@@ -72,6 +76,10 @@ d3d11Renderer::discard() {
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurVSSamplerStates.Fill(nullptr);
+    this->d3d11CurPSSamplerStates.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
 
@@ -111,6 +119,10 @@ d3d11Renderer::resetStateCache() {
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurVSSamplerStates.Fill(nullptr);
+    this->d3d11CurPSSamplerStates.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
     this->curStencilRef = 0xFFFF;
@@ -365,17 +377,29 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
         if (comp.Type == UniformType::Texture) {
             const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
             const Id& resId = *(const Id*)valuePtr;
-            texture* tex = this->pointers.texturePool->Lookup(resId);
+            const texture* tex = this->pointers.texturePool->Lookup(resId);
             o_assert_dbg(tex);
             o_assert_dbg(tex->d3d11ShaderResourceView);
             o_assert_dbg(tex->d3d11SamplerState);
             if (ShaderType::VertexShader == cbStage) {
-                this->d3d11DeviceContext->VSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                this->d3d11DeviceContext->VSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                if (tex->d3d11ShaderResourceView != this->d3d11CurVSShaderResourceViews[shaderSlotIndex]) {
+                    this->d3d11CurVSShaderResourceViews[shaderSlotIndex] = tex->d3d11ShaderResourceView;
+                    this->d3d11DeviceContext->VSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                }
+                if (tex->d3d11SamplerState != this->d3d11CurVSSamplerStates[shaderSlotIndex]) {
+                    this->d3d11CurVSSamplerStates[shaderSlotIndex] = tex->d3d11SamplerState;
+                    this->d3d11DeviceContext->VSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                }
             }
             else {
-                this->d3d11DeviceContext->PSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                this->d3d11DeviceContext->PSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                if (tex->d3d11ShaderResourceView != this->d3d11CurPSShaderResourceViews[shaderSlotIndex]) {
+                    this->d3d11CurPSShaderResourceViews[shaderSlotIndex] = tex->d3d11ShaderResourceView;
+                    this->d3d11DeviceContext->PSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                }
+                if (tex->d3d11SamplerState != this->d3d11CurPSSamplerStates[shaderSlotIndex]) {
+                    this->d3d11CurPSSamplerStates[shaderSlotIndex] = tex->d3d11SamplerState;
+                    this->d3d11DeviceContext->PSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                }
             }
             shaderSlotIndex++;
         }
@@ -584,10 +608,19 @@ d3d11Renderer::invalidateDrawState() {
 void
 d3d11Renderer::invalidateTextureState() {
     o_assert_dbg(this->d3d11DeviceContext);
-    // clear all texture bindings
+
     ID3D11ShaderResourceView* const nullViews[UniformLayout::MaxNumComponents] = { 0 };
-    this->d3d11DeviceContext->PSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
     this->d3d11DeviceContext->VSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
+    this->d3d11DeviceContext->PSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
+
+    ID3D11SamplerState* const nullSamplerStates[UniformLayout::MaxNumComponents] = { 0 };
+    this->d3d11DeviceContext->VSSetSamplers(0, UniformLayout::MaxNumComponents, nullSamplerStates);
+    this->d3d11DeviceContext->PSSetSamplers(0, UniformLayout::MaxNumComponents, nullSamplerStates);
+
+    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
+    this->d3d11CurVSSamplerStates.Fill(nullptr);
+    this->d3d11CurPSSamplerStates.Fill(nullptr);
 }
 
 } // namespace _priv
