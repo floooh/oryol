@@ -482,7 +482,7 @@ class Usage : public _priv::d3d11Usage { };
 class VertexAttr {
 public:
     /// vertex attribute enum
-    enum Code {
+    enum Code : uint8 {
         Position = 0,   ///> "position"
         Normal,         ///> "normal"
         TexCoord0,      ///> "texcoord0"
@@ -503,7 +503,8 @@ public:
         NumVertexAttrs,
         InvalidVertexAttr,
     };
-    
+    static_assert(NumVertexAttrs <= 16, "NumVertexAttrs must be <= 16");
+
     /// convert to string
     static const char* ToString(Code c) {
         switch (c) {
@@ -536,11 +537,13 @@ public:
     @ingroup Gfx
     @brief vertex component formats
     @see VertexLayout
+    
+    NOTE: number of vertex formats must remain <= 16!
 */
 class VertexFormat {
 public:
     /// format enum (don't change order, and append to end!)
-    enum Code {
+    enum Code : uint8 {
         Float,          ///< single component float, expanded to (x, 0, 0, 1)
         Float2,         ///< 2-component float, expanded to (x, y, 0, 1)
         Float3,         ///< 3-component float, expanded to (x, y, z, 1)
@@ -557,6 +560,7 @@ public:
         NumVertexFormats,       ///< number of vertex formats
         InvalidVertexFormat,    ///< the invalid vertex format value
     };
+    static_assert(NumVertexFormats <= 16, "NumVertexFormats must be <=16");
     
     /// get the byte size of a vertex format code
     static int32 ByteSize(Code c) {

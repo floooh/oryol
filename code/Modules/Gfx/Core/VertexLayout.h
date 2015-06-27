@@ -27,9 +27,17 @@ public:
         /// get byte size of component
         int32 ByteSize() const;
 
-        VertexAttr::Code Attr;              ///< the vertex attribute (position, normal, ...)
-        VertexFormat::Code Format;          ///< the vertex format (float, float2, ...)
+        union {
+            #pragma pack(push,1)
+            struct {
+                VertexAttr::Code Attr : 4;
+                VertexFormat::Code Format : 4;
+            };
+            #pragma pack(pop)
+            uint8 Hash;
+        };
     };
+    static_assert(sizeof(Component) == 1, "sizeof(VertexLayout::Component) is not one, bitfield packing problem!");
 
     /// constructor
     VertexLayout();
@@ -41,6 +49,8 @@ public:
     VertexLayout& Add(const Component& comp);
     /// add component by name and format
     VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    /// append components from other vertex layout, fails hard on components collision
+    VertexLayout& Append(const VertexLayout& other);
     /// get number of components
     int32 NumComponents() const;
     /// get component at index
@@ -53,16 +63,20 @@ public:
     int32 ComponentByteOffset(int32 componentIndex) const;
     /// test if the layout contains a specific vertex attribute
     bool Contains(VertexAttr::Code attr) const;
+    /// compute a hash value of a vertex layout
+    uint64 Hash() const;
 
+    /// compute a combined hash value of 2 vertex layout (used for mesh/vertex shader layout matching)
+    static uint64 CombinedHash(const VertexLayout& l0, const VertexLayout& l1);
     /// maximum number of components in layout
     static const int32 MaxNumComponents = 16;
 
 private:
-    int32 numComps;
-    int32 byteSize;
     StaticArray<Component, MaxNumComponents> comps;
-    StaticArray<int32, MaxNumComponents> byteOffsets;
-    StaticArray<int32, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
+    StaticArray<uint8, MaxNumComponents> byteOffsets;
+    StaticArray<int8, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
+    int8 numComps;
+    uint8 byteSize;
 };
 
 //------------------------------------------------------------------------------
