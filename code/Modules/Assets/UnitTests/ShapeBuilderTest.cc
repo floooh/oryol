@@ -23,14 +23,22 @@ TEST(ShapeBuilderTest) {
     #if !ORYOL_UNITTESTS_HEADLESS
     
     // setup a GL context
+    auto gfxSetup = GfxSetup::Window(400, 300, "Oryol Test");
+
     displayMgr displayManager;
-    displayManager.SetupDisplay(GfxSetup::Window(400, 300, "Oryol Test"));
-    
-    // setup a meshFactory object
     meshPool meshPool;
     texturePool texPool;
     class renderer renderer;
-    renderer.setup(&displayManager, &meshPool, &texPool);
+
+    gfxPointers ptrs;
+    ptrs.displayMgr = &displayManager;
+    ptrs.renderer = &renderer;
+    ptrs.meshPool = &meshPool;
+    ptrs.texturePool = &texPool;
+    displayManager.SetupDisplay(gfxSetup, ptrs);
+    
+    // setup a meshFactory object
+    renderer.setup(gfxSetup, ptrs);
     meshFactory factory;
     factory.Setup(&renderer, &meshPool);
     
