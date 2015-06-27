@@ -116,6 +116,12 @@ ProgramBundleSetup::FragmentShader(int32 progIndex) const {
 }
 
 //------------------------------------------------------------------------------
+const VertexLayout&
+ProgramBundleSetup::VertexShaderInputLayout(int32 progIndex) const {
+    return this->programEntries[progIndex].vsInputLayout;
+}
+
+//------------------------------------------------------------------------------
 const String&
 ProgramBundleSetup::VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
     return this->programEntries[progIndex].vsSources[slang];

@@ -49,12 +49,14 @@ public:
     const Id& VertexShader(int32 progIndex) const;
     /// get program fragment shader (only valid if setup from precompiled shaders)
     const Id& FragmentShader(int32 progIndex) const;
+    /// get the vertex shader input layout
+    const VertexLayout& VertexShaderInputLayout(int32 progIndex) const;
     /// get program vertex shader source (only valid if setup from sources)
     const String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
     const String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
     /// get program vertex shader byte code, returns nullptr if no byte code exists
-    void VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
+    void VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;    
     /// get program fragment shader byte code, returns nullptr if no byte code exists
     void FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
     

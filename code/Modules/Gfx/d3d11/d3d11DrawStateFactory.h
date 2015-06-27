@@ -10,6 +10,7 @@
     shader layout objects
 */
 #include "Gfx/Resource/drawStateFactoryBase.h"
+#include "Core/Containers/Map.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
@@ -32,7 +33,13 @@ public:
     void DestroyResource(drawState& ds);
 
 private:
+    /// create or return existing input layout object
+    ID3D11InputLayout* createInputLayout(const drawState& ds, int progIndex);
+    /// release an input layout object
+    void releaseInputLayout(ID3D11InputLayout* d3d11InputLayout);
+
     ID3D11Device* d3d11Device;
+    Map<uint64, ID3D11InputLayout*> d3d11InputLayouts;     
 };
 
 } // namespace _priv
