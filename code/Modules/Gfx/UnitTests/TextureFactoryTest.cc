@@ -21,13 +21,20 @@ TEST(RenderTargetCreationTest) {
     // setup a GL context
     auto gfxSetup = GfxSetup::Window(400, 300, "Oryol Test");
     displayMgr displayManager;
-    displayManager.SetupDisplay(gfxSetup);
-    
-    // setup a meshFactory object
+    class renderer renderer;
     texturePool texPool;
     meshPool meshPool;
-    class renderer renderer;
-    renderer.setup(&displayManager, &meshPool, &texPool);
+
+    gfxPointers ptrs;
+    ptrs.displayMgr = &displayManager;
+    ptrs.renderer = &renderer;
+    ptrs.texturePool = &texPool;
+    ptrs.meshPool = &meshPool;
+
+    displayManager.SetupDisplay(gfxSetup, ptrs);
+    
+    // setup a meshFactory object
+    renderer.setup(gfxSetup, ptrs);
     textureFactory factory;
     factory.Setup(&renderer, &displayManager, &texPool);
     
