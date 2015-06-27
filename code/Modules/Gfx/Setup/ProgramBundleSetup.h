@@ -13,6 +13,7 @@
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/UniformLayout.h"
+#include "Gfx/Core/VertexLayout.h"
 
 namespace Oryol {
     
@@ -34,9 +35,9 @@ public:
     /// add a program consisting of precompiled vertex and fragment shader
     void AddProgram(uint32 mask, const Id& vertexShader, const Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
-    void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource);
+    void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
     /// add a program from precompiled shader byte code
-    void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
+    void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
     /// bind a shader uniform block name to a variable slot
     void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex);
     
@@ -81,6 +82,7 @@ private:
         };
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
+        VertexLayout vsInputLayout;
     };
     struct uniformBlockEntry {
         StringAtom name;

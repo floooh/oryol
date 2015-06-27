@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 34
+Version = 35
 
 import os
 import sys
@@ -1268,14 +1268,52 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
+def writeVertexLayout(f, vs) :
+    # writes a C++ VertexLayout definition into the generated source
+    # code, this is used to match mesh vertex layouts with 
+    # vertex shader input signatures (e.g. required in D3D11),
+    # return the C++ name of the vertex layout
+    mapAttrName = {
+        'position':     'VertexAttr::Position',
+        'normal':       'VertexAttr::Normal',
+        'texcoord0':    'VertexAttr::TexCoord0',
+        'texcoord1':    'VertexAttr::TexCoord1',
+        'texcoord2':    'VertexAttr::TexCoord2',
+        'texcoord3':    'VertexAttr::TexCoord3',
+        'tangent':      'VertexAttr::Tangent',
+        'binormal':     'VertexAttr::Binormal',
+        'weights':      'VertexAttr::Weights',
+        'indices':      'VertexAttr::Indices',
+        'color0':       'VertexAttr::Color0',
+        'color1':       'VertexAttr::Color1',
+        'instance0':    'VertexAttr::Instance0',
+        'instance1':    'VertexAttr::Instance1',
+        'instance2':    'VertexAttr::Instance2',
+        'instance3':    'VertexAttr::Instance3'
+    }
+    mapAttrType = {
+        'float':    'VertexFormat::Float',
+        'vec2':     'VertexFormat::Float2',
+        'vec3':     'VertexFormat::Float3',
+        'vec4':     'VertexFormat::Float4'
+    }
+    layoutName = '{}_layout'.format(vs.name)
+    f.write('    VertexLayout {};\n'.format(layoutName))
+    for attr in vs.inputs :
+        f.write('    {}.Add({}, {});\n'.format(layoutName, mapAttrName[attr.name], mapAttrType[attr.type]))
+    return layoutName
+
+#-------------------------------------------------------------------------------
 def writeBundleSource(f, shdLib, bundle) :
 
     # write the CreateSetup() function
     f.write('ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
     f.write('    ProgramBundleSetup setup("' + bundle.name + '");\n')
-    for i in range(0, len(bundle.programs)) :
-        vsName = shdLib.vertexShaders[bundle.programs[i].vs].name
-        fsName = shdLib.fragmentShaders[bundle.programs[i].fs].name
+    for i, prog in enumerate(bundle.programs) :
+        vs = shdLib.vertexShaders[prog.vs]
+        fs = shdLib.fragmentShaders[prog.fs]
+        vsName = vs.name
+        fsName = fs.name
         for slVersion in slVersions :
             if isGLSL[slVersion] :
                 f.write('    #if ORYOL_OPENGL\n')
@@ -1284,11 +1322,13 @@ def writeBundleSource(f, shdLib, bundle) :
             slangType = slSlangTypes[slVersion]
             vsSource = '{}_{}_src'.format(vsName, slVersion)
             fsSource = '{}_{}_src'.format(fsName, slVersion)
+            vsInputLayout = writeVertexLayout(f, vs)
             if isGLSL[slVersion] :
-                f.write('    setup.AddProgramFromSources({}, {}, {}, {});\n'.format(i, slangType, vsSource, fsSource));
+                f.write('    setup.AddProgramFromSources({}, {}, {}, {}, {});\n'.format(
+                    i, slangType, vsInputLayout, vsSource, fsSource));
             elif isHLSL[slVersion] :
-                f.write('    setup.AddProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                    i, slangType, vsSource, vsSource, fsSource, fsSource))
+                f.write('    setup.AddProgramFromByteCode({}, {}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                    i, slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
         layoutName = '{}_layout'.format(uBlock.bindName)

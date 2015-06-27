@@ -52,18 +52,19 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
+ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource) {
     o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
 
     programEntry& entry = this->obtainEntry(mask);
     entry.vsSources[slang] = vsSource;
     entry.fsSources[slang] = fsSource;
+    entry.vsInputLayout = vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
 void
-ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
+ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
     o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
@@ -73,6 +74,7 @@ ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, 
     entry.vsByteCode[slang].size = vsNumBytes;
     entry.fsByteCode[slang].ptr = fsByteCode;
     entry.fsByteCode[slang].size = fsNumBytes;
+    entry.vsInputLayout = vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
