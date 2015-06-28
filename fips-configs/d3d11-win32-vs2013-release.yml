@@ -4,6 +4,6 @@ generator: Visual Studio 12
 build_tool: cmake
 build_type: Release
 defines:
-    ORYOL_WINDOWS_USE_D3D11: ON
+    ORYOL_USE_D3D11: ON
     ORYOL_WINDOWS_USE_OPENGL: OFF
 
