@@ -72,6 +72,17 @@ mtlRenderer::commitFrame() {
 }
 
 //------------------------------------------------------------------------------
+const DisplayAttrs&
+mtlRenderer::renderTargetAttrs() const {
+    o_assert_dbg(this->valid);
+
+    o_error("mtlRenderer::renderTargetAttrs()\n");
+
+    static DisplayAttrs dummy;
+    return dummy;
+}
+
+//------------------------------------------------------------------------------
 void
 mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
@@ -101,6 +112,14 @@ mtlRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
 
     o_error("mtlRenderer::applyDrawState()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+    o_assert_dbg(this->valid);
+
+    o_error("mtlRenderer::applyUniformBlock()\n");
 }
 
 //------------------------------------------------------------------------------
