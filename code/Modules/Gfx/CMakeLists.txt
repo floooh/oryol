@@ -118,6 +118,17 @@ fips_begin_module(Gfx)
             d3d11InputDefs.h
         )
     endif()
+    if (ORYOL_METAL)
+        fips_dir(mtl)
+        fips_files(
+            mtlEnums.h
+            mtlMeshFactory.h mtlMeshFactory.cc
+            mtlShaderFactory.h mtlShaderFactory.cc
+            mtlProgramBundleFactory.h mtlProgramBundleFactory.cc
+            mtlTextureFactory.h mtlTextureFactory.cc
+            mtlRenderer.h mtlRenderer.cc
+        )
+    endif()
     if (FIPS_ANDROID)
         fips_dir(egl)
         fips_files(eglDisplayMgr.cc eglDisplayMgr.h)

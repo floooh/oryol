@@ -17,6 +17,12 @@ namespace Oryol {
 namespace _priv {
 class renderer : public d3d11Renderer { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlRenderer.h"
+namespace Oryol {
+namespace _priv {
+class renderer : public mtlRenderer { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

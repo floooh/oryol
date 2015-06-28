@@ -11,6 +11,8 @@
 #include "Gfx/gl/glEnums.h"
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11Enums.h"
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlEnums.h"
 #endif
 
 namespace Oryol {
@@ -25,6 +27,8 @@ namespace Oryol {
 class IndexType : public _priv::glIndexType {
 #elif ORYOL_D3D11
 class IndexType : public _priv::d3d11IndexType {
+#elif ORYOL_METAL
+class IndexType : public _priv::mtlIndexType {
 #else
 #error "Unsupported platform"
 #endif
@@ -368,6 +372,8 @@ public:
 class PrimitiveType : public _priv::glPrimitiveType { };
 #elif ORYOL_D3D11
 class PrimitiveType : public _priv::d3d11PrimitiveType { };
+#elif ORYOL_METAL
+class PrimitiveType : public _priv::mtlPrimitiveType { };
 #else
 #error "Unsupported platform"
 #endif
@@ -407,6 +413,8 @@ public:
 class ShaderType : public _priv::glShaderType { };
 #elif ORYOL_D3D11
 class ShaderType : public _priv::d3d11ShaderType { };
+#elif ORYOL_METAL
+class ShaderType : public _priv::mtlShaderType { };
 #else
 #error "Unsupported platform"
 #endif
@@ -421,6 +429,8 @@ class ShaderType : public _priv::d3d11ShaderType { };
 class TextureFilterMode  : public _priv::glTextureFilterMode { };
 #elif ORYOL_D3D11
 class TextureFilterMode : public _priv::d3d11TextureFilterMode { };
+#elif ORYOL_METAL
+class TextureFilterMode : public _priv::mtlTextureFilterMode { };
 #else
 #error "Unsupported platform"
 #endif
@@ -435,6 +445,8 @@ class TextureFilterMode : public _priv::d3d11TextureFilterMode { };
 class TextureType : public _priv::glTextureType { };
 #elif ORYOL_D3D11
 class TextureType : public _priv::d3d11TextureType { };
+#elif ORYOL_METAL
+class TextureType : public _priv::mtlTextureType { };
 #else
 #error "Unsupported platform"
 #endif
@@ -449,6 +461,8 @@ class TextureType : public _priv::d3d11TextureType { };
 class TextureWrapMode : public _priv::glTextureWrapMode { };
 #elif ORYOL_D3D11
 class TextureWrapMode : public _priv::d3d11TextureWrapMode { };
+#elif ORYOL_METAL
+class TextureWrapMode : public _priv::mtlTextureWrapMode { };
 #else
 #error "Unsupported platform"
 #endif
@@ -463,6 +477,8 @@ class TextureWrapMode : public _priv::d3d11TextureWrapMode { };
 class Usage : public _priv::glUsage { };
 #elif ORYOL_D3D11
 class Usage : public _priv::d3d11Usage { };
+#elif ORYOL_METAL
+class Usage : public _priv::mtlUsage { };
 #else
 #error "Unsupported platform"
 #endif

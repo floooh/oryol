@@ -24,6 +24,12 @@ namespace Oryol {
 namespace _priv {
 class programBundle : public d3d11ProgramBundle { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/Resource/programBundleBase.h"
+namespace Oryol {
+namespace _priv {
+class programBundle : public programBundleBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

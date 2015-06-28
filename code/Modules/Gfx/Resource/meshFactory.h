@@ -18,6 +18,12 @@ namespace Oryol {
 namespace _priv {
 class meshFactory : public d3d11MeshFactory { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlMeshFactory.h"
+namespace Oryol {
+namespace _priv {
+class meshFactory : public mtlMeshFactory { };
+} }
 #else
 #error "Platform not yet supported!"
 #endif

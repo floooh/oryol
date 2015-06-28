@@ -17,6 +17,12 @@ namespace Oryol {
 namespace _priv {
 class drawState : public d3d11DrawState { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/Resource/drawStateBase.h"
+namespace Oryol {
+namespace _priv {
+class drawState : public drawStateBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

@@ -17,6 +17,12 @@ namespace Oryol {
 namespace _priv {
 class shaderFactory : public d3d11ShaderFactory { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlShaderFactory.h"
+namespace Oryol {
+namespace _priv {
+class shaderFactory : public mtlShaderFactory { };
+} }
 #else
 #error "Platform not yet supported!"
 #endif

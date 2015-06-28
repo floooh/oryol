@@ -20,6 +20,12 @@ namespace Oryol {
 namespace _priv {
 class shader : public d3d11Shader { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/Resource/shaderBase.h"
+namespace Oryol {
+namespace _priv {
+class shader : public shaderBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

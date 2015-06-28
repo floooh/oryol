@@ -18,6 +18,12 @@ namespace Oryol {
 namespace _priv {
 class textureFactory : public d3d11TextureFactory { };
 }}
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlTextureFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureFactory : public mtlTextureFactory { };
+}}
 #else
 #error "Platform not supported yet!"
 #endif
