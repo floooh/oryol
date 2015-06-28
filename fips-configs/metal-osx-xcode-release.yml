@@ -1,0 +1,9 @@
+---
+platform: osx 
+generator: Xcode 
+build_tool: xcodebuild
+build_type: Release
+defines:
+    ORYOL_USE_METAL: ON
+
+

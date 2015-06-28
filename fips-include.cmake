@@ -32,51 +32,64 @@ else()
     set(ORYOL_OPENAL 0)
 endif()
 
-# POSIX platforms
-if (FIPS_POSIX)
+# use Metal on OSX/iOS?
+if (FIPS_OSX)
+    option(ORYOL_USE_METAL "Use Metal 3D API on OSX/iOS" OFF)
+    if (ORYOL_USE_METAL)
+        set(ORYOL_METAL 1)
+    endif()
+endif()
+
+# use D3D11 on Windows?
+if (FIPS_WINDOWS)
+    option(ORYOL_USE_D3D11 "Use D3D11 3D API on Windows" OFF)
+    if (ORYOL_USE_D3D11)
+        set(ORYOL_D3D11 1)
+    endif()
+endif()
+
+# use OpenGL?
+if (NOT ORYOL_METAL AND NOT ORYOL_D3D11)
     set(ORYOL_OPENGL 1)
+    if (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS)
+        set(ORYOL_OPENGL_CORE_PROFILE 1)
+    endif()
+    if (FIPS_IOS OR FIPS_PNACL OR FIPS_EMSCRIPTEN)
+        set(ORYOL_OPENGLES2 1)
+    endif()
+    if (FIPS_ANDROID)
+        set(ORYOL_OPENGLES3 1)
+    endif()
+endif()
+
+# POSIX platform defines
+if (FIPS_POSIX)
     add_definitions(-DORYOL_POSIX=1)
     if (FIPS_LINUX)
-        set(ORYOL_OPENGL_CORE_PROFILE 1)
         add_definitions(-DORYOL_LINUX=1)
     endif()
     if (FIPS_OSX)
         add_definitions(-DORYOL_OSX=1)
         if (FIPS_MACOS)
-            set(ORYOL_OPENGL_CORE_PROFILE 1)
             add_definitions(-DORYOL_MACOS=1)
         endif()
         if (FIPS_IOS)
-            set(ORYOL_OPENGLES2 1)
             add_definitions(-DORYOL_IOS=1)
         endif()
     endif()
     if (FIPS_PNACL)
-        set(ORYOL_OPENGLES2 1)
         add_definitions(-DORYOL_PNACL=1)
     endif()
     if (FIPS_EMSCRIPTEN)
-        set(ORYOL_OPENGLES2 1)
         add_definitions(-DORYOL_EMSCRIPTEN=1)
     endif()
     if (FIPS_ANDROID)
-        set(ORYOL_OPENGLES3 1)
         add_definitions(-DORYOL_ANDROID=1)
     endif()
 endif()
 
-# Windows platforms
+# Windows platform defines
 if (FIPS_WINDOWS)
-
-    option(ORYOL_USE_D3D11  "Use D3D11 on Windows" OFF)
-   
-    if (ORYOL_USE_D3D11)
-        set(ORYOL_D3D11 1)
-    else()
-        set(ORYOL_OPENGL 1)
-        set(ORYOL_OPRNGL_CORE_PROFILE 1)
-    endif()
-        
     add_definitions(-DORYOL_WINDOWS=1)
     if (FIPS_WIN32)
         add_definitions(-DORYOL_WIN32=1)
@@ -108,6 +121,11 @@ endif()
 # OpenAL defines
 if (ORYOL_OPENAL)
     add_definitions(-DORYOL_OPENAL=1)
+endif()
+
+# Metal defines
+if (ORYOL_METAL)
+    add_definitions(-DORYOL_METAL=1)
 endif()
 
 # misc defines
