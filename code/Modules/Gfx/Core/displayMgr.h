@@ -16,10 +16,10 @@ namespace _priv {
 class displayMgr : public d3d11DisplayMgr { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/Core/displayMgrBase.h"
+#include "Gfx/mtl/mtlDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
-class displayMgr : public displayMgrBase { };
+class displayMgr : public mtlDisplayMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Gfx/glfw/glfwDisplayMgr.h"
