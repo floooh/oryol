@@ -6,7 +6,7 @@
     @brief private: GL implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/texture.h"
+#include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {

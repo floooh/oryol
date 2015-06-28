@@ -74,7 +74,7 @@ public:
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int32 numBytes);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes);
+    void readPixels(void* buf, int32 bufNumBytes);
 
     /// invalidate currently bound mesh state
     void invalidateMeshState();

@@ -6,7 +6,6 @@
     @brief private: GL implementation of programBundleFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
 namespace _priv {
@@ -14,7 +13,8 @@ namespace _priv {
 class renderer;
 class shaderPool;
 class shaderFactory;
-    
+class programBundle;
+
 class glProgramBundleFactory {
 public:
     /// constructor

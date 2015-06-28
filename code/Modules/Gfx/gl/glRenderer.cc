@@ -592,15 +592,15 @@ glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes) {
+glRenderer::readPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(displayManager);
+    o_assert_dbg(this->pointers.displayMgr);
     o_assert_dbg((nullptr != buf) && (bufNumBytes > 0));
     
     GLsizei width, height;
     GLenum format, type;
     if (nullptr == this->curRenderTarget) {
-        const DisplayAttrs& attrs = displayManager->GetDisplayAttrs();
+        const DisplayAttrs& attrs = this->pointers.displayMgr->GetDisplayAttrs();
         width  = attrs.FramebufferWidth;
         height = attrs.FramebufferHeight;
         format = glTypes::AsGLTexImageFormat(attrs.ColorPixelFormat);

@@ -545,7 +545,7 @@ d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::readPixels(displayMgr* displayManager, void* buf, int32 bufNumBytes) {
+d3d11Renderer::readPixels(void* buf, int32 bufNumBytes) {
     o_error("FIXME!\n");
 }
 

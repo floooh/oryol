@@ -247,7 +247,7 @@ void
 Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
     o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
-    state->renderer.readPixels(&state->displayManager, buf, bufNumBytes);
+    state->renderer.readPixels(buf, bufNumBytes);
 }
 
 //------------------------------------------------------------------------------
