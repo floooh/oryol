@@ -5,5 +5,4 @@ build_tool: cmake
 build_type: Debug
 defines:
     ORYOL_USE_D3D11: ON
-    ORYOL_WINDOWS_USE_OPENGL: OFF
 
