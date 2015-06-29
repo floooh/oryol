@@ -58,7 +58,7 @@ mtlDisplayMgr::QuitRequested() const {
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::ProcessSystemEvents() {
-    o_error("mtlDisplayMgr::ProcessSystemEvents()\n");
+    this->cocoa.pollEvents();
 }
 
 //------------------------------------------------------------------------------

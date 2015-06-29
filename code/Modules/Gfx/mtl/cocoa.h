@@ -28,6 +28,8 @@ public:
     void createWindow(int width, int height, const char* title);
     /// destroy app window
     void destroyWindow();
+    /// pool system events
+    void pollEvents();
 
     /// per-window data
     struct cocoaWindowNS {

@@ -9,6 +9,9 @@
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
 
+#import <Metal/Metal.h>
+#import <MetalKit/MTKView.h>
+
 //------------------------------------------------------------------------------
 //  our NSApplication subclass
 //
@@ -164,6 +167,41 @@
 }
 @end
 
+//------------------------------------------------------------------------------
+//  our content-view class
+//
+@interface oryolCocoaView : MTKView {}
+@end
+
+@implementation oryolCocoaView
+{
+@private
+    Oryol::_priv::cocoa::cocoaWindowNS* _window;
+    id <MTLDevice> _device;
+}
+
+- (id)initWithContext:(Oryol::_priv::cocoa::cocoaWindowNS*)initWindow {
+    self = [super initWithFrame:NSMakeRect(0, 0, 1, 1)];
+    if (self != nil) {
+        _window = initWindow;
+        self.device = MTLCreateSystemDefaultDevice();
+    }
+    return self;
+}
+
+- (BOOL)isOpaque {
+    return YES;
+}
+
+- (BOOL)canBecomeKeyView {
+    return YES;
+}
+
+- (BOOL)acceptsFirstResponder{
+    return YES;
+}
+@end
+
 
 namespace Oryol {
 namespace _priv {
@@ -230,9 +268,7 @@ cocoa::createWindow(int width, int height, const char* title) {
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];
 
-    // FIXME: setup Metal context
-
-    this->window.view = nil; // [[oryolCocoaContentView alloc] initWithContext:&this->window];
+    this->window.view = [[oryolCocoaView alloc] initWithContext:&this->window];
 
     // FIXME FULL RETINA RESOLUTION?
     /*
@@ -268,6 +304,23 @@ cocoa::destroyWindow() {
         [this->window.object close];
         this->window.object = nil;
     }
+}
+
+//------------------------------------------------------------------------------
+void
+cocoa::pollEvents() {
+    for (;;) {
+        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                            untilDate:[NSDate distantPast]
+                                               inMode:NSDefaultRunLoopMode
+                                              dequeue:YES];
+        if (event == nil) {
+            break;
+        }
+        [NSApp sendEvent:event];
+    }
+    [this->global.autoreleasePool drain];
+    this->global.autoreleasePool = [[NSAutoreleasePool alloc] init];
 }
 
 //------------------------------------------------------------------------------
