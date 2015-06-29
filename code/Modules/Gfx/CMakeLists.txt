@@ -131,6 +131,7 @@ fips_begin_module(Gfx)
             mtlTextureFactory.h mtlTextureFactory.cc
             mtlRenderer.h mtlRenderer.cc
         )
+        fips_frameworks_osx(Cocoa Metal)
     endif()
     if (FIPS_ANDROID)
         fips_dir(egl)
@@ -160,6 +161,9 @@ fips_begin_module(Gfx)
             if (FIPS_LINUX)
                 # FIXME: should these go into the fips-glfw CMakeLists file?
                 fips_libs(X11 Xrandr Xi Xinerama Xxf86vm Xcursor GL)
+            endif()
+            if (FIPS_OSX)
+                fips_frameworks_osx(Cocoa CoreVideo OpenGL)
             endif()
         endif()
     endif()

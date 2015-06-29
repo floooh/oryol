@@ -23,5 +23,8 @@ fips_begin_module(Sound)
         )
     endif()
     fips_deps(Core IO Resource)
+    if (FIPS_OSX)
+        fips_frameworks_osx(OpenAL)
+    endif()    
 fips_end_module()
 

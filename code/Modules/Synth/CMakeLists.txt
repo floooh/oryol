@@ -29,5 +29,8 @@ fips_begin_module(Synth)
         )
     endif() 
     fips_deps(Resource Core)
+    if (FIPS_OSX)
+        fips_frameworks_osx(OpenAL)
+    endif()
 fips_end_module()
 
