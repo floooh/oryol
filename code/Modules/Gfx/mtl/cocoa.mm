@@ -279,6 +279,9 @@ cocoa::createWindow(int width, int height, const char* title) {
     */
 
     [this->window.object setContentView:this->window.view];
+
+    [NSApp activateIgnoringOtherApps:YES];
+    [this->window.object makeKeyAndOrderFront:nil];
 }
 
 //------------------------------------------------------------------------------

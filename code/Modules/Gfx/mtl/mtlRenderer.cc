@@ -67,8 +67,7 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::commitFrame()\n");
+    Log::Info("mtlRenderer::commitFrame()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +102,7 @@ void
 mtlRenderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
 
-    o_error("mtlRenderer::applyRenderTarget()\n");
+    Log::Info("mtlRenderer::applyRenderTarget()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -126,8 +125,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 void
 mtlRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
     o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::clear()\n");
+    Log::Info("mtlRenderer::clear()\n");
 }
 
 //------------------------------------------------------------------------------

@@ -46,7 +46,7 @@ mtlDisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::Present() {
-    o_error("mtlDisplayMgr::Present()\n");
+    Log::Info("mtlDisplayMgr::Present()\n");
 }
 
 //------------------------------------------------------------------------------
