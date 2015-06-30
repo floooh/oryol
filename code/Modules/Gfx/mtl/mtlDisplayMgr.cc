@@ -9,8 +9,7 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlDisplayMgr::mtlDisplayMgr() :
-quitRequested(false) {
+mtlDisplayMgr::mtlDisplayMgr() {
     // empty
 }
 
@@ -52,7 +51,7 @@ mtlDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 bool
 mtlDisplayMgr::QuitRequested() const {
-    return this->quitRequested;
+    return this->cocoa.windowShouldClose();
 }
 
 //------------------------------------------------------------------------------

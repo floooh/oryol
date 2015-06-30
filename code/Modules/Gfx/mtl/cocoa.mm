@@ -61,25 +61,25 @@
 //
 @interface oryolCocoaWindowDelegate : NSObject
 {
-    Oryol::_priv::cocoa::cocoaWindowNS* window;
+    Oryol::_priv::cocoa* _context;
 }
 
-- (id)initWithContext:(Oryol::_priv::cocoa::cocoaWindowNS *)initWindow;
+- (id)initWithContext:(Oryol::_priv::cocoa*)initContext;
 
 @end
 
 @implementation oryolCocoaWindowDelegate
 
-- (id)initWithContext:(Oryol::_priv::cocoa::cocoaWindowNS *)initWindow {
+- (id)initWithContext:(Oryol::_priv::cocoa*)initContext {
     self = [super init];
     if (self != nil) {
-        window = initWindow;
+        _context = initContext;
     }
     return self;
 }
 
 - (BOOL)windowShouldClose:(id)sender {
-    // FIXME
+    _context->onWindowShouldClose();
     return NO;
 }
 
@@ -176,15 +176,15 @@
 @implementation oryolCocoaView
 {
 @private
-    Oryol::_priv::cocoa::cocoaWindowNS* _window;
+    Oryol::_priv::cocoa* _context;
     id <MTLDevice> _device;
 }
 
-- (id)initWithContext:(Oryol::_priv::cocoa::cocoaWindowNS*)initWindow {
+- (id)initWithContext:(Oryol::_priv::cocoa*)initContext {
     self = [super initWithFrame:NSMakeRect(0, 0, 1, 1)];
     if (self != nil) {
-        _window = initWindow;
-        self.device = MTLCreateSystemDefaultDevice();
+        _context = initContext;
+        _context->metalDevice = MTLCreateSystemDefaultDevice();
     }
     return self;
 }
@@ -243,7 +243,7 @@ cocoa::createWindow(int width, int height, const char* title) {
         initializeAppKit(this->global);
     }
 
-    this->window.delegate = [[oryolCocoaWindowDelegate alloc] initWithContext:&this->window];
+    this->window.delegate = [[oryolCocoaWindowDelegate alloc] initWithContext:this];
     o_assert(nil != this->window.delegate);
 
     // FIXME: fullscreen support
@@ -268,7 +268,7 @@ cocoa::createWindow(int width, int height, const char* title) {
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];
 
-    this->window.view = [[oryolCocoaView alloc] initWithContext:&this->window];
+    this->window.view = [[oryolCocoaView alloc] initWithContext:this];
 
     // FIXME FULL RETINA RESOLUTION?
     /*
@@ -289,9 +289,6 @@ void
 cocoa::destroyWindow() {
     if (nil != this->window.object) {
         [this->window.object orderOut:nil];
-
-        // FIXME: destroy metal context
-
         [this->window.object setDelegate:nil];
 
         if (nil != this->window.delegate) {
@@ -324,6 +321,19 @@ cocoa::pollEvents() {
     }
     [this->global.autoreleasePool drain];
     this->global.autoreleasePool = [[NSAutoreleasePool alloc] init];
+}
+
+//------------------------------------------------------------------------------
+void
+cocoa::onWindowShouldClose() {
+    this->window.shouldClose = true;
+    Log::Warn("FIXME cocoa::onWindowShouldClose(): call onClose callback!\n");
+}
+
+//------------------------------------------------------------------------------
+bool
+cocoa::windowShouldClose() const {
+    return this->window.shouldClose;
 }
 
 //------------------------------------------------------------------------------

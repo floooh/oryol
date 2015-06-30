@@ -34,7 +34,6 @@ public:
     /// destroy the app window
     void destroyWindow();
 
-    bool quitRequested;
     class cocoa cocoa;
 };
 

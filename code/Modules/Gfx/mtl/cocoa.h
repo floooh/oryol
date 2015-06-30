@@ -10,9 +10,12 @@
 
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
+#define ORYOL_OBJC_TYPED_ID(clazz) id<clazz>
+#define ORYOL_OBJC_ID id
 #else
 #include <ApplicationServices/ApplicationServices.h>
-typedef void* id;
+#define ORYOL_OBJC_TYPED_ID(clazz) void*
+#define ORYOL_OBJC_ID void*
 #endif
 
 namespace Oryol {
@@ -30,29 +33,34 @@ public:
     void destroyWindow();
     /// pool system events
     void pollEvents();
+    /// called by window delegate when window should be closed
+    void onWindowShouldClose();
+    /// return whether window system wants application to quit
+    bool windowShouldClose() const;
+
+    /// pointer to metal device
+    ORYOL_OBJC_TYPED_ID(MTLDevice) metalDevice;
 
     /// per-window data
     struct cocoaWindowNS {
-        id object;
-        id delegate;
-        id view;
+        ORYOL_OBJC_ID object;
+        ORYOL_OBJC_ID delegate;
+        ORYOL_OBJC_ID view;
         unsigned int modifierFlags;
         // The total sum of the distances the cursor has been warped
         // since the last cursor motion event was processed
         // This is kept to counteract Cocoa doing the same internally
         double warpDeltaX, warpDeltaY;
+        bool shouldClose;
     } window;
 
     /// global data
     struct cocoaGlobalNS {
-        id delegate;
-        id autoreleasePool;
+        ORYOL_OBJC_ID delegate;
+        ORYOL_OBJC_ID autoreleasePool;
         short int publicKeys[256];
     } global;
 };
-
-
-
 
 } // namespace _priv
 } // namespace Oryol
