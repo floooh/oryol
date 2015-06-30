@@ -129,9 +129,9 @@ fips_begin_module(Gfx)
             mtlShaderFactory.h mtlShaderFactory.cc
             mtlProgramBundleFactory.h mtlProgramBundleFactory.cc
             mtlTextureFactory.h mtlTextureFactory.cc
-            mtlRenderer.h mtlRenderer.cc
+            mtlRenderer.h mtlRenderer.mm
         )
-        fips_frameworks_osx(Cocoa Metal MetalKit)
+        fips_frameworks_osx(Cocoa Metal QuartzCore)
     endif()
     if (FIPS_ANDROID)
         fips_dir(egl)

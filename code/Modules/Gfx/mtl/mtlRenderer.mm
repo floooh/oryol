@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "mtlRenderer.h"
+#include "Gfx/Core/displayMgr.h"
 
 namespace Oryol {
 namespace _priv {
@@ -26,7 +27,13 @@ mtlRenderer::setup(const GfxSetup& /*setup*/, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
 
-    // FIXME
+    // sync semaphore
+    this->inflightSemaphore = dispatch_semaphore_create(3);
+
+    // setup central metal objects
+    this->device = this->pointers.displayMgr->cocoa.metalDevice;
+    this->commandQueue = [this->device newCommandQueue];
+    this->commandQueue.label = @"OryolCommandQueue";
 }
 
 //------------------------------------------------------------------------------
@@ -67,7 +74,17 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    Log::Info("mtlRenderer::commitFrame()\n");
+    o_assert_dbg(nil != this->curCommandBuffer);
+    __block dispatch_semaphore_t blockSema = this->inflightSemaphore;
+    [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+        dispatch_semaphore_signal(blockSema);
+    }];
+
+    Log::Info("FIXME: mtlRenderer::commitFrame: get current drawable!\n");
+//    [this->curCommandBuffer presentDrawable:_view.currentDrawable];
+    [this->curCommandBuffer commit];
+    dispatch_semaphore_wait(this->inflightSemaphore, DISPATCH_TIME_FOREVER);
+    this->curCommandBuffer = nil;
 }
 
 //------------------------------------------------------------------------------
@@ -101,6 +118,11 @@ mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool 
 void
 mtlRenderer::applyRenderTarget(texture* rt) {
     o_assert_dbg(this->valid);
+    if (this->curCommandBuffer == nil) {
+        this->curCommandBuffer = [this->commandQueue commandBuffer];
+        this->curCommandBuffer.label = @"OryolCommandBuffer";
+    }
+
 
     Log::Info("mtlRenderer::applyRenderTarget()\n");
 }

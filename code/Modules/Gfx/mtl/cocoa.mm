@@ -9,9 +9,6 @@
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
 
-#import <Metal/Metal.h>
-#import <MetalKit/MTKView.h>
-
 //------------------------------------------------------------------------------
 //  our NSApplication subclass
 //
@@ -170,23 +167,25 @@
 //------------------------------------------------------------------------------
 //  our content-view class
 //
-@interface oryolCocoaView : MTKView {}
+@interface oryolCocoaView : NSView {}
 @end
 
 @implementation oryolCocoaView
 {
 @private
     Oryol::_priv::cocoa* _context;
-    id <MTLDevice> _device;
 }
 
 - (id)initWithContext:(Oryol::_priv::cocoa*)initContext {
     self = [super initWithFrame:NSMakeRect(0, 0, 1, 1)];
     if (self != nil) {
         _context = initContext;
-        _context->metalDevice = MTLCreateSystemDefaultDevice();
     }
     return self;
+}
+
+- (void)viewDidLoad {
+
 }
 
 - (BOOL)isOpaque {
@@ -268,7 +267,15 @@ cocoa::createWindow(int width, int height, const char* title) {
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];
 
+    // setup default metal device and CAMetalLayer
+    this->metalDevice = MTLCreateSystemDefaultDevice();
+    this->metalLayer = [CAMetalLayer layer];
+    [this->metalLayer setDevice:this->metalDevice];
+
+    // create a 'layer-hosting view' using a CAMetalLayer
     this->window.view = [[oryolCocoaView alloc] initWithContext:this];
+    [this->window.view setWantsLayer:YES];
+    [this->window.view setLayer:this->metalLayer];
 
     // FIXME FULL RETINA RESOLUTION?
     /*

@@ -15,6 +15,7 @@
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "glm/vec4.hpp"
+#include "Gfx/mtl/cocoa.h"
 
 namespace Oryol {
 namespace _priv {
@@ -75,6 +76,10 @@ public:
 private:
     bool valid;
     gfxPointers pointers;
+    dispatch_semaphore_t inflightSemaphore;
+    ORYOL_OBJC_TYPED_ID(MTLDevice) device;
+    ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
+    ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
 };
 
 } // namespace _priv

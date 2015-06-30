@@ -35,6 +35,7 @@ public:
     void destroyWindow();
 
     class cocoa cocoa;
+    
 };
 
 } // namespace _priv
