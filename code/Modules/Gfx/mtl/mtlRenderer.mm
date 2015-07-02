@@ -23,17 +23,18 @@ mtlRenderer::~mtlRenderer() {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::setup(const GfxSetup& /*setup*/, const gfxPointers& ptrs) {
+mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(!this->valid);
     
     this->valid = true;
     this->pointers = ptrs;
+    this->gfxSetup = setup;
 
     // sync semaphore
     mtlInflightSemaphore = dispatch_semaphore_create(3);
 
     // setup central metal objects
-    this->device = this->pointers.displayMgr->cocoa.metalDevice;
+    this->device = this->pointers.displayMgr->cocoa.mtlDevice;
     this->commandQueue = [this->device newCommandQueue];
     this->commandQueue.label = @"OryolCommandQueue";
 }
@@ -43,8 +44,8 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
-    // FIXME
-
+    this->commandQueue = nil;
+    this->device = nil;
     this->pointers = gfxPointers();
     this->valid = false;
 }
@@ -123,26 +124,64 @@ mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool 
 void
 mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
+
+    // create command buffer if this is the first call in the current frame
     if (this->curCommandBuffer == nil) {
         this->curCommandBuffer = [this->commandQueue commandBuffer];
         this->curCommandBuffer.label = @"OryolCommandBuffer";
     }
+
+    // finish previous command encoder (from previous render pass)
     if (this->curCommandEncoder != nil) {
         [this->curCommandEncoder endEncoding];
     }
+
+    // default, or offscreen render target?
     if (nullptr == rt) {
         // default render target
-        this->curDrawable = [this->pointers.displayMgr->cocoa.metalLayer nextDrawable];
-        MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
-        passDesc.colorAttachments[0].texture = [this->curDrawable texture];
+        this->curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
+    }
+    else {
+        o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
+    }
+
+    // init renderpass descriptor
+    MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+    passDesc.colorAttachments[0].texture = [this->curDrawable texture];
+    if (clearState.Actions & ClearState::ClearColor) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
         const glm::vec4& c = clearState.Color;
         passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
-        this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+    }
+    else {
+        passDesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
     }
 
+    if (nil != this->pointers.displayMgr->depthStencilBuffer) {
+        passDesc.depthAttachment.texture = this->pointers.displayMgr->depthStencilBuffer;
+        if (clearState.Actions & ClearState::ClearDepth) {
+            passDesc.depthAttachment.loadAction = MTLLoadActionClear;
+            passDesc.depthAttachment.clearDepth = clearState.Depth;
+        }
+        else {
+            passDesc.depthAttachment.loadAction = MTLLoadActionDontCare;
+        }
+    }
 
-    Log::Info("mtlRenderer::applyRenderTarget()\n");
+    if (PixelFormat::IsDepthStencilFormat(this->gfxSetup.DepthFormat)) {
+        passDesc.stencilAttachment.texture = this->pointers.displayMgr->depthStencilBuffer;
+        if (clearState.Actions & ClearState::ClearStencil) {
+            passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
+            passDesc.stencilAttachment.clearStencil = clearState.Stencil;
+        }
+        else {
+            passDesc.stencilAttachment.loadAction = MTLLoadActionDontCare;
+        }
+    }
+
+    // create command encoder for this render pass
+    this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
 }
 
 //------------------------------------------------------------------------------

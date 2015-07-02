@@ -237,7 +237,7 @@ cocoa::terminate() {
 
 //------------------------------------------------------------------------------
 void
-cocoa::createWindow(int width, int height, const char* title) {
+cocoa::createWindow(const GfxSetup& setup) {
     if (!NSApp) {
         initializeAppKit(this->global);
     }
@@ -252,7 +252,7 @@ cocoa::createWindow(int width, int height, const char* title) {
         NSMiniaturizableWindowMask |
         NSResizableWindowMask;
 
-    NSRect contentRect = NSMakeRect(0, 0, width, height);
+    NSRect contentRect = NSMakeRect(0, 0, setup.Width, setup.Height);
     this->window.object = [[oryolCocoaWindow alloc]
         initWithContentRect:contentRect
                   styleMask:styleMask
@@ -262,22 +262,22 @@ cocoa::createWindow(int width, int height, const char* title) {
 
     [this->window.object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [this->window.object center];
-    [this->window.object setTitle:[NSString stringWithUTF8String:title]];
+    [this->window.object setTitle:[NSString stringWithUTF8String:setup.Title.AsCStr()]];
     [this->window.object setDelegate:this->window.delegate];
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];
 
     // setup default metal device and CAMetalLayer
-    this->metalDevice = MTLCreateSystemDefaultDevice();
-    this->metalLayer = [CAMetalLayer layer];
-    [this->metalLayer setDevice:this->metalDevice];
-    [this->metalLayer setPixelFormat:MTLPixelFormatBGRA8Unorm];
-    [this->metalLayer setFramebufferOnly:YES];
+    this->mtlDevice = MTLCreateSystemDefaultDevice();
+    this->mtlLayer = [CAMetalLayer layer];
+    [this->mtlLayer setDevice:this->mtlDevice];
+    [this->mtlLayer setPixelFormat:MTLPixelFormatBGRA8Unorm];
+    [this->mtlLayer setFramebufferOnly:YES];
 
     // create a 'layer-hosting view' using a CAMetalLayer
     this->window.view = [[oryolCocoaView alloc] initWithContext:this];
     [this->window.view setWantsLayer:YES];
-    [this->window.view setLayer:this->metalLayer];
+    [this->window.view setLayer:this->mtlLayer];
 
     // FIXME FULL RETINA RESOLUTION?
     /*

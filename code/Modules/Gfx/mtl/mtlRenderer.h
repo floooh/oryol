@@ -74,6 +74,7 @@ public:
 
 private:
     bool valid;
+    GfxSetup gfxSetup;
     gfxPointers pointers;
     ORYOL_OBJC_TYPED_ID(MTLDevice) device;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;

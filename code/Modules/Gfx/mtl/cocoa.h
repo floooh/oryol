@@ -7,7 +7,6 @@
     
     NOTE: this is largely ripped from GLFW3 (https://github.com/glfw/glfw)
 */
-
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
@@ -24,7 +23,9 @@ typedef void* MTLDevice;
 typedef void* MTLCommandQueue;
 typedef void* MTLRenderPassDescriptor;
 typedef void* MTLRenderCommandEncoder;
+typedef void* MTLTexture;
 #endif
+#include "Gfx/Setup/GfxSetup.h"
 
 namespace Oryol {
 namespace _priv {
@@ -36,7 +37,7 @@ public:
     /// terminate cocoa wrapper
     void terminate();
     /// create app window
-    void createWindow(int width, int height, const char* title);
+    void createWindow(const GfxSetup& setup);
     /// destroy app window
     void destroyWindow();
     /// pool system events
@@ -47,21 +48,21 @@ public:
     bool windowShouldClose() const;
 
     /// pointer to metal device
-    ORYOL_OBJC_TYPED_ID(MTLDevice) metalDevice;
+    ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     /// pointer to CAMetalLayer
-    CAMetalLayer* metalLayer;
+    CAMetalLayer* mtlLayer = nullptr;
 
     /// per-window data
     struct cocoaWindowNS {
         ORYOL_OBJC_ID object;
         ORYOL_OBJC_ID delegate;
-        ORYOL_OBJC_ID view;
-        unsigned int modifierFlags;
+        ORYOL_OBJC_ID view ;
+        unsigned int modifierFlags = 0;
         // The total sum of the distances the cursor has been warped
         // since the last cursor motion event was processed
         // This is kept to counteract Cocoa doing the same internally
-        double warpDeltaX, warpDeltaY;
-        bool shouldClose;
+        double warpDeltaX = 0.0, warpDeltaY = 0.0;
+        bool shouldClose = false;
     } window;
 
     /// global data

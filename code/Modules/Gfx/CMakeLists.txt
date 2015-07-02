@@ -123,7 +123,8 @@ fips_begin_module(Gfx)
         fips_files(
             cocoa.h cocoa.mm
             cocoaInputDefs.h
-            mtlDisplayMgr.h mtlDisplayMgr.cc
+            mtlDisplayMgr.h mtlDisplayMgr.mm
+            mtlTypes.h mtlTypes.mm
             mtlEnums.h
             mtlMeshFactory.h mtlMeshFactory.cc
             mtlShaderFactory.h mtlShaderFactory.cc

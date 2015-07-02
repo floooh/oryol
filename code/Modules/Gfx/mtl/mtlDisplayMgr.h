@@ -33,9 +33,18 @@ public:
     void createWindow(const GfxSetup& setup);
     /// destroy the app window
     void destroyWindow();
+    /// create the depth and stencil buffers
+    void createDepthStencilBuffer(int width, int height);
+    /// destroy the depth and stencil buffers
+    void destroyDepthStencilBuffer();
+    /// create MSAA render buffer
+    void createMSAABuffer(int width, int height);
+    /// destroy MSAA render buffer
+    void destroyMSAABuffer();
 
     class cocoa cocoa;
-    
+    ORYOL_OBJC_TYPED_ID(MTLTexture) depthStencilBuffer;
+    ORYOL_OBJC_TYPED_ID(MTLTexture) msaaBuffer;
 };
 
 } // namespace _priv
