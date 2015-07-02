@@ -95,20 +95,21 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ClearTarget
+    @class Oryol::ClearAction
     @ingroup Gfx
-    @brief what to clear in Gfx::Clear(), Color, Depth and/or Stencil
+    @brief what to clear in Gfx::Clear(), None, or combination of Color, Depth and/or Stencil
 */
-class ClearTarget {
+class ClearAction {
 public:
     typedef uint32 Mask;
     // NOTE: set the bits high, so that they don't collide with
     // PixelChannel, this allows to assert-check that the two don't get
     // confused (Visual Studio doesn't warn about the different enum types)
     enum Bits {
-        Color = (1<<6),      // clear color buffer
-        Depth = (1<<7),      // clear depth buffer
-        Stencil = (1<<8),    // clear stencil buffer
+        None = 0,               // don't clear anything
+        Color = (1<<6),         // clear color buffer
+        Depth = (1<<7),         // clear depth buffer
+        Stencil = (1<<8),       // clear stencil buffer
 
         All = Color | Depth | Stencil
     };

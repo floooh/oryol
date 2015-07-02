@@ -28,6 +28,7 @@ private:
     Array<URL> getInitResources(const TBUISetup& setup);
 
     TimePoint lastFrameTimePoint;
+    ClearState clearState;
 };
 OryolMain(TurboBadgerDemoApp);
 
@@ -68,6 +69,7 @@ TurboBadgerDemoApp::OnInit() {
     Dbg::Setup();
     Input::Setup();
     Input::BeginCaptureText();
+    this->clearState.Color = glm::vec4(0.5f, 0.0f, 1.0f, 1.0f);
     
     // TBSelectList and TBSelectDropdown widgets have a default item source that are fed with any items
     // specified in the resource files. But it is also possible to set any source which can save memory
@@ -134,8 +136,7 @@ TurboBadgerDemoApp::OnInit() {
 AppState::Code
 TurboBadgerDemoApp::OnRunning() {
 
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.0f, 1.0f, 1.0f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     TBUI::Draw();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

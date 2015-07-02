@@ -121,7 +121,7 @@ mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool 
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyRenderTarget(texture* rt) {
+mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
     if (this->curCommandBuffer == nil) {
         this->curCommandBuffer = [this->commandQueue commandBuffer];
@@ -136,10 +136,8 @@ mtlRenderer::applyRenderTarget(texture* rt) {
         MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
         passDesc.colorAttachments[0].texture = [this->curDrawable texture];
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
-static float r = 0.0f;
-r += 0.01f;
-if (r >= 1.0f) r = 0.0f;
-        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(r, 0.0, 0.0, 1.0);
+        const glm::vec4& c = clearState.Color;
+        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
         this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
     }
 
@@ -161,13 +159,6 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     o_assert_dbg(this->valid);
 
     o_error("mtlRenderer::applyUniformBlock()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
-    o_assert_dbg(this->valid);
-    Log::Info("mtlRenderer::clear()\n");
 }
 
 //------------------------------------------------------------------------------

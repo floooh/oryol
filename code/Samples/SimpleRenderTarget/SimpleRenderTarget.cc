@@ -31,6 +31,8 @@ private:
     Shaders::RenderTarget::Params offscreenParams;
     Shaders::Main::VSParams displayVSParams;
     Shaders::Main::FSParams displayFSParams;
+    ClearState offscreenClearState;
+    ClearState displayClearState;
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -43,16 +45,14 @@ SimpleRenderTargetApp::OnRunning() {
     this->angleX += 0.02f;
     
     // render donut to offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
+    Gfx::ApplyRenderTarget(this->renderTarget, this->offscreenClearState);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
     Gfx::Draw(0);
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.25f), 1.0f, 0);
+    Gfx::ApplyDefaultRenderTarget(this->displayClearState);
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
@@ -120,6 +120,10 @@ SimpleRenderTargetApp::OnInit() {
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
+
+    // setup clear states
+    this->offscreenClearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
+    this->displayClearState.Color = glm::vec4(0.25f, 0.45f, 0.65f, 1.0f);
     
     return App::OnInit();
 }

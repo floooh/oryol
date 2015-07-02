@@ -32,6 +32,7 @@ private:
     int32 frameIndex = 0;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
+    ClearState clearState;
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -51,8 +52,7 @@ InfiniteSpheresApp::OnRunning() {
     
     // render sphere to offscreen render target, using the other render target as
     // source texture
-    Gfx::ApplyOffscreenRenderTarget(this->renderTargets[index0]);
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
+    Gfx::ApplyRenderTarget(this->renderTargets[index0]);
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     this->fsParams.Texture = this->renderTargets[index1];
@@ -61,8 +61,7 @@ InfiniteSpheresApp::OnRunning() {
     Gfx::Draw(0);
     
     // ...and again to display
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.25f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     this->fsParams.Texture = this->renderTargets[index0];
@@ -105,6 +104,7 @@ InfiniteSpheresApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
+    this->clearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
     
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -41,6 +41,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     TextureSetup texBlueprint;
+    ClearState clearState;
 };
 OryolMain(ResourceStressApp);
 
@@ -56,8 +57,7 @@ ResourceStressApp::OnRunning() {
 
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
@@ -110,6 +110,8 @@ ResourceStressApp::OnInit() {
     this->texBlueprint.MagFilter = TextureFilterMode::Linear;
     this->texBlueprint.WrapU = TextureWrapMode::ClampToEdge;
     this->texBlueprint.WrapV = TextureWrapMode::ClampToEdge;
+
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     return App::OnInit();
 }

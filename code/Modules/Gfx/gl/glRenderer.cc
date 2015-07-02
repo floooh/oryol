@@ -258,7 +258,7 @@ glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool o
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyRenderTarget(texture* rt) {
+glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
     
     if (nullptr == rt) {
@@ -302,6 +302,45 @@ glRenderer::applyRenderTarget(texture* rt) {
         this->rasterizerState.ScissorTestEnabled = false;
         ::glDisable(GL_SCISSOR_TEST);
     }
+
+    // perform clear actions
+    GLbitfield glClearMask = 0;
+    
+    // update GL state
+    if (clearState.Actions & ClearState::ClearColor) {
+        glClearMask |= GL_COLOR_BUFFER_BIT;
+        ::glClearColor(clearState.Color.x, clearState.Color.y, clearState.Color.z, clearState.Color.w);
+        if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
+            this->blendState.ColorWriteMask = PixelChannel::RGBA;
+            ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+    }
+    if (clearState.Actions & ClearState::ClearDepth) {
+        glClearMask |= GL_DEPTH_BUFFER_BIT;
+        #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+        ::glClearDepthf(clearState.Depth);
+        #else
+        ::glClearDepth(clearState.Depth);
+        #endif
+        if (!this->depthStencilState.DepthWriteEnabled) {
+            this->depthStencilState.DepthWriteEnabled = true;
+            ::glDepthMask(GL_TRUE);
+        }
+    }
+    if (clearState.Actions & ClearState::ClearStencil) {
+        glClearMask |= GL_STENCIL_BUFFER_BIT;
+        ::glClearStencil(clearState.Stencil);
+        if (this->depthStencilState.StencilWriteMask != 0xFF) {
+            this->depthStencilState.StencilWriteMask = 0xFF;
+            ::glStencilMask(0xFF);
+        }
+    }
+    
+    // finally do the actual clear
+    if (0 != glClearMask) {
+        ::glClear(glClearMask);
+    }
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -430,50 +469,6 @@ glRenderer::applyDrawState(drawState* ds) {
     }
 }
 
-//------------------------------------------------------------------------------
-void
-glRenderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!\n");
-    o_assert2_dbg((clearMask & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
-    
-    GLbitfield glClearMask = 0;
-    
-    // update GL state
-    if (clearMask & ClearTarget::Color) {
-        glClearMask |= GL_COLOR_BUFFER_BIT;
-        ::glClearColor(color.x, color.y, color.z, color.w);
-        if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
-            this->blendState.ColorWriteMask = PixelChannel::RGBA;
-            ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
-    }
-    if (clearMask & ClearTarget::Depth) {
-        glClearMask |= GL_DEPTH_BUFFER_BIT;
-        #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-        ::glClearDepthf(depth);
-        #else
-        ::glClearDepth(depth);
-        #endif
-        if (!this->depthStencilState.DepthWriteEnabled) {
-            this->depthStencilState.DepthWriteEnabled = true;
-            ::glDepthMask(GL_TRUE);
-        }
-    }
-    if (clearMask & ClearTarget::Stencil) {
-        glClearMask |= GL_STENCIL_BUFFER_BIT;
-        ::glClearStencil(stencil);
-        if (this->depthStencilState.StencilWriteMask != 0xFF) {
-            this->depthStencilState.StencilWriteMask = 0xFF;
-            ::glStencilMask(0xFF);
-        }
-    }
-    
-    // finally do the actual clear
-    ::glClear(glClearMask);
-    ORYOL_GL_CHECK_ERROR();
-}
-    
 //------------------------------------------------------------------------------
 void
 glRenderer::draw(const PrimitiveGroup& primGroup) {

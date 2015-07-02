@@ -24,6 +24,7 @@ private:
     int32 height;
     uint8* buffer = nullptr;
     StringBuilder strBuilder;
+    ClearState clearState;
 };
 OryolMain(DebugTextApp);
 
@@ -35,8 +36,7 @@ DebugTextApp::OnRunning() {
     this->moveChars();
     this->drawText();
     
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::Color, glm::vec4(0.5f), 1.0f, 0);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     
@@ -55,6 +55,7 @@ DebugTextApp::OnInit() {
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     this->strBuilder.Reserve(this->width * 2);
     

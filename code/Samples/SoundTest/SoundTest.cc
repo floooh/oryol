@@ -18,6 +18,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
 
+    ClearState clearState;
     struct Effect {
         Id id;
         float* samples = nullptr;   // duplicate for visualization via imgui!
@@ -71,6 +72,7 @@ SoundTestApp::OnInit() {
     Input::Setup();
     Sound::Setup(SoundSetup());
     IMUI::Setup();
+    this->clearState.Color = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
     this->effects[Waka].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.25f, 44100, [this](float dt, int16* samples, int numSamples) {
 
@@ -372,9 +374,8 @@ SoundTestApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 SoundTestApp::OnRunning() {
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     IMUI::NewFrame();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.75f, 0.75f, 0.75f, 1.0f));
 
     // draw UI
     ImGui::SetNextWindowPos(ImVec2(0, 0));

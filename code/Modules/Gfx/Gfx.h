@@ -13,6 +13,7 @@
 #include "IO/Stream/Stream.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/renderer.h"
@@ -75,10 +76,10 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
-    /// make the default render target (backbuffer) current
-    static void ApplyDefaultRenderTarget();
+    /// make the default render target current and optionally clear
+    static void ApplyDefaultRenderTarget(const ClearState& clearState=ClearState());
     /// apply an offscreen render target
-    static void ApplyOffscreenRenderTarget(const Id& id);
+    static void ApplyRenderTarget(const Id& id, const ClearState& clearState=ClearState());
     /// apply view port
     static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
@@ -95,8 +96,6 @@ public:
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     
-    /// clear the currently assigned render target (default depth value is 1.0f, default stencil value is 0)
-    static void Clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth=1.0f, uint8 stencil=0);
     /// submit a draw call with primitive group index in current mesh
     static void Draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

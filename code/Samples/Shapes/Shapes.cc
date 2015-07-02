@@ -38,7 +38,6 @@ ShapeApp::OnRunning() {
     // apply state and render
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     
     // render shape primitive groups
     static const glm::vec3 positions[] = {

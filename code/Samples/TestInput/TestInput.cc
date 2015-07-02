@@ -55,6 +55,7 @@ private:
     glm::mat4 proj;
     glm::mat4 view;
     glm::mat4 invView;
+    ClearState clearState;
 };
 OryolMain(TestInputApp);
 
@@ -82,7 +83,6 @@ TestInputApp::OnInit() {
     dss.RasterizerState.CullFaceEnabled = true;
     this->drawState = Gfx::CreateResource(dss);
 
-    // setup transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -406,8 +406,8 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, this->getClearColor(touchpad), 1.0f, 0);
+    this->clearState.Color = this->getClearColor(touchpad);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

@@ -24,6 +24,7 @@ private:
     SynthOp freqOp;     // frequency modulation
     SynthOp sndOp;      // sound waveform
     SynthOp volOp;      // volume modulation
+    ClearState clearState;
 };
 OryolMain(SynthTestApp);
 
@@ -62,7 +63,9 @@ SynthTestApp::OnInit() {
 
     // type compatibility test between ImGui and SynthOp::WaveT
     o_assert_dbg(sizeof(this->sndOp.Wave) == sizeof(int));
-    
+
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+
     return App::OnInit();
 }
 
@@ -70,8 +73,7 @@ SynthTestApp::OnInit() {
 AppState::Code
 SynthTestApp::OnRunning() {
 
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
 
     static const char* waveFormNames[SynthOp::NumWaves] = {
         "Const", "Sine", "SawTooth", "Triangle", "Square", "Noise",

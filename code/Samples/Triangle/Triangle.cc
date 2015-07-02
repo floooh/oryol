@@ -24,7 +24,6 @@ AppState::Code
 TriangleApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::Draw(0);
     Gfx::CommitFrame();

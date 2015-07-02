@@ -27,6 +27,7 @@ private:
     NVGcontext* ctx = nullptr;
     DemoData data;
     IOQueue ioQueue;
+    ClearState clearState;
 };
 OryolMain(NanoVGApp);
 
@@ -34,8 +35,7 @@ OryolMain(NanoVGApp);
 AppState::Code
 NanoVGApp::OnRunning() {
     
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.3f), 1.0f, 0);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
 
     const int32 w = Gfx::DisplayAttrs().FramebufferWidth;
     const int32 h = Gfx::DisplayAttrs().FramebufferHeight;
@@ -68,7 +68,8 @@ NanoVGApp::OnInit() {
     Input::Setup();
     NanoVG::Setup();
     this->ctx = NanoVG::CreateContext(0); // this doubles draw calls: NVG_STENCIL_STROKES | NVG_ANTIALIAS);
-    
+    this->clearState.Color = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
+
     // start loading assets asynchronously
     this->ioQueue.Start();
     StringBuilder str;

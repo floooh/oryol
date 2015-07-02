@@ -31,6 +31,7 @@ private:
     glm::mat4 proj;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
+    ClearState clearState;
 };
 OryolMain(DDSTextureLoadingApp);
 
@@ -40,10 +41,9 @@ DDSTextureLoadingApp::OnRunning() {
     
     this->distVal += 0.01f;
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f));
-    
+
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {
         // dxt1, dxt3, dxt5, pvr2, pvr4, etc2
@@ -141,6 +141,7 @@ DDSTextureLoadingApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

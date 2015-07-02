@@ -76,7 +76,6 @@ SensorsApp::OnRunning() {
     
     const Sensors& sensors = Input::Sensors();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     Gfx::ApplyDrawState(this->drawState);
     this->vsParams.ModelViewProjection = this->computeMVP(sensors);
     Gfx::ApplyUniformBlock(this->vsParams);

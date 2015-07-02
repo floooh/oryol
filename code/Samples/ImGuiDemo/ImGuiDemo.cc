@@ -24,6 +24,7 @@ private:
     bool showAnotherWindow = false;
     ImVec4 clearColor = ImColor(114, 144, 154);
     TimePoint lastTimePoint;
+    ClearState clearState;
 };
 OryolMain(ImGuiDemoApp);
 
@@ -43,7 +44,8 @@ ImGuiDemoApp::OnInit() {
 AppState::Code
 ImGuiDemoApp::OnRunning() {
 
-    Gfx::ApplyDefaultRenderTarget();
+    this->clearState.Color = glm::vec4(this->clearColor.x, this->clearColor.y, this->clearColor.z, 1.0f);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     IMUI::NewFrame(Clock::LapTime(this->lastTimePoint));
 
     // 1. Show a simple window
@@ -70,7 +72,6 @@ ImGuiDemoApp::OnRunning() {
         ImGui::ShowTestWindow(&showTestWindow);
     }
 
-    Gfx::Clear(ClearTarget::All, glm::vec4(this->clearColor.x, this->clearColor.y, this->clearColor.z, 1.0f));
     ImGui::Render();
     Gfx::CommitFrame();
 

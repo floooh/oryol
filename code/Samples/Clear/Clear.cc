@@ -16,6 +16,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
+    ClearState clearState;
     glm::vec4 clearColor;
 };
 OryolMain(ClearApp);
@@ -25,12 +26,11 @@ AppState::Code
 ClearApp::OnRunning() {
 
     // render one frame
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, this->clearColor);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     Gfx::CommitFrame();
     
-    this->clearColor += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
-    this->clearColor = glm::mod(this->clearColor, glm::vec4(1.0f));
+    this->clearState.Color += glm::vec4(0.01, 0.005, 0.0025f, 0.0);
+    this->clearState.Color = glm::mod(this->clearState.Color, glm::vec4(1.0f));
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

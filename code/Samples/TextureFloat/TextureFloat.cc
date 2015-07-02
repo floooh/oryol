@@ -27,6 +27,7 @@ private:
     Shaders::Offscreen::FSParams offscreenFSParams;
     Shaders::Copy::FSParams copyFSParams;
     TimePoint lastFrameTimePoint;
+    ClearState noClearState;
 };
 OryolMain(TextureFloatApp);
 
@@ -36,14 +37,14 @@ TextureFloatApp::OnRunning() {
     
     this->offscreenFSParams.Time += 1.0f / 60.0f;
     
-    // render plasma to offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->copyFSParams.Texture);
+    // render plasma to offscreen render target, do not clear
+    Gfx::ApplyRenderTarget(this->copyFSParams.Texture, this->noClearState);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
     
     // copy fullscreen quad
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->copyDrawState);
     Gfx::ApplyUniformBlock(this->copyFSParams);
     Gfx::Draw(0);
@@ -89,7 +90,10 @@ TextureFloatApp::OnInit() {
     // fullscreen-copy mesh, shader and draw state
     Id copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
-    
+
+    // setup clear state to not actually clear the render target
+    this->noClearState.Actions = ClearState::ClearNone;
+
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

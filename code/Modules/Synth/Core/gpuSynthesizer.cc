@@ -58,7 +58,7 @@ gpuSynthesizer::IsValid() const {
 void
 gpuSynthesizer::Synthesize(const opBundle& bundle) const {
 
-    Gfx::ApplyOffscreenRenderTarget(this->renderTarget);
+    Gfx::ApplyRenderTarget(this->renderTarget);
     Gfx::ApplyDrawState(this->drawState);
     Gfx::Draw(0);
     Gfx::ReadPixels(bundle.Buffer[0], bundle.BufferNumBytes);

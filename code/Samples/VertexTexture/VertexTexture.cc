@@ -30,6 +30,7 @@ private:
     Shaders::Plane::VSParams planeVSParams;
     Shaders::Plasma::FSParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
+    ClearState noClearState;
 };
 OryolMain(VertexTextureApp);
 
@@ -41,14 +42,13 @@ VertexTextureApp::OnRunning() {
     this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
 
     // render plasma to offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->planeVSParams.Texture);
+    Gfx::ApplyRenderTarget(this->planeVSParams.Texture, this->noClearState);
     Gfx::ApplyDrawState(this->plasmaDrawState);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
     
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
     Gfx::Draw(0);
@@ -97,12 +97,12 @@ VertexTextureApp::OnInit() {
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
     
-    // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->plasmaFSParams.Time = 0.0f;
+    this->noClearState.Actions = ClearState::ClearNone;
 
     return App::OnInit();
 }

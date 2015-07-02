@@ -47,6 +47,7 @@ private:
     Shaders::InitParticles::FSParams initFSParams;
     Shaders::UpdateParticles::FSParams updFSParams;
     Shaders::DrawParticles::VSParams drawVSParams;
+    ClearState noClearState;
 };
 OryolMain(GPUParticlesApp);
 
@@ -73,7 +74,7 @@ GPUParticlesApp::OnRunning() {
     // - the particle update shader reads the previous state and draws the next state
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
-    Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[drawIndex]);
+    Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updateParticles);
@@ -86,7 +87,6 @@ GPUParticlesApp::OnRunning() {
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawParticles);
     this->drawVSParams.ParticleState = this->particleBuffer[drawIndex];
     Gfx::ApplyUniformBlock(this->drawVSParams);
@@ -191,6 +191,9 @@ GPUParticlesApp::OnInit() {
     drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = Gfx::CreateResource(drawSetup);
 
+    // a ClearState which does not perform clear
+    this->noClearState.Actions = ClearState::ClearNone;
+
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -203,11 +206,11 @@ GPUParticlesApp::OnInit() {
     this->drawVSParams.BufferDims = bufferDims;
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
-    Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[0]);
+    Gfx::ApplyRenderTarget(this->particleBuffer[0], this->noClearState);
     Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);
-    Gfx::ApplyOffscreenRenderTarget(this->particleBuffer[1]);
+    Gfx::ApplyRenderTarget(this->particleBuffer[1], this->noClearState);
     Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);

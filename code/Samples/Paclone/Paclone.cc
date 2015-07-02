@@ -85,15 +85,13 @@ PacloneApp::OnRunning() {
     this->gameState.Update(this->tick, &this->spriteCanvas, &this->sounds, input);
 
     // render into offscreen render target
-    Gfx::ApplyOffscreenRenderTarget(this->crtParams.Canvas);
-    Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
+    Gfx::ApplyRenderTarget(this->crtParams.Canvas);
     this->spriteCanvas.Render();
     Dbg::DrawTextBuffer();
     
     // copy offscreen render target into backbuffer
     this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::Color, glm::vec4(0.0f));
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyUniformBlock(this->crtParams);

@@ -30,6 +30,7 @@ private:
     float32 angleY = 0.0f;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
+    ClearState clearState;
 };
 OryolMain(DDSCubeMapApp);
 
@@ -42,8 +43,7 @@ DDSCubeMapApp::OnRunning() {
     this->angleX += 0.01f;
     
     // apply state and draw
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading
@@ -99,6 +99,7 @@ DDSCubeMapApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

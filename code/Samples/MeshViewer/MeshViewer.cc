@@ -40,6 +40,7 @@ private:
     glm::mat4 proj;
     glm::mat4 model;
     glm::mat4 modelViewProj;
+    ClearState clearState;
 
     int32 curMeshIndex = 0;
     static const int32 numMeshes = 3;
@@ -154,21 +155,21 @@ MeshViewerApp::OnInit() {
     this->cameraSettings[2].dist = 0.8f;
     this->cameraSettings[2].height = 0.0f;
 
+    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     return App::OnInit();
 }
 
 //-----------------------------------------------------------------------------
 AppState::Code
 MeshViewerApp::OnRunning() {
-    Gfx::ApplyDefaultRenderTarget();
 
     this->frameCount++;
     this->handleInput();
     this->updateCamera();
     this->updateLight();
-    this->drawUI();
 
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    this->drawUI();
     for (int i = 0; i < this->numMaterials; i++) {
         Gfx::ApplyDrawState(this->materials[i].drawState);
         this->applyVariables(i);

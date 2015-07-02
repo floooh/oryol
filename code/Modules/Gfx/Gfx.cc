@@ -101,20 +101,20 @@ Gfx::RenderTargetAttrs() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyDefaultRenderTarget() {
+Gfx::ApplyDefaultRenderTarget(const ClearState& clearState) {
     o_assert_dbg(IsValid());
-    state->renderer.applyRenderTarget(nullptr);
+    state->renderer.applyRenderTarget(nullptr, clearState);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyOffscreenRenderTarget(const Id& id) {
+Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
     o_assert_dbg(IsValid());
     o_assert_dbg(id.IsValid());
 
     texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
-    state->renderer.applyRenderTarget(renderTarget);
+    state->renderer.applyRenderTarget(renderTarget, clearState);
 }
 
 //------------------------------------------------------------------------------
@@ -248,13 +248,6 @@ Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
     o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
     state->renderer.readPixels(buf, bufNumBytes);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::Clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
-    o_assert_dbg(IsValid());
-    state->renderer.clear(clearMask, color, depth, stencil);
 }
 
 //------------------------------------------------------------------------------

@@ -66,7 +66,6 @@ InstancingApp::OnRunning() {
     // render block        
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.0f));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::DrawInstanced(0, this->curNumParticles);

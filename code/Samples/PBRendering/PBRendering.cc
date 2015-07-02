@@ -26,6 +26,7 @@ private:
     glm::mat4 view;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
+    ClearState clearState;
 };
 OryolMain(PBRenderingApp);
 
@@ -35,9 +36,8 @@ PBRenderingApp::OnRunning() {
     
     Dbg::Print("\n Work in progress!");
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Clear(ClearTarget::All, glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
     
     this->applyDirLight();
     this->applyTransforms(glm::vec3(0.0f, 2.0f, 0.0f));
@@ -72,6 +72,7 @@ PBRenderingApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
+    this->clearState.Color = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     
     // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
