@@ -8,6 +8,11 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/Triangle/Triangle.jpg
   src: Triangle/Triangle.cc
+- name: BlendTest
+  desc: Test BlendState implementation
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/BlendTest/BlendTest.jpg
+  src: BlendTest/BlendTest.cc
 - name: Shapes
   desc: Shapes with random vertex colors, created with ShapeBuilder class
   type: emscripten,pnacl,android
