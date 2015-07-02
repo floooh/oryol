@@ -159,7 +159,7 @@ d3d11Renderer::renderTargetAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyRenderTarget(texture* rt) {
+d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->d3d11DeviceContext);
 
@@ -196,6 +196,26 @@ d3d11Renderer::applyRenderTarget(texture* rt) {
 
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
+
+    // perform clear action
+    if (clearState.Actions & ClearState::ClearColor) {
+        o_assert_dbg(this->d3d11CurRenderTargetView);
+        const FLOAT* clearColor = glm::value_ptr(clearState.Color);
+        this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+    }
+    if (clearState.Actions & (ClearState::ClearDepthStencil)) {
+        o_assert_dbg(this->d3d11CurDepthStencilView);
+        UINT d3d11ClearFlags = 0;
+        if (clearState.Actions & ClearState::ClearDepth) {
+            d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
+        }
+        if (clearState.Actions & ClearState::ClearStencil) {
+            d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
+        }
+        const FLOAT d = clearState.Depth;
+        const UINT8 s = clearState.Stencil;
+        this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, d, s);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -415,31 +435,6 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     if (cb) {
         o_assert_dbg(cbufferPtr);
         this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);
-    }
-}
-
-//------------------------------------------------------------------------------
-void 
-d3d11Renderer::clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    o_assert_dbg(this->d3d11DeviceContext);
-    o_assert2_dbg((clearMask & ClearTarget::All) != 0, "No clear flags set (note that this has changed from PixelChannel)\n");
-
-    if (clearMask & ClearTarget::Color) {
-        o_assert_dbg(this->d3d11CurRenderTargetView);
-        this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, glm::value_ptr(color));
-    }
-    if (clearMask & (ClearTarget::Depth|ClearTarget::Stencil)) {
-        o_assert_dbg(this->d3d11CurDepthStencilView);
-        UINT d3d11ClearFlags = 0;
-        if (ClearTarget::Depth & clearMask) {
-            d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
-        }
-        if (ClearTarget::Stencil & clearMask) {
-            d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
-        }
-        this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, depth, stencil);
     }
 }
 

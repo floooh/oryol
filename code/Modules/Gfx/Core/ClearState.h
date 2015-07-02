@@ -20,6 +20,7 @@ public:
         ClearDepth = (1<<1),
         ClearStencil = (1<<2),
 
+        ClearDepthStencil = ClearDepth | ClearStencil,
         ClearAll = ClearColor | ClearDepth | ClearStencil
     };
     /// the clear color (default: black)

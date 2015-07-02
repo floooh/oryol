@@ -8,6 +8,7 @@
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
@@ -52,7 +53,7 @@ public:
     const DisplayAttrs& renderTargetAttrs() const;
 
     /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt);
+    void applyRenderTarget(texture* rt, const ClearState& clearState);
     /// apply viewport
     void applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply scissor rect
@@ -61,8 +62,6 @@ public:
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
     void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
-    /// clear currently assigned render target
-    void clear(ClearTarget::Mask clearMask, const glm::vec4& color, float32 depth, uint8 stencil);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
