@@ -25,8 +25,8 @@ hard rule is that these callback methods must not block for more then a few doze
 (the usual frame budget is 16ms or 32ms).
 
 Creating a new Oryol application starts with deriving an App subclass and overriding
-the virtual state-callback methods which are called once per frame as long as the associated state
-state is active. The return value of a state callback method is the next state the application
+the virtual state-callback methods which are called once per frame as long as the associated state is 
+active. The return value of a state callback method is the next state the application
 should switch to. 
 
 A minimal Oryol application looks like this:
