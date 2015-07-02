@@ -15,7 +15,6 @@ Experimental C++11 multi-platform 3D engine.
 ```
  There are also fips build-configs for VS2013, look in the fips-configs directory.
 
-- **13-Jun-2015**: compiling the samples for PNaCl with the latest pepper_canary is currently broken because of this issue: https://code.google.com/p/nativeclient/issues/detail?id=4200
 
 ## _Read:_
 
