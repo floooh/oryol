@@ -271,6 +271,8 @@ cocoa::createWindow(int width, int height, const char* title) {
     this->metalDevice = MTLCreateSystemDefaultDevice();
     this->metalLayer = [CAMetalLayer layer];
     [this->metalLayer setDevice:this->metalDevice];
+    [this->metalLayer setPixelFormat:MTLPixelFormatBGRA8Unorm];
+    [this->metalLayer setFramebufferOnly:YES];
 
     // create a 'layer-hosting view' using a CAMetalLayer
     this->window.view = [[oryolCocoaView alloc] initWithContext:this];

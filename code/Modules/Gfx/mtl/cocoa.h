@@ -16,12 +16,14 @@
 #define ORYOL_OBJC_ID id
 static_assert(sizeof(id) == sizeof(void*), "Obj-C id size doesn't match void* size");
 #else
-#include <ApplicationServices/ApplicationServices.h>
 #define ORYOL_OBJC_TYPED_ID(clazz) void*
 #define ORYOL_OBJC_ID void*
 typedef void* CAMetalLayer;
+typedef void* CAMetalDrawable;
 typedef void* MTLDevice;
 typedef void* MTLCommandQueue;
+typedef void* MTLRenderPassDescriptor;
+typedef void* MTLRenderCommandEncoder;
 #endif
 
 namespace Oryol {

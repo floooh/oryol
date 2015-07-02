@@ -8,6 +8,8 @@
 namespace Oryol {
 namespace _priv {
 
+dispatch_semaphore_t mtlInflightSemaphore;
+
 //------------------------------------------------------------------------------
 mtlRenderer::mtlRenderer() :
 valid(false) {
@@ -28,7 +30,7 @@ mtlRenderer::setup(const GfxSetup& /*setup*/, const gfxPointers& ptrs) {
     this->pointers = ptrs;
 
     // sync semaphore
-    this->inflightSemaphore = dispatch_semaphore_create(3);
+    mtlInflightSemaphore = dispatch_semaphore_create(3);
 
     // setup central metal objects
     this->device = this->pointers.displayMgr->cocoa.metalDevice;
@@ -75,15 +77,18 @@ void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
     o_assert_dbg(nil != this->curCommandBuffer);
-    __block dispatch_semaphore_t blockSema = this->inflightSemaphore;
+    __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
     }];
 
-    Log::Info("FIXME: mtlRenderer::commitFrame: get current drawable!\n");
-//    [this->curCommandBuffer presentDrawable:_view.currentDrawable];
+    [this->curCommandEncoder endEncoding];
+    [this->curCommandBuffer presentDrawable:this->curDrawable];
     [this->curCommandBuffer commit];
-    dispatch_semaphore_wait(this->inflightSemaphore, DISPATCH_TIME_FOREVER);
+
+    // FIXME: probably not a good idea to wait here right after the commit!
+    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+    this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
 }
 
@@ -121,6 +126,21 @@ mtlRenderer::applyRenderTarget(texture* rt) {
     if (this->curCommandBuffer == nil) {
         this->curCommandBuffer = [this->commandQueue commandBuffer];
         this->curCommandBuffer.label = @"OryolCommandBuffer";
+    }
+    if (this->curCommandEncoder != nil) {
+        [this->curCommandEncoder endEncoding];
+    }
+    if (nullptr == rt) {
+        // default render target
+        this->curDrawable = [this->pointers.displayMgr->cocoa.metalLayer nextDrawable];
+        MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
+        passDesc.colorAttachments[0].texture = [this->curDrawable texture];
+        passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
+static float r = 0.0f;
+r += 0.01f;
+if (r >= 1.0f) r = 0.0f;
+        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(r, 0.0, 0.0, 1.0);
+        this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
     }
 
 

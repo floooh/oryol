@@ -76,10 +76,11 @@ public:
 private:
     bool valid;
     gfxPointers pointers;
-    dispatch_semaphore_t inflightSemaphore;
     ORYOL_OBJC_TYPED_ID(MTLDevice) device;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
+    ORYOL_OBJC_TYPED_ID(CAMetalDrawable) curDrawable;
+    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
 };
 
 } // namespace _priv
