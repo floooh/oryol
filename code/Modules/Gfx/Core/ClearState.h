@@ -29,7 +29,7 @@ public:
     float32 Depth = 1.0f;
     /// the clear stencil value (default: 0)
     uint8 Stencil = 0;
-    /// the clear action(s) (default: ClearNone)
+    /// the clear action(s) (default: ClearAll)
     uint8 Actions = ClearAll;
 };
 
