@@ -272,7 +272,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     if (setup.IndicesType != IndexType::None) {
         o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
         o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
-        const uint8* indices = ((const uint8*)ptr) + setup.DataIndexOffset;
+        const uint8* indices = ptr + setup.DataIndexOffset;
         const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
         o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
         mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
