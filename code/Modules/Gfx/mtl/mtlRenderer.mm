@@ -34,9 +34,9 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     mtlInflightSemaphore = dispatch_semaphore_create(3);
 
     // setup central metal objects
-    this->device = this->pointers.displayMgr->cocoa.mtlDevice;
-    this->commandQueue = [this->device newCommandQueue];
-    this->commandQueue.label = @"OryolCommandQueue";
+    device = this->pointers.displayMgr->cocoa.mtlDevice;
+    commandQueue = [device newCommandQueue];
+    commandQueue.label = @"OryolCommandQueue";
 }
 
 //------------------------------------------------------------------------------
@@ -44,8 +44,8 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
-    this->commandQueue = nil;
-    this->device = nil;
+    commandQueue = nil;
+    device = nil;
     this->pointers = gfxPointers();
     this->valid = false;
 }
@@ -77,20 +77,23 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil != this->curCommandBuffer);
+    o_assert_dbg(nil != curCommandBuffer);
+    o_assert_dbg(nil != curDrawable);
+
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
-    [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+    [curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
     }];
 
-    [this->curCommandEncoder endEncoding];
-    [this->curCommandBuffer presentDrawable:this->curDrawable];
-    [this->curCommandBuffer commit];
+    [curCommandEncoder endEncoding];
+    [curCommandBuffer presentDrawable:curDrawable];
+    [curCommandBuffer commit];
 
     // FIXME: probably not a good idea to wait here right after the commit!
     dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-    this->curCommandEncoder = nil;
-    this->curCommandBuffer = nil;
+    curCommandEncoder = nil;
+    curCommandBuffer = nil;
+    curDrawable = nil;
 }
 
 //------------------------------------------------------------------------------
@@ -126,20 +129,22 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
 
     // create command buffer if this is the first call in the current frame
-    if (this->curCommandBuffer == nil) {
-        this->curCommandBuffer = [this->commandQueue commandBuffer];
-        this->curCommandBuffer.label = @"OryolCommandBuffer";
+    if (curCommandBuffer == nil) {
+        curCommandBuffer = [commandQueue commandBuffer];
+        curCommandBuffer.label = @"OryolCommandBuffer";
     }
 
     // finish previous command encoder (from previous render pass)
-    if (this->curCommandEncoder != nil) {
-        [this->curCommandEncoder endEncoding];
+    if (curCommandEncoder != nil) {
+        [curCommandEncoder endEncoding];
+        curCommandEncoder = nil;
     }
 
     // default, or offscreen render target?
     if (nullptr == rt) {
         // default render target
-        this->curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
+        curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
+        o_assert(nil != curDrawable);
     }
     else {
         o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
@@ -148,7 +153,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     // init renderpass descriptor
     MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
 
-    passDesc.colorAttachments[0].texture = [this->curDrawable texture];
+    passDesc.colorAttachments[0].texture = [curDrawable texture];
     if (clearState.Actions & ClearState::ClearColor) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
         const glm::vec4& c = clearState.Color;
@@ -181,7 +186,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     // create command encoder for this render pass
-    this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+    curCommandEncoder = [curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
 }
 
 //------------------------------------------------------------------------------

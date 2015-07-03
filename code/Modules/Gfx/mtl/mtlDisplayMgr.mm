@@ -67,7 +67,7 @@ mtlDisplayMgr::QuitRequested() const {
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::ProcessSystemEvents() {
-    this->cocoa.pollEvents();
+    // empty, system events will actually be polled in osxAppProxy::onFrame()
 }
 
 //------------------------------------------------------------------------------

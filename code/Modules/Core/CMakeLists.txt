@@ -76,6 +76,10 @@ fips_begin_module(Core)
             iosBridge.mm iosBridge.h
         )
     endif()
+    if (FIPS_OSX AND ORYOL_USE_METAL)
+        fips_dir(osx)
+        fips_files(osxAppProxy.h osxAppProxy.mm)
+    endif()
     if (FIPS_PNACL)
         fips_dir(pnacl)
         fips_files(

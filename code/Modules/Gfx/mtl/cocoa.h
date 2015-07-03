@@ -40,8 +40,6 @@ public:
     void createWindow(const GfxSetup& setup);
     /// destroy app window
     void destroyWindow();
-    /// pool system events
-    void pollEvents();
     /// called by window delegate when window should be closed
     void onWindowShouldClose();
     /// return whether window system wants application to quit
@@ -67,8 +65,6 @@ public:
 
     /// global data
     struct cocoaGlobalNS {
-        ORYOL_OBJC_ID delegate;
-        ORYOL_OBJC_ID autoreleasePool;
         short int publicKeys[256];
     } global;
 };

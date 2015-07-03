@@ -12,6 +12,9 @@
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclInstance.h"
 #endif
+#if ORYOL_MACOS && ORYOL_METAL
+#include "Core/osx/osxAppProxy.h"
+#endif
 
 namespace Oryol {
 
@@ -31,12 +34,16 @@ suspendRequested(false)
     this->androidBridge.setup(this);
     #elif ORYOL_IOS
     this->iosBridge.setup(this);
+    #elif ORYOL_MACOS && ORYOL_METAL
+    osxAppProxy::init();
     #endif
 }
 
 //------------------------------------------------------------------------------
 App::~App() {
-    #if ORYOL_ANDROID
+    #if ORYOL_MACOS && ORYOL_METAL
+    osxAppProxy::terminate();
+    #elif ORYOL_ANDROID
     this->androidBridge.discard();
     #elif ORYOL_IOS
     this->iosBridge.discard();
@@ -63,6 +70,10 @@ App::StartMainLoop() {
         this->androidBridge.onStop();
     #elif ORYOL_PNACL
         pnaclInstance::Instance()->startMainLoop(this);
+    #elif ORYOL_MACOS && ORYOL_METAL
+        while (AppState::InvalidAppState != this->curState) {
+            osxAppProxy::onFrame(this);
+        }
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();

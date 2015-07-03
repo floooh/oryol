@@ -25,6 +25,11 @@ if (FIPS_USE_VLD)
     add_definitions(-DORYOL_USE_VLD=1)
 endif()
 
+# automatic reference counting on OSX/iOS?
+if (FIPS_OSX_USE_ARC OR FIPS_IOS_USE_ARC)
+    add_definitions(-DORYOL_USE_ARC=1)
+endif()
+
 # use OpenAL?
 if (FIPS_OSX OR FIPS_EMSCRIPTEN)
     set(ORYOL_OPENAL 1)

@@ -10,50 +10,6 @@
 #include "Core/Memory/Memory.h"
 
 //------------------------------------------------------------------------------
-//  our NSApplication subclass
-//
-@interface oryolCocoaApplication : NSApplication
-@end
-
-@implementation oryolCocoaApplication
-// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
-// This works around an AppKit bug, where key up events while holding
-// down the command key don't get sent to the key window.
-- (void)sendEvent:(NSEvent *)event {
-    if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask)) {
-        [[self keyWindow] sendEvent:event];
-    }
-    else {
-        [super sendEvent:event];
-    }
-}
-@end
-
-//------------------------------------------------------------------------------
-//  our application delegate class
-//
-@interface oryolCocoaApplicationDelegate : NSObject
-@end
-
-@implementation oryolCocoaApplicationDelegate
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    // FIXME!
-    return NSTerminateCancel;
-}
-
-- (void)applicationDidChangeScreenParameters:(NSNotification *) notification
-{
-    // FIXME!
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)notification
-{
-    [NSApp stop:nil];
-}
-@end
-
-
-//------------------------------------------------------------------------------
 //  our window delegate class
 //
 @interface oryolCocoaWindowDelegate : NSObject
@@ -206,13 +162,10 @@ namespace Oryol {
 namespace _priv {
 
 static void createKeyTable(cocoa::cocoaGlobalNS& global);
-static void initializeAppKit(cocoa::cocoaGlobalNS& global);
 
 //------------------------------------------------------------------------------
 void
 cocoa::init() {
-    this->global.autoreleasePool = [[NSAutoreleasePool alloc] init];
-    this->global.delegate = nil;
     createKeyTable(this->global);
 
     this->window.object = nil;
@@ -226,22 +179,14 @@ cocoa::init() {
 //------------------------------------------------------------------------------
 void
 cocoa::terminate() {
-    if (this->global.delegate) {
-        [NSApp setDelegate:nil];
-        [this->global.delegate release];
-        this->global.delegate = nil;
-    }
-    [this->global.autoreleasePool release];
-    this->global.autoreleasePool = nil;
+    this->window.object = nil;
+    this->window.delegate = nil;
+    this->window.view = nil;
 }
 
 //------------------------------------------------------------------------------
 void
 cocoa::createWindow(const GfxSetup& setup) {
-    if (!NSApp) {
-        initializeAppKit(this->global);
-    }
-
     this->window.delegate = [[oryolCocoaWindowDelegate alloc] initWithContext:this];
     o_assert(nil != this->window.delegate);
 
@@ -317,23 +262,6 @@ cocoa::destroyWindow() {
 
 //------------------------------------------------------------------------------
 void
-cocoa::pollEvents() {
-    for (;;) {
-        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                            untilDate:[NSDate distantPast]
-                                               inMode:NSDefaultRunLoopMode
-                                              dequeue:YES];
-        if (event == nil) {
-            break;
-        }
-        [NSApp sendEvent:event];
-    }
-    [this->global.autoreleasePool drain];
-    this->global.autoreleasePool = [[NSAutoreleasePool alloc] init];
-}
-
-//------------------------------------------------------------------------------
-void
 cocoa::onWindowShouldClose() {
     this->window.shouldClose = true;
     Log::Warn("FIXME cocoa::onWindowShouldClose(): call onClose callback!\n");
@@ -343,26 +271,6 @@ cocoa::onWindowShouldClose() {
 bool
 cocoa::windowShouldClose() const {
     return this->window.shouldClose;
-}
-
-//------------------------------------------------------------------------------
-void
-initializeAppKit(cocoa::cocoaGlobalNS& global) {
-    o_assert(!NSApp);
-
-    // Implicitly create shared NSApplication instance
-    [oryolCocoaApplication sharedApplication];
-
-    // In case we are unbundled, make us a proper UI application
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-
-    // There can only be one application delegate, but we allocate it the
-    // first time a window is created to keep all window code in this file
-    global.delegate = [[oryolCocoaApplicationDelegate alloc] init];
-    o_assert(nil != global.delegate);
-
-    [NSApp setDelegate:global.delegate];
-    [NSApp run];
 }
 
 //------------------------------------------------------------------------------
