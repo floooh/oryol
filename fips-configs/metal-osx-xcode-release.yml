@@ -6,6 +6,6 @@ build_type: Release
 defines:
     CMAKE_OSX_SYSROOT: '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk'
     ORYOL_USE_METAL: ON
-    ORYOL_OSX_USE_ARC: ON
+    FIPS_OSX_USE_ARC: ON
 
 
