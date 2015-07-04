@@ -125,7 +125,7 @@ def validate(lines, type, slVersion, outPath, cName) :
     '''
     fxcPath = findFxc()
     if not fxcPath :
-        fmt.fmtError("fxc.exe not found!\n")
+        util.fmtError("fxc.exe not found!\n")
 
     ext = {
         'vs': '.vsh',

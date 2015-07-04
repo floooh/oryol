@@ -4,6 +4,8 @@ Code generator for shader libraries.
 
 Version = 36
 
+metalEnabled = False
+
 import os
 import sys
 import glob
@@ -16,38 +18,53 @@ from util import glslcompiler
 if platform.system() == 'Windows' :
     from util import hlslcompiler
 
+if platform.system() == 'Darwin' :
+    from util import metalcompiler
+
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'hlsl5' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
     'glsl120': 'ShaderLang::GLSL120',
     'glsl150': 'ShaderLang::GLSL150',
-    'hlsl5':   'ShaderLang::HLSL5'
+    'hlsl5':   'ShaderLang::HLSL5',
+    'metal':   'ShaderLang::Metal'
 }
 
 isGLSL = {
     'glsl100': True,
     'glsl120': True,
     'glsl150': True,
-    'hlsl5': False
+    'hlsl5': False,
+    'metal': False
 }
 
 isHLSL = {
     'glsl100': False,
     'glsl120': False,
     'glsl150': False,
-    'hlsl5': True
+    'hlsl5': True,
+    'metal': False
+}
+
+isMetal = {
+    'glsl100': False,
+    'glsl120': False,
+    'glsl150': False,
+    'hlsl5': False,
+    'metal': True
 }
 
 glslVersionNumber = {
     'glsl100': 100,
     'glsl120': 120,
     'glsl150': 150,
-    'hlsl5': None
+    'hlsl5': None,
+    'metal': None
 }
 
-# map HLSL functions to GLSL versions
+# declare language-specific mapping macros
 slMacros = {
     'glsl100': {
         '_position': 'gl_Position',
@@ -94,6 +111,16 @@ slMacros = {
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
+    },
+    'metal': {
+        '_position': 'vs_out._vo_position',
+        '_color': '_fo_color',
+        'vec2': 'float2',
+        'vec3': 'float3',
+        'vec4': 'float4',
+        'mat2': 'float2x2',
+        'mat3': 'float3x3',
+        'mat4': 'float4x4'
     }
 }
 
@@ -925,6 +952,160 @@ class HLSLGenerator :
         fs.generatedSource[slVersion] = lines
 
 #-------------------------------------------------------------------------------
+class MetalGenerator :
+    '''
+    Generate vertex and fragment shader source code for Metal shader language
+    '''
+    def __init__(self, shaderLib) :
+        self.shaderLib = shaderLib
+
+    #---------------------------------------------------------------------------
+    def genLines(self, dstLines, srcLines) :
+        for srcLine in srcLines :
+            dstLines.append(srcLine)
+        return dstLines
+
+    #---------------------------------------------------------------------------
+    def genUniformBlocks(self, shd, lines) :
+        
+        # first write texture uniforms outside of cbuffers, and count
+        # non-texture uniforms
+        for uBlock in shd.uniformBlocks :
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('Texture2D {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('TextureCube {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+
+            # if there are non-texture uniforms, groups the rest into a cbuffer
+            if uBlock.bindSlot is not None :
+                lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
+                for type in uBlock.uniformsByType :
+                    if type not in ['sampler2D', 'samplerCube' ] :
+                        for uniform in uBlock.uniformsByType[type] :
+                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                            # pad vec3's to 16 bytes
+                            if type == 'vec3' :
+                                lines.append(Line('  float _pad_{};'.format(uniform.name)))
+                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+        return lines
+    
+    #---------------------------------------------------------------------------
+    def genVertexShaderSource(self, vs, slVersion) :
+        lines = []
+
+        lines.append(Line('#include <metal_stdlib>'))
+        lines.append(Line('#include <simd/simd.h>'))
+        lines.append(Line('using namespace metal;'))
+
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+
+        # write uniform blocks as cbuffers
+        lines = self.genUniformBlocks(vs, lines)
+
+        # write blocks the vs depends on
+        for dep in vs.resolvedDeps :
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+   
+        # write vertex shader input attributes
+        vertex_attrs = {
+            'position':     0,
+            'normal':       1,
+            'texcoord0':    2,
+            'texcoord1':    3,
+            'texcoord2':    4,
+            'texcoord3':    5,
+            'tangent':      6,
+            'binormal':     7,
+            'weights':      8,
+            'indices':      9,
+            'color0':       10,
+            'color1':       11,
+            'instance0':    12,
+            'instance1':    13,
+            'instance2':    14,
+            'instance3':    15
+        }
+
+        # write vertex shader in/out structs
+        lines.append(Line('struct vs_in_t {'))
+        for input in vs.inputs :
+            l = '    {} _vi_{} [[ attribute({}) ]];'.format(input.type, input.name, vertex_attrs[input.name])
+            lines.append(Line(l, input.filePath, input.lineNumber))
+        lines.append(Line('};'))
+        lines.append(Line('struct vs_out_t {'))
+        lines.append(Line('    float4 _vo_position [[position]];'))
+        for output in vs.outputs :
+            lines.append(Line('    {} _vo_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
+        lines.append(Line('};'))
+
+        # write the main() function
+        for input in vs.inputs :
+            l = '#define {} vs_in._vi_{}'.format(input.name, input.name)
+            lines.append(Line(l, input.filePath, input.lineNumber))
+        for output in vs.outputs :
+            l = '#define {} vs_out._vo_{}'.format(output.name, output.name)
+            lines.append(Line(l, output.filePath, output.lineNumber))
+        lines.append(Line('vertex vs_out_t vs_main(vs_in_t vs_in [[stage_in]]) {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('vs_out_t vs_out;'))
+        lines = self.genLines(lines, vs.lines)
+        lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
+        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
+        for input in vs.inputs :
+            lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
+        for output in vs.outputs :
+            lines.append(Line('#undef {}'.format(output.name), output.filePath, output.lineNumber))
+        vs.generatedSource[slVersion] = lines
+
+    #---------------------------------------------------------------------------
+    def genFragmentShaderSource(self, fs, slVersion) :
+        lines = []
+
+        lines.append(Line('#include <metal_stdlib>'))
+        lines.append(Line('#include <simd/simd.h>'))
+        lines.append(Line('using namespace metal;'))
+        
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+
+        # write uniform blocks as cbuffers
+        lines = self.genUniformBlocks(fs, lines)
+
+        # write blocks the fs depends on
+        for dep in fs.resolvedDeps :
+            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+
+        # write fragment shader input structure
+        lines.append(Line('struct fs_in_t {'))
+        lines.append(Line('    float4 _fi_position [[position]];'))
+        for input in fs.inputs :
+            lines.append(Line('    {} _fi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
+        lines.append(Line('};'))
+
+        # write the main function
+        for input in fs.inputs :
+            l = '#define {} fs_in._fi_{}'.format(input.name, input.name)
+            lines.append(Line(l, input.filePath, input.lineNumber))
+        lines.append(Line('fragment float4 fs_main(fs_in_t fs_in [[stage_in]]) {', fs.lines[0].path, fs.lines[0].lineNumber))
+        lines.append(Line('float4 _fo_color;'))
+        lines = self.genLines(lines, fs.lines)
+        lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
+        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
+        for input in fs.inputs :
+            lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
+        fs.generatedSource[slVersion] = lines
+
+#-------------------------------------------------------------------------------
 class ShaderLibrary :
     '''
     This represents the entire shader lib.
@@ -1118,6 +1299,18 @@ class ShaderLibrary :
                 for fs in self.fragmentShaders.values() :
                     gen.genFragmentShaderSource(fs, slVersion)
 
+    def generateShaderSourcesMetal(self) :
+        '''
+        Generates vertex- and fragment shader source for Metal
+        '''
+        gen = MetalGenerator(self)
+        for slVersion in slVersions :
+            if isMetal[slVersion] :
+                for vs in self.vertexShaders.values() :
+                    gen.genVertexShaderSource(vs, slVersion)
+                for fs in self.fragmentShaders.values() :
+                    gen.genFragmentShaderSource(fs, slVersion)
+
     def validateShadersGLSL(self) :
         '''
         Run the shader sources through the GLSL reference compiler
@@ -1134,7 +1327,7 @@ class ShaderLibrary :
     def validateAndWriteShadersHLSL(self, absHdrPath) :
         '''
         Run the shader sources through the HLSL compiler,
-        and let HLSL generate shader byte code in header file
+        and let HLSL compiler generate shader byte code in header file
         '''
         rootPath = os.path.splitext(absHdrPath)[0]
         for slVersion in slVersions :
@@ -1149,6 +1342,24 @@ class ShaderLibrary :
                     cName = fs.name + '_' + slVersion + '_src'
                     outPath = rootPath + '_' + cName + '.h'
                     hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName)
+
+    def validateAndWriteShadersMetal(self, absHdrPath) :
+        '''
+        Bundles all vertex- and fragment-shaders into a single metal source
+        file, compiles this into a binary library files which is 
+        written into a C header file as embedded byte code.
+        '''
+        srcLines = []
+        rootPath = os.path.splitext(absHdrPath)[0]
+        for slVersion in slVersions :
+            if isMetal[slVersion] :
+                for vs in self.vertexShaders.values() :
+                    srcLines.extend(vs.generatedSource[slVersion])
+                for fs in self.fragmentShaders.values() :
+                    srcLines.extend(fs.generatedSource[slVersion])
+            if len(srcLines) > 0 :
+                outPath = rootPath + '.h'
+                metalcompiler.validate(srcLines, outPath)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -1264,6 +1475,12 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         rootPath = os.path.splitext(absPath)[0]
         f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
         f.write('#endif\n')
+    elif isMetal[slVersion] :
+        # for Metal, the shader has been compiled into a binary shader
+        # library file, which needs to be embedded into the C header
+        f.write('#if ORYOL_METAL\n')
+        f.write('#error "FIXME METAL"\n')
+        f.write('#endif\n')
     else :
         util.fmtError("Invalid shader language id")
 
@@ -1320,6 +1537,8 @@ def writeBundleSource(f, shdLib, bundle) :
                 f.write('    #if ORYOL_OPENGL\n')
             elif isHLSL[slVersion] :
                 f.write('    #if ORYOL_D3D11\n')
+            elif isMetal[slVersion] :
+                f.write('    #if ORYOL_METAL\n')
             slangType = slSlangTypes[slVersion]
             vsSource = '{}_{}_src'.format(vsName, slVersion)
             fsSource = '{}_{}_src'.format(fsName, slVersion)
@@ -1329,6 +1548,8 @@ def writeBundleSource(f, shdLib, bundle) :
             elif isHLSL[slVersion] :
                 f.write('    setup.AddProgramFromByteCode({}, {}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                     i, slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
+            elif isMetal[slVersion] :
+                f.write('    #error "FIXME METAL"\n')
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
         layoutName = '{}_layout'.format(uBlock.bindName)
@@ -1367,8 +1588,11 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.generateShaderSourcesHLSL()
+        shaderLibrary.generateShaderSourcesMetal()
         shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
             shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
+        if metalEnabled and platform.system() == 'Darwin' :
+            shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
