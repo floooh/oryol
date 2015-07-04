@@ -56,9 +56,9 @@ ResourceState::Code
 mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
 
-    o_error("FIXME: mtlProgramBundleFactory::SetupResource()\n");
+    Log::Info("mtlProgramBundleFactory::SetupResource()\n");
 
-    return ResourceState::InvalidState;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ void
 mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
 
-    o_error("FIXME: mtlProgramBundleFactory::DestroyResource()\n");
+    Log::Info("mtlProgramBundleFactory::DestroyResource()\n");
 }
 
 } // namespace _priv

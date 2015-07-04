@@ -1,5 +1,9 @@
 #-------------------------------------------------------------------------------
 #   oryol Gfx module
+#
+#   useful links:
+#
+#   https://developer.apple.com/library/prerelease/mac/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/WhatsNewinOSXandiOS/WhatsNewinOSXandiOS.html
 #-------------------------------------------------------------------------------
 
 if (ORYOL_OPENGL)

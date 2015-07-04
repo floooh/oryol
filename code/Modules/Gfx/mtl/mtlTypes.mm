@@ -32,7 +32,7 @@ mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
 MTLResourceOptions
 mtlTypes::asBufferResourceOptions(Usage::Code usage) {
     switch (usage) {
-        case Usage::Immutable:  return MTLResourceStorageModePrivate;
+        case Usage::Immutable:  return MTLResourceOptionStorageModeShared;
         // FIXME: are these the right dynamic access flags?
         case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;

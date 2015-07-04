@@ -194,7 +194,7 @@ void
 mtlRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
 
-    o_error("mtlRenderer::applyDrawState()\n");
+    Log::Info("mtlRenderer::applyDrawState()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -218,7 +218,7 @@ void
 mtlRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
 
-    o_error("mtlRenderer::draw()\n");
+    Log::Info("mtlRenderer::draw()\n");
 }
 
 //------------------------------------------------------------------------------
