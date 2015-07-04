@@ -110,7 +110,7 @@ mtlDisplayMgr::createDepthStencilBuffer(int width, int height) {
 void
 mtlDisplayMgr::destroyDepthStencilBuffer() {
     if (nil != this->depthStencilBuffer) {
-        [this->depthStencilBuffer release];
+        ORYOL_OBJC_RELEASE(this->depthStencilBuffer);
         this->depthStencilBuffer = nil;
     }
 }
@@ -127,7 +127,7 @@ mtlDisplayMgr::createMSAABuffer(int width, int height) {
 void
 mtlDisplayMgr::destroyMSAABuffer() {
     if (nil != this->msaaBuffer) {
-        [this->msaaBuffer release];
+        ORYOL_OBJC_RELEASE(this->msaaBuffer);
         this->msaaBuffer = nil;
     }
 }

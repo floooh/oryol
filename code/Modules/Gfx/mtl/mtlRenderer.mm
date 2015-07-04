@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-//  mtlRenderer.cc
+//  mtlRenderer.mm
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "mtlRenderer.h"
@@ -34,9 +34,9 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     mtlInflightSemaphore = dispatch_semaphore_create(3);
 
     // setup central metal objects
-    device = this->pointers.displayMgr->cocoa.mtlDevice;
-    commandQueue = [device newCommandQueue];
-    commandQueue.label = @"OryolCommandQueue";
+    this->mtlDevice = this->pointers.displayMgr->cocoa.mtlDevice;
+    this->commandQueue = [this->mtlDevice newCommandQueue];
+    this->commandQueue.label = @"OryolCommandQueue";
 }
 
 //------------------------------------------------------------------------------
@@ -44,8 +44,8 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
-    commandQueue = nil;
-    device = nil;
+    this->commandQueue = nil;
+    this->mtlDevice = nil;
     this->pointers = gfxPointers();
     this->valid = false;
 }
@@ -77,23 +77,23 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil != curCommandBuffer);
-    o_assert_dbg(nil != curDrawable);
+    o_assert_dbg(nil != this->curCommandBuffer);
+    o_assert_dbg(nil != this->curDrawable);
 
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
-    [curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+    [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
     }];
 
-    [curCommandEncoder endEncoding];
-    [curCommandBuffer presentDrawable:curDrawable];
-    [curCommandBuffer commit];
+    [this->curCommandEncoder endEncoding];
+    [this->curCommandBuffer presentDrawable:curDrawable];
+    [this->curCommandBuffer commit];
 
     // FIXME: probably not a good idea to wait here right after the commit!
     dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-    curCommandEncoder = nil;
-    curCommandBuffer = nil;
-    curDrawable = nil;
+    this->curCommandEncoder = nil;
+    this->curCommandBuffer = nil;
+    this->curDrawable = nil;
 }
 
 //------------------------------------------------------------------------------
@@ -129,22 +129,22 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
 
     // create command buffer if this is the first call in the current frame
-    if (curCommandBuffer == nil) {
-        curCommandBuffer = [commandQueue commandBuffer];
-        curCommandBuffer.label = @"OryolCommandBuffer";
+    if (this->curCommandBuffer == nil) {
+        this->curCommandBuffer = [this->commandQueue commandBuffer];
+        this->curCommandBuffer.label = @"OryolCommandBuffer";
     }
 
     // finish previous command encoder (from previous render pass)
-    if (curCommandEncoder != nil) {
-        [curCommandEncoder endEncoding];
-        curCommandEncoder = nil;
+    if (this->curCommandEncoder != nil) {
+        [this->curCommandEncoder endEncoding];
+        this->curCommandEncoder = nil;
     }
 
     // default, or offscreen render target?
     if (nullptr == rt) {
         // default render target
-        curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
-        o_assert(nil != curDrawable);
+        this->curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
+        o_assert(nil != this->curDrawable);
     }
     else {
         o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
@@ -186,7 +186,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     // create command encoder for this render pass
-    curCommandEncoder = [curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+    this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
 }
 
 //------------------------------------------------------------------------------
@@ -251,6 +251,13 @@ mtlRenderer::readPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
 
     o_error("mtlRenderer::readPixels()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::invalidateMeshState() {
+    // FIXME!
+    Log::Info("mtlRenderer::invalidateMeshState()\n");
 }
 
 } // namespace _priv

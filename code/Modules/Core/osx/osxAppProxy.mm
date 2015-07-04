@@ -50,7 +50,9 @@
 }
 @end
 
+#if !ORYOL_USE_ARC
 id oryolAutoReleasePool = nil;
+#endif
 id oryolAppDelegate = nil;
 
 namespace Oryol {
@@ -61,7 +63,9 @@ void
 osxAppProxy::init() {
     o_assert(!NSApp);
 
+    #if !ORYOL_USE_ARC
     oryolAutoReleasePool = [[NSAutoreleasePool alloc] init];
+    #endif
 
     // Implicitly create shared NSApplication instance
     [oryolApplication sharedApplication];
@@ -85,14 +89,19 @@ osxAppProxy::terminate() {
         [NSApp setDelegate:nil];
         oryolAppDelegate = nil;
     }
+    #if !ORYOL_USE_ARC
     [oryolAutoReleasePool release];
     oryolAutoReleasePool = nil;
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 osxAppProxy::onFrame(App* app) {
 
+    #if ORYOL_USE_ARC
+    @autoreleasepool {
+    #endif
     app->onFrame();
 
     // poll system events
@@ -106,9 +115,12 @@ osxAppProxy::onFrame(App* app) {
         }
         [NSApp sendEvent:event];
     }
-
+    #if ORYOL_USE_ARC
+    } // @autoreleasepool
+    #else
     [oryolAutoReleasePool drain];
     oryolAutoReleasePool = [[NSAutoreleasePool alloc] init];
+    #endif
 }
 
 

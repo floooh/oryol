@@ -16,6 +16,8 @@ class mtlTypes {
 public:
     /// convert render target pixel format
     static MTLPixelFormat asRenderTargetFormat(PixelFormat::Code fmt);
+    /// convert usage to MTLResourceOptions bit mask
+    static MTLResourceOptions asBufferResourceOptions(Usage::Code usage);
 };
 
 } // namespace _priv

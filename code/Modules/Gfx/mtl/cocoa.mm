@@ -211,6 +211,7 @@ cocoa::createWindow(const GfxSetup& setup) {
     [this->window.object setDelegate:this->window.delegate];
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];
+    [this->window.object setReleasedWhenClosed:NO]; // necessary to prevent autoreleasepool crash on shutdown
 
     // setup default metal device and CAMetalLayer
     this->mtlDevice = MTLCreateSystemDefaultDevice();
@@ -246,12 +247,12 @@ cocoa::destroyWindow() {
         [this->window.object setDelegate:nil];
 
         if (nil != this->window.delegate) {
-            [this->window.delegate release];
+            ORYOL_OBJC_RELEASE(this->window.delegate);
             this->window.delegate = nil;
         }
 
         if (nil != this->window.view) {
-            [this->window.view release];
+            ORYOL_OBJC_RELEASE(this->window.view);
             this->window.view = nil;
         }
 

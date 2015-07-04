@@ -22,10 +22,10 @@ namespace _priv {
 class mesh : public d3d11Mesh { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/Resource/meshBase.h"
+#include "Gfx/mtl/mtlMesh.h"
 namespace Oryol {
 namespace _priv {
-class mesh : public meshBase { };
+class mesh : public mtlMesh { };
 } }
 #else
 #error "Target platform not yet supported!"

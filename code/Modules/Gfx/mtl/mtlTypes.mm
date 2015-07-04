@@ -28,5 +28,20 @@ mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
     }
 }
 
+//------------------------------------------------------------------------------
+MTLResourceOptions
+mtlTypes::asBufferResourceOptions(Usage::Code usage) {
+    switch (usage) {
+        case Usage::Immutable:  return MTLResourceStorageModePrivate;
+        // FIXME: are these the right dynamic access flags?
+        case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
+        case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
+        case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
+        default:
+            o_error("mtlTypes::asBufferResourceOptions: invalid usage value!\n");
+            return 0;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol
