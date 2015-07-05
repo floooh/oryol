@@ -1055,7 +1055,7 @@ class MetalGenerator :
         for output in vs.outputs :
             l = '#define {} vs_out._vo_{}'.format(output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
-        lines.append(Line('vertex vs_out_t vs_main(vs_in_t vs_in [[stage_in]]) {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('vertex vs_out_t {}(vs_in_t vs_in [[stage_in]]) {{'.format(vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
         lines.append(Line('vs_out_t vs_out;'))
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1096,7 +1096,7 @@ class MetalGenerator :
         for input in fs.inputs :
             l = '#define {} fs_in._fi_{}'.format(input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
-        lines.append(Line('fragment float4 fs_main(fs_in_t fs_in [[stage_in]]) {', fs.lines[0].path, fs.lines[0].lineNumber))
+        lines.append(Line('fragment float4 {}(fs_in_t fs_in [[stage_in]]) {{'.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('float4 _fo_color;'))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
@@ -1359,7 +1359,8 @@ class ShaderLibrary :
                     srcLines.extend(fs.generatedSource[slVersion])
             if len(srcLines) > 0 :
                 outPath = rootPath + '.h'
-                metalcompiler.validate(srcLines, outPath)
+                cName = slVersion + '_lib'
+                metalcompiler.validate(srcLines, outPath, cName)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -1479,7 +1480,8 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # for Metal, the shader has been compiled into a binary shader
         # library file, which needs to be embedded into the C header
         f.write('#if ORYOL_METAL\n')
-        f.write('#error "FIXME METAL"\n')
+        rootPath = os.path.splitext(absPath)[0]
+        f.write('#include "{}.metallib.h"\n'.format(rootPath))
         f.write('#endif\n')
     else :
         util.fmtError("Invalid shader language id")
@@ -1533,13 +1535,14 @@ def writeBundleSource(f, shdLib, bundle) :
         vsName = vs.name
         fsName = fs.name
         for slVersion in slVersions :
+            slangType = slSlangTypes[slVersion]
             if isGLSL[slVersion] :
                 f.write('    #if ORYOL_OPENGL\n')
             elif isHLSL[slVersion] :
                 f.write('    #if ORYOL_D3D11\n')
             elif isMetal[slVersion] :
                 f.write('    #if ORYOL_METAL\n')
-            slangType = slSlangTypes[slVersion]
+                f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
             vsSource = '{}_{}_src'.format(vsName, slVersion)
             fsSource = '{}_{}_src'.format(fsName, slVersion)
             if isGLSL[slVersion] :
@@ -1549,7 +1552,8 @@ def writeBundleSource(f, shdLib, bundle) :
                 f.write('    setup.AddProgramFromByteCode({}, {}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                     i, slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
             elif isMetal[slVersion] :
-                f.write('    #error "FIXME METAL"\n')
+                f.write('    setup.AddProgramFromLibrary({}, {}, {}, "{}", "{}");\n'.format(
+                    i, slangType, vsInputLayout, vsName, fsName))
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
         layoutName = '{}_layout'.format(uBlock.bindName)

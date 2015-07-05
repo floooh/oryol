@@ -79,6 +79,13 @@ ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, 
 
 //------------------------------------------------------------------------------
 void
+ProgramBundleSetup::AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const Oryol::VertexLayout &vsInputLayout, const char *vsFunc, const char *fsFunc) {
+    o_assert_dbg(ShaderLang::Metal == slang);
+    o_error("ProgramBundleSetup::AddProgramFromLibrary: FIXME!\n");
+}
+
+//------------------------------------------------------------------------------
+void
 ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(!layout.Empty());
@@ -89,6 +96,20 @@ ProgramBundleSetup::AddUniformBlock(const StringAtom& name, const UniformLayout&
     entry.layout = layout;
     entry.shaderStage = shaderStage;
     entry.slotIndex = slotIndex;
+}
+
+//------------------------------------------------------------------------------
+void
+ProgramBundleSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes) {
+    o_assert_dbg(ShaderLang::Metal == slang);
+    o_error("ProgramBundleSetup::SetLibraryByteCode: FIXME!\n");
+}
+
+//------------------------------------------------------------------------------
+void
+ProgramBundleSetup::LibraryByteCode(ShaderLang::Code slang, const void *&outPtr, uint32 &outSize) const {
+    o_assert_dbg(ShaderLang::Metal == slang);
+    o_error("ProgramBundleSetup::LibraryByteCode: FIXME!\n");
 }
 
 //------------------------------------------------------------------------------
@@ -145,6 +166,20 @@ void
 ProgramBundleSetup::FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
     outPtr = this->programEntries[progIndex].fsByteCode[slang].ptr;
     outSize = this->programEntries[progIndex].fsByteCode[slang].size;
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::VertexShaderFunc(int32 progIndex, ShaderLang::Code slang) const {
+    o_assert_dbg(ShaderLang::Metal == slang);
+    o_error("ProgramBundleSetup::VertexShaderFunc: FIXME!\n");
+}
+
+//------------------------------------------------------------------------------
+const String&
+ProgramBundleSetup::FragmentShaderFunc(int32 progIndex, ShaderLang::Code slang) const {
+    o_assert_dbg(ShaderLang::Metal == slang);
+    o_error("ProgramBundleSetup::FragmentShaderFunc: FIXME!\n");
 }
 
 //------------------------------------------------------------------------------

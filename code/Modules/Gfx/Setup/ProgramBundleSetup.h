@@ -31,16 +31,23 @@ public:
 
     /// the resource locator
     class Locator Locator;
-    
+
     /// add a program consisting of precompiled vertex and fragment shader
     void AddProgram(uint32 mask, const Id& vertexShader, const Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
     /// add a program from precompiled shader byte code
     void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
+    /// add a program from a metal-style shader library
+    void AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
     /// bind a shader uniform block name to a variable slot
     void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex);
-    
+
+    /// set metal-style library byte code
+    void SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes);
+    /// get metal-style library byte code
+    void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
+
     /// get number of programs
     int32 NumPrograms() const;
     /// get program mask by index
@@ -59,7 +66,11 @@ public:
     void VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;    
     /// get program fragment shader byte code, returns nullptr if no byte code exists
     void FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
-    
+    /// get vertex shader name (if using metal-style shader library
+    const String& VertexShaderFunc(int32 progIndex, ShaderLang::Code slang) const;
+    /// get fragment shader name (if using metal-style shader library
+    const String& FragmentShaderFunc(int32 progIndex, ShaderLang::Code slang) const;
+
     /// get number of uniform blocks
     int32 NumUniformBlocks() const;
     /// get unform block name at index

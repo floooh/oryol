@@ -594,6 +594,7 @@ public:
         GLSL120,        ///< OpenGL 2.1
         GLSL150,        ///< OpenGL 3.0
         HLSL5,          ///< D3D11 HLSL
+        Metal,          ///< Metal shader language
 
         NumShaderLangs,
         InvalidShaderLang

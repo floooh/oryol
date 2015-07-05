@@ -6,6 +6,7 @@ import tempfile
 import platform
 import os
 import sys
+import binascii
 import genutil as util
 
 # FIXME: different platform-root for OSX and iOS!
@@ -98,7 +99,24 @@ def parseOutput(output, lines) :
         sys.exit(10) 
 
 #-------------------------------------------------------------------------------
-def validate(lines, outPath) :
+def writeBinHeader(in_bin, out_hdr, c_name) :
+    '''
+    Write the metallib binary data into a C header file.
+    '''
+    with open(in_bin, 'rb') as in_file :
+        data = in_file.read()
+    hexdata = binascii.hexlify(data)
+    with open(out_hdr, 'w') as out_file :
+        out_file.write('#pragma once\n')
+        out_file.write('static const unsigned char {}[] = {{\n'.format(c_name))
+        for i in range(0, len(data)) :
+            out_file.write('0x{}{},'.format(hexdata[i*2], hexdata[i*2+1]))
+            if (i % 16) == 15 :
+                out_file.write('\n')
+        out_file.write('\n};\n')
+
+#-------------------------------------------------------------------------------
+def validate(lines, outPath, c_name) :
     
     # test if tools exists
     if not os.path.isfile(metal_path) :
@@ -118,6 +136,7 @@ def validate(lines, outPath) :
     metal_air_path = rootPath + '.air'
     metal_lib_path = rootPath + '.metal-ar'
     metal_bin_path = rootPath + '.metallib'
+    c_header_path  = rootPath + '.metallib.h'
 
     # write metal source file
     with open(metal_src_path, 'w') as f :
@@ -127,6 +146,9 @@ def validate(lines, outPath) :
     output = cc(metal_src_path, metal_dia_path, metal_air_path)
     output += ar(metal_air_path, metal_lib_path)
     output += link(metal_lib_path, metal_bin_path)
+
+    # write c header
+    writeBinHeader(metal_bin_path, c_header_path, c_name)
 
     # parse errors and warnings
     parseOutput(output, lines)
