@@ -34,7 +34,7 @@ public:
     /// get the current selection mask
     uint32 getSelectionMask() const;
     /// get the current selection index
-    uint32 getSelectionIndex() const;
+    int32 getSelectionIndex() const;
     /// get the currently selected vertex shader
     ID3D11VertexShader* getSelectedVertexShader() const;
     /// get the currently selected pixel shader
@@ -89,7 +89,7 @@ d3d11ProgramBundle::getSelectionMask() const {
 }
 
 //------------------------------------------------------------------------------
-inline uint32
+inline int32
 d3d11ProgramBundle::getSelectionIndex() const {
     return this->selIndex;
 }
