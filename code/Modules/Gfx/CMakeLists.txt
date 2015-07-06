@@ -135,7 +135,8 @@ fips_begin_module(Gfx)
             mtlMesh.h mtlMesh.mm
             mtlMeshFactory.h mtlMeshFactory.mm
             mtlShaderFactory.h mtlShaderFactory.cc
-            mtlProgramBundleFactory.h mtlProgramBundleFactory.cc
+            mtlProgramBundle.h mtlProgramBundle.mm
+            mtlProgramBundleFactory.h mtlProgramBundleFactory.mm
             mtlTextureFactory.h mtlTextureFactory.cc
             mtlRenderer.h mtlRenderer.mm
         )

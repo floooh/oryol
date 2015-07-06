@@ -89,6 +89,8 @@ private:
         Id fragmentShader;
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
+        StaticArray<String, ShaderLang::NumShaderLangs> vsFuncs;
+        StaticArray<String, ShaderLang::NumShaderLangs> fsFuncs;
         struct byteCodeEntry {
             const void* ptr = nullptr;
             uint32 size = 0;
@@ -107,6 +109,8 @@ private:
     /// obtain an existing entry with matching mask or new entry
     programEntry& obtainEntry(uint32 mask);
 
+    int32 libraryByteCodeSize;
+    const void* libraryByteCode;
     int32 numProgramEntries;
     int32 numUniformBlockEntries;
     StaticArray<programEntry, MaxNumPrograms> programEntries;

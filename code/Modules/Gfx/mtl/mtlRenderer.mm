@@ -260,5 +260,12 @@ mtlRenderer::invalidateMeshState() {
     Log::Info("mtlRenderer::invalidateMeshState()\n");
 }
 
+//------------------------------------------------------------------------------
+void
+mtlRenderer::invalidateProgramState() {
+    // FIXME!
+    Log::Info("mtlRenderer::invalidateProgramState()\n");
+}
+
 } // namespace _priv
 } // namespace Oryol
