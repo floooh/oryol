@@ -38,8 +38,44 @@ mtlTypes::asBufferResourceOptions(Usage::Code usage) {
         case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         default:
-            o_error("mtlTypes::asBufferResourceOptions: invalid usage value!\n");
+            o_error("mtlTypes::asBufferResourceOptions(): invalid value!\n");
             return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLCompareFunction
+mtlTypes::asCompareFunc(CompareFunc::Code cmp) {
+    switch (cmp) {
+        case CompareFunc::Never:        return MTLCompareFunctionNever;
+        case CompareFunc::Less:         return MTLCompareFunctionLess;
+        case CompareFunc::Equal:        return MTLCompareFunctionEqual;
+        case CompareFunc::LessEqual:    return MTLCompareFunctionLessEqual;
+        case CompareFunc::Greater:      return MTLCompareFunctionGreater;
+        case CompareFunc::NotEqual:     return MTLCompareFunctionNotEqual;
+        case CompareFunc::GreaterEqual: return MTLCompareFunctionGreaterEqual;
+        case CompareFunc::Always:       return MTLCompareFunctionAlways;
+        default:
+            o_error("mtlTypes::asCompareFunc(): invalid value!\n");
+            return MTLCompareFunctionAlways;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLStencilOperation
+mtlTypes::asStencilOp(StencilOp::Code op) {
+    switch (op) {
+        case StencilOp::Keep:       return MTLStencilOperationKeep;
+        case StencilOp::Zero:       return MTLStencilOperationZero;
+        case StencilOp::Replace:    return MTLStencilOperationReplace;
+        case StencilOp::IncrClamp:  return MTLStencilOperationIncrementClamp;
+        case StencilOp::DecrClamp:  return MTLStencilOperationDecrementClamp;
+        case StencilOp::Invert:     return MTLStencilOperationInvert;
+        case StencilOp::IncrWrap:   return MTLStencilOperationIncrementWrap;
+        case StencilOp::DecrWrap:   return MTLStencilOperationDecrementWrap;
+        default:
+            o_error("mtlTypes::asStencilOp(): invalid value!\n");
+            return MTLStencilOperationKeep;
     }
 }
 

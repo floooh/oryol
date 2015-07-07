@@ -267,5 +267,12 @@ mtlRenderer::invalidateProgramState() {
     Log::Info("mtlRenderer::invalidateProgramState()\n");
 }
 
+//------------------------------------------------------------------------------
+void
+mtlRenderer::invalidateDrawState() {
+    // FIXME!
+    Log::Info("mtlRenderer::invalidateDrawState()\n");
+}
+
 } // namespace _priv
 } // namespace Oryol

@@ -76,6 +76,8 @@ public:
     void invalidateMeshState();
     /// invalidate current shader program state
     void invalidateProgramState();
+    /// invalidate current draw state
+    void invalidateDrawState();
 
     bool valid;
     GfxSetup gfxSetup;

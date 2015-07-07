@@ -24,6 +24,7 @@ typedef void* MTLTexture;
 typedef void* MTLBuffer;
 typedef void* MTLLibrary;
 typedef void* MTLFunction;
+typedef void* MTLRenderPipelineState;
 #endif
 
 #if ORYOL_USE_ARC
