@@ -10,12 +10,27 @@ import binascii
 import genutil as util
 
 # FIXME: different platform-root for OSX and iOS!
-platform_root = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/' 
-sys_root = platform_root + 'Developer/SDKs/MacOSX10.11.sdk'
-bin_path = platform_root + 'usr/bin/'
-metal_path = bin_path + 'metal'
-metal_ar_path = bin_path + 'metal-ar'
-metal_ln_path = bin_path + 'metallib'
+platform_roots = [
+    '/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/',
+    '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/'
+]
+rel_sys_root = 'Developer/SDKs/MacOSX10.11.sdk'
+
+#-------------------------------------------------------------------------------
+def get_sys_root() :
+    for platform_root in platform_roots :
+        sys_root_path = platform_root + rel_sys_root
+        if os.path.isdir(sys_root_path) :
+            return sys_root_path
+    return None
+
+#-------------------------------------------------------------------------------
+def get_tool(tool_name) :
+    for platform_root in platform_roots :
+        tool_path = platform_root + 'usr/bin/' + tool_name
+        if os.path.isfile(tool_path) :
+            return tool_path
+    return None
 
 #-------------------------------------------------------------------------------
 def writeFile(f, lines) :
@@ -39,8 +54,8 @@ def run(cmd) :
 #-------------------------------------------------------------------------------
 def cc(in_src, out_dia, out_air) :
     # run the metal compiler
-    cmd = [metal_path, '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
-           '-isysroot', sys_root,
+    cmd = [get_tool('metal'), '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
+           '-isysroot', get_sys_root(),
            '-serialize-diagnostics', out_dia,
            '-o', out_air,
            '-mmacosx-version-min=10.11',
@@ -51,13 +66,13 @@ def cc(in_src, out_dia, out_air) :
 #-------------------------------------------------------------------------------
 def ar(in_air, out_lib) :
     # run the metal librarian
-    cmd = [metal_ar_path, 'r', out_lib, in_air]
+    cmd = [get_tool('metal-ar'), 'r', out_lib, in_air]
     return run(cmd)
 
 #-------------------------------------------------------------------------------
 def link(in_lib, out_bin) :
     # run the metal linker
-    cmd = [metal_ln_path, '-o', out_bin, in_lib]
+    cmd = [get_tool('metallib'), '-o', out_bin, in_lib]
     return run(cmd)
 
 #-------------------------------------------------------------------------------
@@ -119,13 +134,13 @@ def writeBinHeader(in_bin, out_hdr, c_name) :
 def validate(lines, outPath, c_name) :
     
     # test if tools exists
-    if not os.path.isfile(metal_path) :
+    if not get_tool('metal') :
         util.fmtWarning('metal compiler not found (expected path: {})\n'.format(metal_path))
         return
-    if not os.path.isfile(metal_ar_path) :
+    if not get_tool('metal-ar') :
         util.fmtWarning('metal librarian not found (expected path: {})\n'.format(metal_ar_path))
         return
-    if not os.path.isfile(metal_ln_path) :
+    if not get_tool('metallib') :
         util.fmtWarning('metal linker not found (expected path: {})\n'.format(metal_ln_path))
         return
 
