@@ -47,7 +47,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     ds.mtlDepthStencilState = [this->renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
     o_assert(nil != ds.mtlDepthStencilState);
 
-    // FIXME: create renderpipeline-state
+    // create renderpipeline-state
 
     return ResourceState::Valid;
 }
