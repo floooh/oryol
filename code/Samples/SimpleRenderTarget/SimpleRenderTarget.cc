@@ -108,10 +108,13 @@ SimpleRenderTargetApp::OnInit() {
     auto offdsSetup = DrawStateSetup::FromMeshAndProg(torus, offScreenProg);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    offdsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
+    offdsSetup.BlendState.DepthFormat = PixelFormat::D16;
     this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
     auto dispdsSetup = DrawStateSetup::FromMeshAndProg(sphere, dispProg);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dispdsSetup.RasterizerState.SampleCount = 4;
     this->displayDrawState = Gfx::CreateResource(dispdsSetup);
     
     // setup static transform matrices

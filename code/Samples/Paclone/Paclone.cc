@@ -47,11 +47,6 @@ PacloneApp::OnInit() {
     Sound::Setup(SoundSetup());
     Dbg::Setup();
     
-    // setup canvas and game state
-    this->spriteCanvas.Setup(Width, Height, 8, 8, NumSprites);
-    this->sounds.CreateSoundEffects();
-    this->gameState.Init(&this->spriteCanvas, &this->sounds);
-    
     // setup a offscreen render target and copy-shader
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
     rtSetup.MinFilter = TextureFilterMode::Linear;
@@ -60,6 +55,11 @@ PacloneApp::OnInit() {
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+
+    // setup canvas and game state
+    this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
+    this->sounds.CreateSoundEffects();
+    this->gameState.Init(&this->spriteCanvas, &this->sounds);
 
     return App::OnInit();
 }

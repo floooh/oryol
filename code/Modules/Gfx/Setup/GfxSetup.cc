@@ -45,7 +45,7 @@ GfxSetup::Fullscreen(int32 w, int32 h, String title) {
 GfxSetup
 GfxSetup::WindowMSAA4(int32 w, int32 h, String title) {
     GfxSetup setup = Window(w, h, title);
-    setup.Samples = 4;
+    setup.SampleCount = 4;
     return setup;
 }
 
@@ -53,7 +53,7 @@ GfxSetup::WindowMSAA4(int32 w, int32 h, String title) {
 GfxSetup
 GfxSetup::FullscreenMSAA4(int32 w, int32 h, String title) {
     GfxSetup setup = Fullscreen(w, h, title);
-    setup.Samples = 4;
+    setup.SampleCount = 4;
     return setup;
 }
 
@@ -69,7 +69,7 @@ GfxSetup::GetDisplayAttrs() const {
     attrs.FramebufferHeight = this->Height;
     attrs.ColorPixelFormat  = this->ColorFormat;
     attrs.DepthPixelFormat  = this->DepthFormat;
-    attrs.Samples           = this->Samples;
+    attrs.SampleCount       = this->SampleCount;
     attrs.Windowed          = this->Windowed;
     attrs.WindowTitle       = this->Title;
     attrs.SwapInterval      = this->SwapInterval;

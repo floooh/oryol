@@ -15,27 +15,29 @@ public:
     union {
         #pragma pack(push,1)
         struct {
-            uint8 CullFaceEnabled : 1;
-            uint8 DepthOffsetEnabled : 1;
-            uint8 ScissorTestEnabled : 1;
-            uint8 DitherEnabled : 1;
-            uint8 MultisampleEnabled : 1;
+            uint16 CullFaceEnabled : 1;
+            uint16 DepthOffsetEnabled : 1;
+            uint16 ScissorTestEnabled : 1;
+            uint16 DitherEnabled : 1;
+            uint16 AlphaToCoverageEnabled : 1;
             Face::Code CullFace : 3;
+            uint16 SampleCount : 4;
         };
         #pragma pack(pop)
-        uint8 Hash;
+        uint16 Hash;
     };
 
     /// constructor
     RasterizerState() {
-        static_assert(sizeof(RasterizerState) == 1, "sizeof(RasterizerState) is not 1, bitfield packing problem?");
+        static_assert(sizeof(RasterizerState) == 2, "sizeof(RasterizerState) is not 4, bitfield packing problem?");
         this->Hash = 0;
         this->CullFaceEnabled = false;
         this->DepthOffsetEnabled = false;
         this->ScissorTestEnabled = false;
         this->DitherEnabled = true;
-        this->MultisampleEnabled = true;
+        this->AlphaToCoverageEnabled = false;
         this->CullFace = Face::Back;
+        this->SampleCount = 1;
     }
     /// equality
     bool operator==(const RasterizerState& rhs) const {

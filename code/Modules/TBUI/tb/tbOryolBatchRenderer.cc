@@ -114,7 +114,10 @@ tbOryolBatchRenderer::setupDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    dss.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
+    dss.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
     dss.RasterizerState.ScissorTestEnabled = true;
+    dss.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
     this->drawState = Gfx::CreateResource(dss);
 }
 

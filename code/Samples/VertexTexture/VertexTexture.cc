@@ -82,7 +82,10 @@ VertexTextureApp::OnInit() {
     // setup draw state for offscreen rendering to float render target
     Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
     Id plasmaProg = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
-    this->plasmaDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg));
+    auto dss = DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg);
+    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
+    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
+    this->plasmaDrawState = Gfx::CreateResource(dss);
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
@@ -95,6 +98,7 @@ VertexTextureApp::OnInit() {
     auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dsPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

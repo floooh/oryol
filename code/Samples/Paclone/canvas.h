@@ -5,6 +5,7 @@
 */
 #include "Core/Assertion.h"
 #include "Gfx/Setup/MeshSetup.h"
+#include "Gfx/Setup/TextureSetup.h"
 #include "Paclone/shaders.h"
 #include "sprites.h"
 
@@ -16,7 +17,7 @@ public:
     canvas();
     
     /// setup the canvas
-    void Setup(int numTilesX, int numTilesY, int tileWidth, int tileHeight, int numSprites);
+    void Setup(const Oryol::TextureSetup& rtSetup, int numTilesX, int numTilesY, int tileWidth, int tileHeight, int numSprites);
     /// discard the cancas
     void Discard();
     /// return true if canvas has been setup

@@ -37,8 +37,8 @@ public:
     PixelFormat::Code ColorFormat = PixelFormat::RGB8;
     /// depth pixel format
     PixelFormat::Code DepthFormat = PixelFormat::D24S8;
-    /// MSAA samples (2, 4, 8... no MSAA: 0)
-    int32 Samples = 0;
+    /// MSAA samples (2, 4, 8... no MSAA: 1)
+    int32 SampleCount = 1;
     /// windowed vs Fullscreen
     bool Windowed = true;
     /// swap interval (0 => no vsync, default is 1)

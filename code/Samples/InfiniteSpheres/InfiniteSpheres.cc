@@ -23,7 +23,8 @@ private:
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
     Id renderTargets[2];
-    Id drawState;
+    Id offscreenDrawState;
+    Id displayDrawState;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -47,12 +48,10 @@ InfiniteSpheresApp::OnRunning() {
     const int32 index0 = this->frameIndex % 2;
     const int32 index1 = (this->frameIndex + 1) % 2;
     
-    // generall state
-    Gfx::ApplyDrawState(this->drawState);
-    
     // render sphere to offscreen render target, using the other render target as
     // source texture
     Gfx::ApplyRenderTarget(this->renderTargets[index0]);
+    Gfx::ApplyDrawState(this->offscreenDrawState);
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     this->fsParams.Texture = this->renderTargets[index1];
@@ -62,6 +61,7 @@ InfiniteSpheresApp::OnRunning() {
     
     // ...and again to display
     Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::ApplyDrawState(this->displayDrawState);
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     this->fsParams.Texture = this->renderTargets[index0];
@@ -103,7 +103,12 @@ InfiniteSpheresApp::OnInit() {
     auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    dss.RasterizerState.SampleCount = 4;
+    this->displayDrawState = Gfx::CreateResource(dss);
+    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
+    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
+    dss.RasterizerState.SampleCount = 1;
+    this->offscreenDrawState = Gfx::CreateResource(dss);
     this->clearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
     
     // setup static transform matrices

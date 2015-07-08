@@ -32,7 +32,7 @@ struct DisplayAttrs {
     /// depth buffer pixel format (PixelFormat::None if no depth buffer)
     PixelFormat::Code DepthPixelFormat{PixelFormat::D24S8};
     /// number of multisample-anti-aliasing samples
-    int32 Samples{0};
+    int32 SampleCount{1};
     /// indicates windowed or fullscreen mode
     bool Windowed{true};
     /// vsync swap interval (0 means: no vsync)

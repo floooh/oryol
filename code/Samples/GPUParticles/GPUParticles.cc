@@ -151,11 +151,14 @@ GPUParticlesApp::OnInit() {
     
     // particle initialization and update draw states
     Id initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
-    this->initParticles = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg));
+    auto dss = DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg);
+    dss.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
+    dss.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
+    this->initParticles = Gfx::CreateResource(dss);
     Id updateProg = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
-    auto updateSetup = DrawStateSetup::FromMeshAndProg(fullscreenMesh, updateProg);
-    updateSetup.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = Gfx::CreateResource(updateSetup);
+    dss.Program = updateProg;
+    dss.RasterizerState.ScissorTestEnabled = true;
+    this->updateParticles = Gfx::CreateResource(dss);
 
     // a vertex buffer with the particleIds, this would not be needed if
     // ANGLE_instanced_arrays would support gl_InstanceID
@@ -184,12 +187,12 @@ GPUParticlesApp::OnInit() {
     
     // particle rendering draw state
     Id drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
-    auto drawSetup = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
-    drawSetup.Meshes[1] = this->particleIdMesh;
-    drawSetup.RasterizerState.CullFaceEnabled = true;
-    drawSetup.DepthStencilState.DepthWriteEnabled = true;
-    drawSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles = Gfx::CreateResource(drawSetup);
+    dss = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
+    dss.Meshes[1] = this->particleIdMesh;
+    dss.RasterizerState.CullFaceEnabled = true;
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
+    this->drawParticles = Gfx::CreateResource(dss);
 
     // a ClearState which does not perform clear
     this->noClearState.Actions = ClearState::ClearNone;

@@ -275,7 +275,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         this->rtAttrs.FramebufferHeight = attrs.Height;
         this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
         this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
-        this->rtAttrs.Samples = 1;
+        this->rtAttrs.SampleCount = 1;
         this->rtAttrs.Windowed = false;
         this->rtAttrs.SwapInterval = 1;
     }
@@ -451,6 +451,9 @@ glRenderer::applyDrawState(drawState* ds) {
         o_assert_dbg(ds->prog);
 
         const DrawStateSetup& setup = ds->Setup;
+        o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+        o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+        o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
         if (setup.DepthStencilState != this->depthStencilState) {
             this->applyDepthStencilState(setup.DepthStencilState);
         }
@@ -896,7 +899,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
     o_assert_dbg(this->valid);
 
     const RasterizerState& curState = this->rasterizerState;
-    
+
     const bool cullFaceEnabled = newState.CullFaceEnabled;
     if (cullFaceEnabled != curState.CullFaceEnabled) {
         if (cullFaceEnabled) {
@@ -939,9 +942,9 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
         }
     }
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    const bool msaaEnabled = newState.MultisampleEnabled;
-    if (msaaEnabled != curState.MultisampleEnabled) {
-        if (msaaEnabled) {
+    const uint16 sampleCount = newState.SampleCount;
+    if (sampleCount != curState.SampleCount) {
+        if (sampleCount > 1) {
             ::glEnable(GL_MULTISAMPLE);
         }
         else {

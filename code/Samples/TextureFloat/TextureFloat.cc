@@ -84,7 +84,10 @@ TextureFloatApp::OnInit() {
 
     // setup draw state for offscreen rendering to float render target
     Id offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
-    this->offscreenDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg));
+    auto dss = DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg);
+    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
+    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
+    this->offscreenDrawState = Gfx::CreateResource(dss);
     this->offscreenFSParams.Time = 0.0f;
 
     // fullscreen-copy mesh, shader and draw state

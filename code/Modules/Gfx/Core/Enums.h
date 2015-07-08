@@ -54,7 +54,7 @@ public:
  */
 class PixelChannel {
 public:
-    typedef uint32 Mask;
+    typedef uint64 Mask;
     enum Bits {
         None    = 0,
         
@@ -102,7 +102,7 @@ public:
 class PixelFormat {
 public:
     /// pixel format enum
-    enum Code {
+    enum Code : uint64 {
         RGBA8,          ///< 32-bit wide, 4 channels @ 8-bit
         RGB8,           ///< 24-bit wide, 3 channels @ 8-bit
         RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
@@ -633,7 +633,7 @@ public:
 */
 class Face {
 public:
-    enum Code : uint8 {
+    enum Code : uint16 {
         Front = 0,
         Back,
         Both,
@@ -698,7 +698,7 @@ public:
 */
 class BlendFactor {
 public:
-    enum Code : uint32 {
+    enum Code : uint64 {
         Zero = 0,
         One,
         SrcColor,
@@ -728,7 +728,7 @@ public:
 */
 class BlendOperation {
 public:
-    enum Code : uint32 {
+    enum Code : uint64 {
         Add = 0,
         Subtract,
         ReverseSubtract,

@@ -23,7 +23,7 @@ numVertices(0) {
 
 //------------------------------------------------------------------------------
 void
-canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
+canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     o_assert(!this->isValid);
     o_assert((tilesX > 0) && (tilesX <= MaxWidth) && (tilesY > 0) && (tilesY <= MaxHeight));
     o_assert(numSpr < MaxNumSprites);
@@ -50,6 +50,8 @@ canvas::Setup(int tilesX, int tilesY, int tileW, int tileH, int numSpr) {
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    dsSetup.BlendState.ColorFormat = rtSetup.ColorFormat;
+    dsSetup.BlendState.DepthFormat = rtSetup.DepthFormat;
     dsSetup.RasterizerState.CullFaceEnabled = false;
     this->drawState = Gfx::CreateResource(dsSetup);
     

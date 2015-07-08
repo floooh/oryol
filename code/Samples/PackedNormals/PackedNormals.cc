@@ -85,6 +85,7 @@ PackedNormalsApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
+    dss.RasterizerState.SampleCount = 4;
     this->drawState = Gfx::CreateResource(dss);
 
     // setup projection and view matrices

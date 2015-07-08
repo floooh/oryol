@@ -15,7 +15,7 @@ public:
     union {
         #pragma pack(push,1)
         struct {
-            uint32 BlendEnabled:1;
+            uint64 BlendEnabled:1;
             BlendFactor::Code SrcFactorRGB:5;
             BlendFactor::Code DstFactorRGB:5;
             BlendOperation::Code OpRGB:3;
@@ -23,15 +23,17 @@ public:
             BlendFactor::Code DstFactorAlpha:5;
             BlendOperation::Code OpAlpha:3;
             PixelChannel::Mask ColorWriteMask:4;
+            PixelFormat::Code ColorFormat : 5;
+            PixelFormat::Code DepthFormat : 5;
         };
         #pragma pack(pop)
         /// hash code from merged state
-        uint32 Hash;
+        uint64 Hash;
     };
 
     /// constructor
     BlendState() {
-        static_assert(sizeof(BlendState) == 4, "sizeof(BlendState) is not 4, bitfield packing problem?");
+        static_assert(sizeof(BlendState) == 8, "sizeof(BlendState) is not 8, bitfield packing problem?");
         this->Hash = 0;
         this->BlendEnabled = false;
         this->SrcFactorRGB = BlendFactor::One;
@@ -41,6 +43,8 @@ public:
         this->DstFactorAlpha = BlendFactor::Zero;
         this->OpAlpha = BlendOperation::Add;
         this->ColorWriteMask = PixelChannel::RGBA;
+        this->ColorFormat = PixelFormat::RGB8;
+        this->DepthFormat = PixelFormat::D24S8;        
     };
     
     /// equality

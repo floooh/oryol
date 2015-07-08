@@ -331,6 +331,7 @@ MeshViewerApp::createMaterials() {
         dss.DepthStencilState.DepthWriteEnabled = true;
         dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         dss.RasterizerState.CullFaceEnabled = true;
+        dss.RasterizerState.SampleCount = 4;
         this->materials[i].drawState = Gfx::CreateResource(dss);
     }
     Gfx::PopResourceLabel();

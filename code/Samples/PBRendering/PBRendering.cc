@@ -71,6 +71,7 @@ PBRenderingApp::OnInit() {
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dss.RasterizerState.SampleCount = 4;
     this->drawState = Gfx::CreateResource(dss);
     this->clearState.Color = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     

@@ -83,6 +83,7 @@ ShapeApp::OnInit() {
     auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    dss.RasterizerState.SampleCount = 4;
     this->drawState = Gfx::CreateResource(dss);
 
     // setup projection and view matrices

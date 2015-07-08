@@ -227,6 +227,12 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
+    // for different render targets and quickly select them before
+    // text rendering
+    dss.BlendState.ColorFormat = Gfx::RenderTargetAttrs().ColorPixelFormat;
+    dss.BlendState.DepthFormat = Gfx::RenderTargetAttrs().DepthPixelFormat;
+    dss.RasterizerState.SampleCount = Gfx::RenderTargetAttrs().SampleCount;
     this->textDrawState = Gfx::CreateResource(dss);
 }
 
