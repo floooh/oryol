@@ -139,8 +139,8 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.Samples < 2 ? 1 : this->gfxSetup.Samples;
-    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.Samples < 2 ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
+    dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
+    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
     dxgiSwapChainDesc.BufferCount = 1;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     dxgiSwapChainDesc.OutputWindow = this->hwnd;
@@ -226,7 +226,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
         Memory::Clear(&dsvDesc, sizeof(dsvDesc));
         dsvDesc.Format = depthStencilDesc.Format;
-        if (this->gfxSetup.Samples > 1) {
+        if (this->gfxSetup.SampleCount > 1) {
             dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
         else {

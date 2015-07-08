@@ -84,7 +84,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     rastDesc.DepthBiasClamp = 0.0f;
     rastDesc.DepthClipEnable = TRUE;
     rastDesc.ScissorEnable = rastState.ScissorTestEnabled;
-    rastDesc.MultisampleEnable = rastState.MultisampleEnabled;
+    rastDesc.MultisampleEnable = rastState.SampleCount > 1;
     rastDesc.AntialiasedLineEnable = FALSE;
     hr = this->d3d11Device->CreateRasterizerState(&rastDesc, &ds.d3d11RasterizerState);
     o_assert(SUCCEEDED(hr));

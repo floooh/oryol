@@ -180,7 +180,7 @@ d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         this->rtAttrs.FramebufferHeight = attrs.Height;
         this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
         this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
-        this->rtAttrs.Samples = 1;
+        this->rtAttrs.SampleCount = 1;
         this->rtAttrs.Windowed = false;
         this->rtAttrs.SwapInterval = 1;
 
@@ -199,22 +199,24 @@ d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // perform clear action
     if (clearState.Actions & ClearState::ClearColor) {
-        o_assert_dbg(this->d3d11CurRenderTargetView);
-        const FLOAT* clearColor = glm::value_ptr(clearState.Color);
-        this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+        if (this->d3d11CurRenderTargetView) {
+            const FLOAT* clearColor = glm::value_ptr(clearState.Color);
+            this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+        }
     }
     if (clearState.Actions & (ClearState::ClearDepthStencil)) {
-        o_assert_dbg(this->d3d11CurDepthStencilView);
-        UINT d3d11ClearFlags = 0;
-        if (clearState.Actions & ClearState::ClearDepth) {
-            d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
+        if (this->d3d11CurDepthStencilView) {
+            UINT d3d11ClearFlags = 0;
+            if (clearState.Actions & ClearState::ClearDepth) {
+                d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
+            }
+            if (clearState.Actions & ClearState::ClearStencil) {
+                d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
+            }
+            const FLOAT d = clearState.Depth;
+            const UINT8 s = clearState.Stencil;
+            this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, d, s);
         }
-        if (clearState.Actions & ClearState::ClearStencil) {
-            d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
-        }
-        const FLOAT d = clearState.Depth;
-        const UINT8 s = clearState.Stencil;
-        this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, d, s);
     }
 }
 
@@ -259,6 +261,9 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         o_assert_dbg(ds->d3d11DepthStencilState);
         o_assert_dbg(ds->d3d11RasterizerState);
         o_assert_dbg(ds->d3d11BlendState);
+        o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+        o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+        o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
         this->curDrawState = ds;
         o_assert_dbg(ds->prog);
