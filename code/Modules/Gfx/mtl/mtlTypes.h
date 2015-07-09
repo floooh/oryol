@@ -26,6 +26,16 @@ public:
     static MTLCompareFunction asCompareFunc(CompareFunc::Code cmp);
     /// convert stencil operation enum value
     static MTLStencilOperation asStencilOp(StencilOp::Code op);
+    /// convert color-write-mask
+    static MTLColorWriteMask asColorWriteMask(PixelChannel::Mask mask);
+    /// convert blend operation
+    static MTLBlendOperation asBlendOp(BlendOperation::Code op);
+    /// convert blend factor
+    static MTLBlendFactor asBlendFactor(BlendFactor::Code factor);
+    /// convert vertex format
+    static MTLVertexFormat asVertexFormat(VertexFormat::Code fmt);
+    /// convert vertex step function
+    static MTLVertexStepFunction asVertexStepFunc(VertexStepFunction::Code func);
 };
 
 } // namespace _priv

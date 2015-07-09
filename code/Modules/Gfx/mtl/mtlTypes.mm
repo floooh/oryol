@@ -79,5 +79,96 @@ mtlTypes::asStencilOp(StencilOp::Code op) {
     }
 }
 
+//------------------------------------------------------------------------------
+MTLColorWriteMask
+mtlTypes::asColorWriteMask(PixelChannel::Mask mask) {
+    MTLColorWriteMask mtlMask = MTLColorWriteMaskNone;
+    if (mask & PixelChannel::Red) {
+        mtlMask |= MTLColorWriteMaskRed;
+    }
+    if (mask & PixelChannel::Green) {
+        mtlMask |= MTLColorWriteMaskGreen;
+    }
+    if (mask & PixelChannel::Blue) {
+        mtlMask |= MTLColorWriteMaskBlue;
+    }
+    if (mask & PixelChannel::Alpha) {
+        mtlMask |= MTLColorWriteMaskAlpha;
+    }
+    return mtlMask;
+}
+
+//------------------------------------------------------------------------------
+MTLBlendOperation
+mtlTypes::asBlendOp(BlendOperation::Code op) {
+    switch (op) {
+        case BlendOperation::Add:               return MTLBlendOperationAdd;
+        case BlendOperation::Subtract:          return MTLBlendOperationSubtract;
+        case BlendOperation::ReverseSubtract:   return MTLBlendOperationReverseSubtract;
+        default:
+            o_error("mtlTypes::asBlendOp(): invalid value!\n");
+            return MTLBlendOperationAdd;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLBlendFactor
+mtlTypes::asBlendFactor(BlendFactor::Code factor) {
+    switch (factor) {
+        case BlendFactor::Zero:                 return MTLBlendFactorZero;
+        case BlendFactor::One:                  return MTLBlendFactorOne;
+        case BlendFactor::SrcColor:             return MTLBlendFactorSourceColor;
+        case BlendFactor::OneMinusSrcColor:     return MTLBlendFactorOneMinusSourceColor;
+        case BlendFactor::SrcAlpha:             return MTLBlendFactorSourceAlpha;
+        case BlendFactor::OneMinusSrcAlpha:     return MTLBlendFactorOneMinusSourceAlpha;
+        case BlendFactor::DstColor:             return MTLBlendFactorDestinationColor;
+        case BlendFactor::OneMinusDstColor:     return MTLBlendFactorOneMinusDestinationColor;
+        case BlendFactor::DstAlpha:             return MTLBlendFactorDestinationAlpha;
+        case BlendFactor::OneMinusDstAlpha:     return MTLBlendFactorOneMinusDestinationAlpha;
+        case BlendFactor::SrcAlphaSaturated:    return MTLBlendFactorSourceAlphaSaturated;
+        case BlendFactor::BlendColor:           return MTLBlendFactorBlendColor;
+        case BlendFactor::OneMinusBlendColor:   return MTLBlendFactorOneMinusBlendColor;
+        case BlendFactor::BlendAlpha:           return MTLBlendFactorBlendAlpha;
+        case BlendFactor::OneMinusBlendAlpha:   return MTLBlendFactorOneMinusBlendAlpha;
+        default:
+            o_error("mtlTypes::asBlendFactor(): invalid value!\n");
+            return MTLBlendFactorOne;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLVertexFormat
+mtlTypes::asVertexFormat(VertexFormat::Code fmt) {
+    switch (fmt) {
+        case VertexFormat::Float:       return MTLVertexFormatFloat;
+        case VertexFormat::Float2:      return MTLVertexFormatFloat2;
+        case VertexFormat::Float3:      return MTLVertexFormatFloat3;
+        case VertexFormat::Float4:      return MTLVertexFormatFloat4;
+        case VertexFormat::Byte4:       return MTLVertexFormatChar4;
+        case VertexFormat::Byte4N:      return MTLVertexFormatChar4Normalized;
+        case VertexFormat::UByte4:      return MTLVertexFormatUChar4;
+        case VertexFormat::UByte4N:     return MTLVertexFormatUChar4Normalized;
+        case VertexFormat::Short2:      return MTLVertexFormatShort2;
+        case VertexFormat::Short2N:     return MTLVertexFormatShort2Normalized;
+        case VertexFormat::Short4:      return MTLVertexFormatShort4;
+        case VertexFormat::Short4N:     return MTLVertexFormatShort4Normalized;
+        default:
+            o_error("mtlTypes::asVertexFormat(): invalid value!\n");
+            return MTLVertexFormatFloat;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLVertexStepFunction
+mtlTypes::asVertexStepFunc(VertexStepFunction::Code func) {
+    switch (func) {
+        case VertexStepFunction::PerVertex:     return MTLVertexStepFunctionPerVertex;
+        case VertexStepFunction::PerInstance:   return MTLVertexStepFunctionPerInstance;
+        default:
+            o_error("mtlTypes::asVertexStepFunc(): invalid value!\n");
+            return MTLVertexStepFunctionPerVertex;
+        }
+}
+
 } // namespace _priv
 } // namespace Oryol

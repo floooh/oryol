@@ -34,7 +34,7 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     if (setup.DepthFormat != PixelFormat::None) {
         this->createDepthStencilBuffer(setup.Width, setup.Height);
     }
-    if (setup.Samples > 1) {
+    if (setup.SampleCount > 1) {
         this->createMSAABuffer(setup.Width, setup.Height);
     }
 }
@@ -96,9 +96,9 @@ mtlDisplayMgr::createDepthStencilBuffer(int width, int height) {
         texture2DDescriptorWithPixelFormat:mtlTypes::asRenderTargetFormat(this->gfxSetup.DepthFormat)
         width:width height:height mipmapped:NO
     ];
-    if (this->gfxSetup.Samples > 1) {
+    if (this->gfxSetup.SampleCount > 1) {
         desc.textureType = MTLTextureType2DMultisample;
-        desc.sampleCount = this->gfxSetup.Samples;
+        desc.sampleCount = this->gfxSetup.SampleCount;
     }
     else {
         desc.textureType = MTLTextureType2D;
