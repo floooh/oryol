@@ -96,7 +96,7 @@ TEST(PixelFormatChannelBitsTest) {
     CHECK(PixelFormat::NumBits(PixelFormat::RGBA16F, PixelChannel::Stencil) == 0);
 
     // all other pixel formats must return 0 for all channels
-    for (int pf = 0; pf < PixelFormat::NumPixelFormats; pf++) {
+    for (uint pf = 0; pf < PixelFormat::NumPixelFormats; pf++) {
         if ((pf != PixelFormat::RGBA8) &&
             (pf != PixelFormat::RGB8) &&
             (pf != PixelFormat::R5G6B5) &&

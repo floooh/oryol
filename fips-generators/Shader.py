@@ -4,7 +4,7 @@ Code generator for shader libraries.
 
 Version = 37
 
-metalEnabled = True
+metalEnabled = False
 
 import os
 import sys
