@@ -43,6 +43,7 @@ def writeFile(f, lines) :
 #-------------------------------------------------------------------------------
 def run(cmd) :
     # run a generic command an capture stdout
+    print(cmd)
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :
@@ -159,14 +160,11 @@ def validate(lines, outPath, c_name) :
 
     # compile .metal source file
     output = cc(metal_src_path, metal_dia_path, metal_air_path)
+    parseOutput(output, lines)
     output += ar(metal_air_path, metal_lib_path)
     output += link(metal_lib_path, metal_bin_path)
-
-    # write c header
     writeBinHeader(metal_bin_path, c_header_path, c_name)
 
-    # parse errors and warnings
-    parseOutput(output, lines)
     
 
 

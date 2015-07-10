@@ -2,9 +2,9 @@
 Code generator for shader libraries.
 '''
 
-Version = 36
+Version = 37
 
-metalEnabled = False
+metalEnabled = True
 
 import os
 import sys
@@ -113,7 +113,7 @@ slMacros = {
         'fract(x)': 'frac(x)'
     },
     'metal': {
-        '_position': 'vs_out._vo_position',
+        '_position': 'vs_out._vofi_position',
         '_color': '_fo_color',
         'vec2': 'float2',
         'vec3': 'float3',
@@ -970,23 +970,11 @@ class MetalGenerator :
         
         # first write texture uniforms outside of cbuffers, and count
         # non-texture uniforms
+        uniformDefs = {}
         for uBlock in shd.uniformBlocks :
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('Texture2D {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('TextureCube {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-
             # if there are non-texture uniforms, groups the rest into a cbuffer
-            if uBlock.bindSlot is not None :
-                lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
+            if uBlock.bindSlot is not None:
+                lines.append(Line('struct {}_t {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
                 for type in uBlock.uniformsByType :
                     if type not in ['sampler2D', 'samplerCube' ] :
                         for uniform in uBlock.uniformsByType[type] :
@@ -994,8 +982,9 @@ class MetalGenerator :
                             # pad vec3's to 16 bytes
                             if type == 'vec3' :
                                 lines.append(Line('  float _pad_{};'.format(uniform.name)))
+                            uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
-        return lines
+        return lines, uniformDefs
     
     #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs, slVersion) :
@@ -1010,7 +999,7 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines = self.genUniformBlocks(vs, lines)
+        lines, uniformDefs = self.genUniformBlocks(vs, lines)
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
@@ -1043,9 +1032,9 @@ class MetalGenerator :
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('};'))
         lines.append(Line('struct vs_out_t {'))
-        lines.append(Line('    float4 _vo_position [[position]];'))
+        lines.append(Line('    float4 _vofi_position [[position]];'))
         for output in vs.outputs :
-            lines.append(Line('    {} _vo_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
+            lines.append(Line('    {} _vofi_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
         lines.append(Line('};'))
 
         # write the main() function
@@ -1053,9 +1042,28 @@ class MetalGenerator :
             l = '#define {} vs_in._vi_{}'.format(input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
         for output in vs.outputs :
-            l = '#define {} vs_out._vo_{}'.format(output.name, output.name)
+            l = '#define {} vs_out._vofi_{}'.format(output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
-        lines.append(Line('vertex vs_out_t {}(vs_in_t vs_in [[stage_in]]) {{'.format(vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
+        for uniformDef in uniformDefs :
+            lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
+
+        lines.append(Line('vertex vs_out_t {}('.format(vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
+        for uBlock in vs.uniformBlocks :
+            if uBlock.bindSlot is not None :
+                lines.append(Line('constant {}_t& {} [[buffer({})]],'.format(uBlock.name, uBlock.name, uBlock.bindSlot)))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('texture2d<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('texturecube<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+        lines.append(Line('vs_in_t vs_in [[stage_in]]) {'))
         lines.append(Line('vs_out_t vs_out;'))
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1064,6 +1072,8 @@ class MetalGenerator :
             lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
         for output in vs.outputs :
             lines.append(Line('#undef {}'.format(output.name), output.filePath, output.lineNumber))
+        for uniformDef in uniformDefs :
+            lines.append(Line('#undef {}'.format(uniformDef)))
         vs.generatedSource[slVersion] = lines
 
     #---------------------------------------------------------------------------
@@ -1079,7 +1089,7 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines = self.genUniformBlocks(fs, lines)
+        lines, uniformDefs = self.genUniformBlocks(fs, lines)
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1087,22 +1097,42 @@ class MetalGenerator :
 
         # write fragment shader input structure
         lines.append(Line('struct fs_in_t {'))
-        lines.append(Line('    float4 _fi_position [[position]];'))
+        lines.append(Line('    float4 _vofi_position [[position]];'))
         for input in fs.inputs :
-            lines.append(Line('    {} _fi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
+            lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
         lines.append(Line('};'))
 
         # write the main function
         for input in fs.inputs :
-            l = '#define {} fs_in._fi_{}'.format(input.name, input.name)
+            l = '#define {} fs_in._vofi_{}'.format(input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
-        lines.append(Line('fragment float4 {}(fs_in_t fs_in [[stage_in]]) {{'.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
+        for uniformDef in uniformDefs :
+            lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
+        lines.append(Line('fragment float4 {}('.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
+        for uBlock in fs.uniformBlocks :
+            if uBlock.bindSlot is not None :
+                lines.append(Line('constant {}_t& {} [[buffer({})]],'.format(uBlock.name, uBlock.name, uBlock.bindSlot)))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('texture2d<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('texturecube<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+        lines.append(Line('fs_in_t fs_in [[stage_in]]) {{'.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('float4 _fo_color;'))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
         for input in fs.inputs :
             lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
+        for uniformDef in uniformDefs :
+            lines.append(Line('#undef {}'.format(uniformDef)))
         fs.generatedSource[slVersion] = lines
 
 #-------------------------------------------------------------------------------
