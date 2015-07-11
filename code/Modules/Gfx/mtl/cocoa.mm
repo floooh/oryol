@@ -8,6 +8,7 @@
 #include "Core/Types.h"
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
+#include "Core/String/StringBuilder.h"
 
 //------------------------------------------------------------------------------
 //  our window delegate class
@@ -205,9 +206,11 @@ cocoa::createWindow(const GfxSetup& setup) {
                       defer:NO];
     o_assert(nil != this->window.object);
 
+    StringBuilder strBuilder(setup.Title);
+    strBuilder.Append(" (Metal)");
     [this->window.object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [this->window.object center];
-    [this->window.object setTitle:[NSString stringWithUTF8String:setup.Title.AsCStr()]];
+    [this->window.object setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
     [this->window.object setDelegate:this->window.delegate];
     [this->window.object setAcceptsMouseMovedEvents:YES];
     [this->window.object setRestorable:NO];

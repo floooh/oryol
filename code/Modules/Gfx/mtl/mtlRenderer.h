@@ -82,6 +82,11 @@ public:
     bool valid;
     GfxSetup gfxSetup;
     gfxPointers pointers;
+
+    bool rtValid;
+    DisplayAttrs rtAttrs;
+    
+    drawState* curDrawState;
     ORYOL_OBJC_TYPED_ID(CAMetalDrawable) curDrawable;
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;

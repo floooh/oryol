@@ -170,5 +170,16 @@ mtlTypes::asVertexStepFunc(VertexStepFunction::Code func) {
         }
 }
 
+//------------------------------------------------------------------------------
+MTLCullMode
+mtlTypes::asCullMode(bool cullEnabled, Face::Code face) {
+    if (cullEnabled) {
+        return (Face::Front == face) ? MTLCullModeFront : MTLCullModeBack;
+    }
+    else {
+        return MTLCullModeNone;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

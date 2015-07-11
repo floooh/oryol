@@ -55,7 +55,7 @@ mtlDisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::Present() {
-    Log::Info("mtlDisplayMgr::Present()\n");
+    // hmm... nothing to do here?
 }
 
 //------------------------------------------------------------------------------

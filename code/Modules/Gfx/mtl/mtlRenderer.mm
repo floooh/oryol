@@ -3,7 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "mtlRenderer.h"
+#include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
+#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/mesh.h"
 
 namespace Oryol {
 namespace _priv {
@@ -12,7 +15,14 @@ dispatch_semaphore_t mtlInflightSemaphore;
 
 //------------------------------------------------------------------------------
 mtlRenderer::mtlRenderer() :
-valid(false) {
+valid(false),
+rtValid(false),
+curDrawState(nullptr),
+curDrawable(nil),
+mtlDevice(nil),
+commandQueue(nil),
+curCommandBuffer(nil),
+curCommandEncoder(nil) {
     // FIXME
 }
 
@@ -80,6 +90,8 @@ mtlRenderer::commitFrame() {
     o_assert_dbg(nil != this->curCommandBuffer);
     o_assert_dbg(nil != this->curDrawable);
 
+    this->rtValid = false;
+
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
@@ -143,12 +155,14 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     // default, or offscreen render target?
     if (nullptr == rt) {
         // default render target
+        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         this->curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
         o_assert(nil != this->curDrawable);
     }
     else {
         o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
     }
+    this->rtValid = true;
 
     // init renderpass descriptor
     MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -193,8 +207,48 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 void
 mtlRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(this->curCommandEncoder);
 
-    Log::Info("mtlRenderer::applyDrawState()\n");
+    if (nullptr == ds) {
+        // drawState dependencies still pending, invalidate rendering
+        this->curDrawState = nullptr;
+    }
+    else {
+        o_assert_dbg(ds->mtlRenderPipelineState);
+        o_assert_dbg(ds->mtlDepthStencilState);
+        o_assert2_dbg(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+        o_assert2_dbg(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
+        o_assert2_dbg(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+
+        // set current draw state (used to indicate that rendering is valid)
+        this->curDrawState = ds;
+
+        // apply general state
+        const glm::vec4& bc = ds->Setup.BlendColor;
+        const RasterizerState& rs = ds->Setup.RasterizerState;
+        const DepthStencilState& dss = ds->Setup.DepthStencilState;
+        [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
+        [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
+        [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
+
+        // apply state objects
+        [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
+        [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
+
+        // apply vertex buffers
+        const int numVbSlots = ds->meshes.Size();
+        for (int vbIndex = 0; vbIndex < numVbSlots; vbIndex++) {
+            const mesh* msh = ds->meshes[vbIndex];
+            if (msh) {
+                o_assert_dbg(msh->mtlVertexBuffer);
+                [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbIndex];
+            }
+            else {
+                [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbIndex];
+            }
+        }
+
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -209,16 +263,45 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 void
 mtlRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
+    o_assert2_dbg(this->rtValid, "No render target set!\n");
+    o_assert_dbg(this->curCommandEncoder);
 
-    o_error("mtlRenderer::draw()\n");
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    MTLPrimitiveType mtlPrimType = (MTLPrimitiveType)primGroup.PrimType;
+    IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (IndexType::None != indexType) {
+        o_assert_dbg(this->curDrawState->meshes[0]->mtlIndexBuffer);
+        MTLIndexType mtlIndexType = (MTLIndexType) indexType;
+        NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(indexType);
+        [this->curCommandEncoder drawIndexedPrimitives:mtlPrimType
+            indexCount:primGroup.NumElements
+            indexType:mtlIndexType
+            indexBuffer:this->curDrawState->meshes[0]->mtlIndexBuffer
+            indexBufferOffset:indexBufferOffset ];
+    }
+    else {
+        [this->curCommandEncoder drawPrimitives:mtlPrimType vertexStart:primGroup.BaseElement vertexCount:primGroup.NumElements];
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 mtlRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
-
-    Log::Info("mtlRenderer::draw()\n");
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if rendering a placeholder which doesn't have
+        // as many materials as the original mesh
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->draw(primGroup);
 }
 
 //------------------------------------------------------------------------------

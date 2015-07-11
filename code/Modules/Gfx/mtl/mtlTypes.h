@@ -36,6 +36,8 @@ public:
     static MTLVertexFormat asVertexFormat(VertexFormat::Code fmt);
     /// convert vertex step function
     static MTLVertexStepFunction asVertexStepFunc(VertexStepFunction::Code func);
+    /// convert cullmode
+    static MTLCullMode asCullMode(bool cullEnabled, Face::Code face);
 };
 
 } // namespace _priv
