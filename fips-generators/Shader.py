@@ -70,7 +70,8 @@ slMacros = {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
-        'static': '',
+        '_const': 'const',
+        '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
         'texCUBE(s, t)': 'textureCube(s,t)',
@@ -80,7 +81,8 @@ slMacros = {
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
-        'static': '',
+        '_const': 'const',
+        '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
         'texCUBE(s, t)': 'textureCube(s,t)',
@@ -90,7 +92,8 @@ slMacros = {
         '_position': 'gl_Position',
         '_color': '_FragColor',
         '_fragcoord': 'gl_FragCoord',
-        'static': '',
+        '_const': 'const',
+        '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
@@ -99,6 +102,8 @@ slMacros = {
     'hlsl5': {
         '_position': '_oPosition',
         '_color': '_oColor',
+        '_const': 'static const',
+        '_func': '',
         'vec2': 'float2',
         'vec3': 'float3',
         'vec4': 'float4',
@@ -115,12 +120,19 @@ slMacros = {
     'metal': {
         '_position': 'vs_out._vofi_position',
         '_color': '_fo_color',
+        '_const': 'constant',
+        '_func': 'static',
         'vec2': 'float2',
         'vec3': 'float3',
         'vec4': 'float4',
         'mat2': 'float2x2',
         'mat3': 'float3x3',
-        'mat4': 'float4x4'
+        'mat4': 'float4x4',
+        'mul(m,v)': '(m*v)',
+        'mod(x,y)': 'fmod(x,y)',
+        'tex2D(s, t)': 's.sample(s ## _sampler,t)',
+        'texCUBE(s, t)': 's.sample(s ## _sampler,t)',
+        'tex2Dvs(s, t)': 's.sample(s ## _sampler,t,level(0))'
     }
 }
 
@@ -1026,12 +1038,12 @@ class MetalGenerator :
         }
 
         # write vertex shader in/out structs
-        lines.append(Line('struct vs_in_t {'))
+        lines.append(Line('struct {}_vs_in_t {{'.format(vs.name)))
         for input in vs.inputs :
             l = '    {} _vi_{} [[ attribute({}) ]];'.format(input.type, input.name, vertex_attrs[input.name])
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('};'))
-        lines.append(Line('struct vs_out_t {'))
+        lines.append(Line('struct {}_vs_out_t {{'.format(vs.name)))
         lines.append(Line('    float4 _vofi_position [[position]];'))
         for output in vs.outputs :
             lines.append(Line('    {} _vofi_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
@@ -1047,7 +1059,7 @@ class MetalGenerator :
         for uniformDef in uniformDefs :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
 
-        lines.append(Line('vertex vs_out_t {}('.format(vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('vertex {}_vs_out_t {}('.format(vs.name, vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
         for uBlock in vs.uniformBlocks :
             if uBlock.bindSlot is not None :
                 lines.append(Line('constant {}_t& {} [[buffer({})]],'.format(uBlock.name, uBlock.name, uBlock.bindSlot)))
@@ -1063,8 +1075,8 @@ class MetalGenerator :
                             uniform.filePath, uniform.lineNumber))
                         lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
-        lines.append(Line('vs_in_t vs_in [[stage_in]]) {'))
-        lines.append(Line('vs_out_t vs_out;'))
+        lines.append(Line('{}_vs_in_t vs_in [[stage_in]]) {{'.format(vs.name)))
+        lines.append(Line('{}_vs_out_t vs_out;'.format(vs.name)))
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1096,7 +1108,7 @@ class MetalGenerator :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
 
         # write fragment shader input structure
-        lines.append(Line('struct fs_in_t {'))
+        lines.append(Line('struct {}_fs_in_t {{'.format(fs.name)))
         lines.append(Line('    float4 _vofi_position [[position]];'))
         for input in fs.inputs :
             lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
@@ -1124,7 +1136,7 @@ class MetalGenerator :
                             uniform.filePath, uniform.lineNumber))
                         lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
-        lines.append(Line('fs_in_t fs_in [[stage_in]]) {{'.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
+        lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('float4 _fo_color;'))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
