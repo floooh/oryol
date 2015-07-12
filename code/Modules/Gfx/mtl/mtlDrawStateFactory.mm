@@ -52,18 +52,20 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     // create vertex-descriptor object
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
     for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
+        // NOTE: vertex buffers are located after constant buffers
+        const int vbSlotIndex = mshIndex + GfxConfig::MaxNumUniformBlocks;
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
             for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++) {
                 const auto& comp = layout.ComponentAt(compIndex);
                 vtxDesc.attributes[comp.Attr].format = mtlTypes::asVertexFormat(comp.Format);
-                vtxDesc.attributes[comp.Attr].bufferIndex = mshIndex;
+                vtxDesc.attributes[comp.Attr].bufferIndex = vbSlotIndex;
                 vtxDesc.attributes[comp.Attr].offset = layout.ComponentByteOffset(compIndex);
             }
-            vtxDesc.layouts[mshIndex].stride = layout.ByteSize();
-            vtxDesc.layouts[mshIndex].stepFunction = mtlTypes::asVertexStepFunc(msh->vertexBufferAttrs.StepFunction);
-            vtxDesc.layouts[mshIndex].stepRate = msh->vertexBufferAttrs.StepRate;
+            vtxDesc.layouts[vbSlotIndex].stride = layout.ByteSize();
+            vtxDesc.layouts[vbSlotIndex].stepFunction = mtlTypes::asVertexStepFunc(msh->vertexBufferAttrs.StepFunction);
+            vtxDesc.layouts[vbSlotIndex].stepRate = msh->vertexBufferAttrs.StepRate;
         }
     }
 

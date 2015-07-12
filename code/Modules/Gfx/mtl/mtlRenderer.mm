@@ -236,15 +236,17 @@ mtlRenderer::applyDrawState(drawState* ds) {
         [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
 
         // apply vertex buffers
-        const int numVbSlots = ds->meshes.Size();
-        for (int vbIndex = 0; vbIndex < numVbSlots; vbIndex++) {
-            const mesh* msh = ds->meshes[vbIndex];
+        const int numMeshSlots = ds->meshes.Size();
+        for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
+            const mesh* msh = ds->meshes[meshIndex];
+            // NOTE: vertex buffers are located after constant buffers
+            const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
             if (msh) {
                 o_assert_dbg(msh->mtlVertexBuffer);
-                [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbIndex];
+                [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbSlotIndex];
             }
             else {
-                [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbIndex];
+                [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
             }
         }
 
