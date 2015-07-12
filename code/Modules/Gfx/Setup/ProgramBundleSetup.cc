@@ -43,7 +43,7 @@ ProgramBundleSetup::obtainEntry(uint32 mask) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
-    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
+    o_assert_dbg(this->numProgramEntries < GfxConfig::MaxNumBundlePrograms);
     o_assert_dbg(vs.IsValid() && vs.Type == GfxResourceType::Shader);
     o_assert_dbg(fs.IsValid() && fs.Type == GfxResourceType::Shader);
     
@@ -55,7 +55,7 @@ ProgramBundleSetup::AddProgram(uint32 mask, const Id& vs, const Id& fs) {
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource) {
-    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
+    o_assert_dbg(this->numProgramEntries < GfxConfig::MaxNumBundlePrograms);
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
 
     programEntry& entry = this->obtainEntry(mask);
@@ -67,7 +67,7 @@ ProgramBundleSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, c
 //------------------------------------------------------------------------------
 void
 ProgramBundleSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
-    o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
+    o_assert_dbg(this->numProgramEntries < GfxConfig::MaxNumBundlePrograms);
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
 

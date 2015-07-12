@@ -10,7 +10,7 @@ namespace Oryol {
 //------------------------------------------------------------------------------
 GfxSetup::GfxSetup() {
     for (int32 i = 0; i < GfxResourceType::NumResourceTypes; i++) {
-        this->poolSizes[i] = DefaultPoolSize;
+        this->poolSizes[i] = GfxConfig::DefaultResourcePoolSize;
         this->throttling[i] = 0;    // unthrottled
     }
 }

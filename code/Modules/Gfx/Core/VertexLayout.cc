@@ -38,7 +38,7 @@ uint64
 VertexLayout::CombinedHash(const VertexLayout& l0, const VertexLayout& l1) {
     // returns a hash of two combined vertex layouts, this is used
     // for finding matching mesh/vertexshader pairs
-    StaticArray<Component, MaxNumComponents * 2> combined;
+    StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents * 2> combined;
     int i = 0;
     for (const auto& comp : l0.comps) {
         combined[i++] = comp;
@@ -54,7 +54,7 @@ VertexLayout::CombinedHash(const VertexLayout& l0, const VertexLayout& l1) {
 //------------------------------------------------------------------------------
 VertexLayout&
 VertexLayout::Add(const Component& comp) {
-    o_assert_dbg(this->numComps < MaxNumComponents);
+    o_assert_dbg(this->numComps < GfxConfig::MaxNumVertexLayoutComponents);
     o_assert_dbg(InvalidIndex == this->attrCompIndices[comp.Attr]);
 
     this->comps[this->numComps] = comp;

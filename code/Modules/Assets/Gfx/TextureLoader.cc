@@ -175,7 +175,7 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
     TextureSetup newSetup = TextureSetup::FromPixelData(w, h, numMips, type, pixelFormat, this->setup);
     
     // setup mipmap offsets
-    o_assert_dbg(TextureSetup::MaxNumMipMaps >= ctx->num_mipmaps(0));
+    o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx->num_mipmaps(0));
     for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
             const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);

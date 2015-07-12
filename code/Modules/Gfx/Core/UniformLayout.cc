@@ -27,7 +27,7 @@ UniformLayout::Clear() {
 //------------------------------------------------------------------------------
 UniformLayout&
 UniformLayout::Add(const Component& comp) {
-    o_assert(this->numComps < MaxNumComponents);
+    o_assert(this->numComps < GfxConfig::MaxNumUniformLayoutComponents);
     this->comps[this->numComps] = comp;
     this->byteOffsets[this->numComps] = this->byteSize;
     this->byteSize += comp.ByteSize();

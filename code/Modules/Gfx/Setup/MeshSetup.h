@@ -10,6 +10,7 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
     
@@ -58,8 +59,6 @@ public:
     /// flip v coordinates for fullscreen quad (so that origin is top-left)
     bool FullScreenQuadFlipV;
 
-    /// maximum number of primitive groups for one mesh
-    static const int32 MaxNumPrimGroups = 8;
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups
@@ -79,7 +78,7 @@ public:
     
 private:
     int32 numPrimGroups;
-    class PrimitiveGroup primGroups[MaxNumPrimGroups];
+    class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];
     bool setupFromFile : 1;
     bool setupFromData : 1;
     bool setupEmpty : 1;

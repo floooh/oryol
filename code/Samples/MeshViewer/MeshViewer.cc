@@ -62,7 +62,7 @@ private:
         glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
         glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         float specPower = 32.0f;
-    } materials[MeshSetup::MaxNumPrimGroups];
+    } materials[GfxConfig::MaxNumPrimGroups];
     bool gammaCorrect = true;
 
     struct CameraSetting {

@@ -142,7 +142,7 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
 
     // setup primitive groups
     msh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(msh.numPrimGroups < mesh::MaxNumPrimGroups);
+    o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < msh.numPrimGroups; i++) {
         msh.primGroups[i] = setup.PrimitiveGroup(i);
     }

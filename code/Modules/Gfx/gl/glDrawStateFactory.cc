@@ -62,7 +62,7 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
     }
 
     // convert input mesh vertex layout components to glVertexAttrs
-    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             const VertexLayout& layout = msh->vertexBufferAttrs.Layout;

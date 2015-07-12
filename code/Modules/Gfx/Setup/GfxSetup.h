@@ -14,6 +14,7 @@
 */
 #include "Core/Containers/Array.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
@@ -67,8 +68,6 @@ public:
     GfxSetup();
 
 private:
-    static const int32 DefaultPoolSize = 128;
-    
     int32 poolSizes[GfxResourceType::NumResourceTypes];
     int32 throttling[GfxResourceType::NumResourceTypes];
 };

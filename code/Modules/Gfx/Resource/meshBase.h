@@ -20,9 +20,6 @@ public:
     /// constructor
     meshBase();
     
-    /// max number of primitive groups in the mesh
-    static const int32 MaxNumPrimGroups = 16;
-    
     /// vertex buffer attributes
     VertexBufferAttrs vertexBufferAttrs;
     /// index buffer attributes
@@ -30,7 +27,7 @@ public:
     /// number of primitive groups
     int32 numPrimGroups;
     /// primitive groups
-    StaticArray<PrimitiveGroup, MaxNumPrimGroups> primGroups;
+    StaticArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> primGroups;
     
     /// clear the object
     void Clear();

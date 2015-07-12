@@ -14,16 +14,12 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/UniformLayout.h"
 #include "Gfx/Core/VertexLayout.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
     
 class ProgramBundleSetup {
 public:
-    /// max number of shader programs
-    static const int32 MaxNumPrograms = 8;
-    /// max number of uniform blocks
-    static const int32 MaxNumUniformBlocks = 4;
-
     /// default constructor
     ProgramBundleSetup();
     /// construct with resource locator
@@ -113,8 +109,8 @@ private:
     const void* libraryByteCode;
     int32 numProgramEntries;
     int32 numUniformBlockEntries;
-    StaticArray<programEntry, MaxNumPrograms> programEntries;
-    StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlockEntries;
+    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
+    StaticArray<uniformBlockEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
 };
     
 } // namespace Oryol

@@ -59,7 +59,7 @@ private:
     uint32 selMask;
     int32 selIndex;
     int32 numPrograms;
-    StaticArray<programEntry, ProgramBundleSetup::MaxNumPrograms> programEntries;
+    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     ORYOL_OBJC_TYPED_ID(MTLLibrary) library;
 };
 

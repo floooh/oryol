@@ -208,7 +208,7 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
     
     mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
+    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < mesh.numPrimGroups; i++) {
         mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }
@@ -258,7 +258,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     
     // setup primitive groups
     mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < mesh::MaxNumPrimGroups);
+    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < mesh.numPrimGroups; i++) {
         mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }

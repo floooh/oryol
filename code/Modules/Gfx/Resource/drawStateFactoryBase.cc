@@ -69,7 +69,7 @@ drawStateFactoryBase::SetupResource(drawState& ds) {
 //------------------------------------------------------------------------------
 void
 drawStateFactoryBase::resolveInputMeshes(drawState& ds) {
-    for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
+    for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
         if (ds.Setup.Meshes[i].IsValid()) {
             ds.meshes[i] = this->meshPool->Get(ds.Setup.Meshes[i]);
             o_assert(ds.meshes[i]);
@@ -104,7 +104,7 @@ drawStateFactoryBase::checkInputMeshes(const drawState& ds) const {
 
     StaticArray<int, VertexAttr::NumVertexAttrs> vertexAttrCounts;
     vertexAttrCounts.Fill(0);
-    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             if (ResourceState::Valid != msh->State) {

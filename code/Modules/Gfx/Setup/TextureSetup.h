@@ -9,6 +9,7 @@
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
     
@@ -82,14 +83,10 @@ public:
     /// resource placeholder
     Id Placeholder;
     
-    /// max number of faces
-    static const int32 MaxNumFaces = 6;
-    /// max number of mipmaps
-    static const int32 MaxNumMipMaps = 12;
     /// pixel data mipmap image offsets
-    StaticArray<StaticArray<int32, MaxNumMipMaps>, MaxNumFaces> ImageOffsets;
+    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> ImageOffsets;
     /// pixel data mipmap image sizes
-    StaticArray<StaticArray<int32, MaxNumMipMaps>, MaxNumFaces> ImageSizes;
+    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> ImageSizes;
     
 private:
     bool setupFromFile : 1;

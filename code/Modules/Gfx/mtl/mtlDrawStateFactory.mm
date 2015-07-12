@@ -51,7 +51,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
 
     // create vertex-descriptor object
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
-    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             const VertexLayout& layout = msh->vertexBufferAttrs.Layout;

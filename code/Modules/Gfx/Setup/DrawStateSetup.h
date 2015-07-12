@@ -11,6 +11,7 @@
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
+#include "Gfx/Core/GfxConfig.h"
 #include "glm/vec4.hpp"
 
 namespace Oryol {
@@ -19,8 +20,6 @@ class DrawStateSetup {
 public:
     /// construct from mesh and prog
     static DrawStateSetup FromMeshAndProg(const Id& mesh, const Id& prog, uint32 progSelMask=0);
-    /// max number of input meshes
-    static const int32 MaxInputMeshes = 4;
 
     /// default constructor
     DrawStateSetup();
@@ -36,7 +35,7 @@ public:
     /// rasterizer state
     class RasterizerState RasterizerState;
     /// input mesh(es)
-    StaticArray<Id, MaxInputMeshes> Meshes;
+    StaticArray<Id, GfxConfig::MaxNumInputMeshes> Meshes;
     /// program bundle
     Id Program;
     /// program bundle selection mask

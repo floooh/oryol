@@ -8,6 +8,7 @@
 #include "Core/Assertion.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
     
@@ -68,12 +69,10 @@ public:
 
     /// compute a combined hash value of 2 vertex layout (used for mesh/vertex shader layout matching)
     static uint64 CombinedHash(const VertexLayout& l0, const VertexLayout& l1);
-    /// maximum number of components in layout
-    static const int32 MaxNumComponents = 16;
 
 private:
-    StaticArray<Component, MaxNumComponents> comps;
-    StaticArray<uint8, MaxNumComponents> byteOffsets;
+    StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;
+    StaticArray<uint8, GfxConfig::MaxNumVertexLayoutComponents> byteOffsets;
     StaticArray<int8, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
     int8 numComps;
     uint8 byteSize;

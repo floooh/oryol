@@ -53,7 +53,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
         return false;
     }
     const uint32 numPrimGroups = *u32Ptr++;
-    if (numPrimGroups > MeshSetup::MaxNumPrimGroups) {
+    if (numPrimGroups > GfxConfig::MaxNumPrimGroups) {
         return false;
     }
 

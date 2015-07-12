@@ -50,7 +50,7 @@ mtlProgramBundle::getLibrary() const {
 //------------------------------------------------------------------------------
 int32
 mtlProgramBundle::addShaders(uint32 mask, id<MTLFunction> vsFunc, id<MTLFunction> fsFunc) {
-    o_assert_dbg(this->numPrograms < ProgramBundleSetup::MaxNumPrograms);
+    o_assert_dbg(this->numPrograms < GfxConfig::MaxNumBundlePrograms);
     o_assert_dbg(nil != vsFunc);
     o_assert_dbg(nil != fsFunc);
 

@@ -25,7 +25,7 @@ public:
     void Clear();
     
     /// input mesh pointers
-    StaticArray<mesh*, DrawStateSetup::MaxInputMeshes> meshes;
+    StaticArray<mesh*, GfxConfig::MaxNumInputMeshes> meshes;
     /// program bundle pointer
     programBundle* prog;
 

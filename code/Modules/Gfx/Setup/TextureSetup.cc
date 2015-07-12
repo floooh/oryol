@@ -93,7 +93,7 @@ TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Cod
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert((numMipMaps > 0) && (numMipMaps < MaxNumMipMaps));
+    o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
     
     TextureSetup setup(blueprint);
     setup.setupFromFile = false;

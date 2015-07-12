@@ -6,6 +6,7 @@
     @brief describes the layout of an uniform block
 */
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxConfig.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/StaticArray.h"
 
@@ -59,14 +60,11 @@ public:
     /// get byte offset of a component
     int32 ComponentByteOffset(int32 componentIndex) const;
 
-    /// maximum number of components in layout
-    static const int32 MaxNumComponents = 16;
-
 private:
     int32 numComps;
     int32 byteSize;
-    StaticArray<Component, MaxNumComponents> comps;
-    StaticArray<int32, MaxNumComponents> byteOffsets;
+    StaticArray<Component, GfxConfig::MaxNumUniformLayoutComponents> comps;
+    StaticArray<int32, GfxConfig::MaxNumUniformLayoutComponents> byteOffsets;
 };
 
 //------------------------------------------------------------------------------
