@@ -277,7 +277,7 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     texDesc.CPUAccessFlags = 0;
     texDesc.MiscFlags = setup.Type == TextureType::TextureCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
 
-    const int32 maxNumSubResourceData = TextureSetup::MaxNumFaces * TextureSetup::MaxNumMipMaps;
+    const int32 maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
     D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { 0 };
     const uint8* srcPtr = (const uint8*) data;
     const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;

@@ -347,7 +347,7 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         ShaderType::Code cbStage = ShaderType::InvalidShaderType;
         int32 cbBindSlot = 0;
         const int numConstantBuffers = ds->prog->getNumUniformBlockEntries();
-        o_assert_dbg(numConstantBuffers < ProgramBundleSetup::MaxNumUniformBlocks);
+        o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
         for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
             ID3D11Buffer* cb = ds->prog->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
             if (cb) {
@@ -585,8 +585,8 @@ d3d11Renderer::invalidateProgramState() {
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11DeviceContext->VSSetShader(nullptr, nullptr, 0);
     this->d3d11DeviceContext->PSSetShader(nullptr, nullptr, 0);
-    this->d3d11DeviceContext->VSSetConstantBuffers(0, ProgramBundleSetup::MaxNumUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
-    this->d3d11DeviceContext->PSSetConstantBuffers(0, ProgramBundleSetup::MaxNumUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
+    this->d3d11DeviceContext->VSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
+    this->d3d11DeviceContext->PSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
 }
 
 //------------------------------------------------------------------------------
@@ -609,13 +609,13 @@ void
 d3d11Renderer::invalidateTextureState() {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    ID3D11ShaderResourceView* const nullViews[UniformLayout::MaxNumComponents] = { 0 };
-    this->d3d11DeviceContext->VSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
-    this->d3d11DeviceContext->PSSetShaderResources(0, UniformLayout::MaxNumComponents, nullViews);
+    ID3D11ShaderResourceView* const nullViews[GfxConfig::MaxNumUniformLayoutComponents] = { 0 };
+    this->d3d11DeviceContext->VSSetShaderResources(0, GfxConfig::MaxNumUniformLayoutComponents, nullViews);
+    this->d3d11DeviceContext->PSSetShaderResources(0, GfxConfig::MaxNumUniformLayoutComponents, nullViews);
 
-    ID3D11SamplerState* const nullSamplerStates[UniformLayout::MaxNumComponents] = { 0 };
-    this->d3d11DeviceContext->VSSetSamplers(0, UniformLayout::MaxNumComponents, nullSamplerStates);
-    this->d3d11DeviceContext->PSSetSamplers(0, UniformLayout::MaxNumComponents, nullSamplerStates);
+    ID3D11SamplerState* const nullSamplerStates[GfxConfig::MaxNumUniformLayoutComponents] = { 0 };
+    this->d3d11DeviceContext->VSSetSamplers(0, GfxConfig::MaxNumUniformLayoutComponents, nullSamplerStates);
+    this->d3d11DeviceContext->PSSetSamplers(0, GfxConfig::MaxNumUniformLayoutComponents, nullSamplerStates);
 
     this->d3d11CurVSShaderResourceViews.Fill(nullptr);
     this->d3d11CurPSShaderResourceViews.Fill(nullptr);

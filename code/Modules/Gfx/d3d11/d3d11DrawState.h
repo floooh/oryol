@@ -24,7 +24,7 @@ public:
     void Clear();
 
     /// pointer to input layout objects (same number and order as programBundle variations)
-    StaticArray<ID3D11InputLayout*, ProgramBundleSetup::MaxNumPrograms> d3d11InputLayouts;
+    StaticArray<ID3D11InputLayout*, GfxConfig::MaxNumBundlePrograms> d3d11InputLayouts;
     /// rasterize state object
     ID3D11RasterizerState* d3d11RasterizerState;
     /// depth-stencil state object
@@ -32,11 +32,11 @@ public:
     /// blend state object
     ID3D11BlendState* d3d11BlendState;
     /// input assembler vertex buffer pointers
-    StaticArray<ID3D11Buffer*, DrawStateSetup::MaxInputMeshes> d3d11IAVertexBuffers;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11IAVertexBuffers;
     /// input assember vertex buffer strides
-    StaticArray<uint32, DrawStateSetup::MaxInputMeshes> d3d11IAStrides;
+    StaticArray<uint32, GfxConfig::MaxNumInputMeshes> d3d11IAStrides;
     /// input assembler vertex buffer offsets
-    StaticArray<uint32, DrawStateSetup::MaxInputMeshes> d3d11IAOffsets;
+    StaticArray<uint32, GfxConfig::MaxNumInputMeshes> d3d11IAOffsets;
 };
 
 } // namespace _priv

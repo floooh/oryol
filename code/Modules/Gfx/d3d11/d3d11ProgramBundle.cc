@@ -41,7 +41,7 @@ d3d11ProgramBundle::Clear() {
 //------------------------------------------------------------------------------
 int32
 d3d11ProgramBundle::addShaders(uint32 mask, ID3D11VertexShader* vs, ID3D11PixelShader* ps) {
-    o_assert_dbg(this->numPrograms < ProgramBundleSetup::MaxNumPrograms);
+    o_assert_dbg(this->numPrograms < GfxConfig::MaxNumBundlePrograms);
     o_assert_dbg(vs && ps);
 
     // make sure the mask is unique
@@ -77,7 +77,7 @@ d3d11ProgramBundle::getPixelShaderAt(int32 index) const {
 //------------------------------------------------------------------------------
 void
 d3d11ProgramBundle::addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
-    o_assert_dbg(this->numUniformBlockEntries < ProgramBundleSetup::MaxNumUniformBlocks);
+    o_assert_dbg(this->numUniformBlockEntries < GfxConfig::MaxNumUniformBlocks);
     // NOTE: cb pointer can be 0!
     ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
     entry.constantBuffer = cb;

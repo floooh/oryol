@@ -77,9 +77,9 @@ private:
     uint32 selMask;
     int32 selIndex;
     int32 numPrograms;
-    StaticArray<programEntry, ProgramBundleSetup::MaxNumPrograms> programEntries;
+    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     int32 numUniformBlockEntries;
-    StaticArray<ubEntry, ProgramBundleSetup::MaxNumUniformBlocks> uniformBlockEntries;
+    StaticArray<ubEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
 };
 
 //------------------------------------------------------------------------------

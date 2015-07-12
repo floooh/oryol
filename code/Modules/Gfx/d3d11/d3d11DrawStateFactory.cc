@@ -55,7 +55,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     // set vertex buffers, strides and offsets
     D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
     int d3d11IASlotIndex = 0;
-    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             o_assert_dbg(msh->d3d11VertexBuffer);
@@ -137,7 +137,7 @@ d3d11DrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(nullptr != this->renderer);
 
     this->renderer->invalidateDrawState();
-    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
+    for (int i = 0; i < GfxConfig::MaxNumBundlePrograms; i++) {
         if (nullptr != ds.d3d11InputLayouts[i]) {
             this->releaseInputLayout(ds.d3d11InputLayouts[i]);
         }
@@ -166,7 +166,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
 
     // build combined vertex layout of all input vertex buffers
     VertexLayout vertexLayout;
-    for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             vertexLayout.Append(msh->vertexBufferAttrs.Layout);
@@ -185,7 +185,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
         D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
         int d3d11CompIndex = 0;
         int d3d11IASlotIndex = 0;
-        for (int mshIndex = 0; mshIndex < DrawStateSetup::MaxInputMeshes; mshIndex++) {
+        for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
             const mesh* msh = ds.meshes[mshIndex];
             if (msh) {
                 const VertexLayout& layout = msh->vertexBufferAttrs.Layout;

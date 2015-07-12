@@ -21,13 +21,13 @@ d3d11BlendState(nullptr) {
 //------------------------------------------------------------------------------
 d3d11DrawState::~d3d11DrawState() {
     #if ORYOL_DEBUG
-    for (int i = 0; i < ProgramBundleSetup::MaxNumPrograms; i++) {
+    for (int i = 0; i < GfxConfig::MaxNumBundlePrograms; i++) {
         o_assert_dbg(nullptr == this->d3d11InputLayouts[i]);
     }
     o_assert_dbg(nullptr == this->d3d11RasterizerState);
     o_assert_dbg(nullptr == this->d3d11DepthStencilState);
     o_assert_dbg(nullptr == this->d3d11BlendState);
-    for (int i = 0; i < DrawStateSetup::MaxInputMeshes; i++) {
+    for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
         o_assert_dbg(nullptr == this->d3d11IAVertexBuffers[i]);
     }
     #endif
