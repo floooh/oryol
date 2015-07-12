@@ -60,6 +60,8 @@ public:
     int32 ResourceLabelStackCapacity = 256;
     /// initial resource registry capacity
     int32 ResourceRegistryCapacity = 256;
+    /// size of the global uniform buffer (only relevant on some platforms)
+    int32 GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;

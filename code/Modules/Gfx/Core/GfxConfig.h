@@ -12,6 +12,8 @@ class GfxConfig {
 public:
     /// default resource pool size
     static const int32 DefaultResourcePoolSize = 128;
+    /// default uniform buffer size (only relevant on some platforms)
+    static const int32 DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
     /// max number of input meshes
     static const int32 MaxNumInputMeshes = 4;
     /// maximum number of primitive groups for one mesh

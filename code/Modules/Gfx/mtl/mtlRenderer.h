@@ -6,6 +6,7 @@
     @brief Metal implementation of class 'renderer'
 */
 #include "Core/Types.h"
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/BlendState.h"
@@ -92,6 +93,12 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
     ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
+
+    // rotated global uniform buffers
+    static const int MaxNumUniformBuffers = 2;
+    int32 curUniformBufferIndex;
+    int32 curUniformBufferOffset;
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), MaxNumUniformBuffers> uniformBuffers;
 };
 
 } // namespace _priv

@@ -5,8 +5,10 @@
 #include "mtlRenderer.h"
 #include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
+#include "Gfx/Core/UniformLayout.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/programBundle.h"
 
 namespace Oryol {
 namespace _priv {
@@ -22,7 +24,9 @@ curDrawable(nil),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
-curCommandEncoder(nil) {
+curCommandEncoder(nil),
+curUniformBufferIndex(0),
+curUniformBufferOffset(0) {
     // FIXME
 }
 
@@ -42,11 +46,20 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     // sync semaphore
     mtlInflightSemaphore = dispatch_semaphore_create(3);
+    dispatch_semaphore_signal(mtlInflightSemaphore);
 
     // setup central metal objects
     this->mtlDevice = this->pointers.displayMgr->cocoa.mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
     this->commandQueue.label = @"OryolCommandQueue";
+
+    // create global rotated uniform buffer
+    for (int i = 0; i < MaxNumUniformBuffers; i++) {
+        // FIXME: is options:0 right? this is used by the Xcode game sample
+        this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:0];
+    }
+    this->curUniformBufferIndex = 0;
+    this->curUniformBufferOffset = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -54,6 +67,9 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
+    for (int i = 0; i < MaxNumUniformBuffers; i++) {
+        this->uniformBuffers[i] = nil;
+    }
     this->commandQueue = nil;
     this->mtlDevice = nil;
     this->pointers = gfxPointers();
@@ -92,6 +108,9 @@ mtlRenderer::commitFrame() {
 
     this->rtValid = false;
 
+    // wait for previous frame to finish
+    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
@@ -101,8 +120,13 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer presentDrawable:curDrawable];
     [this->curCommandBuffer commit];
 
+    // rotate to next uniform buffer
+    if (++this->curUniformBufferIndex >= MaxNumUniformBuffers) {
+        this->curUniformBufferIndex = 0;
+    }
+    this->curUniformBufferOffset = 0;
+
     // FIXME: probably not a good idea to wait here right after the commit!
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
     this->curDrawable = nil;
@@ -212,44 +236,43 @@ mtlRenderer::applyDrawState(drawState* ds) {
     if (nullptr == ds) {
         // drawState dependencies still pending, invalidate rendering
         this->curDrawState = nullptr;
+        return;
     }
-    else {
-        o_assert_dbg(ds->mtlRenderPipelineState);
-        o_assert_dbg(ds->mtlDepthStencilState);
-        o_assert2_dbg(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-        o_assert2_dbg(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
-        o_assert2_dbg(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        // set current draw state (used to indicate that rendering is valid)
-        this->curDrawState = ds;
+    o_assert_dbg(ds->mtlRenderPipelineState);
+    o_assert_dbg(ds->mtlDepthStencilState);
+    o_assert2_dbg(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2_dbg(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
+    o_assert2_dbg(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        // apply general state
-        const glm::vec4& bc = ds->Setup.BlendColor;
-        const RasterizerState& rs = ds->Setup.RasterizerState;
-        const DepthStencilState& dss = ds->Setup.DepthStencilState;
-        [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
-        [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
-        [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
+    // set current draw state (used to indicate that rendering is valid)
+    this->curDrawState = ds;
 
-        // apply state objects
-        [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
-        [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
+    // apply general state
+    const glm::vec4& bc = ds->Setup.BlendColor;
+    const RasterizerState& rs = ds->Setup.RasterizerState;
+    const DepthStencilState& dss = ds->Setup.DepthStencilState;
+    [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
+    [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
+    [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
 
-        // apply vertex buffers
-        const int numMeshSlots = ds->meshes.Size();
-        for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
-            const mesh* msh = ds->meshes[meshIndex];
-            // NOTE: vertex buffers are located after constant buffers
-            const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
-            if (msh) {
-                o_assert_dbg(msh->mtlVertexBuffer);
-                [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbSlotIndex];
-            }
-            else {
-                [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
-            }
+    // apply state objects
+    [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
+    [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
+
+    // apply vertex buffers
+    const int numMeshSlots = ds->meshes.Size();
+    for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
+        const mesh* msh = ds->meshes[meshIndex];
+        // NOTE: vertex buffers are located after constant buffers
+        const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
+        if (msh) {
+            o_assert_dbg(msh->mtlVertexBuffer);
+            [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbSlotIndex];
         }
-
+        else {
+            [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
+        }
     }
 }
 
@@ -257,8 +280,50 @@ mtlRenderer::applyDrawState(drawState* ds) {
 void
 mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(this->curCommandEncoder);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
 
-    o_error("mtlRenderer::applyUniformBlock()\n");
+    // get the uniform layout object for this uniform block
+    const programBundle* prog = this->curDrawState->prog;
+    o_assert_dbg(prog);
+    const UniformLayout& layout = prog->Setup.UniformBlockLayout(blockIndex);
+
+    // check whether the provided struct is type-compatible with the uniform layout
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+
+    // FIXME: set textures and samplers, and find start of uniform buffer data
+    // FIXME: textures should be separated from uniforms, probably even go
+    // into the drawState (although this would not allow to change textures
+    // between instances
+    const uint8* uBufferPtr = nullptr;
+    const int numComps = layout.NumComponents();
+    for (int compIndex = 0; compIndex < numComps; compIndex++) {
+        const auto& comp = layout.ComponentAt(compIndex);
+        if (comp.Type == UniformType::Texture) {
+            // FIXME: set texture and sampler in encoder
+        }
+        else {
+            // found the start of the cbuffer struct
+            uBufferPtr = ptr + layout.ComponentByteOffset(compIndex);
+            break;
+        }
+    }
+
+    // write uniforms into global uniform buffer, advance buffer offset
+    // and set current uniform buffer location on command-encoder
+    id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curUniformBufferIndex];
+    const int32 uniformSize = layout.ByteSizeWithoutTextures();
+    o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
+    Memory::Copy(ptr, dstPtr, uniformSize);
+
+    // set vertex shader buffer location for next draw call
+    [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:blockIndex];
+
+    // advance uniform buffer offset
+    this->curUniformBufferOffset += uniformSize;
 }
 
 //------------------------------------------------------------------------------
