@@ -55,7 +55,7 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
 
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_SAMPLES, gfxSetup.Samples,
+        EGL_SAMPLES, gfxSetup.SampleCount,
         EGL_RED_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Red),
         EGL_GREEN_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Green),
         EGL_BLUE_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Blue),
