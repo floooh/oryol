@@ -737,7 +737,7 @@ glRenderer::applyStencilState(const DepthStencilState& newState, const DepthSten
     const uint32 readMask = newState.StencilReadMask;
     const int32 stencilRef = newState.StencilRef;
     if ((cmpFunc != curStencilState.CmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
-        o_assert_range_dbg(cmpFunc, CompareFunc::NumCompareFuncs);
+        o_assert_range_dbg(int(cmpFunc), CompareFunc::NumCompareFuncs);
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
     }
 
@@ -745,9 +745,9 @@ glRenderer::applyStencilState(const DepthStencilState& newState, const DepthSten
     const StencilOp::Code dFailOp = newStencilState.DepthFailOp;
     const StencilOp::Code passOp = newStencilState.PassOp;
     if ((sFailOp != curStencilState.FailOp) || (dFailOp != curStencilState.DepthFailOp) || (passOp  != curStencilState.PassOp)) {
-        o_assert_range_dbg(sFailOp, StencilOp::NumStencilOperations);
-        o_assert_range_dbg(dFailOp, StencilOp::NumStencilOperations);
-        o_assert_range_dbg(passOp, StencilOp::NumStencilOperations);
+        o_assert_range_dbg(int(sFailOp), StencilOp::NumStencilOperations);
+        o_assert_range_dbg(int(dFailOp), StencilOp::NumStencilOperations);
+        o_assert_range_dbg(int(passOp), StencilOp::NumStencilOperations);
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
@@ -769,7 +769,7 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     if (curState.StateHash != newState.StateHash) {
         const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
         if (depthCmpFunc != curState.DepthCmpFunc) {
-            o_assert_range_dbg(depthCmpFunc, CompareFunc::NumCompareFuncs);
+            o_assert_range_dbg(int(depthCmpFunc), CompareFunc::NumCompareFuncs);
             ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
         }
         const bool depthWriteEnabled = newState.DepthWriteEnabled;

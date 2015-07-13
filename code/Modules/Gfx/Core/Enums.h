@@ -101,8 +101,11 @@ public:
 */
 class PixelFormat {
 public:
-    /// pixel format enum
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint64 {
+    #else
+    enum Code {
+    #endif
         RGBA8,          ///< 32-bit wide, 4 channels @ 8-bit
         RGB8,           ///< 24-bit wide, 3 channels @ 8-bit
         RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
@@ -123,7 +126,7 @@ public:
         PVRTC4_RGBA,    ///< PVRTC4 compressed format (RGBA)
         ETC2_RGB8,      ///< ETC2 compressed format (RGB8)
         ETC2_SRGB8,     ///< ETC2 compressed format (SRGB8)
-        
+
         NumPixelFormats,            ///< number of pixel formats
         InvalidPixelFormat,         ///< invalid pixel format value
         None = InvalidPixelFormat,  ///< special "none" type
