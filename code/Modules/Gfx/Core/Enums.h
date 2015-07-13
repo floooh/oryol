@@ -633,15 +633,18 @@ public:
 */
 class Face {
 public:
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint16 {
+    #else
+    enum Code {
+    #endif
         Front = 0,
         Back,
         Both,
-        
-        NumFaceCodes,
-        NumSides = 2,
-        InvalidFace = 0xFF
     };
+    static const int NumFaceCodes = 3;
+    static const int NumSides = 2;
+    static const int InvalidFace = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -652,7 +655,11 @@ public:
 */
 class CompareFunc {
 public:
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint16 {
+    #else
+    enum Code {
+    #endif
         Never = 0,
         Less,
         Equal,
@@ -660,11 +667,10 @@ public:
         Greater,
         NotEqual,
         GreaterEqual,
-        Always,
-        
-        NumCompareFuncs,
-        InvalidCompareFunc,
+        Always
     };
+    static const int NumCompareFuncs = 8;
+    static const int InvalidCompareFunc = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -675,7 +681,11 @@ public:
 */
 class StencilOp {
 public:
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint16 {
+    #else
+    enum Code {
+    #endif
         Keep,
         Zero,
         Replace,
@@ -684,10 +694,9 @@ public:
         Invert,
         IncrWrap,
         DecrWrap,
-        
-        NumStencilOperations,
-        InvalidStencilOperation,
     };
+    static const int NumStencilOperations = 8;
+    static const int InvalidStencilOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
@@ -698,7 +707,11 @@ public:
 */
 class BlendFactor {
 public:
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint64 {
+    #else
+    enum Code {
+    #endif
         Zero = 0,
         One,
         SrcColor,
@@ -714,10 +727,9 @@ public:
         OneMinusBlendColor,
         BlendAlpha,
         OneMinusBlendAlpha,
-        
-        NumBlendFactors,
-        InvalidBlendFactor,
     };
+    static const int NumBlendFactors = 15;
+    static const int InvalidBlendFactor = 0xFF;
 };
  
 //------------------------------------------------------------------------------
@@ -728,14 +740,17 @@ public:
 */
 class BlendOperation {
 public:
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint64 {
+    #else
+    enum Code {
+    #endif
         Add = 0,
         Subtract,
         ReverseSubtract,
-        
-        NumBlendOperations,
-        InvalidBlendOperation,
     };
+    static const int NumBlendOperations = 3;
+    static const int InvalidBlendOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
