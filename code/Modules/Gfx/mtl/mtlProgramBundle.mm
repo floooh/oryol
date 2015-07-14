@@ -17,8 +17,8 @@ mtlProgramBundle::mtlProgramBundle() {
 mtlProgramBundle::~mtlProgramBundle() {
 #if ORYOL_DEBUG
     for (int32 i = 0; i < this->numPrograms; i++) {
-        o_assert_dbg(nil == this->programEntries[i].vertexShader);
-        o_assert_dbg(nil == this->programEntries[i].fragmentShader);
+        o_assert_dbg(nil == this->programEntries[i].mtlVertexShader);
+        o_assert_dbg(nil == this->programEntries[i].mtlFragmentShader);
     }
 #endif
 }
@@ -30,7 +30,7 @@ mtlProgramBundle::Clear() {
     this->selIndex = 0;
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
-    this->library = nil;
+    this->mtlLibrary = nil;
     programBundleBase::Clear();
 }
 
@@ -38,13 +38,13 @@ mtlProgramBundle::Clear() {
 void
 mtlProgramBundle::setLibrary(id<MTLLibrary> lib) {
     o_assert_dbg(nil != lib);
-    this->library = lib;
+    this->mtlLibrary = lib;
 }
 
 //------------------------------------------------------------------------------
 id<MTLLibrary>
 mtlProgramBundle::getLibrary() const {
-    return this->library;
+    return this->mtlLibrary;
 }
 
 //------------------------------------------------------------------------------
@@ -61,8 +61,8 @@ mtlProgramBundle::addShaders(uint32 mask, id<MTLFunction> vsFunc, id<MTLFunction
 
     auto& entry = this->programEntries[this->numPrograms];
     entry.mask = mask;
-    entry.vertexShader = vsFunc;
-    entry.fragmentShader = fsFunc;
+    entry.mtlVertexShader = vsFunc;
+    entry.mtlFragmentShader = fsFunc;
 
     return this->numPrograms++;
 }
@@ -97,13 +97,13 @@ mtlProgramBundle::select(uint32 mask) {
 //------------------------------------------------------------------------------
 id<MTLFunction>
 mtlProgramBundle::getSelectedVertexShader() const {
-    return this->programEntries[this->selIndex].vertexShader;
+    return this->programEntries[this->selIndex].mtlVertexShader;
 }
 
 //------------------------------------------------------------------------------
 id<MTLFunction>
 mtlProgramBundle::getSelectedFragmentShader() const {
-    return this->programEntries[this->selIndex].fragmentShader;
+    return this->programEntries[this->selIndex].mtlFragmentShader;
 }
 
 //------------------------------------------------------------------------------
@@ -115,13 +115,13 @@ mtlProgramBundle::getNumPrograms() const {
 //------------------------------------------------------------------------------
 id<MTLFunction>
 mtlProgramBundle::getVertexShaderAt(int32 index) const {
-    return this->programEntries[index].vertexShader;
+    return this->programEntries[index].mtlVertexShader;
 }
 
 //------------------------------------------------------------------------------
 id<MTLFunction>
 mtlProgramBundle::getFragmentShaderAt(int32 index) const {
-    return this->programEntries[index].fragmentShader;
+    return this->programEntries[index].mtlFragmentShader;
 }
 
 } // namespace _priv

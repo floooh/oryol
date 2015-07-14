@@ -106,8 +106,16 @@ void
 mtlDrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
-    // ARC should take care about releasing the object when nil-ed
     this->renderer->invalidateDrawState();
+
+    if (nil != ds.mtlRenderPipelineState) {
+        ORYOL_OBJC_RELEASE(ds.mtlRenderPipelineState);
+        ds.mtlRenderPipelineState = nil;
+    }
+    if (nil != ds.mtlDepthStencilState) {
+        ORYOL_OBJC_RELEASE(ds.mtlDepthStencilState);
+        ds.mtlDepthStencilState = nil;
+    }
 
     drawStateFactoryBase::DestroyResource(ds);
 }

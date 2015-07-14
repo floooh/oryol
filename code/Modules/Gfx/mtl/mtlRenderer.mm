@@ -424,5 +424,12 @@ mtlRenderer::invalidateDrawState() {
     Log::Info("mtlRenderer::invalidateDrawState()\n");
 }
 
+//------------------------------------------------------------------------------
+void
+mtlRenderer::invalidateTextureState() {
+    // FIXME!
+    Log::Info("mtlRenderer::invalidateTextureState()\n");
+}
+
 } // namespace _priv
 } // namespace Oryol

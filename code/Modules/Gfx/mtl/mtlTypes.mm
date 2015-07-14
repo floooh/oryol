@@ -29,6 +29,34 @@ mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
+MTLPixelFormat
+mtlTypes::asTextureFormat(PixelFormat::Code fmt) {
+    switch (fmt) {
+        case PixelFormat::RGBA8:    return MTLPixelFormatRGBA8Unorm;
+        case PixelFormat::RGBA32F:  return MTLPixelFormatRGBA32Float;
+        case PixelFormat::RGBA16F:  return MTLPixelFormatRGBA16Float;
+        case PixelFormat::L8:       return MTLPixelFormatR8Unorm;
+        case PixelFormat::DXT1:     return MTLPixelFormatBC1_RGBA;
+        case PixelFormat::DXT3:     return MTLPixelFormatBC2_RGBA;
+        case PixelFormat::DXT5:     return MTLPixelFormatBC3_RGBA;
+        default: return MTLPixelFormatInvalid;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLTextureType
+mtlTypes::asTextureType(TextureType::Code type) {
+    switch (type) {
+        case TextureType::Texture2D:    return MTLTextureType2D;
+        case TextureType::Texture3D:    return MTLTextureType3D;
+        case TextureType::TextureCube:  return MTLTextureTypeCube;
+        default:
+            o_error("mtlTypes::asTextureType(): invalid value!\n");
+            return MTLTextureType1D;
+    }
+}
+
+//------------------------------------------------------------------------------
 MTLResourceOptions
 mtlTypes::asBufferResourceOptions(Usage::Code usage) {
     switch (usage) {

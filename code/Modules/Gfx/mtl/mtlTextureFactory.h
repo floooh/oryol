@@ -37,6 +37,13 @@ public:
     void DestroyResource(texture& tex);
     
 private:
+    /// create a render-target texture
+    ResourceState::Code createRenderTarget(texture& tex);
+    /// create a texture from pixel-data in memory
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create a sampler state object and set in texture object
+    void createSamplerState(texture& tex);
+
     class renderer* renderer;
     displayMgr* displayManager;
     texturePool* texPool;

@@ -79,6 +79,8 @@ public:
     void invalidateProgramState();
     /// invalidate current draw state
     void invalidateDrawState();
+    /// invalidate current texture state
+    void invalidateTextureState();
 
     bool valid;
     GfxSetup gfxSetup;

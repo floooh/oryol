@@ -47,20 +47,17 @@ public:
     /// get fragment shader function at program index
     ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShaderAt(int32 index) const;
 
-    // FIXME: uniform blocks
-
-private:
     class programEntry {
     public:
         uint32 mask;
-        ORYOL_OBJC_TYPED_ID(MTLFunction) vertexShader;
-        ORYOL_OBJC_TYPED_ID(MTLFunction) fragmentShader;
+        ORYOL_OBJC_TYPED_ID(MTLFunction) mtlVertexShader;
+        ORYOL_OBJC_TYPED_ID(MTLFunction) mtlFragmentShader;
     };
     uint32 selMask;
     int32 selIndex;
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
-    ORYOL_OBJC_TYPED_ID(MTLLibrary) library;
+    ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlLibrary;
 };
 
 } // namespace _priv

@@ -20,6 +20,10 @@ class mtlTypes {
 public:
     /// convert render target pixel format
     static MTLPixelFormat asRenderTargetFormat(PixelFormat::Code fmt);
+    /// convert texture pixel format
+    static MTLPixelFormat asTextureFormat(PixelFormat::Code fmt);
+    /// convert texture type
+    static MTLTextureType asTextureType(TextureType::Code type);
     /// convert usage to MTLResourceOptions bit mask
     static MTLResourceOptions asBufferResourceOptions(Usage::Code usage);
     /// convert compare function enum value

@@ -99,8 +99,20 @@ mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
 
     this->renderer->invalidateProgramState();
-
-    // hmm, with ARC it should be enough to clear the object references?
+    for (auto& entry : progBundle.programEntries) {
+        if (nil != entry.mtlVertexShader) {
+            ORYOL_OBJC_RELEASE(entry.vertexShader);
+            entry.mtlVertexShader = nil;
+        }
+        if (nil != entry.mtlFragmentShader) {
+            ORYOL_OBJC_RELEASE(entry.fragmentShader);
+            entry.mtlFragmentShader = nil;
+        }
+    }
+    if (nil != progBundle.mtlLibrary) {
+        ORYOL_OBJC_RELEASE(progBundle.mtlLibrary);
+        progBundle.mtlLibrary = nil;
+    }
     progBundle.Clear();
 }
 

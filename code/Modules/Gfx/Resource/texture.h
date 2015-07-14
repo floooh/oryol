@@ -21,10 +21,10 @@ namespace _priv {
 class texture : public d3d11Texture { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/Resource/textureBase.h"
+#include "Gfx/mtl/mtlTexture.h"
 namespace Oryol {
 namespace _priv {
-class texture : public textureBase { };
+class texture : public mtlTexture { };
 } }
 #else
 #error "Target platform not yet supported!"
