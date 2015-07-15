@@ -237,6 +237,7 @@ ResourceState::Code
 glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
+    o_assert_dbg(Usage::Immutable == mesh.Setup.VertexUsage);
 
     const MeshSetup& setup = mesh.Setup;
     
@@ -270,6 +271,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));
     mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
     if (setup.IndicesType != IndexType::None) {
+        o_assert_dbg(setup.IndexUsage == Usage::Immutable);
         o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
         o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
         const uint8* indices = ptr + setup.DataIndexOffset;
