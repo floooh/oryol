@@ -192,7 +192,6 @@ d3d11MeshFactory::createEmptyMesh(mesh& mesh) {
     ibAttrs.Type = setup.IndicesType;
     ibAttrs.BufferUsage = setup.IndexUsage;
     mesh.indexBufferAttrs = ibAttrs;
-    const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
 
     mesh.numPrimGroups = setup.NumPrimitiveGroups();
     o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
@@ -202,6 +201,7 @@ d3d11MeshFactory::createEmptyMesh(mesh& mesh) {
 
     mesh.d3d11VertexBuffer = this->createBuffer(nullptr, vbSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
     if (IndexType::None != ibAttrs.Type) {
+        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         mesh.d3d11IndexBuffer  = this->createBuffer(nullptr, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);
     }
 
