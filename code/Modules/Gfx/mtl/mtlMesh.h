@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief Metal implementation of class mesh
 */
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/resource/meshBase.h"
 #include "Gfx/mtl/mtl_decl.h"
 
@@ -21,7 +22,12 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    ORYOL_OBJC_TYPED_ID(MTLBuffer) mtlVertexBuffer;
+    /// max number of vertex buffer slots (used for double-buffering dynamic vertex data)
+    static const int32 NumSlots = 2;
+    /// active vertex buffer slot
+    uint8 activeVertexBufferSlot;
+
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer),NumSlots> mtlVertexBuffers;
     ORYOL_OBJC_TYPED_ID(MTLBuffer) mtlIndexBuffer;
 };
 

@@ -24,6 +24,12 @@ public:
     static MTLPixelFormat asTextureFormat(PixelFormat::Code fmt);
     /// convert texture type
     static MTLTextureType asTextureType(TextureType::Code type);
+    /// convert texture address mode
+    static MTLSamplerAddressMode asSamplerAddressMode(TextureWrapMode::Code mode);
+    /// convert to sampler min/mag filter
+    static MTLSamplerMinMagFilter asSamplerMinMagFilter(TextureFilterMode::Code f);
+    /// convert to sampler mip filter
+    static MTLSamplerMipFilter asSamplerMipFilter(TextureFilterMode::Code f);
     /// convert usage to MTLResourceOptions bit mask
     static MTLResourceOptions asBufferResourceOptions(Usage::Code usage);
     /// convert compare function enum value

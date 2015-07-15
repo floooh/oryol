@@ -175,7 +175,22 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
 //------------------------------------------------------------------------------
 void
 mtlTextureFactory::createSamplerState(texture& tex) {
-    // FIXME!
+    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
+    o_assert_dbg(nil == tex.mtlSamplerState);
+
+    MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
+    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapU);
+    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapV);
+    desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapW);
+    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MinFilter);
+    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MagFilter);
+    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.MinFilter);
+    desc.lodMinClamp = 0.0f;
+    desc.lodMaxClamp = FLT_MAX;
+    desc.maxAnisotropy = 1;
+    desc.normalizedCoordinates = YES;
+    tex.mtlSamplerState = [this->renderer->mtlDevice newSamplerStateWithDescriptor:desc];
+    o_assert(nil != tex.mtlSamplerState);
 }
 
 } // namespace _priv

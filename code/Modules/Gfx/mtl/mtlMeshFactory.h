@@ -45,6 +45,10 @@ public:
     ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
 
 private:
+    /// setup vertex/index buffer attrs structs in the mesh
+    void setupAttrs(mesh& msh);
+    /// setup the primitive groups in the mesh
+    void setupPrimGroups(mesh& msh);
     /// helper method to create vertex or index buffer
     ORYOL_OBJC_TYPED_ID(MTLBuffer) createBuffer(const void* data, uint32 dataSize, Usage::Code usage);
 

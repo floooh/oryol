@@ -57,6 +57,56 @@ mtlTypes::asTextureType(TextureType::Code type) {
 }
 
 //------------------------------------------------------------------------------
+MTLSamplerAddressMode
+mtlTypes::asSamplerAddressMode(TextureWrapMode::Code mode) {
+    switch (mode) {
+        case TextureWrapMode::ClampToEdge:      return MTLSamplerAddressModeClampToEdge;
+        case TextureWrapMode::Repeat:           return MTLSamplerAddressModeRepeat;
+        case TextureWrapMode::MirroredRepeat:   return MTLSamplerAddressModeMirrorRepeat;
+        default:
+            o_error("mtlTypes::asSamplerAddressMode(): invalid value!\n");
+            return MTLSamplerAddressModeRepeat;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLSamplerMinMagFilter
+mtlTypes::asSamplerMinMagFilter(TextureFilterMode::Code f) {
+    switch (f) {
+        case TextureFilterMode::Nearest:
+        case TextureFilterMode::NearestMipmapNearest:
+        case TextureFilterMode::NearestMipmapLinear:
+            return MTLSamplerMinMagFilterNearest;
+        case TextureFilterMode::Linear:
+        case TextureFilterMode::LinearMipmapNearest:
+        case TextureFilterMode::LinearMipmapLinear:
+            return MTLSamplerMinMagFilterLinear;
+        default:
+            o_error("mtlTypes::asSamplerMinMagFilter(): invalid value!\n");
+            return MTLSamplerMinMagFilterNearest;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLSamplerMipFilter
+mtlTypes::asSamplerMipFilter(TextureFilterMode::Code f) {
+    switch (f) {
+        case TextureFilterMode::Nearest:
+        case TextureFilterMode::Linear:
+            return MTLSamplerMipFilterNotMipmapped;
+        case TextureFilterMode::NearestMipmapNearest:
+        case TextureFilterMode::LinearMipmapNearest:
+            return MTLSamplerMipFilterNearest;
+        case TextureFilterMode::NearestMipmapLinear:
+        case TextureFilterMode::LinearMipmapLinear:
+            return MTLSamplerMipFilterLinear;
+        default:
+            o_error("mtlTypes::asSamplerMipFilter(): invalid value!\n");
+            return MTLSamplerMipFilterNotMipmapped;
+    }
+}
+
+//------------------------------------------------------------------------------
 MTLResourceOptions
 mtlTypes::asBufferResourceOptions(Usage::Code usage) {
     switch (usage) {

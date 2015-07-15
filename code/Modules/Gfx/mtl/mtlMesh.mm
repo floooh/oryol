@@ -10,21 +10,22 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 mtlMesh::mtlMesh() :
-mtlVertexBuffer(nil),
+activeVertexBufferSlot(0),
 mtlIndexBuffer(nil) {
-    // empty
+    this->mtlVertexBuffers.Fill(nil);
 }
 
 //------------------------------------------------------------------------------
 mtlMesh::~mtlMesh() {
-    o_assert_dbg(nil == this->mtlVertexBuffer);
+    o_assert_dbg(nil == this->mtlVertexBuffers[0]);
     o_assert_dbg(nil == this->mtlIndexBuffer);
 }
 
 //------------------------------------------------------------------------------
 void
 mtlMesh::Clear() {
-    this->mtlVertexBuffer = nil;
+    this->activeVertexBufferSlot = 0;
+    this->mtlVertexBuffers.Fill(nil);
     this->mtlIndexBuffer = nil;
     meshBase::Clear();
 }

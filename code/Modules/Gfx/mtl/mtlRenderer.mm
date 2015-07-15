@@ -108,6 +108,9 @@ mtlRenderer::commitFrame() {
 
     this->rtValid = false;
 
+    // commit the global uniform buffer updates
+    [this->uniformBuffers[this->curUniformBufferIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
+
     // wait for previous frame to finish
     dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
 
@@ -136,11 +139,7 @@ mtlRenderer::commitFrame() {
 const DisplayAttrs&
 mtlRenderer::renderTargetAttrs() const {
     o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::renderTargetAttrs()\n");
-
-    static DisplayAttrs dummy;
-    return dummy;
+    return this->rtAttrs;
 }
 
 //------------------------------------------------------------------------------
@@ -267,8 +266,8 @@ mtlRenderer::applyDrawState(drawState* ds) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
         if (msh) {
-            o_assert_dbg(msh->mtlVertexBuffer);
-            [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffer offset:0 atIndex:vbSlotIndex];
+            o_assert_dbg(msh->mtlVertexBuffers[msh->activeVertexBufferSlot]);
+            [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffers[msh->activeVertexBufferSlot] offset:0 atIndex:vbSlotIndex];
         }
         else {
             [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
@@ -313,6 +312,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
+    // NOTE: we'll call didModifyRange only ONCE inside CommitFrame!
     id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curUniformBufferIndex];
     const int32 uniformSize = layout.ByteSizeWithoutTextures();
     o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
@@ -391,8 +391,31 @@ mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 void
 mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(numBytes > 0);
 
-    o_error("mtlRenderer::updateVertices()\n");
+    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
+    const Usage::Code vbUsage = attrs.BufferUsage;
+    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
+    o_assert_dbg(vbUsage == Usage::Stream);
+    
+    uint8 slotIndex = msh->activeVertexBufferSlot;
+    if (Usage::Stream == vbUsage) {
+        // if usage is streaming, rotate slot index to next dynamic vertex buffer
+        // to implement double/multi-buffering
+        slotIndex++;
+        if (slotIndex >= mesh::NumSlots) {
+            slotIndex = 0;
+        }
+        msh->activeVertexBufferSlot = slotIndex;
+    }
+
+    id<MTLBuffer> mtlBuffer = msh->mtlVertexBuffers[slotIndex];
+    o_assert_dbg(numBytes <= int([mtlBuffer length]));
+    void* dstPtr = [mtlBuffer contents];
+    Memory::Copy(data, dstPtr, numBytes);
+    [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
 }
 
 //------------------------------------------------------------------------------

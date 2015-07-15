@@ -34,9 +34,11 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     if (setup.DepthFormat != PixelFormat::None) {
         this->createDepthStencilBuffer(setup.Width, setup.Height);
     }
+    /* FIXME
     if (setup.SampleCount > 1) {
         this->createMSAABuffer(setup.Width, setup.Height);
     }
+    */
 }
 
 //------------------------------------------------------------------------------
