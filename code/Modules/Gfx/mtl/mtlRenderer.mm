@@ -58,7 +58,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     // create global rotated uniform buffer
     for (int i = 0; i < MaxNumUniformBuffers; i++) {
         // FIXME: is options:0 right? this is used by the Xcode game sample
-        this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:0];
+        this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
     }
     this->curUniformBufferIndex = 0;
     this->curUniformBufferOffset = 0;
