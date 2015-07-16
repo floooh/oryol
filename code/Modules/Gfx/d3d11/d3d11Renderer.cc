@@ -396,10 +396,11 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     // set textures and samplers
     const uint8* cbufferPtr = nullptr;
     const int numComps = layout.NumComponents();
-    int32 shaderSlotIndex = 0;
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
         if (comp.Type == UniformType::Texture) {
+            const int32 texBindSlotIndex = comp.BindSlotIndex;
+            o_assert_dbg(texBindSlotIndex != InvalidIndex);
             const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
             const Id& resId = *(const Id*)valuePtr;
             const texture* tex = this->pointers.texturePool->Lookup(resId);
@@ -407,26 +408,25 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
             o_assert_dbg(tex->d3d11ShaderResourceView);
             o_assert_dbg(tex->d3d11SamplerState);
             if (ShaderType::VertexShader == cbStage) {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurVSShaderResourceViews[shaderSlotIndex]) {
-                    this->d3d11CurVSShaderResourceViews[shaderSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->VSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                if (tex->d3d11ShaderResourceView != this->d3d11CurVSShaderResourceViews[texBindSlotIndex]) {
+                    this->d3d11CurVSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
+                    this->d3d11DeviceContext->VSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
                 }
-                if (tex->d3d11SamplerState != this->d3d11CurVSSamplerStates[shaderSlotIndex]) {
-                    this->d3d11CurVSSamplerStates[shaderSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->VSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                if (tex->d3d11SamplerState != this->d3d11CurVSSamplerStates[texBindSlotIndex]) {
+                    this->d3d11CurVSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
+                    this->d3d11DeviceContext->VSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
                 }
             }
             else {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurPSShaderResourceViews[shaderSlotIndex]) {
-                    this->d3d11CurPSShaderResourceViews[shaderSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->PSSetShaderResources(shaderSlotIndex, 1, &tex->d3d11ShaderResourceView);
+                if (tex->d3d11ShaderResourceView != this->d3d11CurPSShaderResourceViews[texBindSlotIndex]) {
+                    this->d3d11CurPSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
+                    this->d3d11DeviceContext->PSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
                 }
-                if (tex->d3d11SamplerState != this->d3d11CurPSSamplerStates[shaderSlotIndex]) {
-                    this->d3d11CurPSSamplerStates[shaderSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->PSSetSamplers(shaderSlotIndex, 1, &tex->d3d11SamplerState);
+                if (tex->d3d11SamplerState != this->d3d11CurPSSamplerStates[texBindSlotIndex]) {
+                    this->d3d11CurPSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
+                    this->d3d11DeviceContext->PSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
                 }
             }
-            shaderSlotIndex++;
         }
         else {
             // found the start of the cbuffer struct
