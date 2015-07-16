@@ -35,7 +35,7 @@ public:
     /// canvas height
     int32 Height = 400;
     /// color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code ColorFormat = PixelFormat::RGB8;
     /// depth pixel format
     PixelFormat::Code DepthFormat = PixelFormat::D24S8;
     /// MSAA samples (2, 4, 8... no MSAA: 1)

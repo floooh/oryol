@@ -165,10 +165,18 @@ void
 glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     o_assert_dbg(nullptr == glfwDisplayMgr::glfwWindow);
 
+    #if ORYOL_MACOS
+    // work around a bug on OSX where a 16-bit color buffer is created when alpha-bits are set 0
+    glfwWindowHint(GLFW_RED_BITS, 8);
+    glfwWindowHint(GLFW_GREEN_BITS, 8); 
+    glfwWindowHint(GLFW_BLUE_BITS, 8); 
+    glfwWindowHint(GLFW_ALPHA_BITS, 8); 
+    #else
     glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Red));
     glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Green));
     glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Blue));
     glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Alpha));
+    #endif
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Depth));
     glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Stencil));
     glfwWindowHint(GLFW_SAMPLES, setup.SampleCount > 1 ? setup.SampleCount : 0);
