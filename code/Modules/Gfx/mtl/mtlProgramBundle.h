@@ -47,17 +47,32 @@ public:
     /// get fragment shader function at program index
     ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShaderAt(int32 index) const;
 
+    /// add a uniform block entry
+    void addUniformBlock(ShaderType::Code bindShaderStage, int32 bindSlotIndex);
+    /// get number of uniform blocks
+    int32 getNumUniformBlocks() const;
+    /// get uniform block shader stage
+    ShaderType::Code getUniformBlockShaderStage(int32 ubIndex) const;
+    /// get uniform block bind slot
+    int32 getUniformBlockBindSlotIndex(int32 ubIndex) const;
+
     class programEntry {
     public:
         uint32 mask;
         ORYOL_OBJC_TYPED_ID(MTLFunction) mtlVertexShader;
         ORYOL_OBJC_TYPED_ID(MTLFunction) mtlFragmentShader;
     };
+    struct ubEntry {
+        ShaderType::Code bindShaderStage = ShaderType::InvalidShaderType;
+        int32 bindSlotIndex;
+    };
     uint32 selMask;
     int32 selIndex;
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlLibrary;
+    int32 numUniformBlockEntries;
+    StaticArray<ubEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
 };
 
 } // namespace _priv

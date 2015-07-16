@@ -37,8 +37,8 @@ UniformLayout::Add(const Component& comp) {
 
 //------------------------------------------------------------------------------
 UniformLayout&
-UniformLayout::Add(const StringAtom& name, UniformType::Code type, uint8 num) {
-    return this->Add(Component(name, type, num));
+UniformLayout::Add(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex) {
+    return this->Add(Component(name, type, num, bindSlotIndex));
 }
 
 //------------------------------------------------------------------------------

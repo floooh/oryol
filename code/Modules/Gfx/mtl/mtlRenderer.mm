@@ -5,10 +5,12 @@
 #include "mtlRenderer.h"
 #include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
+#include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/UniformLayout.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/texture.h"
 
 namespace Oryol {
 namespace _priv {
@@ -292,16 +294,33 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
 
-    // FIXME: set textures and samplers, and find start of uniform buffer data
+    // set textures and samplers, and find start of uniform buffer data
     // FIXME: textures should be separated from uniforms, probably even go
     // into the drawState (although this would not allow to change textures
-    // between instances
+    // between instances)
+    const ShaderType::Code bindShaderStage = prog->getUniformBlockShaderStage(blockIndex);
+    const int32 bindSlotIndex = prog->getUniformBlockBindSlotIndex(blockIndex);
     const uint8* uBufferPtr = nullptr;
     const int numComps = layout.NumComponents();
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
         if (comp.Type == UniformType::Texture) {
-            // FIXME: set texture and sampler in encoder
+            const int32 texBindSlotIndex = comp.BindSlotIndex;
+            o_assert_dbg(texBindSlotIndex != InvalidIndex);
+            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
+            const Id& resId = *(const Id*)valuePtr;
+            const texture* tex = this->pointers.texturePool->Lookup(resId);
+            o_assert_dbg(tex);
+            o_assert_dbg(tex->mtlTex);
+            o_assert_dbg(tex->mtlSamplerState);
+            if (ShaderType::VertexShader == bindShaderStage) {
+                [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:texBindSlotIndex];
+                [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
+            }
+            else {
+                [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:texBindSlotIndex];
+                [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
+            }
         }
         else {
             // found the start of the cbuffer struct
@@ -313,17 +332,24 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside CommitFrame!
-    id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curUniformBufferIndex];
-    const int32 uniformSize = layout.ByteSizeWithoutTextures();
-    o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
-    uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
-    Memory::Copy(ptr, dstPtr, uniformSize);
+    if (nullptr != uBufferPtr) {
+        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curUniformBufferIndex];
+        const int32 uniformSize = layout.ByteSizeWithoutTextures();
+        o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+        uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
+        Memory::Copy(ptr, dstPtr, uniformSize);
 
-    // set vertex shader buffer location for next draw call
-    [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:blockIndex];
+        // set constant buffer location for next draw call
+        if (ShaderType::VertexShader == bindShaderStage) {
+            [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
+        }
+        else {
+            [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
+        }
 
-    // advance uniform buffer offset
-    this->curUniformBufferOffset += uniformSize;
+        // advance uniform buffer offset
+        this->curUniformBufferOffset += uniformSize;
+    }
 }
 
 //------------------------------------------------------------------------------

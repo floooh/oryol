@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 37
+Version = 38
 
 metalEnabled = False
 
@@ -1522,6 +1522,11 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # for Metal, the shader has been compiled into a binary shader
         # library file, which needs to be embedded into the C header
         f.write('#if ORYOL_METAL\n')
+        f.write('/*\n')
+        f.write("Metal source for '{}'\n".format(shd.name))
+        for line in shd.generatedSource[slVersion] :
+            f.write('{}\n'.format(line.content))
+        f.write('*/\n')
         rootPath = os.path.splitext(absPath)[0]
         f.write('#include "{}.metallib.h"\n'.format(rootPath))
         f.write('#endif\n')
@@ -1603,7 +1608,11 @@ def writeBundleSource(f, shdLib, bundle) :
         f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
-                f.write('    {}.Add("{}", {}, 1);\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+                if uniform.bindSlot is None :
+                    bindSlotIndex = 'InvalidIndex'
+                else :
+                    bindSlotIndex = uniform.bindSlot
+                f.write('    {}.Add("{}", {}, 1, {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type], bindSlotIndex))
         f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
             uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
     f.write('    return setup;\n')

@@ -20,7 +20,7 @@ public:
         /// default constructor
         Component();
         /// construct from name, type and number
-        Component(const StringAtom& name, UniformType::Code type, uint8 num);
+        Component(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex);
 
         /// return true if the component is valid
         bool IsValid() const;
@@ -32,6 +32,7 @@ public:
         StringAtom Name;        ///< the uniform binding name
         UniformType::Code Type; ///< data type of the uniform
         uint8 Num;              ///< number of uniforms (if >1 it is an array)
+        int8 BindSlotIndex;     ///< bind slot index (used for texture uniforms)
     };
 
     /// constructor
@@ -48,7 +49,7 @@ public:
     /// add a uniform component to the layout
     UniformLayout& Add(const Component& comp);
     /// add a uniform component to the layout
-    UniformLayout& Add(const StringAtom& name, UniformType::Code type, uint8 num);
+    UniformLayout& Add(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex);
     /// get number of components in the layout
     int32 NumComponents() const;
     /// get component at index
@@ -77,10 +78,11 @@ Num(0) {
 
 //------------------------------------------------------------------------------
 inline
-UniformLayout::Component::Component(const StringAtom& name, UniformType::Code type, uint8 num) :
+UniformLayout::Component::Component(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex) :
 Name(name),
 Type(type),
-Num(num) {
+Num(num),
+BindSlotIndex(bindSlotIndex) {
     o_assert_dbg(this->Name.IsValid());
     o_assert_dbg(this->Type < UniformType::NumUniformTypes);
     o_assert_dbg(this->Num > 0);
@@ -98,6 +100,7 @@ UniformLayout::Component::Clear() {
     this->Name.Clear();
     this->Type = UniformType::InvalidUniformType;
     this->Num = 0;
+    this->BindSlotIndex = InvalidIndex;
 }
 
 //------------------------------------------------------------------------------

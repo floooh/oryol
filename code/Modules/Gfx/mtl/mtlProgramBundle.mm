@@ -31,6 +31,8 @@ mtlProgramBundle::Clear() {
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
     this->mtlLibrary = nil;
+    this->numUniformBlockEntries = 0;
+    this->uniformBlockEntries.Fill(ubEntry());
     programBundleBase::Clear();
 }
 
@@ -122,6 +124,32 @@ mtlProgramBundle::getVertexShaderAt(int32 index) const {
 id<MTLFunction>
 mtlProgramBundle::getFragmentShaderAt(int32 index) const {
     return this->programEntries[index].mtlFragmentShader;
+}
+
+//------------------------------------------------------------------------------
+void
+mtlProgramBundle::addUniformBlock(ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
+    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
+    entry.bindShaderStage = bindShaderStage;
+    entry.bindSlotIndex = bindSlotIndex;
+}
+
+//------------------------------------------------------------------------------
+int32
+mtlProgramBundle::getNumUniformBlocks() const {
+    return this->numUniformBlockEntries;
+}
+
+//------------------------------------------------------------------------------
+ShaderType::Code
+mtlProgramBundle::getUniformBlockShaderStage(int32 ubIndex) const {
+    return this->uniformBlockEntries[ubIndex].bindShaderStage;
+}
+
+//------------------------------------------------------------------------------
+int32
+mtlProgramBundle::getUniformBlockBindSlotIndex(int32 ubIndex) const {
+    return this->uniformBlockEntries[ubIndex].bindSlotIndex;
 }
 
 } // namespace _priv
