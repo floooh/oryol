@@ -67,6 +67,8 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
     [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
     [window center];
+
+    [osxAppBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
 }
 
 } // namespace _priv
