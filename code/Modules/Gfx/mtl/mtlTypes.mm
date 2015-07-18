@@ -21,7 +21,7 @@ mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
         case PixelFormat::D16:
             return MTLPixelFormatDepth32Float;
         case PixelFormat::D24S8:
-            return MTLPixelFormatDepth32Float_Stencil8;
+            return MTLPixelFormatDepth24Unorm_Stencil8;
         default:
             return MTLPixelFormatInvalid;
     }
