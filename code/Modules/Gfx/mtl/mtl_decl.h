@@ -4,16 +4,8 @@
     @file mtl_decl.h
     @brief Metal Objective-C++ declarations
 */
-#if defined(__OBJC__)
-#import <Cocoa/Cocoa.h>
-#import <Metal/Metal.h>
-#import <QuartzCore/QuartzCore.h>
-#define ORYOL_OBJC_TYPED_ID(clazz) id<clazz>
-#define ORYOL_OBJC_ID id
-static_assert(sizeof(id) == sizeof(void*), "Obj-C id size doesn't match void* size");
-#else
-#define ORYOL_OBJC_TYPED_ID(clazz) void*
-#define ORYOL_OBJC_ID void*
+#include "Core/osx/osxAppBridge.h"
+#if !defined(__OBJC__)
 typedef void* CAMetalLayer;
 typedef void* CAMetalDrawable;
 typedef void* MTLDevice;
@@ -27,10 +19,4 @@ typedef void* MTLFunction;
 typedef void* MTLRenderPipelineState;
 typedef void* MTLTexture;
 typedef void* MTLSamplerState;
-#endif
-
-#if ORYOL_USE_ARC
-#define ORYOL_OBJC_RELEASE(obj)
-#else
-#define ORYOL_OBJC_RELEASE(obj) [obj release]
 #endif

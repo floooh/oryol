@@ -49,6 +49,9 @@
 #if ORYOL_IOS
 #include "Core/ios/iosBridge.h"
 #endif
+#if ORYOL_MACOS && ORYOL_METAL
+#include "Core/osx/osxAppBridge.h"
+#endif
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"
 #endif
@@ -105,6 +108,9 @@ protected:
     bool suspendRequested;
     #if ORYOL_IOS
     _priv::iosBridge iosBridge;
+    #endif
+    #if ORYOL_MACOS && ORYOL_METAL
+    _priv::osxAppBridge osxAppBridge;
     #endif
     #if ORYOL_ANDROID
     _priv::androidBridge androidBridge;

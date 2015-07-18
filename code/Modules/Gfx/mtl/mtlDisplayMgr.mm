@@ -10,8 +10,7 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlDisplayMgr::mtlDisplayMgr() :
-depthStencilBuffer(nil) {
+mtlDisplayMgr::mtlDisplayMgr() {
     // empty
 }
 
@@ -29,28 +28,13 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     displayMgrBase::SetupDisplay(setup, ptrs);
 
-    this->cocoa.init();
-    this->createWindow(setup);
-    if (setup.DepthFormat != PixelFormat::None) {
-        this->createDepthStencilBuffer(setup.Width, setup.Height);
-    }
-    /* FIXME
-    if (setup.SampleCount > 1) {
-        this->createMSAABuffer(setup.Width, setup.Height);
-    }
-    */
+    this->configureWindow(setup);
 }
 
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
-
-    this->destroyMSAABuffer();
-    this->destroyDepthStencilBuffer();
-    this->destroyWindow();
-    this->cocoa.terminate();
-
     displayMgrBase::DiscardDisplay();
 }
 
@@ -63,7 +47,7 @@ mtlDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 bool
 mtlDisplayMgr::QuitRequested() const {
-    return this->cocoa.windowShouldClose();
+    return osxAppBridge::ptr()->shouldClose();
 }
 
 //------------------------------------------------------------------------------
@@ -74,64 +58,15 @@ mtlDisplayMgr::ProcessSystemEvents() {
 
 //------------------------------------------------------------------------------
 void
-mtlDisplayMgr::createWindow(const GfxSetup& setup) {
+mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
 
     StringBuilder strBuilder(setup.Title);
     strBuilder.Append(" (Metal)");
-    this->cocoa.createWindow(setup);
-}
 
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::destroyWindow() {
-    this->cocoa.destroyWindow();
-}
-
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::createDepthStencilBuffer(int width, int height) {
-    o_assert_dbg(nil == this->depthStencilBuffer);
-    o_assert_dbg(this->gfxSetup.DepthFormat != PixelFormat::None);
-
-    // create depth buffer
-    MTLTextureDescriptor* desc = [MTLTextureDescriptor
-        texture2DDescriptorWithPixelFormat:mtlTypes::asRenderTargetFormat(this->gfxSetup.DepthFormat)
-        width:width height:height mipmapped:NO
-    ];
-    if (this->gfxSetup.SampleCount > 1) {
-        desc.textureType = MTLTextureType2DMultisample;
-        desc.sampleCount = this->gfxSetup.SampleCount;
-    }
-    else {
-        desc.textureType = MTLTextureType2D;
-    }
-    this->depthStencilBuffer = [this->cocoa.mtlDevice newTextureWithDescriptor:desc];
-}
-
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::destroyDepthStencilBuffer() {
-    if (nil != this->depthStencilBuffer) {
-        ORYOL_OBJC_RELEASE(this->depthStencilBuffer);
-        this->depthStencilBuffer = nil;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::createMSAABuffer(int width, int height) {
-    o_assert_dbg(nil == this->msaaBuffer);
-
-    o_error("mtlDisplayMgr::createMSAABuffer: FIXME!\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::destroyMSAABuffer() {
-    if (nil != this->msaaBuffer) {
-        ORYOL_OBJC_RELEASE(this->msaaBuffer);
-        this->msaaBuffer = nil;
-    }
+    NSWindow* window = osxAppBridge::ptr()->appWindow;
+    [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
+    [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
+    [window center];
 }
 
 } // namespace _priv

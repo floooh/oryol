@@ -13,7 +13,7 @@
 #include "Core/pnacl/pnaclInstance.h"
 #endif
 #if ORYOL_MACOS && ORYOL_METAL
-#include "Core/osx/osxAppProxy.h"
+#include "Core/osx/osxAppBridge.h"
 #endif
 
 namespace Oryol {
@@ -35,14 +35,14 @@ suspendRequested(false)
     #elif ORYOL_IOS
     this->iosBridge.setup(this);
     #elif ORYOL_MACOS && ORYOL_METAL
-    osxAppProxy::init();
+    this->osxAppBridge.setup(this);
     #endif
 }
 
 //------------------------------------------------------------------------------
 App::~App() {
     #if ORYOL_MACOS && ORYOL_METAL
-    osxAppProxy::terminate();
+    this->osxAppBridge.discard();
     #elif ORYOL_ANDROID
     this->androidBridge.discard();
     #elif ORYOL_IOS
@@ -61,6 +61,8 @@ App::StartMainLoop() {
         emscripten_set_main_loop(staticOnFrame, 0, 1);
     #elif ORYOL_IOS
         this->iosBridge.startMainLoop();
+    #elif ORYOL_MACOS && ORYOL_METAL
+        this->osxAppBridge.startMainLoop();
     #elif ORYOL_ANDROID
         this->addBlocker(AppState::Init);
         this->androidBridge.onStart();
@@ -70,10 +72,6 @@ App::StartMainLoop() {
         this->androidBridge.onStop();
     #elif ORYOL_PNACL
         pnaclInstance::Instance()->startMainLoop(this);
-    #elif ORYOL_MACOS && ORYOL_METAL
-        while (AppState::InvalidAppState != this->curState) {
-            osxAppProxy::onFrame(this);
-        }
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();
@@ -243,6 +241,9 @@ AppState::Code
 App::OnDestroy() {
     #if ORYOL_EMSCRIPTEN
     emscripten_cancel_main_loop();
+    #endif
+    #if ORYOL_MACOS && ORYOL_METAL
+    this->osxAppBridge.onDestroy();
     #endif
     return AppState::InvalidAppState;
 }

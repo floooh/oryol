@@ -8,6 +8,7 @@
     NOTE: only include this file from a Objective-C(++) file!
 */
 #include "Gfx/Core/Enums.h"
+#include "Gfx/mtl/mtl_decl.h"
 
 #if !defined(__OBJC__)
 #error "mtlTypes.h: Must be included from Obj-C source!"

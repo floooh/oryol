@@ -17,7 +17,7 @@
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "glm/vec4.hpp"
-#include "Gfx/mtl/cocoa.h"
+#include "Core/osx/osxAppBridge.h"
 
 namespace Oryol {
 namespace _priv {
@@ -90,7 +90,6 @@ public:
     DisplayAttrs rtAttrs;
     
     drawState* curDrawState;
-    ORYOL_OBJC_TYPED_ID(CAMetalDrawable) curDrawable;
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;

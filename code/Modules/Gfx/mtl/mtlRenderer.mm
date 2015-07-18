@@ -22,7 +22,6 @@ mtlRenderer::mtlRenderer() :
 valid(false),
 rtValid(false),
 curDrawState(nullptr),
-curDrawable(nil),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
@@ -51,7 +50,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     dispatch_semaphore_signal(mtlInflightSemaphore);
 
     // setup central metal objects
-    this->mtlDevice = this->pointers.displayMgr->cocoa.mtlDevice;
+    this->mtlDevice = osxAppBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
     this->commandQueue.label = @"OryolCommandQueue";
 
@@ -106,7 +105,6 @@ void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
     o_assert_dbg(nil != this->curCommandBuffer);
-    o_assert_dbg(nil != this->curDrawable);
 
     this->rtValid = false;
 
@@ -122,7 +120,7 @@ mtlRenderer::commitFrame() {
     }];
 
     [this->curCommandEncoder endEncoding];
-    [this->curCommandBuffer presentDrawable:curDrawable];
+    [this->curCommandBuffer presentDrawable:osxAppBridge::ptr()->mtkView.currentDrawable];
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
@@ -134,7 +132,6 @@ mtlRenderer::commitFrame() {
     // FIXME: probably not a good idea to wait here right after the commit!
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
-    this->curDrawable = nil;
 }
 
 //------------------------------------------------------------------------------
@@ -181,8 +178,6 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     if (nullptr == rt) {
         // default render target
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        this->curDrawable = [this->pointers.displayMgr->cocoa.mtlLayer nextDrawable];
-        o_assert(nil != this->curDrawable);
     }
     else {
         o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
@@ -190,9 +185,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->rtValid = true;
 
     // init renderpass descriptor
-    MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
-
-    passDesc.colorAttachments[0].texture = [curDrawable texture];
+    MTLRenderPassDescriptor* passDesc = osxAppBridge::ptr()->mtkView.currentRenderPassDescriptor;
     if (clearState.Actions & ClearState::ClearColor) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
         const glm::vec4& c = clearState.Color;
@@ -202,8 +195,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
     }
 
-    if (nil != this->pointers.displayMgr->depthStencilBuffer) {
-        passDesc.depthAttachment.texture = this->pointers.displayMgr->depthStencilBuffer;
+    if (PixelFormat::IsDepthFormat(this->gfxSetup.DepthFormat)) {
         if (clearState.Actions & ClearState::ClearDepth) {
             passDesc.depthAttachment.loadAction = MTLLoadActionClear;
             passDesc.depthAttachment.clearDepth = clearState.Depth;
@@ -214,7 +206,6 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     if (PixelFormat::IsDepthStencilFormat(this->gfxSetup.DepthFormat)) {
-        passDesc.stencilAttachment.texture = this->pointers.displayMgr->depthStencilBuffer;
         if (clearState.Actions & ClearState::ClearStencil) {
             passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
             passDesc.stencilAttachment.clearStencil = clearState.Stencil;

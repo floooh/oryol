@@ -2,7 +2,6 @@
 //  mtlTypes.mm
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Gfx/mtl/cocoa.h"
 #include "mtlTypes.h"
 
 namespace Oryol {
