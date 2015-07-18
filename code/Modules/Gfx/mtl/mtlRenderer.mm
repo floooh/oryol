@@ -20,13 +20,13 @@ dispatch_semaphore_t mtlInflightSemaphore;
 //------------------------------------------------------------------------------
 mtlRenderer::mtlRenderer() :
 valid(false),
+curFrameRotateIndex(0),
 rtValid(false),
 curDrawState(nullptr),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
 curCommandEncoder(nil),
-curUniformBufferIndex(0),
 curUniformBufferOffset(0) {
     // FIXME
 }
@@ -45,21 +45,20 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->pointers = ptrs;
     this->gfxSetup = setup;
 
-    // sync semaphore
-    mtlInflightSemaphore = dispatch_semaphore_create(3);
-    dispatch_semaphore_signal(mtlInflightSemaphore);
+    // frame-sync semaphore
+    mtlInflightSemaphore = dispatch_semaphore_create(MaxInflightFrames);
 
     // setup central metal objects
     this->mtlDevice = osxAppBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
     this->commandQueue.label = @"OryolCommandQueue";
 
-    // create global rotated uniform buffer
-    for (int i = 0; i < MaxNumUniformBuffers; i++) {
+    // create global rotated uniform buffers
+    for (int i = 0; i < MaxInflightFrames; i++) {
         // FIXME: is options:0 right? this is used by the Xcode game sample
         this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
     }
-    this->curUniformBufferIndex = 0;
+    this->curFrameRotateIndex = 0;
     this->curUniformBufferOffset = 0;
 }
 
@@ -68,7 +67,7 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
-    for (int i = 0; i < MaxNumUniformBuffers; i++) {
+    for (int i = 0; i < MaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
     this->commandQueue = nil;
@@ -109,10 +108,7 @@ mtlRenderer::commitFrame() {
     this->rtValid = false;
 
     // commit the global uniform buffer updates
-    [this->uniformBuffers[this->curUniformBufferIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
-
-    // wait for previous frame to finish
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+    [this->uniformBuffers[this->curFrameRotateIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
 
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
@@ -124,14 +120,18 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
-    if (++this->curUniformBufferIndex >= MaxNumUniformBuffers) {
-        this->curUniformBufferIndex = 0;
+    if (++this->curFrameRotateIndex >= MaxInflightFrames) {
+        this->curFrameRotateIndex = 0;
     }
     this->curUniformBufferOffset = 0;
 
     // FIXME: probably not a good idea to wait here right after the commit!
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
+
+    // block until previous frame has finished (the semaphore
+    // has a counter of MaxRotateFrame, which is at least 2)
+    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
 }
 
 //------------------------------------------------------------------------------
@@ -324,7 +324,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside CommitFrame!
     if (nullptr != uBufferPtr) {
-        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curUniformBufferIndex];
+        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
         const int32 uniformSize = layout.ByteSizeWithoutTextures();
         o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
         uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
@@ -411,6 +411,8 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(numBytes > 0);
+
+    // FIXME: enfore that updateVertices is only called once per frame per mesh!!!
 
     const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
     const Usage::Code vbUsage = attrs.BufferUsage;

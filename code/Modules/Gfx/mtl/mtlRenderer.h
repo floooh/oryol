@@ -86,6 +86,9 @@ public:
     GfxSetup gfxSetup;
     gfxPointers pointers;
 
+    static const int MaxInflightFrames = 3;
+    int32 curFrameRotateIndex;
+
     bool rtValid;
     DisplayAttrs rtAttrs;
     
@@ -96,10 +99,8 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
 
     // rotated global uniform buffers
-    static const int MaxNumUniformBuffers = 2;
-    int32 curUniformBufferIndex;
     int32 curUniformBufferOffset;
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), MaxNumUniformBuffers> uniformBuffers;
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), MaxInflightFrames> uniformBuffers;
 };
 
 } // namespace _priv
