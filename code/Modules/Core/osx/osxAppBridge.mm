@@ -38,7 +38,7 @@ using namespace Oryol::_priv;
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender {
-    return YES;
+    return NO;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender {
@@ -219,6 +219,7 @@ void
 osxAppBridge::onDestroy() {
     [this->mtkView setDelegate:nil];
     [this->appWindow setDelegate:nil];
+    [this->appWindow orderOut:nil];
     [NSApp stop:nil];
 }
 
