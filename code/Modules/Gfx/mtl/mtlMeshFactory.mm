@@ -58,8 +58,7 @@ mtlMeshFactory::SetupResource(mesh& msh) {
         return this->createEmptyMesh(msh);
     }
     else if (msh.Setup.ShouldSetupFullScreenQuad()) {
-        o_error("FIXME!");
-        // return this->createFullscreenQuad(msh);
+        return this->createFullscreenQuad(msh);
     }
     else {
         o_error("mtlMeshFactory::SetupResource(): don't know how to create mesh!\n");
@@ -146,7 +145,6 @@ mtlMeshFactory::setupPrimGroups(mesh& msh) {
 ResourceState::Code
 mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
-    o_assert_dbg(nil == msh.mtlVertexBuffers[1]);
     o_assert_dbg(nil == msh.mtlIndexBuffer);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -178,7 +176,6 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
 ResourceState::Code
 mtlMeshFactory::createEmptyMesh(mesh& msh) {
     o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
-    o_assert_dbg(nil == msh.mtlVertexBuffers[1]);
     o_assert_dbg(nil == msh.mtlIndexBuffer);
 
     this->setupAttrs(msh);
@@ -203,6 +200,48 @@ mtlMeshFactory::createEmptyMesh(mesh& msh) {
         msh.mtlIndexBuffer = this->createBuffer(nullptr, ibSize, msh.Setup.IndexUsage);
         o_assert_dbg(nil != msh.mtlIndexBuffer);
     }
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+mtlMeshFactory::createFullscreenQuad(mesh& msh) {
+    o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
+    o_assert_dbg(nil == msh.mtlIndexBuffer);
+
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.NumVertices = 4;
+    vbAttrs.BufferUsage = Usage::Immutable;
+    vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    msh.vertexBufferAttrs = vbAttrs;
+
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.NumIndices = 6;
+    ibAttrs.Type = IndexType::Index16;
+    ibAttrs.BufferUsage = Usage::Immutable;
+    msh.indexBufferAttrs = ibAttrs;
+
+    msh.numPrimGroups = 1;
+    msh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+
+    const float32 topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float32 botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
+    float32 vertices[] = {
+        -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
+        +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
+        +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
+        -1.0f, -1.0f, 0.0f, 0.0f, botV,     // bottom-left corner
+    };
+
+    uint16 indices[] = {
+        0, 2, 1,            // topleft -> bottomright -> topright
+        0, 3, 2,            // topleft -> bottomleft -> bottomright
+    };
+
+    msh.mtlVertexBuffers[0] = this->createBuffer(vertices, sizeof(vertices), Usage::Immutable);
+    msh.mtlIndexBuffer = this->createBuffer(indices, sizeof(indices), Usage::Immutable);
+
     return ResourceState::Valid;
 }
 
