@@ -93,10 +93,19 @@ mtlRenderer::resetStateCache() {
 //------------------------------------------------------------------------------
 bool
 mtlRenderer::queryFeature(GfxFeature::Code feat) const {
-    o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::queryFeature()\n");
-    return false;
+    switch(feat) {
+        #if ORYOL_MACOS
+        case GfxFeature::TextureCompressionDXT:
+        #else
+        case GfxFeature::TextureCompressionPVRTC:
+        #endif
+        case GfxFeature::TextureFloat:
+        case GfxFeature::Instancing:
+        case GfxFeature::OriginTopLeft:
+            return true;
+        default:
+            return false;
+    }
 }
 
 //------------------------------------------------------------------------------
