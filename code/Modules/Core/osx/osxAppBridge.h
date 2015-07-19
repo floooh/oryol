@@ -104,8 +104,10 @@ public:
     /// called per frame by the MTKView delegate
     void onFrame();
 
-    /// create the application window
+    /// create the application window (hidden)
     void createWindow();
+    /// actually show the window (called from displayMgr)
+    void showWindow();
 
     static osxAppBridge* self;
     App* app;

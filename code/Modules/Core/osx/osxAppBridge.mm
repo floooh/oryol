@@ -387,7 +387,14 @@ osxAppBridge::createWindow() {
     [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth24Unorm_Stencil8];
     [this->appWindow setContentView:this->mtkView];
 
-    // bring to front and done
+    // the window is initially hidden until osxAppBridge::showWindow
+    // is called from within the display manager
+}
+
+//------------------------------------------------------------------------------
+void
+osxAppBridge::showWindow() {
+    o_assert_dbg(nil != this->appWindow);
     [this->appWindow makeKeyAndOrderFront:nil];
 }
 

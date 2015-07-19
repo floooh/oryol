@@ -29,6 +29,7 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     displayMgrBase::SetupDisplay(setup, ptrs);
 
     this->configureWindow(setup);
+    osxAppBridge::ptr()->showWindow();
 }
 
 //------------------------------------------------------------------------------
