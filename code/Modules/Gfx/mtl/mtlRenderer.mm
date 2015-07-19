@@ -46,7 +46,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->gfxSetup = setup;
 
     // frame-sync semaphore
-    mtlInflightSemaphore = dispatch_semaphore_create(MaxInflightFrames);
+    mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
 
     // setup central metal objects
     this->mtlDevice = osxAppBridge::ptr()->mtlDevice;
@@ -54,7 +54,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->commandQueue.label = @"OryolCommandQueue";
 
     // create global rotated uniform buffers
-    for (int i = 0; i < MaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
         // FIXME: is options:0 right? this is used by the Xcode game sample
         this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
     }
@@ -67,7 +67,7 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
-    for (int i = 0; i < MaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
     this->commandQueue = nil;
@@ -120,7 +120,7 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
-    if (++this->curFrameRotateIndex >= MaxInflightFrames) {
+    if (++this->curFrameRotateIndex >= GfxConfig::MtlMaxInflightFrames) {
         this->curFrameRotateIndex = 0;
     }
     this->curUniformBufferOffset = 0;

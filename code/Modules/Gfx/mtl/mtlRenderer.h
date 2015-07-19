@@ -18,6 +18,7 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "glm/vec4.hpp"
 #include "Core/osx/osxAppBridge.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
 namespace _priv {
@@ -86,7 +87,6 @@ public:
     GfxSetup gfxSetup;
     gfxPointers pointers;
 
-    static const int MaxInflightFrames = 3;
     int32 curFrameRotateIndex;
 
     bool rtValid;
@@ -100,7 +100,7 @@ public:
 
     // rotated global uniform buffers
     int32 curUniformBufferOffset;
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), MaxInflightFrames> uniformBuffers;
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MtlMaxInflightFrames> uniformBuffers;
 };
 
 } // namespace _priv

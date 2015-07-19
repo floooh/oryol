@@ -45,6 +45,7 @@ fips_begin_module(Gfx)
         displayMgr.h
         renderer.h
         gfxPointers.h
+        GfxConfig.h
     )
     fips_dir(Resource)
     fips_files(

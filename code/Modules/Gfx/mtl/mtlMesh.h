@@ -8,6 +8,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/resource/meshBase.h"
 #include "Gfx/mtl/mtl_decl.h"
+#include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {
 namespace _priv {
@@ -23,7 +24,7 @@ public:
     void Clear();
 
     /// max number of vertex buffer slots (used for double-buffering dynamic vertex data)
-    static const int32 NumSlots = 2;
+    static const int32 NumSlots = GfxConfig::MtlMaxInflightFrames;
     /// active vertex buffer slot
     uint8 activeVertexBufferSlot;
 
