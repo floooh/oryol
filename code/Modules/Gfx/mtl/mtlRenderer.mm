@@ -382,11 +382,8 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::draw(const PrimitiveGroup& primGroup) {
+mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!\n");
-    o_assert_dbg(this->curCommandEncoder);
-
     if (nullptr == this->curDrawState) {
         return;
     }
@@ -401,17 +398,20 @@ mtlRenderer::draw(const PrimitiveGroup& primGroup) {
             indexCount:primGroup.NumElements
             indexType:mtlIndexType
             indexBuffer:this->curDrawState->meshes[0]->mtlIndexBuffer
-            indexBufferOffset:indexBufferOffset ];
+            indexBufferOffset:indexBufferOffset
+            instanceCount:numInstances ];
     }
     else {
-        [this->curCommandEncoder drawPrimitives:mtlPrimType vertexStart:primGroup.BaseElement vertexCount:primGroup.NumElements];
+        [this->curCommandEncoder drawPrimitives:mtlPrimType
+            vertexStart:primGroup.BaseElement
+            vertexCount:primGroup.NumElements
+            instanceCount:numInstances];
     }
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::draw(int32 primGroupIndex) {
-    o_assert_dbg(this->valid);
+mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
@@ -422,23 +422,19 @@ mtlRenderer::draw(int32 primGroupIndex) {
         return;
     }
     const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
-    this->draw(primGroup);
+    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
-    o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::drawInstanced()\n");
+mtlRenderer::draw(const PrimitiveGroup& primGroup) {
+    this->drawInstanced(primGroup, 1);
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
-    o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::drawInstanced()\n");
+mtlRenderer::draw(int32 primGroupIndex) {
+    this->drawInstanced(primGroupIndex, 1);
 }
 
 //------------------------------------------------------------------------------
