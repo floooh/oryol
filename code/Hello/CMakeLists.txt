@@ -3,7 +3,7 @@
 #	The most simple hello-world to test the build system.
 #-------------------------------------------------------------------------------
 
-if (NOT FIPS_ANDROID AND NOT FIPS_IOS AND NOT FIPS_PNACL)
+if (NOT FIPS_ANDROID AND NOT FIPS_IOS AND NOT FIPS_PNACL AND NOT ORYOL_USE_METAL)
 fips_begin_app(hello cmdline)
     fips_files(hello.cc)
     fips_deps(Core)
