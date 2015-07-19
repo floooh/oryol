@@ -46,13 +46,13 @@ VertexTextureApp::OnRunning() {
     Gfx::ApplyDrawState(this->plasmaDrawState);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
-    
+
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
     Gfx::Draw(0);
-    
+
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
     

@@ -365,7 +365,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
         const int32 uniformSize = layout.ByteSizeWithoutTextures();
         o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
         uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
-        Memory::Copy(ptr, dstPtr, uniformSize);
+        std::memcpy(dstPtr, uBufferPtr, uniformSize);
 
         // set constant buffer location for next draw call
         if (ShaderType::VertexShader == bindShaderStage) {
@@ -466,7 +466,7 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     id<MTLBuffer> mtlBuffer = msh->mtlVertexBuffers[slotIndex];
     o_assert_dbg(numBytes <= int([mtlBuffer length]));
     void* dstPtr = [mtlBuffer contents];
-    Memory::Copy(data, dstPtr, numBytes);
+    std::memcpy(dstPtr, data, numBytes);
     [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
 }
 
