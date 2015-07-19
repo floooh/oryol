@@ -162,8 +162,14 @@ mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool ori
 void
 mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(nil != this->curCommandEncoder);
 
-    o_error("mtlRenderer::applyScissorRect()\n");
+    MTLScissorRect rect;
+    rect.x = x;
+    rect.y = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
+    rect.width = width;
+    rect.height = height;
+    [this->curCommandEncoder setScissorRect:rect];
 }
 
 //------------------------------------------------------------------------------
@@ -184,17 +190,33 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     // default, or offscreen render target?
+    MTLRenderPassDescriptor* passDesc = nil;
     if (nullptr == rt) {
         // default render target
+        passDesc = osxAppBridge::ptr()->mtkView.currentRenderPassDescriptor;
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
-        o_error("FIXME: mtlRenderer::applyRenderTarget(): offscreen render target!\n");
+        passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+        // FIXME: have a 'AsDisplayAttrs' util function
+        const TextureAttrs& attrs = rt->textureAttrs;
+        this->rtAttrs.WindowWidth = this->rtAttrs.FramebufferWidth = attrs.Width;
+        this->rtAttrs.WindowHeight = this->rtAttrs.FramebufferHeight = attrs.Height;
+        this->rtAttrs.WindowPosX = this->rtAttrs.WindowPosY = 0;
+        this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
+        this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
+        this->rtAttrs.SampleCount = 1;
+        this->rtAttrs.Windowed = false;
+        this->rtAttrs.SwapInterval = 1;
     }
     this->rtValid = true;
 
     // init renderpass descriptor
-    MTLRenderPassDescriptor* passDesc = osxAppBridge::ptr()->mtkView.currentRenderPassDescriptor;
+    o_assert_dbg(passDesc);
+    if (rt) {
+        passDesc.colorAttachments[0].texture = rt->mtlTex;
+    }
     if (clearState.Actions & ClearState::ClearColor) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
         const glm::vec4& c = clearState.Color;
@@ -204,7 +226,10 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
     }
 
-    if (PixelFormat::IsDepthFormat(this->gfxSetup.DepthFormat)) {
+    if (PixelFormat::IsDepthFormat(this->rtAttrs.DepthPixelFormat)) {
+        if (rt) {
+            passDesc.depthAttachment.texture = rt->mtlDepthTex;
+        }
         if (clearState.Actions & ClearState::ClearDepth) {
             passDesc.depthAttachment.loadAction = MTLLoadActionClear;
             passDesc.depthAttachment.clearDepth = clearState.Depth;
@@ -214,7 +239,10 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         }
     }
 
-    if (PixelFormat::IsDepthStencilFormat(this->gfxSetup.DepthFormat)) {
+    if (PixelFormat::IsDepthStencilFormat(this->rtAttrs.DepthPixelFormat)) {
+        if (rt) {
+            passDesc.stencilAttachment.texture = rt->mtlDepthTex;
+        }
         if (clearState.Actions & ClearState::ClearStencil) {
             passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
             passDesc.stencilAttachment.clearStencil = clearState.Stencil;

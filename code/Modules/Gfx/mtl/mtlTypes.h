@@ -19,8 +19,12 @@ namespace _priv {
 
 class mtlTypes {
 public:
-    /// convert render target pixel format
-    static MTLPixelFormat asRenderTargetFormat(PixelFormat::Code fmt);
+    /// convert color render target pixel format
+    static MTLPixelFormat asRenderTargetColorFormat(PixelFormat::Code fmt);
+    /// convert depth render target pixel format
+    static MTLPixelFormat asRenderTargetDepthFormat(PixelFormat::Code fmt);
+    /// convert stencil render target pixel format
+    static MTLPixelFormat asRenderTargetStencilFormat(PixelFormat::Code fmt);
     /// convert texture pixel format
     static MTLPixelFormat asTextureFormat(PixelFormat::Code fmt);
     /// convert texture type

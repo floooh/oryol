@@ -8,6 +8,8 @@
 #include "Core/Assertion.h"
 #include "Gfx/Resource/texture.h"
 #include "Gfx/Core/renderer.h"
+#include "Gfx/Core/displayMgr.h"
+#include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {
@@ -105,14 +107,105 @@ mtlTextureFactory::DestroyResource(texture& tex) {
         ORYOL_OBJC_RELEASE(tex.mtlSamplerState);
         tex.mtlSamplerState = nil;
     }
+    if (nil != tex.mtlDepthTex) {
+        ORYOL_OBJC_RELEASE(tex.mtlDepthTex);
+        tex.mtlDepthTex = nil;
+    }
     tex.Clear();
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
 mtlTextureFactory::createRenderTarget(texture& tex) {
-    o_error("mtlTextureFactory: FIXME!\n");
-    return ResourceState::InvalidState;
+    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
+    o_assert_dbg(nil == tex.mtlTex);
+    o_assert_dbg(nil == tex.mtlSamplerState);
+    o_assert_dbg(nil == tex.mtlDepthTex);
+
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.NumMipMaps == 1);
+    o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
+
+    // get size of new render target
+    int32 width, height;
+    texture* sharedDepthProvider = nullptr;
+    if (setup.IsRelSizeRenderTarget()) {
+        const DisplayAttrs& dispAttrs = this->displayManager->GetDisplayAttrs();
+        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
+    }
+    else if (setup.HasSharedDepth()) {
+        // a shared depth-buffer render target, obtain width and height
+        // from the original render target
+        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        o_assert_dbg(nullptr != sharedDepthProvider);
+        width = sharedDepthProvider->textureAttrs.Width;
+        height = sharedDepthProvider->textureAttrs.Height;
+    }
+    else {
+        width = setup.Width;
+        height = setup.Height;
+    }
+    o_assert_dbg((width > 0) && (height > 0));
+
+    // create the color texture
+    MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
+    texDesc.textureType = MTLTextureType2D;
+    texDesc.pixelFormat = mtlTypes::asRenderTargetColorFormat(setup.ColorFormat);
+    if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
+        o_warn("mtlTextureFactory: not a renderable pixel format!\n");
+        return ResourceState::Failed;
+    }
+    texDesc.width = width;
+    texDesc.height = height;
+    texDesc.depth = 1;
+    texDesc.mipmapLevelCount = 1;
+    texDesc.arrayLength = 1;
+    texDesc.sampleCount = 1;
+    texDesc.resourceOptions = MTLResourceStorageModePrivate;
+    texDesc.cpuCacheMode = MTLCPUCacheModeDefaultCache;
+    texDesc.storageMode = MTLStorageModePrivate;
+    tex.mtlTex = [this->renderer->mtlDevice newTextureWithDescriptor:texDesc];
+    o_assert(nil != tex.mtlTex);
+
+    // create option depth texture
+    if (setup.HasDepth()) {
+        if (setup.HasSharedDepth()) {
+            // shared depth buffer
+            o_assert_dbg(sharedDepthProvider->mtlDepthTex);
+            tex.mtlDepthTex = sharedDepthProvider->mtlDepthTex;
+        }
+        else {
+            // create depth buffer texture
+            o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
+            o_assert_dbg(PixelFormat::None != setup.DepthFormat);
+            texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
+            tex.mtlDepthTex = [this->renderer->mtlDevice newTextureWithDescriptor:texDesc];
+            o_assert(nil != tex.mtlDepthTex);
+        }
+    }
+
+    // create sampler state for color texture
+    this->createSamplerState(tex);
+    o_assert_dbg(nil != tex.mtlSamplerState);
+
+    // setup texture attributes
+    TextureAttrs attrs;
+    attrs.Locator = setup.Locator;
+    attrs.Type = TextureType::Texture2D;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.DepthFormat = setup.DepthFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = setup.Width;
+    attrs.Height = setup.Height;
+    attrs.NumMipMaps = 1;
+    attrs.IsRenderTarget = true;
+    attrs.HasDepthBuffer = setup.HasDepth();
+    attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
+    tex.textureAttrs = attrs;
+
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
@@ -169,6 +262,17 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     this->createSamplerState(tex);
     o_assert(nil != tex.mtlSamplerState);
 
+    // setup texture attributes
+    TextureAttrs attrs;
+    attrs.Locator = setup.Locator;
+    attrs.Type = setup.Type;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = setup.Width;
+    attrs.Height = setup.Height;
+    attrs.NumMipMaps = setup.NumMipMaps;
+    tex.textureAttrs = attrs;
+
     return ResourceState::Valid;
 }
 
@@ -181,7 +285,9 @@ mtlTextureFactory::createSamplerState(texture& tex) {
     MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
     desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapU);
     desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapV);
-    desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapW);
+    if (TextureType::Texture3D == tex.Setup.Type) {
+        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapW);
+    }
     desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MinFilter);
     desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MagFilter);
     desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.MinFilter);

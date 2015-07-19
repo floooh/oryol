@@ -44,18 +44,21 @@ _func float square(float x) {
     return x * x;
 }
 
+/*
 _func float TrowbridgeReitz(float c, float n_dot_h) {
     float cSquared = c * c;
     return square(cSquared / (n_dot_h*n_dot_h*(cSquared - 1.0) + 1.0));
 }
+*/
 
+/*
 _func vec3 D_TrowbridgeReitz(vec3 L, vec3 V, vec3 N) {
     vec3 H = normalize(L + V);
     float D = TrowbridgeReitz(c, dot(N, H));
-    // normalize
     D *= 1.0 / (c*c*PI);
     return vec3(D, D, D);
 }
+*/
 
 //------------------------------------------------------------------------------
 //  D(h)
@@ -77,18 +80,21 @@ _func vec3 D_GGX(vec3 L, vec3 V, vec3 N) {
 //  G(l,v,h)
 //  Schlick
 //
+/*
 _const float m = 0.25;
 
 _func float Gsch(float v, float m) {
     float k = sqrt(2.0 * m * m / PI);
     return v > 0.0 ? v / (v - k * v + k) : 0.0;
 }
+
 _func vec3 G_Schlick(vec3 L, vec3 V, vec3 N) {
     float n_dot_l = dot(N, L);
     float n_dot_v = dot(N, V);
     float G = Gsch(n_dot_l, m) * Gsch(n_dot_v, m);
     return vec3(G, G, G);
 }
+*/
 
 _func float Gue4(float v, float k) {
     // hmm this is the same as Gsch except for how k is derived
@@ -116,8 +122,8 @@ _func vec3 G_UE4(vec3 L, vec3 V, vec3 N) {
     vec3 V = normalize(eyePos - viewSpacePos);  // view vector
     vec3 L = lightVec.xyz;                      // light vector
 
-    float n_dot_l = dot(N, L);
-    float n_dot_v = dot(N, V);
+//    float n_dot_l = dot(N, L);
+//    float n_dot_v = dot(N, V);
 
 //    vec3 D = D_TrowbridgeReitz(L, V, N);
     vec3 D = D_GGX(L, V, N);

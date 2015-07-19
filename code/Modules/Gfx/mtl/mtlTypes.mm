@@ -9,7 +9,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 MTLPixelFormat
-mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
+mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
     // see the capability table for the list of renderable pixel formats:
     // https://developer.apple.com/library/prerelease/ios/documentation/Metal/Reference/MetalConstants_Ref/index.html
     //
@@ -17,9 +17,30 @@ mtlTypes::asRenderTargetFormat(PixelFormat::Code fmt) {
         case PixelFormat::RGBA8:
         case PixelFormat::RGB8:
             return MTLPixelFormatRGBA8Unorm;
+        default:
+            return MTLPixelFormatInvalid;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLPixelFormat
+mtlTypes::asRenderTargetDepthFormat(PixelFormat::Code fmt) {
+    switch (fmt) {
         case PixelFormat::D32:
-        case PixelFormat::D16:
             return MTLPixelFormatDepth32Float;
+        case PixelFormat::D16:
+        case PixelFormat::D24S8:
+            return MTLPixelFormatDepth24Unorm_Stencil8;
+        default:
+            return MTLPixelFormatInvalid;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLPixelFormat
+mtlTypes::asRenderTargetStencilFormat(PixelFormat::Code fmt) {
+    switch (fmt) {
+        case PixelFormat::D16:
         case PixelFormat::D24S8:
             return MTLPixelFormatDepth24Unorm_Stencil8;
         default:

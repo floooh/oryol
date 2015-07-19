@@ -72,7 +72,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     // create renderpipeline-state
     const BlendState& blendState = ds.Setup.BlendState;
     MTLRenderPipelineDescriptor* rpDesc = [[MTLRenderPipelineDescriptor alloc] init];
-    rpDesc.colorAttachments[0].pixelFormat = mtlTypes::asRenderTargetFormat(blendState.ColorFormat);
+    rpDesc.colorAttachments[0].pixelFormat = mtlTypes::asRenderTargetColorFormat(blendState.ColorFormat);
     rpDesc.colorAttachments[0].writeMask = mtlTypes::asColorWriteMask(blendState.ColorWriteMask);
     rpDesc.colorAttachments[0].blendingEnabled = blendState.BlendEnabled;
     rpDesc.colorAttachments[0].alphaBlendOperation = mtlTypes::asBlendOp(blendState.OpAlpha);
@@ -81,8 +81,8 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     rpDesc.colorAttachments[0].destinationRGBBlendFactor = mtlTypes::asBlendFactor(blendState.DstFactorRGB);
     rpDesc.colorAttachments[0].sourceAlphaBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorAlpha);
     rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
-    rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetFormat(blendState.DepthFormat);
-    rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetFormat(blendState.DepthFormat);
+    rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
+    rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
     o_warn("FIXME: move shader selection into DrawStateSetup!!!\n");
     rpDesc.fragmentFunction = ds.prog->getFragmentShaderAt(0);
     rpDesc.vertexFunction = ds.prog->getVertexShaderAt(0);

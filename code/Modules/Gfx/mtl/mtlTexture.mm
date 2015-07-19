@@ -11,7 +11,8 @@ namespace _priv {
 //------------------------------------------------------------------------------
 mtlTexture::mtlTexture() :
 mtlTex(nil),
-mtlSamplerState(nil) {
+mtlSamplerState(nil),
+mtlDepthTex(nil) {
     // empty
 }
 
@@ -19,6 +20,7 @@ mtlSamplerState(nil) {
 mtlTexture::~mtlTexture() {
     o_assert_dbg(nil == this->mtlTex);
     o_assert_dbg(nil == this->mtlSamplerState);
+    o_assert_dbg(nil == this->mtlDepthTex);
 }
 
 //------------------------------------------------------------------------------
@@ -27,6 +29,7 @@ mtlTexture::Clear() {
     textureBase::Clear();
     this->mtlTex = nil;
     this->mtlSamplerState = nil;
+    this->mtlDepthTex = nil;
 }
 
 } // namespace _priv
