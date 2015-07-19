@@ -16,7 +16,11 @@ mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
     switch (fmt) {
         case PixelFormat::RGBA8:
         case PixelFormat::RGB8:
-            return MTLPixelFormatRGBA8Unorm;
+            return MTLPixelFormatBGRA8Unorm;
+        case PixelFormat::RGBA32F:
+            return MTLPixelFormatRGBA32Float;
+        case PixelFormat::RGBA16F:
+            return MTLPixelFormatRGBA16Float;
         default:
             return MTLPixelFormatInvalid;
     }
