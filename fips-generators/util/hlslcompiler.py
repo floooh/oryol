@@ -34,6 +34,15 @@ def findFxc() :
                 except :
                     fxcPath = None
 
+        # if registry is not found, try a few other likely paths
+        for path in [
+           'C:\\Program Files (x86)\\Windows Kits\\8.1\\',
+           'C:\\Program Files (x86)\\Windows Kits\\10.0\\'
+        ] :
+            if os.path.isdir(path) :
+                fxcPath = path
+                break
+
         fxcPath += u'bin\\x86\\fxc.exe'
         if os.path.isfile(fxcPath) :
             return fxcPath
