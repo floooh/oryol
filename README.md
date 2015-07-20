@@ -2,7 +2,8 @@
  
 Experimental C++11 multi-platform 3D engine.
 
-[![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)
+OSX, Linux: [![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)
+Windows: [![Build status](https://ci.appveyor.com/api/projects/status/hn5sup2y532h64jg/branch/master?svg=true)](https://ci.appveyor.com/project/floooh/oryol/branch/master)
 
 ## _Live Demos_
 
