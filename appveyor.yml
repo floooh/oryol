@@ -1,0 +1,16 @@
+---
+branches:
+    except:
+        - gh-pages
+
+os: Visual Studio 2015 RC
+clone_folder: c:\projects\oryol
+shallow_clone: true
+clone_depth: 5
+matrix:
+    fast_finish: true
+
+build_script:
+    - cmd: python fips build win64-vs2015-debug
+
+
