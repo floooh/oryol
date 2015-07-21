@@ -24,7 +24,7 @@ public:
     ~d3d11DrawStateFactory();
 
     /// setup the factory
-    void Setup(class renderer* rendr, class meshPool* mshPool, class programBundlePool* pbPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// setup drawState resource

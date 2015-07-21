@@ -6,13 +6,13 @@
     @brief D3D11 implementation of MeshFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/Core/gfxPointers.h"
+#include "Gfx/Core/Enums.h"
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class meshPool;
 class mesh;
 
 class d3d11MeshFactory {
@@ -23,7 +23,7 @@ public:
     ~d3d11MeshFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(renderer* rendr, meshPool* mshPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -47,8 +47,7 @@ private:
     /// helper method to create vertex or index buffer
     ID3D11Buffer* createBuffer(const void* vertexData, uint32 vertexDataSize, uint32 d3d11BindFlags, Usage::Code usage);
 
-    class renderer* renderer;
-    class meshPool* meshPool;
+    gfxPointers pointers;
     ID3D11Device* d3d11Device;
     bool isValid;
 };

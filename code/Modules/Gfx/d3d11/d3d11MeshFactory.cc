@@ -13,8 +13,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11MeshFactory::d3d11MeshFactory() :
-renderer(nullptr),
-meshPool(nullptr),
 d3d11Device(nullptr),
 isValid(false) {
     // empty
@@ -27,26 +25,20 @@ d3d11MeshFactory::~d3d11MeshFactory() {
 
 //------------------------------------------------------------------------------
 void
-d3d11MeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
+d3d11MeshFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(rendr);
-    o_assert_dbg(mshPool);
-    o_assert_dbg(rendr->d3d11Device);
-
     this->isValid = true;
-    this->renderer = rendr;
-    this->meshPool = mshPool;
-    this->d3d11Device = renderer->d3d11Device;
+    this->pointers = ptrs;
+    this->d3d11Device = this->pointers.renderer->d3d11Device;
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::Discard() {
     o_assert_dbg(this->isValid);
-    this->isValid = false;
-    this->renderer = nullptr;
-    this->meshPool = nullptr;
+    this->pointers = gfxPointers();
     this->d3d11Device = nullptr;
+    this->isValid = false;
 }
 
 //------------------------------------------------------------------------------
@@ -81,10 +73,7 @@ d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::DestroyResource(mesh& mesh) {
-    o_assert_dbg(nullptr != this->renderer);
-
-    this->renderer->invalidateMeshState();
-
+    this->pointers.renderer->invalidateMeshState();
     if (mesh.d3d11VertexBuffer) {
         mesh.d3d11VertexBuffer->Release();
     }

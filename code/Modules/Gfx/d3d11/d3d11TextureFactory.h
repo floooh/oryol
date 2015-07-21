@@ -6,15 +6,13 @@
     @brief D3D11 implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Resource/texture.h"
+#include "Gfx/Core/gfxPointers.h"
+#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
 class texture;
-class displayMgr;
-class texturePool;
     
 class d3d11TextureFactory {
 public:
@@ -24,7 +22,7 @@ public:
     ~d3d11TextureFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -51,9 +49,7 @@ private:
     /// create d3d11 depth-stencil-view object
     ID3D11DepthStencilView* createDepthStencilView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
 
-    class renderer* renderer;
-    displayMgr* displayManager;
-    texturePool* texPool;
+    gfxPointers pointers;
     ID3D11Device* d3d11Device;
     bool isValid;
 };

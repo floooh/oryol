@@ -5,18 +5,15 @@
 #include "d3d11TextureFactory.h"
 #include "Gfx/d3d11/d3d11_impl.h"
 #include "Gfx/d3d11/d3d11types.h"
+#include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11TextureFactory::d3d11TextureFactory() :
-renderer(nullptr),
-displayManager(nullptr),
-texPool(nullptr),
 d3d11Device(nullptr),
 isValid(false) {
     // empty
@@ -29,17 +26,11 @@ d3d11TextureFactory::~d3d11TextureFactory() {
 
 //------------------------------------------------------------------------------
 void
-d3d11TextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool_) {
+d3d11TextureFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != displayMgr);
-    o_assert_dbg(nullptr != texPool_);
-
     this->isValid = true;
-    this->renderer = rendr;
-    this->displayManager = displayMgr;
-    this->texPool = texPool_;
-    this->d3d11Device = renderer->d3d11Device;
+    this->pointers = ptrs;
+    this->d3d11Device = this->pointers.renderer->d3d11Device;
 }
 
 //------------------------------------------------------------------------------
@@ -48,10 +39,8 @@ d3d11TextureFactory::Discard() {
     o_assert_dbg(this->isValid);
 
     this->isValid = false;
+    this->pointers = gfxPointers();
     this->d3d11Device = nullptr;
-    this->renderer = nullptr;
-    this->displayManager = nullptr;
-    this->texPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -67,7 +56,7 @@ d3d11TextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
@@ -84,7 +73,7 @@ d3d11TextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
     }
@@ -99,7 +88,7 @@ void
 d3d11TextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
 
     if (nullptr != tex.d3d11Texture2D) {
         tex.d3d11Texture2D->Release();
@@ -143,14 +132,14 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
     int32 width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
-        const DisplayAttrs& dispAttrs = this->displayManager->GetDisplayAttrs();
+        const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
         height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
         o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;

@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Gfx/Core/renderer.h"
 #include "d3d11ProgramBundleFactory.h"
+#include "Gfx/Resource/programBundle.h"
 #include "d3d11_impl.h"
 
 namespace Oryol {
@@ -11,7 +12,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 d3d11ProgramBundleFactory::d3d11ProgramBundleFactory() :
-renderer(nullptr),
 d3d11Device(nullptr),
 isValid(false) {
     // empty
@@ -24,13 +24,11 @@ d3d11ProgramBundleFactory::~d3d11ProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-d3d11ProgramBundleFactory::Setup(class renderer* rendr) {
+d3d11ProgramBundleFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(rendr);
-    o_assert_dbg(rendr->d3d11Device);
     this->isValid = true;
-    this->renderer = rendr;
-    this->d3d11Device = rendr->d3d11Device;
+    this->pointers = ptrs;
+    this->d3d11Device = this->pointers.renderer->d3d11Device;
 }
 
 //------------------------------------------------------------------------------
@@ -38,6 +36,7 @@ void
 d3d11ProgramBundleFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
+    this->pointers = gfxPointers();
     this->d3d11Device = nullptr;
 }
 
@@ -54,7 +53,7 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->d3d11Device);
     HRESULT hr;
 
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
     const ShaderLang::Code slang = ShaderLang::HLSL5;
     const ProgramBundleSetup& setup = progBundle.Setup;
 
@@ -124,7 +123,7 @@ d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->d3d11Device);
 
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
 
     const int32 numProgs = progBundle.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {

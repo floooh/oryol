@@ -24,11 +24,11 @@ d3d11DrawStateFactory::~d3d11DrawStateFactory() {
 
 //------------------------------------------------------------------------------
 void
-d3d11DrawStateFactory::Setup(class renderer* rendr, class meshPool* mshPool, class programBundlePool* pbPool) {
+d3d11DrawStateFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(nullptr == this->d3d11Device);
 
-    drawStateFactoryBase::Setup(rendr, mshPool, pbPool);
-    this->d3d11Device = rendr->d3d11Device;
+    drawStateFactoryBase::Setup(ptrs);
+    this->d3d11Device = this->pointers.renderer->d3d11Device;
     o_assert_dbg(nullptr != this->d3d11Device);
 }
 
@@ -134,9 +134,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
 //------------------------------------------------------------------------------
 void
 d3d11DrawStateFactory::DestroyResource(drawState& ds) {
-    o_assert_dbg(nullptr != this->renderer);
-
-    this->renderer->invalidateDrawState();
+    this->pointers.renderer->invalidateDrawState();
     for (int i = 0; i < GfxConfig::MaxNumBundlePrograms; i++) {
         if (nullptr != ds.d3d11InputLayouts[i]) {
             this->releaseInputLayout(ds.d3d11InputLayouts[i]);
