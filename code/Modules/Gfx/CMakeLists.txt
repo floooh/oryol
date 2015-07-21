@@ -58,13 +58,10 @@ fips_begin_module(Gfx)
         meshFactory.h
         programBundle.h
         programBundleFactory.h
-        shader.h
-        shaderFactory.h
         texture.h
         textureFactory.h
         meshBase.cc meshBase.h
         programBundleBase.h
-        shaderBase.cc shaderBase.h
         textureBase.cc textureBase.h
         gfxResourceContainer.cc gfxResourceContainer.h
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -76,7 +73,6 @@ fips_begin_module(Gfx)
         GfxSetup.cc GfxSetup.h
         MeshSetup.cc MeshSetup.h
         ProgramBundleSetup.cc ProgramBundleSetup.h
-        ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
     )
     if (ORYOL_OPENGL)
@@ -93,8 +89,6 @@ fips_begin_module(Gfx)
             glProgramBundle.cc glProgramBundle.h
             glProgramBundleFactory.cc glProgramBundleFactory.h
             glRenderer.cc glRenderer.h
-            glShader.cc glShader.h
-            glShaderFactory.cc glShaderFactory.h
             glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h
@@ -112,8 +106,6 @@ fips_begin_module(Gfx)
             d3d11Types.cc d3d11Types.h
             d3d11Mesh.cc d3d11Mesh.h
             d3d11MeshFactory.cc d3d11MeshFactory.h
-            d3d11Shader.cc d3d11Shader.h
-            d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11ProgramBundle.cc d3d11ProgramBundle.h
             d3d11ProgramBundleFactory.cc d3d11ProgramBundleFactory.h
             d3d11Texture.cc d3d11Texture.h
@@ -134,7 +126,6 @@ fips_begin_module(Gfx)
             mtlEnums.h
             mtlMesh.h mtlMesh.mm
             mtlMeshFactory.h mtlMeshFactory.mm
-            mtlShaderFactory.h mtlShaderFactory.cc
             mtlProgramBundle.h mtlProgramBundle.mm
             mtlProgramBundleFactory.h mtlProgramBundleFactory.mm
             mtlDrawState.h mtlDrawState.mm

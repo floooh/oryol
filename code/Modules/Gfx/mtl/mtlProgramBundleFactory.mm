@@ -13,8 +13,6 @@ namespace _priv {
 //------------------------------------------------------------------------------
 mtlProgramBundleFactory::mtlProgramBundleFactory() :
 renderer(0),
-shdPool(0),
-shdFactory(0),
 isValid(false) {
     // empty
 }
@@ -26,15 +24,11 @@ mtlProgramBundleFactory::~mtlProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-mtlProgramBundleFactory::Setup(class renderer* rendr, shaderPool* pool, shaderFactory* factory) {
+mtlProgramBundleFactory::Setup(class renderer* rendr) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != pool);
-    o_assert_dbg(nullptr != factory);
     this->isValid = true;
     this->renderer = rendr;
-    this->shdPool = pool;
-    this->shdFactory = factory;
 }
 
 //------------------------------------------------------------------------------
@@ -43,8 +37,6 @@ mtlProgramBundleFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     this->renderer = nullptr;
-    this->shdPool = nullptr;
-    this->shdFactory = nullptr;
 }
 
 //------------------------------------------------------------------------------

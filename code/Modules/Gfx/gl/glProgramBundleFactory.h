@@ -6,6 +6,8 @@
     @brief private: GL implementation of programBundleFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Core/Enums.h"
+#include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -23,7 +25,7 @@ public:
     ~glProgramBundleFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr, shaderPool* shdPool, shaderFactory* shdFactory);
+    void Setup(class renderer* rendr);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -35,9 +37,10 @@ public:
     void DestroyResource(programBundle& progBundle);
 
 private:
+    /// compile a GL shader (return 0 if failed)
+    GLuint compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const;
+
     class renderer* renderer;
-    shaderPool* shdPool;
-    shaderFactory* shdFactory;
     bool isValid;
 };
     

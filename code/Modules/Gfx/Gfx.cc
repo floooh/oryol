@@ -23,7 +23,6 @@ Gfx::Setup(const class GfxSetup& setup) {
     pointers.displayMgr = &state->displayManager;
     pointers.renderer = &state->renderer;
     pointers.meshPool = &state->resourceContainer.meshPool;
-    pointers.shaderPool = &state->resourceContainer.shaderPool;
     pointers.programBundlePool = &state->resourceContainer.programBundlePool;
     pointers.texturePool = &state->resourceContainer.texturePool;
     pointers.drawStatePool = &state->resourceContainer.drawStatePool;

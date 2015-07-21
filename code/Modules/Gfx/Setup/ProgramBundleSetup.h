@@ -28,8 +28,6 @@ public:
     /// the resource locator
     class Locator Locator;
 
-    /// add a program consisting of precompiled vertex and fragment shader
-    void AddProgram(uint32 mask, const Id& vertexShader, const Id& fragmentShader);
     /// add a program from vertex- and fragment-shader sources
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
     /// add a program from precompiled shader byte code
@@ -48,10 +46,6 @@ public:
     int32 NumPrograms() const;
     /// get program mask by index
     uint32 Mask(int32 progIndex) const;
-    /// get program vertex shader (only valid if setup from precompiled shaders)
-    const Id& VertexShader(int32 progIndex) const;
-    /// get program fragment shader (only valid if setup from precompiled shaders)
-    const Id& FragmentShader(int32 progIndex) const;
     /// get the vertex shader input layout
     const VertexLayout& VertexShaderInputLayout(int32 progIndex) const;
     /// get program vertex shader source (only valid if setup from sources)
@@ -81,8 +75,6 @@ public:
 private:
     struct programEntry {
         uint32 mask = 0;
-        Id vertexShader;
-        Id fragmentShader;
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> vsFuncs;

@@ -91,7 +91,6 @@ ResourceStressApp::OnInit() {
     gfxSetup.SetPoolSize(GfxResourceType::Texture, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::DrawState, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::ProgramBundle, 4);
-    gfxSetup.SetPoolSize(GfxResourceType::Shader, 8);
     Gfx::Setup(gfxSetup);
     
     // setup debug text rendering

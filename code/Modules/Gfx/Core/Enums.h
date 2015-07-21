@@ -375,7 +375,6 @@ public:
     enum Code {
         Texture,            ///< a texture
         Mesh,               ///< a mesh
-        Shader,             ///< a vertex shader
         ProgramBundle,      ///< shader program bundle
         ConstantBlock,      ///< block constant shader uniforms
         DrawState,          ///< draw state resource

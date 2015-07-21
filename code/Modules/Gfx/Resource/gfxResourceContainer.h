@@ -17,7 +17,6 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/meshFactory.h"
-#include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/programBundleFactory.h"
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStateFactory.h"
@@ -82,12 +81,10 @@ public:
     
     gfxPointers pointers;
     class meshFactory meshFactory;
-    class shaderFactory shaderFactory;
     class programBundleFactory programBundleFactory;
     class textureFactory textureFactory;
     class drawStateFactory drawStateFactory;
     class meshPool meshPool;
-    class shaderPool shaderPool;
     class programBundlePool programBundlePool;
     class texturePool texturePool;
     class drawStatePool drawStatePool;

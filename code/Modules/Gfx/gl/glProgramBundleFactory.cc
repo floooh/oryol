@@ -4,8 +4,6 @@
 #include "Pre.h"
 #include "glProgramBundleFactory.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/shader.h"
-#include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glInfo.h"
@@ -17,8 +15,6 @@ namespace _priv {
 //------------------------------------------------------------------------------
 glProgramBundleFactory::glProgramBundleFactory() :
 renderer(0),
-shdPool(0),
-shdFactory(0),
 isValid(false) {
     // empty
 }
@@ -30,15 +26,11 @@ glProgramBundleFactory::~glProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Setup(class renderer* rendr, shaderPool* pool, shaderFactory* factory) {
+glProgramBundleFactory::Setup(class renderer* rendr) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != pool);
-    o_assert_dbg(nullptr != factory);
     this->isValid = true;
     this->renderer = rendr;
-    this->shdPool = pool;
-    this->shdFactory = factory;
 }
 
 //------------------------------------------------------------------------------
@@ -47,8 +39,6 @@ glProgramBundleFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     this->renderer = nullptr;
-    this->shdPool = nullptr;
-    this->shdFactory = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -75,38 +65,17 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     // for each program in the bundle...
     const int32 numProgs = setup.NumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
+        o_assert_dbg(setup.VertexShaderSource(progIndex, slang).IsValid());
+        o_assert_dbg(setup.FragmentShaderSource(progIndex, slang).IsValid());
         
-        // lookup or compile vertex shader
-        Map<String,String> noDefines;
-        GLuint glVertexShader = 0;
-        bool deleteVertexShader = false;
-        if (setup.VertexShaderSource(progIndex, slang).IsValid()) {
-            // compile the vertex shader from source
-            glVertexShader = this->shdFactory->compileShader(ShaderType::VertexShader, setup.VertexShaderSource(progIndex, slang));
-            deleteVertexShader = true;
-        }
-        else {
-            // vertex shader is precompiled
-            const shader* vertexShader = this->shdPool->Lookup(setup.VertexShader(progIndex));
-            o_assert_dbg(nullptr != vertexShader);
-            glVertexShader = vertexShader->glShd;
-        }
+        // compile vertex shader
+        const String& vsSource = setup.VertexShaderSource(progIndex, slang);
+        GLuint glVertexShader = this->compileShader(ShaderType::VertexShader, vsSource.AsCStr(), vsSource.Length());
         o_assert_dbg(0 != glVertexShader);
         
-        // lookup or compile fragment shader
-        GLuint glFragmentShader = 0;
-        bool deleteFragmentShader = false;
-        if (setup.FragmentShaderSource(progIndex, slang).IsValid()) {
-            // compile the fragment shader from source
-            glFragmentShader = this->shdFactory->compileShader(ShaderType::FragmentShader, setup.FragmentShaderSource(progIndex, slang));
-            deleteFragmentShader = true;
-        }
-        else {
-            // fragment shader is precompiled
-            const shader* fragmentShader = this->shdPool->Lookup(setup.FragmentShader(progIndex));
-            o_assert_dbg(nullptr != fragmentShader);
-            glFragmentShader = fragmentShader->glShd;
-        }
+        // compile fragment shader
+        const String& fsSource = setup.FragmentShaderSource(progIndex, slang);
+        GLuint glFragmentShader = this->compileShader(ShaderType::FragmentShader, fsSource.AsCStr(), fsSource.Length());
         o_assert_dbg(0 != glFragmentShader);
         
         // create GL program object and attach vertex/fragment shader
@@ -132,13 +101,9 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         ORYOL_GL_CHECK_ERROR();
         
         // can discard shaders now if we compiled them ourselves
-        if (deleteVertexShader) {
-            ::glDeleteShader(glVertexShader);
-        }
-        if (deleteFragmentShader) {
-            ::glDeleteShader(glFragmentShader);
-        }
-        
+        ::glDeleteShader(glVertexShader);
+        ::glDeleteShader(glFragmentShader);
+
         // linking successful?
         GLint linkStatus;
         ::glGetProgramiv(glProg, GL_LINK_STATUS, &linkStatus);
@@ -213,6 +178,55 @@ glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     }
     progBundle.Clear();
 }
+
+//------------------------------------------------------------------------------
+GLuint
+glProgramBundleFactory::compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const {
+    o_assert_dbg(sourceString && (sourceLen > 0));
     
+    GLuint glShader = glCreateShader(type);
+    o_assert_dbg(0 != glShader);
+    ORYOL_GL_CHECK_ERROR();
+    
+    // attach source to shader object
+    ::glShaderSource(glShader, 1, &sourceString, &sourceLen);
+    ORYOL_GL_CHECK_ERROR();
+    
+    // compile the shader
+    ::glCompileShader(glShader);
+    ORYOL_GL_CHECK_ERROR();
+    
+    // compilation failed?
+    GLint compileStatus = 0;
+    ::glGetShaderiv(glShader, GL_COMPILE_STATUS, &compileStatus);
+    ORYOL_GL_CHECK_ERROR();
+    
+    #if ORYOL_DEBUG
+        GLint logLength = 0;
+        ::glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
+        ORYOL_GL_CHECK_ERROR();
+        if (logLength > 0) {
+            
+            // first print the shader source
+            Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
+            
+            // now print the info log
+            GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
+            ::glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
+            ORYOL_GL_CHECK_ERROR();
+            Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
+            Memory::Free(shdLogBuf);
+        }
+    #endif
+    
+    if (!compileStatus) {
+        // compiling failed
+        ::glDeleteShader(glShader);
+        ORYOL_GL_CHECK_ERROR();
+        glShader = 0;
+    }
+    return glShader;
+}
+
 } // namespace _priv
 } // namespace Oryol
