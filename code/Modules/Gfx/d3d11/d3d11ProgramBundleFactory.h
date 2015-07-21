@@ -24,7 +24,7 @@ public:
     ~d3d11ProgramBundleFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr, shaderPool* shdPool, shaderFactory* shdFactory);
+    void Setup(class renderer* rendr);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup

@@ -24,7 +24,7 @@ d3d11ProgramBundleFactory::~d3d11ProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-d3d11ProgramBundleFactory::Setup(class renderer* rendr, shaderPool* shdPool, shaderFactory* shdFactory) {
+d3d11ProgramBundleFactory::Setup(class renderer* rendr) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(rendr);
     o_assert_dbg(rendr->d3d11Device);
