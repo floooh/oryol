@@ -40,7 +40,7 @@ TEST(ShapeBuilderTest) {
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
     meshFactory factory;
-    factory.Setup(&renderer, &meshPool);
+    factory.Setup(ptrs);
     
     // the state builder
     ShapeBuilder shapeBuilder;

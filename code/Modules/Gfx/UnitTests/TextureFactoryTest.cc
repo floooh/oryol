@@ -36,7 +36,7 @@ TEST(RenderTargetCreationTest) {
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
     textureFactory factory;
-    factory.Setup(&renderer, &displayManager, &texPool);
+    factory.Setup(ptrs);
     
     // create a render target (no depth buffer)
     auto texSetup = TextureSetup::RenderTarget(320, 256);

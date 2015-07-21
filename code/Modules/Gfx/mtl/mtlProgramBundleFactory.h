@@ -6,13 +6,11 @@
     @brief Metal implementation of programBundleFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class shaderPool;
-class shaderFactory;
 class programBundle;
 
 class mtlProgramBundleFactory {
@@ -23,7 +21,7 @@ public:
     ~mtlProgramBundleFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -35,7 +33,7 @@ public:
     void DestroyResource(programBundle& progBundle);
 
 private:
-    class renderer* renderer;
+    gfxPointers pointers;
     bool isValid;
 };
     

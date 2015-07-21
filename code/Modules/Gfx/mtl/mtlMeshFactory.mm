@@ -13,8 +13,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 mtlMeshFactory::mtlMeshFactory() :
-renderer(nullptr),
-meshPool(nullptr),
 isValid(false) {
     // empty
 }
@@ -26,22 +24,18 @@ mtlMeshFactory::~mtlMeshFactory() {
 
 //------------------------------------------------------------------------------
 void
-mtlMeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
+mtlMeshFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != mshPool);
     this->isValid = true;
-    this->renderer = rendr;
-    this->meshPool = mshPool;
+    this->pointers = ptrs;
 }
 
 //------------------------------------------------------------------------------
 void
 mtlMeshFactory::Discard() {
     o_assert_dbg(this->isValid);
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
-    this->meshPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -77,8 +71,7 @@ mtlMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 mtlMeshFactory::DestroyResource(mesh& msh) {
-    o_assert_dbg(this->renderer);
-    this->renderer->invalidateMeshState();
+    this->pointers.renderer->invalidateMeshState();
     for (int i = 0; i < mesh::NumSlots; i++) {
         if (nil != msh.mtlVertexBuffers[i]) {
             ORYOL_OBJC_RELEASE(msh.mtlVertexBuffer[i]);
@@ -99,15 +92,14 @@ mtlMeshFactory::DestroyResource(mesh& msh) {
 id<MTLBuffer>
 mtlMeshFactory::createBuffer(const void* data, uint32 dataSize, Usage::Code usage) {
     o_assert_dbg(dataSize > 0);
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
 
     MTLResourceOptions options = mtlTypes::asBufferResourceOptions(usage);
     id<MTLBuffer> buf;
     if (data) {
-        buf = [this->renderer->mtlDevice newBufferWithBytes:data length:dataSize options:options];
+        buf = [this->pointers.renderer->mtlDevice newBufferWithBytes:data length:dataSize options:options];
     }
     else {
-        buf = [this->renderer->mtlDevice newBufferWithLength:dataSize options:options];
+        buf = [this->pointers.renderer->mtlDevice newBufferWithLength:dataSize options:options];
     }
     return buf;
 }

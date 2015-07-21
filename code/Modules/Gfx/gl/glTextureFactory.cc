@@ -18,9 +18,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glTextureFactory::glTextureFactory() :
-renderer(nullptr),
-displayManager(nullptr),
-texPool(nullptr),
 isValid(false) {
     // empty
 }
@@ -32,27 +29,18 @@ glTextureFactory::~glTextureFactory() {
 
 //------------------------------------------------------------------------------
 void
-glTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool_) {
+glTextureFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != displayMgr);
-    o_assert_dbg(nullptr != texPool_);
-
     this->isValid = true;
-    this->renderer = rendr;
-    this->displayManager = displayMgr;
-    this->texPool = texPool_;
+    this->pointers = ptrs;
 }
 
 //------------------------------------------------------------------------------
 void
 glTextureFactory::Discard() {
     o_assert_dbg(this->isValid);
-
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
-    this->displayManager = nullptr;
-    this->texPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -98,7 +86,7 @@ void
 glTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
     
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
 
     if (0 != tex.glFramebuffer) {
         ::glDeleteFramebuffers(1, &tex.glFramebuffer);
@@ -131,7 +119,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(0 == tex.glFramebuffer);
     o_assert_dbg(0 == tex.glDepthRenderbuffer);
     
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
     ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &glOrigFramebuffer);
     ORYOL_GL_CHECK_ERROR();
@@ -146,14 +134,14 @@ glTextureFactory::createRenderTarget(texture& tex) {
     int32 width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
-        const DisplayAttrs& dispAttrs = this->displayManager->GetDisplayAttrs();
+        const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
         height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
         o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
@@ -238,7 +226,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         o_warn("glTextureFactory::createRenderTarget(): framebuffer completeness check failed!\n");
     }
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     
     // setup texture attrs and set on texture
     TextureAttrs attrs;
@@ -396,7 +384,7 @@ GLuint
 glTextureFactory::glGenAndBindTexture(GLenum target) {
     o_assert_dbg(this->isValid);
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     GLuint glTex = 0;
     ::glGenTextures(1, &glTex);
     ::glActiveTexture(GL_TEXTURE0);

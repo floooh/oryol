@@ -19,7 +19,6 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nil == ds.mtlRenderPipelineState);
     o_assert_dbg(nil == ds.mtlDepthStencilState);
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
 
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.prog);
@@ -46,7 +45,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
         dsDesc.frontFaceStencil.readMask = dss.StencilReadMask;
         dsDesc.frontFaceStencil.writeMask = dss.StencilWriteMask;
     }
-    ds.mtlDepthStencilState = [this->renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
+    ds.mtlDepthStencilState = [this->pointers.renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
     o_assert(nil != ds.mtlDepthStencilState);
 
     // create vertex-descriptor object
@@ -92,7 +91,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     rpDesc.alphaToOneEnabled = NO;
     rpDesc.sampleCount = ds.Setup.RasterizerState.SampleCount;
     NSError* err = NULL;
-    ds.mtlRenderPipelineState = [this->renderer->mtlDevice newRenderPipelineStateWithDescriptor:rpDesc error:&err];
+    ds.mtlRenderPipelineState = [this->pointers.renderer->mtlDevice newRenderPipelineStateWithDescriptor:rpDesc error:&err];
     if (!ds.mtlRenderPipelineState) {
         o_error("mtlDrawStateFactory: failed to create MTLRenderPipelineState with:\n  %s\n", err.localizedDescription.UTF8String);
         return ResourceState::InvalidState;
@@ -106,7 +105,7 @@ void
 mtlDrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
-    this->renderer->invalidateDrawState();
+    this->pointers.renderer->invalidateDrawState();
 
     if (nil != ds.mtlRenderPipelineState) {
         ORYOL_OBJC_RELEASE(ds.mtlRenderPipelineState);

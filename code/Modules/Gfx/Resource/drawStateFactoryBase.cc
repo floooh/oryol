@@ -11,9 +11,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 drawStateFactoryBase::drawStateFactoryBase() :
-renderer(nullptr),
-meshPool(nullptr),
-programBundlePool(nullptr),
 isValid(false) {
     // empty
 }
@@ -25,18 +22,9 @@ drawStateFactoryBase::~drawStateFactoryBase() {
 
 //------------------------------------------------------------------------------
 void
-drawStateFactoryBase::Setup(class renderer* rendr, class meshPool* mshPool, class programBundlePool* pbPool) {
+drawStateFactoryBase::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != mshPool);
-    o_assert_dbg(nullptr != pbPool);
-    o_assert_dbg(nullptr == this->renderer);
-    o_assert_dbg(nullptr == this->meshPool);
-    o_assert_dbg(nullptr == this->programBundlePool);
-
-    this->renderer = rendr;
-    this->meshPool = mshPool;
-    this->programBundlePool = pbPool;
+    this->pointers = ptrs;
     this->isValid = true;
 }
 
@@ -44,13 +32,7 @@ drawStateFactoryBase::Setup(class renderer* rendr, class meshPool* mshPool, clas
 void
 drawStateFactoryBase::Discard() {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(nullptr != this->renderer);
-    o_assert_dbg(nullptr != this->meshPool);
-    o_assert_dbg(nullptr != this->programBundlePool);
-    
-    this->renderer = nullptr;
-    this->meshPool = nullptr;
-    this->programBundlePool = nullptr;
+    this->pointers = gfxPointers();
     this->isValid = false;
 }
 
@@ -61,7 +43,7 @@ drawStateFactoryBase::SetupResource(drawState& ds) {
 
     this->resolveInputMeshes(ds);
     this->checkInputMeshes(ds);
-    ds.prog = this->programBundlePool->Lookup(ds.Setup.Program);
+    ds.prog = this->pointers.programBundlePool->Lookup(ds.Setup.Program);
     o_assert_dbg(ds.prog && (ResourceState::Valid == ds.prog->State));
     return ResourceState::Valid;
 }
@@ -71,7 +53,7 @@ void
 drawStateFactoryBase::resolveInputMeshes(drawState& ds) {
     for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
         if (ds.Setup.Meshes[i].IsValid()) {
-            ds.meshes[i] = this->meshPool->Get(ds.Setup.Meshes[i]);
+            ds.meshes[i] = this->pointers.meshPool->Get(ds.Setup.Meshes[i]);
             o_assert(ds.meshes[i]);
         }
         else {

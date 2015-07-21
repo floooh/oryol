@@ -12,7 +12,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 mtlProgramBundleFactory::mtlProgramBundleFactory() :
-renderer(0),
 isValid(false) {
     // empty
 }
@@ -24,19 +23,18 @@ mtlProgramBundleFactory::~mtlProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-mtlProgramBundleFactory::Setup(class renderer* rendr) {
+mtlProgramBundleFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
     this->isValid = true;
-    this->renderer = rendr;
+    this->pointers = ptrs;
 }
 
 //------------------------------------------------------------------------------
 void
 mtlProgramBundleFactory::Discard() {
     o_assert_dbg(this->isValid);
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -49,10 +47,9 @@ mtlProgramBundleFactory::IsValid() const {
 ResourceState::Code
 mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
     o_assert_dbg(nil == progBundle.getLibrary());
 
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
     const ShaderLang::Code slang = ShaderLang::Metal;
     const ProgramBundleSetup& setup = progBundle.Setup;
     const void* libraryByteCode = nullptr;
@@ -64,7 +61,7 @@ mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
     // first create the shader library (one library per bundle)
     NSError* err = 0;
     dispatch_data_t libData = dispatch_data_create(libraryByteCode, libraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-    id<MTLLibrary> mtlLibrary = [this->renderer->mtlDevice newLibraryWithData:libData error:&err];
+    id<MTLLibrary> mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
     progBundle.setLibrary(mtlLibrary);
     o_assert(nil == err);
 
@@ -95,7 +92,7 @@ void
 mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
 
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
     for (auto& entry : progBundle.programEntries) {
         if (nil != entry.mtlVertexShader) {
             ORYOL_OBJC_RELEASE(entry.vertexShader);

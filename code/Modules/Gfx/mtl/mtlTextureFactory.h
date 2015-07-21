@@ -6,15 +6,13 @@
     @brief Metal implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
 class texture;
-class displayMgr;
-class texturePool;
-    
+
 class mtlTextureFactory {
 public:
     /// constructor
@@ -23,7 +21,7 @@ public:
     ~mtlTextureFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -44,9 +42,7 @@ private:
     /// create a sampler state object and set in texture object
     void createSamplerState(texture& tex);
 
-    class renderer* renderer;
-    displayMgr* displayManager;
-    texturePool* texPool;
+    gfxPointers pointers;
     bool isValid;
 };
     

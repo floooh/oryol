@@ -7,13 +7,12 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/gfxPointers.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class meshPool;
 class mesh;
 
 class mtlMeshFactory {
@@ -24,7 +23,7 @@ public:
     ~mtlMeshFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(renderer* rendr, meshPool* mshPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -52,8 +51,7 @@ private:
     /// helper method to create vertex or index buffer
     ORYOL_OBJC_TYPED_ID(MTLBuffer) createBuffer(const void* data, uint32 dataSize, Usage::Code usage);
 
-    class renderer* renderer;
-    class meshPool* meshPool;
+    gfxPointers pointers;
     bool isValid;
 };
 

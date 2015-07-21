@@ -8,12 +8,11 @@
 #include "Resource/ResourceState.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class meshPool;
 class mesh;
 
 class glMeshFactory {
@@ -23,8 +22,8 @@ public:
     /// destructor
     ~glMeshFactory();
     
-    /// setup with a pointer to the state wrapper object
-    void Setup(renderer* rendr, meshPool* mshPool);
+    /// setup the factory
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -50,8 +49,7 @@ private:
     /// helper method to create index buffer in mesh
     GLuint createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage);
 
-    class renderer* renderer;
-    class meshPool* meshPool;
+    gfxPointers pointers;
     bool isValid;
 };
     

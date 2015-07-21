@@ -6,13 +6,11 @@
     @brief base class for drawStateFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class meshPool;
-class programBundlePool;
 class drawState;
 
 class drawStateFactoryBase {
@@ -23,7 +21,7 @@ public:
     ~drawStateFactoryBase();
 
     /// setup the factory
-    void Setup(renderer* rendr, meshPool* mshPool, programBundlePool* pbPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if factory has been setup
@@ -39,9 +37,7 @@ protected:
     /// check whether input mesh configuration is valid
     void checkInputMeshes(const drawState& ds) const;
 
-    class renderer* renderer;
-    class meshPool* meshPool;
-    class programBundlePool* programBundlePool;
+    gfxPointers pointers;
     bool isValid;
 };
 

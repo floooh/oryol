@@ -14,7 +14,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glProgramBundleFactory::glProgramBundleFactory() :
-renderer(0),
 isValid(false) {
     // empty
 }
@@ -26,19 +25,18 @@ glProgramBundleFactory::~glProgramBundleFactory() {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Setup(class renderer* rendr) {
+glProgramBundleFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
     this->isValid = true;
-    this->renderer = rendr;
+    this->pointers = ptrs;
 }
 
 //------------------------------------------------------------------------------
 void
 glProgramBundleFactory::Discard() {
     o_assert_dbg(this->isValid);
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -51,7 +49,7 @@ glProgramBundleFactory::IsValid() const {
 ResourceState::Code
 glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
@@ -128,7 +126,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         progBundle.addProgram(setup.Mask(progIndex), glProg);
         
         // resolve user uniform locations
-        this->renderer->useProgram(glProg);
+        this->pointers.renderer->useProgram(glProg);
         const int32 numUniformBlocks = setup.NumUniformBlocks();
         for (int32 uniformBlockIndex = 0; uniformBlockIndex < numUniformBlocks; uniformBlockIndex++) {
             int32 samplerIndex = 0;
@@ -157,7 +155,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         }
         #endif
     }
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
     
     return ResourceState::Valid;
 }
@@ -166,7 +164,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
 void
 glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
-    this->renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateProgramState();
     
     const int32 numProgs = progBundle.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {

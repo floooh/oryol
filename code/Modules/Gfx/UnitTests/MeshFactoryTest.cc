@@ -40,7 +40,7 @@ TEST(MeshFactoryTest) {
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
     meshFactory factory;
-    factory.Setup(&renderer, &meshPool);
+    factory.Setup(ptrs);
     
     // setup a MeshBuilder and create mesh geometry
     MeshBuilder mb;

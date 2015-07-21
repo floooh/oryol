@@ -23,13 +23,13 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     
     this->pointers = ptrs;
     
-    this->meshFactory.Setup(this->pointers.renderer, &this->meshPool);
+    this->meshFactory.Setup(this->pointers);
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->programBundleFactory.Setup(this->pointers.renderer);
+    this->programBundleFactory.Setup(this->pointers);
     this->programBundlePool.Setup(GfxResourceType::ProgramBundle, setup.PoolSize(GfxResourceType::ProgramBundle));
-    this->textureFactory.Setup(this->pointers.renderer, this->pointers.displayMgr, &this->texturePool);
+    this->textureFactory.Setup(this->pointers);
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->drawStateFactory.Setup(this->pointers.renderer, &this->meshPool, &this->programBundlePool);
+    this->drawStateFactory.Setup(this->pointers);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {

@@ -16,9 +16,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 mtlTextureFactory::mtlTextureFactory() :
-renderer(nullptr),
-displayManager(nullptr),
-texPool(nullptr),
 isValid(false) {
     // empty
 }
@@ -30,27 +27,18 @@ mtlTextureFactory::~mtlTextureFactory() {
 
 //------------------------------------------------------------------------------
 void
-mtlTextureFactory::Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool_) {
+mtlTextureFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != displayMgr);
-    o_assert_dbg(nullptr != texPool_);
-
     this->isValid = true;
-    this->renderer = rendr;
-    this->displayManager = displayMgr;
-    this->texPool = texPool_;
+    this->pointers = ptrs;
 }
 
 //------------------------------------------------------------------------------
 void
 mtlTextureFactory::Discard() {
     o_assert_dbg(this->isValid);
-
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
-    this->displayManager = nullptr;
-    this->texPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -66,7 +54,7 @@ mtlTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
@@ -83,7 +71,7 @@ mtlTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
     }
@@ -98,7 +86,7 @@ void
 mtlTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
 
-    this->renderer->invalidateTextureState();
+    this->pointers.renderer->invalidateTextureState();
     if (nil != tex.mtlTex) {
         ORYOL_OBJC_RELEASE(tex.mtlTex);
         tex.mtlTex = nil;
@@ -117,7 +105,6 @@ mtlTextureFactory::DestroyResource(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 mtlTextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
     o_assert_dbg(nil == tex.mtlTex);
     o_assert_dbg(nil == tex.mtlSamplerState);
     o_assert_dbg(nil == tex.mtlDepthTex);
@@ -131,14 +118,14 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     int32 width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
-        const DisplayAttrs& dispAttrs = this->displayManager->GetDisplayAttrs();
+        const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
         height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->texPool->Lookup(setup.DepthRenderTarget);
+        texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
         o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
@@ -166,7 +153,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     texDesc.resourceOptions = MTLResourceStorageModePrivate;
     texDesc.cpuCacheMode = MTLCPUCacheModeDefaultCache;
     texDesc.storageMode = MTLStorageModePrivate;
-    tex.mtlTex = [this->renderer->mtlDevice newTextureWithDescriptor:texDesc];
+    tex.mtlTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
     o_assert(nil != tex.mtlTex);
 
     // create option depth texture
@@ -181,7 +168,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
             o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
             o_assert_dbg(PixelFormat::None != setup.DepthFormat);
             texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
-            tex.mtlDepthTex = [this->renderer->mtlDevice newTextureWithDescriptor:texDesc];
+            tex.mtlDepthTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
             o_assert(nil != tex.mtlDepthTex);
         }
     }
@@ -211,7 +198,6 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
     o_assert_dbg(nil == tex.mtlTex);
     o_assert_dbg(nil == tex.mtlSamplerState);
 
@@ -238,7 +224,7 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     texDesc.arrayLength = 1;
     texDesc.sampleCount = 1;
     texDesc.resourceOptions = MTLResourceStorageModeAuto;
-    tex.mtlTex = [this->renderer->mtlDevice newTextureWithDescriptor:texDesc];
+    tex.mtlTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
     o_assert(nil != tex.mtlTex);
 
     // copy data bytes into texture
@@ -279,7 +265,6 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
 //------------------------------------------------------------------------------
 void
 mtlTextureFactory::createSamplerState(texture& tex) {
-    o_assert_dbg(this->renderer && this->renderer->mtlDevice);
     o_assert_dbg(nil == tex.mtlSamplerState);
 
     MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
@@ -295,7 +280,7 @@ mtlTextureFactory::createSamplerState(texture& tex) {
     desc.lodMaxClamp = FLT_MAX;
     desc.maxAnisotropy = 1;
     desc.normalizedCoordinates = YES;
-    tex.mtlSamplerState = [this->renderer->mtlDevice newSamplerStateWithDescriptor:desc];
+    tex.mtlSamplerState = [this->pointers.renderer->mtlDevice newSamplerStateWithDescriptor:desc];
     o_assert(nil != tex.mtlSamplerState);
 }
 

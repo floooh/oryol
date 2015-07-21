@@ -6,15 +6,13 @@
     @brief private: GL implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
 class texture;
-class displayMgr;
-class texturePool;
     
 class glTextureFactory {
 public:
@@ -24,7 +22,7 @@ public:
     ~glTextureFactory();
     
     /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr, displayMgr* displayMgr, texturePool* texPool);
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -46,9 +44,7 @@ private:
     /// create texture from raw pixel data
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
 
-    class renderer* renderer;
-    displayMgr* displayManager;
-    texturePool* texPool;
+    gfxPointers pointers;
     bool isValid;
 };
     

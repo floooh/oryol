@@ -43,17 +43,13 @@ glDrawStateFactory::SetupResource(drawState& ds) {
 //------------------------------------------------------------------------------
 void
 glDrawStateFactory::DestroyResource(drawState& ds) {
-    o_assert_dbg(this->renderer);
-
-    this->renderer->invalidateMeshState();
-
+    this->pointers.renderer->invalidateMeshState();
     ds.Clear();
 }
 
 //------------------------------------------------------------------------------
 void
 glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
-    o_assert_dbg(this->renderer);
 
     // first disable all vertex attrs
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {

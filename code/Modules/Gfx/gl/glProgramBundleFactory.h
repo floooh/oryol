@@ -7,14 +7,12 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class renderer;
-class shaderPool;
-class shaderFactory;
 class programBundle;
 
 class glProgramBundleFactory {
@@ -24,8 +22,8 @@ public:
     /// destructor
     ~glProgramBundleFactory();
     
-    /// setup with a pointer to the state wrapper object
-    void Setup(class renderer* rendr);
+    /// setup the factory
+    void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
     /// return true if the object has been setup
@@ -40,7 +38,7 @@ private:
     /// compile a GL shader (return 0 if failed)
     GLuint compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const;
 
-    class renderer* renderer;
+    gfxPointers pointers;
     bool isValid;
 };
     

@@ -16,8 +16,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glMeshFactory::glMeshFactory() :
-renderer(nullptr),
-meshPool(nullptr),
 isValid(false) {
     // empty
 }
@@ -29,22 +27,18 @@ glMeshFactory::~glMeshFactory() {
 
 //------------------------------------------------------------------------------
 void
-glMeshFactory::Setup(class renderer* rendr, class meshPool* mshPool) {
+glMeshFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
-    o_assert_dbg(nullptr != rendr);
-    o_assert_dbg(nullptr != mshPool);
+    this->pointers = ptrs;
     this->isValid = true;
-    this->renderer = rendr;
-    this->meshPool = mshPool;
 }
 
 //------------------------------------------------------------------------------
 void
 glMeshFactory::Discard() {
     o_assert_dbg(this->isValid);
+    this->pointers = gfxPointers();
     this->isValid = false;
-    this->renderer = nullptr;
-    this->meshPool = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -79,10 +73,7 @@ glMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
-    o_assert_dbg(nullptr != this->renderer);
-    
-    this->renderer->invalidateMeshState();
-    
+    this->pointers.renderer->invalidateMeshState();
     for (uint8 i = 0; i < mesh.numVertexBufferSlots; i++) {
         GLuint vb = mesh.glVertexBuffers[i];
         if (0 != vb) {
@@ -102,18 +93,17 @@ glMeshFactory::DestroyResource(mesh& mesh) {
 */
 GLuint
 glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage) {
-    o_assert_dbg(nullptr != this->renderer);
     o_assert_dbg(vertexDataSize > 0);
     
-    this->renderer->invalidateMeshState();
+    this->pointers.renderer->invalidateMeshState();
     GLuint vb = 0;
     ::glGenBuffers(1, &vb);
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(0 != vb);
-    this->renderer->bindVertexBuffer(vb);
+    this->pointers.renderer->bindVertexBuffer(vb);
     ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, usage);
     ORYOL_GL_CHECK_ERROR();
-    this->renderer->invalidateMeshState();
+    this->pointers.renderer->invalidateMeshState();
     return vb;
 }
 
@@ -124,18 +114,17 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
 */
 GLuint
 glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Usage::Code usage) {
-    o_assert_dbg(nullptr != this->renderer);
     o_assert_dbg(indexDataSize > 0);
     
-    this->renderer->invalidateMeshState();
+    this->pointers.renderer->invalidateMeshState();
     GLuint ib = 0;
     ::glGenBuffers(1, &ib);
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(0 != ib);
-    this->renderer->bindIndexBuffer(ib);
+    this->pointers.renderer->bindIndexBuffer(ib);
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, usage);
     ORYOL_GL_CHECK_ERROR();
-    this->renderer->invalidateMeshState();
+    this->pointers.renderer->invalidateMeshState();
     return ib;
 }
 
