@@ -317,5 +317,33 @@ d3d11Types::asTextureAddressMode(TextureWrapMode::Code mode) {
     }
 }
 
+//------------------------------------------------------------------------------
+DXGI_FORMAT
+d3d11Types::asIndexType(IndexType::Code c) {
+    switch (c) {
+        case IndexType::None:       return DXGI_FORMAT_UNKNOWN; // this is a valid return type!   
+        case IndexType::Index16:    return DXGI_FORMAT_R16_UINT;
+        case IndexType::Index32:    return DXGI_FORMAT_R32_UINT;
+        default:
+            o_error("d3d11Types::asIndexType(): invalid value!\n");
+            return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+//------------------------------------------------------------------------------
+D3D11_PRIMITIVE_TOPOLOGY
+d3d11Types::asPrimitiveTopology(PrimitiveType::Code c) {
+    switch (c) {
+        case PrimitiveType::Points:         return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+        case PrimitiveType::Lines:          return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+        case PrimitiveType::LineStrip:      return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+        case PrimitiveType::Triangles:      return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        case PrimitiveType::TriangleStrip:  return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+        default:
+            o_error("d3d11Types::asPrimitiveTopology(): invalid value!\n");
+            return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

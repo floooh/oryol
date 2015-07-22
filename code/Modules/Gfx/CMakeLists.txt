@@ -101,7 +101,6 @@ fips_begin_module(Gfx)
         fips_files(
             d3d11_impl.h d3d11_decl.h
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
-            d3d11Enums.h
             d3d11Types.cc d3d11Types.h
             d3d11Mesh.cc d3d11Mesh.h
             d3d11MeshFactory.cc d3d11MeshFactory.h

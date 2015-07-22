@@ -7,6 +7,19 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
+PrimitiveType::Code
+OmshParser::translatePrimType(uint32 omshPrimType) {
+    switch (omshPrimType) {
+        case 0:     return PrimitiveType::Points;
+        case 1:     return PrimitiveType::Lines;
+        case 3:     return PrimitiveType::LineStrip;
+        case 4:     return PrimitiveType::Triangles;
+        case 5:     return PrimitiveType::TriangleStrip;
+        default:    return PrimitiveType::InvalidPrimitiveType;
+    }
+}
+
+//------------------------------------------------------------------------------
 bool
 OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     o_assert_dbg(ptr);
@@ -76,7 +89,10 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     }
     for(uint32 i = 0; i < numPrimGroups; i++) {
         PrimitiveGroup primGroup;
-        primGroup.PrimType = (PrimitiveType::Code) *u32Ptr++;
+        primGroup.PrimType = translatePrimType(*u32Ptr++);
+        if (PrimitiveType::InvalidPrimitiveType == primGroup.PrimType) {
+            return false;
+        }
         primGroup.BaseElement = *u32Ptr++;
         primGroup.NumElements = *u32Ptr++;
         outSetup.AddPrimitiveGroup(primGroup);

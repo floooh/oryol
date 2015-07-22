@@ -48,6 +48,10 @@ public:
     static D3D11_FILTER asSamplerFilter(TextureFilterMode::Code magFilter, TextureFilterMode::Code minFilter);
     /// convert texture wrap mode to d3d11 texture address mode
     static D3D11_TEXTURE_ADDRESS_MODE asTextureAddressMode(TextureWrapMode::Code mode);
+    /// convert vertex index type to dxgi format
+    static DXGI_FORMAT asIndexType(IndexType::Code c);
+    /// convert primitive type
+    static D3D11_PRIMITIVE_TOPOLOGY asPrimitiveTopology(PrimitiveType::Code c);
 };
 
 } // namespace _priv 

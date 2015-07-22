@@ -24,7 +24,7 @@
             uint32 format;      // values of VertexFormat::Code
         } vertexAttrs[numVertexAttr];
         struct {
-            uint32 primitiveType;   // values of PrimitiveType::Code
+            uint32 primitiveType;   // values of OmshPrimitiveType (see below)
             uint32 baseElement;
             uint32 numElements;
         } primitiveGroups[numPrimitiveGroups];
@@ -32,6 +32,16 @@
         uint8 indexData[numIndices * indexSize];
         - optional: 2 zero-bytes of padding if odd number of 16-bit-indices
     };
+
+    enum OmshPrimitiveType {
+        Points = 0,
+        Lines = 1,
+        LineLoop = 2,
+        LineStrip = 3,
+        Triangles = 4,
+        TriangleStrip = 5,
+        TriangleFan = 6,
+    }
 */
 #include "Gfx/Setup/MeshSetup.h"
 
@@ -41,6 +51,9 @@ class OmshParser {
 public:
     /// parse block of memory into MeshSetup object
     static bool Parse(const void* ptr, uint32 size, MeshSetup& outSetup);
+private:
+    /// transate OMSH primtype to actual primtype
+    static PrimitiveType::Code translatePrimType(uint32 omshPrimType);
 };
 
 } // namespace Oryol

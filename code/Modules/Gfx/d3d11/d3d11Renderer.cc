@@ -9,6 +9,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "d3d11_impl.h"
+#include "d3d11Types.h"
 
 namespace Oryol {
 namespace _priv {
@@ -316,10 +317,10 @@ d3d11Renderer::applyDrawState(drawState* ds) {
                 &(this->curVertexOffsets[0]));          // pOffsets
         }
 
-        // apply optional index buffer
+        // apply optional index buffer (can be nullptr!)
         if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
             this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
-            DXGI_FORMAT d3d11IndexFormat = (DXGI_FORMAT)ds->meshes[0]->indexBufferAttrs.Type;
+            DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
             this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
         }
 
@@ -454,7 +455,7 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->curDrawState->meshes[0]);
     if (primGroup.PrimType != this->curPrimitiveTopology) {
         this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
+        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
     }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
@@ -494,7 +495,7 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
     o_assert_dbg(this->curDrawState->meshes[0]);
     if (primGroup.PrimType != this->curPrimitiveTopology) {
         this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)primGroup.PrimType);
+        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
     }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
