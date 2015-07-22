@@ -227,11 +227,9 @@ glTypes::asGLPrimitiveType(PrimitiveType::Code c) {
     switch (c) {
         case PrimitiveType::Points:         return GL_POINTS;
         case PrimitiveType::Lines:          return GL_LINES;
-        case PrimitiveType::LineLoop:       return GL_LINE_LOOP;
         case PrimitiveType::LineStrip:      return GL_LINE_STRIP;
         case PrimitiveType::Triangles:      return GL_TRIANGLES;
         case PrimitiveType::TriangleStrip:  return GL_TRIANGLE_STRIP;
-        case PrimitiveType::TriangleFan:    return GL_TRIANGLE_FAN;
         default:
             o_error("glTypes::asGLPrimitiveType(): invalid param!\n");
             return 0;
