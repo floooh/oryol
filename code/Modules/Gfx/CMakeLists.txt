@@ -79,7 +79,6 @@ fips_begin_module(Gfx)
         fips_dir(gl)
         fips_files(
             glDebugOutput.cc glDebugOutput.h
-            glEnums.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
             glDrawState.cc glDrawState.h

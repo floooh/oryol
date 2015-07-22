@@ -7,6 +7,7 @@
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glInfo.h"
+#include "Gfx/gl/glTypes.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
@@ -182,7 +183,7 @@ GLuint
 glProgramBundleFactory::compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const {
     o_assert_dbg(sourceString && (sourceLen > 0));
     
-    GLuint glShader = glCreateShader(type);
+    GLuint glShader = glCreateShader(glTypes::asGLShaderType(type));
     o_assert_dbg(0 != glShader);
     ORYOL_GL_CHECK_ERROR();
     

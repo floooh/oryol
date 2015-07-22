@@ -11,7 +11,7 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 GLenum
-glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
+glTypes::asGLTexImageFormat(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::RGBA8:
         case PixelFormat::R5G5B5A1:
@@ -63,14 +63,14 @@ glTypes::AsGLTexImageFormat(PixelFormat::Code c) {
 
         default:
             // FIXME: add missing values
-            o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
+            o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
             return 0;
     }
 }
 
 //------------------------------------------------------------------------------
 GLenum
-glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
+glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     return glTypes::AsGLTexImageFormat(c);
     #else
@@ -118,7 +118,7 @@ glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
             
         default:
             // FIXME: add missing values
-            o_error("glTypes::AsGLTexImageFormat(): invalid param!\n");
+            o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
             return 0;
     }
     #endif
@@ -126,7 +126,7 @@ glTypes::AsGLTexImageInternalFormat(PixelFormat::Code c) {
 
 //------------------------------------------------------------------------------
 GLenum
-glTypes::AsGLTexImageType(PixelFormat::Code c) {
+glTypes::asGLTexImageType(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::RGBA32F:
             return GL_FLOAT;
@@ -167,14 +167,14 @@ glTypes::AsGLTexImageType(PixelFormat::Code c) {
             
         default:
             // FIXME: add missing values
-            o_error("glTypes::AsGLTexImageType(): invalid param!\n");
+            o_error("glTypes::asGLTexImageType(): invalid param!\n");
             return 0;
     }
 }
     
 //------------------------------------------------------------------------------
 GLenum
-glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
+glTypes::asGLRenderbufferFormat(PixelFormat::Code c) {
     // NOTE: all color buffers are actually created as texture attachments,
     // so currently this method is only used for depth formats, and
     // once depth textures are supported will probably go away
@@ -204,7 +204,104 @@ glTypes::AsGLRenderbufferFormat(PixelFormat::Code c) {
             return GL_DEPTH24_STENCIL8;
             #endif
         default:
-            o_error("glTypes::AsGLRenderbufferFormat(): invalid param!\n");
+            o_error("glTypes::asGLRenderbufferFormat(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLIndexType(IndexType::Code c) {
+    switch (c) {
+        case IndexType::Index16:    return GL_UNSIGNED_SHORT;
+        case IndexType::Index32:    return GL_UNSIGNED_INT;
+        default:
+            o_error("glTypes::asGLIndexType(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLPrimitiveType(PrimitiveType::Code c) {
+    switch (c) {
+        case PrimitiveType::Points:         return GL_POINTS;
+        case PrimitiveType::Lines:          return GL_LINES;
+        case PrimitiveType::LineLoop:       return GL_LINE_LOOP;
+        case PrimitiveType::LineStrip:      return GL_LINE_STRIP;
+        case PrimitiveType::Triangles:      return GL_TRIANGLES;
+        case PrimitiveType::TriangleStrip:  return GL_TRIANGLE_STRIP;
+        case PrimitiveType::TriangleFan:    return GL_TRIANGLE_FAN;
+        default:
+            o_error("glTypes::asGLPrimitiveType(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLShaderType(ShaderType::Code c) {
+    switch (c) {
+        case ShaderType::VertexShader:      return GL_VERTEX_SHADER;
+        case ShaderType::FragmentShader:    return GL_FRAGMENT_SHADER;
+        default:
+            o_error("glTypes::asGLShaderType(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLTexFilterMode(TextureFilterMode::Code c) {
+    switch (c) {
+        case TextureFilterMode::Nearest:                return GL_NEAREST;
+        case TextureFilterMode::Linear:                 return GL_LINEAR;
+        case TextureFilterMode::NearestMipmapNearest:   return GL_NEAREST_MIPMAP_NEAREST;
+        case TextureFilterMode::NearestMipmapLinear:    return GL_NEAREST_MIPMAP_LINEAR;
+        case TextureFilterMode::LinearMipmapNearest:    return GL_LINEAR_MIPMAP_NEAREST;
+        case TextureFilterMode::LinearMipmapLinear:     return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+            o_error("glTypes::asGLTexFilterMode(): invalid param!\n");
+            return 0;
+    };
+};
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLTexWrapMode(TextureWrapMode::Code c) {
+    switch (c) {
+        case TextureWrapMode::ClampToEdge:      return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode::Repeat:           return GL_REPEAT;
+        case TextureWrapMode::MirroredRepeat:   return GL_MIRRORED_REPEAT;
+        default:
+            o_error("glTypes::asGLTexWrapMode(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLTextureTarget(TextureType::Code c) {
+    switch (c) {
+        case TextureType::Texture2D:    return GL_TEXTURE_2D;
+        case TextureType::Texture3D:    return GL_TEXTURE_3D;
+        case TextureType::TextureCube:  return GL_TEXTURE_CUBE_MAP;
+        default:
+            o_error("glTypes::asGLTextureTarget(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLBufferUsage(Usage::Code c) {
+    switch (c) {
+        case Usage::Immutable:  return GL_STATIC_DRAW;
+        case Usage::Static:     return GL_STATIC_DRAW;
+        case Usage::Dynamic:    return GL_DYNAMIC_DRAW;
+        case Usage::Stream:     return GL_STREAM_DRAW;
+        default:
+            o_error("glTypes::asGLBufferUsage(): invalid param!\n");
             return 0;
     }
 }

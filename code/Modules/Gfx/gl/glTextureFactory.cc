@@ -161,18 +161,18 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ORYOL_GL_CHECK_ERROR();
     
     // create render target texture
-    GLenum glColorFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
-    GLint glColorInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
-    GLenum glColorType = glTypes::AsGLTexImageType(setup.ColorFormat);
+    GLenum glColorFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+    GLint glColorInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
+    GLenum glColorType = glTypes::asGLTexImageType(setup.ColorFormat);
     GLuint glColorRenderTexture = 0;
     ::glGenTextures(1, &glColorRenderTexture);
     ::glActiveTexture(GL_TEXTURE0);
     ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ORYOL_GL_CHECK_ERROR();
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, setup.MinFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, setup.MagFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::asGLTexFilterMode(setup.MinFilter));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::asGLTexFilterMode(setup.MagFilter));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.WrapU));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.WrapV));
     #if !ORYOL_OPENGLES2
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
     #endif
@@ -198,7 +198,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
             o_assert_dbg(0 != glDepthRenderBuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
-            GLint glDepthFormat = glTypes::AsGLRenderbufferFormat(setup.DepthFormat);
+            GLint glDepthFormat = glTypes::asGLRenderbufferFormat(setup.DepthFormat);
             ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
             ORYOL_GL_CHECK_ERROR();
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
@@ -273,12 +273,12 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     }
     
     // create a texture object
-    GLenum glTextureTarget = setup.Type;
+    GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
     const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
     
     // setup texture params
-    GLenum glMinFilter = setup.MinFilter;
-    GLenum glMagFilter = setup.MagFilter;
+    GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.MinFilter);
+    GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.MagFilter);
     if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
@@ -297,8 +297,8 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
     else {
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, setup.WrapU);
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, setup.WrapV);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.WrapU));
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.WrapV));
     }
     ORYOL_GL_CHECK_ERROR();
     
@@ -307,7 +307,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
     const int32 numMipMaps = setup.NumMipMaps;
     const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
-    GLenum glTexImageInternalFormat = glTypes::AsGLTexImageInternalFormat(setup.ColorFormat);
+    GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
     for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         
         GLenum glImgTarget;
@@ -345,8 +345,8 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
             }
             else {
                 // uncompressed texture data
-                GLenum glTexImageFormat = glTypes::AsGLTexImageFormat(setup.ColorFormat);
-                GLenum glTexImageType = glTypes::AsGLTexImageType(setup.ColorFormat);
+                GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+                GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
                 ::glTexImage2D(glImgTarget,
                                mipIndex,
                                glTexImageInternalFormat,
@@ -374,7 +374,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     // setup texture
     tex.textureAttrs = attrs;
     tex.glTex = glTex;
-    tex.glTarget = setup.Type;
+    tex.glTarget = glTypes::asGLTextureTarget(setup.Type);
 
     return ResourceState::Valid;
 }

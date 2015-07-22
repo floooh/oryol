@@ -483,15 +483,17 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->curDrawState->meshes[0]);
     ORYOL_GL_CHECK_ERROR();
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        ::glDrawElements(primGroup.PrimType, primGroup.NumElements, indexType, indices);
+        const GLenum glIndexType = glTypes::asGLIndexType(indexType);
+        ::glDrawElements(glPrimType, primGroup.NumElements, glIndexType, indices);
     }
     else {
         // non-indexed geometry
-        ::glDrawArrays(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements);
+        ::glDrawArrays(glPrimType, primGroup.BaseElement, primGroup.NumElements);
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -526,15 +528,17 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(this->curDrawState->meshes[0]);
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        glExt::DrawElementsInstanced(primGroup.PrimType, primGroup.NumElements, indexType, indices, numInstances);
+        const GLenum glIndexType = glTypes::asGLIndexType(indexType);
+        glExt::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
     }
     else {
         // non-indexed geometry
-        glExt::DrawArraysInstanced(primGroup.PrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
+        glExt::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -601,8 +605,8 @@ glRenderer::readPixels(void* buf, int32 bufNumBytes) {
         const DisplayAttrs& attrs = this->pointers.displayMgr->GetDisplayAttrs();
         width  = attrs.FramebufferWidth;
         height = attrs.FramebufferHeight;
-        format = glTypes::AsGLTexImageFormat(attrs.ColorPixelFormat);
-        type   = glTypes::AsGLTexImageType(attrs.ColorPixelFormat);
+        format = glTypes::asGLTexImageFormat(attrs.ColorPixelFormat);
+        type   = glTypes::asGLTexImageType(attrs.ColorPixelFormat);
         o_assert((width & 3) == 0);
         o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorPixelFormat)));
     }
@@ -610,8 +614,8 @@ glRenderer::readPixels(void* buf, int32 bufNumBytes) {
         const TextureAttrs& attrs = this->curRenderTarget->textureAttrs;
         width  = attrs.Width;
         height = attrs.Height;
-        format = glTypes::AsGLTexImageFormat(attrs.ColorFormat);
-        type   = glTypes::AsGLTexImageType(attrs.ColorFormat);
+        format = glTypes::asGLTexImageFormat(attrs.ColorFormat);
+        type   = glTypes::asGLTexImageType(attrs.ColorFormat);
         o_assert((width & 3) == 0);
         o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorFormat)));
     }

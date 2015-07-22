@@ -132,65 +132,6 @@ TEST(PixelFormatByteSizeTest) {
 }
 
 //------------------------------------------------------------------------------
-TEST(TextureTypeTest) {
-    CHECK(TextureType::NumTextureTypes == 3);
-    CHECK(TextureType::Texture2D == GL_TEXTURE_2D);
-    #if !ORYOL_OPENGLES2
-    CHECK(TextureType::Texture3D == GL_TEXTURE_3D);
-    #endif
-    CHECK(TextureType::TextureCube == GL_TEXTURE_CUBE_MAP);
-}
-
-//------------------------------------------------------------------------------
-TEST(PrimitiveTypeTest) {
-    CHECK(PrimitiveType::NumPrimitiveTypes == 7);
-    CHECK(PrimitiveType::Points == GL_POINTS);
-    CHECK(PrimitiveType::Lines == GL_LINES);
-    CHECK(PrimitiveType::LineLoop == GL_LINE_LOOP);
-    CHECK(PrimitiveType::LineStrip == GL_LINE_STRIP);
-    CHECK(PrimitiveType::Triangles == GL_TRIANGLES);
-    CHECK(PrimitiveType::TriangleStrip == GL_TRIANGLE_STRIP);
-    CHECK(PrimitiveType::TriangleFan == GL_TRIANGLE_FAN);
-}
-
-//------------------------------------------------------------------------------
-TEST(UsageTest) {
-    CHECK(Usage::NumUsages == 4);
-    CHECK(Usage::Immutable == GL_STATIC_DRAW);
-    CHECK(Usage::Static == GL_STATIC_DRAW);
-    CHECK(Usage::Dynamic == GL_DYNAMIC_DRAW);
-    CHECK(Usage::Stream == GL_STREAM_DRAW);
-}
-
-//------------------------------------------------------------------------------
-TEST(TextureWrapMode) {
-    CHECK(TextureWrapMode::NumTextureWrapModes == 3);
-    CHECK(TextureWrapMode::ClampToEdge == GL_CLAMP_TO_EDGE);
-    CHECK(TextureWrapMode::Repeat == GL_REPEAT);
-    CHECK(TextureWrapMode::MirroredRepeat == GL_MIRRORED_REPEAT);
-}
-
-//------------------------------------------------------------------------------
-TEST(IndexTypeTest) {
-    CHECK(IndexType::NumIndexTypes == 3);
-    CHECK(IndexType::Index16 == GL_UNSIGNED_SHORT);
-    CHECK(IndexType::Index32 == GL_UNSIGNED_INT);
-    CHECK(IndexType::ByteSize(IndexType::Index16) == 2);
-    CHECK(IndexType::ByteSize(IndexType::Index32) == 4);
-}
-
-//------------------------------------------------------------------------------
-TEST(TextureFilterModeTest) {
-    CHECK(TextureFilterMode::NumTextureFilterModes == 6);
-    CHECK(TextureFilterMode::Nearest == GL_NEAREST);
-    CHECK(TextureFilterMode::Linear == GL_LINEAR);
-    CHECK(TextureFilterMode::NearestMipmapNearest == GL_NEAREST_MIPMAP_NEAREST);
-    CHECK(TextureFilterMode::NearestMipmapLinear == GL_NEAREST_MIPMAP_LINEAR);
-    CHECK(TextureFilterMode::LinearMipmapNearest == GL_LINEAR_MIPMAP_NEAREST);
-    CHECK(TextureFilterMode::LinearMipmapLinear == GL_LINEAR_MIPMAP_LINEAR);
-}
-
-//------------------------------------------------------------------------------
 TEST(VertexFormatTest) {
     CHECK(VertexFormat::NumVertexFormats == 12);
     
@@ -228,12 +169,5 @@ TEST(VertexAttrTest) {
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance1)) == "instance1");
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance2)) == "instance2");
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance3)) == "instance3");
-}
-
-//------------------------------------------------------------------------------
-TEST(ShaderTypeTest) {
-    CHECK(ShaderType::NumShaderTypes == 2);
-    CHECK(ShaderType::VertexShader == GL_VERTEX_SHADER);
-    CHECK(ShaderType::FragmentShader == GL_FRAGMENT_SHADER);
 }
 

@@ -15,13 +15,27 @@ namespace _priv {
 class glTypes {
 public:
     /// convert Oryol pixel format to glTexImage format
-    static GLenum AsGLTexImageFormat(PixelFormat::Code c);
+    static GLenum asGLTexImageFormat(PixelFormat::Code c);
     /// convert Oryol pixel format to glTexImage format, this is == TexImageFormat on GLES but may be different on desktop GL
-    static GLenum AsGLTexImageInternalFormat(PixelFormat::Code c);
+    static GLenum asGLTexImageInternalFormat(PixelFormat::Code c);
     /// convert Oryol pixel format to glTexImage type
-    static GLenum AsGLTexImageType(PixelFormat::Code c);
+    static GLenum asGLTexImageType(PixelFormat::Code c);
     /// convert Oryol pixel format to renderbuffer format
-    static GLenum AsGLRenderbufferFormat(PixelFormat::Code c);
+    static GLenum asGLRenderbufferFormat(PixelFormat::Code c);
+    /// convert Oryol index type to GL index type
+    static GLenum asGLIndexType(IndexType::Code c);
+    /// convert Oryol primitive type to GL primitive type
+    static GLenum asGLPrimitiveType(PrimitiveType::Code c);
+    /// convert Oryol shader type to GL shader type
+    static GLenum asGLShaderType(ShaderType::Code c);
+    /// convert Oryol texture filter to GL texture filter
+    static GLenum asGLTexFilterMode(TextureFilterMode::Code c);
+    /// convert Oryol texture wrap mode to GL texture wrap mode
+    static GLenum asGLTexWrapMode(TextureWrapMode::Code c);
+    /// convert Oryol texture type to GL texture target
+    static GLenum asGLTextureTarget(TextureType::Code c);
+    /// convert Oryol usage to GL buffer usage
+    static GLenum asGLBufferUsage(Usage::Code c);
 };
     
 } // namespace _priv

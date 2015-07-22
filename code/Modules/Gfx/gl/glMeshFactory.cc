@@ -101,7 +101,7 @@ glMeshFactory::createVertexBuffer(const void* vertexData, uint32 vertexDataSize,
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(0 != vb);
     this->pointers.renderer->bindVertexBuffer(vb);
-    ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, usage);
+    ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glTypes::asGLBufferUsage(usage));
     ORYOL_GL_CHECK_ERROR();
     this->pointers.renderer->invalidateMeshState();
     return vb;
@@ -122,7 +122,7 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(0 != ib);
     this->pointers.renderer->bindIndexBuffer(ib);
-    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, usage);
+    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glTypes::asGLBufferUsage(usage));
     ORYOL_GL_CHECK_ERROR();
     this->pointers.renderer->invalidateMeshState();
     return ib;

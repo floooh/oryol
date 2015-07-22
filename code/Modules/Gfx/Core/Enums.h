@@ -7,13 +7,6 @@
 #include "Core/Types.h"
 #include "Core/Assertion.h"
 #include "Resource/Id.h"
-#if ORYOL_OPENGL
-#include "Gfx/gl/glEnums.h"
-#elif ORYOL_D3D11
-#include "Gfx/d3d11/d3d11Enums.h"
-#elif ORYOL_METAL
-#include "Gfx/mtl/mtlEnums.h"
-#endif
 
 namespace Oryol {
 
@@ -23,16 +16,17 @@ namespace Oryol {
     @ingroup Gfx
     @brief selects 16- or 32-bit indices
 */
-#if ORYOL_OPENGL
-class IndexType : public _priv::glIndexType {
-#elif ORYOL_D3D11
-class IndexType : public _priv::d3d11IndexType {
-#elif ORYOL_METAL
-class IndexType : public _priv::mtlIndexType {
-#else
-#error "Unsupported platform"
-#endif
+class IndexType {
 public:
+    enum Code {
+        None = 0,
+        Index16,
+        Index32,
+        
+        NumIndexTypes,
+        InvalidIndexType = 0xFFFFFFFF
+    };
+
     /// get byte size of index type
     static int32 ByteSize(IndexType::Code c) {
         switch (c) {
@@ -350,15 +344,22 @@ public:
     @ingroup Gfx
     @brief primitive type enum (triangle strips, lists, etc...)
 */
-#if ORYOL_OPENGL
-class PrimitiveType : public _priv::glPrimitiveType { };
-#elif ORYOL_D3D11
-class PrimitiveType : public _priv::d3d11PrimitiveType { };
-#elif ORYOL_METAL
-class PrimitiveType : public _priv::mtlPrimitiveType { };
-#else
-#error "Unsupported platform"
-#endif
+class PrimitiveType {
+public:
+    /// primitive type enum (don't change order, append to end!)
+    enum Code {
+        Points = 0,
+        Lines,
+        LineLoop,
+        LineStrip,
+        Triangles,
+        TriangleStrip,
+        TriangleFan,
+        
+        NumPrimitiveTypes,
+        InvalidPrimitiveType = 0xFFFFFFFF,
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -390,15 +391,17 @@ public:
     @ingroup Gfx
     @brief shader types (vertex shader, fragment shader)
 */
-#if ORYOL_OPENGL
-class ShaderType : public _priv::glShaderType { };
-#elif ORYOL_D3D11
-class ShaderType : public _priv::d3d11ShaderType { };
-#elif ORYOL_METAL
-class ShaderType : public _priv::mtlShaderType { };
-#else
-#error "Unsupported platform"
-#endif
+class ShaderType {
+public:
+    /// shader types enum
+    enum Code {
+        VertexShader = 0,
+        FragmentShader,
+        
+        NumShaderTypes,
+        InvalidShaderType = 0xFFFFFFFF,
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -406,31 +409,40 @@ class ShaderType : public _priv::mtlShaderType { };
     @ingroup Gfx
     @brief texture sampling filter mode
 */
-#if ORYOL_OPENGL
-class TextureFilterMode  : public _priv::glTextureFilterMode { };
-#elif ORYOL_D3D11
-class TextureFilterMode : public _priv::d3d11TextureFilterMode { };
-#elif ORYOL_METAL
-class TextureFilterMode : public _priv::mtlTextureFilterMode { };
-#else
-#error "Unsupported platform"
-#endif
-   
+class TextureFilterMode {
+public:
+    /// filtering modes
+    enum Code {
+        Nearest = 0,
+        Linear,
+        NearestMipmapNearest,
+        NearestMipmapLinear,
+        LinearMipmapNearest,
+        LinearMipmapLinear,
+        
+        NumTextureFilterModes,
+        InvalidTextureFilterMode = 0xFFFFFFFF,
+    };
+};
+
 //------------------------------------------------------------------------------
 /**
     @class Oryol::TextureType
     @ingroup Gfx
     @brief texture type (2D, 3D, Cube)
 */
-#if ORYOL_OPENGL
-class TextureType : public _priv::glTextureType { };
-#elif ORYOL_D3D11
-class TextureType : public _priv::d3d11TextureType { };
-#elif ORYOL_METAL
-class TextureType : public _priv::mtlTextureType { };
-#else
-#error "Unsupported platform"
-#endif
+class TextureType {
+public:
+    /// texture type enum
+    enum Code {
+        Texture2D = 0,
+        Texture3D,
+        TextureCube,
+        
+        NumTextureTypes,
+        InvalidTextureType = 0xFFFFFFFF,
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -438,15 +450,18 @@ class TextureType : public _priv::mtlTextureType { };
     @ingroup Gfx
     @brief texture coordinate wrapping modes
 */
-#if ORYOL_OPENGL
-class TextureWrapMode : public _priv::glTextureWrapMode { };
-#elif ORYOL_D3D11
-class TextureWrapMode : public _priv::d3d11TextureWrapMode { };
-#elif ORYOL_METAL
-class TextureWrapMode : public _priv::mtlTextureWrapMode { };
-#else
-#error "Unsupported platform"
-#endif
+class TextureWrapMode {
+public:
+    /// wrap modes
+    enum Code {
+        ClampToEdge = 0,
+        Repeat,
+        MirroredRepeat,
+                
+        NumTextureWrapModes,
+        InvalidTextureWrapMode = 0xFFFFFFFF,
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -454,15 +469,19 @@ class TextureWrapMode : public _priv::mtlTextureWrapMode { };
     @ingroup Gfx
     @brief graphics resource usage types
 */
-#if ORYOL_OPENGL
-class Usage : public _priv::glUsage { };
-#elif ORYOL_D3D11
-class Usage : public _priv::d3d11Usage { };
-#elif ORYOL_METAL
-class Usage : public _priv::mtlUsage { };
-#else
-#error "Unsupported platform"
-#endif
+class Usage {
+public:
+    /// usage enum
+    enum Code {
+        Immutable = 0,
+        Static,
+        Dynamic,
+        Stream,
+        
+        NumUsages,
+        InvalidUsage = 0xFFFFFFFF,
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
