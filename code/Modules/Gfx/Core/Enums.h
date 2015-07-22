@@ -350,11 +350,9 @@ public:
     enum Code {
         Points = 0,
         Lines,
-        LineLoop,
         LineStrip,
         Triangles,
         TriangleStrip,
-        TriangleFan,
         
         NumPrimitiveTypes,
         InvalidPrimitiveType = 0xFFFFFFFF,

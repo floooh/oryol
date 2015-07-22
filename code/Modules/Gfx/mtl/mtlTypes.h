@@ -53,6 +53,10 @@ public:
     static MTLVertexStepFunction asVertexStepFunc(VertexStepFunction::Code func);
     /// convert cullmode
     static MTLCullMode asCullMode(bool cullEnabled, Face::Code face);
+    /// convert vertex index type
+    static MTLIndexType asIndexType(IndexType::Code c);
+    /// convert primitive type
+    static MTLPrimitiveType asPrimitiveType(PrimitiveType::Code c);
 };
 
 } // namespace _priv

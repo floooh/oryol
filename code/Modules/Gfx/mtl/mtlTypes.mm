@@ -283,5 +283,32 @@ mtlTypes::asCullMode(bool cullEnabled, Face::Code face) {
     }
 }
 
+//------------------------------------------------------------------------------
+MTLIndexType
+mtlTypes::asIndexType(IndexType::Code c) {
+    switch (c) {
+        case IndexType::Index16: return MTLIndexTypeUInt16;
+        case IndexType::Index32: return MTLIndexTypeUInt32;
+        default:
+            o_error("mtlTypes::asIndexType(): invalid value!\n");
+            return MTLIndexTypeUInt16;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLPrimitiveType
+mtlTypes::asPrimitiveType(PrimitiveType::Code c) {
+    switch (c) {
+        case PrimitiveType::Points:         return MTLPrimitiveTypePoint;
+        case PrimitiveType::Lines:          return MTLPrimitiveTypeLine;
+        case PrimitiveType::LineStrip:      return MTLPrimitiveTypeLineStrip;
+        case PrimitiveType::Triangles:      return MTLPrimitiveTypeTriangle;
+        case PrimitiveType::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
+        default:
+            o_error("mtlTypes::asPrimitiveType(): invalid value!\n");
+            return MTLPrimitiveTypePoint;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

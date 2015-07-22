@@ -122,7 +122,6 @@ fips_begin_module(Gfx)
             mtl_decl.h mtl_impl.h
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm
-            mtlEnums.h
             mtlMesh.h mtlMesh.mm
             mtlMeshFactory.h mtlMeshFactory.mm
             mtlProgramBundle.h mtlProgramBundle.mm
