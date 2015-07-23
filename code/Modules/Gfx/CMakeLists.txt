@@ -117,7 +117,6 @@ fips_begin_module(Gfx)
     if (ORYOL_METAL)
         fips_dir(mtl)
         fips_files(
-            cocoaInputDefs.h
             mtl_decl.h mtl_impl.h
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm

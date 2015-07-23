@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  osxAppBridge.mm
+//  osxBridge.mm
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "osxAppBridge.h"
+#include "osxBridge.h"
 #include "Core/Assertion.h"
 #include "Core/App.h"
 
@@ -34,7 +34,7 @@ using namespace Oryol::_priv;
 @implementation oryolAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidFinishLaunching();
+    osxBridge::ptr()->onDidFinishLaunching();
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender {
@@ -42,52 +42,52 @@ using namespace Oryol::_priv;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender {
-    osxAppBridge::ptr()->onShouldTerminate();
+    osxBridge::ptr()->onShouldTerminate();
     return NSTerminateNow;
 }
 
 - (void)applicationWillTerminate:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onWillTerminate();
+    osxBridge::ptr()->onWillTerminate();
 }
 
 - (void)applicationWillBecomeActive:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onWillBecomeActive();
+    osxBridge::ptr()->onWillBecomeActive();
 }
 
 - (void)applicationDidBecomeActive:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidBecomeActive();
+    osxBridge::ptr()->onDidBecomeActive();
 }
 
 - (void)applicationWillResignActive:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onWillResignActive();
+    osxBridge::ptr()->onWillResignActive();
 }
 
 - (void)applicationDidResignActive:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidResignActive();
+    osxBridge::ptr()->onDidResignActive();
 }
 
 - (void)applicationWillHide:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onWillHide();
+    osxBridge::ptr()->onWillHide();
 }
 
 - (void)applicationDidHide:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidHide();
+    osxBridge::ptr()->onDidHide();
 }
 
 - (void)applicationWillUnhide:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onWillUnhide();
+    osxBridge::ptr()->onWillUnhide();
 }
 
 - (void)applicationDidUnhide:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidUnhide();
+    osxBridge::ptr()->onDidUnhide();
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification*)aNotifaction {
-    osxAppBridge::ptr()->onDidChangeScreenParameters();
+    osxBridge::ptr()->onDidChangeScreenParameters();
 }
 
 - (void)applicationDidChangeOcclusionState:(NSNotification*)aNotification {
-    osxAppBridge::ptr()->onDidChangeOcclusionState();
+    osxBridge::ptr()->onDidChangeOcclusionState();
 }
 @end
 
@@ -97,32 +97,32 @@ using namespace Oryol::_priv;
 
 @implementation oryolWindowDelegate
 - (BOOL)windowShouldClose:(id)sender {
-    osxAppBridge::ptr()->onWindowShouldClose();
+    osxBridge::ptr()->onWindowShouldClose();
     return NO;
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidResize();
+    osxBridge::ptr()->onWindowDidResize();
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidMove();
+    osxBridge::ptr()->onWindowDidMove();
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidMiniaturize();
+    osxBridge::ptr()->onWindowDidMiniaturize();
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidDeminiaturize();
+    osxBridge::ptr()->onWindowDidDeminiaturize();
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidBecomeKey();
+    osxBridge::ptr()->onWindowDidBecomeKey();
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-    osxAppBridge::ptr()->onWindowDidResignKey();
+    osxBridge::ptr()->onWindowDidResignKey();
 }
 @end
 
@@ -138,7 +138,7 @@ using namespace Oryol::_priv;
 - (void)drawInView:(MTKView*)view
 {
     @autoreleasepool {
-        osxAppBridge::ptr()->onFrame();
+        osxBridge::ptr()->onFrame();
     }
 }
 @end
@@ -146,10 +146,10 @@ using namespace Oryol::_priv;
 namespace Oryol {
 namespace _priv {
 
-osxAppBridge* osxAppBridge::self = nullptr;
+osxBridge* osxBridge::self = nullptr;
 
 //------------------------------------------------------------------------------
-osxAppBridge::osxAppBridge() :
+osxBridge::osxBridge() :
 app(nullptr),
 shouldCloseFlag(false),
 appDelegate(nil),
@@ -163,34 +163,34 @@ mtkView(nil) {
 }
 
 //------------------------------------------------------------------------------
-osxAppBridge::~osxAppBridge() {
+osxBridge::~osxBridge() {
     o_assert(nil == this->app);
     o_assert(self);
     self = nullptr;
 }
 
 //------------------------------------------------------------------------------
-osxAppBridge*
-osxAppBridge::ptr() {
+osxBridge*
+osxBridge::ptr() {
     o_assert_dbg(self);
     return self;
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::setup(App* app_) {
+osxBridge::setup(App* app_) {
     o_assert_dbg(nullptr == this->app);
     o_assert_dbg(nullptr != app_);
-    Log::Info("osxAppBridge::setup() called\n");
+    Log::Info("osxBridge::setup() called\n");
 
     this->app = app_;
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::discard() {
+osxBridge::discard() {
     o_assert_dbg(nullptr != this->app);
-    Log::Info("osxAppBridge::discard() called\n");
+    Log::Info("osxBridge::discard() called\n");
 
     this->appWindow = nil;
     this->app = nullptr;
@@ -198,14 +198,14 @@ osxAppBridge::discard() {
 
 //------------------------------------------------------------------------------
 bool
-osxAppBridge::shouldClose() {
+osxBridge::shouldClose() {
     return this->shouldCloseFlag;
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::startMainLoop() {
-    Log::Info("osxAppBridge::startMainLoop() called\n");
+osxBridge::startMainLoop() {
+    Log::Info("osxBridge::startMainLoop() called\n");
     [oryolApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     this->appDelegate = [[oryolAppDelegate alloc] init];
@@ -216,7 +216,7 @@ osxAppBridge::startMainLoop() {
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDestroy() {
+osxBridge::onDestroy() {
     [this->mtkView setDelegate:nil];
     [this->appWindow setDelegate:nil];
     [this->appWindow orderOut:nil];
@@ -225,135 +225,135 @@ osxAppBridge::onDestroy() {
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidFinishLaunching() {
-    Log::Info("osxAppBridge::onDidFinishLaunched() called\n");
+osxBridge::onDidFinishLaunching() {
+    Log::Info("osxBridge::onDidFinishLaunched() called\n");
     this->createWindow();
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onShouldTerminate() {
-    Log::Info("osxAppBridge::onShouldTerminate() called\n");
+osxBridge::onShouldTerminate() {
+    Log::Info("osxBridge::onShouldTerminate() called\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWillTerminate() {
-    Log::Info("osxAppBridge::onWillTerminate() called!\n");
+osxBridge::onWillTerminate() {
+    Log::Info("osxBridge::onWillTerminate() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWillBecomeActive() {
-    Log::Info("osxAppBridge::onWillBecomeActive() called!\n");
+osxBridge::onWillBecomeActive() {
+    Log::Info("osxBridge::onWillBecomeActive() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidBecomeActive() {
-    Log::Info("osxAppBridge::onDidBecomeActive() called!\n");
+osxBridge::onDidBecomeActive() {
+    Log::Info("osxBridge::onDidBecomeActive() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWillResignActive() {
-    Log::Info("osxAppBridge::onWillResignActive() called!\n");
+osxBridge::onWillResignActive() {
+    Log::Info("osxBridge::onWillResignActive() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidResignActive() {
-    Log::Info("osxAppBridge::onDidResignActive() called!\n");
+osxBridge::onDidResignActive() {
+    Log::Info("osxBridge::onDidResignActive() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWillHide() {
-    Log::Info("osxAppBridge::onWillHide() called!\n");
+osxBridge::onWillHide() {
+    Log::Info("osxBridge::onWillHide() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidHide() {
-    Log::Info("osxAppBridge::onDidHide() called!\n");
+osxBridge::onDidHide() {
+    Log::Info("osxBridge::onDidHide() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWillUnhide() {
-    Log::Info("osxAppBridge::onWillUnhide() called!\n");
+osxBridge::onWillUnhide() {
+    Log::Info("osxBridge::onWillUnhide() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidUnhide() {
-    Log::Info("osxAppBridge::onDidUnhide() called!\n");
+osxBridge::onDidUnhide() {
+    Log::Info("osxBridge::onDidUnhide() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidChangeScreenParameters() {
-    Log::Info("osxAppBridge::onDidChangeScreenParameters() called!\n");
+osxBridge::onDidChangeScreenParameters() {
+    Log::Info("osxBridge::onDidChangeScreenParameters() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onDidChangeOcclusionState() {
-    Log::Info("osxAppBridge::onDidChangeOcclusionState() called!\n");
+osxBridge::onDidChangeOcclusionState() {
+    Log::Info("osxBridge::onDidChangeOcclusionState() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowShouldClose() {
+osxBridge::onWindowShouldClose() {
     this->shouldCloseFlag = true;
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidResize() {
-    Log::Info("osxAppBridge::onWindowDidResize() called!\n");
+osxBridge::onWindowDidResize() {
+    Log::Info("osxBridge::onWindowDidResize() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidMove() {
-    Log::Info("osxAppBridge::onWindowDidMove() called!\n");
+osxBridge::onWindowDidMove() {
+    Log::Info("osxBridge::onWindowDidMove() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidMiniaturize() {
-    Log::Info("osxAppBridge::onWindowDidMiniaturize() called\n");
+osxBridge::onWindowDidMiniaturize() {
+    Log::Info("osxBridge::onWindowDidMiniaturize() called\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidDeminiaturize() {
-    Log::Info("osxAppBridge::osxWindowDidDeminiaturize() called\n");
+osxBridge::onWindowDidDeminiaturize() {
+    Log::Info("osxBridge::osxWindowDidDeminiaturize() called\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidBecomeKey() {
-    Log::Info("osxAppBridge::osxWindowDidBecomeKey() called!\n");
+osxBridge::onWindowDidBecomeKey() {
+    Log::Info("osxBridge::osxWindowDidBecomeKey() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onWindowDidResignKey() {
-    Log::Info("osxAppBridge::osxWindowDidResignKey() called!\n");
+osxBridge::onWindowDidResignKey() {
+    Log::Info("osxBridge::osxWindowDidResignKey() called!\n");
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::onFrame() {
+osxBridge::onFrame() {
     o_assert_dbg(this->app);
     this->app->onFrame();
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::createWindow() {
+osxBridge::createWindow() {
     o_assert_dbg(nil == this->appWindow);
 
     // window delegate
@@ -387,13 +387,13 @@ osxAppBridge::createWindow() {
     [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth24Unorm_Stencil8];
     [this->appWindow setContentView:this->mtkView];
 
-    // the window is initially hidden until osxAppBridge::showWindow
+    // the window is initially hidden until osxBridge::showWindow
     // is called from within the display manager
 }
 
 //------------------------------------------------------------------------------
 void
-osxAppBridge::showWindow() {
+osxBridge::showWindow() {
     o_assert_dbg(nil != this->appWindow);
     [this->appWindow makeKeyAndOrderFront:nil];
 }

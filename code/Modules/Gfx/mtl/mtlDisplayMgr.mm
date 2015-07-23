@@ -29,7 +29,7 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     displayMgrBase::SetupDisplay(setup, ptrs);
 
     this->configureWindow(setup);
-    osxAppBridge::ptr()->showWindow();
+    osxBridge::ptr()->showWindow();
 }
 
 //------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ mtlDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 bool
 mtlDisplayMgr::QuitRequested() const {
-    return osxAppBridge::ptr()->shouldClose();
+    return osxBridge::ptr()->shouldClose();
 }
 
 //------------------------------------------------------------------------------
@@ -64,12 +64,12 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     StringBuilder strBuilder(setup.Title);
     strBuilder.Append(" (Metal)");
 
-    NSWindow* window = osxAppBridge::ptr()->appWindow;
+    NSWindow* window = osxBridge::ptr()->appWindow;
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
     [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
     [window center];
 
-    [osxAppBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+    [osxBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
 }
 
 } // namespace _priv

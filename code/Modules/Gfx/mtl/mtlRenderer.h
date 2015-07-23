@@ -17,8 +17,8 @@
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "glm/vec4.hpp"
-#include "Core/osx/osxAppBridge.h"
 #include "Gfx/Core/GfxConfig.h"
+#include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {

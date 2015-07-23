@@ -49,7 +49,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
 
     // setup central metal objects
-    this->mtlDevice = osxAppBridge::ptr()->mtlDevice;
+    this->mtlDevice = osxBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
     this->commandQueue.label = @"OryolCommandQueue";
 
@@ -125,7 +125,7 @@ mtlRenderer::commitFrame() {
     }];
 
     [this->curCommandEncoder endEncoding];
-    [this->curCommandBuffer presentDrawable:osxAppBridge::ptr()->mtkView.currentDrawable];
+    [this->curCommandBuffer presentDrawable:osxBridge::ptr()->mtkView.currentDrawable];
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
@@ -193,7 +193,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     MTLRenderPassDescriptor* passDesc = nil;
     if (nullptr == rt) {
         // default render target
-        passDesc = osxAppBridge::ptr()->mtkView.currentRenderPassDescriptor;
+        passDesc = osxBridge::ptr()->mtkView.currentRenderPassDescriptor;
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
@@ -364,6 +364,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
         id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
         const int32 uniformSize = layout.ByteSizeWithoutTextures();
         o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+        o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
         uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
         std::memcpy(dstPtr, uBufferPtr, uniformSize);
 
@@ -375,8 +376,8 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
             [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
         }
 
-        // advance uniform buffer offset
-        this->curUniformBufferOffset += uniformSize;
+        // advance uniform buffer offset (buffer offsets must be multiples of 256)
+        this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + uniformSize, 256);
     }
 }
 

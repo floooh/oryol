@@ -50,7 +50,7 @@
 #include "Core/ios/iosBridge.h"
 #endif
 #if ORYOL_MACOS && ORYOL_METAL
-#include "Core/osx/osxAppBridge.h"
+#include "Core/osx/osxBridge.h"
 #endif
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"
@@ -110,7 +110,7 @@ protected:
     _priv::iosBridge iosBridge;
     #endif
     #if ORYOL_MACOS && ORYOL_METAL
-    _priv::osxAppBridge osxAppBridge;
+    _priv::osxBridge osxBridge;
     #endif
     #if ORYOL_ANDROID
     _priv::androidBridge androidBridge;

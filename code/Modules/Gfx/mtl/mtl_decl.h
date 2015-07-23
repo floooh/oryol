@@ -4,7 +4,7 @@
     @file mtl_decl.h
     @brief Metal Objective-C++ declarations
 */
-#include "Core/osx/osxAppBridge.h"
+#include "Core/osx/osxBridge.h"
 #if !defined(__OBJC__)
 typedef void* CAMetalLayer;
 typedef void* CAMetalDrawable;

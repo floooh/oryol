@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::osxAppBridge
+    @class Oryol::_priv::osxBridge
     @ingroup _priv
     @brief OSX app wrapper (only used for Metal renderer)
     
@@ -39,14 +39,14 @@ namespace Oryol {
 class App;
 namespace _priv {
 
-class osxAppBridge {
+class osxBridge {
 public:
     /// constructor
-    osxAppBridge();
+    osxBridge();
     /// destructor
-    ~osxAppBridge();
+    ~osxBridge();
     /// get checked pointer
-    static osxAppBridge* ptr();
+    static osxBridge* ptr();
 
     /// setup the object
     void setup(App* app);
@@ -109,7 +109,36 @@ public:
     /// actually show the window (called from displayMgr)
     void showWindow();
 
-    static osxAppBridge* self;
+    /// callbacks (similar to GLFW)
+    struct {
+        // callback function typedefs
+        typedef void (*windowPosFunc)(int x, int y);
+        typedef void (*windowSizeFunc)(int w, int h);
+        typedef void (*windowFocusFunc)(bool gainedInputFocus);
+        typedef void (*windowIconifyFunc)(bool iconified);
+        typedef void (*framebufferSizeFunc)(int x, int y);
+        typedef void (*mouseButtonFunc)(int btn, int action, int modifiers);
+        typedef void (*cursorPosFunc)(double x, double y);
+        typedef void (*cursorEnterFunc)(bool entered);
+        typedef void (*scrollFunc)(double x, double y);
+        typedef void (*keyFunc)(int key, int scancode, int action, int modifiers);
+        typedef void (*charFunc)(uint32 unicodeCodePoint);
+
+        /// window position changed callback hook
+        windowPosFunc onWindowPos = nullptr;
+        windowSizeFunc onWindowSize = nullptr;
+        windowFocusFunc onWindowFocus = nullptr;
+        windowIconifyFunc onWindowIconify = nullptr;
+        framebufferSizeFunc onFramebufferSize = nullptr;
+        mouseButtonFunc onMouseButton = nullptr;
+        cursorPosFunc onCursorPos = nullptr;
+        cursorEnterFunc onCursorEnter = nullptr;
+        scrollFunc onScroll = nullptr;
+        keyFunc onKey = nullptr;
+        charFunc onChar = nullptr;
+    } callbacks;
+
+    static osxBridge* self;
     App* app;
     bool shouldCloseFlag;
     ORYOL_OBJC_ID appDelegate;
