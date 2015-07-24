@@ -139,7 +139,9 @@ DrawCallPerfApp::updateParticles() {
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample"));
+    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
+    gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
     Input::Setup();
 
