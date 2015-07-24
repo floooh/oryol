@@ -11,11 +11,11 @@ namespace Oryol {
 namespace _priv {
 class inputMgr : public d3d11InputMgr { };
 } }
-#elif ORYOL_METAL
-#include "Input/base/inputMgrBase.h"
+#elif ORYOL_MACOS && ORYOL_METAL
+#include "Input/osx/osxInputMgr.h"
 namespace Oryol {
 namespace _priv {
-class inputMgr : public inputMgrBase { };
+class inputMgr : public osxInputMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Input/glfw/glfwInputMgr.h"

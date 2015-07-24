@@ -22,14 +22,10 @@ fips_begin_module(Input)
     fips_dir(touch)
     fips_files(
         gestureState.h
-        panDetector.cc
-        panDetector.h
-        pinchDetector.cc
-        pinchDetector.h
-        tapDetector.cc
-        tapDetector.h
-        touchEvent.cc
-        touchEvent.h
+        panDetector.cc panDetector.h
+        pinchDetector.cc pinchDetector.h
+        tapDetector.cc tapDetector.h
+        touchEvent.cc touchEvent.h
     )
     if (FIPS_ANDROID)
         fips_dir(android)
@@ -53,6 +49,10 @@ fips_begin_module(Input)
             fips_files(glfwInputMgr.cc glfwInputMgr.h)
             fips_deps(glfw3)
         endif()
+    endif()
+    if (FIPS_MACOS AND ORYOL_METAL)
+        fips_dir(osx)
+        fips_files(osxInputMgr.cc osxInputMgr.h)
     endif()
     if (ORYOL_D3D11)
         fips_dir(d3d11)

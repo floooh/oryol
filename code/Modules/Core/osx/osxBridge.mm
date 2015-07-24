@@ -532,7 +532,6 @@ osxBridge::onInputScroll(float64 xoffset, float64 yoffset) {
     }
 }
 
-
 //------------------------------------------------------------------------------
 void
 osxBridge::onFrame() {
