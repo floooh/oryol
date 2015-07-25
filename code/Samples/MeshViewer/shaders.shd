@@ -7,7 +7,7 @@
 //  common utility functions
 //
 @block Util
-vec4 gamma(vec4 c) {
+_func vec4 gamma(vec4 c) {
     float p = 1.0/2.2;
     return vec4(pow(c.xyz, vec3(p, p, p)), c.w);
 }
