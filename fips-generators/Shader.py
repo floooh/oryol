@@ -986,14 +986,11 @@ class MetalGenerator :
         for uBlock in shd.uniformBlocks :
             # if there are non-texture uniforms, groups the rest into a cbuffer
             if uBlock.bindSlot is not None:
-                lines.append(Line('struct {}_t {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
+                lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
                 for type in uBlock.uniformsByType :
                     if type not in ['sampler2D', 'samplerCube' ] :
                         for uniform in uBlock.uniformsByType[type] :
                             lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                            # pad vec3's to 16 bytes
-                            if type == 'vec3' :
-                                lines.append(Line('  float _pad_{};'.format(uniform.name)))
                             uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines, uniformDefs
@@ -1014,8 +1011,13 @@ class MetalGenerator :
         lines, uniformDefs = self.genUniformBlocks(vs, lines)
 
         # write blocks the vs depends on
+        # (Metal specific: protect against multiple inclusion)
         for dep in vs.resolvedDeps :
+            guard = '{}_INCLUDED'.format(self.shaderLib.blocks[dep].name)
+            lines.append(Line('#ifndef {}'.format(guard)))
+            lines.append(Line('#define {}'.format(guard)))
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines.append(Line('#endif'))
    
         # write vertex shader input attributes
         vertex_attrs = {
@@ -1062,7 +1064,7 @@ class MetalGenerator :
         lines.append(Line('vertex {}_vs_out_t {}('.format(vs.name, vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
         for uBlock in vs.uniformBlocks :
             if uBlock.bindSlot is not None :
-                lines.append(Line('constant {}_t& {} [[buffer({})]],'.format(uBlock.name, uBlock.name, uBlock.bindSlot)))
+                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(vs.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
                     if type == 'sampler2D' :
@@ -1105,7 +1107,11 @@ class MetalGenerator :
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
+            guard = '{}_INCLUDED'.format(self.shaderLib.blocks[dep].name)
+            lines.append(Line('#ifndef {}'.format(guard)))
+            lines.append(Line('#define {}'.format(guard)))
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines.append(Line('#endif'))
 
         # write fragment shader input structure
         lines.append(Line('struct {}_fs_in_t {{'.format(fs.name)))
@@ -1123,7 +1129,7 @@ class MetalGenerator :
         lines.append(Line('fragment float4 {}('.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         for uBlock in fs.uniformBlocks :
             if uBlock.bindSlot is not None :
-                lines.append(Line('constant {}_t& {} [[buffer({})]],'.format(uBlock.name, uBlock.name, uBlock.bindSlot)))
+                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(fs.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
                     if type == 'sampler2D' :
