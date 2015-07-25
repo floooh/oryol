@@ -22,7 +22,8 @@ def findFxc() :
     Returns an unicode path string of fxc.exe if found, or None if
     not found.
     '''
-    fcxPath = None;
+    fxcPath = None;
+    fxcSubPath = u'bin\\x86\\fxc.exe'
 
     # first get the preferred kit name (either 8.1 or 10, are there others?)
     try :
@@ -30,24 +31,23 @@ def findFxc() :
             for kit in ['KitsRoot10', 'KitsRoot81'] :
                 try :
                     fxcPath, _ = _winreg.QueryValueEx(key, kit)
-                    break
+                    fxcPath += fxcSubPath
+                    if os.path.isfile(fxcPath) :
+                        return fxcPath
                 except :
                     fxcPath = None
 
         # if registry is not found, try a few other likely paths
         for path in [
-           'C:\\Program Files (x86)\\Windows Kits\\8.1\\',
-           'C:\\Program Files (x86)\\Windows Kits\\10.0\\'
+           'C:\\Program Files (x86)\\Windows Kits\\10\\',
+           'C:\\Program Files (x86)\\Windows Kits\\8.1\\'
         ] :
             if os.path.isdir(path) :
-                fxcPath = path
-                break
+                fxcPath = path + fxcSubPath
+                if os.path.isfile(fxcPath) :
+                    return fxcPath
 
-        fxcPath += u'bin\\x86\\fxc.exe'
-        if os.path.isfile(fxcPath) :
-            return fxcPath
-        else :
-            return None
+        return None
 
     except WindowsError :
         return None
