@@ -129,7 +129,7 @@ slMacros = {
         'mat3': 'float3x3',
         'mat4': 'float4x4',
         'mul(m,v)': '(m*v)',
-        'mod(x,y)': 'fmod(x,y)',
+        'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(s, t)': 's.sample(s ## _sampler,t)',
         'texCUBE(s, t)': 's.sample(s ## _sampler,t)',
         'tex2Dvs(s, t)': 's.sample(s ## _sampler,t,level(0))'
