@@ -72,7 +72,7 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
 GLenum
 glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    return glTypes::AsGLTexImageFormat(c);
+    return glTypes::asGLTexImageFormat(c);
     #else
     switch (c) {
         case PixelFormat::RGBA8:
