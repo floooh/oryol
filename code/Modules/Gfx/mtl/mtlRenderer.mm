@@ -154,8 +154,16 @@ mtlRenderer::renderTargetAttrs() const {
 void
 mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(nil != this->curCommandEncoder);
 
-    o_error("mtlRenderer::applyViewPort()\n");
+    MTLViewport vp;
+    vp.originX = (double) x;
+    vp.originY = (double) (originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
+    vp.width   = (double) width;
+    vp.height  = (double) height;
+    vp.znear   = 0.0;
+    vp.zfar    = 1.0;
+    [this->curCommandEncoder setViewport:vp];
 }
 
 //------------------------------------------------------------------------------
