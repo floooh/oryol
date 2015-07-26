@@ -21,15 +21,17 @@ public:
     void SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
-    /// process window system events (call near start of frame)
-    void ProcessSystemEvents();
-    /// present the current rendered frame
-    void Present();
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
 
     /// configure the app window
     void configureWindow(const GfxSetup& setup);
+
+private:
+    /// callback for window-resize
+    static void onFramebufferSize(int w, int h);
+    /// ptr to self for onFramebufferSize
+    static mtlDisplayMgr* self;
 };
 
 } // namespace _priv

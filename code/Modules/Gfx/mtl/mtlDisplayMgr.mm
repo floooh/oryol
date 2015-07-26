@@ -9,16 +9,21 @@
 namespace Oryol {
 namespace _priv {
 
+mtlDisplayMgr* mtlDisplayMgr::self = nullptr;
+
 //------------------------------------------------------------------------------
 mtlDisplayMgr::mtlDisplayMgr() {
-    // empty
+    o_assert_dbg(nullptr == self);
+    self = this;
 }
 
 //------------------------------------------------------------------------------
 mtlDisplayMgr::~mtlDisplayMgr() {
+    o_assert_dbg(self);
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
+    self = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -30,6 +35,7 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->configureWindow(setup);
     osxBridge::ptr()->showWindow();
+    osxBridge::ptr()->callbacks.fbsize = mtlDisplayMgr::onFramebufferSize;
 }
 
 //------------------------------------------------------------------------------
@@ -40,21 +46,9 @@ mtlDisplayMgr::DiscardDisplay() {
 }
 
 //------------------------------------------------------------------------------
-void
-mtlDisplayMgr::Present() {
-    // hmm... nothing to do here?
-}
-
-//------------------------------------------------------------------------------
 bool
 mtlDisplayMgr::QuitRequested() const {
     return osxBridge::ptr()->shouldClose();
-}
-
-//------------------------------------------------------------------------------
-void
-mtlDisplayMgr::ProcessSystemEvents() {
-    // empty, system events will actually be polled in osxAppProxy::onFrame()
 }
 
 //------------------------------------------------------------------------------
@@ -70,6 +64,18 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     [window center];
 
     [osxBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+}
+
+//------------------------------------------------------------------------------
+void
+mtlDisplayMgr::onFramebufferSize(int w, int h) {
+    o_assert_dbg((w > 0) && (h > 0));
+    if (self) {
+        self->displayAttrs.FramebufferWidth = w;
+        self->displayAttrs.FramebufferHeight = h;
+        self->displayAttrs.WindowWidth = w;
+        self->displayAttrs.WindowHeight = h;
+    }
 }
 
 } // namespace _priv

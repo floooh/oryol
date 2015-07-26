@@ -171,12 +171,26 @@ void
 mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nil != this->curCommandEncoder);
+    o_assert_dbg(width >= 0);
+    o_assert_dbg(height >= 0);
+
+    // clip against frame buffer size
+    x = std::min(std::max(0, x), this->rtAttrs.FramebufferWidth - 1);
+    y = std::min(std::max(0, y), this->rtAttrs.FramebufferHeight - 1);
+    if ((x + width) > this->rtAttrs.FramebufferWidth) {
+        width = this->rtAttrs.FramebufferWidth - x;
+    }
+    if ((y + height) > this->rtAttrs.FramebufferHeight) {
+        height = this->rtAttrs.FramebufferHeight - y;
+    }
 
     MTLScissorRect rect;
     rect.x = x;
     rect.y = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
     rect.width = width;
     rect.height = height;
+
+    // need to clip against render target
     [this->curCommandEncoder setScissorRect:rect];
 }
 
