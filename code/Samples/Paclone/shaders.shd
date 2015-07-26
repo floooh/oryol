@@ -82,7 +82,7 @@ _func vec3 ToSrgb(vec3 c){return vec3(ToSrgb1(c.r),ToSrgb1(c.g),ToSrgb1(c.b));}
 
 // Nearest emulated sample given floating point position and texel offset.
 // Also zero's off screen.
-_func vec3 Fetch(vec2 pos,vec2 off){
+_func vec3 Fetch(sampler2D iChannel0, vec2 pos,vec2 off){
     pos=floor(pos*res+off)/res;
     if(max(abs(pos.x-0.5),abs(pos.y-0.5))>0.5)return vec3(0.0,0.0,0.0);
     return ToLinear(tex2D(iChannel0,pos.xy).rgb);}
@@ -94,10 +94,10 @@ _func vec2 Dist(vec2 pos){pos=pos*res;return -((pos-floor(pos))-vec2(0.5,0.5));}
 _func float Gaus(float pos,float scale){return exp2(scale*pos*pos);}
 
 // 3-tap Gaussian filter along horz line.
-_func vec3 Horz3(vec2 pos,float off){
-    vec3 b=Fetch(pos,vec2(-1.0,off));
-    vec3 c=Fetch(pos,vec2( 0.0,off));
-    vec3 d=Fetch(pos,vec2( 1.0,off));
+_func vec3 Horz3(sampler2D iChannel0, vec2 pos,float off){
+    vec3 b=Fetch(iChannel0,pos,vec2(-1.0,off));
+    vec3 c=Fetch(iChannel0,pos,vec2( 0.0,off));
+    vec3 d=Fetch(iChannel0,pos,vec2( 1.0,off));
     float dst=Dist(pos).x;
     // Convert distance to weight.
     float scale=hardPix;
@@ -108,12 +108,12 @@ _func vec3 Horz3(vec2 pos,float off){
     return (b*wb+c*wc+d*wd)/(wb+wc+wd);}
 
 // 5-tap Gaussian filter along horz line.
-_func vec3 Horz5(vec2 pos,float off){
-    vec3 a=Fetch(pos,vec2(-2.0,off));
-    vec3 b=Fetch(pos,vec2(-1.0,off));
-    vec3 c=Fetch(pos,vec2( 0.0,off));
-    vec3 d=Fetch(pos,vec2( 1.0,off));
-    vec3 e=Fetch(pos,vec2( 2.0,off));
+_func vec3 Horz5(sampler2D iChannel0, vec2 pos,float off){
+    vec3 a=Fetch(iChannel0,pos,vec2(-2.0,off));
+    vec3 b=Fetch(iChannel0,pos,vec2(-1.0,off));
+    vec3 c=Fetch(iChannel0,pos,vec2( 0.0,off));
+    vec3 d=Fetch(iChannel0,pos,vec2( 1.0,off));
+    vec3 e=Fetch(iChannel0,pos,vec2( 2.0,off));
     float dst=Dist(pos).x;
     // Convert distance to weight.
     float scale=hardPix;
@@ -131,10 +131,10 @@ _func float Scan(vec2 pos,float off){
     return Gaus(dst+off,hardScan);}
 
 // Allow nearest three lines to effect pixel.
-_func vec3 Tri(vec2 pos){
-    vec3 a=Horz3(pos,-1.0);
-    vec3 b=Horz5(pos, 0.0);
-    vec3 c=Horz3(pos, 1.0);
+_func vec3 Tri(sampler2D iChannel0, vec2 pos){
+    vec3 a=Horz3(iChannel0,pos,-1.0);
+    vec3 b=Horz5(iChannel0,pos, 0.0);
+    vec3 c=Horz3(iChannel0,pos, 1.0);
     float wa=Scan(pos,-1.0);
     float wb=Scan(pos, 0.0);
     float wc=Scan(pos, 1.0);
@@ -156,9 +156,9 @@ _func vec3 Mask(vec2 pos){
     else mask.b=maskLight;
     return mask;}
 
-_func vec4 tl_crt(vec4 fragCoord, vec2 uv) {
+_func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
     vec2 pos=Warp(uv);
-    return vec4(ToSrgb(Tri(pos) * Mask(fragCoord.xy)), 1.0);}
+    return vec4(ToSrgb(Tri(iChannel0, pos) * Mask(fragCoord.xy)), 1.0);}
 @end
 
 //------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ _func vec4 tl_crt(vec4 fragCoord, vec2 uv) {
     @uniform sampler2D iChannel0 Canvas
 @end
     #if 1
-    _color = tl_crt(_fragcoord, uv);
+    _color = tl_crt(iChannel0, _fragcoord, uv);
     #else
     _color = tex2D(iChannel0, uv);
     #endif
