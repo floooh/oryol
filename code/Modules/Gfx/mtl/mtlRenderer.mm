@@ -124,8 +124,10 @@ mtlRenderer::commitFrame() {
         dispatch_semaphore_signal(blockSema);
     }];
 
-    [this->curCommandEncoder endEncoding];
-    [this->curCommandBuffer presentDrawable:osxBridge::ptr()->mtkView.currentDrawable];
+    if (nil != this->curCommandEncoder) {
+        [this->curCommandEncoder endEncoding];
+        [this->curCommandBuffer presentDrawable:osxBridge::ptr()->mtkView.currentDrawable];
+    }
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
@@ -154,7 +156,9 @@ mtlRenderer::renderTargetAttrs() const {
 void
 mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil != this->curCommandEncoder);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
 
     MTLViewport vp;
     vp.originX = (double) x;
@@ -170,9 +174,12 @@ mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool ori
 void
 mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil != this->curCommandEncoder);
     o_assert_dbg(width >= 0);
     o_assert_dbg(height >= 0);
+
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
 
     // clip against frame buffer size
     x = std::min(std::max(0, x), this->rtAttrs.FramebufferWidth - 1);
@@ -238,10 +245,15 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         this->rtAttrs.Windowed = false;
         this->rtAttrs.SwapInterval = 1;
     }
-    this->rtValid = true;
+    if (passDesc) {
+        this->rtValid = true;
+    }
+    else {
+        // pass descriptor will not be valid if window is minimized
+        return;
+    }
 
     // init renderpass descriptor
-    o_assert_dbg(passDesc);
     if (rt) {
         passDesc.colorAttachments[0].texture = rt->mtlTex;
     }
@@ -281,6 +293,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     // create command encoder for this render pass
+    // this might return nil if the window is minimized
     this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
 }
 
@@ -288,8 +301,9 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 void
 mtlRenderer::applyDrawState(drawState* ds) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->curCommandEncoder);
-
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
     if (nullptr == ds) {
         // drawState dependencies still pending, invalidate rendering
         this->curDrawState = nullptr;
@@ -337,7 +351,9 @@ mtlRenderer::applyDrawState(drawState* ds) {
 void
 mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->curCommandEncoder);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
     if (nullptr == this->curDrawState) {
         return;
     }
@@ -413,6 +429,9 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 void
 mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
     if (nullptr == this->curDrawState) {
         return;
     }
@@ -441,6 +460,9 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
 //------------------------------------------------------------------------------
 void
 mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
     if (nullptr == this->curDrawState) {
         return;
     }
