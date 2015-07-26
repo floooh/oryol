@@ -22,7 +22,7 @@ public:
         None = 0,
         Index16,
         Index32,
-        
+
         NumIndexTypes,
         InvalidIndexType = 0xFFFFFFFF
     };
@@ -51,37 +51,37 @@ public:
     typedef uint64 Mask;
     enum Bits {
         None    = 0,
-        
+
         Stencil = (1<<5),
         Depth   = (1<<4),
         Red     = (1<<3),
         Green   = (1<<2),
         Blue    = (1<<1),
         Alpha   = (1<<0),
-        
+
         DepthStencil = Depth|Stencil,
         DS = DepthStencil,
-        
+
         D = Depth,
         S = Stencil,
         R = Red,
         G = Green,
         B = Blue,
         A = Alpha,
-        
+
         RG  = R|G,
         GB  = G|B,
         RB  = R|B,
         RGB = R|G|B,
-        
+
         RA = R|A,
         GA = G|A,
         BA = B|A,
-        
+
         RGA = R|G|A,
         GBA = G|B|A,
         RBA = R|B|A,
-        
+
         RGBA = R|G|B|A,
         All = R|G|B|A|D|S,
     };
@@ -293,7 +293,7 @@ public:
                 break;
         }
         // fallthrough: unsupported combination
-        return 0;        
+        return 0;
     }
     /// compute row-pitch (distance in bytes from one row of data to next)
     static int32 RowPitch(PixelFormat::Code fmt, int32 width) {
@@ -353,7 +353,7 @@ public:
         LineStrip,
         Triangles,
         TriangleStrip,
-        
+
         NumPrimitiveTypes,
         InvalidPrimitiveType = 0xFFFFFFFF,
     };
@@ -364,7 +364,7 @@ public:
     @class Oryol::GfxResourceType
     @ingroup Gfx
     @brief Gfx module resource types
- 
+
     These types are used for the type in Id for Gfx module
     resources.
 */
@@ -377,7 +377,7 @@ public:
         ProgramBundle,      ///< shader program bundle
         ConstantBlock,      ///< block constant shader uniforms
         DrawState,          ///< draw state resource
-        
+
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,
     };
@@ -395,7 +395,7 @@ public:
     enum Code {
         VertexShader = 0,
         FragmentShader,
-        
+
         NumShaderTypes,
         InvalidShaderType = 0xFFFFFFFF,
     };
@@ -417,7 +417,7 @@ public:
         NearestMipmapLinear,
         LinearMipmapNearest,
         LinearMipmapLinear,
-        
+
         NumTextureFilterModes,
         InvalidTextureFilterMode = 0xFFFFFFFF,
     };
@@ -436,7 +436,7 @@ public:
         Texture2D = 0,
         Texture3D,
         TextureCube,
-        
+
         NumTextureTypes,
         InvalidTextureType = 0xFFFFFFFF,
     };
@@ -455,7 +455,7 @@ public:
         ClampToEdge = 0,
         Repeat,
         MirroredRepeat,
-                
+
         NumTextureWrapModes,
         InvalidTextureWrapMode = 0xFFFFFFFF,
     };
@@ -475,7 +475,7 @@ public:
         Static,
         Dynamic,
         Stream,
-        
+
         NumUsages,
         InvalidUsage = 0xFFFFFFFF,
     };
@@ -486,7 +486,7 @@ public:
     @class Oryol::VertexAttr
     @ingroup Gfx
     @brief vertex attribute enum (position, texcoord, ...)
- 
+
     The VertexAttr definitions don't have a hardwired meaning, they just
     exist to make the binding of vertex components (living in vertex buffers)
     to vertex attribute definition in vertex shaders easier to understand.
@@ -497,23 +497,23 @@ class VertexAttr {
 public:
     /// vertex attribute enum
     enum Code : uint8 {
-        Position = 0,   ///> "position"
-        Normal,         ///> "normal"
-        TexCoord0,      ///> "texcoord0"
-        TexCoord1,      ///> "texcoord1"
-        TexCoord2,      ///> "texcoord2"
-        TexCoord3,      ///> "texcoord3"
-        Tangent,        ///> "tangent
-        Binormal,       ///> "binormal"
-        Weights,        ///> "weights" (skin weights)
-        Indices,        ///> "indices" (skin indices)
-        Color0,         ///> "color0"
-        Color1,         ///> "color1"
-        Instance0,      ///> "instance0"
-        Instance1,      ///> "instance1"
-        Instance2,      ///> "instance2"
-        Instance3,      ///> "instance3"
-        
+        Position = 0,   ///< "position"
+        Normal,         ///< "normal"
+        TexCoord0,      ///< "texcoord0"
+        TexCoord1,      ///< "texcoord1"
+        TexCoord2,      ///< "texcoord2"
+        TexCoord3,      ///< "texcoord3"
+        Tangent,        ///< "tangent
+        Binormal,       ///< "binormal"
+        Weights,        ///< "weights" (skin weights)
+        Indices,        ///< "indices" (skin indices)
+        Color0,         ///< "color0"
+        Color1,         ///< "color1"
+        Instance0,      ///< "instance0"
+        Instance1,      ///< "instance1"
+        Instance2,      ///< "instance2"
+        Instance3,      ///< "instance3"
+
         NumVertexAttrs,
         InvalidVertexAttr,
     };
@@ -567,7 +567,7 @@ public:
         Short2N,        ///< 2-component float (-1.0f..+1.0f) mapped to short (-32768..+32768)
         Short4,         ///< 4-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32768)
         Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32768)
-        
+
         NumVertexFormats,       ///< number of vertex formats
         InvalidVertexFormat,    ///< the invalid vertex format value
     };
@@ -638,7 +638,7 @@ public:
         Instancing,                 ///< supports hardware-instanced rendering
         OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
         OriginTopLeft,              ///< image space origin is top-left (D3D-style)
-        
+
         NumFeatures,
         InvalidFeature
     };
@@ -750,7 +750,7 @@ public:
     static const int NumBlendFactors = 15;
     static const int InvalidBlendFactor = 0xFF;
 };
- 
+
 //------------------------------------------------------------------------------
 /**
     @class Oryol::BlendOperation
