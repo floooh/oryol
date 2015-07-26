@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 39
+Version = 42
 
 metalEnabled = False
 
@@ -110,9 +110,9 @@ slMacros = {
         'mat2': 'float2x2',
         'mat3': 'float3x3',
         'mat4': 'float4x4',
-        'tex2D(s, t)': 's.Sample(s ## _sampler,t)',
-        'texCUBE(s, t)': 's.Sample(s ## _sampler,t)',
-        'tex2Dvs(s, t)': 's.SampleLevel(s ## _sampler,t,0.0)',
+        'tex2D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'texCUBE(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'tex2Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
@@ -879,6 +879,23 @@ class HLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
+    def genHeader(self, lines) :
+        lines.append(Line('#ifndef ORYOL_HLSL_TYPES'))
+        lines.append(Line('#define ORYOL_HLSL_TYPES'))
+        lines.append(Line('class _tex2d {'))
+        lines.append(Line('    Texture2D t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
+        lines.append(Line('class _texcube {'))
+        lines.append(Line('    TextureCube t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
+        lines.append(Line('#define sampler2D _tex2d'))
+        lines.append(Line('#define samplerCube _texcube'))
+        lines.append(Line('#endif'))
+        return lines
+
+    #---------------------------------------------------------------------------
     def genUniformBlocks(self, shd, lines) :
         
         # first write texture uniforms outside of cbuffers, and count
@@ -887,14 +904,14 @@ class HLSLGenerator :
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
                     if type == 'sampler2D' :
-                        lines.append(Line('Texture2D {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                        lines.append(Line('Texture2D _t_{} : register(t{});'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                        lines.append(Line('SamplerState _s_{} : register(s{});'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
                     elif type == 'samplerCube' :
-                        lines.append(Line('TextureCube {} : register(t{});'.format(uniform.name, uniform.bindSlot), 
+                        lines.append(Line('TextureCube _t_{} : register(t{});'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState {}_sampler : register(s{});'.format(uniform.name, uniform.bindSlot), 
+                        lines.append(Line('SamplerState _s_{} : register(s{});'.format(uniform.name, uniform.bindSlot), 
                             uniform.filePath, uniform.lineNumber))
 
             # if there are non-texture uniforms, groups the rest into a cbuffer
@@ -909,11 +926,29 @@ class HLSLGenerator :
                                 lines.append(Line('  float _pad_{};'.format(uniform.name)))
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines
-    
+     
+    #---------------------------------------------------------------------------
+    def genTexObjects(self, shd, lines) :
+        for uBlock in shd.uniformBlocks :
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('_tex2d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                            uniform.name, uniform.name, uniform.name, uniform.name, uniform.name),
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                            uniform.name, uniform.name, uniform.name, uniform.name, uniform.name),
+                            uniform.filePath, uniform.lineNumber))
+        return lines
+
     #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs, slVersion) :
         lines = []
         
+        # write header source
+        lines = self.genHeader(lines)
+
         # write compatibility macros
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
@@ -934,6 +969,7 @@ class HLSLGenerator :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
         lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines = self.genTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
         vs.generatedSource[slVersion] = lines
@@ -941,6 +977,9 @@ class HLSLGenerator :
     #---------------------------------------------------------------------------
     def genFragmentShaderSource(self, fs, slVersion) :
         lines = []
+
+        # write header source
+        lines = self.genHeader(lines)
 
         # write compatibility macros
         for func in slMacros[slVersion] :
@@ -960,6 +999,7 @@ class HLSLGenerator :
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('in float4 _fragcoord : SV_Position,'))
         lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
+        lines = self.genTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
         fs.generatedSource[slVersion] = lines
