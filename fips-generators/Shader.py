@@ -132,7 +132,8 @@ slMacros = {
         'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
-        'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))'
+        'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'discard': 'discard_fragment()'
     }
 }
 
