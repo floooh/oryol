@@ -97,7 +97,9 @@ def parseOutput(output, lines) :
         colStartIndex = lineEndIndex + 1
         colEndIndex = outLine.find('-', colStartIndex)
         if colEndIndex == -1 :
-            continue
+            colEndIndex = outLine.find(')', colStartIndex)
+            if colEndIndex == -1 :
+                continue
         msgStartIndex = outLine.find(':', colStartIndex+1)
         if msgStartIndex == -1 :
             continue
@@ -144,12 +146,12 @@ def validate(lines, type, slVersion, outPath, cName) :
         'vs': 'vs_5_0',
         'fs': 'ps_5_0'
     }
+    rootPath = os.path.splitext(outPath)[0]
+    hlsl_src_path = rootPath + '.{}{}'.format(profile[type], ext[type])
+    with open(hlsl_src_path, 'w') as f :
+        writeFile(f, lines)
 
-    f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
-    writeFile(f, lines)
-    f.close()
-
-    cmd = [fxcPath, '/T', profile[type], '/O3', '/Fh', outPath, '/Vn', cName, f.name]
+    cmd = [fxcPath, '/T', profile[type], '/O3', '/Fh', outPath, '/Vn', cName, hlsl_src_path]
+    print(cmd);
     output = callFxc(cmd)
-    os.unlink(f.name)
     parseOutput(output, lines)
