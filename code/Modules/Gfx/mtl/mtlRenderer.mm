@@ -183,6 +183,12 @@ mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool 
     if ((y + height) > this->rtAttrs.FramebufferHeight) {
         height = this->rtAttrs.FramebufferHeight - y;
     }
+    if (width <= 0) {
+        width = 1;
+    }
+    if (height <= 0) {
+        height = 1;
+    }
 
     MTLScissorRect rect;
     rect.x = x;
