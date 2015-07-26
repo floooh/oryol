@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 38
+Version = 39
 
 metalEnabled = False
 
@@ -130,9 +130,9 @@ slMacros = {
         'mat4': 'float4x4',
         'mul(m,v)': '(m*v)',
         'mod(x,y)': '(x-y*floor(x/y))',
-        'tex2D(s, t)': 's.sample(s ## _sampler,t)',
-        'texCUBE(s, t)': 's.sample(s ## _sampler,t)',
-        'tex2Dvs(s, t)': 's.sample(s ## _sampler,t,level(0))'
+        'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))'
     }
 }
 
@@ -978,6 +978,25 @@ class MetalGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
+    def genHeader(self, lines) :
+        # write general Metal declarations at top of shader
+        lines.append(Line('#ifndef _ORYOL_METAL_HEADER'))
+        lines.append(Line('#define _ORYOL_METAL_HEADER'))
+        lines.append(Line('#include <metal_stdlib>'))
+        lines.append(Line('#include <simd/simd.h>'))
+        lines.append(Line('using namespace metal;'))
+        lines.append(Line('template<typename TYPE> class _tex {'))
+        lines.append(Line('public:'))
+        lines.append(Line('    _tex(TYPE t_, sampler s_) : t(t_), s(s_) {};'))
+        lines.append(Line('    TYPE t;'))
+        lines.append(Line('    sampler s;'))
+        lines.append(Line('};'))
+        lines.append(Line('typedef _tex<texture2d<float,access::sample>> sampler2D;'))
+        lines.append(Line('typedef _tex<texturecube<float,access::sample>> samplerCube;'))
+        lines.append(Line('#endif'))
+        return lines
+
+    #---------------------------------------------------------------------------
     def genUniformBlocks(self, shd, lines) :
         
         # first write texture uniforms outside of cbuffers, and count
@@ -994,14 +1013,46 @@ class MetalGenerator :
                             uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines, uniformDefs
-    
+
+    #---------------------------------------------------------------------------
+    def genFuncArgs(self, shd, lines) :
+        for uBlock in shd.uniformBlocks :
+            if uBlock.bindSlot is not None :
+                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(shd.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('texture2d<float,access::sample> _t_{} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler _s_{} [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('texturecube<float,access::sample> _t_{} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+                        lines.append(Line('sampler _s_{} [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
+                            uniform.filePath, uniform.lineNumber))
+        return lines
+
+    #---------------------------------------------------------------------------
+    def genTexObjects(self, shd, lines) :
+        for uBlock in shd.uniformBlocks :
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        lines.append(Line('sampler2D {}(_t_{},_s_{});'.format(
+                            uniform.name, uniform.name, uniform.name),
+                            uniform.filePath, uniform.lineNumber))
+                    elif type == 'samplerCube' :
+                        lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
+                            uniform.name, uniform.name, uniform.name),
+                            uniform.filePath, uniform.lineNumber))
+        return lines
+
     #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs, slVersion) :
         lines = []
 
-        lines.append(Line('#include <metal_stdlib>'))
-        lines.append(Line('#include <simd/simd.h>'))
-        lines.append(Line('using namespace metal;'))
+        lines = self.genHeader(lines)
 
         # write compatibility macros
         for func in slMacros[slVersion] :
@@ -1013,7 +1064,7 @@ class MetalGenerator :
         # write blocks the vs depends on
         # (Metal specific: protect against multiple inclusion)
         for dep in vs.resolvedDeps :
-            guard = '{}_INCLUDED'.format(self.shaderLib.blocks[dep].name)
+            guard = '_ORYOL_BLOCK_{}'.format(self.shaderLib.blocks[dep].name)
             lines.append(Line('#ifndef {}'.format(guard)))
             lines.append(Line('#define {}'.format(guard)))
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
@@ -1062,23 +1113,10 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
 
         lines.append(Line('vertex {}_vs_out_t {}('.format(vs.name, vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
-        for uBlock in vs.uniformBlocks :
-            if uBlock.bindSlot is not None :
-                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(vs.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('texture2d<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('texturecube<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
+        lines = self.genFuncArgs(vs, lines)
         lines.append(Line('{}_vs_in_t vs_in [[stage_in]]) {{'.format(vs.name)))
         lines.append(Line('{}_vs_out_t vs_out;'.format(vs.name)))
+        lines = self.genTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1094,9 +1132,7 @@ class MetalGenerator :
     def genFragmentShaderSource(self, fs, slVersion) :
         lines = []
 
-        lines.append(Line('#include <metal_stdlib>'))
-        lines.append(Line('#include <simd/simd.h>'))
-        lines.append(Line('using namespace metal;'))
+        lines = self.genHeader(lines)
         
         # write compatibility macros
         for func in slMacros[slVersion] :
@@ -1127,23 +1163,11 @@ class MetalGenerator :
         for uniformDef in uniformDefs :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
         lines.append(Line('fragment float4 {}('.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
-        for uBlock in fs.uniformBlocks :
-            if uBlock.bindSlot is not None :
-                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(fs.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('texture2d<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('texturecube<float,access::sample> {} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler {}_sampler [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
+        lines = self.genFuncArgs(fs, lines)
+        lines.append(Line('float4 _fragcoord [[position]],'))
         lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('float4 _fo_color;'))
+        lines = self.genTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
