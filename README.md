@@ -11,6 +11,10 @@ Experimental C++11 multi-platform 3D engine.
 
 http://floooh.github.io/oryol/
 
+## _Build_
+
+[How to Build](doc/BUILD.md)
+
 ## _Public Service Announcements_
 
 - **27-Jul-2015**: the new OSX Metal renderer is feature-complete. To give it a try you need the latest OSX10.11 and Xcode7 betas, and then:
@@ -41,16 +45,6 @@ There is no Metal support for iOS yet (coming 'Really Soon Now').
 * [10,000ft View](doc/OVERVIEW.md)
 * [Core Module](code/Modules/Core/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
-
-## _Clone_
-
-```bash
-git clone https://github.com/floooh/oryol.git oryol
-```
-
-## _Build_
-
-[How to Build](doc/BUILD.md)
 
 ## _Videos_
 
