@@ -4,8 +4,6 @@ Code generator for shader libraries.
 
 Version = 42
 
-metalEnabled = False
-
 import os
 import sys
 import glob
@@ -1718,7 +1716,7 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
             shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
-        if metalEnabled and platform.system() == 'Darwin' :
+        if platform.system() == 'Darwin' :
             shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)

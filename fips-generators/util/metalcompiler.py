@@ -136,13 +136,13 @@ def validate(lines, outPath, c_name) :
     
     # test if tools exists
     if not get_tool('metal') :
-        util.fmtWarning('metal compiler not found (expected path: {})\n'.format(metal_path))
+        util.fmtWarning('metal compiler not found\n')
         return
     if not get_tool('metal-ar') :
-        util.fmtWarning('metal librarian not found (expected path: {})\n'.format(metal_ar_path))
+        util.fmtWarning('metal librarian not found\n')
         return
     if not get_tool('metallib') :
-        util.fmtWarning('metal linker not found (expected path: {})\n'.format(metal_ln_path))
+        util.fmtWarning('metal linker not found\n')
         return
 
     # filenames
