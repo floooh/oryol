@@ -282,7 +282,9 @@ GLenum
 glTypes::asGLTextureTarget(TextureType::Code c) {
     switch (c) {
         case TextureType::Texture2D:    return GL_TEXTURE_2D;
+        #if !ORYOL_OPENGLES2
         case TextureType::Texture3D:    return GL_TEXTURE_3D;
+        #endif
         case TextureType::TextureCube:  return GL_TEXTURE_CUBE_MAP;
         default:
             o_error("glTypes::asGLTextureTarget(): invalid param!\n");
