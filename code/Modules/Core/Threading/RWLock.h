@@ -75,5 +75,29 @@ RWLock::UnlockRead() {
 #endif
 }
 
+class ScopedReadLock {
+private:
+	RWLock& _lock;
+public:
+	ScopedReadLock(RWLock& lock) : _lock(lock) {
+		_lock.LockRead();
+	}
+	~ScopedReadLock() {
+		_lock.UnlockRead();
+	}
+};
+
+class ScopedWriteLock {
+private:
+	RWLock& _lock;
+public:
+	ScopedWriteLock(RWLock& lock) : _lock(lock) {
+		_lock.LockWrite();
+	}
+	~ScopedWriteLock() {
+		_lock.UnlockWrite();
+	}
+};
+
 } // namespace Oryol
 
