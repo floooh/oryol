@@ -53,8 +53,8 @@ PacloneApp::OnInit() {
     rtSetup.MagFilter = TextureFilterMode::Linear;
     this->crtParams.Canvas = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
-    Id prog = Gfx::CreateResource(Shaders::CRT::CreateSetup());
-    this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    Id shd = Gfx::CreateResource(Shaders::CRT::CreateSetup());
+    this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);

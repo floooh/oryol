@@ -35,8 +35,8 @@ gpuSynthesizer::Setup(const SynthSetup& setupAttrs) {
     this->renderTarget = Gfx::CreateResource(rtSetup);
     
     Id fsqMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id prog = Gfx::CreateResource(Shaders::Synth::CreateSetup());
-    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fsqMesh, prog));
+    Id shd = Gfx::CreateResource(Shaders::Synth::CreateSetup());
+    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fsqMesh, shd));
     Gfx::PopResourceLabel();
 }
 

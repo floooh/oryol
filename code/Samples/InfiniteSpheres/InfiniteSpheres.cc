@@ -99,8 +99,8 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72, 40).Build();
     Id sphere = Gfx::CreateResource(shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(sphere, prog);
+    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(sphere, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = 4;

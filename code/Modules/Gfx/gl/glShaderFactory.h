@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::glProgramBundleFactory
+    @class Oryol::_priv::glShaderFactory
     @ingroup _priv
-    @brief private: GL implementation of programBundleFactory
+    @brief private: GL implementation of shaderFactory
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/Enums.h"
@@ -13,14 +13,14 @@
 namespace Oryol {
 namespace _priv {
 
-class programBundle;
+class shader;
 
-class glProgramBundleFactory {
+class glShaderFactory {
 public:
     /// constructor
-    glProgramBundleFactory();
+    glShaderFactory();
     /// destructor
-    ~glProgramBundleFactory();
+    ~glShaderFactory();
     
     /// setup the factory
     void Setup(const gfxPointers& ptrs);
@@ -29,10 +29,10 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
     
-    /// setup programBundle resource
-    ResourceState::Code SetupResource(programBundle& progBundle);
-    /// destroy the shader
-    void DestroyResource(programBundle& progBundle);
+    /// setup resource
+    ResourceState::Code SetupResource(shader& shd);
+    /// destroy resource
+    void DestroyResource(shader& shd);
 
 private:
     /// compile a GL shader (return 0 if failed)

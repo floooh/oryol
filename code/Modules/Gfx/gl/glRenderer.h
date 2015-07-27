@@ -24,7 +24,7 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
-class programBundle;
+class shader;
     
 class glRenderer {
 public:
@@ -79,8 +79,8 @@ public:
     /// bind index buffer with state caching
     void bindIndexBuffer(GLuint ib);
 
-    /// invalidate program state
-    void invalidateProgramState();
+    /// invalidate shader state
+    void invalidateShaderState();
     /// invoke glUseProgram (if changed)
     void useProgram(GLuint prog);
 
@@ -104,8 +104,8 @@ private:
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state
     void applyRasterizerState(const RasterizerState& rs);
-    /// apply program to use for rendering
-    void applyProgramBundle(programBundle* progBundle, uint32 progSelMask);
+    /// apply shader to use for rendering
+    void applyShader(shader* shd, uint32 selMask);
     /// apply mesh state
     void applyMeshState(const drawState* ds);
 

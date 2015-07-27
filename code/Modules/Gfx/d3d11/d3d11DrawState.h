@@ -7,7 +7,6 @@
 */
 #include "Gfx/Resource/drawStateBase.h"
 #include "Gfx/d3d11/d3d11_decl.h"
-#include "Gfx/d3d11/d3d11ProgramBundle.h"
 #include "Core/Containers/StaticArray.h"
 
 namespace Oryol {
@@ -23,7 +22,7 @@ public:
     /// clear the object (called from drawStateFactory::DestroyResource())
     void Clear();
 
-    /// pointer to input layout objects (same number and order as programBundle variations)
+    /// pointer to input layout objects (same number and order as shader variations)
     StaticArray<ID3D11InputLayout*, GfxConfig::MaxNumBundlePrograms> d3d11InputLayouts;
     /// rasterize state object
     ID3D11RasterizerState* d3d11RasterizerState;

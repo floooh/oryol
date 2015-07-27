@@ -56,7 +56,7 @@ private:
     int numSprites;
     int numVertices;
     Oryol::Id mesh;
-    Oryol::Id prog;
+    Oryol::Id shader;
     Oryol::Id drawState;
     Oryol::Shaders::Canvas::FSParams canvasParams;
 

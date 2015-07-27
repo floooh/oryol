@@ -41,8 +41,8 @@ AppState::Code
 FullscreenQuadApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
     this->params.Time = 0.0f;
     return App::OnInit();
 }

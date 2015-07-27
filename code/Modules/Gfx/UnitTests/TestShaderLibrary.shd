@@ -8,7 +8,7 @@ Bla Bla Bla
 
 //------------------------------------------------------------------------------
 @block TransformUtil
-vec4 myTransform(mat4 mvp, vec4 pos)
+_func vec4 myTransform(mat4 mvp, vec4 pos)
 {
     return mul(pos, mvp);
 }
@@ -16,7 +16,7 @@ vec4 myTransform(mat4 mvp, vec4 pos)
 
 //------------------------------------------------------------------------------
 @block FSUtil
-vec4 myColor(vec4 nrm, vec4 texColor)
+_func vec4 myColor(vec4 nrm, vec4 texColor)
 {
     return ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor;
 }

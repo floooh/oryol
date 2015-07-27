@@ -9,7 +9,7 @@
 #include "Gfx/Core/UniformLayout.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Resource/mesh.h"
-#include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/texture.h"
 
 namespace Oryol {
@@ -354,9 +354,9 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     }
 
     // get the uniform layout object for this uniform block
-    const programBundle* prog = this->curDrawState->prog;
-    o_assert_dbg(prog);
-    const UniformLayout& layout = prog->Setup.UniformBlockLayout(blockIndex);
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
@@ -365,8 +365,8 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // FIXME: textures should be separated from uniforms, probably even go
     // into the drawState (although this would not allow to change textures
     // between instances)
-    const ShaderType::Code bindShaderStage = prog->getUniformBlockShaderStage(blockIndex);
-    const int32 bindSlotIndex = prog->getUniformBlockBindSlotIndex(blockIndex);
+    const ShaderType::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
+    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
     const uint8* uBufferPtr = nullptr;
     const int numComps = layout.NumComponents();
     for (int compIndex = 0; compIndex < numComps; compIndex++) {

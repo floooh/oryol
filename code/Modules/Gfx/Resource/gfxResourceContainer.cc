@@ -25,8 +25,8 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     
     this->meshFactory.Setup(this->pointers);
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->programBundleFactory.Setup(this->pointers);
-    this->programBundlePool.Setup(GfxResourceType::ProgramBundle, setup.PoolSize(GfxResourceType::ProgramBundle));
+    this->shaderFactory.Setup(this->pointers);
+    this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
     this->textureFactory.Setup(this->pointers);
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
     this->drawStateFactory.Setup(this->pointers);
@@ -56,8 +56,8 @@ gfxResourceContainer::discard() {
     this->drawStateFactory.Discard();
     this->texturePool.Discard();
     this->textureFactory.Discard();
-    this->programBundlePool.Discard();
-    this->programBundleFactory.Discard();
+    this->shaderPool.Discard();
+    this->shaderFactory.Discard();
     this->meshPool.Discard();
     this->meshFactory.Discard();
     this->pointers = gfxPointers();
@@ -248,7 +248,7 @@ gfxResourceContainer::failedAsync(const Id& resId) {
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const ProgramBundleSetup& setup) {
+gfxResourceContainer::Create(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->registry.Lookup(setup.Locator);
@@ -256,12 +256,12 @@ gfxResourceContainer::Create(const ProgramBundleSetup& setup) {
         return resId;
     }
     else {
-        resId = this->programBundlePool.AllocId();
+        resId = this->shaderPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
-        programBundle& res = this->programBundlePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->programBundleFactory.SetupResource(res);
+        shader& res = this->shaderPool.Assign(resId, setup, ResourceState::Setup);
+        const ResourceState::Code newState = this->shaderFactory.SetupResource(res);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
-        this->programBundlePool.UpdateState(resId, newState);
+        this->shaderPool.UpdateState(resId, newState);
     }
     return resId;
 }
@@ -418,21 +418,17 @@ gfxResourceContainer::Destroy(ResourceLabel label) {
             }
             break;
                 
-            case GfxResourceType::ProgramBundle:
+            case GfxResourceType::Shader:
             {
-                if (ResourceState::Valid == this->programBundlePool.QueryState(id)) {
-                    programBundle* prog = this->programBundlePool.Lookup(id);
-                    if (prog) {
-                        this->programBundleFactory.DestroyResource(*prog);
+                if (ResourceState::Valid == this->shaderPool.QueryState(id)) {
+                    shader* shd = this->shaderPool.Lookup(id);
+                    if (shd) {
+                        this->shaderFactory.DestroyResource(*shd);
                     }
                 }
-                this->programBundlePool.Unassign(id);
+                this->shaderPool.Unassign(id);
             }
             break;
-                
-            case GfxResourceType::ConstantBlock:
-                o_assert2(false, "FIXME!!!\n");
-                break;
                 
             case GfxResourceType::DrawState:
             {
@@ -460,7 +456,7 @@ gfxResourceContainer::update() {
     
     /// call update method on resource pools (this is cheap)
     this->meshPool.Update();
-    this->programBundlePool.Update();
+    this->shaderPool.Update();
     this->texturePool.Update();
     this->drawStatePool.Update();
 
@@ -487,11 +483,8 @@ gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
             return this->texturePool.QueryResourceInfo(resId);
         case GfxResourceType::Mesh:
             return this->meshPool.QueryResourceInfo(resId);
-        case GfxResourceType::ProgramBundle:
-            return this->programBundlePool.QueryResourceInfo(resId);
-        case GfxResourceType::ConstantBlock:
-            o_assert2(false, "FIXME!!!\n");
-            return ResourceInfo();
+        case GfxResourceType::Shader:
+            return this->shaderPool.QueryResourceInfo(resId);
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryResourceInfo(resId);
         default:
@@ -510,11 +503,8 @@ gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->texturePool.QueryPoolInfo();
         case GfxResourceType::Mesh:
             return this->meshPool.QueryPoolInfo();
-        case GfxResourceType::ProgramBundle:
-            return this->programBundlePool.QueryPoolInfo();
-        case GfxResourceType::ConstantBlock:
-            o_assert2(false, "FIXME!!!\n");
-            return ResourcePoolInfo();
+        case GfxResourceType::Shader:
+            return this->shaderPool.QueryPoolInfo();
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryPoolInfo();
         default:
@@ -533,11 +523,8 @@ gfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
             return this->texturePool.GetNumFreeSlots();
         case GfxResourceType::Mesh:
             return this->meshPool.GetNumFreeSlots();
-        case GfxResourceType::ProgramBundle:
-            return this->programBundlePool.GetNumFreeSlots();
-        case GfxResourceType::ConstantBlock:
-            o_assert2(false, "FIXME!!!\n");
-            return 0;
+        case GfxResourceType::Shader:
+            return this->shaderPool.GetNumFreeSlots();
         case GfxResourceType::DrawState:
             return this->drawStatePool.GetNumFreeSlots();
         default:

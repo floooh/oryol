@@ -1,30 +1,30 @@
 //------------------------------------------------------------------------------
-//  d3d11ProgramBundleFactory
+//  d3d11ShaderFactory
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Gfx/Core/renderer.h"
-#include "d3d11ProgramBundleFactory.h"
-#include "Gfx/Resource/programBundle.h"
+#include "d3d11ShaderFactory.h"
+#include "Gfx/Resource/shader.h"
 #include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11ProgramBundleFactory::d3d11ProgramBundleFactory() :
+d3d11ShaderFactory::d3d11ShaderFactory() :
 d3d11Device(nullptr),
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-d3d11ProgramBundleFactory::~d3d11ProgramBundleFactory() {
+d3d11ShaderFactory::~d3d11ShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11ProgramBundleFactory::Setup(const gfxPointers& ptrs) {
+d3d11ShaderFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
@@ -33,7 +33,7 @@ d3d11ProgramBundleFactory::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11ProgramBundleFactory::Discard() {
+d3d11ShaderFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     this->pointers = gfxPointers();
@@ -42,20 +42,20 @@ d3d11ProgramBundleFactory::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-d3d11ProgramBundleFactory::IsValid() const {
+d3d11ShaderFactory::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
+d3d11ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->d3d11Device);
     HRESULT hr;
 
-    this->pointers.renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateShaderState();
     const ShaderLang::Code slang = ShaderLang::HLSL5;
-    const ProgramBundleSetup& setup = progBundle.Setup;
+    const ShaderSetup& setup = shd.Setup;
 
     // for each program in the bundle
     const int32 numProgs = setup.NumPrograms();
@@ -82,7 +82,7 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
         o_assert_dbg(ps);
 
         // add vertexshader/pixelshader pair to program bundle
-        progBundle.addShaders(setup.Mask(progIndex), vs, ps);
+        shd.addShaders(setup.Mask(progIndex), vs, ps);
     }
 
     // create constant buffers
@@ -110,28 +110,28 @@ d3d11ProgramBundleFactory::SetupResource(programBundle& progBundle) {
 
         // the d3d11ConstantBuffer ptr can be 0 at this point, if the
         // uniform block only contains textures
-        progBundle.addUniformBlockEntry(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
+        shd.addUniformBlockEntry(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
     }
-    o_assert_dbg(progBundle.getNumUniformBlockEntries() == setup.NumUniformBlocks());
+    o_assert_dbg(shd.getNumUniformBlockEntries() == setup.NumUniformBlocks());
 
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
+d3d11ShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->d3d11Device);
 
-    this->pointers.renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateShaderState();
 
-    const int32 numProgs = progBundle.getNumPrograms();
+    const int32 numProgs = shd.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        ID3D11VertexShader* vs = progBundle.getVertexShaderAt(progIndex);
+        ID3D11VertexShader* vs = shd.getVertexShaderAt(progIndex);
         if (vs) {
             vs->Release();
         }
-        ID3D11PixelShader* ps = progBundle.getPixelShaderAt(progIndex);
+        ID3D11PixelShader* ps = shd.getPixelShaderAt(progIndex);
         if (ps) {
             ps->Release();
         }
@@ -139,15 +139,15 @@ d3d11ProgramBundleFactory::DestroyResource(programBundle& progBundle) {
 
     int32 dummySlotIndex = 0;
     ShaderType::Code dummyBindStage = ShaderType::InvalidShaderType;
-    const int32 numConstantBuffers = progBundle.getNumUniformBlockEntries();
+    const int32 numConstantBuffers = shd.getNumUniformBlockEntries();
     for (int32 cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-        ID3D11Buffer* cb = progBundle.getUniformBlockEntryAt(cbIndex, dummyBindStage, dummySlotIndex);
+        ID3D11Buffer* cb = shd.getUniformBlockEntryAt(cbIndex, dummyBindStage, dummySlotIndex);
         if (cb) {
             cb->Release();
         }
     }
 
-    progBundle.Clear();
+    shd.Clear();
 }
 
 } // namespace _priv

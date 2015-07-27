@@ -81,8 +81,8 @@ VertexTextureApp::OnInit() {
 
     // setup draw state for offscreen rendering to float render target
     Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id plasmaProg = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(fsQuadMesh, plasmaProg);
+    Id plasmaShader = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(fsQuadMesh, plasmaShader);
     dss.BlendState.ColorFormat = rtSetup.ColorFormat;
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
     this->plasmaDrawState = Gfx::CreateResource(dss);
@@ -94,8 +94,8 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
     Id planeMesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id planeProg = Gfx::CreateResource(Shaders::Plane::CreateSetup());
-    auto dsPlane = DrawStateSetup::FromMeshAndProg(planeMesh, planeProg);
+    Id planeShader = Gfx::CreateResource(Shaders::Plane::CreateSetup());
+    auto dsPlane = DrawStateSetup::FromMeshAndShader(planeMesh, planeShader);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsPlane.RasterizerState.SampleCount = 4;

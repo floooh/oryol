@@ -17,7 +17,7 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/meshFactory.h"
-#include "Gfx/Resource/programBundleFactory.h"
+#include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStateFactory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"
@@ -64,8 +64,8 @@ public:
 
     /// lookup mesh object
     mesh* lookupMesh(const Id& resId);
-    /// lookup program bundle object
-    programBundle* lookupProgramBundle(const Id& resId);
+    /// lookup shader object
+    shader* lookupShader(const Id& resId);
     /// lookup texture object
     texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
@@ -81,11 +81,11 @@ public:
     
     gfxPointers pointers;
     class meshFactory meshFactory;
-    class programBundleFactory programBundleFactory;
+    class shaderFactory shaderFactory;
     class textureFactory textureFactory;
     class drawStateFactory drawStateFactory;
     class meshPool meshPool;
-    class programBundlePool programBundlePool;
+    class shaderPool shaderPool;
     class texturePool texturePool;
     class drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
@@ -101,10 +101,10 @@ gfxResourceContainer::lookupMesh(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline programBundle*
-gfxResourceContainer::lookupProgramBundle(const Id& resId) {
+inline shader*
+gfxResourceContainer::lookupShader(const Id& resId) {
     o_assert_dbg(this->valid);
-    return this->programBundlePool.Lookup(resId);
+    return this->shaderPool.Lookup(resId);
 }
 
 //------------------------------------------------------------------------------

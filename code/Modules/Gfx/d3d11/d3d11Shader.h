@@ -1,28 +1,23 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d11ProgramBundle
+    @class Oryol::_priv::d3d11Shader
     @ingroup _priv
-    @brief D3D11 implementation of program bundle
-
-    NOTE: Currently, constant buffers are part of the d3d11ProgramBundle
-    object, so basically 'per-shader' not 'per-drawstate'. This does
-    not allow to 'bake' per-material constant buffers, or share
-    constant buffers between shaders.
+    @brief D3D11 implementation of shader
 */
-#include "Gfx/Resource/programBundleBase.h"
+#include "Gfx/Resource/shaderBase.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class d3d11ProgramBundle : public programBundleBase {
+class d3d11Shader : public shaderBase {
 public:
     /// constructor
-    d3d11ProgramBundle();
+    d3d11Shader();
     /// destructor
-    ~d3d11ProgramBundle();
+    ~d3d11Shader();
 
     /// clear the object
     void Clear();
@@ -84,19 +79,19 @@ private:
 
 //------------------------------------------------------------------------------
 inline uint32
-d3d11ProgramBundle::getSelectionMask() const {
+d3d11Shader::getSelectionMask() const {
     return this->selMask;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-d3d11ProgramBundle::getSelectionIndex() const {
+d3d11Shader::getSelectionIndex() const {
     return this->selIndex;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-d3d11ProgramBundle::select(uint32 mask) {
+d3d11Shader::select(uint32 mask) {
     // number of programs will be small, so linear is ok
     if (this->selMask != mask) {
         for (int32 i = 0; i < this->numPrograms; i++) {
@@ -112,25 +107,25 @@ d3d11ProgramBundle::select(uint32 mask) {
 
 //------------------------------------------------------------------------------
 inline ID3D11VertexShader*
-d3d11ProgramBundle::getSelectedVertexShader() const {
+d3d11Shader::getSelectedVertexShader() const {
     return this->programEntries[this->selIndex].vertexShader;
 }
 
 //------------------------------------------------------------------------------
 inline ID3D11PixelShader*
-d3d11ProgramBundle::getSelectedPixelShader() const {
+d3d11Shader::getSelectedPixelShader() const {
     return this->programEntries[this->selIndex].pixelShader;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-d3d11ProgramBundle::getNumUniformBlockEntries() const {
+d3d11Shader::getNumUniformBlockEntries() const {
     return this->numUniformBlockEntries;
 }
 
 //------------------------------------------------------------------------------
 inline ID3D11Buffer*
-d3d11ProgramBundle::getUniformBlockEntryAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const {
+d3d11Shader::getUniformBlockEntryAt(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const {
     const ubEntry& entry = this->uniformBlockEntries[index];
     outBindShaderStage = entry.bindShaderStage;
     outBindSlotIndex = entry.bindSlotIndex;

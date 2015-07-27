@@ -106,9 +106,9 @@ tbOryolBatchRenderer::setupDrawState() {
     o_assert_dbg(this->mesh.IsValid());
     o_assert_dbg(!this->drawState.IsValid());
     
-    Id prog = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
     
-    auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, prog);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;

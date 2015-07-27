@@ -1,25 +1,24 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d11ProgramBundleFactory
+    @class Oryol::_priv::mtlShaderFactory
     @ingroup _priv
-    @brief D3D11 implementation of programBundleFactory
+    @brief Metal implementation of shaderFactory
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class programBundle;
+class shader;
 
-class d3d11ProgramBundleFactory {
+class mtlShaderFactory {
 public:
     /// constructor
-    d3d11ProgramBundleFactory();
+    mtlShaderFactory();
     /// destructor
-    ~d3d11ProgramBundleFactory();
+    ~mtlShaderFactory();
     
     /// setup with a pointer to the state wrapper object
     void Setup(const gfxPointers& ptrs);
@@ -28,14 +27,13 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
     
-    /// setup programBundle resource
-    ResourceState::Code SetupResource(programBundle& progBundle);
+    /// setup shader resource
+    ResourceState::Code SetupResource(shader& shd);
     /// destroy the shader
-    void DestroyResource(programBundle& progBundle);
+    void DestroyResource(shader& shd);
 
 private:
     gfxPointers pointers;
-    ID3D11Device* d3d11Device;
     bool isValid;
 };
     

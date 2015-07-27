@@ -101,17 +101,17 @@ SimpleRenderTargetApp::OnInit() {
     Id sphere = Gfx::CreateResource(shapeBuilder.Result());
 
     // create shaders
-    Id offScreenProg = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
-    Id dispProg = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
+    Id dispShader = Gfx::CreateResource(Shaders::Main::CreateSetup());
     
     // create one draw state for offscreen rendering, and one draw state for main target rendering
-    auto offdsSetup = DrawStateSetup::FromMeshAndProg(torus, offScreenProg);
+    auto offdsSetup = DrawStateSetup::FromMeshAndShader(torus, offScreenShader);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     offdsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
     offdsSetup.BlendState.DepthFormat = PixelFormat::D16;
     this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
-    auto dispdsSetup = DrawStateSetup::FromMeshAndProg(sphere, dispProg);
+    auto dispdsSetup = DrawStateSetup::FromMeshAndShader(sphere, dispShader);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dispdsSetup.RasterizerState.SampleCount = 4;

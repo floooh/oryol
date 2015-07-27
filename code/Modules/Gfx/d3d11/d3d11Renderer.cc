@@ -267,8 +267,8 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
         this->curDrawState = ds;
-        o_assert_dbg(ds->prog);
-        ds->prog->select(ds->Setup.ProgramSelectionMask);
+        o_assert_dbg(ds->shd);
+        ds->shd->select(ds->Setup.ShaderSelectionMask);
 
         // apply state objects (if state has changed)
         if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
@@ -325,7 +325,7 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         }
 
         // apply input layout
-        const uint32 selIndex = ds->prog->getSelectionIndex();
+        const uint32 selIndex = ds->shd->getSelectionIndex();
         o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
         if (this->d3d11CurInputLayout != ds->d3d11InputLayouts[selIndex]) {
             this->d3d11CurInputLayout = ds->d3d11InputLayouts[selIndex];
@@ -333,12 +333,12 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         }
 
         // apply shaders
-        ID3D11VertexShader* d3d11VS = ds->prog->getSelectedVertexShader();
+        ID3D11VertexShader* d3d11VS = ds->shd->getSelectedVertexShader();
         if (this->d3d11CurVertexShader != d3d11VS) {
             this->d3d11CurVertexShader = d3d11VS;
             this->d3d11DeviceContext->VSSetShader(d3d11VS, NULL, 0);
         }
-        ID3D11PixelShader* d3d11PS = ds->prog->getSelectedPixelShader();
+        ID3D11PixelShader* d3d11PS = ds->shd->getSelectedPixelShader();
         if (this->d3d11CurPixelShader != d3d11PS) {
             this->d3d11CurPixelShader = d3d11PS;
             this->d3d11DeviceContext->PSSetShader(d3d11PS, NULL, 0);
@@ -347,10 +347,10 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         // apply constant buffers
         ShaderType::Code cbStage = ShaderType::InvalidShaderType;
         int32 cbBindSlot = 0;
-        const int numConstantBuffers = ds->prog->getNumUniformBlockEntries();
+        const int numConstantBuffers = ds->shd->getNumUniformBlockEntries();
         o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
         for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-            ID3D11Buffer* cb = ds->prog->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
+            ID3D11Buffer* cb = ds->shd->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
             if (cb) {
                 o_assert_dbg(cbBindSlot != InvalidIndex);
                 if (ShaderType::VertexShader == cbStage) {
@@ -381,9 +381,9 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     }
 
     // get the uniform-layout object for this uniform block
-    const programBundle* prog = this->curDrawState->prog;
-    o_assert_dbg(prog);
-    const UniformLayout& layout = prog->Setup.UniformBlockLayout(blockIndex);
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
 
     // check whether the provided struct is type-compatible with the
     // expected uniform block layout
@@ -392,7 +392,7 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     // get the constant buffer entry from the program bundle
     ShaderType::Code cbStage = ShaderType::InvalidShaderType;
     int32 cbBindSlot = 0;
-    ID3D11Buffer* cb = prog->getUniformBlockEntryAt(blockIndex, cbStage, cbBindSlot);
+    ID3D11Buffer* cb = shd->getUniformBlockEntryAt(blockIndex, cbStage, cbBindSlot);
 
     // set textures and samplers
     const uint8* cbufferPtr = nullptr;
@@ -575,7 +575,7 @@ d3d11Renderer::invalidateMeshState() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::invalidateProgramState() {
+d3d11Renderer::invalidateShaderState() {
     o_assert_dbg(this->d3d11DeviceContext);
 
     Log::Info("d3d11Renderer::invalidateProgramState()\n");

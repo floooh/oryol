@@ -6,7 +6,7 @@
 #include "mtl_impl.h"
 #include "mtlTypes.h"
 #include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/renderer.h"
 
@@ -21,7 +21,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(nil == ds.mtlDepthStencilState);
 
     drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.prog);
+    o_assert_dbg(ds.shd);
 
     // create depth-stencil-state
     const DepthStencilState& dss = ds.Setup.DepthStencilState;
@@ -83,8 +83,8 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
     rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
     o_warn("FIXME: move shader selection into DrawStateSetup!!!\n");
-    rpDesc.fragmentFunction = ds.prog->getFragmentShaderAt(0);
-    rpDesc.vertexFunction = ds.prog->getVertexShaderAt(0);
+    rpDesc.fragmentFunction = ds.shd->getFragmentShaderAt(0);
+    rpDesc.vertexFunction = ds.shd->getVertexShaderAt(0);
     rpDesc.vertexDescriptor = vtxDesc;
     rpDesc.rasterizationEnabled = YES;
     rpDesc.alphaToCoverageEnabled = ds.Setup.RasterizerState.AlphaToCoverageEnabled;

@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ProgramBundleSetup
+    @class Oryol::ShaderSetup
     @ingroup Gfx
-    @brief setup information for a shader program bundle
+    @brief setup class for shaders
 */
 #include "Core/Types.h"
 #include "Core/String/String.h"
@@ -18,21 +18,21 @@
 
 namespace Oryol {
     
-class ProgramBundleSetup {
+class ShaderSetup {
 public:
     /// default constructor
-    ProgramBundleSetup();
+    ShaderSetup();
     /// construct with resource locator
-    ProgramBundleSetup(const Locator& loc);
+    ShaderSetup(const Locator& loc);
 
     /// the resource locator
     class Locator Locator;
 
-    /// add a program from vertex- and fragment-shader sources
+    /// add shader program from vertex- and fragment-shader sources
     void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
-    /// add a program from precompiled shader byte code
+    /// add shader program from precompiled shader byte code
     void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
-    /// add a program from a metal-style shader library
+    /// add shader program from a metal-style shader library
     void AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
     /// bind a shader uniform block name to a variable slot
     void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex);

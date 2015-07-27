@@ -327,7 +327,7 @@ MeshViewerApp::createMaterials() {
 
     this->curMaterialLabel = Gfx::PushResourceLabel();
     for (int i = 0; i < this->numMaterials; i++) {
-        auto dss = DrawStateSetup::FromMeshAndProg(this->mesh, this->shaders[this->materials[i].shaderIndex]);
+        auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shaders[this->materials[i].shaderIndex]);
         dss.DepthStencilState.DepthWriteEnabled = true;
         dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         dss.RasterizerState.CullFaceEnabled = true;

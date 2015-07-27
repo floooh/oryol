@@ -45,8 +45,8 @@ SensorsApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(2.0, 2.0, 2.0, 1).Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;

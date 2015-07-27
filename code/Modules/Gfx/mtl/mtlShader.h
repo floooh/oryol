@@ -1,23 +1,23 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::mtlProgramBundle
+    @class Oryol::_priv::mtlShader
     @ingroup _priv
-    @brief Metal implementation of class programBundle
+    @brief Metal implementation of class shader
 */
-#include "Gfx/Resource/programBundleBase.h"
+#include "Gfx/Resource/shaderBase.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class mtlProgramBundle : public programBundleBase {
+class mtlShader : public shaderBase {
 public:
     /// constructor
-    mtlProgramBundle();
+    mtlShader();
     /// destructor
-    ~mtlProgramBundle();
+    ~mtlShader();
 
     /// clear the object
     void Clear();

@@ -94,8 +94,8 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);
