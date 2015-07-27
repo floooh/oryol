@@ -49,7 +49,6 @@ mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(nil == progBundle.getLibrary());
 
-    this->pointers.renderer->invalidateProgramState();
     const ShaderLang::Code slang = ShaderLang::Metal;
     const ProgramBundleSetup& setup = progBundle.Setup;
     const void* libraryByteCode = nullptr;
@@ -92,7 +91,6 @@ void
 mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
     o_assert_dbg(this->isValid);
 
-    this->pointers.renderer->invalidateProgramState();
     for (auto& entry : progBundle.programEntries) {
         if (nil != entry.mtlVertexShader) {
             ORYOL_OBJC_RELEASE(entry.vertexShader);

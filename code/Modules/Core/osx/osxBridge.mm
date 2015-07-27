@@ -45,23 +45,6 @@ using namespace Oryol::_priv;
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender {
     return NO;
 }
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender {
-    osxBridge::ptr()->onShouldTerminate();
-    return NSTerminateNow;
-}
-
-- (void)applicationWillTerminate:(NSNotification*)aNotification {
-    osxBridge::ptr()->onWillTerminate();
-}
-
-- (void)applicationDidChangeScreenParameters:(NSNotification*)aNotifaction {
-    osxBridge::ptr()->onDidChangeScreenParameters();
-}
-
-- (void)applicationDidChangeOcclusionState:(NSNotification*)aNotification {
-    osxBridge::ptr()->onDidChangeOcclusionState();
-}
 @end
 
 //------------------------------------------------------------------------------
@@ -102,7 +85,7 @@ using namespace Oryol::_priv;
 
 @implementation oryolViewDelegate
 - (void)view:(MTKView*)view willLayoutWithSize:(CGSize)size {
-    // FIXME!
+    // empty
 }
 
 - (void)drawInView:(MTKView*)view {
@@ -383,32 +366,7 @@ osxBridge::onDestroy() {
 //------------------------------------------------------------------------------
 void
 osxBridge::onDidFinishLaunching() {
-    Log::Info("osxBridge::onDidFinishLaunched() called\n");
     this->createWindow();
-}
-
-//------------------------------------------------------------------------------
-void
-osxBridge::onShouldTerminate() {
-    Log::Info("osxBridge::onShouldTerminate() called\n");
-}
-
-//------------------------------------------------------------------------------
-void
-osxBridge::onWillTerminate() {
-    Log::Info("osxBridge::onWillTerminate() called!\n");
-}
-
-//------------------------------------------------------------------------------
-void
-osxBridge::onDidChangeScreenParameters() {
-    Log::Info("osxBridge::onDidChangeScreenParameters() called!\n");
-}
-
-//------------------------------------------------------------------------------
-void
-osxBridge::onDidChangeOcclusionState() {
-    Log::Info("osxBridge::onDidChangeOcclusionState() called!\n");
 }
 
 //------------------------------------------------------------------------------

@@ -71,7 +71,6 @@ mtlMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 mtlMeshFactory::DestroyResource(mesh& msh) {
-    this->pointers.renderer->invalidateMeshState();
     for (int i = 0; i < mesh::NumSlots; i++) {
         if (nil != msh.mtlVertexBuffers[i]) {
             ORYOL_OBJC_RELEASE(msh.mtlVertexBuffer[i]);

@@ -28,7 +28,7 @@ commandQueue(nil),
 curCommandBuffer(nil),
 curCommandEncoder(nil),
 curUniformBufferOffset(0) {
-    // FIXME
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -51,7 +51,6 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     // setup central metal objects
     this->mtlDevice = osxBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
-    this->commandQueue.label = @"OryolCommandQueue";
 
     // create global rotated uniform buffers
     for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
@@ -86,8 +85,7 @@ mtlRenderer::isValid() const {
 void
 mtlRenderer::resetStateCache() {
     o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::resetStateCache()\n");
+    o_warn("mtlRenderer::resetStateCache()\n");
 }
 
 //------------------------------------------------------------------------------
@@ -135,8 +133,6 @@ mtlRenderer::commitFrame() {
         this->curFrameRotateIndex = 0;
     }
     this->curUniformBufferOffset = 0;
-
-    // FIXME: probably not a good idea to wait here right after the commit!
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
 
@@ -215,7 +211,6 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     // create command buffer if this is the first call in the current frame
     if (this->curCommandBuffer == nil) {
         this->curCommandBuffer = [this->commandQueue commandBuffer];
-        this->curCommandBuffer.label = @"OryolCommandBuffer";
     }
 
     // finish previous command encoder (from previous render pass)
@@ -403,7 +398,7 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
-    // NOTE: we'll call didModifyRange only ONCE inside CommitFrame!
+    // NOTE: we'll call didModifyRange only ONCE inside commitFrame!
     if (nullptr != uBufferPtr) {
         id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
         const int32 uniformSize = layout.ByteSizeWithoutTextures();
@@ -525,36 +520,7 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 void
 mtlRenderer::readPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
-
-    o_error("mtlRenderer::readPixels()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::invalidateMeshState() {
-    // FIXME!
-    Log::Info("mtlRenderer::invalidateMeshState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::invalidateProgramState() {
-    // FIXME!
-    Log::Info("mtlRenderer::invalidateProgramState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::invalidateDrawState() {
-    // FIXME!
-    Log::Info("mtlRenderer::invalidateDrawState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::invalidateTextureState() {
-    // FIXME!
-    Log::Info("mtlRenderer::invalidateTextureState()\n");
+    o_warn("mtlRenderer::readPixels()\n");
 }
 
 } // namespace _priv

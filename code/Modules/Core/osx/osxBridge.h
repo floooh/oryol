@@ -61,14 +61,6 @@ public:
     void onDestroy();
     /// called by app delegate when app has launched
     void onDidFinishLaunching();
-    /// called by app delagate when application should terminate
-    void onShouldTerminate();
-    /// called by app delegate when application will terminate
-    void onWillTerminate();
-    /// called by app delegate when screen parameters have changed
-    void onDidChangeScreenParameters();
-    /// called by app when occlusion state changes
-    void onDidChangeOcclusionState();
 
     /// called when window receives close request
     void onWindowShouldClose();

@@ -54,7 +54,6 @@ mtlTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
@@ -71,7 +70,6 @@ mtlTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
     }
@@ -86,7 +84,6 @@ void
 mtlTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
 
-    this->pointers.renderer->invalidateTextureState();
     if (nil != tex.mtlTex) {
         ORYOL_OBJC_RELEASE(tex.mtlTex);
         tex.mtlTex = nil;

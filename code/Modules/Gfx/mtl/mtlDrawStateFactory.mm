@@ -105,8 +105,6 @@ void
 mtlDrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
-    this->pointers.renderer->invalidateDrawState();
-
     if (nil != ds.mtlRenderPipelineState) {
         ORYOL_OBJC_RELEASE(ds.mtlRenderPipelineState);
         ds.mtlRenderPipelineState = nil;
