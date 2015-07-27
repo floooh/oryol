@@ -218,10 +218,10 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id prog = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
     
     // finally create draw state
-    auto dss = DrawStateSetup::FromMeshAndProg(this->textMesh, prog, 0);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->textMesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;

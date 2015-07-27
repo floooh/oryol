@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  glProgramBundleFactory.cc
+//  glShaderFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "glProgramBundleFactory.h"
+#include "glShaderFactory.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/gl/gl_impl.h"
@@ -14,19 +14,19 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glProgramBundleFactory::glProgramBundleFactory() :
+glShaderFactory::glShaderFactory() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-glProgramBundleFactory::~glProgramBundleFactory() {
+glShaderFactory::~glShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Setup(const gfxPointers& ptrs) {
+glShaderFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
@@ -34,7 +34,7 @@ glProgramBundleFactory::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::Discard() {
+glShaderFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->pointers = gfxPointers();
     this->isValid = false;
@@ -42,15 +42,15 @@ glProgramBundleFactory::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-glProgramBundleFactory::IsValid() const {
+glShaderFactory::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glProgramBundleFactory::SetupResource(programBundle& progBundle) {
+glShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    this->pointers.renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateShaderState();
 
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = ShaderLang::GLSL100;
@@ -59,7 +59,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
-    const ProgramBundleSetup& setup = progBundle.Setup;
+    const ShaderSetup& setup = shd.Setup;
 
     // for each program in the bundle...
     const int32 numProgs = setup.NumPrograms();
@@ -124,7 +124,7 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         }
         
         // linking succeeded, store GL program
-        progBundle.addProgram(setup.Mask(progIndex), glProg);
+        shd.addProgram(setup.Mask(progIndex), glProg);
         
         // resolve user uniform locations
         this->pointers.renderer->useProgram(glProg);
@@ -137,9 +137,9 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
             for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
                 const UniformLayout::Component& comp = layout.ComponentAt(uniformIndex);
                 const GLint glLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-                progBundle.bindUniform(progIndex, uniformBlockIndex, slotIndex, glLocation);
+                shd.bindUniform(progIndex, uniformBlockIndex, slotIndex, glLocation);
                 if (comp.Type == UniformType::Texture) {
-                    progBundle.bindSamplerUniform(progIndex, uniformBlockIndex, slotIndex, glLocation, samplerIndex);
+                    shd.bindSamplerUniform(progIndex, uniformBlockIndex, slotIndex, glLocation, samplerIndex);
                     // set the sampler index in the shader program, this will never change
                     ::glUniform1i(glLocation, samplerIndex);
                     samplerIndex++;
@@ -152,35 +152,35 @@ glProgramBundleFactory::SetupResource(programBundle& progBundle) {
         // resolve attrib locations
         for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
             GLint loc = ::glGetAttribLocation(glProg, VertexAttr::ToString((VertexAttr::Code)i));
-            progBundle.bindAttribLocation(progIndex, (VertexAttr::Code)i, loc);
+            shd.bindAttribLocation(progIndex, (VertexAttr::Code)i, loc);
         }
         #endif
     }
-    this->pointers.renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateShaderState();
     
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-glProgramBundleFactory::DestroyResource(programBundle& progBundle) {
+glShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    this->pointers.renderer->invalidateProgramState();
+    this->pointers.renderer->invalidateShaderState();
     
-    const int32 numProgs = progBundle.getNumPrograms();
+    const int32 numProgs = shd.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        GLuint glProg = progBundle.getProgramAtIndex(progIndex);
+        GLuint glProg = shd.getProgramAtIndex(progIndex);
         if (0 != glProg) {
             ::glDeleteProgram(glProg);
             ORYOL_GL_CHECK_ERROR();
         }
     }
-    progBundle.Clear();
+    shd.Clear();
 }
 
 //------------------------------------------------------------------------------
 GLuint
-glProgramBundleFactory::compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const {
+glShaderFactory::compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const {
     o_assert_dbg(sourceString && (sourceLen > 0));
     
     GLuint glShader = glCreateShader(glTypes::asGLShaderType(type));

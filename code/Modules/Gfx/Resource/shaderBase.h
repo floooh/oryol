@@ -1,15 +1,15 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::programBundleBase
+    @class Oryol::_priv::shaderBase
     @ingroup _priv
-    @brief private: program bundle resource base class
+    @brief shader resource base class
 */
 #include "Resource/Core/resourceBase.h"
-#include "Gfx/Setup/ProgramBundleSetup.h"
+#include "Gfx/Setup/ShaderSetup.h"
 
 namespace Oryol {
 namespace _priv {
-class programBundleBase : public resourceBase<ProgramBundleSetup> { };
+class shaderBase : public resourceBase<ShaderSetup> { };
 } // namespace _priv
 } // namespace Oryol

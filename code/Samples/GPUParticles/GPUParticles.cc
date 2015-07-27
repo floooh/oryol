@@ -150,13 +150,13 @@ GPUParticlesApp::OnInit() {
     Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     
     // particle initialization and update draw states
-    Id initProg = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(fullscreenMesh, initProg);
+    Id initShader = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(fullscreenMesh, initShader);
     dss.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
     dss.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
     this->initParticles = Gfx::CreateResource(dss);
-    Id updateProg = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
-    dss.Program = updateProg;
+    Id updateShader = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
+    dss.Shader = updateShader;
     dss.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Gfx::CreateResource(dss);
 
@@ -186,8 +186,8 @@ GPUParticlesApp::OnInit() {
     this->shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
     
     // particle rendering draw state
-    Id drawProg = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
-    dss = DrawStateSetup::FromMeshAndProg(this->shapeMesh, drawProg);
+    Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
+    dss = DrawStateSetup::FromMeshAndShader(this->shapeMesh, drawShader);
     dss.Meshes[1] = this->particleIdMesh;
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;

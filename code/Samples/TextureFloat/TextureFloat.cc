@@ -83,16 +83,16 @@ TextureFloatApp::OnInit() {
     Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
 
     // setup draw state for offscreen rendering to float render target
-    Id offscreenProg = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndProg(fullscreenMesh, offscreenProg);
+    Id offscreenShader = Gfx::CreateResource(Shaders::Offscreen::CreateSetup());
+    auto dss = DrawStateSetup::FromMeshAndShader(fullscreenMesh, offscreenShader);
     dss.BlendState.ColorFormat = rtSetup.ColorFormat;
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
     this->offscreenDrawState = Gfx::CreateResource(dss);
     this->offscreenFSParams.Time = 0.0f;
 
     // fullscreen-copy mesh, shader and draw state
-    Id copyProg = Gfx::CreateResource(Shaders::Copy::CreateSetup());
-    this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(fullscreenMesh, copyProg));
+    Id copyShader = Gfx::CreateResource(Shaders::Copy::CreateSetup());
+    this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fullscreenMesh, copyShader));
 
     // setup clear state to not actually clear the render target
     this->noClearState.Actions = ClearState::ClearNone;

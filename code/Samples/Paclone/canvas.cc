@@ -45,8 +45,8 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
     this->mesh = Gfx::CreateResource(meshSetup);
-    this->prog = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
-    auto dsSetup = DrawStateSetup::FromMeshAndProg(this->mesh, this->prog, 0);
+    this->shader = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
+    auto dsSetup = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;

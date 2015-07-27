@@ -18,7 +18,6 @@ class renderer;
 class displayMgr;
 class meshPool;
 class shaderPool;
-class programBundlePool;
 class texturePool;
 class drawStatePool;
 
@@ -28,7 +27,6 @@ public:
     class displayMgr* displayMgr = nullptr;
     class meshPool* meshPool = nullptr;
     class shaderPool* shaderPool = nullptr;
-    class programBundlePool* programBundlePool = nullptr;
     class texturePool* texturePool = nullptr;
     class drawStatePool* drawStatePool = nullptr;
 };

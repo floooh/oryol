@@ -19,7 +19,7 @@ namespace Oryol {
 class DrawStateSetup {
 public:
     /// construct from mesh and prog
-    static DrawStateSetup FromMeshAndProg(const Id& mesh, const Id& prog, uint32 progSelMask=0);
+    static DrawStateSetup FromMeshAndShader(const Id& mesh, const Id& shd, uint32 shdSelMask=0);
 
     /// default constructor
     DrawStateSetup();
@@ -36,10 +36,10 @@ public:
     class RasterizerState RasterizerState;
     /// input mesh(es)
     StaticArray<Id, GfxConfig::MaxNumInputMeshes> Meshes;
-    /// program bundle
-    Id Program;
-    /// program bundle selection mask
-    uint32 ProgramSelectionMask;
+    /// shader 
+    Id Shader;
+    /// shader selection mask
+    uint32 ShaderSelectionMask;
 };
 
 } // namespace Oryol

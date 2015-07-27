@@ -11,17 +11,17 @@ namespace Oryol {
 DrawStateSetup::DrawStateSetup() :
 Locator(Locator::NonShared()),
 BlendColor(1.0f, 1.0f, 1.0f, 1.0f),
-ProgramSelectionMask(0) {
+ShaderSelectionMask(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 DrawStateSetup
-DrawStateSetup::FromMeshAndProg(const Id& msh, const Id& prg, uint32 selMask) {
+DrawStateSetup::FromMeshAndShader(const Id& msh, const Id& shd, uint32 selMask) {
     DrawStateSetup setup;
     setup.Meshes[0] = msh;
-    setup.Program = prg;
-    setup.ProgramSelectionMask = selMask;
+    setup.Shader = shd;
+    setup.ShaderSelectionMask = selMask;
     return setup;
 }
 

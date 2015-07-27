@@ -11,7 +11,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/texture.h"
-#include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Resource/drawState.h"
 #include "glm/vec2.hpp"
@@ -142,7 +142,7 @@ glRenderer::discard() {
     o_assert_dbg(this->valid);
     
     this->invalidateMeshState();
-    this->invalidateProgramState();
+    this->invalidateShaderState();
     this->invalidateTextureState();
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
@@ -171,7 +171,7 @@ glRenderer::resetStateCache() {
     this->setupBlendState();
     this->setupRasterizerState();
     this->invalidateMeshState();
-    this->invalidateProgramState();
+    this->invalidateShaderState();
     this->invalidateTextureState();
 }
 
@@ -345,11 +345,11 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyProgramBundle(programBundle* progBundle, uint32 mask) {
+glRenderer::applyShader(shader* shd, uint32 mask) {
     o_assert_dbg(this->valid);
 
-    progBundle->selectProgram(mask);
-    GLuint glProg = progBundle->getProgram();
+    shd->selectProgram(mask);
+    GLuint glProg = shd->getProgram();
     o_assert_dbg(0 != glProg);
     this->useProgram(glProg);
 }
@@ -360,7 +360,7 @@ glRenderer::applyMeshState(const drawState* ds) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != ds);
     o_assert_dbg(nullptr != ds->meshes[0]);
-    o_assert_dbg(nullptr != ds->prog);
+    o_assert_dbg(nullptr != ds->shd);
     ORYOL_GL_CHECK_ERROR();
 
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
@@ -403,13 +403,11 @@ glRenderer::applyMeshState(const drawState* ds) {
     // this uses glGetAttribLocation for platforms which don't support
     // glBindAttribLocation (e.g. RaspberryPi)
     // FIXME: currently this doesn't use state-caching
-    o_assert_dbg(ds->prog);
-
     this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
-        const GLint glAttribIndex = ds->prog->getAttribLocation((VertexAttr::Code)attrIndex);
+        const GLint glAttribIndex = ds->shd->getAttribLocation((VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
             const mesh* msh = ds->meshes[attr.vbIndex];
@@ -448,7 +446,7 @@ glRenderer::applyDrawState(drawState* ds) {
     else {
         // draw state is valid, ready for rendering
         this->curDrawState = ds;
-        o_assert_dbg(ds->prog);
+        o_assert_dbg(ds->shd);
 
         const DrawStateSetup& setup = ds->Setup;
         o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
@@ -467,7 +465,7 @@ glRenderer::applyDrawState(drawState* ds) {
         if (setup.RasterizerState != this->rasterizerState) {
             this->applyRasterizerState(setup.RasterizerState);
         }
-        this->applyProgramBundle(ds->prog, setup.ProgramSelectionMask);
+        this->applyShader(ds->shd, setup.ShaderSelectionMask);
         this->applyMeshState(ds);
     }
 }
@@ -664,7 +662,7 @@ glRenderer::bindIndexBuffer(GLuint ib) {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::invalidateProgramState() {
+glRenderer::invalidateShaderState() {
     o_assert_dbg(this->valid);
 
     ::glUseProgram(0);
@@ -971,9 +969,9 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     }
 
     // get the uniform layout object for this uniform block
-    const programBundle* prog = this->curDrawState->prog;
-    o_assert_dbg(prog);
-    const UniformLayout& layout = prog->Setup.UniformBlockLayout(blockIndex);
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
 
     // check whether the provided struct is type-compatibel with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
@@ -986,7 +984,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-        GLint glLoc = prog->getUniformLocation(blockIndex, compIndex);
+        GLint glLoc = shd->getUniformLocation(blockIndex, compIndex);
         switch (comp.Type) {
             case UniformType::Float:
                 {
@@ -1050,7 +1048,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
                     const Id& resId = *(const Id*)valuePtr;
                     texture* tex = this->pointers.texturePool->Lookup(resId);
                     o_assert_dbg(tex);
-                    int32 samplerIndex = prog->getSamplerIndex(blockIndex, compIndex);
+                    int32 samplerIndex = shd->getSamplerIndex(blockIndex, compIndex);
                     GLuint glTexture = tex->glTex;
                     GLenum glTarget = tex->glTarget;
                     this->bindTexture(samplerIndex, glTarget, glTexture);

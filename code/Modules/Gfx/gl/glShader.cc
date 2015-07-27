@@ -1,20 +1,20 @@
 //------------------------------------------------------------------------------
-//  glProgramBundle.cc
+//  glShader.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "glProgramBundle.h"
+#include "glShader.h"
 #include "Core/Memory/Memory.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glProgramBundle::glProgramBundle() {
+glShader::glShader() {
     this->Clear();
 }
 
 //------------------------------------------------------------------------------
-glProgramBundle::~glProgramBundle() {
+glShader::~glShader() {
     #if !ORYOL_NO_ASSERT
     for (int32 i = 0; i < this->numProgramEntries; i++) {
         o_assert_dbg(0 == this->programEntries[i].program);
@@ -24,7 +24,7 @@ glProgramBundle::~glProgramBundle() {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundle::Clear() {
+glShader::Clear() {
     this->selMask = 0xFFFFFFFF;
     this->selIndex = 0;
     this->numProgramEntries = 0;
@@ -43,12 +43,12 @@ glProgramBundle::Clear() {
         }
         #endif
     }
-    programBundleBase::Clear();
+    shaderBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 int32
-glProgramBundle::addProgram(uint32 mask, GLuint glProg) {
+glShader::addProgram(uint32 mask, GLuint glProg) {
     o_assert_dbg(this->numProgramEntries < MaxNumPrograms);
 
     // make sure the mask is unique
@@ -63,7 +63,7 @@ glProgramBundle::addProgram(uint32 mask, GLuint glProg) {
 
 //------------------------------------------------------------------------------
 void
-glProgramBundle::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation) {
+glShader::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation) {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
     o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
@@ -72,7 +72,7 @@ glProgramBundle::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex,
 
 //------------------------------------------------------------------------------
 void
-glProgramBundle::bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex) {
+glShader::bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex) {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
     o_assert_range_dbg(slotIndex, MaxNumUniformBlocks);
     o_assert_range_dbg(slotIndex, MaxNumUniforms);
@@ -83,7 +83,7 @@ glProgramBundle::bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slo
 //------------------------------------------------------------------------------
 #if ORYOL_GL_USE_GETATTRIBLOCATION
 void
-glProgramBundle::bindAttribLocation(int32 progIndex, VertexAttr::Code attr, GLint location) {
+glShader::bindAttribLocation(int32 progIndex, VertexAttr::Code attr, GLint location) {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
     o_assert_range_dbg(attr, VertexAttr::NumVertexAttrs);
     this->programEntries[progIndex].attribMapping[attr] = location;
@@ -92,13 +92,13 @@ glProgramBundle::bindAttribLocation(int32 progIndex, VertexAttr::Code attr, GLin
 
 //------------------------------------------------------------------------------
 int32
-glProgramBundle::getNumPrograms() const {
+glShader::getNumPrograms() const {
     return this->numProgramEntries;
 }
 
 //------------------------------------------------------------------------------
 GLuint
-glProgramBundle::getProgramAtIndex(int32 progIndex) const {
+glShader::getProgramAtIndex(int32 progIndex) const {
     o_assert_range_dbg(progIndex, this->numProgramEntries);
     return this->programEntries[progIndex].program;
 }

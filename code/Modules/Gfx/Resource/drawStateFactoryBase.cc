@@ -43,8 +43,8 @@ drawStateFactoryBase::SetupResource(drawState& ds) {
 
     this->resolveInputMeshes(ds);
     this->checkInputMeshes(ds);
-    ds.prog = this->pointers.programBundlePool->Lookup(ds.Setup.Program);
-    o_assert_dbg(ds.prog && (ResourceState::Valid == ds.prog->State));
+    ds.shd = this->pointers.shaderPool->Lookup(ds.Setup.Shader);
+    o_assert_dbg(ds.shd && (ResourceState::Valid == ds.shd->State));
     return ResourceState::Valid;
 }
 

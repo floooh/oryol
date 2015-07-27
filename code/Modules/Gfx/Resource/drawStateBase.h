@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-class programBundle;
+class shader;
 class mesh;
 
 class drawStateBase : public resourceBase<DrawStateSetup> {
@@ -26,9 +26,8 @@ public:
     
     /// input mesh pointers
     StaticArray<mesh*, GfxConfig::MaxNumInputMeshes> meshes;
-    /// program bundle pointer
-    programBundle* prog;
-
+    /// shader pointer
+    shader* shd;
 };
 
 } // namespace _priv

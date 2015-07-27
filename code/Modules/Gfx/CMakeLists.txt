@@ -1,9 +1,6 @@
 #-------------------------------------------------------------------------------
 #   oryol Gfx module
 #
-#   useful links:
-#
-#   https://developer.apple.com/library/prerelease/mac/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide/WhatsNewinOSXandiOS/WhatsNewinOSXandiOS.html
 #-------------------------------------------------------------------------------
 
 if (ORYOL_OPENGL)
@@ -56,12 +53,12 @@ fips_begin_module(Gfx)
         drawStateFactory.h
         mesh.h
         meshFactory.h
-        programBundle.h
-        programBundleFactory.h
+        shader.h
+        shaderBase.h
+        shaderFactory.h
         texture.h
         textureFactory.h
         meshBase.cc meshBase.h
-        programBundleBase.h
         textureBase.cc textureBase.h
         gfxResourceContainer.cc gfxResourceContainer.h
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -72,7 +69,7 @@ fips_begin_module(Gfx)
         DrawStateSetup.cc DrawStateSetup.h
         GfxSetup.cc GfxSetup.h
         MeshSetup.cc MeshSetup.h
-        ProgramBundleSetup.cc ProgramBundleSetup.h
+        ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
     )
     if (ORYOL_OPENGL)
@@ -85,8 +82,8 @@ fips_begin_module(Gfx)
             glDrawStateFactory.cc glDrawStateFactory.h
             glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
-            glProgramBundle.cc glProgramBundle.h
-            glProgramBundleFactory.cc glProgramBundleFactory.h
+            glShader.cc glShader.h
+            glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
             glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h

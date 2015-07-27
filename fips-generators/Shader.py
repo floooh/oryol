@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 42
+Version = 43
 
 import os
 import sys
@@ -1480,7 +1480,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('/*  #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
-    f.write('#include "Gfx/Setup/ProgramBundleSetup.h"\n')
+    f.write('#include "Gfx/Setup/ShaderSetup.h"\n')
     f.write('#include "glm/vec2.hpp"\n')
     f.write('#include "glm/vec3.hpp"\n')
     f.write('#include "glm/vec4.hpp"\n')
@@ -1528,7 +1528,7 @@ def writeBundleHeader(f, shdLib, bundle) :
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
 
-    f.write('        static ProgramBundleSetup CreateSetup();\n')
+    f.write('        static ShaderSetup CreateSetup();\n')
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -1642,8 +1642,8 @@ def writeVertexLayout(f, vs) :
 def writeBundleSource(f, shdLib, bundle) :
 
     # write the CreateSetup() function
-    f.write('ProgramBundleSetup ' + bundle.name + '::CreateSetup() {\n')
-    f.write('    ProgramBundleSetup setup("' + bundle.name + '");\n')
+    f.write('ShaderSetup ' + bundle.name + '::CreateSetup() {\n')
+    f.write('    ShaderSetup setup("' + bundle.name + '");\n')
     for i, prog in enumerate(bundle.programs) :
         vs = shdLib.vertexShaders[prog.vs]
         fs = shdLib.fragmentShaders[prog.fs]

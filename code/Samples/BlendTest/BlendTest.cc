@@ -57,8 +57,8 @@ BlendTestApp::OnInit() {
 
     // create drawstate for a patterned background
     Id cbMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id cbProg = Gfx::CreateResource(Shaders::Background::CreateSetup());
-    this->backgroundDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(cbMesh, cbProg));
+    Id cbShd = Gfx::CreateResource(Shaders::Background::CreateSetup());
+    this->backgroundDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(cbMesh, cbShd));
 
     // setup a triangle mesh and shader
     MeshBuilder meshBuilder;
@@ -77,13 +77,13 @@ BlendTestApp::OnInit() {
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f)
         .End();
     Id mesh = Gfx::CreateResource(meshBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
     
     // setup one draw state for each blend factor combination
     const glm::vec4 blendColor(1.0f, 1.0f, 0.0f, 1.0f);
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+            auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
             dss.BlendState.BlendEnabled = true;
             dss.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
             dss.BlendState.DstFactorRGB = (BlendFactor::Code) y;

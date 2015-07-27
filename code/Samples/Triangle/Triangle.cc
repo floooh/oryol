@@ -55,8 +55,8 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
         .End();
     Id mesh = Gfx::CreateResource(meshBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
-    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, prog));
+    Id shd = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
+    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
 
     return App::OnInit();
 }

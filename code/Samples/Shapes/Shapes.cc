@@ -78,9 +78,9 @@ ShapeApp::OnInit() {
         .Plane(1.5f, 1.5f, 10)
         .Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id prog = Gfx::CreateResource(Shaders::Shapes::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Shapes::CreateSetup());
     
-    auto dss = DrawStateSetup::FromMeshAndProg(mesh, prog);
+    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = 4;

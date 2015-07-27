@@ -36,7 +36,7 @@ private:
     
     static const int32 MaxNumObjects = 1024;
     uint32 frameCount = 0;
-    Id prog;
+    Id shader;
     Array<Object> objects;
     glm::mat4 view;
     glm::mat4 proj;
@@ -90,14 +90,14 @@ ResourceStressApp::OnInit() {
     gfxSetup.SetPoolSize(GfxResourceType::Mesh, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::Texture, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::DrawState, MaxNumObjects + 32);
-    gfxSetup.SetPoolSize(GfxResourceType::ProgramBundle, 4);
+    gfxSetup.SetPoolSize(GfxResourceType::Shader, 4);
     Gfx::Setup(gfxSetup);
     
     // setup debug text rendering
     Dbg::Setup();    
     
     // setup the shader that is used by all objects
-    this->prog = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::Main::CreateSetup());
 
     // setup matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -149,7 +149,7 @@ ResourceStressApp::createObjects() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1).Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndProg(mesh, this->prog));
+    obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, this->shader));
     obj.texture = Gfx::LoadResource(
         TextureLoader::Create(
             TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint),
