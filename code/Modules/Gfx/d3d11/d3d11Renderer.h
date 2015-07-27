@@ -14,8 +14,6 @@
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Setup/ProgramBundleSetup.h"
-#include "Gfx/Setup/DrawStateSetup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include <glm/vec4.hpp>
 #include "Gfx/d3d11/d3d11_decl.h"
@@ -27,7 +25,6 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
-class programBundle;
     
 class d3d11Renderer {
 public:
@@ -78,7 +75,7 @@ public:
     /// invalidate currently bound mesh state
     void invalidateMeshState();
     /// invalidate currently bound shader program state
-    void invalidateProgramState();
+    void invalidateShaderState();
     /// invalidate currently bound draw state 
     void invalidateDrawState();
     /// invalidate currently bound texture state

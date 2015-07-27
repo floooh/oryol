@@ -50,7 +50,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     HRESULT hr;
 
     drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.prog);
+    o_assert_dbg(ds.shd);
 
     // set vertex buffers, strides and offsets
     D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
@@ -67,7 +67,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     }
 
     // create input layout objects (with sharing of matching input layout signatures)
-    const int numProgEntries = ds.prog->getNumPrograms();
+    const int numProgEntries = ds.shd->getNumPrograms();
     for (int progIndex = 0; progIndex < numProgEntries; progIndex++) {
         ds.d3d11InputLayouts[progIndex] = this->createInputLayout(ds, progIndex);
     }
@@ -170,7 +170,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
             vertexLayout.Append(msh->vertexBufferAttrs.Layout);
         }
     }
-    const VertexLayout& vsInputLayout = ds.prog->Setup.VertexShaderInputLayout(progIndex);
+    const VertexLayout& vsInputLayout = ds.shd->Setup.VertexShaderInputLayout(progIndex);
     const uint64 hash = VertexLayout::CombinedHash(vertexLayout, vsInputLayout);
     if (this->d3d11InputLayouts.Contains(hash)) {
         // re-use an existing input layout object
@@ -211,7 +211,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
         // lookup the vertex shader bytecode
         const void* vsByteCode = nullptr;
         uint32 vsSize = 0;
-        ds.prog->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
+        ds.shd->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
         o_assert_dbg(vsByteCode && (vsSize > 0));
 
         // create d3d11 input layout object

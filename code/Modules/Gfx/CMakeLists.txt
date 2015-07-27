@@ -101,8 +101,8 @@ fips_begin_module(Gfx)
             d3d11Types.cc d3d11Types.h
             d3d11Mesh.cc d3d11Mesh.h
             d3d11MeshFactory.cc d3d11MeshFactory.h
-            d3d11ProgramBundle.cc d3d11ProgramBundle.h
-            d3d11ProgramBundleFactory.cc d3d11ProgramBundleFactory.h
+            d3d11Shader.cc d3d11Shader.h
+            d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
             d3d11DrawState.h d3d11DrawState.cc
