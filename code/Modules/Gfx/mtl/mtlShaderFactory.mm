@@ -1,29 +1,29 @@
 //------------------------------------------------------------------------------
-//  mtlProgramBundleFactory.cc
+//  mtlShaderFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "mtlProgramBundleFactory.h"
+#include "mtlShaderFactory.h"
 #include "Core/Assertion.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/programBundle.h"
+#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlProgramBundleFactory::mtlProgramBundleFactory() :
+mtlShaderFactory::mtlShaderFactory() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-mtlProgramBundleFactory::~mtlProgramBundleFactory() {
+mtlShaderFactory::~mtlShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-mtlProgramBundleFactory::Setup(const gfxPointers& ptrs) {
+mtlShaderFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
@@ -31,7 +31,7 @@ mtlProgramBundleFactory::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-mtlProgramBundleFactory::Discard() {
+mtlShaderFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->pointers = gfxPointers();
     this->isValid = false;
@@ -39,18 +39,18 @@ mtlProgramBundleFactory::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-mtlProgramBundleFactory::IsValid() const {
+mtlShaderFactory::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
+mtlShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(nil == progBundle.getLibrary());
+    o_assert_dbg(nil == shd.getLibrary());
 
     const ShaderLang::Code slang = ShaderLang::Metal;
-    const ProgramBundleSetup& setup = progBundle.Setup;
+    const ShaderSetup& setup = shd.Setup;
     const void* libraryByteCode = nullptr;
     uint32 libraryByteCodeSize = 0;
     setup.LibraryByteCode(slang, libraryByteCode, libraryByteCodeSize);
@@ -61,7 +61,7 @@ mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
     NSError* err = 0;
     dispatch_data_t libData = dispatch_data_create(libraryByteCode, libraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
     id<MTLLibrary> mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
-    progBundle.setLibrary(mtlLibrary);
+    shd.setLibrary(mtlLibrary);
     o_assert(nil == err);
 
     // create vertex and fragment shader function objects
@@ -73,14 +73,14 @@ mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
         id<MTLFunction> vsFunc = [mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
         const String& fsName = setup.FragmentShaderFunc(progIndex, slang);
         id<MTLFunction> fsFunc = [mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
-        progBundle.addShaders(setup.Mask(progIndex), vsFunc, fsFunc);
+        shd.addShaders(setup.Mask(progIndex), vsFunc, fsFunc);
     }
 
     // setup uniform block binding data
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
         const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
         const int32 bindSlotIndex = setup.UniformBlockSlot(i);
-        progBundle.addUniformBlock(bindShaderStage, bindSlotIndex);
+        shd.addUniformBlock(bindShaderStage, bindSlotIndex);
     }
 
     return ResourceState::Valid;
@@ -88,10 +88,10 @@ mtlProgramBundleFactory::SetupResource(programBundle& progBundle) {
 
 //------------------------------------------------------------------------------
 void
-mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
+mtlShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
 
-    for (auto& entry : progBundle.programEntries) {
+    for (auto& entry : shd.programEntries) {
         if (nil != entry.mtlVertexShader) {
             ORYOL_OBJC_RELEASE(entry.vertexShader);
             entry.mtlVertexShader = nil;
@@ -101,11 +101,11 @@ mtlProgramBundleFactory::DestroyResource(programBundle& progBundle) {
             entry.mtlFragmentShader = nil;
         }
     }
-    if (nil != progBundle.mtlLibrary) {
-        ORYOL_OBJC_RELEASE(progBundle.mtlLibrary);
-        progBundle.mtlLibrary = nil;
+    if (nil != shd.mtlLibrary) {
+        ORYOL_OBJC_RELEASE(shd.mtlLibrary);
+        shd.mtlLibrary = nil;
     }
-    progBundle.Clear();
+    shd.Clear();
 }
 
 } // namespace _priv

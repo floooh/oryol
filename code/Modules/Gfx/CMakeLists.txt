@@ -119,8 +119,8 @@ fips_begin_module(Gfx)
             mtlTypes.h mtlTypes.mm
             mtlMesh.h mtlMesh.mm
             mtlMeshFactory.h mtlMeshFactory.mm
-            mtlProgramBundle.h mtlProgramBundle.mm
-            mtlProgramBundleFactory.h mtlProgramBundleFactory.mm
+            mtlShader.h mtlShader.mm
+            mtlShaderFactory.h mtlShaderFactory.mm
             mtlDrawState.h mtlDrawState.mm
             mtlDrawStateFactory.h mtlDrawStateFactory.mm
             mtlTexture.h mtlTexture.mm

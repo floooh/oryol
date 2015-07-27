@@ -26,7 +26,6 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
-class programBundle;
     
 class mtlRenderer {
 public:
