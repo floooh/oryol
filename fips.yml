@@ -42,6 +42,9 @@ exports:
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
         Synth :         code/Modules/Synth
+        IMUI :          code/Modules/IMUI
+        TBUI :          code/Modules/TBUI
+        Sound :         code/Modules/Sound
         NanoVG :        code/Modules/NanoVG
         
         # ext libs
