@@ -67,8 +67,6 @@ mtlShaderFactory::SetupResource(shader& shd) {
     // create vertex and fragment shader function objects
     const int32 numProgs = setup.NumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-
-        // create vertex shader
         const String& vsName = setup.VertexShaderFunc(progIndex, slang);
         id<MTLFunction> vsFunc = [mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
         const String& fsName = setup.FragmentShaderFunc(progIndex, slang);
