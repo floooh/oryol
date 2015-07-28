@@ -46,7 +46,15 @@ There is no Metal support for iOS yet (coming 'Really Soon Now').
 * [Core Module](code/Modules/Core/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
-## _Videos_
+## Try
+
+A simple standalone app using Oryol: https://github.com/floooh/oryol-test-app
+
+## _Videos_ 
+
+Please note that these videos use older versions of the Gfx module, details
+have changed (and will continue to change at least until the Vulkan and DX12
+renderer backends have been implemented).
 
 - Coding a triangle from scratch [OSX](http://www.youtube.com/watch?v=B5R0uE5IMZs), [Windows](http://www.youtube.com/watch?v=fcmOhvVd80o)
 - [Building a standalone app](https://www.youtube.com/watch?v=z8nwrGh2Zsc)
