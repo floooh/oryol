@@ -1,0 +1,101 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+@vs FractalVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+@out vec2 xy
+{
+    _position = position;
+    uv = texcoord0;
+    xy = (texcoord0 - vec2(4.8, -10.2)) * 0.06125;
+}
+@end
+
+//------------------------------------------------------------------------------
+@fs FractalFS
+@uniform_block fractalFSParams FractalFSParams
+    @uniform vec2 mousePos MousePos
+    @uniform sampler2D tex Texture
+@end
+@in vec2 uv
+@in vec2 xy
+{
+    // distance to mouse
+    float d = 1.0;
+    if (mousePos.x > 0.0 && mousePos.y > 0.0) {
+        d = min(1.0, distance(mousePos, uv) * 5.0);
+    }
+
+    // read previous params
+    vec4 params = tex2D(tex, uv) * d;
+    float cx = params.x;
+    float cy = params.y;
+    float i = params.w;
+    float c = cx*cx + cy*cy;
+    if (c > 4.0) {
+        _color = vec4(cx, cy, 1.0, i);  // finished
+    }
+    else {
+        float cxt = cx*cx - cy*cy + xy.x;
+        cy = 2.0 * cx*cy + xy.y;
+        cx = cxt;
+        i += 1.0;
+        _color = vec4(cx, cy, 0.0, i);
+    }
+}
+@end
+
+//------------------------------------------------------------------------------
+@bundle Fractal
+@program FractalVS FractalFS
+@end
+
+//------------------------------------------------------------------------------
+@vs DisplayVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+{
+    _position = position;
+    uv = texcoord0;
+}
+@end
+
+//------------------------------------------------------------------------------
+@block util
+_func vec4 hue2rgb(float h) {
+    float r = abs(h * 6.0 - 4.0) - 1.0;
+    float g = 2.0 - abs(h * 6.0 - 2.0);
+    float b = 2.0 - abs(h * 6.0 - 4.0);
+    return vec4(r, g, b, 1.0);
+}
+@end
+
+//------------------------------------------------------------------------------
+@fs DisplayFS
+@use util
+@uniform_block displayFSParams DisplayFSParams
+    @uniform sampler2D tex Texture
+@end
+@in vec2 uv
+{
+    vec4 params = tex2D(tex, uv);
+    if (params.z > 0.5) {
+        float i = params.w;
+        float hue = mod(i, 32.0) / 32.0;
+        _color = hue2rgb(hue);
+    }
+    else {
+        _color = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+}
+@end
+
+//------------------------------------------------------------------------------
+@bundle Display
+@program DisplayVS DisplayFS
+@end
