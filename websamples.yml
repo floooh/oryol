@@ -8,11 +8,6 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/Triangle/Triangle.jpg
   src: Triangle/Triangle.cc
-- name: BlendTest
-  desc: Test BlendState implementation
-  type: emscripten,android,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/BlendTest/BlendTest.jpg
-  src: BlendTest/BlendTest.cc
 - name: Shapes
   desc: Shapes with random vertex colors, created with ShapeBuilder class
   type: emscripten,pnacl,android
@@ -23,6 +18,11 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/PackedNormals/PackedNormals.jpg
   src: PackedNormals/PackedNormals.cc
+- name: BlendTest
+  desc: Test BlendState implementation
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/BlendTest/BlendTest.jpg
+  src: BlendTest/BlendTest.cc
 - name: SimpleRenderTarget
   desc: Demonstrate simple offscreen rendering
   type: emscripten,android,pnacl
@@ -33,6 +33,36 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/InfiniteSpheres/InfiniteSpheres.jpg
   src: InfiniteSpheres/InfiniteSpheres.cc
+- name: TextureFloat
+  desc: RGB plasma using float render texture
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/TextureFloat/TextureFloat.jpg
+  src: TextureFloat/TextureFloat.cc
+- name: DrawCallPerf
+  desc: Measure draw call performance
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/DrawCallPerf/DrawCallPerf.jpg
+  src: DrawCallPerf/DrawCallPerf.cc
+- name: Instancing
+  desc: Instanced rendering
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Instancing/Instancing.jpg
+  src: Instancing/Instancing.cc
+- name: GPUParticles
+  desc: Fully GPU driven 3D particles
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/GPUParticles/GPUParticles.jpg
+  src: GPUParticles/GPUParticles.cc
+- name: FullscreenQuad
+  desc: Fullscreen quad with some distance field ray-marching
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/FullscreenQuad/FullscreenQuad.jpg
+  src: FullscreenQuad/FullscreenQuad.cc
+- name: VertexTexture
+  desc: Vertex texture fetch from offscreen render target
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/VertexTexture/VertexTexture.jpg
+  src: VertexTexture/VertexTexture.cc
 - name: DDSTextureLoading
   desc: Load and render various DDS texture formats
   type: emscripten,pnacl,android
@@ -43,91 +73,26 @@
   type: emscripten,pnacl
   image: /Users/floh/projects/oryol/code/Samples/DDSCubeMap/DDSCubeMap.jpg
   src: DDSCubeMap/DDSCubeMap.cc
-- name: DrawCallPerf
-  desc: Measure draw call performance
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/DrawCallPerf/DrawCallPerf.jpg
-  src: DrawCallPerf/DrawCallPerf.cc
-- name: FullscreenQuad
-  desc: Fullscreen quad with some distance field ray-marching
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/FullscreenQuad/FullscreenQuad.jpg
-  src: FullscreenQuad/FullscreenQuad.cc
-- name: PBRendering
-  desc: Physically based rendering sample
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/PBRendering/PBRendering.jpg
-  src: PBRendering/PBRendering.cc
-- name: Instancing
-  desc: Instanced rendering
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/Instancing/Instancing.jpg
-  src: Instancing/Instancing.cc
-- name: TextureFloat
-  desc: RGB plasma using float render texture
-  type: emscripten,android,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/TextureFloat/TextureFloat.jpg
-  src: TextureFloat/TextureFloat.cc
-- name: VertexTexture
-  desc: Vertex texture fetch from offscreen render target
-  type: emscripten,android,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/VertexTexture/VertexTexture.jpg
-  src: VertexTexture/VertexTexture.cc
-- name: GPUParticles
-  desc: Fully GPU driven 3D particles
-  type: emscripten,android,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/GPUParticles/GPUParticles.jpg
-  src: GPUParticles/GPUParticles.cc
-- name: ResourceStress
-  desc: Resource loading stresstest
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/ResourceStress/none
-  src: ResourceStress/ResourceStress.cc
-- name: MeshViewer
-  desc: Load and render .omsh mesh files
-  type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/MeshViewer/MeshViewer.jpg
-  src: MeshViewer/MeshViewer.cc
-- name: HTTPClientSample
-  desc: Low-level HTTP loading sample
-  type: emscripten,pnack,android
-  image: /Users/floh/projects/oryol/code/Samples/HTTPClientSample/none
-  src: HTTPClientSample/HTTPClientSample.cc
-- name: CoreHello
-  desc: Low-level hello world sample
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/CoreHello/none
-  src: CoreHello/CoreHello.cc
 - name: DebugText
   desc: Demonstrate debug text rendering
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/DebugText/DebugText.jpg
   src: DebugText/DebugText.cc
-- name: TestInput
-  desc: Test Input module functionality
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
-  src: TestInput/TestInput.cc
-- name: Sensors
-  desc: Device sensors sample
-  type: emscripten,android
-  image: /Users/floh/projects/oryol/code/Samples/Sensors/none
-  src: Sensors/Sensors.cc
+- name: MeshViewer
+  desc: Load and render .omsh mesh files
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/MeshViewer/MeshViewer.jpg
+  src: MeshViewer/MeshViewer.cc
 - name: Paclone
   desc: Simple Pacman clone (work in progress!
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/Paclone/Paclone.jpg
   src: Paclone/Paclone.cc
-- name: SynthTest
-  desc: Most simple Synth audio sample
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/SynthTest/SynthTest.jpg
-  src: SynthTest/SynthTest.cc
-- name: IOQueueSample
-  desc: Asynchronous file loading with IOQueue
+- name: ImGuiDemo
+  desc: ImGui UI integration
   type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
-  src: IOQueueSample/IOQueueSample.cc
+  image: /Users/floh/projects/oryol/code/Samples/ImGuiDemo/ImGuiDemo.jpg
+  src: ImGuiDemo/ImGuiDemo.cc
 - name: TurboBadgerDemo
   desc: Turbobadger UI integration
   type: emscripten,pnacl
@@ -138,11 +103,51 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/TestNanoVG/TestNanoVG.jpg
   src: TestNanoVG/TestNanoVG.cc
-- name: ImGuiDemo
-  desc: ImGui UI integration
+- name: Fractal
+  desc: Simple fractal explorer
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Fractal/Fractal.jpg
+  src: Fractal/Fractal.cc
+- name: PBRendering
+  desc: Physically based rendering sample
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/PBRendering/PBRendering.jpg
+  src: PBRendering/PBRendering.cc
+- name: TestInput
+  desc: Test Input module functionality
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
+  src: TestInput/TestInput.cc
+- name: SynthTest
+  desc: Most simple Synth audio sample
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/SynthTest/SynthTest.jpg
+  src: SynthTest/SynthTest.cc
+- name: ResourceStress
+  desc: Resource loading stresstest
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/ResourceStress/none
+  src: ResourceStress/ResourceStress.cc
+- name: HTTPClientSample
+  desc: Low-level HTTP loading sample
+  type: emscripten,pnack,android
+  image: /Users/floh/projects/oryol/code/Samples/HTTPClientSample/none
+  src: HTTPClientSample/HTTPClientSample.cc
+- name: CoreHello
+  desc: Low-level hello world sample
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/CoreHello/none
+  src: CoreHello/CoreHello.cc
+- name: Sensors
+  desc: Device sensors sample
+  type: emscripten,android
+  image: /Users/floh/projects/oryol/code/Samples/Sensors/none
+  src: Sensors/Sensors.cc
+- name: IOQueueSample
+  desc: Asynchronous file loading with IOQueue
   type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/ImGuiDemo/ImGuiDemo.jpg
-  src: ImGuiDemo/ImGuiDemo.cc
+  image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
+  src: IOQueueSample/IOQueueSample.cc
 - name: SoundTest
   desc: Test Sound module functionality
   type: emscripten
