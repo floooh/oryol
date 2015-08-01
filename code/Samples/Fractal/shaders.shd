@@ -3,35 +3,46 @@
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-@vs FractalVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
-@out vec2 xy
-{
-    _position = position;
-    uv = texcoord0;
-    xy = (texcoord0 - vec2(4.8, -10.2)) * 0.06125;
+@block util
+_func vec4 hue2rgb(float h) {
+    float r = abs(h * 6.0 - 4.0) - 1.0;
+    float g = 2.0 - abs(h * 6.0 - 2.0);
+    float b = 2.0 - abs(h * 6.0 - 4.0);
+    return vec4(r, g, b, 1.0);
 }
 @end
 
 //------------------------------------------------------------------------------
-@fs FractalFS
-@uniform_block fractalFSParams FractalFSParams
-    @uniform vec2 mousePos MousePos
+@vs MandelbrotVS
+@in vec4 position
+@in vec2 texcoord0
+@uniform_block vsParams VSParams
+    @uniform vec4 rect Rect
+@end
+@out vec2 uv
+@out vec2 fractalPos
+{
+    _position = position;
+    uv = texcoord0;
+    fractalPos = rect.xy + (texcoord0 * (rect.zw - rect.xy));
+    /*
+    xy.x = rect.x + (texcoord0.x * (rect.z - rect.x));
+    xy.y = rect.y + (texcoord0.y * (rect.w - rect.y));
+    */
+}
+@end
+
+//------------------------------------------------------------------------------
+@fs MandelbrotFS
+@highp float
+@uniform_block mandelbrotFSParams FSParams
     @uniform sampler2D tex Texture
 @end
 @in vec2 uv
-@in vec2 xy
+@in vec2 fractalPos
 {
-    // distance to mouse
-    float d = 1.0;
-    if (mousePos.x > 0.0 && mousePos.y > 0.0) {
-        d = min(1.0, distance(mousePos, uv) * 5.0);
-    }
-
     // read previous params
-    vec4 params = tex2D(tex, uv) * d;
+    vec4 params = tex2D(tex, uv);
     float cx = params.x;
     float cy = params.y;
     float i = params.w;
@@ -40,8 +51,8 @@
         _color = vec4(cx, cy, 1.0, i);  // finished
     }
     else {
-        float cxt = cx*cx - cy*cy + xy.x;
-        cy = 2.0 * cx*cy + xy.y;
+        float cxt = cx*cx - cy*cy + fractalPos.x;
+        cy = 2.0 * cx*cy + fractalPos.y;
         cx = cxt;
         i += 1.0;
         _color = vec4(cx, cy, 0.0, i);
@@ -50,8 +61,8 @@
 @end
 
 //------------------------------------------------------------------------------
-@bundle Fractal
-@program FractalVS FractalFS
+@bundle Mandelbrot
+@program MandelbrotVS MandelbrotFS
 @end
 
 //------------------------------------------------------------------------------
@@ -66,27 +77,18 @@
 @end
 
 //------------------------------------------------------------------------------
-@block util
-_func vec4 hue2rgb(float h) {
-    float r = abs(h * 6.0 - 4.0) - 1.0;
-    float g = 2.0 - abs(h * 6.0 - 2.0);
-    float b = 2.0 - abs(h * 6.0 - 4.0);
-    return vec4(r, g, b, 1.0);
-}
-@end
-
-//------------------------------------------------------------------------------
 @fs DisplayFS
 @use util
-@uniform_block displayFSParams DisplayFSParams
+@uniform_block fsParams FSParams
     @uniform sampler2D tex Texture
+    @uniform float numColors NumColors
 @end
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);
     if (params.z > 0.5) {
         float i = params.w;
-        float hue = mod(i, 32.0) / 32.0;
+        float hue = mod(i, numColors) / numColors;
         _color = hue2rgb(hue);
     }
     else {
