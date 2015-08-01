@@ -25,10 +25,6 @@ _func vec4 hue2rgb(float h) {
     _position = position;
     uv = texcoord0;
     fractalPos = rect.xy + (texcoord0 * (rect.zw - rect.xy));
-    /*
-    xy.x = rect.x + (texcoord0.x * (rect.z - rect.x));
-    xy.y = rect.y + (texcoord0.y * (rect.w - rect.y));
-    */
 }
 @end
 

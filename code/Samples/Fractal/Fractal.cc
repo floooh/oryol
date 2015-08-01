@@ -24,7 +24,7 @@ private:
     /// draw the ui
     void drawUI();
     /// update the fractal's area rect
-    void updateFractalRect(int x0, int y0, int x1, int y1);
+    void updateFractalRect(float x0, float y0, float x1, float y1);
     /// re-create offscreen render-target if window size has changed (FIXME)
     void checkCreateRenderTargets();
 
@@ -103,12 +103,12 @@ FractalApp::OnInit() {
     style.Colors[ImGuiCol_Button] = grey;
 
     // a fullscreen quad mesh that's reused several times
-    Id fsq = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id fsqFlipped = Gfx::CreateResource(MeshSetup::FullScreenQuad(true));
+    Id fsqFractal = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
+    Id fsqDisplay = Gfx::CreateResource(MeshSetup::FullScreenQuad(true));
 
     // draw state for rendering the final result to screen
     Id dispShd = Gfx::CreateResource(Shaders::Display::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndShader(fsqFlipped, dispShd);
+    auto dss = DrawStateSetup::FromMeshAndShader(fsqDisplay, dispShd);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     this->displayDrawState = Gfx::CreateResource(dss);
@@ -117,7 +117,7 @@ FractalApp::OnInit() {
     this->checkCreateRenderTargets();
 
     // setup mandelbrot state
-    dss = DrawStateSetup::FromMeshAndShader(fsq, Gfx::CreateResource(Shaders::Mandelbrot::CreateSetup()));
+    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, Gfx::CreateResource(Shaders::Mandelbrot::CreateSetup()));
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -143,8 +143,8 @@ FractalApp::OnCleanup() {
 void
 FractalApp::drawUI() {
     const DisplayAttrs& dispAttrs = Gfx::DisplayAttrs();
-    const int32 fbWidth = dispAttrs.FramebufferWidth;
-    const int32 fbHeight = dispAttrs.FramebufferHeight;
+    const float fbWidth = (float) dispAttrs.FramebufferWidth;
+    const float fbHeight = (float) dispAttrs.FramebufferHeight;
 
     IMUI::NewFrame();
 
@@ -193,15 +193,15 @@ FractalApp::reset() {
 
 //------------------------------------------------------------------------------
 void
-FractalApp::updateFractalRect(int x0, int y0, int x1, int y1) {
+FractalApp::updateFractalRect(float x0, float y0, float x1, float y1) {
 
     if ((x0 == x1) || (y0 == y1)) return;
     if (x0 > x1) std::swap(x0, x1);
     if (y0 > y1) std::swap(y0, y1);
 
     const DisplayAttrs& attrs = Gfx::DisplayAttrs();
-    const float fbWidth = attrs.FramebufferWidth;
-    const float fbHeight = attrs.FramebufferHeight;
+    const float fbWidth = (float) attrs.FramebufferWidth;
+    const float fbHeight = (float) attrs.FramebufferHeight;
     glm::vec4 rel = glm::vec4(x0, y0, x1, y1) / glm::vec4(fbWidth, fbHeight, fbWidth, fbHeight);
     const float curX0 = this->fractalRect.x;
     const float curY0 = this->fractalRect.y;
