@@ -254,4 +254,11 @@ MemoryStream::MapRead(const uint8** outMaxValidPtr) {
     }
 }
 
+/// access to the underlying raw buffer
+uchar*
+MemoryStream::RawBuffer() {
+    o_assert(this->buffer);
+    return this->buffer;
+}
+
 } // namespace Oryol
