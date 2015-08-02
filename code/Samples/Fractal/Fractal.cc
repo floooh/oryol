@@ -19,17 +19,34 @@ public:
     AppState::Code OnCleanup();
     
 private:
+    enum Type : int {
+        Mandelbrot = 0,
+        Julia,
+        NumTypes
+    };
+
     /// reset all fractal states to their default
     void reset();
+    /// zoom-out to initial rectangle
+    void zoomOut();
     /// draw the ui
     void drawUI();
+    /// set current bounds rectangle (either Mandelbrot or Julia context)
+    void setBounds(Type type, const glm::vec4& bounds);
+    /// get current bounds (either Mandelbrot or Julia context)
+    glm::vec4 getBounds(Type type) const;
+    /// convert mouse pos to fractal coordinate system pos
+    glm::vec2 convertPos(float x, float y, const glm::vec4 bounds) const;
     /// update the fractal's area rect
     void updateFractalRect(float x0, float y0, float x1, float y1);
+    /// update the Julia set position from a mouse position
+    void updateJuliaPos(float x, float y);
     /// re-create offscreen render-target if window size has changed (FIXME)
     void checkCreateRenderTargets();
 
     DisplayAttrs curDisplayAttrs;
-    ClearState clearState;
+    ClearState fractalClearState;
+    ClearState noClearState;
     ResourceLabel offscreenRenderTargetLabel;
     Id offscreenRenderTarget[2];
     Id displayDrawState;
@@ -37,12 +54,17 @@ private:
     bool clearFlag = true;
     bool dragStarted = false;
     ImVec2 dragStartPos;
-    glm::vec4 fractalRect;
+    Type fractalType = Mandelbrot;
     struct {
         Id drawState;
         Shaders::Mandelbrot::VSParams vsParams;
         Shaders::Mandelbrot::FSParams fsParams;
     } mandelbrot;
+    struct {
+        Id drawState;
+        Shaders::Julia::VSParams vsParams;
+        Shaders::Julia::FSParams fsParams;
+    } julia;
     Shaders::Display::FSParams displayFSParams;
 };
 OryolMain(FractalApp);
@@ -61,20 +83,28 @@ FractalApp::OnRunning() {
     // reset current fractal state if requested
     if (this->clearFlag) {
         this->clearFlag = false;
-        Gfx::ApplyRenderTarget(this->offscreenRenderTarget[0], this->clearState);
-        Gfx::ApplyRenderTarget(this->offscreenRenderTarget[1], this->clearState);
+        Gfx::ApplyRenderTarget(this->offscreenRenderTarget[0], this->fractalClearState);
+        Gfx::ApplyRenderTarget(this->offscreenRenderTarget[1], this->fractalClearState);
     }
 
-    // render fractal data
-    Gfx::ApplyRenderTarget(this->offscreenRenderTarget[index0], this->clearState);
-    Gfx::ApplyDrawState(this->mandelbrot.drawState);
-    this->mandelbrot.fsParams.Texture = this->offscreenRenderTarget[index1];
-    Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
-    Gfx::ApplyUniformBlock(this->mandelbrot.fsParams);
+    // render next fractal iteration
+    Gfx::ApplyRenderTarget(this->offscreenRenderTarget[index0], this->noClearState);
+    if (Mandelbrot == this->fractalType) {
+        Gfx::ApplyDrawState(this->mandelbrot.drawState);
+        this->mandelbrot.fsParams.Texture = this->offscreenRenderTarget[index1];
+        Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
+        Gfx::ApplyUniformBlock(this->mandelbrot.fsParams);
+    }
+    else {
+        Gfx::ApplyDrawState(this->julia.drawState);
+        this->julia.fsParams.Texture = this->offscreenRenderTarget[index1];
+        Gfx::ApplyUniformBlock(this->julia.vsParams);
+        Gfx::ApplyUniformBlock(this->julia.fsParams);
+    }
     Gfx::Draw(0);
 
-    // render one frame
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    // map fractal state to displat
+    Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayFSParams.Texture = this->offscreenRenderTarget[index0];
     Gfx::ApplyUniformBlock(this->displayFSParams);
@@ -124,6 +154,21 @@ FractalApp::OnInit() {
     dss.BlendState.DepthFormat = PixelFormat::None;
     this->mandelbrot.drawState = Gfx::CreateResource(dss);
 
+    // setup julia state
+    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, Gfx::CreateResource(Shaders::Julia::CreateSetup()));
+    dss.RasterizerState.CullFaceEnabled = false;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
+    dss.BlendState.DepthFormat = PixelFormat::None;
+    this->julia.drawState = Gfx::CreateResource(dss);
+
+    // clear state for fractal state
+    this->fractalClearState.Actions = ClearState::ClearAll;
+    this->fractalClearState.Color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    // clear state for not actually clearing
+    this->noClearState.Actions = ClearState::ClearNone;
+
     // initialize fractal states
     this->reset();
 
@@ -145,19 +190,59 @@ FractalApp::drawUI() {
     const DisplayAttrs& dispAttrs = Gfx::DisplayAttrs();
     const float fbWidth = (float) dispAttrs.FramebufferWidth;
     const float fbHeight = (float) dispAttrs.FramebufferHeight;
+    this->clearFlag = false;
+    ImVec2 mousePos = ImGui::GetMousePos();
 
     IMUI::NewFrame();
 
     // draw the controls window
     ImGui::SetNextWindowPos(ImVec2(5, 5), ImGuiSetCond_Once);
-    ImGui::Begin("Controls", nullptr, ImVec2(250, 110));
-    ImGui::Text("mouse-drag a rectangle\nto zoom in");
-    this->clearFlag = ImGui::Button("Redraw"); ImGui::SameLine();
-    if (ImGui::Button("Reset")) {
-        this->clearFlag = true;
+    ImGui::Begin("Controls", nullptr, ImVec2(300, 230));
+    ImGui::BulletText("mouse-drag a rectangle to zoom in");
+    ImGui::BulletText("click into Mandelbrot to render\nJulia set at that point");
+    ImGui::Separator();
+    if (Julia == this->fractalType) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 0.6f));
+        if (ImGui::Button("<< Back")) {
+            this->clearFlag = true;
+            this->fractalType = Mandelbrot;
+        }
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+    }
+    this->clearFlag |= ImGui::Button("Redraw");
+    if (ImGui::SameLine(), ImGui::Button("Zoomout")) {
+        this->clearFlag |= true;
+        this->zoomOut();
+    }
+    if (ImGui::SameLine(), ImGui::Button("Reset")) {
+        this->clearFlag |= true;
         this->reset();
     }
     ImGui::SliderFloat("Colors", &this->displayFSParams.NumColors, 2.0f, 256.0f);
+    ImGui::Separator();
+    glm::vec2 curPos = this->convertPos(mousePos.x, mousePos.y, this->getBounds(this->fractalType));
+    ImGui::Text("X: %f, Y: %f\n", curPos.x, curPos.y);
+    ImGui::Separator();
+    if (Mandelbrot == this->fractalType) {
+        ImGui::Text("Type: Mandelbrot\n"
+                    "x0: %f\ny0: %f\nx0: %f\ny1: %f",
+                    this->mandelbrot.vsParams.Rect.x,
+                    this->mandelbrot.vsParams.Rect.y,
+                    this->mandelbrot.vsParams.Rect.w,
+                    this->mandelbrot.vsParams.Rect.z);
+    }
+    else {
+        ImGui::Text("Type: Julia\n"
+                    "Pos: %f, %f\n"
+                    "x0: %f\ny0: %f\nx0: %f\ny1: %f",
+                    this->julia.fsParams.JuliaPos.x,
+                    this->julia.fsParams.JuliaPos.y,
+                    this->julia.vsParams.Rect.x,
+                    this->julia.vsParams.Rect.y,
+                    this->julia.vsParams.Rect.w,
+                    this->julia.vsParams.Rect.z);
+    }
 
     // handle dragging
     if (!ImGui::IsMouseHoveringAnyWindow() && ImGui::IsMouseClicked(0)) {
@@ -168,7 +253,17 @@ FractalApp::drawUI() {
         const ImVec2& mousePos = ImGui::GetMousePos();
         if (ImGui::IsMouseReleased(0)) {
             this->dragStarted = false;
-            this->updateFractalRect(this->dragStartPos.x, this->dragStartPos.y, mousePos.x, mousePos.y);
+            if ((this->dragStartPos.x != mousePos.x) && (this->dragStartPos.y != mousePos.y)) {
+                this->updateFractalRect(this->dragStartPos.x, this->dragStartPos.y, mousePos.x, mousePos.y);
+            }
+            else {
+                if (Mandelbrot == this->fractalType) {
+                    // single click in Mandelbrot: render a Julia set from that point
+                    this->updateJuliaPos(mousePos.x, mousePos.y);
+                    this->fractalType = Julia;
+                    this->zoomOut();
+                }
+            }
             this->clearFlag = true;
         }
         else {
@@ -185,10 +280,50 @@ FractalApp::drawUI() {
 
 //------------------------------------------------------------------------------
 void
+FractalApp::zoomOut() {
+    this->setBounds(this->fractalType, glm::vec4(-2.0, -2.0, 2.0, 2.0));
+}
+
+//------------------------------------------------------------------------------
+void
 FractalApp::reset() {
-    this->fractalRect = glm::vec4(-2.0, -2.0, 2.0, 2.0);   // x0,y0,x1,y1
+    this->fractalType = Mandelbrot;
     this->displayFSParams.NumColors = 8.0f;
-    this->mandelbrot.vsParams.Rect = this->fractalRect;
+    this->zoomOut();
+}
+
+//------------------------------------------------------------------------------
+void
+FractalApp::setBounds(Type type, const glm::vec4& bounds) {
+    if (Mandelbrot == type) {
+        this->mandelbrot.vsParams.Rect = bounds;
+    }
+    else {
+        this->julia.vsParams.Rect = bounds;
+    }
+}
+
+//------------------------------------------------------------------------------
+glm::vec4
+FractalApp::getBounds(Type type) const {
+    if (Mandelbrot == type) {
+        return this->mandelbrot.vsParams.Rect;
+    }
+    else {
+        return this->julia.vsParams.Rect;
+    }
+}
+
+//------------------------------------------------------------------------------
+glm::vec2
+FractalApp::convertPos(float x, float y, const glm::vec4 bounds) const {
+    // convert mouse pos to fractal real/imaginary pos
+    const DisplayAttrs& attrs = Gfx::DisplayAttrs();
+    const float fbWidth = (float) attrs.FramebufferWidth;
+    const float fbHeight = (float) attrs.FramebufferHeight;
+    glm::vec2 rel = glm::vec2(x, y) / glm::vec2(fbWidth, fbHeight);
+    return glm::vec2(bounds.x + ((bounds.z - bounds.x) * rel.x),
+                     bounds.y + ((bounds.w - bounds.y) * rel.y));
 }
 
 //------------------------------------------------------------------------------
@@ -198,22 +333,16 @@ FractalApp::updateFractalRect(float x0, float y0, float x1, float y1) {
     if ((x0 == x1) || (y0 == y1)) return;
     if (x0 > x1) std::swap(x0, x1);
     if (y0 > y1) std::swap(y0, y1);
+    glm::vec4 bounds = this->getBounds(this->fractalType);
+    glm::vec2 topLeft = this->convertPos(x0, y0, bounds);
+    glm::vec2 botRight = this->convertPos(x1, y1, bounds);
+    this->setBounds(this->fractalType, glm::vec4(topLeft, botRight));
+}
 
-    const DisplayAttrs& attrs = Gfx::DisplayAttrs();
-    const float fbWidth = (float) attrs.FramebufferWidth;
-    const float fbHeight = (float) attrs.FramebufferHeight;
-    glm::vec4 rel = glm::vec4(x0, y0, x1, y1) / glm::vec4(fbWidth, fbHeight, fbWidth, fbHeight);
-    const float curX0 = this->fractalRect.x;
-    const float curY0 = this->fractalRect.y;
-    const float curWidth = this->fractalRect.z - curX0;
-    const float curHeight = this->fractalRect.w - curY0;
-
-    this->fractalRect = glm::vec4(
-        curX0 + (curWidth * rel.x),
-        curY0 + (curHeight * rel.y),
-        curX0 + (curWidth * rel.z),
-        curY0 + (curHeight * rel.w));
-    this->mandelbrot.vsParams.Rect = this->fractalRect;
+//------------------------------------------------------------------------------
+void
+FractalApp::updateJuliaPos(float x, float y) {
+    this->julia.fsParams.JuliaPos = this->convertPos(x, y, this->getBounds(this->fractalType));
 }
 
 //------------------------------------------------------------------------------
