@@ -148,16 +148,18 @@ glfwDisplayMgr::glfwErrorCallback(int error, const char* desc) {
 void
 glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height) {
 
-    // update display attributes
-    self->displayAttrs.FramebufferWidth = width;
-    self->displayAttrs.FramebufferHeight = height;
-    int winWidth, winHeight;
-    glfwGetWindowSize(glfwWindow, &winWidth, &winHeight);
-    self->displayAttrs.WindowWidth = winWidth;
-    self->displayAttrs.WindowHeight = winHeight;
+    // update display attributes (ignore window-minimized)
+    if ((width != 0) && (height != 0)) {
+        self->displayAttrs.FramebufferWidth = width;
+        self->displayAttrs.FramebufferHeight = height;
+        int winWidth, winHeight;
+        glfwGetWindowSize(glfwWindow, &winWidth, &winHeight);
+        self->displayAttrs.WindowWidth = winWidth;
+        self->displayAttrs.WindowHeight = winHeight;
     
-    // notify event handlers
-    self->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
+        // notify event handlers
+        self->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
+    }
 }
 
 //------------------------------------------------------------------------------
