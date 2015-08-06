@@ -1,0 +1,7 @@
+fips_begin_app(Julia windowed)
+    fips_vs_warning_level(3)
+    fips_files(Julia.cc)
+    # oryol_shader(shaders.shd)    
+    fips_deps(Gfx)
+    oryol_add_web_sample(Julia "Fractal demo" "emscripten,pnacl,android" none "Julia/Julia.cc")
+fips_end_app()

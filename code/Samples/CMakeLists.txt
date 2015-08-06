@@ -29,3 +29,5 @@ fips_add_subdirectory(CoreHello)
 fips_add_subdirectory(Sensors)
 fips_add_subdirectory(IOQueueSample)
 fips_add_subdirectory(SoundTest)
+fips_add_subdirectory(Julia)
+
