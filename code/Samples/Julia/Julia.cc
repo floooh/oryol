@@ -43,6 +43,6 @@ JuliaApp::OnRunning() {
 AppState::Code
 JuliaApp::OnCleanup() {
     Gfx::Discard();
-    return AppState::OnCleanup(); 
+    return App::OnCleanup();
 }
 
