@@ -199,19 +199,19 @@ d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
 
     // perform clear action
-    if (clearState.Actions & ClearState::ClearColor) {
+    if (clearState.Actions & ClearState::ColorBit) {
         if (this->d3d11CurRenderTargetView) {
             const FLOAT* clearColor = glm::value_ptr(clearState.Color);
             this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
         }
     }
-    if (clearState.Actions & (ClearState::ClearDepthStencil)) {
+    if (clearState.Actions & ClearState::DepthStencilBits) {
         if (this->d3d11CurDepthStencilView) {
             UINT d3d11ClearFlags = 0;
-            if (clearState.Actions & ClearState::ClearDepth) {
+            if (clearState.Actions & ClearState::DepthBit) {
                 d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
             }
-            if (clearState.Actions & ClearState::ClearStencil) {
+            if (clearState.Actions & ClearState::StencilBit) {
                 d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
             }
             const FLOAT d = clearState.Depth;
