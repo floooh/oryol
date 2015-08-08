@@ -20,9 +20,7 @@ TEST(ClockTest) {
     Duration d0 = Clock::Since(t0);
     TimePoint t1 = Clock::Now();
     CHECK(t1 > t0);
-    CHECK(d0.AsNanoSeconds() > 0.0);
     Log::Info("duration (sec): %f\n", d0.AsSeconds());
     Log::Info("duration (ms): %f\n", d0.AsMilliSeconds());
     Log::Info("duration (us): %f\n", d0.AsMicroSeconds());
-    Log::Info("duration (ns): %f\n", d0.AsNanoSeconds());
 }

@@ -50,9 +50,7 @@ public:
     float64 AsMilliSeconds() const;
     /// get duration in microseconds
     float64 AsMicroSeconds() const;
-    /// get duration in nanoseconds
-    float64 AsNanoSeconds() const;
-    /// as nanoseconds integer ticks
+    /// as microseconds integer ticks
     int64 AsTicks() const;
     
     /// get duration from seconds
@@ -67,11 +65,7 @@ public:
     static Duration FromMicroSeconds(float64 us);
     /// get duration from microseconds
     static Duration FromMicroSeconds(float32 us);
-    /// get duration from nanoseconds
-    static Duration FromNanoSeconds(float64 ns);
-    /// get duration from nanoseconds
-    static Duration FromNanoSeconds(float32 ns);
-    
+
     /// get the raw value
     int64 getRaw() const;
 
@@ -238,24 +232,6 @@ Duration::FromMicroSeconds(float64 us) {
 inline Duration
 Duration::FromMicroSeconds(float32 us) {
     return Duration(int64(us));
-}
-
-//------------------------------------------------------------------------------
-inline float64
-Duration::AsNanoSeconds() const {
-    return (float64)(this->val * 1000);
-}
-
-//------------------------------------------------------------------------------
-inline Duration
-Duration::FromNanoSeconds(float64 ns) {
-    return Duration(int64(ns * 0.001));
-}
-
-//------------------------------------------------------------------------------
-inline Duration
-Duration::FromNanoSeconds(float32 ns) {
-    return Duration(int64(ns * 0.001));
 }
 
 //------------------------------------------------------------------------------
