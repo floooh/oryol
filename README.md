@@ -17,11 +17,7 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
-- **04-Aug-2015**: NOTE: the Metal renderer is broken since OSX 10.11 Beta4 because 
-MetalKit details  and runtime validation requirements have changed, it's hard to 
-fix because the SDK doesn't seem to be updated as well (no matching headers and 
-documentation), so it will probably take a while to fix
-
+- **08-Aug-2015**: the Metal renderer has been fixed for the latest OSX 10.11 and Xcode7 beta, expect it to be broken again when the next betas come in ;)
 
 - **27-Jul-2015**: the new OSX Metal renderer is feature-complete. To give it a
 try you need the latest OSX10.11 and Xcode7 betas, and then:

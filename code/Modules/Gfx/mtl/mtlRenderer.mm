@@ -252,7 +252,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     if (rt) {
         passDesc.colorAttachments[0].texture = rt->mtlTex;
     }
-    if (clearState.Actions & ClearState::ClearColor) {
+    if (clearState.Actions & ClearState::ColorBit) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
         const glm::vec4& c = clearState.Color;
         passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
@@ -265,7 +265,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         if (rt) {
             passDesc.depthAttachment.texture = rt->mtlDepthTex;
         }
-        if (clearState.Actions & ClearState::ClearDepth) {
+        if (clearState.Actions & ClearState::DepthBit) {
             passDesc.depthAttachment.loadAction = MTLLoadActionClear;
             passDesc.depthAttachment.clearDepth = clearState.Depth;
         }
@@ -278,7 +278,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         if (rt) {
             passDesc.stencilAttachment.texture = rt->mtlDepthTex;
         }
-        if (clearState.Actions & ClearState::ClearStencil) {
+        if (clearState.Actions & ClearState::StencilBit) {
             passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
             passDesc.stencilAttachment.clearStencil = clearState.Stencil;
         }

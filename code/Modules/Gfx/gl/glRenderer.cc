@@ -307,7 +307,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     GLbitfield glClearMask = 0;
     
     // update GL state
-    if (clearState.Actions & ClearState::ClearColor) {
+    if (clearState.Actions & ClearState::ColorBit) {
         glClearMask |= GL_COLOR_BUFFER_BIT;
         ::glClearColor(clearState.Color.x, clearState.Color.y, clearState.Color.z, clearState.Color.w);
         if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
@@ -315,7 +315,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
     }
-    if (clearState.Actions & ClearState::ClearDepth) {
+    if (clearState.Actions & ClearState::DepthBit) {
         glClearMask |= GL_DEPTH_BUFFER_BIT;
         #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
         ::glClearDepthf(clearState.Depth);
@@ -327,7 +327,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             ::glDepthMask(GL_TRUE);
         }
     }
-    if (clearState.Actions & ClearState::ClearStencil) {
+    if (clearState.Actions & ClearState::StencilBit) {
         glClearMask |= GL_STENCIL_BUFFER_BIT;
         ::glClearStencil(clearState.Stencil);
         if (this->depthStencilState.StencilWriteMask != 0xFF) {

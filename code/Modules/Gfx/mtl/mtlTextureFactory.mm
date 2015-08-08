@@ -220,7 +220,6 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     texDesc.mipmapLevelCount = setup.NumMipMaps;
     texDesc.arrayLength = 1;
     texDesc.sampleCount = 1;
-    texDesc.resourceOptions = MTLResourceStorageModeAuto;
     tex.mtlTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
     o_assert(nil != tex.mtlTex);
 

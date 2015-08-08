@@ -1,0 +1,101 @@
+//------------------------------------------------------------------------------
+//  shaders.shd
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+@block util
+_func vec4 hue2rgb(float h) {
+    float r = abs(h * 6.0 - 4.0) - 1.0;
+    float g = 2.0 - abs(h * 6.0 - 2.0);
+    float b = 2.0 - abs(h * 6.0 - 4.0);
+    return vec4(r, g, b, 1.0);
+}
+@end
+
+//------------------------------------------------------------------------------
+@vs FractalVS
+@in vec4 position
+@in vec2 texcoord0
+@uniform_block vsParams VSParams
+    @uniform vec4 rect Rect
+@end
+@out vec2 uv
+@out vec2 pos
+{
+    _position = position;
+    uv = texcoord0;
+    pos = rect.xy + (texcoord0 * (rect.zw - rect.xy));
+}
+@end
+
+//------------------------------------------------------------------------------
+@fs JuliaFS
+@highp float
+@uniform_block juliaFSParams FSParams
+    @uniform sampler2D tex Texture
+    @uniform vec2 juliaPos JuliaPos
+@end
+@in vec2 uv
+@in vec2 pos
+{
+    vec4 params = tex2D(tex, uv);
+    float cr = params.x;
+    float ci = params.y;
+    float it = params.w;
+    float d = cr*cr + ci*ci;
+    if (d > 4.0) {
+        _color = vec4(cr, ci, 1.0, it);
+    }
+    else {
+        if (it < 1.0) {
+            cr = pos.x;
+            ci = pos.y;
+        }
+        float cr_new = cr*cr - ci*ci + juliaPos.x;
+        float ci_new = 2.0 * cr*ci + juliaPos.y;
+        _color = vec4(cr_new, ci_new, 0.0, it + 1.0);
+    }
+}
+@end
+
+//------------------------------------------------------------------------------
+@bundle Julia
+@program FractalVS JuliaFS
+@end
+
+//------------------------------------------------------------------------------
+@vs ColorVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+{
+    _position = position;
+    uv = texcoord0;
+}
+@end
+
+//------------------------------------------------------------------------------
+@fs ColorFS
+@use util
+@uniform_block fsParams FSParams
+    @uniform sampler2D tex Texture
+    @uniform float numColors NumColors
+@end
+@in vec2 uv
+{
+    vec4 params = tex2D(tex, uv);
+    if (params.z > 0.5) {
+        float i = params.w;
+        float hue = mod(i, numColors) / numColors;
+        _color = hue2rgb(hue);
+    }
+    else {
+        _color = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+}
+@end
+
+//------------------------------------------------------------------------------
+@bundle Color
+@program ColorVS ColorFS
+@end

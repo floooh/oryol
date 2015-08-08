@@ -17,7 +17,6 @@ public:
     virtual AppState::Code OnCleanup();
 private:
     ClearState displayClearState;
-
 };
 OryolMain(JuliaApp)
 

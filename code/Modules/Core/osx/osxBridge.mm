@@ -84,11 +84,11 @@ using namespace Oryol::_priv;
 @end
 
 @implementation oryolViewDelegate
-- (void)view:(MTKView*)view willLayoutWithSize:(CGSize)size {
-    // empty
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
+    // FIXME(?)
 }
 
-- (void)drawInView:(MTKView*)view {
+- (void)drawInMTKView:(nonnull MTKView *)view {
     @autoreleasepool {
         osxBridge::ptr()->onFrame();
     }
@@ -530,7 +530,7 @@ osxBridge::createWindow() {
     [this->mtkView setDelegate:this->mtkViewDelegate];
     [this->mtkView setDevice:this->mtlDevice];
     [this->mtkView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
-    [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth24Unorm_Stencil8];
+    [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
     [this->appWindow setContentView:this->mtkView];
 
     // the window is initially hidden until osxBridge::showWindow

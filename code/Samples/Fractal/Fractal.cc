@@ -45,8 +45,8 @@ private:
     void checkCreateRenderTargets();
 
     DisplayAttrs curDisplayAttrs;
-    ClearState fractalClearState;
-    ClearState noClearState;
+    ClearState fractalClearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ClearState noClearState = ClearState::ClearNone();
     ResourceLabel offscreenRenderTargetLabel;
     Id offscreenRenderTarget[2];
     Id displayDrawState;
@@ -161,13 +161,6 @@ FractalApp::OnInit() {
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
     dss.BlendState.DepthFormat = PixelFormat::None;
     this->julia.drawState = Gfx::CreateResource(dss);
-
-    // clear state for fractal state
-    this->fractalClearState.Actions = ClearState::ClearAll;
-    this->fractalClearState.Color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-
-    // clear state for not actually clearing
-    this->noClearState.Actions = ClearState::ClearNone;
 
     // initialize fractal states
     this->reset();

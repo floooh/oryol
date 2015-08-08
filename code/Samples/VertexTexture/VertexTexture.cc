@@ -30,7 +30,7 @@ private:
     Shaders::Plane::VSParams planeVSParams;
     Shaders::Plasma::FSParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
-    ClearState noClearState;
+    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(VertexTextureApp);
 
@@ -106,7 +106,6 @@ VertexTextureApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->plasmaFSParams.Time = 0.0f;
-    this->noClearState.Actions = ClearState::ClearNone;
 
     return App::OnInit();
 }

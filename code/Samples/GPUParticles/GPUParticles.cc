@@ -47,7 +47,7 @@ private:
     Shaders::InitParticles::FSParams initFSParams;
     Shaders::UpdateParticles::FSParams updFSParams;
     Shaders::DrawParticles::VSParams drawVSParams;
-    ClearState noClearState;
+    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(GPUParticlesApp);
 
@@ -193,9 +193,6 @@ GPUParticlesApp::OnInit() {
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
     this->drawParticles = Gfx::CreateResource(dss);
-
-    // a ClearState which does not perform clear
-    this->noClearState.Actions = ClearState::ClearNone;
 
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

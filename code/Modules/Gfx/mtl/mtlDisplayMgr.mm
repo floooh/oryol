@@ -63,6 +63,12 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
     [window center];
 
+    // NOTE: this will upscale on Retina displays, to render at Retina
+    // resolution just drop the setDrawableSiz, or set to
+    // [mtkView convertSizeToBacking:mtkView.bounds.size], but this
+    // also needs fixes in the ApplyScissorRect and ApplyViewport functions!
+    CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
+    [osxBridge::ptr()->mtkView setDrawableSize:drawableSize];
     [osxBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
 }
 

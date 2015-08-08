@@ -30,11 +30,13 @@ mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
 MTLPixelFormat
 mtlTypes::asRenderTargetDepthFormat(PixelFormat::Code fmt) {
     switch (fmt) {
+        case PixelFormat::D16:
         case PixelFormat::D32:
             return MTLPixelFormatDepth32Float;
-        case PixelFormat::D16:
         case PixelFormat::D24S8:
-            return MTLPixelFormatDepth24Unorm_Stencil8;
+            // NOTE: MTLPixelFormatDepth24Unorm_Stencil8 isn't universally supported,
+            // instead always use Depth32Float_Stencil8
+            return MTLPixelFormatDepth32Float_Stencil8;
         default:
             return MTLPixelFormatInvalid;
     }
@@ -44,9 +46,8 @@ mtlTypes::asRenderTargetDepthFormat(PixelFormat::Code fmt) {
 MTLPixelFormat
 mtlTypes::asRenderTargetStencilFormat(PixelFormat::Code fmt) {
     switch (fmt) {
-        case PixelFormat::D16:
         case PixelFormat::D24S8:
-            return MTLPixelFormatDepth24Unorm_Stencil8;
+            return MTLPixelFormatDepth32Float_Stencil8;
         default:
             return MTLPixelFormatInvalid;
     }

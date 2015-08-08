@@ -27,7 +27,7 @@ private:
     Shaders::Offscreen::FSParams offscreenFSParams;
     Shaders::Copy::FSParams copyFSParams;
     TimePoint lastFrameTimePoint;
-    ClearState noClearState;
+    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(TextureFloatApp);
 
@@ -93,9 +93,6 @@ TextureFloatApp::OnInit() {
     // fullscreen-copy mesh, shader and draw state
     Id copyShader = Gfx::CreateResource(Shaders::Copy::CreateSetup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fullscreenMesh, copyShader));
-
-    // setup clear state to not actually clear the render target
-    this->noClearState.Actions = ClearState::ClearNone;
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

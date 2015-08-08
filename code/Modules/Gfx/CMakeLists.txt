@@ -31,7 +31,7 @@ fips_begin_module(Gfx)
     fips_files(
         displayMgrBase.cc displayMgrBase.h
         BlendState.h
-        ClearState.h
+        ClearState.cc ClearState.h
         DepthStencilState.h
         Enums.h
         PrimitiveGroup.h
