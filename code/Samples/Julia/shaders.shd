@@ -28,7 +28,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @fs JuliaFS
 @highp float
 @uniform_block juliaFSParams FSParams
@@ -58,7 +57,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @bundle Julia
 @program FractalVS JuliaFS
 @end
@@ -74,12 +72,12 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @fs ColorFS
 @use util
 @uniform_block fsParams FSParams
     @uniform sampler2D tex Texture
     @uniform float numColors NumColors
+    @uniform float numIntensities NumIntensities
 @end
 @in vec2 uv
 {
@@ -87,7 +85,8 @@ _func vec4 hue2rgb(float h) {
     if (params.z > 0.5) {
         float i = params.w;
         float hue = mod(i, numColors) / numColors;
-        _color = hue2rgb(hue);
+        float intensity = mod(i, numIntensities) / numIntensities;
+        _color = hue2rgb(hue) * intensity;
     }
     else {
         _color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -95,7 +94,35 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @bundle Color
 @program ColorVS ColorFS
+@end
+
+//------------------------------------------------------------------------------
+@vs ShapeVS
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProj
+    @uniform vec2 uvScale UVScale
+@end
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+{
+    _position = mul(mvp, position);
+    uv = texcoord0 * uvScale;
+}
+@end
+
+@fs ShapeFS
+@uniform_block fsParams FSParams
+    @uniform sampler2D tex Texture
+@end
+@in vec2 uv
+{
+    _color = tex2D(tex, uv);
+}
+@end
+
+@bundle Shape
+@program ShapeVS ShapeFS
 @end

@@ -21,10 +21,11 @@ fractal::~fractal() {
 
 //------------------------------------------------------------------------------
 void
-fractal::setup(int w, int h, const glm::vec4& rect_, Id fsq) {
+fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id fsq) {
     o_assert_dbg(!this->isValid());
 
     this->rect = rect_;
+    this->pos = pos_;
     this->frameIndex = 0;
 
     // generate a new resource label for our gfx resources
@@ -36,6 +37,8 @@ fractal::setup(int w, int h, const glm::vec4& rect_, Id fsq) {
     rtSetup.DepthFormat = PixelFormat::None;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
+    rtSetup.WrapU = TextureWrapMode::MirroredRepeat;
+    rtSetup.WrapV = TextureWrapMode::MirroredRepeat;
     this->fractalTexture[0] = Gfx::CreateResource(rtSetup);
     this->fractalTexture[1] = Gfx::CreateResource(rtSetup);
 
@@ -86,9 +89,9 @@ fractal::isValid() const {
 void
 fractal::update() {
 
-    // first frame? clear fractal state to all zeros
-    if (0 == this->frameIndex) {
-        ClearState clearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    // increment frame and reset fractal state in first frame
+    if (0 == this->frameIndex++) {
+        const ClearState clearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
         Gfx::ApplyRenderTarget(this->fractalTexture[0], clearState);
         Gfx::ApplyRenderTarget(this->fractalTexture[1], clearState);
     }
@@ -98,8 +101,27 @@ fractal::update() {
     const int32 readIndex  = (this->frameIndex + 1) & 1;
 
     // render next fractal iteration
-    ClearState noClearState = ClearState::ClearNone();
-    Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], noClearState);
+    this->fractalVSParams.Rect = this->rect;
+    this->fractalFSParams.Texture = this->fractalTexture[readIndex];
+    this->fractalFSParams.JuliaPos = this->pos;
+    Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
+    Gfx::ApplyDrawState(this->fractalDrawState);
+    Gfx::ApplyUniformBlock(this->fractalVSParams);
+    Gfx::ApplyUniformBlock(this->fractalFSParams);
+    Gfx::Draw(0);
+
+    // map current fractal state to color texture
+    this->colorFSParams.Texture = this->fractalTexture[writeIndex];
+    this->colorFSParams.NumColors = this->numColors;
+    this->colorFSParams.NumIntensities = this->numIntensities;
+    Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
+    Gfx::ApplyDrawState(this->colorDrawState);
+    Gfx::ApplyUniformBlock(this->colorFSParams);
+    Gfx::Draw(0);
+
+    if (this->frameIndex >= this->cycleCount) {
+        this->frameIndex = 0;
+    }
 }
 
 } // namespace Julia
