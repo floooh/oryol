@@ -41,8 +41,8 @@ Clock::Now() {
     int64 t = ((perfCount.QuadPart - perf.start.QuadPart) * 1000000) / perf.freq.QuadPart;
     #else
     using namespace std;
-    chrono::time_point<chrono::high_resolution_clock, chrono::microseconds> now = chrono::high_resolution_clock::now();
-    int64 t = now.time_since_epoch().count();
+    auto now = chrono::high_resolution_clock::now();
+    int64 t = chrono::duration_cast<chrono::microseconds>(now.time_since_epoch()).count();
     #endif
     return TimePoint(t);
 }
