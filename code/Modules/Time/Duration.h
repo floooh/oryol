@@ -189,73 +189,73 @@ Duration::getRaw() const {
 //------------------------------------------------------------------------------
 inline float64
 Duration::AsSeconds() const {
-    return ((float64)this->val) / 1000000000.0;
-}
-
-//------------------------------------------------------------------------------
-inline Duration
-Duration::FromSeconds(float64 s) {
-    return Duration(int64(s * 1000000000.0));
-}
-
-//------------------------------------------------------------------------------
-inline Duration
-Duration::FromSeconds(float32 s) {
-    return Duration(int64(s * 1000000000.0f));
-}
-
-//------------------------------------------------------------------------------
-inline float64
-Duration::AsMilliSeconds() const {
     return ((float64)this->val) / 1000000.0;
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMilliSeconds(float64 ms) {
-    return Duration(int64(ms * 1000000.0));
+Duration::FromSeconds(float64 s) {
+    return Duration(int64(s * 1000000.0));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMilliSeconds(float32 ms) {
-    return Duration(int64(ms * 1000000.0f));
+Duration::FromSeconds(float32 s) {
+    return Duration(int64(s * 1000000.0f));
 }
 
 //------------------------------------------------------------------------------
 inline float64
-Duration::AsMicroSeconds() const {
+Duration::AsMilliSeconds() const {
     return ((float64)this->val) / 1000.0;
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMicroSeconds(float64 us) {
-    return Duration(int64(us * 1000.0));
+Duration::FromMilliSeconds(float64 ms) {
+    return Duration(int64(ms * 1000.0));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMicroSeconds(float32 us) {
-    return Duration(int64(us * 1000.0f));
+Duration::FromMilliSeconds(float32 ms) {
+    return Duration(int64(ms * 1000.0f));
 }
 
 //------------------------------------------------------------------------------
 inline float64
-Duration::AsNanoSeconds() const {
+Duration::AsMicroSeconds() const {
     return (float64)this->val;
 }
 
 //------------------------------------------------------------------------------
 inline Duration
+Duration::FromMicroSeconds(float64 us) {
+    return Duration(int64(us));
+}
+
+//------------------------------------------------------------------------------
+inline Duration
+Duration::FromMicroSeconds(float32 us) {
+    return Duration(int64(us));
+}
+
+//------------------------------------------------------------------------------
+inline float64
+Duration::AsNanoSeconds() const {
+    return (float64)(this->val * 1000);
+}
+
+//------------------------------------------------------------------------------
+inline Duration
 Duration::FromNanoSeconds(float64 ns) {
-    return Duration(int64(ns));
+    return Duration(int64(ns * 0.001));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
 Duration::FromNanoSeconds(float32 ns) {
-    return Duration(int64(ns));
+    return Duration(int64(ns * 0.001));
 }
 
 //------------------------------------------------------------------------------
