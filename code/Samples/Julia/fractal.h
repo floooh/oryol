@@ -28,11 +28,7 @@ public:
     void update();
 
     /// number of frames until state reset
-    int cycleCount = 3 * 60;
-    /// number of colors for the color-mapped result
-    int numColors = 256;
-    /// number of color intensities
-    int numIntensities = 128;
+    int cycleCount = 10 * 60;
     /// the current rectangle in the real/imaginary plane (c0, i0, c1, i1)
     glm::vec4 rect;
     /// the 'position' of the Julia set within the Mandelbrot set

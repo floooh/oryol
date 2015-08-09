@@ -112,8 +112,6 @@ fractal::update() {
 
     // map current fractal state to color texture
     this->colorFSParams.Texture = this->fractalTexture[writeIndex];
-    this->colorFSParams.NumColors = float(this->numColors);
-    this->colorFSParams.NumIntensities = float(this->numIntensities);
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
     Gfx::ApplyDrawState(this->colorDrawState);
     Gfx::ApplyUniformBlock(this->colorFSParams);

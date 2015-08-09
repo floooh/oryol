@@ -49,26 +49,27 @@ JuliaApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Sphere(0.5f, 72, 36).Build();
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64).Build();
     Id shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
     Id shd = Gfx::CreateResource(Shaders::Shape::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndShader(shapeMesh, shd);
-    dss.DepthStencilState.DepthWriteEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    dss.DepthStencilState.DepthWriteEnabled = true;
+    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
     dss.RasterizerState.CullFaceEnabled = false;
-    dss.BlendState.BlendEnabled = true;
+    dss.BlendState.BlendEnabled = false;
     dss.BlendState.SrcFactorRGB = dss.BlendState.SrcFactorAlpha = BlendFactor::One;
     dss.BlendState.DstFactorRGB = dss.BlendState.DstFactorAlpha = BlendFactor::One;
     dss.BlendState.ColorFormat = gfxSetup.ColorFormat;
     dss.BlendState.DepthFormat = gfxSetup.DepthFormat;
     this->shapeDrawState = Gfx::CreateResource(dss);
+    this->shapeFSParams.NumColors = 128.0;
     this->shapeFSParams.Texture = this->test.colorTexture;
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -2.0f));
+    this->view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
 
     return App::OnInit();
 }
@@ -81,9 +82,10 @@ JuliaApp::OnRunning() {
         this->test.update();
     }
 
-    glm::vec2 rot = glm::vec2(0.01f, 0.02f) * float(this->frameCount);
+    glm::vec2 rot = glm::vec2(0.001f, 0.002f) * float(this->frameCount);
     this->frameCount++;
     this->shapeVSParams.ModelViewProj = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0), rot);
+    this->shapeVSParams.Time = float(this->frameCount) / 60.0f;
     this->shapeVSParams.UVScale = glm::vec2(2.0f, 2.0f);
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
