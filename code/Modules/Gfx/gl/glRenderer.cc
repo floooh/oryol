@@ -547,7 +547,7 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
     if (nullptr == this->curDrawState) {
-    
+        return;
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
     if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
