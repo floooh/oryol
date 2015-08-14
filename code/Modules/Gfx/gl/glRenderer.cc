@@ -579,6 +579,7 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
     // if usage is streaming, rotate slot index to next dynamic vertex buffer
     // to implement double/multi-buffering because the previous buffer
     // might still be in-flight on the GPU
+    o_assert_dbg(buf.numSlots > 1);
     if (++buf.activeSlot >= buf.numSlots) {
         buf.activeSlot = 0;
     }
@@ -592,15 +593,12 @@ glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
 
-    #if ORYOL_DEBUG
-    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
-    const Usage::Code vbUsage = attrs.BufferUsage;
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg(vbUsage == Usage::Stream);
-    #endif
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
 
     auto& vb = msh->buffers[mesh::vb];
     GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
+    o_assert_dbg(0 != glBuffer);
     this->bindVertexBuffer(glBuffer);
     ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
     ORYOL_GL_CHECK_ERROR();
@@ -613,15 +611,13 @@ glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
 
-    #if ORYOL_DEBUG
-    const IndexBufferAttrs& attrs = msh->indexBufferAttrs;
-    const Usage::Code ibUsage = attrs.BufferUsage;
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg(ibUsage == Usage::Stream);
-    #endif
+    o_assert_dbg(IndexType::None != msh->indexBufferAttrs.Type);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
 
     auto& ib = msh->buffers[mesh::ib];
     GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
+    o_assert_dbg(0 != glBuffer);
     this->bindIndexBuffer(glBuffer);
     ::glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numBytes, data);
     ORYOL_GL_CHECK_ERROR();

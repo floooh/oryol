@@ -204,14 +204,13 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
     }
     
     // use double-buffering for dynamic meshes
-    const uint8 vbNumSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
-    const uint8 ibNumSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
-    mesh.buffers[mesh::vb].numSlots = vbNumSlots;
-    for (uint8 slotIndex = 0; slotIndex < vbNumSlots; slotIndex++) {
+    mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+    mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
+    for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
         mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
     }
     if (IndexType::None != ibAttrs.Type) {
-        for (uint8 slotIndex = 0; slotIndex < ibNumSlots; slotIndex++) {
+        for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {
             mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
         }
     }
