@@ -35,9 +35,10 @@ private:
     /// setup draw state
     void setupDrawState();
     /// imgui's draw callback
-    static void imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
+    static void imguiRenderDrawLists(ImDrawData* draw_data);
 
-    static const int MaxNumVertices = 64 * 1024;    
+    static const int MaxNumVertices = 64 * 1024;
+    static const int MaxNumIndices = 128 * 1024;
 
     static imguiWrapper* self;
 
@@ -47,6 +48,7 @@ private:
     Id mesh;
     Id drawState;
     ImDrawVert vertexData[MaxNumVertices];
+    ImDrawIdx indexData[MaxNumIndices];
 };
 
 } // namespace _priv

@@ -102,7 +102,7 @@ void
 imguiWrapper::setupMesh() {
     o_assert_dbg(!this->mesh.IsValid());
 
-    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
+    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream, IndexType::Index16, MaxNumIndices, Usage::Stream);
     setup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
@@ -180,26 +180,41 @@ imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
 
 //------------------------------------------------------------------------------
 void
-imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count) {
+imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     o_assert_dbg(self);
+    o_assert_dbg(draw_data);
 
-    if (cmd_lists_count == 0) {
+    if (draw_data->CmdListsCount == 0) {
         return;
     }
 
     // copy over vertices into single vertex buffer
     int numVertices = 0;
+    int numIndices = 0;
     int numCmdLists;
-    for (numCmdLists = 0; numCmdLists < cmd_lists_count; numCmdLists++) {
-        const ImDrawList* cmd_list = cmd_lists[numCmdLists];
-        const int cmdListNumVerts = (const int) cmd_list->vtx_buffer.size();
-        if ((numVertices + cmdListNumVerts) <= imguiWrapper::MaxNumVertices) {
-            Memory::Copy(&(cmd_list->vtx_buffer[0]), &(self->vertexData[numVertices]), cmdListNumVerts * sizeof(ImDrawVert));
-            numVertices += cmdListNumVerts;
-        }
-        else {
+    for (numCmdLists = 0; numCmdLists < draw_data->CmdListsCount; numCmdLists++) {
+
+        const ImDrawList* cmd_list = draw_data->CmdLists[numCmdLists];
+        const int cmdListNumVertices = cmd_list->VtxBuffer.size();
+        const int cmdListNumIndices  = cmd_list->IdxBuffer.size();
+
+        // overflow check
+        if (((numVertices + cmdListNumVertices) > imguiWrapper::MaxNumVertices) ||
+            ((numIndices + cmdListNumIndices) > imguiWrapper::MaxNumIndices)) {
             break;
         }
+        // copy vertices
+        Memory::Copy((const void*)&cmd_list->VtxBuffer.front(),
+                     &(self->vertexData[numVertices]),
+                     cmdListNumVertices * sizeof(ImDrawVert));
+
+        // need to copy indices one by one and add the current base vertex index :/
+        const ImDrawIdx* srcIndexPtr = &cmd_list->IdxBuffer.front();
+        const uint16 baseVertexIndex = numVertices;
+        for (int i = 0; i < cmdListNumIndices; i++) {
+            self->indexData[numIndices++] = srcIndexPtr[i] + baseVertexIndex;
+        }
+        numVertices += cmdListNumVertices;
     }
 
     // draw command lists
@@ -210,27 +225,29 @@ imguiWrapper::imguiRenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
     vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
     fsParams.Texture = self->fontTexture;
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
+    const int indexDataSize = numIndices * sizeof(ImDrawIdx);
 
     Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
+    Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::ApplyUniformBlock(fsParams);
-    int vtx_offset = 0;
+    int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
-        const ImDrawList* cmd_list = cmd_lists[cmdListIndex];
-        const ImDrawCmd* pcmd_end = cmd_list->commands.end();
-        for (const ImDrawCmd* pcmd = cmd_list->commands.begin(); pcmd != pcmd_end; pcmd++)
-        {
-            if (pcmd->user_callback)
-            {
-                pcmd->user_callback(cmd_list, pcmd);
+        const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];
+        const ImDrawCmd* pcmd_end = cmd_list->CmdBuffer.end();
+        for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != pcmd_end; pcmd++) {
+            if (pcmd->UserCallback) {
+                pcmd->UserCallback(cmd_list, pcmd);
             }
-            else
-            {
-                Gfx::ApplyScissorRect((int)pcmd->clip_rect.x, (int)(height - pcmd->clip_rect.w), (int)(pcmd->clip_rect.z - pcmd->clip_rect.x), (int)(pcmd->clip_rect.w - pcmd->clip_rect.y));
-                Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, vtx_offset, pcmd->vtx_count));
+            else {
+                Gfx::ApplyScissorRect((int)pcmd->ClipRect.x,
+                                      (int)(height - pcmd->ClipRect.w),
+                                      (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                                      (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+                Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, elmOffset, pcmd->ElemCount));
             }
-            vtx_offset += pcmd->vtx_count;
+            elmOffset += pcmd->ElemCount;
         }
     }
     Gfx::ApplyScissorRect(0, 0, (int32)ImGui::GetIO().DisplaySize.x, (int32)ImGui::GetIO().DisplaySize.y);
