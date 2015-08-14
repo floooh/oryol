@@ -74,14 +74,13 @@ glMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
     this->pointers.renderer->invalidateMeshState();
-    for (uint8 i = 0; i < mesh.numVertexBufferSlots; i++) {
-        GLuint vb = mesh.glVertexBuffers[i];
-        if (0 != vb) {
-            ::glDeleteBuffers(1, &vb);
+    for (auto& buf : mesh.buffers) {
+        for (int i = 0; i < buf.numSlots; i++) {
+            GLuint glBuf = buf.glBuffers[i];
+            if  (0 != glBuf) {
+                ::glDeleteBuffers(1, &glBuf);
+            }
         }
-    }
-    if (0 != mesh.glIndexBuffer) {
-        ::glDeleteBuffers(1, &mesh.glIndexBuffer);
     }
     mesh.Clear();
 }
@@ -167,8 +166,10 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     };
     
     // create vertex and index buffer
-    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
-    mesh.glIndexBuffer = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
+    o_assert_dbg(1 == mesh.buffers[mesh::vb].numSlots);
+    o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
+    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
+    mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
 
     return ResourceState::Valid;
 }
@@ -202,20 +203,17 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
         mesh.primGroups[i] = setup.PrimitiveGroup(i);
     }
     
-    // if this is a stream update mesh, we actually create 2 vertex buffers for double-buffered updated
-    if (Usage::Stream == vbAttrs.BufferUsage) {
-        const uint8 numSlots = 2;
-        mesh.numVertexBufferSlots = numSlots;
-        for (uint8 slotIndex = 0; slotIndex < numSlots; slotIndex++) {
-            mesh.glVertexBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
-        }
-    }
-    else {
-        // normal static or dynamic mesh, no double-buffering
-        mesh.glVertexBuffers[0] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
+    // use double-buffering for dynamic meshes
+    const uint8 vbNumSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+    const uint8 ibNumSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
+    mesh.buffers[mesh::vb].numSlots = vbNumSlots;
+    for (uint8 slotIndex = 0; slotIndex < vbNumSlots; slotIndex++) {
+        mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
     }
     if (IndexType::None != ibAttrs.Type) {
-        mesh.glIndexBuffer = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
+        for (uint8 slotIndex = 0; slotIndex < ibNumSlots; slotIndex++) {
+            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
+        }
     }
 
     return ResourceState::Valid;
@@ -227,6 +225,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(Usage::Immutable == mesh.Setup.VertexUsage);
+    o_assert_dbg(Usage::Immutable == mesh.Setup.IndexUsage);
 
     const MeshSetup& setup = mesh.Setup;
     
@@ -258,7 +257,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     const uint8* vertices = ptr + setup.DataVertexOffset;
     const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));
-    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
+    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
     if (setup.IndicesType != IndexType::None) {
         o_assert_dbg(setup.IndexUsage == Usage::Immutable);
         o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
@@ -266,7 +265,7 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
         const uint8* indices = ptr + setup.DataIndexOffset;
         const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
         o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
-        mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
+        mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
     }
     
     return ResourceState::Valid;

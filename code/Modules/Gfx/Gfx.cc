@@ -243,6 +243,15 @@ Gfx::UpdateVertices(const Id& id, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
+Gfx::UpdateIndices(const Id& id, const void* data, int32 numBytes) {
+    o_trace_scoped(Gfx_UpdateIndices);
+    o_assert_dbg(IsValid());
+    mesh* msh = state->resourceContainer.lookupMesh(id);
+    state->renderer.updateIndices(msh, data, numBytes);
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
     o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
