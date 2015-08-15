@@ -9,24 +9,31 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlMesh::mtlMesh() :
-activeVertexBufferSlot(0),
-mtlIndexBuffer(nil) {
-    this->mtlVertexBuffers.Fill(nil);
+mtlMesh::buffer::buffer() :
+updateFrameIndex(-1),
+numSlots(1),
+activeSlot(0) {
+
+    this->mtlBuffers.Fill(nil);
 }
 
 //------------------------------------------------------------------------------
 mtlMesh::~mtlMesh() {
-    o_assert_dbg(nil == this->mtlVertexBuffers[0]);
-    o_assert_dbg(nil == this->mtlIndexBuffer);
+    #if ORYOL_DEBUG
+    for (const auto& buf : this->buffers) {
+        for (int i = 0; i < NumSlots; i++) {
+            o_assert_dbg(buf.mtlBuffers[i] == nil);
+        }
+    }
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 mtlMesh::Clear() {
-    this->activeVertexBufferSlot = 0;
-    this->mtlVertexBuffers.Fill(nil);
-    this->mtlIndexBuffer = nil;
+    for (auto& buf : this->buffers) {
+        buf = buffer();
+    }
     meshBase::Clear();
 }
 

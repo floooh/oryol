@@ -20,6 +20,7 @@ dispatch_semaphore_t mtlInflightSemaphore;
 //------------------------------------------------------------------------------
 mtlRenderer::mtlRenderer() :
 valid(false),
+frameIndex(0),
 curFrameRotateIndex(0),
 rtValid(false),
 curDrawState(nullptr),
@@ -132,6 +133,7 @@ mtlRenderer::commitFrame() {
     if (++this->curFrameRotateIndex >= GfxConfig::MtlMaxInflightFrames) {
         this->curFrameRotateIndex = 0;
     }
+    this->frameIndex++;
     this->curUniformBufferOffset = 0;
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
@@ -333,8 +335,9 @@ mtlRenderer::applyDrawState(drawState* ds) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
         if (msh) {
-            o_assert_dbg(msh->mtlVertexBuffers[msh->activeVertexBufferSlot]);
-            [this->curCommandEncoder setVertexBuffer:msh->mtlVertexBuffers[msh->activeVertexBufferSlot] offset:0 atIndex:vbSlotIndex];
+            const auto& vb = msh->buffers[mesh::vb];
+            o_assert_dbg(nil != vb.mtlBuffers[vb.activeSlot]);
+            [this->curCommandEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
         }
         else {
             [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
@@ -434,13 +437,14 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(primGroup.PrimType);
     IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (IndexType::None != indexType) {
-        o_assert_dbg(this->curDrawState->meshes[0]->mtlIndexBuffer);
+        const auto& ib = this->curDrawState->meshes[0]->buffers[mesh::ib];
+        o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
         MTLIndexType mtlIndexType = mtlTypes::asIndexType(indexType);
         NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(indexType);
         [this->curCommandEncoder drawIndexedPrimitives:mtlPrimType
             indexCount:primGroup.NumElements
             indexType:mtlIndexType
-            indexBuffer:this->curDrawState->meshes[0]->mtlIndexBuffer
+            indexBuffer:ib.mtlBuffers[ib.activeSlot]
             indexBufferOffset:indexBufferOffset
             instanceCount:numInstances ];
     }
@@ -484,32 +488,56 @@ mtlRenderer::draw(int32 primGroupIndex) {
 }
 
 //------------------------------------------------------------------------------
+id<MTLBuffer>
+obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
+    // helper function to get the right double-buffered
+    // vertex or index buffer for a buffer update
+    
+    // restrict buffer updates to once per frame per mesh, this isn't
+    // strictly required on GL, but we want the same restrictions across all 3D APIs
+    o_assert2(buf.updateFrameIndex != frameIndex, "Only one data update allowed per buffer and frame!\n");
+    buf.updateFrameIndex = frameIndex;
+
+    // if usage is streaming, rotate slot index to next dynamic vertex buffer
+    // to implement double/multi-buffering because the previous buffer
+    // might still be in-flight on the GPU
+    o_assert_dbg(buf.numSlots > 1);
+    if (++buf.activeSlot >= buf.numSlots) {
+        buf.activeSlot = 0;
+    }
+    return buf.mtlBuffers[buf.activeSlot];
+}
+
+//------------------------------------------------------------------------------
 void
 mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
-    o_assert_dbg(numBytes > 0);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
 
-    // FIXME: enfore that updateVertices is only called once per frame per mesh!!!
+    auto& vb = msh->buffers[mesh::vb];
+    id<MTLBuffer> mtlBuffer = obtainUpdateBuffer(vb, this->frameIndex);
+    o_assert_dbg(nil != mtlBuffer);
+    o_assert_dbg(numBytes <= int([mtlBuffer length]));
+    void* dstPtr = [mtlBuffer contents];
+    std::memcpy(dstPtr, data, numBytes);
+    [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
+}
 
-    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
-    const Usage::Code vbUsage = attrs.BufferUsage;
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg(vbUsage == Usage::Stream);
-    
-    uint8 slotIndex = msh->activeVertexBufferSlot;
-    if (Usage::Stream == vbUsage) {
-        // if usage is streaming, rotate slot index to next dynamic vertex buffer
-        // to implement double/multi-buffering
-        slotIndex++;
-        if (slotIndex >= mesh::NumSlots) {
-            slotIndex = 0;
-        }
-        msh->activeVertexBufferSlot = slotIndex;
-    }
+//------------------------------------------------------------------------------
+void
+mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
 
-    id<MTLBuffer> mtlBuffer = msh->mtlVertexBuffers[slotIndex];
+    auto& ib = msh->buffers[mesh::ib];
+    id<MTLBuffer> mtlBuffer = obtainUpdateBuffer(ib, this->frameIndex);
+    o_assert_dbg(nil != mtlBuffer);
     o_assert_dbg(numBytes <= int([mtlBuffer length]));
     void* dstPtr = [mtlBuffer contents];
     std::memcpy(dstPtr, data, numBytes);
