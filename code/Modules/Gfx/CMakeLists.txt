@@ -120,7 +120,12 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D12)
         fips_dir(d3d12)
         fips_files(
+            d3d12_impl.h d3d12_decl.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
+            d3d12MeshFactory.cc d3d12MeshFactory.h
+            d3d12ShaderFactory.cc d3d12ShaderFactory.h
+            d3d12TextureFactory.cc d3d12TextureFactory.h
+            d3d12Renderer.cc d3d12Renderer.h
         )
     endif()
     if (ORYOL_METAL)

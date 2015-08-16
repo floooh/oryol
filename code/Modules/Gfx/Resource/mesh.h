@@ -21,6 +21,12 @@ namespace Oryol {
 namespace _priv {
 class mesh : public d3d11Mesh { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/Resource/meshBase.h"
+namespace Oryol {
+namespace _priv {
+class mesh : public meshBase { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlMesh.h"
 namespace Oryol {

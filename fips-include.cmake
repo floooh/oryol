@@ -58,7 +58,7 @@ if (FIPS_WINDOWS)
 endif()
 
 # use OpenGL?
-if (NOT ORYOL_METAL AND NOT ORYOL_D3D11)
+if (NOT ORYOL_METAL AND NOT ORYOL_D3D11 AND NOT ORYOL_D3D12)
     set(ORYOL_OPENGL 1)
     if (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS)
         set(ORYOL_OPENGL_CORE_PROFILE 1)
@@ -125,6 +125,11 @@ endif()
 # D3D11 defines
 if (ORYOL_D3D11)
     add_definitions(-DORYOL_D3D11=1)
+endif()
+
+# D3D12 defines
+if (ORYOL_D3D12)
+    add_definitions(-DORYOL_D3D12=1)
 endif()
 
 # OpenAL defines

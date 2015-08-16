@@ -17,6 +17,12 @@ namespace Oryol {
 namespace _priv {
 class drawStateFactory : public d3d11DrawStateFactory { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/Resource/drawStateFactoryBase.h"
+namespace Oryol {
+namespace _priv {
+class drawStateFactory : public drawStateFactoryBase { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlDrawStateFactory.h"
 namespace Oryol {

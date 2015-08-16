@@ -17,7 +17,13 @@ class textureFactory : public glTextureFactory { };
 namespace Oryol {
 namespace _priv {
 class textureFactory : public d3d11TextureFactory { };
-}}
+} }
+#elif ORYOL_D3D12
+#include "Gfx/d3d12/d3d12TextureFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureFactory : public d3d12TextureFactory { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlTextureFactory.h"
 namespace Oryol {

@@ -24,6 +24,12 @@ namespace Oryol {
 namespace _priv {
 class shader : public d3d11Shader { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/Resource/shaderBase.h"
+namespace Oryol {
+namespace _priv {
+class shader : public shaderBase { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlShader.h"
 namespace Oryol {
