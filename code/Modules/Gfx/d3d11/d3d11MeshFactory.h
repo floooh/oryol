@@ -46,6 +46,10 @@ public:
 private:
     /// helper method to create vertex or index buffer
     ID3D11Buffer* createBuffer(const void* vertexData, uint32 vertexDataSize, uint32 d3d11BindFlags, Usage::Code usage);
+    /// helper method to populate vertex and index buffer attributes in mesh object
+    void setupAttrs(mesh& mesh);
+    /// helper method to populate primitive groups array in mesh object
+    void setupPrimGroups(mesh& mesh);
 
     gfxPointers pointers;
     ID3D11Device* d3d11Device;

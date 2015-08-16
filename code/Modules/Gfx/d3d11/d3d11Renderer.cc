@@ -20,6 +20,7 @@ d3d11Device(nullptr),
 d3d11DeviceContext(nullptr),
 valid(false),
 rtValid(false),
+frameIndex(0),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
 d3d11CurRenderTargetView(nullptr),
@@ -150,6 +151,7 @@ void
 d3d11Renderer::commitFrame() {
     o_assert_dbg(this->valid);
     this->rtValid = false;
+    this->frameIndex++;
 }
 
 //------------------------------------------------------------------------------
@@ -532,16 +534,38 @@ d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(msh->d3d11VertexBuffer);
     o_assert_dbg(numBytes > 0);
 
-    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
-    const Usage::Code vbUsage = attrs.BufferUsage;
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
-    
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+
+    o_assert2(msh->vbUpdateFrameIndex != this->frameIndex, "Only one data update allowed per buffer and frame!\n");
+    msh->vbUpdateFrameIndex = this->frameIndex;
+
     D3D11_MAPPED_SUBRESOURCE mapped;
     HRESULT hr = this->d3d11DeviceContext->Map(msh->d3d11VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
     o_assert_dbg(SUCCEEDED(hr));
     std::memcpy(mapped.pData, data, numBytes);
     this->d3d11DeviceContext->Unmap(msh->d3d11VertexBuffer, 0);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(msh->d3d11IndexBuffer);
+    o_assert_dbg(numBytes > 0);
+
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+
+    o_assert2(msh->ibUpdateFrameIndex != this->frameIndex, "Only one data update allowed per buffer and frame!\n");
+    msh->ibUpdateFrameIndex = this->frameIndex;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    HRESULT hr = this->d3d11DeviceContext->Map(msh->d3d11IndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    o_assert_dbg(SUCCEEDED(hr));
+    std::memcpy(mapped.pData, data, numBytes);
+    this->d3d11DeviceContext->Unmap(msh->d3d11IndexBuffer, 0);
 }
 
 //------------------------------------------------------------------------------
