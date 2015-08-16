@@ -5,11 +5,11 @@
     @ingroup _priv
     @brief frontend inputMgr class
 */
-#if ORYOL_D3D11
-#include "Input/d3d11/d3d11InputMgr.h"
+#if (ORYOL_D3D11 || ORYOL_D3D12)
+#include "Input/win/winInputMgr.h"
 namespace Oryol {
 namespace _priv {
-class inputMgr : public d3d11InputMgr { };
+class inputMgr : public winInputMgr { };
 } }
 #elif ORYOL_MACOS && ORYOL_METAL
 #include "Input/osx/osxInputMgr.h"

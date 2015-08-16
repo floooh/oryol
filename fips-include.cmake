@@ -45,11 +45,15 @@ if (FIPS_OSX)
     endif()
 endif()
 
-# use D3D11 on Windows?
+# use D3D11/D3D12 on Windows?
 if (FIPS_WINDOWS)
     option(ORYOL_USE_D3D11 "Use D3D11 3D API on Windows" OFF)
     if (ORYOL_USE_D3D11)
         set(ORYOL_D3D11 1)
+    endif()
+    option(ORYOL_USE_D3D12 "Use D3D12 3D API on Windows" OFF)
+    if (ORYOL_USE_D3D12)
+        set(ORYOL_D3D12 1)
     endif()
 endif()
 

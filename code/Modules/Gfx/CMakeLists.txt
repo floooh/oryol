@@ -93,6 +93,13 @@ fips_begin_module(Gfx)
             gl_impl.h
         )
     endif()
+    if (ORYOL_D3D11 OR ORYOL_D3D12)
+        fips_dir(win)
+        fips_files(
+            winDisplayMgr.cc winDisplayMgr.h
+            winInputDefs.h    
+        )
+    endif()
     if (ORYOL_D3D11)
         fips_dir(d3d11)
         fips_files(
@@ -108,7 +115,12 @@ fips_begin_module(Gfx)
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
-            d3d11InputDefs.h
+        )
+    endif()
+    if (ORYOL_D3D12)
+        fips_dir(d3d12)
+        fips_files(
+            d3d12DisplayMgr.cc d3d12DisplayMgr.h
         )
     endif()
     if (ORYOL_METAL)
@@ -165,6 +177,9 @@ fips_begin_module(Gfx)
     endif()
     if (ORYOL_D3D11)
         fips_libs(d3d11)
+    endif()
+    if (ORYOL_D3D12)
+        fips_libs(d3d12)
     endif()
     fips_deps(Resource Messaging IO Core)
 fips_end_module()

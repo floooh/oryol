@@ -1,29 +1,29 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d11InputMgr
+    @class Oryol::_priv::winInputMgr
     @ingroup _priv
-    @brief provide input for the D3D11 port
+    @brief provide input for the Windows D3D-based ports
 
-    Input handling for the D3D11 port is similar to GLFW (on purpose), most
+    Input handling for the D3D ports is similar to GLFW (on purpose), most
     of the window and input handling code has been copied from GLFW to ensure
-    same behaviour between the GL and D3D11 versions of Oryol.
+    same behaviour between the GL and D3D versions of Oryol.
 */
 #include "Input/base/inputMgrBase.h"
 
 namespace Oryol {
 namespace _priv {
 
-class d3d11InputMgr : public inputMgrBase {
+class winInputMgr : public inputMgrBase {
 public:
     /// constructor
-    d3d11InputMgr();
+    winInputMgr();
     /// destructor
-    ~d3d11InputMgr();
+    ~winInputMgr();
 
-    /// setup the d3d11 input manager
+    /// setup the window input manager
     void setup(const InputSetup& setup);
-    /// discard the d3d11 input manager
+    /// discard the windows input manager
     void discard();
 
     /// set mouse cursor mode
@@ -36,7 +36,7 @@ private:
     void setupCallbacks();
     /// discard input callbacks
     void discardCallbacks();
-    /// map d3d11DisplayMgr keycode to Oryol keycode
+    /// map winDisplayMgr keycode to Oryol keycode
     Key::Code mapKey(int key) const;
 
     /// key callback
@@ -52,7 +52,7 @@ private:
     /// scroll callback
     static void scrollCallback(double xOffset, double yOffset);
 
-    static d3d11InputMgr* self;
+    static winInputMgr* self;
     int32 runLoopId;
 };
 
