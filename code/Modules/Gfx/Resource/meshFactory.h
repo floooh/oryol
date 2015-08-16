@@ -18,6 +18,12 @@ namespace Oryol {
 namespace _priv {
 class meshFactory : public d3d11MeshFactory { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/d3d12/d3d12MeshFactory.h"
+namespace Oryol {
+namespace _priv {
+class meshFactory : public d3d12MeshFactory { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlMeshFactory.h"
 namespace Oryol {
