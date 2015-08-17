@@ -17,6 +17,11 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
+- **17-Aug-2015**: The imgui wrapper has been updated for imgui 1.44, which 
+requires an update to the fips-imgui dependency. Either delete the fips-imgui
+directory and do a './fips fetch', or do a manual 'git pull && git submodule update'
+in the fips-imgui directory to get the latest version
+
 - **08-Aug-2015**: the Metal renderer has been fixed for the latest OSX 10.11 and Xcode7 beta, expect it to be broken again when the next betas come in ;)
 
 - **27-Jul-2015**: the new OSX Metal renderer is feature-complete. To give it a
