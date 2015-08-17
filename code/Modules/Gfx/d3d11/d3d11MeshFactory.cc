@@ -159,41 +159,51 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
 }
 
 //------------------------------------------------------------------------------
+void
+d3d11MeshFactory::setupAttrs(mesh& mesh) {
+
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.NumVertices = mesh.Setup.NumVertices;
+    vbAttrs.Layout = mesh.Setup.Layout;
+    vbAttrs.BufferUsage = mesh.Setup.VertexUsage;
+    vbAttrs.StepFunction = mesh.Setup.StepFunction;
+    vbAttrs.StepRate = mesh.Setup.StepRate;
+    mesh.vertexBufferAttrs = vbAttrs;
+
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.NumIndices = mesh.Setup.NumIndices;
+    ibAttrs.Type = mesh.Setup.IndicesType;
+    ibAttrs.BufferUsage = mesh.Setup.IndexUsage;
+    mesh.indexBufferAttrs = ibAttrs;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11MeshFactory::setupPrimGroups(mesh& mesh) {
+    mesh.numPrimGroups = mesh.Setup.NumPrimitiveGroups();
+    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
+    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
+        mesh.primGroups[i] = mesh.Setup.PrimitiveGroup(i);
+    }
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 d3d11MeshFactory::createEmptyMesh(mesh& mesh) {
     o_assert_dbg(0 < mesh.Setup.NumVertices);
     o_assert_dbg(nullptr == mesh.d3d11VertexBuffer);
     o_assert_dbg(nullptr == mesh.d3d11IndexBuffer);
 
-    const MeshSetup& setup = mesh.Setup;
-
-    VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = setup.NumVertices;
-    vbAttrs.Layout = setup.Layout;
-    vbAttrs.BufferUsage = setup.VertexUsage;
-    vbAttrs.StepFunction = setup.StepFunction;
-    vbAttrs.StepRate = setup.StepRate;
-    mesh.vertexBufferAttrs = vbAttrs;
+    this->setupAttrs(mesh);
+    this->setupPrimGroups(mesh);
+    const auto& vbAttrs = mesh.vertexBufferAttrs;
+    const auto& ibAttrs = mesh.indexBufferAttrs;
     const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-
-    IndexBufferAttrs ibAttrs;
-    ibAttrs.NumIndices = setup.NumIndices;
-    ibAttrs.Type = setup.IndicesType;
-    ibAttrs.BufferUsage = setup.IndexUsage;
-    mesh.indexBufferAttrs = ibAttrs;
-
-    mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
-        mesh.primGroups[i] = setup.PrimitiveGroup(i);
-    }
-
     mesh.d3d11VertexBuffer = this->createBuffer(nullptr, vbSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
     if (IndexType::None != ibAttrs.Type) {
         const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         mesh.d3d11IndexBuffer  = this->createBuffer(nullptr, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);
     }
-
     return ResourceState::Valid;
 }
 
@@ -205,44 +215,24 @@ d3d11MeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
 
-    const MeshSetup& setup = mesh.Setup;
-
-    // setup vertex buffer attrs
-    VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = setup.NumVertices;
-    vbAttrs.BufferUsage = setup.VertexUsage;
-    vbAttrs.Layout = setup.Layout;
-    vbAttrs.StepFunction = setup.StepFunction;
-    vbAttrs.StepRate = setup.StepRate;
-    mesh.vertexBufferAttrs = vbAttrs;
-
-    // setup index buffer attrs
-    IndexBufferAttrs ibAttrs;
-    ibAttrs.NumIndices = setup.NumIndices;
-    ibAttrs.Type = setup.IndicesType;
-    ibAttrs.BufferUsage = setup.IndexUsage;
-    mesh.indexBufferAttrs = ibAttrs;
-
-    // setup primitive groups
-    mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
-        mesh.primGroups[i] = setup.PrimitiveGroup(i);
-    }
+    this->setupAttrs(mesh);
+    this->setupPrimGroups(mesh);
+    const auto& vbAttrs = mesh.vertexBufferAttrs;
+    const auto& ibAttrs = mesh.indexBufferAttrs;
 
     // setup the mesh object
     const uint8* ptr = (const uint8*)data;
-    const uint8* vertices = ptr + setup.DataVertexOffset;
-    const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
+    const uint8* vertices = ptr + mesh.Setup.DataVertexOffset;
+    const int32 verticesByteSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));
-    mesh.d3d11VertexBuffer = this->createBuffer(vertices, verticesByteSize, D3D11_BIND_VERTEX_BUFFER, setup.VertexUsage);
-    if (setup.IndicesType != IndexType::None) {
-        o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
-        o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
-        const uint8* indices = ((const uint8*)ptr) + setup.DataIndexOffset;
-        const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
+    mesh.d3d11VertexBuffer = this->createBuffer(vertices, verticesByteSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
+    if (IndexType::None != ibAttrs.Type) {
+        o_assert_dbg(mesh.Setup.DataIndexOffset != InvalidIndex);
+        o_assert_dbg(mesh.Setup.DataIndexOffset >= verticesByteSize);
+        const uint8* indices = ((const uint8*)ptr) + mesh.Setup.DataIndexOffset;
+        const int32 indicesByteSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
-        mesh.d3d11IndexBuffer = this->createBuffer(indices, indicesByteSize, D3D11_BIND_INDEX_BUFFER, setup.IndexUsage);
+        mesh.d3d11IndexBuffer = this->createBuffer(indices, indicesByteSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);
     }
     return ResourceState::Valid;
 }

@@ -84,6 +84,7 @@ valid(false),
 globalVAO(0),
 #endif
 rtValid(false),
+frameIndex(0),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
 scissorX(0),
@@ -212,6 +213,7 @@ glRenderer::commitFrame() {
     o_assert_dbg(this->valid);    
     this->rtValid = false;
     this->curRenderTarget = nullptr;
+    this->frameIndex++;
 }
 
 //------------------------------------------------------------------------------
@@ -366,12 +368,14 @@ glRenderer::applyMeshState(const drawState* ds) {
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
     // this is the default vertex attribute code path for most
     // desktop and mobile platforms
-    this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
+    const auto& ib = ds->meshes[0]->buffers[mesh::ib];
+    this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
         glVertexAttr& curAttr = this->glAttrs[attrIndex];
         const mesh* msh = ds->meshes[attr.vbIndex];
-        const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
+        const auto& vb = msh->buffers[mesh::vb];
+        const GLuint glVB = vb.glBuffers[vb.activeSlot];
 
         bool vbChanged = (glVB != this->glAttrVBs[attrIndex]);
         bool attrChanged = (attr != curAttr);
@@ -561,32 +565,60 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 }
 
 //------------------------------------------------------------------------------
+static GLuint
+obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
+    // helper function to get the right GL buffer for a vertex-
+    // or index-buffer update, this is implemented with
+    // double-buffer to prevent a sync-stall with the GPU
+    
+    // restrict buffer updates to once per frame per mesh, this isn't
+    // strictly required on GL, but we want the same restrictions across all 3D APIs
+    o_assert2(buf.updateFrameIndex != frameIndex, "Only one data update allowed per buffer and frame!\n");
+    buf.updateFrameIndex = frameIndex;
+
+    // if usage is streaming, rotate slot index to next dynamic vertex buffer
+    // to implement double/multi-buffering because the previous buffer
+    // might still be in-flight on the GPU
+    o_assert_dbg(buf.numSlots > 1);
+    if (++buf.activeSlot >= buf.numSlots) {
+        buf.activeSlot = 0;
+    }
+    return buf.glBuffers[buf.activeSlot];
+}
+
+//------------------------------------------------------------------------------
 void
 glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
-    o_assert_dbg(numBytes > 0);
-    
-    const VertexBufferAttrs& attrs = msh->vertexBufferAttrs;
-    const Usage::Code vbUsage = attrs.BufferUsage;
-    o_assert_dbg((numBytes > 0) && (numBytes <= attrs.ByteSize()));
-    o_assert_dbg((vbUsage == Usage::Stream) || (vbUsage == Usage::Dynamic) || (vbUsage == Usage::Static));
-    
-    uint8 slotIndex = msh->activeVertexBufferSlot;
-    if (Usage::Stream == vbUsage) {
-        // if usage is streaming, rotate slot index to next dynamic vertex buffer
-        // to implement double/multi-buffering
-        slotIndex++;
-        if (slotIndex >= msh->numVertexBufferSlots) {
-            slotIndex = 0;
-        }
-        msh->activeVertexBufferSlot = slotIndex;
-    }
-    
-    GLuint vb = msh->glVertexBuffers[slotIndex];
-    this->bindVertexBuffer(vb);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+
+    auto& vb = msh->buffers[mesh::vb];
+    GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
+    o_assert_dbg(0 != glBuffer);
+    this->bindVertexBuffer(glBuffer);
     ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(nullptr != data);
+
+    o_assert_dbg(IndexType::None != msh->indexBufferAttrs.Type);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+
+    auto& ib = msh->buffers[mesh::ib];
+    GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
+    o_assert_dbg(0 != glBuffer);
+    this->bindIndexBuffer(glBuffer);
+    ::glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numBytes, data);
     ORYOL_GL_CHECK_ERROR();
 }
 

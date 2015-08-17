@@ -44,6 +44,10 @@ public:
     ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
     
 private:
+    /// helper method to popluate vertex/index attr structs
+    void setupAttrs(mesh& msh);
+    /// helper method to populate primitive groups
+    void setupPrimGroups(mesh& msh);
     /// helper method to create vertex buffer in mesh
     GLuint createVertexBuffer(const void* vertexData, uint32 vertexDataSize, Usage::Code usage);
     /// helper method to create index buffer in mesh

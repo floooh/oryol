@@ -69,6 +69,8 @@ public:
     void drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int32 numBytes);
+    /// update index data
+    void updateIndices(mesh* msh, const void* data, int32 numBytes);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(void* buf, int32 bufNumBytes);
     
@@ -123,6 +125,7 @@ private:
 
     bool rtValid;
     DisplayAttrs rtAttrs;
+    int32 frameIndex;
     
     // high-level state cache
     texture* curRenderTarget;

@@ -71,15 +71,11 @@ mtlMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 mtlMeshFactory::DestroyResource(mesh& msh) {
-    for (int i = 0; i < mesh::NumSlots; i++) {
-        if (nil != msh.mtlVertexBuffers[i]) {
-            ORYOL_OBJC_RELEASE(msh.mtlVertexBuffer[i]);
-            msh.mtlVertexBuffers[i] = nil;
+    for (auto& buf : msh.buffers) {
+        for (auto& mtlBuf : buf.mtlBuffers) {
+            ORYOL_OBJC_RELEASE(mtlBuf);
+            mtlBuf = nil;
         }
-    }
-    if (nil != msh.mtlIndexBuffer) {
-        ORYOL_OBJC_RELEASE(msh.mtlIndexBuffer);
-        msh.mtlIndexBuffer = nil;
     }
     msh.Clear();
 }
@@ -134,71 +130,77 @@ mtlMeshFactory::setupPrimGroups(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
+mtlMeshFactory::createEmptyMesh(mesh& msh) {
+    o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
+    o_assert_dbg(nil == msh.buffers[mesh::ib].mtlBuffers[0]);
+    o_assert_dbg(0 < msh.Setup.NumVertices);
+
+    this->setupAttrs(msh);
+    this->setupPrimGroups(msh);
+    const auto& vbAttrs = msh.vertexBufferAttrs;
+    const auto& ibAttrs = msh.indexBufferAttrs;
+
+    // create vertex buffer(s)
+    const int32 vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
+    msh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+    for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::vb].numSlots; slotIndex++) {
+        msh.buffers[mesh::vb].mtlBuffers[slotIndex] = this->createBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
+    }
+
+    // create optional index buffer(s)
+    if (IndexType::None != ibAttrs.Type) {
+        msh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
+        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {
+            msh.buffers[mesh::ib].mtlBuffers[slotIndex] = this->createBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
+        }
+    }
+
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
 mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
-    o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
-    o_assert_dbg(nil == msh.mtlIndexBuffer);
+    o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
+    o_assert_dbg(nil == msh.buffers[mesh::ib].mtlBuffers[0]);
+    o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
+    o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(Usage::Immutable == msh.Setup.VertexUsage);
 
     this->setupAttrs(msh);
     this->setupPrimGroups(msh);
+    const auto& vbAttrs = msh.vertexBufferAttrs;
+    const auto& ibAttrs = msh.indexBufferAttrs;
 
+    // create vertex buffer
     const uint8* ptr = (const uint8*) data;
     const uint8* vertices = ptr + msh.Setup.DataVertexOffset;
-    const int32 vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
+    const int32 vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + vbSize));
+    msh.buffers[mesh::vb].mtlBuffers[0] = this->createBuffer(vertices, vbSize, msh.Setup.VertexUsage);
+    o_assert_dbg(nil != msh.buffers[mesh::vb].mtlBuffers[0]);
 
-    msh.mtlVertexBuffers[0] = this->createBuffer(vertices, vbSize, msh.Setup.VertexUsage);
-    o_assert_dbg(nil != msh.mtlVertexBuffers[0]);
-    if (msh.Setup.IndicesType != IndexType::None) {
+    // create optional index buffer
+    if (ibAttrs.Type != IndexType::None) {
+        o_assert_dbg(Usage::Immutable == msh.Setup.IndexUsage);
         o_assert_dbg(msh.Setup.DataIndexOffset != InvalidIndex);
         o_assert_dbg(msh.Setup.DataIndexOffset >= vbSize);
         const uint8* indices = ptr + msh.Setup.DataIndexOffset;
-        const int32 ibSize = msh.Setup.NumIndices * IndexType::ByteSize(msh.Setup.IndicesType);
+        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         o_assert_dbg((ptr + size) >= (indices + ibSize));
-        msh.mtlIndexBuffer = this->createBuffer(indices, ibSize, msh.Setup.IndexUsage);
-        o_assert_dbg(nil != msh.mtlIndexBuffer);
+        msh.buffers[mesh::ib].mtlBuffers[0] = this->createBuffer(indices, ibSize, ibAttrs.BufferUsage);
+        o_assert_dbg(nil != msh.buffers[mesh::ib].mtlBuffers[0]);
     }
     return ResourceState::Valid;
 }
 
-//------------------------------------------------------------------------------
-ResourceState::Code
-mtlMeshFactory::createEmptyMesh(mesh& msh) {
-    o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
-    o_assert_dbg(nil == msh.mtlIndexBuffer);
-
-    this->setupAttrs(msh);
-    this->setupPrimGroups(msh);
-
-    const int32 vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
-    o_assert_dbg(vbSize > 0);
-
-    if (Usage::Stream == msh.Setup.VertexUsage) {
-        for (int i = 0; i < mesh::NumSlots; i++) {
-            msh.mtlVertexBuffers[i] = this->createBuffer(nullptr, vbSize, msh.Setup.VertexUsage);
-            o_assert_dbg(nil != msh.mtlVertexBuffers[i]);
-        }
-    }
-    else {
-        msh.mtlVertexBuffers[0] = this->createBuffer(nullptr, vbSize, msh.Setup.VertexUsage);
-        o_assert_dbg(nil != msh.mtlVertexBuffers[0]);
-    }
-    if (IndexType::None != msh.Setup.IndicesType) {
-        const int32 ibSize = msh.Setup.NumIndices * IndexType::ByteSize(msh.Setup.IndicesType);
-        o_assert_dbg(ibSize > 0);
-        msh.mtlIndexBuffer = this->createBuffer(nullptr, ibSize, msh.Setup.IndexUsage);
-        o_assert_dbg(nil != msh.mtlIndexBuffer);
-    }
-    return ResourceState::Valid;
-}
 
 //------------------------------------------------------------------------------
 ResourceState::Code
 mtlMeshFactory::createFullscreenQuad(mesh& msh) {
-    o_assert_dbg(nil == msh.mtlVertexBuffers[0]);
-    o_assert_dbg(nil == msh.mtlIndexBuffer);
 
     VertexBufferAttrs vbAttrs;
     vbAttrs.NumVertices = 4;
@@ -230,8 +232,8 @@ mtlMeshFactory::createFullscreenQuad(mesh& msh) {
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
 
-    msh.mtlVertexBuffers[0] = this->createBuffer(vertices, sizeof(vertices), Usage::Immutable);
-    msh.mtlIndexBuffer = this->createBuffer(indices, sizeof(indices), Usage::Immutable);
+    msh.buffers[mesh::vb].mtlBuffers[0] = this->createBuffer(vertices, sizeof(vertices), Usage::Immutable);
+    msh.buffers[mesh::ib].mtlBuffers[0] = this->createBuffer(indices, sizeof(indices), Usage::Immutable);
 
     return ResourceState::Valid;
 }

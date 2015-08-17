@@ -21,10 +21,10 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    /// pointer to vertex buffer object
     ID3D11Buffer* d3d11VertexBuffer;
-    /// pointer to optional index buffer object (nullptr if no indices)
     ID3D11Buffer* d3d11IndexBuffer;
+    int32 vbUpdateFrameIndex;
+    int32 ibUpdateFrameIndex;
 };
 
 } // namespace _priv

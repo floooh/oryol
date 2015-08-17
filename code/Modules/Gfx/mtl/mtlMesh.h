@@ -15,21 +15,24 @@ namespace _priv {
 
 class mtlMesh : public meshBase {
 public:
-    /// constructor
-    mtlMesh();
     /// destructor
     ~mtlMesh();
 
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    /// max number of vertex buffer slots (used for double-buffering dynamic vertex data)
     static const int32 NumSlots = GfxConfig::MtlMaxInflightFrames;
-    /// active vertex buffer slot
-    uint8 activeVertexBufferSlot;
-
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer),NumSlots> mtlVertexBuffers;
-    ORYOL_OBJC_TYPED_ID(MTLBuffer) mtlIndexBuffer;
+    struct buffer {
+        buffer();
+        int32 updateFrameIndex;
+        uint8 numSlots;
+        uint8 activeSlot;
+        StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), NumSlots> mtlBuffers;
+    };
+    // indices into buffers array (first entry is vertex buffers, second entry is index buffers
+    static const int vb = 0;
+    static const int ib = 1;
+    StaticArray<buffer,2> buffers;
 };
 
 } // namespace _priv

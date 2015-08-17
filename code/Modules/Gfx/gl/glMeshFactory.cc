@@ -74,14 +74,13 @@ glMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 void
 glMeshFactory::DestroyResource(mesh& mesh) {
     this->pointers.renderer->invalidateMeshState();
-    for (uint8 i = 0; i < mesh.numVertexBufferSlots; i++) {
-        GLuint vb = mesh.glVertexBuffers[i];
-        if (0 != vb) {
-            ::glDeleteBuffers(1, &vb);
+    for (auto& buf : mesh.buffers) {
+        for (int i = 0; i < buf.numSlots; i++) {
+            GLuint glBuf = buf.glBuffers[i];
+            if  (0 != glBuf) {
+                ::glDeleteBuffers(1, &glBuf);
+            }
         }
-    }
-    if (0 != mesh.glIndexBuffer) {
-        ::glDeleteBuffers(1, &mesh.glIndexBuffer);
     }
     mesh.Clear();
 }
@@ -137,8 +136,6 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     vbAttrs.BufferUsage = Usage::Immutable;
     vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    vbAttrs.StepFunction = VertexStepFunction::PerVertex;
-    vbAttrs.StepRate = 1;
     mesh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -167,55 +164,68 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     };
     
     // create vertex and index buffer
-    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
-    mesh.glIndexBuffer = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
+    o_assert_dbg(1 == mesh.buffers[mesh::vb].numSlots);
+    o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
+    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
+    mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
 
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
-ResourceState::Code
-glMeshFactory::createEmptyMesh(mesh& mesh) {
-    o_assert_dbg(0 < mesh.Setup.NumVertices);
-    
-    const MeshSetup& setup = mesh.Setup;
+void
+glMeshFactory::setupAttrs(mesh& msh) {
 
     VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = setup.NumVertices;
-    vbAttrs.Layout = setup.Layout;
-    vbAttrs.BufferUsage = setup.VertexUsage;
-    vbAttrs.StepFunction = setup.StepFunction;
-    vbAttrs.StepRate = setup.StepRate;
-    mesh.vertexBufferAttrs = vbAttrs;
-    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-    
+    vbAttrs.NumVertices = msh.Setup.NumVertices;
+    vbAttrs.Layout = msh.Setup.Layout;
+    vbAttrs.BufferUsage = msh.Setup.VertexUsage;
+    vbAttrs.StepFunction = msh.Setup.StepFunction;
+    vbAttrs.StepRate = msh.Setup.StepRate;
+    msh.vertexBufferAttrs = vbAttrs;
+
     IndexBufferAttrs ibAttrs;
-    ibAttrs.NumIndices = setup.NumIndices;
-    ibAttrs.Type = setup.IndicesType;
-    ibAttrs.BufferUsage = setup.IndexUsage;
-    mesh.indexBufferAttrs = ibAttrs;
-    const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+    ibAttrs.NumIndices = msh.Setup.NumIndices;
+    ibAttrs.Type = msh.Setup.IndicesType;
+    ibAttrs.BufferUsage = msh.Setup.IndexUsage;
+    msh.indexBufferAttrs = ibAttrs;
+}
+
+//------------------------------------------------------------------------------
+void
+glMeshFactory::setupPrimGroups(mesh& msh) {
+    msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
+    o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
+    for (int32 i = 0; i < msh.numPrimGroups; i++) {
+        msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
+    }
+}
+//------------------------------------------------------------------------------
+ResourceState::Code
+glMeshFactory::createEmptyMesh(mesh& mesh) {
+    o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
+    o_assert_dbg(0 == mesh.buffers[mesh::ib].glBuffers[0]);
+    o_assert_dbg(0 < mesh.Setup.NumVertices);
     
-    mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
-        mesh.primGroups[i] = setup.PrimitiveGroup(i);
+    this->setupAttrs(mesh);
+    this->setupPrimGroups(mesh);
+    const auto& vbAttrs = mesh.vertexBufferAttrs;
+    const auto& ibAttrs = mesh.indexBufferAttrs;
+
+    // create vertex buffer(s)
+    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+    mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+    for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
+        mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
     }
-    
-    // if this is a stream update mesh, we actually create 2 vertex buffers for double-buffered updated
-    if (Usage::Stream == vbAttrs.BufferUsage) {
-        const uint8 numSlots = 2;
-        mesh.numVertexBufferSlots = numSlots;
-        for (uint8 slotIndex = 0; slotIndex < numSlots; slotIndex++) {
-            mesh.glVertexBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
-        }
-    }
-    else {
-        // normal static or dynamic mesh, no double-buffering
-        mesh.glVertexBuffers[0] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
-    }
+
+    // create optional index buffer(s)
     if (IndexType::None != ibAttrs.Type) {
-        mesh.glIndexBuffer = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
+        mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
+        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {
+            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
+        }
     }
 
     return ResourceState::Valid;
@@ -224,49 +234,37 @@ glMeshFactory::createEmptyMesh(mesh& mesh) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
+    o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
+    o_assert_dbg(0 == mesh.buffers[mesh::ib].glBuffers[0]);
+    o_assert_dbg(1 == mesh.buffers[mesh::vb].numSlots);
+    o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(Usage::Immutable == mesh.Setup.VertexUsage);
 
-    const MeshSetup& setup = mesh.Setup;
-    
-    // setup vertex buffer attrs
-    VertexBufferAttrs vbAttrs;
-    vbAttrs.NumVertices = setup.NumVertices;
-    vbAttrs.BufferUsage = setup.VertexUsage;
-    vbAttrs.Layout = setup.Layout;
-    vbAttrs.StepFunction = setup.StepFunction;
-    vbAttrs.StepRate = setup.StepRate;
-    mesh.vertexBufferAttrs = vbAttrs;
-    
-    // setup index buffer attrs
-    IndexBufferAttrs ibAttrs;
-    ibAttrs.NumIndices = setup.NumIndices;
-    ibAttrs.Type = setup.IndicesType;
-    ibAttrs.BufferUsage = setup.IndexUsage;
-    mesh.indexBufferAttrs = ibAttrs;
-    
-    // setup primitive groups
-    mesh.numPrimGroups = setup.NumPrimitiveGroups();
-    o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
-        mesh.primGroups[i] = setup.PrimitiveGroup(i);
-    }
-    
-    // setup the mesh object
+    this->setupAttrs(mesh);
+    this->setupPrimGroups(mesh);
+    const auto& vbAttrs = mesh.vertexBufferAttrs;
+    const auto& ibAttrs = mesh.indexBufferAttrs;
+
+    // create vertex buffer
     const uint8* ptr = (const uint8*)data;
-    const uint8* vertices = ptr + setup.DataVertexOffset;
-    const int32 verticesByteSize = setup.NumVertices * setup.Layout.ByteSize();
-    o_assert_dbg((ptr + size) >= (vertices + verticesByteSize));
-    mesh.glVertexBuffers[0] = this->createVertexBuffer(vertices, verticesByteSize, setup.VertexUsage);
-    if (setup.IndicesType != IndexType::None) {
-        o_assert_dbg(setup.IndexUsage == Usage::Immutable);
-        o_assert_dbg(setup.DataIndexOffset != InvalidIndex);
-        o_assert_dbg(setup.DataIndexOffset >= verticesByteSize);
-        const uint8* indices = ptr + setup.DataIndexOffset;
-        const int32 indicesByteSize = setup.NumIndices * IndexType::ByteSize(setup.IndicesType);
-        o_assert_dbg((ptr + size) >= (indices + indicesByteSize));
-        mesh.glIndexBuffer = this->createIndexBuffer(indices, indicesByteSize, setup.IndexUsage);
+    const uint8* vertices = ptr + mesh.Setup.DataVertexOffset;
+    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+    o_assert_dbg((ptr + size) >= (vertices + vbSize));
+    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
+    o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[0]);
+
+    // create optional index buffer
+    if (ibAttrs.Type != IndexType::None) {
+        o_assert_dbg(Usage::Immutable == ibAttrs.BufferUsage);
+        o_assert_dbg(mesh.Setup.DataIndexOffset != InvalidIndex);
+        o_assert_dbg(mesh.Setup.DataIndexOffset >= vbSize);
+        const uint8* indices = ptr + mesh.Setup.DataIndexOffset;
+        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        o_assert_dbg((ptr + size) >= (indices + ibSize));
+        mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, ibSize, ibAttrs.BufferUsage);
+        o_assert_dbg(0 != mesh.buffers[mesh::ib].glBuffers[0]);
     }
     
     return ResourceState::Valid;
