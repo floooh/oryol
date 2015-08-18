@@ -121,6 +121,8 @@ fips_begin_module(Gfx)
         fips_dir(d3d12)
         fips_files(
             d3d12_impl.h d3d12_decl.h
+            d3d12Config.h
+            d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
             d3d12MeshFactory.cc d3d12MeshFactory.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
@@ -184,7 +186,7 @@ fips_begin_module(Gfx)
         fips_libs(d3d11)
     endif()
     if (ORYOL_D3D12)
-        fips_libs(d3d12)
+        fips_libs(d3d12 dxgi)
     endif()
     fips_deps(Resource Messaging IO Core)
 fips_end_module()

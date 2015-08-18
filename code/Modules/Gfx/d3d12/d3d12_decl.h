@@ -6,5 +6,11 @@
 */
 #include "Gfx/win/win_decl.h"
 
+struct IDXGIFactory4;
+struct IDXGISwapChain3;
+typedef enum DXGI_FORMAT DXGI_FORMAT;
+
+struct ID3D12Device;
+struct ID3D12CommandQueue;
 
 
