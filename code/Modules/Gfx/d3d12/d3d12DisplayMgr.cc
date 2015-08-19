@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "d3d12_impl.h"
 #include "d3d12DisplayMgr.h"
-#include "d3d12Config.h"
 #include "d3d12Types.h"
 
 namespace Oryol {
@@ -15,8 +14,10 @@ d3d12DisplayMgr::d3d12DisplayMgr() :
 dxgiFactory(nullptr),
 d3d12Device(nullptr),
 d3d12CommandQueue(nullptr),
-dxgiSwapChain(nullptr) {
-    // empty
+dxgiSwapChain(nullptr),
+d3d12RTVHeap(nullptr),
+rtvDescriptorSize(0) {
+    this->d3d12RenderTargets.Fill(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -24,10 +25,6 @@ d3d12DisplayMgr::~d3d12DisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
-    o_assert_dbg(nullptr == this->dxgiFactory);
-    o_assert_dbg(nullptr == this->d3d12Device);
-    o_assert_dbg(nullptr == this->d3d12CommandQueue);
-    o_assert_dbg(nullptr == this->dxgiSwapChain);
 }
 
 //------------------------------------------------------------------------------
@@ -41,12 +38,14 @@ d3d12DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createDXGIFactory();
     this->createDeviceObjects();
     this->createSwapChain();
+    this->createDefaultRenderTarget(setup.Width, setup.Height);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12DisplayMgr::DiscardDisplay() {
     o_assert_dbg(this->IsDisplayValid());
+    this->destroyDefaultRenderTarget();
     this->destroySwapChain();
     this->destroyDeviceObjects();
     this->destroyDXGIFactory();
@@ -164,6 +163,58 @@ d3d12DisplayMgr::enableDebugLayer() {
         debugController->EnableDebugLayer();
     }
     #endif
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12DisplayMgr::createDefaultRenderTarget(int width, int height) {
+    o_assert_dbg(this->d3d12Device);
+    o_assert_dbg(nullptr == this->d3d12RTVHeap);
+    o_assert_dbg(nullptr == this->d3d12RenderTargets[0]);
+    o_assert_dbg((width > 0) && (height > 0));
+    HRESULT hr;
+
+    D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
+    Memory::Clear(&heapDesc, sizeof(heapDesc));
+    heapDesc.NumDescriptors = d3d12Config::NumFrames;
+    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    hr = this->d3d12Device->CreateDescriptorHeap(&heapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12RTVHeap);
+    o_assert(SUCCEEDED(hr) && this->d3d12RTVHeap);
+    this->rtvDescriptorSize = this->d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    o_assert(this->rtvDescriptorSize > 0);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
+    for (int i = 0; i < d3d12Config::NumFrames; i++) {
+        hr = this->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->d3d12RenderTargets[i]);
+        o_assert(SUCCEEDED(hr) && this->d3d12RenderTargets[i]);
+        this->d3d12Device->CreateRenderTargetView(this->d3d12RenderTargets[i], nullptr, rtvHandle);
+        rtvHandle.ptr += this->rtvDescriptorSize;
+    }
+
+    // FIXME: create depth-stencil buffer!
+    o_warn("Create depth-stencil buffer!\n");
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12DisplayMgr::destroyDefaultRenderTarget() {
+    o_assert_dbg(this->d3d12RenderTargets[0]);
+    o_assert_dbg(this->d3d12RTVHeap);
+
+    // FIXME: destroy depth-stencil buffer!
+    o_warn("Destroy depth-stencil buffer!\n");
+
+    for (auto& rt : this->d3d12RenderTargets) {
+        if (rt) {
+            rt->Release();
+            rt = nullptr;
+        }
+    }
+    if (this->d3d12RTVHeap) {
+        this->d3d12RTVHeap->Release();
+        this->d3d12RTVHeap = nullptr;
+    }
 }
 
 } // namespace _priv
