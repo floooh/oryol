@@ -56,7 +56,8 @@ public:
     ID3D12DescriptorHeap* d3d12RTVHeap;
     StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
 
-    int rtvDescriptorSize;    
+    int32 rtvDescriptorSize;    
+    uint32 curBackbufferIndex;
 };
 
 } // namespace _priv

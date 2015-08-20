@@ -18,6 +18,7 @@ typedef unsigned long ULONG_PTR, *PULONG_PTR;
 #define __int3264 __int32
 #endif
 
+typedef void* HANDLE;
 typedef unsigned long DWORD;
 struct HWND__;
 typedef HWND__* HWND;

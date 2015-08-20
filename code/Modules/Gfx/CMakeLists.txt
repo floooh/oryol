@@ -96,6 +96,7 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D11 OR ORYOL_D3D12)
         fips_dir(win)
         fips_files(
+            win_decl.h
             winDisplayMgr.cc winDisplayMgr.h
             winInputDefs.h    
         )

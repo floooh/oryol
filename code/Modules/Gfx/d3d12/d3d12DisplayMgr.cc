@@ -5,6 +5,7 @@
 #include "d3d12_impl.h"
 #include "d3d12DisplayMgr.h"
 #include "d3d12Types.h"
+#include "Gfx/Core/renderer.h"
 
 namespace Oryol {
 namespace _priv {
@@ -16,7 +17,8 @@ d3d12Device(nullptr),
 d3d12CommandQueue(nullptr),
 dxgiSwapChain(nullptr),
 d3d12RTVHeap(nullptr),
-rtvDescriptorSize(0) {
+rtvDescriptorSize(0),
+curBackbufferIndex(0) {
     this->d3d12RenderTargets.Fill(nullptr);
 }
 
@@ -39,12 +41,16 @@ d3d12DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createDeviceObjects();
     this->createSwapChain();
     this->createDefaultRenderTarget(setup.Width, setup.Height);
+    this->curBackbufferIndex = this->dxgiSwapChain->GetCurrentBackBufferIndex();
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12DisplayMgr::DiscardDisplay() {
     o_assert_dbg(this->IsDisplayValid());
+    
+    // NOTE: this method must be called after d3d12Renderer::discard(), since
+    // d3d12Renderer::discard() waits until the GPU is finished!
     this->destroyDefaultRenderTarget();
     this->destroySwapChain();
     this->destroyDeviceObjects();
@@ -55,7 +61,10 @@ d3d12DisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 void
 d3d12DisplayMgr::Present() {
-    o_warn("d3d12DisplayMgr::Present()\n");
+    o_assert_dbg(this->dxgiSwapChain);
+    this->dxgiSwapChain->Present(this->gfxSetup.SwapInterval, 0);
+    this->pointers.renderer->waitForPreviousFrame();
+    this->curBackbufferIndex = this->dxgiSwapChain->GetCurrentBackBufferIndex();
 }
 
 //------------------------------------------------------------------------------
