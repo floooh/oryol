@@ -10,6 +10,7 @@
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "d3d12_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -75,9 +76,28 @@ public:
     /// invalidate currently bound texture state
     void invalidateTextureState();
 
+    /// wait for the previous frame to finish
+    void waitForPreviousFrame();
+
+    /// pointer to d3d12 device (owned by display mgr)
+    ID3D12Device* d3d12Device;
+    /// pointer to d3d12 command queue (owned by display mgr)
+    ID3D12CommandQueue* d3d12CommandQueue;
+    /// pointer to d3d12 command allocator (owned by render mgr)
+    ID3D12CommandAllocator* d3d12CommandAllocator;
+    /// pointer to d3d12 command list (owned by render mgr)
+    ID3D12GraphicsCommandList* d3d12CommandList;
+
+    /// the current frame index, starts at 0 and is incremented in commitFrame
+    uint64 frameIndex;
+
 private:
     bool valid;
     gfxPointers pointers;
+    bool rtValid;
+    DisplayAttrs rtAttrs;
+    ID3D12Fence* d3d12Fence;
+    HANDLE fenceEvent;
 };
 
 } // namespace _priv
