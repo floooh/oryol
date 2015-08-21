@@ -17,6 +17,8 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
+- **21-Aug-2015**: As expected, the latest OSX 10.11 beta breaks the Metal port again, yay :D
+
 - **17-Aug-2015**: The imgui wrapper has been updated for imgui 1.44, which 
 requires an update to the fips-imgui dependency. Either delete the fips-imgui
 directory and do a './fips fetch', or do a manual 'git pull && git submodule update'
