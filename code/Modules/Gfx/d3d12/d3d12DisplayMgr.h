@@ -8,7 +8,6 @@
 #include "Gfx/win/winDisplayMgr.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 #include "Gfx/d3d12/d3d12Config.h"
-#include "Core/Containers/StaticArray.h"
 
 namespace Oryol {
 namespace _priv {
@@ -44,20 +43,11 @@ public:
     void destroySwapChain();
     /// enable the debug layer (only if compiled with ORYOL_DEBUG)
     void enableDebugLayer();
-    /// create the default (backbuffer) render target 
-    void createDefaultRenderTarget(int width, int height);
-    /// destroy the default render target
-    void destroyDefaultRenderTarget();
 
     IDXGIFactory4* dxgiFactory;
     ID3D12Device* d3d12Device;
     ID3D12CommandQueue* d3d12CommandQueue;
     IDXGISwapChain3* dxgiSwapChain;
-    ID3D12DescriptorHeap* d3d12RTVHeap;
-    StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
-
-    int32 rtvDescriptorSize;    
-    uint32 curBackbufferIndex;
 };
 
 } // namespace _priv
