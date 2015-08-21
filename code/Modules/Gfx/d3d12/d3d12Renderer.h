@@ -6,10 +6,12 @@
     @brief D3D12 implementation of class renderer
 */
 #include "Core/Types.h"
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/d3d12/d3d12Config.h"
 #include "d3d12_decl.h"
 
 namespace Oryol {
@@ -77,7 +79,7 @@ public:
     void invalidateTextureState();
 
     /// wait for the previous frame to finish
-    void waitForPreviousFrame();
+    void frameSync();
 
     /// pointer to d3d12 device (owned by display mgr)
     ID3D12Device* d3d12Device;
@@ -92,12 +94,40 @@ public:
     uint64 frameIndex;
 
 private:
+    /// create the d3d12 command allocator object
+    void createCommandAllocator();
+    /// destroy d3d12 command allocator object
+    void destroyCommandAllocator();
+    /// create the d3d12 command list object
+    void createCommandList();
+    /// destroy the d3d12 command allocator object
+    void destroyCommandList();
+    /// create the frame synchronization objects
+    void createFrameSyncObjects();
+    /// destory frame sync objects
+    void destroyFrameSyncObjects();
+    /// create the default render-targets
+    void createDefaultRenderTargets();
+    /// destroy the default render-targets
+    void destroyDefaultRenderTargets();
+
     bool valid;
     gfxPointers pointers;
     bool rtValid;
     DisplayAttrs rtAttrs;
+
+    texture* curRenderTarget;
+    drawState* curDrawState;
+
+    // frame-sync objects
     ID3D12Fence* d3d12Fence;
     HANDLE fenceEvent;
+
+    // default render target
+    StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
+    ID3D12DescriptorHeap* d3d12RTVHeap;
+    int32 rtvDescriptorSize;
+    uint32 curBackbufferIndex;
 };
 
 } // namespace _priv
