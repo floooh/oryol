@@ -2,8 +2,10 @@
 //  d3d12ShaderFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "d3d12ShaderFactory.h"
 #include "Core/Assertion.h"
+#include "d3d12ShaderFactory.h"
+#include "Gfx/Core/renderer.h"
+#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {
@@ -45,15 +47,36 @@ d3d12ShaderFactory::IsValid() const {
 ResourceState::Code
 d3d12ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    o_warn("d3d12ShaderFactory::SetupResource()\n");
-    return ResourceState::InvalidState;
+
+    this->pointers.renderer->invalidateShaderState();
+    const ShaderLang::Code slang = ShaderLang::HLSL5;
+    const ShaderSetup& setup = shd.Setup;
+
+    d3d12Shader::shaderBlob vsByteCode;
+    d3d12Shader::shaderBlob psByteCode;
+    const int32 numProgs = setup.NumPrograms();
+    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
+        setup.VertexShaderByteCode(progIndex, slang, vsByteCode.ptr, vsByteCode.size);
+        setup.FragmentShaderByteCode(progIndex, slang, psByteCode.ptr, psByteCode.size);
+        shd.addShaders(setup.Mask(progIndex), vsByteCode, psByteCode);
+    }
+
+    o_warn("FIXME: d3d12ShaderFactory::SetupResource() setup constant buffers\n");
+
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12ShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    o_warn("d3d12ShaderFactory::DestroyResource()\n");
+
+    this->pointers.renderer->invalidateShaderState();
+    
+    // no need to destroy 'shader objects' here
+    o_warn("FIXME: d3d12ShaderFactory::SetupResource() destroy constant buffers\n");
+
+    shd.Clear();
 }
 
 } // namespace _priv

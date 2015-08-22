@@ -45,7 +45,7 @@ ResourceState::Code
 d3d12MeshFactory::SetupResource(mesh& msh) {
     o_assert_dbg(this->isValid);
     o_warn("d3d12MeshFactory::SetupResource()\n");
-    return ResourceState::InvalidState;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ ResourceState::Code
 d3d12MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
     o_assert_dbg(this->isValid);
     o_warn("d3d12MeshFactory::SetupResource()\n");
-    return ResourceState::InvalidState;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

@@ -123,9 +123,11 @@ fips_begin_module(Gfx)
         fips_files(
             d3d12_impl.h d3d12_decl.h
             d3d12Config.h
+            d3d12Allocator.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
             d3d12MeshFactory.cc d3d12MeshFactory.h
+            d3d12Shader.cc d3d12Shader.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12Renderer.cc d3d12Renderer.h
