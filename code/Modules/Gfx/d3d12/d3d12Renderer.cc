@@ -350,6 +350,9 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     this->d3d12CommandList->ResourceBarrier(1, &barrier);
 
+    // set the render target
+    this->d3d12CommandList->OMSetRenderTargets(1, &colorRTVHandle, FALSE, nullptr);
+
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
 
