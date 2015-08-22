@@ -25,10 +25,10 @@ namespace _priv {
 class shader : public d3d11Shader { };
 } }
 #elif ORYOL_D3D12
-#include "Gfx/Resource/shaderBase.h"
+#include "Gfx/d3d12/d3d12Shader.h"
 namespace Oryol {
 namespace _priv {
-class shader : public shaderBase { };
+class shader : public d3d12Shader { };
 } }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlShader.h"

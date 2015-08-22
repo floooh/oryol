@@ -25,3 +25,4 @@ typedef HWND__* HWND;
 typedef UINT_PTR WPARAM;
 typedef LONG_PTR LPARAM;
 typedef LONG_PTR LRESULT;
+typedef ULONG_PTR SIZE_T, *PSIZE_T;
