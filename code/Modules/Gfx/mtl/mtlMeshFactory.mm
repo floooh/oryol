@@ -187,7 +187,7 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     if (ibAttrs.Type != IndexType::None) {
         o_assert_dbg(Usage::Immutable == msh.Setup.IndexUsage);
         o_assert_dbg(msh.Setup.DataIndexOffset != InvalidIndex);
-        o_assert_dbg(msh.Setup.DataIndexOffset >= vbSize);
+        o_assert_dbg(msh.Setup.DataIndexOffset >= (msh.Setup.DataVertexOffset + vbSize));
         const uint8* indices = ptr + msh.Setup.DataIndexOffset;
         const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         o_assert_dbg((ptr + size) >= (indices + ibSize));
