@@ -12,8 +12,8 @@ Pacman Info:
 * http://www.lomont.org/Software/Games/PacMan/PacmanEmulation.pdf
 
 On parallel-task systems:
-https://software.intel.com/en-us/blogs/2010/08/20/nulstein-v2-plog-presenting-through-a-blog
-https://software.intel.com/en-us/articles/do-it-yourself-game-task-scheduling
-http://blog.molecular-matters.com/2015/08/24/job-system-2-0-lock-free-work-stealing-part-1-basics/
-http://www.enkisoftware.com/devlogpost-20150822-1-Implementing_a_lightweight_task_scheduler.html
-https://github.com/dougbinks/enkiTS
+* https://software.intel.com/en-us/blogs/2010/08/20/nulstein-v2-plog-presenting-through-a-blog
+* https://software.intel.com/en-us/articles/do-it-yourself-game-task-scheduling
+* http://blog.molecular-matters.com/2015/08/24/job-system-2-0-lock-free-work-stealing-part-1-basics/
+* http://www.enkisoftware.com/devlogpost-20150822-1-Implementing_a_lightweight_task_scheduler.html
+* https://github.com/dougbinks/enkiTS
