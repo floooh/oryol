@@ -127,6 +127,7 @@ fips_begin_module(Gfx)
             d3d12ResourceContainer.cc d3d12ResourceContainer.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
+            d3d12Mesh.cc d3d12Mesh.h
             d3d12MeshFactory.cc d3d12MeshFactory.h
             d3d12Shader.cc d3d12Shader.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h

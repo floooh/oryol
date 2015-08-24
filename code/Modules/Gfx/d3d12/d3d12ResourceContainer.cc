@@ -11,13 +11,13 @@ namespace _priv {
 void
 d3d12ResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     gfxResourceContainerBase::setup(setup, ptrs);
-    this->resourceAllocator.Setup(ptrs.renderer->d3d12Device);
+    this->resAllocator.Setup(ptrs.renderer->d3d12Device);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12ResourceContainer::discard() {
-    this->resourceAllocator.Discard();
+    this->resAllocator.Discard();
     gfxResourceContainerBase::discard();
 }
 
