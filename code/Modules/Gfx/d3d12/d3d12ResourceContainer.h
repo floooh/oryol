@@ -18,8 +18,7 @@ public:
     /// discard the resource manager
     void discard();
 
-private:
-    d3d12ResourceAllocator resourceAllocator;
+    d3d12ResourceAllocator resAllocator;
 };
 
 } // namespace _priv

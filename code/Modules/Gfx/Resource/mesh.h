@@ -22,10 +22,10 @@ namespace _priv {
 class mesh : public d3d11Mesh { };
 } }
 #elif ORYOL_D3D12
-#include "Gfx/Resource/meshBase.h"
+#include "Gfx/d3d12/d3d12Mesh.h"
 namespace Oryol {
 namespace _priv {
-class mesh : public meshBase { };
+class mesh : public d3d12Mesh { };
 } }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlMesh.h"

@@ -5,6 +5,7 @@
 #include "d3d12Renderer.h"
 #include "d3d12_impl.h"
 #include "Gfx/Core/displayMgr.h"
+#include "Gfx/Resource/gfxResourceContainer.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Oryol {
@@ -256,6 +257,9 @@ d3d12Renderer::frameSync() {
 
     // lookup new backbuffer index
     this->curBackbufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
+
+    // garbage-collect resources
+    this->pointers.resContainer->resAllocator.GarbageCollect(this->frameIndex);
 }
 
 //------------------------------------------------------------------------------
