@@ -156,16 +156,16 @@ d3d12ResourceAllocator::AllocBuffer(ID3D12GraphicsCommandList* cmdList, uint64 f
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::Free(uint64 frameIndex, ID3D12Resource* res) {
+d3d12ResourceAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->d3d12Device);
     o_assert_dbg(res);
 
     // place a new item in the free-queue, the actual release will happen
     // a few frames later inside the GarbageCollect() method
-    // when the GPU is done with the buffer
+    // when the GPU is done with the resource
     this->releaseQueue.Enqueue(frameIndex, res);
-    Log::Dbg("> free d3d12 buffer %p at frame %d\n", res, frameIndex);
+    Log::Dbg("> free d3d12 resource %p at frame %d\n", res, frameIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ d3d12ResourceAllocator::upload(ID3D12GraphicsCommandList* cmdList, uint64 frameI
     cmdList->CopyBufferRegion(dstRes, 0, uploadBuffer, 0, size);
 
     // add the upload buffer to the release-queue, so that it will be deleted when no longer in use
-    this->Free(frameIndex, uploadBuffer);
+    this->ReleaseDeferred(frameIndex, uploadBuffer);
 }
 
 } // namespace _priv

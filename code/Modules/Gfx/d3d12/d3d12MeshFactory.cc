@@ -2,6 +2,7 @@
 //  d3d12MeshFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "d3d12_impl.h"
 #include "d3d12MeshFactory.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/renderer.h"
@@ -78,12 +79,12 @@ d3d12MeshFactory::DestroyResource(mesh& msh) {
     for (auto& buf : msh.buffers) {
         for (ID3D12Resource* d3d12Res : buf.d3d12DefaultBuffers) {
             if (d3d12Res) {
-                resAllocator.Free(frameIndex, d3d12Res);
+                resAllocator.ReleaseDeferred(frameIndex, d3d12Res);
             }
         }
         for (ID3D12Resource* d3d12Res : buf.d3d12UploadBuffers) {
             if (d3d12Res) {
-                resAllocator.Free(frameIndex, d3d12Res);
+                resAllocator.ReleaseDeferred(frameIndex, d3d12Res);
             }
         }
     }

@@ -39,8 +39,8 @@ public:
 
     /// allocate a d3d12 buffer resource for use and vertex-, index- or constant-buffer optionally fill with data
     ID3D12Resource* AllocBuffer(ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size);
-    /// defer-free all data associated with resource label
-    void Free(uint64 frameIndex, ID3D12Resource* res);
+    /// defer-free a resource (any D3D12 object that needs to be deferred-deleted actually)
+    void ReleaseDeferred(uint64 frameIndex, ID3D12Object* res);
 
 private:
     /// internal helper method to create a d3d12 buffer resource
@@ -52,9 +52,9 @@ private:
 
     struct freeItem {
         freeItem() : frameIndex(0), res(nullptr) { };
-        freeItem(uint64 frameIndex_, ID3D12Resource* res_) : frameIndex(frameIndex_), res(res_) { };
+        freeItem(uint64 frameIndex_, ID3D12Object* res_) : frameIndex(frameIndex_), res(res_) { };
         uint64 frameIndex;
-        ID3D12Resource* res;
+        ID3D12Object* res;
     };
     ID3D12Device* d3d12Device;
     Queue<freeItem> releaseQueue;

@@ -1,0 +1,22 @@
+#pragma once
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::d3d12DrawStateFactory
+    @ingroup _priv
+    @brief D3D12 implementation of drawStateFactory
+*/
+#include "Gfx/Resource/drawStateFactoryBase.h"
+
+namespace Oryol {
+namespace _priv {
+
+class d3d12DrawStateFactory : public drawStateFactoryBase {
+public:
+    /// setup drawState resource
+    ResourceState::Code SetupResource(drawState& ds);
+    /// destroy the drawState
+    void DestroyResource(drawState& ds);
+};
+
+} // namespace _priv
+} // namespace Oryol
