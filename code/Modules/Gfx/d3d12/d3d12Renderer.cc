@@ -17,6 +17,7 @@ d3d12Device(nullptr),
 d3d12CommandQueue(nullptr),
 d3d12CommandAllocator(nullptr),
 d3d12CommandList(nullptr),
+d3d12RootSignature(nullptr),
 frameIndex(0),
 valid(false),
 rtValid(false),
@@ -52,6 +53,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createCommandList();
     this->createFrameSyncObjects();
     this->createDefaultRenderTargets();
+    this->createRootSignature();
 
     this->frameIndex = 1;
 }
@@ -69,6 +71,7 @@ d3d12Renderer::discard() {
     this->d3d12CommandList->Close();
     this->frameSync();
 
+    this->destroyRootSignature();
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
     this->destroyCommandList();
@@ -213,6 +216,95 @@ d3d12Renderer::destroyDefaultRenderTargets() {
     if (this->d3d12RTVHeap) {
         this->d3d12RTVHeap->Release();
         this->d3d12RTVHeap = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::createRootSignature() {
+    o_assert_dbg(nullptr == this->d3d12RootSignature);
+    o_assert_dbg(this->d3d12Device);
+    HRESULT hr;
+
+    // the root signature describes number of constant buffers,
+    // textures and samplers that can be bound to the vertex- and pixel-shader
+    StaticArray<D3D12_DESCRIPTOR_RANGE, 3> vsRanges;
+    Memory::Clear(&vsRanges[0], sizeof(vsRanges[0]) * vsRanges.Size());
+    StaticArray<D3D12_DESCRIPTOR_RANGE, 3> psRanges;
+    Memory::Clear(&psRanges[0], sizeof(psRanges[0]) * psRanges.Size());
+
+    vsRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    vsRanges[0].NumDescriptors = d3d12Config::MaxNumVSConstantBuffers;
+    vsRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    vsRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    vsRanges[1].NumDescriptors = d3d12Config::MaxNumVSTextures;
+    vsRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    vsRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    vsRanges[2].NumDescriptors = d3d12Config::MaxNumVSTextures;
+    vsRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    psRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    psRanges[0].NumDescriptors = d3d12Config::MaxNumPSConstantBuffers;
+    psRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    psRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    psRanges[1].NumDescriptors = d3d12Config::MaxNumPSTextures;
+    psRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    psRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    psRanges[2].NumDescriptors = d3d12Config::MaxNumPSTextures;
+    psRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    StaticArray<D3D12_ROOT_PARAMETER, 4> rootParams;
+    Memory::Clear(&rootParams[0], sizeof(rootParams[0]) * rootParams.Size());
+    // vertex shader constant buffers and textures
+    rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[0].DescriptorTable.pDescriptorRanges = &vsRanges[0];
+    rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+    // vertex shader samplers
+    rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[1].DescriptorTable.pDescriptorRanges = &vsRanges[2];
+    rootParams[1].DescriptorTable.NumDescriptorRanges = 1;
+    // pixel shader constant buffers and textures
+    rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[2].DescriptorTable.pDescriptorRanges = &psRanges[0];
+    rootParams[2].DescriptorTable.NumDescriptorRanges = 2;
+    // pixel shader samplers
+    rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[3].DescriptorTable.pDescriptorRanges = &psRanges[2];
+    rootParams[3].DescriptorTable.NumDescriptorRanges = 1;
+
+    D3D12_ROOT_SIGNATURE_DESC rootDesc;
+    Memory::Clear(&rootDesc, sizeof(rootDesc));
+    rootDesc.NumParameters = rootParams.Size();
+    rootDesc.pParameters = &rootParams[0];
+    rootDesc.NumStaticSamplers = 0;
+    rootDesc.pStaticSamplers = nullptr;
+    rootDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    ID3DBlob* sig = nullptr;
+    ID3DBlob* error = nullptr;
+    hr = D3D12SerializeRootSignature(&rootDesc, D3D_ROOT_SIGNATURE_VERSION_1, &sig, &error); 
+    if (FAILED(hr)) {
+        o_assert(error);
+        o_error("d3d12Renderer: Failed to create root signature with: %s\n", error->GetBufferPointer());
+    }
+    hr = this->d3d12Device->CreateRootSignature(
+        0,                                  // NodeMask 
+        sig->GetBufferPointer(),            // pBlobWithRootSignature
+        sig->GetBufferSize(),               // blobLengthInBytes
+        __uuidof(ID3D12RootSignature),      // riid
+        (void**)&this->d3d12RootSignature); // ppvRootSignature
+    o_assert(SUCCEEDED(hr) && this->d3d12RootSignature);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::destroyRootSignature() {
+    if (this->d3d12RootSignature) {
+        this->d3d12RootSignature->Release();
+        this->d3d12RootSignature = nullptr;
     }
 }
 

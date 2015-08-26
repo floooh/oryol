@@ -91,6 +91,7 @@ d3d12DrawStateFactory::DestroyResource(drawState& ds) {
 void
 d3d12DrawStateFactory::createPSO(drawState& ds) {
     o_assert_dbg(nullptr == ds.d3d12PipelineState);
+    o_assert_dbg(this->pointers.renderer->d3d12RootSignature);
 
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     o_assert_dbg(d3d12Device);
@@ -127,7 +128,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     //
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     Memory::Clear(&psoDesc, sizeof(psoDesc));
-    psoDesc.pRootSignature = nullptr; // FIXME;
+    psoDesc.pRootSignature = this->pointers.renderer->d3d12RootSignature;
     psoDesc.VS.pShaderBytecode = vsPtr;
     psoDesc.VS.BytecodeLength = vsSize;
     psoDesc.PS.pShaderBytecode = fsPtr;

@@ -89,6 +89,8 @@ public:
     ID3D12CommandAllocator* d3d12CommandAllocator;
     /// pointer to d3d12 command list (owned by render mgr)
     ID3D12GraphicsCommandList* d3d12CommandList;
+    /// pointer to the d3d12 root signature (owned by render mgr)
+    ID3D12RootSignature* d3d12RootSignature;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;
@@ -110,6 +112,10 @@ private:
     void createDefaultRenderTargets();
     /// destroy the default render-targets
     void destroyDefaultRenderTargets();
+    /// create the root signature object
+    void createRootSignature();
+    /// destroy the root signature object
+    void destroyRootSignature();
 
     bool valid;
     gfxPointers pointers;
