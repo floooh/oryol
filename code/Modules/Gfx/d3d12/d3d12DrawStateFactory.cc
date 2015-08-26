@@ -31,20 +31,69 @@ asStencilOpDesc(const StencilState& stencilState) {
 //------------------------------------------------------------------------------
 static UINT
 describeInputLayout(drawState& ds, D3D12_INPUT_ELEMENT_DESC* inputLayout) {
-    o_error("FIXME!\n");
-    return 0;
+
+    int d3d12CompIndex = 0;
+    int d3d12IASlotIndex = 0;
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
+        const mesh* msh = ds.meshes[mshIndex];
+        if (msh) {
+            const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
+            for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d12CompIndex++) {
+                const auto& comp = layout.ComponentAt(compIndex);
+                o_assert_dbg(d3d12CompIndex < VertexAttr::NumVertexAttrs);
+                D3D12_INPUT_ELEMENT_DESC& d3d12Comp = inputLayout[d3d12CompIndex];
+                d3d12Comp.SemanticName = d3d12Types::asSemanticName(comp.Attr);
+                d3d12Comp.SemanticIndex = d3d12Types::asSemanticIndex(comp.Attr);
+                d3d12Comp.Format = d3d12Types::asInputElementFormat(comp.Format);
+                d3d12Comp.InputSlot = d3d12IASlotIndex;
+                d3d12Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
+                d3d12Comp.InputSlotClass = d3d12Types::asInputClassification(msh->vertexBufferAttrs.StepFunction);
+                if (VertexStepFunction::PerVertex == msh->vertexBufferAttrs.StepFunction) {
+                    d3d12Comp.InstanceDataStepRate = 0;
+                }
+                else {
+                    d3d12Comp.InstanceDataStepRate = msh->vertexBufferAttrs.StepRate;
+                }
+            }
+            d3d12IASlotIndex++;
+        }
+    }
+    return d3d12CompIndex;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d12DrawStateFactory::SetupResource(drawState& ds) {
-    o_assert_dbg(nullptr == ds.d3d12PipelineState);
-    HRESULT hr;
-    ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
-    o_assert_dbg(d3d12Device);
 
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
+    this->createPSO(ds);
+    o_assert_dbg(ds.d3d12PipelineState);
+
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12DrawStateFactory::DestroyResource(drawState& ds) {
+    o_assert_dbg(this->isValid);
+
+    d3d12ResourceAllocator& resAllocator = this->pointers.resContainer->resAllocator;
+    this->pointers.renderer->invalidateMeshState();
+    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    if (ds.d3d12PipelineState) {
+        resAllocator.ReleaseDeferred(frameIndex, ds.d3d12PipelineState);
+    }
+    drawStateFactoryBase::DestroyResource(ds);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12DrawStateFactory::createPSO(drawState& ds) {
+    o_assert_dbg(nullptr == ds.d3d12PipelineState);
+
+    ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
+    o_assert_dbg(d3d12Device);
 
     // shader byte code pointers and size
     const void* vsPtr = nullptr;
@@ -128,29 +177,9 @@ d3d12DrawStateFactory::SetupResource(drawState& ds) {
     o_warn("d3d12DrawStateFactory::SetupResource() what about the SampleDesc.Quality???\n");
     psoDesc.SampleDesc.Quality = 0;
     psoDesc.NodeMask = 0;
-    #if ORYOL_DEBUG
-    psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
-    #else
     psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-    #endif
-    hr = d3d12Device->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&ds.d3d12PipelineState);
+    HRESULT hr = d3d12Device->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&ds.d3d12PipelineState);
     o_assert(SUCCEEDED(hr) && ds.d3d12PipelineState);
-
-    return ResourceState::Valid;
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12DrawStateFactory::DestroyResource(drawState& ds) {
-    o_assert_dbg(this->isValid);
-
-    d3d12ResourceAllocator& resAllocator = this->pointers.resContainer->resAllocator;
-    this->pointers.renderer->invalidateMeshState();
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
-    if (ds.d3d12PipelineState) {
-        resAllocator.ReleaseDeferred(frameIndex, ds.d3d12PipelineState);
-    }
-    drawStateFactoryBase::DestroyResource(ds);
 }
 
 } // namespace _priv
