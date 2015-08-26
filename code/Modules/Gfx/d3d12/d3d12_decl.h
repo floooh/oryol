@@ -20,6 +20,7 @@ struct ID3D12Resource;
 struct ID3D12Fence;
 struct ID3D12Heap;
 struct ID3D12PipelineState;
+struct ID3D12RootSignature;
 
 typedef enum D3D12_RESOURCE_STATES D3D12_RESOURCE_STATES;
 typedef enum D3D12_HEAP_TYPE D3D12_HEAP_TYPE;
