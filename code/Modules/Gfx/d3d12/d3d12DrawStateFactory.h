@@ -16,6 +16,10 @@ public:
     ResourceState::Code SetupResource(drawState& ds);
     /// destroy the drawState
     void DestroyResource(drawState& ds);
+
+private:
+    /// create pipeline state object and set into drawState
+    void createPSO(drawState& ds);
 };
 
 } // namespace _priv
