@@ -258,5 +258,18 @@ d3d12Types::asInputClassification(VertexStepFunction::Code func) {
     }
 }
 
+//------------------------------------------------------------------------------
+DXGI_FORMAT
+d3d12Types::asIndexType(IndexType::Code c) {
+    switch (c) {
+    case IndexType::None:       return DXGI_FORMAT_UNKNOWN; // this is a valid return type!   
+    case IndexType::Index16:    return DXGI_FORMAT_R16_UINT;
+    case IndexType::Index32:    return DXGI_FORMAT_R32_UINT;
+    default:
+        o_error("d3d12Types::asIndexType(): invalid value!\n");
+        return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol
