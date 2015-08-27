@@ -45,7 +45,7 @@ d3d12ResourceAllocator::Discard() {
         this->releaseQueue.Dequeue(item);
         ULONG count = item.res->Release();
         o_assert_dbg(0 == count);
-        Log::Dbg("> released d3d12 buffer %p at shutdown\n", item.res);
+        Log::Dbg("> released d3d12 resource %p at shutdown\n", item.res);
     }
     this->d3d12Device = nullptr;
 }
@@ -72,7 +72,7 @@ d3d12ResourceAllocator::GarbageCollect(uint64 frameIndex) {
             o_assert_dbg(item.res);
             ULONG count = item.res->Release();
             o_assert_dbg(0 == count);
-            Log::Dbg("> released d3d12 buffer %p at frame %d\n", item.res, frameIndex);
+            Log::Dbg("> released d3d12 resource %p at frame %d\n", item.res, frameIndex);
         }
     }
 }

@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "d3d12Renderer.h"
 #include "d3d12_impl.h"
+#include "d3d12Types.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -54,6 +55,9 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createFrameSyncObjects();
     this->createDefaultRenderTargets();
     this->createRootSignature();
+
+    // set the root signature for the first frame
+    this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
 
     this->frameIndex = 1;
 }
@@ -352,6 +356,10 @@ d3d12Renderer::frameSync() {
 
     // garbage-collect resources
     this->pointers.resContainer->resAllocator.GarbageCollect(this->frameIndex);
+
+    // prepare for next frame
+    o_assert_dbg(this->d3d12RootSignature);
+    this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
 }
 
 //------------------------------------------------------------------------------
@@ -449,8 +457,9 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     // set the render target
     this->d3d12CommandList->OMSetRenderTargets(1, &colorRTVHandle, FALSE, nullptr);
 
-    // set viewport to cover whole screen
+    // set viewport and scissor-rect to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
+    this->applyScissorRect(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
 
     // perform clear action
     if (clearState.Actions & ClearState::ColorBit) {
@@ -469,19 +478,87 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
-    o_warn("d3d12Renderer::applyViewPort()\n");
+    o_assert_dbg(this->d3d12CommandList);
+
+    D3D12_VIEWPORT vp;
+    vp.TopLeftX = (FLOAT)x;
+    vp.TopLeftY = (FLOAT)(originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
+    vp.Width = (FLOAT)width;
+    vp.Height = (FLOAT)height;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    this->d3d12CommandList->RSSetViewports(1, &vp);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
-    o_warn("d3d12Renderer::applyScissorRect()\n");
+    o_assert_dbg(this->d3d12CommandList);
+
+    D3D12_RECT rect;
+    rect.left = x;
+    rect.top = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
+    rect.right = x + width;
+    rect.bottom = originTopLeft ? (y + height) : (this->rtAttrs.FramebufferHeight - y);
+    this->d3d12CommandList->RSSetScissorRects(1, &rect);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyDrawState(drawState* ds) {
-    o_warn("d3d12Renderer::applyDrawState()\n");
+    o_assert_dbg(this->d3d12CommandList);
+
+    if (nullptr == ds) {
+        // the drawState is pending (dependent resource still loading),
+        // invalidate rendering for followup draw calls
+        this->curDrawState = nullptr;
+        return;
+    }
+    o_assert_dbg(ds->d3d12PipelineState);
+    o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+
+    this->curDrawState = ds;
+
+    // apply pipeline state (FIXME: only if changed!)
+    this->d3d12CommandList->SetPipelineState(ds->d3d12PipelineState);
+    
+    // apply vertex and index buffers (FIXME: only if changed!)
+    D3D12_VERTEX_BUFFER_VIEW vbViews[GfxConfig::MaxNumInputMeshes];
+    D3D12_INDEX_BUFFER_VIEW ibView;
+    const D3D12_INDEX_BUFFER_VIEW* ibViewPtr = nullptr;
+    bool hasIndexBuffer = false;
+    for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
+        const mesh* msh = ds->meshes[i];
+        if (msh) {
+            const mesh::buffer& vb = msh->buffers[mesh::vb];
+            o_assert_dbg(vb.d3d12DefaultBuffers[vb.activeSlot]);
+            vbViews[i].BufferLocation = vb.d3d12DefaultBuffers[vb.activeSlot]->GetGPUVirtualAddress();
+            vbViews[i].SizeInBytes = msh->vertexBufferAttrs.ByteSize();
+            vbViews[i].StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
+            if ((0 == i) && (IndexType::None != msh->indexBufferAttrs.Type)) {
+                const mesh::buffer& ib = msh->buffers[mesh::ib];
+                o_assert_dbg(ib.d3d12DefaultBuffers[ib.activeSlot]);
+                ibView.BufferLocation = ib.d3d12DefaultBuffers[ib.activeSlot]->GetGPUVirtualAddress();
+                ibView.SizeInBytes = msh->indexBufferAttrs.ByteSize();
+                ibView.Format = d3d12Types::asIndexType(msh->indexBufferAttrs.Type);
+                ibViewPtr = &ibView;
+            }
+        }
+        else {
+            vbViews[i].BufferLocation = 0;
+            vbViews[i].SizeInBytes = 0;
+            vbViews[i].StrideInBytes = 0;
+        }
+    }
+    this->d3d12CommandList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
+    this->d3d12CommandList->IASetIndexBuffer(ibViewPtr);
+    o_warn("PrimitiveTopology needs to go into mesh (from PrimitiveGroup)!\n");
+    this->d3d12CommandList->IASetPrimitiveTopology(d3d12Types::asPrimitiveTopology(ds->meshes[0]->primGroups[0].PrimType));
+    this->d3d12CommandList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
+
+    // FIXME: bind shader resources
 }
 
 //------------------------------------------------------------------------------
@@ -493,13 +570,45 @@ d3d12Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
-    o_warn("d3d12Renderer::draw()\n");
+    o_assert_dbg(this->d3d12CommandList);
+    o_assert2_dbg(this->rtValid, "No render target set!\n");
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (indexType != IndexType::None) {
+        this->d3d12CommandList->DrawIndexedInstanced(
+            primGroup.NumElements,  // IndexCountPerInstance
+            1,                      // InstanceCount
+            primGroup.BaseElement,  // StartIndexLocation
+            0,                      // BaseVertexLocation
+            0);                     // StartInstanceLocation
+    }
+    else {
+        this->d3d12CommandList->DrawInstanced(
+            primGroup.NumElements,  // VertexCountPerInstance
+            1,                      // InstanceCount
+            primGroup.BaseElement,  // StartVertexLocation
+            0);                     // StartInstanceLocation
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::draw(int32 primGroupIndex) {
-    o_warn("d3d12Renderer::draw()\n");
+    o_assert_dbg(this->valid);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->draw(primGroup);
 }
 
 //------------------------------------------------------------------------------

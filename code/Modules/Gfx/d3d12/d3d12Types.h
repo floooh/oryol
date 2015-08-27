@@ -42,6 +42,8 @@ public:
     static DXGI_FORMAT asInputElementFormat(VertexFormat::Code fmt);
     /// convert VertexStepFunction to d3d11 input classification
     static D3D12_INPUT_CLASSIFICATION asInputClassification(VertexStepFunction::Code func);
+    /// convert vertex index type to dxgi format
+    static DXGI_FORMAT asIndexType(IndexType::Code c);
 };
 
 } // namespace _priv
