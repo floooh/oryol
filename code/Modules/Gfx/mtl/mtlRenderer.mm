@@ -433,11 +433,12 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(primGroup.PrimType);
-    IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curDrawState->meshes[0];
+    o_assert_dbg(msh);
+    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(msh->Setup.PrimitiveType);
+    IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (IndexType::None != indexType) {
-        const auto& ib = this->curDrawState->meshes[0]->buffers[mesh::ib];
+        const auto& ib = msh->buffers[mesh::ib];
         o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
         MTLIndexType mtlIndexType = mtlTypes::asIndexType(indexType);
         NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(indexType);

@@ -216,7 +216,7 @@ mtlMeshFactory::createFullscreenQuad(mesh& msh) {
     msh.indexBufferAttrs = ibAttrs;
 
     msh.numPrimGroups = 1;
-    msh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    msh.primGroups[0] = PrimitiveGroup(0, 6);
 
     const float32 topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
     const float32 botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
