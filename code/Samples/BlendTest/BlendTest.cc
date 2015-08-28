@@ -67,7 +67,7 @@ BlendTestApp::OnInit() {
     meshBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
-    meshBuilder.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 3);
+    meshBuilder.PrimitiveGroups.Add(0, 3);
     meshBuilder.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.05f, 0.5f)
         .Vertex(0, VertexAttr::Color0, 0.75f, 0.0f, 0.0f, 0.75f)

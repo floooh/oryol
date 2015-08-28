@@ -13,7 +13,8 @@ d3d11Mesh::d3d11Mesh() :
 d3d11VertexBuffer(nullptr),
 d3d11IndexBuffer(nullptr),
 vbUpdateFrameIndex(-1),
-ibUpdateFrameIndex(-1) {
+ibUpdateFrameIndex(-1),
+d3d11PrimTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED) {
     // empty
 }
 
@@ -30,6 +31,7 @@ d3d11Mesh::Clear() {
     this->d3d11IndexBuffer = nullptr;
     this->vbUpdateFrameIndex = -1;
     this->ibUpdateFrameIndex = -1;
+    this->d3d11PrimTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     meshBase::Clear();
 }
 

@@ -108,6 +108,7 @@ private:
     ID3D11InputLayout* d3d11CurInputLayout;
     ID3D11VertexShader* d3d11CurVertexShader;
     ID3D11PixelShader* d3d11CurPixelShader;
+    D3D_PRIMITIVE_TOPOLOGY d3d11CurPrimitiveTopology;
     StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurVSConstantBuffers;
     StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurPSConstantBuffers;
     StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVertexBuffers;
@@ -120,7 +121,6 @@ private:
 
     uint16 curStencilRef;
     glm::vec4 curBlendColor;
-    PrimitiveType::Code curPrimitiveTopology;
 };
 
 } // namespace _priv

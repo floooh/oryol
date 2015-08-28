@@ -17,20 +17,17 @@ namespace Oryol {
 
 class PrimitiveGroup {
 public:
-    PrimitiveType::Code PrimType;
     int32 BaseElement;
     int32 NumElements;
 
     /// default constructor
     PrimitiveGroup() :
-        PrimType(PrimitiveType::InvalidPrimitiveType),
         BaseElement(0),
         NumElements(0) {
         // empty
     }
     /// construct for indexed or non-indexed
-    PrimitiveGroup(PrimitiveType::Code type, int32 baseElement, int32 numElements) :
-        PrimType(type),
+    PrimitiveGroup(int32 baseElement, int32 numElements) :
         BaseElement(baseElement),
         NumElements(numElements) {
         // empty

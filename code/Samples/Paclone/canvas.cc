@@ -43,7 +43,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     meshSetup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
+    meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
     this->mesh = Gfx::CreateResource(meshSetup);
     this->shader = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
     auto dsSetup = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);

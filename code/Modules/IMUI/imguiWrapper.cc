@@ -245,7 +245,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
                                       (int)(height - pcmd->ClipRect.w),
                                       (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
                                       (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, elmOffset, pcmd->ElemCount));
+                Gfx::Draw(PrimitiveGroup(elmOffset, pcmd->ElemCount));
             }
             elmOffset += pcmd->ElemCount;
         }

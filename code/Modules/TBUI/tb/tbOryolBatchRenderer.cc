@@ -465,7 +465,7 @@ tbOryolBatchRenderer::drawBatches() {
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
             fsParams.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
             Gfx::ApplyUniformBlock(fsParams);
-            Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
+            Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }
         Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);
     }

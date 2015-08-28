@@ -141,7 +141,7 @@ debugTextRenderer::drawTextBuffer() {
         Gfx::ApplyDrawState(this->textDrawState);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::ApplyUniformBlock(fsParams);
-        Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
+        Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }
 

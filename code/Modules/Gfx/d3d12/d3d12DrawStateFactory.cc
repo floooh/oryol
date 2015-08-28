@@ -168,9 +168,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     psoDesc.InputLayout.pInputElementDescs = inputLayout;
     psoDesc.InputLayout.NumElements = inputLayoutNumElements;
     psoDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-    o_warn("Move PrimitiveTopology out of PrimitiveGroup into mesh!\n");
-    o_assert(ds.meshes[0]->numPrimGroups > 0);
-    psoDesc.PrimitiveTopologyType = d3d12Types::asPrimitiveTopologyType(ds.meshes[0]->primGroups[0].PrimType);
+    psoDesc.PrimitiveTopologyType = ds.meshes[0]->d3d12PrimTopologyType;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = d3d12Types::asRenderTargetFormat(bs.ColorFormat);
     psoDesc.DSVFormat = d3d12Types::asRenderTargetFormat(bs.DepthFormat);

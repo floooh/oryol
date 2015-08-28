@@ -554,8 +554,7 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     }
     this->d3d12CommandList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
     this->d3d12CommandList->IASetIndexBuffer(ibViewPtr);
-    o_warn("PrimitiveTopology needs to go into mesh (from PrimitiveGroup)!\n");
-    this->d3d12CommandList->IASetPrimitiveTopology(d3d12Types::asPrimitiveTopology(ds->meshes[0]->primGroups[0].PrimType));
+    this->d3d12CommandList->IASetPrimitiveTopology(ds->meshes[0]->d3d12PrimTopology);
     this->d3d12CommandList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
 
     // FIXME: bind shader resources

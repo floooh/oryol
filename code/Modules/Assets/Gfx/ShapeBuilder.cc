@@ -50,8 +50,7 @@ ShapeBuilder::Color(const glm::vec4& c) {
 void
 ShapeBuilder::buildPrimitiveGroup() {
     o_assert(this->curPrimGroupNumElements > 0);
-    PrimitiveGroup primGroup(PrimitiveType::Triangles,
-                             this->curPrimGroupBaseElement,
+    PrimitiveGroup primGroup(this->curPrimGroupBaseElement,
                              this->curPrimGroupNumElements);
     this->meshBuilder.PrimitiveGroups.Add(primGroup);
     this->curPrimGroupBaseElement += this->curPrimGroupNumElements;

@@ -32,8 +32,8 @@ d3d11CurIndexBuffer(nullptr),
 d3d11CurInputLayout(nullptr),
 d3d11CurVertexShader(nullptr),
 d3d11CurPixelShader(nullptr),
-curStencilRef(0xFFFF),
-curPrimitiveTopology(PrimitiveType::InvalidPrimitiveType) {
+d3d11CurPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED),
+curStencilRef(0xFFFF) {
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
@@ -75,6 +75,7 @@ d3d11Renderer::discard() {
     this->d3d11CurInputLayout = nullptr;
     this->d3d11CurVertexShader = nullptr;
     this->d3d11CurPixelShader = nullptr;
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
@@ -118,6 +119,7 @@ d3d11Renderer::resetStateCache() {
     this->d3d11CurInputLayout = nullptr;
     this->d3d11CurVertexShader = nullptr;
     this->d3d11CurPixelShader = nullptr;
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     this->d3d11CurVSConstantBuffers.Fill(nullptr);
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11CurVertexBuffers.Fill(nullptr);
@@ -129,7 +131,6 @@ d3d11Renderer::resetStateCache() {
     this->curVertexOffsets.Fill(0);
     this->curStencilRef = 0xFFFF;
     this->curBlendColor = glm::vec4(0.0f);
-    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
 }
 
 //------------------------------------------------------------------------------
@@ -318,6 +319,10 @@ d3d11Renderer::applyDrawState(drawState* ds) {
                 &(this->curVertexStrides[0]),           // pStrides
                 &(this->curVertexOffsets[0]));          // pOffsets
         }
+        if (this->d3d11CurPrimitiveTopology != ds->meshes[0]->d3d11PrimTopology) {
+            this->d3d11CurPrimitiveTopology = ds->meshes[0]->d3d11PrimTopology;
+            this->d3d11DeviceContext->IASetPrimitiveTopology(ds->meshes[0]->d3d11PrimTopology);
+        }
 
         // apply optional index buffer (can be nullptr!)
         if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
@@ -455,10 +460,6 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
         return;
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroup.PrimType != this->curPrimitiveTopology) {
-        this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
-    }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
@@ -495,10 +496,6 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
         return;
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroup.PrimType != this->curPrimitiveTopology) {
-        this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
-    }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexedInstanced(primGroup.NumElements, numInstances, primGroup.BaseElement, 0, 0);
@@ -586,7 +583,7 @@ d3d11Renderer::invalidateMeshState() {
     this->d3d11CurVertexBuffers.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
-    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     this->d3d11DeviceContext->IASetInputLayout(nullptr);
     this->d3d11DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
     this->d3d11DeviceContext->IASetVertexBuffers(

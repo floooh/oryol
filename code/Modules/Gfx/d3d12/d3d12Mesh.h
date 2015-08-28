@@ -14,6 +14,8 @@ namespace _priv {
 
 class d3d12Mesh : public meshBase {
 public:
+    /// constructor
+    d3d12Mesh();
     /// destructor
     ~d3d12Mesh();
 
@@ -38,6 +40,8 @@ public:
     static const int vb = 0;
     static const int ib = 1;
     StaticArray<buffer, 2> buffers;
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE d3d12PrimTopologyType;
+    D3D12_PRIMITIVE_TOPOLOGY d3d12PrimTopology;
 };
 
 } // namespace _priv
