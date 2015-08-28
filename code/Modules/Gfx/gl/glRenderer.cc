@@ -484,8 +484,9 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
     ORYOL_GL_CHECK_ERROR();
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
+    const mesh* msh = this->curDrawState->meshes[0];
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+    const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -529,8 +530,9 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     }
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(this->curDrawState->meshes[0]);
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
+    const mesh* msh = this->curDrawState->meshes[0];
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+    const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
