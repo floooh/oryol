@@ -96,25 +96,16 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     o_assert_dbg(d3d12Device);
 
-    // shader byte code pointers and size
-    const void* vsPtr = nullptr;
-    const void* fsPtr = nullptr;
-    uint32 vsSize = 0, fsSize = 0;
-    ds.shd->Setup.VertexShaderByteCode(0, ShaderLang::HLSL5, vsPtr, vsSize);
-    ds.shd->Setup.FragmentShaderByteCode(0, ShaderLang::HLSL5, fsPtr, fsSize);
-    o_assert_dbg(vsPtr && (vsSize > 0));
-    o_assert_dbg(fsPtr && (fsSize > 0));
-
     // setup input-layout-desc
     D3D12_INPUT_ELEMENT_DESC inputLayout[VertexAttr::NumVertexAttrs];
     Memory::Clear(inputLayout, sizeof(inputLayout));
     UINT inputLayoutNumElements = describeInputLayout(ds, inputLayout);
 
-    // FIXME: draw-state-setup must have shader-variation-mask! 
-    // always use shader at slot 0 for now
-    const RasterizerState& rs = ds.Setup.RasterizerState;
-    const BlendState& bs = ds.Setup.BlendState;
-    const DepthStencilState& dss = ds.Setup.DepthStencilState;
+    // get vertex and pixel shader byte code
+    const shader::shaderBlob* vs = ds.shd->getVertexShaderByMask(ds.Setup.ShaderSelectionMask);
+    const shader::shaderBlob* ps = ds.shd->getPixelShaderByMask(ds.Setup.ShaderSelectionMask);
+    o_assert2(vs && ps, "invalid shader selection mask");
+    o_assert_dbg(vs->ptr && (vs->size > 0) && ps->ptr && (ps->size > 0));
 
     // FIXME: ideally we'd want a pipeline cache here to re-use identical pipeline-state
     // since draw-states may contain identical pipeline-state but different 
@@ -126,13 +117,17 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     // - in debug mode, or with optional cmake option, also compile redundant
     //   PSOs, and cross-check their blobs to make sure the hash is collision-safe!
     //
+    const RasterizerState& rs = ds.Setup.RasterizerState;
+    const BlendState& bs = ds.Setup.BlendState;
+    const DepthStencilState& dss = ds.Setup.DepthStencilState;
+
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     Memory::Clear(&psoDesc, sizeof(psoDesc));
     psoDesc.pRootSignature = this->pointers.renderer->d3d12RootSignature;
-    psoDesc.VS.pShaderBytecode = vsPtr;
-    psoDesc.VS.BytecodeLength = vsSize;
-    psoDesc.PS.pShaderBytecode = fsPtr;
-    psoDesc.PS.BytecodeLength = fsSize;
+    psoDesc.VS.pShaderBytecode = vs->ptr;
+    psoDesc.VS.BytecodeLength = vs->size;
+    psoDesc.PS.pShaderBytecode = ps->ptr;
+    psoDesc.PS.BytecodeLength = ps->size;
     psoDesc.BlendState.AlphaToCoverageEnable = rs.AlphaToCoverageEnabled;
     psoDesc.BlendState.IndependentBlendEnable = FALSE;
     psoDesc.BlendState.RenderTarget[0].BlendEnable = bs.BlendEnabled;
@@ -157,7 +152,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     psoDesc.RasterizerState.AntialiasedLineEnable = FALSE;
     psoDesc.RasterizerState.ForcedSampleCount = 0;
     psoDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-    psoDesc.DepthStencilState.DepthEnable = TRUE;   // FIXME: should this be dss.DepthCmpFund != NEVER?
+    psoDesc.DepthStencilState.DepthEnable = (dss.DepthCmpFunc != CompareFunc::Never);
     psoDesc.DepthStencilState.DepthWriteMask = dss.DepthWriteEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
     psoDesc.DepthStencilState.DepthFunc = d3d12Types::asComparisonFunc(dss.DepthCmpFunc);
     psoDesc.DepthStencilState.StencilEnable = dss.StencilEnabled;
