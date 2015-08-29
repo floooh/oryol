@@ -124,8 +124,7 @@ glShaderFactory::SetupResource(shader& shd) {
         }
         
         // linking succeeded, store GL program
-        int32 shdProgIndex = shd.addProgram(setup.Mask(progIndex), glProg);
-        o_assert(shdProgIndex == progIndex);
+        shd.addProgram(setup.Mask(progIndex), glProg);
 
         // resolve user uniform locations
         this->pointers.renderer->useProgram(glProg);
