@@ -29,23 +29,15 @@ public:
 
     /// add vs/fs function pair with selection mask
     int32 addShaders(uint32 mask, ORYOL_OBJC_TYPED_ID(MTLFunction) vsFunc, ORYOL_OBJC_TYPED_ID(MTLFunction) fsFunc);
-    /// select an vs/fs pair
-    bool select(uint32 mask);
-    /// get the current selection mask
-    uint32 getSelectionMask() const;
-    /// get the current selection index
-    int32 getSelectionIndex() const;
-    /// get the currently selected vertex shader function
-    ORYOL_OBJC_TYPED_ID(MTLFunction) getSelectedVertexShader() const;
-    /// get the currently selected fragment shader function
-    ORYOL_OBJC_TYPED_ID(MTLFunction) getSelectedFragmentShader() const;
 
     /// get number of programs
     int32 getNumPrograms() const;
+    /// get prog index by mask (return InvalidIndex if not found)
+    int32 getProgIndexByMask(uint32 mask) const;
     /// get vertex shader function at program index
-    ORYOL_OBJC_TYPED_ID(MTLFunction) getVertexShaderAt(int32 index) const;
+    ORYOL_OBJC_TYPED_ID(MTLFunction) getVertexShader(int32 progIndex) const;
     /// get fragment shader function at program index
-    ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShaderAt(int32 index) const;
+    ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShader(int32 origIndex) const;
 
     /// add a uniform block entry
     void addUniformBlock(ShaderType::Code bindShaderStage, int32 bindSlotIndex);
@@ -66,8 +58,6 @@ public:
         ShaderType::Code bindShaderStage = ShaderType::InvalidShaderType;
         int32 bindSlotIndex;
     };
-    uint32 selMask;
-    int32 selIndex;
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlLibrary;

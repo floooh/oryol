@@ -26,8 +26,6 @@ mtlShader::~mtlShader() {
 //------------------------------------------------------------------------------
 void
 mtlShader::Clear() {
-    this->selMask = 0xFFFFFFFF;
-    this->selIndex = 0;
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
     this->mtlLibrary = nil;
@@ -70,42 +68,14 @@ mtlShader::addShaders(uint32 mask, id<MTLFunction> vsFunc, id<MTLFunction> fsFun
 }
 
 //------------------------------------------------------------------------------
-uint32
-mtlShader::getSelectionMask() const {
-    return this->selMask;
-}
-
-//------------------------------------------------------------------------------
 int32
-mtlShader::getSelectionIndex() const {
-    return this->selIndex;
-}
-
-//------------------------------------------------------------------------------
-bool
-mtlShader::select(uint32 mask) {
-    if (this->selMask != mask) {
-        for (int32 i = 0; i < this->numPrograms; i++) {
-            if (this->programEntries[i].mask == mask) {
-                this->selMask = mask;
-                this->selIndex = i;
-                return true;
-            }
+mtlShader::getProgIndexByMask(uint32 mask) const {
+    for (int32 i = 0; i < this->numPrograms; i++) {
+        if (this->programEntries[i].mask == mask) {
+            return i;
         }
     }
-    return false;
-}
-
-//------------------------------------------------------------------------------
-id<MTLFunction>
-mtlShader::getSelectedVertexShader() const {
-    return this->programEntries[this->selIndex].mtlVertexShader;
-}
-
-//------------------------------------------------------------------------------
-id<MTLFunction>
-mtlShader::getSelectedFragmentShader() const {
-    return this->programEntries[this->selIndex].mtlFragmentShader;
+    return InvalidIndex;
 }
 
 //------------------------------------------------------------------------------
@@ -116,14 +86,14 @@ mtlShader::getNumPrograms() const {
 
 //------------------------------------------------------------------------------
 id<MTLFunction>
-mtlShader::getVertexShaderAt(int32 index) const {
-    return this->programEntries[index].mtlVertexShader;
+mtlShader::getVertexShader(int32 progIndex) const {
+    return this->programEntries[progIndex].mtlVertexShader;
 }
 
 //------------------------------------------------------------------------------
 id<MTLFunction>
-mtlShader::getFragmentShaderAt(int32 index) const {
-    return this->programEntries[index].mtlFragmentShader;
+mtlShader::getFragmentShader(int32 progIndex) const {
+    return this->programEntries[progIndex].mtlFragmentShader;
 }
 
 //------------------------------------------------------------------------------
