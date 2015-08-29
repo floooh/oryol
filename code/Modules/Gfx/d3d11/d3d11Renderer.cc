@@ -260,117 +260,112 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     if (nullptr == ds) {
         // the drawstate is still pending, invalidate rendering
         this->curDrawState = nullptr;
+        return;
     }
-    else {
-        o_assert_dbg(ds->d3d11DepthStencilState);
-        o_assert_dbg(ds->d3d11RasterizerState);
-        o_assert_dbg(ds->d3d11BlendState);
-        o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-        o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-        o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        this->curDrawState = ds;
-        o_assert_dbg(ds->shd);
-        ds->shd->select(ds->Setup.ShaderSelectionMask);
+    o_assert_dbg(ds->d3d11DepthStencilState);
+    o_assert_dbg(ds->d3d11RasterizerState);
+    o_assert_dbg(ds->d3d11BlendState);
+    o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        // apply state objects (if state has changed)
-        if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
-            this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
-            this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
-        }
-        if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
-            (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
+    this->curDrawState = ds;
+    o_assert_dbg(ds->shd);
 
-            this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
-            this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
-            this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
-        }
-        if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
-            glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
+    // apply state objects (if state has changed)
+    if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
+        this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
+        this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+    }
+    if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
+        (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
+
+        this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
+        this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
+        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
+    }
+    if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
+        glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
         
-            this->d3d11CurBlendState = ds->d3d11BlendState;
-            this->curBlendColor = ds->Setup.BlendColor;
-            this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
-        }
+        this->d3d11CurBlendState = ds->d3d11BlendState;
+        this->curBlendColor = ds->Setup.BlendColor;
+        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
+    }
 
-        // apply vertex buffers
-        bool vbDirty = false;
-        const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
-        o_assert_dbg(vbNumSlots == this->d3d11CurVertexBuffers.Size());
-        for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
-            if (this->d3d11CurVertexBuffers[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
-                this->d3d11CurVertexBuffers[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
-                vbDirty = true;
-            }
-            if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
-                this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
-                vbDirty = true;
-            }
-            if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
-                this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
-                vbDirty = true;
-            }
+    // apply vertex buffers
+    bool vbDirty = false;
+    const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
+    o_assert_dbg(vbNumSlots == this->d3d11CurVertexBuffers.Size());
+    for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
+        if (this->d3d11CurVertexBuffers[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
+            this->d3d11CurVertexBuffers[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
+            vbDirty = true;
         }
-        if (vbDirty) {
-            this->d3d11DeviceContext->IASetVertexBuffers(
-                0,                                      // StartSlot 
-                vbNumSlots,                             // NumBuffers
-                &(this->d3d11CurVertexBuffers[0]),      // ppVertexBuffers
-                &(this->curVertexStrides[0]),           // pStrides
-                &(this->curVertexOffsets[0]));          // pOffsets
+        if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
+            this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
+            vbDirty = true;
         }
-        if (this->d3d11CurPrimitiveTopology != ds->meshes[0]->d3d11PrimTopology) {
-            this->d3d11CurPrimitiveTopology = ds->meshes[0]->d3d11PrimTopology;
-            this->d3d11DeviceContext->IASetPrimitiveTopology(ds->meshes[0]->d3d11PrimTopology);
+        if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
+            this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
+            vbDirty = true;
         }
+    }
+    if (vbDirty) {
+        this->d3d11DeviceContext->IASetVertexBuffers(
+            0,                                      // StartSlot 
+            vbNumSlots,                             // NumBuffers
+            &(this->d3d11CurVertexBuffers[0]),      // ppVertexBuffers
+            &(this->curVertexStrides[0]),           // pStrides
+            &(this->curVertexOffsets[0]));          // pOffsets
+    }
+    if (this->d3d11CurPrimitiveTopology != ds->meshes[0]->d3d11PrimTopology) {
+        this->d3d11CurPrimitiveTopology = ds->meshes[0]->d3d11PrimTopology;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->meshes[0]->d3d11PrimTopology);
+    }
 
-        // apply optional index buffer (can be nullptr!)
-        if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
-            this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
-            DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
-            this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
-        }
+    // apply optional index buffer (can be nullptr!)
+    if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
+        this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
+        DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
+        this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
+    }
 
-        // apply input layout
-        const uint32 selIndex = ds->shd->getSelectionIndex();
-        o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
-        if (this->d3d11CurInputLayout != ds->d3d11InputLayouts[selIndex]) {
-            this->d3d11CurInputLayout = ds->d3d11InputLayouts[selIndex];
-            this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
-        }
+    // apply input layout and shaders
+    if (this->d3d11CurInputLayout != ds->d3d11InputLayout) {
+        this->d3d11CurInputLayout = ds->d3d11InputLayout;
+        this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayout);
+    }
 
-        // apply shaders
-        ID3D11VertexShader* d3d11VS = ds->shd->getSelectedVertexShader();
-        if (this->d3d11CurVertexShader != d3d11VS) {
-            this->d3d11CurVertexShader = d3d11VS;
-            this->d3d11DeviceContext->VSSetShader(d3d11VS, NULL, 0);
-        }
-        ID3D11PixelShader* d3d11PS = ds->shd->getSelectedPixelShader();
-        if (this->d3d11CurPixelShader != d3d11PS) {
-            this->d3d11CurPixelShader = d3d11PS;
-            this->d3d11DeviceContext->PSSetShader(d3d11PS, NULL, 0);
-        }
+    // apply shaders
+    if (this->d3d11CurVertexShader != ds->d3d11VertexShader) {
+        this->d3d11CurVertexShader = ds->d3d11VertexShader;
+        this->d3d11DeviceContext->VSSetShader(ds->d3d11VertexShader, NULL, 0);
+    }
+    if (this->d3d11CurPixelShader != ds->d3d11PixelShader) {
+        this->d3d11CurPixelShader = ds->d3d11PixelShader;
+        this->d3d11DeviceContext->PSSetShader(ds->d3d11PixelShader, NULL, 0);
+    }
         
-        // apply constant buffers
-        ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-        int32 cbBindSlot = 0;
-        const int numConstantBuffers = ds->shd->getNumUniformBlockEntries();
-        o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
-        for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-            ID3D11Buffer* cb = ds->shd->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
-            if (cb) {
-                o_assert_dbg(cbBindSlot != InvalidIndex);
-                if (ShaderType::VertexShader == cbStage) {
-                    if (this->d3d11CurVSConstantBuffers[cbBindSlot] != cb) {
-                        this->d3d11CurVSConstantBuffers[cbBindSlot] = cb;
-                        this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
-                    }
+    // apply constant buffers
+    ShaderType::Code cbStage = ShaderType::InvalidShaderType;
+    int32 cbBindSlot = 0;
+    const int numConstantBuffers = ds->shd->getNumUniformBlockEntries();
+    o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
+    for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
+        ID3D11Buffer* cb = ds->shd->getUniformBlockEntryAtIndex(cbIndex, cbStage, cbBindSlot);
+        if (cb) {
+            o_assert_dbg(cbBindSlot != InvalidIndex);
+            if (ShaderType::VertexShader == cbStage) {
+                if (this->d3d11CurVSConstantBuffers[cbBindSlot] != cb) {
+                    this->d3d11CurVSConstantBuffers[cbBindSlot] = cb;
+                    this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
                 }
-                else {
-                    if (this->d3d11CurPSConstantBuffers[cbBindSlot] != cb) {
-                        this->d3d11CurPSConstantBuffers[cbBindSlot] = cb;
-                        this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
-                    }
+            }
+            else {
+                if (this->d3d11CurPSConstantBuffers[cbBindSlot] != cb) {
+                    this->d3d11CurPSConstantBuffers[cbBindSlot] = cb;
+                    this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
                 }
             }
         }
@@ -399,7 +394,7 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
     // get the constant buffer entry from the program bundle
     ShaderType::Code cbStage = ShaderType::InvalidShaderType;
     int32 cbBindSlot = 0;
-    ID3D11Buffer* cb = shd->getUniformBlockEntryAt(blockIndex, cbStage, cbBindSlot);
+    ID3D11Buffer* cb = shd->getUniformBlockEntryAtIndex(blockIndex, cbStage, cbBindSlot);
 
     // set textures and samplers
     const uint8* cbufferPtr = nullptr;

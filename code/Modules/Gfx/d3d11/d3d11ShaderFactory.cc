@@ -127,11 +127,11 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
 
     const int32 numProgs = shd.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        ID3D11VertexShader* vs = shd.getVertexShaderAt(progIndex);
+        ID3D11VertexShader* vs = shd.getVertexShaderAtIndex(progIndex);
         if (vs) {
             vs->Release();
         }
-        ID3D11PixelShader* ps = shd.getPixelShaderAt(progIndex);
+        ID3D11PixelShader* ps = shd.getPixelShaderAtIndex(progIndex);
         if (ps) {
             ps->Release();
         }
@@ -141,7 +141,7 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
     ShaderType::Code dummyBindStage = ShaderType::InvalidShaderType;
     const int32 numConstantBuffers = shd.getNumUniformBlockEntries();
     for (int32 cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-        ID3D11Buffer* cb = shd.getUniformBlockEntryAt(cbIndex, dummyBindStage, dummySlotIndex);
+        ID3D11Buffer* cb = shd.getUniformBlockEntryAtIndex(cbIndex, dummyBindStage, dummySlotIndex);
         if (cb) {
             cb->Release();
         }

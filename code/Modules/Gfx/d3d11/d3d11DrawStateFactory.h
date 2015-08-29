@@ -30,7 +30,7 @@ public:
 
 private:
     /// create or return existing input layout object
-    ID3D11InputLayout* createInputLayout(const drawState& ds, int progIndex);
+    ID3D11InputLayout* createInputLayout(const drawState& ds);
     /// release an input layout object
     void releaseInputLayout(ID3D11InputLayout* d3d11InputLayout);
 
