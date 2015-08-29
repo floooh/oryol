@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief private: GL implementation of shader
 */
+#include "Core/Containers/StaticArray.h"
 #include "Gfx/Resource/shaderBase.h"
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_decl.h"
@@ -33,96 +34,91 @@ public:
     void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
     #endif
     
-    /// select program in the bundle
-    bool selectProgram(uint32 mask);
-    /// get the current selection mask
-    uint32 getSelectionMask() const;
-    /// get the currently selected GL program
-    GLuint getProgram() const;
-    /// get uniform location by slot index in currently selected program (-1 if not exists)
-    GLint getUniformLocation(int32 blockIndex, int32 slotIndex) const;
-    /// get sampler location by slot index in currently selected program (-1 if not exists)
-    int32 getSamplerIndex(int32 blockIndex, int32 slotIndex) const;
-    #if ORYOL_GL_USE_GETATTRIBLOCATION
-    /// get a vertex attribute location
-    GLint getAttribLocation(VertexAttr::Code attrib) const;
-    #endif
-    
+    /// get program index by mask (returns InvalidIndex if not exists)
+    int32 getProgIndexByMask(uint32 mask) const;
     /// get number of programs
     int32 getNumPrograms() const;
     /// get program at index
-    GLuint getProgramAtIndex(int32 progIndex) const;
-    
+    GLuint getProgram(int32 progIndex) const;
+    /// get uniform location by slot index in program (-1 if not exists)
+    GLint getUniformLocation(int32 progIndex, int32 blockIndex, int32 slotIndex) const;
+    /// get sampler location by slot index in program (-1 if not exists)
+    int32 getSamplerIndex(int32 progIndex, int32 blockIndex, int32 slotIndex) const;
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
+    /// get a vertex attribute location
+    GLint getAttribLocation(int32 progIndex, VertexAttr::Code attrib) const;
+    #endif
+        
 private:
     static const int32 MaxNumUniformBlocks = 4;
     static const int32 MaxNumUniforms = 16;
     static const int32 MaxNumPrograms = 8;
 
+    struct mapping {
+        GLint uniform = -1;
+        int32 sampler = -1;
+    };
+
     struct programEntry {
-        uint32 mask;
-        GLuint program;
-        GLint uniformMapping[MaxNumUniformBlocks][MaxNumUniforms];
-        int32 samplerMapping[MaxNumUniformBlocks][MaxNumUniforms];
+        programEntry() :
+            mask(0),
+            program(0) {
+            #if ORYOL_GL_USE_GETATTRIBLOCATION
+            this->attribMapping.Fill(-1);
+            #endif
+        };
+        uint32 mask = 0;
+        GLuint program = 0;
+        StaticArray<StaticArray<mapping,MaxNumUniforms>,MaxNumUniformBlocks> mappings;
         #if ORYOL_GL_USE_GETATTRIBLOCATION
-        GLint attribMapping[VertexAttr::NumVertexAttrs];
+        StaticArray<GLint,VertexAttr::NumVertexAttrs> attribMapping;
         #endif
     };
-    uint32 selMask;
-    int32 selIndex;
     int32 numProgramEntries;
-    programEntry programEntries[MaxNumPrograms];
+    StaticArray<programEntry, MaxNumPrograms> programEntries;
 };
 
 //------------------------------------------------------------------------------
-inline uint32
-glShader::getSelectionMask() const {
-    return this->selMask;
-}
-
-//------------------------------------------------------------------------------
-inline bool
-glShader::selectProgram(uint32 mask) {
+inline int32
+glShader::getProgIndexByMask(uint32 mask) const {
     // number of programs will be small, so linear is ok
-    if (this->selMask != mask) {
-        for (int32 i = 0; i < this->numProgramEntries; i++) {
-            if (this->programEntries[i].mask == mask) {
-                this->selMask = mask;
-                this->selIndex = i;
-                return true;
-            }
+    for (int32 i = 0; i < this->numProgramEntries; i++) {
+        if (this->programEntries[i].mask == mask) {
+            return i;
         }
     }
-    return false;
-}
-
-//------------------------------------------------------------------------------
-inline GLuint
-glShader::getProgram() const {
-    return this->programEntries[this->selIndex].program;
-}
-
-//------------------------------------------------------------------------------
-inline GLint
-glShader::getUniformLocation(int32 blockIndex, int32 slotIndex) const {
-    o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
-    o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    return this->programEntries[this->selIndex].uniformMapping[blockIndex][slotIndex];
+    return InvalidIndex;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-glShader::getSamplerIndex(int32 blockIndex, int32 slotIndex) const {
-    o_assert_range_dbg(blockIndex, MaxNumUniformBlocks);
-    o_assert_range_dbg(slotIndex, MaxNumUniforms);
-    return this->programEntries[this->selIndex].samplerMapping[blockIndex][slotIndex];
+glShader::getNumPrograms() const {
+    return this->numProgramEntries;
+}
+
+//------------------------------------------------------------------------------
+inline GLuint
+glShader::getProgram(int32 progIndex) const {
+    return this->programEntries[progIndex].program;
+}
+
+//------------------------------------------------------------------------------
+inline GLint
+glShader::getUniformLocation(int32 progIndex, int32 blockIndex, int32 slotIndex) const {
+    return this->programEntries[progIndex].mappings[blockIndex][slotIndex].uniform;
+}
+
+//------------------------------------------------------------------------------
+inline int32
+glShader::getSamplerIndex(int32 progIndex, int32 blockIndex, int32 slotIndex) const {
+    return this->programEntries[progIndex].mappings[blockIndex][slotIndex].sampler;
 }
 
 //------------------------------------------------------------------------------
 #if ORYOL_GL_USE_GETATTRIBLOCATION
 inline GLint
-glShader::getAttribLocation(VertexAttr::Code attrib) const {
-    o_assert_range_dbg(attrib, VertexAttr::NumVertexAttrs);
-    return this->programEntries[this->selIndex].attribMapping[attrib];
+glShader::getAttribLocation(int32 progIndex, VertexAttr::Code attrib) const {
+    return this->programEntries[progIndex].attribMapping[attrib];
 }
 #endif
     

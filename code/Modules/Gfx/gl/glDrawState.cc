@@ -8,9 +8,16 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+glDrawState::glDrawState() :
+shdProgIndex(InvalidIndex) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 void
 glDrawState::Clear() {
     this->glAttrs.Fill(glVertexAttr());
+    this->shdProgIndex = InvalidIndex;
     drawStateBase::Clear();
 }
 

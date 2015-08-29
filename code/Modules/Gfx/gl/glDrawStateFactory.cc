@@ -10,6 +10,7 @@
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
+#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {
@@ -35,6 +36,9 @@ glDrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
     drawStateFactoryBase::SetupResource(ds);
+    o_assert_dbg(ds.shd);
+    ds.shdProgIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
+    o_assert_dbg(InvalidIndex != ds.shdProgIndex);
     this->glSetupVertexAttrs(ds);
 
     return ResourceState::Valid;

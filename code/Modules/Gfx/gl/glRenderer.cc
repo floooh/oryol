@@ -347,17 +347,6 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyShader(shader* shd, uint32 mask) {
-    o_assert_dbg(this->valid);
-
-    shd->selectProgram(mask);
-    GLuint glProg = shd->getProgram();
-    o_assert_dbg(0 != glProg);
-    this->useProgram(glProg);
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::applyMeshState(const drawState* ds) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != ds);
@@ -407,15 +396,19 @@ glRenderer::applyMeshState(const drawState* ds) {
     // this uses glGetAttribLocation for platforms which don't support
     // glBindAttribLocation (e.g. RaspberryPi)
     // FIXME: currently this doesn't use state-caching
-    this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
+    o_assert_dbg(InvalidIndex != ds->shdProgIndex);
+
+    const auto& ib = ds->meshes[0]->buffers[mesh::ib];
+    this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
-        const GLint glAttribIndex = ds->shd->getAttribLocation((VertexAttr::Code)attrIndex);
+        const GLint glAttribIndex = ds->shd->getAttribLocation(ds->shdProgIndex, (VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
             const mesh* msh = ds->meshes[attr.vbIndex];
-            const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
+            const auto& vb = msh->buffers[mesh::vb];
+            const GLuint glVB = vb.glBuffers[vb.activeSlot];
             this->bindVertexBuffer(glVB);
             ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
             ORYOL_GL_CHECK_ERROR();
@@ -469,7 +462,7 @@ glRenderer::applyDrawState(drawState* ds) {
         if (setup.RasterizerState != this->rasterizerState) {
             this->applyRasterizerState(setup.RasterizerState);
         }
-        this->applyShader(ds->shd, setup.ShaderSelectionMask);
+        this->useProgram(ds->shd->getProgram(ds->shdProgIndex));
         this->applyMeshState(ds);
     }
 }
@@ -1005,6 +998,8 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
+    const int32 progIndex = this->curDrawState->shdProgIndex;
+    o_assert_dbg(InvalidIndex != progIndex);
     const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
 
     // check whether the provided struct is type-compatibel with the
@@ -1018,7 +1013,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     for (int compIndex = 0; compIndex < numComps; compIndex++) {
         const auto& comp = layout.ComponentAt(compIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-        GLint glLoc = shd->getUniformLocation(blockIndex, compIndex);
+        GLint glLoc = shd->getUniformLocation(progIndex, blockIndex, compIndex);
         switch (comp.Type) {
             case UniformType::Float:
                 {
@@ -1082,7 +1077,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
                     const Id& resId = *(const Id*)valuePtr;
                     texture* tex = this->pointers.texturePool->Lookup(resId);
                     o_assert_dbg(tex);
-                    int32 samplerIndex = shd->getSamplerIndex(blockIndex, compIndex);
+                    int32 samplerIndex = shd->getSamplerIndex(progIndex, blockIndex, compIndex);
                     GLuint glTexture = tex->glTex;
                     GLenum glTarget = tex->glTarget;
                     this->bindTexture(samplerIndex, glTarget, glTexture);

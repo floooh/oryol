@@ -124,8 +124,9 @@ glShaderFactory::SetupResource(shader& shd) {
         }
         
         // linking succeeded, store GL program
-        shd.addProgram(setup.Mask(progIndex), glProg);
-        
+        int32 shdProgIndex = shd.addProgram(setup.Mask(progIndex), glProg);
+        o_assert(shdProgIndex == progIndex);
+
         // resolve user uniform locations
         this->pointers.renderer->useProgram(glProg);
         const int32 numUniformBlocks = setup.NumUniformBlocks();
@@ -169,7 +170,7 @@ glShaderFactory::DestroyResource(shader& shd) {
     
     const int32 numProgs = shd.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        GLuint glProg = shd.getProgramAtIndex(progIndex);
+        GLuint glProg = shd.getProgram(progIndex);
         if (0 != glProg) {
             ::glDeleteProgram(glProg);
             ORYOL_GL_CHECK_ERROR();

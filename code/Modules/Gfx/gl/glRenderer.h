@@ -106,8 +106,6 @@ private:
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state
     void applyRasterizerState(const RasterizerState& rs);
-    /// apply shader to use for rendering
-    void applyShader(shader* shd, uint32 selMask);
     /// apply mesh state
     void applyMeshState(const drawState* ds);
 
