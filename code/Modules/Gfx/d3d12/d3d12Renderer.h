@@ -12,6 +12,7 @@
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/d3d12/d3d12Config.h"
+#include "Gfx/d3d12/d3d12ResourceAllocator.h"
 #include "d3d12_decl.h"
 
 namespace Oryol {
@@ -91,6 +92,8 @@ public:
     ID3D12GraphicsCommandList* d3d12CommandList;
     /// pointer to the d3d12 root signature (owned by render mgr)
     ID3D12RootSignature* d3d12RootSignature;
+    // resource allocator for D3D12 objects
+    d3d12ResourceAllocator d3d12Allocator;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;
@@ -116,6 +119,14 @@ private:
     void createRootSignature();
     /// destroy the root signature object
     void destroyRootSignature();
+    /// create the per-frame resources
+    void createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame);
+    /// destroy the per-frame resource
+    void destroyFrameResources();
+    /// create the sampler-descriptor-heap
+    void createSamplerDescriptorHeap();
+    /// destroy the sampler-descriptor-heap
+    void destroySamplerDescriptorHeap();
 
     bool valid;
     gfxPointers pointers;
@@ -134,6 +145,18 @@ private:
     ID3D12DescriptorHeap* d3d12RTVHeap;
     int32 rtvDescriptorSize;
     uint32 curBackbufferIndex;
+    
+    // samplers are not per-frame!
+    ID3D12DescriptorHeap* samplerDescHeap;
+
+    // per-frame resources which are rotated
+    struct frameResources {
+        ID3D12Resource* defaultCB = nullptr;
+        ID3D12Resource* uploadCB = nullptr;
+        uint8* uploadPtr = nullptr;
+        ID3D12DescriptorHeap* cbvSrvHeap = nullptr;
+    };
+    StaticArray<frameResources, d3d12Config::NumFrames> d3d12FrameResources;
 };
 
 } // namespace _priv

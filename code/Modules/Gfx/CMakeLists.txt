@@ -61,6 +61,7 @@ fips_begin_module(Gfx)
         meshBase.cc meshBase.h
         textureBase.cc textureBase.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
+        gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
     )
@@ -124,7 +125,6 @@ fips_begin_module(Gfx)
             d3d12_impl.h d3d12_decl.h
             d3d12Config.h
             d3d12ResourceAllocator.cc d3d12ResourceAllocator.h
-            d3d12ResourceContainer.cc d3d12ResourceContainer.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
             d3d12Mesh.cc d3d12Mesh.h

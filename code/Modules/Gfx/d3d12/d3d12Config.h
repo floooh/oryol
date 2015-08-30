@@ -20,9 +20,11 @@ public:
     /// max number of pixel shader constant buffers
     static const int MaxNumPSConstantBuffers = GfxConfig::MaxNumUniformBlocks;
     /// max number of vertex shader textures
-    static const int MaxNumVSTextures = 4;
+    static const int MaxNumVSTextures = 2;
     /// max number of pixel shader textures
-    static const int MaxNumPSTextures = 16;
+    static const int MaxNumPSTextures = 8;
+    /// maximum number of different samplers over whole application
+    static const int MaxNumSamplers = 64;
 };
 
 } // namespace _priv

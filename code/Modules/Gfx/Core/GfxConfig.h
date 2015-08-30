@@ -14,6 +14,8 @@ public:
     static const int32 DefaultResourcePoolSize = 128;
     /// default uniform buffer size (only relevant on some platforms)
     static const int32 DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
+    /// default maximum number of draw-calls per frame (only relevant on some platforms)
+    static const int32 DefaultMaxDrawCallsPerFrame = (1<<16);
     /// max number of input meshes
     static const int32 MaxNumInputMeshes = 4;
     /// maximum number of primitive groups for one mesh

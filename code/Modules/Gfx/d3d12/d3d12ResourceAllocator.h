@@ -28,27 +28,31 @@ public:
     /// destructor
     ~d3d12ResourceAllocator();
 
-    /// setup the heap allocator
-    void Setup(ID3D12Device* device);
-    /// discard the heap allocator (call after GPU is finished)
-    void Discard();
-    /// return true if has been setup
-    bool IsValid() const;
+    /// destroy all left-over resources
+    void DestroyAll();
     /// garbage-collect released resources when safe, call once per frame
     void GarbageCollect(uint64 frameIndex);
 
-    /// allocate a d3d12 buffer resource for use and vertex-, index- or constant-buffer optionally fill with data
-    ID3D12Resource* AllocBuffer(ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size);
+    /// create a d3d12 buffer with implicit default heap
+    ID3D12Resource* AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size);
+    /// create a d3d12 buffer with implicit upload heap
+    ID3D12Resource* AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size);
+    /// allocate a d3d12 buffer resource, optionally fill with data
+    ID3D12Resource* AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size);
+    /// allocate a d3d12 descriptor heap
+    ID3D12DescriptorHeap* AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32 numItems);
+    
     /// defer-free a resource (any D3D12 object that needs to be deferred-deleted actually)
     void ReleaseDeferred(uint64 frameIndex, ID3D12Object* res);
 
+    /// place a state-transition resource-barrier command
+    void Transition(ID3D12GraphicsCommandList* cmdList, ID3D12Resource* res, D3D12_RESOURCE_STATES fromState, D3D12_RESOURCE_STATES toState);
+
 private:
     /// internal helper method to create a d3d12 buffer resource
-    ID3D12Resource* createBuffer(D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size);
-    /// internal data upload method, expects that the buffer is already in COPY_DEST state
-    void upload(ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size);
-    /// place a state-transition resource-barrier command
-    void transition(ID3D12GraphicsCommandList* cmdList, ID3D12Resource* res, D3D12_RESOURCE_STATES fromState, D3D12_RESOURCE_STATES toState);
+    ID3D12Resource* createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size);
+    /// upload method, expects that the buffer is already in COPY_DEST state
+    void upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size);
 
     struct freeItem {
         freeItem() : frameIndex(0), res(nullptr) { };
@@ -56,9 +60,7 @@ private:
         uint64 frameIndex;
         ID3D12Object* res;
     };
-    ID3D12Device* d3d12Device;
     Queue<freeItem> releaseQueue;
-    bool valid;
 };
 
 } // namespace _priv

@@ -28,7 +28,8 @@ d3d12Fence(nullptr),
 fenceEvent(nullptr),
 d3d12RTVHeap(nullptr),
 rtvDescriptorSize(0),
-curBackbufferIndex(0) {
+curBackbufferIndex(0),
+samplerDescHeap(nullptr) {
     this->d3d12RenderTargets.Fill(nullptr);
 }
 
@@ -55,6 +56,8 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createFrameSyncObjects();
     this->createDefaultRenderTargets();
     this->createRootSignature();
+    this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
+    this->createSamplerDescriptorHeap();
 
     // set the root signature for the first frame
     this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
@@ -75,11 +78,14 @@ d3d12Renderer::discard() {
     this->d3d12CommandList->Close();
     this->frameSync();
 
+    this->destroySamplerDescriptorHeap();
+    this->destroyFrameResources();
     this->destroyRootSignature();
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
     this->destroyCommandList();
     this->destroyCommandAllocator();
+    this->d3d12Allocator.DestroyAll();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
     
@@ -313,6 +319,70 @@ d3d12Renderer::destroyRootSignature() {
 }
 
 //------------------------------------------------------------------------------
+void
+d3d12Renderer::createSamplerDescriptorHeap() {
+    o_assert_dbg(nullptr == this->samplerDescHeap);
+
+    this->samplerDescHeap = this->d3d12Allocator.AllocDescriptorHeap(this->d3d12Device,
+        D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
+        d3d12Config::MaxNumSamplers);
+    o_assert_dbg(this->samplerDescHeap);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::destroySamplerDescriptorHeap() {
+    if (this->samplerDescHeap) {
+        this->d3d12Allocator.ReleaseDeferred(this->frameIndex, this->samplerDescHeap);
+        this->samplerDescHeap = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
+    HRESULT hr;
+
+    for (auto& frameRes : this->d3d12FrameResources) {
+
+        o_assert_dbg(nullptr == frameRes.defaultCB);
+        o_assert_dbg(nullptr == frameRes.uploadCB);
+        o_assert_dbg(nullptr == frameRes.cbvSrvHeap);
+        
+        frameRes.defaultCB = this->d3d12Allocator.AllocDefaultBuffer(this->d3d12Device, cbSize);
+        o_assert_dbg(frameRes.defaultCB);
+        frameRes.uploadCB = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
+        o_assert_dbg(frameRes.uploadCB);
+        hr = frameRes.uploadCB->Map(0, nullptr, (void**)&frameRes.uploadPtr);
+        o_assert(SUCCEEDED(hr));
+        frameRes.cbvSrvHeap = this->d3d12Allocator.AllocDescriptorHeap(this->d3d12Device, 
+            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 
+            maxDrawCallsPerFrame * (d3d12Config::MaxNumVSConstantBuffers + d3d12Config::MaxNumPSConstantBuffers));
+        o_assert_dbg(frameRes.cbvSrvHeap);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::destroyFrameResources() {
+    for (auto& frameRes : this->d3d12FrameResources) {
+        if (frameRes.defaultCB) {
+            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.defaultCB);
+            frameRes.defaultCB = nullptr;
+        }
+        if (frameRes.uploadCB) {
+            frameRes.uploadCB->Unmap(0, nullptr);
+            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.uploadCB);
+            frameRes.uploadCB = nullptr;
+        }
+        if (frameRes.cbvSrvHeap) {
+            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.cbvSrvHeap);
+            frameRes.cbvSrvHeap = nullptr;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 bool
 d3d12Renderer::isValid() const {
     return this->valid;
@@ -355,7 +425,7 @@ d3d12Renderer::frameSync() {
     this->curBackbufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
     // garbage-collect resources
-    this->pointers.resContainer->resAllocator.GarbageCollect(this->frameIndex);
+    this->d3d12Allocator.GarbageCollect(this->frameIndex);
 
     // prepare for next frame
     o_assert_dbg(this->d3d12RootSignature);
