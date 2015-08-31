@@ -151,9 +151,8 @@ private:
 
     // per-frame resources which are rotated
     struct frameResources {
-        ID3D12Resource* defaultCB = nullptr;
-        ID3D12Resource* uploadCB = nullptr;
-        uint8* uploadPtr = nullptr;
+        ID3D12Resource* constantBuffer = nullptr;
+        uint8* constantBufferPtr = nullptr;
         ID3D12DescriptorHeap* cbvSrvHeap = nullptr;
     };
     StaticArray<frameResources, d3d12Config::NumFrames> d3d12FrameResources;

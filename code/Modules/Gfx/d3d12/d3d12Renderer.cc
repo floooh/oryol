@@ -345,16 +345,20 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 
     for (auto& frameRes : this->d3d12FrameResources) {
 
-        o_assert_dbg(nullptr == frameRes.defaultCB);
-        o_assert_dbg(nullptr == frameRes.uploadCB);
+        o_assert_dbg(nullptr == frameRes.constantBuffer);
         o_assert_dbg(nullptr == frameRes.cbvSrvHeap);
         
-        frameRes.defaultCB = this->d3d12Allocator.AllocDefaultBuffer(this->d3d12Device, cbSize);
-        o_assert_dbg(frameRes.defaultCB);
-        frameRes.uploadCB = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
-        o_assert_dbg(frameRes.uploadCB);
-        hr = frameRes.uploadCB->Map(0, nullptr, (void**)&frameRes.uploadPtr);
+        // this is the buffer for shader constants that change between drawcalls,
+        // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
+        frameRes.constantBuffer = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
+        o_assert_dbg(frameRes.constantBuffer);
+        
+        // we keep the mapped pointer to the constant buffer around
+        hr = frameRes.constantBuffer->Map(0, nullptr, (void**)&frameRes.constantBufferPtr);
         o_assert(SUCCEEDED(hr));
+
+        // the descriptor heap for the per-draw-call constant buffer
+        // FIXME: pre-allocate CBV's?
         frameRes.cbvSrvHeap = this->d3d12Allocator.AllocDescriptorHeap(this->d3d12Device, 
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 
             maxDrawCallsPerFrame * (d3d12Config::MaxNumVSConstantBuffers + d3d12Config::MaxNumPSConstantBuffers));
@@ -366,14 +370,11 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 void
 d3d12Renderer::destroyFrameResources() {
     for (auto& frameRes : this->d3d12FrameResources) {
-        if (frameRes.defaultCB) {
-            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.defaultCB);
-            frameRes.defaultCB = nullptr;
-        }
-        if (frameRes.uploadCB) {
-            frameRes.uploadCB->Unmap(0, nullptr);
-            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.uploadCB);
-            frameRes.uploadCB = nullptr;
+        if (frameRes.constantBuffer) {
+            frameRes.constantBuffer->Unmap(0, nullptr);
+            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
+            frameRes.constantBuffer = nullptr;
+            frameRes.constantBufferPtr = nullptr;
         }
         if (frameRes.cbvSrvHeap) {
             this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.cbvSrvHeap);
