@@ -150,7 +150,7 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     o_assert_dbg(IndexType::None != ibAttrs.Type ? Usage::Immutable == ibAttrs.BufferUsage : true);
     
     d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
-    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->d3d12CommandList; // FIXME: double buffered???
+    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->d3d12CommandList;
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
     // create vertex buffer
@@ -158,7 +158,7 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     const uint8* vertices = ptr + msh.Setup.DataVertexOffset;
     const int32 vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + vbSize));
-    msh.buffers[mesh::vb].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, data, size);
+    msh.buffers[mesh::vb].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, vbSize);
     o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
 
     // create optional index buffer
@@ -169,7 +169,7 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
         const uint8* indices = ptr + msh.Setup.DataIndexOffset;
         const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         o_assert_dbg((ptr + size) >= (indices + ibSize));
-        msh.buffers[mesh::ib].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, data, size);
+        msh.buffers[mesh::ib].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, ibSize);
         o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
     }
     return ResourceState::Valid;
