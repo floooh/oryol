@@ -63,7 +63,8 @@ ShapeApp::OnRunning() {
 AppState::Code
 ShapeApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample"));
+    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
+    Gfx::Setup(gfxSetup);
 
     // create resources
     ShapeBuilder shapeBuilder;
@@ -83,7 +84,7 @@ ShapeApp::OnInit() {
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = 4;
+    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->drawState = Gfx::CreateResource(dss);
 
     // setup projection and view matrices
