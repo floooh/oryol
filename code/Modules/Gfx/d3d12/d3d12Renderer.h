@@ -97,6 +97,8 @@ public:
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;
+    /// the current frame index module the max number of in-flight-frames
+    uint32 curFrameRotateIndex;
 
 private:
     /// create the d3d12 command allocator object
@@ -129,6 +131,7 @@ private:
     void destroySamplerDescriptorHeap();
 
     bool valid;
+    GfxSetup gfxSetup;
     gfxPointers pointers;
     bool rtValid;
     DisplayAttrs rtAttrs;
@@ -144,18 +147,34 @@ private:
     StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
     ID3D12DescriptorHeap* d3d12RTVHeap;
     int32 rtvDescriptorSize;
-    uint32 curBackbufferIndex;
+    int32 curBackBufferIndex;
     
     // samplers are not per-frame!
     ID3D12DescriptorHeap* samplerDescHeap;
 
+    // root signature slots, ordered from low to high change-frequency
+    enum rootParam {
+        VSSamplers = 0,
+        PSSamplers,
+        VSTextures,
+        PSTextures,
+
+        VSConstantBuffer0,
+        PSConstantBuffer0,
+        VSConstantBuffer1,
+        PSConstantBuffer1,
+
+        NumRootParams
+    };
+
     // per-frame resources which are rotated
     struct frameResources {
         ID3D12Resource* constantBuffer = nullptr;
-        uint8* constantBufferPtr = nullptr;
-        ID3D12DescriptorHeap* cbvSrvHeap = nullptr;
+        uint8* cbCpuPtr = nullptr;
+        uint64 cbGpuPtr = 0;
     };
     StaticArray<frameResources, d3d12Config::NumFrames> d3d12FrameResources;
+    int32 curConstantBufferOffset;
 };
 
 } // namespace _priv

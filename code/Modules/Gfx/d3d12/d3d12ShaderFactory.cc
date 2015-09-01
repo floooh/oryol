@@ -52,6 +52,7 @@ d3d12ShaderFactory::SetupResource(shader& shd) {
     const ShaderLang::Code slang = ShaderLang::HLSL5;
     const ShaderSetup& setup = shd.Setup;
 
+    // set vertex- and pixel-shader bytecode pointers
     d3d12Shader::shaderBlob vsByteCode;
     d3d12Shader::shaderBlob psByteCode;
     const int32 numProgs = setup.NumPrograms();
@@ -61,8 +62,13 @@ d3d12ShaderFactory::SetupResource(shader& shd) {
         shd.addShaders(setup.Mask(progIndex), vsByteCode, psByteCode);
     }
 
-    o_warn("FIXME: d3d12ShaderFactory::SetupResource() setup constant buffers\n");
-
+    // set uniform block binding info
+    for (int i = 0; i < setup.NumUniformBlocks(); i++) {
+        const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
+        const int32 bindSlotIndex = setup.UniformBlockSlot(i);
+        shd.addUniformBlockEntry(bindShaderStage, bindSlotIndex);
+    }
+    
     return ResourceState::Valid;
 }
 
@@ -70,12 +76,7 @@ d3d12ShaderFactory::SetupResource(shader& shd) {
 void
 d3d12ShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
-
     this->pointers.renderer->invalidateShaderState();
-    
-    // no need to destroy 'shader objects' here
-    o_warn("FIXME: d3d12ShaderFactory::SetupResource() destroy constant buffers\n");
-
     shd.Clear();
 }
 

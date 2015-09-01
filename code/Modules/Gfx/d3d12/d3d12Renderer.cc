@@ -20,6 +20,7 @@ d3d12CommandAllocator(nullptr),
 d3d12CommandList(nullptr),
 d3d12RootSignature(nullptr),
 frameIndex(0),
+curFrameRotateIndex(0),
 valid(false),
 rtValid(false),
 curRenderTarget(nullptr),
@@ -28,8 +29,9 @@ d3d12Fence(nullptr),
 fenceEvent(nullptr),
 d3d12RTVHeap(nullptr),
 rtvDescriptorSize(0),
-curBackbufferIndex(0),
-samplerDescHeap(nullptr) {
+curBackBufferIndex(0),
+samplerDescHeap(nullptr),
+curConstantBufferOffset(0) {
     this->d3d12RenderTargets.Fill(nullptr);
 }
 
@@ -47,6 +49,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(0 == this->frameIndex);
 
     this->valid = true;
+    this->gfxSetup = setup;
     this->pointers = ptrs;
     this->d3d12Device = ptrs.displayMgr->d3d12Device;
     this->d3d12CommandQueue = ptrs.displayMgr->d3d12CommandQueue;
@@ -202,7 +205,7 @@ d3d12Renderer::createDefaultRenderTargets() {
         this->d3d12Device->CreateRenderTargetView(this->d3d12RenderTargets[i], nullptr, rtvHandle);
         rtvHandle.ptr += this->rtvDescriptorSize;
     }
-    this->curBackbufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
+    this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
     o_warn("d3d12Renderer::createDefaultRenderTarget: create depth-stencil buffer(s?)\n");
 }
@@ -236,55 +239,80 @@ d3d12Renderer::createRootSignature() {
     o_assert_dbg(this->d3d12Device);
     HRESULT hr;
 
+    // currently, all constant buffers can change between draw calls,
+    // so they are set directly in the root signature, textures and
+    // samplers can only change between draw states, so they are set via descriptors
+
+
     // the root signature describes number of constant buffers,
     // textures and samplers that can be bound to the vertex- and pixel-shader
-    StaticArray<D3D12_DESCRIPTOR_RANGE, 3> vsRanges;
+    StaticArray<D3D12_DESCRIPTOR_RANGE, 2> vsRanges;
     Memory::Clear(&vsRanges[0], sizeof(vsRanges[0]) * vsRanges.Size());
-    StaticArray<D3D12_DESCRIPTOR_RANGE, 3> psRanges;
+    StaticArray<D3D12_DESCRIPTOR_RANGE, 2> psRanges;
     Memory::Clear(&psRanges[0], sizeof(psRanges[0]) * psRanges.Size());
 
-    vsRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-    vsRanges[0].NumDescriptors = d3d12Config::MaxNumVSConstantBuffers;
+    vsRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    vsRanges[0].NumDescriptors = d3d12Config::MaxNumVSTextures;
     vsRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    vsRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    vsRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
     vsRanges[1].NumDescriptors = d3d12Config::MaxNumVSTextures;
     vsRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    vsRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    vsRanges[2].NumDescriptors = d3d12Config::MaxNumVSTextures;
-    vsRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    psRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-    psRanges[0].NumDescriptors = d3d12Config::MaxNumPSConstantBuffers;
+    psRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    psRanges[0].NumDescriptors = d3d12Config::MaxNumPSTextures;
     psRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    psRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    psRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
     psRanges[1].NumDescriptors = d3d12Config::MaxNumPSTextures;
     psRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    psRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    psRanges[2].NumDescriptors = d3d12Config::MaxNumPSTextures;
-    psRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    StaticArray<D3D12_ROOT_PARAMETER, 4> rootParams;
+    StaticArray<D3D12_ROOT_PARAMETER, NumRootParams> rootParams;
     Memory::Clear(&rootParams[0], sizeof(rootParams[0]) * rootParams.Size());
-    // vertex shader constant buffers and textures
-    rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[0].DescriptorTable.pDescriptorRanges = &vsRanges[0];
-    rootParams[0].DescriptorTable.NumDescriptorRanges = 2;
+
     // vertex shader samplers
-    rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[1].DescriptorTable.pDescriptorRanges = &vsRanges[2];
-    rootParams[1].DescriptorTable.NumDescriptorRanges = 1;
-    // pixel shader constant buffers and textures
-    rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[2].DescriptorTable.pDescriptorRanges = &psRanges[0];
-    rootParams[2].DescriptorTable.NumDescriptorRanges = 2;
+    rootParams[VSSamplers].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[VSSamplers].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[VSSamplers].DescriptorTable.pDescriptorRanges = &vsRanges[1];
+    rootParams[VSSamplers].DescriptorTable.NumDescriptorRanges = 1;
+
     // pixel shader samplers
-    rootParams[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[3].DescriptorTable.pDescriptorRanges = &psRanges[2];
-    rootParams[3].DescriptorTable.NumDescriptorRanges = 1;
+    rootParams[PSSamplers].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[PSSamplers].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[PSSamplers].DescriptorTable.pDescriptorRanges = &psRanges[1];
+    rootParams[PSSamplers].DescriptorTable.NumDescriptorRanges = 1;
+
+    // vertex shader textures
+    rootParams[VSTextures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[VSTextures].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[VSTextures].DescriptorTable.pDescriptorRanges = &vsRanges[0];
+    rootParams[VSTextures].DescriptorTable.NumDescriptorRanges = 1;
+
+    // pixel shader textures
+    rootParams[PSTextures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[PSTextures].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[PSTextures].DescriptorTable.pDescriptorRanges = &psRanges[0];
+    rootParams[PSTextures].DescriptorTable.NumDescriptorRanges = 1;
+
+    // vertex shader constant buffers
+    rootParams[VSConstantBuffer0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParams[VSConstantBuffer0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[VSConstantBuffer0].Constants.ShaderRegister = 0;
+    rootParams[VSConstantBuffer0].Constants.RegisterSpace = 0;
+   
+    rootParams[VSConstantBuffer1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParams[VSConstantBuffer1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParams[VSConstantBuffer1].Constants.ShaderRegister = 1;
+    rootParams[VSConstantBuffer1].Constants.RegisterSpace = 0;
+
+    // pixel shader constant buffers
+    rootParams[PSConstantBuffer0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParams[PSConstantBuffer0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[PSConstantBuffer0].Constants.ShaderRegister = 0;
+    rootParams[PSConstantBuffer0].Constants.RegisterSpace = 0;
+
+    rootParams[PSConstantBuffer1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParams[PSConstantBuffer1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParams[PSConstantBuffer1].Constants.ShaderRegister = 1;
+    rootParams[PSConstantBuffer1].Constants.RegisterSpace = 0;
 
     D3D12_ROOT_SIGNATURE_DESC rootDesc;
     Memory::Clear(&rootDesc, sizeof(rootDesc));
@@ -343,26 +371,22 @@ void
 d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
     HRESULT hr;
 
+    this->curFrameRotateIndex = 0;
+    this->curConstantBufferOffset = 0;
     for (auto& frameRes : this->d3d12FrameResources) {
 
         o_assert_dbg(nullptr == frameRes.constantBuffer);
-        o_assert_dbg(nullptr == frameRes.cbvSrvHeap);
         
         // this is the buffer for shader constants that change between drawcalls,
         // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
         frameRes.constantBuffer = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
         o_assert_dbg(frameRes.constantBuffer);
         
-        // we keep the mapped pointer to the constant buffer around
-        hr = frameRes.constantBuffer->Map(0, nullptr, (void**)&frameRes.constantBufferPtr);
+        // get the CPU and GPU start address of the constant buffer
+        hr = frameRes.constantBuffer->Map(0, nullptr, (void**)&frameRes.cbCpuPtr);
         o_assert(SUCCEEDED(hr));
-
-        // the descriptor heap for the per-draw-call constant buffer
-        // FIXME: pre-allocate CBV's?
-        frameRes.cbvSrvHeap = this->d3d12Allocator.AllocDescriptorHeap(this->d3d12Device, 
-            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 
-            maxDrawCallsPerFrame * (d3d12Config::MaxNumVSConstantBuffers + d3d12Config::MaxNumPSConstantBuffers));
-        o_assert_dbg(frameRes.cbvSrvHeap);
+        frameRes.cbGpuPtr = frameRes.constantBuffer->GetGPUVirtualAddress();
+        o_assert_dbg(frameRes.cbGpuPtr);
     }
 }
 
@@ -374,11 +398,8 @@ d3d12Renderer::destroyFrameResources() {
             frameRes.constantBuffer->Unmap(0, nullptr);
             this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
             frameRes.constantBuffer = nullptr;
-            frameRes.constantBufferPtr = nullptr;
-        }
-        if (frameRes.cbvSrvHeap) {
-            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.cbvSrvHeap);
-            frameRes.cbvSrvHeap = nullptr;
+            frameRes.cbCpuPtr = nullptr;
+            frameRes.cbGpuPtr = 0;
         }
     }
 }
@@ -423,7 +444,7 @@ d3d12Renderer::frameSync() {
     o_assert(SUCCEEDED(hr));
 
     // lookup new backbuffer index
-    this->curBackbufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
+    this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
     // garbage-collect resources
     this->d3d12Allocator.GarbageCollect(this->frameIndex);
@@ -431,6 +452,10 @@ d3d12Renderer::frameSync() {
     // prepare for next frame
     o_assert_dbg(this->d3d12RootSignature);
     this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
+    this->curConstantBufferOffset = 0;
+    if (++this->curFrameRotateIndex >= d3d12Config::NumFrames) {
+        this->curFrameRotateIndex = 0;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -444,7 +469,7 @@ d3d12Renderer::commitFrame() {
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = this->d3d12RenderTargets[this->curBackbufferIndex];
+    barrier.Transition.pResource = this->d3d12RenderTargets[this->curBackBufferIndex];
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -498,10 +523,10 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = dispMgr->GetDisplayAttrs();
-        colorRenderTarget = this->d3d12RenderTargets[this->curBackbufferIndex];
+        colorRenderTarget = this->d3d12RenderTargets[this->curBackBufferIndex];
         colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;        
         colorRTVHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
-        colorRTVHandle.ptr += this->rtvDescriptorSize * this->curBackbufferIndex;
+        colorRTVHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
     }
     else {
         o_error("FIXME: d3d12Renderer apply offscreen render target!\n");
@@ -585,12 +610,12 @@ d3d12Renderer::applyDrawState(drawState* ds) {
         this->curDrawState = nullptr;
         return;
     }
+    this->curDrawState = ds;
+
     o_assert_dbg(ds->d3d12PipelineState);
     o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
     o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
     o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
-
-    this->curDrawState = ds;
 
     // apply pipeline state (FIXME: only if changed!)
     this->d3d12CommandList->SetPipelineState(ds->d3d12PipelineState);
@@ -627,14 +652,64 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     this->d3d12CommandList->IASetIndexBuffer(ibViewPtr);
     this->d3d12CommandList->IASetPrimitiveTopology(ds->meshes[0]->d3d12PrimTopology);
     this->d3d12CommandList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
-
-    // FIXME: bind shader resources
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
-    o_warn("d3d12Renderer::applyUniformBlock()\n");
+    o_assert_dbg(this->d3d12CommandList);
+
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+
+    // get the uniform layout for this uniform block
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+
+    // check whether the provided struct is type-compatible with the uniform layout
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+
+    // FIXME: textures should be set in applyDrawState, not applyUniformBlock, 
+    const ShaderType::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
+    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
+    const uint8* uBufferPtr = nullptr;
+    const int numComps = layout.NumComponents();
+    for (int compIndex = 0; compIndex < numComps; compIndex++) {
+        const auto& comp = layout.ComponentAt(compIndex);
+        if (comp.Type == UniformType::Texture) {
+            // FIXME: skip texture stuff 
+        }
+        else {
+            // found start of cbuffer data
+            uBufferPtr = ptr + layout.ComponentByteOffset(compIndex);
+            break;
+        }
+    }
+
+    // copy uniform data into global constant buffer
+    if (nullptr != uBufferPtr) {
+        const int32 uniformSize = layout.ByteSizeWithoutTextures();
+        o_assert2((this->curConstantBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
+        const auto& frameRes = this->d3d12FrameResources[this->curFrameRotateIndex];
+        uint8* dstPtr = frameRes.cbCpuPtr + this->curConstantBufferOffset;
+        std::memcpy(dstPtr, uBufferPtr, uniformSize);
+
+        // get the GPU address of current constant buffer location and set
+        // the constant buffer location directly in the root signature
+        // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
+        // PSConstantBuffer0 or PSConstantBuffer1
+        const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curConstantBufferOffset;
+        static const int maxHighFreqCBs = 2;    // FIXME: '2' completely pulled out of ass to keep root sig small-ish
+        o_assert_dbg(bindSlotIndex < maxHighFreqCBs);
+        UINT rootParamIndex = ShaderType::VertexShader == bindShaderStage ? VSConstantBuffer0 : PSConstantBuffer0;
+        rootParamIndex += bindSlotIndex * maxHighFreqCBs;
+        this->d3d12CommandList->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
+
+        // advance constant buffer offset (must be multiple of 256)
+        this->curConstantBufferOffset = Memory::RoundUp(this->curConstantBufferOffset + uniformSize, 256);
+    }
 }
 
 //------------------------------------------------------------------------------
