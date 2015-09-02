@@ -35,7 +35,7 @@ d3d12Types::asRenderTargetFormat(PixelFormat::Code pf) {
         case PixelFormat::D16:      
             return DXGI_FORMAT_D16_UNORM;
         case PixelFormat::D32:      
-            return DXGI_FORMAT_D32_FLOAT;   // FIXME???
+            return DXGI_FORMAT_D32_FLOAT;
         case PixelFormat::D24S8:    
             return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default:

@@ -27,7 +27,9 @@ curRenderTarget(nullptr),
 curDrawState(nullptr),
 d3d12Fence(nullptr),
 fenceEvent(nullptr),
+d3d12DepthStencil(nullptr),
 d3d12RTVHeap(nullptr),
+d3d12DSVHeap(nullptr),
 rtvDescriptorSize(0),
 curBackBufferIndex(0),
 samplerDescHeap(nullptr),
@@ -57,7 +59,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->createCommandAllocator();
     this->createCommandList();
     this->createFrameSyncObjects();
-    this->createDefaultRenderTargets();
+    this->createDefaultRenderTargets(setup.Width, setup.Height);
     this->createRootSignature();
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createSamplerDescriptorHeap();
@@ -180,18 +182,20 @@ d3d12Renderer::destroyFrameSyncObjects() {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::createDefaultRenderTargets() {
+d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     o_assert_dbg(nullptr == this->d3d12RTVHeap);
+    o_assert_dbg(nullptr == this->d3d12DSVHeap);
+    o_assert_dbg(nullptr == this->d3d12DepthStencil);
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
     HRESULT hr;
 
     // create a render-target-view heap with NumFrames entries
-    D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-    Memory::Clear(&heapDesc, sizeof(heapDesc));
-    heapDesc.NumDescriptors = d3d12Config::NumFrames;
-    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    hr = this->d3d12Device->CreateDescriptorHeap(&heapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12RTVHeap);
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+    Memory::Clear(&rtvHeapDesc, sizeof(rtvHeapDesc));
+    rtvHeapDesc.NumDescriptors = d3d12Config::NumFrames;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    hr = this->d3d12Device->CreateDescriptorHeap(&rtvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12RTVHeap);
     o_assert(SUCCEEDED(hr) && this->d3d12RTVHeap);
     this->rtvDescriptorSize = this->d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     o_assert(this->rtvDescriptorSize > 0);
@@ -207,25 +211,80 @@ d3d12Renderer::createDefaultRenderTargets() {
     }
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
-    o_warn("d3d12Renderer::createDefaultRenderTarget: create depth-stencil buffer(s?)\n");
+    // create a single depth-stencil buffer
+    if (PixelFormat::None != this->gfxSetup.DepthFormat) {
+
+        D3D12_HEAP_PROPERTIES dsHeapProps;
+        Memory::Clear(&dsHeapProps, sizeof(dsHeapProps));
+        dsHeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        D3D12_RESOURCE_DESC dsDesc;
+        Memory::Clear(&dsDesc, sizeof(dsDesc));
+        dsDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        dsDesc.Alignment = 0;
+        dsDesc.Width = width;
+        dsDesc.Height = height;
+        dsDesc.DepthOrArraySize = 1;
+        dsDesc.MipLevels = 0;
+        dsDesc.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
+        dsDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
+        dsDesc.SampleDesc.Quality = 0;
+        o_warn("FIXME: d3d12Renderer::createDefaultRenderTargets: Sample Quality!\n");
+        dsDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        dsDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+        D3D12_CLEAR_VALUE clearValue;
+        Memory::Clear(&clearValue, sizeof(clearValue));
+        clearValue.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
+        clearValue.DepthStencil.Depth = 1.0f;
+        clearValue.DepthStencil.Stencil = 0;
+
+        hr = this->d3d12Device->CreateCommittedResource(
+            &dsHeapProps,                       // pHeapProperties
+            D3D12_HEAP_FLAG_NONE,               // HeapFlags
+            &dsDesc,                            // pResourceDesc,
+            D3D12_RESOURCE_STATE_DEPTH_WRITE,   // InitialResourceState
+            &clearValue,                        // pOptimizedClearValue
+            __uuidof(ID3D12Resource),           // riidResource
+            (void**)&this->d3d12DepthStencil);  // ppvResource
+        o_assert(SUCCEEDED(hr) && this->d3d12DepthStencil);
+
+        D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+        Memory::Clear(&dsvHeapDesc, sizeof(dsvHeapDesc));
+        dsvHeapDesc.NumDescriptors = 1;
+        dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        hr = this->d3d12Device->CreateDescriptorHeap(&dsvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12DSVHeap);
+        o_assert(SUCCEEDED(hr) && this->d3d12DSVHeap);
+
+        D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+        Memory::Clear(&dsvDesc, sizeof(dsvDesc));
+        dsvDesc.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
+        dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+        this->d3d12Device->CreateDepthStencilView(this->d3d12DepthStencil, &dsvDesc, this->d3d12DSVHeap->GetCPUDescriptorHandleForHeapStart());
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::destroyDefaultRenderTargets() {
 
-    // FIXME: destroy depth-stencil buffer!
-    o_warn("Destroy depth-stencil buffer!\n");
-    
-    // release the render target resource objects
+    if (this->d3d12DepthStencil) {
+        this->d3d12DepthStencil->Release();
+        this->d3d12DepthStencil = nullptr;
+    }
     for (auto& rt : this->d3d12RenderTargets) {
         if (rt) {
             rt->Release();
             rt = nullptr;
         }
     }
-
-    // release the render-target-view heap
+    if (this->d3d12DSVHeap) {
+        this->d3d12DSVHeap->Release();
+        this->d3d12DSVHeap = nullptr;
+    }
     if (this->d3d12RTVHeap) {
         this->d3d12RTVHeap->Release();
         this->d3d12RTVHeap = nullptr;
@@ -517,16 +576,24 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->d3d12CommandList);
     const displayMgr* dispMgr = this->pointers.displayMgr;
 
-    ID3D12Resource* colorRenderTarget = nullptr;
-    D3D12_CPU_DESCRIPTOR_HANDLE colorRTVHandle = { 0 };
+    ID3D12Resource* colorBuffer = nullptr;
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = { 0 };
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = { 0 };
+    D3D12_CPU_DESCRIPTOR_HANDLE* rtvHandlePtr = nullptr;
+    D3D12_CPU_DESCRIPTOR_HANDLE* dsvHandlePtr = nullptr; 
     D3D12_RESOURCE_STATES colorStateBefore = (D3D12_RESOURCE_STATES) 0xFFFFFFFF;
     this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = dispMgr->GetDisplayAttrs();
-        colorRenderTarget = this->d3d12RenderTargets[this->curBackBufferIndex];
-        colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;        
-        colorRTVHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
-        colorRTVHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
+        colorBuffer = this->d3d12RenderTargets[this->curBackBufferIndex];
+        colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        rtvHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
+        rtvHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
+        rtvHandlePtr = &rtvHandle;
+        if (this->d3d12DepthStencil) {
+            dsvHandle = this->d3d12DSVHeap->GetCPUDescriptorHandleForHeapStart();
+            dsvHandlePtr = &dsvHandle;
+        }
     }
     else {
         o_error("FIXME: d3d12Renderer apply offscreen render target!\n");
@@ -535,23 +602,23 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         // states (hmm does that mean a texture cannot be used as a vertex shader
         // texture and a pixel shader texture at the same time?
     }
-    o_assert_dbg(colorRenderTarget && (colorStateBefore != 0xFFFFFFFF));
+    o_assert_dbg(colorBuffer && (colorStateBefore != 0xFFFFFFFF));
 
     this->curRenderTarget = rt;
     this->rtValid = true;
 
-    // transition resource into render target state
+    // transition color buffer into render target state
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = colorRenderTarget;
+    barrier.Transition.pResource = colorBuffer;
     barrier.Transition.StateBefore = colorStateBefore;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     this->d3d12CommandList->ResourceBarrier(1, &barrier);
 
     // set the render target
-    this->d3d12CommandList->OMSetRenderTargets(1, &colorRTVHandle, FALSE, nullptr);
+    this->d3d12CommandList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);
 
     // set viewport and scissor-rect to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
@@ -559,16 +626,25 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // perform clear action
     if (clearState.Actions & ClearState::ColorBit) {
-        if (colorRTVHandle.ptr) {
+        if (rtvHandlePtr) {
             const FLOAT* clearColor = glm::value_ptr(clearState.Color);        
-            this->d3d12CommandList->ClearRenderTargetView(colorRTVHandle, clearColor, 0, nullptr);
+            this->d3d12CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
         }
     }
     if (clearState.Actions & ClearState::DepthStencilBits) {
-        o_warn("FIXME: clear depth-stencil buffer!\n");
+        if (dsvHandlePtr) {
+            D3D12_CLEAR_FLAGS d3d12ClearFlags = (D3D12_CLEAR_FLAGS) 0;
+            if (clearState.Actions & ClearState::DepthBit) {
+                d3d12ClearFlags |= D3D12_CLEAR_FLAG_DEPTH;
+            }
+            if (clearState.Actions & ClearState::StencilBit) {
+                d3d12ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
+            }
+            const FLOAT d = clearState.Depth;
+            const UINT8 s = clearState.Stencil;
+            this->d3d12CommandList->ClearDepthStencilView(dsvHandle, d3d12ClearFlags, d, s, 0, nullptr);
+        }
     }
-
-    o_warn("d3d12Renderer::applyRenderTarget()\n");
 }
 
 //------------------------------------------------------------------------------

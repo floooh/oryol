@@ -114,7 +114,7 @@ private:
     /// destory frame sync objects
     void destroyFrameSyncObjects();
     /// create the default render-targets
-    void createDefaultRenderTargets();
+    void createDefaultRenderTargets(int width, int height);
     /// destroy the default render-targets
     void destroyDefaultRenderTargets();
     /// create the root signature object
@@ -145,7 +145,9 @@ private:
 
     // default render target
     StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
+    ID3D12Resource* d3d12DepthStencil;
     ID3D12DescriptorHeap* d3d12RTVHeap;
+    ID3D12DescriptorHeap* d3d12DSVHeap;
     int32 rtvDescriptorSize;
     int32 curBackBufferIndex;
     
