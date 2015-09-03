@@ -21,6 +21,7 @@ class meshPool;
 class shaderPool;
 class texturePool;
 class drawStatePool;
+class textureBundlePool;
 
 struct gfxPointers {
 public:
@@ -31,6 +32,7 @@ public:
     class shaderPool* shaderPool = nullptr;
     class texturePool* texturePool = nullptr;
     class drawStatePool* drawStatePool = nullptr;
+    class textureBundlePool* textureBundlePool = nullptr;
 };
 
 } // namespace _priv

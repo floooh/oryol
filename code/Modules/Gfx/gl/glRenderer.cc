@@ -469,6 +469,22 @@ glRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
+glRenderer::applyTextureBundle(textureBundle* tb) {
+    o_assert_dbg(this->valid);
+
+    if (nullptr == tb) {
+        // textureBundle contains textures that are not yet loaded,
+        // disable the next draw call, and return
+        this->curDrawState = nullptr;
+        return;
+    }
+    else {
+        o_error("glRenderer::applyTextureBundle: FIXME!\n");
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");

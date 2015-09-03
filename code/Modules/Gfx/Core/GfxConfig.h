@@ -32,6 +32,10 @@ public:
     static const int32 MaxNumUniformLayoutComponents = 16;
     /// maximum number of components in vertex layout
     static const int32 MaxNumVertexLayoutComponents = 16;
+    /// maximum number of vertex shader textures
+    static const int32 MaxNumVSTextures = 4;
+    /// maxium number of fragment shader textures
+    static const int32 MaxNumFSTextures = 8;
     /// maximum number of in-flight frames for Metal
     static const int32 MtlMaxInflightFrames = 3;
 };

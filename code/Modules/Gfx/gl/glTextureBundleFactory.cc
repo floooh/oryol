@@ -1,0 +1,92 @@
+//------------------------------------------------------------------------------
+//  glTextureBundleFactory.cc
+//------------------------------------------------------------------------------
+#include "Pre.h"
+#include "glTextureBundleFactory.h"
+#include "Core/Assertion.h"
+#include "Gfx/Core/GfxConfig.h"
+#include "Gfx/Core/Enums.h"
+#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/textureBundle.h"
+#include "Gfx/Resource/resourcePools.h"
+
+namespace Oryol {
+namespace _priv {
+
+//------------------------------------------------------------------------------
+glTextureBundleFactory::glTextureBundleFactory() :
+isValid(false) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+glTextureBundleFactory::~glTextureBundleFactory() {
+    o_assert_dbg(!this->isValid);
+}
+
+//------------------------------------------------------------------------------
+void
+glTextureBundleFactory::Setup(const gfxPointers& ptrs) {
+    o_assert_dbg(!this->isValid);
+    this->isValid = true;
+    this->pointers = ptrs;
+}
+
+//------------------------------------------------------------------------------
+void
+glTextureBundleFactory::Discard() {
+    o_assert_dbg(this->isValid);
+    this->isValid = false;
+    this->pointers = gfxPointers();
+}
+
+//------------------------------------------------------------------------------
+bool
+glTextureBundleFactory::IsValid() const {
+    return this->isValid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+glTextureBundleFactory::SetupResource(textureBundle& tb) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg(this->pointers.texturePool);
+
+    // This method will only be called by the gfxResourceContainer object
+    // once all textures in the bundle have finished loading (or are already valid),
+    // the textureBundle object will be in Pending state until this has happened, if any
+    // of the textures are in failed state, the textureBundle object
+    // will also be set to failed state. All that remains to do here is
+    // to lookup the texture objects and gather the GL texture names from them.
+
+    for (int i = 0; i < GfxConfig::MaxNumVSTextures; i++) {
+        o_assert_dbg((0 == tb.vs[i].glTex) && (0 == tb.vs[i].glTarget));
+        const auto& vsTex = tb.Setup.VS[i];
+        if (vsTex.IsValid()) {
+            o_assert_dbg(vsTex.Type == GfxResourceType::Texture);
+            texture* tex = this->pointers.texturePool->Get(vsTex);
+            o_assert_dbg(tex && (ResourceState::Valid == tex->State));
+            o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
+            tb.vs[i].glTex = tex->glTex;
+            tb.vs[i].glTarget = tex->glTarget;
+        }
+    }
+
+    for (int i = 0; i < GfxConfig::MaxNumFSTextures; i++) {
+        o_assert_dbg((0 == tb.fs[i].glTex) && (0 == tb.fs[i].glTarget));
+        const auto& fsTex = tb.Setup.FS[i];
+        if (fsTex.IsValid()) {
+            o_assert_dbg(fsTex.Type == GfxResourceType::Texture);
+            texture* tex = this->pointers.texturePool->Get(fsTex);
+            o_assert_dbg(tex && (ResourceState::Valid == tex->State));
+            o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
+            tb.fs[i].glTex = tex->glTex;
+            tb.fs[i].glTarget = tex->glTarget;
+        }
+    }
+
+    return ResourceState::Valid;
+}
+
+} // namespace _priv
+} // namespace Oryol

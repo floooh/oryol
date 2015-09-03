@@ -86,6 +86,8 @@ public:
     static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
+    /// apply a texture bundle
+    static void ApplyTextureBundle(const Id& id);
     /// apply a uniform block
     template<class T> static void ApplyUniformBlock(const T& value);
 

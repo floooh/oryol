@@ -51,15 +51,18 @@ fips_begin_module(Gfx)
         drawState.h
         drawStateFactoryBase.cc drawStateFactoryBase.h
         drawStateFactory.h
+        meshBase.cc meshBase.h
         mesh.h
         meshFactory.h
-        shader.h
         shaderBase.h
+        shader.h
         shaderFactory.h
+        textureBase.cc textureBase.h
         texture.h
         textureFactory.h
-        meshBase.cc meshBase.h
-        textureBase.cc textureBase.h
+        textureBundleBase.h
+        textureBundle.h
+        textureBundleFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -72,6 +75,7 @@ fips_begin_module(Gfx)
         MeshSetup.cc MeshSetup.h
         ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
+        TextureBundleSetup.cc TextureBundleSetup.h
     )
     if (ORYOL_OPENGL)
         fips_dir(gl)
@@ -86,6 +90,8 @@ fips_begin_module(Gfx)
             glShader.cc glShader.h
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
+            glTextureBundle.cc glTextureBundle.h
+            glTextureBundleFactory.cc glTextureBundleFactory.h
             glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h

@@ -31,6 +31,8 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
     this->drawStateFactory.Setup(this->pointers);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
+    this->textureBundleFactory.Setup(this->pointers);
+    this->textureBundlePool.Setup(GfxResourceType::TextureBundle, setup.PoolSize(GfxResourceType::TextureBundle));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
@@ -52,6 +54,8 @@ gfxResourceContainerBase::discard() {
     
     resourceContainerBase::discard();
 
+    this->textureBundlePool.Discard();
+    this->textureBundleFactory.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
     this->texturePool.Discard();

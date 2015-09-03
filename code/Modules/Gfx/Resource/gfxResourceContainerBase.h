@@ -20,6 +20,7 @@
 #include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStateFactory.h"
+#include "Gfx/Resource/textureBundleFactory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"
 #include "Gfx/Resource/TextureLoaderBase.h"
 #include "Gfx/Core/gfxPointers.h"
@@ -70,6 +71,8 @@ public:
     texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
     drawState* lookupDrawState(const Id& resId);
+    /// lookup a texture-bundle object
+    textureBundle* lookupTextureBundle(const Id& resId);
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
@@ -84,10 +87,12 @@ public:
     class shaderFactory shaderFactory;
     class textureFactory textureFactory;
     class drawStateFactory drawStateFactory;
+    class textureBundleFactory textureBundleFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;
     class drawStatePool drawStatePool;
+    class textureBundlePool textureBundlePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
     Array<Id> pendingDrawStates;
@@ -119,6 +124,13 @@ inline drawState*
 gfxResourceContainerBase::lookupDrawState(const Id& resId) {
     o_assert_dbg(this->valid);
     return this->drawStatePool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline textureBundle*
+gfxResourceContainerBase::lookupTextureBundle(const Id& resId) {
+    o_assert_dbg(this->valid);
+    return this->textureBundlePool.Lookup(resId);
 }
 
 } // namespace _priv
