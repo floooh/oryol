@@ -63,7 +63,7 @@ public:
 
     /// get number of uniform blocks
     int32 NumUniformBlocks() const;
-    /// get unform block name at index
+    /// get uniform block name at index
     const StringAtom& UniformBlockName(int32 uniformBlockIndex) const;
     /// get uniform block layout at index
     const UniformLayout& UniformBlockLayout(int32 uniformBlockIndex) const;
@@ -106,5 +106,3 @@ private:
 };
     
 } // namespace Oryol
- 
- 

@@ -24,7 +24,7 @@ public:
 
     /// set library object
     void setLibrary(ORYOL_OBJC_TYPED_ID(MTLLibrary) lib);
-    /// get libraru object
+    /// get library object
     ORYOL_OBJC_TYPED_ID(MTLLibrary) getLibrary() const;
 
     /// add vs/fs function pair with selection mask

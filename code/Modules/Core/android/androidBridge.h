@@ -26,7 +26,7 @@ public:
     androidBridge();
     /// destructor
     ~androidBridge();
-    /// return ptr to global iosBridge object
+    /// return ptr to global androidBridge object
     static androidBridge* ptr();    
     /// setup the bridge with pointer to App object
     void setup(App* app);

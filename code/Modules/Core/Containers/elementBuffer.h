@@ -49,7 +49,7 @@ public:
     int32 frontSpare() const;
     /// get number of free slots at back
     int32 backSpare() const;
-    /// get overal spare (frontSpare + backSpare)
+    /// get overall spare (frontSpare + backSpare)
     int32 spare() const;
     /// get number of valid elements
     int32 size() const;
