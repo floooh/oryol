@@ -22,7 +22,7 @@ public:
         cancelled,
         invalid,
     } type = invalid;
-    /// time stamp when the event occured
+    /// time stamp when the event occurred
     TimePoint time;
     /// number of touch points in the event
     int32 numTouches = 0;

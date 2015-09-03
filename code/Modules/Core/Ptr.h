@@ -82,7 +82,7 @@ public:
             set(static_cast<T*>(rhs_p));
         }
     };
-    /// move-assign from comptabile Ptr<>
+    /// move-assign from compatible Ptr<>
     template<class U> void operator=(Ptr<U>&& rhs) {
         T* rhs_p = static_cast<T*>(rhs.getUnsafe());
         if (rhs_p != p) {

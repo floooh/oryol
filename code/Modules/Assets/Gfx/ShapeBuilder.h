@@ -69,7 +69,7 @@ private:
 
     /// update number of vertices and triangles in shape
     void UpdateNumElements(ShapeData& shapeData);
-    /// helper method: build vertex colord
+    /// helper method: build vertex colors
     void BuildVertexColors(const ShapeData& shape, int32 startVertexIndex);
     /// build box vertices and indices
     void BuildBox(const ShapeData& shape, int32 curVertexIndex, int32 curTriIndex);

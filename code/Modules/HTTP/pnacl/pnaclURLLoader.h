@@ -22,7 +22,7 @@ public:
     static void cbSendRequest(void* data, int32_t result);
     /// pepper-thread callback after HTTP response header has been loaded
     static void cbRequestComplete(void* data, int32_t result);
-    /// pepper-thread callback to fetch resonse body
+    /// pepper-thread callback to fetch response body
     static void cbOnRead(void* data, int32_t result);
 
 private:

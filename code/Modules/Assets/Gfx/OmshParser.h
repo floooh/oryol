@@ -52,7 +52,7 @@ public:
     /// parse block of memory into MeshSetup object
     static bool Parse(const void* ptr, uint32 size, MeshSetup& outSetup);
 private:
-    /// transate OMSH primtype to actual primtype
+    /// translate OMSH primtype to actual primtype
     static PrimitiveType::Code translatePrimType(uint32 omshPrimType);
 };
 

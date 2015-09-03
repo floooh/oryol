@@ -44,7 +44,7 @@ public:
     ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
     
 private:
-    /// helper method to popluate vertex/index attr structs
+    /// helper method to populate vertex/index attr structs
     void setupAttrs(mesh& msh);
     /// helper method to populate primitive groups
     void setupPrimGroups(mesh& msh);
@@ -59,5 +59,3 @@ private:
     
 } // namespace _priv
 } // namespace Oryol
-
- 

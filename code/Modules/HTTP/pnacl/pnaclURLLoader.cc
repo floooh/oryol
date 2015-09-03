@@ -172,7 +172,7 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     }
     else
     {
-        // an error occured
+        // an error occurred
         Log::Warn("pnaclURLLoader::cbOnRead: Error while reading body data.\n");
         req->httpRequest->GetResponse()->SetStatus(IOStatus::DownloadError);
         auto ioReq = req->httpRequest->GetIoRequest();

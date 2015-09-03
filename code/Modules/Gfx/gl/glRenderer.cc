@@ -1005,7 +1005,7 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     o_assert_dbg(shd);
     const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
 
-    // check whether the provided struct is type-compatibel with the
+    // check whether the provided struct is type-compatible with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");

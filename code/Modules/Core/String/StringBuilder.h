@@ -86,11 +86,11 @@ public:
     /// append a list of strings with delimiter
     void Append(char delim, std::initializer_list<String> list);
     
-    /// substitute all occurances of a string, return number of substitutions
+    /// substitute all occurrences of a string, return number of substitutions
     int32 SubstituteAll(const char* match, const char* subst);
     /// substitute all, with String objects
     int32 SubstituteAll(const String& match, const String& subst);
-    /// substitute first occurance of a string, return true if substituted
+    /// substitute first occurrence of a string, return true if substituted
     bool SubstituteFirst(const char* match, const char* subst);
     /// substitute first, with String objects
     bool SubstituteFirst(const String& match, const String& subst);

@@ -8,7 +8,7 @@
     A TimePoint holds a specific point in time returned by the high-resolution
     Clock. There is no relation to the wall-clock time, the TimePoint '0'
     has no specific meaning. The only meaningful operations on TimePoints
-    is comparision to other TimePoints, subtracting TimePoints to gain 
+    is comparison to other TimePoints, subtracting TimePoints to gain
     a Duration, or adding a Duration to a TimePoint to get another TimePoint.
     
     @see Duration
