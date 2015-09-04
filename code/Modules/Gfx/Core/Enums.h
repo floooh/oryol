@@ -790,7 +790,6 @@ public:
         Mat4,
         Int,
         Bool,
-        Texture,
 
         NumUniformTypes,
         InvalidUniformType,
@@ -808,7 +807,6 @@ public:
             case Mat4:      return 4 * 4 * sizeof(float32);
             case Int:       return sizeof(int32);
             case Bool:      return sizeof(int32);
-            case Texture:   return sizeof(Id);
             default:
                 o_error("invalid uniform type code!\n");
                 return 0;

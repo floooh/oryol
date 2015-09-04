@@ -20,19 +20,15 @@ public:
         /// default constructor
         Component();
         /// construct from name, type and number
-        Component(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex);
+        Component(const StringAtom& name, UniformType::Code type);
 
         /// return true if the component is valid
         bool IsValid() const;
-        /// clear the component
-        void Clear();
         /// compute the byte size of the component
         int32 ByteSize() const;
 
         StringAtom Name;        ///< the uniform binding name
         UniformType::Code Type; ///< data type of the uniform
-        uint8 Num;              ///< number of uniforms (if >1 it is an array)
-        int8 BindSlotIndex;     ///< bind slot index (used for texture uniforms)
     };
 
     /// constructor
@@ -49,15 +45,13 @@ public:
     /// add a uniform component to the layout
     UniformLayout& Add(const Component& comp);
     /// add a uniform component to the layout
-    UniformLayout& Add(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex);
+    UniformLayout& Add(const StringAtom& name, UniformType::Code type);
     /// get number of components in the layout
     int32 NumComponents() const;
     /// get component at index
     const Component& ComponentAt(int32 componentIndex) const;
     /// get the overall byte size of the uniform layout
     int32 ByteSize() const;
-    /// return the byte size without texture components
-    int32 ByteSizeWithoutTextures() const;
     /// get byte offset of a component
     int32 ComponentByteOffset(int32 componentIndex) const;
 
@@ -71,36 +65,23 @@ private:
 //------------------------------------------------------------------------------
 inline
 UniformLayout::Component::Component() :
-Type(UniformType::InvalidUniformType),
-Num(0) {
+Type(UniformType::InvalidUniformType) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-UniformLayout::Component::Component(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex) :
+UniformLayout::Component::Component(const StringAtom& name, UniformType::Code type) :
 Name(name),
-Type(type),
-Num(num),
-BindSlotIndex(bindSlotIndex) {
+Type(type) {
     o_assert_dbg(this->Name.IsValid());
     o_assert_dbg(this->Type < UniformType::NumUniformTypes);
-    o_assert_dbg(this->Num > 0);
 }
 
 //------------------------------------------------------------------------------
 inline bool
 UniformLayout::Component::IsValid() const {
     return this->Name.IsValid();
-}
-
-//------------------------------------------------------------------------------
-inline void
-UniformLayout::Component::Clear() {
-    this->Name.Clear();
-    this->Type = UniformType::InvalidUniformType;
-    this->Num = 0;
-    this->BindSlotIndex = InvalidIndex;
 }
 
 //------------------------------------------------------------------------------

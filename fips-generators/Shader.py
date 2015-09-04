@@ -1506,27 +1506,42 @@ def writeBundleHeader(f, shdLib, bundle) :
     for blockIndex, uBlock in enumerate(bundle.uniformBlocks) :
         if uBlock.shaderStage == 'vs' :
             shaderStage = 'ShaderType::VertexShader'
+            shaderStageName = 'VS'
         else :
             shaderStage = 'ShaderType::FragmentShader'
-        if uBlock.bindSlot is None :
-            bindSlotIndex = "InvalidIndex"
-        else :
-            bindSlotIndex = uBlock.bindSlot
-        f.write('        #pragma pack(push,1)\n')
-        f.write('        struct {} {{\n'.format(uBlock.bindName))
-        f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
-        f.write('            static const int32 _bindSlotIndex = {};\n'.format(bindSlotIndex))
-        f.write('            static const ShaderType::Code _bindShaderStage = {};\n'.format(shaderStage))
-        f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
+            shaderStateName = 'FS'
+
+        # count number of non-texture uniforms
+        numUniforms = 0
         for type in uBlock.uniformsByType :
-            for uniform in uBlock.uniformsByType[type] :
-                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
-                # for vec3's we need to add a padding field, FIXME: would be good
-                # to try filling the padding fields with float params!
-                if type == 'vec3' :
-                    f.write('            float32 _pad_{};\n'.format(uniform.bindName))
-        f.write('        };\n')
-        f.write('        #pragma pack(pop)\n')
+            if type not in ['sampler2D', 'samplerCube'] :
+                numUniforms += len(uBlock.uniformsByType[type])
+
+        # only write a uniform block structure if there are actual values in it
+        if numUniforms > 0 :
+            f.write('        #pragma pack(push,1)\n')
+            f.write('        struct {} {{\n'.format(uBlock.bindName))
+            f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
+            f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
+            f.write('            static const ShaderType::Code _bindShaderStage = {};\n'.format(shaderStage))
+            f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
+            for type in uBlock.uniformsByType :
+                if type not in ['sampler2D', 'samplerCube'] :
+                    for uniform in uBlock.uniformsByType[type] :
+                        f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
+                        # for vec3's we need to add a padding field, FIXME: would be good
+                        # to try filling the padding fields with float params!
+                        if type == 'vec3' :
+                            f.write('            float32 _pad_{};\n'.format(uniform.bindName))
+            f.write('        };\n')
+            f.write('        #pragma pack(pop)\n')
+
+        # write texture slot indices
+        for type in uBlock.uniformsByType :
+            if type in ['sampler2D', 'samplerCube'] :
+                for uniform in uBlock.uniformsByType[type] :
+                    f.write('        static const int32 {}_{} = {};\n'.format(
+                        shaderStageName, uniform.bindName, uniform.bindSlot))
 
     f.write('        static ShaderSetup CreateSetup();\n')
     f.write('    };\n')
@@ -1672,18 +1687,43 @@ def writeBundleSource(f, shdLib, bundle) :
                     i, slangType, vsInputLayout, vsName, fsName))
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
-        layoutName = '{}_layout'.format(uBlock.bindName)
-        f.write('    UniformLayout {};\n'.format(layoutName))
-        f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
+        if uBlock.shaderStage == 'vs' :
+            shaderStage = 'ShaderType::VertexShader'
+        else :
+            shaderStage = 'ShaderType::FragmentShader'
+
+        # count number of non-texture uniforms
+        numUniforms = 0
         for type in uBlock.uniformsByType :
-            for uniform in uBlock.uniformsByType[type] :
-                if uniform.bindSlot is None :
-                    bindSlotIndex = 'InvalidIndex'
-                else :
-                    bindSlotIndex = uniform.bindSlot
-                f.write('    {}.Add("{}", {}, 1, {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type], bindSlotIndex))
-        f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-            uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
+            if type not in ['sampler2D', 'samplerCube'] :
+                numUniforms += len(uBlock.uniformsByType[type])
+        
+        # only setup uniform layout if the uniform block has actual values (not only textures)
+        if numUniforms > 0 :
+            layoutName = '{}_layout'.format(uBlock.bindName)
+            f.write('    UniformLayout {};\n'.format(layoutName))
+            f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
+            for type in uBlock.uniformsByType :
+                if type not in ['sampler2D', 'samplerCube'] :
+                    for uniform in uBlock.uniformsByType[type] :
+                        if uniform.bindSlot is None :
+                            bindSlotIndex = 'InvalidIndex'
+                        else :
+                            bindSlotIndex = uniform.bindSlot
+                        f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+            f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+                uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
+
+        # add texture slots
+        for type in uBlock.uniformsByType :
+            if type in ['sampler2D', 'samplerCube'] :
+                for uniform in uBlock.uniformsByType[type] :
+                    if type == 'sampler2D' :
+                        texType = 'TextureType::Texture2D'
+                    else :
+                        texType = 'TextureType::TextureCube'
+                    f.write('    setup.AddTexture("{}", {}, {}, {});\n'.format(uniform.name, shaderStage, texType, uniform.bindSlot))
+                
     f.write('    return setup;\n')
     f.write('}\n')
 

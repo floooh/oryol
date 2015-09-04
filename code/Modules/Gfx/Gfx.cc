@@ -112,6 +112,7 @@ void
 Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
     o_assert_dbg(IsValid());
     o_assert_dbg(id.IsValid());
+    o_assert_dbg(id.Type == GfxResourceType::Texture);
 
     texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
@@ -123,6 +124,7 @@ void
 Gfx::ApplyDrawState(const Id& id) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
+    o_assert_dbg(id.Type == GfxResourceType::DrawState);
     state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
 }
 
@@ -131,6 +133,7 @@ void
 Gfx::ApplyTextureBundle(const Id& id) {
     o_trace_scoped(Gfx__ApplyTextureBundle);
     o_assert_dbg(IsValid());
+    o_assert_dbg(id.Type == GfxResourceType::TextureBundle);
     state->renderer.applyTextureBundle(state->resourceContainer.lookupTextureBundle(id));
 }
 

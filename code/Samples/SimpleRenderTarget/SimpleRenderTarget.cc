@@ -21,6 +21,7 @@ private:
     glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
 
     Id renderTarget;
+    Id renderTargetTextureBundle;
     Id offscreenDrawState;
     Id displayDrawState;
     glm::mat4 view;
@@ -30,7 +31,6 @@ private:
     float32 angleY = 0.0f;
     Shaders::RenderTarget::Params offscreenParams;
     Shaders::Main::VSParams displayVSParams;
-    Shaders::Main::FSParams displayFSParams;
     ClearState offscreenClearState;
     ClearState displayClearState;
 };
@@ -56,7 +56,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::ApplyUniformBlock(this->displayFSParams);
+    Gfx::ApplyTextureBundle(this->renderTargetTextureBundle);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -73,6 +73,7 @@ SimpleRenderTargetApp::OnInit() {
 
     // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
+    TextureBundleSetup tbSetup;
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
@@ -81,8 +82,9 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
     this->renderTarget = Gfx::CreateResource(rtSetup);
-    this->displayFSParams.Texture = this->renderTarget;
-    
+    tbSetup.VS[Shaders::Main::VS_Texture] = this->renderTarget;
+    this->renderTargetTextureBundle = Gfx::CreateResource(tbSetup);
+
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout

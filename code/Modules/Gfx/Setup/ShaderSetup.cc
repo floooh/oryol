@@ -13,7 +13,8 @@ Locator(Locator::NonShared()),
 libraryByteCodeSize(0),
 libraryByteCode(nullptr),
 numProgramEntries(0),
-numUniformBlockEntries(0) {
+numUniformBlockEntries(0),
+numTextureEntries(0) {
     // empty
 }
 
@@ -21,7 +22,8 @@ numUniformBlockEntries(0) {
 ShaderSetup::ShaderSetup(const class Locator& locator) :
 Locator(locator),
 numProgramEntries(0),
-numUniformBlockEntries(0) {
+numUniformBlockEntries(0),
+numTextureEntries(0) {
     // empty
 }
 
@@ -89,6 +91,18 @@ ShaderSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout
     entry.name = name;
     entry.layout = layout;
     entry.shaderStage = shaderStage;
+    entry.slotIndex = slotIndex;
+}
+
+//------------------------------------------------------------------------------
+void
+ShaderSetup::AddTexture(const StringAtom& name, ShaderType::Code shaderStage, TextureType::Code texType, int32 slotIndex) {
+    o_assert_dbg(name.IsValid());
+
+    textureEntry & entry = this->textureEntries[this->numTextureEntries++];
+    entry.name = name;
+    entry.shaderStage = shaderStage;
+    entry.textureType = texType;
     entry.slotIndex = slotIndex;
 }
 
@@ -196,6 +210,36 @@ ShaderSetup::UniformBlockSlot(int32 uniformBlockIndex) const {
 ShaderType::Code
 ShaderSetup::UniformBlockShaderStage(int32 uniformBlockIndex) const {
     return this->uniformBlockEntries[uniformBlockIndex].shaderStage;
+}
+
+//------------------------------------------------------------------------------
+int32
+ShaderSetup::NumTextures() const {
+    return this->numTextureEntries;
+}
+
+//------------------------------------------------------------------------------
+const StringAtom&
+ShaderSetup::TextureName(int32 texIndex) const {
+    return this->textureEntries[texIndex].name;
+}
+
+//------------------------------------------------------------------------------
+ShaderType::Code
+ShaderSetup::TextureShaderStage(int32 texIndex) const {
+    return this->textureEntries[texIndex].shaderStage;
+}
+
+//------------------------------------------------------------------------------
+TextureType::Code
+ShaderSetup::TextureType(int32 texIndex) const {
+    return this->textureEntries[texIndex].textureType;
+}
+
+//------------------------------------------------------------------------------
+int32
+ShaderSetup::TextureSlot(int32 texIndex) const {
+    return this->textureEntries[texIndex].slotIndex;
 }
 
 } // namespace Oryol

@@ -17,9 +17,8 @@ byteSize(0) {
 //------------------------------------------------------------------------------
 void
 UniformLayout::Clear() {
-    for (int i = 0; i < this->numComps; i++) {
-        this->comps[i].Clear();
-    }
+    this->comps.Fill(Component());
+    this->byteOffsets.Fill(0);
     this->numComps = 0;
     this->byteSize = 0;
 }
@@ -37,20 +36,8 @@ UniformLayout::Add(const Component& comp) {
 
 //------------------------------------------------------------------------------
 UniformLayout&
-UniformLayout::Add(const StringAtom& name, UniformType::Code type, uint8 num, int8 bindSlotIndex) {
-    return this->Add(Component(name, type, num, bindSlotIndex));
-}
-
-//------------------------------------------------------------------------------
-int32
-UniformLayout::ByteSizeWithoutTextures() const {
-    int32 byteSize = 0;
-    for (int i = 0; i < this->numComps; i++) {
-        if (this->comps[i].Type != UniformType::Texture) {
-            byteSize += this->comps[i].ByteSize();
-        }
-    }
-    return byteSize;
+UniformLayout::Add(const StringAtom& name, UniformType::Code type) {
+    return this->Add(Component(name, type));
 }
 
 } // namespace Oryol
