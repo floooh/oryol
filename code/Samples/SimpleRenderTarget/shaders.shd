@@ -44,9 +44,7 @@
 @end
 
 @fs mainFS
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@texture sampler2D tex Texture
 @in vec2 uv
 @in vec4 nrm
     vec4 c = tex2D(tex, uv * vec2(20.0, 10.0));
