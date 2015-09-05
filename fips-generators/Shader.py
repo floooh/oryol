@@ -147,7 +147,6 @@ validInOutTypes = [
 # NOTE: order is important, always go from greatest to smallest type,
 # and keep texture samplers at start!
 validUniformTypes = [
-    'sampler2D', 'samplerCube',
     'mat4', 'mat3', 'mat2',
     'vec4', 'vec3', 'vec2',
     'float', 'int', 'bool'
@@ -163,8 +162,6 @@ uniformCType = {
     'mat2':         'glm::mat2',
     'mat3':         'glm::mat3',
     'mat4':         'glm::mat4',
-    'sampler2D':    'Id',
-    'samplerCube':  'Id',
 }
 
 uniformOryolType = {
@@ -177,9 +174,11 @@ uniformOryolType = {
     'mat2':         'UniformType::Mat2',
     'mat3':         'UniformType::Mat3',
     'mat4':         'UniformType::Mat4',
-    'sampler2D':    'UniformType::Texture',
-    'samplerCube':  'UniformType::Texture'
 }
+
+validTextureTypes = [
+    'sampler2D', 'samplerCube'
+]
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -258,7 +257,6 @@ class Uniform :
         self.type = type
         self.name = name
         self.bindName = bindName
-        self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
 
@@ -324,6 +322,34 @@ class UniformBlock :
         return hash(hashString)
 
 #-------------------------------------------------------------------------------
+class Texture :
+    '''
+    A texture shader parameter
+    '''
+    def __init__(self, type, name, bindName, shaderStage, filePath, lineNumber) :
+        self.type = type
+        self.name = name
+        self.bindName = bindName
+        self.bindSlot = None
+        self.shaderStage = shaderStage
+        self.filePath = filePath
+        self.lineNumber = lineNumber
+
+    def isEquivalent(self, other) :
+        if self.type != other.type :
+            return False
+        if self.name != other.name :
+            return False
+        if self.bindName != other.bindName :
+            return False
+        if self.shaderStage != other.shaderStage :
+            return False
+        return True
+    
+    def dump(self) :
+        dumpObj(self)
+
+#-------------------------------------------------------------------------------
 class Attr :
     '''
     A shader input or output attribute.
@@ -353,6 +379,7 @@ class VertexShader(Snippet) :
         self.name = name
         self.highPrecision = []
         self.uniformBlocks = []
+        self.textures = []
         self.inputs = []
         self.outputs = []
         self.resolvedDeps = []
@@ -366,6 +393,9 @@ class VertexShader(Snippet) :
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
+        print 'Textures:'
+        for texture in self.textures :
+            texture.dump()
         print 'Inputs:'
         for input in self.inputs :
             input.dump()
@@ -383,6 +413,7 @@ class FragmentShader(Snippet) :
         self.name = name
         self.highPrecision = []
         self.uniformBlocks = []
+        self.textures = []
         self.inputs = []
         self.resolvedDeps = []        
         self.generatedSource = {}
@@ -395,6 +426,9 @@ class FragmentShader(Snippet) :
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
+        print 'Textures:'
+        for texture in self.textures :
+            texture.dump()
         print 'Inputs:'
         for input in self.inputs :
             input.dump()
@@ -425,6 +459,7 @@ class Bundle() :
         self.name = name
         self.programs = []
         self.uniformBlocks = []
+        self.textures = []
 
     def getTag(self) :
         return 'bundle'
@@ -598,6 +633,23 @@ class Parser :
         self.current.highPrecision.append(type)
 
     #---------------------------------------------------------------------------
+    def onTexture(self, args) :
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@texture must come after @vs or @fs tag!")
+        if len(args) != 3:
+            util.fmtError("@texture must have 3 args (type name binding)")
+        type = args[0]
+        name = args[1]
+        bind = args[2]
+        if type not in validTextureTypes :
+            util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
+        if checkListDup(name, self.current.textures) :
+            util.fmtError("@texture '{}' already defined in '{}'!".format(name, self.current.name))
+        shaderStage = self.current.getTag()
+        tex = Texture(type, name, bind, shaderStage, self.fileName, self.lineNumber)
+        self.current.textures.append(tex)
+
+    #---------------------------------------------------------------------------
     def onUniform(self, args) :
         if not self.current or self.current.getTag() != 'uniform_block' :
             util.fmtError("@uniform must come after @uniform_block tag!")
@@ -607,11 +659,12 @@ class Parser :
         name = args[1]
         bind = args[2]
         if type not in validUniformTypes :
-            util.fmtError("invalid block uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+            util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
 
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
         uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
+        self.current.uniforms.append(uniform)
         self.current.uniformsByType[type].append(uniform)
 
     #---------------------------------------------------------------------------
@@ -686,6 +739,8 @@ class Parser :
                 self.onIn(args)
             elif tag == 'out':
                 self.onOut(args)
+            elif tag == 'texture':
+                self.onTexture(args)
             elif tag == 'uniform':
                 self.onUniform(args)
             elif tag == 'uniform_block':
@@ -747,26 +802,14 @@ class GLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    def genUniformBlocks(self, shd, slVersion, lines) :
+    def genUniforms(self, shd, slVersion, lines) :
+        # FIXME: write actual uniform blocks on higher GLSL versions
         for uBlock in shd.uniformBlocks :
-            '''
-            if glslVersionNumber[slVersion] >= 150 :
-                # on GLSL 1.50 and above, write actual uniform blocks
-                lines.append(Line('layout(std140) uniform {} {{'.format(uBlock.name), uBlock.filePath, uBlock.lineNumber))
-                for type in uBlock.uniformsByType :
-                    for uniform in uBlock.uniformsByType[type] :
-                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
-            else :
-                # on old-school GLSL, pack the uniform block members into arrays by type
-                for type in uBlock.uniformsByType :
-                    name = '{}_{}'.format(uBlock.name, type)
-                    size = len(uBlock.uniformsByType[type])
-                    lines.append(Line('uniform {} {}[{}];'.format(type, name, size), uBlock.filePath, uBlock.lineNumber)) 
-            '''
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
                     lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+        for tex in shd.textures :
+            lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
         return lines 
 
     #---------------------------------------------------------------------------
@@ -791,7 +834,7 @@ class GLSLGenerator :
                 lines.append(Line('#endif'))
 
         # write uniform blocks 
-        lines = self.genUniformBlocks(vs, slVersion, lines)
+        lines = self.genUniforms(vs, slVersion, lines)
 
         # write vertex shader inputs
         for input in vs.inputs :
@@ -839,7 +882,7 @@ class GLSLGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks (only in glsl150)
-        lines = self.genUniformBlocks(fs, slVersion, lines)
+        lines = self.genUniforms(fs, slVersion, lines)
 
         # write fragment shader inputs
         for input in fs.inputs :
@@ -894,50 +937,41 @@ class HLSLGenerator :
         return lines
 
     #---------------------------------------------------------------------------
-    def genUniformBlocks(self, shd, lines) :
-        
-        # first write texture uniforms outside of cbuffers, and count
-        # non-texture uniforms
-        for uBlock in shd.uniformBlocks :
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('Texture2D _t_{} : register(t{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState _s_{} : register(s{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('TextureCube _t_{} : register(t{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('SamplerState _s_{} : register(s{});'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
+    def genUniforms(self, shd, lines) :
+       
+        # write textures
+        for tex in shd.textures :
+            if tex.type == 'sampler2D':
+                texType = 'Texture2D'
+            else :
+                texType = 'TextureCube'
+            lines.append(Line('{} _t_{} : register(t{});'.format(texType, tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+            lines.append(Line('SamplerState _s_{} : register(s{});'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
 
-            # if there are non-texture uniforms, groups the rest into a cbuffer
+        # write uniform blocks
+        for uBlock in shd.uniformBlocks :
             if uBlock.bindSlot is not None :
                 lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
                 for type in uBlock.uniformsByType :
-                    if type not in ['sampler2D', 'samplerCube' ] :
-                        for uniform in uBlock.uniformsByType[type] :
-                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                            # pad vec3's to 16 bytes
-                            if type == 'vec3' :
-                                lines.append(Line('  float _pad_{};'.format(uniform.name)))
+                    for uniform in uBlock.uniformsByType[type] :
+                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                        # pad vec3's to 16 bytes
+                        if type == 'vec3' :
+                            lines.append(Line('  float _pad_{};'.format(uniform.name)))
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines
      
     #---------------------------------------------------------------------------
-    def genTexObjects(self, shd, lines) :
-        for uBlock in shd.uniformBlocks :
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('_tex2d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                            uniform.name, uniform.name, uniform.name, uniform.name, uniform.name),
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                            uniform.name, uniform.name, uniform.name, uniform.name, uniform.name),
-                            uniform.filePath, uniform.lineNumber))
+    def genLocalTexObjects(self, shd, lines) :
+        for tex in shd.textures :
+            if tex.type == 'sampler2D' :
+                lines.append(Line('_tex2d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                    tex.name, tex.name, tex.name, tex.name, tex.name),
+                    tex.filePath, tex.lineNumber))
+            elif tex.type == 'samplerCube' :
+                lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                    tex.name, tex.name, tex.name, tex.name, tex.name),
+                    tex.filePath, tex.lineNumber))
         return lines
 
     #---------------------------------------------------------------------------
@@ -952,9 +986,9 @@ class HLSLGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines = self.genUniformBlocks(vs, lines)
+        lines = self.genUniforms(vs, lines)
 
-        # write blocks the vs depends on
+        # write code blocks the vs depends on
         for dep in vs.resolvedDeps :
             lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
     
@@ -967,7 +1001,7 @@ class HLSLGenerator :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
         lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
-        lines = self.genTexObjects(vs, lines)
+        lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
         vs.generatedSource[slVersion] = lines
@@ -984,7 +1018,7 @@ class HLSLGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines = self.genUniformBlocks(fs, lines)
+        lines = self.genUniforms(fs, lines)
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -997,7 +1031,7 @@ class HLSLGenerator :
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('in float4 _fragcoord : SV_Position,'))
         lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
-        lines = self.genTexObjects(fs, lines)
+        lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
         fs.generatedSource[slVersion] = lines
@@ -1036,20 +1070,16 @@ class MetalGenerator :
         return lines
 
     #---------------------------------------------------------------------------
-    def genUniformBlocks(self, shd, lines) :
-        
-        # first write texture uniforms outside of cbuffers, and count
-        # non-texture uniforms
+    def genUniforms(self, shd, lines) :
         uniformDefs = {}
         for uBlock in shd.uniformBlocks :
             # if there are non-texture uniforms, groups the rest into a cbuffer
             if uBlock.bindSlot is not None:
                 lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
                 for type in uBlock.uniformsByType :
-                    if type not in ['sampler2D', 'samplerCube' ] :
-                        for uniform in uBlock.uniformsByType[type] :
-                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                            uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
+                    for uniform in uBlock.uniformsByType[type] :
+                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                        uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
                 lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines, uniformDefs
 
@@ -1058,33 +1088,26 @@ class MetalGenerator :
         for uBlock in shd.uniformBlocks :
             if uBlock.bindSlot is not None :
                 lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(shd.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('texture2d<float,access::sample> _t_{} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler _s_{} [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('texturecube<float,access::sample> _t_{} [[texture({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
-                        lines.append(Line('sampler _s_{} [[sampler({})]],'.format(uniform.name, uniform.bindSlot), 
-                            uniform.filePath, uniform.lineNumber))
+        for tex in shd.textures :
+            if tex.type == 'sampler2D' :
+                lines.append(Line('texture2d<float,access::sample> _t_{} [[texture({})]],'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                lines.append(Line('sampler _s_{} [[sampler({})]],'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+            elif tex.type == 'samplerCube' :
+                lines.append(Line('texturecube<float,access::sample> _t_{} [[texture({})]],'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                lines.append(Line('sampler _s_{} [[sampler({})]],'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
         return lines
 
     #---------------------------------------------------------------------------
-    def genTexObjects(self, shd, lines) :
-        for uBlock in shd.uniformBlocks :
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        lines.append(Line('sampler2D {}(_t_{},_s_{});'.format(
-                            uniform.name, uniform.name, uniform.name),
-                            uniform.filePath, uniform.lineNumber))
-                    elif type == 'samplerCube' :
-                        lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
-                            uniform.name, uniform.name, uniform.name),
-                            uniform.filePath, uniform.lineNumber))
+    def genLocalTexObjects(self, shd, lines) :
+        for tex in shd.textures :
+            if tex.type == 'sampler2D' :
+                lines.append(Line('sampler2D {}(_t_{},_s_{});'.format(
+                    tex.name, tex.name, tex.name),
+                    tex.filePath, tex.lineNumber))
+            elif tex.type == 'samplerCube' :
+                lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
+                    tex.name, tex.name, tex.name),
+                    tex.filePath, tex.lineNumber))
         return lines
 
     #---------------------------------------------------------------------------
@@ -1098,7 +1121,7 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines, uniformDefs = self.genUniformBlocks(vs, lines)
+        lines, uniformDefs = self.genUniforms(vs, lines)
 
         # write blocks the vs depends on
         # (Metal specific: protect against multiple inclusion)
@@ -1155,7 +1178,7 @@ class MetalGenerator :
         lines = self.genFuncArgs(vs, lines)
         lines.append(Line('{}_vs_in_t vs_in [[stage_in]]) {{'.format(vs.name)))
         lines.append(Line('{}_vs_out_t vs_out;'.format(vs.name)))
-        lines = self.genTexObjects(vs, lines)
+        lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1178,7 +1201,7 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
         # write uniform blocks as cbuffers
-        lines, uniformDefs = self.genUniformBlocks(fs, lines)
+        lines, uniformDefs = self.genUniforms(fs, lines)
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1206,7 +1229,7 @@ class MetalGenerator :
         lines.append(Line('float4 _fragcoord [[position]],'))
         lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('float4 _fo_color;'))
-        lines = self.genTexObjects(fs, lines)
+        lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
@@ -1280,7 +1303,7 @@ class ShaderLibrary :
 
     def checkAddUniformBlock(self, uniformBlock, list) :
         '''
-        Add uniform bundle to list with sanity checks.
+        Add uniform block to list with sanity checks.
         '''
         listUniformBlock = findByName(uniformBlock.name, list)
         if listUniformBlock :
@@ -1293,7 +1316,22 @@ class ShaderLibrary :
             # new uniform block, add to list
             list.append(uniformBlock)
 
-    def resolveBundleUniformBlocks(self, bundle) :
+    def checkAddTexture(self, texture, list) :
+        '''
+        Add texture to list with sanity checks.
+        '''
+        listTexture = findByName(texture.name, list)
+        if listTexture :
+            if not texture.isEquvalent(listTexture) :
+                util.setErrorLocation(texture.filePath, texture.lineNumber)
+                util.fmtError("texture named '{}' not equivalent".format(texture.name), False)
+                util.setErrorLocation(listTexture.filePath, listTexture.lineNumber)
+                util.fmtError("texture named '{}' not equivalent".format(texture.name), False)
+        else :
+            # new texture, add to list
+            list.append(texture)
+
+    def resolveBundleUniformBlocksAndTextures(self, bundle) :
         '''
         Gathers all uniform blocks from all shaders in the bundle
         '''
@@ -1303,12 +1341,16 @@ class ShaderLibrary :
                 util.fmtError("unknown vertex shader '{}'".format(program.vs))
             for uniformBlock in self.vertexShaders[program.vs].uniformBlocks :
                 self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
+            for tex in self.vertexShaders[program.vs].textures :
+                self.checkAddTexture(tex, bundle.textures)
 
             if program.fs not in self.fragmentShaders :
                 util.setErrorLocation(program.filePath, program.lineNumber)
                 util.fmtError("unknown fragment shader '{}'".format(program.fs))
             for uniformBlock in self.fragmentShaders[program.fs].uniformBlocks :
                 self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
+            for tex in self.fragmentShaders[program.fs].textures :
+                self.checkAddTexture(tex, bundle.textures)
 
     def assignParamSlotIndices(self, bundle) :
         '''
@@ -1317,21 +1359,20 @@ class ShaderLibrary :
         binding instead of parameter names.
         '''
         uniformBlockSlot = 0
-        textureSlot = 0
         for uBlock in bundle.uniformBlocks :
-            numBlockUniforms = 0
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type in ['sampler2D', 'samplerCube' ] :
-                        uniform.bindSlot = textureSlot
-                        textureSlot += 1;
-                    else :
-                        numBlockUniforms += 1
-
-            # if there are non-texture uniforms, groups the rest into a cbuffer
-            if numBlockUniforms > 0 :
-                uBlock.bindSlot = uniformBlockSlot
-                uniformBlockSlot += 1
+            uBlock.bindSlot = uniformBlockSlot
+            uniformBlockSlot += 1
+        
+        # assign texture bind slots, separatly for vertex- and fragment-shaders
+        vsTexSlot = 0
+        fsTexSlot = 0
+        for tex in bundle.textures :
+            if tex.shaderStage == 'vs' :
+                tex.bindSlot = vsTexSlot
+                vsTexSlot += 1
+            else :
+                tex.bindSlot = fsTexSlot
+                fsTexSlot += 1
 
     def resolveAllDependencies(self) :
         '''
@@ -1348,7 +1389,7 @@ class ShaderLibrary :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
         for bundle in self.bundles.values() :
-            self.resolveBundleUniformBlocks(bundle)
+            self.resolveBundleUniformBlocksAndTextures(bundle)
             self.assignParamSlotIndices(bundle)
 
     def validate(self) :
@@ -1508,38 +1549,29 @@ def writeBundleHeader(f, shdLib, bundle) :
             shaderStage = 'VS'
         else :
             shaderStage = 'FS'
-
-        # count number of non-texture uniforms
-        numUniforms = 0
+        f.write('        #pragma pack(push,1)\n')
+        f.write('        struct {} {{\n'.format(uBlock.bindName))
+        f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
+        f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
+        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(shaderStage))
+        f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
         for type in uBlock.uniformsByType :
-            if type not in ['sampler2D', 'samplerCube'] :
-                numUniforms += len(uBlock.uniformsByType[type])
-
-        # only write a uniform block structure if there are actual values in it
-        if numUniforms > 0 :
-            f.write('        #pragma pack(push,1)\n')
-            f.write('        struct {} {{\n'.format(uBlock.bindName))
-            f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
-            f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
-            f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(shaderStage))
-            f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
-            for type in uBlock.uniformsByType :
-                if type not in ['sampler2D', 'samplerCube'] :
-                    for uniform in uBlock.uniformsByType[type] :
-                        f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
-                        # for vec3's we need to add a padding field, FIXME: would be good
-                        # to try filling the padding fields with float params!
-                        if type == 'vec3' :
-                            f.write('            float32 _pad_{};\n'.format(uniform.bindName))
-            f.write('        };\n')
-            f.write('        #pragma pack(pop)\n')
-
-        # write texture slot indices
-        for type in uBlock.uniformsByType :
-            if type in ['sampler2D', 'samplerCube'] :
-                for uniform in uBlock.uniformsByType[type] :
-                    f.write('        static const int32 {}_{} = {};\n'.format(
-                        shaderStage, uniform.bindName, uniform.bindSlot))
+            for uniform in uBlock.uniformsByType[type] :
+                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
+                # for vec3's we need to add a padding field, FIXME: would be good
+                # to try filling the padding fields with float params!
+                if type == 'vec3' :
+                    f.write('            float32 _pad_{};\n'.format(uniform.bindName))
+        f.write('        };\n')
+        f.write('        #pragma pack(pop)\n')
+    
+    # write texture slot indices
+    for tex in bundle.textures :
+        if tex.shaderStage == 'vs' :
+            shaderStage = 'VS'
+        else :
+            shaderStage = 'FS'
+        f.write('        static const int32 {}_{} = {};\n'.format(shaderStage, tex.bindName, tex.bindSlot))
 
     f.write('        static ShaderSetup CreateSetup();\n')
     f.write('    };\n')
@@ -1684,43 +1716,34 @@ def writeBundleSource(f, shdLib, bundle) :
                 f.write('    setup.AddProgramFromLibrary({}, {}, {}, "{}", "{}");\n'.format(
                     i, slangType, vsInputLayout, vsName, fsName))
             f.write('    #endif\n');
+
+    # add uniform layouts to setup object
     for uBlock in bundle.uniformBlocks :
         if uBlock.shaderStage == 'vs' :
             shaderStage = 'VS'
         else :
             shaderStage = 'FS'
 
-        # count number of non-texture uniforms
-        numUniforms = 0
+        layoutName = '{}_layout'.format(uBlock.bindName)
+        f.write('    UniformLayout {};\n'.format(layoutName))
+        f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
         for type in uBlock.uniformsByType :
-            if type not in ['sampler2D', 'samplerCube'] :
-                numUniforms += len(uBlock.uniformsByType[type])
-        
-        # only setup uniform layout if the uniform block has actual values (not only textures)
-        if numUniforms > 0 :
-            layoutName = '{}_layout'.format(uBlock.bindName)
-            f.write('    UniformLayout {};\n'.format(layoutName))
-            f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
-            for type in uBlock.uniformsByType :
-                if type not in ['sampler2D', 'samplerCube'] :
-                    for uniform in uBlock.uniformsByType[type] :
-                        if uniform.bindSlot is None :
-                            bindSlotIndex = 'InvalidIndex'
-                        else :
-                            bindSlotIndex = uniform.bindSlot
-                        f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
-            f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-                uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
+            for uniform in uBlock.uniformsByType[type] :
+                f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+        f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+            uBlock.name, layoutName, uBlock.bindName, uBlock.bindName))
 
-        # add texture slots
-        for type in uBlock.uniformsByType :
-            if type in ['sampler2D', 'samplerCube'] :
-                for uniform in uBlock.uniformsByType[type] :
-                    if type == 'sampler2D' :
-                        texType = 'TextureType::Texture2D'
-                    else :
-                        texType = 'TextureType::TextureCube'
-                    f.write('    setup.AddTexture("{}", ShaderStage::{}, {}, {});\n'.format(uniform.name, shaderStage, texType, uniform.bindSlot))
+    # add texture slots to setup objects
+    for tex in bundle.textures :
+        if tex.shaderStage == 'vs' :
+            shaderStage = 'VS'
+        else :
+            shaderStage = 'FS'
+        if tex.type == 'sampler2D' :
+            texType = 'TextureType::Texture2D'
+        else :
+            texType = 'TextureType::TextureCube'
+        f.write('    setup.AddTexture("{}", ShaderStage::{}, {}, {});\n'.format(tex.name, shaderStage, texType, tex.bindSlot))
                 
     f.write('    return setup;\n')
     f.write('}\n')
@@ -1758,3 +1781,4 @@ def generate(input, out_src, out_hdr) :
             shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
+
