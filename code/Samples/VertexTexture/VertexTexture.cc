@@ -22,8 +22,10 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
+    Id plasmaRenderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
+    Id planeTextureBundle;
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -42,7 +44,7 @@ VertexTextureApp::OnRunning() {
     this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
 
     // render plasma to offscreen render target
-    Gfx::ApplyRenderTarget(this->planeVSParams.Texture, this->noClearState);
+    Gfx::ApplyRenderTarget(this->plasmaRenderTarget, this->noClearState);
     Gfx::ApplyDrawState(this->plasmaDrawState);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
@@ -51,6 +53,7 @@ VertexTextureApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
+    Gfx::ApplyTextureBundle(this->planeTextureBundle);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -77,7 +80,7 @@ VertexTextureApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
-    this->planeVSParams.Texture = Gfx::CreateResource(rtSetup);
+    this->plasmaRenderTarget = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
     Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
@@ -100,6 +103,11 @@ VertexTextureApp::OnInit() {
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
+
+    // texture bundle for the plane vertex texture
+    auto tbSetup = TextureBundleSetup::FromShader(planeShader);
+    tbSetup.VS[Shaders::Plane::VS_Texture] = this->plasmaRenderTarget;
+    this->planeTextureBundle = Gfx::CreateResource(tbSetup);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
