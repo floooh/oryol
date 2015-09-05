@@ -135,9 +135,7 @@ _func float snoise(vec2 v)
 @end
 
 @fs copyFS
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@texture sampler2D tex Texture
 @in vec2 uv
     // scale back to 0..1
     _color = tex2D(tex, uv) * 0.01;

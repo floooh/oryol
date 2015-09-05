@@ -19,13 +19,14 @@ public:
     AppState::Code OnCleanup();
     
 private:
+    Id renderTarget;
     Id offscreenDrawState;
     Id copyDrawState;
-    
+    Id copyTextureBundle;
+
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Offscreen::FSParams offscreenFSParams;
-    Shaders::Copy::FSParams copyFSParams;
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -38,7 +39,7 @@ TextureFloatApp::OnRunning() {
     this->offscreenFSParams.Time += 1.0f / 60.0f;
     
     // render plasma to offscreen render target, do not clear
-    Gfx::ApplyRenderTarget(this->copyFSParams.Texture, this->noClearState);
+    Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
@@ -46,7 +47,7 @@ TextureFloatApp::OnRunning() {
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::ApplyUniformBlock(this->copyFSParams);
+    Gfx::ApplyTextureBundle(this->copyTextureBundle);
     Gfx::Draw(0);
     
     Dbg::DrawTextBuffer();
@@ -77,8 +78,8 @@ TextureFloatApp::OnInit() {
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.MagFilter = TextureFilterMode::Nearest;
     rtSetup.MinFilter = TextureFilterMode::Nearest;
-    this->copyFSParams.Texture = Gfx::CreateResource(rtSetup);
-    
+    this->renderTarget = Gfx::CreateResource(rtSetup);
+
     // fullscreen mesh, we'll reuse this several times
     Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
 
@@ -90,9 +91,12 @@ TextureFloatApp::OnInit() {
     this->offscreenDrawState = Gfx::CreateResource(dss);
     this->offscreenFSParams.Time = 0.0f;
 
-    // fullscreen-copy mesh, shader and draw state
+    // fullscreen-copy resources
     Id copyShader = Gfx::CreateResource(Shaders::Copy::CreateSetup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fullscreenMesh, copyShader));
+    auto tbSetup = TextureBundleSetup::FromShader(copyShader);
+    tbSetup.FS[Shaders::Copy::FS_Texture] = this->renderTarget;
+    this->copyTextureBundle = Gfx::CreateResource(tbSetup);
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
