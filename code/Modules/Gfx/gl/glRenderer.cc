@@ -469,22 +469,6 @@ glRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextureBundle(textureBundle* tb) {
-    o_assert_dbg(this->valid);
-
-    if (nullptr == tb) {
-        // textureBundle contains textures that are not yet loaded,
-        // disable the next draw call, and return
-        this->curDrawState = nullptr;
-        return;
-    }
-    else {
-        o_error("glRenderer::applyTextureBundle: FIXME!\n");
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
@@ -1088,24 +1072,48 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
                 }
                 break;
 
-            case UniformType::Texture:
-                {
-                    const Id& resId = *(const Id*)valuePtr;
-                    texture* tex = this->pointers.texturePool->Lookup(resId);
-                    o_assert_dbg(tex);
-                    int32 samplerIndex = shd->getSamplerIndex(progIndex, blockIndex, compIndex);
-                    GLuint glTexture = tex->glTex;
-                    GLenum glTarget = tex->glTarget;
-                    this->bindTexture(samplerIndex, glTarget, glTexture);
-                }
-                break;
-
             default:
                 o_error("FIXME: invalid uniform type!\n");
                 break;
         }
     }
 }
+
+//------------------------------------------------------------------------------
+void
+glRenderer::applyTextureBundle(textureBundle* tb) {
+    o_assert_dbg(this->valid);
+
+    if (nullptr == tb) {
+        // textureBundle contains textures that are not yet loaded,
+        // disable the next draw call, and return
+        this->curDrawState = nullptr;
+        return;
+    }
+    else {
+        // bind vertex textures
+        for (const auto& vsTex : tb->vs) {
+            if (InvalidIndex == vsTex.samplerIndex) {
+                // can stop on first invalid entry
+                break;
+            }
+            else {
+                this->bindTexture(vsTex.samplerIndex, vsTex.glTarget, vsTex.glTex);
+            }
+        }
+        // bind fragment shader textures
+        for (const auto& fsTex : tb->fs) {
+            if (InvalidIndex == fsTex.samplerIndex) {
+                // can stop on first invalid entry
+                break;
+            }
+            else {
+                this->bindTexture(fsTex.samplerIndex, fsTex.glTarget, fsTex.glTex);
+            }
+        }
+    }
+}
+
 
 } // namespace _priv
 } // namespace Oryol

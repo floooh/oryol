@@ -385,19 +385,19 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ShaderType
+    @class Oryol::ShaderStage
     @ingroup Gfx
-    @brief shader types (vertex shader, fragment shader)
+    @brief the shader stages (vertex shader, fragment shader)
 */
-class ShaderType {
+class ShaderStage {
 public:
-    /// shader types enum
+    /// shader stages enum
     enum Code {
-        VertexShader = 0,
-        FragmentShader,
+        VS = 0,
+        FS,
 
-        NumShaderTypes,
-        InvalidShaderType = 0xFFFFFFFF,
+        NumShaderStages,
+        InvalidShaderStage = 0xFFFFFFFF,
     };
 };
 

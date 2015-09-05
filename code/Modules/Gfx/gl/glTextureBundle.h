@@ -17,14 +17,15 @@ public:
     /// clear the object (called from textureBundleFactory::DestroyResource())
     void Clear();
 
-    struct texAndTarget {
+    struct bindEntry {
+        int32 samplerIndex = InvalidIndex;
         GLuint glTex = 0;
         GLenum glTarget = 0;
     };
     /// vertex shader textures
-    StaticArray<texAndTarget, GfxConfig::MaxNumVSTextures> vs;
+    StaticArray<bindEntry, GfxConfig::MaxNumVSTextures> vs;
     /// fragment shader textures
-    StaticArray<texAndTarget, GfxConfig::MaxNumFSTextures> fs;
+    StaticArray<bindEntry, GfxConfig::MaxNumFSTextures> fs;
 };
 
 } // namespace _priv

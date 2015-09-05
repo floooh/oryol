@@ -285,9 +285,8 @@ gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
         drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
 
         // check if all referenced resources are loaded, if not defer draw state creation
-        const ResourceState::Code resState = this->queryDrawStateDependenciesState(&res);
-        if (resState == ResourceState::Pending)
-        {
+        const ResourceState::Code resState = this->queryDrawStateDepState(&res);
+        if (resState == ResourceState::Pending) {
             this->pendingDrawStates.Add(resId);
             this->drawStatePool.UpdateState(resId, ResourceState::Pending);
         }
@@ -301,8 +300,56 @@ gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
+template<> Id
+gfxResourceContainerBase::Create(const TextureBundleSetup& setup) {
+    o_assert_dbg(this->isValid());
+
+    Id resId = this->registry.Lookup(setup.Locator);
+    if (resId.IsValid()) {
+        return resId;
+    }
+    else {
+        resId = this->textureBundlePool.AllocId();
+        this->registry.Add(setup.Locator, resId, this->peekLabel());
+        textureBundle& res = this->textureBundlePool.Assign(resId, setup, ResourceState::Setup);
+
+        // check if all referenced resources are loaded, if not defer creation
+        const ResourceState::Code resState = this->queryTextureBundleDepState(&res);
+        if (resState == ResourceState::Pending) {
+            this->pendingTextureBundles.Add(resId);
+            this->textureBundlePool.UpdateState(resId, ResourceState::Pending);
+        }
+        else {
+            const ResourceState::Code newState = this->textureBundleFactory.SetupResource(res);
+            o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
+            this->textureBundlePool.UpdateState(resId, newState);
+        }
+    }
+    return resId;
+}
+
+//------------------------------------------------------------------------------
+bool
+gfxResourceContainerBase::checkState(ResourceState::Code resState) const {
+    // helper function for the queryXxxState functions, returns true
+    // if the input state is Failed or Pending, fails hard on Initial or
+    // Setup state, otherwise returns false
+    switch (resState) {
+        case ResourceState::Failed:
+        case ResourceState::Pending:
+            return true;
+        case ResourceState::Initial:
+        case ResourceState::Setup:
+            o_error("gfxResourceContainerBase::checkState: can't happen!");
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
-gfxResourceContainerBase::queryDrawStateDependenciesState(const drawState* ds) {
+gfxResourceContainerBase::queryDrawStateDepState(const drawState* ds) {
     o_assert_dbg(ds);
 
     // this returns an overall state of the meshes attached to
@@ -311,29 +358,18 @@ gfxResourceContainerBase::queryDrawStateDependenciesState(const drawState* ds) {
         if (meshId.IsValid()) {
             const mesh* msh = this->meshPool.Get(meshId);
             if (msh) {
-                switch (msh->State) {
-                    case ResourceState::Failed:
-                        // at least one mesh has failed loading
-                        return ResourceState::Failed;
-                    case ResourceState::Pending:
-                        // at least one mesh has not finished loading
-                        return ResourceState::Pending;
-                    case ResourceState::Initial:
-                    case ResourceState::Setup:
-                        // this cannot happen
-                        o_error("can't happen!\n");
-                        return ResourceState::InvalidState;
-                    default:
-                        break;
+                if (this->checkState(msh->State)) {
+                    // Failed or Pending, exit early
+                    return msh->State;
                 }
             }
             else {
-                // the required mesh no longer exists
+                // the dependent resource no longer exists
                 return ResourceState::Failed;
             }
         }
     }
-    // fallthough means: all mesh dependencies are valid
+    // fallthrough means: all mesh dependencies are valid
     return ResourceState::Valid;
 }
 
@@ -349,7 +385,7 @@ gfxResourceContainerBase::handlePendingDrawStates() {
         o_assert_dbg(resId.IsValid());
         drawState* ds = this->drawStatePool.Get(resId);
         if (ds) {
-            const ResourceState::Code state = this->queryDrawStateDependenciesState(ds);
+            const ResourceState::Code state = this->queryDrawStateDepState(ds);
             if (state != ResourceState::Pending) {
                 this->pendingDrawStates.Erase(i);
                 if (state == ResourceState::Valid) {
@@ -370,6 +406,82 @@ gfxResourceContainerBase::handlePendingDrawStates() {
             // still need to remove the entry from the pending array
             o_warn("gfxResourceContainer::handlePendingDrawStates(): drawState destroyed before dependencies loaded!\n");
             this->pendingDrawStates.Erase(i);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+gfxResourceContainerBase::queryTextureBundleDepState(const textureBundle* tb) {
+    o_assert_dbg(tb);
+
+    // this returns an overall state of the dependent textures
+    for (const Id& texId : tb->Setup.VS) {
+        if (texId.IsValid()) {
+            const texture* tex = this->texturePool.Get(texId);
+            if (tex) {
+                if (this->checkState(tex->State)) {
+                    // Failed or Pending, exit early
+                    return tex->State;
+                }
+            }
+            else {
+                // the dependent resource no longer exists
+                return ResourceState::Failed;
+            }
+        }
+    }
+    for (const Id& texId : tb->Setup.FS) {
+        if (texId.IsValid()) {
+            const texture* tex = this->texturePool.Get(texId);
+            if (tex) {
+                if (this->checkState(tex->State)) {
+                    // Failed or Pending, exit early
+                    return tex->State;
+                }
+            }
+            else {
+                // the dependent resource no longer exists
+                return ResourceState::Failed;
+            }
+        }
+    }
+    // fallthrough means: all texture deps are valid
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+void
+gfxResourceContainerBase::handlePendingTextureBundles() {
+    // goes through the array of pending textureBundles and checks
+    // if their dependent textures have finished loading, if yes,
+    // setup the texture bundle
+    for (int i = this->pendingTextureBundles.Size() - 1; i >= 0; i--) {
+        const Id& resId = this->pendingTextureBundles[i];
+        o_assert_dbg(resId.IsValid());
+        textureBundle* tb = this->textureBundlePool.Get(resId);
+        if (tb) {
+            const ResourceState::Code state = this->queryTextureBundleDepState(tb);
+            if (state != ResourceState::Pending) {
+                this->pendingTextureBundles.Erase(i);
+                if (state == ResourceState::Valid) {
+                    // all ok, can setup texture bundle
+                    const ResourceState::Code newState = this->textureBundleFactory.SetupResource(*tb);
+                    o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
+                    this->textureBundlePool.UpdateState(resId, newState);
+                }
+                else {
+                    // a texture has failed loading, also set textureBundle to failed
+                    o_assert_dbg(state == ResourceState::Failed);
+                    this->textureBundlePool.UpdateState(resId, state);
+                }
+            }
+        }
+        else {
+            // the textureBundle object was destroyed before everything was loaded,
+            // still need to remove the entry from the pending array
+            o_warn("gfxResourceContainer::handlePendingTextureBundles(): textureBundle destroyed before dependencies loaded!\n");
+            this->pendingTextureBundles.Erase(i);
         }
     }
 }
@@ -445,6 +557,18 @@ gfxResourceContainerBase::Destroy(ResourceLabel label) {
                 this->drawStatePool.Unassign(id);
             }
             break;
+
+            case GfxResourceType::TextureBundle:
+            {
+                if (ResourceState::Valid == this->textureBundlePool.QueryState(id)) {
+                    textureBundle* tb = this->textureBundlePool.Lookup(id);
+                    if (tb) {
+                        this->textureBundleFactory.DestroyResource(*tb);
+                    }
+                }
+                this->textureBundlePool.Unassign(id);
+            }
+            break;
                 
             default:
                 o_assert(false);
@@ -463,6 +587,7 @@ gfxResourceContainerBase::update() {
     this->shaderPool.Update();
     this->texturePool.Update();
     this->drawStatePool.Update();
+    this->textureBundlePool.Update();
 
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
@@ -473,8 +598,9 @@ gfxResourceContainerBase::update() {
         }
     }
 
-    // handle drawstates with pending dependendies
+    // handle drawStates and textureBundles with pending dependendies
     this->handlePendingDrawStates();
+    this->handlePendingTextureBundles();
 }
 
 //------------------------------------------------------------------------------
@@ -491,6 +617,8 @@ gfxResourceContainerBase::QueryResourceInfo(const Id& resId) const {
             return this->shaderPool.QueryResourceInfo(resId);
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryResourceInfo(resId);
+        case GfxResourceType::TextureBundle:
+            return this->textureBundlePool.QueryResourceInfo(resId);
         default:
             o_assert(false);
             return ResourceInfo();
@@ -511,6 +639,8 @@ gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->shaderPool.QueryPoolInfo();
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryPoolInfo();
+        case GfxResourceType::TextureBundle:
+            return this->textureBundlePool.QueryPoolInfo();
         default:
             o_assert(false);
             return ResourcePoolInfo();
@@ -531,6 +661,8 @@ gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) con
             return this->shaderPool.GetNumFreeSlots();
         case GfxResourceType::DrawState:
             return this->drawStatePool.GetNumFreeSlots();
+        case GfxResourceType::TextureBundle:
+            return this->textureBundlePool.GetNumFreeSlots();
         default:
             o_assert(false);
             return 0;

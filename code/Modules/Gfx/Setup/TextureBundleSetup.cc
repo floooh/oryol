@@ -8,14 +8,18 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureBundleSetup::TextureBundleSetup() :
-Locator(Locator::NonShared()) {
+Locator(Locator::NonShared()),
+ShaderSelectionMask(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-TextureBundleSetup::TextureBundleSetup(const class Locator& loc) :
-Locator(loc) {
-    // empty
+TextureBundleSetup
+TextureBundleSetup::FromShader(const Id& shd, uint32 selMask) {
+    TextureBundleSetup setup;
+    setup.Shader = shd;
+    setup.ShaderSelectionMask = selMask;
+    return setup;
 }
 
 } // namespace Oryol

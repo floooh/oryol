@@ -73,7 +73,6 @@ SimpleRenderTargetApp::OnInit() {
 
     // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
-    TextureBundleSetup tbSetup;
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
@@ -82,8 +81,6 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.MagFilter = TextureFilterMode::Linear;
     rtSetup.MinFilter = TextureFilterMode::Linear;
     this->renderTarget = Gfx::CreateResource(rtSetup);
-    tbSetup.VS[Shaders::Main::VS_Texture] = this->renderTarget;
-    this->renderTargetTextureBundle = Gfx::CreateResource(tbSetup);
 
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
@@ -105,7 +102,12 @@ SimpleRenderTargetApp::OnInit() {
     // create shaders
     Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
     Id dispShader = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    
+
+    // create texture bundle for the main pass
+    auto tbSetup = TextureBundleSetup::FromShader(dispShader);
+    tbSetup.FS[Shaders::Main::FS_Texture] = this->renderTarget;
+    this->renderTargetTextureBundle = Gfx::CreateResource(tbSetup);
+
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     auto offdsSetup = DrawStateSetup::FromMeshAndShader(torus, offScreenShader);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;

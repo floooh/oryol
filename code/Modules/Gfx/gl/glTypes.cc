@@ -238,10 +238,10 @@ glTypes::asGLPrimitiveType(PrimitiveType::Code c) {
 
 //------------------------------------------------------------------------------
 GLenum
-glTypes::asGLShaderType(ShaderType::Code c) {
+glTypes::asGLShaderStage(ShaderStage::Code c) {
     switch (c) {
-        case ShaderType::VertexShader:      return GL_VERTEX_SHADER;
-        case ShaderType::FragmentShader:    return GL_FRAGMENT_SHADER;
+        case ShaderStage::VS: return GL_VERTEX_SHADER;
+        case ShaderStage::FS: return GL_FRAGMENT_SHADER;
         default:
             o_error("glTypes::asGLShaderType(): invalid param!\n");
             return 0;

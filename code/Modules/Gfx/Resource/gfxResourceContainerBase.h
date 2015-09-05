@@ -77,10 +77,16 @@ public:
     /// per-frame update (update resource pools and pending loaders)
     void update();
 
+    /// private helper function to dependent resource state
+    bool checkState(ResourceState::Code resState) const;
     /// query overall state of drawstate dependencies (state of input meshes)
-    ResourceState::Code queryDrawStateDependenciesState(const drawState* ds);
+    ResourceState::Code queryDrawStateDepState(const drawState* ds);
     /// handle pending draw states, this is called once per frame
     void handlePendingDrawStates();
+    /// query overal state of textureBundle dependencies (state of textures in bundle)
+    ResourceState::Code queryTextureBundleDepState(const textureBundle* tb);
+    /// handle pending texture bundle states, this is called once per frame
+    void handlePendingTextureBundles();
     
     gfxPointers pointers;
     class meshFactory meshFactory;
@@ -96,6 +102,7 @@ public:
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
     Array<Id> pendingDrawStates;
+    Array<Id> pendingTextureBundles;
 };
 
 //------------------------------------------------------------------------------

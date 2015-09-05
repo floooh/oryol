@@ -14,7 +14,8 @@ libraryByteCodeSize(0),
 libraryByteCode(nullptr),
 numProgramEntries(0),
 numUniformBlockEntries(0),
-numTextureEntries(0) {
+numVSTexEntries(0),
+numFSTexEntries(0) {
     // empty
 }
 
@@ -23,7 +24,8 @@ ShaderSetup::ShaderSetup(const class Locator& locator) :
 Locator(locator),
 numProgramEntries(0),
 numUniformBlockEntries(0),
-numTextureEntries(0) {
+numVSTexEntries(0),
+numFSTexEntries(0) {
     // empty
 }
 
@@ -82,7 +84,7 @@ ShaderSetup::AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const Or
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex) {
+ShaderSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderStage::Code stage, int32 slotIndex) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(!layout.Empty());
     o_assert_dbg(0 != layout.TypeHash);
@@ -90,18 +92,18 @@ ShaderSetup::AddUniformBlock(const StringAtom& name, const UniformLayout& layout
     uniformBlockEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
     entry.name = name;
     entry.layout = layout;
-    entry.shaderStage = shaderStage;
+    entry.stage = stage;
     entry.slotIndex = slotIndex;
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddTexture(const StringAtom& name, ShaderType::Code shaderStage, TextureType::Code texType, int32 slotIndex) {
+ShaderSetup::AddTexture(const StringAtom& name, ShaderStage::Code stage, TextureType::Code texType, int32 slotIndex) {
     o_assert_dbg(name.IsValid());
 
-    textureEntry & entry = this->textureEntries[this->numTextureEntries++];
+    textureEntry& entry = stage==ShaderStage::VS ? this->vsTexEntries[this->numVSTexEntries++] : this->fsTexEntries[this->numFSTexEntries++];
     entry.name = name;
-    entry.shaderStage = shaderStage;
+    entry.stage = stage;
     entry.textureType = texType;
     entry.slotIndex = slotIndex;
 }
@@ -207,39 +209,33 @@ ShaderSetup::UniformBlockSlot(int32 uniformBlockIndex) const {
 }
 
 //------------------------------------------------------------------------------
-ShaderType::Code
+ShaderStage::Code
 ShaderSetup::UniformBlockShaderStage(int32 uniformBlockIndex) const {
-    return this->uniformBlockEntries[uniformBlockIndex].shaderStage;
+    return this->uniformBlockEntries[uniformBlockIndex].stage;
 }
 
 //------------------------------------------------------------------------------
 int32
-ShaderSetup::NumTextures() const {
-    return this->numTextureEntries;
+ShaderSetup::NumTextures(ShaderStage::Code stage) const {
+    return stage==ShaderStage::VS ? this->numVSTexEntries : this->numFSTexEntries;
 }
 
 //------------------------------------------------------------------------------
 const StringAtom&
-ShaderSetup::TextureName(int32 texIndex) const {
-    return this->textureEntries[texIndex].name;
-}
-
-//------------------------------------------------------------------------------
-ShaderType::Code
-ShaderSetup::TextureShaderStage(int32 texIndex) const {
-    return this->textureEntries[texIndex].shaderStage;
+ShaderSetup::TextureName(ShaderStage::Code stage, int32 i) const {
+    return (stage==ShaderStage::VS ? this->vsTexEntries[i]:this->fsTexEntries[i]).name;
 }
 
 //------------------------------------------------------------------------------
 TextureType::Code
-ShaderSetup::TextureType(int32 texIndex) const {
-    return this->textureEntries[texIndex].textureType;
+ShaderSetup::TextureType(ShaderStage::Code stage, int32 i) const {
+    return (stage==ShaderStage::VS ? this->vsTexEntries[i]:this->fsTexEntries[i]).textureType;
 }
 
 //------------------------------------------------------------------------------
 int32
-ShaderSetup::TextureSlot(int32 texIndex) const {
-    return this->textureEntries[texIndex].slotIndex;
+ShaderSetup::TextureSlot(ShaderStage::Code stage, int32 i) const {
+    return (stage==ShaderStage::VS ? this->vsTexEntries[i]:this->fsTexEntries[i]).slotIndex;
 }
 
 } // namespace Oryol

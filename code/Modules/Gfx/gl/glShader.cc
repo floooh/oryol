@@ -45,17 +45,13 @@ glShader::addProgram(uint32 mask, GLuint glProg) {
 //------------------------------------------------------------------------------
 void
 glShader::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation) {
-    mapping& m = this->programEntries[progIndex].mappings[blockIndex][slotIndex];
-    m.uniform = glUniformLocation;
-    m.sampler = -1;
+    this->programEntries[progIndex].uniformMappings[blockIndex][slotIndex] = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------
 void
-glShader::bindSamplerUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation, int32 samplerIndex) {
-    mapping& m = this->programEntries[progIndex].mappings[blockIndex][slotIndex];
-    m.uniform = glUniformLocation;
-    m.sampler = samplerIndex;
+glShader::bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, int32 samplerIndex) {
+    this->programEntries[progIndex].samplerMappings[stage][slotIndex] = samplerIndex;
 }
 
 //------------------------------------------------------------------------------

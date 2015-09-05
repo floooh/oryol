@@ -59,6 +59,12 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
     // will also be set to failed state. All that remains to do here is
     // to lookup the texture objects and gather the GL texture names from them.
 
+    // get shader and progIndex in order to lookup the samplerIndex on the shader
+    const shader* shd = this->pointers.shaderPool->Lookup(tb.Setup.Shader);
+    o_assert_dbg(shd);
+    int32 progIndex = shd->getProgIndexByMask(tb.Setup.ShaderSelectionMask);
+    o_assert_dbg(InvalidIndex != progIndex);
+
     for (int i = 0; i < GfxConfig::MaxNumVSTextures; i++) {
         o_assert_dbg((0 == tb.vs[i].glTex) && (0 == tb.vs[i].glTarget));
         const auto& vsTex = tb.Setup.VS[i];
@@ -67,8 +73,11 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             texture* tex = this->pointers.texturePool->Get(vsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
-            tb.vs[i].glTex = tex->glTex;
-            tb.vs[i].glTarget = tex->glTarget;
+            auto& entry = tb.vs[i];
+            entry.samplerIndex = shd->getSamplerIndex(progIndex, i, ShaderStage::VS);
+            entry.glTex = tex->glTex;
+            entry.glTarget = tex->glTarget;
+            o_assert_dbg((0 != entry.glTex) && (0 != entry.glTarget) && (InvalidIndex != entry.samplerIndex));
         }
     }
 
@@ -80,12 +89,22 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             texture* tex = this->pointers.texturePool->Get(fsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
-            tb.fs[i].glTex = tex->glTex;
-            tb.fs[i].glTarget = tex->glTarget;
+            auto& entry = tb.fs[i];
+            entry.samplerIndex = shd->getSamplerIndex(progIndex, i, ShaderStage::FS);
+            entry.glTex = tex->glTex;
+            entry.glTarget = tex->glTarget;
+            o_assert_dbg((0 != entry.glTex) && (0 != entry.glTarget) && (InvalidIndex != entry.samplerIndex));
         }
     }
 
     return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+void
+glTextureBundleFactory::DestroyResource(textureBundle& tb) {
+    o_assert_dbg(this->isValid);
+    tb.Clear();
 }
 
 } // namespace _priv

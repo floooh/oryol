@@ -10,8 +10,8 @@ namespace _priv {
 //------------------------------------------------------------------------------
 void
 glTextureBundle::Clear() {
-    this->vs.Fill(texAndTarget());
-    this->fs.Fill(texAndTarget());
+    this->vs.Fill(bindEntry());
+    this->fs.Fill(bindEntry());
 }
 
 } // namespace _priv

@@ -1505,11 +1505,9 @@ def writeBundleHeader(f, shdLib, bundle) :
     # write uniform block structs
     for blockIndex, uBlock in enumerate(bundle.uniformBlocks) :
         if uBlock.shaderStage == 'vs' :
-            shaderStage = 'ShaderType::VertexShader'
-            shaderStageName = 'VS'
+            shaderStage = 'VS'
         else :
-            shaderStage = 'ShaderType::FragmentShader'
-            shaderStateName = 'FS'
+            shaderStage = 'FS'
 
         # count number of non-texture uniforms
         numUniforms = 0
@@ -1523,7 +1521,7 @@ def writeBundleHeader(f, shdLib, bundle) :
             f.write('        struct {} {{\n'.format(uBlock.bindName))
             f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
             f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
-            f.write('            static const ShaderType::Code _bindShaderStage = {};\n'.format(shaderStage))
+            f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(shaderStage))
             f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
             for type in uBlock.uniformsByType :
                 if type not in ['sampler2D', 'samplerCube'] :
@@ -1541,7 +1539,7 @@ def writeBundleHeader(f, shdLib, bundle) :
             if type in ['sampler2D', 'samplerCube'] :
                 for uniform in uBlock.uniformsByType[type] :
                     f.write('        static const int32 {}_{} = {};\n'.format(
-                        shaderStageName, uniform.bindName, uniform.bindSlot))
+                        shaderStage, uniform.bindName, uniform.bindSlot))
 
     f.write('        static ShaderSetup CreateSetup();\n')
     f.write('    };\n')
@@ -1688,9 +1686,9 @@ def writeBundleSource(f, shdLib, bundle) :
             f.write('    #endif\n');
     for uBlock in bundle.uniformBlocks :
         if uBlock.shaderStage == 'vs' :
-            shaderStage = 'ShaderType::VertexShader'
+            shaderStage = 'VS'
         else :
-            shaderStage = 'ShaderType::FragmentShader'
+            shaderStage = 'FS'
 
         # count number of non-texture uniforms
         numUniforms = 0
@@ -1722,7 +1720,7 @@ def writeBundleSource(f, shdLib, bundle) :
                         texType = 'TextureType::Texture2D'
                     else :
                         texType = 'TextureType::TextureCube'
-                    f.write('    setup.AddTexture("{}", {}, {}, {});\n'.format(uniform.name, shaderStage, texType, uniform.bindSlot))
+                    f.write('    setup.AddTexture("{}", ShaderStage::{}, {}, {});\n'.format(uniform.name, shaderStage, texType, uniform.bindSlot))
                 
     f.write('    return setup;\n')
     f.write('}\n')
