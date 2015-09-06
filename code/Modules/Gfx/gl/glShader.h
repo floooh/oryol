@@ -55,7 +55,7 @@ private:
     static const int32 MaxNumUniformBlocks = 4;
     static const int32 MaxNumUniforms = 16;
     static const int32 MaxNumPrograms = 8;
-    static const int32 MaxNumSamplers = GfxConfig::MaxNumVSTextures + GfxConfig::MaxNumFSTextures;
+    static const int32 MaxNumSamplers = GfxConfig::MaxNumShaderTextures;
 
     struct programEntry {
         struct sampler {

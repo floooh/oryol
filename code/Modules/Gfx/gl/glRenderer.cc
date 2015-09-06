@@ -1092,7 +1092,7 @@ glRenderer::applyTextureBundle(textureBundle* tb) {
     }
     else {
         // bind vertex textures
-        // FIRST: we cannot exit early on the first invalid texture entry
+        // NOTE: we cannot exit early on the first invalid texture entry
         // since there may be multiple texture bundles to fill all texture slot
         for (const auto& vsTex : tb->vs) {
             if (InvalidIndex != vsTex.samplerIndex) {
@@ -1107,7 +1107,6 @@ glRenderer::applyTextureBundle(textureBundle* tb) {
         }
     }
 }
-
 
 } // namespace _priv
 } // namespace Oryol
