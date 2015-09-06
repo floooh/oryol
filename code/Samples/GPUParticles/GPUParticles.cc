@@ -35,7 +35,9 @@ private:
     Id shapeMesh;
     Id initParticles;
     Id updateParticles;
+    Id updTextureBundle[NumParticleBuffers];
     Id drawParticles;
+    Id drawTextureBundle[NumParticleBuffers];
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -79,8 +81,8 @@ GPUParticlesApp::OnRunning() {
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updateParticles);
     this->updFSParams.NumParticles = (float32) this->curNumParticles;
-    this->updFSParams.PrevState = this->particleBuffer[readIndex];
     Gfx::ApplyUniformBlock(this->updFSParams);
+    Gfx::ApplyTextureBundle(this->updTextureBundle[readIndex]);
     Gfx::Draw(0);
     
     // now the actual particle shape rendering:
@@ -88,8 +90,8 @@ GPUParticlesApp::OnRunning() {
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawParticles);
-    this->drawVSParams.ParticleState = this->particleBuffer[drawIndex];
     Gfx::ApplyUniformBlock(this->drawVSParams);
+    Gfx::ApplyTextureBundle(this->drawTextureBundle[drawIndex]);
     Gfx::DrawInstanced(0, this->curNumParticles);
     
     Dbg::DrawTextBuffer();
@@ -149,13 +151,18 @@ GPUParticlesApp::OnInit() {
     // a fullscreen mesh for the particle init- and update-shaders
     Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     
-    // particle initialization and update draw states
+    // particle initialization and update resources
     Id initShader = Gfx::CreateResource(Shaders::InitParticles::CreateSetup());
+    Id updateShader = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
+    auto tbSetup = TextureBundleSetup::FromShader(updateShader);
+    for (int i = 0; i < NumParticleBuffers; i++) {
+        tbSetup.FS[Shaders::UpdateParticles::FS_PrevState] = this->particleBuffer[i];
+        this->updTextureBundle[i] = Gfx::CreateResource(tbSetup);
+    }
     auto dss = DrawStateSetup::FromMeshAndShader(fullscreenMesh, initShader);
     dss.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
     dss.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
     this->initParticles = Gfx::CreateResource(dss);
-    Id updateShader = Gfx::CreateResource(Shaders::UpdateParticles::CreateSetup());
     dss.Shader = updateShader;
     dss.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Gfx::CreateResource(dss);
@@ -185,8 +192,13 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     this->shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
     
-    // particle rendering draw state
+    // particle rendering texture bundles and draw state
     Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::CreateSetup());
+    tbSetup = TextureBundleSetup::FromShader(drawShader);
+    for (int i = 0; i < NumParticleBuffers; i++) {
+        tbSetup.VS[Shaders::DrawParticles::VS_ParticleState] = this->particleBuffer[i];
+        this->drawTextureBundle[i] = Gfx::CreateResource(tbSetup);
+    }
     dss = DrawStateSetup::FromMeshAndShader(this->shapeMesh, drawShader);
     dss.Meshes[1] = this->particleIdMesh;
     dss.RasterizerState.CullFaceEnabled = true;

@@ -181,9 +181,9 @@ _func float snoise(vec2 v)
 @use FSUtil
 @uniform_block fsParams FSParams
     @uniform vec2 bufDims BufferDims
-    @uniform sampler2D prevState PrevState
     @uniform float numParticles NumParticles
 @end
+@texture sampler2D prevState PrevState
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
@@ -236,8 +236,8 @@ _func float snoise(vec2 v)
 @uniform_block vsParams VSParams
     @uniform mat4 mvp ModelViewProjection
     @uniform vec2 bufDims BufferDims
-    @uniform sampler2D particleTex ParticleState
 @end
+@texture sampler2D particleTex ParticleState
 @in vec4 position
 @in vec4 color0
 @in float instance0
