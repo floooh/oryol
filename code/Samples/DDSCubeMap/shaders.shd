@@ -14,9 +14,7 @@
 @end
 
 @fs fs
-@uniform_block fsParams FSParams
-    @uniform samplerCube tex Texture
-@end
+@texture samplerCube tex Texture
 @in vec3 nrm
     _color = texCUBE(tex, nrm);
 @end
