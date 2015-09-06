@@ -49,19 +49,24 @@ private:
     ClearState noClearState = ClearState::ClearNone();
     ResourceLabel offscreenRenderTargetLabel;
     Id offscreenRenderTarget[2];
+    Id displayShader;
     Id displayDrawState;
+    Id displayTextureBundle[2];
     int32 frameIndex = 0;
     bool clearFlag = true;
     bool dragStarted = false;
     ImVec2 dragStartPos;
     Type fractalType = Mandelbrot;
     struct {
+        Id shader;
         Id drawState;
+        Id textureBundle[2];
         Shaders::Mandelbrot::VSParams vsParams;
-        Shaders::Mandelbrot::FSParams fsParams;
     } mandelbrot;
     struct {
+        Id shader;
         Id drawState;
+        Id textureBundle[2];
         Shaders::Julia::VSParams vsParams;
         Shaders::Julia::FSParams fsParams;
     } julia;
@@ -91,23 +96,22 @@ FractalApp::OnRunning() {
     Gfx::ApplyRenderTarget(this->offscreenRenderTarget[index0], this->noClearState);
     if (Mandelbrot == this->fractalType) {
         Gfx::ApplyDrawState(this->mandelbrot.drawState);
-        this->mandelbrot.fsParams.Texture = this->offscreenRenderTarget[index1];
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
-        Gfx::ApplyUniformBlock(this->mandelbrot.fsParams);
+        Gfx::ApplyTextureBundle(this->mandelbrot.textureBundle[index1]);
     }
     else {
         Gfx::ApplyDrawState(this->julia.drawState);
-        this->julia.fsParams.Texture = this->offscreenRenderTarget[index1];
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
+        Gfx::ApplyTextureBundle(this->julia.textureBundle[index1]);
     }
     Gfx::Draw(0);
 
     // map fractal state to displat
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->displayDrawState);
-    this->displayFSParams.Texture = this->offscreenRenderTarget[index0];
     Gfx::ApplyUniformBlock(this->displayFSParams);
+    Gfx::ApplyTextureBundle(this->displayTextureBundle[index0]);
     Gfx::Draw(0);
 
     this->drawUI();
@@ -136,18 +140,23 @@ FractalApp::OnInit() {
     Id fsqFractal = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id fsqDisplay = Gfx::CreateResource(MeshSetup::FullScreenQuad(true));
 
+    // create shaders
+    this->displayShader = Gfx::CreateResource(Shaders::Display::CreateSetup());
+    this->mandelbrot.shader = Gfx::CreateResource(Shaders::Mandelbrot::CreateSetup());
+    this->julia.shader = Gfx::CreateResource(Shaders::Julia::CreateSetup());
+
     // draw state for rendering the final result to screen
-    Id dispShd = Gfx::CreateResource(Shaders::Display::CreateSetup());
-    auto dss = DrawStateSetup::FromMeshAndShader(fsqDisplay, dispShd);
+    auto dss = DrawStateSetup::FromMeshAndShader(fsqDisplay, this->displayShader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     this->displayDrawState = Gfx::CreateResource(dss);
 
-    // setup 2 ping-poing fp32 render targets which hold the current fractal state
+    // setup 2 ping-poing fp32 render targets which hold the current fractal state,
+    // and the texture bundles which use reference these render targets
     this->checkCreateRenderTargets();
 
     // setup mandelbrot state
-    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, Gfx::CreateResource(Shaders::Mandelbrot::CreateSetup()));
+    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, this->mandelbrot.shader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -155,7 +164,7 @@ FractalApp::OnInit() {
     this->mandelbrot.drawState = Gfx::CreateResource(dss);
 
     // setup julia state
-    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, Gfx::CreateResource(Shaders::Julia::CreateSetup()));
+    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, this->julia.shader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -367,5 +376,21 @@ FractalApp::checkCreateRenderTargets() {
         this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
         Gfx::PopResourceLabel();
         this->clearFlag = true;
+
+        // we also need to re-create all texture bundles which
+        // use these render targets as textures
+        for (int i=0; i<2; i++) {
+            auto tbSetup = TextureBundleSetup::FromShader(this->displayShader);
+            tbSetup.FS[Shaders::Display::FS_Texture] = this->offscreenRenderTarget[i];
+            this->displayTextureBundle[i] = Gfx::CreateResource(tbSetup);
+
+            tbSetup = TextureBundleSetup::FromShader(this->mandelbrot.shader);
+            tbSetup.FS[Shaders::Mandelbrot::FS_Texture] = this->offscreenRenderTarget[i];
+            this->mandelbrot.textureBundle[i] = Gfx::CreateResource(tbSetup);
+
+            tbSetup = TextureBundleSetup::FromShader(this->julia.shader);
+            tbSetup.FS[Shaders::Mandelbrot::FS_Texture] = this->offscreenRenderTarget[i];
+            this->julia.textureBundle[i] = Gfx::CreateResource(tbSetup);
+        }
     }
 }
