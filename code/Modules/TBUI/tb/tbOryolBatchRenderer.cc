@@ -45,9 +45,9 @@ tbOryolBatchRenderer::Setup() {
     
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
-    this->setupWhiteTexture();
     this->setupMesh();
-    this->setupDrawState();
+    this->setupShaderAndDrawState();
+    this->setupWhiteTexture();
     Gfx::PopResourceLabel();
     
     this->isValid = true;
@@ -66,7 +66,8 @@ tbOryolBatchRenderer::Discard() {
 //------------------------------------------------------------------------------
 void
 tbOryolBatchRenderer::setupWhiteTexture() {
-    o_assert_dbg(!this->whiteTexture.IsValid());
+    o_assert_dbg(!this->whiteTextureBundle.IsValid());
+    o_assert_dbg(this->shader.IsValid());
     
     const int w = 4;
     const int h = 4;
@@ -79,7 +80,11 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = sizeof(pixels);
-    this->whiteTexture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
+    Id texture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
+
+    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
+    tbSetup.FS[Shaders::TBUIShader::FS_Texture] = texture;
+    this->whiteTextureBundle = Gfx::CreateResource(tbSetup);
 }
 
 //------------------------------------------------------------------------------
@@ -102,13 +107,13 @@ tbOryolBatchRenderer::setupMesh() {
 
 //------------------------------------------------------------------------------
 void
-tbOryolBatchRenderer::setupDrawState() {
+tbOryolBatchRenderer::setupShaderAndDrawState() {
     o_assert_dbg(this->mesh.IsValid());
     o_assert_dbg(!this->drawState.IsValid());
     
-    Id shd = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
     
-    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, shd);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -287,7 +292,7 @@ tbOryolBatchRenderer::FlushBitmap(TBBitmap* bitmap) {
     if (this->curBatchIndex < MaxNumBatches) {
         const Batch& curBatch = this->batches[this->curBatchIndex];
         auto* oryolBitmap = (tbOryolBitmap*) bitmap;
-        if (oryolBitmap && (oryolBitmap->texture == curBatch.texture)) {
+        if (oryolBitmap && (oryolBitmap->textureBundle == curBatch.textureBundle)) {
             this->flushBatch();
         }
     }
@@ -323,12 +328,12 @@ tbOryolBatchRenderer::addQuad(const TBRect& dstRect, const TBRect& srcRect, uint
     Batch* curBatch = &(this->batches[this->curBatchIndex]);
     auto* oryolBitmap = (tbOryolBitmap*) bitmap;
     if (oryolBitmap) {
-        if (curBatch->texture != oryolBitmap->texture) {
+        if (curBatch->textureBundle != oryolBitmap->textureBundle) {
             curBatch = this->flushBatch();
             if (!curBatch) {
                 return;
             }
-            curBatch->texture = oryolBitmap->texture;
+            curBatch->textureBundle = oryolBitmap->textureBundle;
         }
         int bitmapWidth = bitmap->Width();
         int bitmapHeight = bitmap->Height();
@@ -339,12 +344,12 @@ tbOryolBatchRenderer::addQuad(const TBRect& dstRect, const TBRect& srcRect, uint
     }
     else {
         // bitmap-less, use white texture
-        if (curBatch->texture != this->whiteTexture) {
+        if (curBatch->textureBundle != this->whiteTextureBundle) {
             curBatch = this->flushBatch();
             if (!curBatch) {
                 return;
             }
-            curBatch->texture = this->whiteTexture;
+            curBatch->textureBundle = this->whiteTextureBundle;
         }
     }
     curBatch->fragment = fragment;
@@ -431,7 +436,7 @@ tbOryolBatchRenderer::flushBatch() {
         curBatch = &this->batches[this->curBatchIndex];
         curBatch->startIndex = this->curVertexIndex;
         curBatch->numVertices = 0;
-        curBatch->texture.Invalidate();        
+        curBatch->textureBundle.Invalidate();
         curBatch->fragment = nullptr;
         curBatch->batchId = this->batchId;
         return &(this->batches[this->curBatchIndex]);
@@ -449,7 +454,6 @@ tbOryolBatchRenderer::drawBatches() {
     if (this->curBatchIndex > 1) {
 
         Shaders::TBUIShader::VSParams vsParams;
-        Shaders::TBUIShader::FSParams fsParams;
 
         vsParams.Ortho = glm::ortho(0.0f, float(this->screenRect.w),
             (float)this->screenRect.h, 0.0f,
@@ -463,8 +467,8 @@ tbOryolBatchRenderer::drawBatches() {
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            fsParams.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
-            Gfx::ApplyUniformBlock(fsParams);
+            Id texBundle = batch.textureBundle.IsValid() ? batch.textureBundle : this->whiteTextureBundle;
+            Gfx::ApplyTextureBundle(texBundle);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }
         Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);

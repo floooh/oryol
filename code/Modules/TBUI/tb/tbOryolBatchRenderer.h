@@ -60,7 +60,7 @@ public:
     struct Batch {
         uint16 startIndex = 0;
         uint16 numVertices = 0;
-        Id texture;
+        Id textureBundle;
         uint32 batchId = 0;
         tb::TBRect clipRect;
         tb::TBBitmapFragment* fragment = nullptr;
@@ -72,7 +72,7 @@ public:
     /// setup the dynamic mesh
     void setupMesh();
     /// setup the draw state
-    void setupDrawState();
+    void setupShaderAndDrawState();
     /// add texture to be defer-deleted in EndPaint()
     void deferDeleteTexture(ResourceLabel label);
     /// delete textures added with deferDeleteTexture
@@ -83,6 +83,8 @@ public:
     void drawBatches();
 
 private:
+    friend class tbOryolBitmap;
+
     bool isValid;
     
     float fOpacitity;
@@ -101,8 +103,9 @@ private:
     ResourceLabel resLabel;
     VertexLayout vertexLayout;
     tb::TBRect tbClipRect;
-    Id whiteTexture;
+    Id whiteTextureBundle;
     Id mesh;
+    Id shader;
     Id drawState;
     Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;

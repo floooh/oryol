@@ -5,6 +5,7 @@
 #include "tbOryolBitmap.h"
 #include "tbOryolBatchRenderer.h"
 #include "tb_bitmap_fragment.h"
+#include "TBUIShaders.h"
 
 namespace Oryol {
 namespace _priv {
@@ -20,7 +21,7 @@ label(ResourceLabel::Invalid) {
 
 //------------------------------------------------------------------------------
 tbOryolBitmap::~tbOryolBitmap() {
-    if (this->texture.IsValid()) {
+    if (this->textureBundle.IsValid()) {
         this->destroyTexture();
     }
 }
@@ -39,7 +40,7 @@ tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::SetData(uint32* data) {
-    o_assert_dbg(this->texture.IsValid());
+    o_assert_dbg(this->textureBundle.IsValid());
     this->destroyTexture();
     this->createTexture(data);
 }
@@ -47,7 +48,8 @@ tbOryolBitmap::SetData(uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::createTexture(tb::uint32* data) {
-    o_assert_dbg(!this->texture.IsValid());
+    o_assert_dbg(!this->textureBundle.IsValid());
+    o_assert_dbg(this->renderer && this->renderer->shader.IsValid());
 
     const int byteSize = this->width * this->height * sizeof(tb::uint32);
 
@@ -58,7 +60,11 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = byteSize;
-    this->texture = Gfx::CreateResource(texSetup, data, byteSize);
+    Id texture = Gfx::CreateResource(texSetup, data, byteSize);
+
+    auto tbSetup = TextureBundleSetup::FromShader(this->renderer->shader);
+    tbSetup.FS[Shaders::TBUIShader::FS_Texture] = texture;
+    this->textureBundle = Gfx::CreateResource(tbSetup);
     
     Gfx::PopResourceLabel();
 }
@@ -66,9 +72,9 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::destroyTexture() {
-    o_assert_dbg(this->texture.IsValid());
+    o_assert_dbg(this->textureBundle.IsValid());
     this->renderer->deferDeleteTexture(this->label);
-    this->texture.Invalidate();
+    this->textureBundle.Invalidate();
     this->label = ResourceLabel::Invalid;
 }
 
