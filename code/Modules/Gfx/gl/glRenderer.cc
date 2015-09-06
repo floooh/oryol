@@ -1092,22 +1092,16 @@ glRenderer::applyTextureBundle(textureBundle* tb) {
     }
     else {
         // bind vertex textures
+        // FIRST: we cannot exit early on the first invalid texture entry
+        // since there may be multiple texture bundles to fill all texture slot
         for (const auto& vsTex : tb->vs) {
-            if (InvalidIndex == vsTex.samplerIndex) {
-                // can stop on first invalid entry
-                break;
-            }
-            else {
+            if (InvalidIndex != vsTex.samplerIndex) {
                 this->bindTexture(vsTex.samplerIndex, vsTex.glTarget, vsTex.glTex);
             }
         }
         // bind fragment shader textures
         for (const auto& fsTex : tb->fs) {
-            if (InvalidIndex == fsTex.samplerIndex) {
-                // can stop on first invalid entry
-                break;
-            }
-            else {
+            if (InvalidIndex != fsTex.samplerIndex) {
                 this->bindTexture(fsTex.samplerIndex, fsTex.glTarget, fsTex.glTex);
             }
         }
