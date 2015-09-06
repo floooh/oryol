@@ -25,7 +25,10 @@ private:
     void applyViewPort();
 
     Id crtEffect;
+    Id crtRenderTarget;
+    Id crtTexBundle;
     Shaders::CRT::FSParams crtParams;
+
     canvas spriteCanvas;
     game gameState;
     sound sounds;
@@ -47,14 +50,17 @@ PacloneApp::OnInit() {
     Sound::Setup(SoundSetup());
     Dbg::Setup();
     
-    // setup a offscreen render target and copy-shader
+    // setup a offscreen render target, copy-shader and texture bundle
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
-    this->crtParams.Canvas = Gfx::CreateResource(rtSetup);
+    this->crtRenderTarget = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id shd = Gfx::CreateResource(Shaders::CRT::CreateSetup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
+    auto tbSetup = TextureBundleSetup::FromShader(shd);
+    tbSetup.FS[Shaders::CRT::FS_Canvas] = this->crtRenderTarget;
+    this->crtTexBundle = Gfx::CreateResource(tbSetup);
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
@@ -85,7 +91,7 @@ PacloneApp::OnRunning() {
     this->gameState.Update(this->tick, &this->spriteCanvas, &this->sounds, input);
 
     // render into offscreen render target
-    Gfx::ApplyRenderTarget(this->crtParams.Canvas);
+    Gfx::ApplyRenderTarget(this->crtRenderTarget);
     this->spriteCanvas.Render();
     Dbg::DrawTextBuffer();
     
@@ -95,6 +101,7 @@ PacloneApp::OnRunning() {
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyUniformBlock(this->crtParams);
+    Gfx::ApplyTextureBundle(this->crtTexBundle);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     this->tick++;

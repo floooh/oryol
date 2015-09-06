@@ -62,7 +62,9 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    this->canvasParams.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
+    tbSetup.FS[Shaders::Canvas::FS_Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->texBundle = Gfx::CreateResource(tbSetup);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -96,7 +98,7 @@ canvas::Render() {
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->canvasParams);
+    Gfx::ApplyTextureBundle(this->texBundle);
     Gfx::Draw(0);
 }
 

@@ -58,7 +58,7 @@ private:
     Oryol::Id mesh;
     Oryol::Id shader;
     Oryol::Id drawState;
-    Oryol::Shaders::Canvas::FSParams canvasParams;
+    Oryol::Id texBundle;
 
     static const int MaxWidth = 64;
     static const int MaxHeight = 64;
