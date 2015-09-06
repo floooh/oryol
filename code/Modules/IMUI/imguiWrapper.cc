@@ -47,9 +47,9 @@ imguiWrapper::Setup() {
 
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
-    this->setupFontTexture();
     this->setupMesh();
     this->setupDrawState();
+    this->setupFontTexture();
     Gfx::PopResourceLabel();
 
     this->isValid = true;
@@ -75,7 +75,8 @@ imguiWrapper::IsValid() const {
 //------------------------------------------------------------------------------
 void
 imguiWrapper::setupFontTexture() {
-    o_assert_dbg(!this->fontTexture.IsValid());
+    o_assert_dbg(!this->fontTextureBundle.IsValid());
+    o_assert_dbg(this->shader.IsValid());
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -90,7 +91,11 @@ imguiWrapper::setupFontTexture() {
     texSetup.MinFilter = TextureFilterMode::Nearest;
     texSetup.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
-    this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
+    Id fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
+
+    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
+    tbSetup.FS[Shaders::IMUIShader::FS_Texture] = fontTexture;
+    this->fontTextureBundle = Gfx::CreateResource(tbSetup);
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
@@ -120,9 +125,9 @@ imguiWrapper::setupDrawState() {
     o_assert_dbg(!this->drawState.IsValid());
     o_assert_dbg(this->mesh.IsValid());
 
-    Id shd = Gfx::CreateResource(Shaders::IMUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::IMUIShader::CreateSetup());
     
-    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, shd);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -219,11 +224,9 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
 
     // draw command lists
     Shaders::IMUIShader::VSParams vsParams;
-    Shaders::IMUIShader::FSParams fsParams;
     const float width  = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
     vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
-    fsParams.Texture = self->fontTexture;
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
     const int indexDataSize = numIndices * sizeof(ImDrawIdx);
 
@@ -231,7 +234,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::ApplyUniformBlock(fsParams);
+    Gfx::ApplyTextureBundle(self->fontTextureBundle);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];

@@ -44,8 +44,9 @@ private:
 
     bool isValid = false;
     ResourceLabel resLabel;
-    Id fontTexture;
+    Id fontTextureBundle;
     Id mesh;
+    Id shader;
     Id drawState;
     ImDrawVert vertexData[MaxNumVertices];
     ImDrawIdx indexData[MaxNumIndices];
