@@ -41,10 +41,11 @@ public:
     Oryol::ResourceLabel label;
     Oryol::Id fractalDrawState;
     Oryol::StaticArray<Oryol::Id, 2> fractalTexture;
+    Oryol::StaticArray<Oryol::Id, 2> fractalTextureBundle;
     Oryol::Id colorDrawState;
+    Oryol::StaticArray<Oryol::Id, 2> colorTextureBundle;
     Oryol::Shaders::Julia::VSParams fractalVSParams;
     Oryol::Shaders::Julia::FSParams fractalFSParams;
-    Oryol::Shaders::Color::FSParams colorFSParams;
 };
 
 } // namespace Julia

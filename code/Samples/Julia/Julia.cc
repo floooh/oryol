@@ -28,6 +28,7 @@ private:
     ClearState displayClearState;
     fractal test;
     Id shapeDrawState;
+    Id shapeTextureBundle;
     Shaders::Shape::VSParams shapeVSParams;
     Shaders::Shape::FSParams shapeFSParams;
     glm::mat4 view;
@@ -64,7 +65,10 @@ JuliaApp::OnInit() {
     dss.BlendState.DepthFormat = gfxSetup.DepthFormat;
     this->shapeDrawState = Gfx::CreateResource(dss);
     this->shapeFSParams.NumColors = 128.0;
-    this->shapeFSParams.Texture = this->test.colorTexture;
+
+    auto tbSetup = TextureBundleSetup::FromShader(shd);
+    tbSetup.FS[Shaders::Shape::FS_Texture] = this->test.colorTexture;
+    this->shapeTextureBundle = Gfx::CreateResource(tbSetup);
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -92,6 +96,7 @@ JuliaApp::OnRunning() {
     Gfx::ApplyDrawState(this->shapeDrawState);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
+    Gfx::ApplyTextureBundle(this->shapeTextureBundle);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
