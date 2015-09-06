@@ -24,10 +24,10 @@ namespace _priv {
 class textureBundle : public textureBundleBase { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/Resource/textureBundleBase.h"
+#include "Gfx/mtl/mtlTextureBundle.h"
 namespace Oryol {
 namespace _priv {
-class textureBundle : public textureBundleBase { };
+class textureBundle : public mtlTextureBundle { };
 } }
 #else
 #error "Target platform not supported!"

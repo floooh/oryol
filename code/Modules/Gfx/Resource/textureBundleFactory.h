@@ -15,6 +15,12 @@ namespace Oryol {
 namespace _priv {
 class textureBundleFactory : public glTextureBundleFactory { };
 } }
+#elif ORYOL_METAL
+#include "Gfx/mtl/mtlTextureBundleFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureBundleFactory : public mtlTextureBundleFactory { };
+} }
 #else
 #error "Target platform not supported!"
 #endif

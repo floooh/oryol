@@ -347,6 +347,37 @@ mtlRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
+mtlRenderer::applyTextureBundle(textureBundle* tb) {
+    o_assert_dbg(this->valid);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
+    if (nullptr == tb) {
+        // textureBundle contains textures that are not yet loaded,
+        // disable the next draw call, and return
+        this->curDrawState = nullptr;
+        return;
+    }
+
+    // bind vertex shader textures
+    for (const auto& vsTex : tb->vs) {
+        if (InvalidIndex != vsTex.bindSlotIndex) {
+            [this->curCommandEncoder setVertexTexture:vsTex.mtlTex atIndex:vsTex.bindSlotIndex];
+            [this->curCommandEncoder setVertexSamplerState:vsTex.mtlSamplerState atIndex:vsTex.bindSlotIndex];
+        }
+    }
+
+    // bind fragment shader textures
+    for (const auto& fsTex : tb->fs) {
+        if (InvalidIndex != fsTex.bindSlotIndex) {
+            [this->curCommandEncoder setFragmentTexture:fsTex.mtlTex atIndex:fsTex.bindSlotIndex];
+            [this->curCommandEncoder setFragmentSamplerState:fsTex.mtlSamplerState atIndex:fsTex.bindSlotIndex];
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
@@ -363,64 +394,29 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-
-    // set textures and samplers, and find start of uniform buffer data
-    // FIXME: textures should be separated from uniforms, probably even go
-    // into the drawState (although this would not allow to change textures
-    // between instances)
-    const ShaderType::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
-    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
-    const uint8* uBufferPtr = nullptr;
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type == UniformType::Texture) {
-            const int32 texBindSlotIndex = comp.BindSlotIndex;
-            o_assert_dbg(texBindSlotIndex != InvalidIndex);
-            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-            const Id& resId = *(const Id*)valuePtr;
-            const texture* tex = this->pointers.texturePool->Lookup(resId);
-            o_assert_dbg(tex);
-            o_assert_dbg(tex->mtlTex);
-            o_assert_dbg(tex->mtlSamplerState);
-            if (ShaderType::VertexShader == bindShaderStage) {
-                [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:texBindSlotIndex];
-                [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
-            }
-            else {
-                [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:texBindSlotIndex];
-                [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
-            }
-        }
-        else {
-            // found the start of the cbuffer struct
-            uBufferPtr = ptr + layout.ComponentByteOffset(compIndex);
-            break;
-        }
-    }
+    o_assert(byteSize == layout.ByteSize());
+    o_assert2((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside commitFrame!
-    if (nullptr != uBufferPtr) {
-        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
-        const int32 uniformSize = layout.ByteSizeWithoutTextures();
-        o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
-        o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
-        uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
-        std::memcpy(dstPtr, uBufferPtr, uniformSize);
+    id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
+    uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
+    std::memcpy(dstPtr, ptr, byteSize);
 
-        // set constant buffer location for next draw call
-        if (ShaderType::VertexShader == bindShaderStage) {
-            [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
-        }
-        else {
-            [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
-        }
-
-        // advance uniform buffer offset (buffer offsets must be multiples of 256)
-        this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + uniformSize, 256);
+    // set constant buffer location for next draw call
+    const ShaderStage::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
+    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
+    if (ShaderStage::VS == bindShaderStage) {
+        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
     }
+    else {
+        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
+    }
+
+    // advance uniform buffer offset (buffer offsets must be multiples of 256)
+    this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, 256);
 }
 
 //------------------------------------------------------------------------------

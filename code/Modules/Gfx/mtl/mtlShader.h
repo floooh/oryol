@@ -40,13 +40,22 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShader(int32 origIndex) const;
 
     /// add a uniform block entry
-    void addUniformBlock(ShaderType::Code bindShaderStage, int32 bindSlotIndex);
+    void addUniformBlock(ShaderStage::Code bindShaderStage, int32 bindSlotIndex);
     /// get number of uniform blocks
     int32 getNumUniformBlocks() const;
     /// get uniform block shader stage
-    ShaderType::Code getUniformBlockShaderStage(int32 ubIndex) const;
+    ShaderStage::Code getUniformBlockShaderStage(int32 ubIndex) const;
     /// get uniform block bind slot
     int32 getUniformBlockBindSlotIndex(int32 ubIndex) const;
+
+    /// ad a texture entry
+    void addTexture(ShaderStage::Code stage, TextureType::Code type, int32 bindSlotIndex);
+    /// get number of textures
+    int32 getNumTextures(ShaderStage::Code stage) const;
+    /// get texture type
+    TextureType::Code getTextureType(ShaderStage::Code stage, int32 texIndex) const;
+    /// get texture bind slot
+    int32 getTextureBindSlotIndex(ShaderStage::Code stage, int32 texIndex) const;
 
     class programEntry {
     public:
@@ -55,14 +64,22 @@ public:
         ORYOL_OBJC_TYPED_ID(MTLFunction) mtlFragmentShader;
     };
     struct ubEntry {
-        ShaderType::Code bindShaderStage = ShaderType::InvalidShaderType;
-        int32 bindSlotIndex;
+        ShaderStage::Code bindShaderStage = ShaderStage::InvalidShaderStage;
+        int32 bindSlotIndex = InvalidIndex;
+    };
+    struct texEntry {
+        TextureType::Code type = TextureType::InvalidTextureType;
+        int32 bindSlotIndex = InvalidIndex;
     };
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlLibrary;
     int32 numUniformBlockEntries;
     StaticArray<ubEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
+    int32 numVSTextures;
+    StaticArray<texEntry, GfxConfig::MaxNumVSTextures> vsTextures;
+    int32 numFSTextures;
+    StaticArray<texEntry, GfxConfig::MaxNumFSTextures> fsTextures;
 };
 
 } // namespace _priv

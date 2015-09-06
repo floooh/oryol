@@ -76,9 +76,21 @@ mtlShaderFactory::SetupResource(shader& shd) {
 
     // setup uniform block binding data
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
-        const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
+        const ShaderStage::Code bindShaderStage = setup.UniformBlockShaderStage(i);
         const int32 bindSlotIndex = setup.UniformBlockSlot(i);
         shd.addUniformBlock(bindShaderStage, bindSlotIndex);
+    }
+
+    // setup texture binding data
+    for (int i = 0; i < setup.NumTextures(ShaderStage::VS); i++) {
+        const int32 bindSlotIndex = setup.TextureSlot(ShaderStage::VS, i);
+        TextureType::Code texType = setup.TextureType(ShaderStage::VS, i);
+        shd.addTexture(ShaderStage::VS, texType, bindSlotIndex);
+    }
+    for (int i = 0; i < setup.NumTextures(ShaderStage::FS); i++) {
+        const int32 bindSlotIndex = setup.TextureSlot(ShaderStage::FS, i);
+        TextureType::Code texType = setup.TextureType(ShaderStage::FS, i);
+        shd.addTexture(ShaderStage::FS, texType, bindSlotIndex);
     }
 
     return ResourceState::Valid;

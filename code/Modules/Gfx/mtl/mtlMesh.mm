@@ -13,7 +13,6 @@ mtlMesh::buffer::buffer() :
 updateFrameIndex(-1),
 numSlots(1),
 activeSlot(0) {
-
     this->mtlBuffers.Fill(nil);
 }
 

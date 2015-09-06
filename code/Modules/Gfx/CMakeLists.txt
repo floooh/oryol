@@ -157,6 +157,8 @@ fips_begin_module(Gfx)
             mtlDrawStateFactory.h mtlDrawStateFactory.mm
             mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
+            mtlTextureBundle.h mtlTextureBundle.mm
+            mtlTextureBundleFactory.h mtlTextureBundleFactory.mm
             mtlRenderer.h mtlRenderer.mm
         )
         fips_frameworks_osx(Cocoa Metal QuartzCore)
