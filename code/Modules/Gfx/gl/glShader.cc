@@ -50,8 +50,10 @@ glShader::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint 
 
 //------------------------------------------------------------------------------
 void
-glShader::bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, int32 samplerIndex) {
-    this->programEntries[progIndex].samplerMappings[stage][slotIndex] = samplerIndex;
+glShader::bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, TextureType::Code type, int32 samplerIndex) {
+    auto& smp = this->programEntries[progIndex].samplerMappings[stage][slotIndex];
+    smp.index = samplerIndex;
+    smp.type = type;
 }
 
 //------------------------------------------------------------------------------

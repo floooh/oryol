@@ -28,7 +28,7 @@ public:
     /// bind a uniform location to a slot index
     void bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
-    void bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, int32 samplerIndex);
+    void bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, TextureType::Code type, int32 samplerIndex);
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// bind a vertex attribute location
     void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
@@ -44,6 +44,8 @@ public:
     GLint getUniformLocation(int32 progIndex, int32 blockIndex, int32 slotIndex) const;
     /// get sampler location by slot index in program (-1 if not exists)
     int32 getSamplerIndex(int32 progIndex, int32 slotIndex, ShaderStage::Code stage) const;
+    /// get sampler type by slot index in program
+    TextureType::Code getSamplerType(int32 progIndex, int32 slotIndex, ShaderStage::Code stage) const;
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// get a vertex attribute location
     GLint getAttribLocation(int32 progIndex, VertexAttr::Code attrib) const;
@@ -56,6 +58,10 @@ private:
     static const int32 MaxNumSamplers = GfxConfig::MaxNumVSTextures + GfxConfig::MaxNumFSTextures;
 
     struct programEntry {
+        struct sampler {
+            int32 index = -1;
+            TextureType::Code type = TextureType::InvalidTextureType;
+        };
         programEntry() :
             mask(0),
             program(0) {
@@ -63,7 +69,7 @@ private:
                 m.Fill(-1);
             }
             for (auto& m : this->samplerMappings) {
-                m.Fill(-1);
+                m.Fill(sampler());
             }
             #if ORYOL_GL_USE_GETATTRIBLOCATION
             this->attribMapping.Fill(-1);
@@ -72,7 +78,7 @@ private:
         uint32 mask = 0;
         GLuint program = 0;
         StaticArray<StaticArray<GLint,MaxNumUniforms>,MaxNumUniformBlocks> uniformMappings;
-        StaticArray<StaticArray<int32,MaxNumSamplers>,ShaderStage::NumShaderStages> samplerMappings;
+        StaticArray<StaticArray<sampler,MaxNumSamplers>,ShaderStage::NumShaderStages> samplerMappings;
         #if ORYOL_GL_USE_GETATTRIBLOCATION
         StaticArray<GLint,VertexAttr::NumVertexAttrs> attribMapping;
         #endif
@@ -114,7 +120,13 @@ glShader::getUniformLocation(int32 progIndex, int32 blockIndex, int32 slotIndex)
 //------------------------------------------------------------------------------
 inline int32
 glShader::getSamplerIndex(int32 progIndex, int32 slotIndex, ShaderStage::Code stage) const {
-    return this->programEntries[progIndex].samplerMappings[stage][slotIndex];
+    return this->programEntries[progIndex].samplerMappings[stage][slotIndex].index;
+}
+
+//------------------------------------------------------------------------------
+inline TextureType::Code
+glShader::getSamplerType(int32 progIndex, int32 slotIndex, ShaderStage::Code stage) const {
+    return this->programEntries[progIndex].samplerMappings[stage][slotIndex].type;
 }
 
 //------------------------------------------------------------------------------

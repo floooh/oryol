@@ -148,7 +148,8 @@ glShaderFactory::SetupResource(shader& shd) {
             const int32 numTextures = setup.NumTextures(stage);
             for (int texIndex = 0; texIndex < numTextures; texIndex++) {
                 const StringAtom& texName = setup.TextureName(stage, texIndex);
-                shd.bindSampler(progIndex, texIndex, stage, glTextureSlot);
+                TextureType::Code texType = setup.TextureType(stage, texIndex);
+                shd.bindSampler(progIndex, texIndex, stage, texType, glTextureSlot);
                 const GLint glLocation = ::glGetUniformLocation(glProg, texName.AsCStr());
                 o_assert_dbg(glLocation >= 0);
                 // set the sampler index in the shader program, this will never change
