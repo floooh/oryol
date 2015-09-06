@@ -374,7 +374,6 @@ FractalApp::checkCreateRenderTargets() {
         offscreenRTSetup.MagFilter = TextureFilterMode::Nearest;
         this->offscreenRenderTarget[0] = Gfx::CreateResource(offscreenRTSetup);
         this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
-        Gfx::PopResourceLabel();
         this->clearFlag = true;
 
         // we also need to re-create all texture bundles which
@@ -392,5 +391,7 @@ FractalApp::checkCreateRenderTargets() {
             tbSetup.FS[Shaders::Mandelbrot::FS_Texture] = this->offscreenRenderTarget[i];
             this->julia.textureBundle[i] = Gfx::CreateResource(tbSetup);
         }
+
+        Gfx::PopResourceLabel();
     }
 }
