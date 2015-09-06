@@ -31,9 +31,7 @@ _func vec4 hue2rgb(float h) {
 //------------------------------------------------------------------------------
 @fs MandelbrotFS
 @highp float
-@uniform_block mandelbrotFSParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@texture sampler2D tex Texture
 @in vec2 uv
 @in vec2 pos
 {
@@ -59,9 +57,9 @@ _func vec4 hue2rgb(float h) {
 @fs JuliaFS
 @highp float
 @uniform_block juliaFSParams FSParams
-    @uniform sampler2D tex Texture
     @uniform vec2 juliaPos JuliaPos
 @end
+@texture sampler2D tex Texture
 @in vec2 uv
 @in vec2 pos
 {
@@ -108,9 +106,9 @@ _func vec4 hue2rgb(float h) {
 @fs DisplayFS
 @use util
 @uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
     @uniform float numColors NumColors
 @end
+@texture sampler2D tex Texture
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);

@@ -13,9 +13,7 @@
 
 @fs canvasFS
 @in vec2 uv
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@texture sampler2D tex Texture
     _color = tex2D(tex, uv);
 @end
 
@@ -175,8 +173,8 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @in vec2 uv
 @uniform_block fsParams FSParams
     @uniform vec2 iResolution Resolution
-    @uniform sampler2D iChannel0 Canvas
 @end
+@texture sampler2D iChannel0 Canvas
     #if 1
     _color = tl_crt(iChannel0, _fragcoord, uv);
     #else

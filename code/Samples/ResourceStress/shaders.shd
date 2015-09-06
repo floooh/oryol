@@ -10,9 +10,7 @@
 @end
 
 @fs fs
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@texture sampler2D tex Texture
 @in vec2 uv
     _color = vec4(tex2D(tex, uv).xyz, 1.0);
 @end
