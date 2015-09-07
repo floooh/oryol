@@ -72,7 +72,7 @@ public:
     /// get uniform block shader stage at index
     ShaderStage::Code UniformBlockBindStage(int32 index) const;
     /// get uniform block bind slot at index
-    int32 UniformBlockBindSlot(int32 undex) const;
+    int32 UniformBlockBindSlot(int32 index) const;
     /// find uniform block layout by uniform block bind stage and bind slot
     const UniformLayout* FindUniformBlockLayout(ShaderStage::Code bindStage, int32 bindSlot) const;
 
