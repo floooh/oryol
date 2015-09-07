@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 44
+Version = 45
 
 import os
 import sys
@@ -950,15 +950,14 @@ class HLSLGenerator :
 
         # write uniform blocks
         for uBlock in shd.uniformBlocks :
-            if uBlock.bindSlot is not None :
-                lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
-                for type in uBlock.uniformsByType :
-                    for uniform in uBlock.uniformsByType[type] :
-                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                        # pad vec3's to 16 bytes
-                        if type == 'vec3' :
-                            lines.append(Line('  float _pad_{};'.format(uniform.name)))
-                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+            lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                    # pad vec3's to 16 bytes
+                    if type == 'vec3' :
+                        lines.append(Line('  float _pad_{};'.format(uniform.name)))
+            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines
      
     #---------------------------------------------------------------------------
@@ -1074,20 +1073,18 @@ class MetalGenerator :
         uniformDefs = {}
         for uBlock in shd.uniformBlocks :
             # if there are non-texture uniforms, groups the rest into a cbuffer
-            if uBlock.bindSlot is not None:
-                lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
-                for type in uBlock.uniformsByType :
-                    for uniform in uBlock.uniformsByType[type] :
-                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
-                        uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
-                lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
+            lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
+            for type in uBlock.uniformsByType :
+                for uniform in uBlock.uniformsByType[type] :
+                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                    uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
+            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines, uniformDefs
 
     #---------------------------------------------------------------------------
     def genFuncArgs(self, shd, lines) :
         for uBlock in shd.uniformBlocks :
-            if uBlock.bindSlot is not None :
-                lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(shd.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
+            lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(shd.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
         for tex in shd.textures :
             if tex.type == 'sampler2D' :
                 lines.append(Line('texture2d<float,access::sample> _t_{} [[texture({})]],'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
@@ -1352,18 +1349,21 @@ class ShaderLibrary :
             for tex in self.fragmentShaders[program.fs].textures :
                 self.checkAddTexture(tex, bundle.textures)
 
-    def assignParamSlotIndices(self, bundle) :
+    def assignBindSlotIndices(self, bundle) :
         '''
-        Assigns bindSlotIndex to uniform blocks and texture variables
-        in all slots, these are used on some platforms for shader parameter
-        binding instead of parameter names.
+        Assigns bindSlotIndex to uniform blocks and texture variables. These
+        are counted separately for the different shader stages (each
+        shader stage has its own bind slots)
         '''
-        uniformBlockSlot = 0
+        vsUBSlot = 0
+        fsUBSlot = 0
         for uBlock in bundle.uniformBlocks :
-            uBlock.bindSlot = uniformBlockSlot
-            uniformBlockSlot += 1
-        
-        # assign texture bind slots, separatly for vertex- and fragment-shaders
+            if uBlock.shaderStage == 'vs' :
+                uBlock.bindSlot = vsUBSlot
+                vsUBSlot += 1
+            else :
+                uBlock.bindSlot = fsUBSlot
+                fsUBSlot += 1
         vsTexSlot = 0
         fsTexSlot = 0
         for tex in bundle.textures :
@@ -1390,7 +1390,7 @@ class ShaderLibrary :
             self.removeDuplicateDeps(fs)
         for bundle in self.bundles.values() :
             self.resolveBundleUniformBlocksAndTextures(bundle)
-            self.assignParamSlotIndices(bundle)
+            self.assignBindSlotIndices(bundle)
 
     def validate(self) :
         '''
@@ -1551,7 +1551,6 @@ def writeBundleHeader(f, shdLib, bundle) :
             shaderStage = 'FS'
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(uBlock.bindName))
-        f.write('            static const int32 _uniformBlockIndex = {};\n'.format(blockIndex))
         f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(shaderStage))
         f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
@@ -1743,7 +1742,7 @@ def writeBundleSource(f, shdLib, bundle) :
             texType = 'TextureType::Texture2D'
         else :
             texType = 'TextureType::TextureCube'
-        f.write('    setup.AddTexture("{}", ShaderStage::{}, {}, {});\n'.format(tex.name, shaderStage, texType, tex.bindSlot))
+        f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex.name, texType, shaderStage, tex.bindSlot))
                 
     f.write('    return setup;\n')
     f.write('}\n')

@@ -44,14 +44,14 @@ glShader::addProgram(uint32 mask, GLuint glProg) {
 
 //------------------------------------------------------------------------------
 void
-glShader::bindUniform(int32 progIndex, int32 blockIndex, int32 slotIndex, GLint glUniformLocation) {
-    this->programEntries[progIndex].uniformMappings[blockIndex][slotIndex] = glUniformLocation;
+glShader::bindUniform(int32 progIndex, ShaderStage::Code ubBindStage, int32 ubBindSlot, int32 uniformIndex, GLint glUniformLocation) {
+    this->programEntries[progIndex].uniformArrayEntry(ubBindStage, ubBindSlot, uniformIndex) = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------
 void
-glShader::bindSampler(int32 progIndex, int32 slotIndex, ShaderStage::Code stage, TextureType::Code type, int32 samplerIndex) {
-    auto& smp = this->programEntries[progIndex].samplerMappings[stage][slotIndex];
+glShader::bindSampler(int32 progIndex, ShaderStage::Code bindStage, int32 texBindSlot, TextureType::Code type, int32 samplerIndex) {
+    auto& smp = this->programEntries[progIndex].samplerArrayEntry(bindStage, texBindSlot);
     smp.index = samplerIndex;
     smp.type = type;
 }

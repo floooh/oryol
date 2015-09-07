@@ -987,7 +987,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
     if (!this->curDrawState) {
@@ -1000,20 +1000,21 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     o_assert_dbg(shd);
     const int32 progIndex = this->curDrawState->shdProgIndex;
     o_assert_dbg(InvalidIndex != progIndex);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+    const UniformLayout* layout = shd->Setup.FindUniformBlockLayout(ubBindStage, ubBindSlot);
+    o_assert_dbg(layout);
 
     // check whether the provided struct is type-compatibel with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert_dbg(layout.ByteSize() == byteSize);
+    o_assert2(layout->TypeHash == layoutHash, "incompatible uniform block!\n");
+    o_assert_dbg(layout->ByteSize() == byteSize);
 
     // for each uniform in the uniform block:
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-        GLint glLoc = shd->getUniformLocation(progIndex, blockIndex, compIndex);
+    const int numUniforms = layout->NumComponents();
+    for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+        const auto& comp = layout->ComponentAt(uniformIndex);
+        const uint8* valuePtr = ptr + layout->ComponentByteOffset(uniformIndex);
+        GLint glLoc = shd->getUniformLocation(progIndex, ubBindStage, ubBindSlot, uniformIndex);
         switch (comp.Type) {
             case UniformType::Float:
                 {

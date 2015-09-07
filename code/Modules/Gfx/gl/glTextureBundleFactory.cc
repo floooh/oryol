@@ -73,11 +73,11 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             texture* tex = this->pointers.texturePool->Get(vsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
-            if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, i, ShaderStage::VS)) {
-                o_error("Texture type mismatch on slot '%s'\n", shd->Setup.TextureName(ShaderStage::VS, i).AsCStr());
+            if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, ShaderStage::VS, i)) {
+                o_error("Texture type mismatch!\n");
             }
             auto& entry = tb.vs[i];
-            entry.samplerIndex = shd->getSamplerIndex(progIndex, i, ShaderStage::VS);
+            entry.samplerIndex = shd->getSamplerIndex(progIndex, ShaderStage::VS, i);
             entry.glTex = tex->glTex;
             entry.glTarget = tex->glTarget;
             o_assert_dbg((0 != entry.glTex) && (0 != entry.glTarget) && (InvalidIndex != entry.samplerIndex));
@@ -92,11 +92,11 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             texture* tex = this->pointers.texturePool->Get(fsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
-            if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, i, ShaderStage::FS)) {
-                o_error("Texture type mismatch on slot '%s'\n", shd->Setup.TextureName(ShaderStage::FS, i).AsCStr());
+            if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, ShaderStage::FS, i)) {
+                o_error("Texture type mismatch!\n");
             }
             auto& entry = tb.fs[i];
-            entry.samplerIndex = shd->getSamplerIndex(progIndex, i, ShaderStage::FS);
+            entry.samplerIndex = shd->getSamplerIndex(progIndex, ShaderStage::FS, i);
             entry.glTex = tex->glTex;
             entry.glTarget = tex->glTarget;
             o_assert_dbg((0 != entry.glTex) && (0 != entry.glTarget) && (InvalidIndex != entry.samplerIndex));
