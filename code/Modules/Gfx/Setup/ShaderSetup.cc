@@ -191,6 +191,18 @@ ShaderSetup::NumUniformBlocks() const {
 }
 
 //------------------------------------------------------------------------------
+int32
+ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const {
+    for (int i = 0; i < this->numUniformBlockEntries; i++) {
+        const auto& entry = this->uniformBlockEntries[i];
+        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
+            return i;
+        }
+    }
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
 const StringAtom&
 ShaderSetup::UniformBlockName(int32 index) const {
     return this->uniformBlockEntries[index].name;
@@ -215,21 +227,21 @@ ShaderSetup::UniformBlockBindStage(int32 index) const {
 }
 
 //------------------------------------------------------------------------------
-const UniformLayout*
-ShaderSetup::FindUniformBlockLayout(ShaderStage::Code bindStage, int32 bindSlot) const {
-    for (int i = 0; i < this->numUniformBlockEntries; i++) {
-        const auto& entry = this->uniformBlockEntries[i];
-        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
-            return &entry.layout;
-        }
-    }
-    return nullptr;
+int32
+ShaderSetup::NumTextures() const {
+    return this->numTextureEntries;
 }
 
 //------------------------------------------------------------------------------
 int32
-ShaderSetup::NumTextures() const {
-    return this->numTextureEntries;
+ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const {
+    for (int i = 0; i < this->numTextureEntries; i++) {
+        const auto& entry = this->textureEntries[i];
+        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
+            return i;
+        }
+    }
+    return InvalidIndex;
 }
 
 //------------------------------------------------------------------------------

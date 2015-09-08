@@ -1000,20 +1000,21 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
     o_assert_dbg(shd);
     const int32 progIndex = this->curDrawState->shdProgIndex;
     o_assert_dbg(InvalidIndex != progIndex);
-    const UniformLayout* layout = shd->Setup.FindUniformBlockLayout(ubBindStage, ubBindSlot);
-    o_assert_dbg(layout);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    o_assert_dbg(InvalidIndex != ubIndex);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatibel with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
-    o_assert2(layout->TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert_dbg(layout->ByteSize() == byteSize);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    o_assert_dbg(layout.ByteSize() == byteSize);
 
     // for each uniform in the uniform block:
-    const int numUniforms = layout->NumComponents();
+    const int numUniforms = layout.NumComponents();
     for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-        const auto& comp = layout->ComponentAt(uniformIndex);
-        const uint8* valuePtr = ptr + layout->ComponentByteOffset(uniformIndex);
+        const auto& comp = layout.ComponentAt(uniformIndex);
+        const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
         GLint glLoc = shd->getUniformLocation(progIndex, ubBindStage, ubBindSlot, uniformIndex);
         switch (comp.Type) {
             case UniformType::Float:
@@ -1091,20 +1092,19 @@ glRenderer::applyTextureBundle(textureBundle* tb) {
         this->curDrawState = nullptr;
         return;
     }
-    else {
-        // bind vertex textures
-        // NOTE: we cannot exit early on the first invalid texture entry
-        // since there may be multiple texture bundles to fill all texture slot
-        for (const auto& vsTex : tb->vs) {
-            if (InvalidIndex != vsTex.samplerIndex) {
-                this->bindTexture(vsTex.samplerIndex, vsTex.glTarget, vsTex.glTex);
-            }
+
+    // bind vertex textures
+    // NOTE: we cannot exit early on the first invalid texture entry
+    // since there may be multiple texture bundles to fill all texture slot
+    for (const auto& vsTex : tb->vs) {
+        if (InvalidIndex != vsTex.samplerIndex) {
+            this->bindTexture(vsTex.samplerIndex, vsTex.glTarget, vsTex.glTex);
         }
-        // bind fragment shader textures
-        for (const auto& fsTex : tb->fs) {
-            if (InvalidIndex != fsTex.samplerIndex) {
-                this->bindTexture(fsTex.samplerIndex, fsTex.glTarget, fsTex.glTex);
-            }
+    }
+    // bind fragment shader textures
+    for (const auto& fsTex : tb->fs) {
+        if (InvalidIndex != fsTex.samplerIndex) {
+            this->bindTexture(fsTex.samplerIndex, fsTex.glTarget, fsTex.glTex);
         }
     }
 }

@@ -65,6 +65,8 @@ public:
 
     /// get number of uniform blocks
     int32 NumUniformBlocks() const;
+    /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
+    int32 UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const;
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int32 index) const;
     /// get uniform block layout at index
@@ -73,11 +75,11 @@ public:
     ShaderStage::Code UniformBlockBindStage(int32 index) const;
     /// get uniform block bind slot at index
     int32 UniformBlockBindSlot(int32 index) const;
-    /// find uniform block layout by uniform block bind stage and bind slot
-    const UniformLayout* FindUniformBlockLayout(ShaderStage::Code bindStage, int32 bindSlot) const;
 
     /// get number of textures
     int32 NumTextures() const;
+    /// find texture index by bind stage and slot (return InvalidIndex if not found)
+    int32 TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const;
     /// get texture slot name at index
     const StringAtom& TextureName(int32 index) const;
     /// get texture type at index

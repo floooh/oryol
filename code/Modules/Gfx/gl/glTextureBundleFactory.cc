@@ -74,7 +74,9 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
             if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, ShaderStage::VS, i)) {
-                o_error("Texture type mismatch!\n");
+                int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::VS, i);
+                o_assert_dbg(InvalidIndex != texIndex);
+                o_error("Texture type mismatch at slot '%s'!\n", shd->Setup.TextureName(texIndex).AsCStr());
             }
             auto& entry = tb.vs[i];
             entry.samplerIndex = shd->getSamplerIndex(progIndex, ShaderStage::VS, i);
@@ -93,7 +95,9 @@ glTextureBundleFactory::SetupResource(textureBundle& tb) {
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((tex->glTex != 0) && (tex->glTarget != 0));
             if (tex->textureAttrs.Type != shd->getSamplerType(progIndex, ShaderStage::FS, i)) {
-                o_error("Texture type mismatch!\n");
+                int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::FS, i);
+                o_assert_dbg(InvalidIndex != texIndex);
+                o_error("Texture type mismatch at slot '%s'!\n", shd->Setup.TextureName(texIndex).AsCStr());
             }
             auto& entry = tb.fs[i];
             entry.samplerIndex = shd->getSamplerIndex(progIndex, ShaderStage::FS, i);

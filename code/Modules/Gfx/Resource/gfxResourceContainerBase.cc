@@ -414,7 +414,6 @@ gfxResourceContainerBase::handlePendingDrawStates() {
 ResourceState::Code
 gfxResourceContainerBase::queryTextureBundleDepState(const textureBundle* tb) {
     o_assert_dbg(tb);
-    o_assert_dbg(tb->Setup.NumTextures() > 0);
 
     // this returns an overall state of the dependent textures
     for (const Id& texId : tb->Setup.VS) {
