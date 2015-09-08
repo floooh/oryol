@@ -35,9 +35,9 @@ public:
     /// add shader program from a metal-style shader library
     void AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
     /// bind a shader uniform block name to a variable slot
-    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderStage::Code stage, int32 bindSlot);
+    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
     /// add a shader texture slot
-    void AddTexture(const StringAtom& name, TextureType::Code stage, ShaderStage::Code shaderStage, int32 bindSlot);
+    void AddTexture(const StringAtom& name, TextureType::Code texType, ShaderStage::Code bindStage, int32 bindSlot);
 
     /// set metal-style library byte code
     void SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes);
