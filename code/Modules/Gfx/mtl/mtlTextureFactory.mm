@@ -158,7 +158,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     if (setup.HasDepth()) {
         if (setup.HasSharedDepth()) {
             // shared depth buffer
-            o_assert_dbg(sharedDepthProvider->mtlDepthTex);
+            o_assert_dbg(sharedDepthProvider && sharedDepthProvider->mtlDepthTex);
             tex.mtlDepthTex = sharedDepthProvider->mtlDepthTex;
         }
         else {
