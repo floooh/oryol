@@ -347,38 +347,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyTextureBundle(textureBundle* tb) {
-    o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
-        return;
-    }
-    if (nullptr == tb) {
-        // textureBundle contains textures that are not yet loaded,
-        // disable the next draw call, and return
-        this->curDrawState = nullptr;
-        return;
-    }
-
-    // bind vertex shader textures
-    for (const auto& vsTex : tb->vs) {
-        if (InvalidIndex != vsTex.bindSlotIndex) {
-            [this->curCommandEncoder setVertexTexture:vsTex.mtlTex atIndex:vsTex.bindSlotIndex];
-            [this->curCommandEncoder setVertexSamplerState:vsTex.mtlSamplerState atIndex:vsTex.bindSlotIndex];
-        }
-    }
-
-    // bind fragment shader textures
-    for (const auto& fsTex : tb->fs) {
-        if (InvalidIndex != fsTex.bindSlotIndex) {
-            [this->curCommandEncoder setFragmentTexture:fsTex.mtlTex atIndex:fsTex.bindSlotIndex];
-            [this->curCommandEncoder setFragmentSamplerState:fsTex.mtlSamplerState atIndex:fsTex.bindSlotIndex];
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -390,7 +359,8 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
@@ -406,17 +376,51 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     std::memcpy(dstPtr, ptr, byteSize);
 
     // set constant buffer location for next draw call
-    const ShaderStage::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
-    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
-    if (ShaderStage::VS == bindShaderStage) {
-        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
+    if (ShaderStage::VS == ubBindStage) {
+        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:ubBindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
+        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:ubBindSlot];
     }
 
     // advance uniform buffer offset (buffer offsets must be multiples of 256)
     this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, 256);
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::applyTextureBundle(textureBundle* tb) {
+    o_assert_dbg(this->valid);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
+    if (nullptr == tb) {
+        // textureBundle contains textures that are not yet loaded,
+        // disable the next draw call, and return
+        this->curDrawState = nullptr;
+        return;
+    }
+
+    // bind vertex shader textures, do not overwrite unused slots, these could
+    // be set by other texture bundles!
+    NSUInteger vsBindSlot = 0;
+    for (const auto& vsTex : tb->vs) {
+        if (nil != vsTex.mtlTex) {
+            [this->curCommandEncoder setVertexTexture:vsTex.mtlTex atIndex:vsBindSlot];
+            [this->curCommandEncoder setVertexSamplerState:vsTex.mtlSamplerState atIndex:vsBindSlot];
+        }
+        vsBindSlot++;
+    }
+
+    // bind fragment shader textures
+    NSUInteger fsBindSlot = 0;
+    for (const auto& fsTex : tb->fs) {
+        if (nil != fsTex.mtlTex) {
+            [this->curCommandEncoder setFragmentTexture:fsTex.mtlTex atIndex:fsBindSlot];
+            [this->curCommandEncoder setFragmentSamplerState:fsTex.mtlSamplerState atIndex:fsBindSlot];
+        }
+        fsBindSlot++;
+    }
 }
 
 //------------------------------------------------------------------------------

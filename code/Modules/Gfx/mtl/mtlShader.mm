@@ -29,12 +29,6 @@ mtlShader::Clear() {
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
     this->mtlLibrary = nil;
-    this->numUniformBlockEntries = 0;
-    this->uniformBlockEntries.Fill(ubEntry());
-    this->numVSTextures = 0;
-    this->vsTextures.Fill(texEntry());
-    this->numFSTextures = 0;
-    this->fsTextures.Fill(texEntry());
     shaderBase::Clear();
 }
 
@@ -98,58 +92,6 @@ mtlShader::getVertexShader(int32 progIndex) const {
 id<MTLFunction>
 mtlShader::getFragmentShader(int32 progIndex) const {
     return this->programEntries[progIndex].mtlFragmentShader;
-}
-
-//------------------------------------------------------------------------------
-void
-mtlShader::addUniformBlock(ShaderStage::Code bindShaderStage, int32 bindSlotIndex) {
-    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
-    entry.bindShaderStage = bindShaderStage;
-    entry.bindSlotIndex = bindSlotIndex;
-}
-
-//------------------------------------------------------------------------------
-int32
-mtlShader::getNumUniformBlocks() const {
-    return this->numUniformBlockEntries;
-}
-
-//------------------------------------------------------------------------------
-ShaderStage::Code
-mtlShader::getUniformBlockShaderStage(int32 ubIndex) const {
-    return this->uniformBlockEntries[ubIndex].bindShaderStage;
-}
-
-//------------------------------------------------------------------------------
-int32
-mtlShader::getUniformBlockBindSlotIndex(int32 ubIndex) const {
-    return this->uniformBlockEntries[ubIndex].bindSlotIndex;
-}
-
-//------------------------------------------------------------------------------
-void
-mtlShader::addTexture(ShaderStage::Code stage, TextureType::Code type, int32 bindSlotIndex) {
-    texEntry& entry = stage == ShaderStage::VS ? this->vsTextures[this->numVSTextures++] : this->fsTextures[this->numFSTextures++];
-    entry.type = type;
-    entry.bindSlotIndex = bindSlotIndex;
-}
-
-//------------------------------------------------------------------------------
-int32
-mtlShader::getNumTextures(ShaderStage::Code stage) const {
-    return stage == ShaderStage::VS ? this->numVSTextures : this->numFSTextures;
-}
-
-//------------------------------------------------------------------------------
-TextureType::Code
-mtlShader::getTextureType(ShaderStage::Code stage, int32 texIndex) const {
-    return stage == ShaderStage::VS ? this->vsTextures[texIndex].type : this->fsTextures[texIndex].type;
-}
-
-//------------------------------------------------------------------------------
-int32
-mtlShader::getTextureBindSlotIndex(ShaderStage::Code stage, int32 texIndex) const {
-    return stage == ShaderStage::VS ? this->vsTextures[texIndex].bindSlotIndex : this->fsTextures[texIndex].bindSlotIndex;
 }
 
 } // namespace _priv

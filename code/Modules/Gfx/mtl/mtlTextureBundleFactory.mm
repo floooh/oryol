@@ -57,14 +57,15 @@ mtlTextureBundleFactory::SetupResource(textureBundle& tb) {
         const auto& vsTex = tb.Setup.VS[i];
         if (vsTex.IsValid()) {
             o_assert_dbg(vsTex.Type == GfxResourceType::Texture);
-            texture* tex = this->pointers.texturePool->Get(vsTex);
+            const texture* tex = this->pointers.texturePool->Get(vsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((nil != tex->mtlTex) && (nil != tex->mtlSamplerState));
-            if (tex->textureAttrs.Type != shd->getTextureType(ShaderStage::VS, i)) {
-                o_error("Texture type mismatch on slot '%s'\n", shd->Setup.TextureName(ShaderStage::VS, i).AsCStr());
+            const int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::VS, i);
+            o_assert_dbg(InvalidIndex != texIndex);
+            if (tex->textureAttrs.Type != shd->Setup.TextureType(texIndex)) {
+                o_error("Texture type mismatch at slot '%s'\n", shd->Setup.TextureName(texIndex).AsCStr());
             }
             auto& entry = tb.vs[i];
-            entry.bindSlotIndex = shd->getTextureBindSlotIndex(ShaderStage::VS, i);
             entry.mtlTex = tex->mtlTex;
             entry.mtlSamplerState = tex->mtlSamplerState;
         }
@@ -75,14 +76,15 @@ mtlTextureBundleFactory::SetupResource(textureBundle& tb) {
         const auto& fsTex = tb.Setup.FS[i];
         if (fsTex.IsValid()) {
             o_assert_dbg(fsTex.Type == GfxResourceType::Texture);
-            texture* tex = this->pointers.texturePool->Get(fsTex);
+            const texture* tex = this->pointers.texturePool->Get(fsTex);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg((nil != tex->mtlTex) && (nil != tex->mtlSamplerState));
-            if (tex->textureAttrs.Type != shd->getTextureType(ShaderStage::FS, i)) {
-                o_error("Texture type mismatch on slot '%s'\n", shd->Setup.TextureName(ShaderStage::FS, i).AsCStr());
+            const int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::FS, i);
+            o_assert_dbg(InvalidIndex != texIndex);
+            if (tex->textureAttrs.Type != shd->Setup.TextureType(texIndex)) {
+                o_error("Texture type mismatch at slot '%s'\n", shd->Setup.TextureName(texIndex).AsCStr());
             }
             auto& entry = tb.fs[i];
-            entry.bindSlotIndex = shd->getTextureBindSlotIndex(ShaderStage::FS, i);
             entry.mtlTex = tex->mtlTex;
             entry.mtlSamplerState = tex->mtlSamplerState;
         }

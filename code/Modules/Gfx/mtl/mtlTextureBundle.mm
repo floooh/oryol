@@ -9,7 +9,6 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 mtlTextureBundle::entry::entry() :
-bindSlotIndex(InvalidIndex),
 mtlTex(nil),
 mtlSamplerState(nil) {
     // empty

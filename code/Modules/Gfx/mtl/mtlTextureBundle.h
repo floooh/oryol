@@ -19,7 +19,6 @@ public:
 
     struct entry {
         entry();
-        int32 bindSlotIndex;
         ORYOL_OBJC_TYPED_ID(MTLTexture) mtlTex;
         ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;
     };

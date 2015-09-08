@@ -136,6 +136,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     // create the color texture
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = MTLTextureType2D;
+    texDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     texDesc.pixelFormat = mtlTypes::asRenderTargetColorFormat(setup.ColorFormat);
     if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
         o_warn("mtlTextureFactory: not a renderable pixel format!\n");
@@ -209,6 +210,7 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     // create metal texture object
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = mtlTypes::asTextureType(setup.Type);
+    texDesc.usage = MTLTextureUsageShaderRead;
     texDesc.pixelFormat = mtlTypes::asTextureFormat(setup.ColorFormat);
     if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
         o_warn("mtlTextureFactory: texture pixel format not supported in Metal!\n");
