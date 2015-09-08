@@ -381,13 +381,12 @@ gfxResourceContainerBase::handlePendingDrawStates() {
     // loading), checks whether meshes have finished loading (or failed to load)
     // and finishes the draw state creation
     for (int i = this->pendingDrawStates.Size() - 1; i >= 0; i--) {
-        const Id& resId = this->pendingDrawStates[i];
+        Id resId = this->pendingDrawStates[i];
         o_assert_dbg(resId.IsValid());
         drawState* ds = this->drawStatePool.Get(resId);
         if (ds) {
             const ResourceState::Code state = this->queryDrawStateDepState(ds);
             if (state != ResourceState::Pending) {
-                this->pendingDrawStates.Erase(i);
                 if (state == ResourceState::Valid) {
                     // all ok, can setup draw state
                     const ResourceState::Code newState = this->drawStateFactory.SetupResource(*ds);
@@ -399,6 +398,7 @@ gfxResourceContainerBase::handlePendingDrawStates() {
                     o_assert_dbg(state == ResourceState::Failed);
                     this->drawStatePool.UpdateState(resId, state);
                 }
+                this->pendingDrawStates.Erase(i);
             }
         }
         else {
@@ -414,6 +414,7 @@ gfxResourceContainerBase::handlePendingDrawStates() {
 ResourceState::Code
 gfxResourceContainerBase::queryTextureBundleDepState(const textureBundle* tb) {
     o_assert_dbg(tb);
+    o_assert_dbg(tb->Setup.NumTextures() > 0);
 
     // this returns an overall state of the dependent textures
     for (const Id& texId : tb->Setup.VS) {
@@ -457,13 +458,12 @@ gfxResourceContainerBase::handlePendingTextureBundles() {
     // if their dependent textures have finished loading, if yes,
     // setup the texture bundle
     for (int i = this->pendingTextureBundles.Size() - 1; i >= 0; i--) {
-        const Id& resId = this->pendingTextureBundles[i];
+        Id resId = this->pendingTextureBundles[i];
         o_assert_dbg(resId.IsValid());
         textureBundle* tb = this->textureBundlePool.Get(resId);
         if (tb) {
             const ResourceState::Code state = this->queryTextureBundleDepState(tb);
             if (state != ResourceState::Pending) {
-                this->pendingTextureBundles.Erase(i);
                 if (state == ResourceState::Valid) {
                     // all ok, can setup texture bundle
                     const ResourceState::Code newState = this->textureBundleFactory.SetupResource(*tb);
@@ -475,6 +475,7 @@ gfxResourceContainerBase::handlePendingTextureBundles() {
                     o_assert_dbg(state == ResourceState::Failed);
                     this->textureBundlePool.UpdateState(resId, state);
                 }
+                this->pendingTextureBundles.Erase(i);
             }
         }
         else {
