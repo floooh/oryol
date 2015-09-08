@@ -17,6 +17,8 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
+- **08-Sep-2015**: Metal port has been fixed again for latest OSX 10.11 and Xcode7 betas, but only in the d3d12 branch for now (this is where the interesting stuff happens at the moment)
+
 - **21-Aug-2015**: As expected, the latest OSX 10.11 beta breaks the Metal port again, yay :D
 
 - **17-Aug-2015**: The imgui wrapper has been updated for imgui 1.44, which 
