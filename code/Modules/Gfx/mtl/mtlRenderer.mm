@@ -394,6 +394,9 @@ mtlRenderer::applyTextureBundle(textureBundle* tb) {
     if (nil == this->curCommandEncoder) {
         return;
     }
+    if (nullptr == this->curDrawState) {
+        return;
+    }
     if (nullptr == tb) {
         // textureBundle contains textures that are not yet loaded,
         // disable the next draw call, and return
