@@ -53,7 +53,9 @@ public:
         
 private:
     static const int32 MaxUniformsPerBlock = 16;
-    static const int32 MaxUBsPerStage = 4;
+    static const int32 MaxUBsPerStage =
+        GfxConfig::MaxNumVSUniformBlocks > GfxConfig::MaxNumFSUniformBlocks ?
+        GfxConfig::MaxNumVSUniformBlocks : GfxConfig::MaxNumFSUniformBlocks;
     static const int32 MaxStages = ShaderStage::NumShaderStages;
     static const int32 MaxPrograms = 4;
     static const int32 MaxSamplers = GfxConfig::MaxNumShaderTextures;

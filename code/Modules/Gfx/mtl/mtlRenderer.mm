@@ -333,7 +333,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
     for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
         const mesh* msh = ds->meshes[meshIndex];
         // NOTE: vertex buffers are located after constant buffers
-        const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
+        const int vbSlotIndex = meshIndex + GfxConfig::MaxNumVSUniformBlocks;
         if (msh) {
             const auto& vb = msh->buffers[mesh::vb];
             o_assert_dbg(nil != vb.mtlBuffers[vb.activeSlot]);
