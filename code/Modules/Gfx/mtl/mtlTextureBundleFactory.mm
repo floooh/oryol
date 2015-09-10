@@ -48,6 +48,7 @@ ResourceState::Code
 mtlTextureBundleFactory::SetupResource(textureBundle& tb) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->pointers.texturePool);
+    o_assert_dbg(this->pointers.shaderPool);
 
     const shader* shd = this->pointers.shaderPool->Lookup(tb.Setup.Shader);
     o_assert_dbg(shd);
