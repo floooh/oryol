@@ -21,6 +21,12 @@ namespace Oryol {
 namespace _priv {
 class textureBundleFactory : public mtlTextureBundleFactory { };
 } }
+#elif ORYOL_D3D11
+#include "Gfx/d3d11/d3d11TextureBundleFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureBundleFactory : public d3d11TextureBundleFactory { };
+} }
 #else
 #error "Target platform not supported!"
 #endif

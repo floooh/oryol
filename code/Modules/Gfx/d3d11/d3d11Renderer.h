@@ -25,6 +25,7 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
+class textureBundle;
     
 class d3d11Renderer {
 public:
@@ -58,7 +59,9 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    /// apply a texture bundle
+    void applyTextureBundle(textureBundle* tb);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -109,8 +112,8 @@ private:
     ID3D11VertexShader* d3d11CurVertexShader;
     ID3D11PixelShader* d3d11CurPixelShader;
     D3D_PRIMITIVE_TOPOLOGY d3d11CurPrimitiveTopology;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurVSConstantBuffers;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurPSConstantBuffers;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumVSUniformBlocks> d3d11CurVSConstantBuffers;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumFSUniformBlocks> d3d11CurPSConstantBuffers;
     StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVertexBuffers;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexStrides;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexOffsets;

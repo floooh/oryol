@@ -120,6 +120,8 @@ fips_begin_module(Gfx)
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
+            d3d11TextureBundle.cc d3d11TextureBundle.h
+            d3d11TextureBundleFactory.cc d3d11TextureBundleFactory.h
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
@@ -221,8 +223,6 @@ fips_begin_unittest(Gfx)
         glTypesTest.cc
     )
     oryol_shader(TestShaderLibrary.shd)
-    # FIXME: hmm strange, why doesn't recursive dependency resolution work here
-    # (have to explicitely link with Gfx)
     fips_deps(HTTP Gfx Assets)
 fips_end_unittest()
 

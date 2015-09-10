@@ -89,30 +89,27 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
     D3D11_BUFFER_DESC cbDesc;
     Memory::Clear(&cbDesc, sizeof(cbDesc));
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
-        const int32 bindSlotIndex = setup.UniformBlockSlot(i);
+        const ShaderStage::Code bindStage = setup.UniformBlockBindStage(i);
+        const int32 bindSlot = setup.UniformBlockBindSlot(i);
         const UniformLayout& layout = setup.UniformBlockLayout(i);
-        const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
+        o_assert_dbg(InvalidIndex != bindSlot);
+
+        // NOTE: constant buffer size must be multiple of 16 bytes
+        o_assert_dbg(layout.ByteSize() > 0);
+        cbDesc.ByteWidth = Memory::RoundUp(layout.ByteSize(), 16);
+        cbDesc.Usage = D3D11_USAGE_DEFAULT;
+        cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        cbDesc.CPUAccessFlags = 0;
 
         ID3D11Buffer* d3d11ConstantBuffer = nullptr;
-        if (bindSlotIndex != InvalidIndex) {
-
-            // NOTE: constant buffer size must be multiple of 16 bytes
-            o_assert_dbg(layout.ByteSizeWithoutTextures() > 0);
-            cbDesc.ByteWidth = Memory::RoundUp(layout.ByteSizeWithoutTextures(), 16);
-            cbDesc.Usage = D3D11_USAGE_DEFAULT;
-            cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-            cbDesc.CPUAccessFlags = 0;
-
-            hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
-            o_assert(SUCCEEDED(hr));
-            o_assert_dbg(d3d11ConstantBuffer);
-        }
+        hr = this->d3d11Device->CreateBuffer(&cbDesc, nullptr, &d3d11ConstantBuffer);
+        o_assert(SUCCEEDED(hr));
+        o_assert_dbg(d3d11ConstantBuffer);
 
         // the d3d11ConstantBuffer ptr can be 0 at this point, if the
         // uniform block only contains textures
-        shd.addUniformBlockEntry(d3d11ConstantBuffer, bindShaderStage, bindSlotIndex);
+        shd.addUniformBlockEntry(bindStage, bindSlot, d3d11ConstantBuffer);
     }
-    o_assert_dbg(shd.getNumUniformBlockEntries() == setup.NumUniformBlocks());
 
     return ResourceState::Valid;
 }
@@ -125,6 +122,7 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
 
     this->pointers.renderer->invalidateShaderState();
 
+    // clear the vertex and pixel shaders
     const int32 numProgs = shd.getNumPrograms();
     for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
         ID3D11VertexShader* vs = shd.getVertexShaderAtIndex(progIndex);
@@ -137,16 +135,23 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
         }
     }
 
-    int32 dummySlotIndex = 0;
-    ShaderType::Code dummyBindStage = ShaderType::InvalidShaderType;
-    const int32 numConstantBuffers = shd.getNumUniformBlockEntries();
-    for (int32 cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-        ID3D11Buffer* cb = shd.getUniformBlockEntryAtIndex(cbIndex, dummyBindStage, dummySlotIndex);
+    // release constant buffers at vertex shader stage
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumVSUniformBlocks; bindSlot++) {
+        ID3D11Buffer* cb = shd.getConstantBuffer(ShaderStage::VS, bindSlot);
         if (cb) {
             cb->Release();
         }
     }
 
+    // release constant buffers at fragment shader stage
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumFSUniformBlocks; bindSlot++) {
+        ID3D11Buffer* cb = shd.getConstantBuffer(ShaderStage::FS, bindSlot);
+        if (cb) {
+            cb->Release();
+        }
+    }
+
+    // reset shader object for reuse
     shd.Clear();
 }
 

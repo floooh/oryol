@@ -39,11 +39,9 @@ public:
     ID3D11PixelShader* getPixelShaderAtIndex(int32 index) const;
 
     /// add a uniform block entry
-    void addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex);
-    /// get number of uniform block entries
-    int32 getNumUniformBlockEntries() const;
-    /// get uniform block at index
-    ID3D11Buffer* getUniformBlockEntryAtIndex(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const;
+    void addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb);
+    /// get uniform block constant buffer at bind stage and slot (can return nullptr)
+    ID3D11Buffer* getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const;
 
 private:
     struct programEntry {
@@ -53,37 +51,16 @@ private:
         ID3D11VertexShader* vertexShader;
         ID3D11PixelShader* pixelShader;
     };
-    struct ubEntry {
-        ubEntry() : 
-            constantBuffer(nullptr), 
-            bindShaderStage(ShaderType::InvalidShaderType),
-            bindSlotIndex(InvalidIndex) {};
-
-        // NOTE: the constantBuffer pointer can be 0 if
-        // the associated uniform-block has only texture params!
-        ID3D11Buffer* constantBuffer;
-        ShaderType::Code bindShaderStage;
-        int32 bindSlotIndex;
-    };
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
-    int32 numUniformBlockEntries;
-    StaticArray<ubEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumVSUniformBlocks> vsCB;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumFSUniformBlocks> fsCB;
 };
 
 //------------------------------------------------------------------------------
-inline int32
-d3d11Shader::getNumUniformBlockEntries() const {
-    return this->numUniformBlockEntries;
-}
-
-//------------------------------------------------------------------------------
 inline ID3D11Buffer*
-d3d11Shader::getUniformBlockEntryAtIndex(int32 index, ShaderType::Code& outBindShaderStage, int32& outBindSlotIndex) const {
-    const ubEntry& entry = this->uniformBlockEntries[index];
-    outBindShaderStage = entry.bindShaderStage;
-    outBindSlotIndex = entry.bindSlotIndex;
-    return entry.constantBuffer;
+d3d11Shader::getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const {
+    return ShaderStage::VS == bindStage ? this->vsCB[bindSlot] : this->fsCB[bindSlot];
 }
 
 } // namespace _priv

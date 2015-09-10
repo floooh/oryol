@@ -347,34 +347,30 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         this->d3d11DeviceContext->PSSetShader(ds->d3d11PixelShader, NULL, 0);
     }
         
-    // apply constant buffers
-    ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-    int32 cbBindSlot = 0;
-    const int numConstantBuffers = ds->shd->getNumUniformBlockEntries();
-    o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
-    for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-        ID3D11Buffer* cb = ds->shd->getUniformBlockEntryAtIndex(cbIndex, cbStage, cbBindSlot);
-        if (cb) {
-            o_assert_dbg(cbBindSlot != InvalidIndex);
-            if (ShaderType::VertexShader == cbStage) {
-                if (this->d3d11CurVSConstantBuffers[cbBindSlot] != cb) {
-                    this->d3d11CurVSConstantBuffers[cbBindSlot] = cb;
-                    this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
-                }
-            }
-            else {
-                if (this->d3d11CurPSConstantBuffers[cbBindSlot] != cb) {
-                    this->d3d11CurPSConstantBuffers[cbBindSlot] = cb;
-                    this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
-                }
-            }
+    // apply vertex-shader-stage constant buffers
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumVSUniformBlocks; bindSlot++) {
+        // NOTE: cb can be nullptr!
+        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::VS, bindSlot);
+        if (this->d3d11CurVSConstantBuffers[bindSlot] != cb) {
+            this->d3d11CurVSConstantBuffers[bindSlot] = cb;
+            this->d3d11DeviceContext->VSSetConstantBuffers(bindSlot, 1, &cb);
+        }
+    }
+
+    // apply fragment-shader-stage constant buffers
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumFSUniformBlocks; bindSlot++) {
+        // NOTE: cb can be nullptr!
+        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::FS, bindSlot);
+        if (this->d3d11CurPSConstantBuffers[bindSlot] != cb) {
+            this->d3d11CurPSConstantBuffers[bindSlot] = cb;
+            this->d3d11DeviceContext->PSSetConstantBuffers(bindSlot, 1, &cb);
         }
     }
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(0 != layoutHash);
     if (nullptr == this->curDrawState) {
@@ -382,69 +378,71 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
         return;
     }
 
-    // get the uniform-layout object for this uniform block
+    // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    const UniformLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
-    // check whether the provided struct is type-compatible with the
-    // expected uniform block layout
+    // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    
-    // get the constant buffer entry from the program bundle
-    ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-    int32 cbBindSlot = 0;
-    ID3D11Buffer* cb = shd->getUniformBlockEntryAtIndex(blockIndex, cbStage, cbBindSlot);
+    o_assert(byteSize == layout.ByteSize());
 
-    // set textures and samplers
-    const uint8* cbufferPtr = nullptr;
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type == UniformType::Texture) {
-            const int32 texBindSlotIndex = comp.BindSlotIndex;
-            o_assert_dbg(texBindSlotIndex != InvalidIndex);
-            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-            const Id& resId = *(const Id*)valuePtr;
-            const texture* tex = this->pointers.texturePool->Lookup(resId);
-            o_assert_dbg(tex);
-            o_assert_dbg(tex->d3d11ShaderResourceView);
-            o_assert_dbg(tex->d3d11SamplerState);
-            if (ShaderType::VertexShader == cbStage) {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurVSShaderResourceViews[texBindSlotIndex]) {
-                    this->d3d11CurVSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->VSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                }
-                if (tex->d3d11SamplerState != this->d3d11CurVSSamplerStates[texBindSlotIndex]) {
-                    this->d3d11CurVSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->VSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
-                }
+    // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
+    ID3D11Buffer* cb = shd->getConstantBuffer(ubBindStage, ubBindSlot);
+    o_assert_dbg(cb);
+    this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, ptr, 0, 0);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::applyTextureBundle(textureBundle* tb) {
+    o_assert_dbg(this->d3d11DeviceContext);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    if (nullptr == tb) {
+        // textureBundle contains textures that are not yet loaded,
+        // disable the next draw call, and return
+        this->curDrawState = nullptr;
+        return;
+    }
+
+    // bind vertex shader textures, do not overwrite unused slots, these could
+    // be used by other texture bundles
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumVSTextures; bindSlot++) {
+        ID3D11ShaderResourceView* srv = tb->vs[bindSlot].d3d11ShaderResourceView;
+        ID3D11SamplerState* smp = tb->vs[bindSlot].d3d11SamplerState;
+        if (srv && smp) {
+            if (srv != this->d3d11CurVSShaderResourceViews[bindSlot]) {
+                this->d3d11CurVSShaderResourceViews[bindSlot] = srv;
+                this->d3d11DeviceContext->VSSetShaderResources(bindSlot, 1, &srv);
             }
-            else {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurPSShaderResourceViews[texBindSlotIndex]) {
-                    this->d3d11CurPSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->PSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                }
-                if (tex->d3d11SamplerState != this->d3d11CurPSSamplerStates[texBindSlotIndex]) {
-                    this->d3d11CurPSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->PSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
-                }
+            if (smp != this->d3d11CurVSSamplerStates[bindSlot]) {
+                this->d3d11CurVSSamplerStates[bindSlot] = smp;
+                this->d3d11DeviceContext->VSSetSamplers(bindSlot, 1, &smp);
             }
-        }
-        else {
-            // found the start of the cbuffer struct
-            cbufferPtr = ptr + layout.ComponentByteOffset(compIndex);
-            break;
         }
     }
 
-    // apply optional uniform block
-    // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
-    if (cb) {
-        o_assert_dbg(cbufferPtr);
-        this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);
+    // bind fragment shader textures, do not overwrite unused slots, these could
+    // be used by other texture bundles
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumFSTextures; bindSlot++) {
+        ID3D11ShaderResourceView* srv = tb->fs[bindSlot].d3d11ShaderResourceView;
+        ID3D11SamplerState* smp = tb->fs[bindSlot].d3d11SamplerState;
+        if (srv && smp) {
+            if (srv != this->d3d11CurPSShaderResourceViews[bindSlot]) {
+                this->d3d11CurPSShaderResourceViews[bindSlot] = srv;
+                this->d3d11DeviceContext->PSSetShaderResources(bindSlot, 1, &srv);
+            }
+            if (smp != this->d3d11CurPSSamplerStates[bindSlot]) {
+                this->d3d11CurPSSamplerStates[bindSlot] = smp;
+                this->d3d11DeviceContext->PSSetSamplers(bindSlot, 1, &smp);
+            }
+        }
     }
 }
+
 
 //------------------------------------------------------------------------------
 void
@@ -602,8 +600,8 @@ d3d11Renderer::invalidateShaderState() {
     this->d3d11CurPSConstantBuffers.Fill(nullptr);
     this->d3d11DeviceContext->VSSetShader(nullptr, nullptr, 0);
     this->d3d11DeviceContext->PSSetShader(nullptr, nullptr, 0);
-    this->d3d11DeviceContext->VSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
-    this->d3d11DeviceContext->PSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
+    this->d3d11DeviceContext->VSSetConstantBuffers(0, GfxConfig::MaxNumVSUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
+    this->d3d11DeviceContext->PSSetConstantBuffers(0, GfxConfig::MaxNumFSUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
 }
 
 //------------------------------------------------------------------------------

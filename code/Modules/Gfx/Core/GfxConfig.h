@@ -22,8 +22,12 @@ public:
     static const int32 MaxNumPrimGroups = 8;
     /// max number of shader programs in one program bundle
     static const int32 MaxNumBundlePrograms = 8;
-    /// max number of uniform blocks
-    static const int32 MaxNumUniformBlocks = 4;
+    /// max number of uniform blocks bound to vertex shader stage
+    static const int32 MaxNumVSUniformBlocks = 4;
+    /// max number of uniform blocks bound to fragment shader stage
+    static const int32 MaxNumFSUniformBlocks = 4;
+    /// max number of uniform blocks in a shader program
+    static const int32 MaxNumUniformBlocks = 8;
     /// max number of texture faces
     static const int32 MaxNumTextureFaces = 6;
     /// max number of texture mipmaps

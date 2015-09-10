@@ -12,10 +12,10 @@ namespace _priv {
 class textureBundle : public glTextureBundle { };
 } }
 #elif ORYOL_D3D11
-#include "Gfx/Resource/textureBundleBase.h"
+#include "Gfx/d3d11/d3d11TextureBundle.h"
 namespace Oryol {
 namespace _priv {
-class textureBundle : public textureBundleBase { };
+class textureBundle : public d3d11TextureBundle { };
 } }
 #elif ORYOL_D3D12
 #include "Gfx/Resource/textureBundleBase.h"
