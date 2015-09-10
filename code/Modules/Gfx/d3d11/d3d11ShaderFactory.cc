@@ -91,7 +91,7 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
         const ShaderStage::Code bindStage = setup.UniformBlockBindStage(i);
         const int32 bindSlot = setup.UniformBlockBindSlot(i);
-        const UniformLayout& layout = setup.UniformBlockLayout(i);
+        const UniformBlockLayout& layout = setup.UniformBlockLayout(i);
         o_assert_dbg(InvalidIndex != bindSlot);
 
         // NOTE: constant buffer size must be multiple of 16 bytes
@@ -135,19 +135,13 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
         }
     }
 
-    // release constant buffers at vertex shader stage
-    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumVSUniformBlocks; bindSlot++) {
-        ID3D11Buffer* cb = shd.getConstantBuffer(ShaderStage::VS, bindSlot);
-        if (cb) {
-            cb->Release();
-        }
-    }
-
-    // release constant buffers at fragment shader stage
-    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumFSUniformBlocks; bindSlot++) {
-        ID3D11Buffer* cb = shd.getConstantBuffer(ShaderStage::FS, bindSlot);
-        if (cb) {
-            cb->Release();
+    // release constant buffers 
+    for (int bindStage = 0; bindStage < ShaderStage::NumShaderStages; bindStage++) {
+        for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
+            ID3D11Buffer* cb = shd.getConstantBuffer((ShaderStage::Code)bindStage, bindSlot);
+            if (cb) {
+                cb->Release();
+            }
         }
     }
 

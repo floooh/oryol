@@ -22,24 +22,20 @@ public:
     static const int32 MaxNumPrimGroups = 8;
     /// max number of shader programs in one program bundle
     static const int32 MaxNumBundlePrograms = 8;
-    /// max number of uniform blocks bound to vertex shader stage
-    static const int32 MaxNumVSUniformBlocks = 4;
-    /// max number of uniform blocks bound to fragment shader stage
-    static const int32 MaxNumFSUniformBlocks = 4;
-    /// max number of uniform blocks in a shader program
-    static const int32 MaxNumUniformBlocks = 8;
+    /// max number of uniform blocks per stage
+    static const int32 MaxNumUniformBlocksPerStage = 4;
+    /// max number of texture blocks per stage
+    static const int32 MaxNumTextureBlocksPerStage = 4;
+    /// maximum number of texture bind slots per stage
+    static const int32 MaxNumTexturesPerStage = 16;
     /// max number of texture faces
     static const int32 MaxNumTextureFaces = 6;
     /// max number of texture mipmaps
     static const int32 MaxNumTextureMipMaps = 12;
-    /// maximum number of vertex shader textures
-    static const int32 MaxNumVSTextures = 4;
-    /// maxium number of fragment shader textures
-    static const int32 MaxNumFSTextures = 8;
-    /// overall max number of textures in a shader program
-    static const int32 MaxNumShaderTextures = MaxNumVSTextures + MaxNumFSTextures;
-    /// maximum number of value components in uniform layout
-    static const int32 MaxNumUniformLayoutComponents = 16;
+    /// maximum number of components in uniform block layout
+    static const int32 MaxNumUniformBlockLayoutComponents = 16;
+    /// maximum number of components in texture block layout
+    static const int32 MaxNumTextureBlockLayoutComponents = 16;
     /// maximum number of components in vertex layout
     static const int32 MaxNumVertexLayoutComponents = 16;
     /// maximum number of in-flight frames for Metal

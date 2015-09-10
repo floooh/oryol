@@ -38,7 +38,8 @@ fips_begin_module(Gfx)
         RasterizerState.h
         StencilState.h
         VertexLayout.cc VertexLayout.h
-        UniformLayout.cc UniformLayout.h
+        UniformBlockLayout.cc UniformBlockLayout.h
+        TextureBlockLayout.cc TextureBlockLayout.h
         displayMgr.h
         renderer.h
         gfxPointers.h
@@ -60,9 +61,9 @@ fips_begin_module(Gfx)
         textureBase.cc textureBase.h
         texture.h
         textureFactory.h
-        textureBundleBase.h
-        textureBundle.h
-        textureBundleFactory.h
+        textureBlockBase.h
+        textureBlock.h
+        textureBlockFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -75,7 +76,7 @@ fips_begin_module(Gfx)
         MeshSetup.cc MeshSetup.h
         ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
-        TextureBundleSetup.cc TextureBundleSetup.h
+        TextureBlockSetup.cc TextureBlockSetup.h
     )
     if (ORYOL_OPENGL)
         fips_dir(gl)
@@ -90,8 +91,8 @@ fips_begin_module(Gfx)
             glShader.cc glShader.h
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
-            glTextureBundle.cc glTextureBundle.h
-            glTextureBundleFactory.cc glTextureBundleFactory.h
+            glTextureBlock.cc glTextureBlock.h
+            glTextureBlockFactory.cc glTextureBlockFactory.h
             glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h
@@ -120,8 +121,8 @@ fips_begin_module(Gfx)
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11TextureBundle.cc d3d11TextureBundle.h
-            d3d11TextureBundleFactory.cc d3d11TextureBundleFactory.h
+            d3d11TextureBlock.cc d3d11TextureBlock.h
+            d3d11TextureBlockFactory.cc d3d11TextureBlockFactory.h
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
@@ -159,8 +160,8 @@ fips_begin_module(Gfx)
             mtlDrawStateFactory.h mtlDrawStateFactory.mm
             mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
-            mtlTextureBundle.h mtlTextureBundle.mm
-            mtlTextureBundleFactory.h mtlTextureBundleFactory.mm
+            mtlTextureBlock.h mtlTextureBlock.mm
+            mtlTextureBlockFactory.h mtlTextureBlockFactory.mm
             mtlRenderer.h mtlRenderer.mm
         )
         fips_frameworks_osx(Cocoa Metal QuartzCore)

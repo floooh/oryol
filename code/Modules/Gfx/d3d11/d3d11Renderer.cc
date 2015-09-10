@@ -382,7 +382,7 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
@@ -396,20 +396,22 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyTextureBundle(textureBundle* tb) {
+d3d11Renderer::applyTextureBlock(textureBlock* tb) {
     o_assert_dbg(this->d3d11DeviceContext);
     if (nullptr == this->curDrawState) {
         return;
     }
     if (nullptr == tb) {
-        // textureBundle contains textures that are not yet loaded,
+        // textureBlock contains textures that are not yet loaded,
         // disable the next draw call, and return
         this->curDrawState = nullptr;
         return;
     }
 
+#error "FIXME!"
+
     // bind vertex shader textures, do not overwrite unused slots, these could
-    // be used by other texture bundles
+    // be used by other texture blocks
     for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumVSTextures; bindSlot++) {
         ID3D11ShaderResourceView* srv = tb->vs[bindSlot].d3d11ShaderResourceView;
         ID3D11SamplerState* smp = tb->vs[bindSlot].d3d11SamplerState;
@@ -426,7 +428,7 @@ d3d11Renderer::applyTextureBundle(textureBundle* tb) {
     }
 
     // bind fragment shader textures, do not overwrite unused slots, these could
-    // be used by other texture bundles
+    // be used by other texture blocks
     for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumFSTextures; bindSlot++) {
         ID3D11ShaderResourceView* srv = tb->fs[bindSlot].d3d11ShaderResourceView;
         ID3D11SamplerState* smp = tb->fs[bindSlot].d3d11SamplerState;

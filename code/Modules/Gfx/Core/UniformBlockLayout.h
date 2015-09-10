@@ -1,9 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::UniformLayout
+    @class Oryol::UniformBlockLayout
     @ingroup Gfx
     @brief describes the layout of an uniform block
+
+    A UniformBlockLayout describes the names and types of a group of
+    related shader uniforms.
 */
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
@@ -12,9 +15,9 @@
 
 namespace Oryol {
 
-class UniformLayout {
+class UniformBlockLayout {
 public:
-    /// a UniformLayout component describes a single uniform in the uniform block
+    /// a UniformBlockLayout component describes a single uniform in the uniform block
     class Component {
     public:
         /// default constructor
@@ -32,7 +35,7 @@ public:
     };
 
     /// constructor
-    UniformLayout();
+    UniformBlockLayout();
 
     /// clear the uniform layout
     void Clear();
@@ -43,9 +46,9 @@ public:
     int64 TypeHash;
 
     /// add a uniform component to the layout
-    UniformLayout& Add(const Component& comp);
+    UniformBlockLayout& Add(const Component& comp);
     /// add a uniform component to the layout
-    UniformLayout& Add(const StringAtom& name, UniformType::Code type);
+    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type);
     /// get number of components in the layout
     int32 NumComponents() const;
     /// get component at index
@@ -58,20 +61,20 @@ public:
 private:
     int32 numComps;
     int32 byteSize;
-    StaticArray<Component, GfxConfig::MaxNumUniformLayoutComponents> comps;
-    StaticArray<int32, GfxConfig::MaxNumUniformLayoutComponents> byteOffsets;
+    StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
+    StaticArray<int32, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
 };
 
 //------------------------------------------------------------------------------
 inline
-UniformLayout::Component::Component() :
+UniformBlockLayout::Component::Component() :
 Type(UniformType::InvalidUniformType) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-UniformLayout::Component::Component(const StringAtom& name, UniformType::Code type) :
+UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type) :
 Name(name),
 Type(type) {
     o_assert_dbg(this->Name.IsValid());
@@ -80,43 +83,43 @@ Type(type) {
 
 //------------------------------------------------------------------------------
 inline bool
-UniformLayout::Component::IsValid() const {
+UniformBlockLayout::Component::IsValid() const {
     return this->Name.IsValid();
 }
 
 //------------------------------------------------------------------------------
 inline int32
-UniformLayout::Component::ByteSize() const {
+UniformBlockLayout::Component::ByteSize() const {
     return UniformType::ByteSize(this->Type);
 }
 
 //------------------------------------------------------------------------------
 inline bool
-UniformLayout::Empty() const {
+UniformBlockLayout::Empty() const {
     return 0 == this->numComps;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-UniformLayout::NumComponents() const {
+UniformBlockLayout::NumComponents() const {
     return this->numComps;
 }
 
 //------------------------------------------------------------------------------
-inline const UniformLayout::Component&
-UniformLayout::ComponentAt(int32 componentIndex) const {
+inline const UniformBlockLayout::Component&
+UniformBlockLayout::ComponentAt(int32 componentIndex) const {
     return this->comps[componentIndex];
 }
 
 //------------------------------------------------------------------------------
 inline int32
-UniformLayout::ByteSize() const {
+UniformBlockLayout::ByteSize() const {
     return this->byteSize;
 }
 
 //------------------------------------------------------------------------------
 inline int32
-UniformLayout::ComponentByteOffset(int32 componentIndex) const {
+UniformBlockLayout::ComponentByteOffset(int32 componentIndex) const {
     return this->byteOffsets[componentIndex];
 }
 

@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
-//  UniformLayout.h
+//  UniformBlockLayout.h
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "UniformLayout.h"
+#include "UniformBlockLayout.h"
 
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-UniformLayout::UniformLayout() :
+UniformBlockLayout::UniformBlockLayout() :
 TypeHash(0),
 numComps(0),
 byteSize(0) {
@@ -16,7 +16,7 @@ byteSize(0) {
 
 //------------------------------------------------------------------------------
 void
-UniformLayout::Clear() {
+UniformBlockLayout::Clear() {
     this->comps.Fill(Component());
     this->byteOffsets.Fill(0);
     this->numComps = 0;
@@ -24,9 +24,8 @@ UniformLayout::Clear() {
 }
 
 //------------------------------------------------------------------------------
-UniformLayout&
-UniformLayout::Add(const Component& comp) {
-    o_assert(this->numComps < GfxConfig::MaxNumUniformLayoutComponents);
+UniformBlockLayout&
+UniformBlockLayout::Add(const Component& comp) {
     this->comps[this->numComps] = comp;
     this->byteOffsets[this->numComps] = this->byteSize;
     this->byteSize += comp.ByteSize();
@@ -35,8 +34,8 @@ UniformLayout::Add(const Component& comp) {
 }
 
 //------------------------------------------------------------------------------
-UniformLayout&
-UniformLayout::Add(const StringAtom& name, UniformType::Code type) {
+UniformBlockLayout&
+UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type) {
     return this->Add(Component(name, type));
 }
 

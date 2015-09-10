@@ -20,10 +20,7 @@ d3d11Shader::~d3d11Shader() {
         o_assert_dbg(nullptr == this->programEntries[i].vertexShader);
         o_assert_dbg(nullptr == this->programEntries[i].pixelShader);
     }
-    for (auto cb : this->vsCB) {
-        o_assert_dbg(nullptr == cb);
-    }
-    for (auto cb : this->fsCB) {
+    for (auto cb : this->constantBuffers) {
         o_assert_dbg(nullptr == cb);
     }
 #endif
@@ -34,8 +31,7 @@ void
 d3d11Shader::Clear() {
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
-    this->vsCB.Fill(nullptr);
-    this->fsCB.Fill(nullptr);
+    this->constantBuffers.Fill(nullptr);
     shaderBase::Clear();
 }
 
@@ -114,12 +110,8 @@ d3d11Shader::getPixelShaderByMask(uint32 mask) const {
 void
 d3d11Shader::addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb) {
     o_assert_dbg(cb);
-    if (ShaderStage::VS == bindStage) {
-        this->vsCB[bindSlot] = cb;
-    }
-    else {
-        this->fsCB[bindSlot] = cb;
-    }
+    const int32 cbIndex = (ShaderStage::NumShaderStages * bindStage) + bindSlot;
+    this->constantBuffers[cbIndex] = cb;
 }
 
 } // namespace _priv

@@ -20,7 +20,7 @@
 #include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/textureFactory.h"
 #include "Gfx/Resource/drawStateFactory.h"
-#include "Gfx/Resource/textureBundleFactory.h"
+#include "Gfx/Resource/textureBlockFactory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"
 #include "Gfx/Resource/TextureLoaderBase.h"
 #include "Gfx/Core/gfxPointers.h"
@@ -71,8 +71,8 @@ public:
     texture* lookupTexture(const Id& resId);
     /// lookup draw-state object
     drawState* lookupDrawState(const Id& resId);
-    /// lookup a texture-bundle object
-    textureBundle* lookupTextureBundle(const Id& resId);
+    /// lookup a texture-block object
+    textureBlock* lookupTextureBlock(const Id& resId);
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
@@ -83,26 +83,26 @@ public:
     ResourceState::Code queryDrawStateDepState(const drawState* ds);
     /// handle pending draw states, this is called once per frame
     void handlePendingDrawStates();
-    /// query overal state of textureBundle dependencies (state of textures in bundle)
-    ResourceState::Code queryTextureBundleDepState(const textureBundle* tb);
-    /// handle pending texture bundle states, this is called once per frame
-    void handlePendingTextureBundles();
+    /// query overal state of textureBlock dependencies (state of textures in block)
+    ResourceState::Code queryTextureBlockDepState(const textureBlock* tb);
+    /// handle pending texture block states, this is called once per frame
+    void handlePendingTextureBlocks();
     
     gfxPointers pointers;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class textureFactory textureFactory;
     class drawStateFactory drawStateFactory;
-    class textureBundleFactory textureBundleFactory;
+    class textureBlockFactory textureBlockFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;
     class drawStatePool drawStatePool;
-    class textureBundlePool textureBundlePool;
+    class textureBlockPool textureBlockPool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
     Array<Id> pendingDrawStates;
-    Array<Id> pendingTextureBundles;
+    Array<Id> pendingTextureBlocks;
 };
 
 //------------------------------------------------------------------------------
@@ -134,10 +134,10 @@ gfxResourceContainerBase::lookupDrawState(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline textureBundle*
-gfxResourceContainerBase::lookupTextureBundle(const Id& resId) {
+inline textureBlock*
+gfxResourceContainerBase::lookupTextureBlock(const Id& resId) {
     o_assert_dbg(this->valid);
-    return this->textureBundlePool.Lookup(resId);
+    return this->textureBlockPool.Lookup(resId);
 }
 
 } // namespace _priv

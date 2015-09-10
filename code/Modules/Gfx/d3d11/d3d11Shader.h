@@ -6,6 +6,8 @@
     @brief D3D11 implementation of shader
 */
 #include "Gfx/Resource/shaderBase.h"
+#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxConfig.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
@@ -51,16 +53,17 @@ private:
         ID3D11VertexShader* vertexShader;
         ID3D11PixelShader* pixelShader;
     };
+    static const int32 NumConstantBuffers = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumVSUniformBlocks> vsCB;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumFSUniformBlocks> fsCB;
+    StaticArray<ID3D11Buffer*, NumConstantBuffers> constantBuffers;
 };
 
 //------------------------------------------------------------------------------
 inline ID3D11Buffer*
 d3d11Shader::getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const {
-    return ShaderStage::VS == bindStage ? this->vsCB[bindSlot] : this->fsCB[bindSlot];
+    const int32 cbIndex = (ShaderStage::NumShaderStages * bindStage) + bindSlot;
+    return this->constantBuffers[cbIndex];
 }
 
 } // namespace _priv

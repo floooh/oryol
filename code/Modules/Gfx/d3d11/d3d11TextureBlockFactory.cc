@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  d3d11TextureBundleFactory.cc
+//  d3d11TextureBlockFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "d3d11TextureBundleFactory.h"
+#include "d3d11TextureBlockFactory.h"
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Core/Assertion.h"
@@ -11,19 +11,19 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11TextureBundleFactory::d3d11TextureBundleFactory() :
+d3d11TextureBlockFactory::d3d11TextureBlockFactory() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-d3d11TextureBundleFactory::~d3d11TextureBundleFactory() {
+d3d11TextureBlockFactory::~d3d11TextureBlockFactory() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11TextureBundleFactory::Setup(const gfxPointers& ptrs) {
+d3d11TextureBlockFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
@@ -31,7 +31,7 @@ d3d11TextureBundleFactory::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-d3d11TextureBundleFactory::Discard() {
+d3d11TextureBlockFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     this->pointers = gfxPointers();
@@ -39,16 +39,18 @@ d3d11TextureBundleFactory::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-d3d11TextureBundleFactory::IsValid() const {
+d3d11TextureBlockFactory::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11TextureBundleFactory::SetupResource(textureBundle& tb) {
+d3d11TextureBlockFactory::SetupResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->pointers.texturePool);
     o_assert_dbg(this->pointers.shaderPool);
+
+#error "FIXME!"
 
     const shader* shd = this->pointers.shaderPool->Lookup(tb.Setup.Shader);
     o_assert_dbg(shd);
@@ -100,7 +102,7 @@ d3d11TextureBundleFactory::SetupResource(textureBundle& tb) {
 
 //------------------------------------------------------------------------------
 void
-d3d11TextureBundleFactory::DestroyResource(textureBundle& tb) {
+d3d11TextureBlockFactory::DestroyResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
     tb.Clear();
 }

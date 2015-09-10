@@ -27,7 +27,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     pointers.shaderPool = &state->resourceContainer.shaderPool;
     pointers.texturePool = &state->resourceContainer.texturePool;
     pointers.drawStatePool = &state->resourceContainer.drawStatePool;
-    pointers.textureBundlePool = &state->resourceContainer.textureBundlePool;
+    pointers.textureBlockPool = &state->resourceContainer.textureBlockPool;
     
     state->displayManager.SetupDisplay(setup, pointers);
     state->renderer.setup(setup, pointers);
@@ -130,11 +130,11 @@ Gfx::ApplyDrawState(const Id& id) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyTextureBundle(const Id& id) {
-    o_trace_scoped(Gfx__ApplyTextureBundle);
+Gfx::ApplyTextureBlock(const Id& id) {
+    o_trace_scoped(Gfx__ApplyTextureBlock);
     o_assert_dbg(IsValid());
-    o_assert_dbg(id.Type == GfxResourceType::TextureBundle);
-    state->renderer.applyTextureBundle(state->resourceContainer.lookupTextureBundle(id));
+    o_assert_dbg(id.Type == GfxResourceType::TextureBlock);
+    state->renderer.applyTextureBlock(state->resourceContainer.lookupTextureBlock(id));
 }
 
 //------------------------------------------------------------------------------

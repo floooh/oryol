@@ -31,8 +31,8 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
     this->drawStateFactory.Setup(this->pointers);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
-    this->textureBundleFactory.Setup(this->pointers);
-    this->textureBundlePool.Setup(GfxResourceType::TextureBundle, setup.PoolSize(GfxResourceType::TextureBundle));
+    this->textureBlockFactory.Setup(this->pointers);
+    this->textureBlockPool.Setup(GfxResourceType::TextureBlock, setup.PoolSize(GfxResourceType::TextureBlock));
     
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
@@ -54,8 +54,8 @@ gfxResourceContainerBase::discard() {
     
     resourceContainerBase::discard();
 
-    this->textureBundlePool.Discard();
-    this->textureBundleFactory.Discard();
+    this->textureBlockPool.Discard();
+    this->textureBlockFactory.Discard();
     this->drawStatePool.Discard();
     this->drawStateFactory.Discard();
     this->texturePool.Discard();
@@ -301,7 +301,7 @@ gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainerBase::Create(const TextureBundleSetup& setup) {
+gfxResourceContainerBase::Create(const TextureBlockSetup& setup) {
     o_assert_dbg(this->isValid());
 
     Id resId = this->registry.Lookup(setup.Locator);
@@ -309,20 +309,20 @@ gfxResourceContainerBase::Create(const TextureBundleSetup& setup) {
         return resId;
     }
     else {
-        resId = this->textureBundlePool.AllocId();
+        resId = this->textureBlockPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
-        textureBundle& res = this->textureBundlePool.Assign(resId, setup, ResourceState::Setup);
+        textureBlock& res = this->textureBlockPool.Assign(resId, setup, ResourceState::Setup);
 
         // check if all referenced resources are loaded, if not defer creation
-        const ResourceState::Code resState = this->queryTextureBundleDepState(&res);
+        const ResourceState::Code resState = this->queryTextureBlockDepState(&res);
         if (resState == ResourceState::Pending) {
-            this->pendingTextureBundles.Add(resId);
-            this->textureBundlePool.UpdateState(resId, ResourceState::Pending);
+            this->pendingTextureBlocks.Add(resId);
+            this->textureBlockPool.UpdateState(resId, ResourceState::Pending);
         }
         else {
-            const ResourceState::Code newState = this->textureBundleFactory.SetupResource(res);
+            const ResourceState::Code newState = this->textureBlockFactory.SetupResource(res);
             o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
-            this->textureBundlePool.UpdateState(resId, newState);
+            this->textureBlockPool.UpdateState(resId, newState);
         }
     }
     return resId;
@@ -412,7 +412,7 @@ gfxResourceContainerBase::handlePendingDrawStates() {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-gfxResourceContainerBase::queryTextureBundleDepState(const textureBundle* tb) {
+gfxResourceContainerBase::queryTextureBlockDepState(const textureBlock* tb) {
     o_assert_dbg(tb);
 
     // this returns an overall state of the dependent textures
@@ -452,36 +452,36 @@ gfxResourceContainerBase::queryTextureBundleDepState(const textureBundle* tb) {
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainerBase::handlePendingTextureBundles() {
-    // goes through the array of pending textureBundles and checks
+gfxResourceContainerBase::handlePendingTextureBlocks() {
+    // goes through the array of pending textureBlocks and checks
     // if their dependent textures have finished loading, if yes,
-    // setup the texture bundle
-    for (int i = this->pendingTextureBundles.Size() - 1; i >= 0; i--) {
-        Id resId = this->pendingTextureBundles[i];
+    // setup the texture block
+    for (int i = this->pendingTextureBlocks.Size() - 1; i >= 0; i--) {
+        Id resId = this->pendingTextureBlocks[i];
         o_assert_dbg(resId.IsValid());
-        textureBundle* tb = this->textureBundlePool.Get(resId);
+        textureBlock* tb = this->textureBlockPool.Get(resId);
         if (tb) {
-            const ResourceState::Code state = this->queryTextureBundleDepState(tb);
+            const ResourceState::Code state = this->queryTextureBlockDepState(tb);
             if (state != ResourceState::Pending) {
                 if (state == ResourceState::Valid) {
-                    // all ok, can setup texture bundle
-                    const ResourceState::Code newState = this->textureBundleFactory.SetupResource(*tb);
+                    // all ok, can setup texture block
+                    const ResourceState::Code newState = this->textureBlockFactory.SetupResource(*tb);
                     o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
-                    this->textureBundlePool.UpdateState(resId, newState);
+                    this->textureBlockPool.UpdateState(resId, newState);
                 }
                 else {
-                    // a texture has failed loading, also set textureBundle to failed
+                    // a texture has failed loading, also set textureBlock to failed
                     o_assert_dbg(state == ResourceState::Failed);
-                    this->textureBundlePool.UpdateState(resId, state);
+                    this->textureBlockPool.UpdateState(resId, state);
                 }
-                this->pendingTextureBundles.Erase(i);
+                this->pendingTextureBlocks.Erase(i);
             }
         }
         else {
-            // the textureBundle object was destroyed before everything was loaded,
+            // the textureBlock object was destroyed before everything was loaded,
             // still need to remove the entry from the pending array
-            o_warn("gfxResourceContainer::handlePendingTextureBundles(): textureBundle destroyed before dependencies loaded!\n");
-            this->pendingTextureBundles.Erase(i);
+            o_warn("gfxResourceContainer::handlePendingTextureBlocks(): textureBlock destroyed before dependencies loaded!\n");
+            this->pendingTextureBlocks.Erase(i);
         }
     }
 }
@@ -558,15 +558,15 @@ gfxResourceContainerBase::Destroy(ResourceLabel label) {
             }
             break;
 
-            case GfxResourceType::TextureBundle:
+            case GfxResourceType::TextureBlock:
             {
-                if (ResourceState::Valid == this->textureBundlePool.QueryState(id)) {
-                    textureBundle* tb = this->textureBundlePool.Lookup(id);
+                if (ResourceState::Valid == this->textureBlockPool.QueryState(id)) {
+                    textureBlock* tb = this->textureBlockPool.Lookup(id);
                     if (tb) {
-                        this->textureBundleFactory.DestroyResource(*tb);
+                        this->textureBlockFactory.DestroyResource(*tb);
                     }
                 }
-                this->textureBundlePool.Unassign(id);
+                this->textureBlockPool.Unassign(id);
             }
             break;
                 
@@ -587,7 +587,7 @@ gfxResourceContainerBase::update() {
     this->shaderPool.Update();
     this->texturePool.Update();
     this->drawStatePool.Update();
-    this->textureBundlePool.Update();
+    this->textureBlockPool.Update();
 
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
@@ -598,9 +598,9 @@ gfxResourceContainerBase::update() {
         }
     }
 
-    // handle drawStates and textureBundles with pending dependendies
+    // handle drawStates and textureBlocks with pending dependendies
     this->handlePendingDrawStates();
-    this->handlePendingTextureBundles();
+    this->handlePendingTextureBlocks();
 }
 
 //------------------------------------------------------------------------------
@@ -617,8 +617,8 @@ gfxResourceContainerBase::QueryResourceInfo(const Id& resId) const {
             return this->shaderPool.QueryResourceInfo(resId);
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryResourceInfo(resId);
-        case GfxResourceType::TextureBundle:
-            return this->textureBundlePool.QueryResourceInfo(resId);
+        case GfxResourceType::TextureBlock:
+            return this->textureBlockPool.QueryResourceInfo(resId);
         default:
             o_assert(false);
             return ResourceInfo();
@@ -639,8 +639,8 @@ gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->shaderPool.QueryPoolInfo();
         case GfxResourceType::DrawState:
             return this->drawStatePool.QueryPoolInfo();
-        case GfxResourceType::TextureBundle:
-            return this->textureBundlePool.QueryPoolInfo();
+        case GfxResourceType::TextureBlock:
+            return this->textureBlockPool.QueryPoolInfo();
         default:
             o_assert(false);
             return ResourcePoolInfo();
@@ -661,8 +661,8 @@ gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) con
             return this->shaderPool.GetNumFreeSlots();
         case GfxResourceType::DrawState:
             return this->drawStatePool.GetNumFreeSlots();
-        case GfxResourceType::TextureBundle:
-            return this->textureBundlePool.GetNumFreeSlots();
+        case GfxResourceType::TextureBlock:
+            return this->textureBlockPool.GetNumFreeSlots();
         default:
             o_assert(false);
             return 0;
