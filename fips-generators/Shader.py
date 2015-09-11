@@ -268,11 +268,11 @@ class UniformBlock :
     '''
     A group of related shader uniforms.
     '''
-    def __init__(self, name, bindName, shaderStage, filePath, lineNumber) :
+    def __init__(self, name, bindName, bindStage, filePath, lineNumber) :
         self.name = name
         self.bindName = bindName
         self.bindSlot = None
-        self.shaderStage = shaderStage
+        self.bindStage = bindStage
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.uniforms = []
@@ -298,7 +298,7 @@ class UniformBlock :
             return False
         if self.bindName != other.bindName :
             return False
-        if self.shaderStage != other.shaderStage :
+        if self.bindStage != other.bindStage :
             return False
         for uniform in self.uniforms :
             other_uniform = findByName(uniform.name, other.uniforms)
@@ -326,12 +326,12 @@ class Texture :
     '''
     A texture shader parameter
     '''
-    def __init__(self, type, name, bindName, shaderStage, filePath, lineNumber) :
+    def __init__(self, type, name, bindName, bindStage, filePath, lineNumber) :
         self.type = type
         self.name = name
         self.bindName = bindName
         self.bindSlot = None
-        self.shaderStage = shaderStage
+        self.bindStage = bindStage
         self.filePath = filePath
         self.lineNumber = lineNumber
 
@@ -342,7 +342,7 @@ class Texture :
             return False
         if self.bindName != other.bindName :
             return False
-        if self.shaderStage != other.shaderStage :
+        if self.bindStage != other.bindStage :
             return False
         return True
     
@@ -645,8 +645,8 @@ class Parser :
             util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
         if checkListDup(name, self.current.textures) :
             util.fmtError("@texture '{}' already defined in '{}'!".format(name, self.current.name))
-        shaderStage = self.current.getTag()
-        tex = Texture(type, name, bind, shaderStage, self.fileName, self.lineNumber)
+        bindStage = self.current.getTag()
+        tex = Texture(type, name, bind, bindStage, self.fileName, self.lineNumber)
         self.current.textures.append(tex)
 
     #---------------------------------------------------------------------------
@@ -675,10 +675,10 @@ class Parser :
             util.fmtError("@uniform_block must have 2 args (name bind)")
         name = args[0]
         bind = args[1]
-        shaderStage = self.current.getTag()
+        bindStage = self.current.getTag()
         if checkListDup(name, self.current.uniformBlocks) :
             util.fmtError("@uniform_block '{}' already defined in '{}'!".format(name, self.current.name))
-        uniformBlock = UniformBlock(name, bind, shaderStage, self.fileName, self.lineNumber)
+        uniformBlock = UniformBlock(name, bind, bindStage, self.fileName, self.lineNumber)
         self.current.uniformBlocks.append(uniformBlock)
         self.push(uniformBlock)
 
@@ -1358,7 +1358,7 @@ class ShaderLibrary :
         vsUBSlot = 0
         fsUBSlot = 0
         for uBlock in bundle.uniformBlocks :
-            if uBlock.shaderStage == 'vs' :
+            if uBlock.bindStage == 'vs' :
                 uBlock.bindSlot = vsUBSlot
                 vsUBSlot += 1
             else :
@@ -1367,7 +1367,7 @@ class ShaderLibrary :
         vsTexSlot = 0
         fsTexSlot = 0
         for tex in bundle.textures :
-            if tex.shaderStage == 'vs' :
+            if tex.bindStage == 'vs' :
                 tex.bindSlot = vsTexSlot
                 vsTexSlot += 1
             else :
@@ -1545,14 +1545,14 @@ def writeBundleHeader(f, shdLib, bundle) :
     
     # write uniform block structs
     for blockIndex, uBlock in enumerate(bundle.uniformBlocks) :
-        if uBlock.shaderStage == 'vs' :
-            shaderStage = 'VS'
+        if uBlock.bindStage == 'vs' :
+            stageName = 'VS'
         else :
-            shaderStage = 'FS'
+            stageName = 'FS'
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(uBlock.bindName))
         f.write('            static const int32 _bindSlotIndex = {};\n'.format(uBlock.bindSlot))
-        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(shaderStage))
+        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
         f.write('            static const int64 _layoutHash = {};\n'.format(uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
@@ -1566,11 +1566,11 @@ def writeBundleHeader(f, shdLib, bundle) :
     
     # write texture slot indices
     for tex in bundle.textures :
-        if tex.shaderStage == 'vs' :
-            shaderStage = 'VS'
+        if tex.bindStage == 'vs' :
+            stageName = 'VS'
         else :
-            shaderStage = 'FS'
-        f.write('        static const int32 {}_{} = {};\n'.format(shaderStage, tex.bindName, tex.bindSlot))
+            stageName = 'FS'
+        f.write('        static const int32 {}_{} = {};\n'.format(stageName, tex.bindName, tex.bindSlot))
 
     f.write('        static ShaderSetup CreateSetup();\n')
     f.write('    };\n')
@@ -1718,11 +1718,6 @@ def writeBundleSource(f, shdLib, bundle) :
 
     # add uniform layouts to setup object
     for uBlock in bundle.uniformBlocks :
-        if uBlock.shaderStage == 'vs' :
-            shaderStage = 'VS'
-        else :
-            shaderStage = 'FS'
-
         layoutName = '{}_layout'.format(uBlock.bindName)
         f.write('    UniformBlockLayout {};\n'.format(layoutName))
         f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
@@ -1734,15 +1729,15 @@ def writeBundleSource(f, shdLib, bundle) :
 
     # add texture slots to setup objects
     for tex in bundle.textures :
-        if tex.shaderStage == 'vs' :
-            shaderStage = 'VS'
+        if tex.bindStage == 'vs' :
+            stageName = 'VS'
         else :
-            shaderStage = 'FS'
+            stageName = 'FS'
         if tex.type == 'sampler2D' :
             texType = 'TextureType::Texture2D'
         else :
             texType = 'TextureType::TextureCube'
-        f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex.name, texType, shaderStage, tex.bindSlot))
+        f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex.name, texType, stageName, tex.bindSlot))
                 
     f.write('    return setup;\n')
     f.write('}\n')
