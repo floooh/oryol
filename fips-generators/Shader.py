@@ -1724,7 +1724,7 @@ def writeBundleSource(f, shdLib, bundle) :
             shaderStage = 'FS'
 
         layoutName = '{}_layout'.format(uBlock.bindName)
-        f.write('    UniformLayout {};\n'.format(layoutName))
+        f.write('    UniformBlockLayout {};\n'.format(layoutName))
         f.write('    {}.TypeHash = {};\n'.format(layoutName, uBlock.getHash()))
         for type in uBlock.uniformsByType :
             for uniform in uBlock.uniformsByType[type] :
