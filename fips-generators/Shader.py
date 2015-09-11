@@ -211,7 +211,7 @@ class Line :
 #-------------------------------------------------------------------------------
 class Snippet :
     '''
-    A snippet from a shader file, can be a block, vertex/fragment shader,
+    A snippet from a shader file, can be a code block, vertex/fragment shader,
     etc...
     '''
     def __init__(self) :
@@ -225,7 +225,7 @@ class Snippet :
 #-------------------------------------------------------------------------------
 class Reference :
     '''
-    A reference to another block, with information where the 
+    A reference to another named object, with information where the 
     ref is located (source, linenumber)
     '''
     def __init__(self, name, path, lineNumber) :
@@ -234,7 +234,7 @@ class Reference :
         self.lineNumber = lineNumber
         
 #-------------------------------------------------------------------------------
-class Block(Snippet) :
+class CodeBlock(Snippet) :
     '''
     A code block snippet.
     '''
@@ -243,7 +243,7 @@ class Block(Snippet) :
         self.name = name
 
     def getTag(self) :
-        return 'block'
+        return 'code_block'
 
     def dump(self) :
         Snippet.dump(self)
@@ -268,11 +268,11 @@ class UniformBlock :
     '''
     A group of related shader uniforms.
     '''
-    def __init__(self, name, bindName, bindStage, filePath, lineNumber) :
+    def __init__(self, name, bindName, filePath, lineNumber) :
         self.name = name
         self.bindName = bindName
+        self.bindStage = None
         self.bindSlot = None
-        self.bindStage = bindStage
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.uniforms = []
@@ -292,24 +292,6 @@ class UniformBlock :
         for type in self.uniformsByType :
             for uniform in self.uniformsByType[type] :
                 dumpObj(uniform)
-
-    def isEquivalent(self, other) :
-        if self.name != other.name :
-            return False
-        if self.bindName != other.bindName :
-            return False
-        if self.bindStage != other.bindStage :
-            return False
-        for uniform in self.uniforms :
-            other_uniform = findByName(uniform.name, other.uniforms)
-            if not other_uniform :
-                return False
-            else :
-                if uniform.type != other_uniform.type :
-                    return False
-                elif uniform.bindName != other_uniform.bindName :
-                    return False
-        return True
 
     def getHash(self) :
         # returns an integer hash for the uniform block layout,
@@ -335,17 +317,6 @@ class Texture :
         self.filePath = filePath
         self.lineNumber = lineNumber
 
-    def isEquivalent(self, other) :
-        if self.type != other.type :
-            return False
-        if self.name != other.name :
-            return False
-        if self.bindName != other.bindName :
-            return False
-        if self.bindStage != other.bindStage :
-            return False
-        return True
-    
     def dump(self) :
         dumpObj(self)
 
@@ -378,6 +349,7 @@ class VertexShader(Snippet) :
         Snippet.__init__(self)
         self.name = name
         self.highPrecision = []
+        self.uniformBlockRefs = []
         self.uniformBlocks = []
         self.textures = []
         self.inputs = []
@@ -390,6 +362,9 @@ class VertexShader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
+        print 'UniformBlockRefs:'
+        for uniformBlockRef in self.uniformBlockRefs :
+            uniformBlockRefs.dump()
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
@@ -412,6 +387,7 @@ class FragmentShader(Snippet) :
         Snippet.__init__(self)
         self.name = name
         self.highPrecision = []
+        self.uniformBlockRefs = []
         self.uniformBlocks = []
         self.textures = []
         self.inputs = []
@@ -423,6 +399,9 @@ class FragmentShader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
+        print 'UniformBlockRefs:'
+        for uniformBlockRef in self.uniformBlockRefs :
+            uniformBlockRef.dump()
         print 'UniformBlocks:'
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
@@ -539,17 +518,49 @@ class Parser :
         self.current = self.stack.pop();
 
     #---------------------------------------------------------------------------
-    def onBlock(self, args) :
+    def onCodeBlock(self, args) :
         if len(args) != 1 :
-            util.fmtError("@block must have 1 arg (name)")
+            util.fmtError("@code_block must have 1 arg (name)")
         if self.current is not None :
-            util.fmtError("cannot nest @block (missing @end in '{}'?)".format(self.current.name))
+            util.fmtError("@code_block must be at top level (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
-        if name in self.shaderLib.blocks :
-            util.fmtError("@block '{}' already defined".format(name))
-        block = Block(name)
-        self.shaderLib.blocks[name] = block
-        self.push(block)
+        if name in self.shaderLib.codeBlocks :
+            util.fmtError("@code_block '{}' already defined".format(name))
+        codeBlock = CodeBlock(name)
+        self.shaderLib.codeBlocks[name] = codeBlock
+        self.push(codeBlock)
+
+    #---------------------------------------------------------------------------
+    def onUniformBlock(self, args) :
+        if self.current is not None :
+            util.fmtError("@uniform_block must be at top level (missing @end in '{}'?".format(self.current.name))
+        if len(args) != 2:
+            util.fmtError("@uniform_block must have 2 args (name bind)")
+        name = args[0]
+        bind = args[1]
+        if name in self.shaderLib.uniformBlocks  :
+            util.fmtError("@uniform_block '{}' already defined.".format(name))
+        ub = UniformBlock(name, bind, self.fileName, self.lineNumber)
+        self.shaderLib.uniformBlocks[name] = ub
+        self.push(ub)
+
+    #---------------------------------------------------------------------------
+    def onUniform(self, args) :
+        if not self.current or self.current.getTag() != 'uniform_block' :
+            util.fmtError("@uniform must come after @uniform_block tag!")
+        if len(args) != 3:
+            util.fmtError("@uniform must have 3 args (type name binding)")
+        type = args[0]
+        name = args[1]
+        bind = args[2]
+        if type not in validUniformTypes :
+            util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+
+        if checkListDup(name, self.current.uniforms) :
+            util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
+        uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
+        self.current.uniforms.append(uniform)
+        self.current.uniformsByType[type].append(uniform)
 
     #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
@@ -650,39 +661,6 @@ class Parser :
         self.current.textures.append(tex)
 
     #---------------------------------------------------------------------------
-    def onUniform(self, args) :
-        if not self.current or self.current.getTag() != 'uniform_block' :
-            util.fmtError("@uniform must come after @uniform_block tag!")
-        if len(args) != 3:
-            util.fmtError("@uniform must have 3 args (type name binding)")
-        type = args[0]
-        name = args[1]
-        bind = args[2]
-        if type not in validUniformTypes :
-            util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
-
-        if checkListDup(name, self.current.uniforms) :
-            util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
-        uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
-        self.current.uniforms.append(uniform)
-        self.current.uniformsByType[type].append(uniform)
-
-    #---------------------------------------------------------------------------
-    def onUniformBlock(self, args) :
-        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
-            util.fmtError("@uniform_block must come after @vs or @fs tag!")
-        if len(args) != 2:
-            util.fmtError("@uniform_block must have 2 args (name bind)")
-        name = args[0]
-        bind = args[1]
-        bindStage = self.current.getTag()
-        if checkListDup(name, self.current.uniformBlocks) :
-            util.fmtError("@uniform_block '{}' already defined in '{}'!".format(name, self.current.name))
-        uniformBlock = UniformBlock(name, bind, bindStage, self.fileName, self.lineNumber)
-        self.current.uniformBlocks.append(uniformBlock)
-        self.push(uniformBlock)
-
-    #---------------------------------------------------------------------------
     def onProgram(self, args) :
         if not self.current or self.current.getTag() != 'bundle' :
             util.fmtError("@program must come after @bundle!")
@@ -693,22 +671,39 @@ class Parser :
         self.current.programs.append(Program(vs, fs, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
-    def onUse(self, args) :
-        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
-            util.fmtError("@use must come after @block, @vs or @fs!")
+    def onUseCodeBlock(self, args) :
+        if not self.current or not self.current.getTag() in ['code_block', 'vs', 'fs'] :
+            util.fmtError("@use_code_block must come after @code_block, @vs or @fs!")
         if len(args) < 1:
-            util.fmtError("@use must have at least one arg!")
+            util.fmtError("@use_code_block must have at least one arg!")
         for arg in args :
             self.current.dependencies.append(Reference(arg, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
+    def onUseUniformBlock(self, args) :
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@use_code_block must come after @vs or @fs!")
+        if len(args) < 1:
+            util.fmtError("@use_code_block must have at least one arg!")
+        for arg in args :
+            if arg not in self.shaderLib.uniformBlocks :
+                util.fmtError("unknown uniform_block name '{}'".format(arg))
+            uniformBlock = self.shaderLib.uniformBlocks[arg]
+            if uniformBlock.bindStage is not None :
+                if uniformBlock.bindStage != self.current.getTag() :
+                    util.fmtError("uniform_block '{}' cannot be used both in @vs and @fs!".format(arg))
+            uniformBlock.bindStage = self.current.getTag()
+            self.current.uniformBlockRefs.append(Reference(arg, self.fileName, self.lineNumber))
+            self.current.uniformBlocks.append(uniformBlock)
+    
+    #---------------------------------------------------------------------------
     def onEnd(self, args) :
-        if not self.current or not self.current.getTag() in ['uniform_block', 'block', 'vs', 'fs', 'bundle'] :
-            util.fmtError("@end must come after @uniform_block, @block, @vs, @fs or @bundle!")
+        if not self.current or not self.current.getTag() in ['uniform_block', 'code_block', 'vs', 'fs', 'bundle'] :
+            util.fmtError("@end must come after @uniform_block, @code_block, @vs, @fs or @bundle!")
         if len(args) != 0:
             util.fmtError("@end must not have arguments")
-        if self.current.getTag() in ['block', 'vs', 'fs'] and len(self.current.lines) == 0 :
-            util.fmtError("no source code lines in @block, @vs or @fs section")
+        if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
+            util.fmtError("no source code lines in @code_block, @vs or @fs section")
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -725,7 +720,7 @@ class Parser :
             tagAndArgs = line[tagStartIndex+1 :].split()
             tag = tagAndArgs[0]
             args = tagAndArgs[1:]
-            if tag == 'block':
+            if tag == 'code_block':
                 self.onBlock(args)
             elif tag == 'vs':
                 self.onVertexShader(args)
@@ -733,8 +728,10 @@ class Parser :
                 self.onFragmentShader(args)
             elif tag == 'bundle':
                 self.onBundle(args)
-            elif tag == 'use':
-                self.onUse(args)
+            elif tag == 'use_code_block':
+                self.onUseCodeBlock(args)
+            elif tag == 'use_uniform_block':
+                self.onUseUniformBlock(args)
             elif tag == 'in':
                 self.onIn(args)
             elif tag == 'out':
@@ -852,7 +849,7 @@ class GLSLGenerator :
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
 
         # write vertex shader function
         lines.append(Line('void main() {', vs.lines[0].path, vs.lines[0].lineNumber))
@@ -897,7 +894,7 @@ class GLSLGenerator :
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
 
         # write fragment shader function
         lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
@@ -989,7 +986,7 @@ class HLSLGenerator :
 
         # write code blocks the vs depends on
         for dep in vs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
     
         # write the main() function
         lines.append(Line('void main(', vs.lines[0].path, vs.lines[0].lineNumber))
@@ -1021,7 +1018,7 @@ class HLSLGenerator :
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
         
         # write the main function
         lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))
@@ -1072,7 +1069,6 @@ class MetalGenerator :
     def genUniforms(self, shd, lines) :
         uniformDefs = {}
         for uBlock in shd.uniformBlocks :
-            # if there are non-texture uniforms, groups the rest into a cbuffer
             lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
@@ -1123,10 +1119,10 @@ class MetalGenerator :
         # write blocks the vs depends on
         # (Metal specific: protect against multiple inclusion)
         for dep in vs.resolvedDeps :
-            guard = '_ORYOL_BLOCK_{}'.format(self.shaderLib.blocks[dep].name)
+            guard = '_ORYOL_BLOCK_{}'.format(self.shaderLib.codeBlocks[dep].name)
             lines.append(Line('#ifndef {}'.format(guard)))
             lines.append(Line('#define {}'.format(guard)))
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
             lines.append(Line('#endif'))
    
         # write vertex shader input attributes
@@ -1202,10 +1198,10 @@ class MetalGenerator :
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
-            guard = '{}_INCLUDED'.format(self.shaderLib.blocks[dep].name)
+            guard = '{}_INCLUDED'.format(self.shaderLib.codeBlocks[dep].name)
             lines.append(Line('#ifndef {}'.format(guard)))
             lines.append(Line('#define {}'.format(guard)))
-            lines = self.genLines(lines, self.shaderLib.blocks[dep].lines)
+            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
             lines.append(Line('#endif'))
 
         # write fragment shader input structure
@@ -1243,7 +1239,8 @@ class ShaderLibrary :
     '''
     def __init__(self, inputs) :
         self.sources = inputs
-        self.blocks = {}
+        self.codeBlocks = {}
+        self.uniformBlocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
         self.bundles = {}
@@ -1252,8 +1249,11 @@ class ShaderLibrary :
     def dump(self) :
         dumpObj(self)
         print 'Blocks:'
-        for block in self.blocks.values() :
-            block.dump()
+        for cb in self.codeBlocks.values() :
+            cb.dump()
+        print 'UniformBlocks:'
+        for ub in self.uniformBlocks.values() :
+            ub.dump()
         print 'Vertex Shaders:'
         for vs in self.vertexShaders.values() :
             vs.dump()
@@ -1278,11 +1278,11 @@ class ShaderLibrary :
         '''
         # just add new dependencies at the end of resolvedDeps,
         # and remove dups in a second pass after recursion
-        if not dep.name in self.blocks :
+        if not dep.name in self.codeBlocks :
             util.setErrorLocation(dep.path, dep.lineNumber)
-            util.fmtError("unknown block dependency '{}'".format(dep.name))
+            util.fmtError("unknown code_block dependency '{}'".format(dep.name))
         shd.resolvedDeps.append(dep.name)
-        for depdep in self.blocks[dep.name].dependencies :
+        for depdep in self.codeBlocks[dep.name].dependencies :
             self.resolveDeps(shd, depdep)
 
     def removeDuplicateDeps(self, shd) :
@@ -1298,20 +1298,17 @@ class ShaderLibrary :
         deps.reverse()
         shd.resolvedDeps = deps
 
-    def checkAddUniformBlock(self, uniformBlock, list) :
+    def checkAddUniformBlock(self, uniformBlockRef, list) :
         '''
-        Add uniform block to list with sanity checks.
+        Resolve a uniform block ref and add to list with sanity checks.
         '''
-        listUniformBlock = findByName(uniformBlock.name, list)
-        if listUniformBlock :
-            if not uniformBlock.isEquivalent(listUniformBlock) :
-                util.setErrorLocation(uniformBlock.filePath, uniformBlock.lineNumber)
-                util.fmtError("uniform blocks named '{}' not equivalent".format(uniformBlock.name), False)
-                util.setErrorLocation(listUniformBlock.filePath, listUniformBlock.lineNumber)
-                util.fmtError("uniform blocks named '{}' not equivalent".format(uniformBlock.name), False)
+        if uniformBlockRef.name in self.uniformBlocks :
+            if not findByName(uniformBlockRef.name, list) :
+                uniformBlock = self.uniformBlocks[uniformBlockRef.name]
+                list.append(uniformBlock)
         else :
-            # new uniform block, add to list
-            list.append(uniformBlock)
+            util.setErrorLocation(uniformBlockRef.filePath, uniformBlockRef.lineNumber)
+            util.fmtError("uniform block '%s' not found!".format(uniformBlockRef.name))
 
     def checkAddTexture(self, texture, list) :
         '''
@@ -1328,24 +1325,25 @@ class ShaderLibrary :
             # new texture, add to list
             list.append(texture)
 
-    def resolveBundleUniformBlocksAndTextures(self, bundle) :
+    def resolveUniformBlocksAndTextures(self, bundle) :
         '''
-        Gathers all uniform blocks from all shaders in the bundle
+        Gathers all uniform blocks from all shaders in the bundle,
+        and assigns the bindStage
         '''
         for program in bundle.programs :
             if program.vs not in self.vertexShaders :
                 util.setErrorLocation(program.filePath, program.lineNumber)
                 util.fmtError("unknown vertex shader '{}'".format(program.vs))
-            for uniformBlock in self.vertexShaders[program.vs].uniformBlocks :
-                self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
+            for uniformBlockRef in self.vertexShaders[program.vs].uniformBlockRefs :
+                self.checkAddUniformBlock(uniformBlockRef, bundle.uniformBlocks)
             for tex in self.vertexShaders[program.vs].textures :
                 self.checkAddTexture(tex, bundle.textures)
 
             if program.fs not in self.fragmentShaders :
                 util.setErrorLocation(program.filePath, program.lineNumber)
                 util.fmtError("unknown fragment shader '{}'".format(program.fs))
-            for uniformBlock in self.fragmentShaders[program.fs].uniformBlocks :
-                self.checkAddUniformBlock(uniformBlock, bundle.uniformBlocks)
+            for uniformBlockRef in self.fragmentShaders[program.fs].uniformBlockRefs :
+                self.checkAddUniformBlock(uniformBlockRef, bundle.uniformBlocks)
             for tex in self.fragmentShaders[program.fs].textures :
                 self.checkAddTexture(tex, bundle.textures)
 
@@ -1389,7 +1387,7 @@ class ShaderLibrary :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
         for bundle in self.bundles.values() :
-            self.resolveBundleUniformBlocksAndTextures(bundle)
+            self.resolveUniformBlocksAndTextures(bundle)
             self.assignBindSlotIndices(bundle)
 
     def validate(self) :
