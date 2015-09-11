@@ -33,4 +33,15 @@ TextureBlockLayout::Add(const StringAtom& name, TextureType::Code type, int32 bi
     return *this;
 }
 
+//------------------------------------------------------------------------------
+int32
+TextureBlockLayout::ComponentIndexForBindSlot(int32 bindSlot) const {
+    for (int i = 0; i < this->numComps; i++) {
+        if (this->comps[i].BindSlot == bindSlot) {
+            return i;
+        }
+    }
+    return InvalidIndex;
+}
+
 } // namespace Oryol

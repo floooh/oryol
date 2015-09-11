@@ -19,10 +19,11 @@ public:
 
     ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
     struct entry {
-        int32 bindSlot = InvalidIndex;
+        int32 bindSlot;
         ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
         ID3D11SamplerState* d3d11SamplerState = nullptr;
     };
+    int32 numEntries = 0;
     StaticArray<entry, GfxConfig::MaxNumTexturesPerStage> entries;
 };
 

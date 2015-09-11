@@ -50,53 +50,40 @@ d3d11TextureBlockFactory::SetupResource(textureBlock& tb) {
     o_assert_dbg(this->pointers.texturePool);
     o_assert_dbg(this->pointers.shaderPool);
 
-#error "FIXME!"
-
     const shader* shd = this->pointers.shaderPool->Lookup(tb.Setup.Shader);
     o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(tb.Setup.BindStage, tb.Setup.BindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
 
-    // gather vertex shader textures
-    for (int i = 0; i < GfxConfig::MaxNumVSTextures; i++) {
-        o_assert_dbg(nullptr == tb.vs[i].d3d11ShaderResourceView);
-        o_assert_dbg(nullptr == tb.vs[i].d3d11SamplerState);
-        const auto& vsTex = tb.Setup.VS[i];
-        if (vsTex.IsValid()) {
-            o_assert_dbg(vsTex.Type == GfxResourceType::Texture);
-            const texture* tex = this->pointers.texturePool->Get(vsTex);
+    tb.bindStage = tb.Setup.BindStage;
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumTexturesPerStage; bindSlot++) {
+        Id texId = tb.Setup.Slot[bindSlot];
+        if (texId.IsValid()) {
+            o_assert(texId.Type == GfxResourceType::Texture);
+
+            // lookup source texture
+            const texture* tex = this->pointers.texturePool->Get(texId);
             o_assert_dbg(tex && (ResourceState::Valid == tex->State));
             o_assert_dbg(tex->d3d11ShaderResourceView && tex->d3d11SamplerState);
-            const int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::VS, i);
-            o_assert_dbg(InvalidIndex != texIndex);
-            if (tex->textureAttrs.Type != shd->Setup.TextureType(texIndex)) {
-                o_error("Texture type mismatch at slot '%s'\n", shd->Setup.TextureName(texIndex).AsCStr());
+
+            // make sure type of source texture (2D, Cube...) is matching the
+            // expected binding slot texture type
+            const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(bindSlot));
+            if (texBlockComp.Type != tex->textureAttrs.Type) {
+                o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
             }
-            auto& entry = tb.vs[i];
-            entry.d3d11ShaderResourceView = tex->d3d11ShaderResourceView;
-            entry.d3d11SamplerState = tex->d3d11SamplerState;
+
+            // copy over the D3D11 resoruce pointers
+            auto& dstEntry = tb.entries[tb.numEntries++];
+            o_assert_dbg(InvalidIndex == dstEntry.bindSlot);
+            o_assert_dbg(nullptr == dstEntry.d3d11ShaderResourceView);
+            o_assert_dbg(nullptr == dstEntry.d3d11SamplerState);
+            dstEntry.bindSlot = bindSlot;
+            dstEntry.d3d11ShaderResourceView = tex->d3d11ShaderResourceView;
+            dstEntry.d3d11SamplerState = tex->d3d11SamplerState;
         }
     }
-
-    // gather fragment shader textures
-    for (int i = 0; i < GfxConfig::MaxNumFSTextures; i++) {
-        o_assert_dbg(nullptr == tb.fs[i].d3d11ShaderResourceView);
-        o_assert_dbg(nullptr == tb.fs[i].d3d11SamplerState);
-        const auto& fsTex = tb.Setup.FS[i];
-        if (fsTex.IsValid()) {
-            o_assert_dbg(fsTex.Type == GfxResourceType::Texture);
-            const texture* tex = this->pointers.texturePool->Get(fsTex);
-            o_assert_dbg(tex && (ResourceState::Valid == tex->State));
-            o_assert_dbg(tex->d3d11ShaderResourceView && tex->d3d11SamplerState);
-            const int32 texIndex = shd->Setup.TextureIndexByStageAndSlot(ShaderStage::FS, i);
-            o_assert_dbg(InvalidIndex != texIndex);
-            if (tex->textureAttrs.Type != shd->Setup.TextureType(texIndex)) {
-                o_error("Texture type mismatch at slot '%s'\n", shd->Setup.TextureName(texIndex).AsCStr());
-            }
-            auto& entry = tb.fs[i];
-            entry.d3d11ShaderResourceView = tex->d3d11ShaderResourceView;
-            entry.d3d11SamplerState = tex->d3d11SamplerState;
-        }
-    }
-
     return ResourceState::Valid;
 }
 

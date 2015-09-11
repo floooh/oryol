@@ -112,15 +112,15 @@ private:
     ID3D11VertexShader* d3d11CurVertexShader;
     ID3D11PixelShader* d3d11CurPixelShader;
     D3D_PRIMITIVE_TOPOLOGY d3d11CurPrimitiveTopology;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurVSConstantBuffers;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurPSConstantBuffers;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVertexBuffers;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurVSCBs;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurPSCBs;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVBs;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexStrides;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexOffsets;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSShaderResourceViews;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSShaderResourceViews;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSamplerStates;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSamplerStates;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSRVs;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSRVs;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSamplers;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSamplers;
 
     uint16 curStencilRef;
     glm::vec4 curBlendColor;

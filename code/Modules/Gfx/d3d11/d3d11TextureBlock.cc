@@ -11,6 +11,7 @@ namespace _priv {
 void
 d3d11TextureBlock::Clear() {
     this->bindStage = ShaderStage::InvalidShaderStage;
+    this->numEntries = 0;
     this->entries.Fill(entry());
     textureBlockBase::Clear();
 }

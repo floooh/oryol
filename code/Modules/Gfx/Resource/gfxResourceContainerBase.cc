@@ -416,22 +416,7 @@ gfxResourceContainerBase::queryTextureBlockDepState(const textureBlock* tb) {
     o_assert_dbg(tb);
 
     // this returns an overall state of the dependent textures
-    for (const Id& texId : tb->Setup.VS) {
-        if (texId.IsValid()) {
-            const texture* tex = this->texturePool.Get(texId);
-            if (tex) {
-                if (this->checkState(tex->State)) {
-                    // Failed or Pending, exit early
-                    return tex->State;
-                }
-            }
-            else {
-                // the dependent resource no longer exists
-                return ResourceState::Failed;
-            }
-        }
-    }
-    for (const Id& texId : tb->Setup.FS) {
+    for (const Id& texId : tb->Setup.Slot) {
         if (texId.IsValid()) {
             const texture* tex = this->texturePool.Get(texId);
             if (tex) {

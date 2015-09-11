@@ -43,6 +43,8 @@ public:
     TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int32 bindSlot);
     /// get number of components in the layout
     int32 NumComponents() const;
+    /// find component index with matching bind slot, InvalidIndex if not match
+    int32 ComponentIndexForBindSlot(int32 bindSlot) const;
     /// get component at index
     const Component& ComponentAt(int32 index) const;
 
