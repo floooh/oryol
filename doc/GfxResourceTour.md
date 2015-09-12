@@ -176,7 +176,7 @@ depending on whether initialization-data was provided or not
           upload buffer into default buffer
         * put the upload buffer into a deferred release queue to be released 
           N frames later when no longer in use by GPU
-    * a call ID3D12Device::ResourceBarrier() for state transition of the default
+    * a call to ID3D12GraphicsCommandList::ResourceBarrier() for state transition of the default
       heap buffer from copy-dest to use as vertex/constant/index buffer
 
 This D3D12 resource initialization is (AFAIK) the most basic way to initialize
