@@ -217,7 +217,7 @@ no support for uniform arrays, I haven't made up my mind about these yet).
 A texture-block-layout describes the names, types and texture-bind-slots of 
 up to 16 textures.
 
-Even though it is possible to setup shaders objects manually in C++, the common
+Even though it is possible to setup shader objects manually in C++, the common
 way is through the shader code generator that's integrated into the Oryol
 build process:
 
@@ -328,7 +328,7 @@ at draw-state creation:
 
 * no GL calls are made
 * only a combined array of the vertex attribute elements of the input meshes 
-  are created to simplify the glVertexAttribPointer calls later during rendering
+  is created to simplify the glVertexAttribPointer calls later during rendering
 
 in Gfx::ApplyDrawState():
 
@@ -398,7 +398,7 @@ in Gfx::ApplyDrawState:
 * [MTLRenderCommandEncoder setCullMode:]
 * [MTLRenderCommandEncoder setRenderPipelineState:]
 * [MTLRenderCommandEncoder setDepthStencilState:]
-* for each if the 4 mesh slots:
+* for each of the 4 mesh slots:
     * [MTLRenderCommandEncoder setVertexBuffer:offset:atIndex], for empty 
       mesh bind slots, this is called with a nil vertex-buffer
 
@@ -482,17 +482,15 @@ To create texture objects, the following information is provided:
 * a flag whether the texture is a render target
 * an optional depth-buffer pixel-format
 * an optional shared-depth-buffer resource id
-* optional initialization data as one pointer, and offsets and sizes to 
+* optional initialization data as one pointer, and offsets and sizes of 
   mip-surface data
 
-Currently, no multiple-render-targets are supported.
+Currently, no 'multiple-render-targets' are supported.
 
-The only Gfx function that accepts a texture resource id is 
+The only Gfx function that directly accepts a texture resource id is 
 Gfx::ApplyRenderTarget():
 
 #### What happens at creation and in Gfx::ApplyRenderTarget():
-
-Essentially, setting a new render target starts a new render-pass:
 
 **GL/GLES2/WebGL**:
 
