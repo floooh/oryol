@@ -608,7 +608,7 @@ To create a texture-block object, the following input data must be provided:
 * the shader stage and bind slot this texture block will be bound to
 * up to 16 previously created texture objects set in the 'texture-bind-slots'
 
-At creation time, the texture-layouts in the provided shader objects
+At creation time, the texture-layouts in the provided shader object
 will be used to check whether the provided textures are type-compatible
 (for instance, if a 2D texture is assigned to a texture-slot which expects
 a cube-texture, the texture-block creation will fail).
