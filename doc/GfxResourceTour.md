@@ -90,11 +90,11 @@ can look quite clean:
 
 ```cpp
     Gfx::ApplyDefaultRenderTarget(clearState);
-    for (const auto& mat : materials) {
-        Gfx::ApplyDrawState(mat.drawState);
-        Gfx::ApplyUniformBlock(mat.uniforms);
-        Gfx::ApplyTextureBlock(mat.textures);
-        for (const auto& inst : instances) {
+    for (const auto& shape: shapes) {
+        Gfx::ApplyDrawState(shape.drawState);
+        Gfx::ApplyUniformBlock(shape.materialUniforms);
+        Gfx::ApplyTextureBlock(shape.materialTextures);
+        for (const auto& inst : shapeInstances) {
             inst.uniforms.mvp = ...;
             Gfx::ApplyUniformBlock(inst.uniforms);
             Gfx::Draw(0);
