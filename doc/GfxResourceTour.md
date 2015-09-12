@@ -39,10 +39,10 @@ defined up-front. This makes rendering less flexible (you cannot do
 uniforms and textures), but the advantage is that no dynamic 'recompilation'
 of state needs to happen between draw calls in the 3D API or GPU driver.
 
-To make map somewhat well to the new 3D APIs, the Oryol Gfx API had to be
+To map somewhat well to the new 3D APIs, the Oryol Gfx API had to be
 changed slightly in the past months, and will continue to change until at least
 the Vulkan rendering backend has been implemented. But I think the end-result
-will still be very simple medium-level 3D API which nicely bridges the
+will still be a very simple medium-level 3D API which nicely bridges the
 gap between 'old' and 'new'.
 
 
@@ -77,8 +77,8 @@ A simple render-loop could look like this:
 
 * for each render pass:
     * set render target
-    * for each 'material batch':
-        * set draw state object, this implicitely also sets shaders and input geometry
+    * for each 'shape':
+        * set draw-state object, this implicitely also sets shaders and input geometry
         * set per-material texture- and uniform-blocks
         * for each instance:
             * compute and update per-instance uniform values
