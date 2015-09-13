@@ -29,7 +29,7 @@ private:
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    Shaders::RenderTarget::Params offscreenParams;
+    Shaders::RenderTarget::VSParams offscreenParams;
     Shaders::Main::VSParams displayVSParams;
     ClearState offscreenClearState;
     ClearState displayClearState;
@@ -56,7 +56,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::ApplyTextureBundle(this->renderTargetTextureBundle);
+    Gfx::ApplyTextureBlock(this->renderTargetTextureBundle);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -100,12 +100,12 @@ SimpleRenderTargetApp::OnInit() {
     Id sphere = Gfx::CreateResource(shapeBuilder.Result());
 
     // create shaders
-    Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
-    Id dispShader = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::Setup());
+    Id dispShader = Gfx::CreateResource(Shaders::Main::Setup());
 
     // create texture bundle for the main pass
-    auto tbSetup = TextureBundleSetup::FromShader(dispShader);
-    tbSetup.FS[Shaders::Main::FS_Texture] = this->renderTarget;
+    auto tbSetup = Shaders::Main::FSTextures::Setup(dispShader);
+    tbSetup.Slot[Shaders::Main::FSTextures::Texture] = this->renderTarget;
     this->renderTargetTextureBundle = Gfx::CreateResource(tbSetup);
 
     // create one draw state for offscreen rendering, and one draw state for main target rendering

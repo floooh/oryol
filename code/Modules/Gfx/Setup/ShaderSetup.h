@@ -40,9 +40,6 @@ public:
     /// add a texture block
     void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
     
-    /// add a shader texture slot
-    void AddTexture(const StringAtom& name, TextureType::Code texType, ShaderStage::Code bindStage, int32 bindSlot);
-
     /// set metal-style library byte code
     void SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes);
     /// get metal-style library byte code

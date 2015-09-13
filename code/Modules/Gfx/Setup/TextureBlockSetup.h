@@ -15,11 +15,6 @@ namespace Oryol {
 
 class TextureBlockSetup {
 public:
-    /// construct for vertex shader bind stage
-    static TextureBlockSetup VS(int32 bindSlot, const Id& shd, uint32 shdSelMask=0);
-    /// construct for fragment shader bind stage
-    static TextureBlockSetup FS(int32 bindSlot, const Id& shd, uint32 shdSelMask=0);
-
     /// default constructor
     TextureBlockSetup();
 
