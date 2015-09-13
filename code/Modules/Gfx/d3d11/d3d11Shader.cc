@@ -110,7 +110,7 @@ d3d11Shader::getPixelShaderByMask(uint32 mask) const {
 void
 d3d11Shader::addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb) {
     o_assert_dbg(cb);
-    const int32 cbIndex = (ShaderStage::NumShaderStages * bindStage) + bindSlot;
+    const int32 cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
     this->constantBuffers[cbIndex] = cb;
 }
 

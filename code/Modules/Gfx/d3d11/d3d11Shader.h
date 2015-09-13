@@ -62,7 +62,7 @@ private:
 //------------------------------------------------------------------------------
 inline ID3D11Buffer*
 d3d11Shader::getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const {
-    const int32 cbIndex = (ShaderStage::NumShaderStages * bindStage) + bindSlot;
+    const int32 cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
     return this->constantBuffers[cbIndex];
 }
 
