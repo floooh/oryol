@@ -19,7 +19,7 @@ public:
 
     ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
     struct entry {
-        int32 bindSlot;
+        int32 bindSlot = InvalidIndex;
         ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
         ID3D11SamplerState* d3d11SamplerState = nullptr;
     };
