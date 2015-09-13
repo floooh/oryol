@@ -74,7 +74,7 @@ d3d11TextureBlockFactory::SetupResource(textureBlock& tb) {
                 o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
             }
 
-            // copy over the D3D11 resoruce pointers
+            // copy over the D3D11 resource pointers
             auto& dstEntry = tb.entries[tb.numEntries++];
             o_assert_dbg(InvalidIndex == dstEntry.bindSlot);
             o_assert_dbg(nullptr == dstEntry.d3d11ShaderResourceView);
