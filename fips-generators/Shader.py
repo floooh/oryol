@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 45
+Version = 46
 
 import os
 import sys
@@ -760,7 +760,7 @@ class Parser :
             tag = tagAndArgs[0]
             args = tagAndArgs[1:]
             if tag == 'code_block':
-                self.onBlock(args)
+                self.onCodeBlock(args)
             elif tag == 'vs':
                 self.onVertexShader(args)
             elif tag == 'fs':
