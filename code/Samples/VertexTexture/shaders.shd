@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 //  see https://github.com/ashima/webgl-noise
 //
-@block NoiseUtil
+@code_block NoiseUtil
 //
 // Description : Array and textureless GLSL 2D simplex noise function.
 //      Author : Ian McEwan, Ashima Arts.
@@ -80,21 +80,26 @@ _func float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
+@uniform_block plasmaParams FSParams
+@uniform float time Time
+@end
+
 @vs plasmaVS
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
+{
     _position = position;
     uv = texcoord0;
+}
 @end
 
 @fs plasmaFS
 @highp float
-@use NoiseUtil
-@uniform_block fsParams FSParams
-    @uniform float time Time
-@end
+@use_code_block NoiseUtil
+@use_uniform_block plasmaParams
 @in vec2 uv
+{
     vec2 dx = vec2(time, 0.0);
     vec2 dy = vec2(0.0, time);
     vec2 dxy = vec2(time, time);
@@ -121,6 +126,7 @@ _func float snoise(vec2 v)
     
     // scale by 100 to check that the result isn't clamped to 1.0
     _color = vec4(red, green, blue, height * 0.2);
+}
 @end
 
 @bundle Plasma
@@ -128,23 +134,32 @@ _func float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-@vs planeVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
+@uniform_block planeParams VSParams
+@uniform mat4 mvp ModelViewProjection
 @end
+@texture_block planeTextures FSTextures
 @texture sampler2D tex Texture
+@end
+
+@vs planeVS
+@use_uniform_block planeParams
+@use_texture_block planeTextures
 @in vec4 position
 @in vec2 texcoord0
 @out vec4 color
+{
     color = tex2Dvs(tex, texcoord0);
     vec4 pos = position;
     pos.y = color.w;
     _position = mul(mvp, pos);
+}
 @end
 
 @fs planeFS
 @in vec4 color
+{
     _color = color;
+}
 @end
 
 @bundle Plane

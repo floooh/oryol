@@ -2,10 +2,16 @@
 //  Shaders for the InfiniteSpheres sample
 //------------------------------------------------------------------------------
 
-@vs vs
 @uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
+@uniform mat4 mvp ModelViewProjection
 @end
+
+@texture_block fsTextures FSTextures
+@texture sampler2D tex Texture
+@end
+
+@vs vs
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
 @in vec2 texcoord0
@@ -17,7 +23,7 @@
 @end
 
 @fs fs
-@texture sampler2D tex Texture
+@use_texture_block fsTextures
 @in vec4 nrm
 @in vec2 uv
     vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));

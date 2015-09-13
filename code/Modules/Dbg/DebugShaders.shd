@@ -2,13 +2,19 @@
 //  Debug module shaders
 //------------------------------------------------------------------------------
 
+@uniform_block vsParams VSParams
+@uniform vec2 glyphSize GlyphSize   // glyph size on current display
+@end
+
+@texture_block fsTextures FSTextures
+@texture sampler2D tex Texture
+@end
+
 //------------------------------------------------------------------------------
 //  text vertex shader 
 //
 @vs vsDbgText
-@uniform_block vsParams VSParams
-    @uniform vec2 glyphSize GlyphSize   // glyph size on current display
-@end
+@use_uniform_block vsParams
 @in vec4 position   // x: cursorX, y: cursorY, z: fontX, w: fontY
 @in vec4 color0
 @out vec2 uv
@@ -25,7 +31,7 @@
 //  text fragment shader
 //
 @fs fsDbgText
-@texture sampler2D tex Texture
+@use_texture_block fsTextures
 @in vec2 uv
 @in vec4 color
     _color = tex2D(tex, uv).xxxx * color;

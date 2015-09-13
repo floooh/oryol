@@ -138,7 +138,7 @@ debugTextRenderer::drawTextBuffer() {
         Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->textDrawState);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::ApplyTextureBundle(this->fontTextureBundle);
+        Gfx::ApplyTextureBlock(this->fontTextureBlock);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }
@@ -146,7 +146,7 @@ debugTextRenderer::drawTextBuffer() {
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupFontTexture() {
-    o_assert_dbg(!this->fontTextureBundle.IsValid());
+    o_assert_dbg(!this->fontTextureBlock.IsValid());
     o_assert_dbg(this->textShader.IsValid());
     
     // convert the KC85/4 font into 8bpp image data
@@ -190,11 +190,11 @@ debugTextRenderer::setupFontTexture() {
     o_assert_dbg(Gfx::QueryResourceInfo(fontTexture).State == ResourceState::Valid);
 
     // setup texture bundle
-    auto tbSetup = TextureBundleSetup::FromShader(this->textShader);
-    tbSetup.FS[Shaders::TextShader::FS_Texture] = fontTexture;
-    this->fontTextureBundle = Gfx::CreateResource(tbSetup);
-    o_assert_dbg(this->fontTextureBundle.IsValid());
-    o_assert_dbg(Gfx::QueryResourceInfo(this->fontTextureBundle).State == ResourceState::Valid);
+    auto tbSetup = Shaders::TextShader::FSTextures::Setup(this->textShader);
+    tbSetup.Slot[Shaders::TextShader::FSTextures::Texture] = fontTexture;
+    this->fontTextureBlock = Gfx::CreateResource(tbSetup);
+    o_assert_dbg(this->fontTextureBlock.IsValid());
+    o_assert_dbg(Gfx::QueryResourceInfo(this->fontTextureBlock).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    this->textShader = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
+    this->textShader = Gfx::CreateResource(Shaders::TextShader::Setup());
     
     // finally create draw state
     auto dss = DrawStateSetup::FromMeshAndShader(this->textMesh, this->textShader);

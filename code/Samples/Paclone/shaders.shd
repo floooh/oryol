@@ -2,19 +2,27 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
+@texture_block canvasTextures FSTextures
+@texture sampler2D tex Texture
+@end
+
 @vs canvasVS
 @in vec2 position
 @in vec2 texcoord0
 @out vec2 uv
+{
     _position = vec4(((position.xy * 2.0) - 1.0), 0.0, 1.0);
     _position.y = -_position.y;
     uv = texcoord0;
+}
 @end
 
 @fs canvasFS
+@use_texture_block canvasTextures
 @in vec2 uv
-@texture sampler2D tex Texture
+{
     _color = tex2D(tex, uv);
+}
 @end
 
 @bundle Canvas
@@ -25,7 +33,7 @@
 //  Timothy Lottes CRT effect shader:
 //  https://www.shadertoy.com/view/XsjSzR#
 
-@block TL_CRT
+@code_block TL_CRT
 //
 //
 // PUBLIC DOMAIN CRT STYLED SCAN-LINE SHADER
@@ -164,22 +172,32 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
+{
     _position = position;
     uv = texcoord0;
+}
+@end
+
+@uniform_block crtFSParams FSParams
+@uniform vec2 iResolution Resolution
+@end
+
+@texture_block crtFSTextures FSTextures
+@texture sampler2D iChannel0 Canvas
 @end
 
 @fs crtFS
-@use TL_CRT
+@use_code_block TL_CRT
+@use_uniform_block crtFSParams
+@use_texture_block crtFSTextures
 @in vec2 uv
-@uniform_block fsParams FSParams
-    @uniform vec2 iResolution Resolution
-@end
-@texture sampler2D iChannel0 Canvas
+{
     #if 1
     _color = tl_crt(iChannel0, _fragcoord, uv);
     #else
     _color = tex2D(iChannel0, uv);
     #endif
+}
 @end
 
 @bundle CRT

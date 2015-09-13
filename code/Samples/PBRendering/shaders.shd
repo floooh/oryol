@@ -5,11 +5,13 @@
 // http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
 //------------------------------------------------------------------------------
 
-@vs vs
 @uniform_block vsParams VSParams
-    @uniform mat4 modelViewProj ModelViewProj
-    @uniform mat4 modelView ModelView
+@uniform mat4 modelViewProj ModelViewProj
+@uniform mat4 modelView ModelView
 @end
+
+@vs vs
+@use_uniform_block vsParams
 @in vec4 position
 @in vec3 normal
 @out vec3 viewSpacePos
@@ -21,7 +23,7 @@
 
 //------------------------------------------------------------------------------
 //  perform gamma correction
-@block Util
+@code_block Util
 _func vec4 gamma(vec4 c) {
     float p = 1.0/2.2;
     return vec4(pow(abs(c.xyz), vec3(p, p, p)), c.w);
@@ -31,7 +33,7 @@ _func vec4 gamma(vec4 c) {
 //------------------------------------------------------------------------------
 //  BRDF functions
 //
-@block BRDF
+@code_block BRDF
 
 //------------------------------------------------------------------------------
 //  D(h)
@@ -110,11 +112,13 @@ _func vec3 G_UE4(vec3 L, vec3 V, vec3 N) {
 
 @end
 
-@fs fs
-@use Util BRDF
 @uniform_block fsParams FSParams
-    @uniform vec3 lightVec LightVec // must be in view space already
+@uniform vec3 lightVec LightVec // must be in view space already
 @end
+
+@fs fs
+@use_code_block Util BRDF
+@use_uniform_block fsParams
 @in vec3 viewSpacePos
 @in vec3 viewSpaceNormal
     const vec3 eyePos = vec3(0.0, 0.0, 0.0);    // in view space, eye pos is at origin

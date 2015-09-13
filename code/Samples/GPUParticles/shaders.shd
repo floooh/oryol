@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 //  Fragment shader util functions
 //
-@block FSUtil
+@code_block FSUtil
 // get particleId from current fragment coord
 _func float getParticleId(float bufferWidth, vec2 fragCoord) {
     vec2 xy = floor(fragCoord);
@@ -41,7 +41,7 @@ _func particleStateUvs getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCo
 //------------------------------------------------------------------------------
 //  Vertex shader util functions
 //
-@block VSUtil
+@code_block VSUtil
 // compute particle position uv coord from particleId
 _func vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
     float numParticlesAlongX = bufferDims.x * 0.5;
@@ -66,7 +66,7 @@ _func vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
 //               Distributed under the MIT License. See LICENSE file.
 //               https://github.com/ashima/webgl-noise
 //
-@block Noise
+@code_block Noise
 _func vec3 mod289(vec3 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
@@ -134,7 +134,9 @@ _func float snoise(vec2 v)
 //
 @vs fsqVS
 @in vec4 position
+{
     _position = position;
+}
 @end
 
 //------------------------------------------------------------------------------
@@ -145,13 +147,15 @@ _func float snoise(vec2 v)
 //
 //  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
 //  | p3.pos | p3.vec | ...    | ...
+@uniform_block initParams FSParams
+@uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
+@end
+
 @fs initFS
 @highp float
-@use Noise
-@use FSUtil
-@uniform_block fsParams FSParams
-    @uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
-@end
+@use_code_block Noise FSUtil
+@use_uniform_block initParams
+{
     if (atPosition(_fragcoord.xy)) {
         // position starts always at 0
         _color = vec4(0.0, 0.0, 0.0, 0.0);
@@ -166,6 +170,7 @@ _func float snoise(vec2 v)
         rnd.y += 2.0; // skew velocity upwards
         _color = vec4(rnd, 0.0);
     }
+}
 @end
 
 @bundle InitParticles
@@ -176,14 +181,21 @@ _func float snoise(vec2 v)
 //  Fullscreen-quad shader to update particle positions and velocity
 //  via ping-ponging.
 //
+@uniform_block updateParams FSParams
+@uniform vec2 bufDims BufferDims
+@uniform float numParticles NumParticles
+@end
+
+@texture_block updateTextures FSTextures
+@texture sampler2D prevState PrevState
+@end
+
 @fs updateFS
 @highp float
-@use FSUtil
-@uniform_block fsParams FSParams
-    @uniform vec2 bufDims BufferDims
-    @uniform float numParticles NumParticles
-@end
-@texture sampler2D prevState PrevState
+@use_code_block FSUtil
+@use_uniform_block updateParams
+@use_texture_block updateTextures
+{
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
@@ -216,6 +228,7 @@ _func float snoise(vec2 v)
         }
         _color = vel;
     }
+}
 @end
 
 @bundle UpdateParticles
@@ -230,30 +243,40 @@ _func float snoise(vec2 v)
 //  particleID, the particle's position is fetched from the particle state
 //  texture.
 //
+@uniform_block drawParams VSParams
+@uniform mat4 mvp ModelViewProjection
+@uniform vec2 bufDims BufferDims
+@end
+
+@texture_block drawTextures FSTextures
+@texture sampler2D particleTex ParticleState
+@end
+
 @vs drawVS
 @highp sampler2D
-@use VSUtil
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
-    @uniform vec2 bufDims BufferDims
-@end
-@texture sampler2D particleTex ParticleState
+@use_code_block VSUtil
+@use_uniform_block drawParams
+@use_texture_block drawTextures
 @in vec4 position
 @in vec4 color0
 @in float instance0
 @out vec4 color
+{
     float particleId = instance0;
     vec2 posUv = posUvFromParticleId(particleId, bufDims);
     vec4 particlePos = vec4(tex2Dvs(particleTex, posUv).xyz, 0.0);
 
     _position = mul(mvp, (position + particlePos));
     color = color0;
+}
 @end
 
 
 @fs drawFS
 @in vec4 color
+{
     _color = color;
+}
 @end
 
 @bundle DrawParticles
