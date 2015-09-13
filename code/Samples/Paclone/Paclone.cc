@@ -26,7 +26,7 @@ private:
 
     Id crtEffect;
     Id crtRenderTarget;
-    Id crtTexBundle;
+    Id crtTexBlock;
     Shaders::CRT::FSParams crtParams;
 
     canvas spriteCanvas;
@@ -50,17 +50,17 @@ PacloneApp::OnInit() {
     Sound::Setup(SoundSetup());
     Dbg::Setup();
     
-    // setup a offscreen render target, copy-shader and texture bundle
+    // setup a offscreen render target, copy-shader and texture block
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
     rtSetup.MinFilter = TextureFilterMode::Linear;
     rtSetup.MagFilter = TextureFilterMode::Linear;
     this->crtRenderTarget = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
-    Id shd = Gfx::CreateResource(Shaders::CRT::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
-    auto tbSetup = TextureBundleSetup::FromShader(shd);
-    tbSetup.FS[Shaders::CRT::FS_Canvas] = this->crtRenderTarget;
-    this->crtTexBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::CRT::FSTextures::Setup(shd);
+    tbSetup.Slot[Shaders::CRT::FSTextures::Canvas] = this->crtRenderTarget;
+    this->crtTexBlock = Gfx::CreateResource(tbSetup);
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
@@ -101,7 +101,7 @@ PacloneApp::OnRunning() {
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyUniformBlock(this->crtParams);
-    Gfx::ApplyTextureBundle(this->crtTexBundle);
+    Gfx::ApplyTextureBlock(this->crtTexBlock);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     this->tick++;

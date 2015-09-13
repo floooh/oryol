@@ -25,7 +25,7 @@ private:
     Id plasmaRenderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
-    Id planeTextureBundle;
+    Id planeTextureBlock;
     
     glm::mat4 view;
     glm::mat4 proj;
@@ -53,7 +53,7 @@ VertexTextureApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
-    Gfx::ApplyTextureBundle(this->planeTextureBundle);
+    Gfx::ApplyTextureBlock(this->planeTextureBlock);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -84,7 +84,7 @@ VertexTextureApp::OnInit() {
 
     // setup draw state for offscreen rendering to float render target
     Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id plasmaShader = Gfx::CreateResource(Shaders::Plasma::CreateSetup());
+    Id plasmaShader = Gfx::CreateResource(Shaders::Plasma::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(fsQuadMesh, plasmaShader);
     dss.BlendState.ColorFormat = rtSetup.ColorFormat;
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
@@ -97,17 +97,17 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
     Id planeMesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id planeShader = Gfx::CreateResource(Shaders::Plane::CreateSetup());
+    Id planeShader = Gfx::CreateResource(Shaders::Plane::Setup());
     auto dsPlane = DrawStateSetup::FromMeshAndShader(planeMesh, planeShader);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
 
-    // texture bundle for the plane vertex texture
-    auto tbSetup = TextureBundleSetup::FromShader(planeShader);
-    tbSetup.VS[Shaders::Plane::VS_Texture] = this->plasmaRenderTarget;
-    this->planeTextureBundle = Gfx::CreateResource(tbSetup);
+    // texture block for the plane vertex texture
+    auto tbSetup = Shaders::Plane::VSTextures::Setup(planeShader);
+    tbSetup.Slot[Shaders::Plane::VSTextures::Texture] = this->plasmaRenderTarget;
+    this->planeTextureBlock = Gfx::CreateResource(tbSetup);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

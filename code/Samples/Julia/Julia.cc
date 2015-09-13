@@ -28,7 +28,7 @@ private:
     ClearState displayClearState;
     fractal test;
     Id shapeDrawState;
-    Id shapeTextureBundle;
+    Id shapeTextureBlock;
     Shaders::Shape::VSParams shapeVSParams;
     Shaders::Shape::FSParams shapeFSParams;
     glm::mat4 view;
@@ -52,7 +52,7 @@ JuliaApp::OnInit() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64).Build();
     Id shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id shd = Gfx::CreateResource(Shaders::Shape::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Shape::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(shapeMesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
@@ -66,9 +66,9 @@ JuliaApp::OnInit() {
     this->shapeDrawState = Gfx::CreateResource(dss);
     this->shapeFSParams.NumColors = 128.0;
 
-    auto tbSetup = TextureBundleSetup::FromShader(shd);
-    tbSetup.FS[Shaders::Shape::FS_Texture] = this->test.colorTexture;
-    this->shapeTextureBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::Shape::FSTextures::Setup(shd);
+    tbSetup.Slot[Shaders::Shape::FSTextures::Texture] = this->test.colorTexture;
+    this->shapeTextureBlock = Gfx::CreateResource(tbSetup);
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -96,7 +96,7 @@ JuliaApp::OnRunning() {
     Gfx::ApplyDrawState(this->shapeDrawState);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
-    Gfx::ApplyTextureBundle(this->shapeTextureBundle);
+    Gfx::ApplyTextureBlock(this->shapeTextureBlock);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

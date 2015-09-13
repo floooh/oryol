@@ -40,7 +40,7 @@ public:
     int32 height;
     
     ResourceLabel label;
-    Id textureBundle;
+    Id textureBlock;
 };
 
 } // namespace _priv

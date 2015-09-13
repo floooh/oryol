@@ -162,7 +162,7 @@ InstancingApp::OnInit() {
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     auto shapeBuilderResult = shapeBuilder.Result();
     Id mesh = Gfx::CreateResource(shapeBuilderResult);
-    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.Meshes[1] = this->instanceMesh;
     dss.RasterizerState.CullFaceEnabled = true;

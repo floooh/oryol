@@ -60,7 +60,7 @@ public:
     struct Batch {
         uint16 startIndex = 0;
         uint16 numVertices = 0;
-        Id textureBundle;
+        Id textureBlock;
         uint32 batchId = 0;
         tb::TBRect clipRect;
         tb::TBBitmapFragment* fragment = nullptr;
@@ -103,7 +103,7 @@ private:
     ResourceLabel resLabel;
     VertexLayout vertexLayout;
     tb::TBRect tbClipRect;
-    Id whiteTextureBundle;
+    Id whiteTextureBlock;
     Id mesh;
     Id shader;
     Id drawState;

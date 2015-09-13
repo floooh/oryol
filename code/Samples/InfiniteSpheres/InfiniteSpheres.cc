@@ -25,7 +25,7 @@ private:
     Id renderTargets[2];
     Id offscreenDrawState;
     Id displayDrawState;
-    Id textureBundles[2];
+    Id textureBlocks[2];
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -55,7 +55,7 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBundle(this->textureBundles[index1]);
+    Gfx::ApplyTextureBlock(this->textureBlocks[index1]);
     Gfx::Draw(0);
     
     // ...and again to display
@@ -64,7 +64,7 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBundle(this->textureBundles[index0]);
+    Gfx::ApplyTextureBlock(this->textureBlocks[index0]);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -102,7 +102,7 @@ InfiniteSpheresApp::OnInit() {
     Id sphere = Gfx::CreateResource(shapeBuilder.Result());
 
     // create shader which is used for both offscreen- and display-rendering
-    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
 
     // create draw state for rendering into default render target
     auto dss = DrawStateSetup::FromMeshAndShader(sphere, shd);
@@ -118,11 +118,11 @@ InfiniteSpheresApp::OnInit() {
     this->offscreenDrawState = Gfx::CreateResource(dss);
     this->clearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
 
-    // create 2 texture bundles for offscreen rendering
-    auto tbSetup = TextureBundleSetup::FromShader(shd);
+    // create 2 texture blocks for offscreen rendering
+    auto tbSetup = Shaders::Main::FSTextures::Setup(shd);
     for (int32 i = 0; i < 2; i++) {
-        tbSetup.FS[Shaders::Main::FS_Texture] = this->renderTargets[i];
-        this->textureBundles[i] = Gfx::CreateResource(tbSetup);
+        tbSetup.Slot[Shaders::Main::FSTextures::Texture] = this->renderTargets[i];
+        this->textureBlocks[i] = Gfx::CreateResource(tbSetup);
     }
 
     // setup static transform matrices

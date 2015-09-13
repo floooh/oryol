@@ -140,9 +140,9 @@ MeshViewerApp::OnInit() {
     style.Colors[ImGuiCol_HeaderHovered] = defaultBlue;
     style.Colors[ImGuiCol_HeaderActive] = defaultBlue;
 
-    this->shaders[Normals] = Gfx::CreateResource(Shaders::Normals::CreateSetup());
-    this->shaders[Lambert] = Gfx::CreateResource(Shaders::Lambert::CreateSetup());
-    this->shaders[Phong]   = Gfx::CreateResource(Shaders::Phong::CreateSetup());
+    this->shaders[Normals] = Gfx::CreateResource(Shaders::Normals::Setup());
+    this->shaders[Lambert] = Gfx::CreateResource(Shaders::Lambert::Setup());
+    this->shaders[Phong]   = Gfx::CreateResource(Shaders::Phong::Setup());
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices

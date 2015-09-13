@@ -248,7 +248,7 @@ _func float snoise(vec2 v)
 @uniform vec2 bufDims BufferDims
 @end
 
-@texture_block drawTextures FSTextures
+@texture_block drawTextures VSTextures
 @texture sampler2D particleTex ParticleState
 @end
 

@@ -137,7 +137,7 @@ _func float snoise(vec2 v)
 @uniform_block planeParams VSParams
 @uniform mat4 mvp ModelViewProjection
 @end
-@texture_block planeTextures FSTextures
+@texture_block planeTextures VSTextures
 @texture sampler2D tex Texture
 @end
 

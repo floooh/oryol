@@ -75,7 +75,7 @@ imguiWrapper::IsValid() const {
 //------------------------------------------------------------------------------
 void
 imguiWrapper::setupFontTexture() {
-    o_assert_dbg(!this->fontTextureBundle.IsValid());
+    o_assert_dbg(!this->fontTextureBlock.IsValid());
     o_assert_dbg(this->shader.IsValid());
 
     ImGuiIO& io = ImGui::GetIO();
@@ -93,9 +93,9 @@ imguiWrapper::setupFontTexture() {
     texSetup.ImageSizes[0][0] = imgSize;
     Id fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 
-    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
-    tbSetup.FS[Shaders::IMUIShader::FS_Texture] = fontTexture;
-    this->fontTextureBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::IMUIShader::FSTextures::Setup(this->shader);
+    tbSetup.Slot[Shaders::IMUIShader::FSTextures::Texture] = fontTexture;
+    this->fontTextureBlock = Gfx::CreateResource(tbSetup);
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
@@ -125,7 +125,7 @@ imguiWrapper::setupDrawState() {
     o_assert_dbg(!this->drawState.IsValid());
     o_assert_dbg(this->mesh.IsValid());
 
-    this->shader = Gfx::CreateResource(Shaders::IMUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::IMUIShader::Setup());
     
     auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
@@ -234,7 +234,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::ApplyTextureBundle(self->fontTextureBundle);
+    Gfx::ApplyTextureBlock(self->fontTextureBlock);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];

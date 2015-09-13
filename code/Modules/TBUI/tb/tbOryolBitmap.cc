@@ -21,7 +21,7 @@ label(ResourceLabel::Invalid) {
 
 //------------------------------------------------------------------------------
 tbOryolBitmap::~tbOryolBitmap() {
-    if (this->textureBundle.IsValid()) {
+    if (this->textureBlock.IsValid()) {
         this->destroyTexture();
     }
 }
@@ -40,7 +40,7 @@ tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::SetData(uint32* data) {
-    o_assert_dbg(this->textureBundle.IsValid());
+    o_assert_dbg(this->textureBlock.IsValid());
     this->destroyTexture();
     this->createTexture(data);
 }
@@ -48,7 +48,7 @@ tbOryolBitmap::SetData(uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::createTexture(tb::uint32* data) {
-    o_assert_dbg(!this->textureBundle.IsValid());
+    o_assert_dbg(!this->textureBlock.IsValid());
     o_assert_dbg(this->renderer && this->renderer->shader.IsValid());
 
     const int byteSize = this->width * this->height * sizeof(tb::uint32);
@@ -62,9 +62,9 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
     texSetup.ImageSizes[0][0] = byteSize;
     Id texture = Gfx::CreateResource(texSetup, data, byteSize);
 
-    auto tbSetup = TextureBundleSetup::FromShader(this->renderer->shader);
-    tbSetup.FS[Shaders::TBUIShader::FS_Texture] = texture;
-    this->textureBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::TBUIShader::FSTextures::Setup(this->renderer->shader);
+    tbSetup.Slot[Shaders::TBUIShader::FSTextures::Texture] = texture;
+    this->textureBlock = Gfx::CreateResource(tbSetup);
     
     Gfx::PopResourceLabel();
 }
@@ -72,9 +72,9 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
 //------------------------------------------------------------------------------
 void
 tbOryolBitmap::destroyTexture() {
-    o_assert_dbg(this->textureBundle.IsValid());
+    o_assert_dbg(this->textureBlock.IsValid());
     this->renderer->deferDeleteTexture(this->label);
-    this->textureBundle.Invalidate();
+    this->textureBlock.Invalidate();
     this->label = ResourceLabel::Invalid;
 }
 

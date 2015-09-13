@@ -57,7 +57,7 @@ BlendTestApp::OnInit() {
 
     // create drawstate for a patterned background
     Id cbMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
-    Id cbShd = Gfx::CreateResource(Shaders::Background::CreateSetup());
+    Id cbShd = Gfx::CreateResource(Shaders::Background::Setup());
     this->backgroundDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(cbMesh, cbShd));
 
     // setup a triangle mesh and shader
@@ -77,7 +77,7 @@ BlendTestApp::OnInit() {
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f)
         .End();
     Id mesh = Gfx::CreateResource(meshBuilder.Result());
-    Id shd = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
     
     // setup one draw state for each blend factor combination
     const glm::vec4 blendColor(1.0f, 1.0f, 0.0f, 1.0f);

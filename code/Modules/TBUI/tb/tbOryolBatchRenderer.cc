@@ -66,7 +66,7 @@ tbOryolBatchRenderer::Discard() {
 //------------------------------------------------------------------------------
 void
 tbOryolBatchRenderer::setupWhiteTexture() {
-    o_assert_dbg(!this->whiteTextureBundle.IsValid());
+    o_assert_dbg(!this->whiteTextureBlock.IsValid());
     o_assert_dbg(this->shader.IsValid());
     
     const int w = 4;
@@ -82,9 +82,9 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     texSetup.ImageSizes[0][0] = sizeof(pixels);
     Id texture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
 
-    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
-    tbSetup.FS[Shaders::TBUIShader::FS_Texture] = texture;
-    this->whiteTextureBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::TBUIShader::FSTextures::Setup(this->shader);
+    tbSetup.Slot[Shaders::TBUIShader::FSTextures::Texture] = texture;
+    this->whiteTextureBlock = Gfx::CreateResource(tbSetup);
 }
 
 //------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ tbOryolBatchRenderer::setupShaderAndDrawState() {
     o_assert_dbg(this->mesh.IsValid());
     o_assert_dbg(!this->drawState.IsValid());
     
-    this->shader = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::TBUIShader::Setup());
     
     auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
@@ -292,7 +292,7 @@ tbOryolBatchRenderer::FlushBitmap(TBBitmap* bitmap) {
     if (this->curBatchIndex < MaxNumBatches) {
         const Batch& curBatch = this->batches[this->curBatchIndex];
         auto* oryolBitmap = (tbOryolBitmap*) bitmap;
-        if (oryolBitmap && (oryolBitmap->textureBundle == curBatch.textureBundle)) {
+        if (oryolBitmap && (oryolBitmap->textureBlock == curBatch.textureBlock)) {
             this->flushBatch();
         }
     }
@@ -328,12 +328,12 @@ tbOryolBatchRenderer::addQuad(const TBRect& dstRect, const TBRect& srcRect, uint
     Batch* curBatch = &(this->batches[this->curBatchIndex]);
     auto* oryolBitmap = (tbOryolBitmap*) bitmap;
     if (oryolBitmap) {
-        if (curBatch->textureBundle != oryolBitmap->textureBundle) {
+        if (curBatch->textureBlock != oryolBitmap->textureBlock) {
             curBatch = this->flushBatch();
             if (!curBatch) {
                 return;
             }
-            curBatch->textureBundle = oryolBitmap->textureBundle;
+            curBatch->textureBlock = oryolBitmap->textureBlock;
         }
         int bitmapWidth = bitmap->Width();
         int bitmapHeight = bitmap->Height();
@@ -344,12 +344,12 @@ tbOryolBatchRenderer::addQuad(const TBRect& dstRect, const TBRect& srcRect, uint
     }
     else {
         // bitmap-less, use white texture
-        if (curBatch->textureBundle != this->whiteTextureBundle) {
+        if (curBatch->textureBlock != this->whiteTextureBlock) {
             curBatch = this->flushBatch();
             if (!curBatch) {
                 return;
             }
-            curBatch->textureBundle = this->whiteTextureBundle;
+            curBatch->textureBlock = this->whiteTextureBlock;
         }
     }
     curBatch->fragment = fragment;
@@ -436,7 +436,7 @@ tbOryolBatchRenderer::flushBatch() {
         curBatch = &this->batches[this->curBatchIndex];
         curBatch->startIndex = this->curVertexIndex;
         curBatch->numVertices = 0;
-        curBatch->textureBundle.Invalidate();
+        curBatch->textureBlock.Invalidate();
         curBatch->fragment = nullptr;
         curBatch->batchId = this->batchId;
         return &(this->batches[this->curBatchIndex]);
@@ -467,8 +467,8 @@ tbOryolBatchRenderer::drawBatches() {
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            Id texBundle = batch.textureBundle.IsValid() ? batch.textureBundle : this->whiteTextureBundle;
-            Gfx::ApplyTextureBundle(texBundle);
+            Id texBlock = batch.textureBlock.IsValid() ? batch.textureBlock : this->whiteTextureBlock;
+            Gfx::ApplyTextureBlock(texBlock);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }
         Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);

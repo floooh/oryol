@@ -45,7 +45,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
     this->mesh = Gfx::CreateResource(meshSetup);
-    this->shader = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::Canvas::Setup());
     auto dsSetup = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
@@ -62,9 +62,9 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    auto tbSetup = TextureBundleSetup::FromShader(this->shader);
-    tbSetup.FS[Shaders::Canvas::FS_Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
-    this->texBundle = Gfx::CreateResource(tbSetup);
+    auto tbSetup = Shaders::Canvas::FSTextures::Setup(this->shader);
+    tbSetup.Slot[Shaders::Canvas::FSTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->texBlock = Gfx::CreateResource(tbSetup);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -98,7 +98,7 @@ canvas::Render() {
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyTextureBundle(this->texBundle);
+    Gfx::ApplyTextureBlock(this->texBlock);
     Gfx::Draw(0);
 }
 
