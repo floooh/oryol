@@ -195,7 +195,7 @@ glMeshFactory::setupAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupPrimGroups(mesh& msh) {
-    msh.glPrimType = glTypes::asGLPrimitiveType(msh.Setup.PrimitiveType);
+    msh.glPrimType = glTypes::asGLPrimitiveType(msh.Setup.PrimType);
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < msh.numPrimGroups; i++) {

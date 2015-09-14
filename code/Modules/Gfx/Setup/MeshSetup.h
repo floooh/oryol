@@ -60,7 +60,7 @@ public:
     bool FullScreenQuadFlipV;
 
     /// primitive type 
-    PrimitiveType::Code PrimitiveType;
+    PrimitiveType::Code PrimType;
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups

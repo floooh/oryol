@@ -71,7 +71,7 @@ public:
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int32 index) const;
     /// get uniform block layout at index
-    const UniformBlockLayout& UniformBlockLayout(int32 index) const;
+    const class UniformBlockLayout& UniformBlockLayout(int32 index) const;
     /// get uniform block shader stage at index
     ShaderStage::Code UniformBlockBindStage(int32 index) const;
     /// get uniform block bind slot at index
@@ -84,7 +84,7 @@ public:
     /// get texture block name at index
     const StringAtom& TextureBlockName(int32 index) const;
     /// get texture block layout at index
-    const TextureBlockLayout& TextureBlockLayout(int32 index) const;
+    const class TextureBlockLayout& TextureBlockLayout(int32 index) const;
     /// get texture block shader stage at index
     ShaderStage::Code TextureBlockBindStage(int32 index) const;
     /// get texture block bind slot at index

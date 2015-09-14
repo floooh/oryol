@@ -62,7 +62,7 @@ public:
     /// read/write access to vertex layout
     class VertexLayout Layout;
     /// primitive type
-    PrimitiveType::Code PrimitiveType;
+    PrimitiveType::Code PrimType;
     /// primitive groups (at least one must be defined)
     Array<PrimitiveGroup> PrimitiveGroups;
     /// vertex data usage

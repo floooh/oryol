@@ -13,7 +13,7 @@ MeshBuilder::MeshBuilder() :
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::Index16),
-PrimitiveType(PrimitiveType::Triangles),
+PrimType(PrimitiveType::Triangles),
 VertexUsage(Usage::Immutable),
 IndexUsage(Usage::Immutable),
 inBegin(false),
@@ -32,7 +32,7 @@ MeshBuilder::Clear() {
     this->NumVertices = 0;
     this->NumIndices = 0;
     this->IndicesType = IndexType::Index16;
-    this->PrimitiveType = PrimitiveType::Triangles;
+    this->PrimType = PrimitiveType::Triangles;
     this->Layout.Clear();
     this->PrimitiveGroups.Clear();
     this->VertexUsage = Usage::Immutable;
@@ -63,7 +63,7 @@ MeshBuilder::Begin() {
     meshSetup.NumVertices = this->NumVertices;
     meshSetup.NumIndices = this->NumIndices;
     meshSetup.IndicesType = this->IndicesType;
-    meshSetup.PrimitiveType = this->PrimitiveType;
+    meshSetup.PrimType = this->PrimType;
     for (const auto& primGroup : this->PrimitiveGroups) {
         meshSetup.AddPrimitiveGroup(primGroup);
     }
