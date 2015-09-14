@@ -26,9 +26,9 @@ public:
     /// set GL program object by mask
     int32 addProgram(uint32 mask, GLuint glProg);
     /// bind a uniform location to a slot index
-    void bindUniform(int32 progIndex, ShaderStage::Code ubBindStage, int32 ubBindSlot, int32 uniformIndex, GLint glUniformLocation);
+    void bindUniform(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
-    void bindSampler(int32 progIndex, ShaderStage::Code texBindStage, int32 texBindSlot, TextureType::Code type, int32 samplerIndex);
+    void bindSampler(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex, int32 samplerIndex);
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// bind a vertex attribute location
     void bindAttribLocation(int32 progIndex, VertexAttr::Code attrib, GLint attribLocation);
@@ -40,26 +40,22 @@ public:
     int32 getNumPrograms() const;
     /// get program at index
     GLuint getProgram(int32 progIndex) const;
-    /// get uniform location by slot index in program (-1 if not exists)
-    GLint getUniformLocation(int32 progIndex, ShaderStage::Code ubBindStage, int32 ubBindSlot, int32 uniformIndex) const;
-    /// get sampler location by slot index in program (-1 if not exists)
-    int32 getSamplerIndex(int32 progIndex, ShaderStage::Code texBindStage, int32 texBindSlot) const;
-    /// get sampler type by slot index in program
-    TextureType::Code getSamplerType(int32 progIndex, ShaderStage::Code texBindStage, int32 texBindSlot) const;
+    /// get uniform location (-1 if not exists)
+    GLint getUniformLocation(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex) const;
+    /// get sampler index (InvalidIndex if not exists)
+    int32 getSamplerIndex (int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex) const;
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     /// get a vertex attribute location
     GLint getAttribLocation(int32 progIndex, VertexAttr::Code attrib) const;
     #endif
         
 private:
-    static const int32 MaxUniformsPerBlock = 16;
-    static const int32 MaxUBsPerStage =
-        GfxConfig::MaxNumVSUniformBlocks > GfxConfig::MaxNumFSUniformBlocks ?
-        GfxConfig::MaxNumVSUniformBlocks : GfxConfig::MaxNumFSUniformBlocks;
+    static const int32 MaxUniformsPerBlock = GfxConfig::MaxNumUniformBlockLayoutComponents;
+    static const int32 MaxTexturesPerBlock = GfxConfig::MaxNumTextureBlockLayoutComponents;
+    static const int32 MaxUBsPerStage = GfxConfig::MaxNumUniformBlocksPerStage;
+    static const int32 MaxTBsPerStage = GfxConfig::MaxNumTextureBlocksPerStage;
     static const int32 MaxStages = ShaderStage::NumShaderStages;
     static const int32 MaxPrograms = 4;
-    static const int32 MaxSamplers = GfxConfig::MaxNumShaderTextures;
-
 
     struct programEntry {
         //======================================================================
@@ -85,36 +81,33 @@ private:
         // texture bind slots.
         //======================================================================
 
-        struct sampler {
-            int32 index = InvalidIndex;
-            TextureType::Code type = TextureType::InvalidTextureType;
-        };
         programEntry() :
             mask(0),
             program(0) {
             this->uniformMappings.Fill(-1);
-            this->samplerMappings.Fill(sampler());
+            this->samplerMappings.Fill(InvalidIndex);
             #if ORYOL_GL_USE_GETATTRIBLOCATION
             this->attribMapping.Fill(-1);
             #endif
         };
         /// access to uniformArrayEntry
-        GLint& uniformArrayEntry(ShaderStage::Code ubBindStage, int32 ubBindSlot, int32 uniformIndex) {
+        GLint& uniformArrayEntry(ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex) {
             return this->uniformMappings[
-                    uniformIndex +
-                    ubBindSlot * MaxUniformsPerBlock +
-                    ubBindStage * MaxUBsPerStage * MaxUniformsPerBlock];
+                uniformIndex +
+                bindSlot * MaxUniformsPerBlock +
+                bindStage * MaxUBsPerStage * MaxUniformsPerBlock];
         };
         /// array to sampler array entry
-        sampler& samplerArrayEntry(ShaderStage::Code bindStage, int32 bindSlot) {
+        int32& samplerArrayEntry(ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex) {
             return this->samplerMappings[
-                    bindSlot +
-                    bindStage == ShaderStage::VS ? 0 : GfxConfig::MaxNumVSTextures];
+                textureIndex +
+                bindSlot + MaxTexturesPerBlock +
+                bindStage + MaxTBsPerStage * MaxTexturesPerBlock];
         };
         uint32 mask = 0;
         GLuint program = 0;
         StaticArray<GLint, MaxStages*MaxUBsPerStage*MaxUniformsPerBlock> uniformMappings;
-        StaticArray<sampler, MaxSamplers> samplerMappings;
+        StaticArray<int32, MaxStages*MaxTBsPerStage*MaxTexturesPerBlock> samplerMappings;
         #if ORYOL_GL_USE_GETATTRIBLOCATION
         StaticArray<GLint,VertexAttr::NumVertexAttrs> attribMapping;
         #endif
@@ -149,20 +142,14 @@ glShader::getProgram(int32 progIndex) const {
 
 //------------------------------------------------------------------------------
 inline GLint
-glShader::getUniformLocation(int32 progIndex, ShaderStage::Code ubBindStage, int32 ubBindSlot, int32 uniformIndex) const {
-    return const_cast<glShader*>(this)->programEntries[progIndex].uniformArrayEntry(ubBindStage, ubBindSlot, uniformIndex);
+glShader::getUniformLocation(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex) const {
+    return const_cast<glShader*>(this)->programEntries[progIndex].uniformArrayEntry(bindStage, bindSlot, uniformIndex);
 }
 
 //------------------------------------------------------------------------------
 inline int32
-glShader::getSamplerIndex(int32 progIndex, ShaderStage::Code texBindStage, int32 texBindSlot) const {
-    return const_cast<glShader*>(this)->programEntries[progIndex].samplerArrayEntry(texBindStage, texBindSlot).index;
-}
-
-//------------------------------------------------------------------------------
-inline TextureType::Code
-glShader::getSamplerType(int32 progIndex, ShaderStage::Code texBindStage, int32 texBindSlot) const {
-    return const_cast<glShader*>(this)->programEntries[progIndex].samplerArrayEntry(texBindStage, texBindSlot).type;
+glShader::getSamplerIndex(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex) const {
+    return const_cast<glShader*>(this)->programEntries[progIndex].samplerArrayEntry(bindStage, bindSlot, textureIndex);
 }
 
 //------------------------------------------------------------------------------

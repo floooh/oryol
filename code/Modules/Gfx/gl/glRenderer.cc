@@ -1002,7 +1002,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
     o_assert_dbg(InvalidIndex != progIndex);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
     o_assert_dbg(InvalidIndex != ubIndex);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatibel with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
@@ -1016,76 +1016,80 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
         const auto& comp = layout.ComponentAt(uniformIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
         GLint glLoc = shd->getUniformLocation(progIndex, ubBindStage, ubBindSlot, uniformIndex);
-        switch (comp.Type) {
-            case UniformType::Float:
-                {
-                    const float32 val = *(const float32*)valuePtr;
-                    ::glUniform1f(glLoc, val);
-                }
-                break;
+        if (-1 != glLoc) {
+            switch (comp.Type) {
+                case UniformType::Float:
+                    {
+                        const float32 val = *(const float32*)valuePtr;
+                        ::glUniform1f(glLoc, val);
+                    }
+                    break;
 
-            case UniformType::Vec2:
-                {
-                    const glm::vec2& val = *(const glm::vec2*) valuePtr;
-                    ::glUniform2f(glLoc, val.x, val.y);
-                }
-                break;
+                case UniformType::Vec2:
+                    {
+                        const glm::vec2& val = *(const glm::vec2*) valuePtr;
+                        ::glUniform2f(glLoc, val.x, val.y);
+                    }
+                    break;
 
-            case UniformType::Vec3:
-                {
-                    const glm::vec3& val = *(const glm::vec3*)valuePtr;
-                    ::glUniform3f(glLoc, val.x, val.y, val.z);
-                }
-                break;
+                case UniformType::Vec3:
+                    {
+                        const glm::vec3& val = *(const glm::vec3*)valuePtr;
+                        ::glUniform3f(glLoc, val.x, val.y, val.z);
+                    }
+                    break;
 
-            case UniformType::Vec4:
-                {
-                    const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                    ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
-                }
-                break;
+                case UniformType::Vec4:
+                    {
+                        const glm::vec4& val = *(const glm::vec4*)valuePtr;
+                        ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                    }
+                    break;
 
-            case UniformType::Mat2:
-                {
-                    const glm::mat2& val = *(const glm::mat2*)valuePtr;
-                    ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat2:
+                    {
+                        const glm::mat2& val = *(const glm::mat2*)valuePtr;
+                        ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Mat3:
-                {
-                    const glm::mat3& val = *(const glm::mat3*)valuePtr;
-                    ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat3:
+                    {
+                        const glm::mat3& val = *(const glm::mat3*)valuePtr;
+                        ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Mat4:
-                {
-                    const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                    ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat4:
+                    {
+                        const glm::mat4& val = *(const glm::mat4*)valuePtr;
+                        ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Bool:
-                {
-                    // NOTE: bools are actually stored as int32 in the uniform block struct
-                    const int32 val = *(const int32*)valuePtr;
-                    ::glUniform1i(glLoc, val);
-                }
-                break;
+                case UniformType::Bool:
+                    {
+                        // NOTE: bools are actually stored as int32 in the uniform block struct
+                        const int32 val = *(const int32*)valuePtr;
+                        ::glUniform1i(glLoc, val);
+                    }
+                    break;
 
-            default:
-                o_error("FIXME: invalid uniform type!\n");
-                break;
+                default:
+                    o_error("FIXME: invalid uniform type!\n");
+                    break;
+            }
         }
     }
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextureBundle(textureBundle* tb) {
+glRenderer::applyTextureBlock(textureBlock* tb) {
     o_assert_dbg(this->valid);
-
+    if (nullptr == this->curDrawState) {
+        return;
+    }
     if (nullptr == tb) {
         // textureBundle contains textures that are not yet loaded,
         // disable the next draw call, and return
@@ -1093,19 +1097,9 @@ glRenderer::applyTextureBundle(textureBundle* tb) {
         return;
     }
 
-    // bind vertex textures
-    // NOTE: we cannot exit early on the first invalid texture entry
-    // since there may be multiple texture bundles to fill all texture slot
-    for (const auto& vsTex : tb->vs) {
-        if (InvalidIndex != vsTex.samplerIndex) {
-            this->bindTexture(vsTex.samplerIndex, vsTex.glTarget, vsTex.glTex);
-        }
-    }
-    // bind fragment shader textures
-    for (const auto& fsTex : tb->fs) {
-        if (InvalidIndex != fsTex.samplerIndex) {
-            this->bindTexture(fsTex.samplerIndex, fsTex.glTarget, fsTex.glTex);
-        }
+    for (int i = 0; i < tb->numEntries; i++) {
+        const auto& entry = tb->entries[i];
+        this->bindTexture(entry.samplerIndex, entry.glTarget, entry.glTex);
     }
 }
 

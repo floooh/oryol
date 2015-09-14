@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::glTextureBundleFactory
+    @class Oryol::_priv::glTextureBlockFactory
     @ingroup _priv
-    @brief GL implementation of textureBundleFactory
+    @brief GL implementation of textureBlockFactory
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
@@ -11,14 +11,14 @@
 namespace Oryol {
 namespace _priv {
 
-class textureBundle;
+class textureBlock;
 
-class glTextureBundleFactory {
+class glTextureBlockFactory {
 public:
     /// constructor
-    glTextureBundleFactory();
+    glTextureBlockFactory();
     /// destructor
-    ~glTextureBundleFactory();
+    ~glTextureBlockFactory();
 
     /// setup the factory
     void Setup(const gfxPointers& ptrs);
@@ -28,9 +28,9 @@ public:
     bool IsValid() const;
 
     /// setup resource
-    ResourceState::Code SetupResource(textureBundle& tb);
+    ResourceState::Code SetupResource(textureBlock& tb);
     /// destroy resource
-    void DestroyResource(textureBundle& tb);
+    void DestroyResource(textureBlock& tb);
 
 private:
     bool isValid;

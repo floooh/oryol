@@ -130,12 +130,12 @@ glShaderFactory::SetupResource(shader& shd) {
         this->pointers.renderer->useProgram(glProg);
         const int32 numUniformBlocks = setup.NumUniformBlocks();
         for (int32 ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
-            const UniformLayout& layout = setup.UniformBlockLayout(ubIndex);
+            const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
             ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
             int32 ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
             const int32 numUniforms = layout.NumComponents();
             for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-                const UniformLayout::Component& comp = layout.ComponentAt(uniformIndex);
+                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
                 const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
                 shd.bindUniform(progIndex, ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
             }
@@ -143,18 +143,21 @@ glShaderFactory::SetupResource(shader& shd) {
 
         // resolve texture locations
         int glTextureLocation = 0;
-        const int32 numTextures = setup.NumTextures();
-        for (int texIndex = 0; texIndex < numTextures; texIndex++) {
-            const StringAtom& texName = setup.TextureName(texIndex);
-            TextureType::Code texType = setup.TextureType(texIndex);
-            ShaderStage::Code texBindStage = setup.TextureBindStage(texIndex);
-            int32 texBindSlot = setup.TextureBindSlot(texIndex);
-            shd.bindSampler(progIndex, texBindStage, texBindSlot, texType, glTextureLocation);
-            const GLint glLocation = ::glGetUniformLocation(glProg, texName.AsCStr());
-            o_assert_dbg(glLocation >= 0);
-            // set the sampler index in the shader program, this will never change
-            ::glUniform1i(glLocation, glTextureLocation);
-            glTextureLocation++;
+        const int32 numTextures = setup.NumTextureBlocks();
+        for (int32 tbIndex = 0; tbIndex < numTextures; tbIndex++) {
+            const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
+            ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
+            int32 tbBindSlot = setup.TextureBlockBindSlot(tbIndex);
+            const int32 numTextures = layout.NumComponents();
+            for (int texIndex = 0; texIndex < numTextures; texIndex++) {
+                const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
+                const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+                o_assert_dbg(-1 != glUniformLocation);
+                shd.bindSampler(progIndex, tbBindStage, tbBindSlot, texIndex, glTextureLocation);
+                // set the sampler index in the shader program, this will never change
+                ::glUniform1i(glUniformLocation, glTextureLocation);
+                glTextureLocation++;
+            }
         }
         
         #if ORYOL_GL_USE_GETATTRIBLOCATION

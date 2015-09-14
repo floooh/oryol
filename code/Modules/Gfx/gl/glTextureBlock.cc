@@ -1,18 +1,18 @@
 //------------------------------------------------------------------------------
-//  glTextureBundle.cc
+//  glTextureBlock.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "glTextureBundle.h"
+#include "glTextureBlock.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 void
-glTextureBundle::Clear() {
-    this->vs.Fill(bindEntry());
-    this->fs.Fill(bindEntry());
-    textureBundleBase::Clear();
+glTextureBlock::Clear() {
+    this->numEntries = 0;
+    this->entries.Fill(entry());
+    textureBlockBase::Clear();
 }
 
 } // namespace _priv

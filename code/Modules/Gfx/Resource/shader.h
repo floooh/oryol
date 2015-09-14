@@ -16,8 +16,7 @@
 namespace Oryol {
 namespace _priv {
 class shader : public glShader { };
-} // namespace _priv
-} // namespace Oryol
+} }
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11Shader.h"
 namespace Oryol {
