@@ -26,7 +26,7 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
-class textureBundle;
+class textureBlock;
 
 class mtlRenderer {
 public:
@@ -59,8 +59,8 @@ public:
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
     void applyDrawState(drawState* ds);
-    /// apply a texture bundle
-    void applyTextureBundle(textureBundle* tb);
+    /// apply a texture block
+    void applyTextureBlock(textureBlock* tb);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// submit a draw call with primitive group index in current mesh

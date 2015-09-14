@@ -52,7 +52,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
     for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         // NOTE: vertex buffers are located after constant buffers
-        const int vbSlotIndex = mshIndex + GfxConfig::MaxNumVSUniformBlocks;
+        const int vbSlotIndex = mshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             const VertexLayout& layout = msh->vertexBufferAttrs.Layout;

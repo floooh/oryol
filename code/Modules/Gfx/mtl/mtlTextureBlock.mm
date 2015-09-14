@@ -1,14 +1,15 @@
 //------------------------------------------------------------------------------
-//  mtlTextureBundle.cc
+//  mtlTextureBlock.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "mtlTextureBundle.h"
+#include "mtlTextureBlock.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlTextureBundle::entry::entry() :
+mtlTextureBlock::entry::entry() :
+bindSlot(InvalidIndex),
 mtlTex(nil),
 mtlSamplerState(nil) {
     // empty
@@ -16,10 +17,11 @@ mtlSamplerState(nil) {
 
 //------------------------------------------------------------------------------
 void
-mtlTextureBundle::Clear() {
-    this->vs.Fill(entry());
-    this->fs.Fill(entry());
-    textureBundleBase::Clear();
+mtlTextureBlock::Clear() {
+    this->bindStage = ShaderStage::InvalidShaderStage;
+    this->numEntries = 0;
+    this->entries.Fill(entry());
+    textureBlockBase::Clear();
 }
 
 } // namespace _priv
