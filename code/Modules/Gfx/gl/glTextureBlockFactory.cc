@@ -64,11 +64,11 @@ glTextureBlockFactory::SetupResource(textureBlock& tb) {
     // get shader and progIndex in order to lookup the samplerIndex on the shader
     const shader* shd = this->pointers.shaderPool->Lookup(tb.Setup.Shader);
     o_assert_dbg(shd);
-    int32 progIndex = shd->getProgIndexByMask(tb.Setup.ShaderSelectionMask);
+    const int32 progIndex = shd->getProgIndexByMask(tb.Setup.ShaderSelectionMask);
     o_assert_dbg(InvalidIndex != progIndex);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(tb.Setup.BindStage, tb.Setup.BindSlot);
+    const int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(tb.Setup.BindStage, tb.Setup.BindSlot);
     o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(progIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
 
     for (int texIndex = 0; texIndex < GfxConfig::MaxNumTexturesPerStage; texIndex++) {
         const Id& texId = tb.Setup.Slot[texIndex];
