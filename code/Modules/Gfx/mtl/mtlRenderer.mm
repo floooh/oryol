@@ -429,7 +429,7 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     }
     const mesh* msh = this->curDrawState->meshes[0];
     o_assert_dbg(msh);
-    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(msh->Setup.PrimitiveType);
+    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(msh->Setup.PrimType);
     IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (IndexType::None != indexType) {
         const auto& ib = msh->buffers[mesh::ib];
