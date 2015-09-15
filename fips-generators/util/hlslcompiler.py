@@ -152,6 +152,5 @@ def validate(lines, type, slVersion, outPath, cName) :
         writeFile(f, lines)
 
     cmd = [fxcPath, '/T', profile[type], '/O3', '/Fh', outPath, '/Vn', cName, hlsl_src_path]
-    print(cmd);
     output = callFxc(cmd)
     parseOutput(output, lines)
