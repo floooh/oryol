@@ -21,6 +21,7 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
+class textureBlock;
 
 class d3d12Renderer {
 public:
@@ -54,7 +55,9 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    /// apply a texture block
+    void applyTextureBlock(textureBlock* tb);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

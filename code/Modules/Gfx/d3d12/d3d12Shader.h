@@ -35,15 +35,6 @@ public:
     /// get pixel shader by selection mask, return nullptr if not found
     const shaderBlob* getPixelShaderByMask(uint32 mask) const;
 
-    /// add a uniform block entry
-    void addUniformBlockEntry(ShaderType::Code bindShaderStage, int32 bindSlotIndex);
-    /// get number of uniform blocks
-    int32 getNumUniformBlocks() const;
-    /// get uniform block shader stage
-    ShaderType::Code getUniformBlockShaderStage(int32 ubIndex) const;
-    /// get uniform block bind slot
-    int32 getUniformBlockBindSlotIndex(int32 ubIndex) const;
-
 private:
     struct programEntry {
         programEntry() : mask(0) { };
@@ -51,15 +42,8 @@ private:
         shaderBlob vertexShader;
         shaderBlob pixelShader;
     };
-    struct ubEntry {
-        ShaderType::Code bindShaderStage = ShaderType::InvalidShaderType;
-        int32 bindSlotIndex = InvalidIndex;
-    };
     int32 numPrograms;
     StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
-    int32 numUniformBlockEntries;
-    StaticArray<ubEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
-
 };
 
 } // namespace _priv

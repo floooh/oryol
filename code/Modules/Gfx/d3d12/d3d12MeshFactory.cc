@@ -114,8 +114,8 @@ d3d12MeshFactory::setupAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 d3d12MeshFactory::setupPrimGroups(mesh& msh) {
-    msh.d3d12PrimTopologyType = d3d12Types::asPrimitiveTopologyType(msh.Setup.PrimitiveType);
-    msh.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(msh.Setup.PrimitiveType);
+    msh.d3d12PrimTopologyType = d3d12Types::asPrimitiveTopologyType(msh.Setup.PrimType);
+    msh.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(msh.Setup.PrimType);
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < msh.numPrimGroups; i++) {

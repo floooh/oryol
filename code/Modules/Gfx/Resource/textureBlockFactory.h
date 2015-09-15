@@ -27,6 +27,12 @@ namespace Oryol {
 namespace _priv {
 class textureBlockFactory : public d3d11TextureBlockFactory { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/d3d12/d3d12TextureBlockFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureBlockFactory : public d3d12TextureBlockFactory { };
+} }
 #else
 #error "Target platform not supported!"
 #endif

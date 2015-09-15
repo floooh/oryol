@@ -311,17 +311,17 @@ d3d12Renderer::createRootSignature() {
     Memory::Clear(&psRanges[0], sizeof(psRanges[0]) * psRanges.Size());
 
     vsRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    vsRanges[0].NumDescriptors = d3d12Config::MaxNumVSTextures;
+    vsRanges[0].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
     vsRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     vsRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    vsRanges[1].NumDescriptors = d3d12Config::MaxNumVSTextures;
+    vsRanges[1].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
     vsRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     psRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    psRanges[0].NumDescriptors = d3d12Config::MaxNumPSTextures;
+    psRanges[0].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
     psRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     psRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    psRanges[1].NumDescriptors = d3d12Config::MaxNumPSTextures;
+    psRanges[1].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
     psRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     StaticArray<D3D12_ROOT_PARAMETER, NumRootParams> rootParams;
@@ -732,60 +732,49 @@ d3d12Renderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->d3d12CommandList);
 
     if (nullptr == this->curDrawState) {
         return;
     }
 
-    // get the uniform layout for this uniform block
+    #if ORYOL_DEBUG
+    // verify that the provided uniform-block is type-compatible with 
+    // the uniform-block expected at the binding stage and slot
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
-
-    // check whether the provided struct is type-compatible with the uniform layout
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-
-    // FIXME: textures should be set in applyDrawState, not applyUniformBlock, 
-    const ShaderType::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
-    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
-    const uint8* uBufferPtr = nullptr;
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type == UniformType::Texture) {
-            // FIXME: skip texture stuff 
-        }
-        else {
-            // found start of cbuffer data
-            uBufferPtr = ptr + layout.ComponentByteOffset(compIndex);
-            break;
-        }
-    }
+    o_assert(byteSize == layout.ByteSize());
+    #endif
 
     // copy uniform data into global constant buffer
-    if (nullptr != uBufferPtr) {
-        const int32 uniformSize = layout.ByteSizeWithoutTextures();
-        o_assert2((this->curConstantBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
-        const auto& frameRes = this->d3d12FrameResources[this->curFrameRotateIndex];
-        uint8* dstPtr = frameRes.cbCpuPtr + this->curConstantBufferOffset;
-        std::memcpy(dstPtr, uBufferPtr, uniformSize);
+    o_assert2((this->curConstantBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
+    const auto& frameRes = this->d3d12FrameResources[this->curFrameRotateIndex];
+    uint8* dstPtr = frameRes.cbCpuPtr + this->curConstantBufferOffset;
+    std::memcpy(dstPtr, ptr, byteSize);
 
-        // get the GPU address of current constant buffer location and set
-        // the constant buffer location directly in the root signature
-        // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
-        // PSConstantBuffer0 or PSConstantBuffer1
-        const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curConstantBufferOffset;
-        static const int maxHighFreqCBs = 2;    // FIXME: '2' completely pulled out of ass to keep root sig small-ish
-        o_assert_dbg(bindSlotIndex < maxHighFreqCBs);
-        UINT rootParamIndex = ShaderType::VertexShader == bindShaderStage ? VSConstantBuffer0 : PSConstantBuffer0;
-        rootParamIndex += bindSlotIndex * maxHighFreqCBs;
-        this->d3d12CommandList->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
+    // get the GPU address of current constant buffer location and set
+    // the constant buffer location directly in the root signature
+    // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
+    // PSConstantBuffer0 or PSConstantBuffer1
+    const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curConstantBufferOffset;
+    static const int maxHighFreqCBs = 2;
+    o_assert_dbg(bindSlot < maxHighFreqCBs);
+    UINT rootParamIndex = ShaderStage::VS == bindStage ? VSConstantBuffer0 : PSConstantBuffer0;
+    rootParamIndex += bindSlot * maxHighFreqCBs;
+    this->d3d12CommandList->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
 
-        // advance constant buffer offset (must be multiple of 256)
-        this->curConstantBufferOffset = Memory::RoundUp(this->curConstantBufferOffset + uniformSize, 256);
-    }
+    // advance constant buffer offset (must be multiple of 256)
+    this->curConstantBufferOffset = Memory::RoundUp(this->curConstantBufferOffset + byteSize, 256);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::applyTextureBlock(textureBlock* tb) {
+    o_warn("FIXME!\n");
 }
 
 //------------------------------------------------------------------------------

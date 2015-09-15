@@ -1,29 +1,27 @@
 //------------------------------------------------------------------------------
-//  d3d12ShaderFactory.cc
+//  d3d12TextureBlockFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "d3d12TextureBlockFactory.h"
 #include "Core/Assertion.h"
-#include "d3d12ShaderFactory.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d12ShaderFactory::d3d12ShaderFactory() :
+d3d12TextureBlockFactory::d3d12TextureBlockFactory() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-d3d12ShaderFactory::~d3d12ShaderFactory() {
+d3d12TextureBlockFactory::~d3d12TextureBlockFactory() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12ShaderFactory::Setup(const gfxPointers& ptrs) {
+d3d12TextureBlockFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
@@ -31,7 +29,7 @@ d3d12ShaderFactory::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-d3d12ShaderFactory::Discard() {
+d3d12TextureBlockFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
     this->pointers = gfxPointers();
@@ -39,38 +37,25 @@ d3d12ShaderFactory::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-d3d12ShaderFactory::IsValid() const {
+d3d12TextureBlockFactory::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12ShaderFactory::SetupResource(shader& shd) {
+d3d12TextureBlockFactory::SetupResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
 
-    this->pointers.renderer->invalidateShaderState();
-    const ShaderLang::Code slang = ShaderLang::HLSL5;
-    const ShaderSetup& setup = shd.Setup;
-
-    // set vertex- and pixel-shader bytecode pointers
-    d3d12Shader::shaderBlob vsByteCode;
-    d3d12Shader::shaderBlob psByteCode;
-    const int32 numProgs = setup.NumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        setup.VertexShaderByteCode(progIndex, slang, vsByteCode.ptr, vsByteCode.size);
-        setup.FragmentShaderByteCode(progIndex, slang, psByteCode.ptr, psByteCode.size);
-        shd.addShaders(setup.Mask(progIndex), vsByteCode, psByteCode);
-    }
-
-    return ResourceState::Valid;
+    o_error("FIXME!\n");
+    return ResourceState::Failed;
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12ShaderFactory::DestroyResource(shader& shd) {
+d3d12TextureBlockFactory::DestroyResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
-    this->pointers.renderer->invalidateShaderState();
-    shd.Clear();
+
+    o_error("FIXME!\n");
 }
 
 } // namespace _priv

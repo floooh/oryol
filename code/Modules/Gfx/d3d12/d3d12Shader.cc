@@ -28,8 +28,6 @@ void
 d3d12Shader::Clear() {
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
-    this->numUniformBlockEntries = 0;
-    this->uniformBlockEntries.Fill(ubEntry());
     shaderBase::Clear();
 }
 
@@ -71,32 +69,6 @@ d3d12Shader::getPixelShaderByMask(uint32 mask) const {
         }
     }
     return nullptr;
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Shader::addUniformBlockEntry(ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
-    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
-    entry.bindShaderStage = bindShaderStage;
-    entry.bindSlotIndex = bindSlotIndex;
-}
-
-//------------------------------------------------------------------------------
-int32
-d3d12Shader::getNumUniformBlocks() const {
-    return this->numUniformBlockEntries;
-}
-
-//------------------------------------------------------------------------------
-ShaderType::Code
-d3d12Shader::getUniformBlockShaderStage(int32 ubIndex) const {
-    return this->uniformBlockEntries[ubIndex].bindShaderStage;
-}
-
-//------------------------------------------------------------------------------
-int32
-d3d12Shader::getUniformBlockBindSlotIndex(int32 ubIndex) const {
-    return this->uniformBlockEntries[ubIndex].bindSlotIndex;
 }
 
 } // namespace _priv
