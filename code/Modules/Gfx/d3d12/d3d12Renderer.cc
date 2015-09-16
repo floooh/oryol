@@ -16,8 +16,6 @@ namespace _priv {
 d3d12Renderer::d3d12Renderer() :
 d3d12Device(nullptr),
 d3d12CommandQueue(nullptr),
-d3d12CommandAllocator(nullptr),
-d3d12CommandList(nullptr),
 d3d12RootSignature(nullptr),
 frameIndex(0),
 curFrameRotateIndex(0),
@@ -49,6 +47,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(ptrs.displayMgr->d3d12Device);
     o_assert_dbg(ptrs.displayMgr->d3d12CommandQueue);
     o_assert_dbg(0 == this->frameIndex);
+    HRESULT hr;
 
     this->valid = true;
     this->gfxSetup = setup;
@@ -56,17 +55,20 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->d3d12Device = ptrs.displayMgr->d3d12Device;
     this->d3d12CommandQueue = ptrs.displayMgr->d3d12CommandQueue;
 
-    this->createCommandAllocator();
-    this->createCommandList();
+    this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
     this->createDefaultRenderTargets(setup.Width, setup.Height);
     this->createRootSignature();
-    this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createSamplerDescriptorHeap();
 
-    // set the root signature for the first frame
-    this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
+    // prepare command list for first frame
+    hr = this->curCommandList()->Reset(this->curCommandAllocator(), nullptr);
+    o_assert(SUCCEEDED(hr));
+    this->curCommandList()->SetGraphicsRootSignature(this->d3d12RootSignature);
 
+    // set an initial fence for the 'previous' frame
+    hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, 0);
+    o_assert(SUCCEEDED(hr));
     this->frameIndex = 1;
 }
 
@@ -74,22 +76,19 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 void
 d3d12Renderer::discard() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->d3d12CommandAllocator);
-    o_assert_dbg(this->d3d12CommandList);
     o_assert_dbg(this->d3d12Fence);
     o_assert_dbg(this->fenceEvent);
 
     // need to wait that the GPU is done before destroying objects
-    this->d3d12CommandList->Close();
+    this->curCommandList()->Close();
     this->frameSync();
+    this->curCommandList()->Close();
 
     this->destroySamplerDescriptorHeap();
-    this->destroyFrameResources();
     this->destroyRootSignature();
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
-    this->destroyCommandList();
-    this->destroyCommandAllocator();
+    this->destroyFrameResources();
     this->d3d12Allocator.DestroyAll();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
@@ -100,52 +99,62 @@ d3d12Renderer::discard() {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::createCommandAllocator() {
-    o_assert_dbg(this->d3d12Device);
-    o_assert_dbg(nullptr == this->d3d12CommandAllocator);
+d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
+    HRESULT hr;
 
-    // FIXME: I think we need d3d12Config::NumFrames allocators,
-    // and rotate through them so that a new command list can
-    // start recording before the previous is finished
-    HRESULT hr = this->d3d12Device->CreateCommandAllocator(
-        D3D12_COMMAND_LIST_TYPE_DIRECT,
-        __uuidof(ID3D12CommandAllocator),
-        (void**)&this->d3d12CommandAllocator);
-    o_assert(SUCCEEDED(hr) && this->d3d12CommandAllocator);
-}
+    this->curFrameRotateIndex = 0;
+    this->curConstantBufferOffset = 0;
+    for (auto& frameRes : this->d3d12FrameResources) {
 
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::destroyCommandAllocator() {
-    if (this->d3d12CommandAllocator) {
-        this->d3d12CommandAllocator->Release();
-        this->d3d12CommandAllocator = nullptr;
+        o_assert_dbg(nullptr == frameRes.constantBuffer);
+
+        // create a command allocator
+        hr = this->d3d12Device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT,
+            __uuidof(ID3D12CommandAllocator),
+            (void**)&frameRes.commandAllocator);
+        o_assert(SUCCEEDED(hr) && frameRes.commandAllocator);
+
+        // create a command list
+        hr = this->d3d12Device->CreateCommandList(
+            0,                                  // nodeMask
+            D3D12_COMMAND_LIST_TYPE_DIRECT,     // type
+            frameRes.commandAllocator,          // pCommandAllocator
+            nullptr,                            // pInitialState
+            __uuidof(ID3D12CommandList),
+            (void**)&frameRes.commandList);
+        o_assert(SUCCEEDED(hr) && frameRes.commandList);
+        hr = frameRes.commandList->Close();
+        o_assert(SUCCEEDED(hr));
+
+        // this is the buffer for shader constants that change between drawcalls,
+        // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
+        frameRes.constantBuffer = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
+        o_assert_dbg(frameRes.constantBuffer);
+
+        // get the CPU and GPU start address of the constant buffer
+        hr = frameRes.constantBuffer->Map(0, nullptr, (void**)&frameRes.cbCpuPtr);
+        o_assert(SUCCEEDED(hr));
+        frameRes.cbGpuPtr = frameRes.constantBuffer->GetGPUVirtualAddress();
+        o_assert_dbg(frameRes.cbGpuPtr);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::createCommandList() {
-    o_assert_dbg(this->d3d12Device);
-    o_assert_dbg(this->d3d12CommandAllocator);
-    o_assert_dbg(nullptr == this->d3d12CommandList);
-
-    HRESULT hr = this->d3d12Device->CreateCommandList(
-        0,                                  // nodeMask
-        D3D12_COMMAND_LIST_TYPE_DIRECT,     // type
-        this->d3d12CommandAllocator,        // pCommandAllocator
-        nullptr,    // pInitialState (FIXME: the docs say this must be a valid pipeline state, but the samples use nullptr?)
-        __uuidof(ID3D12CommandList),
-        (void**)&this->d3d12CommandList);
-    o_assert(SUCCEEDED(hr) && this->d3d12CommandList);
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::destroyCommandList() {
-    if (this->d3d12CommandList) {
-        this->d3d12CommandList->Release();
-        this->d3d12CommandList = nullptr;
+d3d12Renderer::destroyFrameResources() {
+    for (auto& frameRes : this->d3d12FrameResources) {
+        if (frameRes.constantBuffer) {
+            frameRes.constantBuffer->Unmap(0, nullptr);
+            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
+            frameRes.constantBuffer = nullptr;
+            frameRes.cbCpuPtr = nullptr;
+            frameRes.cbGpuPtr = 0;
+            frameRes.commandList->Release();
+            frameRes.commandList = nullptr;
+            frameRes.commandAllocator->Release();
+            frameRes.commandAllocator = nullptr;
+        }
     }
 }
 
@@ -426,44 +435,6 @@ d3d12Renderer::destroySamplerDescriptorHeap() {
 }
 
 //------------------------------------------------------------------------------
-void
-d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
-    HRESULT hr;
-
-    this->curFrameRotateIndex = 0;
-    this->curConstantBufferOffset = 0;
-    for (auto& frameRes : this->d3d12FrameResources) {
-
-        o_assert_dbg(nullptr == frameRes.constantBuffer);
-        
-        // this is the buffer for shader constants that change between drawcalls,
-        // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
-        frameRes.constantBuffer = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
-        o_assert_dbg(frameRes.constantBuffer);
-        
-        // get the CPU and GPU start address of the constant buffer
-        hr = frameRes.constantBuffer->Map(0, nullptr, (void**)&frameRes.cbCpuPtr);
-        o_assert(SUCCEEDED(hr));
-        frameRes.cbGpuPtr = frameRes.constantBuffer->GetGPUVirtualAddress();
-        o_assert_dbg(frameRes.cbGpuPtr);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::destroyFrameResources() {
-    for (auto& frameRes : this->d3d12FrameResources) {
-        if (frameRes.constantBuffer) {
-            frameRes.constantBuffer->Unmap(0, nullptr);
-            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
-            frameRes.constantBuffer = nullptr;
-            frameRes.cbCpuPtr = nullptr;
-            frameRes.cbGpuPtr = 0;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
 bool
 d3d12Renderer::isValid() const {
     return this->valid;
@@ -471,57 +442,8 @@ d3d12Renderer::isValid() const {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::frameSync() {
-    // NOTE: this method is called from displayMgr::Present()!
-    o_assert_dbg(this->d3d12Fence);
-    o_assert_dbg(this->fenceEvent);
-    o_assert_dbg(this->d3d12CommandAllocator);
-    o_assert_dbg(this->d3d12CommandList);
-    HRESULT hr;
-
-    // FIXME: what this actually does is wait for the CURRENT frame to finish
-    // that has just been recorded, what we actually need to do is wait for
-    // the frame BEFORE to finish, and start recording a new command list
-    // while the current one is executing
-
-    // FIXME REMINDER: the d3d12 hello world sample says that waiting for the
-    // previous frame to finish is not best practice
-    const uint64 fenceValue = this->frameIndex++;
-    hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, fenceValue);
-    o_assert(SUCCEEDED(hr));
-
-    // wait until previous frame is finished
-    if (this->d3d12Fence->GetCompletedValue() < fenceValue) {
-        hr = this->d3d12Fence->SetEventOnCompletion(fenceValue, this->fenceEvent);
-        ::WaitForSingleObject(this->fenceEvent, INFINITE);
-    }
-
-    // reset the command allocator and command list for next frame
-    hr = this->d3d12CommandAllocator->Reset();
-    o_assert(SUCCEEDED(hr));
-    hr = this->d3d12CommandList->Reset(this->d3d12CommandAllocator, nullptr);
-    o_assert(SUCCEEDED(hr));
-
-    // lookup new backbuffer index
-    this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
-
-    // garbage-collect resources
-    this->d3d12Allocator.GarbageCollect(this->frameIndex);
-
-    // prepare for next frame
-    o_assert_dbg(this->d3d12RootSignature);
-    this->d3d12CommandList->SetGraphicsRootSignature(this->d3d12RootSignature);
-    this->curConstantBufferOffset = 0;
-    if (++this->curFrameRotateIndex >= d3d12Config::NumFrames) {
-        this->curFrameRotateIndex = 0;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 d3d12Renderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->d3d12CommandList);
 
     // transition the default render target back from render target to present state
     const displayMgr* dispMgr = this->pointers.displayMgr;
@@ -532,13 +454,61 @@ d3d12Renderer::commitFrame() {
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    this->d3d12CommandList->ResourceBarrier(1, &barrier);
+    this->curCommandList()->ResourceBarrier(1, &barrier);
 
     // execute the command list, after this, displayMgr::present() is called,
     // which calls Present on the swapchain and waits for the previous
     // frame to finish
-    this->d3d12CommandList->Close();
-    this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**) &this->d3d12CommandList);
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
+    cmdList->Close();
+    this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmdList);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::frameSync() {
+    // NOTE: this method is called from displayMgr::Present(),
+    // and after d3d12Renderer::commitFrame()!
+    o_assert_dbg(this->d3d12Fence);
+    o_assert_dbg(this->fenceEvent);
+    HRESULT hr;
+
+    // set a fence with the current frame index...
+    const uint64 newFenceValue = this->frameIndex;
+    hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, newFenceValue);
+    o_assert(SUCCEEDED(hr));
+
+    // wait on the previous frame
+    uint64 waitFenceValue = this->frameIndex - 1;
+    if (this->d3d12Fence->GetCompletedValue() < waitFenceValue) {
+        hr = this->d3d12Fence->SetEventOnCompletion(waitFenceValue, this->fenceEvent);
+        ::WaitForSingleObject(this->fenceEvent, INFINITE);
+    }
+
+    // deferred-release resources
+    this->d3d12Allocator.GarbageCollect(this->frameIndex);
+
+    // bump frame indices, this rotates to curFrameRotateIndex
+    // to the frameResource slot of the previous frame, these
+    // resource are now no longer used by the GPU
+    this->frameIndex++;
+    if (++this->curFrameRotateIndex >= d3d12Config::NumFrames) {
+        this->curFrameRotateIndex = 0;
+    }
+
+    // reset the rotated command allocator and command list for next frame
+    hr = this->curCommandAllocator()->Reset();
+    o_assert(SUCCEEDED(hr));
+    hr = this->curCommandList()->Reset(this->curCommandAllocator(), nullptr);
+    o_assert(SUCCEEDED(hr));
+
+    // lookup new backbuffer index
+    this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
+
+    // prepare for next frame
+    o_assert_dbg(this->d3d12RootSignature);
+    this->curCommandList()->SetGraphicsRootSignature(this->d3d12RootSignature);
+    this->curConstantBufferOffset = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -573,8 +543,8 @@ d3d12Renderer::renderTargetAttrs() const {
 void
 d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(this->d3d12CommandList);
     const displayMgr* dispMgr = this->pointers.displayMgr;
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     ID3D12Resource* colorBuffer = nullptr;
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = { 0 };
@@ -615,10 +585,10 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     barrier.Transition.StateBefore = colorStateBefore;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    this->d3d12CommandList->ResourceBarrier(1, &barrier);
+    cmdList->ResourceBarrier(1, &barrier);
 
     // set the render target
-    this->d3d12CommandList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);
+    cmdList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);
 
     // set viewport and scissor-rect to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
@@ -628,7 +598,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     if (clearState.Actions & ClearState::ColorBit) {
         if (rtvHandlePtr) {
             const FLOAT* clearColor = glm::value_ptr(clearState.Color);        
-            this->d3d12CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+            cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
         }
     }
     if (clearState.Actions & ClearState::DepthStencilBits) {
@@ -642,7 +612,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             }
             const FLOAT d = clearState.Depth;
             const UINT8 s = clearState.Stencil;
-            this->d3d12CommandList->ClearDepthStencilView(dsvHandle, d3d12ClearFlags, d, s, 0, nullptr);
+            cmdList->ClearDepthStencilView(dsvHandle, d3d12ClearFlags, d, s, 0, nullptr);
         }
     }
 }
@@ -650,8 +620,6 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
-    o_assert_dbg(this->d3d12CommandList);
-
     D3D12_VIEWPORT vp;
     vp.TopLeftX = (FLOAT)x;
     vp.TopLeftY = (FLOAT)(originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
@@ -659,27 +627,23 @@ d3d12Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool o
     vp.Height = (FLOAT)height;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
-    this->d3d12CommandList->RSSetViewports(1, &vp);
+    this->curCommandList()->RSSetViewports(1, &vp);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
-    o_assert_dbg(this->d3d12CommandList);
-
     D3D12_RECT rect;
     rect.left = x;
     rect.top = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
     rect.right = x + width;
     rect.bottom = originTopLeft ? (y + height) : (this->rtAttrs.FramebufferHeight - y);
-    this->d3d12CommandList->RSSetScissorRects(1, &rect);
+    this->curCommandList()->RSSetScissorRects(1, &rect);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyDrawState(drawState* ds) {
-    o_assert_dbg(this->d3d12CommandList);
-
     if (nullptr == ds) {
         // the drawState is pending (dependent resource still loading),
         // invalidate rendering for followup draw calls
@@ -687,6 +651,7 @@ d3d12Renderer::applyDrawState(drawState* ds) {
         return;
     }
     this->curDrawState = ds;
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     o_assert_dbg(ds->d3d12PipelineState);
     o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
@@ -694,7 +659,7 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
     // apply pipeline state (FIXME: only if changed!)
-    this->d3d12CommandList->SetPipelineState(ds->d3d12PipelineState);
+    cmdList->SetPipelineState(ds->d3d12PipelineState);
     
     // apply vertex and index buffers (FIXME: only if changed!)
     D3D12_VERTEX_BUFFER_VIEW vbViews[GfxConfig::MaxNumInputMeshes];
@@ -724,17 +689,15 @@ d3d12Renderer::applyDrawState(drawState* ds) {
             vbViews[i].StrideInBytes = 0;
         }
     }
-    this->d3d12CommandList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
-    this->d3d12CommandList->IASetIndexBuffer(ibViewPtr);
-    this->d3d12CommandList->IASetPrimitiveTopology(ds->meshes[0]->d3d12PrimTopology);
-    this->d3d12CommandList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
+    cmdList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
+    cmdList->IASetIndexBuffer(ibViewPtr);
+    cmdList->IASetPrimitiveTopology(ds->meshes[0]->d3d12PrimTopology);
+    cmdList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
-    o_assert_dbg(this->d3d12CommandList);
-
     if (nullptr == this->curDrawState) {
         return;
     }
@@ -765,7 +728,7 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     o_assert_dbg(bindSlot < maxHighFreqCBs);
     UINT rootParamIndex = ShaderStage::VS == bindStage ? VSConstantBuffer0 : PSConstantBuffer0;
     rootParamIndex += bindSlot * maxHighFreqCBs;
-    this->d3d12CommandList->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
+    this->curCommandList()->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
 
     // advance constant buffer offset (must be multiple of 256)
     this->curConstantBufferOffset = Memory::RoundUp(this->curConstantBufferOffset + byteSize, 256);
@@ -780,14 +743,13 @@ d3d12Renderer::applyTextureBlock(textureBlock* tb) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
-    o_assert_dbg(this->d3d12CommandList);
     o_assert2_dbg(this->rtValid, "No render target set!\n");
     if (nullptr == this->curDrawState) {
         return;
     }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
-        this->d3d12CommandList->DrawIndexedInstanced(
+        this->curCommandList()->DrawIndexedInstanced(
             primGroup.NumElements,  // IndexCountPerInstance
             1,                      // InstanceCount
             primGroup.BaseElement,  // StartIndexLocation
@@ -795,7 +757,7 @@ d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
             0);                     // StartInstanceLocation
     }
     else {
-        this->d3d12CommandList->DrawInstanced(
+        this->curCommandList()->DrawInstanced(
             primGroup.NumElements,  // VertexCountPerInstance
             1,                      // InstanceCount
             primGroup.BaseElement,  // StartVertexLocation

@@ -89,10 +89,6 @@ public:
     ID3D12Device* d3d12Device;
     /// pointer to d3d12 command queue (owned by display mgr)
     ID3D12CommandQueue* d3d12CommandQueue;
-    /// pointer to d3d12 command allocator (owned by render mgr)
-    ID3D12CommandAllocator* d3d12CommandAllocator;
-    /// pointer to d3d12 command list (owned by render mgr)
-    ID3D12GraphicsCommandList* d3d12CommandList;
     /// pointer to the d3d12 root signature (owned by render mgr)
     ID3D12RootSignature* d3d12RootSignature;
     // resource allocator for D3D12 objects
@@ -102,16 +98,16 @@ public:
     uint64 frameIndex;
     /// the current frame index module the max number of in-flight-frames
     uint32 curFrameRotateIndex;
+    /// get the current (frame-rotated) command list
+    ID3D12GraphicsCommandList* curCommandList() const {
+        return this->d3d12FrameResources[this->curFrameRotateIndex].commandList;
+    };
+    /// get the current (frame-rotated) command allocator
+    ID3D12CommandAllocator* curCommandAllocator() const {
+        return this->d3d12FrameResources[this->curFrameRotateIndex].commandAllocator;
+    };
 
 private:
-    /// create the d3d12 command allocator object
-    void createCommandAllocator();
-    /// destroy d3d12 command allocator object
-    void destroyCommandAllocator();
-    /// create the d3d12 command list object
-    void createCommandList();
-    /// destroy the d3d12 command allocator object
-    void destroyCommandList();
     /// create the frame synchronization objects
     void createFrameSyncObjects();
     /// destory frame sync objects
@@ -174,6 +170,8 @@ private:
 
     // per-frame resources which are rotated
     struct frameResources {
+        ID3D12CommandAllocator* commandAllocator = nullptr;
+        ID3D12GraphicsCommandList* commandList = nullptr;
         ID3D12Resource* constantBuffer = nullptr;
         uint8* cbCpuPtr = nullptr;
         uint64 cbGpuPtr = 0;

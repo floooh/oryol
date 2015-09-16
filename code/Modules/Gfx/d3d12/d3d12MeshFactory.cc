@@ -150,7 +150,7 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     o_assert_dbg(IndexType::None != ibAttrs.Type ? Usage::Immutable == ibAttrs.BufferUsage : true);
     
     d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
-    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->d3d12CommandList;
+    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
     // create vertex buffer
