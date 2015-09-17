@@ -100,11 +100,11 @@ public:
     uint32 curFrameRotateIndex;
     /// get the current (frame-rotated) command list
     ID3D12GraphicsCommandList* curCommandList() const {
-        return this->d3d12FrameResources[this->curFrameRotateIndex].commandList;
+        return this->frameResources[this->curFrameRotateIndex].commandList;
     };
     /// get the current (frame-rotated) command allocator
     ID3D12CommandAllocator* curCommandAllocator() const {
-        return this->d3d12FrameResources[this->curFrameRotateIndex].commandAllocator;
+        return this->frameResources[this->curFrameRotateIndex].commandAllocator;
     };
 
 private:
@@ -143,10 +143,11 @@ private:
     HANDLE fenceEvent;
 
     // default render target
-    StaticArray<ID3D12Resource*, d3d12Config::NumFrames> d3d12RenderTargets;
-    ID3D12Resource* d3d12DepthStencil;
-    ID3D12DescriptorHeap* d3d12RTVHeap;
-    ID3D12DescriptorHeap* d3d12DSVHeap;
+    StaticArray<ID3D12Resource*, d3d12Config::NumFrames> backbufferSurfaces;
+    ID3D12Resource* msaaSurface;
+    ID3D12Resource* depthStencilSurface;
+    ID3D12DescriptorHeap* rtvHeap;
+    ID3D12DescriptorHeap* dsvHeap;
     int32 rtvDescriptorSize;
     int32 curBackBufferIndex;
     
@@ -176,7 +177,7 @@ private:
         uint8* cbCpuPtr = nullptr;
         uint64 cbGpuPtr = 0;
     };
-    StaticArray<frameResources, d3d12Config::NumFrames> d3d12FrameResources;
+    StaticArray<frameResources, d3d12Config::NumFrames> frameResources;
     int32 curConstantBufferOffset;
 };
 

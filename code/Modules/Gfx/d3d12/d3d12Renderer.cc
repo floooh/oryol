@@ -25,14 +25,15 @@ curRenderTarget(nullptr),
 curDrawState(nullptr),
 d3d12Fence(nullptr),
 fenceEvent(nullptr),
-d3d12DepthStencil(nullptr),
-d3d12RTVHeap(nullptr),
-d3d12DSVHeap(nullptr),
+msaaSurface(nullptr),
+depthStencilSurface(nullptr),
+rtvHeap(nullptr),
+dsvHeap(nullptr),
 rtvDescriptorSize(0),
 curBackBufferIndex(0),
 samplerDescHeap(nullptr),
 curConstantBufferOffset(0) {
-    this->d3d12RenderTargets.Fill(nullptr);
+    this->backbufferSurfaces.Fill(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 
     this->curFrameRotateIndex = 0;
     this->curConstantBufferOffset = 0;
-    for (auto& frameRes : this->d3d12FrameResources) {
+    for (auto& frameRes : this->frameResources) {
 
         o_assert_dbg(nullptr == frameRes.constantBuffer);
 
@@ -143,7 +144,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::destroyFrameResources() {
-    for (auto& frameRes : this->d3d12FrameResources) {
+    for (auto& frameRes : this->frameResources) {
         if (frameRes.constantBuffer) {
             frameRes.constantBuffer->Unmap(0, nullptr);
             this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
@@ -204,28 +205,35 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     // For the depth-stencil-view, 1 depth-buffer resource is always
     // created.
     
-    o_assert_dbg(nullptr == this->d3d12RTVHeap);
-    o_assert_dbg(nullptr == this->d3d12DSVHeap);
-    o_assert_dbg(nullptr == this->d3d12DepthStencil);
+    o_assert_dbg(nullptr == this->rtvHeap);
+    o_assert_dbg(nullptr == this->dsvHeap);
+    o_assert_dbg(nullptr == this->msaaSurface);
+    o_assert_dbg(nullptr == this->depthStencilSurface);
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
     HRESULT hr;
     const bool isMSAA = this->gfxSetup.SampleCount > 1;
+    const int smpCount = this->gfxSetup.SampleCount;
+    const PixelFormat::Code colorFormat = this->gfxSetup.ColorFormat;
+
+    // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
+    // this will be resolved into the actually swapchain backbuffer when needed
+
 
     // create a render-target-view heap with NumFrames entries
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
     d3d12Types::initDescriptorHeapDesc(&rtvHeapDesc, d3d12Config::NumFrames, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
-    hr = this->d3d12Device->CreateDescriptorHeap(&rtvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12RTVHeap);
-    o_assert(SUCCEEDED(hr) && this->d3d12RTVHeap);
+    hr = this->d3d12Device->CreateDescriptorHeap(&rtvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->rtvHeap);
+    o_assert(SUCCEEDED(hr) && this->rtvHeap);
     this->rtvDescriptorSize = this->d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     o_assert(this->rtvDescriptorSize > 0);
 
     // create NumFrames render-target-views from the render-target-view-heap
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = this->rtvHeap->GetCPUDescriptorHandleForHeapStart();
     for (int i = 0; i < d3d12Config::NumFrames; i++) {
-        o_assert_dbg(nullptr == this->d3d12RenderTargets[i]);
-        hr = this->pointers.displayMgr->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->d3d12RenderTargets[i]);
-        o_assert_dbg(SUCCEEDED(hr) && this->d3d12RenderTargets[i]);
-        this->d3d12Device->CreateRenderTargetView(this->d3d12RenderTargets[i], nullptr, rtvHandle);
+        o_assert_dbg(nullptr == this->backbufferSurfaces[i]);
+        hr = this->pointers.displayMgr->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->backbufferSurfaces[i]);
+        o_assert_dbg(SUCCEEDED(hr) && this->backbufferSurfaces[i]);
+        this->d3d12Device->CreateRenderTargetView(this->backbufferSurfaces[i], nullptr, rtvHandle);
         rtvHandle.ptr += this->rtvDescriptorSize;
     }
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
@@ -234,7 +242,6 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     if (PixelFormat::None != this->gfxSetup.DepthFormat) {
 
         const PixelFormat::Code depthFormat = this->gfxSetup.DepthFormat;
-        const int smpCount = this->gfxSetup.SampleCount;
 
         D3D12_HEAP_PROPERTIES dsHeapProps;
         d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
@@ -244,23 +251,23 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         d3d12Types::initDepthStencilClearValue(&clearValue, depthFormat, 1.0f, 0);
 
         hr = this->d3d12Device->CreateCommittedResource(
-            &dsHeapProps,                       // pHeapProperties
-            D3D12_HEAP_FLAG_NONE,               // HeapFlags
-            &dsDesc,                            // pResourceDesc,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,   // InitialResourceState
-            &clearValue,                        // pOptimizedClearValue
-            __uuidof(ID3D12Resource),           // riidResource
-            (void**)&this->d3d12DepthStencil);  // ppvResource
-        o_assert(SUCCEEDED(hr) && this->d3d12DepthStencil);
+            &dsHeapProps,                           // pHeapProperties
+            D3D12_HEAP_FLAG_NONE,                   // HeapFlags
+            &dsDesc,                                // pResourceDesc,
+            D3D12_RESOURCE_STATE_DEPTH_WRITE,       // InitialResourceState
+            &clearValue,                            // pOptimizedClearValue
+            __uuidof(ID3D12Resource),               // riidResource
+            (void**)&this->depthStencilSurface);    // ppvResource
+        o_assert(SUCCEEDED(hr) && this->depthStencilSurface);
 
         D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
         d3d12Types::initDescriptorHeapDesc(&dsvHeapDesc, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false);
-        hr = this->d3d12Device->CreateDescriptorHeap(&dsvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12DSVHeap);
-        o_assert(SUCCEEDED(hr) && this->d3d12DSVHeap);
+        hr = this->d3d12Device->CreateDescriptorHeap(&dsvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->dsvHeap);
+        o_assert(SUCCEEDED(hr) && this->dsvHeap);
 
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
         d3d12Types::initDSVDesc(&dsvDesc, depthFormat, isMSAA);
-        this->d3d12Device->CreateDepthStencilView(this->d3d12DepthStencil, &dsvDesc, this->d3d12DSVHeap->GetCPUDescriptorHandleForHeapStart());
+        this->d3d12Device->CreateDepthStencilView(this->depthStencilSurface, &dsvDesc, this->dsvHeap->GetCPUDescriptorHandleForHeapStart());
     }
 }
 
@@ -268,23 +275,27 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
 void
 d3d12Renderer::destroyDefaultRenderTargets() {
 
-    if (this->d3d12DepthStencil) {
-        this->d3d12DepthStencil->Release();
-        this->d3d12DepthStencil = nullptr;
+    if (this->msaaSurface) {
+        this->msaaSurface->Release();
+        this->msaaSurface = nullptr;
     }
-    for (auto& rt : this->d3d12RenderTargets) {
+    if (this->depthStencilSurface) {
+        this->depthStencilSurface->Release();
+        this->depthStencilSurface = nullptr;
+    }
+    for (auto& rt : this->backbufferSurfaces) {
         if (rt) {
             rt->Release();
             rt = nullptr;
         }
     }
-    if (this->d3d12DSVHeap) {
-        this->d3d12DSVHeap->Release();
-        this->d3d12DSVHeap = nullptr;
+    if (this->dsvHeap) {
+        this->dsvHeap->Release();
+        this->dsvHeap = nullptr;
     }
-    if (this->d3d12RTVHeap) {
-        this->d3d12RTVHeap->Release();
-        this->d3d12RTVHeap = nullptr;
+    if (this->rtvHeap) {
+        this->rtvHeap->Release();
+        this->rtvHeap = nullptr;
     }
 }
 
@@ -438,7 +449,7 @@ d3d12Renderer::commitFrame() {
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = this->d3d12RenderTargets[this->curBackBufferIndex];
+    barrier.Transition.pResource = this->backbufferSurfaces[this->curBackBufferIndex];
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -543,13 +554,13 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->invalidateTextureState();
     if (nullptr == rt) {
         this->rtAttrs = dispMgr->GetDisplayAttrs();
-        colorBuffer = this->d3d12RenderTargets[this->curBackBufferIndex];
+        colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
         colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        rtvHandle = this->d3d12RTVHeap->GetCPUDescriptorHandleForHeapStart();
+        rtvHandle = this->rtvHeap->GetCPUDescriptorHandleForHeapStart();
         rtvHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
         rtvHandlePtr = &rtvHandle;
-        if (this->d3d12DepthStencil) {
-            dsvHandle = this->d3d12DSVHeap->GetCPUDescriptorHandleForHeapStart();
+        if (this->depthStencilSurface) {
+            dsvHandle = this->dsvHeap->GetCPUDescriptorHandleForHeapStart();
             dsvHandlePtr = &dsvHandle;
         }
     }
@@ -703,7 +714,7 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
 
     // copy uniform data into global constant buffer
     o_assert2((this->curConstantBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
-    const auto& frameRes = this->d3d12FrameResources[this->curFrameRotateIndex];
+    const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
     uint8* dstPtr = frameRes.cbCpuPtr + this->curConstantBufferOffset;
     std::memcpy(dstPtr, ptr, byteSize);
 
