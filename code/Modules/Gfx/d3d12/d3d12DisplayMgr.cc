@@ -132,10 +132,8 @@ d3d12DisplayMgr::createSwapChain() {
     swapChainDesc.BufferDesc.Format = d3d12Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    swapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
-    o_warn("d3d12DisplayMgr::createSwapChain(): what about the SampleDesc.Quality???\n");
+    swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
-    o_warn("FIXME: swapChainDesc.SampleDesc.Quality!\n");
     swapChainDesc.BufferCount = d3d12Config::NumFrames;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.OutputWindow = this->hwnd;

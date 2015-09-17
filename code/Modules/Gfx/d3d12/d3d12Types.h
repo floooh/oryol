@@ -44,6 +44,18 @@ public:
     static D3D12_INPUT_CLASSIFICATION asInputClassification(VertexStepFunction::Code func);
     /// convert vertex index type to dxgi format
     static DXGI_FORMAT asIndexType(IndexType::Code c);
+    /// initialize a D3D12_HEAP_PROPERTIES struct
+    static void initHeapProps(D3D12_HEAP_PROPERTIES* out, D3D12_HEAP_TYPE type);
+    /// initialize a D3D12_RESOURCE_DESC for a vertex/index/constant buffer
+    static void initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size);
+    /// initialize a D3D12_RESOURCE_DESC for a render-target surface
+    static void initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, PixelFormat::Code fmt, int sampleCount);
+    /// initialize a D3D12_CLEAR_VALUE
+    static void initDepthStencilClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float d, uint8 s);
+    // initialize a D3D12_DESCRIPTOR_HEAP_DESC 
+    static void initDescriptorHeapDesc(D3D12_DESCRIPTOR_HEAP_DESC* out, int num, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible);
+    /// initialize a D3D12_DEPTH_STENCIL_VIEW_DESC
+    static void initDSVDesc(D3D12_DEPTH_STENCIL_VIEW_DESC* out, PixelFormat::Code fmt, bool isMSAA);
 };
 
 } // namespace _priv

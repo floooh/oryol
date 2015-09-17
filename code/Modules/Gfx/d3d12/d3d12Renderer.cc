@@ -192,18 +192,28 @@ d3d12Renderer::destroyFrameSyncObjects() {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::createDefaultRenderTargets(int width, int height) {
+
+    // Here, 2 render-target-views, and optionally one 1 depth-stencil-view
+    // is created for rendering into the default render target.
+    // For the non-MSAA case, the 2 RSVs are associated with the DXGI
+    // swapchain buffers. For the MSAA case, an image resource is created
+    // which is the multi-sample surface, and both render-target-views
+    // point to this surface (only one RTV would be necessary, but this
+    // simplifies the other code which only needs to know 1 case both 
+    // for MSAA and non-MSAA.
+    // For the depth-stencil-view, 1 depth-buffer resource is always
+    // created.
+    
     o_assert_dbg(nullptr == this->d3d12RTVHeap);
     o_assert_dbg(nullptr == this->d3d12DSVHeap);
     o_assert_dbg(nullptr == this->d3d12DepthStencil);
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
     HRESULT hr;
+    const bool isMSAA = this->gfxSetup.SampleCount > 1;
 
     // create a render-target-view heap with NumFrames entries
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-    Memory::Clear(&rtvHeapDesc, sizeof(rtvHeapDesc));
-    rtvHeapDesc.NumDescriptors = d3d12Config::NumFrames;
-    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    d3d12Types::initDescriptorHeapDesc(&rtvHeapDesc, d3d12Config::NumFrames, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
     hr = this->d3d12Device->CreateDescriptorHeap(&rtvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12RTVHeap);
     o_assert(SUCCEEDED(hr) && this->d3d12RTVHeap);
     this->rtvDescriptorSize = this->d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -223,30 +233,15 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     // create a single depth-stencil buffer
     if (PixelFormat::None != this->gfxSetup.DepthFormat) {
 
+        const PixelFormat::Code depthFormat = this->gfxSetup.DepthFormat;
+        const int smpCount = this->gfxSetup.SampleCount;
+
         D3D12_HEAP_PROPERTIES dsHeapProps;
-        Memory::Clear(&dsHeapProps, sizeof(dsHeapProps));
-        dsHeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-
+        d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
         D3D12_RESOURCE_DESC dsDesc;
-        Memory::Clear(&dsDesc, sizeof(dsDesc));
-        dsDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        dsDesc.Alignment = 0;
-        dsDesc.Width = width;
-        dsDesc.Height = height;
-        dsDesc.DepthOrArraySize = 1;
-        dsDesc.MipLevels = 0;
-        dsDesc.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
-        dsDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
-        dsDesc.SampleDesc.Quality = 0;
-        o_warn("FIXME: d3d12Renderer::createDefaultRenderTargets: Sample Quality!\n");
-        dsDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-        dsDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
+        d3d12Types::initRTResourceDesc(&dsDesc, width, height, depthFormat, smpCount);
         D3D12_CLEAR_VALUE clearValue;
-        Memory::Clear(&clearValue, sizeof(clearValue));
-        clearValue.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
-        clearValue.DepthStencil.Depth = 1.0f;
-        clearValue.DepthStencil.Stencil = 0;
+        d3d12Types::initDepthStencilClearValue(&clearValue, depthFormat, 1.0f, 0);
 
         hr = this->d3d12Device->CreateCommittedResource(
             &dsHeapProps,                       // pHeapProperties
@@ -259,19 +254,12 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         o_assert(SUCCEEDED(hr) && this->d3d12DepthStencil);
 
         D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
-        Memory::Clear(&dsvHeapDesc, sizeof(dsvHeapDesc));
-        dsvHeapDesc.NumDescriptors = 1;
-        dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        d3d12Types::initDescriptorHeapDesc(&dsvHeapDesc, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false);
         hr = this->d3d12Device->CreateDescriptorHeap(&dsvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->d3d12DSVHeap);
         o_assert(SUCCEEDED(hr) && this->d3d12DSVHeap);
 
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-        Memory::Clear(&dsvDesc, sizeof(dsvDesc));
-        dsvDesc.Format = d3d12Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
-        dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-        dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-
+        d3d12Types::initDSVDesc(&dsvDesc, depthFormat, isMSAA);
         this->d3d12Device->CreateDepthStencilView(this->d3d12DepthStencil, &dsvDesc, this->d3d12DSVHeap->GetCPUDescriptorHandleForHeapStart());
     }
 }

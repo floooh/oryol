@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "d3d12Types.h"
 #include "d3d12_impl.h"
+#include "Core/Memory/Memory.h"
 
 namespace Oryol {
 namespace _priv {
@@ -262,13 +263,90 @@ d3d12Types::asInputClassification(VertexStepFunction::Code func) {
 DXGI_FORMAT
 d3d12Types::asIndexType(IndexType::Code c) {
     switch (c) {
-    case IndexType::None:       return DXGI_FORMAT_UNKNOWN; // this is a valid return type!   
-    case IndexType::Index16:    return DXGI_FORMAT_R16_UINT;
-    case IndexType::Index32:    return DXGI_FORMAT_R32_UINT;
-    default:
-        o_error("d3d12Types::asIndexType(): invalid value!\n");
-        return DXGI_FORMAT_UNKNOWN;
+        case IndexType::None:       return DXGI_FORMAT_UNKNOWN; // this is a valid return type!   
+        case IndexType::Index16:    return DXGI_FORMAT_R16_UINT;
+        case IndexType::Index32:    return DXGI_FORMAT_R32_UINT;
+        default:
+            o_error("d3d12Types::asIndexType(): invalid value!\n");
+            return DXGI_FORMAT_UNKNOWN;
     }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initHeapProps(D3D12_HEAP_PROPERTIES* out, D3D12_HEAP_TYPE type) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_HEAP_PROPERTIES));
+    out->Type = type;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, PixelFormat::Code fmt, int sampleCount) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_RESOURCE_DESC));
+    out->Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    out->Width = width;
+    out->Height = height;
+    out->DepthOrArraySize = 1;
+    out->MipLevels = 1;
+    out->Format = d3d12Types::asRenderTargetFormat(fmt);
+    out->SampleDesc.Count = sampleCount;
+    out->Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
+        out->Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    }
+    else if (PixelFormat::IsDepthStencilFormat(fmt)) {
+        out->Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_RESOURCE_DESC));
+    out->Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    out->Alignment = 0;
+    out->Width = size;
+    out->Height = 1;
+    out->DepthOrArraySize = 1;
+    out->MipLevels = 1;
+    out->Format = DXGI_FORMAT_UNKNOWN;
+    out->SampleDesc.Count = 1;
+    out->SampleDesc.Quality = 0;
+    out->Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    out->Flags = D3D12_RESOURCE_FLAG_NONE;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initDepthStencilClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float d, uint8 s) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
+    out->Format = d3d12Types::asRenderTargetFormat(fmt);
+    out->DepthStencil.Depth = d;
+    out->DepthStencil.Stencil = s;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initDescriptorHeapDesc(D3D12_DESCRIPTOR_HEAP_DESC* out, int num, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
+    out->NumDescriptors = num;
+    out->Type = type;
+    out->Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initDSVDesc(D3D12_DEPTH_STENCIL_VIEW_DESC* out, PixelFormat::Code fmt, bool isMSAA) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_DEPTH_STENCIL_VIEW_DESC));
+    out->Format = d3d12Types::asRenderTargetFormat(fmt);
+    out->ViewDimension = isMSAA ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D;
+    out->Flags = D3D12_DSV_FLAG_NONE;
 }
 
 } // namespace _priv

@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d12ResourceAllocator.h"
+#include "d3d12Types.h"
 #include "d3d12_impl.h"
 #include "d3d12Config.h"
 
@@ -55,29 +56,16 @@ d3d12ResourceAllocator::GarbageCollect(uint64 frameIndex) {
 ID3D12Resource*
 d3d12ResourceAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size) {
 
-    D3D12_HEAP_PROPERTIES heapProperties;
-    Memory::Clear(&heapProperties, sizeof(heapProperties));
-    heapProperties.Type = heapType;
-
-    D3D12_RESOURCE_DESC resourceDesc;
-    Memory::Clear(&resourceDesc, sizeof(resourceDesc));
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resourceDesc.Alignment = 0;
-    resourceDesc.Width = size;
-    resourceDesc.Height = 1;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.SampleDesc.Quality = 0;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+    D3D12_HEAP_PROPERTIES heapProps;
+    d3d12Types::initHeapProps(&heapProps, heapType);
+    D3D12_RESOURCE_DESC desc;
+    d3d12Types::initBufferResourceDesc(&desc, size);
 
     ID3D12Resource* d3d12Resource = nullptr;
     HRESULT hr = d3d12Device->CreateCommittedResource(
-        &heapProperties,                // pHeapProperties
+        &heapProps,                     // pHeapProperties
         D3D12_HEAP_FLAG_NONE,           // HeapFlags
-        &resourceDesc,                  // pResourceDesc
+        &desc,                          // pResourceDesc
         initialState,                   // InitialResourceState
         nullptr,                        // pOptimizedClearValue
         __uuidof(ID3D12Resource),
@@ -155,10 +143,7 @@ d3d12ResourceAllocator::AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DES
     o_assert_dbg(numItems > 0);
 
     D3D12_DESCRIPTOR_HEAP_DESC desc;
-    Memory::Clear(&desc, sizeof(desc));
-    desc.Type = type;
-    desc.NumDescriptors = numItems;
-    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    d3d12Types::initDescriptorHeapDesc(&desc, numItems, type, true);
     ID3D12DescriptorHeap* heap = nullptr;
     HRESULT hr = d3d12Device->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&heap);
     o_assert(SUCCEEDED(hr) && heap);
