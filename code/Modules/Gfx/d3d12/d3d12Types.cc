@@ -321,6 +321,18 @@ d3d12Types::initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size) {
 
 //------------------------------------------------------------------------------
 void
+d3d12Types::initColorClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float r, float g, float b, float a) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
+    out->Format = d3d12Types::asRenderTargetFormat(fmt);
+    out->Color[0] = r; 
+    out->Color[1] = g; 
+    out->Color[2] = b;
+    out->Color[3] = a;
+}
+
+//------------------------------------------------------------------------------
+void
 d3d12Types::initDepthStencilClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float d, uint8 s) {
     o_assert_dbg(out);
     Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));

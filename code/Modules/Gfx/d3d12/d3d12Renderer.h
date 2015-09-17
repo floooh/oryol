@@ -128,6 +128,8 @@ private:
     void createSamplerDescriptorHeap();
     /// destroy the sampler-descriptor-heap
     void destroySamplerDescriptorHeap();
+    /// perform a render-target transition
+    void rtTransition(ID3D12Resource* rt, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
     bool valid;
     GfxSetup gfxSetup;

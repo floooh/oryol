@@ -217,7 +217,23 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
 
     // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
     // this will be resolved into the actually swapchain backbuffer when needed
-
+    if (isMSAA) {
+        D3D12_HEAP_PROPERTIES dsHeapProps;
+        d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
+        D3D12_RESOURCE_DESC dsDesc;
+        d3d12Types::initRTResourceDesc(&dsDesc, width, height, colorFormat, smpCount);
+        D3D12_CLEAR_VALUE clearValue;
+        d3d12Types::initColorClearValue(&clearValue, colorFormat, 0.0f, 0.0f, 0.0f, 1.0f);
+        hr = this->d3d12Device->CreateCommittedResource(
+            &dsHeapProps,                           // pHeapProperties
+            D3D12_HEAP_FLAG_NONE,                   // HeapFlags
+            &dsDesc,                                // pResourceDesc,
+            D3D12_RESOURCE_STATE_RENDER_TARGET,     // InitialResourceState
+            &clearValue,                            // pOptimizedClearValue
+            __uuidof(ID3D12Resource),               // riidResource
+            (void**)&this->msaaSurface);            // ppvResource
+        o_assert(SUCCEEDED(hr) && this->msaaSurface);
+    }
 
     // create a render-target-view heap with NumFrames entries
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
@@ -233,7 +249,14 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         o_assert_dbg(nullptr == this->backbufferSurfaces[i]);
         hr = this->pointers.displayMgr->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->backbufferSurfaces[i]);
         o_assert_dbg(SUCCEEDED(hr) && this->backbufferSurfaces[i]);
-        this->d3d12Device->CreateRenderTargetView(this->backbufferSurfaces[i], nullptr, rtvHandle);
+        if (isMSAA) {
+            // MSAA: render-target-views are bound to msaa surface
+            this->d3d12Device->CreateRenderTargetView(this->msaaSurface, nullptr, rtvHandle);
+        }
+        else {
+            // no MSAA: render-target-views are directly bound to swap-chain buffers
+            this->d3d12Device->CreateRenderTargetView(this->backbufferSurfaces[i], nullptr, rtvHandle);
+        }
         rtvHandle.ptr += this->rtvDescriptorSize;
     }
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
@@ -445,15 +468,7 @@ d3d12Renderer::commitFrame() {
     o_assert_dbg(this->valid);
 
     // transition the default render target back from render target to present state
-    const displayMgr* dispMgr = this->pointers.displayMgr;
-    D3D12_RESOURCE_BARRIER barrier;
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = this->backbufferSurfaces[this->curBackBufferIndex];
-    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    this->curCommandList()->ResourceBarrier(1, &barrier);
+    this->rtTransition(this->backbufferSurfaces[this->curBackBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
     // execute the command list, after this, displayMgr::present() is called,
     // which calls Present on the swapchain and waits for the previous
@@ -540,6 +555,21 @@ d3d12Renderer::renderTargetAttrs() const {
 
 //------------------------------------------------------------------------------
 void
+d3d12Renderer::rtTransition(ID3D12Resource* rt, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+    o_assert_dbg(rt);
+    D3D12_RESOURCE_BARRIER barrier;
+    Memory::Clear(&barrier, sizeof(barrier));
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier.Transition.pResource = rt;
+    barrier.Transition.StateBefore = before;
+    barrier.Transition.StateAfter = after;
+    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    this->curCommandList()->ResourceBarrier(1, &barrier);
+}
+
+//------------------------------------------------------------------------------
+void
 d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
     const displayMgr* dispMgr = this->pointers.displayMgr;
@@ -577,14 +607,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->rtValid = true;
 
     // transition color buffer into render target state
-    D3D12_RESOURCE_BARRIER barrier;
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = colorBuffer;
-    barrier.Transition.StateBefore = colorStateBefore;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    cmdList->ResourceBarrier(1, &barrier);
+    this->rtTransition(colorBuffer, colorStateBefore, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
     // set the render target
     cmdList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);

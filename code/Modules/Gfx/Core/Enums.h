@@ -129,6 +129,7 @@ public:
     /// return true for valid render target color formats
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
+            case RGB8:  // note: this is not a valid rt fmt on some platforms, but is extended to RGBA8 there!
             case RGBA8:
             case RGBA32F:
             case RGBA16F:
