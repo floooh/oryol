@@ -82,8 +82,12 @@ d3d12Renderer::discard() {
 
     // need to wait that the GPU is done before destroying objects
     this->curCommandList()->Close();
-    this->frameSync();
-    this->curCommandList()->Close();
+    const uint64 waitFrameIndex = this->frameIndex - 1;
+    if (this->d3d12Fence->GetCompletedValue() < waitFrameIndex) {
+        HRESULT hr = this->d3d12Fence->SetEventOnCompletion(waitFrameIndex, this->fenceEvent);
+        o_assert(SUCCEEDED(hr));
+        ::WaitForSingleObject(this->fenceEvent, INFINITE);
+    }
 
     this->destroySamplerDescriptorHeap();
     this->destroyRootSignature();
@@ -515,6 +519,7 @@ d3d12Renderer::frameSync() {
     uint64 waitFenceValue = this->frameIndex - 1;
     if (this->d3d12Fence->GetCompletedValue() < waitFenceValue) {
         hr = this->d3d12Fence->SetEventOnCompletion(waitFenceValue, this->fenceEvent);
+        o_assert(SUCCEEDED(hr));
         ::WaitForSingleObject(this->fenceEvent, INFINITE);
     }
 
