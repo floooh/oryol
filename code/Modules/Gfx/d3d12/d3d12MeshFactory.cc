@@ -177,14 +177,67 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12MeshFactory::createEmptyMesh(mesh& msh) {
-    o_error("FIXME!");
-    return ResourceState::Failed;
+d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
+    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
+    o_assert_dbg(nullptr == msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+    o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
+    o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
+
+    VertexBufferAttrs vbAttrs;
+    vbAttrs.NumVertices = 4;
+    vbAttrs.BufferUsage = Usage::Immutable;
+    vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    vbAttrs.StepFunction = VertexStepFunction::PerVertex;
+    vbAttrs.StepRate = 1;
+    msh.vertexBufferAttrs = vbAttrs;
+
+    IndexBufferAttrs ibAttrs;
+    ibAttrs.NumIndices = 6;
+    ibAttrs.Type = IndexType::Index16;
+    ibAttrs.BufferUsage = Usage::Immutable;
+    msh.indexBufferAttrs = ibAttrs;
+
+    msh.d3d12PrimTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    msh.d3d12PrimTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    msh.numPrimGroups = 1;
+    msh.primGroups[0] = PrimitiveGroup(0, 6);
+
+    // vertices
+    const float32 topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float32 botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
+    float32 vertices[] = {
+        -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
+        +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
+        +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
+        -1.0f, -1.0f, 0.0f, 0.0f, botV      // bottom-left corner
+    };
+
+    // indices
+    uint16 indices[] = {
+        0, 2, 1,            // topleft -> bottomright -> topright
+        0, 3, 2,            // topleft -> bottomleft -> bottomright
+    };
+    
+    // create d3d12 buffers
+    ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
+    o_assert_dbg(d3d12Device);
+    d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
+    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
+    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+
+    msh.buffers[mesh::vb].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, sizeof(vertices));
+    o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
+
+    msh.buffers[mesh::ib].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, sizeof(indices));
+    o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
+d3d12MeshFactory::createEmptyMesh(mesh& msh) {
     o_error("FIXME!");
     return ResourceState::Failed;
 }
