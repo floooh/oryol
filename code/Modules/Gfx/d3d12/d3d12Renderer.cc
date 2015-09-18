@@ -211,9 +211,10 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     o_assert_dbg(nullptr == this->depthStencilSurface);
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
     HRESULT hr;
-    const bool isMSAA = this->gfxSetup.SampleCount > 1;
-    const int smpCount = this->gfxSetup.SampleCount;
-    const PixelFormat::Code colorFormat = this->gfxSetup.ColorFormat;
+    const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+    const int smpCount = dispAttrs.SampleCount;
+    const bool isMSAA = smpCount > 1;
+    const PixelFormat::Code colorFormat = dispAttrs.ColorPixelFormat;
 
     // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
     // this will be resolved into the actually swapchain backbuffer when needed
@@ -262,9 +263,9 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
     // create a single depth-stencil buffer
-    if (PixelFormat::None != this->gfxSetup.DepthFormat) {
+    const PixelFormat::Code depthFormat = dispAttrs.DepthPixelFormat;
+    if (PixelFormat::None != depthFormat) {
 
-        const PixelFormat::Code depthFormat = this->gfxSetup.DepthFormat;
 
         D3D12_HEAP_PROPERTIES dsHeapProps;
         d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
@@ -466,9 +467,27 @@ d3d12Renderer::isValid() const {
 void
 d3d12Renderer::commitFrame() {
     o_assert_dbg(this->valid);
+    const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+    const bool isMSAA = dispAttrs.SampleCount > 1;
 
-    // transition the default render target back from render target to present state
-    this->rtTransition(this->backbufferSurfaces[this->curBackBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    // in MSAA situation, need to resolve the MSAA render target into non-multisampled backbuffer surfaces
+    ID3D12Resource* curBackBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
+    if (isMSAA) {
+        this->rtTransition(this->msaaSurface, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+        this->rtTransition(curBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+        this->curCommandList()->ResolveSubresource(
+            curBackBuffer, // pDstResource
+            0,
+            this->msaaSurface, // pSrcResource
+            0,
+            d3d12Types::asRenderTargetFormat(dispAttrs.ColorPixelFormat));
+        this->rtTransition(curBackBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_PRESENT);
+        this->rtTransition(this->msaaSurface, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    }
+    else {
+        // transition the default render target back from render target to present state
+        this->rtTransition(curBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    }
 
     // execute the command list, after this, displayMgr::present() is called,
     // which calls Present on the swapchain and waits for the previous
@@ -583,9 +602,16 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     D3D12_RESOURCE_STATES colorStateBefore = (D3D12_RESOURCE_STATES) 0xFFFFFFFF;
     this->invalidateTextureState();
     if (nullptr == rt) {
+        const bool isMSAA = this->pointers.displayMgr->GetDisplayAttrs().SampleCount > 1;
         this->rtAttrs = dispMgr->GetDisplayAttrs();
-        colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
-        colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        if (isMSAA) {
+            colorBuffer = this->msaaSurface;
+            colorStateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        }
+        else {
+            colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
+            colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        }        
         rtvHandle = this->rtvHeap->GetCPUDescriptorHandleForHeapStart();
         rtvHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
         rtvHandlePtr = &rtvHandle;
@@ -607,7 +633,9 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->rtValid = true;
 
     // transition color buffer into render target state
-    this->rtTransition(colorBuffer, colorStateBefore, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    if (D3D12_RESOURCE_STATE_RENDER_TARGET != colorStateBefore) {
+        this->rtTransition(colorBuffer, colorStateBefore, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    }
 
     // set the render target
     cmdList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);
