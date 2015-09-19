@@ -138,10 +138,8 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     }
     o_assert_dbg((width > 0) && (height > 0));
 
-    // create the color buffer
+    // create the color buffer and render-target-view
     tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, 1);
-    
-    // create and fill a render-target-view descriptor
     tex.renderTargetView = descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
     descAllocator.CPUHandle(tex.renderTargetView, rtvHandle);
