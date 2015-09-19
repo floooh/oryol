@@ -56,7 +56,6 @@ d3d11TextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
@@ -73,7 +72,6 @@ d3d11TextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
     }
