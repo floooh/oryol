@@ -31,7 +31,6 @@ rtvHeap(nullptr),
 dsvHeap(nullptr),
 rtvDescriptorSize(0),
 curBackBufferIndex(0),
-samplerDescHeap(nullptr),
 curConstantBufferOffset(0) {
     this->backbufferSurfaces.Fill(nullptr);
 }
@@ -56,12 +55,13 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->d3d12Device = ptrs.displayMgr->d3d12Device;
     this->d3d12CommandQueue = ptrs.displayMgr->d3d12CommandQueue;
 
+    this->d3d12DescAllocator.Setup(setup, ptrs);
+
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
     this->createDefaultRenderTargets(setup.Width, setup.Height);
     this->createRootSignature();
-    this->createSamplerDescriptorHeap();
-
+   
     // prepare command list for first frame
     hr = this->curCommandList()->Reset(this->curCommandAllocator(), nullptr);
     o_assert(SUCCEEDED(hr));
@@ -89,12 +89,12 @@ d3d12Renderer::discard() {
         ::WaitForSingleObject(this->fenceEvent, INFINITE);
     }
 
-    this->destroySamplerDescriptorHeap();
     this->destroyRootSignature();
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
     this->destroyFrameResources();
     this->d3d12ResAllocator.DestroyAll();
+    this->d3d12DescAllocator.Discard();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
     
@@ -439,26 +439,6 @@ d3d12Renderer::destroyRootSignature() {
 }
 
 //------------------------------------------------------------------------------
-void
-d3d12Renderer::createSamplerDescriptorHeap() {
-    o_assert_dbg(nullptr == this->samplerDescHeap);
-
-    this->samplerDescHeap = this->d3d12ResAllocator.AllocDescriptorHeap(this->d3d12Device,
-        D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
-        d3d12Config::MaxNumSamplers);
-    o_assert_dbg(this->samplerDescHeap);
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::destroySamplerDescriptorHeap() {
-    if (this->samplerDescHeap) {
-        this->d3d12ResAllocator.ReleaseDeferred(this->frameIndex, this->samplerDescHeap);
-        this->samplerDescHeap = nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
 bool
 d3d12Renderer::isValid() const {
     return this->valid;
@@ -516,6 +496,7 @@ d3d12Renderer::frameSync() {
 
     // deferred-release resources
     this->d3d12ResAllocator.GarbageCollect(this->frameIndex);
+    this->d3d12DescAllocator.GarbageCollect(this->frameIndex);
 
     // bump frame indices, this rotates to curFrameRotateIndex
     // to the frameResource slot of the previous frame, these

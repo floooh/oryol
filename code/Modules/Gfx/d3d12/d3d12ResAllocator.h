@@ -28,7 +28,7 @@ public:
     /// destructor
     ~d3d12ResAllocator();
 
-    /// destroy all left-over resources
+    /// destroy all left-over resources (called at shutdown)
     void DestroyAll();
     /// garbage-collect released resources when safe, call once per frame
     void GarbageCollect(uint64 frameIndex);

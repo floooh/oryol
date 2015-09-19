@@ -17,6 +17,8 @@ public:
     static const int NumFrames = 2;
     /// maximum number of different samplers over whole application
     static const int MaxNumSamplers = 64;
+    /// maximum number of render targets that can exist at the same time
+    static const int MaxNumRenderTargets = 64;
 };
 
 } // namespace _priv

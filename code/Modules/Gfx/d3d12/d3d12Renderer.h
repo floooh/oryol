@@ -13,6 +13,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/d3d12/d3d12Config.h"
 #include "Gfx/d3d12/d3d12ResAllocator.h"
+#include "Gfx/d3d12/d3d12DescAllocator.h"
 #include "d3d12_decl.h"
 
 namespace Oryol {
@@ -91,8 +92,10 @@ public:
     ID3D12CommandQueue* d3d12CommandQueue;
     /// pointer to the d3d12 root signature (owned by render mgr)
     ID3D12RootSignature* d3d12RootSignature;
-    // resource allocator for D3D12 objects
+    /// allocator for D3D12 resources
     d3d12ResAllocator d3d12ResAllocator;
+    /// allocator for D3D12 descriptors
+    d3d12DescAllocator d3d12DescAllocator;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;
@@ -124,10 +127,6 @@ private:
     void createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame);
     /// destroy the per-frame resource
     void destroyFrameResources();
-    /// create the sampler-descriptor-heap
-    void createSamplerDescriptorHeap();
-    /// destroy the sampler-descriptor-heap
-    void destroySamplerDescriptorHeap();
     /// perform a render-target transition
     void rtTransition(ID3D12Resource* rt, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
@@ -153,9 +152,6 @@ private:
     int32 rtvDescriptorSize;
     int32 curBackBufferIndex;
     
-    // samplers are not per-frame!
-    ID3D12DescriptorHeap* samplerDescHeap;
-
     // root signature slots, ordered from low to high change-frequency
     enum rootParam {
         VSSamplers = 0,
