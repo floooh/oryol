@@ -9,7 +9,7 @@
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "d3d12DrawStateFactory.h"
-#include "d3d12ResourceAllocator.h"
+#include "d3d12ResAllocator.h"
 #include "d3d12Types.h"
 #include "d3d12_impl.h"
 
@@ -78,7 +78,7 @@ void
 d3d12DrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
-    d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->d3d12ResAllocator;
     this->pointers.renderer->invalidateMeshState();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
     if (ds.d3d12PipelineState) {

@@ -12,7 +12,7 @@
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/d3d12/d3d12Config.h"
-#include "Gfx/d3d12/d3d12ResourceAllocator.h"
+#include "Gfx/d3d12/d3d12ResAllocator.h"
 #include "d3d12_decl.h"
 
 namespace Oryol {
@@ -92,7 +92,7 @@ public:
     /// pointer to the d3d12 root signature (owned by render mgr)
     ID3D12RootSignature* d3d12RootSignature;
     // resource allocator for D3D12 objects
-    d3d12ResourceAllocator d3d12Allocator;
+    d3d12ResAllocator d3d12ResAllocator;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;

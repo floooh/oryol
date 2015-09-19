@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d12ResourceAllocator
+    @class Oryol::_priv::d3d12ResAllocator
     @ingroup _priv
     @brief D3D12 resource allocator wrapper
 
@@ -21,12 +21,12 @@
 namespace Oryol {
 namespace _priv {
 
-class d3d12ResourceAllocator {
+class d3d12ResAllocator {
 public:
     /// constructor
-    d3d12ResourceAllocator();
+    d3d12ResAllocator();
     /// destructor
-    ~d3d12ResourceAllocator();
+    ~d3d12ResAllocator();
 
     /// destroy all left-over resources
     void DestroyAll();

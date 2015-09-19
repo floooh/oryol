@@ -94,7 +94,7 @@ d3d12Renderer::discard() {
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
     this->destroyFrameResources();
-    this->d3d12Allocator.DestroyAll();
+    this->d3d12ResAllocator.DestroyAll();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
     
@@ -134,7 +134,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 
         // this is the buffer for shader constants that change between drawcalls,
         // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
-        frameRes.constantBuffer = this->d3d12Allocator.AllocUploadBuffer(this->d3d12Device, cbSize);
+        frameRes.constantBuffer = this->d3d12ResAllocator.AllocUploadBuffer(this->d3d12Device, cbSize);
         o_assert_dbg(frameRes.constantBuffer);
 
         // get the CPU and GPU start address of the constant buffer
@@ -151,7 +151,7 @@ d3d12Renderer::destroyFrameResources() {
     for (auto& frameRes : this->frameResources) {
         if (frameRes.constantBuffer) {
             frameRes.constantBuffer->Unmap(0, nullptr);
-            this->d3d12Allocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
+            this->d3d12ResAllocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
             frameRes.constantBuffer = nullptr;
             frameRes.cbCpuPtr = nullptr;
             frameRes.cbGpuPtr = 0;
@@ -199,12 +199,12 @@ void
 d3d12Renderer::createDefaultRenderTargets(int width, int height) {
 
     // Here, 2 render-target-views, and optionally one 1 depth-stencil-view
-    // is created for rendering into the default render target.
+    // are created for rendering into the default render target.
     // For the non-MSAA case, the 2 RSVs are associated with the DXGI
     // swapchain buffers. For the MSAA case, an image resource is created
     // which is the multi-sample surface, and both render-target-views
     // point to this surface (only one RTV would be necessary, but this
-    // simplifies the other code which only needs to know 1 case both 
+    // simplifies other code which only needs to know 1 case both 
     // for MSAA and non-MSAA.
     // For the depth-stencil-view, 1 depth-buffer resource is always
     // created.
@@ -221,7 +221,7 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     const PixelFormat::Code colorFormat = dispAttrs.ColorPixelFormat;
 
     // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
-    // this will be resolved into the actually swapchain backbuffer when needed
+    // this will be resolved into the swapchain buffer when needed
     if (isMSAA) {
         D3D12_HEAP_PROPERTIES dsHeapProps;
         d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
@@ -266,11 +266,9 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     }
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
-    // create a single depth-stencil buffer
+    // create a single depth-stencil buffer if requested
     const PixelFormat::Code depthFormat = dispAttrs.DepthPixelFormat;
     if (PixelFormat::None != depthFormat) {
-
-
         D3D12_HEAP_PROPERTIES dsHeapProps;
         d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
         D3D12_RESOURCE_DESC dsDesc;
@@ -337,7 +335,6 @@ d3d12Renderer::createRootSignature() {
     // currently, all constant buffers can change between draw calls,
     // so they are set directly in the root signature, textures and
     // samplers can only change between draw states, so they are set via descriptors
-
 
     // the root signature describes number of constant buffers,
     // textures and samplers that can be bound to the vertex- and pixel-shader
@@ -446,7 +443,7 @@ void
 d3d12Renderer::createSamplerDescriptorHeap() {
     o_assert_dbg(nullptr == this->samplerDescHeap);
 
-    this->samplerDescHeap = this->d3d12Allocator.AllocDescriptorHeap(this->d3d12Device,
+    this->samplerDescHeap = this->d3d12ResAllocator.AllocDescriptorHeap(this->d3d12Device,
         D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
         d3d12Config::MaxNumSamplers);
     o_assert_dbg(this->samplerDescHeap);
@@ -456,7 +453,7 @@ d3d12Renderer::createSamplerDescriptorHeap() {
 void
 d3d12Renderer::destroySamplerDescriptorHeap() {
     if (this->samplerDescHeap) {
-        this->d3d12Allocator.ReleaseDeferred(this->frameIndex, this->samplerDescHeap);
+        this->d3d12ResAllocator.ReleaseDeferred(this->frameIndex, this->samplerDescHeap);
         this->samplerDescHeap = nullptr;
     }
 }
@@ -477,14 +474,10 @@ d3d12Renderer::commitFrame() {
     // in MSAA situation, need to resolve the MSAA render target into non-multisampled backbuffer surfaces
     ID3D12Resource* curBackBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
     if (isMSAA) {
+        const DXGI_FORMAT d3d12Fmt = d3d12Types::asRenderTargetFormat(dispAttrs.ColorPixelFormat);
         this->rtTransition(this->msaaSurface, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
         this->rtTransition(curBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RESOLVE_DEST);
-        this->curCommandList()->ResolveSubresource(
-            curBackBuffer, // pDstResource
-            0,
-            this->msaaSurface, // pSrcResource
-            0,
-            d3d12Types::asRenderTargetFormat(dispAttrs.ColorPixelFormat));
+        this->curCommandList()->ResolveSubresource(curBackBuffer, 0,this->msaaSurface, 0, d3d12Fmt);
         this->rtTransition(curBackBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_PRESENT);
         this->rtTransition(this->msaaSurface, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
     }
@@ -494,8 +487,7 @@ d3d12Renderer::commitFrame() {
     }
 
     // execute the command list, after this, displayMgr::present() is called,
-    // which calls Present on the swapchain and waits for the previous
-    // frame to finish
+    // which calls Present on the swapchain and waits for the previous frame to finish
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
     cmdList->Close();
     this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmdList);
@@ -504,8 +496,7 @@ d3d12Renderer::commitFrame() {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::frameSync() {
-    // NOTE: this method is called from displayMgr::Present(),
-    // and after d3d12Renderer::commitFrame()!
+    // NOTE: this method is called from displayMgr::Present(), and after d3d12Renderer::commitFrame()!
     o_assert_dbg(this->d3d12Fence);
     o_assert_dbg(this->fenceEvent);
     HRESULT hr;
@@ -524,11 +515,12 @@ d3d12Renderer::frameSync() {
     }
 
     // deferred-release resources
-    this->d3d12Allocator.GarbageCollect(this->frameIndex);
+    this->d3d12ResAllocator.GarbageCollect(this->frameIndex);
 
     // bump frame indices, this rotates to curFrameRotateIndex
     // to the frameResource slot of the previous frame, these
-    // resource are now no longer used by the GPU
+    // resource are now no longer used by the GPU and will
+    // be written in the next frame
     this->frameIndex++;
     if (++this->curFrameRotateIndex >= d3d12Config::NumFrames) {
         this->curFrameRotateIndex = 0;

@@ -74,7 +74,7 @@ void
 d3d12MeshFactory::DestroyResource(mesh& msh) {
     o_assert_dbg(this->isValid);
 
-    d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->d3d12ResAllocator;
     this->pointers.renderer->invalidateMeshState();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
     for (auto& buf : msh.buffers) {
@@ -149,7 +149,7 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     o_assert_dbg(Usage::Immutable == vbAttrs.BufferUsage);
     o_assert_dbg(IndexType::None != ibAttrs.Type ? Usage::Immutable == ibAttrs.BufferUsage : true);
     
-    d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->d3d12ResAllocator;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
@@ -222,7 +222,7 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     // create d3d12 buffers
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     o_assert_dbg(d3d12Device);
-    d3d12ResourceAllocator& resAllocator = this->pointers.renderer->d3d12Allocator;
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->d3d12ResAllocator;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 

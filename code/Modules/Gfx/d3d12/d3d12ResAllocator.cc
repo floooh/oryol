@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  d3d12ResourceAllocator.cc
+//  d3d12ResAllocator.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "d3d12ResourceAllocator.h"
+#include "d3d12ResAllocator.h"
 #include "d3d12Types.h"
 #include "d3d12_impl.h"
 #include "d3d12Config.h"
@@ -11,18 +11,18 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d12ResourceAllocator::d3d12ResourceAllocator() {
+d3d12ResAllocator::d3d12ResAllocator() {
     // empty
 }
 
 //------------------------------------------------------------------------------
-d3d12ResourceAllocator::~d3d12ResourceAllocator() {
+d3d12ResAllocator::~d3d12ResAllocator() {
     o_assert(this->releaseQueue.Empty());
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::DestroyAll() {    
+d3d12ResAllocator::DestroyAll() {    
     freeItem item;
     while (!this->releaseQueue.Empty()) {
         this->releaseQueue.Dequeue(item);
@@ -34,7 +34,7 @@ d3d12ResourceAllocator::DestroyAll() {
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::GarbageCollect(uint64 frameIndex) {
+d3d12ResAllocator::GarbageCollect(uint64 frameIndex) {
 
     // release all resources from longer then NumFrames befores,
     // these are definitely no longer accessed by the GPU
@@ -54,7 +54,7 @@ d3d12ResourceAllocator::GarbageCollect(uint64 frameIndex) {
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResourceAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size) {
+d3d12ResAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size) {
 
     D3D12_HEAP_PROPERTIES heapProps;
     d3d12Types::initHeapProps(&heapProps, heapType);
@@ -77,7 +77,7 @@ d3d12ResourceAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE 
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::Transition(ID3D12GraphicsCommandList* cmdList, ID3D12Resource* res, D3D12_RESOURCE_STATES fromState, D3D12_RESOURCE_STATES toState) {
+d3d12ResAllocator::Transition(ID3D12GraphicsCommandList* cmdList, ID3D12Resource* res, D3D12_RESOURCE_STATES fromState, D3D12_RESOURCE_STATES toState) {
     o_assert_dbg(cmdList);
     o_assert_dbg(res);
     o_assert_dbg(fromState != toState);
@@ -95,7 +95,7 @@ d3d12ResourceAllocator::Transition(ID3D12GraphicsCommandList* cmdList, ID3D12Res
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResourceAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
+d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(size > 0);
 
@@ -106,7 +106,7 @@ d3d12ResourceAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResourceAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size) {
+d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(size > 0);
 
@@ -117,7 +117,7 @@ d3d12ResourceAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 siz
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResourceAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size) {
+d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(cmdList);
     o_assert_dbg(size > 0);
@@ -138,7 +138,7 @@ d3d12ResourceAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12Graph
 
 //------------------------------------------------------------------------------
 ID3D12DescriptorHeap*
-d3d12ResourceAllocator::AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32 numItems) {
+d3d12ResAllocator::AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32 numItems) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(numItems > 0);
 
@@ -152,7 +152,7 @@ d3d12ResourceAllocator::AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DES
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
+d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     o_assert_dbg(res);
 
     // place a new item in the free-queue, the actual release will happen
@@ -164,7 +164,7 @@ d3d12ResourceAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
 
 //------------------------------------------------------------------------------
 void
-d3d12ResourceAllocator::upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size) {
+d3d12ResAllocator::upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size) {
     o_assert_dbg(cmdList);
     o_assert_dbg(dstRes);
     o_assert_dbg(data && (size > 0));
