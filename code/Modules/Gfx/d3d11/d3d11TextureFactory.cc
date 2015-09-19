@@ -137,7 +137,7 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
+        sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
         o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
