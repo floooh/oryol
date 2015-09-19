@@ -137,20 +137,6 @@ d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCo
 }
 
 //------------------------------------------------------------------------------
-ID3D12DescriptorHeap*
-d3d12ResAllocator::AllocDescriptorHeap(ID3D12Device* d3d12Device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32 numItems) {
-    o_assert_dbg(d3d12Device);
-    o_assert_dbg(numItems > 0);
-
-    D3D12_DESCRIPTOR_HEAP_DESC desc;
-    d3d12Types::initDescriptorHeapDesc(&desc, numItems, type, true);
-    ID3D12DescriptorHeap* heap = nullptr;
-    HRESULT hr = d3d12Device->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&heap);
-    o_assert(SUCCEEDED(hr) && heap);
-    return heap;
-}
-
-//------------------------------------------------------------------------------
 void
 d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     o_assert_dbg(res);
