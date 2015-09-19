@@ -137,6 +137,43 @@ d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCo
 }
 
 //------------------------------------------------------------------------------
+ID3D12Resource*
+d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, int smpCount) {
+    o_assert_dbg(d3d12Device);
+    o_assert_dbg((width > 0) && (height > 0) && (smpCount > 0));
+    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(fmt) || PixelFormat::IsValidTextureDepthFormat(fmt));
+
+    D3D12_RESOURCE_DESC desc;
+    d3d12Types::initRTResourceDesc(&desc, width, height, fmt, smpCount);
+    D3D12_HEAP_PROPERTIES heapProps;
+    d3d12Types::initHeapProps(&heapProps, D3D12_HEAP_TYPE_DEFAULT);
+
+    D3D12_CLEAR_VALUE clearValue;
+    D3D12_RESOURCE_STATES initialState;
+    if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
+        d3d12Types::initColorClearValue(&clearValue, fmt, 0.0f, 0.0f, 0.0f, 1.0f);
+        initialState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    }
+    else {
+        d3d12Types::initDepthStencilClearValue(&clearValue, fmt, 1.0f, 0);
+        initialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+    }
+    ID3D12Resource* d3d12Resource = nullptr;
+    HRESULT hr = d3d12Device->CreateCommittedResource(
+        &heapProps,                         // pHeapProperties
+        D3D12_HEAP_FLAG_NONE,               // HeapFlags
+        &desc,                              // pResourceDesc
+        initialState,                       // InitialResourceState
+        &clearValue,                        // pOptimizedClearValue
+        __uuidof(ID3D12Resource),
+        (void**)&d3d12Resource);
+    o_assert(SUCCEEDED(hr) && d3d12Resource);
+    Log::Dbg("> created d3d12 render target resource at %p\n", d3d12Resource);
+
+    return d3d12Resource;
+}
+
+//------------------------------------------------------------------------------
 void
 d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     o_assert_dbg(res);

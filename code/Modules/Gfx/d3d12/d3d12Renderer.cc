@@ -27,9 +27,6 @@ d3d12Fence(nullptr),
 fenceEvent(nullptr),
 msaaSurface(nullptr),
 depthStencilSurface(nullptr),
-rtvHeap(nullptr),
-dsvHeap(nullptr),
-rtvDescriptorSize(0),
 curBackBufferIndex(0),
 curConstantBufferOffset(0) {
     this->backbufferSurfaces.Fill(nullptr);
@@ -55,7 +52,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->d3d12Device = ptrs.displayMgr->d3d12Device;
     this->d3d12CommandQueue = ptrs.displayMgr->d3d12CommandQueue;
 
-    this->d3d12DescAllocator.Setup(setup, ptrs);
+    this->descAllocator.Setup(setup, ptrs);
 
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
@@ -93,8 +90,8 @@ d3d12Renderer::discard() {
     this->destroyDefaultRenderTargets();
     this->destroyFrameSyncObjects();
     this->destroyFrameResources();
-    this->d3d12ResAllocator.DestroyAll();
-    this->d3d12DescAllocator.Discard();
+    this->resAllocator.DestroyAll();
+    this->descAllocator.Discard();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
     
@@ -134,7 +131,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
 
         // this is the buffer for shader constants that change between drawcalls,
         // it is placed in its own upload heap, written by the CPU and read by the GPU each frame
-        frameRes.constantBuffer = this->d3d12ResAllocator.AllocUploadBuffer(this->d3d12Device, cbSize);
+        frameRes.constantBuffer = this->resAllocator.AllocUploadBuffer(this->d3d12Device, cbSize);
         o_assert_dbg(frameRes.constantBuffer);
 
         // get the CPU and GPU start address of the constant buffer
@@ -151,7 +148,7 @@ d3d12Renderer::destroyFrameResources() {
     for (auto& frameRes : this->frameResources) {
         if (frameRes.constantBuffer) {
             frameRes.constantBuffer->Unmap(0, nullptr);
-            this->d3d12ResAllocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
+            this->resAllocator.ReleaseDeferred(this->frameIndex, frameRes.constantBuffer);
             frameRes.constantBuffer = nullptr;
             frameRes.cbCpuPtr = nullptr;
             frameRes.cbGpuPtr = 0;
@@ -209,8 +206,6 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     // For the depth-stencil-view, 1 depth-buffer resource is always
     // created.
     
-    o_assert_dbg(nullptr == this->rtvHeap);
-    o_assert_dbg(nullptr == this->dsvHeap);
     o_assert_dbg(nullptr == this->msaaSurface);
     o_assert_dbg(nullptr == this->depthStencilSurface);
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
@@ -223,37 +218,18 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
     // this will be resolved into the swapchain buffer when needed
     if (isMSAA) {
-        D3D12_HEAP_PROPERTIES dsHeapProps;
-        d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
-        D3D12_RESOURCE_DESC dsDesc;
-        d3d12Types::initRTResourceDesc(&dsDesc, width, height, colorFormat, smpCount);
-        D3D12_CLEAR_VALUE clearValue;
-        d3d12Types::initColorClearValue(&clearValue, colorFormat, 0.0f, 0.0f, 0.0f, 1.0f);
-        hr = this->d3d12Device->CreateCommittedResource(
-            &dsHeapProps,                           // pHeapProperties
-            D3D12_HEAP_FLAG_NONE,                   // HeapFlags
-            &dsDesc,                                // pResourceDesc,
-            D3D12_RESOURCE_STATE_RENDER_TARGET,     // InitialResourceState
-            &clearValue,                            // pOptimizedClearValue
-            __uuidof(ID3D12Resource),               // riidResource
-            (void**)&this->msaaSurface);            // ppvResource
-        o_assert(SUCCEEDED(hr) && this->msaaSurface);
+        this->msaaSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, colorFormat, smpCount);
     }
 
-    // create a render-target-view heap with NumFrames entries
-    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-    d3d12Types::initDescriptorHeapDesc(&rtvHeapDesc, d3d12Config::NumFrames, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
-    hr = this->d3d12Device->CreateDescriptorHeap(&rtvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->rtvHeap);
-    o_assert(SUCCEEDED(hr) && this->rtvHeap);
-    this->rtvDescriptorSize = this->d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    o_assert(this->rtvDescriptorSize > 0);
-
     // create NumFrames render-target-views from the render-target-view-heap
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = this->rtvHeap->GetCPUDescriptorHandleForHeapStart();
     for (int i = 0; i < d3d12Config::NumFrames; i++) {
         o_assert_dbg(nullptr == this->backbufferSurfaces[i]);
         hr = this->pointers.displayMgr->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->backbufferSurfaces[i]);
         o_assert_dbg(SUCCEEDED(hr) && this->backbufferSurfaces[i]);
+        
+        this->renderTargetViews[i] = this->descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
+        this->descAllocator.CPUHandle(this->renderTargetViews[i], rtvHandle);
         if (isMSAA) {
             // MSAA: render-target-views are bound to msaa surface
             this->d3d12Device->CreateRenderTargetView(this->msaaSurface, nullptr, rtvHandle);
@@ -262,38 +238,18 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
             // no MSAA: render-target-views are directly bound to swap-chain buffers
             this->d3d12Device->CreateRenderTargetView(this->backbufferSurfaces[i], nullptr, rtvHandle);
         }
-        rtvHandle.ptr += this->rtvDescriptorSize;
     }
     this->curBackBufferIndex = this->pointers.displayMgr->dxgiSwapChain->GetCurrentBackBufferIndex();
 
     // create a single depth-stencil buffer if requested
     const PixelFormat::Code depthFormat = dispAttrs.DepthPixelFormat;
     if (PixelFormat::None != depthFormat) {
-        D3D12_HEAP_PROPERTIES dsHeapProps;
-        d3d12Types::initHeapProps(&dsHeapProps, D3D12_HEAP_TYPE_DEFAULT);
-        D3D12_RESOURCE_DESC dsDesc;
-        d3d12Types::initRTResourceDesc(&dsDesc, width, height, depthFormat, smpCount);
-        D3D12_CLEAR_VALUE clearValue;
-        d3d12Types::initDepthStencilClearValue(&clearValue, depthFormat, 1.0f, 0);
+        this->depthStencilSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, depthFormat, smpCount);
+        this->depthStencilView = this->descAllocator.Allocate(d3d12DescAllocator::DepthStencilView);
 
-        hr = this->d3d12Device->CreateCommittedResource(
-            &dsHeapProps,                           // pHeapProperties
-            D3D12_HEAP_FLAG_NONE,                   // HeapFlags
-            &dsDesc,                                // pResourceDesc,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,       // InitialResourceState
-            &clearValue,                            // pOptimizedClearValue
-            __uuidof(ID3D12Resource),               // riidResource
-            (void**)&this->depthStencilSurface);    // ppvResource
-        o_assert(SUCCEEDED(hr) && this->depthStencilSurface);
-
-        D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
-        d3d12Types::initDescriptorHeapDesc(&dsvHeapDesc, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false);
-        hr = this->d3d12Device->CreateDescriptorHeap(&dsvHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&this->dsvHeap);
-        o_assert(SUCCEEDED(hr) && this->dsvHeap);
-
-        D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-        d3d12Types::initDSVDesc(&dsvDesc, depthFormat, isMSAA);
-        this->d3d12Device->CreateDepthStencilView(this->depthStencilSurface, &dsvDesc, this->dsvHeap->GetCPUDescriptorHandleForHeapStart());
+        D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
+        this->descAllocator.CPUHandle(this->depthStencilView, dsvHandle);
+        this->d3d12Device->CreateDepthStencilView(this->depthStencilSurface, nullptr, dsvHandle);
     }
 }
 
@@ -314,14 +270,6 @@ d3d12Renderer::destroyDefaultRenderTargets() {
             rt->Release();
             rt = nullptr;
         }
-    }
-    if (this->dsvHeap) {
-        this->dsvHeap->Release();
-        this->dsvHeap = nullptr;
-    }
-    if (this->rtvHeap) {
-        this->rtvHeap->Release();
-        this->rtvHeap = nullptr;
     }
 }
 
@@ -495,8 +443,8 @@ d3d12Renderer::frameSync() {
     }
 
     // deferred-release resources
-    this->d3d12ResAllocator.GarbageCollect(this->frameIndex);
-    this->d3d12DescAllocator.GarbageCollect(this->frameIndex);
+    this->resAllocator.GarbageCollect(this->frameIndex);
+    this->descAllocator.GarbageCollect(this->frameIndex);
 
     // bump frame indices, this rotates to curFrameRotateIndex
     // to the frameResource slot of the previous frame, these
@@ -589,17 +537,16 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         else {
             colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
             colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        }        
-        rtvHandle = this->rtvHeap->GetCPUDescriptorHandleForHeapStart();
-        rtvHandle.ptr += this->rtvDescriptorSize * this->curBackBufferIndex;
+        }
+        this->descAllocator.CPUHandle(this->renderTargetViews[this->curBackBufferIndex], rtvHandle);
         rtvHandlePtr = &rtvHandle;
         if (this->depthStencilSurface) {
-            dsvHandle = this->dsvHeap->GetCPUDescriptorHandleForHeapStart();
+            this->descAllocator.CPUHandle(this->depthStencilView, dsvHandle);
             dsvHandlePtr = &dsvHandle;
         }
     }
     else {
-        o_error("FIXME: d3d12Renderer apply offscreen render target!\n");
+        o_warn("FIXME: d3d12Renderer apply offscreen render target!\n");
         // FIXME: the render target could have been a pixel-shader or
         // vertex-shader-texture, d3d12Texture objects must track their current
         // states (hmm does that mean a texture cannot be used as a vertex shader

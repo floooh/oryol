@@ -78,7 +78,7 @@ void
 d3d12DrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
-    d3d12ResAllocator& resAllocator = this->pointers.renderer->d3d12ResAllocator;
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     this->pointers.renderer->invalidateMeshState();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
     if (ds.d3d12PipelineState) {

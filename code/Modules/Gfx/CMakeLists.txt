@@ -143,6 +143,7 @@ fips_begin_module(Gfx)
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
             d3d12DrawState.cc d3d12DrawState.h
             d3d12DrawStateFactory.cc d3d12DrawStateFactory.h
+            d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12TextureBlock.cc d3d12TextureBlock.h
             d3d12TextureBlockFactory.cc d3d12TextureBlockFactory.h

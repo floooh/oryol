@@ -93,9 +93,9 @@ public:
     /// pointer to the d3d12 root signature (owned by render mgr)
     ID3D12RootSignature* d3d12RootSignature;
     /// allocator for D3D12 resources
-    d3d12ResAllocator d3d12ResAllocator;
+    d3d12ResAllocator resAllocator;
     /// allocator for D3D12 descriptors
-    d3d12DescAllocator d3d12DescAllocator;
+    d3d12DescAllocator descAllocator;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;
@@ -147,9 +147,8 @@ private:
     StaticArray<ID3D12Resource*, d3d12Config::NumFrames> backbufferSurfaces;
     ID3D12Resource* msaaSurface;
     ID3D12Resource* depthStencilSurface;
-    ID3D12DescriptorHeap* rtvHeap;
-    ID3D12DescriptorHeap* dsvHeap;
-    int32 rtvDescriptorSize;
+    StaticArray<Id, d3d12Config::NumFrames> renderTargetViews;
+    Id depthStencilView;
     int32 curBackBufferIndex;
     
     // root signature slots, ordered from low to high change-frequency

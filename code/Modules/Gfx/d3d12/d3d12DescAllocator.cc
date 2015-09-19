@@ -122,16 +122,29 @@ d3d12DescAllocator::initHeap(Type type, int32 numSlots, int32 descriptorsPerSlot
     const int32 numHeapEntries = numSlots * descriptorsPerSlot;
 
     D3D12_DESCRIPTOR_HEAP_TYPE d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
+    bool shaderVisible = false;
     switch (type) {
-        case RenderTargetView:  d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; break;
-        case DepthStencilView:  d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; break;
-        case TextureBlock:      d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; break;
-        case Sampler:           d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER; break;        
+        case RenderTargetView:  
+            d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; 
+            shaderVisible = false;
+            break;
+        case DepthStencilView:  
+            d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; 
+            shaderVisible = false;
+            break;
+        case TextureBlock:      
+            d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; 
+            shaderVisible = true;
+            break;
+        case Sampler:           
+            d3d12HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER; 
+            shaderVisible = true;
+            break;        
     }
     o_assert_dbg(D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES != d3d12HeapType);
 
     D3D12_DESCRIPTOR_HEAP_DESC desc;
-    d3d12Types::initDescriptorHeapDesc(&desc, numHeapEntries, d3d12HeapType, true);
+    d3d12Types::initDescriptorHeapDesc(&desc, numHeapEntries, d3d12HeapType, shaderVisible);
     HRESULT hr = d3d12Device->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&heapEntry.d3d12DescHeap);
     o_assert(SUCCEEDED(hr) && heapEntry.d3d12DescHeap);
 

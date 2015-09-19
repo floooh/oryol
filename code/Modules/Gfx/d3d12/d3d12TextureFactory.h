@@ -6,7 +6,10 @@
     @brief D3D12 implementation of texture factory
 */
 #include "Resource/ResourceState.h"
+#include "Resource/Id.h"
 #include "Gfx/Core/gfxPointers.h"
+#include "Gfx/d3d12/d3d12_decl.h"
+#include "Core/Containers/Map.h"
 
 namespace Oryol {
 namespace _priv {
@@ -35,8 +38,17 @@ public:
     void DestroyResource(texture& tex);
 
 private:
+    /// create render target texture
+    ResourceState::Code createRenderTarget(texture& tex);
+    /// create a texture from pixel data in memory
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+
+    /// create new or lookup existing sampler 
+    Id createSampler(const D3D12_SAMPLER_DESC& desc);
+
     gfxPointers pointers;
     bool isValid;
+    Map<uint64, Id> samplers;
 };
 
 } // _priv

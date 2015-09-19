@@ -45,17 +45,15 @@ d3d12TextureBlockFactory::IsValid() const {
 ResourceState::Code
 d3d12TextureBlockFactory::SetupResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
-
-    o_error("FIXME!\n");
-    return ResourceState::Failed;
+    o_warn("FIXME!\n");
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12TextureBlockFactory::DestroyResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
-
-    o_error("FIXME!\n");
+    o_warn("FIXME!\n");
 }
 
 } // namespace _priv

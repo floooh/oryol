@@ -296,7 +296,7 @@ d3d12Types::initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, 
     if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
         out->Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     }
-    else if (PixelFormat::IsDepthStencilFormat(fmt)) {
+    else if (PixelFormat::IsValidRenderTargetDepthFormat(fmt)) {
         out->Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
 }
