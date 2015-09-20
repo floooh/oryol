@@ -46,6 +46,28 @@ d3d12Types::asRenderTargetFormat(PixelFormat::Code pf) {
 }
 
 //------------------------------------------------------------------------------
+DXGI_FORMAT
+d3d12Types::asTextureFormat(PixelFormat::Code pf) {
+    switch (pf) {
+    case PixelFormat::RGBA8:    return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case PixelFormat::RGBA4:    return DXGI_FORMAT_B4G4R4A4_UNORM;
+    case PixelFormat::R5G6B5:   return DXGI_FORMAT_B5G6R5_UNORM;
+    case PixelFormat::R5G5B5A1: return DXGI_FORMAT_B5G5R5A1_UNORM;
+    case PixelFormat::RGBA32F:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case PixelFormat::RGBA16F:  return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case PixelFormat::L8:       return DXGI_FORMAT_R8_UNORM;
+    case PixelFormat::DXT1:     return DXGI_FORMAT_BC1_UNORM;
+    case PixelFormat::DXT3:     return DXGI_FORMAT_BC2_UNORM;
+    case PixelFormat::DXT5:     return DXGI_FORMAT_BC3_UNORM;
+    case PixelFormat::D16:      return DXGI_FORMAT_D16_UNORM;
+    case PixelFormat::D32:      return DXGI_FORMAT_D32_FLOAT;   // FIXME???
+    case PixelFormat::D24S8:    return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    default:
+        return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+//------------------------------------------------------------------------------
 D3D12_BLEND
 d3d12Types::asBlendFactor(BlendFactor::Code b) {
     switch (b) {
@@ -299,6 +321,22 @@ d3d12Types::initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, 
     else if (PixelFormat::IsValidRenderTargetDepthFormat(fmt)) {
         out->Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initTextureResourceDesc(D3D12_RESOURCE_DESC* out, const TextureSetup& setup) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_RESOURCE_DESC));
+    out->Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    out->Width = setup.Width;
+    out->Height = setup.Height;
+    out->DepthOrArraySize = setup.Type == TextureType::TextureCube ? 6 : 1;
+    out->MipLevels = setup.NumMipMaps;
+    out->Format = d3d12Types::asTextureFormat(setup.ColorFormat);
+    out->SampleDesc.Count = 1;
+    out->SampleDesc.Quality = 0;
+    o_assert_dbg(out->Format != DXGI_FORMAT_UNKNOWN);
 }
 
 //------------------------------------------------------------------------------

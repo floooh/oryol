@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
 namespace Oryol {
@@ -18,6 +19,8 @@ public:
     static DXGI_FORMAT asSwapChainFormat(PixelFormat::Code pixelFormat);
     /// convert PixelFormat to a rendertarget DXGI format
     static DXGI_FORMAT asRenderTargetFormat(PixelFormat::Code pixelFormat);
+    /// convert PixelFormat to a texture DXGI format
+    static DXGI_FORMAT asTextureFormat(PixelFormat::Code pixelFormat);
     /// convert blend factor to d3d12 blend factor
     static D3D12_BLEND asBlendFactor(BlendFactor::Code b);
     /// convert blend operation to d3d12 blend op
@@ -50,6 +53,8 @@ public:
     static void initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size);
     /// initialize a D3D12_RESOURCE_DESC for a render-target surface
     static void initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, PixelFormat::Code fmt, int sampleCount);
+    /// initialize a D3D12_RESOURCE_DESC for a 2D or Cube texture
+    static void initTextureResourceDesc(D3D12_RESOURCE_DESC* out, const TextureSetup& setup);
     /// initialize a D3D12_CLEAR_VALUE for color clear
     static void initColorClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float r, float g, float b, float a);
     /// initialize a D3D12_CLEAR_VALUE for depth-stencil clear

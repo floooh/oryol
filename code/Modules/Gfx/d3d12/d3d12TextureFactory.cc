@@ -9,6 +9,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "d3d12_impl.h"
+#include "d3d12Types.h"
 
 namespace Oryol {
 namespace _priv {
@@ -116,7 +117,6 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     d3d12DescAllocator& descAllocator = this->pointers.renderer->descAllocator;
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
     // get size of new render target
     int32 width, height;
@@ -160,13 +160,63 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
         descAllocator.CPUHandle(tex.depthStencilView, dsvHandle);
         d3d12Device->CreateDepthStencilView(tex.d3d12DepthBufferRes, nullptr, dsvHandle);
     }
+
+    // setup texture attrs and set on texture
+    TextureAttrs attrs;
+    attrs.Locator = setup.Locator;
+    attrs.Type = TextureType::Texture2D;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.DepthFormat = setup.DepthFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = width;
+    attrs.Height = height;
+    attrs.NumMipMaps = 1;
+    attrs.IsRenderTarget = true;
+    attrs.HasDepthBuffer = setup.HasDepth();
+    attrs.HasSharedDepthBuffer = setup.HasSharedDepth();
+    tex.textureAttrs = attrs;
+
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code 
 d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    return ResourceState::InvalidState;
+    o_assert_dbg(nullptr == tex.d3d12TextureRes);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
+
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.NumMipMaps > 0);
+
+    if (setup.Type == TextureType::Texture3D) {
+        o_warn("d3d12TextureFactory: 3d textures not yet implemented!\n");
+        return ResourceState::Failed;
+    }
+    if (DXGI_FORMAT_UNKNOWN == d3d12Types::asTextureFormat(setup.ColorFormat)) {
+        o_warn("d3d12TextureFactory: unknown texture format!\n");
+        return ResourceState::Failed;
+    }
+
+    // create d3d12 texture resource
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
+    ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
+    ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
+    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    tex.d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, data, size);
+
+    // setup texture attributes
+    TextureAttrs attrs;
+    attrs.Locator = setup.Locator;
+    attrs.Type = setup.Type;
+    attrs.ColorFormat = setup.ColorFormat;
+    attrs.TextureUsage = Usage::Immutable;
+    attrs.Width = setup.Width;
+    attrs.Height = setup.Height;
+    attrs.NumMipMaps = setup.NumMipMaps;
+    tex.textureAttrs = attrs;
+
+    return ResourceState::Valid;
 }
 
 } // namespace _priv

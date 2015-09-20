@@ -43,12 +43,8 @@ private:
     /// create a texture from pixel data in memory
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
 
-    /// create new or lookup existing sampler 
-    Id createSampler(const D3D12_SAMPLER_DESC& desc);
-
     gfxPointers pointers;
     bool isValid;
-    Map<uint64, Id> samplers;
 };
 
 } // _priv

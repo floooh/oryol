@@ -237,8 +237,6 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.NumMipMaps > 0);
 
-    // FIXME: test if texture format is supported
-
     if (setup.Type == TextureType::Texture3D) {
         o_warn("d3d11TextureFactory: 3d textures not yet implemented\n");
         return ResourceState::Failed;
