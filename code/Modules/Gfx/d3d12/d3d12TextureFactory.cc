@@ -142,7 +142,7 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, 1);
     tex.renderTargetView = descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
-    descAllocator.CPUHandle(tex.renderTargetView, rtvHandle);
+    descAllocator.CPUHandle(tex.renderTargetView, 0, rtvHandle);
     d3d12Device->CreateRenderTargetView(tex.d3d12TextureRes, nullptr, rtvHandle);
 
     // create optional depth-buffer
@@ -157,7 +157,7 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
         }
         tex.depthStencilView = descAllocator.Allocate(d3d12DescAllocator::DepthStencilView);
         D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
-        descAllocator.CPUHandle(tex.depthStencilView, dsvHandle);
+        descAllocator.CPUHandle(tex.depthStencilView, 0, dsvHandle);
         d3d12Device->CreateDepthStencilView(tex.d3d12DepthBufferRes, nullptr, dsvHandle);
     }
 

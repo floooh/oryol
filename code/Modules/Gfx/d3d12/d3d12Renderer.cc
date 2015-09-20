@@ -229,7 +229,7 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         
         this->renderTargetViews[i] = this->descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
-        this->descAllocator.CPUHandle(this->renderTargetViews[i], rtvHandle);
+        this->descAllocator.CPUHandle(this->renderTargetViews[i], 0, rtvHandle);
         if (isMSAA) {
             // MSAA: render-target-views are bound to msaa surface
             this->d3d12Device->CreateRenderTargetView(this->msaaSurface, nullptr, rtvHandle);
@@ -248,7 +248,7 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         this->depthStencilView = this->descAllocator.Allocate(d3d12DescAllocator::DepthStencilView);
 
         D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
-        this->descAllocator.CPUHandle(this->depthStencilView, dsvHandle);
+        this->descAllocator.CPUHandle(this->depthStencilView, 0, dsvHandle);
         this->d3d12Device->CreateDepthStencilView(this->depthStencilSurface, nullptr, dsvHandle);
     }
 }
@@ -538,10 +538,10 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
             colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
         }
-        this->descAllocator.CPUHandle(this->renderTargetViews[this->curBackBufferIndex], rtvHandle);
+        this->descAllocator.CPUHandle(this->renderTargetViews[this->curBackBufferIndex], 0, rtvHandle);
         rtvHandlePtr = &rtvHandle;
         if (this->depthStencilSurface) {
-            this->descAllocator.CPUHandle(this->depthStencilView, dsvHandle);
+            this->descAllocator.CPUHandle(this->depthStencilView, 0, dsvHandle);
             dsvHandlePtr = &dsvHandle;
         }
     }

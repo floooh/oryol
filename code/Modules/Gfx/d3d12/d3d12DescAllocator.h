@@ -47,9 +47,9 @@ public:
     void ReleaseDeferred(uint64 frameIndex, const Id& id);
 
     /// get CPU handle into a descriptor heap
-    void CPUHandle(const Id& id, D3D12_CPU_DESCRIPTOR_HANDLE& out) const;
+    void CPUHandle(const Id& id, int subDescIndex, D3D12_CPU_DESCRIPTOR_HANDLE& out) const;
     /// get GPU handle into a descriptor heap
-    void GPUHandle(const Id& id, D3D12_GPU_DESCRIPTOR_HANDLE& out) const;
+    void GPUHandle(const Id& id, int subDescIndex, D3D12_GPU_DESCRIPTOR_HANDLE& out) const;
 
 private:
     /// initialize heap of type with number of slots
@@ -64,7 +64,8 @@ private:
     struct heap {
         int32 numSlots = 0;
         int32 descriptorsPerSlot = 0;
-        uint32 incrSize = 0;
+        uint32 descIncrSize = 0;
+        uint32 slotIncrSize = 0;
         ID3D12DescriptorHeap* d3d12DescHeap = nullptr;
         Queue<uint16> freeSlots;
     };

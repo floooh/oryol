@@ -10,7 +10,8 @@ namespace _priv {
 //------------------------------------------------------------------------------
 void
 d3d12TextureBlock::Clear() {
-    // FIXME!
+    this->bindStage = ShaderStage::InvalidShaderStage;
+    this->d3d12SRVDescriptor.Invalidate();
     textureBlockBase::Clear();
 }
 

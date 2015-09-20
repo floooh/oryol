@@ -6,6 +6,8 @@
     @brief D3D12 implementation of textureBlock
 */
 #include "Gfx/resource/textureBlockBase.h"
+#include "Resource/Id.h"
+#include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {
@@ -15,7 +17,8 @@ public:
     /// clear the object
     void Clear();
 
-    // FIXME!
+    ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+    class Id d3d12SRVDescriptor;
 };
 
 } // namespace _priv
