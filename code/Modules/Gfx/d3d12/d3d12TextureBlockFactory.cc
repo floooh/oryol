@@ -67,6 +67,29 @@ d3d12TextureBlockFactory::SetupResource(textureBlock& tb) {
     // sampler registers only continuously within 1 texture block,
     // and if several texture blocks exist, start at their respective
     // texture-base-register!
+    //
+    // ALTERNATIVELY:
+    //
+    //  Allocate big per-frame descriptor heaps for shader-resource-views and
+    //  samplers and write blocks of up to 16 SRVs/sampler entries before
+    //  a draw-call if dirty. This would require dirty tracking on 
+    //  each ApplyTextureBlock(), and starting a new 16-entry block
+    //  in the dynamic descriptor heap.
+    //
+    // ALTERNATIVELY:
+    //
+    //  In ApplyDrawCall(), not only supply a draw-call res-id, but
+    //  also an optional array of texture-block-ids, which are 
+    //  applied together with the drawcall.
+    //
+    // ALTERNATIVELY:
+    //  Allow to call several ApplyTextureBlock() between 
+    //  ApplyDrawState() and Draw(), but *NOT* between Draw()'s.
+    //  This way, each ApplyDrawState() would start a new 16-entry
+    //  block in the SRV heap, which can be 'filled up' by one
+    //  or more ApplyTextureBlock(), but CANNOT be changed further 
+    //  between draw calls (hmm this sound like the best option)...
+    //
 
     /*
     o_assert_dbg(this->isValid);
