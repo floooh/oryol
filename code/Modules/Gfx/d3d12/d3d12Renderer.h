@@ -109,6 +109,10 @@ public:
     ID3D12CommandAllocator* curCommandAllocator() const {
         return this->frameResources[this->curFrameRotateIndex].commandAllocator;
     };
+    /// the global render-target-view descriptor heap
+    Id rtvHeap;
+    /// the global depth-stencil-view descriptor heap
+    Id dsvHeap;
 
 private:
     /// create the frame synchronization objects
@@ -148,7 +152,8 @@ private:
     ID3D12Resource* msaaSurface;
     ID3D12Resource* depthStencilSurface;
     StaticArray<Id, d3d12Config::NumFrames> renderTargetViews;
-    Id depthStencilView;
+    StaticArray<int, d3d12Config::NumFrames> rtvDescriptorSlots;
+    int dsvDescriptorSlot;
     int32 curBackBufferIndex;
     
     // root signature slots, ordered from low to high change-frequency
@@ -171,6 +176,7 @@ private:
         ID3D12CommandAllocator* commandAllocator = nullptr;
         ID3D12GraphicsCommandList* commandList = nullptr;
         ID3D12Resource* constantBuffer = nullptr;
+        Id srvHeap;
         uint8* cbCpuPtr = nullptr;
         uint64 cbGpuPtr = 0;
     };

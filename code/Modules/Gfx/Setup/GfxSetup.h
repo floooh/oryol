@@ -64,6 +64,8 @@ public:
     int32 GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
     /// max number of drawcalls per frame (only relevant on some platforms)
     int32 MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
+    /// max number of ApplyDrawState per frame (only relevant on some platforms)
+    int32 MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;

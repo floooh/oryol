@@ -11,7 +11,9 @@ namespace _priv {
 //------------------------------------------------------------------------------
 d3d12Texture::d3d12Texture() :
 d3d12TextureRes(nullptr),
-d3d12DepthBufferRes(nullptr) {
+d3d12DepthBufferRes(nullptr),
+rtvDescriptorSlot(InvalidIndex),
+dsvDescriptorSlot(InvalidIndex) {
     // empty
 }
 
@@ -19,8 +21,8 @@ d3d12DepthBufferRes(nullptr) {
 d3d12Texture::~d3d12Texture() {
     o_assert_dbg(nullptr == this->d3d12TextureRes);
     o_assert_dbg(nullptr == this->d3d12DepthBufferRes);
-    o_assert_dbg(!this->renderTargetView.IsValid());
-    o_assert_dbg(!this->depthStencilView.IsValid());
+    o_assert_dbg(InvalidIndex == this->rtvDescriptorSlot);
+    o_assert_dbg(InvalidIndex == this->dsvDescriptorSlot);
 }
 
 //------------------------------------------------------------------------------
@@ -29,8 +31,8 @@ d3d12Texture::Clear() {
     textureBase::Clear();
     this->d3d12TextureRes = nullptr;
     this->d3d12DepthBufferRes = nullptr;
-    this->renderTargetView.Invalidate();
-    this->depthStencilView.Invalidate();
+    this->rtvDescriptorSlot = InvalidIndex;
+    this->dsvDescriptorSlot = InvalidIndex;
 }
 
 } // namespace _priv

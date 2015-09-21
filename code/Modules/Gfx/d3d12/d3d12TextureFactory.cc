@@ -91,11 +91,13 @@ d3d12TextureFactory::DestroyResource(texture& tex) {
     if (tex.d3d12DepthBufferRes) {
         resAllocator.ReleaseDeferred(frameIndex, tex.d3d12DepthBufferRes);
     }
-    if (tex.renderTargetView.IsValid()) {
-        descAllocator.ReleaseDeferred(frameIndex, tex.renderTargetView);
+    if (InvalidIndex != tex.rtvDescriptorSlot) {
+        const Id& rtvHeap = this->pointers.renderer->rtvHeap;
+        descAllocator.ReleaseSlotDeferred(rtvHeap, frameIndex, tex.rtvDescriptorSlot);
     }
-    if (tex.depthStencilView.IsValid()) {
-        descAllocator.ReleaseDeferred(frameIndex, tex.depthStencilView);
+    if (InvalidIndex != tex.dsvDescriptorSlot) {
+        const Id& dsvHeap = this->pointers.renderer->dsvHeap;
+        descAllocator.ReleaseSlotDeferred(dsvHeap, frameIndex, tex.dsvDescriptorSlot);
     }
     tex.Clear();
 }
@@ -105,8 +107,8 @@ ResourceState::Code
 d3d12TextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(nullptr == tex.d3d12TextureRes);
     o_assert_dbg(nullptr == tex.d3d12DepthBufferRes);
-    o_assert_dbg(!tex.renderTargetView.IsValid());
-    o_assert_dbg(!tex.depthStencilView.IsValid());
+    o_assert_dbg(InvalidIndex == tex.rtvDescriptorSlot);
+    o_assert_dbg(InvalidIndex == tex.dsvDescriptorSlot);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
@@ -140,10 +142,11 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
 
     // create the color buffer and render-target-view
     tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, 1);
-    tex.renderTargetView = descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
-    descAllocator.CPUHandle(tex.renderTargetView, 0, rtvHandle);
-    d3d12Device->CreateRenderTargetView(tex.d3d12TextureRes, nullptr, rtvHandle);
+    const Id& rtvHeap = this->pointers.renderer->rtvHeap;
+    tex.rtvDescriptorSlot = descAllocator.AllocSlot(rtvHeap);
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvCPUHandle;
+    descAllocator.CPUHandle(rtvCPUHandle, rtvHeap, tex.rtvDescriptorSlot);
+    d3d12Device->CreateRenderTargetView(tex.d3d12TextureRes, nullptr, rtvCPUHandle);
 
     // create optional depth-buffer
     if (setup.HasDepth()) {
@@ -155,10 +158,11 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
         else {
             tex.d3d12DepthBufferRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.DepthFormat, 1);
         }
-        tex.depthStencilView = descAllocator.Allocate(d3d12DescAllocator::DepthStencilView);
-        D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
-        descAllocator.CPUHandle(tex.depthStencilView, 0, dsvHandle);
-        d3d12Device->CreateDepthStencilView(tex.d3d12DepthBufferRes, nullptr, dsvHandle);
+        const Id& dsvHeap = this->pointers.renderer->dsvHeap;
+        tex.dsvDescriptorSlot = descAllocator.AllocSlot(dsvHeap);
+        D3D12_CPU_DESCRIPTOR_HANDLE dsvCPUHandle;
+        descAllocator.CPUHandle(dsvCPUHandle, dsvHeap, tex.dsvDescriptorSlot);
+        d3d12Device->CreateDepthStencilView(tex.d3d12DepthBufferRes, nullptr, dsvCPUHandle);
     }
 
     // setup texture attrs and set on texture

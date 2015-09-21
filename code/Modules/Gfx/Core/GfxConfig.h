@@ -16,6 +16,8 @@ public:
     static const int32 DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
     /// default maximum number of draw-calls per frame (only relevant on some platforms)
     static const int32 DefaultMaxDrawCallsPerFrame = (1<<16);
+    /// default maximum number of Gfx::ApplyDrawState per frame (only relevant on some platforms)
+    static const int32 DefaultMaxApplyDrawStatesPerFrame = 4096;
     /// max number of input meshes
     static const int32 MaxNumInputMeshes = 4;
     /// maximum number of primitive groups for one mesh

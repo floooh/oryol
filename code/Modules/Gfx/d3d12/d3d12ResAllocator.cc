@@ -28,7 +28,7 @@ d3d12ResAllocator::DestroyAll() {
         this->releaseQueue.Dequeue(item);
         ULONG count = item.res->Release();
         o_assert_dbg(0 == count);
-        Log::Dbg("> released d3d12 resource %p at shutdown\n", item.res);
+        o_dbg("> released d3d12 resource %p at shutdown\n", item.res);
     }
 }
 
@@ -47,7 +47,7 @@ d3d12ResAllocator::GarbageCollect(uint64 frameIndex) {
             o_assert_dbg(item.res);
             ULONG count = item.res->Release();
             o_assert_dbg(0 == count);
-            Log::Dbg("> released d3d12 resource %p at frame %d\n", item.res, frameIndex);
+            o_dbg("> released d3d12 resource %p at frame %d\n", item.res, frameIndex);
         }
     }
 }
@@ -100,7 +100,7 @@ d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
     o_assert_dbg(size > 0);
 
     ID3D12Resource* buffer = this->createBuffer(d3d12Device, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, size);
-    Log::Dbg("> created d3d12 upload buffer at %p\n", buffer);
+    o_dbg("> created d3d12 upload buffer at %p\n", buffer);
     return buffer;
 }
 
@@ -111,7 +111,7 @@ d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size) {
     o_assert_dbg(size > 0);
 
     ID3D12Resource* buffer = this->createBuffer(d3d12Device, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, size);
-    Log::Dbg("> created d3d12 default buffer at %p\n", buffer);
+    o_dbg("> created d3d12 default buffer at %p\n", buffer);
     return buffer;
 }
 
@@ -168,7 +168,7 @@ d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int h
         __uuidof(ID3D12Resource),
         (void**)&d3d12Resource);
     o_assert(SUCCEEDED(hr) && d3d12Resource);
-    Log::Dbg("> created d3d12 render target resource at %p\n", d3d12Resource);
+    o_dbg("> created d3d12 render target resource at %p\n", d3d12Resource);
 
     return d3d12Resource;
 }
@@ -287,7 +287,7 @@ d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     // a few frames later inside the GarbageCollect() method
     // when the GPU is done with the resource
     this->releaseQueue.Enqueue(frameIndex, res);
-    Log::Dbg("> free d3d12 resource %p at frame %d\n", res, frameIndex);
+    o_dbg("> free d3d12 resource %p at frame %d\n", res, frameIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -299,7 +299,7 @@ d3d12ResAllocator::upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* 
 
     // create a temporary upload buffer and copy data into it
     ID3D12Resource* uploadBuffer = this->AllocUploadBuffer(d3d12Device, size);
-    Log::Dbg("> created d3d12 upload buffer %p at frame %d\n", uploadBuffer, frameIndex);
+    o_dbg("> created d3d12 upload buffer %p at frame %d\n", uploadBuffer, frameIndex);
     void* dstPtr = nullptr;
     HRESULT hr = uploadBuffer->Map(0, nullptr, &dstPtr);
     o_assert(SUCCEEDED(hr));

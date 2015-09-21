@@ -52,45 +52,39 @@ d3d12TextureBlockFactory::SetupResource(textureBlock& tb) {
 
     // FIXME FIXME FIXME
     //
-    // The root signature needs one descriptor-table-entry
-    // per update-frequency (per-pass, per-material, we don't allow
-    // per instance texture changes).
-    // Each of the 2 texture-block-bind-slot needs a 
-    // base-register-index (e.g. texture registers 0..7 are for
-    // texture-block-bind-slot 0, and texture registers 8..15
-    // are for texture-block-bind-slot 1. The base-register-index
-    // must be defined on the descriptor-range at root-signature-setup.
+    // Here's how texture blocks will have to work:
     //
-    // (and the same for samplers)
-    //
-    // the shader code generator must allocate the texture and
-    // sampler registers only continuously within 1 texture block,
-    // and if several texture blocks exist, start at their respective
-    // texture-base-register!
-    //
-    // ALTERNATIVELY:
-    //
-    //  Allocate big per-frame descriptor heaps for shader-resource-views and
-    //  samplers and write blocks of up to 16 SRVs/sampler entries before
-    //  a draw-call if dirty. This would require dirty tracking on 
-    //  each ApplyTextureBlock(), and starting a new 16-entry block
-    //  in the dynamic descriptor heap.
-    //
-    // ALTERNATIVELY:
-    //
-    //  In ApplyDrawCall(), not only supply a draw-call res-id, but
-    //  also an optional array of texture-block-ids, which are 
-    //  applied together with the drawcall.
-    //
-    // ALTERNATIVELY:
-    //  Allow to call several ApplyTextureBlock() between 
-    //  ApplyDrawState() and Draw(), but *NOT* between Draw()'s.
-    //  This way, each ApplyDrawState() would start a new 16-entry
-    //  block in the SRV heap, which can be 'filled up' by one
-    //  or more ApplyTextureBlock(), but CANNOT be changed further 
-    //  between draw calls (hmm this sound like the best option)...
-    //
-
+    //  - the root signature has one bind slot per:
+    //      * up to 16 textures bound to vertex shader
+    //      * up to 16 samplers bound to vertex shader
+    //      * up to 16 textures bound to fragment shader
+    //      * up to 16 samplers bound to fragment shader
+    //  - so there's all in all 4 root-sig-slots for textures and samplers
+    //  - textureBlock will no longer be an actual resource, instead
+    //    it just becomes a memory-block with texture-ids, bindStage and bindSlot, 
+    //    exactly like uniform-blocks work
+    //  - which means: textureBlockFactory, etc etc etc go away
+    //  - texture-blocks need to track a dirty flag and sampler-hash-
+    //    value, whenever a dirty texture-block is applied, its
+    //    sampler-hash-value must be recomputed and an index
+    //    into the sampler-heap must be recomputed
+    //  - the sampler-hash value points into a sampler-cache
+    //    with up to 128 sampler-combinations (== 2048/16)
+    //  - the sampler-cache-index becomes the root-signature
+    //    value
+    //  - entries can never be deleted from the sampler-cache,
+    //    meaning an app can only have up to 128 different
+    //    sampler-combinations (ought to be enough for everyone)
+    //  - for texture shader-resource-views, a global double-
+    //    buffered SRV-heap exists, and a new entry is 
+    //    started there when a texture-block is assigned
+    //  - there will be 3 ApplyDrawState() variants:
+    //          ApplyDrawState(id);
+    //          ApplyDrawState(id, texBlock)
+    //          ApplyDrawState(id, texBlock, texBlock)
+    //    there can only be one texture block assigned per
+    //    ApplyDrawStateCall and shader-stage
+    // 
     /*
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->pointers.texturePool);
@@ -166,7 +160,7 @@ void
 d3d12TextureBlockFactory::DestroyResource(textureBlock& tb) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->pointers.renderer);
-
+    /*
     d3d12DescAllocator& descAllocator = this->pointers.renderer->descAllocator;
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
@@ -175,7 +169,7 @@ d3d12TextureBlockFactory::DestroyResource(textureBlock& tb) {
         descAllocator.ReleaseDeferred(frameIndex, tb.d3d12SRVDescriptor);
     }
     // FIXME: release samplers
-
+    */
     tb.Clear();
 }
 

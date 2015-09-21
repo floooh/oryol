@@ -30,10 +30,10 @@ public:
     ID3D12Resource* d3d12TextureRes;
     /// optional depth-buffer resource object
     ID3D12Resource* d3d12DepthBufferRes;
-    /// optional render-target-view handle (see d3d12DescAllocator)
-    class Id renderTargetView;
-    /// optional depth-stencil-view handle (see d3d12DescAllocator)
-    class Id depthStencilView;
+    /// optional render-target-view descriptor-heap slot-index
+    int rtvDescriptorSlot;
+    /// optional depth-stencil-view descriptor-heap slot-index
+    int dsvDescriptorSlot;
 };
 
 } // namespace _priv

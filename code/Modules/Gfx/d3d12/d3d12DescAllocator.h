@@ -21,10 +21,11 @@ public:
     enum Type : Id::TypeT {
         RenderTargetView = 0,
         DepthStencilView,
-        TextureBlock,
+        ShaderResourceView,
         Sampler,
 
         NumTypes,
+        InvalidType,
     };
 
     /// constructor
@@ -38,45 +39,46 @@ public:
     void Discard();
     /// return true if the allocator has been setup
     bool IsValid() const;
-    /// garbage-collect released descriptors when safe, call once per frame
+    /// garbage-collect released resources when safe, call once per frame
     void GarbageCollect(uint64 frameIndex);
 
-    /// allocate a descriptor resource
-    Id Allocate(Type t);
-    /// deferred-free a descriptor resource
-    void ReleaseDeferred(uint64 frameIndex, const Id& id);
+    /// create descriptor heap of given type and number of slots and slot entries
+    Id AllocHeap(Type type, int32 numSlots, int32 numDescriptorsPerSlot, bool allowAllocSlot);
+
+    /// allocate a slot index from given heap
+    int AllocSlot(const Id& heapId);
+    /// deferred-release a slot-index from heap
+    void ReleaseSlotDeferred(const Id& heapId, uint64 frameIndex, int slotIndex);
 
     /// get CPU handle into a descriptor heap
-    void CPUHandle(const Id& id, int subDescIndex, D3D12_CPU_DESCRIPTOR_HANDLE& out) const;
+    void CPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;
     /// get GPU handle into a descriptor heap
-    void GPUHandle(const Id& id, int subDescIndex, D3D12_GPU_DESCRIPTOR_HANDLE& out) const;
+    void GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;
 
 private:
-    /// initialize heap of type with number of slots
-    void initHeap(Type type, int32 numSlots, int32 descriptorsPerSlots);
-    /// discard a heap
-    void discardHeap(Type type);
-
     ID3D12Device* d3d12Device;
-    uint32 uniqueCounter;
     bool valid;
-    
+    int32 numHeaps;
+
+    static const int MaxNumHeaps = 32;
     struct heap {
         int32 numSlots = 0;
-        int32 descriptorsPerSlot = 0;
-        uint32 descIncrSize = 0;
+        int32 numDescriptorsPerSlot = 0;
         uint32 slotIncrSize = 0;
+        Type type = InvalidType;
         ID3D12DescriptorHeap* d3d12DescHeap = nullptr;
-        Queue<uint16> freeSlots;
+        Queue<int> freeSlots;           // only if heap was allocated with allowAllocSlot=true
     };
-    StaticArray<heap, NumTypes> heaps;
-
     struct freeItem {
-        freeItem() : frameIndex(0) { };
-        freeItem(uint64 frameIndex_, const Id& id_) : frameIndex(frameIndex_), id(id_) { };
+        freeItem() : frameIndex(0), slotIndex(InvalidIndex) {};
+        freeItem(const Id& heapId_, uint64 frameIndex_, int slotIndex_) :
+            heapId(heapId_), frameIndex(frameIndex_), slotIndex(slotIndex_) {
+        };
+        Id heapId;
         uint64 frameIndex;
-        Id id;
+        int slotIndex;
     };
+    StaticArray<heap, MaxNumHeaps> heaps;
     Queue<freeItem> releaseQueue;
 };
 

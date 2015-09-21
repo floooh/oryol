@@ -30,6 +30,8 @@ depthStencilSurface(nullptr),
 curBackBufferIndex(0),
 curConstantBufferOffset(0) {
     this->backbufferSurfaces.Fill(nullptr);
+    this->rtvDescriptorSlots.Fill(InvalidIndex);
+    this->dsvDescriptorSlot = InvalidIndex;
 }
 
 //------------------------------------------------------------------------------
@@ -139,6 +141,13 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
         o_assert(SUCCEEDED(hr));
         frameRes.cbGpuPtr = frameRes.constantBuffer->GetGPUVirtualAddress();
         o_assert_dbg(frameRes.cbGpuPtr);
+
+        // create the shader-resource-view- and sampler-heaps, this has one slot
+        // per shader stage and ApplyDrawState call, and each slot
+        // has as many descriptors as can be bound to a shader stage
+        const int numSlots = ShaderStage::NumShaderStages * this->gfxSetup.MaxApplyDrawStatesPerFrame;
+        const int numDescsPerSlot = GfxConfig::MaxNumTexturesPerStage;
+        frameRes.srvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::ShaderResourceView, numSlots, numDescsPerSlot, false);
     }
 }
 
@@ -221,15 +230,20 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
         this->msaaSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, colorFormat, smpCount);
     }
 
-    // create NumFrames render-target-views from the render-target-view-heap
+    // create a descriptor heap for render-target-views and depth-stencil-views
+    this->rtvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::RenderTargetView, d3d12Config::MaxNumRenderTargets, 1, true);
+    this->dsvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::DepthStencilView, d3d12Config::MaxNumRenderTargets, 1, true);
+
+    // create NumFrames render-target-views
     for (int i = 0; i < d3d12Config::NumFrames; i++) {
         o_assert_dbg(nullptr == this->backbufferSurfaces[i]);
         hr = this->pointers.displayMgr->dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&this->backbufferSurfaces[i]);
         o_assert_dbg(SUCCEEDED(hr) && this->backbufferSurfaces[i]);
         
-        this->renderTargetViews[i] = this->descAllocator.Allocate(d3d12DescAllocator::RenderTargetView);
+        // allocate a render-target-view descriptor
+        this->rtvDescriptorSlots[i] = this->descAllocator.AllocSlot(this->rtvHeap);
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
-        this->descAllocator.CPUHandle(this->renderTargetViews[i], 0, rtvHandle);
+        this->descAllocator.CPUHandle(rtvHandle, this->rtvHeap, this->rtvDescriptorSlots[i]);
         if (isMSAA) {
             // MSAA: render-target-views are bound to msaa surface
             this->d3d12Device->CreateRenderTargetView(this->msaaSurface, nullptr, rtvHandle);
@@ -245,10 +259,9 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     const PixelFormat::Code depthFormat = dispAttrs.DepthPixelFormat;
     if (PixelFormat::None != depthFormat) {
         this->depthStencilSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, depthFormat, smpCount);
-        this->depthStencilView = this->descAllocator.Allocate(d3d12DescAllocator::DepthStencilView);
-
+        this->dsvDescriptorSlot = this->descAllocator.AllocSlot(this->dsvHeap);
         D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
-        this->descAllocator.CPUHandle(this->depthStencilView, 0, dsvHandle);
+        this->descAllocator.CPUHandle(dsvHandle, this->dsvHeap, this->dsvDescriptorSlot);
         this->d3d12Device->CreateDepthStencilView(this->depthStencilSurface, nullptr, dsvHandle);
     }
 }
@@ -521,10 +534,10 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     ID3D12Resource* colorBuffer = nullptr;
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = { 0 };
-    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = { 0 };
-    D3D12_CPU_DESCRIPTOR_HANDLE* rtvHandlePtr = nullptr;
-    D3D12_CPU_DESCRIPTOR_HANDLE* dsvHandlePtr = nullptr; 
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvCPUHandle;
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvCPUHandle;
+    D3D12_CPU_DESCRIPTOR_HANDLE* rtvCPUHandlePtr = nullptr;
+    D3D12_CPU_DESCRIPTOR_HANDLE* dsvCPUHandlePtr = nullptr; 
     D3D12_RESOURCE_STATES colorStateBefore = (D3D12_RESOURCE_STATES) 0xFFFFFFFF;
     this->invalidateTextureState();
     if (nullptr == rt) {
@@ -538,11 +551,11 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             colorBuffer = this->backbufferSurfaces[this->curBackBufferIndex];
             colorStateBefore = D3D12_RESOURCE_STATE_PRESENT;
         }
-        this->descAllocator.CPUHandle(this->renderTargetViews[this->curBackBufferIndex], 0, rtvHandle);
-        rtvHandlePtr = &rtvHandle;
+        this->descAllocator.CPUHandle(rtvCPUHandle, this->rtvHeap, this->rtvDescriptorSlots[this->curBackBufferIndex]);
+        rtvCPUHandlePtr = &rtvCPUHandle;
         if (this->depthStencilSurface) {
-            this->descAllocator.CPUHandle(this->depthStencilView, 0, dsvHandle);
-            dsvHandlePtr = &dsvHandle;
+            this->descAllocator.CPUHandle(dsvCPUHandle, this->dsvHeap, this->dsvDescriptorSlot);
+            dsvCPUHandlePtr = &dsvCPUHandle;
         }
     }
     else {
@@ -563,7 +576,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
 
     // set the render target
-    cmdList->OMSetRenderTargets(1, rtvHandlePtr, FALSE, dsvHandlePtr);
+    cmdList->OMSetRenderTargets(1, rtvCPUHandlePtr, FALSE, dsvCPUHandlePtr);
 
     // set viewport and scissor-rect to cover whole screen
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
@@ -571,13 +584,13 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // perform clear action
     if (clearState.Actions & ClearState::ColorBit) {
-        if (rtvHandlePtr) {
+        if (rtvCPUHandlePtr) {
             const FLOAT* clearColor = glm::value_ptr(clearState.Color);        
-            cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+            cmdList->ClearRenderTargetView(rtvCPUHandle, clearColor, 0, nullptr);
         }
     }
     if (clearState.Actions & ClearState::DepthStencilBits) {
-        if (dsvHandlePtr) {
+        if (dsvCPUHandlePtr) {
             D3D12_CLEAR_FLAGS d3d12ClearFlags = (D3D12_CLEAR_FLAGS) 0;
             if (clearState.Actions & ClearState::DepthBit) {
                 d3d12ClearFlags |= D3D12_CLEAR_FLAG_DEPTH;
@@ -587,7 +600,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             }
             const FLOAT d = clearState.Depth;
             const UINT8 s = clearState.Stencil;
-            cmdList->ClearDepthStencilView(dsvHandle, d3d12ClearFlags, d, s, 0, nullptr);
+            cmdList->ClearDepthStencilView(dsvCPUHandle, d3d12ClearFlags, d, s, 0, nullptr);
         }
     }
 }
