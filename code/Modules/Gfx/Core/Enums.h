@@ -411,16 +411,13 @@ public:
 class TextureFilterMode {
 public:
     /// filtering modes
-    enum Code {
-        Nearest = 0,
+    enum Code : uint16 {
+        Nearest,
         Linear,
         NearestMipmapNearest,
         NearestMipmapLinear,
         LinearMipmapNearest,
         LinearMipmapLinear,
-
-        NumTextureFilterModes,
-        InvalidTextureFilterMode = 0xFFFFFFFF,
     };
 };
 
@@ -452,13 +449,10 @@ public:
 class TextureWrapMode {
 public:
     /// wrap modes
-    enum Code {
-        ClampToEdge = 0,
+    enum Code : uint16 {
+        ClampToEdge,
         Repeat,
         MirroredRepeat,
-
-        NumTextureWrapModes,
-        InvalidTextureWrapMode = 0xFFFFFFFF,
     };
 };
 

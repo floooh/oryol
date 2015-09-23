@@ -84,10 +84,10 @@ InfiniteSpheresApp::OnInit() {
     auto rtSetup = TextureSetup::RenderTarget(512, 512);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
-    rtSetup.MinFilter = TextureFilterMode::Linear;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
-    rtSetup.WrapU = TextureWrapMode::Repeat;
-    rtSetup.WrapV = TextureWrapMode::Repeat;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     for (int32 i = 0; i < 2; i++) {
         this->renderTargets[i] = Gfx::CreateResource(rtSetup);
     }

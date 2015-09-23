@@ -142,8 +142,8 @@ GPUParticlesApp::OnInit() {
     // the 2 ping/pong particle state textures
     auto particleBufferSetup = TextureSetup::RenderTarget(ParticleBufferWidth, ParticleBufferHeight);
     particleBufferSetup.ColorFormat = PixelFormat::RGBA32F;
-    particleBufferSetup.MinFilter = TextureFilterMode::Nearest;
-    particleBufferSetup.MagFilter = TextureFilterMode::Nearest;
+    particleBufferSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    particleBufferSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     this->particleBuffer[0] = Gfx::CreateResource(particleBufferSetup);
     particleBufferSetup.Locator = "pong";
     this->particleBuffer[1] = Gfx::CreateResource(particleBufferSetup);

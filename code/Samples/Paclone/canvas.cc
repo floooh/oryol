@@ -57,10 +57,10 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     
     // setup sprite texture
     auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
-    texSetup.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
     auto tbSetup = Shaders::Canvas::FSTextures::Setup(this->shader);
     tbSetup.Slot[Shaders::Canvas::FSTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);

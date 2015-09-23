@@ -16,11 +16,6 @@ RelHeight(0.0f),
 NumMipMaps(1),
 ColorFormat(PixelFormat::RGBA8),
 DepthFormat(PixelFormat::None),
-WrapU(TextureWrapMode::Repeat),
-WrapV(TextureWrapMode::Repeat),
-WrapW(TextureWrapMode::Repeat),
-MagFilter(TextureFilterMode::Nearest),
-MinFilter(TextureFilterMode::Nearest),
 Locator(Locator::NonShared()),
 setupFromFile(false),
 setupFromImageFileData(false),
@@ -70,9 +65,8 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
     setup.setupAsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
-    setup.WrapU = TextureWrapMode::ClampToEdge;
-    setup.WrapV = TextureWrapMode::ClampToEdge;
-    setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
@@ -121,9 +115,8 @@ TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
     setup.isRelSizeRenderTarget = true;
     setup.RelWidth = relWidth;
     setup.RelHeight = relHeight;
-    setup.WrapU = TextureWrapMode::ClampToEdge;
-    setup.WrapV = TextureWrapMode::ClampToEdge;
-    setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
@@ -136,9 +129,8 @@ TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
     setup.setupAsRenderTarget = true;
     setup.hasSharedDepth = true;
     setup.DepthRenderTarget = depthRenderTarget;
-    setup.WrapU = TextureWrapMode::ClampToEdge;
-    setup.WrapV = TextureWrapMode::ClampToEdge;
-    setup.WrapW = TextureWrapMode::InvalidTextureWrapMode;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 

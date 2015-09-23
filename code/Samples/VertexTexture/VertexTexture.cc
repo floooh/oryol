@@ -78,8 +78,8 @@ VertexTextureApp::OnInit() {
     // create RGBA offscreen render target which holds the plasma
     auto rtSetup = TextureSetup::RenderTarget(256, 256);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.MinFilter = TextureFilterMode::Nearest;
-    rtSetup.MagFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     this->plasmaRenderTarget = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target

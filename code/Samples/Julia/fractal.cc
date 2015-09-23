@@ -38,10 +38,10 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     auto rtSetup = TextureSetup::RenderTarget(w, h);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.DepthFormat = PixelFormat::None;
-    rtSetup.MinFilter = TextureFilterMode::Nearest;
-    rtSetup.MagFilter = TextureFilterMode::Nearest;
-    rtSetup.WrapU = TextureWrapMode::MirroredRepeat;
-    rtSetup.WrapV = TextureWrapMode::MirroredRepeat;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.WrapU = TextureWrapMode::MirroredRepeat;
+    rtSetup.Sampler.WrapV = TextureWrapMode::MirroredRepeat;
     for (int i = 0; i < 2; i++) {
         this->fractalTexture[i] = Gfx::CreateResource(rtSetup);
         auto tbSetup = Shaders::Julia::FSTextures::Setup(fractalShader);
@@ -51,8 +51,8 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
 
     // create a color render target that holds the fractal state as color texture
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.MinFilter = TextureFilterMode::Linear;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->colorTexture = Gfx::CreateResource(rtSetup);
 
     // create draw state for updating the fractal state

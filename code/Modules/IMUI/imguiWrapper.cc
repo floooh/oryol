@@ -86,10 +86,10 @@ imguiWrapper::setupFontTexture() {
     const int imgSize = width * height * sizeof(uint8);
 
     auto texSetup = TextureSetup::FromPixelData(width, height, 1, TextureType::Texture2D, PixelFormat::L8);
-    texSetup.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
     Id fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 

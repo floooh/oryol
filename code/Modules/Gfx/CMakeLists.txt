@@ -33,6 +33,7 @@ fips_begin_module(Gfx)
         BlendState.h
         ClearState.cc ClearState.h
         DepthStencilState.h
+        SamplerState.h
         Enums.h
         PrimitiveGroup.h
         RasterizerState.h

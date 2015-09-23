@@ -64,27 +64,18 @@ d3d12TextureBlockFactory::SetupResource(textureBlock& tb) {
     //    it just becomes a memory-block with texture-ids, bindStage and bindSlot, 
     //    exactly like uniform-blocks work
     //  - which means: textureBlockFactory, etc etc etc go away
-    //  - texture-blocks need to track a dirty flag and sampler-hash-
-    //    value, whenever a dirty texture-block is applied, its
-    //    sampler-hash-value must be recomputed and an index
-    //    into the sampler-heap must be recomputed
-    //  - the sampler-hash value points into a sampler-cache
-    //    with up to 128 sampler-combinations (== 2048/16)
-    //  - the sampler-cache-index becomes the root-signature
-    //    value
-    //  - entries can never be deleted from the sampler-cache,
-    //    meaning an app can only have up to 128 different
-    //    sampler-combinations (ought to be enough for everyone)
-    //  - for texture shader-resource-views, a global double-
-    //    buffered SRV-heap exists, and a new entry is 
-    //    started there when a texture-block is assigned
-    //  - there will be 3 ApplyDrawState() variants:
-    //          ApplyDrawState(id);
-    //          ApplyDrawState(id, texBlock)
-    //          ApplyDrawState(id, texBlock, texBlock)
-    //    there can only be one texture block assigned per
-    //    ApplyDrawStateCall and shader-stage
-    // 
+    //  - only one call to ApplyTextureBlock per shader-stage 
+    //    is allowed between ApplyDrawState and Draw (or: make 
+    //    the 2 texture blocks into ApplyDrawState arguments
+    //  - when ApplyTextureBlock is called, a hash will be computed
+    //    over the samplers in the block, which is fed into a 
+    //    sampler-cache as key. If the sampler-cache has a hit,
+    //    it returns a pointer into the sampler-heap, otherwise,
+    //    a new 16-slot entry in the sampler-heap is initialized,
+    //    and added to the sampler-cache, this way there can
+    //    128 different sampler-block variations per sampler heap (2048/16)
+    //  - the SRVs for the textures will simply be written to 
+    //    a double-buffered SRV heap, which is reset each frame
     /*
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->pointers.texturePool);

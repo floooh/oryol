@@ -77,10 +77,10 @@ DDSCubeMapApp::OnInit() {
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
 
     TextureSetup texBluePrint;
-    texBluePrint.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
+    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     StringAtom texPath;
     if (Gfx::QueryFeature(GfxFeature::TextureCompressionPVRTC)) {
         texPath = "tex:romechurch_bpp2.pvr";

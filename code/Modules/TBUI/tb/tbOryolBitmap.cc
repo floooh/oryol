@@ -55,10 +55,10 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
 
     this->label = Gfx::PushResourceLabel();
     auto texSetup = TextureSetup::FromPixelData(this->width, this->height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.WrapU = TextureWrapMode::Repeat;
-    texSetup.WrapV = TextureWrapMode::Repeat;
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    texSetup.Sampler.WrapV = TextureWrapMode::Repeat;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = byteSize;
     Id texture = Gfx::CreateResource(texSetup, data, byteSize);
 

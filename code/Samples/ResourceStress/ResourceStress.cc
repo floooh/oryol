@@ -104,10 +104,10 @@ ResourceStressApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
-    this->texBlueprint.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    this->texBlueprint.MagFilter = TextureFilterMode::Linear;
-    this->texBlueprint.WrapU = TextureWrapMode::ClampToEdge;
-    this->texBlueprint.WrapV = TextureWrapMode::ClampToEdge;
+    this->texBlueprint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    this->texBlueprint.Sampler.MagFilter = TextureFilterMode::Linear;
+    this->texBlueprint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    this->texBlueprint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
 
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     

@@ -76,8 +76,8 @@ TextureFloatApp::OnInit() {
     // configure texture sampler with point-filtering
     auto rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
-    rtSetup.MagFilter = TextureFilterMode::Nearest;
-    rtSetup.MinFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // fullscreen mesh, we'll reuse this several times

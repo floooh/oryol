@@ -101,10 +101,10 @@ DDSTextureLoadingApp::OnInit() {
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
 
     TextureSetup texBluePrint;
-    texBluePrint.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
+    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     static const char *paths[NumTextures] = {
         "tex:lok_dxt1.dds",
         "tex:lok_dxt3.dds",

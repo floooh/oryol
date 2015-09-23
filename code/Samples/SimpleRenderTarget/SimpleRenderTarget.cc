@@ -76,10 +76,10 @@ SimpleRenderTargetApp::OnInit() {
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
-    rtSetup.WrapU = TextureWrapMode::Repeat;
-    rtSetup.WrapV = TextureWrapMode::Repeat;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
-    rtSetup.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // create a donut (this will be rendered into the offscreen render target)

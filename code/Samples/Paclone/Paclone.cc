@@ -52,8 +52,8 @@ PacloneApp::OnInit() {
     
     // setup a offscreen render target, copy-shader and texture block
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
-    rtSetup.MinFilter = TextureFilterMode::Linear;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->crtRenderTarget = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id shd = Gfx::CreateResource(Shaders::CRT::Setup());

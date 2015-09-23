@@ -10,6 +10,7 @@
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
+#include "Gfx/Core/SamplerState.h"
 
 namespace Oryol {
     
@@ -65,18 +66,9 @@ public:
     PixelFormat::Code DepthFormat;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
     Id DepthRenderTarget;
-    
-    /// texture wrap mode for u dimension (default is Repeat for textures, and ClampToEdge for render targets)
-    TextureWrapMode::Code WrapU;
-    /// texture wrap mode for v dimension
-    TextureWrapMode::Code WrapV;
-    /// texture wrap mode for w dimension
-    TextureWrapMode::Code WrapW;
-    
-    /// magnification sample filter
-    TextureFilterMode::Code MagFilter;
-    /// minification sample filter
-    TextureFilterMode::Code MinFilter;
+
+    /// sampler state
+    SamplerState Sampler;
 
     /// resource locator
     class Locator Locator;
