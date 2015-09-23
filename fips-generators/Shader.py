@@ -1587,7 +1587,6 @@ def writeHeaderTop(f, shdLib) :
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
     f.write('#include "Gfx/Setup/ShaderSetup.h"\n')
-    f.write('#include "Gfx/Setup/TextureBlockSetup.h"\n')
     f.write('#include "glm/vec2.hpp"\n')
     f.write('#include "glm/vec3.hpp"\n')
     f.write('#include "glm/vec4.hpp"\n')

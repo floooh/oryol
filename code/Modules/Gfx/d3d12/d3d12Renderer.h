@@ -22,7 +22,6 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
-class textureBlock;
 
 class d3d12Renderer {
 public:

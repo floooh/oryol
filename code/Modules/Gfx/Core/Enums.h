@@ -377,7 +377,6 @@ public:
         Mesh,               ///< a mesh
         Shader,             ///< a shader
         DrawState,          ///< a draw-state
-        TextureBlock,       ///< a texture block
 
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,

@@ -62,9 +62,6 @@ fips_begin_module(Gfx)
         textureBase.cc textureBase.h
         texture.h
         textureFactory.h
-        textureBlockBase.h
-        textureBlock.h
-        textureBlockFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -77,7 +74,6 @@ fips_begin_module(Gfx)
         MeshSetup.cc MeshSetup.h
         ShaderSetup.cc ShaderSetup.h
         TextureSetup.cc TextureSetup.h
-        TextureBlockSetup.cc TextureBlockSetup.h
     )
     if (ORYOL_OPENGL)
         fips_dir(gl)
@@ -146,8 +142,6 @@ fips_begin_module(Gfx)
             d3d12DrawStateFactory.cc d3d12DrawStateFactory.h
             d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
-            d3d12TextureBlock.cc d3d12TextureBlock.h
-            d3d12TextureBlockFactory.cc d3d12TextureBlockFactory.h
             d3d12Renderer.cc d3d12Renderer.h
         )
     endif()
