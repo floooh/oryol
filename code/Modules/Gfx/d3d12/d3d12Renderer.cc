@@ -724,7 +724,7 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyTextureBlock(textureBlock* tb) {
+d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
     o_warn("FIXME!\n");
 }
 

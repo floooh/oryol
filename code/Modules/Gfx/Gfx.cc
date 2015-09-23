@@ -129,15 +129,6 @@ Gfx::ApplyDrawState(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-void
-Gfx::ApplyTextureBlock(const Id& id) {
-    o_trace_scoped(Gfx__ApplyTextureBlock);
-    o_assert_dbg(IsValid());
-    o_assert_dbg(id.Type == GfxResourceType::TextureBlock);
-    state->renderer.applyTextureBlock(state->resourceContainer.lookupTextureBlock(id));
-}
-
-//------------------------------------------------------------------------------
 bool
 Gfx::QueryFeature(GfxFeature::Code feat) {
     o_assert_dbg(IsValid());

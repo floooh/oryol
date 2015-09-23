@@ -341,6 +341,15 @@ class TextureBlock :
         for tex in self.textures :
             dumpObj(tex)
 
+    def getHash(self) :
+        # returns an integer hash for the texture-block layout,
+        # this is used as runtime-type check in Gfx::ApplyTextureBlock
+        # to check whether a compatible block is set
+        hashString = ''
+        for tex in self.textures :
+            hashString += tex.type
+        return hash(hashString)
+
 #-------------------------------------------------------------------------------
 class Attr :
     '''
@@ -1601,7 +1610,7 @@ def writeBundleHeader(f, shdLib, bundle) :
     f.write('    public:\n')
     
     # write uniform block structs
-    for blockIndex, ub in enumerate(bundle.uniformBlocks) :
+    for ub in bundle.uniformBlocks :
         if ub.bindStage == 'vs' :
             stageName = 'VS'
         else :
@@ -1621,19 +1630,22 @@ def writeBundleHeader(f, shdLib, bundle) :
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
     
-    # write texture slot indices
+    # write texture block structs
     for tb in bundle.textureBlocks :
         if tb.bindStage == 'vs' :
             stageName = 'VS'
         else :
             stageName = 'FS'
+        f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(tb.bindName))
-        f.write('            static TextureBlockSetup Setup(const Id& shd, int32 shdSelMask=0);\n')
         f.write('            static const int32 _bindSlotIndex = {};\n'.format(tb.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
+        f.write('            static const int64 _layoutHash = {};\n'.format(tb.getHash()))
+        f.write('            static const int32 _numTextures = {};\n'.format(len(tb.textures)))
         for tex in tb.textures :
-            f.write('            static const int32 {} = {};\n'.format(tex.bindName, tex.bindSlot))
+            f.write('            Id {};\n'.format(tex.bindName))
         f.write('        };\n')
+        f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
     f.write('    };\n')
 
@@ -1793,6 +1805,7 @@ def writeBundleSource(f, shdLib, bundle) :
     for tb in bundle.textureBlocks :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
+        f.write('    {}.TypeHash = {};\n'.format(layoutName, tb.getHash()))
         for tex in tb.textures :
             if tex.type == 'sampler2D':
                 texType = 'Texture2D'
@@ -1808,18 +1821,6 @@ def writeBundleSource(f, shdLib, bundle) :
                 
     f.write('    return setup;\n')
     f.write('}\n')
-
-    # write the texture block setup functions
-    for tb in bundle.textureBlocks :
-        tbStructName = '{}::{}'.format(bundle.name, tb.bindName)
-        f.write('TextureBlockSetup {}::Setup(const Id& shd, int32 shdSelMask) {{\n'.format(tbStructName))
-        f.write('    TextureBlockSetup setup;\n')
-        f.write('    setup.BindStage = {}::_bindShaderStage;\n'.format(tbStructName))
-        f.write('    setup.BindSlot = {}::_bindSlotIndex;\n'.format(tbStructName))
-        f.write('    setup.Shader = shd;\n')
-        f.write('    setup.ShaderSelectionMask = shdSelMask;\n')
-        f.write('    return setup;\n')
-        f.write('}\n')
 
 #-------------------------------------------------------------------------------
 def generateSource(absSourcePath, shdLib) :

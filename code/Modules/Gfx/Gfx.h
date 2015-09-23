@@ -87,9 +87,9 @@ public:
     /// apply draw state to use for rendering
     static void ApplyDrawState(const Id& id);
     /// apply a texture block
-    static void ApplyTextureBlock(const Id& id);
+    template<class T> static void ApplyTextureBlock(const T& tb);
     /// apply a uniform block
-    template<class T> static void ApplyUniformBlock(const T& value);
+    template<class T> static void ApplyUniformBlock(const T& ub);
 
     /// update dynamic vertex data (only complete replace possible at the moment)
     static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
@@ -128,9 +128,23 @@ private:
 
 //------------------------------------------------------------------------------
 template<class T> inline void
-Gfx::ApplyUniformBlock(const T& value) {
+Gfx::ApplyTextureBlock(const T& tb) {
     o_assert_dbg(IsValid());
-    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8*) &value, sizeof(value));
+    o_assert_dbg(T::_numTextures <= GfxConfig::MaxNumTexturesPerStage);
+    _priv::texture* textures[GfxConfig::MaxNumTexturesPerStage];
+    const Id* texId = (const Id*)&tb;
+    for (int i = 0; i < T::_numTextures; i++) {
+        o_assert_dbg(GfxResourceType::Texture == texId[i].Type);
+        textures[i] = state->resourceContainer.lookupTexture(texId[i]);
+    }
+    state->renderer.applyTextureBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, textures, T::_numTextures);
+}
+
+//------------------------------------------------------------------------------
+template<class T> inline void
+Gfx::ApplyUniformBlock(const T& ub) {
+    o_assert_dbg(IsValid());
+    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8*) &ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------

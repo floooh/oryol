@@ -26,10 +26,10 @@ private:
     float32 distVal = 0.0f;
     Id drawState;
     static const int32 NumTextures = 16;
-    StaticArray<Id, NumTextures> texBlock;
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Main::VSParams vsParams;
+    StaticArray<Shaders::Main::FSTextures, NumTextures> texBlock;
     ClearState clearState;
 };
 OryolMain(DDSTextureLoadingApp);
@@ -68,7 +68,7 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        const auto resState = Gfx::QueryResourceInfo(this->texBlock[i]).State;
+        const auto resState = Gfx::QueryResourceInfo(this->texBlock[i].Texture).State;
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
@@ -124,10 +124,8 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        Id texId = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint), i));
-        auto tbSetup = Shaders::Main::FSTextures::Setup(shd);
-        tbSetup.Slot[Shaders::Main::FSTextures::Texture] = texId;
-        this->texBlock[i] = Gfx::CreateResource(tbSetup);
+        Id tex = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint), i));
+        this->texBlock[i].Texture = tex;
     }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
