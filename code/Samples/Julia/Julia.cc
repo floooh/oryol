@@ -28,9 +28,9 @@ private:
     ClearState displayClearState;
     fractal test;
     Id shapeDrawState;
-    Id shapeTextureBlock;
     Shaders::Shape::VSParams shapeVSParams;
     Shaders::Shape::FSParams shapeFSParams;
+    Shaders::Shape::FSTextures shapeFSTextures;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -66,10 +66,6 @@ JuliaApp::OnInit() {
     this->shapeDrawState = Gfx::CreateResource(dss);
     this->shapeFSParams.NumColors = 128.0;
 
-    auto tbSetup = Shaders::Shape::FSTextures::Setup(shd);
-    tbSetup.Slot[Shaders::Shape::FSTextures::Texture] = this->test.colorTexture;
-    this->shapeTextureBlock = Gfx::CreateResource(tbSetup);
-
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
@@ -91,12 +87,13 @@ JuliaApp::OnRunning() {
     this->shapeVSParams.ModelViewProj = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0), rot);
     this->shapeVSParams.Time = float(this->frameCount) / 60.0f;
     this->shapeVSParams.UVScale = glm::vec2(2.0f, 2.0f);
+    this->shapeFSTextures.Texture = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
     Gfx::ApplyDrawState(this->shapeDrawState);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
-    Gfx::ApplyTextureBlock(this->shapeTextureBlock);
+    Gfx::ApplyTextureBlock(this->shapeFSTextures);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

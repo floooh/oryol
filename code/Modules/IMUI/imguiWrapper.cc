@@ -75,7 +75,7 @@ imguiWrapper::IsValid() const {
 //------------------------------------------------------------------------------
 void
 imguiWrapper::setupFontTexture() {
-    o_assert_dbg(!this->fontTextureBlock.IsValid());
+    o_assert_dbg(!this->fontTexture.IsValid());
     o_assert_dbg(this->shader.IsValid());
 
     ImGuiIO& io = ImGui::GetIO();
@@ -91,11 +91,7 @@ imguiWrapper::setupFontTexture() {
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
-    Id fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
-
-    auto tbSetup = Shaders::IMUIShader::FSTextures::Setup(this->shader);
-    tbSetup.Slot[Shaders::IMUIShader::FSTextures::Texture] = fontTexture;
-    this->fontTextureBlock = Gfx::CreateResource(tbSetup);
+    this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
@@ -229,12 +225,14 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
     const int indexDataSize = numIndices * sizeof(ImDrawIdx);
+    Shaders::IMUIShader::FSTextures texBlock;
+    texBlock.Texture = self->fontTexture;
 
     Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
     Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
     Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::ApplyTextureBlock(self->fontTextureBlock);
+    Gfx::ApplyTextureBlock(texBlock);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];

@@ -25,12 +25,12 @@ private:
     Id plasmaRenderTarget;
     Id plasmaDrawState;
     Id planeDrawState;
-    Id planeTextureBlock;
     
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Plane::VSParams planeVSParams;
-    Shaders::Plasma::FSParams plasmaFSParams;
+    Shaders::Plane::VSTextures planeVSTextures;
+    Shaders::Plasma::FSParams plasmaFSParams;    
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -53,7 +53,7 @@ VertexTextureApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
-    Gfx::ApplyTextureBlock(this->planeTextureBlock);
+    Gfx::ApplyTextureBlock(this->planeVSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -103,11 +103,7 @@ VertexTextureApp::OnInit() {
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState = Gfx::CreateResource(dsPlane);
-
-    // texture block for the plane vertex texture
-    auto tbSetup = Shaders::Plane::VSTextures::Setup(planeShader);
-    tbSetup.Slot[Shaders::Plane::VSTextures::Texture] = this->plasmaRenderTarget;
-    this->planeTextureBlock = Gfx::CreateResource(tbSetup);
+    this->planeVSTextures.Texture = this->plasmaRenderTarget;
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

@@ -44,7 +44,7 @@ private:
 
     bool isValid = false;
     ResourceLabel resLabel;
-    Id fontTextureBlock;
+    Id fontTexture;
     Id mesh;
     Id shader;
     Id drawState;

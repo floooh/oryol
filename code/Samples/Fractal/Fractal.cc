@@ -51,7 +51,6 @@ private:
     Id offscreenRenderTarget[2];
     Id displayShader;
     Id displayDrawState;
-    Id displayTextureBlock[2];
     int32 frameIndex = 0;
     bool clearFlag = true;
     bool dragStarted = false;
@@ -60,13 +59,11 @@ private:
     struct {
         Id shader;
         Id drawState;
-        Id textureBlock[2];
-        Shaders::Mandelbrot::VSParams vsParams;
+        Shaders::Mandelbrot::VSParams vsParams;        
     } mandelbrot;
     struct {
         Id shader;
         Id drawState;
-        Id textureBlock[2];
         Shaders::Julia::VSParams vsParams;
         Shaders::Julia::FSParams fsParams;
     } julia;
@@ -97,13 +94,17 @@ FractalApp::OnRunning() {
     if (Mandelbrot == this->fractalType) {
         Gfx::ApplyDrawState(this->mandelbrot.drawState);
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
-        Gfx::ApplyTextureBlock(this->mandelbrot.textureBlock[index1]);
+        Shaders::Mandelbrot::FSTextures texBlock;
+        texBlock.Texture = this->offscreenRenderTarget[index1];
+        Gfx::ApplyTextureBlock(texBlock);
     }
     else {
         Gfx::ApplyDrawState(this->julia.drawState);
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
-        Gfx::ApplyTextureBlock(this->julia.textureBlock[index1]);
+        Shaders::Julia::FSTextures texBlock;
+        texBlock.Texture = this->offscreenRenderTarget[index1];
+        Gfx::ApplyTextureBlock(texBlock);
     }
     Gfx::Draw(0);
 
@@ -111,7 +112,9 @@ FractalApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayFSParams);
-    Gfx::ApplyTextureBlock(this->displayTextureBlock[index0]);
+    Shaders::Display::FSTextures texBlock;
+    texBlock.Texture = this->offscreenRenderTarget[index0];
+    Gfx::ApplyTextureBlock(texBlock);
     Gfx::Draw(0);
 
     this->drawUI();
@@ -375,22 +378,6 @@ FractalApp::checkCreateRenderTargets() {
         this->offscreenRenderTarget[0] = Gfx::CreateResource(offscreenRTSetup);
         this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
         this->clearFlag = true;
-
-        // we also need to re-create all texture blocks which
-        // use these render targets as textures
-        for (int i=0; i<2; i++) {
-            auto tbSetup = Shaders::Display::FSTextures::Setup(this->displayShader);
-            tbSetup.Slot[Shaders::Display::FSTextures::Texture] = this->offscreenRenderTarget[i];
-            this->displayTextureBlock[i] = Gfx::CreateResource(tbSetup);
-
-            tbSetup = Shaders::Mandelbrot::FSTextures::Setup(this->mandelbrot.shader);
-            tbSetup.Slot[Shaders::Mandelbrot::FSTextures::Texture] = this->offscreenRenderTarget[i];
-            this->mandelbrot.textureBlock[i] = Gfx::CreateResource(tbSetup);
-
-            tbSetup = Shaders::Julia::FSTextures::Setup(this->julia.shader);
-            tbSetup.Slot[Shaders::Julia::FSTextures::Texture] = this->offscreenRenderTarget[i];
-            this->julia.textureBlock[i] = Gfx::CreateResource(tbSetup);
-        }
 
         Gfx::PopResourceLabel();
     }

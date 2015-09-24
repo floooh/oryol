@@ -41,9 +41,7 @@ public:
     Oryol::ResourceLabel label;
     Oryol::Id fractalDrawState;
     Oryol::StaticArray<Oryol::Id, 2> fractalTexture;
-    Oryol::StaticArray<Oryol::Id, 2> fractalTextureBlock;
     Oryol::Id colorDrawState;
-    Oryol::StaticArray<Oryol::Id, 2> colorTextureBlock;
     Oryol::Shaders::Julia::VSParams fractalVSParams;
     Oryol::Shaders::Julia::FSParams fractalFSParams;
 };

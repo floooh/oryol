@@ -22,10 +22,8 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    Id renderTargets[2];
     Id offscreenDrawState;
     Id displayDrawState;
-    Id textureBlocks[2];
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -33,6 +31,7 @@ private:
     float32 angleY = 0.0f;
     int32 frameIndex = 0;
     Shaders::Main::VSParams vsParams;
+    Shaders::Main::FSTextures fsTextures[2];
     ClearState clearState;
 };
 OryolMain(InfiniteSpheresApp);
@@ -50,12 +49,12 @@ InfiniteSpheresApp::OnRunning() {
     
     // render sphere to offscreen render target, using the other render target as
     // source texture
-    Gfx::ApplyRenderTarget(this->renderTargets[index0]);
+    Gfx::ApplyRenderTarget(this->fsTextures[index0].Texture);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBlock(this->textureBlocks[index1]);
+    Gfx::ApplyTextureBlock(this->fsTextures[index1]);
     Gfx::Draw(0);
     
     // ...and again to display
@@ -64,7 +63,7 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBlock(this->textureBlocks[index0]);
+    Gfx::ApplyTextureBlock(this->fsTextures[index0]);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -89,7 +88,7 @@ InfiniteSpheresApp::OnInit() {
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     for (int32 i = 0; i < 2; i++) {
-        this->renderTargets[i] = Gfx::CreateResource(rtSetup);
+        this->fsTextures[i].Texture = Gfx::CreateResource(rtSetup);
     }
 
     // create a sphere shape mesh
@@ -117,13 +116,6 @@ InfiniteSpheresApp::OnInit() {
     dss.RasterizerState.SampleCount = 1;
     this->offscreenDrawState = Gfx::CreateResource(dss);
     this->clearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
-
-    // create 2 texture blocks for offscreen rendering
-    auto tbSetup = Shaders::Main::FSTextures::Setup(shd);
-    for (int32 i = 0; i < 2; i++) {
-        tbSetup.Slot[Shaders::Main::FSTextures::Texture] = this->renderTargets[i];
-        this->textureBlocks[i] = Gfx::CreateResource(tbSetup);
-    }
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

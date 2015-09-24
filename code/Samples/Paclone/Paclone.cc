@@ -26,8 +26,8 @@ private:
 
     Id crtEffect;
     Id crtRenderTarget;
-    Id crtTexBlock;
     Shaders::CRT::FSParams crtParams;
+    Shaders::CRT::FSTextures crtTextures;
 
     canvas spriteCanvas;
     game gameState;
@@ -58,9 +58,7 @@ PacloneApp::OnInit() {
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
     Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
-    auto tbSetup = Shaders::CRT::FSTextures::Setup(shd);
-    tbSetup.Slot[Shaders::CRT::FSTextures::Canvas] = this->crtRenderTarget;
-    this->crtTexBlock = Gfx::CreateResource(tbSetup);
+    this->crtTextures.Canvas = this->crtRenderTarget;
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
@@ -101,7 +99,7 @@ PacloneApp::OnRunning() {
     this->applyViewPort();
     Gfx::ApplyDrawState(this->crtEffect);
     Gfx::ApplyUniformBlock(this->crtParams);
-    Gfx::ApplyTextureBlock(this->crtTexBlock);
+    Gfx::ApplyTextureBlock(this->crtTextures);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     this->tick++;

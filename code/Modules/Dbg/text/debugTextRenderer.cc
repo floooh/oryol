@@ -135,10 +135,13 @@ debugTextRenderer::drawTextBuffer() {
         const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
 
+        Shaders::TextShader::FSTextures texBlock;
+        texBlock.Texture = this->fontTexture;
+
         Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->textDrawState);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::ApplyTextureBlock(this->fontTextureBlock);
+        Gfx::ApplyTextureBlock(texBlock);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }
@@ -146,7 +149,7 @@ debugTextRenderer::drawTextBuffer() {
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupFontTexture() {
-    o_assert_dbg(!this->fontTextureBlock.IsValid());
+    o_assert_dbg(!this->fontTexture.IsValid());
     o_assert_dbg(this->textShader.IsValid());
     
     // convert the KC85/4 font into 8bpp image data
@@ -185,16 +188,9 @@ debugTextRenderer::setupFontTexture() {
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = imgDataSize;
-    Id fontTexture = Gfx::CreateResource(texSetup, data);
+    this->fontTexture = Gfx::CreateResource(texSetup, data);
     o_assert_dbg(fontTexture.IsValid());
     o_assert_dbg(Gfx::QueryResourceInfo(fontTexture).State == ResourceState::Valid);
-
-    // setup texture bundle
-    auto tbSetup = Shaders::TextShader::FSTextures::Setup(this->textShader);
-    tbSetup.Slot[Shaders::TextShader::FSTextures::Texture] = fontTexture;
-    this->fontTextureBlock = Gfx::CreateResource(tbSetup);
-    o_assert_dbg(this->fontTextureBlock.IsValid());
-    o_assert_dbg(Gfx::QueryResourceInfo(this->fontTextureBlock).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------

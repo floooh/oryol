@@ -70,7 +70,7 @@ private:
     VertexLayout vertexLayout;
     RWLock rwLock;
     Id textShader;
-    Id fontTextureBlock;
+    Id fontTexture;
     Id textMesh;
     Id textDrawState;
     StringBuilder stringBuilder;

@@ -22,11 +22,11 @@ private:
     Id renderTarget;
     Id offscreenDrawState;
     Id copyDrawState;
-    Id copyTextureBlock;
 
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Offscreen::FSParams offscreenFSParams;
+    Shaders::Copy::FSTextures copyFSTextures;
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -47,7 +47,7 @@ TextureFloatApp::OnRunning() {
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::ApplyTextureBlock(this->copyTextureBlock);
+    Gfx::ApplyTextureBlock(this->copyFSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -94,9 +94,7 @@ TextureFloatApp::OnInit() {
     // fullscreen-copy resources
     Id copyShader = Gfx::CreateResource(Shaders::Copy::Setup());
     this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fullscreenMesh, copyShader));
-    auto tbSetup = Shaders::Copy::FSTextures::Setup(copyShader);
-    tbSetup.Slot[Shaders::Copy::FSTextures::Texture] = this->renderTarget;
-    this->copyTextureBlock = Gfx::CreateResource(tbSetup);
+    this->copyFSTextures.Texture = this->renderTarget;
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

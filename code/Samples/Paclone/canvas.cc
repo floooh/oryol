@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "canvas.h"
-#include "shaders.h"
 #include "Gfx/Gfx.h"
 
 using namespace Oryol;
@@ -62,9 +61,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    auto tbSetup = Shaders::Canvas::FSTextures::Setup(this->shader);
-    tbSetup.Slot[Shaders::Canvas::FSTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
-    this->texBlock = Gfx::CreateResource(tbSetup);
+    this->textures.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -98,7 +95,7 @@ canvas::Render() {
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyTextureBlock(this->texBlock);
+    Gfx::ApplyTextureBlock(this->textures);
     Gfx::Draw(0);
 }
 

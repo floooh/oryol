@@ -41,7 +41,6 @@ DDSTextureLoadingApp::OnRunning() {
     this->distVal += 0.01f;
     
     Gfx::ApplyDefaultRenderTarget(this->clearState);
-    Gfx::ApplyDrawState(this->drawState);
 
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {
@@ -72,6 +71,7 @@ DDSTextureLoadingApp::OnRunning() {
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
+            Gfx::ApplyDrawState(this->drawState);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::ApplyTextureBlock(this->texBlock[i]);
             Gfx::Draw(0);

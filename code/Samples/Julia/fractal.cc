@@ -44,9 +44,6 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     rtSetup.Sampler.WrapV = TextureWrapMode::MirroredRepeat;
     for (int i = 0; i < 2; i++) {
         this->fractalTexture[i] = Gfx::CreateResource(rtSetup);
-        auto tbSetup = Shaders::Julia::FSTextures::Setup(fractalShader);
-        tbSetup.Slot[Shaders::Julia::FSTextures::Texture] = this->fractalTexture[i];
-        this->fractalTextureBlock[i] = Gfx::CreateResource(tbSetup);
     }
 
     // create a color render target that holds the fractal state as color texture
@@ -69,12 +66,6 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     dss.BlendState.ColorFormat = PixelFormat::RGBA8;
     this->colorDrawState = Gfx::CreateResource(dss);
 
-    for (int i = 0; i < 2; i++) {
-        auto tbSetup = Shaders::Color::FSTextures::Setup(colorShader);
-        tbSetup.Slot[Shaders::Color::FSTextures::Texture] = this->fractalTexture[i];
-        this->colorTextureBlock[i] = Gfx::CreateResource(tbSetup);
-    }
-
     Gfx::PopResourceLabel();
 }
 
@@ -90,13 +81,7 @@ fractal::discard() {
     for (auto& tex : this->fractalTexture) {
         tex.Invalidate();
     }
-    for (auto& tb : this->fractalTextureBlock) {
-        tb.Invalidate();
-    }
     this->colorDrawState.Invalidate();
-    for (auto& tb : this->colorTextureBlock) {
-        tb.Invalidate();
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -123,17 +108,21 @@ fractal::update() {
     // render next fractal iteration
     this->fractalVSParams.Rect = this->rect;
     this->fractalFSParams.JuliaPos = this->pos;
+    Shaders::Julia::FSTextures juliaTextures;
+    juliaTextures.Texture = this->fractalTexture[readIndex];
     Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
     Gfx::ApplyDrawState(this->fractalDrawState);
     Gfx::ApplyUniformBlock(this->fractalVSParams);
     Gfx::ApplyUniformBlock(this->fractalFSParams);
-    Gfx::ApplyTextureBlock(this->fractalTextureBlock[readIndex]);
+    Gfx::ApplyTextureBlock(juliaTextures);
     Gfx::Draw(0);
 
     // map current fractal state to color texture
+    Shaders::Color::FSTextures colorTextures;
+    colorTextures.Texture = this->fractalTexture[writeIndex];
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
     Gfx::ApplyDrawState(this->colorDrawState);
-    Gfx::ApplyTextureBlock(this->colorTextureBlock[writeIndex]);
+    Gfx::ApplyTextureBlock(colorTextures);
     Gfx::Draw(0);
 
     if (this->frameIndex >= this->cycleCount) {
