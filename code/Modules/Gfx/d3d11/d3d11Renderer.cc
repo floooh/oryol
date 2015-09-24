@@ -34,6 +34,7 @@ d3d11CurVertexShader(nullptr),
 d3d11CurPixelShader(nullptr),
 d3d11CurPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED),
 curStencilRef(0xFFFF) {
+    this->numApplyTextureBlock.Fill(0);
     this->d3d11CurVSCBs.Fill(nullptr);
     this->d3d11CurPSCBs.Fill(nullptr);
     this->d3d11CurVBs.Fill(nullptr);
@@ -263,6 +264,9 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         return;
     }
 
+    // clear the applyTextureBlock counters
+    this->numApplyTextureBlock.Fill(0);
+
     o_assert_dbg(ds->d3d11DepthStencilState);
     o_assert_dbg(ds->d3d11RasterizerState);
     o_assert_dbg(ds->d3d11BlendState);
@@ -397,41 +401,65 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyTextureBlock(textureBlock* tb) {
+d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
     o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
     if (nullptr == this->curDrawState) {
         return;
     }
-    if (nullptr == tb) {
-        // textureBlock contains textures that are not yet loaded,
-        // disable the next draw call, and return
-        this->curDrawState = nullptr;
-        return;
+
+    // if any of the provided texture pointers are not valid, this means one of the
+    // textures isn't valid yet, in this case, disable rendering for the next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
 
-    if (ShaderStage::VS == tb->bindStage) {
-        for (int i = 0; i < tb->numEntries; i++) {
-            const auto& entry = tb->entries[i];
-            if (entry.d3d11ShaderResourceView != this->d3d11CurVSSRVs[entry.bindSlot]) {
-                this->d3d11CurVSSRVs[entry.bindSlot] = entry.d3d11ShaderResourceView;
-                this->d3d11DeviceContext->VSSetShaderResources(entry.bindSlot, 1, &entry.d3d11ShaderResourceView);
+    // only one applyTextureBlock is allowed after an ApplyDrawState!
+    if (this->numApplyTextureBlock[bindStage]++ > 1) {
+        o_error("Only one ApplyTextureBlock is allowed per stage after ApplyDrawState!\n");
+    }
+
+    // check if the provided texture types are compatible
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // apply textures and samplers
+    if (ShaderStage::VS == bindStage) {
+        for (int i = 0; i < numTextures; i++) {
+            if (textures[i]->d3d11ShaderResourceView != this->d3d11CurVSSRVs[i]) {
+                this->d3d11CurVSSRVs[i] = textures[i]->d3d11ShaderResourceView;
+                this->d3d11DeviceContext->VSSetShaderResources(i, 1, &(textures[i]->d3d11ShaderResourceView));
             }
-            if (entry.d3d11SamplerState != this->d3d11CurVSSamplers[entry.bindSlot]) {
-                this->d3d11CurVSSamplers[entry.bindSlot] = entry.d3d11SamplerState;
-                this->d3d11DeviceContext->VSSetSamplers(entry.bindSlot, 1, &entry.d3d11SamplerState);
+            if (textures[i]->d3d11SamplerState != this->d3d11CurVSSamplers[i]) {
+                this->d3d11CurVSSamplers[i] = textures[i]->d3d11SamplerState;
+                this->d3d11DeviceContext->VSSetSamplers(i, 1, &(textures[i]->d3d11SamplerState));
             }
         }
     }
     else {
-        for (int i = 0; i < tb->numEntries; i++) {
-            const auto& entry = tb->entries[i];
-            if (entry.d3d11ShaderResourceView != this->d3d11CurPSSRVs[entry.bindSlot]) {
-                this->d3d11CurPSSRVs[entry.bindSlot] = entry.d3d11ShaderResourceView;
-                this->d3d11DeviceContext->PSSetShaderResources(entry.bindSlot, 1, &entry.d3d11ShaderResourceView);
+        for (int i = 0; i < numTextures; i++) {
+            if (textures[i]->d3d11ShaderResourceView != this->d3d11CurPSSRVs[i]) {
+                this->d3d11CurPSSRVs[i] = textures[i]->d3d11ShaderResourceView;
+                this->d3d11DeviceContext->PSSetShaderResources(i, 1, &(textures[i]->d3d11ShaderResourceView));
             }
-            if (entry.d3d11SamplerState != this->d3d11CurPSSamplers[entry.bindSlot]) {
-                this->d3d11CurPSSamplers[entry.bindSlot] = entry.d3d11SamplerState;
-                this->d3d11DeviceContext->PSSetSamplers(entry.bindSlot, 1, &entry.d3d11SamplerState);
+            if (textures[i]->d3d11SamplerState != this->d3d11CurPSSamplers[i]) {
+                this->d3d11CurPSSamplers[i] = textures[i]->d3d11SamplerState;
+                this->d3d11DeviceContext->PSSetSamplers(i, 1, &(textures[i]->d3d11SamplerState));
             }
         }
     }

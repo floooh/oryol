@@ -361,10 +361,10 @@ ID3D11SamplerState*
 d3d11TextureFactory::createSamplerState(const texture& tex) {
     D3D11_SAMPLER_DESC smpDesc;
     Memory::Clear(&smpDesc, sizeof(smpDesc));
-    smpDesc.Filter = d3d11Types::asSamplerFilter(tex.Setup.MagFilter, tex.Setup.MinFilter);
-    smpDesc.AddressU = d3d11Types::asTextureAddressMode(tex.Setup.WrapU);
-    smpDesc.AddressV = d3d11Types::asTextureAddressMode(tex.Setup.WrapV);
-    smpDesc.AddressW = d3d11Types::asTextureAddressMode(tex.Setup.WrapW);
+    smpDesc.Filter = d3d11Types::asSamplerFilter(tex.Setup.Sampler.MagFilter, tex.Setup.Sampler.MinFilter);
+    smpDesc.AddressU = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapU);
+    smpDesc.AddressV = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapV);
+    smpDesc.AddressW = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapW);
     smpDesc.MipLODBias = 0.0f;
     smpDesc.MaxAnisotropy = 1;
     smpDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;

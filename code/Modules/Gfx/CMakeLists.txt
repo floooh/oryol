@@ -118,8 +118,6 @@ fips_begin_module(Gfx)
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11TextureBlock.cc d3d11TextureBlock.h
-            d3d11TextureBlockFactory.cc d3d11TextureBlockFactory.h
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h

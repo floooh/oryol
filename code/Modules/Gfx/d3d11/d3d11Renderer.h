@@ -59,9 +59,9 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// apply a texture block
-    void applyTextureBlock(textureBlock* tb);
+    void applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -101,6 +101,8 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
+    // number of calls to applyTextureBlock since applyDrawState (only one is allowed per stage)
+    StaticArray<int32, ShaderStage::NumShaderStages> numApplyTextureBlock;
 
     ID3D11RenderTargetView* d3d11CurRenderTargetView;
     ID3D11DepthStencilView* d3d11CurDepthStencilView;
