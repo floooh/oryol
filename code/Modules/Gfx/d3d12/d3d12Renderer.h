@@ -14,6 +14,7 @@
 #include "Gfx/d3d12/d3d12Config.h"
 #include "Gfx/d3d12/d3d12ResAllocator.h"
 #include "Gfx/d3d12/d3d12DescAllocator.h"
+#include "Gfx/d3d12/d3d12SamplerCache.h"
 #include "d3d12_decl.h"
 
 namespace Oryol {
@@ -95,6 +96,8 @@ public:
     d3d12ResAllocator resAllocator;
     /// allocator for D3D12 descriptors
     d3d12DescAllocator descAllocator;
+    /// cache for D3D12 samplers
+    d3d12SamplerCache samplerCache;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
     uint64 frameIndex;

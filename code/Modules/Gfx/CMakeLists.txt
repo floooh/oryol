@@ -130,6 +130,7 @@ fips_begin_module(Gfx)
             d3d12Config.h
             d3d12ResAllocator.cc d3d12ResAllocator.h
             d3d12DescAllocator.cc d3d12DescAllocator.h
+            d3d12SamplerCache.cc d3d12SamplerCache.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
             d3d12Mesh.cc d3d12Mesh.h

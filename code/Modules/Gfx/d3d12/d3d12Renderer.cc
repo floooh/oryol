@@ -55,6 +55,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->d3d12CommandQueue = ptrs.displayMgr->d3d12CommandQueue;
 
     this->descAllocator.Setup(setup, ptrs);
+    this->samplerCache.Setup(ptrs);
 
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
@@ -93,6 +94,7 @@ d3d12Renderer::discard() {
     this->destroyFrameSyncObjects();
     this->destroyFrameResources();
     this->resAllocator.DestroyAll();
+    this->samplerCache.Discard();
     this->descAllocator.Discard();
     this->d3d12CommandQueue = nullptr;
     this->d3d12Device = nullptr;
@@ -142,7 +144,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
         frameRes.cbGpuPtr = frameRes.constantBuffer->GetGPUVirtualAddress();
         o_assert_dbg(frameRes.cbGpuPtr);
 
-        // create the shader-resource-view- and sampler-heaps, this has one slot
+        // create the shader-resource-view-heaps, this has one slot
         // per shader stage and ApplyDrawState call, and each slot
         // has as many descriptors as can be bound to a shader stage
         const int numSlots = ShaderStage::NumShaderStages * this->gfxSetup.MaxApplyDrawStatesPerFrame;

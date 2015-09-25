@@ -54,6 +54,8 @@ public:
     void CPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;
     /// get GPU handle into a descriptor heap
     void GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;
+    /// get descriptor increment size of descriptor heap
+    uint32 DescriptorIncrementSize(const Id& heapId) const;
 
 private:
     ID3D12Device* d3d12Device;
@@ -64,6 +66,7 @@ private:
     struct heap {
         int32 numSlots = 0;
         int32 numDescriptorsPerSlot = 0;
+        uint32 descIncrSize = 0;
         uint32 slotIncrSize = 0;
         Type type = InvalidType;
         ID3D12DescriptorHeap* d3d12DescHeap = nullptr;

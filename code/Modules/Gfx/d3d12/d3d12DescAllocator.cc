@@ -97,7 +97,8 @@ d3d12DescAllocator::AllocHeap(Type type, int32 numSlots, int32 numDescriptorsPer
     d3d12Types::initDescriptorHeapDesc(&desc, numDescriptors, d3d12HeapType, shaderVisible);
     HRESULT hr = d3d12Device->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap), (void**)&entry.d3d12DescHeap);
     o_assert(SUCCEEDED(hr) && entry.d3d12DescHeap);
-    entry.slotIncrSize = numDescriptorsPerSlot * this->d3d12Device->GetDescriptorHandleIncrementSize(d3d12HeapType);
+    entry.descIncrSize = this->d3d12Device->GetDescriptorHandleIncrementSize(d3d12HeapType);
+    entry.slotIncrSize = numDescriptorsPerSlot * entry.descIncrSize;
 
     if (allowAllocSlot) {
         entry.freeSlots.Reserve(numSlots);
@@ -128,6 +129,12 @@ d3d12DescAllocator::GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, const Id& heapId
     o_assert_dbg(entry.d3d12DescHeap);
     out = entry.d3d12DescHeap->GetGPUDescriptorHandleForHeapStart();
     out.ptr += (entry.slotIncrSize * slotIndex);
+}
+
+//------------------------------------------------------------------------------
+uint32
+d3d12DescAllocator::DescriptorIncrementSize(const Id& heapId) const {
+    return this->heaps[heapId.SlotIndex].descIncrSize;
 }
 
 //------------------------------------------------------------------------------

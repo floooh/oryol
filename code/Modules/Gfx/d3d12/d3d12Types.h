@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Core/Enums.h"
+#include "Gfx/Core/SamplerState.h"
 #include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
@@ -45,6 +46,10 @@ public:
     static DXGI_FORMAT asInputElementFormat(VertexFormat::Code fmt);
     /// convert VertexStepFunction to d3d11 input classification
     static D3D12_INPUT_CLASSIFICATION asInputClassification(VertexStepFunction::Code func);
+    /// convert min/mag filters to d3d11 filter
+    static D3D12_FILTER asSamplerFilter(TextureFilterMode::Code magFilter, TextureFilterMode::Code minFilter);
+    /// convert texture wrap mode to d3d11 texture address mode
+    static D3D12_TEXTURE_ADDRESS_MODE asTextureAddressMode(TextureWrapMode::Code mode);
     /// convert vertex index type to dxgi format
     static DXGI_FORMAT asIndexType(IndexType::Code c);
     /// initialize a D3D12_HEAP_PROPERTIES struct
@@ -63,6 +68,8 @@ public:
     static void initDescriptorHeapDesc(D3D12_DESCRIPTOR_HEAP_DESC* out, int num, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible);
     /// initialize a D3D12_DEPTH_STENCIL_VIEW_DESC
     static void initDSVDesc(D3D12_DEPTH_STENCIL_VIEW_DESC* out, PixelFormat::Code fmt, bool isMSAA);
+    /// initialize a D3D12_SAMPLsER_DESC
+    static void initSamplerDesc(D3D12_SAMPLER_DESC* out, const SamplerState& sampler);
 };
 
 } // namespace _priv
