@@ -9,6 +9,7 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/SamplerState.h"
 #include "Gfx/Setup/TextureSetup.h"
+#include "Gfx/Attrs/TextureAttrs.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
 namespace Oryol {
@@ -68,8 +69,18 @@ public:
     static void initDescriptorHeapDesc(D3D12_DESCRIPTOR_HEAP_DESC* out, int num, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible);
     /// initialize a D3D12_DEPTH_STENCIL_VIEW_DESC
     static void initDSVDesc(D3D12_DEPTH_STENCIL_VIEW_DESC* out, PixelFormat::Code fmt, bool isMSAA);
-    /// initialize a D3D12_SAMPLsER_DESC
+    /// initialize a D3D12_SAMPLER_DESC
     static void initSamplerDesc(D3D12_SAMPLER_DESC* out, const SamplerState& sampler);
+    /// initialize a D3D12_SHADER_RESOURCE_VIEW_DESC
+    static void initSRVDesc(D3D12_SHADER_RESOURCE_VIEW_DESC* out, const TextureAttrs& attrs);
+    /// initialize a root-signature descriptor range
+    static void initDescriptorRange(D3D12_DESCRIPTOR_RANGE* out, D3D12_DESCRIPTOR_RANGE_TYPE type, int num, int reg, int regSpace);
+    /// initialize a root-parameter as constant-buffer-view
+    static void initRootParamAsCBV(D3D12_ROOT_PARAMETER* out, D3D12_SHADER_VISIBILITY vis, int reg, int regSpace);
+    /// intitialize a root-parameter as descriptor table
+    static void initRootParamAsTable(D3D12_ROOT_PARAMETER* out, D3D12_SHADER_VISIBILITY vis, D3D12_DESCRIPTOR_RANGE* ranges, int numRanges);
+    /// initialize root-signature desc structure
+    static void initRootDesc(D3D12_ROOT_SIGNATURE_DESC* out, D3D12_ROOT_PARAMETER* params, int numParams);
 };
 
 } // namespace _priv

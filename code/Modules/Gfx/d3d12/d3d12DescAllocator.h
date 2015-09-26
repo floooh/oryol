@@ -55,7 +55,9 @@ public:
     /// get GPU handle into a descriptor heap
     void GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;
     /// get descriptor increment size of descriptor heap
-    uint32 DescriptorIncrementSize(const Id& heapId) const;
+    uint32 DescriptorIncrementSize(const Id& heapId) const;    
+    /// get D3D12 heap pointer for heap id
+    ID3D12DescriptorHeap* DescriptorHeap(const Id& heapId) const;
 
 private:
     ID3D12Device* d3d12Device;

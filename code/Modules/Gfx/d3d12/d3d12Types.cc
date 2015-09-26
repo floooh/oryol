@@ -467,5 +467,68 @@ d3d12Types::initSamplerDesc(D3D12_SAMPLER_DESC* out, const SamplerState& sampler
     out->MaxLOD = D3D12_FLOAT32_MAX;
 }
 
+//------------------------------------------------------------------------------
+void
+d3d12Types::initSRVDesc(D3D12_SHADER_RESOURCE_VIEW_DESC* out, const TextureAttrs& attrs) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_SHADER_RESOURCE_VIEW_DESC));
+    out->Format = d3d12Types::asTextureFormat(attrs.ColorFormat);
+    out->Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    if (attrs.Type == TextureType::Texture2D) {
+        out->ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        out->Texture2D.MipLevels = attrs.NumMipMaps;
+    }
+    else {
+        out->ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        out->TextureCube.MipLevels = attrs.NumMipMaps;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initDescriptorRange(D3D12_DESCRIPTOR_RANGE* out, D3D12_DESCRIPTOR_RANGE_TYPE type, int num, int reg, int regSpace) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_DESCRIPTOR_RANGE));
+    out->RangeType = type;
+    out->NumDescriptors = num;
+    out->BaseShaderRegister = reg;
+    out->RegisterSpace = regSpace;
+    out->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initRootParamAsCBV(D3D12_ROOT_PARAMETER* out, D3D12_SHADER_VISIBILITY vis, int reg, int regSpace) {
+    o_assert_dbg(out);
+    Memory::Clear(out, sizeof(D3D12_ROOT_PARAMETER));
+    out->ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    out->ShaderVisibility = vis;
+    out->Descriptor.ShaderRegister = reg;
+    out->Descriptor.RegisterSpace = regSpace;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initRootParamAsTable(D3D12_ROOT_PARAMETER* out, D3D12_SHADER_VISIBILITY vis, D3D12_DESCRIPTOR_RANGE* ranges, int numRanges) {
+    o_assert_dbg(out);
+    o_assert_dbg(ranges && (numRanges > 0));
+    Memory::Clear(out, sizeof(D3D12_ROOT_PARAMETER));
+    out->ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    out->ShaderVisibility = vis;
+    out->DescriptorTable.pDescriptorRanges = ranges;
+    out->DescriptorTable.NumDescriptorRanges = numRanges;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initRootDesc(D3D12_ROOT_SIGNATURE_DESC* out, D3D12_ROOT_PARAMETER* params, int numParams) {
+    o_assert_dbg(out);
+    o_assert_dbg(params && (numParams > 0));
+    Memory::Clear(out, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+    out->NumParameters = numParams;
+    out->pParameters = params;
+    out->Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+}
+
 } // namespace _priv
 } // namespace Oryol

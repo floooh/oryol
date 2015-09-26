@@ -93,7 +93,7 @@ d3d12SamplerCache::Lookup(const SamplerState* samplers, int numSamplers) {
         // in debug mode, store the original sampler state structs to check
         // for hash collisions later
         #if ORYOL_DEBUG
-        SamplerState* cachedSamplers = &this->dbgStore[slotIndex];
+        SamplerState* cachedSamplers = &this->dbgStore[slotIndex * NumSamplersPerSlot];
         for (int i = 0; i < numSamplers; i++) {
             cachedSamplers[i] = samplers[i];
         }

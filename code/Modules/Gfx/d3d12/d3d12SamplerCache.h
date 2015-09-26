@@ -41,6 +41,8 @@ public:
     void CPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE& out, int item) const;
     /// get GPU handle into sampler heap
     void GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, int item) const;
+    /// get d3d12 descriptor heap pointer
+    ID3D12DescriptorHeap* DescriptorHeap() const;
 
 private:
     static const int MaxNumSamplers = 2048;    // this is defined by d3d12
@@ -68,6 +70,12 @@ d3d12SamplerCache::CPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE& out, int item) const {
 inline void
 d3d12SamplerCache::GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, int item) const {
     return this->descAllocator->GPUHandle(out, this->samplerHeap, item);
+}
+
+//------------------------------------------------------------------------------
+inline ID3D12DescriptorHeap*
+d3d12SamplerCache::DescriptorHeap() const {
+    return this->descAllocator->DescriptorHeap(this->samplerHeap);
 }
 
 } // namespace _priv

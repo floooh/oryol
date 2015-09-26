@@ -135,6 +135,8 @@ private:
     void destroyFrameResources();
     /// perform a render-target transition
     void rtTransition(ID3D12Resource* rt, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
+    /// (re-)set the root signature and descriptor heaps on the current command list
+    void resetRootSignatureAndDescriptorHeaps();
 
     bool valid;
     GfxSetup gfxSetup;
@@ -144,6 +146,9 @@ private:
 
     texture* curRenderTarget;
     drawState* curDrawState;
+
+    // number of calls to applyTextureBlock since applyDrawState (only one is allowed per stage)
+    StaticArray<int32, ShaderStage::NumShaderStages> numApplyTextureBlock;
 
     // frame-sync objects
     ID3D12Fence* d3d12Fence;
@@ -160,15 +165,14 @@ private:
     
     // root signature slots, ordered from low to high change-frequency
     enum rootParam {
-        VSSamplers = 0,
+        PSConstantBuffer0 = 0,
+        PSConstantBuffer1,
+        VSConstantBuffer0,
+        VSConstantBuffer1,
+        PSTextures,
         PSSamplers,
         VSTextures,
-        PSTextures,
-
-        VSConstantBuffer0,
-        PSConstantBuffer0,
-        VSConstantBuffer1,
-        PSConstantBuffer1,
+        VSSamplers,
 
         NumRootParams
     };
@@ -183,7 +187,8 @@ private:
         uint64 cbGpuPtr = 0;
     };
     StaticArray<frameResources, d3d12Config::NumFrames> frameResources;
-    int32 curConstantBufferOffset;
+    int32 curCBOffset;
+    int32 curSRVSlotIndex;
 };
 
 } // namespace _priv

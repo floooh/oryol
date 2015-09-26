@@ -28,10 +28,12 @@ fenceEvent(nullptr),
 msaaSurface(nullptr),
 depthStencilSurface(nullptr),
 curBackBufferIndex(0),
-curConstantBufferOffset(0) {
+curCBOffset(0),
+curSRVSlotIndex(0) {
     this->backbufferSurfaces.Fill(nullptr);
     this->rtvDescriptorSlots.Fill(InvalidIndex);
     this->dsvDescriptorSlot = InvalidIndex;
+    this->numApplyTextureBlock.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -65,7 +67,7 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     // prepare command list for first frame
     hr = this->curCommandList()->Reset(this->curCommandAllocator(), nullptr);
     o_assert(SUCCEEDED(hr));
-    this->curCommandList()->SetGraphicsRootSignature(this->d3d12RootSignature);
+    this->resetRootSignatureAndDescriptorHeaps();
 
     // set an initial fence for the 'previous' frame
     hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, 0);
@@ -109,7 +111,8 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
     HRESULT hr;
 
     this->curFrameRotateIndex = 0;
-    this->curConstantBufferOffset = 0;
+    this->curCBOffset = 0;
+    this->curSRVSlotIndex = 0;
     for (auto& frameRes : this->frameResources) {
 
         o_assert_dbg(nullptr == frameRes.constantBuffer);
@@ -295,87 +298,27 @@ d3d12Renderer::createRootSignature() {
     o_assert_dbg(this->d3d12Device);
     HRESULT hr;
 
-    // currently, all constant buffers can change between draw calls,
-    // so they are set directly in the root signature, textures and
-    // samplers can only change between draw states, so they are set via descriptors
+    // a single range-description for textures and samplers
+    // this is the same both for vertex- and fragment-textures
+    D3D12_DESCRIPTOR_RANGE texRange;
+    d3d12Types::initDescriptorRange(&texRange, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, GfxConfig::MaxNumTexturesPerStage, 0, 0);
+    D3D12_DESCRIPTOR_RANGE smpRange;
+    d3d12Types::initDescriptorRange(&smpRange, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, GfxConfig::MaxNumTexturesPerStage, 0, 0);
 
-    // the root signature describes number of constant buffers,
-    // textures and samplers that can be bound to the vertex- and pixel-shader
-    StaticArray<D3D12_DESCRIPTOR_RANGE, 2> vsRanges;
-    Memory::Clear(&vsRanges[0], sizeof(vsRanges[0]) * vsRanges.Size());
-    StaticArray<D3D12_DESCRIPTOR_RANGE, 2> psRanges;
-    Memory::Clear(&psRanges[0], sizeof(psRanges[0]) * psRanges.Size());
-
-    vsRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    vsRanges[0].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
-    vsRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    vsRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    vsRanges[1].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
-    vsRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-    psRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    psRanges[0].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
-    psRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    psRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    psRanges[1].NumDescriptors = GfxConfig::MaxNumTextureBlocksPerStage;
-    psRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-    StaticArray<D3D12_ROOT_PARAMETER, NumRootParams> rootParams;
-    Memory::Clear(&rootParams[0], sizeof(rootParams[0]) * rootParams.Size());
-
-    // vertex shader samplers
-    rootParams[VSSamplers].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[VSSamplers].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[VSSamplers].DescriptorTable.pDescriptorRanges = &vsRanges[1];
-    rootParams[VSSamplers].DescriptorTable.NumDescriptorRanges = 1;
-
-    // pixel shader samplers
-    rootParams[PSSamplers].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[PSSamplers].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[PSSamplers].DescriptorTable.pDescriptorRanges = &psRanges[1];
-    rootParams[PSSamplers].DescriptorTable.NumDescriptorRanges = 1;
-
-    // vertex shader textures
-    rootParams[VSTextures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[VSTextures].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[VSTextures].DescriptorTable.pDescriptorRanges = &vsRanges[0];
-    rootParams[VSTextures].DescriptorTable.NumDescriptorRanges = 1;
-
-    // pixel shader textures
-    rootParams[PSTextures].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParams[PSTextures].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[PSTextures].DescriptorTable.pDescriptorRanges = &psRanges[0];
-    rootParams[PSTextures].DescriptorTable.NumDescriptorRanges = 1;
-
-    // vertex shader constant buffers
-    rootParams[VSConstantBuffer0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[VSConstantBuffer0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[VSConstantBuffer0].Constants.ShaderRegister = 0;
-    rootParams[VSConstantBuffer0].Constants.RegisterSpace = 0;
-   
-    rootParams[VSConstantBuffer1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[VSConstantBuffer1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParams[VSConstantBuffer1].Constants.ShaderRegister = 1;
-    rootParams[VSConstantBuffer1].Constants.RegisterSpace = 0;
-
-    // pixel shader constant buffers
-    rootParams[PSConstantBuffer0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[PSConstantBuffer0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[PSConstantBuffer0].Constants.ShaderRegister = 0;
-    rootParams[PSConstantBuffer0].Constants.RegisterSpace = 0;
-
-    rootParams[PSConstantBuffer1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParams[PSConstantBuffer1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParams[PSConstantBuffer1].Constants.ShaderRegister = 1;
-    rootParams[PSConstantBuffer1].Constants.RegisterSpace = 0;
+    // the root parameters
+    // FIXME: we should have 4 constant buffers per shader stage, but for testing's sake...
+    StaticArray<D3D12_ROOT_PARAMETER, NumRootParams> params;
+    d3d12Types::initRootParamAsCBV(&params[PSConstantBuffer0], D3D12_SHADER_VISIBILITY_PIXEL, 0, 0);
+    d3d12Types::initRootParamAsCBV(&params[PSConstantBuffer1], D3D12_SHADER_VISIBILITY_PIXEL, 1, 0);
+    d3d12Types::initRootParamAsCBV(&params[VSConstantBuffer0], D3D12_SHADER_VISIBILITY_VERTEX, 0, 0);
+    d3d12Types::initRootParamAsCBV(&params[VSConstantBuffer1], D3D12_SHADER_VISIBILITY_VERTEX, 1, 0);
+    d3d12Types::initRootParamAsTable(&params[PSTextures], D3D12_SHADER_VISIBILITY_PIXEL, &texRange, 1);
+    d3d12Types::initRootParamAsTable(&params[PSSamplers], D3D12_SHADER_VISIBILITY_PIXEL, &smpRange, 1);
+    d3d12Types::initRootParamAsTable(&params[VSTextures], D3D12_SHADER_VISIBILITY_VERTEX, &texRange, 1);
+    d3d12Types::initRootParamAsTable(&params[VSSamplers], D3D12_SHADER_VISIBILITY_VERTEX, &smpRange, 1);
 
     D3D12_ROOT_SIGNATURE_DESC rootDesc;
-    Memory::Clear(&rootDesc, sizeof(rootDesc));
-    rootDesc.NumParameters = rootParams.Size();
-    rootDesc.pParameters = &rootParams[0];
-    rootDesc.NumStaticSamplers = 0;
-    rootDesc.pStaticSamplers = nullptr;
-    rootDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    d3d12Types::initRootDesc(&rootDesc, &params[0], params.Size());
     ID3DBlob* sig = nullptr;
     ID3DBlob* error = nullptr;
     hr = D3D12SerializeRootSignature(&rootDesc, D3D_ROOT_SIGNATURE_VERSION_1, &sig, &error); 
@@ -481,8 +424,20 @@ d3d12Renderer::frameSync() {
 
     // prepare for next frame
     o_assert_dbg(this->d3d12RootSignature);
-    this->curCommandList()->SetGraphicsRootSignature(this->d3d12RootSignature);
-    this->curConstantBufferOffset = 0;
+    this->resetRootSignatureAndDescriptorHeaps();
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::resetRootSignatureAndDescriptorHeaps() {
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
+    cmdList->SetGraphicsRootSignature(this->d3d12RootSignature);
+    ID3D12DescriptorHeap* descHeaps[2];
+    descHeaps[0] = this->descAllocator.DescriptorHeap(this->frameResources[this->curFrameRotateIndex].srvHeap);
+    descHeaps[1] = this->samplerCache.DescriptorHeap();
+    cmdList->SetDescriptorHeaps(2, descHeaps);
+    this->curCBOffset = 0;
+    this->curSRVSlotIndex = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -641,6 +596,7 @@ d3d12Renderer::applyDrawState(drawState* ds) {
         return;
     }
     this->curDrawState = ds;
+    this->numApplyTextureBlock.Fill(0);
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     o_assert_dbg(ds->d3d12PipelineState);
@@ -704,16 +660,16 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     #endif
 
     // copy uniform data into global constant buffer
-    o_assert2((this->curConstantBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
+    o_assert2((this->curCBOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
     const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
-    uint8* dstPtr = frameRes.cbCpuPtr + this->curConstantBufferOffset;
+    uint8* dstPtr = frameRes.cbCpuPtr + this->curCBOffset;
     std::memcpy(dstPtr, ptr, byteSize);
 
     // get the GPU address of current constant buffer location and set
     // the constant buffer location directly in the root signature
     // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
     // PSConstantBuffer0 or PSConstantBuffer1
-    const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curConstantBufferOffset;
+    const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curCBOffset;
     static const int maxHighFreqCBs = 2;
     o_assert_dbg(bindSlot < maxHighFreqCBs);
     UINT rootParamIndex = ShaderStage::VS == bindStage ? VSConstantBuffer0 : PSConstantBuffer0;
@@ -721,13 +677,84 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     this->curCommandList()->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
 
     // advance constant buffer offset (must be multiple of 256)
-    this->curConstantBufferOffset = Memory::RoundUp(this->curConstantBufferOffset + byteSize, 256);
+    this->curCBOffset = Memory::RoundUp(this->curCBOffset + byteSize, 256);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
-    o_warn("FIXME!\n");
+    o_assert_dbg(numTextures < GfxConfig::MaxNumTexturesPerStage);
+    o_assert_dbg(0 == bindSlot);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+
+    // if any of the provided texture pointers are not valid, this means one of the
+    // textures isn't valid yet, in this case, disable rendering for the next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
+    }
+
+    // only one applyTextureBlock is allowed after an ApplyDrawState!
+    // FIXME: texture blocks to be applied should go into Gfx::ApplyDrawState() as
+    // optional parameters!
+    if (this->numApplyTextureBlock[bindStage]++ > 1) {
+        o_error("Only one ApplyTextureBlock is allowed per stage after ApplyDrawState!\n");
+    }
+
+    // check if the provided texture types are compatible
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // fill a new block of SRVs on the SRV heap
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;    
+    this->descAllocator.CPUHandle(cpuHandle, frameRes.srvHeap, this->curSRVSlotIndex);
+    const uint32 incrSize = this->descAllocator.DescriptorIncrementSize(frameRes.srvHeap);
+    for (int i = 0; i < numTextures; i++) {
+        const texture* tex = textures[i];
+        d3d12Types::initSRVDesc(&srvDesc, tex->textureAttrs);
+        this->d3d12Device->CreateShaderResourceView(tex->d3d12TextureRes, &srvDesc, cpuHandle);
+        cpuHandle.ptr += incrSize;
+    }
+
+    // update the root signature with the new SRV block
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
+    this->descAllocator.GPUHandle(gpuHandle, frameRes.srvHeap, this->curSRVSlotIndex);
+    const UINT texRootParamIndex = ShaderStage::VS == bindStage ? VSTextures : PSTextures;
+    this->curCommandList()->SetGraphicsRootDescriptorTable(texRootParamIndex, gpuHandle);
+
+    // bump shader-resource-view slot index to next slot
+    this->curSRVSlotIndex++;
+
+    // now a similar procedure for samplers, these are different because
+    // sampler heaps can only have 2048 entries, thus we need to reuse them
+    // through a static sampler cache
+    // FIXME: may be a similar approach makes sense for textures as well??
+    SamplerState samplers[GfxConfig::MaxNumTexturesPerStage];
+    for (int i = 0; i < numTextures; i++) {
+        samplers[i] = textures[i]->Setup.Sampler;
+    }
+    int smpHeapSlot = this->samplerCache.Lookup(samplers, numTextures);
+    this->samplerCache.GPUHandle(gpuHandle, smpHeapSlot);
+    const UINT smpRootParamIndex = ShaderStage::VS == bindStage ? VSSamplers : PSSamplers;
+    this->curCommandList()->SetGraphicsRootDescriptorTable(smpRootParamIndex, gpuHandle);
 }
 
 //------------------------------------------------------------------------------

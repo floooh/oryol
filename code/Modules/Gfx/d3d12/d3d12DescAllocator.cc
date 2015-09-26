@@ -138,6 +138,12 @@ d3d12DescAllocator::DescriptorIncrementSize(const Id& heapId) const {
 }
 
 //------------------------------------------------------------------------------
+ID3D12DescriptorHeap*
+d3d12DescAllocator::DescriptorHeap(const Id& heapId) const {
+    return this->heaps[heapId.SlotIndex].d3d12DescHeap;
+}
+
+//------------------------------------------------------------------------------
 int
 d3d12DescAllocator::AllocSlot(const Id& heapId) {
     return this->heaps[heapId.SlotIndex].freeSlots.Dequeue();
