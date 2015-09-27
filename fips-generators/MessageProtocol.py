@@ -175,7 +175,7 @@ def getArrayType(attrType) :
     Get the element type of an array type.
     '''
     # strip the 'Array<' at the left, and the '>' at the right
-    return attrType[12:-1]
+    return attrType[6:-1]
 
 #-------------------------------------------------------------------------------
 def writeMessageClasses(f, desc) :
