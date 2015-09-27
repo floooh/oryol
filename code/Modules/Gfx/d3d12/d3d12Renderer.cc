@@ -800,13 +800,44 @@ d3d12Renderer::draw(int32 primGroupIndex) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
-    o_warn("d3d12Renderer::drawInstanced()\n");
+    o_assert2_dbg(this->rtValid, "No render target set!\n");
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    if (indexType != IndexType::None) {
+        this->curCommandList()->DrawIndexedInstanced(
+            primGroup.NumElements,  // IndexCountPerInstance
+            numInstances,           // InstanceCount
+            primGroup.BaseElement,  // StartIndexLocation
+            0,                      // BaseVertexLocation
+            0);                     // StartInstanceLocation
+    }
+    else {
+        this->curCommandList()->DrawInstanced(
+            primGroup.NumElements,  // VertexCountPerInstance
+            numInstances,           // InstanceCount
+            primGroup.BaseElement,  // StartVertexLocation
+            0);                     // StartInstanceLocation
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
-    o_warn("d3d12Renderer::drawInstanced()\n");
+    o_assert_dbg(this->valid);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+    o_assert_dbg(this->curDrawState->meshes[0]);
+    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+        // this may happen if trying to render a placeholder which doesn't
+        // have as many materials as the original mesh, anyway, this isn't
+        // a serious error
+        return;
+    }
+    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
