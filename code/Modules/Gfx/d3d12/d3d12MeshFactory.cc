@@ -78,12 +78,7 @@ d3d12MeshFactory::DestroyResource(mesh& msh) {
     this->pointers.renderer->invalidateMeshState();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
     for (auto& buf : msh.buffers) {
-        for (ID3D12Resource* d3d12Res : buf.d3d12DefaultBuffers) {
-            if (d3d12Res) {
-                resAllocator.ReleaseDeferred(frameIndex, d3d12Res);
-            }
-        }
-        for (ID3D12Resource* d3d12Res : buf.d3d12UploadBuffers) {
+        for (ID3D12Resource* d3d12Res : buf.d3d12Buffers) {
             if (d3d12Res) {
                 resAllocator.ReleaseDeferred(frameIndex, d3d12Res);
             }
@@ -126,8 +121,7 @@ d3d12MeshFactory::setupPrimGroups(mesh& msh) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
-    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
-    o_assert_dbg(nullptr == msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12Buffers[0]);
     o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
     o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
     o_assert_dbg(nullptr != data);
@@ -158,8 +152,8 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     const uint8* vertices = ptr + msh.Setup.DataVertexOffset;
     const int32 vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
     o_assert_dbg((ptr + size) >= (vertices + vbSize));
-    msh.buffers[mesh::vb].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, vbSize);
-    o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
+    msh.buffers[mesh::vb].d3d12Buffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, vbSize);
+    o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12Buffers[0]);
 
     // create optional index buffer
     if (ibAttrs.Type != IndexType::None) {
@@ -169,8 +163,8 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
         const uint8* indices = ptr + msh.Setup.DataIndexOffset;
         const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         o_assert_dbg((ptr + size) >= (indices + ibSize));
-        msh.buffers[mesh::ib].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, ibSize);
-        o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+        msh.buffers[mesh::ib].d3d12Buffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, ibSize);
+        o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12Buffers[0]);
     }
     return ResourceState::Valid;
 }
@@ -178,8 +172,8 @@ d3d12MeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
-    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
-    o_assert_dbg(nullptr == msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12Buffers[0]);
+    o_assert_dbg(nullptr == msh.buffers[mesh::ib].d3d12Buffers[0]);
     o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
     o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
 
@@ -226,11 +220,11 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
-    msh.buffers[mesh::vb].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, sizeof(vertices));
-    o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12DefaultBuffers[0]);
+    msh.buffers[mesh::vb].d3d12Buffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, vertices, sizeof(vertices));
+    o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12Buffers[0]);
 
-    msh.buffers[mesh::ib].d3d12DefaultBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, sizeof(indices));
-    o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12DefaultBuffers[0]);
+    msh.buffers[mesh::ib].d3d12Buffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, indices, sizeof(indices));
+    o_assert_dbg(nullptr != msh.buffers[mesh::ib].d3d12Buffers[0]);
 
     return ResourceState::Valid;
 }
@@ -238,8 +232,39 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d12MeshFactory::createEmptyMesh(mesh& msh) {
-    o_error("FIXME!");
-    return ResourceState::Failed;
+    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12Buffers[0]);
+    o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12Buffers[1]);
+    o_assert_dbg(msh.Setup.NumVertices > 0);
+
+    this->setupAttrs(msh);
+    this->setupPrimGroups(msh);
+    const auto& vbAttrs = msh.vertexBufferAttrs;
+    const auto& ibAttrs = msh.indexBufferAttrs;
+    o_assert_dbg(Usage::Stream == vbAttrs.BufferUsage); // NOTE: for now, only allow streaming scenario
+    o_assert_dbg(IndexType::None != ibAttrs.Type ? Usage::Stream == ibAttrs.BufferUsage : true);
+
+    ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
+    o_assert_dbg(d3d12Device);
+    d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
+
+    // create 2 upload vertex buffers (the data will be written by CPU once per frame, and
+    // read by GPU once per frame, so there will be no uploading into a default buffer,
+    // instead the GPU will read directly from the upload buffer
+    const uint32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+    msh.buffers[mesh::vb].numSlots = 2;
+    for (int slotIndex = 0; slotIndex < msh.buffers[mesh::vb].numSlots; slotIndex++) {
+        msh.buffers[mesh::vb].d3d12Buffers[slotIndex] = resAllocator.AllocUploadBuffer(d3d12Device, vbSize);
+    }
+
+    if (IndexType::None != ibAttrs.Type) {
+        msh.buffers[mesh::ib].numSlots = 2;
+        const uint32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        for (int slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {
+            msh.buffers[mesh::ib].d3d12Buffers[slotIndex] = resAllocator.AllocUploadBuffer(d3d12Device, ibSize);
+        }
+    }
+
+    return ResourceState::Valid;
 }
 
 } // namespace _priv

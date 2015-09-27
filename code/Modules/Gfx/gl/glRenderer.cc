@@ -571,7 +571,7 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
     o_assert2(buf.updateFrameIndex != frameIndex, "Only one data update allowed per buffer and frame!\n");
     buf.updateFrameIndex = frameIndex;
 
-    // if usage is streaming, rotate slot index to next dynamic vertex buffer
+    // rotate slot index to next dynamic vertex buffer
     // to implement double/multi-buffering because the previous buffer
     // might still be in-flight on the GPU
     o_assert_dbg(buf.numSlots > 1);

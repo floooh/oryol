@@ -28,14 +28,12 @@ public:
             updateFrameIndex(InvalidIndex),
             numSlots(1),
             activeSlot(0) {
-            d3d12DefaultBuffers.Fill(nullptr);
-            d3d12UploadBuffers.Fill(nullptr);
+            d3d12Buffers.Fill(nullptr);
         }
-        int32 updateFrameIndex;
+        uint64 updateFrameIndex;
         uint8 numSlots;
         uint8 activeSlot;
-        StaticArray<ID3D12Resource*,NumSlots> d3d12DefaultBuffers;
-        StaticArray<ID3D12Resource*,NumSlots> d3d12UploadBuffers;
+        StaticArray<ID3D12Resource*,NumSlots> d3d12Buffers;
     };
     static const int vb = 0;
     static const int ib = 1;

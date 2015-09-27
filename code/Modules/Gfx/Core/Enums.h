@@ -460,6 +460,11 @@ public:
     @class Oryol::Usage
     @ingroup Gfx
     @brief graphics resource usage types
+
+    FIXME: need to clean these up: 
+        - Immutable:    required initialization data
+        - Dynamic:      need better name, only updated once or infrequently
+        - Stream:       changed every frame
 */
 class Usage {
 public:

@@ -20,8 +20,7 @@ d3d12Mesh::~d3d12Mesh() {
     #if ORYOL_DEBUG
     for (const auto& buf : this->buffers) {
         for (int i = 0; i < NumSlots; i++) {
-            o_assert_dbg(nullptr == buf.d3d12DefaultBuffers[i]);
-            o_assert_dbg(nullptr == buf.d3d12UploadBuffers[i]);
+            o_assert_dbg(nullptr == buf.d3d12Buffers[i]);
         }
     }
     #endif

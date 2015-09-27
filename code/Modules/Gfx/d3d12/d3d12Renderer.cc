@@ -463,9 +463,7 @@ d3d12Renderer::queryFeature(GfxFeature::Code feat) const {
 //------------------------------------------------------------------------------
 const DisplayAttrs&
 d3d12Renderer::renderTargetAttrs() const {
-    o_warn("d3d12Renderer::renderTargetAttrs()\n");
-    static DisplayAttrs dummyAttrs;
-    return dummyAttrs;
+    return this->rtAttrs;
 }
 
 //------------------------------------------------------------------------------
@@ -616,14 +614,14 @@ d3d12Renderer::applyDrawState(drawState* ds) {
         const mesh* msh = ds->meshes[i];
         if (msh) {
             const mesh::buffer& vb = msh->buffers[mesh::vb];
-            o_assert_dbg(vb.d3d12DefaultBuffers[vb.activeSlot]);
-            vbViews[i].BufferLocation = vb.d3d12DefaultBuffers[vb.activeSlot]->GetGPUVirtualAddress();
+            o_assert_dbg(vb.d3d12Buffers[vb.activeSlot]);
+            vbViews[i].BufferLocation = vb.d3d12Buffers[vb.activeSlot]->GetGPUVirtualAddress();
             vbViews[i].SizeInBytes = msh->vertexBufferAttrs.ByteSize();
             vbViews[i].StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
             if ((0 == i) && (IndexType::None != msh->indexBufferAttrs.Type)) {
                 const mesh::buffer& ib = msh->buffers[mesh::ib];
-                o_assert_dbg(ib.d3d12DefaultBuffers[ib.activeSlot]);
-                ibView.BufferLocation = ib.d3d12DefaultBuffers[ib.activeSlot]->GetGPUVirtualAddress();
+                o_assert_dbg(ib.d3d12Buffers[ib.activeSlot]);
+                ibView.BufferLocation = ib.d3d12Buffers[ib.activeSlot]->GetGPUVirtualAddress();
                 ibView.SizeInBytes = msh->indexBufferAttrs.ByteSize();
                 ibView.Format = d3d12Types::asIndexType(msh->indexBufferAttrs.Type);
                 ibViewPtr = &ibView;
@@ -670,10 +668,9 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
     // PSConstantBuffer0 or PSConstantBuffer1
     const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curCBOffset;
-    static const int maxHighFreqCBs = 2;
-    o_assert_dbg(bindSlot < maxHighFreqCBs);
+    o_assert_dbg(bindSlot < 2);
     UINT rootParamIndex = ShaderStage::VS == bindStage ? VSConstantBuffer0 : PSConstantBuffer0;
-    rootParamIndex += bindSlot * maxHighFreqCBs;
+    rootParamIndex += bindSlot;
     this->curCommandList()->SetGraphicsRootConstantBufferView(rootParamIndex, cbGpuPtr);
 
     // advance constant buffer offset (must be multiple of 256)
@@ -813,15 +810,71 @@ d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 }
 
 //------------------------------------------------------------------------------
+static ID3D12Resource*
+obtainUpdateBuffer(mesh::buffer& buf, uint64 frameIndex) {
+    // helper function to get the right GL buffer for a vertex-
+    // or index-buffer update, this is implemented with
+    // double-buffer to prevent a sync-stall with the GPU
+
+    // restrict buffer updates to once per frame per mesh
+    o_assert2(buf.updateFrameIndex != frameIndex, "Only one data update allowed per buffer and frame!\n");
+    buf.updateFrameIndex = frameIndex;
+
+    o_assert_dbg(buf.numSlots > 1);
+    if (++buf.activeSlot >= buf.numSlots) {
+        buf.activeSlot = 0;
+    }
+    return buf.d3d12Buffers[buf.activeSlot];
+}
+
+//------------------------------------------------------------------------------
 void
 d3d12Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
-    o_warn("d3d12Renderer::updateVertices()\n");
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+    
+    // NOTE: in the streaming scenario, the data is written once per frame by
+    // the CPU, and read once per frame from the GPU, thus there are no
+    // separate upload- and default-buffers, instead there are two
+    // double-buffered CPU- and GPU-accessible upload heap buffers 
+
+    // get the next rotated buffer
+    auto& vb = msh->buffers[mesh::vb];
+    ID3D12Resource* d3d12Buffer = obtainUpdateBuffer(vb, this->frameIndex);
+    o_assert_dbg(d3d12Buffer);
+
+    // copy data into the d3d12 buffer
+    void* dstPtr = nullptr;
+    HRESULT hr = d3d12Buffer->Map(0, nullptr, &dstPtr);
+    o_assert(SUCCEEDED(hr));
+    Memory::Copy(data, dstPtr, numBytes);
+    d3d12Buffer->Unmap(0, nullptr);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
-    o_warn("d3d12Renderer::updateIndices()\n");
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != msh);
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(IndexType::None != msh->indexBufferAttrs.Type);
+    o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
+    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+
+    // see updateVertex() for details!
+    auto& ib = msh->buffers[mesh::ib];
+    ID3D12Resource* d3d12Buffer = obtainUpdateBuffer(ib, this->frameIndex);
+    o_assert_dbg(d3d12Buffer);
+
+    // copy data into the d3d12 buffer
+    void* dstPtr = nullptr;
+    HRESULT hr = d3d12Buffer->Map(0, nullptr, &dstPtr);
+    o_assert(SUCCEEDED(hr));
+    Memory::Copy(data, dstPtr, numBytes);
+    d3d12Buffer->Unmap(0, nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -851,7 +904,7 @@ d3d12Renderer::invalidateDrawState() {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::invalidateTextureState() {
-    o_warn("d3d12Renderer::invalidateTextureState()\n");
+    // o_warn("d3d12Renderer::invalidateTextureState()\n");
 }
 
 } // namespace _priv
