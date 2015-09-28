@@ -12,6 +12,8 @@ namespace _priv {
 d3d12Texture::d3d12Texture() :
 d3d12TextureRes(nullptr),
 d3d12DepthBufferRes(nullptr),
+d3d12TextureState(D3D12_RESOURCE_STATE_COMMON),
+d3d12DepthBufferState(D3D12_RESOURCE_STATE_COMMON),
 rtvDescriptorSlot(InvalidIndex),
 dsvDescriptorSlot(InvalidIndex) {
     // empty
@@ -31,6 +33,8 @@ d3d12Texture::Clear() {
     textureBase::Clear();
     this->d3d12TextureRes = nullptr;
     this->d3d12DepthBufferRes = nullptr;
+    this->d3d12TextureState = D3D12_RESOURCE_STATE_COMMON;
+    this->d3d12DepthBufferState = D3D12_RESOURCE_STATE_COMMON;
     this->rtvDescriptorSlot = InvalidIndex;
     this->dsvDescriptorSlot = InvalidIndex;
 }

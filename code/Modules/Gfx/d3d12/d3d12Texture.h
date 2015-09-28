@@ -30,6 +30,10 @@ public:
     ID3D12Resource* d3d12TextureRes;
     /// optional depth-buffer resource object
     ID3D12Resource* d3d12DepthBufferRes;
+    /// need to keep track of texture resource state
+    D3D12_RESOURCE_STATES d3d12TextureState;
+    /// need to keep track of depth-buffer resource state
+    D3D12_RESOURCE_STATES d3d12DepthBufferState;
     /// optional render-target-view descriptor-heap slot-index
     int rtvDescriptorSlot;
     /// optional depth-stencil-view descriptor-heap slot-index

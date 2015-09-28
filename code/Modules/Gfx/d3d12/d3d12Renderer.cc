@@ -514,11 +514,16 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         }
     }
     else {
-        o_warn("FIXME: d3d12Renderer apply offscreen render target!\n");
-        // FIXME: the render target could have been a pixel-shader or
-        // vertex-shader-texture, d3d12Texture objects must track their current
-        // states (hmm does that mean a texture cannot be used as a vertex shader
-        // texture and a pixel shader texture at the same time?
+        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
+        colorBuffer = rt->d3d12TextureRes;
+        colorStateBefore = rt->d3d12TextureState;
+        rt->d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        this->descAllocator.CPUHandle(rtvCPUHandle, this->rtvHeap, rt->rtvDescriptorSlot);
+        rtvCPUHandlePtr = &rtvCPUHandle;
+        if (this->depthStencilSurface) {
+            this->descAllocator.CPUHandle(dsvCPUHandle, this->dsvHeap, rt->dsvDescriptorSlot);
+            dsvCPUHandlePtr = &dsvCPUHandle;
+        }
     }
     o_assert_dbg(colorBuffer && (colorStateBefore != 0xFFFFFFFF));
 
@@ -718,6 +723,27 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     }
     #endif
 
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
+
+    // perform any necessary state transitions
+    // FIXME: it might happen that the same resource is used as pixel-shader-texture
+    // and vertex-shader-texture in the same shader, but according to the
+    // state transition system this would be illegal?
+    D3D12_RESOURCE_STATES requiredState;
+    if (ShaderStage::FS == bindStage) {
+        requiredState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    }
+    else {
+        requiredState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+    }
+    for (int i = 0; i < numTextures; i++) {
+        texture* tex = textures[i];
+        if (tex->d3d12TextureState != requiredState) {
+            this->resAllocator.Transition(cmdList, tex->d3d12TextureRes, tex->d3d12TextureState, requiredState);
+            tex->d3d12TextureState = requiredState;
+        }
+    }
+
     // fill a new block of SRVs on the SRV heap
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
     const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
@@ -735,7 +761,7 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
     this->descAllocator.GPUHandle(gpuHandle, frameRes.srvHeap, this->curSRVSlotIndex);
     const UINT texRootParamIndex = ShaderStage::VS == bindStage ? VSTextures : PSTextures;
-    this->curCommandList()->SetGraphicsRootDescriptorTable(texRootParamIndex, gpuHandle);
+    cmdList->SetGraphicsRootDescriptorTable(texRootParamIndex, gpuHandle);
 
     // bump shader-resource-view slot index to next slot
     this->curSRVSlotIndex++;
@@ -751,7 +777,7 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     int smpHeapSlot = this->samplerCache.Lookup(samplers, numTextures);
     this->samplerCache.GPUHandle(gpuHandle, smpHeapSlot);
     const UINT smpRootParamIndex = ShaderStage::VS == bindStage ? VSSamplers : PSSamplers;
-    this->curCommandList()->SetGraphicsRootDescriptorTable(smpRootParamIndex, gpuHandle);
+    cmdList->SetGraphicsRootDescriptorTable(smpRootParamIndex, gpuHandle);
 }
 
 //------------------------------------------------------------------------------
