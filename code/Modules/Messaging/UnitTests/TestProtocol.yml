@@ -8,6 +8,7 @@ headers:
     - 'Core/Containers/Array.h'
 messages:
     - name: TestMsg1
+      serialize: true
       attrs:
         - { name: Int8Val, type: int8 }
         - { name: Int16Val, type: int16, default: '-1' }
@@ -21,10 +22,12 @@ messages:
         - { name: Float64Val, type: float64, default: '12.0' }
     - name: TestMsg2
       parent: TestMsg1
+      serialize: true
       attrs:
         - { name: StringVal, type: 'String', default: '"Test"' }
         - { name: StringAtomVal, type: 'StringAtom' }
     - name: TestArrayMsg
+      serialize: true
       attrs:
         - { name: Int32ArrayVal, type: Array<int32> }
         - { name: StringArrayVal, type: Array<String> }
