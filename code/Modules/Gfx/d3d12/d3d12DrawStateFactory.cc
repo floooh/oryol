@@ -166,7 +166,9 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     psoDesc.PrimitiveTopologyType = ds.meshes[0]->d3d12PrimTopologyType;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = d3d12Types::asRenderTargetFormat(bs.ColorFormat);
-    psoDesc.DSVFormat = d3d12Types::asRenderTargetFormat(bs.DepthFormat);
+    if (bs.DepthFormat != PixelFormat::InvalidPixelFormat) {
+        psoDesc.DSVFormat = d3d12Types::asRenderTargetFormat(bs.DepthFormat);
+    }
     psoDesc.SampleDesc.Count = rs.SampleCount;
     o_warn("d3d12DrawStateFactory::SetupResource() what about the SampleDesc.Quality???\n");
     psoDesc.SampleDesc.Quality = 0;

@@ -520,7 +520,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         rt->d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
         this->descAllocator.CPUHandle(rtvCPUHandle, this->rtvHeap, rt->rtvDescriptorSlot);
         rtvCPUHandlePtr = &rtvCPUHandle;
-        if (this->depthStencilSurface) {
+        if (rt->d3d12DepthBufferRes) {
             this->descAllocator.CPUHandle(dsvCPUHandle, this->dsvHeap, rt->dsvDescriptorSlot);
             dsvCPUHandlePtr = &dsvCPUHandle;
         }
