@@ -29,7 +29,10 @@ msaaSurface(nullptr),
 depthStencilSurface(nullptr),
 curBackBufferIndex(0),
 curCBOffset(0),
-curSRVSlotIndex(0) {
+curSRVSlotIndex(0),
+resizeFlag(false),
+resizeWidth(0),
+resizeHeight(0) {
     this->backbufferSurfaces.Fill(nullptr);
     this->rtvDescriptorSlots.Fill(InvalidIndex);
     this->dsvDescriptorSlot = InvalidIndex;
@@ -58,6 +61,10 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->descAllocator.Setup(setup, ptrs);
     this->samplerCache.Setup(ptrs);
+
+    // create a descriptor heap for render-target-views and depth-stencil-views
+    this->rtvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::RenderTargetView, d3d12Config::MaxNumRenderTargets, 1, true);
+    this->dsvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::DepthStencilView, d3d12Config::MaxNumRenderTargets, 1, true);
 
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
@@ -209,6 +216,8 @@ d3d12Renderer::destroyFrameSyncObjects() {
 void
 d3d12Renderer::createDefaultRenderTargets(int width, int height) {
 
+    // NOTE: this method is called at startup and whenever the window is resized
+
     // Here, 2 render-target-views, and optionally one 1 depth-stencil-view
     // are created for rendering into the default render target.
     // For the non-MSAA case, the 2 RSVs are associated with the DXGI
@@ -234,10 +243,6 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     if (isMSAA) {
         this->msaaSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, colorFormat, smpCount);
     }
-
-    // create a descriptor heap for render-target-views and depth-stencil-views
-    this->rtvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::RenderTargetView, d3d12Config::MaxNumRenderTargets, 1, true);
-    this->dsvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::DepthStencilView, d3d12Config::MaxNumRenderTargets, 1, true);
 
     // create NumFrames render-target-views
     for (int i = 0; i < d3d12Config::NumFrames; i++) {
@@ -274,6 +279,20 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::destroyDefaultRenderTargets() {
+
+    // NOTE: this method is called at shutdown, and
+    // whenever the window resizes, we are allowed to destroy resources
+    // immediately, since the GPU is definitely finished
+    for (int i = 0; i < d3d12Config::NumFrames; i++) {
+        if (InvalidIndex != this->rtvDescriptorSlots[i]) {
+            this->descAllocator.ReleaseSlotImmediate(this->rtvHeap, this->rtvDescriptorSlots[i]);
+            this->rtvDescriptorSlots[i] = InvalidIndex;
+        }
+    }
+    if (InvalidIndex != this->dsvDescriptorSlot) {
+        this->descAllocator.ReleaseSlotImmediate(this->dsvHeap, this->dsvDescriptorSlot);
+        this->dsvDescriptorSlot = InvalidIndex;
+    }
 
     if (this->msaaSurface) {
         this->msaaSurface->Release();
@@ -382,6 +401,7 @@ d3d12Renderer::commitFrame() {
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::frameSync() {
+
     // NOTE: this method is called from displayMgr::Present(), and after d3d12Renderer::commitFrame()!
     o_assert_dbg(this->d3d12Fence);
     o_assert_dbg(this->fenceEvent);
@@ -398,6 +418,25 @@ d3d12Renderer::frameSync() {
         hr = this->d3d12Fence->SetEventOnCompletion(waitFenceValue, this->fenceEvent);
         o_assert(SUCCEEDED(hr));
         ::WaitForSingleObject(this->fenceEvent, INFINITE);
+    }
+
+    // need to resize?
+    if (this->resizeFlag) {
+        this->resizeFlag = false;
+
+        // wait for the GPU do be completely done
+        if (this->d3d12Fence->GetCompletedValue() < newFenceValue) {
+            hr = this->d3d12Fence->SetEventOnCompletion(newFenceValue, this->fenceEvent);
+            o_assert(SUCCEEDED(hr));
+            ::WaitForSingleObject(this->fenceEvent, INFINITE);
+        }
+
+        // all resource should now be longer in use, perform the resize
+        this->doResize(this->resizeWidth, this->resizeHeight);
+
+        // set the completion signal again for the next frame
+        hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, newFenceValue);
+        o_assert(SUCCEEDED(hr));
     }
 
     // deferred-release resources
@@ -962,6 +1001,27 @@ d3d12Renderer::invalidateDrawState() {
 void
 d3d12Renderer::invalidateTextureState() {
     // o_warn("d3d12Renderer::invalidateTextureState()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::resizeAtNextFrame(int newWidth, int newHeight) {
+    this->resizeFlag = true;
+    this->resizeWidth = newWidth;
+    this->resizeHeight = newHeight;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Renderer::doResize(int newWidth, int newHeight) {
+
+    o_dbg("> resizing to w=%d h=%d\n", newWidth, newHeight);
+
+    this->destroyDefaultRenderTargets();
+    DXGI_FORMAT d3d12Fmt = d3d12Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+    HRESULT hr = this->pointers.displayMgr->dxgiSwapChain->ResizeBuffers(d3d12Config::NumFrames, newWidth, newHeight, d3d12Fmt, 0);
+    o_assert(SUCCEEDED(hr));
+    this->createDefaultRenderTargets(newWidth, newHeight);
 }
 
 } // namespace _priv

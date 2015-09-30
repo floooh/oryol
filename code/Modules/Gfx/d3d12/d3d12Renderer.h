@@ -116,15 +116,19 @@ public:
     /// the global depth-stencil-view descriptor heap
     Id dsvHeap;
 
+    /// create the default render-targets
+    void createDefaultRenderTargets(int width, int height);
+    /// destroy the default render-targets
+    void destroyDefaultRenderTargets();
+
+    /// called by display mgr when a window resize happens, sets flag to resize framebuf at next possible time
+    void resizeAtNextFrame(int newWidth, int newHeight);
+
 private:
     /// create the frame synchronization objects
     void createFrameSyncObjects();
     /// destory frame sync objects
     void destroyFrameSyncObjects();
-    /// create the default render-targets
-    void createDefaultRenderTargets(int width, int height);
-    /// destroy the default render-targets
-    void destroyDefaultRenderTargets();
     /// create the root signature object
     void createRootSignature();
     /// destroy the root signature object
@@ -137,6 +141,8 @@ private:
     void rtTransition(ID3D12Resource* rt, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
     /// (re-)set the root signature and descriptor heaps on the current command list
     void resetRootSignatureAndDescriptorHeaps();
+    /// perform actual framebuffer resize (called from frameSync())
+    void doResize(int32 resizeWidth, int32 resizeHeight);
 
     bool valid;
     GfxSetup gfxSetup;
@@ -189,6 +195,10 @@ private:
     StaticArray<frameResources, d3d12Config::NumFrames> frameResources;
     int32 curCBOffset;
     int32 curSRVSlotIndex;
+
+    bool resizeFlag;
+    int32 resizeWidth;
+    int32 resizeHeight;
 };
 
 } // namespace _priv

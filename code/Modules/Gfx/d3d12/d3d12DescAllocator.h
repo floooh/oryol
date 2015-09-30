@@ -49,6 +49,8 @@ public:
     int AllocSlot(const Id& heapId);
     /// deferred-release a slot-index from heap
     void ReleaseSlotDeferred(const Id& heapId, uint64 frameIndex, int slotIndex);
+    /// release a slot-index immediately (careful that it isn't in use by GPU!)
+    void ReleaseSlotImmediate(const Id& heapId, int slotIndex);
 
     /// get CPU handle into a descriptor heap
     void CPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE& out, const Id& heapId, int slotIndex) const;

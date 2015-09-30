@@ -45,8 +45,7 @@ d3d12ResAllocator::GarbageCollect(uint64 frameIndex) {
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue(item);
             o_assert_dbg(item.res);
-            ULONG count = item.res->Release();
-            o_assert_dbg(0 == count);
+            item.res->Release();
             o_dbg("> released d3d12 resource %p at frame %d\n", item.res, frameIndex);
         }
     }

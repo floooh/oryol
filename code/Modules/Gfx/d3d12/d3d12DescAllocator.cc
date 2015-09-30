@@ -157,6 +157,12 @@ d3d12DescAllocator::ReleaseSlotDeferred(const Id& heapId, uint64 frameIndex, int
 
 //------------------------------------------------------------------------------
 void
+d3d12DescAllocator::ReleaseSlotImmediate(const Id& heapId, int slotIndex) {
+    this->heaps[heapId.SlotIndex].freeSlots.Enqueue(slotIndex);
+}
+
+//------------------------------------------------------------------------------
+void
 d3d12DescAllocator::GarbageCollect(uint64 frameIndex) {
 
     const uint64 safeNumFrames = d3d12Config::NumFrames + 1;

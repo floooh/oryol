@@ -62,12 +62,6 @@ d3d12DisplayMgr::Present() {
 
 //------------------------------------------------------------------------------
 void
-d3d12DisplayMgr::onWindowDidResize() {
-    o_warn("d3d12DisplayMgr::onWindowDidResize()\n");
-}
-
-//------------------------------------------------------------------------------
-void
 d3d12DisplayMgr::createDXGIFactory() {
     o_assert_dbg(nullptr == this->dxgiFactory);
 
@@ -164,6 +158,16 @@ d3d12DisplayMgr::enableDebugLayer() {
         debugController->EnableDebugLayer();
     }
     #endif
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12DisplayMgr::onWindowDidResize() {
+    if (this->dxgiSwapChain) {        
+        const int newWidth = this->displayAttrs.FramebufferWidth;
+        const int newHeight = this->displayAttrs.FramebufferHeight;
+        this->pointers.renderer->resizeAtNextFrame(newWidth, newHeight);
+    }
 }
 
 } // namespace _priv
