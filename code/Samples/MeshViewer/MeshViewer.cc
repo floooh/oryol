@@ -40,7 +40,7 @@ private:
     glm::mat4 proj;
     glm::mat4 model;
     glm::mat4 modelViewProj;
-    ClearState clearState;
+    ClearState clearState = ClearState::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
     int32 curMeshIndex = 0;
     static const int32 numMeshes = 3;
@@ -118,7 +118,9 @@ MeshViewerApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering and input system
-    Gfx::Setup(GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Viewer"));
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Viewer");
+    gfxSetup.ClearHint = this->clearState;
+    Gfx::Setup(gfxSetup);
     Input::Setup();
 
     // setup IMUI ui system
@@ -155,7 +157,6 @@ MeshViewerApp::OnInit() {
     this->cameraSettings[2].dist = 0.8f;
     this->cameraSettings[2].height = 0.0f;
 
-    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     return App::OnInit();
 }
 

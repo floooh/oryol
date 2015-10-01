@@ -26,7 +26,7 @@ private:
     glm::mat4 view;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSParams fsParams;
-    ClearState clearState;
+    ClearState clearState = ClearState::ClearAll(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 };
 OryolMain(PBRenderingApp);
 
@@ -55,7 +55,9 @@ PBRenderingApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 PBRenderingApp::OnInit() {
-    Gfx::Setup(GfxSetup::WindowMSAA4(1024, 600, "Oryol PBR Sample"));
+    auto gfxSetup = GfxSetup::WindowMSAA4(1024, 600, "Oryol PBR Sample");
+    gfxSetup.ClearHint = this->clearState;
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
     
     // create resources
@@ -73,7 +75,6 @@ PBRenderingApp::OnInit() {
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = 4;
     this->drawState = Gfx::CreateResource(dss);
-    this->clearState.Color = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
     
     // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

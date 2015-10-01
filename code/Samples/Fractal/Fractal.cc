@@ -375,6 +375,7 @@ FractalApp::checkCreateRenderTargets() {
         offscreenRTSetup.DepthFormat = PixelFormat::None;
         offscreenRTSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
         offscreenRTSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+        offscreenRTSetup.ClearHint = this->fractalClearState;
         this->offscreenRenderTarget[0] = Gfx::CreateResource(offscreenRTSetup);
         this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
         this->clearFlag = true;

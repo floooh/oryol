@@ -234,14 +234,19 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     o_assert_dbg(this->pointers.displayMgr->dxgiSwapChain);
     HRESULT hr;
     const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-    const int smpCount = dispAttrs.SampleCount;
-    const bool isMSAA = smpCount > 1;
-    const PixelFormat::Code colorFormat = dispAttrs.ColorPixelFormat;
+    const int sampleCount = dispAttrs.SampleCount;
+    const bool isMSAA = sampleCount > 1;
 
     // if MSAA is on, create a separate multisample-rendertarget as backbuffer,
     // this will be resolved into the swapchain buffer when needed
     if (isMSAA) {
-        this->msaaSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, colorFormat, smpCount);
+        this->msaaSurface = this->resAllocator.AllocRenderTarget(
+            this->d3d12Device, 
+            width, 
+            height, 
+            dispAttrs.ColorPixelFormat,
+            this->gfxSetup.ClearHint,
+            sampleCount);
     }
 
     // create NumFrames render-target-views
@@ -268,7 +273,13 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
     // create a single depth-stencil buffer if requested
     const PixelFormat::Code depthFormat = dispAttrs.DepthPixelFormat;
     if (PixelFormat::None != depthFormat) {
-        this->depthStencilSurface = this->resAllocator.AllocRenderTarget(this->d3d12Device, width, height, depthFormat, smpCount);
+        this->depthStencilSurface = this->resAllocator.AllocRenderTarget(
+            this->d3d12Device, 
+            width, 
+            height, 
+            depthFormat, 
+            ClearState::ClearDepthStencil(),
+            sampleCount);
         this->dsvDescriptorSlot = this->descAllocator.AllocSlot(this->dsvHeap);
         D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
         this->descAllocator.CPUHandle(dsvHandle, this->dsvHeap, this->dsvDescriptorSlot);

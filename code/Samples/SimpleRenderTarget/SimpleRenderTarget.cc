@@ -31,8 +31,8 @@ private:
     Shaders::RenderTarget::VSParams offscreenParams;
     Shaders::Main::VSParams displayVSParams;
     Shaders::Main::FSTextures displayFSTextures;
-    ClearState offscreenClearState;
-    ClearState displayClearState;
+    ClearState offscreenClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    ClearState displayClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -69,7 +69,9 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample"));
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
+    gfxSetup.ClearHint = this->displayClearState;
+    Gfx::Setup(gfxSetup);
 
     // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
@@ -80,6 +82,7 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.ClearHint = this->offscreenClearState;
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // create a donut (this will be rendered into the offscreen render target)
@@ -126,10 +129,6 @@ SimpleRenderTargetApp::OnInit() {
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
 
-    // setup clear states
-    this->offscreenClearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
-    this->displayClearState.Color = glm::vec4(0.25f, 0.45f, 0.65f, 1.0f);
-    
     return App::OnInit();
 }
 

@@ -414,24 +414,24 @@ d3d12Types::initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Types::initColorClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float r, float g, float b, float a) {
+d3d12Types::initClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, const ClearState& clearState) {
     o_assert_dbg(out);
+    o_assert_dbg(clearState.Actions != ClearState::None);
     Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
     out->Format = d3d12Types::asRenderTargetFormat(fmt);
-    out->Color[0] = r; 
-    out->Color[1] = g; 
-    out->Color[2] = b;
-    out->Color[3] = a;
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Types::initDepthStencilClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float d, uint8 s) {
-    o_assert_dbg(out);
-    Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
-    out->Format = d3d12Types::asRenderTargetFormat(fmt);
-    out->DepthStencil.Depth = d;
-    out->DepthStencil.Stencil = s;
+    if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
+        out->Color[0] = clearState.Color.x;
+        out->Color[1] = clearState.Color.y;
+        out->Color[2] = clearState.Color.z;
+        out->Color[3] = clearState.Color.w;
+    }
+    else if (PixelFormat::IsValidRenderTargetDepthFormat(fmt)) {
+        out->DepthStencil.Depth = clearState.Depth;
+        out->DepthStencil.Stencil = clearState.Stencil;
+    }
+    else {
+        o_error("d3d12Types::initClearValue(): invalid pixel format!\n");
+    }
 }
 
 //------------------------------------------------------------------------------

@@ -137,7 +137,7 @@ d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCo
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, int smpCount) {
+d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, const ClearState& clearHint, int smpCount) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg((width > 0) && (height > 0) && (smpCount > 0));
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(fmt) || PixelFormat::IsValidTextureDepthFormat(fmt));
@@ -147,23 +147,28 @@ d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int h
     D3D12_HEAP_PROPERTIES heapProps;
     d3d12Types::initHeapProps(&heapProps, D3D12_HEAP_TYPE_DEFAULT);
 
-    D3D12_CLEAR_VALUE clearValue;
     D3D12_RESOURCE_STATES initialState;
     if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
-        d3d12Types::initColorClearValue(&clearValue, fmt, 0.0f, 0.0f, 0.0f, 1.0f);
         initialState = D3D12_RESOURCE_STATE_RENDER_TARGET;
     }
     else {
-        d3d12Types::initDepthStencilClearValue(&clearValue, fmt, 1.0f, 0);
         initialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
     }
+
+    D3D12_CLEAR_VALUE clearValue;
+    const D3D12_CLEAR_VALUE* clearValuePtr = nullptr;
+    if (clearHint.Actions != ClearState::None) {
+        d3d12Types::initClearValue(&clearValue, fmt, clearHint);
+        clearValuePtr = &clearValue;
+    }
+
     ID3D12Resource* d3d12Resource = nullptr;
     HRESULT hr = d3d12Device->CreateCommittedResource(
         &heapProps,                         // pHeapProperties
         D3D12_HEAP_FLAG_NONE,               // HeapFlags
         &desc,                              // pResourceDesc
         initialState,                       // InitialResourceState
-        &clearValue,                        // pOptimizedClearValue
+        clearValuePtr,                      // pOptimizedClearValue
         __uuidof(ID3D12Resource),
         (void**)&d3d12Resource);
     o_assert(SUCCEEDED(hr) && d3d12Resource);

@@ -32,7 +32,7 @@ private:
     int32 frameIndex = 0;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSTextures fsTextures[2];
-    ClearState clearState;
+    ClearState clearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -77,6 +77,7 @@ AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample");
+    gfxSetup.ClearHint = this->clearState;
     Gfx::Setup(gfxSetup);
 
     // create 2 ping-pong offscreen render targets
@@ -115,7 +116,6 @@ InfiniteSpheresApp::OnInit() {
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
     dss.RasterizerState.SampleCount = 1;
     this->offscreenDrawState = Gfx::CreateResource(dss);
-    this->clearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

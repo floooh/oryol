@@ -61,10 +61,8 @@ public:
     static void initRTResourceDesc(D3D12_RESOURCE_DESC* out, int width, int height, PixelFormat::Code fmt, int sampleCount);
     /// initialize a D3D12_RESOURCE_DESC for a 2D or Cube texture
     static void initTextureResourceDesc(D3D12_RESOURCE_DESC* out, const TextureSetup& setup);
-    /// initialize a D3D12_CLEAR_VALUE for color clear
-    static void initColorClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float r, float g, float b, float a);
-    /// initialize a D3D12_CLEAR_VALUE for depth-stencil clear
-    static void initDepthStencilClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float d, uint8 s);
+    /// initialize a D3D12_CLEAR_VALUE
+    static void initClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, const ClearState& clearState);
     // initialize a D3D12_DESCRIPTOR_HEAP_DESC 
     static void initDescriptorHeapDesc(D3D12_DESCRIPTOR_HEAP_DESC* out, int num, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible);
     /// initialize a D3D12_DEPTH_STENCIL_VIEW_DESC

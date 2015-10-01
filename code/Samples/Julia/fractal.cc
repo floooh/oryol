@@ -38,6 +38,7 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     auto rtSetup = TextureSetup::RenderTarget(w, h);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.DepthFormat = PixelFormat::None;
+    rtSetup.ClearHint = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.WrapU = TextureWrapMode::MirroredRepeat;

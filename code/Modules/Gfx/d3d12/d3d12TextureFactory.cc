@@ -141,7 +141,7 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg((width > 0) && (height > 0));
 
     // create the color buffer and render-target-view
-    tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, 1);
+    tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, setup.ClearHint, 1);
     tex.d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
     const Id& rtvHeap = this->pointers.renderer->rtvHeap;
     tex.rtvDescriptorSlot = descAllocator.AllocSlot(rtvHeap);
@@ -157,7 +157,7 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
             tex.d3d12DepthBufferRes->AddRef();
         }
         else {
-            tex.d3d12DepthBufferRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.DepthFormat, 1);
+            tex.d3d12DepthBufferRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.DepthFormat, setup.ClearHint, 1);
         }
         tex.d3d12DepthBufferState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
         const Id& dsvHeap = this->pointers.renderer->dsvHeap;

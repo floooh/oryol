@@ -11,6 +11,7 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Core/SamplerState.h"
+#include "Gfx/Core/ClearState.h"
 
 namespace Oryol {
     
@@ -69,6 +70,8 @@ public:
 
     /// sampler state
     SamplerState Sampler;
+    /// optional clear hint for render targets, this is used as hint by D3D12 to optimize clears
+    ClearState ClearHint;
 
     /// resource locator
     class Locator Locator;

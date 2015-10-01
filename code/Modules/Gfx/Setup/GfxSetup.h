@@ -15,6 +15,7 @@
 #include "Core/Containers/Array.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
+#include "Gfx/Core/ClearState.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
@@ -46,6 +47,8 @@ public:
     int32 SwapInterval = 1;
     /// window title
     String Title = "Oryol";
+    /// optional clear-hint how the default render target is clear, used in D3D12 for MSAA backbuffer
+    ClearState ClearHint;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int32 poolSize);
