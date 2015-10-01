@@ -139,9 +139,8 @@ debugTextRenderer::drawTextBuffer() {
         texBlock.Texture = this->fontTexture;
 
         Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->textDrawState);
+        Gfx::ApplyDrawState(this->textDrawState, texBlock);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::ApplyTextureBlock(texBlock);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }

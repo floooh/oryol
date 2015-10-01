@@ -49,21 +49,19 @@ InfiniteSpheresApp::OnRunning() {
     
     // render sphere to offscreen render target, using the other render target as
     // source texture
-    Gfx::ApplyRenderTarget(this->fsTextures[index0].Texture);
-    Gfx::ApplyDrawState(this->offscreenDrawState);
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
+    Gfx::ApplyRenderTarget(this->fsTextures[index0].Texture);
+    Gfx::ApplyDrawState(this->offscreenDrawState, this->fsTextures[index1]);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBlock(this->fsTextures[index1]);
     Gfx::Draw(0);
     
     // ...and again to display
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
-    Gfx::ApplyDrawState(this->displayDrawState);
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
+    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::ApplyDrawState(this->displayDrawState, this->fsTextures[index0]);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::ApplyTextureBlock(this->fsTextures[index0]);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();

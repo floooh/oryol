@@ -92,29 +92,26 @@ FractalApp::OnRunning() {
     // render next fractal iteration
     Gfx::ApplyRenderTarget(this->offscreenRenderTarget[index0], this->noClearState);
     if (Mandelbrot == this->fractalType) {
-        Gfx::ApplyDrawState(this->mandelbrot.drawState);
-        Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
         Shaders::Mandelbrot::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyTextureBlock(texBlock);
+        Gfx::ApplyDrawState(this->mandelbrot.drawState, texBlock);
+        Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
     }
     else {
-        Gfx::ApplyDrawState(this->julia.drawState);
-        Gfx::ApplyUniformBlock(this->julia.vsParams);
-        Gfx::ApplyUniformBlock(this->julia.fsParams);
         Shaders::Julia::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyTextureBlock(texBlock);
+        Gfx::ApplyDrawState(this->julia.drawState, texBlock);
+        Gfx::ApplyUniformBlock(this->julia.vsParams);
+        Gfx::ApplyUniformBlock(this->julia.fsParams);
     }
     Gfx::Draw(0);
 
     // map fractal state to displat
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->displayDrawState);
-    Gfx::ApplyUniformBlock(this->displayFSParams);
     Shaders::Display::FSTextures texBlock;
     texBlock.Texture = this->offscreenRenderTarget[index0];
-    Gfx::ApplyTextureBlock(texBlock);
+    Gfx::ApplyDrawState(this->displayDrawState, texBlock);
+    Gfx::ApplyUniformBlock(this->displayFSParams);
     Gfx::Draw(0);
 
     this->drawUI();

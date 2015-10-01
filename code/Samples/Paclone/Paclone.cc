@@ -97,9 +97,8 @@ PacloneApp::OnRunning() {
     this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     this->applyViewPort();
-    Gfx::ApplyDrawState(this->crtEffect);
+    Gfx::ApplyDrawState(this->crtEffect, this->crtTextures);
     Gfx::ApplyUniformBlock(this->crtParams);
-    Gfx::ApplyTextureBlock(this->crtTextures);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     this->tick++;

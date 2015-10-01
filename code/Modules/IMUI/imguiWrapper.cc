@@ -230,9 +230,8 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
 
     Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
     Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
-    Gfx::ApplyDrawState(self->drawState);
+    Gfx::ApplyDrawState(self->drawState, texBlock);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::ApplyTextureBlock(texBlock);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];

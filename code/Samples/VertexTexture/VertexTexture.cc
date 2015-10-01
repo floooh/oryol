@@ -51,9 +51,8 @@ VertexTextureApp::OnRunning() {
 
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->planeDrawState);
+    Gfx::ApplyDrawState(this->planeDrawState, this->planeVSTextures);
     Gfx::ApplyUniformBlock(this->planeVSParams);
-    Gfx::ApplyTextureBlock(this->planeVSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();

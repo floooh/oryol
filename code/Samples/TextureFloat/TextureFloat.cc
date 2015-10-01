@@ -46,8 +46,7 @@ TextureFloatApp::OnRunning() {
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::ApplyTextureBlock(this->copyFSTextures);
+    Gfx::ApplyDrawState(this->copyDrawState, this->copyFSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();

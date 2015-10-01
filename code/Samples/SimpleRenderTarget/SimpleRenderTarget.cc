@@ -52,11 +52,10 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::Draw(0);
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    Gfx::ApplyDefaultRenderTarget(this->displayClearState);
+    Gfx::ApplyDrawState(this->displayDrawState, this->displayFSTextures);
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::ApplyTextureBlock(this->displayFSTextures);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();

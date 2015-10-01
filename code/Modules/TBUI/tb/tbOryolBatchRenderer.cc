@@ -460,11 +460,10 @@ tbOryolBatchRenderer::drawBatches() {
         Gfx::UpdateVertices(this->mesh, this->vertexData, vertexDataSize);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
-            Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
             fsTextures.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
-            Gfx::ApplyDrawState(this->drawState);
+            Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
+            Gfx::ApplyDrawState(this->drawState, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
-            Gfx::ApplyTextureBlock(fsTextures);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }
         Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);

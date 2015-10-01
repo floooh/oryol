@@ -94,8 +94,7 @@ canvas::Render() {
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyTextureBlock(this->textures);
+    Gfx::ApplyDrawState(this->drawState, this->textures);
     Gfx::Draw(0);
 }
 

@@ -63,9 +63,8 @@ ResourceStressApp::OnRunning() {
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
             fsTextures.Texture = obj.texture;
-            Gfx::ApplyDrawState(obj.drawState);
+            Gfx::ApplyDrawState(obj.drawState, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
-            Gfx::ApplyTextureBlock(fsTextures);
             Gfx::Draw(0);
         }
     }

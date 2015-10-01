@@ -48,9 +48,8 @@ DDSCubeMapApp::OnRunning() {
     // check whether the cube map has finished loading
     if (Gfx::QueryResourceInfo(this->fsTextures.Texture).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState);
+        Gfx::ApplyDrawState(this->drawState, this->fsTextures);
         Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::ApplyTextureBlock(this->fsTextures);
         Gfx::Draw(0);
     }
     Gfx::CommitFrame();

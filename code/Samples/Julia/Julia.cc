@@ -90,10 +90,9 @@ JuliaApp::OnRunning() {
     this->shapeFSTextures.Texture = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->shapeDrawState);
+    Gfx::ApplyDrawState(this->shapeDrawState, this->shapeFSTextures);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
-    Gfx::ApplyTextureBlock(this->shapeFSTextures);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

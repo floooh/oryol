@@ -76,24 +76,22 @@ GPUParticlesApp::OnRunning() {
     // - the particle update shader reads the previous state and draws the next state
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
-    Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    Gfx::ApplyDrawState(this->updateParticles);
-    this->updFSParams.NumParticles = (float32) this->curNumParticles;
-    Gfx::ApplyUniformBlock(this->updFSParams);
     this->updFSTextures.PrevState = this->particleBuffer[readIndex];
-    Gfx::ApplyTextureBlock(this->updFSTextures);
+    this->updFSParams.NumParticles = (float32) this->curNumParticles;
+    Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
+    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
+    Gfx::ApplyDrawState(this->updateParticles, this->updFSTextures);
+    Gfx::ApplyUniformBlock(this->updFSParams);
     Gfx::Draw(0);
     
     // now the actual particle shape rendering:
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawParticles);
-    Gfx::ApplyUniformBlock(this->drawVSParams);
     this->drawVSTextures.ParticleState = this->particleBuffer[drawIndex];
-    Gfx::ApplyTextureBlock(this->drawVSTextures);
+    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDrawState(this->drawParticles, this->drawVSTextures);
+    Gfx::ApplyUniformBlock(this->drawVSParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     
     Dbg::DrawTextBuffer();

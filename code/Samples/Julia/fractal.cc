@@ -112,18 +112,16 @@ fractal::update() {
     Shaders::Julia::FSTextures juliaTextures;
     juliaTextures.Texture = this->fractalTexture[readIndex];
     Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->fractalDrawState);
+    Gfx::ApplyDrawState(this->fractalDrawState, juliaTextures);
     Gfx::ApplyUniformBlock(this->fractalVSParams);
     Gfx::ApplyUniformBlock(this->fractalFSParams);
-    Gfx::ApplyTextureBlock(juliaTextures);
     Gfx::Draw(0);
 
     // map current fractal state to color texture
     Shaders::Color::FSTextures colorTextures;
     colorTextures.Texture = this->fractalTexture[writeIndex];
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->colorDrawState);
-    Gfx::ApplyTextureBlock(colorTextures);
+    Gfx::ApplyDrawState(this->colorDrawState, colorTextures);
     Gfx::Draw(0);
 
     if (this->frameIndex >= this->cycleCount) {
