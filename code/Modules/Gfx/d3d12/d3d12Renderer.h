@@ -153,9 +153,6 @@ private:
     texture* curRenderTarget;
     drawState* curDrawState;
 
-    // number of calls to applyTextureBlock since applyDrawState (only one is allowed per stage)
-    StaticArray<int32, ShaderStage::NumShaderStages> numApplyTextureBlock;
-
     // frame-sync objects
     ID3D12Fence* d3d12Fence;
     HANDLE fenceEvent;

@@ -36,7 +36,6 @@ resizeHeight(0) {
     this->backbufferSurfaces.Fill(nullptr);
     this->rtvDescriptorSlots.Fill(InvalidIndex);
     this->dsvDescriptorSlot = InvalidIndex;
-    this->numApplyTextureBlock.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -649,7 +648,6 @@ d3d12Renderer::applyDrawState(drawState* ds) {
         return;
     }
     this->curDrawState = ds;
-    this->numApplyTextureBlock.Fill(0);
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     o_assert_dbg(ds->d3d12PipelineState);
@@ -748,13 +746,6 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
             this->curDrawState = nullptr;
             return;
         }
-    }
-
-    // only one applyTextureBlock is allowed after an ApplyDrawState!
-    // FIXME: texture blocks to be applied should go into Gfx::ApplyDrawState() as
-    // optional parameters!
-    if (this->numApplyTextureBlock[bindStage]++ > 1) {
-        o_error("Only one ApplyTextureBlock is allowed per stage after ApplyDrawState!\n");
     }
 
     // check if the provided texture types are compatible
