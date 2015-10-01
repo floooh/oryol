@@ -34,7 +34,6 @@ d3d11CurVertexShader(nullptr),
 d3d11CurPixelShader(nullptr),
 d3d11CurPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED),
 curStencilRef(0xFFFF) {
-    this->numApplyTextureBlock.Fill(0);
     this->d3d11CurVSCBs.Fill(nullptr);
     this->d3d11CurPSCBs.Fill(nullptr);
     this->d3d11CurVBs.Fill(nullptr);
@@ -251,9 +250,6 @@ d3d11Renderer::applyDrawState(drawState* ds) {
         return;
     }
 
-    // clear the applyTextureBlock counters
-    this->numApplyTextureBlock.Fill(0);
-
     o_assert_dbg(ds->d3d11DepthStencilState);
     o_assert_dbg(ds->d3d11RasterizerState);
     o_assert_dbg(ds->d3d11BlendState);
@@ -402,11 +398,6 @@ d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
             this->curDrawState = nullptr;
             return;
         }
-    }
-
-    // only one applyTextureBlock is allowed after an ApplyDrawState!
-    if (this->numApplyTextureBlock[bindStage]++ > 1) {
-        o_error("Only one ApplyTextureBlock is allowed per stage after ApplyDrawState!\n");
     }
 
     // check if the provided texture types are compatible

@@ -101,8 +101,6 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
-    // number of calls to applyTextureBlock since applyDrawState (only one is allowed per stage)
-    StaticArray<int32, ShaderStage::NumShaderStages> numApplyTextureBlock;
 
     ID3D11RenderTargetView* d3d11CurRenderTargetView;
     ID3D11DepthStencilView* d3d11CurDepthStencilView;
