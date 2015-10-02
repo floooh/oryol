@@ -347,7 +347,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -359,7 +359,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, 
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatible with the uniform layout
@@ -376,11 +376,11 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, 
     std::memcpy(dstPtr, ptr, byteSize);
 
     // set constant buffer location for next draw call
-    if (ShaderStage::VS == ubBindStage) {
-        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:ubBindSlot];
+    if (ShaderStage::VS == bindStage) {
+        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:ubBindSlot];
+        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
     }
 
     // advance uniform buffer offset (buffer offsets must be multiples of 256)
@@ -389,7 +389,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, 
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyTextureBlock(textureBlock* tb) {
+mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -397,22 +397,45 @@ mtlRenderer::applyTextureBlock(textureBlock* tb) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    if (nullptr == tb) {
-        // textureBundle contains textures that are not yet loaded,
-        // disable the next draw call, and return
-        this->curDrawState = nullptr;
-        return;
+
+    // if any of the texture pointers is null, this means the texture hasn't loaded
+    // yet or has failed loading, in this case, disable the next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
 
-    for (int i = 0; i < tb->numEntries; i++) {
-        const auto& entry = tb->entries[i];
-        if (ShaderStage::VS == tb->bindStage) {
-            [this->curCommandEncoder setVertexTexture:entry.mtlTex atIndex:entry.bindSlot];
-            [this->curCommandEncoder setVertexSamplerState:entry.mtlSamplerState atIndex:entry.bindSlot];
+    //  check if the provided texture types are compatible with the shader expectations
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(bindSlot));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
         }
-        else {
-            [this->curCommandEncoder setFragmentTexture:entry.mtlTex atIndex:entry.bindSlot];
-            [this->curCommandEncoder setFragmentSamplerState:entry.mtlSamplerState atIndex:entry.bindSlot];
+    }
+    #endif
+
+    // apply textures and samplers
+    if (ShaderStage::VS == bindStage) {
+        for (int i = 0; i < numTextures; i++) {
+            const texture* tex = textures[i];
+            [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
+        }
+    }
+    else {
+        for (int i = 0; i < numTextures; i++) {
+            const texture* tex = textures[i];
+            [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
 }

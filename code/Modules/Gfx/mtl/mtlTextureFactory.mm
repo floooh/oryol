@@ -266,14 +266,14 @@ mtlTextureFactory::createSamplerState(texture& tex) {
     o_assert_dbg(nil == tex.mtlSamplerState);
 
     MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
-    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapU);
-    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapV);
+    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapU);
+    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapV);
     if (TextureType::Texture3D == tex.Setup.Type) {
-        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapW);
+        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapW);
     }
-    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MinFilter);
-    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MagFilter);
-    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.MinFilter);
+    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MinFilter);
+    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MagFilter);
+    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.Sampler.MinFilter);
     desc.lodMinClamp = 0.0f;
     desc.lodMaxClamp = FLT_MAX;
     desc.maxAnisotropy = 1;
