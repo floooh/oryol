@@ -365,11 +365,12 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
         return;
     }
 
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    
     #if ORYOL_DEBUG
     // verify that the provided uniform block struct is type compatible
     // with the uniform block expected at the binding stage and slot
-    const shader* shd = this->curDrawState->shd;
-    o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
