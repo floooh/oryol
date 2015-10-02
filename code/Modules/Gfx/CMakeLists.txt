@@ -88,8 +88,6 @@ fips_begin_module(Gfx)
             glShader.cc glShader.h
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
-            glTextureBlock.cc glTextureBlock.h
-            glTextureBlockFactory.cc glTextureBlockFactory.h
             glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h

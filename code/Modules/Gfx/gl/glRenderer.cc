@@ -987,7 +987,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
     if (!this->curDrawState) {
@@ -1000,7 +1000,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
     o_assert_dbg(shd);
     const int32 progIndex = this->curDrawState->shdProgIndex;
     o_assert_dbg(InvalidIndex != progIndex);
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     o_assert_dbg(InvalidIndex != ubIndex);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
@@ -1015,7 +1015,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
     for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
         const auto& comp = layout.ComponentAt(uniformIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
-        GLint glLoc = shd->getUniformLocation(progIndex, ubBindStage, ubBindSlot, uniformIndex);
+        GLint glLoc = shd->getUniformLocation(progIndex, bindStage, bindSlot, uniformIndex);
         if (-1 != glLoc) {
             switch (comp.Type) {
                 case UniformType::Float:
@@ -1085,21 +1085,44 @@ glRenderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, i
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextureBlock(textureBlock* tb) {
+glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
     if (nullptr == this->curDrawState) {
         return;
     }
-    if (nullptr == tb) {
-        // textureBundle contains textures that are not yet loaded,
-        // disable the next draw call, and return
-        this->curDrawState = nullptr;
-        return;
+
+    // if any of the provided texture pointers are not valid, this means
+    // that a texture hasn't been loaded yet (or has failed loading), in this
+    // case, disable rendering for next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
 
-    for (int i = 0; i < tb->numEntries; i++) {
-        const auto& entry = tb->entries[i];
-        this->bindTexture(entry.samplerIndex, entry.glTarget, entry.glTex);
+    // check if provided texture types are compatible with the expections
+    // of the currently bound shader
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // apply textures and samplers
+    for (int i = 0; i < numTextures; i++) {
+        const texture* tex = textures[i];
+        this->bindTexture(i, tex->glTarget, tex->glTex);
     }
 }
 
