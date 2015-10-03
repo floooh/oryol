@@ -17,7 +17,6 @@ public:
     
 private:
     ClearState clearState;
-    glm::vec4 clearColor;
 };
 OryolMain(ClearApp);
 
