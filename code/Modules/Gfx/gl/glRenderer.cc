@@ -795,7 +795,7 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     
     // apply common depth-stencil state if changed
     bool depthStencilChanged = false;
-    if (curState.StateHash != newState.StateHash) {
+    if (curState.Hash != newState.Hash) {
         const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
         if (depthCmpFunc != curState.DepthCmpFunc) {
             o_assert_range_dbg(int(depthCmpFunc), CompareFunc::NumCompareFuncs);
