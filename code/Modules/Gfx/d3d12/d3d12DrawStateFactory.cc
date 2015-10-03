@@ -161,16 +161,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
         o_assert2(vs && ps, "invalid shader selection mask");
         o_assert_dbg(vs->ptr && (vs->size > 0) && ps->ptr && (ps->size > 0));
 
-        // FIXME: ideally we'd want a pipeline cache here to re-use identical pipeline-state
-        // since draw-states may contain identical pipeline-state but different 
-        // bound vertex-buffers or textures:
-        // - compute a hash over the D3D12_GRAPHICS_PIPELINE_STATE_DESC (but beware
-        //   of the pointer to the input layout!)
-        // - keep a dictionary of already compiled PSO objects with their DESC hash as key
-        // - reuse PSO's if matching (use AddRef...?)
-        // - in debug mode, or with optional cmake option, also compile redundant
-        //   PSOs, and cross-check their blobs to make sure the hash is collision-safe!
-        //
+        // create the pipeline-state-object
         const RasterizerState& rs = ds.Setup.RasterizerState;
         const BlendState& bs = ds.Setup.BlendState;
         const DepthStencilState& dss = ds.Setup.DepthStencilState;
