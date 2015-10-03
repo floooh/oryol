@@ -32,13 +32,13 @@ public:
             /// stencil-ref value
             uint16 StencilRef : 8;
         };
-        uint32 StateHash;
+        uint32 Hash;
     };
 
     /// constructor
     DepthStencilState() {
         static_assert(sizeof(DepthStencilState) == 8, "sizeof(DepthStencilState) is not 8, bitfield packing problem?");
-        this->StateHash = 0;
+        this->Hash = 0;
         this->DepthCmpFunc = CompareFunc::Always;
         this->DepthWriteEnabled = false;
         this->StencilEnabled = false;
@@ -49,13 +49,13 @@ public:
 
     /// equality
     bool operator==(const DepthStencilState& rhs) const {
-        return (this->StateHash == rhs.StateHash) &&
+        return (this->Hash == rhs.Hash) &&
                (this->StencilFront == rhs.StencilFront) &&
                (this->StencilBack == rhs.StencilBack);
     };
     /// inequality
     bool operator!=(const DepthStencilState& rhs) const {
-        return (this->StateHash != rhs.StateHash) ||
+        return (this->Hash != rhs.Hash) ||
                (this->StencilFront != rhs.StencilFront) ||
                (this->StencilBack != rhs.StencilBack);
     }
