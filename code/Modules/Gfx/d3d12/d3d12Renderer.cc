@@ -543,7 +543,6 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     D3D12_CPU_DESCRIPTOR_HANDLE* rtvCPUHandlePtr = nullptr;
     D3D12_CPU_DESCRIPTOR_HANDLE* dsvCPUHandlePtr = nullptr; 
     D3D12_RESOURCE_STATES colorStateBefore = (D3D12_RESOURCE_STATES) 0xFFFFFFFF;
-    this->invalidateTextureState();
     if (nullptr == rt) {
         const bool isMSAA = this->pointers.displayMgr->GetDisplayAttrs().SampleCount > 1;
         this->rtAttrs = dispMgr->GetDisplayAttrs();
@@ -655,7 +654,7 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
     o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-    // apply pipeline state (FIXME: only if changed!)
+    // apply pipeline state
     cmdList->SetPipelineState(ds->d3d12PipelineState);
     
     // apply vertex and index buffers (FIXME: only if changed!)
@@ -979,30 +978,6 @@ d3d12Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 void
 d3d12Renderer::readPixels(void* buf, int32 bufNumBytes) {
     o_warn("d3d12Renderer::readPixels()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::invalidateMeshState() {
-    o_warn("d3d12Renderer::invalidateMeshState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::invalidateShaderState() {
-    o_warn("d3d12Renderer::invalidateShaderState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::invalidateDrawState() {
-    o_warn("d3d12Renderer::invalidateDrawState()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12Renderer::invalidateTextureState() {
-    // o_warn("d3d12Renderer::invalidateTextureState()\n");
 }
 
 //------------------------------------------------------------------------------

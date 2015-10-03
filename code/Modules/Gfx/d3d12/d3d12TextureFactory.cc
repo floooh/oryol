@@ -83,8 +83,6 @@ d3d12TextureFactory::DestroyResource(texture& tex) {
     d3d12DescAllocator& descAllocator = this->pointers.renderer->descAllocator;
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
-    this->pointers.renderer->invalidateTextureState();
-
     if (tex.d3d12TextureRes) {
         resAllocator.ReleaseDeferred(frameIndex, tex.d3d12TextureRes);
     }

@@ -74,15 +74,6 @@ public:
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(void* buf, int32 bufNumBytes);
 
-    /// invalidate currently bound mesh state
-    void invalidateMeshState();
-    /// invalidate currently bound shader program state
-    void invalidateShaderState();
-    /// invalidate currently bound draw state 
-    void invalidateDrawState();
-    /// invalidate currently bound texture state
-    void invalidateTextureState();
-
     /// wait for the previous frame to finish
     void frameSync();
 

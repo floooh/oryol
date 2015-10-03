@@ -48,7 +48,6 @@ ResourceState::Code
 d3d12ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
 
-    this->pointers.renderer->invalidateShaderState();
     const ShaderLang::Code slang = ShaderLang::HLSL5;
     const ShaderSetup& setup = shd.Setup;
 
@@ -69,7 +68,6 @@ d3d12ShaderFactory::SetupResource(shader& shd) {
 void
 d3d12ShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    this->pointers.renderer->invalidateShaderState();
     shd.Clear();
 }
 

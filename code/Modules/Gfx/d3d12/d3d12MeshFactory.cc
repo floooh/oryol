@@ -75,7 +75,6 @@ d3d12MeshFactory::DestroyResource(mesh& msh) {
     o_assert_dbg(this->isValid);
 
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
-    this->pointers.renderer->invalidateMeshState();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
     for (auto& buf : msh.buffers) {
         for (ID3D12Resource* d3d12Res : buf.d3d12Buffers) {
