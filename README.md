@@ -17,16 +17,15 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
+- **04-Oct-2015**: The D3D12 renderer backend is feature-complete and has been merged back into master! There are a number of Gfx API changes, until proper documentation is available look at the Oryol standalone sample app for the required code changes: https://github.com/floooh/oryol-test-app/commit/f14f46b1bdcf8bd9acb445bef10219916f700285. Testing the renderer backend is a bit unusual until there's a new cmake version which directly supports selecting the Windows SDK:
+  - you need Windows10 and VS2015
+  - select the D3D12 build config: **fips set config d3d12-win64-vs2015-debug**
+  - build VStudio project files: **fips gen**
+  - open project in VStudio: **fips open**
+  - now you need to manually 'retarget' the solution to the Win10 SDK, wait until everything has loaded, select   the menu entry **Project -> Retarget solution** and retarget everything to the 'Target Platform Version: 10.0.10240.0'
+  - after that you should be able to build, run and debug the D3D12 rendering backend
+
 - **08-Sep-2015**: Metal port has been fixed again for latest OSX 10.11 and Xcode7 betas, but only in the d3d12 branch for now (this is where the interesting stuff happens at the moment)
-
-- **21-Aug-2015**: As expected, the latest OSX 10.11 beta breaks the Metal port again, yay :D
-
-- **17-Aug-2015**: The imgui wrapper has been updated for imgui 1.44, which 
-requires an update to the fips-imgui dependency. Either delete the fips-imgui
-directory and do a './fips fetch', or do a manual 'git pull && git submodule update'
-in the fips-imgui directory to get the latest version
-
-- **08-Aug-2015**: the Metal renderer has been fixed for the latest OSX 10.11 and Xcode7 beta, expect it to be broken again when the next betas come in ;)
 
 - **27-Jul-2015**: the new OSX Metal renderer is feature-complete. To give it a
 try you need the latest OSX10.11 and Xcode7 betas, and then:
@@ -39,7 +38,6 @@ try you need the latest OSX10.11 and Xcode7 betas, and then:
 ...or use './fips open' to compile and debug in Xcode.
 
 There is no Metal support for iOS yet (coming 'Really Soon Now').
-
 
 - **24-Jun-2015**: the D3D11 renderer should now be on feature parity with the GL renderer, only some small optimizations are missing. To give it a whirl (all samples should work, except the NanoVG demo):
 
