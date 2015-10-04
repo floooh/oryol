@@ -22,8 +22,12 @@ public:
     /// clear the object (called from drawStateFactory::DestroyResource())
     void Clear();
 
-    /// pointer to input layout objects (same number and order as shader variations)
-    StaticArray<ID3D11InputLayout*, GfxConfig::MaxNumBundlePrograms> d3d11InputLayouts;
+    /// pointer to input layout object
+    ID3D11InputLayout* d3d11InputLayout;
+    /// pointer to vertex shader
+    ID3D11VertexShader* d3d11VertexShader;
+    /// pointer to pixel shader
+    ID3D11PixelShader* d3d11PixelShader;
     /// rasterize state object
     ID3D11RasterizerState* d3d11RasterizerState;
     /// depth-stencil state object

@@ -25,6 +25,7 @@ namespace _priv {
 class texture;
 class drawState;
 class mesh;
+class textureBlock;
     
 class d3d11Renderer {
 public:
@@ -58,7 +59,9 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    /// apply a texture block
+    void applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -108,19 +111,19 @@ private:
     ID3D11InputLayout* d3d11CurInputLayout;
     ID3D11VertexShader* d3d11CurVertexShader;
     ID3D11PixelShader* d3d11CurPixelShader;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurVSConstantBuffers;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocks> d3d11CurPSConstantBuffers;
-    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVertexBuffers;
+    D3D_PRIMITIVE_TOPOLOGY d3d11CurPrimitiveTopology;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurVSCBs;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumUniformBlocksPerStage> d3d11CurPSCBs;
+    StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVBs;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexStrides;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexOffsets;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumUniformLayoutComponents> d3d11CurVSShaderResourceViews;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumUniformLayoutComponents> d3d11CurPSShaderResourceViews;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumUniformLayoutComponents> d3d11CurVSSamplerStates;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumUniformLayoutComponents> d3d11CurPSSamplerStates;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSRVs;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSRVs;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSamplers;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSamplers;
 
     uint16 curStencilRef;
     glm::vec4 curBlendColor;
-    PrimitiveType::Code curPrimitiveTopology;
 };
 
 } // namespace _priv

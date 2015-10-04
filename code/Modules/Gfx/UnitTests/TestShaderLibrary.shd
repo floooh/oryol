@@ -6,28 +6,31 @@
 Bla Bla Bla
 */
 
-//------------------------------------------------------------------------------
-@block TransformUtil
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProj
+@end
+
+@texture_block fsTextures FSTextures
+    @texture sampler2D tex Texture
+@end
+
+@code_block TransformUtil
 _func vec4 myTransform(mat4 mvp, vec4 pos)
 {
     return mul(pos, mvp);
 }
 @end
 
-//------------------------------------------------------------------------------
-@block FSUtil
+@code_block FSUtil
 _func vec4 myColor(vec4 nrm, vec4 texColor)
 {
     return ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor;
 }
 @end
 
-//------------------------------------------------------------------------------
 @vs MyVertexShader
-@use TransformUtil
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProj
-@end
+@use_code_block TransformUtil
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
 @in vec2 texcoord0
@@ -38,16 +41,15 @@ _func vec4 myColor(vec4 nrm, vec4 texColor)
     uv  = texcoord0;
 @end
 
-//------------------------------------------------------------------------------
 @fs MyFragmentShader
-@use FSUtil
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@use_code_block FSUtil
+@use_texture_block fsTextures
 @in vec4 nrm
 @in vec2 uv
+{
     vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));
     _color = myColor(nrm, texColor);
+}
 @end
 
 @bundle MyShader

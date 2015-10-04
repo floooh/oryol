@@ -56,16 +56,15 @@ ResourceStressApp::OnRunning() {
     this->showInfo();
 
     Shaders::Main::VSParams vsParams;
-    Shaders::Main::FSParams fsParams;
+    Shaders::Main::FSTextures fsTextures;
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
-            fsParams.Texture = obj.texture;
-            Gfx::ApplyDrawState(obj.drawState);
+            fsTextures.Texture = obj.texture;
+            Gfx::ApplyDrawState(obj.drawState, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
-            Gfx::ApplyUniformBlock(fsParams);
             Gfx::Draw(0);
         }
     }
@@ -97,7 +96,7 @@ ResourceStressApp::OnInit() {
     Dbg::Setup();    
     
     // setup the shader that is used by all objects
-    this->shader = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::Main::Setup());
 
     // setup matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -105,10 +104,10 @@ ResourceStressApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
-    this->texBlueprint.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    this->texBlueprint.MagFilter = TextureFilterMode::Linear;
-    this->texBlueprint.WrapU = TextureWrapMode::ClampToEdge;
-    this->texBlueprint.WrapV = TextureWrapMode::ClampToEdge;
+    this->texBlueprint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    this->texBlueprint.Sampler.MagFilter = TextureFilterMode::Linear;
+    this->texBlueprint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    this->texBlueprint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
 
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     

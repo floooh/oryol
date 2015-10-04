@@ -16,7 +16,7 @@ d3d11Types::asSwapChainFormat(PixelFormat::Code pf) {
         case PixelFormat::RGBA8:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
         default:
-            o_error("d3d11Types::asSwapChainFormat: not a valid D3D11 display pixel format\n");\
+            o_error("d3d11Types::asSwapChainFormat: not a valid D3D11 display pixel format\n");
             return DXGI_FORMAT_UNKNOWN;
     }
 }

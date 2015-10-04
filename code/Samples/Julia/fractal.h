@@ -44,7 +44,6 @@ public:
     Oryol::Id colorDrawState;
     Oryol::Shaders::Julia::VSParams fractalVSParams;
     Oryol::Shaders::Julia::FSParams fractalFSParams;
-    Oryol::Shaders::Color::FSParams colorFSParams;
 };
 
 } // namespace Julia

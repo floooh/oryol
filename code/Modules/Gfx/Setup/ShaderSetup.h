@@ -12,7 +12,8 @@
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
-#include "Gfx/Core/UniformLayout.h"
+#include "Gfx/Core/UniformBlockLayout.h"
+#include "Gfx/Core/TextureBlockLayout.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/GfxConfig.h"
 
@@ -34,9 +35,11 @@ public:
     void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
     /// add shader program from a metal-style shader library
     void AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
-    /// bind a shader uniform block name to a variable slot
-    void AddUniformBlock(const StringAtom& name, const UniformLayout& layout, ShaderType::Code shaderStage, int32 slotIndex);
-
+    /// add a uniform block
+    void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
+    /// add a texture block
+    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
+    
     /// set metal-style library byte code
     void SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes);
     /// get metal-style library byte code
@@ -63,15 +66,30 @@ public:
 
     /// get number of uniform blocks
     int32 NumUniformBlocks() const;
+    /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
+    int32 UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const;
     /// get uniform block name at index
-    const StringAtom& UniformBlockName(int32 uniformBlockIndex) const;
+    const StringAtom& UniformBlockName(int32 index) const;
     /// get uniform block layout at index
-    const UniformLayout& UniformBlockLayout(int32 uniformBlockIndex) const;
-    /// get uniform block shader stage
-    ShaderType::Code UniformBlockShaderStage(int32 uniformBlockIndex) const;
-    /// get uniform block slot index
-    int32 UniformBlockSlot(int32 uniformBlockIndex) const;
-    
+    const class UniformBlockLayout& UniformBlockLayout(int32 index) const;
+    /// get uniform block shader stage at index
+    ShaderStage::Code UniformBlockBindStage(int32 index) const;
+    /// get uniform block bind slot at index
+    int32 UniformBlockBindSlot(int32 index) const;
+
+    /// get number of texture blocks
+    int32 NumTextureBlocks() const;
+    /// find texture block index by bind stage and slot (return InvalidIndex if not found)
+    int32 TextureBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const;
+    /// get texture block name at index
+    const StringAtom& TextureBlockName(int32 index) const;
+    /// get texture block layout at index
+    const class TextureBlockLayout& TextureBlockLayout(int32 index) const;
+    /// get texture block shader stage at index
+    ShaderStage::Code TextureBlockBindStage(int32 index) const;
+    /// get texture block bind slot at index
+    int32 TextureBlockBindSlot(int32 index) const;
+
 private:
     struct programEntry {
         uint32 mask = 0;
@@ -89,20 +107,31 @@ private:
     };
     struct uniformBlockEntry {
         StringAtom name;
-        UniformLayout layout;
-        ShaderType::Code shaderStage;
-        int32 slotIndex = InvalidIndex;
+        class UniformBlockLayout layout;
+        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        int32 bindSlot = InvalidIndex;
+    };
+    struct textureBlockEntry {
+        StringAtom name;
+        class TextureBlockLayout layout;
+        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        int32 bindSlot = InvalidIndex;
     };
 
     /// obtain an existing entry with matching mask or new entry
     programEntry& obtainEntry(uint32 mask);
 
+    static const int32 MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
+    static const int32 MaxNumTextureBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumTextureBlocksPerStage;
+
     int32 libraryByteCodeSize;
     const void* libraryByteCode;
-    int32 numProgramEntries;
-    int32 numUniformBlockEntries;
-    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
-    StaticArray<uniformBlockEntry, GfxConfig::MaxNumUniformBlocks> uniformBlockEntries;
+    int32 numPrograms;
+    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programs;
+    int32 numUniformBlocks;
+    StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
+    int32 numTextureBlocks;
+    StaticArray<textureBlockEntry, MaxNumTextureBlocks> textureBlocks;
 };
     
 } // namespace Oryol

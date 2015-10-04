@@ -84,10 +84,14 @@ public:
     static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
     static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
-    /// apply draw state to use for rendering
+    /// apply draw state to use for rendering without texture blocks
     static void ApplyDrawState(const Id& id);
+    /// apply draw state with one texture block
+    template<class T0> static void ApplyDrawState(const Id& id, const T0& tb0);
+    /// apply draw state with two texture blocks (one per shader stage)
+    template<class T0, class T1> static void ApplyDrawState(const Id& id, const T0& tb0, const T1& tb1);
     /// apply a uniform block
-    template<class T> static void ApplyUniformBlock(const T& value);
+    template<class T> static void ApplyUniformBlock(const T& ub);
 
     /// update dynamic vertex data (only complete replace possible at the moment)
     static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
@@ -114,6 +118,9 @@ public:
     static _priv::gfxResourceContainer& resource();
 
 private:
+    /// private generic apply texture block method
+    template<class T> static void applyTextureBlock(const T& tb);
+
     struct _state {
         class GfxSetup gfxSetup;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
@@ -126,9 +133,39 @@ private:
 
 //------------------------------------------------------------------------------
 template<class T> inline void
-Gfx::ApplyUniformBlock(const T& value) {
+Gfx::applyTextureBlock(const T& tb) {
     o_assert_dbg(IsValid());
-    state->renderer.applyUniformBlock(T::_uniformBlockIndex, T::_layoutHash, (const uint8*) &value, sizeof(value));
+    o_assert_dbg(T::_numTextures <= GfxConfig::MaxNumTexturesPerStage);
+    _priv::texture* textures[GfxConfig::MaxNumTexturesPerStage];
+    const Id* texId = (const Id*)&tb;
+    for (int i = 0; i < T::_numTextures; i++) {
+        o_assert_dbg(GfxResourceType::Texture == texId[i].Type);
+        textures[i] = state->resourceContainer.lookupTexture(texId[i]);
+    }
+    state->renderer.applyTextureBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, textures, T::_numTextures);
+}
+
+//------------------------------------------------------------------------------
+template<class T0> inline void
+Gfx::ApplyDrawState(const Id& id, const T0& tb0) {
+    Gfx::ApplyDrawState(id);
+    Gfx::applyTextureBlock<T0>(tb0);
+}
+
+//------------------------------------------------------------------------------
+template<class T0, class T1> inline void
+Gfx::ApplyDrawState(const Id& id, const T0& tb0, const T1& tb1) {
+    o_assert2(T0::_bindShaderStage != T1::_bindShaderStage, "cannot bind 2 texture blocks to same shader stage!\n");
+    Gfx::ApplyDrawState(id);
+    Gfx::applyTextureBlock<T0>(tb0);
+    Gfx::applyTextureBlock<T1>(tb1);
+}
+
+//------------------------------------------------------------------------------
+template<class T> inline void
+Gfx::ApplyUniformBlock(const T& ub) {
+    o_assert_dbg(IsValid());
+    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8*) &ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------

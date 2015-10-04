@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "canvas.h"
-#include "shaders.h"
 #include "Gfx/Gfx.h"
 
 using namespace Oryol;
@@ -43,9 +42,9 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     meshSetup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    meshSetup.AddPrimitiveGroup(PrimitiveGroup(PrimitiveType::Triangles, 0, this->numVertices));
+    meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
     this->mesh = Gfx::CreateResource(meshSetup);
-    this->shader = Gfx::CreateResource(Shaders::Canvas::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::Canvas::Setup());
     auto dsSetup = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
@@ -57,12 +56,12 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     
     // setup sprite texture
     auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
-    texSetup.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageSizes[0][0] = Sheet::NumBytes;
-    this->canvasParams.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->textures.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -95,8 +94,7 @@ canvas::Render() {
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->mesh, data, numBytes);
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->canvasParams);
+    Gfx::ApplyDrawState(this->drawState, this->textures);
     Gfx::Draw(0);
 }
 

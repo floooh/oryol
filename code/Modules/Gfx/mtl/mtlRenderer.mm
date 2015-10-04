@@ -6,7 +6,7 @@
 #include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/UniformLayout.h"
+#include "Gfx/Core/UniformBlockLayout.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Resource/shader.h"
@@ -333,7 +333,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
     for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
         const mesh* msh = ds->meshes[meshIndex];
         // NOTE: vertex buffers are located after constant buffers
-        const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocks;
+        const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         if (msh) {
             const auto& vb = msh->buffers[mesh::vb];
             o_assert_dbg(nil != vb.mtlBuffers[vb.activeSlot]);
@@ -347,7 +347,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -359,67 +359,84 @@ mtlRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* 
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatible with the uniform layout
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-
-    // set textures and samplers, and find start of uniform buffer data
-    // FIXME: textures should be separated from uniforms, probably even go
-    // into the drawState (although this would not allow to change textures
-    // between instances)
-    const ShaderType::Code bindShaderStage = shd->getUniformBlockShaderStage(blockIndex);
-    const int32 bindSlotIndex = shd->getUniformBlockBindSlotIndex(blockIndex);
-    const uint8* uBufferPtr = nullptr;
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type == UniformType::Texture) {
-            const int32 texBindSlotIndex = comp.BindSlotIndex;
-            o_assert_dbg(texBindSlotIndex != InvalidIndex);
-            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-            const Id& resId = *(const Id*)valuePtr;
-            const texture* tex = this->pointers.texturePool->Lookup(resId);
-            o_assert_dbg(tex);
-            o_assert_dbg(tex->mtlTex);
-            o_assert_dbg(tex->mtlSamplerState);
-            if (ShaderType::VertexShader == bindShaderStage) {
-                [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:texBindSlotIndex];
-                [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
-            }
-            else {
-                [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:texBindSlotIndex];
-                [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:texBindSlotIndex];
-            }
-        }
-        else {
-            // found the start of the cbuffer struct
-            uBufferPtr = ptr + layout.ComponentByteOffset(compIndex);
-            break;
-        }
-    }
+    o_assert(byteSize == layout.ByteSize());
+    o_assert2((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside commitFrame!
-    if (nullptr != uBufferPtr) {
-        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
-        const int32 uniformSize = layout.ByteSizeWithoutTextures();
-        o_assert2((this->curUniformBufferOffset + uniformSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
-        o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
-        uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
-        std::memcpy(dstPtr, uBufferPtr, uniformSize);
+    id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
+    uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
+    std::memcpy(dstPtr, ptr, byteSize);
 
-        // set constant buffer location for next draw call
-        if (ShaderType::VertexShader == bindShaderStage) {
-            [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
-        }
-        else {
-            [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlotIndex];
-        }
+    // set constant buffer location for next draw call
+    if (ShaderStage::VS == bindStage) {
+        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
+    }
+    else {
+        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
+    }
 
-        // advance uniform buffer offset (buffer offsets must be multiples of 256)
-        this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + uniformSize, 256);
+    // advance uniform buffer offset (buffer offsets must be multiples of 256)
+    this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, 256);
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
+    o_assert_dbg(this->valid);
+    if (nil == this->curCommandEncoder) {
+        return;
+    }
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+
+    // if any of the texture pointers is null, this means the texture hasn't loaded
+    // yet or has failed loading, in this case, disable the next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
+    }
+
+    //  check if the provided texture types are compatible with the shader expectations
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(bindSlot));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // apply textures and samplers
+    if (ShaderStage::VS == bindStage) {
+        for (int i = 0; i < numTextures; i++) {
+            const texture* tex = textures[i];
+            [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
+        }
+    }
+    else {
+        for (int i = 0; i < numTextures; i++) {
+            const texture* tex = textures[i];
+            [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
+        }
     }
 }
 
@@ -433,11 +450,12 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(primGroup.PrimType);
-    IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curDrawState->meshes[0];
+    o_assert_dbg(msh);
+    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(msh->Setup.PrimType);
+    IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (IndexType::None != indexType) {
-        const auto& ib = this->curDrawState->meshes[0]->buffers[mesh::ib];
+        const auto& ib = msh->buffers[mesh::ib];
         o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
         MTLIndexType mtlIndexType = mtlTypes::asIndexType(indexType);
         NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(indexType);

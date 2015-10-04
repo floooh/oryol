@@ -27,7 +27,7 @@ public:
     /// convert Oryol primitive type to GL primitive type
     static GLenum asGLPrimitiveType(PrimitiveType::Code c);
     /// convert Oryol shader type to GL shader type
-    static GLenum asGLShaderType(ShaderType::Code c);
+    static GLenum asGLShaderStage(ShaderStage::Code c);
     /// convert Oryol texture filter to GL texture filter
     static GLenum asGLTexFilterMode(TextureFilterMode::Code c);
     /// convert Oryol texture wrap mode to GL texture wrap mode

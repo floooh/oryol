@@ -89,10 +89,10 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     }
     for(uint32 i = 0; i < numPrimGroups; i++) {
         PrimitiveGroup primGroup;
-        primGroup.PrimType = translatePrimType(*u32Ptr++);
-        if (PrimitiveType::InvalidPrimitiveType == primGroup.PrimType) {
-            return false;
+        if (0 == i) {
+            outSetup.PrimType = translatePrimType(*u32Ptr);
         }
+        u32Ptr++;
         primGroup.BaseElement = *u32Ptr++;
         primGroup.NumElements = *u32Ptr++;
         outSetup.AddPrimitiveGroup(primGroup);

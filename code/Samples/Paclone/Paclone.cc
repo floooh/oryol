@@ -25,7 +25,10 @@ private:
     void applyViewPort();
 
     Id crtEffect;
+    Id crtRenderTarget;
     Shaders::CRT::FSParams crtParams;
+    Shaders::CRT::FSTextures crtTextures;
+
     canvas spriteCanvas;
     game gameState;
     sound sounds;
@@ -47,14 +50,15 @@ PacloneApp::OnInit() {
     Sound::Setup(SoundSetup());
     Dbg::Setup();
     
-    // setup a offscreen render target and copy-shader
+    // setup a offscreen render target, copy-shader and texture block
     auto rtSetup = TextureSetup::RenderTarget(canvasWidth, canvasHeight);
-    rtSetup.MinFilter = TextureFilterMode::Linear;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
-    this->crtParams.Canvas = Gfx::CreateResource(rtSetup);
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+    this->crtRenderTarget = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
-    Id shd = Gfx::CreateResource(Shaders::CRT::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
+    this->crtTextures.Canvas = this->crtRenderTarget;
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
@@ -85,7 +89,7 @@ PacloneApp::OnRunning() {
     this->gameState.Update(this->tick, &this->spriteCanvas, &this->sounds, input);
 
     // render into offscreen render target
-    Gfx::ApplyRenderTarget(this->crtParams.Canvas);
+    Gfx::ApplyRenderTarget(this->crtRenderTarget);
     this->spriteCanvas.Render();
     Dbg::DrawTextBuffer();
     
@@ -93,7 +97,7 @@ PacloneApp::OnRunning() {
     this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     this->applyViewPort();
-    Gfx::ApplyDrawState(this->crtEffect);
+    Gfx::ApplyDrawState(this->crtEffect, this->crtTextures);
     Gfx::ApplyUniformBlock(this->crtParams);
     Gfx::Draw(0);
     Gfx::CommitFrame();

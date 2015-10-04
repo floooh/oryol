@@ -2,8 +2,11 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-@block util
+@texture_block fsTextures FSTextures
+@texture sampler2D tex Texture
+@end
+
+@code_block util
 _func vec4 hue2rgb(float h) {
     float r = abs(h * 6.0 - 4.0) - 1.0;
     float g = 2.0 - abs(h * 6.0 - 2.0);
@@ -13,12 +16,14 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
+@uniform_block fractalVSParams VSParams
+@uniform vec4 rect Rect
+@end
+
 @vs FractalVS
+@use_uniform_block fractalVSParams
 @in vec4 position
 @in vec2 texcoord0
-@uniform_block vsParams VSParams
-    @uniform vec4 rect Rect
-@end
 @out vec2 uv
 @out vec2 pos
 {
@@ -28,12 +33,14 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
+@uniform_block juliaFSParams FSParams
+@uniform vec2 juliaPos JuliaPos
+@end
+
 @fs JuliaFS
 @highp float
-@uniform_block juliaFSParams FSParams
-    @uniform sampler2D tex Texture
-    @uniform vec2 juliaPos JuliaPos
-@end
+@use_uniform_block juliaFSParams
+@use_texture_block fsTextures
 @in vec2 uv
 @in vec2 pos
 {
@@ -73,9 +80,7 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @fs ColorFS
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@use_texture_block fsTextures
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);
@@ -94,12 +99,14 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
-@vs ShapeVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProj
-    @uniform vec2 uvScale UVScale
-    @uniform float time Time
+@uniform_block shapeVSParams VSParams
+@uniform mat4 mvp ModelViewProj
+@uniform vec2 uvScale UVScale
+@uniform float time Time
 @end
+
+@vs ShapeVS
+@use_uniform_block shapeVSParams
 @in vec4 position
 @in vec2 texcoord0
 @out vec4 norm
@@ -116,12 +123,14 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@fs ShapeFS
-@use util
-@uniform_block fsParams FSParams
-    @uniform float numColors NumColors
-    @uniform sampler2D tex Texture
+@uniform_block shapeFSParams FSParams
+@uniform float numColors NumColors
 @end
+
+@fs ShapeFS
+@use_code_block util
+@use_uniform_block shapeFSParams
+@use_texture_block fsTextures
 @in vec4 norm
 @in vec2 uv
 {

@@ -144,8 +144,9 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     ibAttrs.BufferUsage = Usage::Immutable;
     mesh.indexBufferAttrs = ibAttrs;
 
+    mesh.glPrimType = glTypes::asGLPrimitiveType(PrimitiveType::Triangles);
     mesh.numPrimGroups = 1;
-    mesh.primGroups[0] = PrimitiveGroup(PrimitiveType::Triangles, 0, 6);
+    mesh.primGroups[0] = PrimitiveGroup(0, 6);
 
     // vertices
     const float32 topV = mesh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
@@ -194,6 +195,7 @@ glMeshFactory::setupAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 glMeshFactory::setupPrimGroups(mesh& msh) {
+    msh.glPrimType = glTypes::asGLPrimitiveType(msh.Setup.PrimType);
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < msh.numPrimGroups; i++) {

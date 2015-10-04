@@ -31,25 +31,30 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     // generate a new resource label for our gfx resources
     this->label = Gfx::PushResourceLabel();
 
+    // the fractal-rendering shader
+    Id fractalShader = Gfx::CreateResource(Shaders::Julia::Setup());
+
     // create the ping-pong render target that hold the fractal state
     auto rtSetup = TextureSetup::RenderTarget(w, h);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.DepthFormat = PixelFormat::None;
-    rtSetup.MinFilter = TextureFilterMode::Nearest;
-    rtSetup.MagFilter = TextureFilterMode::Nearest;
-    rtSetup.WrapU = TextureWrapMode::MirroredRepeat;
-    rtSetup.WrapV = TextureWrapMode::MirroredRepeat;
-    this->fractalTexture[0] = Gfx::CreateResource(rtSetup);
-    this->fractalTexture[1] = Gfx::CreateResource(rtSetup);
+    rtSetup.ClearHint = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    rtSetup.Sampler.WrapU = TextureWrapMode::MirroredRepeat;
+    rtSetup.Sampler.WrapV = TextureWrapMode::MirroredRepeat;
+    for (int i = 0; i < 2; i++) {
+        this->fractalTexture[i] = Gfx::CreateResource(rtSetup);
+    }
 
     // create a color render target that holds the fractal state as color texture
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.MinFilter = TextureFilterMode::Linear;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->colorTexture = Gfx::CreateResource(rtSetup);
 
     // create draw state for updating the fractal state
-    auto dss = DrawStateSetup::FromMeshAndShader(fsq, Gfx::CreateResource(Shaders::Julia::CreateSetup()));
+    auto dss = DrawStateSetup::FromMeshAndShader(fsq, fractalShader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -57,7 +62,8 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     this->fractalDrawState = Gfx::CreateResource(dss);
 
     // create draw state to map fractal state into color texture
-    dss.Shader = Gfx::CreateResource(Shaders::Color::CreateSetup());
+    Id colorShader = Gfx::CreateResource(Shaders::Color::Setup());
+    dss.Shader = colorShader;
     dss.BlendState.ColorFormat = PixelFormat::RGBA8;
     this->colorDrawState = Gfx::CreateResource(dss);
 
@@ -102,19 +108,20 @@ fractal::update() {
 
     // render next fractal iteration
     this->fractalVSParams.Rect = this->rect;
-    this->fractalFSParams.Texture = this->fractalTexture[readIndex];
     this->fractalFSParams.JuliaPos = this->pos;
+    Shaders::Julia::FSTextures juliaTextures;
+    juliaTextures.Texture = this->fractalTexture[readIndex];
     Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->fractalDrawState);
+    Gfx::ApplyDrawState(this->fractalDrawState, juliaTextures);
     Gfx::ApplyUniformBlock(this->fractalVSParams);
     Gfx::ApplyUniformBlock(this->fractalFSParams);
     Gfx::Draw(0);
 
     // map current fractal state to color texture
-    this->colorFSParams.Texture = this->fractalTexture[writeIndex];
+    Shaders::Color::FSTextures colorTextures;
+    colorTextures.Texture = this->fractalTexture[writeIndex];
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->colorDrawState);
-    Gfx::ApplyUniformBlock(this->colorFSParams);
+    Gfx::ApplyDrawState(this->colorDrawState, colorTextures);
     Gfx::Draw(0);
 
     if (this->frameIndex >= this->cycleCount) {

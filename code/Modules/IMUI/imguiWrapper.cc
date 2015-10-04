@@ -47,9 +47,9 @@ imguiWrapper::Setup() {
 
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
-    this->setupFontTexture();
     this->setupMesh();
     this->setupDrawState();
+    this->setupFontTexture();
     Gfx::PopResourceLabel();
 
     this->isValid = true;
@@ -76,6 +76,7 @@ imguiWrapper::IsValid() const {
 void
 imguiWrapper::setupFontTexture() {
     o_assert_dbg(!this->fontTexture.IsValid());
+    o_assert_dbg(this->shader.IsValid());
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -85,10 +86,10 @@ imguiWrapper::setupFontTexture() {
     const int imgSize = width * height * sizeof(uint8);
 
     auto texSetup = TextureSetup::FromPixelData(width, height, 1, TextureType::Texture2D, PixelFormat::L8);
-    texSetup.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = imgSize;
     this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 
@@ -120,9 +121,9 @@ imguiWrapper::setupDrawState() {
     o_assert_dbg(!this->drawState.IsValid());
     o_assert_dbg(this->mesh.IsValid());
 
-    Id shd = Gfx::CreateResource(Shaders::IMUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::IMUIShader::Setup());
     
-    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, shd);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -219,19 +220,18 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
 
     // draw command lists
     Shaders::IMUIShader::VSParams vsParams;
-    Shaders::IMUIShader::FSParams fsParams;
     const float width  = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
     vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
-    fsParams.Texture = self->fontTexture;
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
     const int indexDataSize = numIndices * sizeof(ImDrawIdx);
+    Shaders::IMUIShader::FSTextures texBlock;
+    texBlock.Texture = self->fontTexture;
 
     Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
     Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
-    Gfx::ApplyDrawState(self->drawState);
+    Gfx::ApplyDrawState(self->drawState, texBlock);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::ApplyUniformBlock(fsParams);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[cmdListIndex];
@@ -245,7 +245,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
                                       (int)(height - pcmd->ClipRect.w),
                                       (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
                                       (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, elmOffset, pcmd->ElemCount));
+                Gfx::Draw(PrimitiveGroup(elmOffset, pcmd->ElemCount));
             }
             elmOffset += pcmd->ElemCount;
         }

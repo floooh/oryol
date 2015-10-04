@@ -14,10 +14,14 @@ namespace _priv {
 
 class glDrawState : public drawStateBase {
 public:
+    /// constructor
+    glDrawState();
     /// clear the object (called from drawStateFactory::DestroyResource()
     void Clear();
     /// GL vertex attributes
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
+    /// the shader program index for this draw state
+    int32 shdProgIndex;
 };
 
 } // namespace _priv

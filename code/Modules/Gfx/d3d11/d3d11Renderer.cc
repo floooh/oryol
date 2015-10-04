@@ -32,15 +32,15 @@ d3d11CurIndexBuffer(nullptr),
 d3d11CurInputLayout(nullptr),
 d3d11CurVertexShader(nullptr),
 d3d11CurPixelShader(nullptr),
-curStencilRef(0xFFFF),
-curPrimitiveTopology(PrimitiveType::InvalidPrimitiveType) {
-    this->d3d11CurVSConstantBuffers.Fill(nullptr);
-    this->d3d11CurPSConstantBuffers.Fill(nullptr);
-    this->d3d11CurVertexBuffers.Fill(nullptr);
-    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurVSSamplerStates.Fill(nullptr);
-    this->d3d11CurPSSamplerStates.Fill(nullptr);
+d3d11CurPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED),
+curStencilRef(0xFFFF) {
+    this->d3d11CurVSCBs.Fill(nullptr);
+    this->d3d11CurPSCBs.Fill(nullptr);
+    this->d3d11CurVBs.Fill(nullptr);
+    this->d3d11CurVSSRVs.Fill(nullptr);
+    this->d3d11CurPSSRVs.Fill(nullptr);
+    this->d3d11CurVSSamplers.Fill(nullptr);
+    this->d3d11CurPSSamplers.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
 }
@@ -75,13 +75,14 @@ d3d11Renderer::discard() {
     this->d3d11CurInputLayout = nullptr;
     this->d3d11CurVertexShader = nullptr;
     this->d3d11CurPixelShader = nullptr;
-    this->d3d11CurVSConstantBuffers.Fill(nullptr);
-    this->d3d11CurPSConstantBuffers.Fill(nullptr);
-    this->d3d11CurVertexBuffers.Fill(nullptr);
-    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurVSSamplerStates.Fill(nullptr);
-    this->d3d11CurPSSamplerStates.Fill(nullptr);
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    this->d3d11CurVSCBs.Fill(nullptr);
+    this->d3d11CurPSCBs.Fill(nullptr);
+    this->d3d11CurVBs.Fill(nullptr);
+    this->d3d11CurVSSRVs.Fill(nullptr);
+    this->d3d11CurPSSRVs.Fill(nullptr);
+    this->d3d11CurVSSamplers.Fill(nullptr);
+    this->d3d11CurPSSamplers.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
 
@@ -118,18 +119,18 @@ d3d11Renderer::resetStateCache() {
     this->d3d11CurInputLayout = nullptr;
     this->d3d11CurVertexShader = nullptr;
     this->d3d11CurPixelShader = nullptr;
-    this->d3d11CurVSConstantBuffers.Fill(nullptr);
-    this->d3d11CurPSConstantBuffers.Fill(nullptr);
-    this->d3d11CurVertexBuffers.Fill(nullptr);
-    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurVSSamplerStates.Fill(nullptr);
-    this->d3d11CurPSSamplerStates.Fill(nullptr);
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    this->d3d11CurVSCBs.Fill(nullptr);
+    this->d3d11CurPSCBs.Fill(nullptr);
+    this->d3d11CurVBs.Fill(nullptr);
+    this->d3d11CurVSSRVs.Fill(nullptr);
+    this->d3d11CurPSSRVs.Fill(nullptr);
+    this->d3d11CurVSSamplers.Fill(nullptr);
+    this->d3d11CurPSSamplers.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
     this->curStencilRef = 0xFFFF;
     this->curBlendColor = glm::vec4(0.0f);
-    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
 }
 
 //------------------------------------------------------------------------------
@@ -173,20 +174,7 @@ d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         this->d3d11CurDepthStencilView = this->pointers.displayMgr->d3d11DepthStencilView;
     }
     else {
-        // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
-        const TextureAttrs& attrs = rt->textureAttrs;
-        this->rtAttrs.WindowWidth = attrs.Width;
-        this->rtAttrs.WindowHeight = attrs.Height;
-        this->rtAttrs.WindowPosX = 0;
-        this->rtAttrs.WindowPosY = 0;
-        this->rtAttrs.FramebufferWidth = attrs.Width;
-        this->rtAttrs.FramebufferHeight = attrs.Height;
-        this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
-        this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
-        this->rtAttrs.SampleCount = 1;
-        this->rtAttrs.Windowed = false;
-        this->rtAttrs.SwapInterval = 1;
-
+        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
         this->d3d11CurRenderTargetView = rt->d3d11RenderTargetView;
         this->d3d11CurDepthStencilView = rt->d3d11DepthStencilView;
     }
@@ -259,122 +247,117 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     if (nullptr == ds) {
         // the drawstate is still pending, invalidate rendering
         this->curDrawState = nullptr;
+        return;
     }
-    else {
-        o_assert_dbg(ds->d3d11DepthStencilState);
-        o_assert_dbg(ds->d3d11RasterizerState);
-        o_assert_dbg(ds->d3d11BlendState);
-        o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-        o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-        o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        this->curDrawState = ds;
-        o_assert_dbg(ds->shd);
-        ds->shd->select(ds->Setup.ShaderSelectionMask);
+    o_assert_dbg(ds->d3d11DepthStencilState);
+    o_assert_dbg(ds->d3d11RasterizerState);
+    o_assert_dbg(ds->d3d11BlendState);
+    o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-        // apply state objects (if state has changed)
-        if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
-            this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
-            this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
-        }
-        if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
-            (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
+    this->curDrawState = ds;
+    o_assert_dbg(ds->shd);
 
-            this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
-            this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
-            this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
-        }
-        if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
-            glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
+    // apply state objects (if state has changed)
+    if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
+        this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
+        this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+    }
+    if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
+        (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
+
+        this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
+        this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
+        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
+    }
+    if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
+        glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
         
-            this->d3d11CurBlendState = ds->d3d11BlendState;
-            this->curBlendColor = ds->Setup.BlendColor;
-            this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
-        }
+        this->d3d11CurBlendState = ds->d3d11BlendState;
+        this->curBlendColor = ds->Setup.BlendColor;
+        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
+    }
 
-        // apply vertex buffers
-        bool vbDirty = false;
-        const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
-        o_assert_dbg(vbNumSlots == this->d3d11CurVertexBuffers.Size());
-        for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
-            if (this->d3d11CurVertexBuffers[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
-                this->d3d11CurVertexBuffers[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
-                vbDirty = true;
-            }
-            if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
-                this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
-                vbDirty = true;
-            }
-            if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
-                this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
-                vbDirty = true;
-            }
+    // apply vertex buffers
+    bool vbDirty = false;
+    const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
+    o_assert_dbg(vbNumSlots == this->d3d11CurVBs.Size());
+    for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
+        if (this->d3d11CurVBs[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
+            this->d3d11CurVBs[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
+            vbDirty = true;
         }
-        if (vbDirty) {
-            this->d3d11DeviceContext->IASetVertexBuffers(
-                0,                                      // StartSlot 
-                vbNumSlots,                             // NumBuffers
-                &(this->d3d11CurVertexBuffers[0]),      // ppVertexBuffers
-                &(this->curVertexStrides[0]),           // pStrides
-                &(this->curVertexOffsets[0]));          // pOffsets
+        if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
+            this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
+            vbDirty = true;
         }
+        if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
+            this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
+            vbDirty = true;
+        }
+    }
+    if (vbDirty) {
+        this->d3d11DeviceContext->IASetVertexBuffers(
+            0,                                      // StartSlot 
+            vbNumSlots,                             // NumBuffers
+            &(this->d3d11CurVBs[0]),      // ppVertexBuffers
+            &(this->curVertexStrides[0]),           // pStrides
+            &(this->curVertexOffsets[0]));          // pOffsets
+    }
+    if (this->d3d11CurPrimitiveTopology != ds->meshes[0]->d3d11PrimTopology) {
+        this->d3d11CurPrimitiveTopology = ds->meshes[0]->d3d11PrimTopology;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->meshes[0]->d3d11PrimTopology);
+    }
 
-        // apply optional index buffer (can be nullptr!)
-        if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
-            this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
-            DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
-            this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
-        }
+    // apply optional index buffer (can be nullptr!)
+    if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
+        this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
+        DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
+        this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
+    }
 
-        // apply input layout
-        const uint32 selIndex = ds->shd->getSelectionIndex();
-        o_assert_dbg(ds->d3d11InputLayouts[selIndex]);
-        if (this->d3d11CurInputLayout != ds->d3d11InputLayouts[selIndex]) {
-            this->d3d11CurInputLayout = ds->d3d11InputLayouts[selIndex];
-            this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayouts[selIndex]);
-        }
+    // apply input layout and shaders
+    if (this->d3d11CurInputLayout != ds->d3d11InputLayout) {
+        this->d3d11CurInputLayout = ds->d3d11InputLayout;
+        this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayout);
+    }
 
-        // apply shaders
-        ID3D11VertexShader* d3d11VS = ds->shd->getSelectedVertexShader();
-        if (this->d3d11CurVertexShader != d3d11VS) {
-            this->d3d11CurVertexShader = d3d11VS;
-            this->d3d11DeviceContext->VSSetShader(d3d11VS, NULL, 0);
-        }
-        ID3D11PixelShader* d3d11PS = ds->shd->getSelectedPixelShader();
-        if (this->d3d11CurPixelShader != d3d11PS) {
-            this->d3d11CurPixelShader = d3d11PS;
-            this->d3d11DeviceContext->PSSetShader(d3d11PS, NULL, 0);
-        }
+    // apply shaders
+    if (this->d3d11CurVertexShader != ds->d3d11VertexShader) {
+        this->d3d11CurVertexShader = ds->d3d11VertexShader;
+        this->d3d11DeviceContext->VSSetShader(ds->d3d11VertexShader, NULL, 0);
+    }
+    if (this->d3d11CurPixelShader != ds->d3d11PixelShader) {
+        this->d3d11CurPixelShader = ds->d3d11PixelShader;
+        this->d3d11DeviceContext->PSSetShader(ds->d3d11PixelShader, NULL, 0);
+    }
         
-        // apply constant buffers
-        ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-        int32 cbBindSlot = 0;
-        const int numConstantBuffers = ds->shd->getNumUniformBlockEntries();
-        o_assert_dbg(numConstantBuffers < GfxConfig::MaxNumUniformBlocks);
-        for (int cbIndex = 0; cbIndex < numConstantBuffers; cbIndex++) {
-            ID3D11Buffer* cb = ds->shd->getUniformBlockEntryAt(cbIndex, cbStage, cbBindSlot);
-            if (cb) {
-                o_assert_dbg(cbBindSlot != InvalidIndex);
-                if (ShaderType::VertexShader == cbStage) {
-                    if (this->d3d11CurVSConstantBuffers[cbBindSlot] != cb) {
-                        this->d3d11CurVSConstantBuffers[cbBindSlot] = cb;
-                        this->d3d11DeviceContext->VSSetConstantBuffers(cbBindSlot, 1, &cb);
-                    }
-                }
-                else {
-                    if (this->d3d11CurPSConstantBuffers[cbBindSlot] != cb) {
-                        this->d3d11CurPSConstantBuffers[cbBindSlot] = cb;
-                        this->d3d11DeviceContext->PSSetConstantBuffers(cbBindSlot, 1, &cb);
-                    }
-                }
-            }
+    // apply vertex-shader-stage constant buffers
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
+        // NOTE: cb can be nullptr!
+        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::VS, bindSlot);
+        if (this->d3d11CurVSCBs[bindSlot] != cb) {
+            this->d3d11CurVSCBs[bindSlot] = cb;
+            this->d3d11DeviceContext->VSSetConstantBuffers(bindSlot, 1, &cb);
+        }
+    }
+
+    // apply fragment-shader-stage constant buffers
+    for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
+        // NOTE: cb can be nullptr!
+        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::FS, bindSlot);
+        if (this->d3d11CurPSCBs[bindSlot] != cb) {
+            this->d3d11CurPSCBs[bindSlot] = cb;
+            this->d3d11DeviceContext->PSSetConstantBuffers(bindSlot, 1, &cb);
         }
     }
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(0 != layoutHash);
     if (nullptr == this->curDrawState) {
@@ -382,67 +365,82 @@ d3d11Renderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8
         return;
     }
 
-    // get the uniform-layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
-
-    // check whether the provided struct is type-compatible with the
-    // expected uniform block layout
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
     
-    // get the constant buffer entry from the program bundle
-    ShaderType::Code cbStage = ShaderType::InvalidShaderType;
-    int32 cbBindSlot = 0;
-    ID3D11Buffer* cb = shd->getUniformBlockEntryAt(blockIndex, cbStage, cbBindSlot);
+    #if ORYOL_DEBUG
+    // verify that the provided uniform block struct is type compatible
+    // with the uniform block expected at the binding stage and slot
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    o_assert(byteSize == layout.ByteSize());
+    #endif
 
-    // set textures and samplers
-    const uint8* cbufferPtr = nullptr;
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        if (comp.Type == UniformType::Texture) {
-            const int32 texBindSlotIndex = comp.BindSlotIndex;
-            o_assert_dbg(texBindSlotIndex != InvalidIndex);
-            const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-            const Id& resId = *(const Id*)valuePtr;
-            const texture* tex = this->pointers.texturePool->Lookup(resId);
-            o_assert_dbg(tex);
-            o_assert_dbg(tex->d3d11ShaderResourceView);
-            o_assert_dbg(tex->d3d11SamplerState);
-            if (ShaderType::VertexShader == cbStage) {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurVSShaderResourceViews[texBindSlotIndex]) {
-                    this->d3d11CurVSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->VSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                }
-                if (tex->d3d11SamplerState != this->d3d11CurVSSamplerStates[texBindSlotIndex]) {
-                    this->d3d11CurVSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->VSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
-                }
-            }
-            else {
-                if (tex->d3d11ShaderResourceView != this->d3d11CurPSShaderResourceViews[texBindSlotIndex]) {
-                    this->d3d11CurPSShaderResourceViews[texBindSlotIndex] = tex->d3d11ShaderResourceView;
-                    this->d3d11DeviceContext->PSSetShaderResources(texBindSlotIndex, 1, &tex->d3d11ShaderResourceView);
-                }
-                if (tex->d3d11SamplerState != this->d3d11CurPSSamplerStates[texBindSlotIndex]) {
-                    this->d3d11CurPSSamplerStates[texBindSlotIndex] = tex->d3d11SamplerState;
-                    this->d3d11DeviceContext->PSSetSamplers(texBindSlotIndex, 1, &tex->d3d11SamplerState);
-                }
-            }
-        }
-        else {
-            // found the start of the cbuffer struct
-            cbufferPtr = ptr + layout.ComponentByteOffset(compIndex);
-            break;
+    // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
+    ID3D11Buffer* cb = shd->getConstantBuffer(ubBindStage, ubBindSlot);
+    o_assert_dbg(cb);
+    this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, ptr, 0, 0);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+
+    // if any of the provided texture pointers are not valid, this means one of the
+    // textures isn't valid yet, in this case, disable rendering for the next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
         }
     }
 
-    // apply optional uniform block
-    // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
-    if (cb) {
-        o_assert_dbg(cbufferPtr);
-        this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, cbufferPtr, 0, 0);
+    // check if the provided texture types are compatible
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // apply textures and samplers
+    if (ShaderStage::VS == bindStage) {
+        for (int i = 0; i < numTextures; i++) {
+            if (textures[i]->d3d11ShaderResourceView != this->d3d11CurVSSRVs[i]) {
+                this->d3d11CurVSSRVs[i] = textures[i]->d3d11ShaderResourceView;
+                this->d3d11DeviceContext->VSSetShaderResources(i, 1, &(textures[i]->d3d11ShaderResourceView));
+            }
+            if (textures[i]->d3d11SamplerState != this->d3d11CurVSSamplers[i]) {
+                this->d3d11CurVSSamplers[i] = textures[i]->d3d11SamplerState;
+                this->d3d11DeviceContext->VSSetSamplers(i, 1, &(textures[i]->d3d11SamplerState));
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < numTextures; i++) {
+            if (textures[i]->d3d11ShaderResourceView != this->d3d11CurPSSRVs[i]) {
+                this->d3d11CurPSSRVs[i] = textures[i]->d3d11ShaderResourceView;
+                this->d3d11DeviceContext->PSSetShaderResources(i, 1, &(textures[i]->d3d11ShaderResourceView));
+            }
+            if (textures[i]->d3d11SamplerState != this->d3d11CurPSSamplers[i]) {
+                this->d3d11CurPSSamplers[i] = textures[i]->d3d11SamplerState;
+                this->d3d11DeviceContext->PSSetSamplers(i, 1, &(textures[i]->d3d11SamplerState));
+            }
+        }
     }
 }
 
@@ -455,10 +453,6 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
         return;
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroup.PrimType != this->curPrimitiveTopology) {
-        this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
-    }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
@@ -495,10 +489,6 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
         return;
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroup.PrimType != this->curPrimitiveTopology) {
-        this->curPrimitiveTopology = primGroup.PrimType;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(d3d11Types::asPrimitiveTopology(primGroup.PrimType));
-    }
     const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexedInstanced(primGroup.NumElements, numInstances, primGroup.BaseElement, 0, 0);
@@ -583,16 +573,16 @@ d3d11Renderer::invalidateMeshState() {
 
     this->d3d11CurIndexBuffer = nullptr;
     this->d3d11CurInputLayout = nullptr;
-    this->d3d11CurVertexBuffers.Fill(nullptr);
+    this->d3d11CurVBs.Fill(nullptr);
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
-    this->curPrimitiveTopology = PrimitiveType::InvalidPrimitiveType;
+    this->d3d11CurPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     this->d3d11DeviceContext->IASetInputLayout(nullptr);
     this->d3d11DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
     this->d3d11DeviceContext->IASetVertexBuffers(
         0, 
-        this->d3d11CurVertexBuffers.Size(),
-        &(this->d3d11CurVertexBuffers[0]),
+        this->d3d11CurVBs.Size(),
+        &(this->d3d11CurVBs[0]),
         &(this->curVertexStrides[0]),
         &(this->curVertexOffsets[0]));
 }
@@ -606,12 +596,12 @@ d3d11Renderer::invalidateShaderState() {
 
     this->d3d11CurVertexShader = nullptr;
     this->d3d11CurPixelShader = nullptr;
-    this->d3d11CurVSConstantBuffers.Fill(nullptr);
-    this->d3d11CurPSConstantBuffers.Fill(nullptr);
+    this->d3d11CurVSCBs.Fill(nullptr);
+    this->d3d11CurPSCBs.Fill(nullptr);
     this->d3d11DeviceContext->VSSetShader(nullptr, nullptr, 0);
     this->d3d11DeviceContext->PSSetShader(nullptr, nullptr, 0);
-    this->d3d11DeviceContext->VSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurVSConstantBuffers[0]);
-    this->d3d11DeviceContext->PSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocks, &this->d3d11CurPSConstantBuffers[0]);
+    this->d3d11DeviceContext->VSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocksPerStage, &this->d3d11CurVSCBs[0]);
+    this->d3d11DeviceContext->PSSetConstantBuffers(0, GfxConfig::MaxNumUniformBlocksPerStage, &this->d3d11CurPSCBs[0]);
 }
 
 //------------------------------------------------------------------------------
@@ -634,18 +624,18 @@ void
 d3d11Renderer::invalidateTextureState() {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    ID3D11ShaderResourceView* const nullViews[GfxConfig::MaxNumUniformLayoutComponents] = { 0 };
-    this->d3d11DeviceContext->VSSetShaderResources(0, GfxConfig::MaxNumUniformLayoutComponents, nullViews);
-    this->d3d11DeviceContext->PSSetShaderResources(0, GfxConfig::MaxNumUniformLayoutComponents, nullViews);
+    ID3D11ShaderResourceView* const nullSRVs[GfxConfig::MaxNumTexturesPerStage] = { 0 };
+    this->d3d11DeviceContext->VSSetShaderResources(0, GfxConfig::MaxNumTexturesPerStage, nullSRVs);
+    this->d3d11DeviceContext->PSSetShaderResources(0, GfxConfig::MaxNumTexturesPerStage, nullSRVs);
 
-    ID3D11SamplerState* const nullSamplerStates[GfxConfig::MaxNumUniformLayoutComponents] = { 0 };
-    this->d3d11DeviceContext->VSSetSamplers(0, GfxConfig::MaxNumUniformLayoutComponents, nullSamplerStates);
-    this->d3d11DeviceContext->PSSetSamplers(0, GfxConfig::MaxNumUniformLayoutComponents, nullSamplerStates);
+    ID3D11SamplerState* const nullSamplers[GfxConfig::MaxNumTexturesPerStage] = { 0 };
+    this->d3d11DeviceContext->VSSetSamplers(0, GfxConfig::MaxNumTexturesPerStage, nullSamplers);
+    this->d3d11DeviceContext->PSSetSamplers(0, GfxConfig::MaxNumTexturesPerStage, nullSamplers);
 
-    this->d3d11CurVSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurPSShaderResourceViews.Fill(nullptr);
-    this->d3d11CurVSSamplerStates.Fill(nullptr);
-    this->d3d11CurPSSamplerStates.Fill(nullptr);
+    this->d3d11CurVSSRVs.Fill(nullptr);
+    this->d3d11CurPSSRVs.Fill(nullptr);
+    this->d3d11CurVSSamplers.Fill(nullptr);
+    this->d3d11CurPSSamplers.Fill(nullptr);
 }
 
 } // namespace _priv

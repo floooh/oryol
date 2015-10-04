@@ -46,6 +46,7 @@ private:
     ResourceLabel resLabel;
     Id fontTexture;
     Id mesh;
+    Id shader;
     Id drawState;
     ImDrawVert vertexData[MaxNumVertices];
     ImDrawIdx indexData[MaxNumIndices];

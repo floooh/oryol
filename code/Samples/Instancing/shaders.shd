@@ -2,10 +2,12 @@
 //  Instancing sample shaders
 //------------------------------------------------------------------------------
 
-@vs vs
 @uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
+@uniform mat4 mvp ModelViewProjection
 @end
+
+@vs vs
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 color0
 @in vec4 instance0

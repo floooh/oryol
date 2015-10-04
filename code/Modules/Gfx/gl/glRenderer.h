@@ -25,7 +25,8 @@ class texture;
 class drawState;
 class mesh;
 class shader;
-    
+class textureBlock;
+
 class glRenderer {
 public:
     /// constructor
@@ -58,7 +59,9 @@ public:
     /// apply draw state
     void applyDrawState(drawState* ds);
     /// apply a shader uniform block
-    void applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    /// apply a texture block
+    void applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -106,8 +109,6 @@ private:
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state
     void applyRasterizerState(const RasterizerState& rs);
-    /// apply shader to use for rendering
-    void applyShader(shader* shd, uint32 selMask);
     /// apply mesh state
     void applyMeshState(const drawState* ds);
 

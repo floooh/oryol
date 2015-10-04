@@ -154,7 +154,7 @@ DrawCallPerfApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;

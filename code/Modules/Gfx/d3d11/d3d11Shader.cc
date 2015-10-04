@@ -20,8 +20,8 @@ d3d11Shader::~d3d11Shader() {
         o_assert_dbg(nullptr == this->programEntries[i].vertexShader);
         o_assert_dbg(nullptr == this->programEntries[i].pixelShader);
     }
-    for (int32 i = 0; i < this->numUniformBlockEntries; i++) {
-        o_assert_dbg(nullptr == this->uniformBlockEntries[i].constantBuffer);
+    for (auto cb : this->constantBuffers) {
+        o_assert_dbg(nullptr == cb);
     }
 #endif
 }
@@ -29,12 +29,9 @@ d3d11Shader::~d3d11Shader() {
 //------------------------------------------------------------------------------
 void
 d3d11Shader::Clear() {
-    this->selMask = 0xFFFFFFFF;
-    this->selIndex = 0;
     this->numPrograms = 0;
     this->programEntries.Fill(programEntry());
-    this->numUniformBlockEntries = 0;
-    this->uniformBlockEntries.Fill(ubEntry());
+    this->constantBuffers.Fill(nullptr);
     shaderBase::Clear();
 }
 
@@ -64,25 +61,57 @@ d3d11Shader::getNumPrograms() const {
 
 //------------------------------------------------------------------------------
 ID3D11VertexShader*
-d3d11Shader::getVertexShaderAt(int32 index) const {
+d3d11Shader::getVertexShaderAtIndex(int32 index) const {
     return this->programEntries[index].vertexShader;
 }
 
 //------------------------------------------------------------------------------
 ID3D11PixelShader*
-d3d11Shader::getPixelShaderAt(int32 index) const {
+d3d11Shader::getPixelShaderAtIndex(int32 index) const {
     return this->programEntries[index].pixelShader;
 }
 
 //------------------------------------------------------------------------------
+int32
+d3d11Shader::getProgIndexByMask(uint32 mask) const {
+    for (int i = 0; i < this->numPrograms; i++) {
+        if (this->programEntries[i].mask == mask) {
+            return i;
+        }
+    }
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+ID3D11VertexShader*
+d3d11Shader::getVertexShaderByMask(uint32 mask) const {
+    int32 progIndex = this->getProgIndexByMask(mask);
+    if (progIndex != InvalidIndex) {
+        return this->programEntries[progIndex].vertexShader;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+ID3D11PixelShader*
+d3d11Shader::getPixelShaderByMask(uint32 mask) const {
+    int32 progIndex = this->getProgIndexByMask(mask);
+    if (progIndex != InvalidIndex) {
+        return this->programEntries[progIndex].pixelShader;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
 void
-d3d11Shader::addUniformBlockEntry(ID3D11Buffer* cb, ShaderType::Code bindShaderStage, int32 bindSlotIndex) {
-    o_assert_dbg(this->numUniformBlockEntries < GfxConfig::MaxNumUniformBlocks);
-    // NOTE: cb pointer can be 0!
-    ubEntry& entry = this->uniformBlockEntries[this->numUniformBlockEntries++];
-    entry.constantBuffer = cb;
-    entry.bindShaderStage = bindShaderStage;
-    entry.bindSlotIndex = bindSlotIndex;
+d3d11Shader::addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb) {
+    o_assert_dbg(cb);
+    const int32 cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
+    this->constantBuffers[cbIndex] = cb;
 }
 
 } // namespace _priv

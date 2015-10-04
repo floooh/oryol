@@ -45,9 +45,9 @@ tbOryolBatchRenderer::Setup() {
     
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
-    this->setupWhiteTexture();
     this->setupMesh();
-    this->setupDrawState();
+    this->setupShaderAndDrawState();
+    this->setupWhiteTexture();
     Gfx::PopResourceLabel();
     
     this->isValid = true;
@@ -67,6 +67,7 @@ tbOryolBatchRenderer::Discard() {
 void
 tbOryolBatchRenderer::setupWhiteTexture() {
     o_assert_dbg(!this->whiteTexture.IsValid());
+    o_assert_dbg(this->shader.IsValid());
     
     const int w = 4;
     const int h = 4;
@@ -74,10 +75,10 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     Memory::Fill(pixels, sizeof(pixels), 0xFF);
     
     auto texSetup = TextureSetup::FromPixelData(w, h, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.WrapU = TextureWrapMode::Repeat;
-    texSetup.WrapV = TextureWrapMode::Repeat;
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    texSetup.Sampler.WrapV = TextureWrapMode::Repeat;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = sizeof(pixels);
     this->whiteTexture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
 }
@@ -102,13 +103,13 @@ tbOryolBatchRenderer::setupMesh() {
 
 //------------------------------------------------------------------------------
 void
-tbOryolBatchRenderer::setupDrawState() {
+tbOryolBatchRenderer::setupShaderAndDrawState() {
     o_assert_dbg(this->mesh.IsValid());
     o_assert_dbg(!this->drawState.IsValid());
     
-    Id shd = Gfx::CreateResource(Shaders::TBUIShader::CreateSetup());
+    this->shader = Gfx::CreateResource(Shaders::TBUIShader::Setup());
     
-    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, shd);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -431,7 +432,7 @@ tbOryolBatchRenderer::flushBatch() {
         curBatch = &this->batches[this->curBatchIndex];
         curBatch->startIndex = this->curVertexIndex;
         curBatch->numVertices = 0;
-        curBatch->texture.Invalidate();        
+        curBatch->texture.Invalidate();
         curBatch->fragment = nullptr;
         curBatch->batchId = this->batchId;
         return &(this->batches[this->curBatchIndex]);
@@ -449,23 +450,21 @@ tbOryolBatchRenderer::drawBatches() {
     if (this->curBatchIndex > 1) {
 
         Shaders::TBUIShader::VSParams vsParams;
-        Shaders::TBUIShader::FSParams fsParams;
-
+        Shaders::TBUIShader::FSTextures fsTextures;
         vsParams.Ortho = glm::ortho(0.0f, float(this->screenRect.w),
             (float)this->screenRect.h, 0.0f,
             -1.0f, 1.0f);
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
-        
+
         this->tbClipRect = this->screenRect;
         Gfx::UpdateVertices(this->mesh, this->vertexData, vertexDataSize);
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(vsParams);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
+            fsTextures.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            fsParams.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
-            Gfx::ApplyUniformBlock(fsParams);
-            Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, batch.startIndex, batch.numVertices));
+            Gfx::ApplyDrawState(this->drawState, fsTextures);
+            Gfx::ApplyUniformBlock(vsParams);
+            Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }
         Gfx::ApplyScissorRect(this->screenRect.x, this->screenRect.y, this->screenRect.w, this->screenRect.h);
     }

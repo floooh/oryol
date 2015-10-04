@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 //  see https://github.com/ashima/webgl-noise
 //
-@block NoiseUtil
+@code_block NoiseUtil
 //
 // Description : Array and textureless GLSL 2D simplex noise function.
 //      Author : Ian McEwan, Ashima Arts.
@@ -80,6 +80,10 @@ _func float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
+@uniform_block fsParams FSParams
+    @uniform float time Time
+@end
+
 @vs offscreenVS
 @in vec4 position
 @in vec2 texcoord0
@@ -89,11 +93,9 @@ _func float snoise(vec2 v)
 @end
 
 @fs offscreenFS
+@use_uniform_block fsParams
 @highp float
-@use NoiseUtil
-@uniform_block fsParams FSParams
-    @uniform float time Time
-@end
+@use_code_block NoiseUtil
 @in vec2 uv
 
     vec2 dx = vec2(time, 0.0);
@@ -126,6 +128,10 @@ _func float snoise(vec2 v)
 //------------------------------------------------------------------------------
 //  Copy offscreen render target to back buffer
 //
+@texture_block fsTextures FSTextures
+@texture sampler2D tex Texture
+@end
+
 @vs copyVS
 @in vec4 position
 @in vec2 texcoord0
@@ -135,9 +141,7 @@ _func float snoise(vec2 v)
 @end
 
 @fs copyFS
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@use_texture_block fsTextures
 @in vec2 uv
     // scale back to 0..1
     _color = tex2D(tex, uv) * 0.01;

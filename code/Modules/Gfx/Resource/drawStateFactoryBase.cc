@@ -37,6 +37,12 @@ drawStateFactoryBase::Discard() {
 }
 
 //------------------------------------------------------------------------------
+bool
+drawStateFactoryBase::IsValid() const {
+    return this->isValid;
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 drawStateFactoryBase::SetupResource(drawState& ds) {
     o_assert_dbg(this->isValid);

@@ -28,11 +28,10 @@ TEST(TextureSetupTest) {
     CHECK(rt.ColorFormat == PixelFormat::RGB8);
     CHECK(rt.DepthFormat == PixelFormat::InvalidPixelFormat);
     CHECK(!rt.DepthRenderTarget.IsValid());
-    CHECK(rt.WrapU == TextureWrapMode::ClampToEdge);
-    CHECK(rt.WrapV == TextureWrapMode::ClampToEdge);
-    CHECK(rt.WrapW == TextureWrapMode::InvalidTextureWrapMode);
-    CHECK(rt.MagFilter == TextureFilterMode::Nearest);
-    CHECK(rt.MinFilter == TextureFilterMode::Nearest);
+    CHECK(rt.Sampler.WrapU == TextureWrapMode::ClampToEdge);
+    CHECK(rt.Sampler.WrapV == TextureWrapMode::ClampToEdge);
+    CHECK(rt.Sampler.MagFilter == TextureFilterMode::Nearest);
+    CHECK(rt.Sampler.MinFilter == TextureFilterMode::Nearest);
     
     // setup as absolute-size render target, with depth buffer
     auto rt0 = TextureSetup::RenderTarget(320, 256);
@@ -53,11 +52,10 @@ TEST(TextureSetupTest) {
     CHECK(rt0.ColorFormat == PixelFormat::RGBA8);
     CHECK(rt0.DepthFormat == PixelFormat::D24S8);
     CHECK(!rt0.DepthRenderTarget.IsValid());
-    CHECK(rt0.WrapU == TextureWrapMode::ClampToEdge);
-    CHECK(rt0.WrapV == TextureWrapMode::ClampToEdge);
-    CHECK(rt0.WrapW == TextureWrapMode::InvalidTextureWrapMode);
-    CHECK(rt0.MagFilter == TextureFilterMode::Nearest);
-    CHECK(rt0.MinFilter == TextureFilterMode::Nearest);
+    CHECK(rt0.Sampler.WrapU == TextureWrapMode::ClampToEdge);
+    CHECK(rt0.Sampler.WrapV == TextureWrapMode::ClampToEdge);
+    CHECK(rt0.Sampler.MagFilter == TextureFilterMode::Nearest);
+    CHECK(rt0.Sampler.MinFilter == TextureFilterMode::Nearest);
     
     // setup as relative-size render target, no depth buffer
     auto rt1 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
@@ -77,11 +75,10 @@ TEST(TextureSetupTest) {
     CHECK(rt1.ColorFormat == PixelFormat::R5G6B5);
     CHECK(rt1.DepthFormat == PixelFormat::InvalidPixelFormat);
     CHECK(!rt1.DepthRenderTarget.IsValid());
-    CHECK(rt1.WrapU == TextureWrapMode::ClampToEdge);
-    CHECK(rt1.WrapV == TextureWrapMode::ClampToEdge);
-    CHECK(rt1.WrapW == TextureWrapMode::InvalidTextureWrapMode);
-    CHECK(rt1.MagFilter == TextureFilterMode::Nearest);
-    CHECK(rt1.MinFilter == TextureFilterMode::Nearest);
+    CHECK(rt1.Sampler.WrapU == TextureWrapMode::ClampToEdge);
+    CHECK(rt1.Sampler.WrapV == TextureWrapMode::ClampToEdge);
+    CHECK(rt1.Sampler.MagFilter == TextureFilterMode::Nearest);
+    CHECK(rt1.Sampler.MinFilter == TextureFilterMode::Nearest);
     
     // setup as relative-size render target, with depth buffer
     auto rt2 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
@@ -102,11 +99,10 @@ TEST(TextureSetupTest) {
     CHECK(rt2.ColorFormat == PixelFormat::RGBA4);
     CHECK(rt2.DepthFormat == PixelFormat::D16);
     CHECK(!rt2.DepthRenderTarget.IsValid());
-    CHECK(rt2.WrapU == TextureWrapMode::ClampToEdge);
-    CHECK(rt2.WrapV == TextureWrapMode::ClampToEdge);
-    CHECK(rt2.WrapW == TextureWrapMode::InvalidTextureWrapMode);
-    CHECK(rt2.MagFilter == TextureFilterMode::Nearest);
-    CHECK(rt2.MinFilter == TextureFilterMode::Nearest);
+    CHECK(rt2.Sampler.WrapU == TextureWrapMode::ClampToEdge);
+    CHECK(rt2.Sampler.WrapV == TextureWrapMode::ClampToEdge);
+    CHECK(rt2.Sampler.MagFilter == TextureFilterMode::Nearest);
+    CHECK(rt2.Sampler.MinFilter == TextureFilterMode::Nearest);
     
     // setup as shared-depth render target
     auto rt3 = TextureSetup::SharedDepthRenderTarget(Id(1, 2, GfxResourceType::Texture));
@@ -127,10 +123,9 @@ TEST(TextureSetupTest) {
     CHECK(rt3.DepthRenderTarget.SlotIndex == 2);
     CHECK(rt3.DepthRenderTarget.Type == GfxResourceType::Texture);
     CHECK(rt3.DepthRenderTarget.UniqueStamp == 1);
-    CHECK(rt3.WrapU == TextureWrapMode::ClampToEdge);
-    CHECK(rt3.WrapV == TextureWrapMode::ClampToEdge);
-    CHECK(rt3.WrapW == TextureWrapMode::InvalidTextureWrapMode);
-    CHECK(rt3.MagFilter == TextureFilterMode::Nearest);
-    CHECK(rt3.MinFilter == TextureFilterMode::Nearest);
+    CHECK(rt3.Sampler.WrapU == TextureWrapMode::ClampToEdge);
+    CHECK(rt3.Sampler.WrapV == TextureWrapMode::ClampToEdge);
+    CHECK(rt3.Sampler.MagFilter == TextureFilterMode::Nearest);
+    CHECK(rt3.Sampler.MinFilter == TextureFilterMode::Nearest);
 }
 

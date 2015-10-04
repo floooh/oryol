@@ -5,7 +5,7 @@
 //  http://www.iquilezles.org/default.html
 //------------------------------------------------------------------------------
 
-@block VSFuncs
+@code_block VSFuncs
 // compute eye position
 _func vec3 eyePos(float time, vec3 center) {
     return center + vec3(sin(time * 0.1) * 5.0, 2.0, cos(time * 0.1) * 5.0);
@@ -31,11 +31,13 @@ _func lookatResult lookat(vec3 eye, vec3 center,vec3 up) {
 //  Vertex shader, just shift the texcoord to -1..+1 and hand it over to
 //  the fragment shader.
 //
-@vs vs
-@use VSFuncs
 @uniform_block params Params
     @uniform float time Time
 @end
+
+@vs vs
+@use_code_block VSFuncs
+@use_uniform_block params
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
@@ -58,7 +60,7 @@ _func lookatResult lookat(vec3 eye, vec3 center,vec3 up) {
     sinTime.w = sin(time * 0.125);
 @end
 
-@block FSFuncs
+@code_block FSFuncs
 // smooth-minimum, see here: http://iquilezles.org/www/articles/smin/smin.htm
 _func float smin(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a)/k, 0.0, 1.0);
@@ -118,7 +120,6 @@ _func float dScene(vec4 sinTime, vec3 p) {
     return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0,1.0,1.0)), 0.2));
 }
 
-
 //------------------------------------------------------------------------------
 //  normal estimation function
 //
@@ -135,7 +136,7 @@ _func vec3 normal(vec4 sinTime, vec3 p) {
 //  The fragment shader where the magic happens.
 //
 @fs fs
-@use FSFuncs
+@use_code_block FSFuncs
 @highp float
 @in vec2 uv
 @in vec3 eye

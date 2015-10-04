@@ -129,6 +129,7 @@ public:
     /// return true for valid render target color formats
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
+            case RGB8:  // note: this is not a valid rt fmt on some platforms, but is extended to RGBA8 there!
             case RGBA8:
             case RGBA32F:
             case RGBA16F:
@@ -375,7 +376,7 @@ public:
         Texture,            ///< a texture
         Mesh,               ///< a mesh
         Shader,             ///< a shader
-        DrawState,          ///< draw state resource
+        DrawState,          ///< a draw-state
 
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,
@@ -384,19 +385,19 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ShaderType
+    @class Oryol::ShaderStage
     @ingroup Gfx
-    @brief shader types (vertex shader, fragment shader)
+    @brief the shader stages (vertex shader, fragment shader)
 */
-class ShaderType {
+class ShaderStage {
 public:
-    /// shader types enum
+    /// shader stages enum
     enum Code {
-        VertexShader = 0,
-        FragmentShader,
+        VS = 0,
+        FS,
 
-        NumShaderTypes,
-        InvalidShaderType = 0xFFFFFFFF,
+        NumShaderStages,
+        InvalidShaderStage = 0xFFFFFFFF,
     };
 };
 
@@ -409,16 +410,13 @@ public:
 class TextureFilterMode {
 public:
     /// filtering modes
-    enum Code {
-        Nearest = 0,
+    enum Code : uint16 {
+        Nearest,
         Linear,
         NearestMipmapNearest,
         NearestMipmapLinear,
         LinearMipmapNearest,
         LinearMipmapLinear,
-
-        NumTextureFilterModes,
-        InvalidTextureFilterMode = 0xFFFFFFFF,
     };
 };
 
@@ -450,13 +448,10 @@ public:
 class TextureWrapMode {
 public:
     /// wrap modes
-    enum Code {
-        ClampToEdge = 0,
+    enum Code : uint16 {
+        ClampToEdge,
         Repeat,
         MirroredRepeat,
-
-        NumTextureWrapModes,
-        InvalidTextureWrapMode = 0xFFFFFFFF,
     };
 };
 
@@ -465,6 +460,11 @@ public:
     @class Oryol::Usage
     @ingroup Gfx
     @brief graphics resource usage types
+
+    FIXME: need to clean these up: 
+        - Immutable:    required initialization data
+        - Dynamic:      need better name, only updated once or infrequently
+        - Stream:       changed every frame
 */
 class Usage {
 public:
@@ -789,7 +789,6 @@ public:
         Mat4,
         Int,
         Bool,
-        Texture,
 
         NumUniformTypes,
         InvalidUniformType,
@@ -807,7 +806,6 @@ public:
             case Mat4:      return 4 * 4 * sizeof(float32);
             case Int:       return sizeof(int32);
             case Bool:      return sizeof(int32);
-            case Texture:   return sizeof(Id);
             default:
                 o_error("invalid uniform type code!\n");
                 return 0;

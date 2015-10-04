@@ -28,11 +28,11 @@ private:
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    Shaders::RenderTarget::Params offscreenParams;
+    Shaders::RenderTarget::VSParams offscreenParams;
     Shaders::Main::VSParams displayVSParams;
-    Shaders::Main::FSParams displayFSParams;
-    ClearState offscreenClearState;
-    ClearState displayClearState;
+    Shaders::Main::FSTextures displayFSTextures;
+    ClearState offscreenClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    ClearState displayClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -52,11 +52,10 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::Draw(0);
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    Gfx::ApplyDefaultRenderTarget(this->displayClearState);
+    Gfx::ApplyDrawState(this->displayDrawState, this->displayFSTextures);
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::ApplyUniformBlock(this->displayFSParams);
     Gfx::Draw(0);
     
     Gfx::CommitFrame();
@@ -69,20 +68,22 @@ SimpleRenderTargetApp::OnRunning() {
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample"));
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
+    gfxSetup.ClearHint = this->displayClearState;
+    Gfx::Setup(gfxSetup);
 
     // create an offscreen render target, we explicitly want repeat texture wrap mode
     // and linear blending...
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::D16;
-    rtSetup.WrapU = TextureWrapMode::Repeat;
-    rtSetup.WrapV = TextureWrapMode::Repeat;
-    rtSetup.MagFilter = TextureFilterMode::Linear;
-    rtSetup.MinFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
+    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    rtSetup.ClearHint = this->offscreenClearState;
     this->renderTarget = Gfx::CreateResource(rtSetup);
-    this->displayFSParams.Texture = this->renderTarget;
-    
+
     // create a donut (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
@@ -101,9 +102,12 @@ SimpleRenderTargetApp::OnInit() {
     Id sphere = Gfx::CreateResource(shapeBuilder.Result());
 
     // create shaders
-    Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::CreateSetup());
-    Id dispShader = Gfx::CreateResource(Shaders::Main::CreateSetup());
-    
+    Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::Setup());
+    Id dispShader = Gfx::CreateResource(Shaders::Main::Setup());
+
+    // create texture bundle for the main pass
+    this->displayFSTextures.Texture = this->renderTarget;
+
     // create one draw state for offscreen rendering, and one draw state for main target rendering
     auto offdsSetup = DrawStateSetup::FromMeshAndShader(torus, offScreenShader);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
@@ -124,10 +128,6 @@ SimpleRenderTargetApp::OnInit() {
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
 
-    // setup clear states
-    this->offscreenClearState.Color = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
-    this->displayClearState.Color = glm::vec4(0.25f, 0.45f, 0.65f, 1.0f);
-    
     return App::OnInit();
 }
 

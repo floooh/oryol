@@ -45,7 +45,7 @@ TriangleApp::OnInit() {
     meshBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
-    meshBuilder.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 3);
+    meshBuilder.PrimitiveGroups.Add(0, 3);
     meshBuilder.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f)
         .Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f)
@@ -55,7 +55,7 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f)
         .End();
     Id mesh = Gfx::CreateResource(meshBuilder.Result());
-    Id shd = Gfx::CreateResource(Shaders::Triangle::CreateSetup());
+    Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
     this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
 
     return App::OnInit();

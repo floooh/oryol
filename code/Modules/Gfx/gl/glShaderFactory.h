@@ -36,7 +36,7 @@ public:
 
 private:
     /// compile a GL shader (return 0 if failed)
-    GLuint compileShader(ShaderType::Code type, const char* sourceString, int sourceLen) const;
+    GLuint compileShader(ShaderStage::Code stage, const char* sourceString, int sourceLen) const;
 
     gfxPointers pointers;
     bool isValid;

@@ -136,6 +136,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     // create the color texture
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = MTLTextureType2D;
+    texDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     texDesc.pixelFormat = mtlTypes::asRenderTargetColorFormat(setup.ColorFormat);
     if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
         o_warn("mtlTextureFactory: not a renderable pixel format!\n");
@@ -157,7 +158,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     if (setup.HasDepth()) {
         if (setup.HasSharedDepth()) {
             // shared depth buffer
-            o_assert_dbg(sharedDepthProvider->mtlDepthTex);
+            o_assert_dbg(sharedDepthProvider && sharedDepthProvider->mtlDepthTex);
             tex.mtlDepthTex = sharedDepthProvider->mtlDepthTex;
         }
         else {
@@ -209,6 +210,7 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     // create metal texture object
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = mtlTypes::asTextureType(setup.Type);
+    texDesc.usage = MTLTextureUsageShaderRead;
     texDesc.pixelFormat = mtlTypes::asTextureFormat(setup.ColorFormat);
     if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
         o_warn("mtlTextureFactory: texture pixel format not supported in Metal!\n");
@@ -264,14 +266,14 @@ mtlTextureFactory::createSamplerState(texture& tex) {
     o_assert_dbg(nil == tex.mtlSamplerState);
 
     MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
-    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapU);
-    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapV);
+    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapU);
+    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapV);
     if (TextureType::Texture3D == tex.Setup.Type) {
-        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.WrapW);
+        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapW);
     }
-    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MinFilter);
-    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.MagFilter);
-    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.MinFilter);
+    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MinFilter);
+    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MagFilter);
+    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.Sampler.MinFilter);
     desc.lodMinClamp = 0.0f;
     desc.lodMaxClamp = FLT_MAX;
     desc.maxAnisotropy = 1;

@@ -45,9 +45,9 @@ void
 debugTextRenderer::setup() {
     o_assert(!this->valid);
     this->resourceLabel = Gfx::PushResourceLabel();
-    this->setupFontTexture();
     this->setupTextMesh();
     this->setupTextDrawState();
+    this->setupFontTexture();
     Gfx::PopResourceLabel();
     this->valid = true;
 }
@@ -131,24 +131,25 @@ debugTextRenderer::drawTextBuffer() {
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
         Shaders::TextShader::VSParams vsParams;
-        Shaders::TextShader::FSParams fsParams;
         const float w = 8.0f / Gfx::RenderTargetAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
-        fsParams.Texture = this->fontTexture;
-    
+
+        Shaders::TextShader::FSTextures texBlock;
+        texBlock.Texture = this->fontTexture;
+
         Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->textDrawState);
+        Gfx::ApplyDrawState(this->textDrawState, texBlock);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::ApplyUniformBlock(fsParams);
-        Gfx::Draw(PrimitiveGroup(PrimitiveType::Triangles, 0, numVertices));
+        Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupFontTexture() {
-    o_assert(!this->fontTexture.IsValid());
+    o_assert_dbg(!this->fontTexture.IsValid());
+    o_assert_dbg(this->textShader.IsValid());
     
     // convert the KC85/4 font into 8bpp image data
     const int32 numChars = 128;
@@ -180,15 +181,15 @@ debugTextRenderer::setupFontTexture() {
     data->Close();
     
     // setup texture, pixel format is 8bpp uncompressed
-    TextureSetup setup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);
-    setup.MinFilter = TextureFilterMode::Nearest;
-    setup.MagFilter = TextureFilterMode::Nearest;
-    setup.WrapU = TextureWrapMode::ClampToEdge;
-    setup.WrapV = TextureWrapMode::ClampToEdge;
-    setup.ImageSizes[0][0] = imgDataSize;
-    this->fontTexture = Gfx::CreateResource(setup, data);
-    o_assert(this->fontTexture.IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->fontTexture).State == ResourceState::Valid);
+    auto texSetup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    texSetup.ImageSizes[0][0] = imgDataSize;
+    this->fontTexture = Gfx::CreateResource(texSetup, data);
+    o_assert_dbg(fontTexture.IsValid());
+    o_assert_dbg(Gfx::QueryResourceInfo(fontTexture).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
@@ -218,10 +219,10 @@ debugTextRenderer::setupTextDrawState() {
     o_assert(this->textMesh.IsValid());
 
     // shader
-    Id shd = Gfx::CreateResource(Shaders::TextShader::CreateSetup());
+    this->textShader = Gfx::CreateResource(Shaders::TextShader::Setup());
     
     // finally create draw state
-    auto dss = DrawStateSetup::FromMeshAndShader(this->textMesh, shd);
+    auto dss = DrawStateSetup::FromMeshAndShader(this->textMesh, this->textShader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -244,10 +245,6 @@ debugTextRenderer::writeVertex(int32 index, uint8 x, uint8 y, uint8 u, uint8 v, 
     this->vertexData[index].u = (float) u;
     this->vertexData[index].v = (float) v;
     this->vertexData[index].color = rgba;
-/*
-    this->vertexData[index][0] = (v << 24) | (u << 16) | (y << 8) | x;
-    this->vertexData[index][1] = rgba;
-*/
     return index + 1;
 }
 

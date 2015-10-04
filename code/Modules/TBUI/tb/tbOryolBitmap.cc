@@ -5,6 +5,7 @@
 #include "tbOryolBitmap.h"
 #include "tbOryolBatchRenderer.h"
 #include "tb_bitmap_fragment.h"
+#include "TBUIShaders.h"
 
 namespace Oryol {
 namespace _priv {
@@ -48,15 +49,16 @@ tbOryolBitmap::SetData(uint32* data) {
 void
 tbOryolBitmap::createTexture(tb::uint32* data) {
     o_assert_dbg(!this->texture.IsValid());
+    o_assert_dbg(this->renderer && this->renderer->shader.IsValid());
 
     const int byteSize = this->width * this->height * sizeof(tb::uint32);
 
     this->label = Gfx::PushResourceLabel();
     auto texSetup = TextureSetup::FromPixelData(this->width, this->height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
-    texSetup.WrapU = TextureWrapMode::Repeat;
-    texSetup.WrapV = TextureWrapMode::Repeat;
-    texSetup.MinFilter = TextureFilterMode::Nearest;
-    texSetup.MagFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.WrapU = TextureWrapMode::Repeat;
+    texSetup.Sampler.WrapV = TextureWrapMode::Repeat;
+    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageSizes[0][0] = byteSize;
     this->texture = Gfx::CreateResource(texSetup, data, byteSize);
     

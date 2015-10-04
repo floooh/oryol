@@ -33,12 +33,14 @@ fips_begin_module(Gfx)
         BlendState.h
         ClearState.cc ClearState.h
         DepthStencilState.h
+        SamplerState.h
         Enums.h
         PrimitiveGroup.h
         RasterizerState.h
         StencilState.h
         VertexLayout.cc VertexLayout.h
-        UniformLayout.cc UniformLayout.h
+        UniformBlockLayout.cc UniformBlockLayout.h
+        TextureBlockLayout.cc TextureBlockLayout.h
         displayMgr.h
         renderer.h
         gfxPointers.h
@@ -51,16 +53,17 @@ fips_begin_module(Gfx)
         drawState.h
         drawStateFactoryBase.cc drawStateFactoryBase.h
         drawStateFactory.h
+        meshBase.cc meshBase.h
         mesh.h
         meshFactory.h
-        shader.h
         shaderBase.h
+        shader.h
         shaderFactory.h
+        textureBase.cc textureBase.h
         texture.h
         textureFactory.h
-        meshBase.cc meshBase.h
-        textureBase.cc textureBase.h
-        gfxResourceContainer.cc gfxResourceContainer.h
+        gfxResourceContainerBase.cc gfxResourceContainerBase.h
+        gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
     )
@@ -93,6 +96,14 @@ fips_begin_module(Gfx)
             gl_impl.h
         )
     endif()
+    if (ORYOL_D3D11 OR ORYOL_D3D12)
+        fips_dir(win)
+        fips_files(
+            win_decl.h
+            winDisplayMgr.cc winDisplayMgr.h
+            winInputDefs.h    
+        )
+    endif()
     if (ORYOL_D3D11)
         fips_dir(d3d11)
         fips_files(
@@ -108,7 +119,27 @@ fips_begin_module(Gfx)
             d3d11DrawState.h d3d11DrawState.cc
             d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
-            d3d11InputDefs.h
+        )
+    endif()
+    if (ORYOL_D3D12)
+        fips_dir(d3d12)
+        fips_files(
+            d3d12_impl.h d3d12_decl.h
+            d3d12Config.h
+            d3d12ResAllocator.cc d3d12ResAllocator.h
+            d3d12DescAllocator.cc d3d12DescAllocator.h
+            d3d12SamplerCache.cc d3d12SamplerCache.h
+            d3d12Types.cc d3d12Types.h
+            d3d12DisplayMgr.cc d3d12DisplayMgr.h
+            d3d12Mesh.cc d3d12Mesh.h
+            d3d12MeshFactory.cc d3d12MeshFactory.h
+            d3d12Shader.cc d3d12Shader.h
+            d3d12ShaderFactory.cc d3d12ShaderFactory.h
+            d3d12DrawState.cc d3d12DrawState.h
+            d3d12DrawStateFactory.cc d3d12DrawStateFactory.h
+            d3d12Texture.cc d3d12Texture.h
+            d3d12TextureFactory.cc d3d12TextureFactory.h
+            d3d12Renderer.cc d3d12Renderer.h
         )
     endif()
     if (ORYOL_METAL)
@@ -166,6 +197,9 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D11)
         fips_libs(d3d11)
     endif()
+    if (ORYOL_D3D12)
+        fips_libs(d3d12 dxgi)
+    endif()
     fips_deps(Resource Messaging IO Core)
 fips_end_module()
 
@@ -184,8 +218,6 @@ fips_begin_unittest(Gfx)
         glTypesTest.cc
     )
     oryol_shader(TestShaderLibrary.shd)
-    # FIXME: hmm strange, why doesn't recursive dependency resolution work here
-    # (have to explicitely link with Gfx)
     fips_deps(HTTP Gfx Assets)
 fips_end_unittest()
 

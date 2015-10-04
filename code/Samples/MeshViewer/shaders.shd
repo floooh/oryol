@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 //  common utility functions
 //
-@block Util
+@code_block Util
 _func vec4 gamma(vec4 c) {
     float p = 1.0/2.2;
     return vec4(pow(c.xyz, vec3(p, p, p)), c.w);
@@ -16,20 +16,26 @@ _func vec4 gamma(vec4 c) {
 //------------------------------------------------------------------------------
 //  normal visualization shader
 //
-@vs normalsVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
+@uniform_block normalsVSParams VSParams
+@uniform mat4 mvp ModelViewProjection
 @end
+
+@vs normalsVS
+@use_uniform_block normalsVSParams
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
+{
     _position = mul(mvp, position);
     nrm = normal;
+}
 @end
 
 @fs normalsFS
 @in vec4 nrm
+{
     _color = nrm * 0.5 + 0.5;
+}
 @end
 
 @bundle Normals
@@ -39,27 +45,34 @@ _func vec4 gamma(vec4 c) {
 //------------------------------------------------------------------------------
 //  lambert shader
 //
-@vs lambertVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
-    @uniform mat4 model Model
+@uniform_block lambertVSParams VSParams
+@uniform mat4 mvp ModelViewProjection
+@uniform mat4 model Model
 @end
+
+@uniform_block lambertFSParams FSParams
+@uniform vec3 lightDir LightDir     // light dir in global space
+@uniform vec4 lightColor LightColor
+@uniform vec4 matDiffuse MatDiffuse
+@uniform bool gammaCorrect GammaCorrect
+@end
+
+@vs lambertVS
+@use_uniform_block lambertVSParams
 @in vec4 position
 @in vec3 normal
 @out vec3 N
+{
     _position = mul(mvp, position);
     N = mul(model, vec4(normal, 0.0)).xyz;
+}
 @end
 
 @fs lambertFS
-@use Util
-@uniform_block fsParams FSParams
-    @uniform vec3 lightDir LightDir     // light dir in global space
-    @uniform vec4 lightColor LightColor
-    @uniform vec4 matDiffuse MatDiffuse
-    @uniform bool gammaCorrect GammaCorrect
-@end
+@use_code_block Util
+@use_uniform_block lambertFSParams
 @in vec3 N
+{
     vec3 l = lightDir;
     vec3 n = normalize(N);
     float n_dot_l = max(dot(n, l), 0.0);
@@ -70,6 +83,7 @@ _func vec4 gamma(vec4 c) {
     else {
         _color = col;
     }
+}
 @end
 
 @bundle Lambert
@@ -79,33 +93,40 @@ _func vec4 gamma(vec4 c) {
 //------------------------------------------------------------------------------
 //  phong shader
 //
-@vs phongVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
-    @uniform mat4 model Model
+@uniform_block phongVSParams VSParams
+@uniform mat4 mvp ModelViewProjection
+@uniform mat4 model Model
 @end
+
+@uniform_block phongFSParams FSParams
+@uniform vec3 lightDir LightDir     // light dir in global space
+@uniform vec3 eyePos EyePos
+@uniform vec4 lightColor LightColor
+@uniform vec4 matDiffuse MatDiffuse
+@uniform vec4 matSpecular MatSpecular
+@uniform bool gammaCorrect GammaCorrect
+@uniform float matSpecularPower MatSpecularPower
+@end
+
+@vs phongVS
+@use_uniform_block phongVSParams
 @in vec4 position
 @in vec4 normal
 @out vec3 N
 @out vec3 P
+{
     _position = mul(mvp, position);
     P = mul(model, position).xyz;
     N = mul(model, vec4(normal.xyz, 0.0)).xyz;
+}
 @end
 
 @fs phongFS
-@use Util
-@uniform_block fsParams FSParams
-    @uniform vec3 lightDir LightDir     // light dir in global space
-    @uniform vec3 eyePos EyePos
-    @uniform vec4 lightColor LightColor
-    @uniform vec4 matDiffuse MatDiffuse
-    @uniform vec4 matSpecular MatSpecular
-    @uniform bool gammaCorrect GammaCorrect
-    @uniform float matSpecularPower MatSpecularPower
-@end
+@use_code_block Util
+@use_uniform_block phongFSParams
 @in vec3 N
 @in vec3 P
+{
     vec3 l = lightDir;
     vec3 n = normalize(N);
     vec3 v = normalize(eyePos - P);
@@ -121,6 +142,7 @@ _func vec4 gamma(vec4 c) {
     } else {
         _color = col;
     }
+}
 @end
 
 @bundle Phong

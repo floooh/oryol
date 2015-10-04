@@ -3,10 +3,12 @@
 //  Annotated GLSL shaders for Shapes sample
 //------------------------------------------------------------------------------
 
-@vs vs
 @uniform_block params Params
-    @uniform mat4 mvp ModelViewProjection
+@uniform mat4 mvp ModelViewProjection
 @end
+
+@vs vs
+@use_uniform_block params
 @in vec4 position
 @in vec4 color0
 @out vec4 color

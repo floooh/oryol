@@ -56,7 +56,6 @@ d3d11TextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
@@ -73,7 +72,6 @@ d3d11TextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    this->pointers.renderer->invalidateTextureState();
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
     }
@@ -139,7 +137,7 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
-        texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
+        sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
         o_assert_dbg(nullptr != sharedDepthProvider);
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
@@ -238,8 +236,6 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.NumMipMaps > 0);
-
-    // FIXME: test if texture format is supported
 
     if (setup.Type == TextureType::Texture3D) {
         o_warn("d3d11TextureFactory: 3d textures not yet implemented\n");
@@ -365,10 +361,10 @@ ID3D11SamplerState*
 d3d11TextureFactory::createSamplerState(const texture& tex) {
     D3D11_SAMPLER_DESC smpDesc;
     Memory::Clear(&smpDesc, sizeof(smpDesc));
-    smpDesc.Filter = d3d11Types::asSamplerFilter(tex.Setup.MagFilter, tex.Setup.MinFilter);
-    smpDesc.AddressU = d3d11Types::asTextureAddressMode(tex.Setup.WrapU);
-    smpDesc.AddressV = d3d11Types::asTextureAddressMode(tex.Setup.WrapV);
-    smpDesc.AddressW = d3d11Types::asTextureAddressMode(tex.Setup.WrapW);
+    smpDesc.Filter = d3d11Types::asSamplerFilter(tex.Setup.Sampler.MagFilter, tex.Setup.Sampler.MinFilter);
+    smpDesc.AddressU = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapU);
+    smpDesc.AddressV = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapV);
+    smpDesc.AddressW = d3d11Types::asTextureAddressMode(tex.Setup.Sampler.WrapW);
     smpDesc.MipLODBias = 0.0f;
     smpDesc.MaxAnisotropy = 1;
     smpDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;

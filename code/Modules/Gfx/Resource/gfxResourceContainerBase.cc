@@ -1,24 +1,24 @@
 //------------------------------------------------------------------------------
-//  gfxResourceContainer.cc
+//  gfxResourceContainerBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
 #include "IO/IO.h"
-#include "gfxResourceContainer.h"
+#include "gfxResourceContainerBase.h"
 #include "Gfx/Core/displayMgr.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-gfxResourceContainer::gfxResourceContainer() :
+gfxResourceContainerBase::gfxResourceContainerBase() :
 runLoopId(RunLoop::InvalidId) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
+gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->isValid());
     
     this->pointers = ptrs;
@@ -41,7 +41,7 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::discard() {
+gfxResourceContainerBase::discard() {
     o_assert_dbg(this->isValid());
     
     Core::PostRunLoop()->Remove(this->runLoopId);
@@ -65,7 +65,7 @@ gfxResourceContainer::discard() {
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const MeshSetup& setup) {
+gfxResourceContainerBase::Create(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(!setup.ShouldSetupFromFile());
 
@@ -86,7 +86,7 @@ gfxResourceContainer::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::Create(const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -109,7 +109,7 @@ gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int32 siz
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const TextureSetup& setup) {
+gfxResourceContainerBase::Create(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(!setup.ShouldSetupFromFile());
 
@@ -130,7 +130,7 @@ gfxResourceContainer::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::Create(const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -153,7 +153,7 @@ gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int32 
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::prepareAsync(const MeshSetup& setup) {
+gfxResourceContainerBase::prepareAsync(const MeshSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->meshPool.AllocId();
@@ -164,7 +164,7 @@ gfxResourceContainer::prepareAsync(const MeshSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     
     // the prepared resource may have been destroyed while it was loading
@@ -185,7 +185,7 @@ gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::prepareAsync(const TextureSetup& setup) {
+gfxResourceContainerBase::prepareAsync(const TextureSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->texturePool.AllocId();
@@ -196,7 +196,7 @@ gfxResourceContainer::prepareAsync(const TextureSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(this->isValid());
     
     // the prepared resource may have been destroyed while it was loading
@@ -217,7 +217,7 @@ gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, cons
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-gfxResourceContainer::failedAsync(const Id& resId) {
+gfxResourceContainerBase::failedAsync(const Id& resId) {
     o_assert_dbg(this->isValid());
     
     switch (resId.Type) {
@@ -248,7 +248,7 @@ gfxResourceContainer::failedAsync(const Id& resId) {
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const ShaderSetup& setup) {
+gfxResourceContainerBase::Create(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->registry.Lookup(setup.Locator);
@@ -268,7 +268,7 @@ gfxResourceContainer::Create(const ShaderSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const DrawStateSetup& setup) {
+gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->registry.Lookup(setup.Locator);
@@ -281,9 +281,8 @@ gfxResourceContainer::Create(const DrawStateSetup& setup) {
         drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
 
         // check if all referenced resources are loaded, if not defer draw state creation
-        const ResourceState::Code resState = this->queryDrawStateDependenciesState(&res);
-        if (resState == ResourceState::Pending)
-        {
+        const ResourceState::Code resState = this->queryDrawStateDepState(&res);
+        if (resState == ResourceState::Pending) {
             this->pendingDrawStates.Add(resId);
             this->drawStatePool.UpdateState(resId, ResourceState::Pending);
         }
@@ -297,8 +296,27 @@ gfxResourceContainer::Create(const DrawStateSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
+bool
+gfxResourceContainerBase::checkState(ResourceState::Code resState) const {
+    // helper function for the queryXxxState functions, returns true
+    // if the input state is Failed or Pending, fails hard on Initial or
+    // Setup state, otherwise returns false
+    switch (resState) {
+        case ResourceState::Failed:
+        case ResourceState::Pending:
+            return true;
+        case ResourceState::Initial:
+        case ResourceState::Setup:
+            o_error("gfxResourceContainerBase::checkState: can't happen!");
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
-gfxResourceContainer::queryDrawStateDependenciesState(const drawState* ds) {
+gfxResourceContainerBase::queryDrawStateDepState(const drawState* ds) {
     o_assert_dbg(ds);
 
     // this returns an overall state of the meshes attached to
@@ -307,47 +325,35 @@ gfxResourceContainer::queryDrawStateDependenciesState(const drawState* ds) {
         if (meshId.IsValid()) {
             const mesh* msh = this->meshPool.Get(meshId);
             if (msh) {
-                switch (msh->State) {
-                    case ResourceState::Failed:
-                        // at least one mesh has failed loading
-                        return ResourceState::Failed;
-                    case ResourceState::Pending:
-                        // at least one mesh has not finished loading
-                        return ResourceState::Pending;
-                    case ResourceState::Initial:
-                    case ResourceState::Setup:
-                        // this cannot happen
-                        o_error("can't happen!\n");
-                        return ResourceState::InvalidState;
-                    default:
-                        break;
+                if (this->checkState(msh->State)) {
+                    // Failed or Pending, exit early
+                    return msh->State;
                 }
             }
             else {
-                // the required mesh no longer exists
+                // the dependent resource no longer exists
                 return ResourceState::Failed;
             }
         }
     }
-    // fallthough means: all mesh dependencies are valid
+    // fallthrough means: all mesh dependencies are valid
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::handlePendingDrawStates() {
+gfxResourceContainerBase::handlePendingDrawStates() {
 
     // this goes through all pending draw states (where meshes are still
     // loading), checks whether meshes have finished loading (or failed to load)
     // and finishes the draw state creation
     for (int i = this->pendingDrawStates.Size() - 1; i >= 0; i--) {
-        const Id& resId = this->pendingDrawStates[i];
+        Id resId = this->pendingDrawStates[i];
         o_assert_dbg(resId.IsValid());
         drawState* ds = this->drawStatePool.Get(resId);
         if (ds) {
-            const ResourceState::Code state = this->queryDrawStateDependenciesState(ds);
+            const ResourceState::Code state = this->queryDrawStateDepState(ds);
             if (state != ResourceState::Pending) {
-                this->pendingDrawStates.Erase(i);
                 if (state == ResourceState::Valid) {
                     // all ok, can setup draw state
                     const ResourceState::Code newState = this->drawStateFactory.SetupResource(*ds);
@@ -359,6 +365,7 @@ gfxResourceContainer::handlePendingDrawStates() {
                     o_assert_dbg(state == ResourceState::Failed);
                     this->drawStatePool.UpdateState(resId, state);
                 }
+                this->pendingDrawStates.Erase(i);
             }
         }
         else {
@@ -372,7 +379,7 @@ gfxResourceContainer::handlePendingDrawStates() {
 
 //------------------------------------------------------------------------------
 Id
-gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
+gfxResourceContainerBase::Load(const Ptr<ResourceLoader>& loader) {
     o_assert_dbg(this->isValid());
 
     Id resId = this->registry.Lookup(loader->Locator());
@@ -388,7 +395,7 @@ gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::Destroy(ResourceLabel label) {
+gfxResourceContainerBase::Destroy(ResourceLabel label) {
     o_assert_dbg(this->isValid());
     
     Array<Id> ids = this->registry.Remove(label);
@@ -441,7 +448,7 @@ gfxResourceContainer::Destroy(ResourceLabel label) {
                 this->drawStatePool.Unassign(id);
             }
             break;
-                
+
             default:
                 o_assert(false);
                 break;
@@ -451,7 +458,7 @@ gfxResourceContainer::Destroy(ResourceLabel label) {
     
 //------------------------------------------------------------------------------
 void
-gfxResourceContainer::update() {
+gfxResourceContainerBase::update() {
     o_assert_dbg(this->isValid());
     
     /// call update method on resource pools (this is cheap)
@@ -469,13 +476,13 @@ gfxResourceContainer::update() {
         }
     }
 
-    // handle drawstates with pending dependendies
+    // handle drawStates with pending dependendies
     this->handlePendingDrawStates();
 }
 
 //------------------------------------------------------------------------------
 ResourceInfo
-gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
+gfxResourceContainerBase::QueryResourceInfo(const Id& resId) const {
     o_assert_dbg(this->isValid());
     
     switch (resId.Type) {
@@ -495,7 +502,7 @@ gfxResourceContainer::QueryResourceInfo(const Id& resId) const {
 
 //------------------------------------------------------------------------------
 ResourcePoolInfo
-gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
+gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
     o_assert_dbg(this->isValid());
     
     switch (resType) {
@@ -515,7 +522,7 @@ gfxResourceContainer::QueryPoolInfo(GfxResourceType::Code resType) const {
 
 //------------------------------------------------------------------------------
 int32
-gfxResourceContainer::QueryFreeSlots(GfxResourceType::Code resourceType) const {
+gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) const {
     o_assert_dbg(this->isValid());
 
     switch (resourceType) {

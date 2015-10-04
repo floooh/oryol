@@ -16,6 +16,7 @@ namespace _priv {
 
 class renderer;
 class displayMgr;
+class gfxResourceContainer;
 class meshPool;
 class shaderPool;
 class texturePool;
@@ -25,6 +26,7 @@ struct gfxPointers {
 public:
     class renderer* renderer = nullptr;
     class displayMgr* displayMgr = nullptr;
+    class gfxResourceContainer* resContainer = nullptr; 
     class meshPool* meshPool = nullptr;
     class shaderPool* shaderPool = nullptr;
     class texturePool* texturePool = nullptr;

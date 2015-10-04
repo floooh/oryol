@@ -74,13 +74,6 @@ mtlShaderFactory::SetupResource(shader& shd) {
         shd.addShaders(setup.Mask(progIndex), vsFunc, fsFunc);
     }
 
-    // setup uniform block binding data
-    for (int i = 0; i < setup.NumUniformBlocks(); i++) {
-        const ShaderType::Code bindShaderStage = setup.UniformBlockShaderStage(i);
-        const int32 bindSlotIndex = setup.UniformBlockSlot(i);
-        shd.addUniformBlock(bindShaderStage, bindSlotIndex);
-    }
-
     return ResourceState::Valid;
 }
 

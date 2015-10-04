@@ -3,13 +3,19 @@
 //  Annotated GLSL shaders for SimpleRenderTarget sample
 //------------------------------------------------------------------------------
 
+@uniform_block vsParams VSParams
+    @uniform mat4 mvp ModelViewProjection
+@end
+
+@texture_block fsTextures FSTextures
+    @texture sampler2D tex Texture
+@end
+
 //------------------------------------------------------------------------------
 //  Vertex and fragment shaders for rendering into the offscreen render target
 //
 @vs renderTargetVS
-@uniform_block params Params
-    @uniform mat4 mvp ModelViewProjection
-@end
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
@@ -30,9 +36,7 @@
 //  Vertex and fragment shaders for rendering into the frame buffer.
 //
 @vs mainVS
-@uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProjection
-@end
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
 @in vec2 texcoord0
@@ -44,9 +48,7 @@
 @end
 
 @fs mainFS
-@uniform_block fsParams FSParams
-    @uniform sampler2D tex Texture
-@end
+@use_texture_block fsTextures
 @in vec2 uv
 @in vec4 nrm
     vec4 c = tex2D(tex, uv * vec2(20.0, 10.0));

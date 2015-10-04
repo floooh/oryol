@@ -347,17 +347,6 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyShader(shader* shd, uint32 mask) {
-    o_assert_dbg(this->valid);
-
-    shd->selectProgram(mask);
-    GLuint glProg = shd->getProgram();
-    o_assert_dbg(0 != glProg);
-    this->useProgram(glProg);
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::applyMeshState(const drawState* ds) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != ds);
@@ -407,15 +396,19 @@ glRenderer::applyMeshState(const drawState* ds) {
     // this uses glGetAttribLocation for platforms which don't support
     // glBindAttribLocation (e.g. RaspberryPi)
     // FIXME: currently this doesn't use state-caching
-    this->bindIndexBuffer(ds->meshes[0]->glIndexBuffer);    // can be 0
+    o_assert_dbg(InvalidIndex != ds->shdProgIndex);
+
+    const auto& ib = ds->meshes[0]->buffers[mesh::ib];
+    this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
-        const GLint glAttribIndex = ds->shd->getAttribLocation((VertexAttr::Code)attrIndex);
+        const GLint glAttribIndex = ds->shd->getAttribLocation(ds->shdProgIndex, (VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
             const mesh* msh = ds->meshes[attr.vbIndex];
-            const GLuint glVB = msh->glVertexBuffers[msh->activeVertexBufferSlot];
+            const auto& vb = msh->buffers[mesh::vb];
+            const GLuint glVB = vb.glBuffers[vb.activeSlot];
             this->bindVertexBuffer(glVB);
             ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
             ORYOL_GL_CHECK_ERROR();
@@ -469,7 +462,7 @@ glRenderer::applyDrawState(drawState* ds) {
         if (setup.RasterizerState != this->rasterizerState) {
             this->applyRasterizerState(setup.RasterizerState);
         }
-        this->applyShader(ds->shd, setup.ShaderSelectionMask);
+        this->useProgram(ds->shd->getProgram(ds->shdProgIndex));
         this->applyMeshState(ds);
     }
 }
@@ -484,8 +477,9 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     }
     o_assert_dbg(this->curDrawState->meshes[0]);
     ORYOL_GL_CHECK_ERROR();
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
+    const mesh* msh = this->curDrawState->meshes[0];
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+    const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -529,8 +523,9 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     }
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(this->curDrawState->meshes[0]);
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
-    const GLenum glPrimType = glTypes::asGLPrimitiveType(primGroup.PrimType);
+    const mesh* msh = this->curDrawState->meshes[0];
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+    const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -576,7 +571,7 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
     o_assert2(buf.updateFrameIndex != frameIndex, "Only one data update allowed per buffer and frame!\n");
     buf.updateFrameIndex = frameIndex;
 
-    // if usage is streaming, rotate slot index to next dynamic vertex buffer
+    // rotate slot index to next dynamic vertex buffer
     // to implement double/multi-buffering because the previous buffer
     // might still be in-flight on the GPU
     o_assert_dbg(buf.numSlots > 1);
@@ -800,7 +795,7 @@ glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
     
     // apply common depth-stencil state if changed
     bool depthStencilChanged = false;
-    if (curState.StateHash != newState.StateHash) {
+    if (curState.Hash != newState.Hash) {
         const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
         if (depthCmpFunc != curState.DepthCmpFunc) {
             o_assert_range_dbg(int(depthCmpFunc), CompareFunc::NumCompareFuncs);
@@ -992,7 +987,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
     if (!this->curDrawState) {
@@ -1003,7 +998,11 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const UniformLayout& layout = shd->Setup.UniformBlockLayout(blockIndex);
+    const int32 progIndex = this->curDrawState->shdProgIndex;
+    o_assert_dbg(InvalidIndex != progIndex);
+    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != ubIndex);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
     // check whether the provided struct is type-compatible with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
@@ -1012,85 +1011,118 @@ glRenderer::applyUniformBlock(int32 blockIndex, int64 layoutHash, const uint8* p
     o_assert_dbg(layout.ByteSize() == byteSize);
 
     // for each uniform in the uniform block:
-    const int numComps = layout.NumComponents();
-    for (int compIndex = 0; compIndex < numComps; compIndex++) {
-        const auto& comp = layout.ComponentAt(compIndex);
-        const uint8* valuePtr = ptr + layout.ComponentByteOffset(compIndex);
-        GLint glLoc = shd->getUniformLocation(blockIndex, compIndex);
-        switch (comp.Type) {
-            case UniformType::Float:
-                {
-                    const float32 val = *(const float32*)valuePtr;
-                    ::glUniform1f(glLoc, val);
-                }
-                break;
+    const int numUniforms = layout.NumComponents();
+    for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+        const auto& comp = layout.ComponentAt(uniformIndex);
+        const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
+        GLint glLoc = shd->getUniformLocation(progIndex, bindStage, bindSlot, uniformIndex);
+        if (-1 != glLoc) {
+            switch (comp.Type) {
+                case UniformType::Float:
+                    {
+                        const float32 val = *(const float32*)valuePtr;
+                        ::glUniform1f(glLoc, val);
+                    }
+                    break;
 
-            case UniformType::Vec2:
-                {
-                    const glm::vec2& val = *(const glm::vec2*) valuePtr;
-                    ::glUniform2f(glLoc, val.x, val.y);
-                }
-                break;
+                case UniformType::Vec2:
+                    {
+                        const glm::vec2& val = *(const glm::vec2*) valuePtr;
+                        ::glUniform2f(glLoc, val.x, val.y);
+                    }
+                    break;
 
-            case UniformType::Vec3:
-                {
-                    const glm::vec3& val = *(const glm::vec3*)valuePtr;
-                    ::glUniform3f(glLoc, val.x, val.y, val.z);
-                }
-                break;
+                case UniformType::Vec3:
+                    {
+                        const glm::vec3& val = *(const glm::vec3*)valuePtr;
+                        ::glUniform3f(glLoc, val.x, val.y, val.z);
+                    }
+                    break;
 
-            case UniformType::Vec4:
-                {
-                    const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                    ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
-                }
-                break;
+                case UniformType::Vec4:
+                    {
+                        const glm::vec4& val = *(const glm::vec4*)valuePtr;
+                        ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                    }
+                    break;
 
-            case UniformType::Mat2:
-                {
-                    const glm::mat2& val = *(const glm::mat2*)valuePtr;
-                    ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat2:
+                    {
+                        const glm::mat2& val = *(const glm::mat2*)valuePtr;
+                        ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Mat3:
-                {
-                    const glm::mat3& val = *(const glm::mat3*)valuePtr;
-                    ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat3:
+                    {
+                        const glm::mat3& val = *(const glm::mat3*)valuePtr;
+                        ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Mat4:
-                {
-                    const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                    ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                }
-                break;
+                case UniformType::Mat4:
+                    {
+                        const glm::mat4& val = *(const glm::mat4*)valuePtr;
+                        ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                    }
+                    break;
 
-            case UniformType::Bool:
-                {
-                    // NOTE: bools are actually stored as int32 in the uniform block struct
-                    const int32 val = *(const int32*)valuePtr;
-                    ::glUniform1i(glLoc, val);
-                }
-                break;
+                case UniformType::Bool:
+                    {
+                        // NOTE: bools are actually stored as int32 in the uniform block struct
+                        const int32 val = *(const int32*)valuePtr;
+                        ::glUniform1i(glLoc, val);
+                    }
+                    break;
 
-            case UniformType::Texture:
-                {
-                    const Id& resId = *(const Id*)valuePtr;
-                    texture* tex = this->pointers.texturePool->Lookup(resId);
-                    o_assert_dbg(tex);
-                    int32 samplerIndex = shd->getSamplerIndex(blockIndex, compIndex);
-                    GLuint glTexture = tex->glTex;
-                    GLenum glTarget = tex->glTarget;
-                    this->bindTexture(samplerIndex, glTarget, glTexture);
-                }
-                break;
-
-            default:
-                o_error("FIXME: invalid uniform type!\n");
-                break;
+                default:
+                    o_error("FIXME: invalid uniform type!\n");
+                    break;
+            }
         }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
+    if (nullptr == this->curDrawState) {
+        return;
+    }
+
+    // if any of the provided texture pointers are not valid, this means
+    // that a texture hasn't been loaded yet (or has failed loading), in this
+    // case, disable rendering for next draw call
+    for (int i = 0; i < numTextures; i++) {
+        if (nullptr == textures[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
+    }
+
+    // check if provided texture types are compatible with the expections
+    // of the currently bound shader
+    #if ORYOL_DEBUG
+    const shader* shd = this->curDrawState->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
+    for (int i = 0; i < numTextures; i++) {
+        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+        }
+    }
+    #endif
+
+    // apply textures and samplers
+    for (int i = 0; i < numTextures; i++) {
+        const texture* tex = textures[i];
+        this->bindTexture(i, tex->glTarget, tex->glTex);
     }
 }
 

@@ -44,6 +44,9 @@ d3d11DrawStateFactory::Discard() {
 ResourceState::Code
 d3d11DrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(nullptr != this->d3d11Device);
+    o_assert_dbg(nullptr == ds.d3d11InputLayout);
+    o_assert_dbg(nullptr == ds.d3d11VertexShader);
+    o_assert_dbg(nullptr == ds.d3d11PixelShader);
     o_assert_dbg(nullptr == ds.d3d11RasterizerState);
     o_assert_dbg(nullptr == ds.d3d11BlendState);
     o_assert_dbg(nullptr == ds.d3d11DepthStencilState);
@@ -52,7 +55,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
 
-    // set vertex buffers, strides and offsets
+    // set vertex buffers, strides, offsets and input layout
     D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
     int d3d11IASlotIndex = 0;
     for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
@@ -65,12 +68,13 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
             d3d11IASlotIndex++;
         }
     }
-
-    // create input layout objects (with sharing of matching input layout signatures)
-    const int numProgEntries = ds.shd->getNumPrograms();
-    for (int progIndex = 0; progIndex < numProgEntries; progIndex++) {
-        ds.d3d11InputLayouts[progIndex] = this->createInputLayout(ds, progIndex);
-    }
+    // input-layout, vertex and pixel shader
+    ds.d3d11InputLayout = this->createInputLayout(ds);
+    ds.d3d11VertexShader = ds.shd->getVertexShaderByMask(ds.Setup.ShaderSelectionMask);
+    ds.d3d11PixelShader = ds.shd->getPixelShaderByMask(ds.Setup.ShaderSelectionMask);
+    o_assert_dbg(ds.d3d11InputLayout);
+    o_assert_dbg(ds.d3d11VertexShader);
+    o_assert_dbg(ds.d3d11PixelShader);
 
     // create state objects (NOTE: creating the same state will return
     // the same d3d11 state object, so no need to implement our own reuse)
@@ -135,10 +139,8 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
 void
 d3d11DrawStateFactory::DestroyResource(drawState& ds) {
     this->pointers.renderer->invalidateDrawState();
-    for (int i = 0; i < GfxConfig::MaxNumBundlePrograms; i++) {
-        if (nullptr != ds.d3d11InputLayouts[i]) {
-            this->releaseInputLayout(ds.d3d11InputLayouts[i]);
-        }
+    if (nullptr != ds.d3d11InputLayout) {
+        this->releaseInputLayout(ds.d3d11InputLayout);
     }
     if (nullptr != ds.d3d11RasterizerState) {
         ds.d3d11RasterizerState->Release();
@@ -154,8 +156,8 @@ d3d11DrawStateFactory::DestroyResource(drawState& ds) {
 
 //------------------------------------------------------------------------------
 ID3D11InputLayout*
-d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
-    o_assert_dbg(nullptr == ds.d3d11InputLayouts[progIndex]);
+d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
+    o_assert_dbg(nullptr == ds.d3d11InputLayout);
 
     // this is trying to reuse existing input layouts which match the
     // provided mesh-vertex and vertex-shader-input layout
@@ -170,7 +172,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
             vertexLayout.Append(msh->vertexBufferAttrs.Layout);
         }
     }
-    const VertexLayout& vsInputLayout = ds.shd->Setup.VertexShaderInputLayout(progIndex);
+    const VertexLayout& vsInputLayout = ds.shd->Setup.VertexShaderInputLayout(ds.Setup.ShaderSelectionMask);
     const uint64 hash = VertexLayout::CombinedHash(vertexLayout, vsInputLayout);
     if (this->d3d11InputLayouts.Contains(hash)) {
         // re-use an existing input layout object
@@ -209,6 +211,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds, int progIndex) {
         }
 
         // lookup the vertex shader bytecode
+        const int32 progIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
         const void* vsByteCode = nullptr;
         uint32 vsSize = 0;
         ds.shd->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);

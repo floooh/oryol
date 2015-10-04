@@ -169,10 +169,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
     ::glActiveTexture(GL_TEXTURE0);
     ::glBindTexture(GL_TEXTURE_2D, glColorRenderTexture);
     ORYOL_GL_CHECK_ERROR();
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::asGLTexFilterMode(setup.MinFilter));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::asGLTexFilterMode(setup.MagFilter));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.WrapU));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.WrapV));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MinFilter));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MagFilter));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
+    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
     #if !ORYOL_OPENGLES2
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
     #endif
@@ -277,8 +277,8 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
     
     // setup texture params
-    GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.MinFilter);
-    GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.MagFilter);
+    GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.Sampler.MinFilter);
+    GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.Sampler.MagFilter);
     if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
@@ -297,8 +297,8 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
     else {
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.WrapU));
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.WrapV));
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
     }
     ORYOL_GL_CHECK_ERROR();
     

@@ -72,7 +72,7 @@ public:
     /// setup the dynamic mesh
     void setupMesh();
     /// setup the draw state
-    void setupDrawState();
+    void setupShaderAndDrawState();
     /// add texture to be defer-deleted in EndPaint()
     void deferDeleteTexture(ResourceLabel label);
     /// delete textures added with deferDeleteTexture
@@ -83,6 +83,8 @@ public:
     void drawBatches();
 
 private:
+    friend class tbOryolBitmap;
+
     bool isValid;
     
     float fOpacitity;
@@ -103,6 +105,7 @@ private:
     tb::TBRect tbClipRect;
     Id whiteTexture;
     Id mesh;
+    Id shader;
     Id drawState;
     Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;

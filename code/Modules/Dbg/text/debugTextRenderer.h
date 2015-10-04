@@ -69,6 +69,7 @@ private:
     glm::vec2 textScale;
     VertexLayout vertexLayout;
     RWLock rwLock;
+    Id textShader;
     Id fontTexture;
     Id textMesh;
     Id textDrawState;
@@ -76,8 +77,6 @@ private:
     bool valid;
     ResourceLabel resourceLabel;
     
-    // 6 vertices per character, 2 uint32's per vertex (pos+uv, color)
-//    uint32 vertexData[MaxNumVertices][2];
     struct Vertex {
         float x, y, u, v;
         uint32 color;

@@ -22,11 +22,12 @@ Gfx::Setup(const class GfxSetup& setup) {
     gfxPointers pointers;
     pointers.displayMgr = &state->displayManager;
     pointers.renderer = &state->renderer;
+    pointers.resContainer = &state->resourceContainer;
     pointers.meshPool = &state->resourceContainer.meshPool;
     pointers.shaderPool = &state->resourceContainer.shaderPool;
     pointers.texturePool = &state->resourceContainer.texturePool;
     pointers.drawStatePool = &state->resourceContainer.drawStatePool;
-
+    
     state->displayManager.SetupDisplay(setup, pointers);
     state->renderer.setup(setup, pointers);
     state->resourceContainer.setup(setup, pointers);
@@ -110,6 +111,7 @@ void
 Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
     o_assert_dbg(IsValid());
     o_assert_dbg(id.IsValid());
+    o_assert_dbg(id.Type == GfxResourceType::Texture);
 
     texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
@@ -121,6 +123,7 @@ void
 Gfx::ApplyDrawState(const Id& id) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
+    o_assert_dbg(id.Type == GfxResourceType::DrawState);
     state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
 }
 

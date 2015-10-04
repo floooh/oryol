@@ -8,6 +8,7 @@
 #include "Gfx/Setup/TextureSetup.h"
 #include "Paclone/shaders.h"
 #include "sprites.h"
+#include "shaders.h"
 
 namespace Paclone {
     
@@ -58,7 +59,7 @@ private:
     Oryol::Id mesh;
     Oryol::Id shader;
     Oryol::Id drawState;
-    Oryol::Shaders::Canvas::FSParams canvasParams;
+    Oryol::Shaders::Canvas::FSTextures textures;
 
     static const int MaxWidth = 64;
     static const int MaxHeight = 64;

@@ -29,7 +29,7 @@ private:
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
     Shaders::Main::VSParams vsParams;
-    Shaders::Main::FSParams fsParams;
+    Shaders::Main::FSTextures fsTextures;
     ClearState clearState;
 };
 OryolMain(DDSCubeMapApp);
@@ -44,13 +44,12 @@ DDSCubeMapApp::OnRunning() {
     
     // apply state and draw
     Gfx::ApplyDefaultRenderTarget(this->clearState);
-    Gfx::ApplyDrawState(this->drawState);
     
     // check whether the cube map has finished loading
-    if (Gfx::QueryResourceInfo(this->fsParams.Texture).State == ResourceState::Valid) {
+    if (Gfx::QueryResourceInfo(this->fsTextures.Texture).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+        Gfx::ApplyDrawState(this->drawState, this->fsTextures);
         Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::ApplyUniformBlock(this->fsParams);
         Gfx::Draw(0);
     }
     Gfx::CommitFrame();
@@ -74,11 +73,13 @@ DDSCubeMapApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     // create resources
+    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+
     TextureSetup texBluePrint;
-    texBluePrint.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.WrapV = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
+    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     StringAtom texPath;
     if (Gfx::QueryFeature(GfxFeature::TextureCompressionPVRTC)) {
         texPath = "tex:romechurch_bpp2.pvr";
@@ -86,7 +87,7 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->fsParams.Texture = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
+    this->fsTextures.Texture = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint), 0));
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
@@ -94,7 +95,6 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20).Build();
     Id mesh = Gfx::CreateResource(shapeBuilder.Result());
-    Id shd = Gfx::CreateResource(Shaders::Main::CreateSetup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

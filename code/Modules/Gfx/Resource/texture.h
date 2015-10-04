@@ -20,6 +20,12 @@ namespace Oryol {
 namespace _priv {
 class texture : public d3d11Texture { };
 } }
+#elif ORYOL_D3D12
+#include "Gfx/d3d12/d3d12texture.h"
+namespace Oryol {
+namespace _priv {
+class texture : public d3d12Texture { };
+} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlTexture.h"
 namespace Oryol {

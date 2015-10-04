@@ -3,10 +3,12 @@
 //  Annotated GLSL shaders for PackedNormals sample
 //------------------------------------------------------------------------------
 
-@vs vs
-@uniform_block params Params
+@uniform_block vsParams Params
     @uniform mat4 mvp ModelViewProjection
 @end
+
+@vs vs
+@use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm

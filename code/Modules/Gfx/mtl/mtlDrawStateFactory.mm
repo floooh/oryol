@@ -52,7 +52,7 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
     for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         // NOTE: vertex buffers are located after constant buffers
-        const int vbSlotIndex = mshIndex + GfxConfig::MaxNumUniformBlocks;
+        const int vbSlotIndex = mshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         const mesh* msh = ds.meshes[mshIndex];
         if (msh) {
             const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
@@ -82,9 +82,10 @@ mtlDrawStateFactory::SetupResource(drawState& ds) {
     rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
     rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
     rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
-    o_warn("FIXME: move shader selection into DrawStateSetup!!!\n");
-    rpDesc.fragmentFunction = ds.shd->getFragmentShaderAt(0);
-    rpDesc.vertexFunction = ds.shd->getVertexShaderAt(0);
+    const int32 progIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
+    o_assert_dbg(InvalidIndex != progIndex);
+    rpDesc.fragmentFunction = ds.shd->getFragmentShader(progIndex);
+    rpDesc.vertexFunction = ds.shd->getVertexShader(progIndex);
     rpDesc.vertexDescriptor = vtxDesc;
     rpDesc.rasterizationEnabled = YES;
     rpDesc.alphaToCoverageEnabled = ds.Setup.RasterizerState.AlphaToCoverageEnabled;

@@ -15,11 +15,12 @@ TEST(MeshBuilderTest) {
     MeshBuilder mb;
     mb.NumVertices = 4;
     mb.NumIndices = 6;
+    mb.PrimType = PrimitiveType::Triangles;
     mb.IndicesType = IndexType::Index16;
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    mb.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 6);
+    mb.PrimitiveGroups.Add(0, 6);
     mb.Begin()
         // positions
         .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
@@ -57,7 +58,6 @@ TEST(MeshBuilderTest) {
     CHECK(meshSetup.Layout.ComponentAt(1).Attr == VertexAttr::TexCoord0);
     CHECK(meshSetup.Layout.ComponentAt(1).Format == VertexFormat::Float2);
     CHECK(meshSetup.NumPrimitiveGroups() == 1);
-    CHECK(meshSetup.PrimitiveGroup(0).PrimType == PrimitiveType::Triangles);
     CHECK(meshSetup.PrimitiveGroup(0).BaseElement == 0);
     CHECK(meshSetup.PrimitiveGroup(0).NumElements == 6);
     

@@ -4,10 +4,6 @@
     @class Oryol::_priv::d3d11DrawStateFactory
     @ingroup _priv
     @brief D3D11 implementation of drawStateFactory
-
-    FIXME: there should be a way to reuse input layout objects by shader
-    signature, this would drastically reduce the number of 
-    shader layout objects
 */
 #include "Gfx/Resource/drawStateFactoryBase.h"
 #include "Core/Containers/Map.h"
@@ -34,7 +30,7 @@ public:
 
 private:
     /// create or return existing input layout object
-    ID3D11InputLayout* createInputLayout(const drawState& ds, int progIndex);
+    ID3D11InputLayout* createInputLayout(const drawState& ds);
     /// release an input layout object
     void releaseInputLayout(ID3D11InputLayout* d3d11InputLayout);
 
