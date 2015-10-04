@@ -267,19 +267,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
-        // FIXME: hmm, have a 'AsDisplayAttrs' util function somewhere?
-        const TextureAttrs& attrs = rt->textureAttrs;
-        this->rtAttrs.WindowWidth = attrs.Width;
-        this->rtAttrs.WindowHeight = attrs.Height;
-        this->rtAttrs.WindowPosX = 0;
-        this->rtAttrs.WindowPosY = 0;
-        this->rtAttrs.FramebufferWidth = attrs.Width;
-        this->rtAttrs.FramebufferHeight = attrs.Height;
-        this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
-        this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
-        this->rtAttrs.SampleCount = 1;
-        this->rtAttrs.Windowed = false;
-        this->rtAttrs.SwapInterval = 1;
+        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
     }
     
     // apply the frame buffer

@@ -230,17 +230,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
     else {
         passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
-
-        // FIXME: have a 'AsDisplayAttrs' util function
-        const TextureAttrs& attrs = rt->textureAttrs;
-        this->rtAttrs.WindowWidth = this->rtAttrs.FramebufferWidth = attrs.Width;
-        this->rtAttrs.WindowHeight = this->rtAttrs.FramebufferHeight = attrs.Height;
-        this->rtAttrs.WindowPosX = this->rtAttrs.WindowPosY = 0;
-        this->rtAttrs.ColorPixelFormat = attrs.ColorFormat;
-        this->rtAttrs.DepthPixelFormat = attrs.DepthFormat;
-        this->rtAttrs.SampleCount = 1;
-        this->rtAttrs.Windowed = false;
-        this->rtAttrs.SwapInterval = 1;
+        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
     }
     if (passDesc) {
         this->rtValid = true;
