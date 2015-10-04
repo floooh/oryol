@@ -70,12 +70,12 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.indexBufferAttrs.Type == IndexType::Index16);
     CHECK(simpleCube.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(simpleCube.numPrimGroups == 1);
-    CHECK(simpleCube.primGroups[0].PrimType == PrimitiveType::Triangles);
+    CHECK(simpleCube.Setup.PrimType == PrimitiveType::Triangles);
     CHECK(simpleCube.primGroups[0].BaseElement == 0);
     CHECK(simpleCube.primGroups[0].NumElements == 36);
     #if ORYOL_OPENGL
-    CHECK(simpleCube.glVertexBuffers[0] != 0);
-    CHECK(simpleCube.glIndexBuffer != 0);
+    CHECK(simpleCube.buffers[mesh::vb].glBuffers[0] != 0);
+    CHECK(simpleCube.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
     stream->UnmapRead();

@@ -46,10 +46,11 @@ TEST(MeshFactoryTest) {
     MeshBuilder mb;
     mb.NumVertices = 4;
     mb.NumIndices = 6;
+    mb.PrimType = PrimitiveType::Triangles;
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    mb.PrimitiveGroups.Add(PrimitiveType::Triangles, 0, 6);
+    mb.PrimitiveGroups.Add(0, 6);
     mb.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
         .Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f)  // top-right
@@ -93,12 +94,12 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(mesh.indexBufferAttrs.ByteSize() == 12);
     CHECK(mesh.numPrimGroups == 1);
-    CHECK(mesh.primGroups[0].PrimType == PrimitiveType::Triangles);
+    CHECK(mesh.Setup.PrimType == PrimitiveType::Triangles);
     CHECK(mesh.primGroups[0].BaseElement == 0);
     CHECK(mesh.primGroups[0].NumElements == 6);
     #if ORYOL_OPENGL
-    CHECK(mesh.glVertexBuffers[0] != 0);
-    CHECK(mesh.glIndexBuffer != 0);
+    CHECK(mesh.buffers[mesh::vb].glBuffers[0] != 0);
+    CHECK(mesh.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
     stream->UnmapRead();
