@@ -25,7 +25,7 @@ public:
     /// default font size
     int32 DefaultFontSize = 14;
     /// initial glyph set to prevent excessive reconstruction of font texture
-	StringAtom GlyphSet = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\xE2\x80\xA2\xC2\xB7";
+    StringAtom GlyphSet = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\xE2\x80\xA2\xC2\xB7";
 
     /// resource pool size
     int32 ResourcePoolSize = 256;
