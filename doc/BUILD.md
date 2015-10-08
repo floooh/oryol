@@ -58,6 +58,56 @@ More detailed information about fips can be found here:
 
 http://floooh.github.com/fips
 
+### Building for 3D-APIs other than OpenGL:
+
+Oryol has support for non-OpenGL rendering backends on some platforms which
+can be easily selected via fips build configs:
+
+##### D3D11:
+
+Building with D3D11 support requires at least Windows7 and VS2013 (VS2015
+is also supported), select any of the following build configs:
+
+- d3d11-win64-vs2013-debug
+- d3d11-win64-vs2013-release
+- d3d11-win64-vs2015-debug
+- d3d11-win64-vs2015-release
+
+For example:
+
+```bash
+# to build and run on command line:
+> fips set config d3d11-win64-vs2013-release
+> fips gen
+> fips run Triangle
+# to build and debug in VS2013:
+> fips set config d3d11-win64-vs2013-debug
+> fips gen
+> fips open
+```
+
+There are also build configs for 32-bit builds, but 32-bit builds on Windows
+are currently buggy, don't use them.
+
+##### D3D12:
+
+Building with D3D12 support requires Windows10, VS2015 and cmake-3.4, use
+the following build configs for D3D12:
+
+- d3d12-win64-vs2015-debug
+- d3d12-win64-vs2015-release
+
+##### Metal:
+
+Building with Metal support requires OSX 10.11 and Xcode7, use any of the 
+following build configs:
+
+- metal-osx-xcode-debug
+- metal-osx-xcode-release
+- metal-osx-make-debug
+- metal-osx-make-release
+
+
 ### Cross-compiling
 
 #### emscripten:
@@ -142,5 +192,4 @@ PNaCl and Android SDK installation):
 > ./fips webpage serve
 ...
 ```
-
 
