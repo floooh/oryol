@@ -17,6 +17,19 @@ http://floooh.github.io/oryol/
 
 ## _Public Service Announcements_
 
+- **08-Oct-2015**: You can now build the Metal version with the final OSX 10.11 and Xcode7 versions (previously Xcode7-beta was needed):
+
+```bash
+# build and run on command line:
+> ./fips set config metal-osx-xcode-release
+> ./fips build
+> ./fips run ImGuiDemo
+# or build and debug in Xcode7:
+> ./fips set config metal-osx-xcode-debug
+> ./fips gen
+> ./fips open
+```
+
 - **04-Oct-2015**: The D3D12 renderer backend is feature-complete and has been merged back into master! There are a number of Gfx API changes, until proper documentation is available look at the Oryol standalone sample app for the required code changes: https://github.com/floooh/oryol-test-app/commit/f14f46b1bdcf8bd9acb445bef10219916f700285. To test:
 
 ```bash
@@ -29,20 +42,6 @@ http://floooh.github.io/oryol/
 > fips gen
 > fips open
 ```
-
-- **08-Sep-2015**: Metal port has been fixed again for latest OSX 10.11 and Xcode7 betas, but only in the d3d12 branch for now (this is where the interesting stuff happens at the moment)
-
-- **27-Jul-2015**: the new OSX Metal renderer is feature-complete. To give it a
-try you need the latest OSX10.11 and Xcode7 betas, and then:
-
-```bash
-> ./fips set config metal-osx-xcode-debug
-> ./fips build
-> ./fips run ImGuiDemo
-```
-...or use './fips open' to compile and debug in Xcode.
-
-There is no Metal support for iOS yet (coming 'Really Soon Now').
 
 - **24-Jun-2015**: the D3D11 renderer should now be on feature parity with the GL renderer, only some small optimizations are missing. To give it a whirl (all samples should work, except the NanoVG demo):
 
