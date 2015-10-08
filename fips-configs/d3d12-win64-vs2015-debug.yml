@@ -5,4 +5,5 @@ build_tool: cmake
 build_type: Debug
 defines:
     ORYOL_USE_D3D12: ON
+    CMAKE_SYSTEM_VERSION: 10.0
 
