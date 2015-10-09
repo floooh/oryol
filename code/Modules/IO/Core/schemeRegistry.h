@@ -5,7 +5,6 @@
     @ingroup _priv
     @brief: associates URL schemes with FileSystem implementation
 */
-#include "Core/RefCounted.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"
@@ -16,12 +15,12 @@
 namespace Oryol {
 namespace _priv {
 
-class schemeRegistry : public RefCounted {
+class schemeRegistry {
 public:
     /// constructor
     schemeRegistry();
     /// destructor
-    virtual ~schemeRegistry();
+    ~schemeRegistry();
     
     /// associate URL scheme with filesystem
     void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator);

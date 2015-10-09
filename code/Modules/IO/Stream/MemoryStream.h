@@ -22,7 +22,7 @@ public:
     /// construct with initial capacity and allocation strategy
     MemoryStream(int32 initialCapacity, int32 minGrow=ORYOL_STREAM_DEFAULT_MIN_GROW, int32 maxGrow=ORYOL_STREAM_DEFAULT_MAX_GROW);
     /// destructor
-    virtual ~MemoryStream();
+    ~MemoryStream();
     
     /// set allocation strategy
     void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_STREAM_DEFAULT_MAX_GROW);

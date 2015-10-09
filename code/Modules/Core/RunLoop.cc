@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(RunLoop);
-
 //------------------------------------------------------------------------------
 RunLoop::RunLoop() :
 curId(InvalidId)

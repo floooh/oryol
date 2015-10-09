@@ -24,7 +24,7 @@ public:
     /// construct with Stream object (Stream object must be open)
     StreamWriter(const Ptr<Stream>& stream);
     /// destructor
-    virtual ~StreamWriter();
+    ~StreamWriter();
     
     /// attach stream object (must be open, replaces previous object)
     virtual void AttachStream(const Ptr<Stream>& stream);

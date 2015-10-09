@@ -22,7 +22,7 @@ public:
     /// constructor
     Stream();
     /// destructor
-    virtual ~Stream();
+    ~Stream();
     
     /// set URL
     void SetURL(const URL& u);

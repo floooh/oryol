@@ -19,8 +19,6 @@ class assignRegistry {
 public:
     /// constructor
     assignRegistry();
-    /// destructor
-    virtual ~assignRegistry();
     
     /// add or replace an assign definition
     void SetAssign(const String& assign, const String& path);

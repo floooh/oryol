@@ -18,7 +18,7 @@ public:
     /// constructor
     Broadcaster();
     /// destructor
-    virtual ~Broadcaster();
+    ~Broadcaster();
     
     /// subscribe to messages from this port
     void Subscribe(const Ptr<Port>& port);

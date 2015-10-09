@@ -32,7 +32,7 @@ public:
     /// construct with ProtocolId
     Port();
     /// destructor
-    virtual ~Port();
+    ~Port();
 
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg);

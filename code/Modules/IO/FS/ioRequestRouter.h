@@ -20,7 +20,7 @@ public:
     /// constructor
     ioRequestRouter(int32 numLanes);
     /// destructor
-    virtual ~ioRequestRouter();
+    ~ioRequestRouter();
     
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;

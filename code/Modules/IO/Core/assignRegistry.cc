@@ -14,11 +14,6 @@ assignRegistry::assignRegistry() {
 }
 
 //------------------------------------------------------------------------------
-assignRegistry::~assignRegistry() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 assignRegistry::SetAssign(const String& assign, const String& path) {
     o_assert(assign.Back() == ':'); // "assign must end with a ':'\n"

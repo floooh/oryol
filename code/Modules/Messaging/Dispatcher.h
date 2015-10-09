@@ -35,7 +35,7 @@ public:
     /// constructor
     Dispatcher();
     /// destructor
-    virtual ~Dispatcher();
+    ~Dispatcher();
     
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;

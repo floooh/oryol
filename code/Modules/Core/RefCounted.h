@@ -21,9 +21,6 @@ namespace Oryol {
 class RefCounted {
     OryolBaseClassDecl(RefCounted);
 public:
-    /// destructor
-    virtual ~RefCounted();
-    
     /// get reference count
     int32 GetRefCount() const;
     /// add reference

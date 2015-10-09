@@ -30,8 +30,7 @@
 
 namespace Oryol {
 
-class RunLoop : public RefCounted {
-    OryolClassDecl(RunLoop);
+class RunLoop {
 public:
     /// runloop Id
     typedef int32 Id;
@@ -43,7 +42,7 @@ public:
     /// constructor
     RunLoop();
     /// destructor
-    virtual ~RunLoop();
+    ~RunLoop();
     
     /// run one frame
     void Run();

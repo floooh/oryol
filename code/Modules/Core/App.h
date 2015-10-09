@@ -63,7 +63,7 @@ public:
     /// constructor
     App();
     /// destructor
-    virtual ~App();
+    ~App();
     
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();

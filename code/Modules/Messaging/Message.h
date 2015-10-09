@@ -18,7 +18,7 @@ public:
     /// constructor
     Message();
     /// destructor
-    virtual ~Message();
+    ~Message();
     
     /// test if this message belongs to a protocol
     virtual bool IsMemberOf(ProtocolIdType protId) const;

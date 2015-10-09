@@ -21,7 +21,7 @@ public:
     /// constructor with success callback
     MeshLoader(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
     /// destructor
-    virtual ~MeshLoader();
+    ~MeshLoader();
     /// start loading, return a resource id
     virtual Id Start() override;
     /// continue loading, return resource state (Pending, Valid, Failed)

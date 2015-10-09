@@ -22,7 +22,7 @@ public:
     /// constructor
     ioLane();
     /// destructor
-    virtual ~ioLane();
+    ~ioLane();
     
 private:
     /// lookup filesystem for URL

@@ -41,7 +41,7 @@ public:
     /// constructor with forwarding port
     ThreadedQueue(const Ptr<Port>& forwardingPort);
     /// destructor
-    virtual ~ThreadedQueue();
+    ~ThreadedQueue();
     
     /// set optional tick-duration in millsecs, thread will wake up even if no messages pending
     void SetTickDuration(uint32 milliSecs);

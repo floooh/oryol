@@ -28,7 +28,7 @@ public:
     /// constructor
     HTTPClient();
     /// destructor
-    virtual ~HTTPClient();
+    ~HTTPClient();
     
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;

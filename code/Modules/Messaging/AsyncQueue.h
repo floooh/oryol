@@ -20,7 +20,7 @@ public:
     /// constructor
     AsyncQueue();
     /// destructor
-    virtual ~AsyncQueue();
+    ~AsyncQueue();
     
     /// add the forwarding port, where messages are forwarded to in DoWork
     void SetForwardingPort(const Ptr<Port>& port);

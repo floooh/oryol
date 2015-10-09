@@ -9,24 +9,23 @@
 using namespace Oryol;
 
 TEST(RunLoopTest) {
-    Ptr<RunLoop> runLoop = RunLoop::Create();
+    RunLoop runLoop;
     int x = 0;
     int y = 0;
-    auto id0 = runLoop->Add([&x]() { x++; });
-    runLoop->Run();
+    auto id0 = runLoop.Add([&x]() { x++; });
+    runLoop.Run();
     CHECK(x == 1);
     CHECK(y == 0);
-    auto id1 = runLoop->Add([&y]() { y+=2; });
-    runLoop->Run();
+    auto id1 = runLoop.Add([&y]() { y+=2; });
+    runLoop.Run();
     CHECK(x == 2);
     CHECK(y == 2);
-    runLoop->Remove(id0);
-    runLoop->Run();
+    runLoop.Remove(id0);
+    runLoop.Run();
     CHECK(x == 2);
     CHECK(y == 4);
-    runLoop->Remove(id1);
-    runLoop->Run();
+    runLoop.Remove(id1);
+    runLoop.Run();
     CHECK(x == 2);
     CHECK(y == 4);
-    runLoop = 0;
 }

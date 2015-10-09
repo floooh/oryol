@@ -19,7 +19,7 @@ fips_begin_module(Core)
         Logger.cc Logger.h
         Macros.h
         Ptr.h
-        RefCounted.cc RefCounted.h
+        RefCounted.h
         RunLoop.cc RunLoop.h
         Types.h
         precompiled.h

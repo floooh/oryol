@@ -20,7 +20,7 @@ public:
     /// constructor
     TextureLoader(const TextureSetup& setup, int32 ioLane);
     /// destructor
-    virtual ~TextureLoader();
+    ~TextureLoader();
     /// start loading, return a resource id
     virtual Id Start() override;
     /// continue loading, return resource state (Pending, Valid, Failed)

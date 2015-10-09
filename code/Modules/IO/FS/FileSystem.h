@@ -19,7 +19,7 @@ public:
     /// default constructor
     FileSystem();
     /// destructor
-    virtual ~FileSystem();
+    ~FileSystem();
     
     /// per-frame update
     virtual void DoWork();

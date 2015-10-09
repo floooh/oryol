@@ -27,7 +27,7 @@ public:
     /// default constructor
     HTTPFileSystem();
     /// destructor
-    virtual ~HTTPFileSystem();
+    ~HTTPFileSystem();
 
     /// per-frame update
     virtual void DoWork() override;

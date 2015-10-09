@@ -22,7 +22,7 @@ public:
     /// constructor
     Logger();
     /// destructor
-    virtual ~Logger();
+    ~Logger();
     /// generic vprint-style method
     virtual void VPrint(Log::Level l, const char* msg, va_list args);
     /// print an assert message
