@@ -18,5 +18,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # though (asks for the host machine's root password, 
   # and doesn't work on Windows)
   config.vm.network "private_network", ip: "192.168.127.127"
-  config.vm.synced_folder "../../oryol", "/home/vagrant/oryol", type: "nfs"
+  config.vm.synced_folder "../../oryol", "/home/vagrant/oryol", type: "rsync", rsync__exclude: ".git/"
 end
