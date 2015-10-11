@@ -50,25 +50,22 @@ namespace Oryol {
 
 class MeshBuilder {
 public:
-    /// constructor
-    MeshBuilder();
-    
     /// number of vertices
-    uint32 NumVertices;
+    uint32 NumVertices = 0;
     /// number of indices (default 0 for non-indexed meshes)
-    uint32 NumIndices;
+    uint32 NumIndices = 0;
     /// index type (default is 16-bit indices)
-    IndexType::Code IndicesType;
+    IndexType::Code IndicesType = IndexType::Index16;
     /// read/write access to vertex layout
     class VertexLayout Layout;
     /// primitive type
-    PrimitiveType::Code PrimType;
+    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// primitive groups (at least one must be defined)
     Array<PrimitiveGroup> PrimitiveGroups;
     /// vertex data usage
-    Usage::Code VertexUsage;
+    Usage::Code VertexUsage = Usage::Immutable;
     /// index data usage
-    Usage::Code IndexUsage;
+    Usage::Code IndexUsage = Usage::Immutable;
     
     /// begin writing vertex and index data
     MeshBuilder& Begin();
@@ -100,12 +97,12 @@ private:
     uint32 vertexByteOffset(uint32 vertexIndex, int32 compIndex) const;
     
     SetupAndStream<MeshSetup> setupAndStream;
-    bool inBegin;
-    bool resultValid;
+    bool inBegin = false;
+    bool resultValid = false;
     
-    uint8* vertexPointer;
-    uint8* indexPointer;
-    uint8* endPointer;
+    uint8* vertexPointer = nullptr;
+    uint8* indexPointer = nullptr;
+    uint8* endPointer = nullptr;
 };
 
 //------------------------------------------------------------------------------

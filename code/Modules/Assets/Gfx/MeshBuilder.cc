@@ -9,22 +9,6 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-MeshBuilder::MeshBuilder() :
-NumVertices(0),
-NumIndices(0),
-IndicesType(IndexType::Index16),
-PrimType(PrimitiveType::Triangles),
-VertexUsage(Usage::Immutable),
-IndexUsage(Usage::Immutable),
-inBegin(false),
-resultValid(false),
-vertexPointer(nullptr),
-indexPointer(nullptr),
-endPointer(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 MeshBuilder::Clear() {
     o_assert(!this->inBegin);
