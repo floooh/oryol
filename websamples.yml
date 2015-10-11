@@ -153,3 +153,8 @@
   type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/SoundTest/none
   src: SoundTest/SoundTest.cc
+- name: Julia
+  desc: Fractal demo
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/Julia/none
+  src: Julia/Julia.cc
