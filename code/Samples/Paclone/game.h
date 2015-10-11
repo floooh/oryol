@@ -28,6 +28,8 @@ public:
     void Update(int tick, canvas* canvas, sound* sound, Direction input);
     /// cleanup (called once)
     void Cleanup();
+    /// get current pacman position
+    const Int2& PacmanPos() const;
     
 private:
     void setTile(Int2 pos, TileType type) {

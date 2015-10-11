@@ -275,4 +275,16 @@ canvas::ClampY(int tileY) const {
     else return tileY;
 }
 
+//------------------------------------------------------------------------------
+int
+canvas::CanvasWidth() const {
+    return this->canvasWidth;
+}
+
+//------------------------------------------------------------------------------
+int
+canvas::CanvasHeight() const {
+    return this->canvasHeight;
+}
+
 } // namespace Paclone

@@ -10,6 +10,7 @@
 #include "canvas.h"
 #include "game.h"
 #include "shaders.h"
+#include "glm/common.hpp"
 
 using namespace Oryol;
 using namespace Paclone;
@@ -32,7 +33,12 @@ private:
     canvas spriteCanvas;
     game gameState;
     sound sounds;
-    int32 tick;
+    int32 tick = 0;
+    int32 viewPortX = 0;
+    int32 viewPortY = 0;
+    int32 viewPortW = 0;
+    int32 viewPortH = 0;
+    Direction input = NoDirection;
 };
 OryolMain(PacloneApp);
 
@@ -74,11 +80,11 @@ PacloneApp::applyViewPort() {
     float aspect = float(Width) / float(Height);
     const int fbWidth = Gfx::DisplayAttrs().FramebufferWidth;
     const int fbHeight = Gfx::DisplayAttrs().FramebufferHeight;
-    const int viewPortY = 0;
-    const int viewPortH = fbHeight;
-    const int viewPortW = (const int) (fbHeight * aspect);
-    const int viewPortX = (fbWidth - viewPortW) / 2;
-    Gfx::ApplyViewPort(viewPortX, viewPortY, viewPortW, viewPortH);
+    this->viewPortY = 0;
+    this->viewPortH = fbHeight;
+    this->viewPortW = (const int) (fbHeight * aspect);
+    this->viewPortX = (fbWidth - viewPortW) / 2;
+    Gfx::ApplyViewPort(this->viewPortX, this->viewPortY, this->viewPortW, this->viewPortH);
 }
 
 //------------------------------------------------------------------------------
@@ -122,14 +128,42 @@ PacloneApp::OnCleanup() {
 //------------------------------------------------------------------------------
 Direction
 PacloneApp::getInput() {
-    // FIXME: add more input options
-    Direction input = NoDirection;
     const Keyboard& kbd = Input::Keyboard();
     if (kbd.Attached) {
-        if (kbd.KeyPressed(Key::Left))       input = Left;
-        else if (kbd.KeyPressed(Key::Right)) input = Right;
-        else if (kbd.KeyPressed(Key::Up))    input = Up;
-        else if (kbd.KeyPressed(Key::Down))  input = Down;
+        if (kbd.KeyPressed(Key::Left))       this->input = Left;
+        else if (kbd.KeyPressed(Key::Right)) this->input = Right;
+        else if (kbd.KeyPressed(Key::Up))    this->input = Up;
+        else if (kbd.KeyPressed(Key::Down))  this->input = Down;
     }
-    return input;
+    const Touchpad& tpad = Input::Touchpad();
+    const Mouse& mouse = Input::Mouse();
+    if (tpad.Attached || mouse.Attached) {
+        if (tpad.Tapped || tpad.Panning || mouse.ButtonPressed(Mouse::Button::LMB)) {
+            float x, y;
+            if (tpad.Tapped || tpad.Panning) {
+                x = tpad.Position(0).x;
+                y = tpad.Position(0).y;
+            }
+            else {
+                x = mouse.Position.x;
+                y = mouse.Position.y;
+            }
+            const Int2 pacmanPos = this->gameState.PacmanPos();
+            const float relX = float(pacmanPos.x) / float(this->spriteCanvas.CanvasWidth());
+            const float relY = float(pacmanPos.y) / float(this->spriteCanvas.CanvasHeight());
+            const float px = this->viewPortX + this->viewPortW * relX;
+            const float py = this->viewPortY + this->viewPortH * relY;
+            const float dx = x - px;
+            const float dy = y - py;
+            if (glm::abs(dx) > glm::abs(dy)) {
+                // it's a horizontal movement
+                this->input = dx < 0.0f ? Left : Right;
+            }
+            else {
+                // it's a vertical movement
+                this->input = dy < 0.0f ? Up : Down;
+            }
+        }
+    }
+    return this->input;
 }

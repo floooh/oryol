@@ -38,6 +38,10 @@ public:
     void ClearSprite(int index);
     /// set a static tile
     void SetTile(Sheet::SpriteId sprite, int tileX, int tileY);
+    /// get the canvas width in 'virtual pixels'
+    int CanvasWidth() const;
+    /// get the canvas height in 'virtual pixels'
+    int CanvasHeight() const;
 
 private:
     /// compute anim frame for a sprite

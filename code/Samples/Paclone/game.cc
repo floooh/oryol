@@ -38,6 +38,12 @@ game::Cleanup() {
 }
 
 //------------------------------------------------------------------------------
+const Int2&
+game::PacmanPos() const {
+    return this->state.actors[Pacman].pixelPos;
+}
+
+//------------------------------------------------------------------------------
 void
 game::Update(int tick, canvas* canvas, sound* sound, Direction input) {
     if (this->checkNewRound()) {
