@@ -159,6 +159,12 @@ imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
                 io.MouseDown[btn] = mouse.ButtonDown((Mouse::Button)btn) || mouse.ButtonPressed((Mouse::Button)btn);
             }
         }
+        const Touchpad& touchpad = Input::Touchpad();
+        if ((touchpad.Attached) && (touchpad.Position(0).x > 0.0f) && (touchpad.Position(0).y > 0.0f)) {
+            io.MousePos.x = touchpad.Position(0).x;
+            io.MousePos.y = touchpad.Position(0).y;
+            io.MouseDown[0] = touchpad.Tapped || touchpad.Panning;
+        }
 
         const Keyboard& kbd = Input::Keyboard();
         if (kbd.Attached) {
@@ -178,13 +184,6 @@ imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
             for (auto key : keys) {
                 io.KeysDown[key] = kbd.KeyPressed(key);
             }
-        }
-
-        const Touchpad& touchpad = Input::Touchpad();
-        if (touchpad.Attached) {
-            io.MousePos.x = touchpad.Position(0).x;
-            io.MousePos.y = touchpad.Position(0).y;
-            io.MouseDown[0] = touchpad.Tapped || touchpad.Panning;
         }
     }
     ImGui::NewFrame();
