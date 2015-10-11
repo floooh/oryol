@@ -30,8 +30,8 @@ Core::Discard() {
     o_assert(IsValid());
     o_assert(threadPreRunLoop);
     o_assert(threadPostRunLoop);
-    Memory::Delete(threadPreRunLoop);
-    Memory::Delete(threadPostRunLoop);
+    Memory::Delete<RunLoop>(threadPreRunLoop);
+    Memory::Delete<RunLoop>(threadPostRunLoop);
     Memory::Delete(state);
     threadPreRunLoop = nullptr;
     threadPostRunLoop = nullptr;
@@ -89,8 +89,8 @@ Core::LeaveThread() {
     #if ORYOL_HAS_THREADS
     o_assert(threadPreRunLoop);
     o_assert(threadPostRunLoop);
-    Memory::Delete(threadPreRunLoop);
-    Memory::Delete(threadPostRunLoop);
+    Memory::Delete<RunLoop>(threadPreRunLoop);
+    Memory::Delete<RunLoop>(threadPostRunLoop);
     threadPreRunLoop = nullptr;
     threadPostRunLoop = nullptr;
 
