@@ -51,3 +51,4 @@ public:
 };
 
 } // namespace Oryol
+

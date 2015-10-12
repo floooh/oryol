@@ -410,7 +410,11 @@ public:
 class TextureFilterMode {
 public:
     /// filtering modes
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint16 {
+    #else
+    enum Code {
+    #endif
         Nearest,
         Linear,
         NearestMipmapNearest,
@@ -448,7 +452,11 @@ public:
 class TextureWrapMode {
 public:
     /// wrap modes
+    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
     enum Code : uint16 {
+    #else
+    enum Code {
+    #endif
         ClampToEdge,
         Repeat,
         MirroredRepeat,
