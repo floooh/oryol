@@ -160,7 +160,7 @@ imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
             }
         }
         const Touchpad& touchpad = Input::Touchpad();
-        if ((touchpad.Attached) && (touchpad.Position(0).x > 0.0f) && (touchpad.Position(0).y > 0.0f)) {
+        if (touchpad.Attached && (touchpad.Position(0).x > 0.0f) && (touchpad.Position(0).y > 0.0f)) {
             io.MousePos.x = touchpad.Position(0).x;
             io.MousePos.y = touchpad.Position(0).y;
             io.MouseDown[0] = touchpad.Tapped || touchpad.Panning;
