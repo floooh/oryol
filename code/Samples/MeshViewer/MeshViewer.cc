@@ -69,6 +69,8 @@ private:
         float dist = 8.0f;
         glm::vec2 orbital = glm::vec2(glm::radians(25.0f), 0.0f);
         float height = 1.0f;
+        glm::vec2 startOrbital;
+        float startDistance = 0.0f;
     } camera;
     bool camAutoOrbit = true;
     struct CameraSetting cameraSettings[numMeshes];
@@ -127,6 +129,8 @@ MeshViewerApp::OnInit() {
     IMUI::Setup();
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0.0f;
+    style.TouchExtraPadding.x = 5.0f;
+    style.TouchExtraPadding.y = 5.0f;
     ImVec4 defaultBlue(0.0f, 0.5f, 1.0f, 0.7f);
     style.Colors[ImGuiCol_TitleBg] = defaultBlue;
     style.Colors[ImGuiCol_TitleBgCollapsed] = defaultBlue;
@@ -206,6 +210,25 @@ MeshViewerApp::handleInput() {
 
     // rotate camera with mouse if not UI-dragging
     if (!(dragging || ImGui::IsMouseHoveringAnyWindow())) {
+        const Touchpad& tpad = Input::Touchpad();
+        if (tpad.Attached) {
+            if (tpad.PanningStarted) {
+                this->camera.startOrbital = this->camera.orbital;
+            }
+            if (tpad.Panning) {
+                glm::vec2 diff = (tpad.Position(0) - tpad.StartPosition(0)) * 0.01f;
+                this->camera.orbital.y = this->camera.startOrbital.y - diff.x;
+                this->camera.orbital.x = glm::clamp(this->camera.startOrbital.x + diff.y, glm::radians(minLatitude), glm::radians(maxLatitude));
+            }
+            if (tpad.PinchingStarted) {
+                this->camera.startDistance = this->camera.dist;
+            }
+            if (tpad.Pinching) {
+                float32 startDist = glm::length(glm::vec2(tpad.StartPosition(1) - tpad.StartPosition(0)));
+                float32 curDist   = glm::length(glm::vec2(tpad.Position(1) - tpad.Position(0)));
+                this->camera.dist = glm::clamp(this->camera.startDistance - (curDist - startDist) * 0.01f, minCamDist, maxCamDist);
+            }
+        }
         const Mouse& mouse = Input::Mouse();
         if (mouse.Attached) {
             if (mouse.ButtonPressed(Mouse::LMB)) {

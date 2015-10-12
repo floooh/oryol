@@ -76,7 +76,8 @@ InstancingApp::OnRunning() {
     
     // toggle particle update
     const Mouse& mouse = Input::Mouse();
-    if (mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) {
+    const Touchpad& tpad = Input::Touchpad();
+    if ((mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) || (tpad.Attached && tpad.Tapped)) {
         this->updateEnabled = !this->updateEnabled;
     }
     
