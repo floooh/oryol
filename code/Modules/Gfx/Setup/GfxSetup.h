@@ -49,6 +49,8 @@ public:
     String Title = "Oryol";
     /// optional clear-hint how the default render target is clear, used in D3D12 for MSAA backbuffer
     ClearState ClearHint;
+    /// enable to render full-res on HighDPI displays (not supported on all platforms)
+    bool HighDPI = false;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int32 poolSize);

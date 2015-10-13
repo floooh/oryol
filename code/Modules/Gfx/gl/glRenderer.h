@@ -126,6 +126,7 @@ private:
 
     bool rtValid;
     DisplayAttrs rtAttrs;
+    GfxSetup gfxSetup;
     int32 frameIndex;
     
     // high-level state cache

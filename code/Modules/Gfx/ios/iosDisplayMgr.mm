@@ -39,8 +39,14 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     Log::Info("iosDisplayMgr::SetupDisplay() called!\n");
     displayMgrBase::SetupDisplay(gfxSetup, ptrs);
     
-    // modify the color/depth/stencil format of the GLKView
+    // modify the color/depth/stencil format and content scaling of the GLKView
     GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();
+    if (gfxSetup.HighDPI) {
+        glkView.contentScaleFactor = 2.0f;
+    }
+    else {
+        glkView.contentScaleFactor = 1.0f;
+    }
     switch (gfxSetup.ColorFormat) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;

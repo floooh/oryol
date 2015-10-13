@@ -115,11 +115,12 @@ glRenderer::~glRenderer() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setup(const GfxSetup& /*setup*/, const gfxPointers& ptrs) {
+glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(!this->valid);
     
     this->valid = true;
     this->pointers = ptrs;
+    this->gfxSetup = setup;
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -233,6 +234,12 @@ glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool orig
         this->viewPortY = y;
         this->viewPortWidth = width;
         this->viewPortHeight = height;
+        #if ORYOL_IOS
+        // fix iOS high-dpi coordinates (only for default rendertarget)
+        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+            x*=2; y*=2; width*=2; height*=2;
+        }
+        #endif
         ::glViewport(x, y, width, height);
     }
 }
@@ -254,6 +261,12 @@ glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool o
         this->scissorY = y;
         this->scissorWidth = width;
         this->scissorHeight = height;
+        #if ORYOL_IOS
+        // fix iOS high-dpi coordinates (only for default rendertarget)
+        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+            x*=2; y*=2; width*=2; height*=2;
+        }
+        #endif
         ::glScissor(x, y, width, height);
     }
 }

@@ -86,7 +86,9 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
      * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
     EGLint format;
     eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
-    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
+    int32_t w = ANativeWindow_getWidth(window);
+    int32_t h = ANativeWindow_getHeight(window);
+    ANativeWindow_setBuffersGeometry(window, w/2, h/2, format);
     #endif
 
     this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);

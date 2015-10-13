@@ -121,6 +121,7 @@ MeshViewerApp::OnInit() {
 
     // setup rendering and input system
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 512, "Oryol Mesh Viewer");
+    gfxSetup.HighDPI = true;
     gfxSetup.ClearHint = this->clearState;
     Gfx::Setup(gfxSetup);
     Input::Setup();
