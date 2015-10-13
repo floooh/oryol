@@ -88,7 +88,10 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
     int32_t w = ANativeWindow_getWidth(window);
     int32_t h = ANativeWindow_getHeight(window);
-    ANativeWindow_setBuffersGeometry(window, w/2, h/2, format);
+    if (!gfxSetup.HighDPI) {
+        w/=2; h/=2;
+    }
+    ANativeWindow_setBuffersGeometry(window, w, h, format);
     #endif
 
     this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);

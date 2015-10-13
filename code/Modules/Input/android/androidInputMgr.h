@@ -33,6 +33,7 @@ private:
     static void onSensorEvent(const ASensorEvent* event);
 
     RunLoop::Id runLoopId;
+    bool highDPI;
 };
 
 } // namespace _priv

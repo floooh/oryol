@@ -5,6 +5,7 @@
 #include "androidInputMgr.h"
 #include "Core/Core.h"
 #include "Time/Clock.h"
+#include "Gfx/Gfx.h"
 #include "android_native/android_native_app_glue.h"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/trigonometric.hpp"
@@ -19,7 +20,8 @@ static androidInputMgr* self = nullptr;
 
 //------------------------------------------------------------------------------
 androidInputMgr::androidInputMgr() :
-runLoopId(RunLoop::InvalidId) {
+runLoopId(RunLoop::InvalidId),
+highDPI(false) {
     o_assert_dbg(nullptr == self);
     self = this;
 }
@@ -34,6 +36,12 @@ androidInputMgr::~androidInputMgr() {
 void
 androidInputMgr::setup(const InputSetup& setup) {
     Log::Info("androidInputMgr::setup called!\n");
+
+    if (!Gfx::IsValid()) {
+        o_error("androidInputMgr: Gfx::Setup() must be called before Input::Setup!\n");
+        return;
+    }
+    this->highDPI = Gfx::GfxSetup().HighDPI;
 
     inputMgrBase::setup(setup);
     this->touchpad.Attached = true;
@@ -94,6 +102,10 @@ androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* aEvent) {
             curPoint.identifier = AMotionEvent_getPointerId(aEvent, i);
             curPoint.pos.x = AMotionEvent_getX(aEvent, i);
             curPoint.pos.y = AMotionEvent_getY(aEvent, i);
+            if (!self->highDPI) {
+                curPoint.pos.x *= 0.5f;
+                curPoint.pos.y *= 0.5f;
+            }
             curPoint.isChanged = (i == pointerIndex);
         }
 
