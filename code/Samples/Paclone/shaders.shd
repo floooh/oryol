@@ -192,7 +192,7 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @use_texture_block crtFSTextures
 @in vec2 uv
 {
-    #if 0
+    #if 1
     _color = tl_crt(iChannel0, _fragcoord, uv);
     #else
     _color = tex2D(iChannel0, uv);
