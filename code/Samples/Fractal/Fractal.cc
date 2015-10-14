@@ -36,7 +36,7 @@ private:
     /// get current bounds (either Mandelbrot or Julia context)
     glm::vec4 getBounds(Type type) const;
     /// convert mouse pos to fractal coordinate system pos
-    glm::vec2 convertPos(float x, float y, const glm::vec4 bounds) const;
+    glm::vec2 convertPos(float x, float y, const glm::vec4& bounds) const;
     /// update the fractal's area rect
     void updateFractalRect(float x0, float y0, float x1, float y1);
     /// update the Julia set position from a mouse position
@@ -318,7 +318,7 @@ FractalApp::getBounds(Type type) const {
 
 //------------------------------------------------------------------------------
 glm::vec2
-FractalApp::convertPos(float x, float y, const glm::vec4 bounds) const {
+FractalApp::convertPos(float x, float y, const glm::vec4& bounds) const {
     // convert mouse pos to fractal real/imaginary pos
     const DisplayAttrs& attrs = Gfx::DisplayAttrs();
     const float fbWidth = (float) attrs.FramebufferWidth;

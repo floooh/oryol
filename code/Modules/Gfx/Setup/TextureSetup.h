@@ -20,11 +20,11 @@ public:
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, TextureSetup blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
+    static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup a texture from a image file data in memory
-    static TextureSetup FromImageFileData(TextureSetup blueprint=TextureSetup());
+    static TextureSetup FromImageFileData(const TextureSetup& blueprint=TextureSetup());
     /// setup texture from raw pixel data
-    static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint=TextureSetup());
+    static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int32 w, int32 h);
     /// setup as render target with size relative to current display size

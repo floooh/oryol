@@ -44,7 +44,7 @@ TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromFile(const class Locator& loc, TextureSetup blueprint, Id placeholder) {
+TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, Id placeholder) {
     TextureSetup setup(blueprint);
     setup.setupFromFile = true;
     setup.setupFromImageFileData = false;
@@ -72,7 +72,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromImageFileData(TextureSetup bluePrint) {
+TextureSetup::FromImageFileData(const TextureSetup& bluePrint) {
     TextureSetup setup(bluePrint);
     setup.setupFromFile = false;
     setup.setupFromImageFileData = true;
@@ -83,7 +83,7 @@ TextureSetup::FromImageFileData(TextureSetup bluePrint) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, TextureSetup blueprint) {
+TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
