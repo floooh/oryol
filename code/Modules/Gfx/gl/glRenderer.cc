@@ -1009,7 +1009,9 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
     o_assert_dbg(layout.ByteSize() == byteSize);
+    #endif
 
     // for each uniform in the uniform block:
     const int numUniforms = layout.NumComponents();

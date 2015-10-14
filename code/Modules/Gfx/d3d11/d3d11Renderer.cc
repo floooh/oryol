@@ -374,7 +374,9 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert(byteSize == layout.ByteSize());
+    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
+        o_assert_dbg(layout.ByteSize() == byteSize);
+    #endif
     #endif
 
     // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
