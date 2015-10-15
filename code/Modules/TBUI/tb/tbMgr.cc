@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "tbMgr.h"
 #include "Core/Core.h"
+#include "Core/RunLoop.h"
 #include "IO/Core/URLBuilder.h"
 #include "Gfx/Gfx.h"
 #include "Input/Input.h"
@@ -64,6 +65,18 @@ tbMgr::Setup(const TBUISetup& setup) {
     this->inputHandler->Subscribe<InputProtocol::MouseButton>([this](const Ptr<InputProtocol::MouseButton>& msg) {
         this->onMouseButton(msg->GetMouseButton(), msg->GetDown());
     });
+    this->inputHandler->Subscribe<InputProtocol::TouchTapped>([this](const Ptr<InputProtocol::TouchTapped>& msg) {
+        this->onTapped(msg->GetPos());
+    });
+    this->inputHandler->Subscribe<InputProtocol::TouchPanningStarted>([this](const Ptr<InputProtocol::TouchPanningStarted>& msg) {
+        this->onPanningStarted(msg->GetStartPos());
+    });
+    this->inputHandler->Subscribe<InputProtocol::TouchPanning>([this](const Ptr<InputProtocol::TouchPanning>& msg) {
+        this->onPanning(msg->GetPos());
+    });
+    this->inputHandler->Subscribe<InputProtocol::TouchPanningEnded>([this](const Ptr<InputProtocol::TouchPanningEnded>& msg) {
+        this->onPanningEnded(msg->GetPos());
+    });
     this->inputHandler->Subscribe<InputProtocol::MouseScroll>([this](const Ptr<InputProtocol::MouseScroll>& msg) {
         this->onScroll((int)msg->GetScroll().x, (int)-msg->GetScroll().y);
     });
@@ -74,6 +87,11 @@ tbMgr::Setup(const TBUISetup& setup) {
         this->onKey(msg->GetKey(), msg->GetDown() | msg->GetRepeat(), msg->GetUp());
     });
     Input::AttachInputHandler(this->inputHandler);
+
+    // add per-frame update method
+    Core::PostRunLoop()->Add([this] {
+        this->update();
+    });
     
     TBWidgetsAnimationManager::Init();
     
@@ -103,6 +121,20 @@ tbMgr::IsValid() const {
 
 //-----------------------------------------------------------------------------
 void
+tbMgr::update() {
+    this->rootWidget.InvokeProcessStates();
+    this->rootWidget.InvokeProcess();
+
+    // send a release for each tap
+    glm::vec2 pos;
+    while (!this->touchTaps.Empty()) {
+        this->touchTaps.Dequeue(pos);
+        this->rootWidget.InvokePointerUp((int)pos.x, (int)pos.y, this->modifierKeys, true);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void
 tbMgr::Draw() {
     o_assert_dbg(this->IsValid());
     o_assert_dbg(this->renderer);
@@ -111,9 +143,7 @@ tbMgr::Draw() {
     this->rootWidget.SetRect(TBRect(0, 0, disp.FramebufferWidth, disp.FramebufferHeight));
 
     TBAnimationManager::Update();
-    this->rootWidget.InvokeProcessStates();
-    this->rootWidget.InvokeProcess();
-    
+
     this->renderer->BeginPaint(disp.FramebufferWidth, disp.FramebufferHeight);
     this->rootWidget.InvokePaint(TBWidget::PaintProps());
     this->renderer->EndPaint();
@@ -142,23 +172,48 @@ tbMgr::onMouseMove(int posX, int posY) {
 //-----------------------------------------------------------------------------
 void
 tbMgr::onMouseButton(Mouse::Button btn, bool down) {
-        if (btn == Mouse::LMB) {
-            if (down) {
-                this->rootWidget.InvokePointerDown(this->mouseX, this->mouseY, 1, this->modifierKeys, false);
-            }
-            else {
-                this->rootWidget.InvokePointerUp(this->mouseX, this->mouseY, this->modifierKeys, false);
-            }
+    if (btn == Mouse::LMB) {
+        if (down) {
+            this->rootWidget.InvokePointerDown(this->mouseX, this->mouseY, 1, this->modifierKeys, false);
         }
-        else if (btn == Mouse::RMB) {
-            this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
-            if (TBWidget::hovered_widget)
-            {
-                TBWidget::hovered_widget->ConvertFromRoot(this->mouseX, this->mouseY);
-                TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU, this->mouseX, this->mouseY, false, this->modifierKeys);
-                TBWidget::hovered_widget->InvokeEvent(ev);
-            }
+        else {
+            this->rootWidget.InvokePointerUp(this->mouseX, this->mouseY, this->modifierKeys, false);
         }
+    }
+    else if (btn == Mouse::RMB) {
+        this->rootWidget.InvokePointerMove(this->mouseX, this->mouseY, this->modifierKeys, false);
+        if (TBWidget::hovered_widget)
+        {
+            TBWidget::hovered_widget->ConvertFromRoot(this->mouseX, this->mouseY);
+            TBWidgetEvent ev(EVENT_TYPE_CONTEXT_MENU, this->mouseX, this->mouseY, false, this->modifierKeys);
+            TBWidget::hovered_widget->InvokeEvent(ev);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onTapped(const glm::vec2& pos) {
+    this->touchTaps.Enqueue(pos);
+    this->rootWidget.InvokePointerDown((int)pos.x, (int)pos.y, 1, this->modifierKeys, true);
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onPanningStarted(const glm::vec2& pos) {
+    this->rootWidget.InvokePointerDown((int)pos.x, (int)pos.y, 1, this->modifierKeys, true);
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onPanningEnded(const glm::vec2& pos) {
+    this->rootWidget.InvokePointerUp((int)pos.x, (int)pos.y, this->modifierKeys, true);
+}
+
+//-----------------------------------------------------------------------------
+void
+tbMgr::onPanning(const glm::vec2& pos) {
+    this->rootWidget.InvokePointerMove((int)pos.x, (int)pos.y, this->modifierKeys, true);
 }
 
 //-----------------------------------------------------------------------------

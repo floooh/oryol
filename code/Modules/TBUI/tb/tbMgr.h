@@ -6,6 +6,7 @@
 */
 #include "Core/Types.h"
 #include "Core/RunLoop.h"
+#include "Core/Containers/Queue.h"
 #include "IO/Core/IOQueue.h"
 #include "TBUI/TBUISetup.h"
 #include "TBUI/tb/tbOryolBatchRenderer.h"
@@ -44,6 +45,14 @@ private:
     void onMouseButton(Mouse::Button btn, bool down);
     /// mouse scroll input handler
     void onScroll(int wheelX, int wheelY);
+    /// touch-tapped
+    void onTapped(const glm::vec2& pos);
+    /// touch-panning started
+    void onPanningStarted(const glm::vec2& pos);
+    /// touch-panning ended
+    void onPanningEnded(const glm::vec2& pos);
+    /// touch-panning in progress
+    void onPanning(const glm::vec2& pos);
     /// character input handler
     void onWChar(wchar_t c);
     /// key up/down handler
@@ -56,6 +65,7 @@ private:
     int mouseY = 0;
     tbOryolBatchRenderer* renderer = nullptr;
     tbOryolRootWidget rootWidget;
+    Queue<glm::vec2> touchTaps;
 };
 
 } // namespace _priv
