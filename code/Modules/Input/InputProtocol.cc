@@ -10,12 +10,28 @@ OryolClassImpl(InputProtocol::MouseButton);
 OryolClassImpl(InputProtocol::MouseScroll);
 OryolClassImpl(InputProtocol::Key);
 OryolClassImpl(InputProtocol::WChar);
+OryolClassImpl(InputProtocol::TouchTapped);
+OryolClassImpl(InputProtocol::TouchDoubleTapped);
+OryolClassImpl(InputProtocol::TouchPanningStarted);
+OryolClassImpl(InputProtocol::TouchPanning);
+OryolClassImpl(InputProtocol::TouchPanningEnded);
+OryolClassImpl(InputProtocol::TouchPinchingStarted);
+OryolClassImpl(InputProtocol::TouchPinching);
+OryolClassImpl(InputProtocol::TouchPinchingEnded);
 InputProtocol::CreateCallback InputProtocol::jumpTable[InputProtocol::MessageId::NumMessageIds] = { 
     &InputProtocol::MouseMove::FactoryCreate,
     &InputProtocol::MouseButton::FactoryCreate,
     &InputProtocol::MouseScroll::FactoryCreate,
     &InputProtocol::Key::FactoryCreate,
     &InputProtocol::WChar::FactoryCreate,
+    &InputProtocol::TouchTapped::FactoryCreate,
+    &InputProtocol::TouchDoubleTapped::FactoryCreate,
+    &InputProtocol::TouchPanningStarted::FactoryCreate,
+    &InputProtocol::TouchPanning::FactoryCreate,
+    &InputProtocol::TouchPanningEnded::FactoryCreate,
+    &InputProtocol::TouchPinchingStarted::FactoryCreate,
+    &InputProtocol::TouchPinching::FactoryCreate,
+    &InputProtocol::TouchPinchingEnded::FactoryCreate,
 };
 Ptr<Message>
 InputProtocol::Factory::Create(MessageIdType id) {

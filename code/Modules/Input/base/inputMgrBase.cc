@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "inputMgrBase.h"
+#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -123,6 +124,10 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
                 this->touchpad.Tapped = true;
                 this->touchpad.onPos(0, this->singleTapDetector.position);
                 this->touchpad.onStartPos(0, this->singleTapDetector.position);
+
+                auto msg = InputProtocol::TouchTapped::Create();
+                msg->SetPos(this->singleTapDetector.position);
+                this->notifyHandlers(msg);
             }
         }
         if (this->inputSetup.DoubleTapEnabled) {
@@ -130,26 +135,51 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
                 this->touchpad.DoubleTapped = true;
                 this->touchpad.onPos(0, this->doubleTapDetector.position);
                 this->touchpad.onStartPos(0, this->doubleTapDetector.position);
+                
+                auto msg = InputProtocol::TouchDoubleTapped::Create();
+                msg->SetPos(this->doubleTapDetector.position);
+                this->notifyHandlers(msg);
             }
         }
         if (this->inputSetup.PanEnabled) {
             switch (this->panDetector.detect(event)) {
                 case gestureState::start:
-                    this->touchpad.PanningStarted = true;
-                    this->touchpad.Panning = true;
-                    this->touchpad.onPos(0, this->panDetector.position);
-                    this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                    {
+                        this->touchpad.PanningStarted = true;
+                        this->touchpad.Panning = true;
+                        this->touchpad.onPos(0, this->panDetector.position);
+                        this->touchpad.onStartPos(0, this->panDetector.startPosition);
+
+                        auto msg = InputProtocol::TouchPanningStarted::Create();
+                        msg->SetPos(this->panDetector.position);
+                        msg->SetStartPos(this->panDetector.startPosition);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 case gestureState::move:
-                    this->touchpad.Panning = true;
-                    this->touchpad.onPosMov(0, this->panDetector.position);
-                    this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                    {
+                        this->touchpad.Panning = true;
+                        this->touchpad.onPosMov(0, this->panDetector.position);
+                        this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                    
+                        auto msg = InputProtocol::TouchPanning::Create();
+                        msg->SetPos(this->panDetector.position);
+                        msg->SetStartPos(this->panDetector.startPosition);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 case gestureState::end:
-                    this->touchpad.PanningEnded = true;
-                    this->touchpad.Panning = false;
-                    this->touchpad.onPos(0, this->panDetector.position);
-                    this->touchpad.onStartPos(0, this->panDetector.startPosition);
+                    {
+                        this->touchpad.PanningEnded = true;
+                        this->touchpad.Panning = false;
+                        this->touchpad.onPos(0, this->panDetector.position);
+                        this->touchpad.onStartPos(0, this->panDetector.startPosition);
+
+                        auto msg = InputProtocol::TouchPanningEnded::Create();
+                        msg->SetPos(this->panDetector.position);
+                        msg->SetStartPos(this->panDetector.startPosition);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 default:
                     this->touchpad.Panning = false;
@@ -159,27 +189,54 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
         if (this->inputSetup.PinchEnabled) {
             switch (this->pinchDetector.detect(event)) {
                 case gestureState::start:
-                    this->touchpad.PinchingStarted = true;
-                    this->touchpad.Pinching = true;
-                    this->touchpad.onPos(0, this->pinchDetector.position0);
-                    this->touchpad.onPos(1, this->pinchDetector.position1);
-                    this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-                    this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                    {
+                        this->touchpad.PinchingStarted = true;
+                        this->touchpad.Pinching = true;
+                        this->touchpad.onPos(0, this->pinchDetector.position0);
+                        this->touchpad.onPos(1, this->pinchDetector.position1);
+                        this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                        this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+
+                        auto msg = InputProtocol::TouchPinchingStarted::Create();
+                        msg->SetPos0(this->pinchDetector.position0);
+                        msg->SetPos1(this->pinchDetector.position1);
+                        msg->SetStartPos0(this->pinchDetector.startPosition0);
+                        msg->SetStartPos1(this->pinchDetector.startPosition1);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 case gestureState::move:
-                    this->touchpad.Pinching = true;
-                    this->touchpad.onPosMov(0, this->pinchDetector.position0);
-                    this->touchpad.onPosMov(1, this->pinchDetector.position1);
-                    this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-                    this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                    {
+                        this->touchpad.Pinching = true;
+                        this->touchpad.onPosMov(0, this->pinchDetector.position0);
+                        this->touchpad.onPosMov(1, this->pinchDetector.position1);
+                        this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                        this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+
+                        auto msg = InputProtocol::TouchPinching::Create();
+                        msg->SetPos0(this->pinchDetector.position0);
+                        msg->SetPos1(this->pinchDetector.position1);
+                        msg->SetStartPos0(this->pinchDetector.startPosition0);
+                        msg->SetStartPos1(this->pinchDetector.startPosition1);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 case gestureState::end:
-                    this->touchpad.PinchingEnded = true;
-                    this->touchpad.Pinching = false;
-                    this->touchpad.onPos(0, this->pinchDetector.position0);
-                    this->touchpad.onPos(1, this->pinchDetector.position1);
-                    this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
-                    this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+                    {
+                        this->touchpad.PinchingEnded = true;
+                        this->touchpad.Pinching = false;
+                        this->touchpad.onPos(0, this->pinchDetector.position0);
+                        this->touchpad.onPos(1, this->pinchDetector.position1);
+                        this->touchpad.onStartPos(0, this->pinchDetector.startPosition0);
+                        this->touchpad.onStartPos(1, this->pinchDetector.startPosition1);
+
+                        auto msg = InputProtocol::TouchPinchingEnded::Create();
+                        msg->SetPos0(this->pinchDetector.position0);
+                        msg->SetPos1(this->pinchDetector.position1);
+                        msg->SetStartPos0(this->pinchDetector.startPosition0);
+                        msg->SetStartPos1(this->pinchDetector.startPosition1);
+                        this->notifyHandlers(msg);
+                    }
                     break;
                 default:
                     this->touchpad.Pinching = false;
@@ -191,3 +248,4 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
 
 } // namespace _priv
 } // namespace Oryol
+

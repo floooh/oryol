@@ -25,6 +25,14 @@ public:
             MouseScrollId,
             KeyId,
             WCharId,
+            TouchTappedId,
+            TouchDoubleTappedId,
+            TouchPanningStartedId,
+            TouchPanningId,
+            TouchPanningEndedId,
+            TouchPinchingStartedId,
+            TouchPinchingId,
+            TouchPinchingEndedId,
             NumMessageIds
         };
         static const char* ToString(MessageIdType c) {
@@ -34,6 +42,14 @@ public:
                 case MouseScrollId: return "MouseScrollId";
                 case KeyId: return "KeyId";
                 case WCharId: return "WCharId";
+                case TouchTappedId: return "TouchTappedId";
+                case TouchDoubleTappedId: return "TouchDoubleTappedId";
+                case TouchPanningStartedId: return "TouchPanningStartedId";
+                case TouchPanningId: return "TouchPanningId";
+                case TouchPanningEndedId: return "TouchPanningEndedId";
+                case TouchPinchingStartedId: return "TouchPinchingStartedId";
+                case TouchPinchingId: return "TouchPinchingId";
+                case TouchPinchingEndedId: return "TouchPinchingEndedId";
                 default: return "InvalidMessageId";
             }
         };
@@ -43,6 +59,14 @@ public:
             if (std::strcmp("MouseScrollId", str) == 0) return MouseScrollId;
             if (std::strcmp("KeyId", str) == 0) return KeyId;
             if (std::strcmp("WCharId", str) == 0) return WCharId;
+            if (std::strcmp("TouchTappedId", str) == 0) return TouchTappedId;
+            if (std::strcmp("TouchDoubleTappedId", str) == 0) return TouchDoubleTappedId;
+            if (std::strcmp("TouchPanningStartedId", str) == 0) return TouchPanningStartedId;
+            if (std::strcmp("TouchPanningId", str) == 0) return TouchPanningId;
+            if (std::strcmp("TouchPanningEndedId", str) == 0) return TouchPanningEndedId;
+            if (std::strcmp("TouchPinchingStartedId", str) == 0) return TouchPinchingStartedId;
+            if (std::strcmp("TouchPinchingId", str) == 0) return TouchPinchingId;
+            if (std::strcmp("TouchPinchingEndedId", str) == 0) return TouchPinchingEndedId;
             return InvalidMessageId;
         };
     };
@@ -229,6 +253,298 @@ private:
         };
 private:
         wchar_t wchar;
+    };
+    class TouchTapped : public Message {
+        OryolClassDecl(TouchTapped);
+        OryolTypeDecl(TouchTapped,Message);
+    public:
+        TouchTapped() {
+            this->msgId = MessageId::TouchTappedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchTappedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos(const glm::vec2& val) {
+            this->pos = val;
+        };
+        const glm::vec2& GetPos() const {
+            return this->pos;
+        };
+private:
+        glm::vec2 pos;
+    };
+    class TouchDoubleTapped : public Message {
+        OryolClassDecl(TouchDoubleTapped);
+        OryolTypeDecl(TouchDoubleTapped,Message);
+    public:
+        TouchDoubleTapped() {
+            this->msgId = MessageId::TouchDoubleTappedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchDoubleTappedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos(const glm::vec2& val) {
+            this->pos = val;
+        };
+        const glm::vec2& GetPos() const {
+            return this->pos;
+        };
+private:
+        glm::vec2 pos;
+    };
+    class TouchPanningStarted : public Message {
+        OryolClassDecl(TouchPanningStarted);
+        OryolTypeDecl(TouchPanningStarted,Message);
+    public:
+        TouchPanningStarted() {
+            this->msgId = MessageId::TouchPanningStartedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPanningStartedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos(const glm::vec2& val) {
+            this->pos = val;
+        };
+        const glm::vec2& GetPos() const {
+            return this->pos;
+        };
+        void SetStartPos(const glm::vec2& val) {
+            this->startpos = val;
+        };
+        const glm::vec2& GetStartPos() const {
+            return this->startpos;
+        };
+private:
+        glm::vec2 pos;
+        glm::vec2 startpos;
+    };
+    class TouchPanning : public Message {
+        OryolClassDecl(TouchPanning);
+        OryolTypeDecl(TouchPanning,Message);
+    public:
+        TouchPanning() {
+            this->msgId = MessageId::TouchPanningId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPanningId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos(const glm::vec2& val) {
+            this->pos = val;
+        };
+        const glm::vec2& GetPos() const {
+            return this->pos;
+        };
+        void SetStartPos(const glm::vec2& val) {
+            this->startpos = val;
+        };
+        const glm::vec2& GetStartPos() const {
+            return this->startpos;
+        };
+private:
+        glm::vec2 pos;
+        glm::vec2 startpos;
+    };
+    class TouchPanningEnded : public Message {
+        OryolClassDecl(TouchPanningEnded);
+        OryolTypeDecl(TouchPanningEnded,Message);
+    public:
+        TouchPanningEnded() {
+            this->msgId = MessageId::TouchPanningEndedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPanningEndedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos(const glm::vec2& val) {
+            this->pos = val;
+        };
+        const glm::vec2& GetPos() const {
+            return this->pos;
+        };
+        void SetStartPos(const glm::vec2& val) {
+            this->startpos = val;
+        };
+        const glm::vec2& GetStartPos() const {
+            return this->startpos;
+        };
+private:
+        glm::vec2 pos;
+        glm::vec2 startpos;
+    };
+    class TouchPinchingStarted : public Message {
+        OryolClassDecl(TouchPinchingStarted);
+        OryolTypeDecl(TouchPinchingStarted,Message);
+    public:
+        TouchPinchingStarted() {
+            this->msgId = MessageId::TouchPinchingStartedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPinchingStartedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos0(const glm::vec2& val) {
+            this->pos0 = val;
+        };
+        const glm::vec2& GetPos0() const {
+            return this->pos0;
+        };
+        void SetPos1(const glm::vec2& val) {
+            this->pos1 = val;
+        };
+        const glm::vec2& GetPos1() const {
+            return this->pos1;
+        };
+        void SetStartPos0(const glm::vec2& val) {
+            this->startpos0 = val;
+        };
+        const glm::vec2& GetStartPos0() const {
+            return this->startpos0;
+        };
+        void SetStartPos1(const glm::vec2& val) {
+            this->startpos1 = val;
+        };
+        const glm::vec2& GetStartPos1() const {
+            return this->startpos1;
+        };
+private:
+        glm::vec2 pos0;
+        glm::vec2 pos1;
+        glm::vec2 startpos0;
+        glm::vec2 startpos1;
+    };
+    class TouchPinching : public Message {
+        OryolClassDecl(TouchPinching);
+        OryolTypeDecl(TouchPinching,Message);
+    public:
+        TouchPinching() {
+            this->msgId = MessageId::TouchPinchingId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPinchingId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos0(const glm::vec2& val) {
+            this->pos0 = val;
+        };
+        const glm::vec2& GetPos0() const {
+            return this->pos0;
+        };
+        void SetPos1(const glm::vec2& val) {
+            this->pos1 = val;
+        };
+        const glm::vec2& GetPos1() const {
+            return this->pos1;
+        };
+        void SetStartPos0(const glm::vec2& val) {
+            this->startpos0 = val;
+        };
+        const glm::vec2& GetStartPos0() const {
+            return this->startpos0;
+        };
+        void SetStartPos1(const glm::vec2& val) {
+            this->startpos1 = val;
+        };
+        const glm::vec2& GetStartPos1() const {
+            return this->startpos1;
+        };
+private:
+        glm::vec2 pos0;
+        glm::vec2 pos1;
+        glm::vec2 startpos0;
+        glm::vec2 startpos1;
+    };
+    class TouchPinchingEnded : public Message {
+        OryolClassDecl(TouchPinchingEnded);
+        OryolTypeDecl(TouchPinchingEnded,Message);
+    public:
+        TouchPinchingEnded() {
+            this->msgId = MessageId::TouchPinchingEndedId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::TouchPinchingEndedId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IPPT') return true;
+            else return Message::IsMemberOf(protId);
+        };
+        void SetPos0(const glm::vec2& val) {
+            this->pos0 = val;
+        };
+        const glm::vec2& GetPos0() const {
+            return this->pos0;
+        };
+        void SetPos1(const glm::vec2& val) {
+            this->pos1 = val;
+        };
+        const glm::vec2& GetPos1() const {
+            return this->pos1;
+        };
+        void SetStartPos0(const glm::vec2& val) {
+            this->startpos0 = val;
+        };
+        const glm::vec2& GetStartPos0() const {
+            return this->startpos0;
+        };
+        void SetStartPos1(const glm::vec2& val) {
+            this->startpos1 = val;
+        };
+        const glm::vec2& GetStartPos1() const {
+            return this->startpos1;
+        };
+private:
+        glm::vec2 pos0;
+        glm::vec2 pos1;
+        glm::vec2 startpos0;
+        glm::vec2 startpos1;
     };
 };
 }

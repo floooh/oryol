@@ -27,5 +27,40 @@ messages:
     - name: WChar
       attrs:
         - { name: WChar, type: wchar_t, default: 0 }
-        
-        
+    - name: TouchTapped
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+    - name: TouchDoubleTapped
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+    - name: TouchPanningStarted
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+        - { name: StartPos, type: 'glm::vec2' }
+    - name: TouchPanning
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+        - { name: StartPos, type: 'glm::vec2' }
+    - name: TouchPanningEnded
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+        - { name: StartPos, type: 'glm::vec2' }
+    - name: TouchPinchingStarted
+      attrs:
+        - { name: Pos0, type: 'glm::vec2' }
+        - { name: Pos1, type: 'glm::vec2' }
+        - { name: StartPos0, type: 'glm::vec2' }
+        - { name: StartPos1, type: 'glm::vec2' }
+    - name: TouchPinching
+      attrs:
+        - { name: Pos0, type: 'glm::vec2' }
+        - { name: Pos1, type: 'glm::vec2' }
+        - { name: StartPos0, type: 'glm::vec2' }
+        - { name: StartPos1, type: 'glm::vec2' }
+    - name: TouchPinchingEnded
+      attrs:
+        - { name: Pos0, type: 'glm::vec2' }
+        - { name: Pos1, type: 'glm::vec2' }
+        - { name: StartPos0, type: 'glm::vec2' }
+        - { name: StartPos1, type: 'glm::vec2' }
+
