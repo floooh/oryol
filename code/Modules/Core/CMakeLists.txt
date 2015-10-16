@@ -75,8 +75,10 @@ fips_begin_module(Core)
             iosAppDelegate.mm iosAppDelegate.h
             iosBridge.mm iosBridge.h
         )
-    endif()
-    if (FIPS_OSX AND ORYOL_USE_METAL)
+        if (ORYOL_USE_METAL)
+            fips_frameworks_OSX(Metal MetalKit)
+        endif()
+    elseif (FIPS_OSX AND ORYOL_USE_METAL)
         fips_dir(osx)
         fips_files(osxBridge.h osxBridge.mm osxInputDefs.h)
         fips_frameworks_osx(Cocoa Metal MetalKit QuartzCore)

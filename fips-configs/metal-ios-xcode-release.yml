@@ -1,0 +1,10 @@
+---
+platform: ios 
+generator: Xcode
+build_tool: xcodebuild
+build_type: Release 
+cmake-toolchain: ios.toolchain.cmake
+defines:
+    ORYOL_USE_METAL: ON
+    FIPS_IOS_USE_ARC: ON
+
