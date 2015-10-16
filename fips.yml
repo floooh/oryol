@@ -45,7 +45,6 @@ exports:
         IMUI :          code/Modules/IMUI
         TBUI :          code/Modules/TBUI
         Sound :         code/Modules/Sound
-        NanoVG :        code/Modules/NanoVG
         
         # ext libs
         ConvertUTF:         code/Ext/ConvertUTF
