@@ -17,3 +17,9 @@ On parallel-task systems:
 * http://blog.molecular-matters.com/2015/08/24/job-system-2-0-lock-free-work-stealing-part-1-basics/
 * http://www.enkisoftware.com/devlogpost-20150822-1-Implementing_a_lightweight_task_scheduler.html
 * https://github.com/dougbinks/enkiTS
+
+Audio libs:
+* http://sol.gfxile.net/soloud/
+* https://github.com/andrewrk/libsoundio
+* https://github.com/neXyon/audaspace
+* https://www.music.mcgill.ca/~gary/rtaudio/
