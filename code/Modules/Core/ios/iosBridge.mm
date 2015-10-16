@@ -62,9 +62,14 @@ iosBridge::iosBridge() :
 app(nullptr),
 appDelegate(nil),
 appWindow(nil),
+#if ORYOL_METAL
+// FIXME
+#else
 eaglContext(nil),
 glkView(nil),
-glkViewController(nil) {
+glkViewController(nil)
+#endif 
+{
     o_assert(nullptr == self);
     self = this;
 }
@@ -99,11 +104,16 @@ iosBridge::discard() {
     o_assert(nullptr != this->app);
     Log::Info("iosBridge::discard() called.\n");
 
-    [this->eaglContext invalidate]; this->eaglContext = nil;
     [this->appWindow invalidate]; this->appWindow = nil;
     [this->appDelegate invalidate]; this->appDelegate = nil;
+    #if ORYOL_METAL
+    // FIXME
+    o_warn("FIXME METAL!\n");
+    #else
+    [this->eaglContext invalidate]; this->eaglContext = nil;
     [this->glkView invalidate]; this->glkView = nil;
     [this->glkViewController invalidate]; this->glkViewController = nil;
+    #endif
     this->app = nullptr;
 }
 
@@ -129,7 +139,11 @@ iosBridge::onDidFinishLaunching() {
     // create the app's main window
     CGRect mainScreenBounds = [[UIScreen mainScreen] bounds];
     UIWindow* win = [[UIWindow alloc] initWithFrame:mainScreenBounds];
-    
+
+    #if ORYOL_METAL
+    // FIXME
+    o_warn("FIXME METAL!\n");
+    #else
     // create GL context and GLKView
     // NOTE: the drawable properties will be overridden later in iosDisplayMgr!
     this->eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -153,8 +167,9 @@ iosBridge::onDidFinishLaunching() {
     _glkViewController.preferredFramesPerSecond = 60;
     this->glkViewController = _glkViewController;
     win.rootViewController = this->glkViewController;
-    
-    // attach view controller and make window visible
+    #endif
+
+    // make window visible
     win.backgroundColor = [UIColor blackColor];
     this->appWindow = win;
     [this->appWindow makeKeyAndVisible];
@@ -194,8 +209,13 @@ iosBridge::onWillTerminate() {
 void
 iosBridge::onDrawRequested() {
     // this will in turn call onFrame to do the entire frame look
+    #if ORYOL_METAL
+    // FIXME
+    o_warn("FIXME METAL: NEED MTKViewDelegate!!!\n");
+    #else
     o_assert(nil != this->glkView);
     [this->glkView display];
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -219,25 +239,31 @@ iosBridge::iosGetAppWindow() const {
 }
 
 //------------------------------------------------------------------------------
+#if !ORYOL_METAL
 id
 iosBridge::iosGetEAGLContext() const {
     o_assert(nil != this->eaglContext);
     return this->eaglContext;
 }
+#endif
 
 //------------------------------------------------------------------------------
+#if !ORYOL_METAL
 id
 iosBridge::iosGetGLKView() const {
     o_assert(nil != this->glkView);
     return this->glkView;
 }
+#endif
 
 //------------------------------------------------------------------------------
+#if !ORYOL_METAL
 id
 iosBridge::iosGetGLKViewController() const {
     o_assert(nil != this->glkViewController);
     return this->glkViewController;
 }
+#endif
 
 } // namespace _priv
 } // namespace Oryol
