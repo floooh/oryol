@@ -9,24 +9,32 @@ import sys
 import binascii
 import genutil as util
 
-# FIXME: different platform-root for OSX and iOS!
-platform_roots = [
-    '/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/',
-    '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/'
-]
-rel_sys_root = 'Developer/SDKs/MacOSX10.11.sdk'
+platform_roots = {
+    'osx': [
+        '/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/',
+        '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/'
+    ],
+    'ios': [
+        '/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/',
+        '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/'
+    ]
+}
+rel_sys_root = {
+    'osx': 'Developer/SDKs/MacOSX10.11.sdk',
+    'ios': 'Developer/SDKs/iPhoneOS9.0.sdk'
+}
 
 #-------------------------------------------------------------------------------
-def get_sys_root() :
-    for platform_root in platform_roots :
-        sys_root_path = platform_root + rel_sys_root
+def get_sys_root(platform) :
+    for platform_root in platform_roots[platform] :
+        sys_root_path = platform_root + rel_sys_root[platform]
         if os.path.isdir(sys_root_path) :
             return sys_root_path
     return None
 
 #-------------------------------------------------------------------------------
-def get_tool(tool_name) :
-    for platform_root in platform_roots :
+def get_tool(platform, tool_name) :
+    for platform_root in platform_roots[platform] :
         tool_path = platform_root + 'usr/bin/' + tool_name
         if os.path.isfile(tool_path) :
             return tool_path
@@ -43,6 +51,7 @@ def writeFile(f, lines) :
 #-------------------------------------------------------------------------------
 def run(cmd) :
     # run a generic command an capture stdout
+    print('cmd: {}'.format(cmd))
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :
@@ -52,27 +61,33 @@ def run(cmd) :
     return out
 
 #-------------------------------------------------------------------------------
-def cc(in_src, out_dia, out_air) :
+def cc(platform, in_src, out_dia, out_air) :
     # run the metal compiler
-    cmd = [get_tool('metal'), '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
-           '-isysroot', get_sys_root(),
+    tool = get_tool(platform, 'metal')
+    if platform == 'ios':
+        min_version_arg = '-miphoneos-version-min=9.0'
+        std_arg = '-std=ios-metal1.0'
+    else :
+        min_version_arg = '-mmacosx-version-min=10.11'
+        std_arg = '-std=osx-metal1.1'
+    cmd = [tool, '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
+           '-isysroot', get_sys_root(platform),
            '-serialize-diagnostics', out_dia,
            '-o', out_air,
-           '-mmacosx-version-min=10.11',
-           '-std=osx-metal1.1',
+           min_version_arg, std_arg,
            in_src]
     return run(cmd)
 
 #-------------------------------------------------------------------------------
-def ar(in_air, out_lib) :
+def ar(platform, in_air, out_lib) :
     # run the metal librarian
-    cmd = [get_tool('metal-ar'), 'r', out_lib, in_air]
+    cmd = [get_tool(platform, 'metal-ar'), 'r', out_lib, in_air]
     return run(cmd)
 
 #-------------------------------------------------------------------------------
-def link(in_lib, out_bin) :
+def link(platform, in_lib, out_bin) :
     # run the metal linker
-    cmd = [get_tool('metallib'), '-o', out_bin, in_lib]
+    cmd = [get_tool(platform, 'metallib'), '-o', out_bin, in_lib]
     return run(cmd)
 
 #-------------------------------------------------------------------------------
@@ -131,16 +146,18 @@ def writeBinHeader(in_bin, out_hdr, c_name) :
         out_file.write('\n};\n')
 
 #-------------------------------------------------------------------------------
-def validate(lines, outPath, c_name) :
-    
+def validate(platform, lines, outPath, c_name) :
+   
+    print("platform: {}".format(platform))
+
     # test if tools exists
-    if not get_tool('metal') :
+    if not get_tool(platform, 'metal') :
         util.fmtWarning('metal compiler not found\n')
         return
-    if not get_tool('metal-ar') :
+    if not get_tool(platform, 'metal-ar') :
         util.fmtWarning('metal librarian not found\n')
         return
-    if not get_tool('metallib') :
+    if not get_tool(platform, 'metallib') :
         util.fmtWarning('metal linker not found\n')
         return
 
@@ -158,13 +175,9 @@ def validate(lines, outPath, c_name) :
         writeFile(f, lines)
 
     # compile .metal source file
-    output = cc(metal_src_path, metal_dia_path, metal_air_path)
+    output = cc(platform, metal_src_path, metal_dia_path, metal_air_path)
     parseOutput(output, lines)
-    output += ar(metal_air_path, metal_lib_path)
-    output += link(metal_lib_path, metal_bin_path)
+    output += ar(platform, metal_air_path, metal_lib_path)
+    output += link(platform, metal_lib_path, metal_bin_path)
     writeBinHeader(metal_bin_path, c_header_path, c_name)
-
-    
-
-
 

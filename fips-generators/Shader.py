@@ -1577,7 +1577,7 @@ class ShaderLibrary :
             if len(srcLines) > 0 :
                 outPath = rootPath + '.h'
                 cName = slVersion + '_lib'
-                metalcompiler.validate(srcLines, outPath, cName)
+                metalcompiler.validate(util.getEnv('target_platform'), srcLines, outPath, cName)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
