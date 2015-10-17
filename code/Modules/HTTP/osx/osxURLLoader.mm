@@ -15,10 +15,12 @@ std::atomic_flag osxURLLoader_sharedCacheSet{false};
 //------------------------------------------------------------------------------
 osxURLLoader::osxURLLoader() {
     // disable the 'magic cache' to prevent memory growth
+    #if !ORYOL_USE_ARC
     if (!osxURLLoader_sharedCacheSet.test_and_set()) {
         [NSURLCache setSharedURLCache:[[[NSURLCache alloc] initWithMemoryCapacity:0
          diskCapacity:0 diskPath:nil] autorelease]];
     }
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -153,7 +155,9 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             }
             req->SetResponse(response);
         }
+        #if !ORYOL_USE_ARC
         [urlRequest autorelease];
+        #endif
     }
 }
 

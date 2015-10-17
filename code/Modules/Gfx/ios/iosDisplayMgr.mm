@@ -1,4 +1,3 @@
-#if !ORYOL_METAL
 //------------------------------------------------------------------------------
 //  iosDisplayMgr.mm
 //------------------------------------------------------------------------------
@@ -138,5 +137,3 @@ iosDisplayMgr::glBindDefaultFramebuffer() {
 
 } // namespace _priv
 } // namespace Oryol
-#endif // !ORYOL_METAL
-

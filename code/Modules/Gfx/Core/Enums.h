@@ -196,6 +196,39 @@ public:
                 return false;
         }
     }
+    /// return true if this is a PVRTC-compressed format
+    static bool IsPVRTC(Code c) {
+        switch (c) {
+            case PVRTC2_RGB:
+            case PVRTC4_RGB:
+            case PVRTC2_RGBA:
+            case PVRTC4_RGBA:
+                return true;
+            default:
+                return false;
+        }
+    }
+    /// return true if this is a DXT-compressed format
+    static bool IsDXT(Code c) {
+        switch (c) {
+            case DXT1:
+            case DXT3:
+            case DXT5:
+                return true;
+            default:
+                return false;
+        }
+    }
+    /// return true if this is an ETC-compressed format
+    static bool IsETC2(Code c) {
+        switch (c) {
+            case ETC2_RGB8:
+            case ETC2_SRGB8:
+                return true;
+            default:
+                return false;
+        }
+    }
     /// get byte size of pixel format
     static int32 ByteSize(Code c) {
         switch (c) {

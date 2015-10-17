@@ -232,12 +232,17 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
         for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
             int mipWidth = std::max(setup.Width >> mipIndex, 1);
             int mipHeight = std::max(setup.Height >> mipIndex, 1);
+            // special case PVRTC formats: bytesPerRow must be 0
+            int bytesPerRow = 0;
+            if (!PixelFormat::IsPVRTC(setup.ColorFormat)) {
+                bytesPerRow = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
+            }
             MTLRegion region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
             [tex.mtlTex replaceRegion:region
                 mipmapLevel:mipIndex
                 slice:faceIndex
                 withBytes:srcPtr+setup.ImageOffsets[faceIndex][mipIndex]
-                bytesPerRow:PixelFormat::RowPitch(setup.ColorFormat, mipWidth)
+                bytesPerRow:bytesPerRow
                 bytesPerImage:0];
         }
     }

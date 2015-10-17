@@ -1,4 +1,3 @@
-#if !ORYOL_METAL
 #pragma once
 //------------------------------------------------------------------------------
 /**
@@ -39,4 +38,3 @@ private:
     
 } // namespace _priv
 } // namespace Oryol
-#endif // !ORYOL_METAL

@@ -97,7 +97,7 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_ID mtkViewDelegate;
     ORYOL_OBJC_ID mtkViewController;
-    MTKView* mtkView;
+    ORYOL_OBJC_ID mtkView;
     #else
     ORYOL_OBJC_ID eaglContext;
     ORYOL_OBJC_ID glkView;

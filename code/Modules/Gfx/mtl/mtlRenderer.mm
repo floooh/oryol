@@ -127,7 +127,7 @@ mtlRenderer::commitFrame() {
 
     if (nil != this->curCommandEncoder) {
         [this->curCommandEncoder endEncoding];
-        [this->curCommandBuffer presentDrawable:osBridge::ptr()->mtkView.currentDrawable];
+        [this->curCommandBuffer presentDrawable:[osBridge::ptr()->mtkView currentDrawable]];
     }
     [this->curCommandBuffer commit];
 
@@ -227,7 +227,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     MTLRenderPassDescriptor* passDesc = nil;
     if (nullptr == rt) {
         // default render target
-        passDesc = osBridge::ptr()->mtkView.currentRenderPassDescriptor;
+        passDesc = [osBridge::ptr()->mtkView currentRenderPassDescriptor];
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {

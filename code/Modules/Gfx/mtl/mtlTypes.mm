@@ -65,6 +65,11 @@ mtlTypes::asTextureFormat(PixelFormat::Code fmt) {
         case PixelFormat::DXT1:     return MTLPixelFormatBC1_RGBA;
         case PixelFormat::DXT3:     return MTLPixelFormatBC2_RGBA;
         case PixelFormat::DXT5:     return MTLPixelFormatBC3_RGBA;
+        #elif ORYOL_IOS
+        case PixelFormat::PVRTC2_RGB:   return MTLPixelFormatPVRTC_RGB_2BPP;
+        case PixelFormat::PVRTC2_RGBA:  return MTLPixelFormatPVRTC_RGBA_2BPP;
+        case PixelFormat::PVRTC4_RGB:   return MTLPixelFormatPVRTC_RGB_4BPP;
+        case PixelFormat::PVRTC4_RGBA:  return MTLPixelFormatPVRTC_RGBA_4BPP;
         #endif
         default: return MTLPixelFormatInvalid;
     }

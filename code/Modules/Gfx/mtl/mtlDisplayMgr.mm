@@ -76,11 +76,30 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     // also needs fixes in the ApplyScissorRect and ApplyViewport functions!
     CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
     [osBridge::ptr()->mtkView setDrawableSize:drawableSize];
-    [osBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+    #elif ORYOL_IOS
+    osBridge* bridge = osBridge::ptr();
+    if (gfxSetup.HighDPI) {
+        [bridge->mtkView setContentScaleFactor:2.0f];
+    }
+    else {
+        [bridge->mtkView setContentScaleFactor:1.0f];
+    }
+    // get actual rendering size
+    int fbWidth = (int) [bridge->mtkView drawableSize].width;
+    int fbHeight = (int) [bridge->mtkView drawableSize].height;
+    Log::Info("mtlDisplayMgr: actual framebuffer size w=%d, h=%d\n", fbWidth, fbHeight);
+    this->displayAttrs.FramebufferWidth = fbWidth;
+    this->displayAttrs.FramebufferHeight = fbHeight;
+    this->displayAttrs.WindowWidth = fbWidth;
+    this->displayAttrs.WindowHeight = fbHeight;
+    #else
+    #error "mtlDisplayMgr: undefined platform!"
     #endif
+    [osBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_MACOS
 void
 mtlDisplayMgr::onFramebufferSize(int w, int h) {
     o_assert_dbg((w > 0) && (h > 0));
@@ -91,6 +110,7 @@ mtlDisplayMgr::onFramebufferSize(int w, int h) {
         self->displayAttrs.WindowHeight = h;
     }
 }
+#endif
 
 } // namespace _priv
 } // namespace Oryol

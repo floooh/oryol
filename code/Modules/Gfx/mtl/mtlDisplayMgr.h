@@ -28,7 +28,9 @@ private:
     /// configure the app window
     void configureWindow(const GfxSetup& setup);
     /// callback for window-resize
+    #if ORYOL_MACOS
     static void onFramebufferSize(int w, int h);
+    #endif
     /// ptr to self for onFramebufferSize
     static mtlDisplayMgr* self;
 };
