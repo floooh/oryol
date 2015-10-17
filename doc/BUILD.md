@@ -97,16 +97,22 @@ the following build configs for D3D12:
 - d3d12-win64-vs2015-debug
 - d3d12-win64-vs2015-release
 
-##### Metal:
+##### Metal (OSX and iOS):
 
-Building with Metal support requires OSX 10.11 and Xcode7, use any of the 
-following build configs:
+Building with Metal support requires OSX 10.11 and Xcode7. For iOS, a
+Metal-capable iOS device is needed running at least iOS9.
+
+Use any of the following build configs to build for OSX:
 
 - metal-osx-xcode-debug
 - metal-osx-xcode-release
 - metal-osx-make-debug
 - metal-osx-make-release
 
+...and those build configs for iOS9:
+
+- metal-ios-xcode-debug
+- metal-ios-xcode-release
 
 ### Cross-compiling
 
