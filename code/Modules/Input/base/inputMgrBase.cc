@@ -117,7 +117,7 @@ inputMgrBase::setCursorMode(CursorMode::Code mode) {
 //------------------------------------------------------------------------------
 void
 inputMgrBase::onTouchEvent(const touchEvent& event) {
-
+    o_assert_dbg(event.numTouches > 0);
     if (this->touchpad.Attached) {
         if (this->inputSetup.TapEnabled) {
             if (gestureState::action == this->singleTapDetector.detect(event)) {

@@ -6,6 +6,7 @@
 #include "iosInputMgr.h"
 #include "Core/ios/iosBridge.h"
 #include "Time/Clock.h"
+#include "Gfx/Gfx.h"
 #import <UIKit/UIKit.h>
 #import <CoreMotion/CoreMotion.h>
 
@@ -31,11 +32,17 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
             CGPoint pos = [curTouch locationInView:curTouch.view];
             touchEvent::point& curPoint = newEvent.points[newEvent.numTouches++];
             curPoint.identifier = (Oryol::uintptr) curTouch;
+            #if ORYOL_METAL
+            if (iosInputMgrPtr->highDPI) {
+                pos.x *= 2.0f; pos.y *= 2.0f;
+            }
+            #endif
             curPoint.pos.x = pos.x;
             curPoint.pos.y = pos.y;
             curPoint.isChanged = [touches containsObject:curTouch];
         }
     }
+    o_assert(newEvent.numTouches > 0);
     iosInputMgrPtr->onTouchEvent(newEvent);
 }
 
@@ -61,10 +68,13 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 iosInputMgr::iosInputMgr() :
-inputDelegate(nil),
-motionManager(nil),
-resetRunLoopId(RunLoop::InvalidId),
-motionRunLoopId(RunLoop::InvalidId)
+inputDelegate(nil)
+,motionManager(nil)
+,resetRunLoopId(RunLoop::InvalidId)
+,motionRunLoopId(RunLoop::InvalidId)
+#if ORYOL_METAL
+,highDPI(false)
+#endif
 {
     o_assert(nullptr == iosInputMgrPtr);
     iosInputMgrPtr = this;
@@ -79,10 +89,15 @@ iosInputMgr::~iosInputMgr() {
 //------------------------------------------------------------------------------
 void
 iosInputMgr::setup(const InputSetup& setup) {
-    
+
     inputMgrBase::setup(setup);
+
+    if (!Gfx::IsValid()) {
+        o_error("iosInputMgr: Gfx::Setup() must be called before Input::Setup()!\n");
+        return;
+    }
     this->touchpad.Attached = true;
-    
+
     // create the input delegate object
     this->inputDelegate = [[iosInputDelegate alloc] init];
     
@@ -102,8 +117,12 @@ iosInputMgr::setup(const InputSetup& setup) {
     // set delegate in our overriden GLKView/MTKView
     #if ORYOL_OPENGL
     [iosBridge::ptr()->glkView setTouchDelegate:this->inputDelegate];
-    #else
+    #elif ORYOL_METAL
     [iosBridge::ptr()->mtkView setTouchDelegate:this->inputDelegate];
+    // MTKView actually returns true Retina resolution when contentScaleFactor is set to 2.0
+    this->highDPI = Gfx::GfxSetup().HighDPI;
+    #else
+    #error "ioInputMgr: invalid platform!"
     #endif
     
     // add reset callback to post-runloop
@@ -121,8 +140,10 @@ iosInputMgr::discard() {
     // remove touch delegate
     #if ORYOL_OPENGL
     [iosBridge::ptr()->glkView setTouchDelegate:nil];
-    #else
+    #elif ORYOL_METAL
     [iosBridge::ptr()->mtkView setTouchDelegate:nil];
+    #else
+    #error "ioInputMgr: invalid platform!"
     #endif
 
     if (nil != this->motionManager) {

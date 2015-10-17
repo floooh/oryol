@@ -218,6 +218,8 @@ iosBridge::onDidFinishLaunching() {
     [this->mtkView setDevice:this->mtlDevice];
     [this->mtkView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
     [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
+    [this->mtkView setUserInteractionEnabled:YES];
+    [this->mtkView setMultipleTouchEnabled:YES];
     [win addSubview:this->mtkView];
 
     // create view controller
@@ -239,7 +241,7 @@ iosBridge::onDidFinishLaunching() {
     _glkView.enableSetNeedsDisplay = NO;
     _glkView.userInteractionEnabled = YES;
     _glkView.multipleTouchEnabled = YES;
-    _glkView.contentScaleFactor = 1.0f;
+    _glkView.contentScaleFactor = 1.0f;     // FIXME: this caused different behaviour than Metal path!!!
     this->glkView = _glkView;
     [win addSubview:_glkView];
 

@@ -28,7 +28,7 @@ pinchDetector::detect(const touchEvent& newEvent) {
     }
 
     // need 2 touches
-    if (newEvent.numTouches != 2) {
+    if ((newEvent.type != touchEvent::ended) && (newEvent.numTouches != 2)) {
         this->reset();
         return gestureState::none;
     }
@@ -59,6 +59,9 @@ pinchDetector::detect(const touchEvent& newEvent) {
         return gestureState::move;
     }
     else if (newEvent.type == touchEvent::ended) {
+        if (this->startEvent.type == touchEvent::invalid) {
+            return gestureState::none;
+        }
         this->position0 = newEvent.touchPos(this->startEvent.points[0].identifier);
         this->position1 = newEvent.touchPos(this->startEvent.points[1].identifier);
         this->reset();
