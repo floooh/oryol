@@ -34,8 +34,10 @@ mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     displayMgrBase::SetupDisplay(setup, ptrs);
 
     this->configureWindow(setup);
-    osxBridge::ptr()->showWindow();
-    osxBridge::ptr()->callbacks.fbsize = mtlDisplayMgr::onFramebufferSize;
+    #if ORYOL_MACOS
+    osBridge::ptr()->showWindow();
+    osBridge::ptr()->callbacks.fbsize = mtlDisplayMgr::onFramebufferSize;
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -48,13 +50,18 @@ mtlDisplayMgr::DiscardDisplay() {
 //------------------------------------------------------------------------------
 bool
 mtlDisplayMgr::QuitRequested() const {
-    return osxBridge::ptr()->shouldClose();
+    #if ORYOL_MACOS
+    return osBridge::ptr()->shouldClose();
+    #else
+    return false;
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
 
+    #if ORYOL_MACOS
     StringBuilder strBuilder(setup.Title);
     strBuilder.Append(" (Metal)");
 
@@ -68,8 +75,9 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     // [mtkView convertSizeToBacking:mtkView.bounds.size], but this
     // also needs fixes in the ApplyScissorRect and ApplyViewport functions!
     CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
-    [osxBridge::ptr()->mtkView setDrawableSize:drawableSize];
-    [osxBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+    [osBridge::ptr()->mtkView setDrawableSize:drawableSize];
+    [osBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+    #endif
 }
 
 //------------------------------------------------------------------------------

@@ -27,8 +27,8 @@ private:
     /// sample motion data
     void sampleMotionData();
 
-    id inputDelegate;
-    id motionManager;
+    ORYOL_OBJC_ID inputDelegate;
+    ORYOL_OBJC_ID motionManager;
     RunLoop::Id resetRunLoopId;
     RunLoop::Id motionRunLoopId;
 };

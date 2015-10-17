@@ -100,7 +100,7 @@ iosInputMgr::setup(const InputSetup& setup) {
     }
     
     // set delegate in our overriden GLKView
-    oryolGLKView* glkView = iosBridge::ptr()->iosGetGLKView();
+    oryolGLKView* glkView = iosBridge::ptr()->glkView;
     [glkView setTouchDelegate:this->inputDelegate];
     
     // add reset callback to post-runloop
@@ -116,7 +116,7 @@ iosInputMgr::discard() {
     this->resetRunLoopId = RunLoop::InvalidId;
 
     // remove touch delegate
-    oryolGLKView* glkView = iosBridge::ptr()->iosGetGLKView();
+    oryolGLKView* glkView = iosBridge::ptr()->glkView;
     [glkView setTouchDelegate:nil];
     
     if (nil != this->motionManager) {
@@ -125,10 +125,10 @@ iosInputMgr::discard() {
             this->motionRunLoopId = RunLoop::InvalidId;
             [this->motionManager stopAccelerometerUpdates];
         }
-        [this->motionManager release];
+        ORYOL_OBJC_RELEASE(this->motionManager);
         this->motionManager = nil;
     }
-    [this->inputDelegate release];
+    ORYOL_OBJC_RELEASE(this->inputDelegate);
     this->inputDelegate = nil;
     
     inputMgrBase::discard();

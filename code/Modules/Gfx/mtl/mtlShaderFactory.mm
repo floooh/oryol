@@ -61,8 +61,8 @@ mtlShaderFactory::SetupResource(shader& shd) {
     NSError* err = 0;
     dispatch_data_t libData = dispatch_data_create(libraryByteCode, libraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
     id<MTLLibrary> mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
-    shd.setLibrary(mtlLibrary);
     o_assert(nil == err);
+    shd.setLibrary(mtlLibrary);
 
     // create vertex and fragment shader function objects
     const int32 numProgs = setup.NumPrograms();

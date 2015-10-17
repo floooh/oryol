@@ -6,9 +6,58 @@
 #include "Core/Macros.h"
 #include "Core/Log.h"
 #include "Core/App.h"
-#import "iosAppDelegate.h"
 
+//------------------------------------------------------------------------------
+/**
+    IOSAppDelegate wrapper
+*/
+using namespace Oryol;
+using namespace _priv;
+
+@interface iosAppDelegate : NSObject
+@end
+
+@implementation iosAppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    iosBridge::ptr()->onDidFinishLaunching();
+    return YES;
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    iosBridge::ptr()->onWillResignActive();
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    iosBridge::ptr()->onDidEnterBackground();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    iosBridge::ptr()->onWillEnterForeGround();
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    iosBridge::ptr()->onDidBecomeActive();
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    iosBridge::ptr()->onWillTerminate();
+}
+
+#if ORYOL_METAL
+// FIXME
+#else
+- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect {
+    iosBridge::ptr()->onFrame();
+}
+#endif
+@end
+
+#if ORYOL_METAL
+@implementation oryolMTKView
+#else
 @implementation oryolGLKView
+#endif
 @synthesize touchDelegate;
 
 - (void) setTouchDelegate:(id<touchDelegate>)dlg {
@@ -52,6 +101,24 @@
 }
 @end
 
+#if ORYOL_METAL
+@interface oryolViewDelegate<MTKViewDelegate> : NSObject
+@end
+
+@implementation oryolViewDelegate
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
+    // FIXME(?)
+}
+
+- (void)drawInMTKView:(nonnull MTKView *)view {
+    @autoreleasepool {
+        iosBridge::ptr()->onFrame();
+    }
+}
+@end
+#endif
+
+
 namespace Oryol {
 namespace _priv {
 
@@ -59,16 +126,17 @@ iosBridge* iosBridge::self = nullptr;
 
 //------------------------------------------------------------------------------
 iosBridge::iosBridge() :
-app(nullptr),
-appDelegate(nil),
-appWindow(nil),
+app(nullptr)
+,appDelegate(nil)
+,appWindow(nil)
 #if ORYOL_METAL
-// FIXME
+,mtlDevice(nil)
+,mtkViewDelegate(nil)
+,mtkView(nil)
 #else
-eaglContext(nil),
-glkView(nil),
-glkViewController(nil)
-#endif 
+,eaglContext(nil)
+,glkView(nil)
+#endif
 {
     o_assert(nullptr == self);
     self = this;
@@ -107,12 +175,12 @@ iosBridge::discard() {
     [this->appWindow invalidate]; this->appWindow = nil;
     [this->appDelegate invalidate]; this->appDelegate = nil;
     #if ORYOL_METAL
-    // FIXME
-    o_warn("FIXME METAL!\n");
+    ORYOL_OBJC_RELEASE(this->mtlDevice); this->mtlDevice = nil;
+    ORYOL_OBJC_RELEASE(this->mtkView); this->mtkView = nil;
+    ORYOL_OBJC_RELEASE(this->mtkViewDelegate); this->mtkViewDelegate = nil;
     #else
     [this->eaglContext invalidate]; this->eaglContext = nil;
     [this->glkView invalidate]; this->glkView = nil;
-    [this->glkViewController invalidate]; this->glkViewController = nil;
     #endif
     this->app = nullptr;
 }
@@ -141,8 +209,22 @@ iosBridge::onDidFinishLaunching() {
     UIWindow* win = [[UIWindow alloc] initWithFrame:mainScreenBounds];
 
     #if ORYOL_METAL
-    // FIXME
-    o_warn("FIXME METAL!\n");
+    // view delegate, MTKView and metal device
+    this->mtkViewDelegate = [[oryolViewDelegate alloc] init];
+    this->mtlDevice = MTLCreateSystemDefaultDevice();
+    this->mtkView = [[oryolMTKView alloc] init];
+    [this->mtkView setPreferredFramesPerSecond:60];
+    [this->mtkView setDelegate:this->mtkViewDelegate];
+    [this->mtkView setDevice:this->mtlDevice];
+    [this->mtkView setColorPixelFormat:MTLPixelFormatBGRA8Unorm];
+    [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
+    [win addSubview:this->mtkView];
+
+    // create view controller
+    this->mtkViewController = [[UIViewController<MTKViewDelegate> alloc] init];
+    [this->mtkViewController setView:this->mtkView];
+    [win setRootViewController:this->mtkViewController];
+
     #else
     // create GL context and GLKView
     // NOTE: the drawable properties will be overridden later in iosDisplayMgr!
@@ -160,7 +242,7 @@ iosBridge::onDidFinishLaunching() {
     _glkView.contentScaleFactor = 1.0f;
     this->glkView = _glkView;
     [win addSubview:_glkView];
-    
+
     // create a GLKViewController
     GLKViewController* _glkViewController = [[GLKViewController alloc] init];
     _glkViewController.view = _glkView;
@@ -207,63 +289,9 @@ iosBridge::onWillTerminate() {
 
 //------------------------------------------------------------------------------
 void
-iosBridge::onDrawRequested() {
-    // this will in turn call onFrame to do the entire frame look
-    #if ORYOL_METAL
-    // FIXME
-    o_warn("FIXME METAL: NEED MTKViewDelegate!!!\n");
-    #else
-    o_assert(nil != this->glkView);
-    [this->glkView display];
-    #endif
-}
-
-//------------------------------------------------------------------------------
-void
 iosBridge::onFrame() {
     this->app->onFrame();
 }
-
-//------------------------------------------------------------------------------
-id
-iosBridge::iosGetAppDelegate() const {
-    o_assert(nil != this->appDelegate);
-    return this->appDelegate;
-}
-
-//------------------------------------------------------------------------------
-id
-iosBridge::iosGetAppWindow() const {
-    o_assert(nil != this->appWindow);
-    return this->appWindow;
-}
-
-//------------------------------------------------------------------------------
-#if !ORYOL_METAL
-id
-iosBridge::iosGetEAGLContext() const {
-    o_assert(nil != this->eaglContext);
-    return this->eaglContext;
-}
-#endif
-
-//------------------------------------------------------------------------------
-#if !ORYOL_METAL
-id
-iosBridge::iosGetGLKView() const {
-    o_assert(nil != this->glkView);
-    return this->glkView;
-}
-#endif
-
-//------------------------------------------------------------------------------
-#if !ORYOL_METAL
-id
-iosBridge::iosGetGLKViewController() const {
-    o_assert(nil != this->glkViewController);
-    return this->glkViewController;
-}
-#endif
 
 } // namespace _priv
 } // namespace Oryol

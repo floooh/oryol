@@ -1,3 +1,4 @@
+#if !ORYOL_METAL
 //------------------------------------------------------------------------------
 //  iosDisplayMgr.mm
 //------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     displayMgrBase::SetupDisplay(gfxSetup, ptrs);
     
     // modify the color/depth/stencil format and content scaling of the GLKView
-    GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();
+    GLKView* glkView = _priv::iosBridge::ptr()->glkView;
     if (gfxSetup.HighDPI) {
         glkView.contentScaleFactor = 2.0f;
     }
@@ -131,9 +132,11 @@ iosDisplayMgr::Present() {
 //------------------------------------------------------------------------------
 void
 iosDisplayMgr::glBindDefaultFramebuffer() {
-    GLKView* glkView = _priv::iosBridge::ptr()->iosGetGLKView();
+    GLKView* glkView = _priv::iosBridge::ptr()->glkView;
     [glkView bindDrawable];
 }
 
 } // namespace _priv
 } // namespace Oryol
+#endif // !ORYOL_METAL
+

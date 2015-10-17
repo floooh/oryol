@@ -61,9 +61,11 @@ mtlTypes::asTextureFormat(PixelFormat::Code fmt) {
         case PixelFormat::RGBA32F:  return MTLPixelFormatRGBA32Float;
         case PixelFormat::RGBA16F:  return MTLPixelFormatRGBA16Float;
         case PixelFormat::L8:       return MTLPixelFormatR8Unorm;
+        #if ORYOL_MACOS
         case PixelFormat::DXT1:     return MTLPixelFormatBC1_RGBA;
         case PixelFormat::DXT3:     return MTLPixelFormatBC2_RGBA;
         case PixelFormat::DXT5:     return MTLPixelFormatBC3_RGBA;
+        #endif
         default: return MTLPixelFormatInvalid;
     }
 }
@@ -137,9 +139,15 @@ mtlTypes::asBufferResourceOptions(Usage::Code usage) {
     switch (usage) {
         case Usage::Immutable:  return MTLResourceStorageModeShared;
         // FIXME: are these the right dynamic access flags?
+        #if ORYOL_MACOS
         case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
+        #else
+        case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined;
+        case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined;
+        case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined;
+        #endif
         default:
             o_error("mtlTypes::asBufferResourceOptions(): invalid value!\n");
             return 0;

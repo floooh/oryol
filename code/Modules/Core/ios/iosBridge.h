@@ -16,9 +16,11 @@
 #import <GLKit/GLKit.h>
 #endif
 
+#define ORYOL_OBJC_TYPED_ID(clazz) id<clazz>
+#define ORYOL_OBJC_ID id
 static_assert(sizeof(void*) == sizeof(id), "sizeof(void*) doesn't match sizeof(id)!");
 
-// a delegate for touch events, and our own GLKView/MetalView which delegates touch events
+// a delegate for touch events, and our own GLKView/MTKView which delegates touch events
 @protocol touchDelegate
 - (void) touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event;
 - (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event;
@@ -27,15 +29,25 @@ static_assert(sizeof(void*) == sizeof(id), "sizeof(void*) doesn't match sizeof(i
 @end
 
 #if ORYOL_METAL
-// FIXME
+@interface oryolMTKView: MTKView
 #else
 @interface oryolGLKView: GLKView
+#endif
 @property (nonatomic, retain) id<touchDelegate> touchDelegate;
 - (void) setTouchDelegate:(id<touchDelegate>)dlg;
 @end
-#endif
 #else // __OBJC__
+#define ORYOL_OBJC_TYPED_ID(clazz) void*
+#define ORYOL_OBJC_ID void*
 typedef void *id;
+typedef void* MTLDevice;
+typedef void MTKView;
+#endif
+
+#if ORYOL_USE_ARC
+#define ORYOL_OBJC_RELEASE(obj)
+#else
+#define ORYOL_OBJC_RELEASE(obj) [obj release]
 #endif
 
 namespace Oryol {
@@ -77,33 +89,19 @@ public:
     /// called per frame by GLKView
     void onFrame();
     
-    /// get app window
-    id iosGetAppWindow() const;
-    /// get app delegate
-    id iosGetAppDelegate() const;
-
-    #if ORYOL_METAL
-    // FIXME!
-    #else
-    /// get our EAGLContext
-    id iosGetEAGLContext() const;
-    /// get our GLKView
-    id iosGetGLKView() const;
-    /// get our GLKViewController
-    id iosGetGLKViewController() const;
-    #endif
-    
-private:
     static iosBridge* self;
     App* app;
-    id appDelegate;
-    id appWindow;
+    ORYOL_OBJC_ID appDelegate;
+    ORYOL_OBJC_ID appWindow;
     #if ORYOL_METAL
-    // FIXME!
+    ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
+    ORYOL_OBJC_ID mtkViewDelegate;
+    ORYOL_OBJC_ID mtkViewController;
+    MTKView* mtkView;
     #else
-    id eaglContext;
-    id glkView;
-    id glkViewController;
+    ORYOL_OBJC_ID eaglContext;
+    ORYOL_OBJC_ID glkView;
+    ORYOL_OBJC_ID glkViewController;
     #endif
 };
     

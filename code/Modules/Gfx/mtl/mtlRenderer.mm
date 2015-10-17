@@ -50,7 +50,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
 
     // setup central metal objects
-    this->mtlDevice = osxBridge::ptr()->mtlDevice;
+    this->mtlDevice = osBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
 
     // create global rotated uniform buffers
@@ -116,7 +116,9 @@ mtlRenderer::commitFrame() {
     this->rtValid = false;
 
     // commit the global uniform buffer updates
+    #if ORYOL_MACOS
     [this->uniformBuffers[this->curFrameRotateIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
+    #endif
 
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
@@ -125,7 +127,7 @@ mtlRenderer::commitFrame() {
 
     if (nil != this->curCommandEncoder) {
         [this->curCommandEncoder endEncoding];
-        [this->curCommandBuffer presentDrawable:osxBridge::ptr()->mtkView.currentDrawable];
+        [this->curCommandBuffer presentDrawable:osBridge::ptr()->mtkView.currentDrawable];
     }
     [this->curCommandBuffer commit];
 
@@ -225,7 +227,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     MTLRenderPassDescriptor* passDesc = nil;
     if (nullptr == rt) {
         // default render target
-        passDesc = osxBridge::ptr()->mtkView.currentRenderPassDescriptor;
+        passDesc = osBridge::ptr()->mtkView.currentRenderPassDescriptor;
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
@@ -531,7 +533,9 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(numBytes <= int([mtlBuffer length]));
     void* dstPtr = [mtlBuffer contents];
     std::memcpy(dstPtr, data, numBytes);
+    #if ORYOL_MACOS
     [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -549,7 +553,9 @@ mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(numBytes <= int([mtlBuffer length]));
     void* dstPtr = [mtlBuffer contents];
     std::memcpy(dstPtr, data, numBytes);
+    #if ORYOL_MACOS
     [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
+    #endif
 }
 
 //------------------------------------------------------------------------------
