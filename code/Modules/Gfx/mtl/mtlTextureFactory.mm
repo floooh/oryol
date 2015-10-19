@@ -85,16 +85,13 @@ mtlTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
 
     if (nil != tex.mtlTex) {
-        ORYOL_OBJC_RELEASE(tex.mtlTex);
-        tex.mtlTex = nil;
+        this->pointers.renderer->releaseDeferred(tex.mtlTex);
     }
     if (nil != tex.mtlSamplerState) {
-        ORYOL_OBJC_RELEASE(tex.mtlSamplerState);
-        tex.mtlSamplerState = nil;
+        this->pointers.renderer->releaseDeferred(tex.mtlSamplerState);
     }
     if (nil != tex.mtlDepthTex) {
-        ORYOL_OBJC_RELEASE(tex.mtlDepthTex);
-        tex.mtlDepthTex = nil;
+        this->pointers.renderer->releaseDeferred(tex.mtlDepthTex);
     }
     tex.Clear();
 }

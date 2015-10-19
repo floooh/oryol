@@ -9,6 +9,14 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+mtlShader::programEntry::programEntry() :
+mask(0),
+mtlVertexShader(nil),
+mtlFragmentShader(nil) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 mtlShader::mtlShader() {
     this->Clear();
 }

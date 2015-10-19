@@ -157,6 +157,7 @@ fips_begin_module(Gfx)
             mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
             mtlRenderer.h mtlRenderer.mm
+            mtlReleaseQueue.h mtlReleaseQueue.mm
         )
         if (FIPS_MACOS)
             fips_frameworks_osx(QuartzCore)

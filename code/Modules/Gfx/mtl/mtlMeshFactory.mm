@@ -73,8 +73,9 @@ void
 mtlMeshFactory::DestroyResource(mesh& msh) {
     for (auto& buf : msh.buffers) {
         for (auto& mtlBuf : buf.mtlBuffers) {
-            ORYOL_OBJC_RELEASE(mtlBuf);
-            mtlBuf = nil;
+            if (nil != mtlBuf) {
+                this->pointers.renderer->releaseDeferred(mtlBuf);
+            }
         }
     }
     msh.Clear();

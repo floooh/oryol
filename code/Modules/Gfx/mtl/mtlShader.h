@@ -39,8 +39,8 @@ public:
     /// get fragment shader function at program index
     ORYOL_OBJC_TYPED_ID(MTLFunction) getFragmentShader(int32 origIndex) const;
 
-    class programEntry {
-    public:
+    struct programEntry {
+        programEntry();
         uint32 mask;
         ORYOL_OBJC_TYPED_ID(MTLFunction) mtlVertexShader;
         ORYOL_OBJC_TYPED_ID(MTLFunction) mtlFragmentShader;

@@ -107,14 +107,11 @@ mtlDrawStateFactory::DestroyResource(drawState& ds) {
     o_assert_dbg(this->isValid);
 
     if (nil != ds.mtlRenderPipelineState) {
-        ORYOL_OBJC_RELEASE(ds.mtlRenderPipelineState);
-        ds.mtlRenderPipelineState = nil;
+        this->pointers.renderer->releaseDeferred(ds.mtlRenderPipelineState);
     }
     if (nil != ds.mtlDepthStencilState) {
-        ORYOL_OBJC_RELEASE(ds.mtlDepthStencilState);
-        ds.mtlDepthStencilState = nil;
+        this->pointers.renderer->releaseDeferred(ds.mtlDepthStencilState);
     }
-
     drawStateFactoryBase::DestroyResource(ds);
 }
 

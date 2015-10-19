@@ -84,17 +84,14 @@ mtlShaderFactory::DestroyResource(shader& shd) {
 
     for (auto& entry : shd.programEntries) {
         if (nil != entry.mtlVertexShader) {
-            ORYOL_OBJC_RELEASE(entry.vertexShader);
-            entry.mtlVertexShader = nil;
+            this->pointers.renderer->releaseDeferred(entry.mtlVertexShader);
         }
         if (nil != entry.mtlFragmentShader) {
-            ORYOL_OBJC_RELEASE(entry.fragmentShader);
-            entry.mtlFragmentShader = nil;
+            this->pointers.renderer->releaseDeferred(entry.mtlFragmentShader);
         }
     }
     if (nil != shd.mtlLibrary) {
-        ORYOL_OBJC_RELEASE(shd.mtlLibrary);
-        shd.mtlLibrary = nil;
+        this->pointers.renderer->releaseDeferred(shd.mtlLibrary);
     }
     shd.Clear();
 }

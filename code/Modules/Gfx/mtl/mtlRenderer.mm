@@ -45,6 +45,7 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
+    this->releaseQueue.setup();
 
     // frame-sync semaphore
     mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
@@ -56,7 +57,9 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     // create global rotated uniform buffers
     for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
         // FIXME: is options:0 right? this is used by the Xcode game sample
-        this->uniformBuffers[i] = [this->mtlDevice newBufferWithLength:setup.GlobalUniformBufferSize options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
+        this->uniformBuffers[i] = [this->mtlDevice
+            newBufferWithLength:setup.GlobalUniformBufferSize
+            options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
     }
     this->curFrameRotateIndex = 0;
     this->curUniformBufferOffset = 0;
@@ -67,9 +70,14 @@ void
 mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
+    // wait for the final frame to finish
+    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+        dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+    }
     for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
+    this->releaseQueue.discard();
     this->commandQueue = nil;
     this->mtlDevice = nil;
     this->pointers = gfxPointers();
@@ -124,6 +132,9 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
     }];
+    // block until previous frame has finished (the semaphore
+    // has a counter of MaxRotateFrame, which is at least 2)
+    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
 
     if (nil != this->curCommandEncoder) {
         [this->curCommandEncoder endEncoding];
@@ -135,14 +146,16 @@ mtlRenderer::commitFrame() {
     if (++this->curFrameRotateIndex >= GfxConfig::MtlMaxInflightFrames) {
         this->curFrameRotateIndex = 0;
     }
+
+    // safely destroy released GPU resources
+    this->releaseQueue.garbageCollect(this->frameIndex);
+
     this->frameIndex++;
     this->curUniformBufferOffset = 0;
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
 
-    // block until previous frame has finished (the semaphore
-    // has a counter of MaxRotateFrame, which is at least 2)
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+    // safely free released GPU resources
 }
 
 //------------------------------------------------------------------------------
@@ -214,7 +227,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // create command buffer if this is the first call in the current frame
     if (this->curCommandBuffer == nil) {
-        this->curCommandBuffer = [this->commandQueue commandBuffer];
+        this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
 
     // finish previous command encoder (from previous render pass)
@@ -563,6 +576,13 @@ void
 mtlRenderer::readPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
     o_warn("mtlRenderer::readPixels()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::releaseDeferred(ORYOL_OBJC_ID obj) {
+    o_assert_dbg(nil != obj);
+    this->releaseQueue.releaseDeferred(this->frameIndex, obj);
 }
 
 } // namespace _priv
