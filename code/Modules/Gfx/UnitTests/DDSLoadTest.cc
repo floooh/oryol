@@ -16,6 +16,8 @@ using namespace Oryol;
 
 TEST(DDSLoadTest) {
 #if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
+    Core::Setup();
+
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
@@ -145,5 +147,6 @@ TEST(DDSLoadTest) {
 
     req.invalidate();
     IO::Discard();
+    Core::Discard();
 #endif
 }

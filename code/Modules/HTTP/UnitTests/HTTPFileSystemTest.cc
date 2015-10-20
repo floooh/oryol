@@ -13,7 +13,8 @@ using namespace Oryol;
 
 #if !ORYOL_EMSCRIPTEN
 TEST(HTTPFileSystemTest) {
-    
+    Core::Setup();
+
     // setup an IO facade, and associate http: with the HTTPFileSystem
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
@@ -40,5 +41,6 @@ TEST(HTTPFileSystemTest) {
     req = 0;
     
     IO::Discard();
+    Core::Discard();
 }
 #endif

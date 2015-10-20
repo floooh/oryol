@@ -38,6 +38,7 @@ public:
 OryolClassImpl(TestFileSystem);
 
 TEST(IOFacadeTest) {
+    Core::Setup();
     IO::Setup(IOSetup());
     
     // register our test file-system as URI scheme "test"
@@ -73,4 +74,5 @@ TEST(IOFacadeTest) {
     // FIXME: dynamically add/remove/replace filesystems, ...
     
     IO::Discard();
+    Core::Discard();
 }
