@@ -24,7 +24,7 @@ onLoaded(loadedFunc) {
 }
 
 //------------------------------------------------------------------------------
-const class Locator&
+class Locator
 MeshLoaderBase::Locator() const {
     return this->setup.Locator;
 }

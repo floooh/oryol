@@ -160,7 +160,7 @@ ThreadedQueue::moveWriteToTransferQueue() {
     else {
         // otherwise move messages one by one
         while (!this->writeQueue.Empty()) {
-            this->transferQueue.Enqueue(std::move(this->writeQueue.Dequeue()));
+            this->transferQueue.Enqueue(this->writeQueue.Dequeue());
         }
     }
     #if ORYOL_HAS_THREADS

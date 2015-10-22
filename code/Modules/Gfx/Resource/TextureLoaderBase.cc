@@ -16,7 +16,7 @@ ioLane(ioLane_) {
 }
 
 //------------------------------------------------------------------------------
-const class Locator&
+class Locator
 TextureLoaderBase::Locator() const {
     return this->setup.Locator;
 }

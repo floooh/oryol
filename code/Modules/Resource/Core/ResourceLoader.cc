@@ -9,9 +9,10 @@ namespace Oryol {
 OryolClassImpl(ResourceLoader);
 
 //------------------------------------------------------------------------------
-const class Locator&
+class Locator
 ResourceLoader::Locator() const {
-    return Locator();
+    class Locator loc;
+    return loc;
 }
 
 //------------------------------------------------------------------------------

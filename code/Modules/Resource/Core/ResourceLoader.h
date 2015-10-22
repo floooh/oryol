@@ -16,7 +16,7 @@ class ResourceLoader : public RefCounted {
     OryolClassDecl(ResourceLoader);
 public:
     /// return resource locator
-    virtual const class Locator& Locator() const;
+    virtual class Locator Locator() const;
     /// start loading, return a resource id
     virtual Id Start();
     /// continue loading, return resource state (Pending, Valid, Failed)
