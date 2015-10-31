@@ -272,7 +272,7 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
         for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
             o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
             D3D11_SUBRESOURCE_DATA& subResData = subResourceData[subResourceDataIndex];
-            subResData.pSysMem = srcPtr + setup.ImageOffsets[faceIndex][mipIndex];
+            subResData.pSysMem = srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex];
             subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
             subResData.SysMemSlicePitch = 0;
         }

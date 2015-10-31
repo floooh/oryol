@@ -246,12 +246,12 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
         for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
             for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceIndex++) {
 
-                const uint8* srcPtr = srcStartPtr + setup.ImageOffsets[faceIndex][mipIndex];
+                const uint8* srcPtr = srcStartPtr + setup.ImageData.Offsets[faceIndex][mipIndex];
                 const uint32 srcRowPitch  = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
-                const uint32 srcNumRows = setup.ImageSizes[faceIndex][mipIndex] / srcRowPitch;
+                const uint32 srcNumRows = setup.ImageData.Sizes[faceIndex][mipIndex] / srcRowPitch;
                 o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= srcRowPitch);
                 o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= dstLayouts[subResourceIndex].Footprint.RowPitch);
-                o_assert_dbg((srcNumRows * srcRowPitch) == setup.ImageSizes[faceIndex][mipIndex]);
+                o_assert_dbg((srcNumRows * srcRowPitch) == setup.ImageData.Sizes[faceIndex][mipIndex]);
                 o_assert_dbg(srcNumRows == dstNumRows[subResourceIndex]);
 
                 uint8* dstPtr = dstStartPtr + dstLayouts[subResourceIndex].Offset;
