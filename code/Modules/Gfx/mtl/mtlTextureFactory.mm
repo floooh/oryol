@@ -238,7 +238,7 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
             [tex.mtlTex replaceRegion:region
                 mipmapLevel:mipIndex
                 slice:faceIndex
-                withBytes:srcPtr+setup.ImageOffsets[faceIndex][mipIndex]
+                withBytes:srcPtr+setup.ImageData.Offsets[faceIndex][mipIndex]
                 bytesPerRow:bytesPerRow
                 bytesPerImage:0];
         }

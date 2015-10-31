@@ -90,7 +90,7 @@ imguiWrapper::setupFontTexture() {
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    texSetup.ImageSizes[0][0] = imgSize;
+    texSetup.ImageData.Sizes[0][0] = imgSize;
     this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
 
     // there will only be one texture

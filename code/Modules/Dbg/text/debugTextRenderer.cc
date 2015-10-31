@@ -186,7 +186,7 @@ debugTextRenderer::setupFontTexture() {
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.ImageSizes[0][0] = imgDataSize;
+    texSetup.ImageData.Sizes[0][0] = imgDataSize;
     this->fontTexture = Gfx::CreateResource(texSetup, data);
     o_assert_dbg(fontTexture.IsValid());
     o_assert_dbg(Gfx::QueryResourceInfo(fontTexture).State == ResourceState::Valid);

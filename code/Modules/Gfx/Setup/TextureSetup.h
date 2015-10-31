@@ -5,13 +5,13 @@
     @ingroup Gfx
     @brief setup object for textures and render targets
 */
-#include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Core/SamplerState.h"
 #include "Gfx/Core/ClearState.h"
+#include "Gfx/Attrs/ImageDataAttrs.h"
 
 namespace Oryol {
     
@@ -48,7 +48,9 @@ public:
     bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
-    
+
+    /// intended usage
+    Usage::Code TextureUsage;
     /// texture type (default is Texture2D)
     TextureType::Code Type;
     /// the width in pixels (only if absolute-size render target)
@@ -77,12 +79,10 @@ public:
     class Locator Locator;
     /// resource placeholder
     Id Placeholder;
-    
-    /// pixel data mipmap image offsets
-    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> ImageOffsets;
-    /// pixel data mipmap image sizes
-    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> ImageSizes;
-    
+
+    /// optional image surface offsets and sizes
+    ImageDataAttrs ImageData;
+
 private:
     bool setupFromFile : 1;
     bool setupFromImageFileData : 1;

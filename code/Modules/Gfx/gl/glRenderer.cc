@@ -620,6 +620,45 @@ glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
+glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != tex);
+    o_assert_dbg(nullptr != data);
+    ORYOL_GL_CHECK_ERROR();
+
+    // only accept 2D textures for now
+    const TextureAttrs& attrs = tex->textureAttrs;
+    o_assert_dbg(TextureType::Texture2D == attrs.Type);
+    o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
+    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumFaces == 1);
+
+    this->bindTexture(0, tex->glTarget, tex->glTex);
+    uint8* srcPtr = (uint8*)data;
+    GLenum glTexImageFormat = glTypes::asGLTexImageFormat(attrs.ColorFormat);
+    GLenum glTexImageType = glTypes::asGLTexImageType(attrs.ColorFormat);
+    for (int32 mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+        o_assert_dbg(offsetsAndSizes.Sizes[0][mipIndex] > 0);
+        int32 mipWidth = attrs.Width >> mipIndex;
+        if (mipWidth == 0) mipWidth = 1;
+        int32 mipHeight = attrs.Height >> mipIndex;
+        if (mipHeight == 0) mipHeight = 1;
+        ::glTexSubImage2D(tex->glTarget,    // target
+                          mipIndex,         // level
+                          0,                // xoffset
+                          0,                // yoffset
+                          mipWidth,         // width
+                          mipHeight,        // height
+                          glTexImageFormat, // format
+                          glTexImageType,   // type
+                          srcPtr + offsetsAndSizes.Offsets[0][mipIndex]);
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderer::readPixels(void* buf, int32 bufNumBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->pointers.displayMgr);

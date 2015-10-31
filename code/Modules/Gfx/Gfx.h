@@ -97,6 +97,8 @@ public:
     static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
     /// update dynamic index data (only complete replace possible at the moment)
     static void UpdateIndices(const Id& id, const void* data, int32 numBytes);
+    /// update dynamic texture image data (only complete replace possible at the moment)
+    static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
     static void ReadPixels(void* ptr, int32 numBytes);
     

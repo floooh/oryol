@@ -179,8 +179,8 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
     for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
             const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);
-            newSetup.ImageOffsets[faceIndex][mipIndex] = int32(cur - data);
-            newSetup.ImageSizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
+            newSetup.ImageData.Offsets[faceIndex][mipIndex] = int32(cur - data);
+            newSetup.ImageData.Sizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
         }
     }
     return newSetup;

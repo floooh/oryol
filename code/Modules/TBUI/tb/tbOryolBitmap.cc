@@ -59,7 +59,7 @@ tbOryolBitmap::createTexture(tb::uint32* data) {
     texSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    texSetup.ImageSizes[0][0] = byteSize;
+    texSetup.ImageData.Sizes[0][0] = byteSize;
     this->texture = Gfx::CreateResource(texSetup, data, byteSize);
     
     Gfx::PopResourceLabel();

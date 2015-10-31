@@ -126,6 +126,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
@@ -326,7 +327,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         }
     
         for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
-            o_assert_dbg(setup.ImageSizes[faceIndex][mipIndex] > 0);
+            o_assert_dbg(setup.ImageData.Sizes[faceIndex][mipIndex] > 0);
             int32 mipWidth = width >> mipIndex;
             if (mipWidth == 0) mipWidth = 1;
             int32 mipHeight = height >> mipIndex;
@@ -339,8 +340,8 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
                                          mipWidth,
                                          mipHeight,
                                          0,
-                                         setup.ImageSizes[faceIndex][mipIndex],
-                                         srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                                         setup.ImageData.Sizes[faceIndex][mipIndex],
+                                         srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
                 ORYOL_GL_CHECK_ERROR();
             }
             else {
@@ -355,7 +356,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
                                0,
                                glTexImageFormat,
                                glTexImageType,
-                               srcPtr + setup.ImageOffsets[faceIndex][mipIndex]);
+                               srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
                 ORYOL_GL_CHECK_ERROR();
             }
         }
@@ -366,7 +367,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     attrs.Locator = setup.Locator;
     attrs.Type = setup.Type;
     attrs.ColorFormat = setup.ColorFormat;
-    attrs.TextureUsage = Usage::Immutable;
+    attrs.TextureUsage = setup.TextureUsage;
     attrs.Width = width;
     attrs.Height = height;
     attrs.NumMipMaps = setup.NumMipMaps;

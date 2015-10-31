@@ -8,6 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() :
+TextureUsage(Usage::Immutable),
 Type(TextureType::Texture2D),
 Width(0),
 Height(0),
@@ -24,12 +25,7 @@ setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
-    for (auto& offsets : this->ImageOffsets) {
-        offsets.Fill(0);
-    }
-    for (auto& sizes : this->ImageSizes) {
-        sizes.Fill(0);
-    }
+    // empty
 }
 
 //------------------------------------------------------------------------------

@@ -79,7 +79,7 @@ tbOryolBatchRenderer::setupWhiteTexture() {
     texSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    texSetup.ImageSizes[0][0] = sizeof(pixels);
+    texSetup.ImageData.Sizes[0][0] = sizeof(pixels);
     this->whiteTexture = Gfx::CreateResource(texSetup, pixels, sizeof(pixels));
 }
 

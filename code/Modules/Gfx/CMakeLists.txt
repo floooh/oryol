@@ -26,7 +26,13 @@ fips_begin_module(Gfx)
     fips_files(Gfx.cc Gfx.h)
     fips_generate(TYPE MessageProtocol FROM GfxProtocol.yml)
     fips_dir(Attrs)
-    fips_files(DisplayAttrs.h IndexBufferAttrs.h TextureAttrs.h VertexBufferAttrs.h)
+    fips_files(
+        DisplayAttrs.h
+        IndexBufferAttrs.h
+        TextureAttrs.h
+        VertexBufferAttrs.h
+        ImageDataAttrs.h
+    )
     fips_dir(Core)
     fips_files(
         displayMgrBase.cc displayMgrBase.h

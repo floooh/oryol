@@ -60,7 +60,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.ImageSizes[0][0] = Sheet::NumBytes;
+    texSetup.ImageData.Sizes[0][0] = Sheet::NumBytes;
     this->textures.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map

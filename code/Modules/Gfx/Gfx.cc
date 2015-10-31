@@ -255,6 +255,20 @@ Gfx::UpdateIndices(const Id& id, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
+Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes) {
+    o_trace_scoped(Gfx_UpdatePixels);
+    o_assert_dbg(IsValid());
+
+    #if ORYOL_OPENGL
+    texture* tex = state->resourceContainer.lookupTexture(id);
+    state->renderer.updateTexture(tex, data, offsetsAndSizes);
+    #else
+    Log::Warn("Gfx::UpdateTexture(): implement me!\n");
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
     o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
