@@ -182,7 +182,7 @@ imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
                 Key::A, Key::C, Key::V, Key::X, Key::Y, Key::Z
             };
             for (auto key : keys) {
-                io.KeysDown[key] = kbd.KeyPressed(key);
+                io.KeysDown[key] = kbd.KeyDown(key)|kbd.KeyPressed(key);;
             }
         }
     }
