@@ -131,6 +131,7 @@ imguiWrapper::setupDrawState() {
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
     dss.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
     dss.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
+    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
     dss.RasterizerState.ScissorTestEnabled = true;
     dss.RasterizerState.CullFaceEnabled = false;
     dss.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
