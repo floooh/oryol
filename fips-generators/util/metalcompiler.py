@@ -20,16 +20,22 @@ platform_roots = {
     ]
 }
 rel_sys_root = {
-    'osx': 'Developer/SDKs/MacOSX10.11.sdk',
-    'ios': 'Developer/SDKs/iPhoneOS9.0.sdk'
+    'osx': [
+        'Developer/SDKs/MacOSX10.11.sdk'
+    ],
+    'ios': [
+        'Developer/SDKs/iPhoneOS9.1.sdk',
+        'Developer/SDKs/iPhoneOS9.0.sdk'
+    ]
 }
 
 #-------------------------------------------------------------------------------
 def get_sys_root(platform) :
     for platform_root in platform_roots[platform] :
-        sys_root_path = platform_root + rel_sys_root[platform]
-        if os.path.isdir(sys_root_path) :
-            return sys_root_path
+        for sys_root in rel_sys_root[platform] :
+            sys_root_path = platform_root + sys_root
+            if os.path.isdir(sys_root_path) :
+                return sys_root_path
     return None
 
 #-------------------------------------------------------------------------------
