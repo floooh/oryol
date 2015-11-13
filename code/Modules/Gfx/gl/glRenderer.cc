@@ -619,6 +619,19 @@ glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
+static GLuint
+obtainUpdateTexture(texture* tex, int frameIndex) {
+    // same as obtainUpdateBuffer, but for texture
+    o_assert2(tex->updateFrameIndex != frameIndex, "Only one data update allowed per texture and frame!\n");
+    tex->updateFrameIndex = frameIndex;
+    o_assert_dbg(tex->numSlots > 1);
+    if (++tex->activeSlot >= tex->numSlots) {
+        tex->activeSlot = 0;
+    }
+    return tex->glTextures[tex->activeSlot];
+}
+
+//------------------------------------------------------------------------------
 void
 glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
     o_assert_dbg(this->valid);
@@ -634,7 +647,8 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
-    this->bindTexture(0, tex->glTarget, tex->glTex);
+    GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
+    this->bindTexture(0, tex->glTarget, glTex);
     uint8* srcPtr = (uint8*)data;
     GLenum glTexImageFormat = glTypes::asGLTexImageFormat(attrs.ColorFormat);
     GLenum glTexImageType = glTypes::asGLTexImageType(attrs.ColorFormat);
@@ -1164,7 +1178,7 @@ glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // apply textures and samplers
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
-        this->bindTexture(i, tex->glTarget, tex->glTex);
+        this->bindTexture(i, tex->glTarget, tex->glTextures[tex->activeSlot]);
     }
 }
 

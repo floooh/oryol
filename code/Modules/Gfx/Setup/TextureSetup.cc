@@ -21,6 +21,7 @@ Locator(Locator::NonShared()),
 setupFromFile(false),
 setupFromImageFileData(false),
 setupFromPixelData(false),
+setupEmpty(false),
 setupAsRenderTarget(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
@@ -43,9 +44,6 @@ TextureSetup
 TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, Id placeholder) {
     TextureSetup setup(blueprint);
     setup.setupFromFile = true;
-    setup.setupFromImageFileData = false;
-    setup.setupFromPixelData = false;
-    setup.setupAsRenderTarget = false;
     setup.Locator = loc;
     setup.Placeholder = placeholder;
     return setup;
@@ -70,10 +68,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 TextureSetup
 TextureSetup::FromImageFileData(const TextureSetup& bluePrint) {
     TextureSetup setup(bluePrint);
-    setup.setupFromFile = false;
     setup.setupFromImageFileData = true;
-    setup.setupFromPixelData = false;
-    setup.setupAsRenderTarget = false;
     return setup;
 }
 
@@ -86,17 +81,33 @@ TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Cod
     o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
     
     TextureSetup setup(blueprint);
-    setup.setupFromFile = false;
-    setup.setupFromImageFileData = false;
-    setup.setupFromPixelData = true;
-    setup.setupAsRenderTarget = false;
-    
     setup.setupFromPixelData = true;
     setup.Type = type;
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::Empty(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
+    o_assert(w > 0);
+    o_assert(h > 0);
+    o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert(!PixelFormat::IsCompressedFormat(fmt));
+    o_assert(TextureType::Texture2D == type);
+    o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+    
+    TextureSetup setup;
+    setup.setupEmpty = true;
+    setup.Type = type;
+    setup.Width = w;
+    setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.TextureUsage = usage;
     return setup;
 }
 
@@ -146,6 +157,12 @@ TextureSetup::ShouldSetupFromImageFileData() const {
 bool
 TextureSetup::ShouldSetupFromPixelData() const {
     return this->setupFromPixelData;
+}
+
+//------------------------------------------------------------------------------
+bool
+TextureSetup::ShouldSetupEmpty() const {
+    return this->setupEmpty;
 }
 
 //------------------------------------------------------------------------------

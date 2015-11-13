@@ -25,6 +25,8 @@ public:
     static TextureSetup FromImageFileData(const TextureSetup& blueprint=TextureSetup());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    /// setup empty texture (usually for dynamic streaming of CPU generated texture data)
+    static TextureSetup Empty(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int32 w, int32 h);
     /// setup as render target with size relative to current display size
@@ -40,6 +42,8 @@ public:
     bool ShouldSetupFromImageFileData() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
+    /// return true if texture should be created empty
+    bool ShouldSetupEmpty() const;
     /// return true if texture should be setup as render target
     bool ShouldSetupAsRenderTarget() const;
     /// return true if rel-size render target
@@ -87,6 +91,7 @@ private:
     bool setupFromFile : 1;
     bool setupFromImageFileData : 1;
     bool setupFromPixelData : 1;
+    bool setupEmpty : 1;
     bool setupAsRenderTarget : 1;
     bool isRelSizeRenderTarget : 1;
     bool hasSharedDepth : 1;

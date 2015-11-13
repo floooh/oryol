@@ -21,14 +21,18 @@ public:
     /// clear the object
     void Clear();
 
-    /// GL texture object
-    GLuint glTex;
     /// GL texture target
     GLenum glTarget;
     /// GL frame buffer object
     GLuint glFramebuffer;
     /// GL depth render buffer
     GLuint glDepthRenderbuffer;
+
+    static const int32 MaxNumSlots = 2;
+    int32 updateFrameIndex;
+    uint8 numSlots;
+    uint8 activeSlot;
+    StaticArray<GLuint, MaxNumSlots> glTextures;
 };
 
 } // namespace _priv

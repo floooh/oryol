@@ -6,6 +6,7 @@
     @brief private: GL implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
+#include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
 
@@ -39,10 +40,16 @@ public:
     GLuint glGenAndBindTexture(GLenum target);
 
 private:
+    /// helper method to setup texture params on GL texture
+    void setupTextureParams(const TextureSetup& setup, GLuint glTex);
+    /// helper method to setup texture params on GL texture
+    void setupTextureAttrs(texture& tex);
     /// create a render target
     ResourceState::Code createRenderTarget(texture& tex);
     /// create texture from raw pixel data
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create an empty texture (cannot be an immutable texture)
+    ResourceState::Code createEmptyTexture(texture& tex);
 
     gfxPointers pointers;
     bool isValid;

@@ -59,6 +59,9 @@ glTextureFactory::SetupResource(texture& tex) {
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
+    else if (tex.Setup.ShouldSetupEmpty()) {
+        return this->createEmptyTexture(tex);
+    }
     else {
         // here would go more ways to create textures without image data
         return ResourceState::InvalidState;
@@ -92,10 +95,12 @@ glTextureFactory::DestroyResource(texture& tex) {
         ::glDeleteFramebuffers(1, &tex.glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
     }
-        
-    if (0 != tex.glTex) {
-        ::glDeleteTextures(1, &tex.glTex);
-        ORYOL_GL_CHECK_ERROR();
+
+    for (auto& glTex : tex.glTextures) {
+        if (0 != glTex) {
+            ::glDeleteTextures(1, &glTex);
+            ORYOL_GL_CHECK_ERROR();
+        }
     }
     
     if (!tex.textureAttrs.HasSharedDepthBuffer) {
@@ -115,10 +120,10 @@ glTextureFactory::DestroyResource(texture& tex) {
 */
 ResourceState::Code
 glTextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(0 == tex.glTex);
     o_assert_dbg(0 == tex.glFramebuffer);
     o_assert_dbg(0 == tex.glDepthRenderbuffer);
-    
+    o_assert_dbg(0 == tex.glTextures[0]);
+
     this->pointers.renderer->invalidateTextureState();
     GLint glOrigFramebuffer = 0;
     ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &glOrigFramebuffer);
@@ -245,7 +250,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // setup the texture object
     tex.textureAttrs = attrs;
-    tex.glTex = glColorRenderTexture;
+    tex.glTextures[0] = glColorRenderTexture;
     tex.glFramebuffer = glFramebuffer;
     tex.glDepthRenderbuffer = glDepthRenderBuffer;
     tex.glTarget = GL_TEXTURE_2D;
@@ -258,26 +263,8 @@ glTextureFactory::createRenderTarget(texture& tex) {
 }
 
 //------------------------------------------------------------------------------
-ResourceState::Code
-glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(size > 0);
-
-    const TextureSetup& setup = tex.Setup;
-    const int32 width = setup.Width;
-    const int32 height = setup.Height;
-    
-    // test if the texture format is actually supported
-    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
-        o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
-        return ResourceState::Failed;
-    }
-    
-    // create a texture object
-    GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
-    const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
-    
-    // setup texture params
+void
+glTextureFactory::setupTextureParams(const TextureSetup& setup, GLuint glTex) {
     GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.Sampler.MinFilter);
     GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.Sampler.MagFilter);
     if (1 == setup.NumMipMaps) {
@@ -302,8 +289,48 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
     }
     ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glTextureFactory::setupTextureAttrs(texture& tex) {
+    TextureAttrs attrs;
+    attrs.Locator = tex.Setup.Locator;
+    attrs.Type = tex.Setup.Type;
+    attrs.ColorFormat = tex.Setup.ColorFormat;
+    attrs.TextureUsage = tex.Setup.TextureUsage;
+    attrs.Width = tex.Setup.Width;
+    attrs.Height = tex.Setup.Height;
+    attrs.NumMipMaps = tex.Setup.NumMipMaps;
+    tex.textureAttrs = attrs;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
+    o_assert_dbg(nullptr != data);
+    o_assert_dbg(size > 0);
+    o_assert_dbg(0 == tex.glTextures[0]);
+
+    const TextureSetup& setup = tex.Setup;
+    const int32 width = setup.Width;
+    const int32 height = setup.Height;
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     
-    // get pointer to image data
+    // test if the texture format is actually supported
+    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+        o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
+    }
+    
+    // create a texture object
+    const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
+    const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
+    
+    // setup texture params
+    this->setupTextureParams(setup, glTex);
+
+    // copy image data intp texture
     const uint8* srcPtr = (const uint8*) data;
     const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
     const int32 numMipMaps = setup.NumMipMaps;
@@ -329,9 +356,13 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
             o_assert_dbg(setup.ImageData.Sizes[faceIndex][mipIndex] > 0);
             int32 mipWidth = width >> mipIndex;
-            if (mipWidth == 0) mipWidth = 1;
+            if (mipWidth == 0) {
+                mipWidth = 1;
+            }
             int32 mipHeight = height >> mipIndex;
-            if (mipHeight == 0) mipHeight = 1;
+            if (mipHeight == 0) {
+                mipHeight = 1;
+            }
             if (isCompressed) {
                 // compressed texture data
                 ::glCompressedTexImage2D(glImgTarget,
@@ -362,20 +393,71 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
         }
     }
     
-    // setup texture attributes
-    TextureAttrs attrs;
-    attrs.Locator = setup.Locator;
-    attrs.Type = setup.Type;
-    attrs.ColorFormat = setup.ColorFormat;
-    attrs.TextureUsage = setup.TextureUsage;
-    attrs.Width = width;
-    attrs.Height = height;
-    attrs.NumMipMaps = setup.NumMipMaps;
-    
-    // setup texture
-    tex.textureAttrs = attrs;
-    tex.glTex = glTex;
-    tex.glTarget = glTypes::asGLTextureTarget(setup.Type);
+    // setup texture object
+    this->setupTextureAttrs(tex);
+    tex.glTextures[0] = glTex;
+    tex.glTarget = glTextureTarget;
+
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+glTextureFactory::createEmptyTexture(texture& tex) {
+    o_assert_dbg(0 == tex.glTextures[0]);
+    o_assert_dbg(0 == tex.glTextures[1]);
+
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.TextureUsage != Usage::Immutable);
+    o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(setup.ColorFormat));
+    const int32 width = setup.Width;
+    const int32 height = setup.Height;
+    const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
+    const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+    const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+    const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
+
+    // test if the texture format is actually supported
+    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+        o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
+    }
+
+    // create one or two texture object
+    tex.numSlots = Usage::Stream == setup.TextureUsage ? 2 : 1;
+    for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
+
+        tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
+        this->setupTextureParams(setup, tex.glTextures[slotIndex]);
+
+        // initialize texture storage
+        const int32 numMipMaps = setup.NumMipMaps;
+        for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+            int32 mipWidth = width >> mipIndex;
+            if (mipWidth == 0) {
+                mipWidth = 1;
+            }
+            int32 mipHeight = height >> mipIndex;
+            if (mipHeight == 0) {
+                mipHeight = 1;
+            }
+            ::glTexImage2D(glTextureTarget,
+                           mipIndex,
+                           glTexImageInternalFormat,
+                           mipWidth,
+                           mipHeight,
+                           0,
+                           glTexImageFormat,
+                           glTexImageType,
+                           nullptr);
+            ORYOL_GL_CHECK_ERROR();
+        }
+    }
+
+    // setup texture object
+    this->setupTextureAttrs(tex);
+    tex.glTarget = glTextureTarget;
 
     return ResourceState::Valid;
 }
