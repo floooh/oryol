@@ -44,7 +44,7 @@ TEST(RenderTargetCreationTest) {
     texture tex0;
     tex0.Setup = texSetup;
     factory.SetupResource(tex0);
-    CHECK(tex0.glTex != 0);
+    CHECK(tex0.glTextures[0] != 0);
     CHECK(tex0.glFramebuffer != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
     const TextureAttrs& attrs0 = tex0.textureAttrs;
@@ -68,7 +68,7 @@ TEST(RenderTargetCreationTest) {
     texture tex1;
     tex1.Setup = rtSetup;
     factory.SetupResource(tex1);
-    CHECK(tex1.glTex != 0);
+    CHECK(tex1.glTextures[0] != 0);
     CHECK(tex1.glFramebuffer != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
     const TextureAttrs& attrs1 = tex1.textureAttrs;
@@ -92,7 +92,7 @@ TEST(RenderTargetCreationTest) {
     texture tex2;
     tex2.Setup = rtSetup;
     factory.SetupResource(tex2);
-    CHECK(tex2.glTex != 0);
+    CHECK(tex2.glTextures[0] != 0);
     CHECK(tex2.glFramebuffer != 0);
     CHECK(tex2.glDepthRenderbuffer != 0);
     const TextureAttrs& attrs2 = tex2.textureAttrs;
@@ -111,7 +111,7 @@ TEST(RenderTargetCreationTest) {
     
     // cleanup
     factory.DestroyResource(tex1);
-    CHECK(tex1.glTex == 0);
+    CHECK(tex1.glTextures[0] == 0);
     CHECK(tex1.glFramebuffer == 0);
     CHECK(tex1.glDepthRenderbuffer == 0);
     
