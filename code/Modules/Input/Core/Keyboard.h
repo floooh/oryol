@@ -26,6 +26,14 @@ public:
     bool KeyUp(Key::Code key) const;
     /// test if key-repeat happened
     bool KeyRepeat(Key::Code key) const;
+    /// test if any key is pressed
+    bool AnyKeyPressed() const;
+    /// test if any key was pressed down last frame
+    bool AnyKeyDown() const;
+    /// test if any key was released last frame
+    bool AnyKeyUp() const;
+    /// test if any key was repeated last frame
+    bool AnyKeyRepeat() const;
     
     /// return true if text capturing is active
     bool IsCapturingText() const;
@@ -86,6 +94,30 @@ inline bool
 Keyboard::KeyRepeat(Key::Code key) const {
     o_assert_range_dbg(key, Key::NumKeys);
     return this->repeat[key];
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Keyboard::AnyKeyPressed() const {
+    return this->pressed.any();
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Keyboard::AnyKeyDown() const {
+    return this->down.any();
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Keyboard::AnyKeyUp() const {
+    return this->up.any();
+}
+
+//------------------------------------------------------------------------------
+inline bool
+Keyboard::AnyKeyRepeat() const {
+    return this->repeat.any();
 }
 
 //------------------------------------------------------------------------------
