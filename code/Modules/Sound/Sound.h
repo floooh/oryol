@@ -19,6 +19,11 @@ namespace Oryol {
 
 class Sound {
 public:
+    /// voice handle, returned by Play()
+    typedef int Voice;
+    /// invalid voice handle
+    static const int InvalidVoice = -1;
+
     /// setup the Sound module
     static void Setup(const SoundSetup& setup);
     /// discard the Sound module
@@ -45,8 +50,14 @@ public:
     /// destroy one or several sound resources by matching label
     static void DestroyResources(ResourceLabel label);
 
-    /// play a sound effect
-    static void Play(Id snd, int32 loopCount=1, int32 freqShift=0);
+    /// play a sound effect, return Voice handle
+    static Voice Play(Id snd, int32 loopCount=1, float pitch=1.0f);
+    /// stop playback of sound effect voice
+    static void Stop(Id snd, Voice voice);
+    /// set the frequency-shift of a playing sound
+    static void SetPitch(Id snd, Voice voice, float pitch);
+    /// set the volume of a playing sound
+    static void SetVolume(Id snd, Voice voice, float volume);
 
 private:
     struct _state {

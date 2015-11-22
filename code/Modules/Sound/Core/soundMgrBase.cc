@@ -47,8 +47,26 @@ soundMgrBase::isValid() const {
 }
 
 //------------------------------------------------------------------------------
+int
+soundMgrBase::play(soundEffect* /*effect*/, int32 /*loopCount*/, float /*pitch*/) {
+    return -1;
+}
+
+//------------------------------------------------------------------------------
 void
-soundMgrBase::play(soundEffect* /*effect*/, int32 /*loopCount*/, int32 freqShift) {
+soundMgrBase::stop(soundEffect* /*effect*/, int /*voice*/) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+void
+soundMgrBase::setPitch(soundEffect* /*effect*/, int /*voice*/, float /*pitch*/) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+void
+soundMgrBase::setVolume(soundEffect* /*effect*/, int /*voice*/, float /*volume*/) {
     // empty
 }
 

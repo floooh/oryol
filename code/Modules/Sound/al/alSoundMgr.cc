@@ -102,20 +102,65 @@ alSoundMgr::printALInfo() {
 }
 
 //------------------------------------------------------------------------------
-void
-alSoundMgr::play(soundEffect* effect, int32 loopCount, int32 freqShift) {
+int
+alSoundMgr::play(soundEffect* effect, int32 loopCount, float pitch) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != effect);
     o_assert_dbg(effect->State == ResourceState::Valid);
     o_assert_dbg(effect->nextSourceIndex < effect->numSources);
 
     // get next source, round-robin
-    ALuint src = effect->alSources[effect->nextSourceIndex++];
+    const int voice = effect->nextSourceIndex++;
     if (effect->nextSourceIndex == effect->numSources) {
         effect->nextSourceIndex = 0;
     }
+    ALuint src = effect->alSources[voice];
     o_assert_dbg(0 != src);
+    if (0 == loopCount) {
+        alSourcei(src, AL_LOOPING, AL_TRUE);
+    }
+    else {
+        alSourcei(src, AL_LOOPING, AL_FALSE);
+    }
+    alSourcef(src, AL_PITCH, pitch);
     alSourcePlay(src);
+    ORYOL_SOUND_AL_CHECK_ERROR();
+    return voice;
+}
+
+//------------------------------------------------------------------------------
+void
+alSoundMgr::stop(soundEffect* effect, int voice) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(nullptr != effect);
+    o_assert_range_dbg(voice, effect->numSources);
+    ALuint src = effect->alSources[voice];
+    o_assert_dbg(0 != src);
+    alSourceStop(src);
+    ORYOL_SOUND_AL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+alSoundMgr::setPitch(soundEffect* effect, int voice, float pitch) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(nullptr != effect);
+    o_assert_range_dbg(voice, effect->numSources);
+    ALuint src = effect->alSources[voice];
+    o_assert_dbg(0 != src);
+    alSourcef(src, AL_PITCH, pitch);
+    ORYOL_SOUND_AL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+alSoundMgr::setVolume(soundEffect* effect, int voice, float volume) {
+    o_assert_dbg(this->isValid());
+    o_assert_dbg(nullptr != effect);
+    o_assert_range_dbg(voice, effect->numSources);
+    ALuint src = effect->alSources[voice];
+    o_assert_dbg(0 != src);
+    alSourcef(src, AL_GAIN, volume);
     ORYOL_SOUND_AL_CHECK_ERROR();
 }
 

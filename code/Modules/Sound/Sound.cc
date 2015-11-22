@@ -83,12 +83,45 @@ Sound::DestroyResources(ResourceLabel label) {
 }
 
 //------------------------------------------------------------------------------
-void
-Sound::Play(Id resId, int32 loopCount, int32 freqShift) {
+Sound::Voice
+Sound::Play(Id resId, int32 loopCount, float freqShift) {
     o_assert_dbg(IsValid());
     soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
     if (sndEffect) {
-        state->soundMgr.play(sndEffect, loopCount, freqShift);
+        return state->soundMgr.play(sndEffect, loopCount, freqShift);
+    }
+    else {
+        return InvalidVoice;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Sound::Stop(Id resId, Voice voice) {
+    o_assert_dbg(IsValid());
+    soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
+    if (sndEffect) {
+        state->soundMgr.stop(sndEffect, voice);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Sound::SetPitch(Id resId, Voice voice, float pitch) {
+    o_assert_dbg(IsValid());
+    soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
+    if (sndEffect) {
+        state->soundMgr.setPitch(sndEffect, voice, pitch);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Sound::SetVolume(Id resId, Voice voice, float volume) {
+    o_assert_dbg(IsValid());
+    soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
+    if (sndEffect) {
+        state->soundMgr.setVolume(sndEffect, voice, volume);
     }
 }
 

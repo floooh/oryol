@@ -25,7 +25,13 @@ public:
     void discard();
 
     /// play a sound effect
-    void play(soundEffect* effect, int32 loopCount, int32 freqShift);
+    int play(soundEffect* effect, int32 loopCount, float pitch);
+    /// stop a sound effect voice
+    void stop(soundEffect* effect, int voice);
+    /// set pitch-shift on playing sound
+    void setPitch(soundEffect* effect, int voice, float pitch);
+    /// set volume on playing sound
+    void setVolume(soundEffect* effect, int voice, float volume);
 
 private:
     /// print info about OpenAL implementation
