@@ -170,7 +170,7 @@ public:
     };
     /// get next square wave value at normalized sample position
     static float32 Square(float32 p) {
-        return (p < 0.5f) ? -1.0f : 1.0f;
+        return (p > 0.5f) ? -1.0f : 1.0f;
     };
     /// get next triangle wave value at normalized sample position
     static float32 Triangle(float32 p) {

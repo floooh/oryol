@@ -103,7 +103,7 @@ alSoundMgr::printALInfo() {
 
 //------------------------------------------------------------------------------
 int
-alSoundMgr::play(soundEffect* effect, int32 loopCount, float pitch) {
+alSoundMgr::play(soundEffect* effect, int32 loopCount, float pitch, float volume) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != effect);
     o_assert_dbg(effect->State == ResourceState::Valid);
@@ -123,6 +123,7 @@ alSoundMgr::play(soundEffect* effect, int32 loopCount, float pitch) {
         alSourcei(src, AL_LOOPING, AL_FALSE);
     }
     alSourcef(src, AL_PITCH, pitch);
+    alSourcef(src, AL_GAIN, volume);
     alSourcePlay(src);
     ORYOL_SOUND_AL_CHECK_ERROR();
     return voice;

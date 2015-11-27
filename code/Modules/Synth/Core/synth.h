@@ -17,7 +17,7 @@ namespace _priv {
 class synth {
 public:
     /// standard sample rate
-    static const int32 SampleRate = 44100;
+    static const int32 SampleRate = 88000;
     /// byte size of a single sample
     static const int32 SampleSize = 2;
     /// number of samples in one streaming buffer
@@ -25,7 +25,7 @@ public:
     /// byte size of one streaming buffer
     static const int32 BufferSize = SampleSize * BufferNumSamples;
     /// number of voices
-    static const int32 NumVoices = 1;
+    static const int32 NumVoices = 2;
     /// number of tracks per voice
     static const int32 NumTracks = 4;
     /// max sample value (16 bit signed)

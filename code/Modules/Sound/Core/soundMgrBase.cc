@@ -48,7 +48,7 @@ soundMgrBase::isValid() const {
 
 //------------------------------------------------------------------------------
 int
-soundMgrBase::play(soundEffect* /*effect*/, int32 /*loopCount*/, float /*pitch*/) {
+soundMgrBase::play(soundEffect* /*effect*/, int32 /*loopCount*/, float /*pitch*/, float /*volume*/) {
     return -1;
 }
 

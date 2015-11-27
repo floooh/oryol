@@ -9,10 +9,12 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 alBufferStreamer::alBufferStreamer() :
-isValid(false),
-source(0) {
+isValid(false) {
+    for (int i = 0; i < synth::NumVoices; i++) {
+        this->voices[i].source = 0;
+        this->voices[i].queuedBuffers.Reserve(MaxNumBuffers);
+    }
     this->allBuffers.Reserve(MaxNumBuffers);
-    this->queuedBuffers.Reserve(MaxNumBuffers);
     this->freeBuffers.Reserve(MaxNumBuffers);
 }
 
@@ -43,30 +45,33 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
         this->freeBuffers.Enqueue(buf);
     }
 
-    // generate a single playback source
-    alGenSources(1, &this->source);
-    ORYOL_AL_CHECK_ERROR();
-    alSourcef(this->source, AL_GAIN, setupAttrs.InitialVolume);
+    // generate one playback source per voice
+    for (int i = 0; i < synth::NumVoices; i++) {
+        alGenSources(1, &this->voices[i].source);
+        ORYOL_AL_CHECK_ERROR();
+        alSourcef(this->voices[i].source, AL_GAIN, setupAttrs.InitialVolume);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 alBufferStreamer::Discard() {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(0 != this->source);
-    
+
     this->isValid = false;
-    
-    alDeleteSources(1, &this->source);
-    ORYOL_AL_CHECK_ERROR();
-    this->source = 0;
-    
+
+    for (int i = 0; i < synth::NumVoices; i++) {
+        o_assert(this->voices[i].source);
+        alDeleteSources(1, &this->voices[i].source);
+        ORYOL_AL_CHECK_ERROR();
+        this->voices[i].source = 0;
+        this->voices[i].queuedBuffers.Clear();
+    }
     for (ALuint buf : this->allBuffers) {
         alDeleteBuffers(1, &buf);
         ORYOL_AL_CHECK_ERROR();
     }
     this->allBuffers.Clear();
-    this->queuedBuffers.Clear();
     this->freeBuffers.Clear();
 }
 
@@ -79,62 +84,63 @@ alBufferStreamer::IsValid() const {
 //------------------------------------------------------------------------------
 void
 alBufferStreamer::UpdateVolume(float32 v) {
-    o_assert_dbg( 0 != this->source);
-    alSourcef(this->source, AL_GAIN, v);
+    for (int voice = 0; voice < synth::NumVoices; voice++) {
+        o_assert_dbg(0 != this->voices[voice].source);
+        alSourcef(this->voices[voice].source, AL_GAIN, v);
+    }
 }
 
 //------------------------------------------------------------------------------
 bool
 alBufferStreamer::Update() {
-    o_assert_dbg(0 != this->source);
-    
-    // get number of queued and processed buffers
-    ALint buffersQueued = 0;
-    ALint buffersProcessed = 0;
-    alGetSourcei(this->source, AL_BUFFERS_QUEUED, &buffersQueued);
-    ORYOL_AL_CHECK_ERROR();
-    alGetSourcei(this->source, AL_BUFFERS_PROCESSED, &buffersProcessed);
-    ORYOL_AL_CHECK_ERROR();
-    
-    // recycle buffers that have been processed
-    for (int32 i = 0; i < buffersProcessed; i++) {
-        ALuint buf = this->queuedBuffers.Dequeue();
-        alSourceUnqueueBuffers(this->source, 1, &buf);
+    bool needsNewData = false;
+    for (int voice = 0; voice < synth::NumVoices; voice++) {
+        o_assert_dbg(0 != this->voices[voice].source);
+        
+        // get number of queued and processed buffers
+        ALint buffersQueued = 0;
+        ALint buffersProcessed = 0;
+        alGetSourcei(this->voices[voice].source, AL_BUFFERS_QUEUED, &buffersQueued);
         ORYOL_AL_CHECK_ERROR();
-        this->freeBuffers.Enqueue(buf);
+        alGetSourcei(this->voices[voice].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
+        ORYOL_AL_CHECK_ERROR();
+        
+        // recycle buffers that have been processed
+        for (int32 i = 0; i < buffersProcessed; i++) {
+            ALuint buf = this->voices[voice].queuedBuffers.Dequeue();
+            alSourceUnqueueBuffers(this->voices[voice].source, 1, &buf);
+            ORYOL_AL_CHECK_ERROR();
+            this->freeBuffers.Enqueue(buf);
+        }
+        
+        // check if new data is needed (processed + 1 playing + 1 waiting)
+        // FIXME: or: processed + 1 playing?)
+        needsNewData |= (buffersProcessed + 2) >= buffersQueued;
     }
-    
-    // check if new data is needed (processed + 1 playing + 1 waiting)
-    // FIXME: or: processed + 1 playing?)
-    if ((buffersProcessed + 2) >= buffersQueued) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return needsNewData;
 }
 
 //------------------------------------------------------------------------------
 void
-alBufferStreamer::Enqueue(const void* ptr, int32 numBytes) {
+alBufferStreamer::Enqueue(int32 voice, const void* ptr, int32 numBytes) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(synth::BufferSize == numBytes);
     
     ALuint buf = this->freeBuffers.Dequeue();
-    this->queuedBuffers.Enqueue(buf);
+    this->voices[voice].queuedBuffers.Enqueue(buf);
 
     alBufferData(buf, AL_FORMAT_MONO16, ptr, numBytes, synth::SampleRate);
     ORYOL_AL_CHECK_ERROR();
-    alSourceQueueBuffers(this->source, 1, &buf);
+    alSourceQueueBuffers(this->voices[voice].source, 1, &buf);
     ORYOL_AL_CHECK_ERROR();
     
     // start playback if source is not currently playing (either it never was, or it
     // has stopped because it was starved)
     ALint srcState = 0;
-    alGetSourcei(this->source, AL_SOURCE_STATE, &srcState);
+    alGetSourcei(this->voices[voice].source, AL_SOURCE_STATE, &srcState);
     ORYOL_AL_CHECK_ERROR();
     if (AL_PLAYING != srcState) {
-        alSourcePlay(this->source);
+        alSourcePlay(this->voices[voice].source);
         ORYOL_AL_CHECK_ERROR();
         Log::Dbg("alBufferStreamer: starting playback\n");
     }

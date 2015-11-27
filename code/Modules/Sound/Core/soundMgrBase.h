@@ -28,7 +28,7 @@ public:
     bool isValid() const;
 
     /// play a sound effect
-    int play(soundEffect* effect, int32 loopCount, float pitch);
+    int play(soundEffect* effect, int32 loopCount, float pitch, float volume);
     /// stop a sound effect voice
     void stop(soundEffect* effect, int voice);
     /// set pitch-shift on playing sound

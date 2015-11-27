@@ -23,6 +23,7 @@
 */
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Queue.h"
+#include "Core/Containers/StaticArray.h"
 #include "Synth/Core/SynthSetup.h"
 #include "Synth/al/al.h"
 #include "Synth/Core/synth.h"
@@ -46,18 +47,21 @@ public:
 
     /// set new volume (0.0f .. 1.0f)
     void UpdateVolume(float32 v);
-    /// update the streamer, returns true if new data is needed
+    /// update a streamer voice, returns true if new data is needed
     bool Update();
     /// enqueue new data into the streamer
-    void Enqueue(const void* ptr, int32 numBytes);
+    void Enqueue(int32 voice, const void* ptr, int32 numBytes);
     
 private:
-    static const int32 MaxNumBuffers = 8;
+    static const int32 MaxNumBuffers = 8 * synth::NumVoices;
 
     bool isValid;
-    ALuint source;
+    struct voiceData {
+        ALuint source = 0;
+        Queue<ALuint> queuedBuffers;
+    };
+    StaticArray<voiceData, synth::NumVoices> voices;
     Array<ALuint> allBuffers;
-    Queue<ALuint> queuedBuffers;
     Queue<ALuint> freeBuffers;
 };
     

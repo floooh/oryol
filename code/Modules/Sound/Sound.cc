@@ -84,11 +84,11 @@ Sound::DestroyResources(ResourceLabel label) {
 
 //------------------------------------------------------------------------------
 Sound::Voice
-Sound::Play(Id resId, int32 loopCount, float freqShift) {
+Sound::Play(Id resId, int32 loopCount, float pitch, float volume) {
     o_assert_dbg(IsValid());
     soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
     if (sndEffect) {
-        return state->soundMgr.play(sndEffect, loopCount, freqShift);
+        return state->soundMgr.play(sndEffect, loopCount, pitch, volume);
     }
     else {
         return InvalidVoice;

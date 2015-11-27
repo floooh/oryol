@@ -51,7 +51,7 @@ public:
     static void DestroyResources(ResourceLabel label);
 
     /// play a sound effect, return Voice handle
-    static Voice Play(Id snd, int32 loopCount=1, float pitch=1.0f);
+    static Voice Play(Id snd, int32 loopCount=1, float pitch=1.0f, float volume=1.0f);
     /// stop playback of sound effect voice
     static void Stop(Id snd, Voice voice);
     /// set the frequency-shift of a playing sound
