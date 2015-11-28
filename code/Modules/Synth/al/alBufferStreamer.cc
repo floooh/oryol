@@ -25,21 +25,20 @@ alBufferStreamer::~alBufferStreamer() {
 
 //------------------------------------------------------------------------------
 void
-alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
+alBufferStreamer::Setup(const SynthSetup& synthSetup) {
     o_assert_dbg(!this->isValid);
     
     this->isValid = true;
-    
-    // FIXME: actually use attrs from SynthSetup!
+    this->setup = synthSetup;
     
     // generate buffers, initially fill buffer with 0
-    int16 silence[synth::BufferNumSamples] = { 0 };
-    o_assert_dbg(sizeof(silence) == synth::BufferSize);
+    int16 silence[this->setup.NumBufferSamples];
+    Memory::Clear(silence, sizeof(silence));
     for (int i = 0; i < MaxNumBuffers; i++) {
         ALuint buf = 0;
         alGenBuffers(1, &buf);
         ORYOL_AL_CHECK_ERROR();
-        alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), synth::SampleRate);
+        alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), this->setup.SampleRate);
         ORYOL_AL_CHECK_ERROR();
         this->allBuffers.Add(buf);
         this->freeBuffers.Enqueue(buf);
@@ -49,7 +48,7 @@ alBufferStreamer::Setup(const SynthSetup& setupAttrs) {
     for (int i = 0; i < synth::NumVoices; i++) {
         alGenSources(1, &this->voices[i].source);
         ORYOL_AL_CHECK_ERROR();
-        alSourcef(this->voices[i].source, AL_GAIN, setupAttrs.InitialVolume);
+        alSourcef(this->voices[i].source, AL_GAIN, this->setup.InitialVolume);
     }
 }
 
@@ -124,12 +123,12 @@ alBufferStreamer::Update() {
 void
 alBufferStreamer::Enqueue(int32 voice, const void* ptr, int32 numBytes) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(synth::BufferSize == numBytes);
+    o_assert_dbg((this->setup.NumBufferSamples * sizeof(int16)) == numBytes);
     
     ALuint buf = this->freeBuffers.Dequeue();
     this->voices[voice].queuedBuffers.Enqueue(buf);
 
-    alBufferData(buf, AL_FORMAT_MONO16, ptr, numBytes, synth::SampleRate);
+    alBufferData(buf, AL_FORMAT_MONO16, ptr, numBytes, this->setup.SampleRate);
     ORYOL_AL_CHECK_ERROR();
     alSourceQueueBuffers(this->voices[voice].source, 1, &buf);
     ORYOL_AL_CHECK_ERROR();
@@ -146,6 +145,5 @@ alBufferStreamer::Enqueue(int32 voice, const void* ptr, int32 numBytes) {
     }
 }
 
-    
 } // namespace _priv
 } // namespace Oryol

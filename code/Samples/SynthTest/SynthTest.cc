@@ -37,7 +37,6 @@ SynthTestApp::OnInit() {
     IMUI::Setup();
     Input::Setup();
     SynthSetup synthSetup;
-    synthSetup.UseGPUSynthesizer = false;
     synthSetup.InitialVolume = this->volume;
     Synth::Setup(synthSetup);
 

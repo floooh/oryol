@@ -21,6 +21,8 @@ public:
     static void Discard();
     /// check if Synth module is valid
     static bool IsValid();
+    /// access to the SynthSetup object
+    static const class SynthSetup& SynthSetup();
     /// update the global volume (0.0f .. 1.0f)
     static void UpdateVolume(float32 vol);
     /// update the sound system, call once per frame, advances tick

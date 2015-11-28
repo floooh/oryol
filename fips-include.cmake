@@ -1,5 +1,10 @@
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
+set(ORYOL_SYNTH_NUM_VOICES "2" CACHE STRING "Synth module: number of voices")
+add_definitions(-DORYOL_SYNTH_NUM_VOICES=${ORYOL_SYNTH_NUM_VOICES})
+set(ORYOL_SYNTH_NUM_TRACKS_PER_VOICE "2" CACHE STRING "Synth module: number of tracks per voice")
+add_definitions(-DORYOL_SYNTH_NUM_TRACKS_PER_VOICE=${ORYOL_SYNTH_NUM_TRACKS_PER_VOICE})
+
 if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
     option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" ON)
 else() 

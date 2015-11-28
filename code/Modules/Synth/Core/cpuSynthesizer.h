@@ -31,6 +31,7 @@ private:
     int32 sample(int32 voiceIndex, int32 trackIndex, int32 accum, const SynthOp* op);
     
     static const int32 NumWaveSamples = 32;
+    SynthSetup setup;
     int32 waves[SynthOp::NumWaves][NumWaveSamples];
     uint32 freqCounters[synth::NumVoices][synth::NumTracks];
 };

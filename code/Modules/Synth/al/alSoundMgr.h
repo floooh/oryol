@@ -35,6 +35,8 @@ private:
     ALCdevice* alcDevice;
     ALCcontext* alcContext;
     alBufferStreamer streamer;
+    int32 sampleBufferSize;
+    StaticArray<int16*, synth::NumVoices> sampleBuffers;
 };
     
 } // namespace _priv

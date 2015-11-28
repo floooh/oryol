@@ -53,8 +53,9 @@ public:
     void Enqueue(int32 voice, const void* ptr, int32 numBytes);
     
 private:
-    static const int32 MaxNumBuffers = 8 * synth::NumVoices;
+    static const int32 MaxNumBuffers = 12 * synth::NumVoices;
 
+    SynthSetup setup;
     bool isValid;
     struct voiceData {
         ALuint source = 0;

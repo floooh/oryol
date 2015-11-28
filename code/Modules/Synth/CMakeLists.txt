@@ -11,7 +11,6 @@ fips_begin_module(Synth)
         SynthOp.h
         SynthSetup.h
         cpuSynthesizer.cc cpuSynthesizer.h
-        gpuSynthesizer.cc gpuSynthesizer.h
         opBundle.h
         soundMgr.h
         synth.h

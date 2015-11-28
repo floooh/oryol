@@ -13,7 +13,8 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 void
-cpuSynthesizer::Setup(const SynthSetup& /*setupParams*/) {
+cpuSynthesizer::Setup(const SynthSetup& synthSetup) {
+    this->setup = synthSetup;
     this->setupWaves();
     Memory::Clear(this->freqCounters, sizeof(this->freqCounters));
 }
@@ -29,7 +30,7 @@ cpuSynthesizer::Synthesize(const opBundle& bundle) {
 //------------------------------------------------------------------------------
 void
 cpuSynthesizer::synthesizeVoice(int32 voiceIndex, const opBundle& bundle) {
-    o_assert_dbg(synth::BufferSize == bundle.BufferNumBytes);
+    o_assert_dbg(bundle.BufferNumBytes == (setup.NumBufferSamples * sizeof(int16)));
     o_assert_range_dbg(voiceIndex, synth::NumVoices);
     
     // the sample tick range covered by the buffer
@@ -80,7 +81,7 @@ cpuSynthesizer::sample(int32 voiceIndex, int32 trackIndex, int32 accum, const Sy
             accum += (1<<15);
             f = (f * accum) >> 16;
         }
-        uint32 t = (((f * NumWaveSamples) << 12) / synth::SampleRate);
+        uint32 t = (((f * NumWaveSamples) << 12) / this->setup.SampleRate);
         this->freqCounters[voiceIndex][trackIndex] += t;
     
         // sample a canned wave

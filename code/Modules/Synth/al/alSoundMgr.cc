@@ -13,8 +13,9 @@ namespace _priv {
 //------------------------------------------------------------------------------
 alSoundMgr::alSoundMgr() :
 alcDevice(nullptr),
-alcContext(nullptr) {
-    // empty
+alcContext(nullptr),
+sampleBufferSize(0) {
+    this->sampleBuffers.Fill(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -31,6 +32,12 @@ alSoundMgr::Setup(const SynthSetup& setupAttrs) {
     o_assert_dbg(nullptr == this->alcContext);
 
     soundMgrBase::Setup(setupAttrs);
+
+    // allocate sample buffers
+    this->sampleBufferSize = this->setup.NumBufferSamples*sizeof(int16);
+    for (int i=0; i<synth::NumVoices; i++) {
+        this->sampleBuffers[i] = (int16*) Memory::Alloc(this->sampleBufferSize);
+    }
     
     // setup an OpenAL context and make it current
     this->alcDevice = alcOpenDevice(NULL);
@@ -66,6 +73,12 @@ alSoundMgr::Discard() {
     if (nullptr != this->alcDevice) {
         alcCloseDevice(this->alcDevice);
         this->alcDevice = nullptr;
+    }
+    for (int i=0; i<synth::NumVoices; i++) {
+        if (this->sampleBuffers[i]) {
+            Memory::Free(this->sampleBuffers[i]);
+            this->sampleBuffers[i] = nullptr;
+        }
     }
     
     soundMgrBase::Discard();
@@ -117,28 +130,20 @@ alSoundMgr::Update() {
     if (this->streamer.Update()) {
     
         // need to 'render' new buffers
-        static int16 samples[synth::NumVoices][synth::BufferNumSamples];
         const int32 startTick = this->curTick;
-        const int32 endTick = startTick + synth::BufferNumSamples;
+        const int32 endTick = startTick + this->setup.NumBufferSamples;
         opBundle bundle;
         for (int voice = 0; voice < synth::NumVoices; voice++) {
             bundle.StartTick[voice] = startTick;
             bundle.EndTick[voice] = endTick;
-            bundle.Buffer[voice] = samples[voice];
-            bundle.BufferNumBytes = synth::BufferSize;
+            bundle.Buffer[voice] = this->sampleBuffers[voice];
+            bundle.BufferNumBytes = this->sampleBufferSize;
             this->voices[voice].GatherOps(startTick, endTick, bundle);
         }
-        
-        // select between cpuSynth and gpuSynth here!
-        if (this->useGpuSynth) {
-            this->gpuSynth.Synthesize(bundle);
-        }
-        else {
-            this->cpuSynth.Synthesize(bundle);
-        }
-        this->curTick += synth::BufferNumSamples;
+        this->cpuSynth.Synthesize(bundle);
+        this->curTick += this->setup.NumBufferSamples;
         for (int voice = 0; voice < synth::NumVoices; voice++) {
-            this->streamer.Enqueue(voice, samples[voice], sizeof(samples[voice]));
+            this->streamer.Enqueue(voice, this->sampleBuffers[voice], this->sampleBufferSize);
         }
     }
 }

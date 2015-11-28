@@ -9,7 +9,6 @@
 #include "Synth/Core/SynthOp.h"
 #include "Synth/Core/voice.h"
 #include "Synth/Core/cpuSynthesizer.h"
-#include "Synth/Core/gpuSynthesizer.h"
 
 namespace Oryol {
 namespace _priv {
@@ -36,14 +35,11 @@ public:
     /// add an op to a voice track
     void AddOp(int32 voice, int32 track, const SynthOp& op, int32 timeOffset);
     
-protected:
     bool isValid;
     SynthSetup setup;
-    bool useGpuSynth;
     int32 curTick;
     voice voices[synth::NumVoices];
     cpuSynthesizer cpuSynth;
-    gpuSynthesizer gpuSynth;
 };
     
 } // namespace _priv
