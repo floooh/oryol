@@ -7,6 +7,9 @@
 #include "android/native_window.h"
 #include "android_native/android_native_app_glue.h"
 #endif
+#if ORYOL_RASPBERRYPI
+#include "bcm_host.h"
+#endif
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
@@ -45,6 +48,36 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
 
     displayMgrBase::SetupDisplay(gfxSetup, ptrs);
 
+    #if ORYOL_RASPBERRYPI
+    bcm_host_init();
+    static EGL_DISPMANX_WINDOW_T rpiNativeWindow;
+    DISPMANX_ELEMENT_HANDLE_T dispmanElement;
+    DISPMANX_DISPLAY_HANDLE_T dispmanDisplay;
+    DISPMANX_UPDATE_HANDLE_T dispmanUpdate;
+    uint32_t dispWidth, dispHeight;
+    int32_t res = graphics_get_display_size(0, &dispWidth, &dispHeight);
+    o_assert(res >= 0);
+    Log::Info("bcm_host display size: %d, %d\n", dispWidth, dispHeight);
+    VC_RECT_T dstRect;
+    VC_RECT_T srcRect;
+    dstRect.x = 0;
+    dstRect.y = 0;
+    dstRect.width = dispWidth;
+    dstRect.height = dispHeight;
+    dispmanDisplay = vc_dispmanx_display_open(0);
+    dispmanUpdate = vc_dispmanx_update_start(0);
+    dispmanElement = vc_dispmanx_element_add(dispman_update,
+        dispmanDisplay,
+        0, &dstRect,
+        0, &srcRect,
+        DISPMANX_PROTECTION_NONE,
+        0, 0, 0);
+    rpiNativeWindow.element = dispmanElement;
+    rpiNativeWindow.width = dispWidth;
+    rpiNativeWindow.height = dispHeight;
+    vc_dispmanx_update_submit_sync(dispmanUpdate);
+    #endif
+
     this->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     o_assert(nullptr != this->eglDisplay);
     o_assert(eglGetError() == EGL_SUCCESS);
@@ -74,6 +107,8 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     #if ORYOL_ANDROID
         o_assert(OryolAndroidAppState);
         EGLNativeWindowType window = OryolAndroidAppState->window;
+    #elif ORYOL_RASPBERRYPI
+        EGLNativeWindowType window = &rpiNativeWindow;
     #else
         EGLNativeWindowType window = 0;
     #endif

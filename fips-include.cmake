@@ -11,6 +11,8 @@ else()
     option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" OFF)
 endif()
 
+option(ORYOL_RASPBERRYPI "Set to true if compiling for the Raspberry Pi" OFF)
+
 if (ORYOL_USE_LIBCURL)
     add_definitions(-DORYOL_USE_LIBCURL=1)
 endif()
@@ -65,13 +67,13 @@ endif()
 # use OpenGL?
 if (NOT ORYOL_METAL AND NOT ORYOL_D3D11 AND NOT ORYOL_D3D12)
     set(ORYOL_OPENGL 1)
-    if (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS)
-        set(ORYOL_OPENGL_CORE_PROFILE 1)
-    endif()
-    if (FIPS_IOS OR FIPS_PNACL OR FIPS_EMSCRIPTEN)
+    if (ORYOL_RASPBERRYPI)
         set(ORYOL_OPENGLES2 1)
-    endif()
-    if (FIPS_ANDROID)
+    elseif (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS)
+        set(ORYOL_OPENGL_CORE_PROFILE 1)
+    elseif (FIPS_IOS OR FIPS_PNACL OR FIPS_EMSCRIPTEN)
+        set(ORYOL_OPENGLES2 1)
+    elseif (FIPS_ANDROID)
         set(ORYOL_OPENGLES3 1)
     endif()
 endif()
@@ -145,6 +147,13 @@ endif()
 # Metal defines
 if (ORYOL_METAL)
     add_definitions(-DORYOL_METAL=1)
+endif()
+
+# RaspberryPi defines
+if (ORYOL_RASPBERRYPI)
+    add_definitions(-DORYOL_RASPBERRYPI=1)
+    include_directories("/opt/vc/include")
+    link_directories("/opt/vc/lib")
 endif()
 
 # misc defines

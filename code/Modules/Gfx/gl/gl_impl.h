@@ -4,7 +4,11 @@
     Central GL header file, this is BIG, make sure to only include
     this in implementation files, not header files.
 */
-#if ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
+#if ORYOL_RASPBERRYPI
+#define GL_GLEXT_PROTOTYPES
+#include "GLES2/gl2.h"
+#include "GLES2/gl2ext.h"
+#elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
 #include "flextgl/flextGL.h"
 #elif ORYOL_IOS
 #include <OpenGLES/ES2/gl.h>
