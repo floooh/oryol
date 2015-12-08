@@ -16,7 +16,10 @@ def getToolsBinPath() :
     elif platform.system() == 'Darwin' :
         path += '/../../tools/osx/'
     elif platform.system() == 'Linux' :
-        path +=  '/../../tools/linux/'
+        if os.uname()[1] == 'raspberrypi' :
+            path += '/../../tools/raspi/'
+        else :
+            path +=  '/../../tools/linux/'
     else :
         error("Unknown host system {}".format(platform.system()))
     return path;
