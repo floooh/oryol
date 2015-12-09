@@ -17,6 +17,12 @@ namespace Oryol {
 namespace _priv {
 class inputMgr : public osxInputMgr { };
 } }
+#elif ORYOL_RASPBERRYPI
+#include "Input/base/inputMgrBase.h"
+namespace Oryol {
+namespace _priv {
+class inputMgr : public inputMgrBase { };
+} }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Input/glfw/glfwInputMgr.h"
 namespace Oryol {

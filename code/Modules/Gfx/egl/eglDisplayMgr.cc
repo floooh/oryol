@@ -50,32 +50,6 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
 
     #if ORYOL_RASPBERRYPI
     bcm_host_init();
-    static EGL_DISPMANX_WINDOW_T rpiNativeWindow;
-    DISPMANX_ELEMENT_HANDLE_T dispmanElement;
-    DISPMANX_DISPLAY_HANDLE_T dispmanDisplay;
-    DISPMANX_UPDATE_HANDLE_T dispmanUpdate;
-    uint32_t dispWidth, dispHeight;
-    int32_t res = graphics_get_display_size(0, &dispWidth, &dispHeight);
-    o_assert(res >= 0);
-    Log::Info("bcm_host display size: %d, %d\n", dispWidth, dispHeight);
-    VC_RECT_T dstRect;
-    VC_RECT_T srcRect;
-    dstRect.x = 0;
-    dstRect.y = 0;
-    dstRect.width = dispWidth;
-    dstRect.height = dispHeight;
-    dispmanDisplay = vc_dispmanx_display_open(0);
-    dispmanUpdate = vc_dispmanx_update_start(0);
-    dispmanElement = vc_dispmanx_element_add(dispmanUpdate,
-        dispmanDisplay,
-        0, &dstRect,
-        0, &srcRect,
-        DISPMANX_PROTECTION_NONE,
-        0, 0, DISPMANX_NO_ROTATE);
-    rpiNativeWindow.element = dispmanElement;
-    rpiNativeWindow.width = dispWidth;
-    rpiNativeWindow.height = dispHeight;
-    vc_dispmanx_update_submit_sync(dispmanUpdate);
     #endif
 
     this->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -103,35 +77,11 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         return;
     }
     o_assert(eglGetError() == EGL_SUCCESS);
-
-    #if ORYOL_ANDROID
-        o_assert(OryolAndroidAppState);
-        EGLNativeWindowType window = OryolAndroidAppState->window;
-    #elif ORYOL_RASPBERRYPI
-        EGLNativeWindowType window = &rpiNativeWindow;
-    #else
-        EGLNativeWindowType window = 0;
-    #endif
-
-    #if ORYOL_ANDROID
-    // from the native_activity NDK sample:
-    /* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
-     * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
-     * As soon as we picked a EGLConfig, we can safely reconfigure the
-     * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
-    EGLint format;
-    eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
-    int32_t w = ANativeWindow_getWidth(window);
-    int32_t h = ANativeWindow_getHeight(window);
-    if (!gfxSetup.HighDPI) {
-        w/=2; h/=2;
+   
+    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+        o_error("eglDisplayMgr: eglBindAPI() failed!\n");
+        return;
     }
-    ANativeWindow_setBuffersGeometry(window, w, h, format);
-    #endif
-
-    this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);
-    o_assert(eglGetError() == EGL_SUCCESS);
-    o_assert(nullptr != this->eglSurface);
 
     EGLint contextAttrs[] = {
         #if ORYOL_OPENGLES3
@@ -144,6 +94,65 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     this->eglContext = eglCreateContext(this->eglDisplay, this->eglConfig, EGL_NO_CONTEXT, contextAttrs);
     o_assert(eglGetError() == EGL_SUCCESS);
     o_assert(nullptr != this->eglContext);
+
+    #if ORYOL_ANDROID
+        o_assert(OryolAndroidAppState);
+        EGLNativeWindowType window = OryolAndroidAppState->window;
+        // from the native_activity NDK sample:
+        /* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+         * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
+         * As soon as we picked a EGLConfig, we can safely reconfigure the
+         * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+        EGLint format;
+        eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
+        int32_t w = ANativeWindow_getWidth(window);
+        int32_t h = ANativeWindow_getHeight(window);
+        if (!gfxSetup.HighDPI) {
+            w/=2; h/=2;
+        }
+        ANativeWindow_setBuffersGeometry(window, w, h, format);
+    #elif ORYOL_RASPBERRYPI
+        static EGL_DISPMANX_WINDOW_T rpiNativeWindow;
+        uint32_t screenWidth, screenHeight;
+        int32_t success = graphics_get_display_size(0, &screenWidth, &screenHeight);
+        o_assert(success >= 0);
+        
+        VC_RECT_T dstRect, srcRect;
+        dstRect.x = dstRect.y = 0;
+        dstRect.width = screenWidth;
+        dstRect.height = screenHeight;
+        srcRect.x = srcRect.y = 0;
+        srcRect.width = screenWidth << 16;
+        srcRect.height = screenHeight << 16;
+         
+        DISPMANX_DISPLAY_HANDLE_T dispmanDisplay = vc_dispmanx_display_open(0);
+        DISPMANX_UPDATE_HANDLE_T dispmanUpdate = vc_dispmanx_update_start(0);
+        DISPMANX_ELEMENT_HANDLE_T dispmanElement;
+        dispmanElement = vc_dispmanx_element_add(
+            dispmanUpdate, 
+            dispmanDisplay,
+            0, // layer
+            &dstRect, 
+            0, // src
+            &srcRect,
+            DISPMANX_PROTECTION_NONE,
+            0,  // alpha
+            0,  // clamp
+            DISPMANX_NO_ROTATE); // transform
+
+        rpiNativeWindow.element = dispmanElement;
+        rpiNativeWindow.width = screenWidth;
+        rpiNativeWindow.height = screenHeight;
+        vc_dispmanx_update_submit_sync(dispmanUpdate);
+
+        EGLNativeWindowType window = &rpiNativeWindow;
+    #else
+        EGLNativeWindowType window = 0;
+    #endif
+
+    this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);
+    o_assert(eglGetError() == EGL_SUCCESS);
+    o_assert(nullptr != this->eglSurface);
 
     if (!eglMakeCurrent(this->eglDisplay, this->eglSurface, this->eglSurface, this->eglContext)) {
         o_error("eglDisplayMgr: eglMakeCurrent failed!\n");
@@ -200,3 +209,4 @@ eglDisplayMgr::glBindDefaultFramebuffer() {
 
 } // namespace _priv
 } // namespace Oryol
+
