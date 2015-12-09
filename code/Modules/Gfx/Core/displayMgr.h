@@ -27,6 +27,12 @@ namespace Oryol {
 namespace _priv {
 class displayMgr : public mtlDisplayMgr { };
 } }
+#elif (ORYOL_ANDROID || ORYOL_RASPBERRYPI)
+#include "Gfx/egl/eglDisplayMgr.h"
+namespace Oryol {
+namespace _priv {
+class displayMgr : public eglDisplayMgr { };
+} }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
 #include "Gfx/glfw/glfwDisplayMgr.h"
 namespace Oryol {
@@ -38,12 +44,6 @@ class displayMgr : public glfwDisplayMgr { };
 namespace Oryol {
 namespace _priv {
 class displayMgr : public emscDisplayMgr { };
-} }
-#elif ORYOL_ANDROID
-#include "Gfx/egl/eglDisplayMgr.h"
-namespace Oryol {
-namespace _priv {
-class displayMgr : public eglDisplayMgr { };
 } }
 #elif ORYOL_IOS
 #include "Gfx/ios/iosDisplayMgr.h"

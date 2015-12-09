@@ -114,6 +114,8 @@ glExt::VertexAttribDivisor(GLuint index, GLuint divisor) {
         ::glVertexAttribDivisor(index, divisor);
         #elif ORYOL_IOS
         ::glVertexAttribDivisorEXT(index, divisor);
+        #elif ORYOL_RASPBERRYPI
+        o_error("glExt::VertexAttribDivisor() called!\n");
         #elif ORYOL_OPENGLES2
         ::glVertexAttribDivisorANGLE(index, divisor);
         #else
@@ -130,6 +132,8 @@ glExt::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei prim
         ::glDrawArraysInstanced(mode, first, count, primcount);
         #elif ORYOL_IOS
         ::glDrawArraysInstancedEXT(mode, first, count, primcount);
+        #elif ORYOL_RASPBERRYPI
+        o_error("glExt::DrawArraysInstanced() called!\n");
         #elif ORYOL_OPENGLES2
         ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
         #else
@@ -146,6 +150,8 @@ glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void
         ::glDrawElementsInstanced(mode, count, type, indices, primcount);
         #elif ORYOL_IOS
         ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
+        #elif ORYOL_RASPBERRYPI
+        o_error("glExt::DrawElementsInstanced() called!\n");
         #elif ORYOL_OPENGLES2
         ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
         #else
@@ -156,3 +162,4 @@ glExt::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void
 
 } // namespace _priv
 } // namespace Oryol
+

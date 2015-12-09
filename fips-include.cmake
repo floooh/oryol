@@ -152,7 +152,11 @@ endif()
 # RaspberryPi defines
 if (ORYOL_RASPBERRYPI)
     add_definitions(-DORYOL_RASPBERRYPI=1)
-    include_directories("/opt/vc/include")
+    include_directories(
+        "/opt/vc/include" 
+        "/opt/vc/include/interface/vcos/pthreads"
+        "/opt/vc/include/interface/vmcs_host/linux"
+    )
     link_directories("/opt/vc/lib")
 endif()
 

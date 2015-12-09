@@ -66,12 +66,12 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     dstRect.height = dispHeight;
     dispmanDisplay = vc_dispmanx_display_open(0);
     dispmanUpdate = vc_dispmanx_update_start(0);
-    dispmanElement = vc_dispmanx_element_add(dispman_update,
+    dispmanElement = vc_dispmanx_element_add(dispmanUpdate,
         dispmanDisplay,
         0, &dstRect,
         0, &srcRect,
         DISPMANX_PROTECTION_NONE,
-        0, 0, 0);
+        0, 0, DISPMANX_NO_ROTATE);
     rpiNativeWindow.element = dispmanElement;
     rpiNativeWindow.width = dispWidth;
     rpiNativeWindow.height = dispHeight;
