@@ -110,8 +110,10 @@ IOQueue::update() {
                     curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
                 }
                 else {
-                    // no fail handler was set, error out
-                    o_error("IOQueue::update(): failed to load file '%s'\n", ioReq->GetURL().AsCStr());
+                    // no fail handler was set, just print a warning
+                    o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
+                        ioReq->GetURL().AsCStr(),
+                        IOStatus::ToString(ioReq->GetStatus()));
                 }
             }
             // remove the handled io request from the queue
@@ -132,8 +134,9 @@ IOQueue::update() {
                         curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
                     }
                     else {
-                        // no fail handler was set, throw fatal error
-                        o_error("IOQueue::update(): failed to load file '%s'\n", ioReq->GetURL().AsCStr());
+                        o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
+                            ioReq->GetURL().AsCStr(),
+                            IOStatus::ToString(ioReq->GetStatus()));
                     }
                 }
             }
