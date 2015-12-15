@@ -206,7 +206,7 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::cursorEnterCallback(GLFWwindow* win, int entered) {
-    Log::Info("cursorenter: %d\n", entered);
+    // FIXME?
 }
 
 //------------------------------------------------------------------------------
