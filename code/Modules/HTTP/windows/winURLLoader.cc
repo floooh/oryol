@@ -127,7 +127,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // create a response object, no matter whether the
             // send fails or not
             Ptr<HTTPProtocol::HTTPResponse> httpResponse = HTTPProtocol::HTTPResponse::Create();
-            req->SetResponse(httpResponse);
+            req->Response = httpResponse;
 
             // send the request
             BOOL sendResult = WinHttpSendRequest(
@@ -197,7 +197,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
                     // extract body data
                     Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
-                    responseBodyStream->SetURL(req->GetURL());
+                    responseBodyStream->SetURL(req->Url);
                     responseBodyStream->Open(OpenMode::WriteOnly);
                     DWORD bytesToRead = 0;
                     do {
@@ -229,12 +229,12 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     // @todo: write error desc to httpResponse if something went wrong
                 }
                 else {
-                    Log::Warn("winURLLoader: WinHttpReceiveResponse() failed for '%s'!\n", req->GetURL().AsCStr());
+                    Log::Warn("winURLLoader: WinHttpReceiveResponse() failed for '%s'!\n", req->Url.AsCStr());
                 }
             }
             else {
                 /// @todo: better error reporting!
-                Log::Warn("winURLLoader: WinHttpSendRequest() failed for '%s'\n", req->GetURL().AsCStr());
+                Log::Warn("winURLLoader: WinHttpSendRequest() failed for '%s'\n", req->Url.AsCStr());
             }
 
             // unmap the body data if necessary
