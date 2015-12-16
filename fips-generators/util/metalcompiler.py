@@ -24,6 +24,7 @@ rel_sys_root = {
         'Developer/SDKs/MacOSX10.11.sdk'
     ],
     'ios': [
+        'Developer/SDKs/iPhoneOS9.2.sdk',
         'Developer/SDKs/iPhoneOS9.1.sdk',
         'Developer/SDKs/iPhoneOS9.0.sdk'
     ]
