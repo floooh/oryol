@@ -48,12 +48,12 @@ winURLLoader::doWork() {
             this->doOneRequest(req);
 
             // transfer result to embedded ioRequest and set to handled
-            auto ioReq = req->GetIoRequest();
+            auto ioReq = req->IoRequest;
             if (ioReq) {
-                auto httpResponse = req->GetResponse();
-                ioReq->SetStatus(httpResponse->GetStatus());
-                ioReq->SetStream(httpResponse->GetBody());
-                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                auto httpResponse = req->Response;
+                ioReq->Status = httpResponse->Status;
+                ioReq->Data = httpResponse->Body;
+                ioReq->ErrorDesc = httpResponse->ErrorDesc;
                 ioReq->SetHandled();
             }
             req->SetHandled();
@@ -65,13 +65,13 @@ winURLLoader::doWork() {
 //------------------------------------------------------------------------------
 void
 winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
-    Log::Info("winURLLoader::doOneRequest() start: %s\n", req->GetURL().AsCStr());
+    Log::Info("winURLLoader::doOneRequest() start: %s\n", req->Url.AsCStr());
 
     // obtain a connection
-    HINTERNET hConn = this->obtainConnection(req->GetURL());
+    HINTERNET hConn = this->obtainConnection(req->Url);
     if (NULL != hConn) {
-        WideString method(HTTPMethod::ToWideString(req->GetMethod()));
-        WideString path(StringConverter::UTF8ToWide(req->GetURL().PathToEnd()));
+        WideString method(HTTPMethod::ToWideString(req->Method));
+        WideString path(StringConverter::UTF8ToWide(req->Url.PathToEnd()));
 
         // setup an HTTP request
         HINTERNET hRequest = WinHttpOpenRequest(
@@ -85,8 +85,8 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         if (NULL != hRequest) {
             
             // add request headers to the request
-            if (!req->GetRequestHeaders().Empty()) {
-                for (const auto& kvp : req->GetRequestHeaders()) {
+            if (!req->RequestHeaders.Empty()) {
+                for (const auto& kvp : req->RequestHeaders) {
                     this->stringBuilder.Clear();
                     this->stringBuilder.Append(kvp.Key());
                     this->stringBuilder.Append(": ");
@@ -95,9 +95,9 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 }
 
                 // check if we need to add a Content-Type field:
-                if (req->GetBody().isValid() && req->GetBody()->GetContentType().IsValid()) {
+                if (req->Body.isValid() && req->Body->GetContentType().IsValid()) {
                     this->stringBuilder.Append("Content-Type: ");
-                    this->stringBuilder.Append(req->GetBody()->GetContentType().AsCStr());
+                    this->stringBuilder.Append(req->Body->GetContentType().AsCStr());
                     this->stringBuilder.Append("\r\n");
                 }
 
@@ -116,8 +116,8 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // do we have body-data?
             const uint8* bodyDataPtr = WINHTTP_NO_REQUEST_DATA;
             int32 bodySize = 0;
-            if (req->GetBody().isValid()) {
-                const Ptr<Stream>& bodyStream = req->GetBody();
+            if (req->Body.isValid()) {
+                const Ptr<Stream>& bodyStream = req->Body;
                 bodySize = bodyStream->Size();
                 o_assert(bodySize > 0);
                 bodyStream->Open(OpenMode::ReadOnly);
@@ -152,7 +152,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                         &dwStatusCode,
                         &dwTemp,
                         NULL);
-                    httpResponse->SetStatus((IOStatus::Code) dwStatusCode);
+                    httpResponse->Status = (IOStatus::Code) dwStatusCode;
 
                     // query the response headers required data size
                     DWORD dwSize = 0;
@@ -189,7 +189,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                                 fields.Add(key, value);
                             }
                         }
-                        httpResponse->SetResponseHeaders(fields);
+                        httpResponse->ResponseHeaders = fields;
                     }
                     else {
                         Log::Warn("winURLLoader: failed to extract response header fields!\n");
@@ -218,13 +218,13 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     responseBodyStream->Close();
 
                     // extract the Content-Type response header field and set on responseBodyStream
-                    if (httpResponse->GetResponseHeaders().Contains(this->contentTypeString)) {
-                        ContentType contentType(httpResponse->GetResponseHeaders()[this->contentTypeString]);
+                    if (httpResponse->ResponseHeaders.Contains(this->contentTypeString)) {
+                        ContentType contentType(httpResponse->ResponseHeaders[this->contentTypeString]);
                         responseBodyStream->SetContentType(contentType);
                     }
 
                     // ...and finally set the responseBodyStream on the httpResponse
-                    httpResponse->SetBody(responseBodyStream);
+                    httpResponse->Body = responseBodyStream;
 
                     // @todo: write error desc to httpResponse if something went wrong
                 }
@@ -238,18 +238,18 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             }
 
             // unmap the body data if necessary
-            if (req->GetBody().isValid()) {
-                req->GetBody()->Close();
+            if (req->Body.isValid()) {
+                req->Body->Close();
             }
 
             // close the request object
             WinHttpCloseHandle(hRequest);
         }
         else {
-            Log::Warn("winURLLoader: WinHttpOpenRequest() failed for '%s'\n", req->GetURL().AsCStr());
+            Log::Warn("winURLLoader: WinHttpOpenRequest() failed for '%s'\n", req->Url.AsCStr());
         }
     }
-    Log::Info("winURLLoader::doOneRequest() end: %s\n", req->GetURL().AsCStr());
+    Log::Info("winURLLoader::doOneRequest() end: %s\n", req->Url.AsCStr());
 }
 
 //------------------------------------------------------------------------------
@@ -307,3 +307,4 @@ winURLLoader::garbageCollectConnections() {
 
 } // namespace _priv
 } // namespace Oryol
+
