@@ -86,19 +86,19 @@ osxInputMgr::keyCallback(int osxKey, int /*scancode*/, int action, int /*mods*/)
     if (nullptr != self) {
         Key::Code key = self->mapKey(osxKey);
         if (Key::InvalidKey != key) {
-            auto msg = InputProtocol::Key::Create();
-            msg->SetKey(key);
+            auto msg = InputProtocol::KeyEvent::Create();
+            msg->Key = key;
             if (action == ORYOL_OSXBRIDGE_PRESS) {
                 self->keyboard.onKeyDown(key);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (action == ORYOL_OSXBRIDGE_RELEASE) {
                 self->keyboard.onKeyUp(key);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             else {
                 self->keyboard.onKeyRepeat(key);
-                msg->SetRepeat(true);
+                msg->Repeat = true;
             }
             self->notifyHandlers(msg);
         }
@@ -110,8 +110,8 @@ void
 osxInputMgr::charCallback(unsigned int unicode) {
     if (nullptr != self) {
         self->keyboard.onChar((wchar_t)unicode);
-        auto msg = InputProtocol::WChar::Create();
-        msg->SetWChar((wchar_t) unicode);
+        auto msg = InputProtocol::WCharEvent::Create();
+        msg->WChar = (wchar_t) unicode;
         self->notifyHandlers(msg);
     }
 }
@@ -128,15 +128,15 @@ osxInputMgr::mouseButtonCallback(int button, int action, int mods) {
             default:                                    btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
-            auto msg = InputProtocol::MouseButton::Create();
-            msg->SetMouseButton(btn);
+            auto msg = InputProtocol::MouseButtonEvent::Create();
+            msg->MouseButton = btn;
             if (action == ORYOL_OSXBRIDGE_PRESS) {
                 self->mouse.onButtonDown(btn);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (action == ORYOL_OSXBRIDGE_RELEASE) {
                 self->mouse.onButtonUp(btn);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             self->notifyHandlers(msg);
         }
@@ -149,9 +149,9 @@ osxInputMgr::cursorPosCallback(float64 x, float64 y) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)x, (float32)y);
         self->mouse.onPosMov(pos);
-        auto msg = InputProtocol::MouseMove::Create();
-        msg->SetMovement(self->mouse.Movement);
-        msg->SetPosition(self->mouse.Position);
+        auto msg = InputProtocol::MouseMoveEvent::Create();
+        msg->Movement = self->mouse.Movement;
+        msg->Position = self->mouse.Position;
         self->notifyHandlers(msg);
     }
 }
@@ -162,8 +162,8 @@ osxInputMgr::scrollCallback(float64 xOffset, float64 yOffset) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)xOffset, (float32)yOffset);
         self->mouse.Scroll = scroll;
-        auto msg = InputProtocol::MouseScroll::Create();
-        msg->SetScroll(scroll);
+        auto msg = InputProtocol::MouseScrollEvent::Create();
+        msg->Scroll = scroll;
         self->notifyHandlers(msg);
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:12#
+/* #version:14#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -58,13 +58,13 @@ public:
     public:
         Request() {
             this->msgId = MessageId::RequestId;
-            this->lane = 0;
-            this->cachereadenabled = true;
-            this->cachewriteenabled = true;
-            this->startoffset = 0;
-            this->endoffset = 0;
-            this->status = IOStatus::InvalidIOStatus;
-            this->actuallane = 0;
+            this->Lane = 0;
+            this->CacheReadEnabled = true;
+            this->CacheWriteEnabled = true;
+            this->StartOffset = 0;
+            this->EndOffset = 0;
+            this->Status = IOStatus::InvalidIOStatus;
+            this->ActualLane = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -76,77 +76,16 @@ public:
             if (protId == 'IOPT') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetURL(const URL& val) {
-            this->url = val;
-        };
-        const URL& GetURL() const {
-            return this->url;
-        };
-        void SetLane(int32 val) {
-            this->lane = val;
-        };
-        int32 GetLane() const {
-            return this->lane;
-        };
-        void SetCacheReadEnabled(bool val) {
-            this->cachereadenabled = val;
-        };
-        bool GetCacheReadEnabled() const {
-            return this->cachereadenabled;
-        };
-        void SetCacheWriteEnabled(bool val) {
-            this->cachewriteenabled = val;
-        };
-        bool GetCacheWriteEnabled() const {
-            return this->cachewriteenabled;
-        };
-        void SetStartOffset(int32 val) {
-            this->startoffset = val;
-        };
-        int32 GetStartOffset() const {
-            return this->startoffset;
-        };
-        void SetEndOffset(int32 val) {
-            this->endoffset = val;
-        };
-        int32 GetEndOffset() const {
-            return this->endoffset;
-        };
-        void SetStatus(const IOStatus::Code& val) {
-            this->status = val;
-        };
-        const IOStatus::Code& GetStatus() const {
-            return this->status;
-        };
-        void SetErrorDesc(const String& val) {
-            this->errordesc = val;
-        };
-        const String& GetErrorDesc() const {
-            return this->errordesc;
-        };
-        void SetStream(const Ptr<Stream>& val) {
-            this->stream = val;
-        };
-        const Ptr<Stream>& GetStream() const {
-            return this->stream;
-        };
-        void SetActualLane(int32 val) {
-            this->actuallane = val;
-        };
-        int32 GetActualLane() const {
-            return this->actuallane;
-        };
-private:
-        URL url;
-        int32 lane;
-        bool cachereadenabled;
-        bool cachewriteenabled;
-        int32 startoffset;
-        int32 endoffset;
-        IOStatus::Code status;
-        String errordesc;
-        Ptr<Stream> stream;
-        int32 actuallane;
+        URL Url;
+        int32 Lane;
+        bool CacheReadEnabled;
+        bool CacheWriteEnabled;
+        int32 StartOffset;
+        int32 EndOffset;
+        IOStatus::Code Status;
+        String ErrorDesc;
+        Ptr<Stream> Data;
+        int32 ActualLane;
     };
     class notifyLanes : public Message {
         OryolClassDecl(notifyLanes);
@@ -165,14 +104,7 @@ private:
             if (protId == 'IOPT') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetScheme(const StringAtom& val) {
-            this->scheme = val;
-        };
-        const StringAtom& GetScheme() const {
-            return this->scheme;
-        };
-private:
-        StringAtom scheme;
+        StringAtom Scheme;
     };
     class notifyFileSystemRemoved : public notifyLanes {
         OryolClassDecl(notifyFileSystemRemoved);
@@ -191,7 +123,6 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-private:
     };
     class notifyFileSystemReplaced : public notifyLanes {
         OryolClassDecl(notifyFileSystemReplaced);
@@ -210,7 +141,6 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-private:
     };
     class notifyFileSystemAdded : public notifyLanes {
         OryolClassDecl(notifyFileSystemAdded);
@@ -229,7 +159,6 @@ private:
             if (protId == 'IOPT') return true;
             else return notifyLanes::IsMemberOf(protId);
         };
-private:
     };
 };
 }

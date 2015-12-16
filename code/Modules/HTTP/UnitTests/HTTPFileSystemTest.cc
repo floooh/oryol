@@ -29,8 +29,8 @@ TEST(HTTPFileSystemTest) {
     }
     
     // check what we got
-    CHECK(req->GetStatus() == IOStatus::OK);
-    const Ptr<Stream>& loadedData = req->GetStream();
+    CHECK(req->Status == IOStatus::OK);
+    const Ptr<Stream>& loadedData = req->Data;
     CHECK(loadedData.isValid());
     CHECK(loadedData->Size() > 0);
     CHECK(loadedData->GetContentType().TypeAndSubType() == "text/html");

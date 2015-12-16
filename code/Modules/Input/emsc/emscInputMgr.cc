@@ -105,15 +105,15 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
     o_assert_dbg(self);
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
-        auto msg = InputProtocol::Key::Create();
-        msg->SetKey(key);
+        auto msg = InputProtocol::KeyEvent::Create();
+        msg->Key = key;
         if (e->repeat) {
             self->keyboard.onKeyRepeat(key);
-            msg->SetRepeat(true);
+            msg->Repeat = true;
         }
         else {
             self->keyboard.onKeyDown(key);
-            msg->SetDown(true);
+            msg->Down = true;
         }
         self->notifyHandlers(msg);
         if (self->keyboard.IsCapturingText()) {
@@ -146,9 +146,9 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
-        auto msg = InputProtocol::Key::Create();
-        msg->SetKey(key);
-        msg->SetUp(true);
+        auto msg = InputProtocol::KeyEvent::Create();
+        msg->Key = key;
+        msg->Up = true;
         self->notifyHandlers(msg);
         return true;
     }
@@ -161,8 +161,8 @@ emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
     self->keyboard.onChar((wchar_t)e->charCode);    
-    auto msg = InputProtocol::WChar::Create();
-    msg->SetWChar((wchar_t)e->charCode);
+    auto msg = InputProtocol::WCharEvent::Create();
+    msg->WChar = (wchar_t)e->charCode;
     self->notifyHandlers(msg);
     return true;
 }
@@ -187,9 +187,9 @@ emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* 
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonDown(btn);
         
-        auto msg = InputProtocol::MouseButton::Create();
-        msg->SetMouseButton(btn);
-        msg->SetDown(true);
+        auto msg = InputProtocol::MouseButtonEvent::Create();
+        msg->MouseButton = btn;
+        msg->Down = true;
         self->notifyHandlers(msg);
     }
     return true;
@@ -204,9 +204,9 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     if (Mouse::InvalidButton != btn) {
         self->mouse.onButtonUp(btn);
 
-        auto msg = InputProtocol::MouseButton::Create();
-        msg->SetMouseButton(btn);
-        msg->SetUp(true);
+        auto msg = InputProtocol::MouseButtonEvent::Create();
+        msg->MouseButton = btn;
+        msg->Up = true;
         self->notifyHandlers(msg);
     }
     return true;
@@ -228,9 +228,9 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
         self->mouse.onPosMov(pos);
     }
 
-    auto msg = InputProtocol::MouseMove::Create();
-    msg->SetMovement(self->mouse.Movement);
-    msg->SetPosition(self->mouse.Position);
+    auto msg = InputProtocol::MouseMoveEvent::Create();
+    msg->Movement = self->mouse.Movement;
+    msg->Position = self->mouse.Position;
     self->notifyHandlers(msg);
 
     return true;    
@@ -244,8 +244,8 @@ emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* user
     const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
     self->mouse.Scroll = scroll;
 
-    auto msg = InputProtocol::MouseScroll::Create();
-    msg->SetScroll(scroll);
+    auto msg = InputProtocol::MouseScrollEvent::Create();
+    msg->Scroll = scroll;
     self->notifyHandlers(msg);
 
     return true;

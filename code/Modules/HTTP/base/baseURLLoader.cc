@@ -24,18 +24,18 @@ baseURLLoader::doWork() {
 //------------------------------------------------------------------------------
 bool
 baseURLLoader::handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
-    const auto& ioReq = httpReq->GetIoRequest();
+    const auto& ioReq = httpReq->IoRequest;
     if (ioReq.isValid()) {
         if (ioReq->Cancelled()) {
-            ioReq->SetStatus(IOStatus::Cancelled);
-            ioReq->Handled();
+            ioReq->Status = IOStatus::Cancelled;
+            ioReq->SetHandled();
             httpReq->SetCancelled();
-            httpReq->Handled();
+            httpReq->SetHandled();
             return true;
         }
     }
     if (httpReq->Cancelled()) {
-        httpReq->Handled();
+        httpReq->SetHandled();
         return true;
     }
     return false;

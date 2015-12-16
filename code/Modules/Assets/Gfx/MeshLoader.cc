@@ -46,8 +46,8 @@ MeshLoader::Start() {
     
     // fire IO request to start loading the texture data
     this->ioRequest = IOProtocol::Request::Create();
-    this->ioRequest->SetURL(setup.Locator.Location());
-    this->ioRequest->SetLane(this->ioLane);
+    this->ioRequest->Url = setup.Locator.Location();
+    this->ioRequest->Lane = this->ioLane;
     IO::Put(this->ioRequest);
     
     return this->resId;
@@ -62,10 +62,10 @@ MeshLoader::Continue() {
     ResourceState::Code result = ResourceState::Pending;
     
     if (this->ioRequest->Handled()) {
-        if (this->ioRequest->GetStatus() == IOStatus::OK) {
+        if (IOStatus::OK == this->ioRequest->Status) {
             // async loading has finished, use OmshParser to
             // create a MeshSetup object from the loaded data
-            const Ptr<Stream>& stream = this->ioRequest->GetStream();
+            const Ptr<Stream>& stream = this->ioRequest->Data;
             stream->Open(OpenMode::ReadOnly);
             const void* data = stream->MapRead(nullptr);
             const int32 numBytes = stream->Size();

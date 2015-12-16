@@ -29,11 +29,11 @@ TEST(DDSLoadTest) {
         Core::PreRunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    CHECK(req->GetStatus() == IOStatus::OK);
-    if (req->GetStatus() == IOStatus::OK) {
+    CHECK(req->Status == IOStatus::OK);
+    if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->GetStream();
+        const Ptr<Stream>& stream = req->Data;
         stream->Open(OpenMode::ReadOnly);
         const int32 size = stream->Size();
         const void* data = stream->MapRead(nullptr);
@@ -69,11 +69,11 @@ TEST(DDSLoadTest) {
         Core::PreRunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    CHECK(req->GetStatus() == IOStatus::OK);
-    if (req->GetStatus() == IOStatus::OK) {
+    CHECK(req->Status == IOStatus::OK);
+    if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->GetStream();
+        const Ptr<Stream>& stream = req->Data;
         stream->Open(OpenMode::ReadOnly);
         const int32 size = stream->Size();
         const void* data = stream->MapRead(nullptr);
@@ -109,11 +109,11 @@ TEST(DDSLoadTest) {
         Core::PreRunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    CHECK(req->GetStatus() == IOStatus::OK);
-    if (req->GetStatus() == IOStatus::OK) {
+    CHECK(req->Status == IOStatus::OK);
+    if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->GetStream();
+        const Ptr<Stream>& stream = req->Data;
         stream->Open(OpenMode::ReadOnly);
         const int32 size = stream->Size();
         const void* data = stream->MapRead(nullptr);

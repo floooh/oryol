@@ -10,7 +10,7 @@ headers:
 messages:
     - name: Request
       attrs:
-        - { name: URL, type: URL }
+        - { name: Url, type: URL }
         - { name: Lane, type: int32 }
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
@@ -18,7 +18,7 @@ messages:
         - { name: EndOffset, type: int32, default: 0 }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
-        - { name: Stream, type: Ptr<Stream>, dir: out }
+        - { name: Data, type: Ptr<Stream>, dir: out }
         - { name: ActualLane, type: int32, dir: out }
     - name: notifyLanes
       attrs:

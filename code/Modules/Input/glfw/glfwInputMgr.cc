@@ -121,19 +121,19 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
     if (nullptr != self) {
         Key::Code key = self->mapKey(glfwKey);
         if (Key::InvalidKey != key) {
-            auto msg = InputProtocol::Key::Create();
-            msg->SetKey(key);
+            auto msg = InputProtocol::KeyEvent::Create();
+            msg->Key = key;
             if (glfwAction == GLFW_PRESS) {
                 self->keyboard.onKeyDown(key);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->keyboard.onKeyUp(key);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             else {
                 self->keyboard.onKeyRepeat(key);
-                msg->SetRepeat(true);
+                msg->Repeat = true;
             }
             self->notifyHandlers(msg);
         }
@@ -145,8 +145,8 @@ void
 glfwInputMgr::charCallback(GLFWwindow* win, unsigned int unicode) {
     if (nullptr != self) {
         self->keyboard.onChar((wchar_t)unicode);
-        auto msg = InputProtocol::WChar::Create();
-        msg->SetWChar((wchar_t) unicode);
+        auto msg = InputProtocol::WCharEvent::Create();
+        msg->WChar = (wchar_t) unicode;
         self->notifyHandlers(msg);
     }
 }
@@ -163,15 +163,15 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
             default:                        btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
-            auto msg = InputProtocol::MouseButton::Create();
-            msg->SetMouseButton(btn);
+            auto msg = InputProtocol::MouseButtonEvent::Create();
+            msg->MouseButton = btn;
             if (glfwAction == GLFW_PRESS) {
                 self->mouse.onButtonDown(btn);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (glfwAction == GLFW_RELEASE) {
                 self->mouse.onButtonUp(btn);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             self->notifyHandlers(msg);
         }
@@ -184,9 +184,9 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)glfwX, (float32)glfwY);
         self->mouse.onPosMov(pos);
-        auto msg = InputProtocol::MouseMove::Create();
-        msg->SetMovement(self->mouse.Movement);
-        msg->SetPosition(self->mouse.Position);
+        auto msg = InputProtocol::MouseMoveEvent::Create();
+        msg->Movement = self->mouse.Movement;
+        msg->Position = self->mouse.Position;
         self->notifyHandlers(msg);
     }
 }
@@ -197,8 +197,8 @@ glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
         self->mouse.Scroll = scroll;
-        auto msg = InputProtocol::MouseScroll::Create();
-        msg->SetScroll(scroll);
+        auto msg = InputProtocol::MouseScrollEvent::Create();
+        msg->Scroll = scroll;
         self->notifyHandlers(msg);
     }
 }

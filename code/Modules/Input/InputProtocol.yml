@@ -6,58 +6,58 @@ headers:
     - Input/Core/Mouse.h
     - Input/Core/Key.h
 messages:
-    - name: MouseMove
+    - name: MouseMoveEvent
       attrs:
         - { name: Movement, type: 'glm::vec2' }
         - { name: Position, type: 'glm::vec2' }
-    - name: MouseButton
+    - name: MouseButtonEvent
       attrs:
         - { name: MouseButton, type: 'Oryol::Mouse::Button' }
         - { name: Down, type: bool }
         - { name: Up, type: bool }
-    - name: MouseScroll
+    - name: MouseScrollEvent
       attrs:
         - { name: Scroll, type: 'glm::vec2' }
-    - name: Key
+    - name: KeyEvent
       attrs:
         - { name: Key, type: 'Oryol::Key::Code', default: 'Oryol::Key::InvalidKey' }
         - { name: Down, type: bool }
         - { name: Up, type: bool }
         - { name: Repeat, type: bool }
-    - name: WChar
+    - name: WCharEvent
       attrs:
         - { name: WChar, type: wchar_t, default: 0 }
-    - name: TouchTapped
+    - name: TouchTappedEvent
       attrs:
         - { name: Pos, type: 'glm::vec2' }
-    - name: TouchDoubleTapped
+    - name: TouchDoubleTappedEvent
       attrs:
         - { name: Pos, type: 'glm::vec2' }
-    - name: TouchPanningStarted
-      attrs:
-        - { name: Pos, type: 'glm::vec2' }
-        - { name: StartPos, type: 'glm::vec2' }
-    - name: TouchPanning
+    - name: TouchPanningStartedEvent
       attrs:
         - { name: Pos, type: 'glm::vec2' }
         - { name: StartPos, type: 'glm::vec2' }
-    - name: TouchPanningEnded
+    - name: TouchPanningEvent
       attrs:
         - { name: Pos, type: 'glm::vec2' }
         - { name: StartPos, type: 'glm::vec2' }
-    - name: TouchPinchingStarted
+    - name: TouchPanningEndedEvent
+      attrs:
+        - { name: Pos, type: 'glm::vec2' }
+        - { name: StartPos, type: 'glm::vec2' }
+    - name: TouchPinchingStartedEvent
       attrs:
         - { name: Pos0, type: 'glm::vec2' }
         - { name: Pos1, type: 'glm::vec2' }
         - { name: StartPos0, type: 'glm::vec2' }
         - { name: StartPos1, type: 'glm::vec2' }
-    - name: TouchPinching
+    - name: TouchPinchingEvent
       attrs:
         - { name: Pos0, type: 'glm::vec2' }
         - { name: Pos1, type: 'glm::vec2' }
         - { name: StartPos0, type: 'glm::vec2' }
         - { name: StartPos1, type: 'glm::vec2' }
-    - name: TouchPinchingEnded
+    - name: TouchPinchingEndedEvent
       attrs:
         - { name: Pos0, type: 'glm::vec2' }
         - { name: Pos1, type: 'glm::vec2' }

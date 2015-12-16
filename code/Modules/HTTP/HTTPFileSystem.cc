@@ -35,18 +35,18 @@ HTTPFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
     // convert the IO request into a HTTP request and push to HTTPClient
     if (!msg->Cancelled()) {
         Ptr<HTTPProtocol::HTTPRequest> httpReq = HTTPProtocol::HTTPRequest::Create();
-        httpReq->SetMethod(HTTPMethod::Get);
-        httpReq->SetURL(msg->GetURL());
-        httpReq->SetIoRequest(msg);
-        if (msg->GetEndOffset() != 0) {
+        httpReq->Method = HTTPMethod::Get;
+        httpReq->Url = msg->Url;
+        httpReq->IoRequest = msg;
+        if (msg->EndOffset != 0) {
             Map<String,String> reqHeaders = this->requestHeaders;
             // need to add a Range header
-            this->stringBuilder.Format(64, "bytes=%d-%d", msg->GetStartOffset(), msg->GetEndOffset());
+            this->stringBuilder.Format(64, "bytes=%d-%d", msg->StartOffset, msg->EndOffset);
             reqHeaders.Add("Range", this->stringBuilder.GetString());
-            httpReq->SetRequestHeaders(reqHeaders);
+            httpReq->RequestHeaders = reqHeaders;
         }
         else {
-            httpReq->SetRequestHeaders(this->requestHeaders);
+            httpReq->RequestHeaders = this->requestHeaders;
         }
         this->httpClient->Put(httpReq);
     }

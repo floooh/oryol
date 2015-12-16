@@ -23,7 +23,7 @@ public:
         pp::Instance* ppInst = pnaclInstance::Instance();
         this->ppUrlRequestInfo = pp::URLRequestInfo(ppInst);
         this->ppUrlRequestInfo.SetMethod("GET");
-        String urlPath = req->GetURL().PathToEnd();
+        String urlPath = req->Url.PathToEnd();
         this->ppUrlRequestInfo.SetURL(urlPath.AsCStr());
         this->ppUrlLoader = pp::URLLoader(ppInst);
     };
@@ -34,7 +34,7 @@ public:
     }
 
     void readBodyData() {
-        const Ptr<Stream>& responseBody = this->httpRequest->GetResponse()->GetBody();
+        const Ptr<Stream>& responseBody = this->httpRequest->Response->Body;
         if (!responseBody->IsOpen()) {
             responseBody->Open(OpenMode::WriteOnly);
         }
@@ -113,16 +113,16 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
     // create a response object, and a memory stream object which
     // will hold the received data
     auto httpResponse = HTTPProtocol::HTTPResponse::Create();
-    req->httpRequest->SetResponse(httpResponse);
+    req->httpRequest->Response = httpResponse;
     Ptr<MemoryStream> httpResponseBody = MemoryStream::Create();
-    httpResponseBody->SetURL(req->httpRequest->GetURL());
-    httpResponse->SetBody(httpResponseBody);
+    httpResponseBody->SetURL(req->httpRequest->Url);
+    httpResponse->Body = httpResponseBody;
 
     // translate response
     o_assert(!req->ppUrlLoader.is_null());
     o_assert(!req->ppUrlLoader.GetResponseInfo().is_null());
     IOStatus::Code httpStatus = (IOStatus::Code) req->ppUrlLoader.GetResponseInfo().GetStatusCode();
-    httpResponse->SetStatus(httpStatus);
+    httpResponse->Status = httpStatus;
     if (httpStatus == IOStatus::OK) {
         // response header received ok, start loading response body,
         // first get the immediately available data now, and maybe
@@ -132,11 +132,11 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
     else {
         // HTTP error, dump a warning, and cleanup
         Log::Warn("pnaclURLLoader::cbRequestComplete: GET '%s' returned with '%d'\n", 
-            req->httpRequest->GetURL().AsCStr(), httpStatus);
-        auto ioReq = req->httpRequest->GetIoRequest();
+            req->httpRequest->Url.AsCStr(), httpStatus);
+        auto ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
+            auto httpResponse = req->httpRequest->Response;
+            ioReq->Status = httpResponse->Status;
             ioReq->SetHandled();
         }                
         req->httpRequest->SetHandled();
@@ -151,13 +151,13 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     if (PP_OK == result)
     {
         // all data received
-        req->httpRequest->GetResponse()->GetBody()->Close();
-        auto ioReq = req->httpRequest->GetIoRequest();
+        req->httpRequest->Response->Body->Close();
+        auto ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
-            ioReq->SetStream(httpResponse->GetBody());
-            ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+            auto httpResponse = req->httpRequest->Response;
+            ioReq->Status = httpResponse->Status;
+            ioReq->Data = httpResponse->Body;
+            ioReq->ErrorDesc = httpResponse->ErrorDesc;
             ioReq->SetHandled();
         }        
         req->httpRequest->SetHandled();
@@ -167,18 +167,18 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     else if (result > 0)
     {
         // read all available data...
-        req->httpRequest->GetResponse()->GetBody()->Write(req->readBuffer, result);
+        req->httpRequest->Response->Body->Write(req->readBuffer, result);
         req->readBodyData();
     }
     else
     {
         // an error occurred
         Log::Warn("pnaclURLLoader::cbOnRead: Error while reading body data.\n");
-        req->httpRequest->GetResponse()->SetStatus(IOStatus::DownloadError);
-        auto ioReq = req->httpRequest->GetIoRequest();
+        req->httpRequest->Response->Status = IOStatus::DownloadError;
+        auto ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->GetResponse();
-            ioReq->SetStatus(httpResponse->GetStatus());
+            auto httpResponse = req->httpRequest->Response;
+            ioReq->Status = httpResponse->Status;
             ioReq->SetHandled();
         }        
         req->httpRequest->SetHandled();
@@ -189,3 +189,4 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
 
 } // namespace _priv
 } // namespace Oryol
+

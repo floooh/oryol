@@ -41,8 +41,8 @@ TextureLoader::Start() {
     
     // fire IO request to start loading the texture data
     this->ioRequest = IOProtocol::Request::Create();
-    this->ioRequest->SetURL(setup.Locator.Location());
-    this->ioRequest->SetLane(this->ioLane);
+    this->ioRequest->Url = setup.Locator.Location();
+    this->ioRequest->Lane = this->ioLane;
     IO::Put(this->ioRequest);
     
     return this->resId;
@@ -57,10 +57,10 @@ TextureLoader::Continue() {
     ResourceState::Code result = ResourceState::Pending;
     
     if (this->ioRequest->Handled()) {
-        if (this->ioRequest->GetStatus() == IOStatus::OK) {
+        if (IOStatus::OK == this->ioRequest->Status) {
             // yeah, IO is done, let gliml parse the texture data
             // and create the texture resource
-            const Ptr<Stream>& stream = this->ioRequest->GetStream();
+            const Ptr<Stream>& stream = this->ioRequest->Data;
             stream->Open(OpenMode::ReadOnly);
             const uint8* data = stream->MapRead(nullptr);
             const int32 numBytes = stream->Size();

@@ -59,32 +59,32 @@ tbMgr::Setup(const TBUISetup& setup) {
 
     // setup input handler
     this->inputHandler = Dispatcher<InputProtocol>::Create();
-    this->inputHandler->Subscribe<InputProtocol::MouseMove>([this](const Ptr<InputProtocol::MouseMove>& msg) {
-        this->onMouseMove((int)msg->GetPosition().x, (int)msg->GetPosition().y);
+    this->inputHandler->Subscribe<InputProtocol::MouseMoveEvent>([this](const Ptr<InputProtocol::MouseMoveEvent>& msg) {
+        this->onMouseMove((int)msg->Position.x, (int)msg->Position.y);
     });
-    this->inputHandler->Subscribe<InputProtocol::MouseButton>([this](const Ptr<InputProtocol::MouseButton>& msg) {
-        this->onMouseButton(msg->GetMouseButton(), msg->GetDown());
+    this->inputHandler->Subscribe<InputProtocol::MouseButtonEvent>([this](const Ptr<InputProtocol::MouseButtonEvent>& msg) {
+        this->onMouseButton(msg->MouseButton, msg->Down);
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchTapped>([this](const Ptr<InputProtocol::TouchTapped>& msg) {
-        this->onTapped(msg->GetPos());
+    this->inputHandler->Subscribe<InputProtocol::TouchTappedEvent>([this](const Ptr<InputProtocol::TouchTappedEvent>& msg) {
+        this->onTapped(msg->Pos);
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanningStarted>([this](const Ptr<InputProtocol::TouchPanningStarted>& msg) {
-        this->onPanningStarted(msg->GetStartPos());
+    this->inputHandler->Subscribe<InputProtocol::TouchPanningStartedEvent>([this](const Ptr<InputProtocol::TouchPanningStartedEvent>& msg) {
+        this->onPanningStarted(msg->StartPos);
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanning>([this](const Ptr<InputProtocol::TouchPanning>& msg) {
-        this->onPanning(msg->GetPos());
+    this->inputHandler->Subscribe<InputProtocol::TouchPanningEvent>([this](const Ptr<InputProtocol::TouchPanningEvent>& msg) {
+        this->onPanning(msg->Pos);
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanningEnded>([this](const Ptr<InputProtocol::TouchPanningEnded>& msg) {
-        this->onPanningEnded(msg->GetPos());
+    this->inputHandler->Subscribe<InputProtocol::TouchPanningEndedEvent>([this](const Ptr<InputProtocol::TouchPanningEndedEvent>& msg) {
+        this->onPanningEnded(msg->Pos);
     });
-    this->inputHandler->Subscribe<InputProtocol::MouseScroll>([this](const Ptr<InputProtocol::MouseScroll>& msg) {
-        this->onScroll((int)msg->GetScroll().x, (int)-msg->GetScroll().y);
+    this->inputHandler->Subscribe<InputProtocol::MouseScrollEvent>([this](const Ptr<InputProtocol::MouseScrollEvent>& msg) {
+        this->onScroll((int)msg->Scroll.x, (int)-msg->Scroll.y);
     });
-    this->inputHandler->Subscribe<InputProtocol::WChar>([this](const Ptr<InputProtocol::WChar>& msg) {
-        this->onWChar(msg->GetWChar());
+    this->inputHandler->Subscribe<InputProtocol::WCharEvent>([this](const Ptr<InputProtocol::WCharEvent>& msg) {
+        this->onWChar(msg->WChar);
     });
-    this->inputHandler->Subscribe<InputProtocol::Key>([this](const Ptr<InputProtocol::Key>& msg) {
-        this->onKey(msg->GetKey(), msg->GetDown() | msg->GetRepeat(), msg->GetUp());
+    this->inputHandler->Subscribe<InputProtocol::KeyEvent>([this](const Ptr<InputProtocol::KeyEvent>& msg) {
+        this->onKey(msg->Key, msg->Down | msg->Repeat, msg->Up);
     });
     Input::AttachInputHandler(this->inputHandler);
 

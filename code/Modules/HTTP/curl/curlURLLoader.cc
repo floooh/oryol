@@ -131,12 +131,12 @@ curlURLLoader::doWork() {
             this->doOneRequest(req);
 
             // transfer result to embedded IoRequest object
-            auto ioReq = req->GetIoRequest();
+            auto ioReq = req->IoRequest;
             if (ioReq) {
-                auto httpResponse = req->GetResponse();
-                ioReq->SetStatus(httpResponse->GetStatus());
-                ioReq->SetStream(httpResponse->GetBody());
-                ioReq->SetErrorDesc(httpResponse->GetErrorDesc());
+                auto httpResponse = req->Response;
+                ioReq->Status = httpResponse->Status;
+                ioReq->Data = httpResponse->Body;
+                ioReq->ErrorDesc = httpResponse->ErrorDesc;
                 ioReq->SetHandled();
             }
             req->SetHandled();
@@ -153,7 +153,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     this->responseHeaders.Clear();
 
     // set URL in curl
-    const URL& url = req->GetURL();
+    const URL& url = req->Url;
     o_assert(url.Scheme() == "http");
     curl_easy_setopt(this->curlSession, CURLOPT_URL, url.AsCStr());
     if (url.HasPort()) {
@@ -163,15 +163,15 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
     // set the HTTP method
     /// @todo: only HTTP GET and POST supported for now
-    switch (req->GetMethod()) {
+    switch (req->Method) {
         case HTTPMethod::Get:  curl_easy_setopt(this->curlSession, CURLOPT_HTTPGET, 1); break;
         case HTTPMethod::Post: curl_easy_setopt(this->curlSession, CURLOPT_POST, 1); break;
-        default: o_error("curlURLLoader: unsupported HTTP method '%s'\n", HTTPMethod::ToString(req->GetMethod())); break;
+        default: o_error("curlURLLoader: unsupported HTTP method '%s'\n", HTTPMethod::ToString(req->Method)); break;
     }
 
     // setup request header fields
     struct curl_slist* requestHeaders = 0;
-    for (const auto& kvp : req->GetRequestHeaders()) {
+    for (const auto& kvp : req->RequestHeaders) {
         this->stringBuilder.Set(kvp.Key());
         this->stringBuilder.Append(": ");
         this->stringBuilder.Append(kvp.Value());
@@ -179,8 +179,8 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     }
 
     // if this is a POST, set the data to post
-    const Ptr<Stream>& postStream = req->GetBody();
-    if (req->GetMethod() == HTTPMethod::Post) {
+    const Ptr<Stream>& postStream = req->Body;
+    if (req->Method == HTTPMethod::Post) {
         o_assert(postStream.isValid());
         postStream->Open(OpenMode::ReadOnly);
         const uint8* endPtr = nullptr;
@@ -206,7 +206,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     // prepare the HTTPResponse and the response-body stream
     Ptr<HTTPProtocol::HTTPResponse> httpResponse = HTTPProtocol::HTTPResponse::Create();
     Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
-    responseBodyStream->SetURL(req->GetURL());
+    responseBodyStream->SetURL(req->Url);
     responseBodyStream->Open(OpenMode::WriteOnly);
     curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, responseBodyStream.get());
 
@@ -216,20 +216,20 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     // query the http code
     long curlHttpCode = 0;
     curl_easy_getinfo(this->curlSession, CURLINFO_RESPONSE_CODE, &curlHttpCode);
-    httpResponse->SetStatus((IOStatus::Code) curlHttpCode);
+    httpResponse->Status = (IOStatus::Code) curlHttpCode;
 
     // check for error codes
     if (CURLE_PARTIAL_FILE == performResult) {
         // this seems to happen quite often even though all data has been received,
         // not sure what to do about this, but don't treat it as an error
-        Log::Warn("curlURLLoader: CURLE_PARTIAL_FILE received for '%s', httpStatus='%ld'\n", req->GetURL().AsCStr(), curlHttpCode);
-        httpResponse->SetErrorDesc(this->curlError);
+        Log::Warn("curlURLLoader: CURLE_PARTIAL_FILE received for '%s', httpStatus='%ld'\n", req->Url.AsCStr(), curlHttpCode);
+        httpResponse->ErrorDesc = this->curlError;
     }
     else if (0 != performResult) {
         // some other curl error
         Log::Warn("curlURLLoader: curl_easy_peform failed with '%s' for '%s', httpStatus='%ld'\n",
-            req->GetURL().AsCStr(), this->curlError, curlHttpCode);
-        httpResponse->SetErrorDesc(this->curlError);
+            req->Url.AsCStr(), this->curlError, curlHttpCode);
+        httpResponse->ErrorDesc = this->curlError;
     }
 
     // check if the responseHeaders contained a Content-Type, if yes, set it on the responseBodyStream
@@ -239,9 +239,9 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
     // close the responseBodyStream, and set the result
     responseBodyStream->Close();
-    httpResponse->SetResponseHeaders(this->responseHeaders);
-    httpResponse->SetBody(responseBodyStream);
-    req->SetResponse(httpResponse);
+    httpResponse->ResponseHeaders = this->responseHeaders;
+    httpResponse->Body = responseBodyStream;
+    req->Response = httpResponse;
 
     // close the optional body stream
     if (postStream.isValid() && postStream->IsOpen()) {

@@ -77,11 +77,11 @@ void
 ioLane::onRequest(const Ptr<IOProtocol::Request>& msg) {
     if (msg->Cancelled()) {
         // message has been cancelled, don't waste time with it
-        msg->SetStatus(IOStatus::Cancelled);
+        msg->Status = IOStatus::Cancelled;
         msg->SetHandled();
     }
     else {
-        Ptr<FileSystem> fs = this->fileSystemForURL(msg->GetURL());
+        Ptr<FileSystem> fs = this->fileSystemForURL(msg->Url);
         if (fs) {
             fs->onRequest(msg);
         }
@@ -91,7 +91,7 @@ ioLane::onRequest(const Ptr<IOProtocol::Request>& msg) {
 //------------------------------------------------------------------------------
 void
 ioLane::onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& msg) {
-    const StringAtom& urlScheme = msg->GetScheme();
+    const StringAtom& urlScheme = msg->Scheme;
     o_assert(!this->fileSystems.Contains(urlScheme));
     Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
     this->fileSystems.Add(urlScheme, newFileSystem);
@@ -100,7 +100,7 @@ ioLane::onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& ms
 //------------------------------------------------------------------------------
 void
 ioLane::onNotifyFileSystemReplaced(const Ptr<IOProtocol::notifyFileSystemReplaced>& msg) {
-    const StringAtom& urlScheme = msg->GetScheme();
+    const StringAtom& urlScheme = msg->Scheme;
     o_assert(this->fileSystems.Contains(urlScheme));
     Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
     this->fileSystems[urlScheme] = newFileSystem;
@@ -109,7 +109,7 @@ ioLane::onNotifyFileSystemReplaced(const Ptr<IOProtocol::notifyFileSystemReplace
 //------------------------------------------------------------------------------
 void
 ioLane::onNotifyFileSystemRemoved(const Ptr<IOProtocol::notifyFileSystemRemoved>& msg) {
-    const StringAtom& urlScheme = msg->GetScheme();
+    const StringAtom& urlScheme = msg->Scheme;
     o_assert(this->fileSystems.Contains(urlScheme));
     this->fileSystems.Erase(urlScheme);
 }

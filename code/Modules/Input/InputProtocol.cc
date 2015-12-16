@@ -1,37 +1,37 @@
 //-----------------------------------------------------------------------------
-// #version:12# machine generated, do not edit!
+// #version:14# machine generated, do not edit!
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "InputProtocol.h"
 
 namespace Oryol {
-OryolClassImpl(InputProtocol::MouseMove);
-OryolClassImpl(InputProtocol::MouseButton);
-OryolClassImpl(InputProtocol::MouseScroll);
-OryolClassImpl(InputProtocol::Key);
-OryolClassImpl(InputProtocol::WChar);
-OryolClassImpl(InputProtocol::TouchTapped);
-OryolClassImpl(InputProtocol::TouchDoubleTapped);
-OryolClassImpl(InputProtocol::TouchPanningStarted);
-OryolClassImpl(InputProtocol::TouchPanning);
-OryolClassImpl(InputProtocol::TouchPanningEnded);
-OryolClassImpl(InputProtocol::TouchPinchingStarted);
-OryolClassImpl(InputProtocol::TouchPinching);
-OryolClassImpl(InputProtocol::TouchPinchingEnded);
+OryolClassImpl(InputProtocol::MouseMoveEvent);
+OryolClassImpl(InputProtocol::MouseButtonEvent);
+OryolClassImpl(InputProtocol::MouseScrollEvent);
+OryolClassImpl(InputProtocol::KeyEvent);
+OryolClassImpl(InputProtocol::WCharEvent);
+OryolClassImpl(InputProtocol::TouchTappedEvent);
+OryolClassImpl(InputProtocol::TouchDoubleTappedEvent);
+OryolClassImpl(InputProtocol::TouchPanningStartedEvent);
+OryolClassImpl(InputProtocol::TouchPanningEvent);
+OryolClassImpl(InputProtocol::TouchPanningEndedEvent);
+OryolClassImpl(InputProtocol::TouchPinchingStartedEvent);
+OryolClassImpl(InputProtocol::TouchPinchingEvent);
+OryolClassImpl(InputProtocol::TouchPinchingEndedEvent);
 InputProtocol::CreateCallback InputProtocol::jumpTable[InputProtocol::MessageId::NumMessageIds] = { 
-    &InputProtocol::MouseMove::FactoryCreate,
-    &InputProtocol::MouseButton::FactoryCreate,
-    &InputProtocol::MouseScroll::FactoryCreate,
-    &InputProtocol::Key::FactoryCreate,
-    &InputProtocol::WChar::FactoryCreate,
-    &InputProtocol::TouchTapped::FactoryCreate,
-    &InputProtocol::TouchDoubleTapped::FactoryCreate,
-    &InputProtocol::TouchPanningStarted::FactoryCreate,
-    &InputProtocol::TouchPanning::FactoryCreate,
-    &InputProtocol::TouchPanningEnded::FactoryCreate,
-    &InputProtocol::TouchPinchingStarted::FactoryCreate,
-    &InputProtocol::TouchPinching::FactoryCreate,
-    &InputProtocol::TouchPinchingEnded::FactoryCreate,
+    &InputProtocol::MouseMoveEvent::FactoryCreate,
+    &InputProtocol::MouseButtonEvent::FactoryCreate,
+    &InputProtocol::MouseScrollEvent::FactoryCreate,
+    &InputProtocol::KeyEvent::FactoryCreate,
+    &InputProtocol::WCharEvent::FactoryCreate,
+    &InputProtocol::TouchTappedEvent::FactoryCreate,
+    &InputProtocol::TouchDoubleTappedEvent::FactoryCreate,
+    &InputProtocol::TouchPanningStartedEvent::FactoryCreate,
+    &InputProtocol::TouchPanningEvent::FactoryCreate,
+    &InputProtocol::TouchPanningEndedEvent::FactoryCreate,
+    &InputProtocol::TouchPinchingStartedEvent::FactoryCreate,
+    &InputProtocol::TouchPinchingEvent::FactoryCreate,
+    &InputProtocol::TouchPinchingEndedEvent::FactoryCreate,
 };
 Ptr<Message>
 InputProtocol::Factory::Create(MessageIdType id) {

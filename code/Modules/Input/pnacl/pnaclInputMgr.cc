@@ -101,9 +101,9 @@ pnaclInputMgr::onMouseDown(const pp::MouseInputEvent& ie) {
     if (Mouse::InvalidButton != btn) {
         this->mouse.onButtonDown(btn);
 
-        auto msg = InputProtocol::MouseButton::Create();
-        msg->SetMouseButton(btn);
-        msg->SetDown(true);
+        auto msg = InputProtocol::MouseButtonEvent::Create();
+        msg->MouseButton = btn;
+        msg->Down = true;
         this->notifyHandlers(msg);
 
         return true;
@@ -118,9 +118,9 @@ pnaclInputMgr::onMouseUp(const pp::MouseInputEvent& ie) {
     if (Mouse::InvalidButton != btn) {
         this->mouse.onButtonUp(btn);
         
-        auto msg = InputProtocol::MouseButton::Create();
-        msg->SetMouseButton(btn);
-        msg->SetUp(true);
+        auto msg = InputProtocol::MouseButtonEvent::Create();
+        msg->MouseButton = btn;
+        msg->Up = true;
         this->notifyHandlers(msg);
         
         return true;
@@ -136,9 +136,9 @@ pnaclInputMgr::onMouseMove(const pp::MouseInputEvent& ie) {
     this->mouse.Position = glm::vec2(pos.x(), pos.y());
     this->mouse.Movement = glm::vec2(mov.x(), mov.y());
     
-    auto msg = InputProtocol::MouseMove::Create();
-    msg->SetMovement(this->mouse.Movement);
-    msg->SetPosition(this->mouse.Position);
+    auto msg = InputProtocol::MouseMoveEvent::Create();
+    msg->Movement = this->mouse.Movement;
+    msg->Position = this->mouse.Position;
     this->notifyHandlers(msg);
     
     return true;
@@ -164,8 +164,8 @@ pnaclInputMgr::onWheel(const pp::WheelInputEvent& ie) {
     const pp::FloatPoint pos = ie.GetDelta();
     this->mouse.Scroll = glm::vec2(pos.x(), pos.y()); 
     
-    auto msg = InputProtocol::MouseScroll::Create();
-    msg->SetScroll(this->mouse.Scroll);
+    auto msg = InputProtocol::MouseScrollEvent::Create();
+    msg->Scroll = this->mouse.Scroll;
     this->notifyHandlers(msg);
     
     return true;
@@ -178,9 +178,9 @@ pnaclInputMgr::onKeyDown(const pp::KeyboardInputEvent& ie) {
     if (Key::InvalidKey != key) {
         this->keyboard.onKeyDown(key);
 
-        auto msg = InputProtocol::Key::Create();
-        msg->SetKey(key);
-        msg->SetDown(true);
+        auto msg = InputProtocol::KeyEvent::Create();
+        msg->Key = key;
+        msg->Down = true;
         this->notifyHandlers(msg);
 
         return true;
@@ -196,9 +196,9 @@ pnaclInputMgr::onKeyUp(const pp::KeyboardInputEvent& ie) {
     if (Key::InvalidKey != key) {
         this->keyboard.onKeyUp(key);
 
-        auto msg = InputProtocol::Key::Create();
-        msg->SetKey(key);
-        msg->SetUp(true);
+        auto msg = InputProtocol::KeyEvent::Create();
+        msg->Key = key;
+        msg->Up = true;
         this->notifyHandlers(msg);
 
         return true;
@@ -216,8 +216,8 @@ pnaclInputMgr::onChar(const pp::KeyboardInputEvent& ie) {
         const unsigned char* src = (const unsigned char*) str.c_str();
         const int32 wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
         if (wlen > 0) {
-            auto msg = InputProtocol::WChar::Create();
-            msg->SetWChar(wide[0]);
+            auto msg = InputProtocol::WCharEvent::Create();
+            msg->WChar = wide[0];
             this->notifyHandlers(msg);
         }
     }

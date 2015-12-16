@@ -28,8 +28,8 @@ public:
         stream->Write(payload, sizeof(payload));
         stream->Close();
         
-        msg->SetStream(stream);
-        msg->SetStatus(IOStatus::OK);
+        msg->Data = stream;
+        msg->Status = IOStatus::OK;
         msg->SetHandled();
     };
 };
@@ -59,9 +59,9 @@ TEST(IOFacadeTest) {
     CHECK(numRequestsHandled == 1);
     
     // check the msg result
-    CHECK(msg->GetStream().isValid());
-    CHECK(msg->GetStatus() == IOStatus::OK);
-    const Ptr<Stream>& stream = msg->GetStream();
+    CHECK(msg->Data.isValid());
+    CHECK(msg->Status == IOStatus::OK);
+    const Ptr<Stream>& stream = msg->Data;
     stream->Open(OpenMode::ReadOnly);
     CHECK(stream->Size() == 4);
     const uint8* payload = stream->MapRead(nullptr);

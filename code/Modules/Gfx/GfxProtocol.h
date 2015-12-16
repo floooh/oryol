@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:12#
+/* #version:14#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -59,7 +59,6 @@ public:
             if (protId == 'GXPT') return true;
             else return Message::IsMemberOf(protId);
         };
-private:
     };
     class DisplayDiscarded : public Message {
         OryolClassDecl(DisplayDiscarded);
@@ -78,7 +77,6 @@ private:
             if (protId == 'GXPT') return true;
             else return Message::IsMemberOf(protId);
         };
-private:
     };
     class DisplayModified : public Message {
         OryolClassDecl(DisplayModified);
@@ -97,7 +95,6 @@ private:
             if (protId == 'GXPT') return true;
             else return Message::IsMemberOf(protId);
         };
-private:
     };
 };
 }

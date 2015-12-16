@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:12#
+/* #version:14#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -52,7 +52,7 @@ public:
     public:
         HTTPResponse() {
             this->msgId = MessageId::HTTPResponseId;
-            this->status = IOStatus::InvalidIOStatus;
+            this->Status = IOStatus::InvalidIOStatus;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -64,35 +64,10 @@ public:
             if (protId == 'HTPR') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetStatus(const IOStatus::Code& val) {
-            this->status = val;
-        };
-        const IOStatus::Code& GetStatus() const {
-            return this->status;
-        };
-        void SetResponseHeaders(const Map<String,String>& val) {
-            this->responseheaders = val;
-        };
-        const Map<String,String>& GetResponseHeaders() const {
-            return this->responseheaders;
-        };
-        void SetBody(const Ptr<Stream>& val) {
-            this->body = val;
-        };
-        const Ptr<Stream>& GetBody() const {
-            return this->body;
-        };
-        void SetErrorDesc(const String& val) {
-            this->errordesc = val;
-        };
-        const String& GetErrorDesc() const {
-            return this->errordesc;
-        };
-private:
-        IOStatus::Code status;
-        Map<String,String> responseheaders;
-        Ptr<Stream> body;
-        String errordesc;
+        IOStatus::Code Status;
+        Map<String,String> ResponseHeaders;
+        Ptr<Stream> Body;
+        String ErrorDesc;
     };
     class HTTPRequest : public Message {
         OryolClassDecl(HTTPRequest);
@@ -100,7 +75,7 @@ private:
     public:
         HTTPRequest() {
             this->msgId = MessageId::HTTPRequestId;
-            this->method = HTTPMethod::Get;
+            this->Method = HTTPMethod::Get;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -112,49 +87,12 @@ private:
             if (protId == 'HTPR') return true;
             else return Message::IsMemberOf(protId);
         };
-        void SetMethod(const HTTPMethod::Code& val) {
-            this->method = val;
-        };
-        const HTTPMethod::Code& GetMethod() const {
-            return this->method;
-        };
-        void SetURL(const URL& val) {
-            this->url = val;
-        };
-        const URL& GetURL() const {
-            return this->url;
-        };
-        void SetRequestHeaders(const Map<String,String>& val) {
-            this->requestheaders = val;
-        };
-        const Map<String,String>& GetRequestHeaders() const {
-            return this->requestheaders;
-        };
-        void SetBody(const Ptr<Stream>& val) {
-            this->body = val;
-        };
-        const Ptr<Stream>& GetBody() const {
-            return this->body;
-        };
-        void SetIoRequest(const Ptr<IOProtocol::Request>& val) {
-            this->iorequest = val;
-        };
-        const Ptr<IOProtocol::Request>& GetIoRequest() const {
-            return this->iorequest;
-        };
-        void SetResponse(const Ptr<HTTPProtocol::HTTPResponse>& val) {
-            this->response = val;
-        };
-        const Ptr<HTTPProtocol::HTTPResponse>& GetResponse() const {
-            return this->response;
-        };
-private:
-        HTTPMethod::Code method;
-        URL url;
-        Map<String,String> requestheaders;
-        Ptr<Stream> body;
-        Ptr<IOProtocol::Request> iorequest;
-        Ptr<HTTPProtocol::HTTPResponse> response;
+        HTTPMethod::Code Method;
+        URL Url;
+        Map<String,String> RequestHeaders;
+        Ptr<Stream> Body;
+        Ptr<IOProtocol::Request> IoRequest;
+        Ptr<HTTPProtocol::HTTPResponse> Response;
     };
 };
 }

@@ -1,6 +1,6 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:12#
+/* #version:14#
     machine generated, do not edit!
 */
 #include <cstring>
@@ -42,7 +42,7 @@ public:
     public:
         TestMsgEx() {
             this->msgId = MessageId::TestMsgExId;
-            this->exval2 = 0;
+            this->ExVal2 = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -54,14 +54,7 @@ public:
             if (protId == 'TSP2') return true;
             else return TestProtocol::TestMsg1::IsMemberOf(protId);
         };
-        void SetExVal2(int8 val) {
-            this->exval2 = val;
-        };
-        int8 GetExVal2() const {
-            return this->exval2;
-        };
-private:
-        int8 exval2;
+        int8 ExVal2;
     };
 };
 }

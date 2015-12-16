@@ -32,7 +32,7 @@ HTTPClientApp::OnInit() {
     // host is currently ignored (everything must be loaded from
     // from the domain the app is running on)
     this->req = HTTPProtocol::HTTPRequest::Create();
-    this->req->SetURL(ORYOL_SAMPLE_URL "/httptest.txt");
+    this->req->Url = ORYOL_SAMPLE_URL "/httptest.txt";
     this->httpClient->Put(this->req);
 
     return AppState::Running;
@@ -46,16 +46,16 @@ HTTPClientApp::OnRunning() {
 
     // check the pending request status
     if (this->req && this->req->Handled()) {
-        if (this->req->GetResponse()->GetStatus() == IOStatus::OK) {
-            Log::Info("SUCCESS FOR '%s'\n", this->req->GetURL().AsCStr());
-            const Ptr<Stream>& data = this->req->GetResponse()->GetBody();
+        if (this->req->Response->Status == IOStatus::OK) {
+            Log::Info("SUCCESS FOR '%s'\n", this->req->Url.AsCStr());
+            const Ptr<Stream>& data = this->req->Response->Body;
             data->Open(OpenMode::ReadOnly);
             String content((const char*)data->MapRead(nullptr), 0, data->Size());
             Log::Info("BODY: %s\n", content.AsCStr());
             data->Close();
         }
         else {
-            Log::Info("FAIL FOR '%s'\n", this->req->GetURL().AsCStr());
+            Log::Info("FAIL FOR '%s'\n", this->req->Url.AsCStr());
         }
         this->req = nullptr;
     }

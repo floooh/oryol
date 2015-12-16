@@ -27,7 +27,7 @@ messages:
       - name: Method
         type: 'HTTPMethod::Code'
         default: 'HTTPMethod::Get'
-      - name: URL
+      - name: Url
         type: URL
       - name: RequestHeaders
         type: Map<String,String>

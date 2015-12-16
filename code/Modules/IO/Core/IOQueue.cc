@@ -62,7 +62,7 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
 
     // create IO request and push into IO facade
     Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
-    ioReq->SetURL(url);
+    ioReq->Url = url;
     IO::Put(ioReq);
     
     // add to our queue if pending requests
@@ -78,7 +78,7 @@ IOQueue::AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc o
     item.ioRequests.Reserve(urls.Size());
     for (const URL& url : urls) {
         Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
-        ioReq->SetURL(url);
+        ioReq->Url = url;
         IO::Put(ioReq);
         item.ioRequests.Add(ioReq);
         item.successFunc = onSuccess;
@@ -100,20 +100,19 @@ IOQueue::update() {
         const auto& ioReq = curItem.ioRequest;
         if (ioReq->Handled()) {
             // io request has been handled
-            if (IOStatus::OK == ioReq->GetStatus()) {
+            if (IOStatus::OK == ioReq->Status) {
                 // io request was successful
-                curItem.successFunc(ioReq->GetStream());
+                curItem.successFunc(ioReq->Data);
             }
             else {
                 // io request failed
                 if (curItem.failFunc) {
-                    curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
+                    curItem.failFunc(ioReq->Url, ioReq->Status);
                 }
                 else {
                     // no fail handler was set, just print a warning
                     o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
-                        ioReq->GetURL().AsCStr(),
-                        IOStatus::ToString(ioReq->GetStatus()));
+                        ioReq->Url.AsCStr(), IOStatus::ToString(ioReq->Status));
                 }
             }
             // remove the handled io request from the queue
@@ -128,15 +127,14 @@ IOQueue::update() {
         bool anyFailed = false;
         for (const auto& ioReq : curItem.ioRequests) {
             if (ioReq->Handled()) {
-                if (IOStatus::OK != ioReq->GetStatus()) {
+                if (IOStatus::OK != ioReq->Status) {
                     anyFailed = true;
                     if (curItem.failFunc) {
-                        curItem.failFunc(ioReq->GetURL(), ioReq->GetStatus());
+                        curItem.failFunc(ioReq->Url, ioReq->Status);
                     }
                     else {
                         o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
-                            ioReq->GetURL().AsCStr(),
-                            IOStatus::ToString(ioReq->GetStatus()));
+                            ioReq->Url.AsCStr(), IOStatus::ToString(ioReq->Status));
                     }
                 }
             }
@@ -153,7 +151,7 @@ IOQueue::update() {
                 Array<Ptr<Stream>> result;
                 result.Reserve(curItem.ioRequests.Size());
                 for (const auto& ioReq : curItem.ioRequests) {
-                    result.Add(ioReq->GetStream());
+                    result.Add(ioReq->Data);
                 }
                 curItem.successFunc(result);
             }

@@ -14,10 +14,10 @@ using namespace Oryol;
 static int32 val = 0;
 static void GlobalHandler(const Ptr<TestProtocol::TestMsg1>& msg) {
     CHECK(msg->MessageId() == TestProtocol::MessageId::TestMsg1Id);
-    CHECK(msg->GetInt8Val() == 8);
-    CHECK(msg->GetInt16Val() == 16);
-    CHECK(msg->GetInt32Val() == 32);
-    CHECK(msg->GetInt64Val() == 64);
+    CHECK(msg->Int8Val == 8);
+    CHECK(msg->Int16Val == 16);
+    CHECK(msg->Int32Val == 32);
+    CHECK(msg->Int64Val == 64);
     val++;
 }
 
@@ -26,8 +26,8 @@ class HandlerClass {
 public:
     void Handle(const Ptr<TestProtocol::TestMsg2>& msg) {
         CHECK(msg->MessageId() == TestProtocol::MessageId::TestMsg2Id);
-        CHECK(msg->GetUInt16Val() == 16);
-        CHECK(msg->GetStringVal() == "BLA");
+        CHECK(msg->UInt16Val == 16);
+        CHECK(msg->StringVal == "BLA");
         this->val++;
     };
     
@@ -55,16 +55,16 @@ TEST(DispatcherTest) {
     
     // send a few messages
     Ptr<TestProtocol::TestMsg1> msg0 = TestProtocol::TestMsg1::Create();
-    msg0->SetInt8Val(8);
-    msg0->SetInt16Val(16);
-    msg0->SetInt32Val(32);
-    msg0->SetInt64Val(64);
+    msg0->Int8Val = 8;
+    msg0->Int16Val = 16;
+    msg0->Int32Val = 32;
+    msg0->Int64Val = 64;
     sink->Put(msg0);
     CHECK(val == 1);
     
     Ptr<TestProtocol::TestMsg2> msg1 = TestProtocol::TestMsg2::Create();
-    msg1->SetUInt16Val(16);
-    msg1->SetStringVal("BLA");
+    msg1->UInt16Val = 16;
+    msg1->StringVal = "BLA";
     sink->Put(msg1);
     CHECK(handlerObj.val == 1);
 

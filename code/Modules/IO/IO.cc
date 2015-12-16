@@ -97,13 +97,13 @@ IO::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()
     if (newFileSystem) {
         // notify IO threads that a filesystem was added
         Ptr<IOProtocol::notifyFileSystemAdded> msg = IOProtocol::notifyFileSystemAdded::Create();
-        msg->SetScheme(scheme);
+        msg->Scheme = scheme;
         state->requestRouter->Put(msg);
     }
     else {
         // notify IO threads that a filesystem was replaced
         Ptr<IOProtocol::notifyFileSystemReplaced> msg = IOProtocol::notifyFileSystemReplaced::Create();
-        msg->SetScheme(scheme);
+        msg->Scheme = scheme;
         state->requestRouter->Put(msg);
     }
 }
@@ -127,8 +127,8 @@ Ptr<IOProtocol::Request>
 IO::LoadFile(const URL& url, int32 ioLane) {
     o_assert_dbg(IsValid());
     Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
-    ioReq->SetURL(url);
-    ioReq->SetLane(ioLane);
+    ioReq->Url = url;
+    ioReq->Lane = ioLane;
     state->requestRouter->Put(ioReq);
     return ioReq;
 }

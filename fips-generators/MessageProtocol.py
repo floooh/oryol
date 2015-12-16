@@ -7,7 +7,7 @@ import sys
 import yaml
 import genutil as util
 
-Version = 12 
+Version = 14 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -194,7 +194,7 @@ def writeMessageClasses(f, desc) :
         f.write('        ' + msgClassName + '() {\n')
         f.write('            this->msgId = MessageId::' + msgClassName + 'Id;\n')
         for attr in msg.get('attrs', []) :
-            attrName = attr['name'].lower()
+            attrName = attr['name']
             defValue = getAttrDefaultValue(attr)
             if defValue :
                 f.write('            this->' + attrName + ' = ' + defValue + ';\n')
@@ -216,21 +216,9 @@ def writeMessageClasses(f, desc) :
         f.write('            else return ' + msgParentClassName + '::IsMemberOf(protId);\n')
         f.write('        };\n') 
 
-        # write setters/getters
+        # write members
         for attr in msg.get('attrs', []) :
             attrName = attr['name']
-            attrType = attr['type']
-            f.write('        void Set' + attrName + '(' + getRefType(attrType) + ' val) {\n')
-            f.write('            this->' + attrName.lower() + ' = val;\n')
-            f.write('        };\n')
-            f.write('        ' + getRefType(attrType) + ' Get' + attrName + '() const {\n')
-            f.write('            return this->' + attrName.lower() + ';\n')
-            f.write('        };\n')
-
-        # write members
-        f.write('private:\n')
-        for attr in msg.get('attrs', []) :
-            attrName = attr['name'].lower()
             attrType = attr['type']
             f.write('        ' + getValueType(attrType) + ' ' + attrName + ';\n')
         f.write('    };\n')
