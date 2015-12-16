@@ -28,6 +28,7 @@ fips_begin_module(Core)
     fips_files(
         Array.h
         ArrayMap.h
+        Buffer.h
         HashSet.h
         KeyValuePair.h
         Map.h
@@ -111,6 +112,7 @@ fips_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
+        BufferTest.cc
         ArgsTest.cc
         ArrayTest.cc
         StaticArrayTest.cc
