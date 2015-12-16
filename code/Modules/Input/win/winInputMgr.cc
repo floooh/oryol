@@ -108,19 +108,19 @@ winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*w
     if (nullptr != self) {
         Key::Code key = self->mapKey(winKey);
         if (Key::InvalidKey != key) {
-            auto msg = InputProtocol::Key::Create();
-            msg->SetKey(key);
+            auto msg = InputProtocol::KeyEvent::Create();
+            msg->Key = key;
             if (winAction == ORYOL_WIN_PRESS) {
                 self->keyboard.onKeyDown(key);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
                 self->keyboard.onKeyUp(key);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             else {
                 self->keyboard.onKeyRepeat(key);
-                msg->SetRepeat(true);
+                msg->Repeat = true;
             }
             self->notifyHandlers(msg);
         }
@@ -132,8 +132,8 @@ void
 winInputMgr::charCallback(unsigned int unicode) {
     if (nullptr != self) {
         self->keyboard.onChar((wchar_t)unicode);
-        auto msg = InputProtocol::WChar::Create();
-        msg->SetWChar((wchar_t)unicode);
+        auto msg = InputProtocol::WCharEvent::Create();
+        msg->WChar = (wchar_t)unicode;
         self->notifyHandlers(msg);
     }
 }
@@ -150,15 +150,15 @@ winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
             default:                               btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
-            auto msg = InputProtocol::MouseButton::Create();
-            msg->SetMouseButton(btn);
+            auto msg = InputProtocol::MouseButtonEvent::Create();
+            msg->MouseButton = btn;
             if (winAction == ORYOL_WIN_PRESS) {
                 self->mouse.onButtonDown(btn);
-                msg->SetDown(true);
+                msg->Down = true;
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
                 self->mouse.onButtonUp(btn);
-                msg->SetUp(true);
+                msg->Up = true;
             }
             self->notifyHandlers(msg);
         }
@@ -171,9 +171,9 @@ winInputMgr::cursorPosCallback(double winX, double winY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)winX, (float32)winY);
         self->mouse.onPosMov(pos);
-        auto msg = InputProtocol::MouseMove::Create();
-        msg->SetMovement(self->mouse.Movement);
-        msg->SetPosition(self->mouse.Position);
+        auto msg = InputProtocol::MouseMoveEvent::Create();
+        msg->Movement = self->mouse.Movement;
+        msg->Position = self->mouse.Position;
         self->notifyHandlers(msg);
     }
 }
@@ -184,8 +184,8 @@ winInputMgr::scrollCallback(double winX, double winY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)winX, (float32)winY);
         self->mouse.Scroll = scroll;
-        auto msg = InputProtocol::MouseScroll::Create();
-        msg->SetScroll(scroll);
+        auto msg = InputProtocol::MouseScrollEvent::Create();
+        msg->Scroll = scroll;
         self->notifyHandlers(msg);
     }
 }
