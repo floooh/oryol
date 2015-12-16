@@ -49,25 +49,4 @@ Message::Cancelled() const {
     return this->cancelled;
 }
 
-//------------------------------------------------------------------------------
-int32
-Message::EncodedSize() const {
-    /// @todo: this should include some sort of header information
-    return 0;
-}
-
-//------------------------------------------------------------------------------
-uint8*
-Message::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {
-    // @todo: this should write a header with the MessageId
-    return dstPtr;
-}
-
-//------------------------------------------------------------------------------
-const uint8*
-Message::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {
-    /// @todo: this should decode the header
-    return srcPtr;
-}
-    
 } // namespace Oryol

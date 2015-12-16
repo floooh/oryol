@@ -10,7 +10,6 @@ fips_begin_module(Messaging)
         Message.cc Message.h
         Port.cc Port.h
         Protocol.h
-        Serializer.h
         ThreadedQueue.cc ThreadedQueue.h
         Types.h
     )
@@ -23,7 +22,6 @@ fips_begin_unittest(Messaging)
     fips_files(
         AsyncQueueTest.cc
         DispatcherTest.cc
-        SerializerTest.cc
         ThreadedQueueTest.cc
     )
     fips_generate(FROM TestProtocol.yml TYPE MessageProtocol SOURCE TestProtocol.cc HEADER TestProtocol.h)

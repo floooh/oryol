@@ -37,13 +37,6 @@ public:
     /// return true if the message is in cancelled state
     bool Cancelled() const;
     
-    /// get the encoded size of the message
-    virtual int32 EncodedSize() const;
-    /// encode the message to raw memory, maxBytes must be at least EncodedSize()
-    virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const;
-    /// decode the message from raw memory
-    virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr);
-
 protected:
     MessageIdType msgId;
     #if ORYOL_HAS_ATOMIC

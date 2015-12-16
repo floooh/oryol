@@ -6,8 +6,6 @@
 #include "IO/IO.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "IO/Stream/BinaryStreamReader.h"
-#include "IO/Stream/BinaryStreamWriter.h"
 #include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
@@ -24,10 +22,10 @@ public:
         numRequestsHandled++;
         
         // create a stream object, and just write the URL from the msg to it
+        static const uint8 payload[] = {'A', 'B', 'C', 'D'};
         Ptr<MemoryStream> stream = MemoryStream::Create();
         stream->Open(OpenMode::WriteOnly);
-        Ptr<BinaryStreamWriter> writer = BinaryStreamWriter::Create(stream);
-        writer->Write(msg->GetURL().Get());
+        stream->Write(payload, sizeof(payload));
         stream->Close();
         
         msg->SetStream(stream);
@@ -65,11 +63,13 @@ TEST(IOFacadeTest) {
     CHECK(msg->GetStatus() == IOStatus::OK);
     const Ptr<Stream>& stream = msg->GetStream();
     stream->Open(OpenMode::ReadOnly);
-    Ptr<BinaryStreamReader> reader = BinaryStreamReader::Create(stream);
-    StringAtom str;
-    CHECK(reader->Read(str));
+    CHECK(stream->Size() == 4);
+    const uint8* payload = stream->MapRead(nullptr);
+    CHECK(payload[0] == 'A');
+    CHECK(payload[1] == 'B');
+    CHECK(payload[2] == 'C');
+    CHECK(payload[3] == 'D');
     stream->Close();
-    CHECK(str == msg->GetURL().Get());
     
     // FIXME: dynamically add/remove/replace filesystems, ...
     

@@ -1,11 +1,10 @@
 #pragma once
 //-----------------------------------------------------------------------------
-/* #version:11#
+/* #version:12#
     machine generated, do not edit!
 */
 #include <cstring>
 #include "Messaging/Message.h"
-#include "Messaging/Serializer.h"
 #include "Messaging/Protocol.h"
 #include "IO/Core/URL.h"
 #include "HTTP/HTTPMethod.h"

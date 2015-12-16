@@ -7,7 +7,7 @@ import sys
 import yaml
 import genutil as util
 
-Version = 11 
+Version = 12 
     
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, desc) :
@@ -27,7 +27,6 @@ def writeIncludes(f, desc) :
         Write include statements in the generated C++ header.
     '''
     f.write('#include "Messaging/Message.h"\n')
-    f.write('#include "Messaging/Serializer.h"\n')
     parentHdr = desc.get('parentProtocolHeader', 'Messaging/Protocol.h')
     f.write('#include "{}"\n'.format(parentHdr))
 
@@ -217,12 +216,6 @@ def writeMessageClasses(f, desc) :
         f.write('            else return ' + msgParentClassName + '::IsMemberOf(protId);\n')
         f.write('        };\n') 
 
-        # write serializer methods
-        if msg.get('serialize', False) :
-            f.write('        virtual int32 EncodedSize() const override;\n')
-            f.write('        virtual uint8* Encode(uint8* dstPtr, const uint8* maxValidPtr) const override;\n')
-            f.write('        virtual const uint8* Decode(const uint8* srcPtr, const uint8* maxValidPtr) override;\n')
-
         # write setters/getters
         for attr in msg.get('attrs', []) :
             attrName = attr['name']
@@ -241,61 +234,6 @@ def writeMessageClasses(f, desc) :
             attrType = attr['type']
             f.write('        ' + getValueType(attrType) + ' ' + attrName + ';\n')
         f.write('    };\n')
-
-#-------------------------------------------------------------------------------
-def writeSerializeMethods(f, desc) :
-    '''
-    Writes the serializer methods of the message to the source file.
-    '''
-    for msg in desc['messages'] : 
-        if msg.get('serialize', False) :   
-            protocol = desc['name']
-            msgClassName = msg['name']
-            msgParentClassName = msg.get('parent', 'Message')
-
-            # EncodedSize()
-            f.write('int32 ' + protocol + '::' + msgClassName + '::EncodedSize() const {\n')
-            f.write('    int32 s = ' + msgParentClassName + '::EncodedSize();\n')
-            for attr in msg.get('attrs', []) :
-                attrName = attr['name'].lower()
-                attrType = attr['type']
-                if isArrayType(attrType) :
-                    elmType = getArrayType(attrType)                
-                    f.write('    s += Serializer::EncodedArraySize<' + elmType + '>(this->' + attrName + ');\n')
-                else :
-                    f.write('    s += Serializer::EncodedSize<' + attrType + '>(this->' + attrName + ');\n')                
-            f.write('    return s;\n')
-            f.write('}\n')
-
-            # Encode
-            # FIXME: I think we need to diffentiate between "send" and "receive" attributes!
-            # ... so: EncodeSend/DecodeSend, EncodeReceive/DecodeReceive
-            f.write('uint8* ' + protocol + '::' + msgClassName + '::Encode(uint8* dstPtr, const uint8* maxValidPtr) const {\n')
-            f.write('    dstPtr = ' + msgParentClassName + '::Encode(dstPtr, maxValidPtr);\n')
-            for attr in msg.get('attrs', []) :
-                attrName = attr['name'].lower()
-                attrType = attr['type']
-                if isArrayType(attrType) :
-                    elmType = getArrayType(attrType)                
-                    f.write('    dstPtr = Serializer::EncodeArray<' + elmType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
-                else :            
-                    f.write('    dstPtr = Serializer::Encode<' + attrType + '>(this->' + attrName + ', dstPtr, maxValidPtr);\n')
-            f.write('    return dstPtr;\n')
-            f.write('}\n')
-
-            # Decode
-            f.write('const uint8* ' + protocol + '::' + msgClassName + '::Decode(const uint8* srcPtr, const uint8* maxValidPtr) {\n')
-            f.write('    srcPtr = ' + msgParentClassName + '::Decode(srcPtr, maxValidPtr);\n')
-            for attr in msg.get('attrs', []) :
-                attrName = attr['name'].lower()
-                attrType = attr['type']
-                if isArrayType(attrType) :
-                    elmType = getArrayType(attrType)
-                    f.write('    srcPtr = Serializer::DecodeArray<' + elmType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
-                else :
-                    f.write('    srcPtr = Serializer::Decode<' + attrType + '>(srcPtr, maxValidPtr, this->' + attrName + ');\n')
-            f.write('    return srcPtr;\n')
-            f.write('}\n')            
 
 #-------------------------------------------------------------------------------
 def generateHeader(desc, absHeaderPath) :
@@ -348,7 +286,6 @@ def generateSource(desc, absSourcePath) :
         f.write('OryolClassImpl(' + protocol + '::' + msgClassName + ');\n')
         
     writeFactoryClassImpl(f, desc)
-    writeSerializeMethods(f, desc)
     f.write('}\n')
     f.close()
 

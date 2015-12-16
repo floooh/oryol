@@ -28,12 +28,8 @@ fips_begin_module(IO)
     )
     fips_dir(Stream)
     fips_files(
-        BinaryStreamReader.h
-        BinaryStreamWriter.h
         MemoryStream.cc MemoryStream.h
         Stream.cc Stream.h
-        StreamReader.cc StreamReader.h
-        StreamWriter.cc StreamWriter.h
     ) 
     fips_deps(Messaging Core)
 fips_end_module()
@@ -42,7 +38,6 @@ fips_begin_unittest(IO)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
-        BinaryStreamReaderWriterTest.cc
         ContentTypeTest.cc
         IOFacadeTest.cc
         IOStatusTest.cc
