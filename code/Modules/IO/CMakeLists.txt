@@ -26,6 +26,18 @@ fips_begin_module(IO)
         ioLane.cc ioLane.h
         ioRequestRouter.cc ioRequestRouter.h
     )
+    fips_dir(HostFS)
+    fips_files(
+        hostFileAccess.h
+        HostFileSystem.cc HostFileSystem.h
+        base/baseFileAccess.cc base/baseFileAccess.h
+    )
+    if (FIPS_WINDOWS)
+        fips_files(windows/winFileAccess.cc windows/winFileAccess.h)
+    endif()
+    if (FIPS_POSIX)
+        fips_files(posix/posixFileAccess.cc posix/posixFileAccess.h)
+    endif()
     fips_dir(Stream)
     fips_files(
         MemoryStream.cc MemoryStream.h

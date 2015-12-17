@@ -36,7 +36,10 @@ public:
     void Reserve(int32 numBytes);
     /// trim to actual size (reallocates)
     void Trim();
-    
+
+    /// access to the underlying raw buffer
+    uchar* RawBuffer();
+
     /// discard the content of the stream
     virtual void DiscardContent() override;
     
