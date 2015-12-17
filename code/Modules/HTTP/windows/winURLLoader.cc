@@ -199,7 +199,7 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                         BOOL queryDataResult = WinHttpQueryDataAvailable(hRequest, &bytesToRead);
                         o_assert(queryDataResult);
                         if (dwSize > 0) {
-                            uint8* dstPtr = httpReponse->Body.Add(bytesToRead);
+                            uint8* dstPtr = httpResponse->Body.Add(bytesToRead);
                             o_assert(nullptr != dstPtr);
                             DWORD bytesRead = 0;
                             BOOL readDataResult = WinHttpReadData(hRequest, dstPtr, bytesToRead, &bytesRead);
