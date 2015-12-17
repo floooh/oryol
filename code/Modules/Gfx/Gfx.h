@@ -10,7 +10,6 @@
 */
 #include "Core/RunLoop.h"
 #include "Gfx/Core/displayMgr.h"
-#include "IO/Stream/Stream.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/ClearState.h"
@@ -18,6 +17,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Setup/MeshSetup.h"
+#include "Resource/Core/SetupAndData.h"
 #include "glm/vec4.hpp"
 
 namespace Oryol {
@@ -54,10 +54,10 @@ public:
     static ResourceLabel PopResourceLabel();
     /// create a resource object
     template<class SETUP> static Id CreateResource(const SETUP& setup);
-    /// create a resource object with data in stream object
-    template<class SETUP> static Id CreateResource(const SetupAndStream<SETUP>& setupAndStream);
-    /// create a resource object with data in stream object
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const Ptr<Stream>& stream);
+    /// create a resource object with data in buffer object
+    template<class SETUP> static Id CreateResource(const SetupAndData<SETUP>& setupAndData);
+    /// create a resource object with data in buffer object
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const Buffer& data);
     /// create a resource object with pointer to non-owned data
     template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int32 size);
     /// asynchronously load resource object
@@ -179,22 +179,17 @@ Gfx::CreateResource(const SETUP& setup) {
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const Ptr<Stream>& stream) {
+Gfx::CreateResource(const SETUP& setup, const Buffer& data) {
     o_assert_dbg(IsValid());
-    stream->Open(OpenMode::ReadOnly);
-    const void* data = stream->MapRead(nullptr);
-    const int32 size = stream->Size();
-    Id id = state->resourceContainer.Create(setup, data, size);
-    stream->UnmapRead();
-    stream->Close();
-    return id;
+    o_assert_dbg(!data.Empty());
+    return state->resourceContainer.Create(setup, data.Data(), data.Size());
 }
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Id
-Gfx::CreateResource(const SetupAndStream<SETUP>& setupAndStream) {
+Gfx::CreateResource(const SetupAndData<SETUP>& setupAndData) {
     o_assert_dbg(IsValid());
-    return CreateResource(setupAndStream.Setup, setupAndStream.Stream);
+    return CreateResource(setupAndData.Setup, setupAndData.Data);
 }
 
 //------------------------------------------------------------------------------

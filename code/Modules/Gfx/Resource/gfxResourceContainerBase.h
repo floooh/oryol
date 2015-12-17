@@ -12,7 +12,6 @@
 #include "Core/Containers/KeyValuePair.h"
 #include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
-#include "Resource/Core/SetupAndStream.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/resourcePools.h"

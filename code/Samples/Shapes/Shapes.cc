@@ -76,9 +76,8 @@ ShapeApp::OnInit() {
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
-        .Plane(1.5f, 1.5f, 10)
-        .Build();
-    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+        .Plane(1.5f, 1.5f, 10);
+    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shapes::Setup());
     
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);

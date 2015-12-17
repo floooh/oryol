@@ -21,7 +21,7 @@ color(1.0f, 1.0f, 1.0f, 1.0f) {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::Clear() {
+ShapeBuilder::clear() {
     this->Layout.Clear();
     this->RandomColors = false;
     this->curPrimGroupBaseElement = 0;
@@ -29,7 +29,6 @@ ShapeBuilder::Clear() {
     this->transform = glm::mat4();
     this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     this->shapes.Clear();
-    this->meshBuilder.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -166,12 +165,6 @@ ShapeBuilder::Plane(float32 w, float32 d, int32 tiles, bool buildPrimGroup) {
 }
 
 //------------------------------------------------------------------------------
-const SetupAndStream<MeshSetup>
-ShapeBuilder::Result() const {
-    return this->meshBuilder.Result();
-}
-    
-//------------------------------------------------------------------------------
 void
 ShapeBuilder::UpdateNumElements(ShapeData& shape) {
     switch (shape.type) {
@@ -223,7 +216,7 @@ ShapeBuilder::UpdateNumElements(ShapeData& shape) {
 }
 
 //------------------------------------------------------------------------------
-void
+SetupAndData<MeshSetup>
 ShapeBuilder::Build() {
     o_assert(!this->shapes.Empty());
     
@@ -274,7 +267,9 @@ ShapeBuilder::Build() {
         curVertexIndex += shape.numVertices;
         curTriIndex += shape.numTris;
     }
-    this->meshBuilder.End();
+    SetupAndData<MeshSetup> result = this->meshBuilder.Build();
+    this->clear();
+    return result;
 }
 
 //------------------------------------------------------------------------------

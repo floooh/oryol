@@ -8,7 +8,6 @@
 #include "Resource/Core/resourceContainerBase.h"
 #include "Sound/Core/SoundSetup.h"
 #include "Sound/Core/SoundEffectSetup.h"
-#include "IO/Stream/Stream.h"
 #include "Sound/Core/soundEffectPool.h"
 #include "Sound/Core/soundEffectFactory.h"
 

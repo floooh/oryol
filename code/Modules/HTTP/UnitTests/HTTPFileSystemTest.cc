@@ -30,14 +30,11 @@ TEST(HTTPFileSystemTest) {
     
     // check what we got
     CHECK(req->Status == IOStatus::OK);
-    const Ptr<Stream>& loadedData = req->Data;
-    CHECK(loadedData.isValid());
-    CHECK(loadedData->Size() > 0);
-    CHECK(loadedData->GetContentType().TypeAndSubType() == "text/html");
-    loadedData->Open(OpenMode::ReadOnly);
-    String content((const char*)loadedData->MapRead(nullptr), 0, loadedData->Size());
+    CHECK(!req->Data.Empty());
+    CHECK(req->Data.Size() > 0);
+    CHECK(req->Type.TypeAndSubType() == "text/html");
+    String content((const char*)req->Data.Data(), 0, req->Data.Size());
     Log::Info("%s\n", content.AsCStr());
-    loadedData->Close();
     req = 0;
     
     IO::Discard();

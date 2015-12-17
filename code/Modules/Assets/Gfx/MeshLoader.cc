@@ -65,14 +65,11 @@ MeshLoader::Continue() {
         if (IOStatus::OK == this->ioRequest->Status) {
             // async loading has finished, use OmshParser to
             // create a MeshSetup object from the loaded data
-            const Ptr<Stream>& stream = this->ioRequest->Data;
-            stream->Open(OpenMode::ReadOnly);
-            const void* data = stream->MapRead(nullptr);
-            const int32 numBytes = stream->Size();
+            const void* data = this->ioRequest->Data.Data();
+            const int32 numBytes = this->ioRequest->Data.Size();
 
             MeshSetup meshSetup = MeshSetup::FromData(this->setup);
             if (OmshParser::Parse(data, numBytes, meshSetup)) {
-                stream->Close();
 
                 // call the Loaded callback if defined, this
                 // gives the app a chance to look at the
@@ -88,7 +85,6 @@ MeshLoader::Continue() {
                 result = Gfx::resource().initAsync(this->resId, meshSetup, data, numBytes);
             }
             else {
-                stream->Close();
                 result = Gfx::resource().failedAsync(this->resId);
             }
         }

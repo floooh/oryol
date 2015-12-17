@@ -36,14 +36,11 @@ TEST(MeshBuilderTest) {
     
         // indices
         .Triangle(0, 0, 1, 2)
-        .Triangle(1, 0, 2, 3)
-
-        .End();
+        .Triangle(1, 0, 2, 3);
+    auto buildResult = mb.Build();
 
     // get the resulting stream object
-    const Ptr<Stream>& stream = mb.Result().Stream;
-    CHECK(!stream->IsOpen());
-    const MeshSetup& meshSetup = mb.Result().Setup;
+    const MeshSetup& meshSetup = buildResult.Setup;
     CHECK(meshSetup.ShouldSetupFromData());
     
     // check MeshSetup
@@ -65,16 +62,13 @@ TEST(MeshBuilderTest) {
     const uint32 vbufSize = 4 * 5 * sizeof(float32);
     const uint32 ibufSize = 6 * sizeof(uint16);
     const uint32 allDataSize = vbufSize + ibufSize;
-    CHECK(stream->Size() == allDataSize);
+    CHECK(buildResult.Data.Size() == allDataSize);
     
     // check the generated data
-    stream->Open(OpenMode::ReadOnly);
-    const uint8* maxPtr = nullptr;
-    const uint8* ptr = stream->MapRead(&maxPtr);
+    const uint8* ptr = buildResult.Data.Data();
     o_assert(nullptr != ptr);
     CHECK(ptr != nullptr);
-    CHECK(maxPtr == ptr + allDataSize);
-    
+
     // check vertices
     const float32* vPtr = (const float32*) ptr;
     CHECK(vPtr[0] == 0.0f); CHECK(vPtr[1] == 0.0f); CHECK(vPtr[2] == 0.0f);
@@ -90,8 +84,4 @@ TEST(MeshBuilderTest) {
     const uint16* iPtr = (const uint16*) &(vPtr[20]);
     CHECK(iPtr[0] == 0); CHECK(iPtr[1] == 1); CHECK(iPtr[2] == 2);
     CHECK(iPtr[3] == 0); CHECK(iPtr[4] == 2); CHECK(iPtr[5] == 3);
-    
-    CHECK((uint8*)&(iPtr[6]) == maxPtr);
-    
-    stream->Close();
 }

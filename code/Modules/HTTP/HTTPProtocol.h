@@ -7,12 +7,13 @@
 #include "Messaging/Message.h"
 #include "Messaging/Protocol.h"
 #include "IO/Core/URL.h"
+#include "IO/Core/IOStatus.h"
+#include "IO/Core/ContentType.h"
+#include "IO/IOProtocol.h"
 #include "HTTP/HTTPMethod.h"
 #include "Core/Containers/Map.h"
+#include "Core/Containers/Buffer.h"
 #include "Core/String/String.h"
-#include "IO/Stream/Stream.h"
-#include "IO/Core/IOStatus.h"
-#include "IO/IOProtocol.h"
 
 namespace Oryol {
 class HTTPProtocol {
@@ -66,7 +67,8 @@ public:
         };
         IOStatus::Code Status;
         Map<String,String> ResponseHeaders;
-        Ptr<Stream> Body;
+        Buffer Body;
+        ContentType Type;
         String ErrorDesc;
     };
     class HTTPRequest : public Message {
@@ -90,7 +92,8 @@ public:
         HTTPMethod::Code Method;
         URL Url;
         Map<String,String> RequestHeaders;
-        Ptr<Stream> Body;
+        Buffer Body;
+        ContentType Type;
         Ptr<IOProtocol::Request> IoRequest;
         Ptr<HTTPProtocol::HTTPResponse> Response;
     };

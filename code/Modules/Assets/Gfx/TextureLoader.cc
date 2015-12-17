@@ -60,17 +60,14 @@ TextureLoader::Continue() {
         if (IOStatus::OK == this->ioRequest->Status) {
             // yeah, IO is done, let gliml parse the texture data
             // and create the texture resource
-            const Ptr<Stream>& stream = this->ioRequest->Data;
-            stream->Open(OpenMode::ReadOnly);
-            const uint8* data = stream->MapRead(nullptr);
-            const int32 numBytes = stream->Size();
+            const uint8* data = this->ioRequest->Data.Data();
+            const int32 numBytes = this->ioRequest->Data.Size();
             
             gliml::context ctx;
             ctx.enable_dxt(true);
             ctx.enable_pvrtc(true);
             ctx.enable_etc2(true);
             if (ctx.load(data, numBytes)) {
-                stream->Close();
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
                 // NOTE: the prepared texture resource might have already been
                 // destroyed at this point, if this happens, initAsync will
@@ -79,7 +76,6 @@ TextureLoader::Continue() {
                 result = Gfx::resource().initAsync(this->resId, texSetup, data, numBytes);
             }
             else {
-                stream->Close();
                 result = Gfx::resource().failedAsync(this->resId);
             }
         }

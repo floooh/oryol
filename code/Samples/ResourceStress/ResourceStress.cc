@@ -146,8 +146,8 @@ ResourceStressApp::createObjects() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1).Build();
-    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
+    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, this->shader));
     obj.texture = Gfx::LoadResource(
         TextureLoader::Create(

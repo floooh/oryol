@@ -48,22 +48,17 @@ Sound::CreateResource(const SoundEffectSetup& setup) {
 
 //------------------------------------------------------------------------------
 Id
-Sound::CreateResource(const SoundEffectSetup& setup, const Ptr<Stream>& stream) {
+Sound::CreateResource(const SoundEffectSetup& setup, const Buffer& data) {
     o_assert_dbg(IsValid());
-    stream->Open(OpenMode::ReadOnly);
-    const void* data = stream->MapRead(nullptr);
-    const int32 size = stream->Size();
-    Id id = state->resourceContainer.Create(setup, data, size);
-    stream->UnmapRead();
-    stream->Close();
-    return id;
+    o_assert_dbg(!data.Empty());
+    return state->resourceContainer.Create(setup, data.Data(), data.Size());
 }
 
 //------------------------------------------------------------------------------
 Id
-Sound::CreateResource(const SetupAndStream<SoundEffectSetup>& setupAndStream) {
+Sound::CreateResource(const SetupAndData<SoundEffectSetup>& setupAndData) {
     o_assert_dbg(IsValid());
-    return CreateResource(setupAndStream.Setup, setupAndStream.Stream);
+    return CreateResource(setupAndData.Setup, setupAndData.Data);
 }
 
 //------------------------------------------------------------------------------

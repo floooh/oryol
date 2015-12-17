@@ -132,8 +132,8 @@ DDSTextureLoadingApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4).Build();
-    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
+    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

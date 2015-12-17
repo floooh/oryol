@@ -175,14 +175,14 @@ Buffer::Reserve(int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-void
+inline void
 Buffer::Add(const uint8* data, int32 numBytes) {
     this->Reserve(numBytes);
     this->copy(data, numBytes);
 }
 
 //------------------------------------------------------------------------------
-uint8*
+inline uint8*
 Buffer::Add(int32 numBytes) {
     this->Reserve(numBytes);
     uint8* ptr = this->data + this->size;
@@ -191,20 +191,20 @@ Buffer::Add(int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
-void
+inline void
 Buffer::Clear() {
     this->size = 0;
 }
 
 //------------------------------------------------------------------------------
-const uint8*
+inline const uint8*
 Buffer::Data() const {
     o_assert(this->data);
     return this->data;
 }
 
 //------------------------------------------------------------------------------
-uint8*
+inline uint8*
 Buffer::Data() {
     o_assert(this->data);
     return this->data;

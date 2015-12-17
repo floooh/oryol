@@ -26,11 +26,6 @@ fips_begin_module(IO)
         ioLane.cc ioLane.h
         ioRequestRouter.cc ioRequestRouter.h
     )
-    fips_dir(Stream)
-    fips_files(
-        MemoryStream.cc MemoryStream.h
-        Stream.cc Stream.h
-    ) 
     fips_deps(Messaging Core)
 fips_end_module()
 

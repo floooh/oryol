@@ -160,8 +160,8 @@ InstancingApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    auto shapeBuilderResult = shapeBuilder.Result();
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
+    auto shapeBuilderResult = shapeBuilder.Build();
     Id mesh = Gfx::CreateResource(shapeBuilderResult);
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);

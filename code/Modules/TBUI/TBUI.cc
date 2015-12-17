@@ -40,9 +40,9 @@ TBUI::DoAfter(const URL& url, DoAfterFunc doAfterFunc) {
     o_assert_dbg(IsValid());
     
     // FIXME: we should only load resources that are not currently loading
-    state->ioQueue.Add(url, [doAfterFunc](const Ptr<Stream>& stream) {
+    state->ioQueue.Add(url, [doAfterFunc](IOQueue::Result ioResult) {
         o_assert_dbg(IsValid());
-        state->resourceContainer.add(stream);
+        state->resourceContainer.add(ioResult.Url.Get(), std::move(ioResult.Data));
         doAfterFunc();
     });
     if (!state->ioQueue.IsStarted()) {
@@ -56,10 +56,10 @@ TBUI::DoAfter(const Array<URL>& urls, DoAfterFunc doAfterFunc) {
     o_assert_dbg(IsValid());
 
     // FIXME: we should only load resources that are not currently loading
-    state->ioQueue.AddGroup(urls, [doAfterFunc](const Array<Ptr<Stream>>& streams) {
+    state->ioQueue.AddGroup(urls, [doAfterFunc](Array<IOQueue::Result> ioResults) {
         o_assert_dbg(IsValid());
-        for (const auto& stream : streams) {
-            state->resourceContainer.add(stream);
+        for (auto& res : ioResults) {
+            state->resourceContainer.add(res.Url.Get(), std::move(res.Data));
         }
         doAfterFunc();
     });

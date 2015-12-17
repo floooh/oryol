@@ -22,7 +22,7 @@ fips_begin_module(Sound)
             alSoundEffectFactory.cc alSoundEffectFactory.h
         )
     endif()
-    fips_deps(Core IO Resource)
+    fips_deps(Core Resource)
     if (FIPS_OSX)
         fips_frameworks_osx(OpenAL)
     endif()    

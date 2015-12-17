@@ -94,8 +94,8 @@ VertexTextureApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Plane(3.0f, 3.0f, 255).Build();
-    Id planeMesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Plane(3.0f, 3.0f, 255);
+    Id planeMesh = Gfx::CreateResource(shapeBuilder.Build());
     Id planeShader = Gfx::CreateResource(Shaders::Plane::Setup());
     auto dsPlane = DrawStateSetup::FromMeshAndShader(planeMesh, planeShader);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;

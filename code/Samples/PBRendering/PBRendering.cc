@@ -66,9 +66,8 @@ PBRenderingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Sphere(0.5f, 36, 20, true)
-        .Plane(5.0f, 5.0f, 1, true)
-        .Build();
-    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+        .Plane(5.0f, 5.0f, 1, true);
+    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;

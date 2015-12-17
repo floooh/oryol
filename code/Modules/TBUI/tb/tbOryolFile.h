@@ -11,7 +11,6 @@
 */
 #include "Core/Types.h"
 #include "tb_system.h"
-#include "IO/Stream/Stream.h"
 
 namespace Oryol {
 namespace _priv {
@@ -25,7 +24,9 @@ public:
     /// read data from file
     virtual size_t Read(void* buf, size_t elemSize, size_t count);
 
-    Ptr<Stream> content;
+    int32 size = 0;
+    int32 pos = 0;
+    uint8* content = nullptr;
 };
 
 } // namespace _priv

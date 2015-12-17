@@ -48,16 +48,14 @@ TEST(ShapeBuilderTest) {
     // build a simple cube
     shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    shapeBuilder.Build();
+    auto buildResult = shapeBuilder.Build();
 
-    auto stream = shapeBuilder.Result().Stream;
-    stream->Open(OpenMode::ReadOnly);
-    const void* data = stream->MapRead(nullptr);
-    const int32 size = stream->Size();
+    const void* data = buildResult.Data.Data();
+    const int32 size = buildResult.Data.Size();
 
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
-    simpleCube.Setup = shapeBuilder.Result().Setup;
+    simpleCube.Setup = buildResult.Setup;
     factory.SetupResource(simpleCube, data, size);
     CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
     CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
@@ -78,8 +76,6 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
-    stream->UnmapRead();
-    stream->Close();
     factory.DestroyResource(simpleCube);
     factory.Discard();
     renderer.discard();

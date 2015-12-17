@@ -89,17 +89,16 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.Torus(0.3f, 0.5f, 20, 36).Build();
-    Id torus = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Torus(0.3f, 0.5f, 20, 36);
+    Id torus = Gfx::CreateResource(shapeBuilder.Build());
     
     // create a sphere mesh with normals and uv coords
-    shapeBuilder.Clear();
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Sphere(0.5f, 72, 40).Build();
-    Id sphere = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Sphere(0.5f, 72, 40);
+    Id sphere = Gfx::CreateResource(shapeBuilder.Build());
 
     // create shaders
     Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::Setup());

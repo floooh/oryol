@@ -10,7 +10,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 void
-MeshBuilder::Clear() {
+MeshBuilder::clear() {
     o_assert(!this->inBegin);
     
     this->NumVertices = 0;
@@ -22,12 +22,11 @@ MeshBuilder::Clear() {
     this->VertexUsage = Usage::Immutable;
     this->IndexUsage = Usage::Immutable;
     this->inBegin = false;
-    this->resultValid = false;
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
-    this->setupAndStream.Setup = MeshSetup::FromData();
-    this->setupAndStream.Stream.invalidate();
+    this->setupAndData.Setup = MeshSetup::FromData();
+    this->setupAndData.Data.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -38,10 +37,9 @@ MeshBuilder::Begin() {
     o_assert(!this->Layout.Empty());
     o_assert(!this->PrimitiveGroups.Empty());
     this->inBegin = true;
-    this->resultValid = false;
 
     // setup MeshSetup object
-    MeshSetup& meshSetup = this->setupAndStream.Setup;
+    MeshSetup& meshSetup = this->setupAndData.Setup;
     meshSetup = MeshSetup::FromData(this->VertexUsage, this->IndexUsage);
     meshSetup.Layout = this->Layout;
     meshSetup.NumVertices = this->NumVertices;
@@ -61,11 +59,8 @@ MeshBuilder::Begin() {
         meshSetup.DataIndexOffset = vbSize;
     }
     
-    // setup the memory stream object
-    this->setupAndStream.Stream = MemoryStream::Create();
-    this->setupAndStream.Stream->Open(OpenMode::WriteOnly);
-    o_assert(this->setupAndStream.Stream->IsOpen());
-    this->vertexPointer = this->setupAndStream.Stream->MapWrite(allSize);
+    // setup the data buffer object
+    this->vertexPointer = this->setupAndData.Data.Add(allSize);
     this->indexPointer  = this->vertexPointer + vbSize;
     this->endPointer    = this->indexPointer + ibSize;
     
@@ -73,27 +68,14 @@ MeshBuilder::Begin() {
 }
 
 //------------------------------------------------------------------------------
-void
-MeshBuilder::End() {
+SetupAndData<MeshSetup>
+MeshBuilder::Build() {
     o_assert(this->inBegin);
-    o_assert(!this->resultValid);
-    o_assert(this->setupAndStream.Stream->IsOpen());
 
     this->inBegin = false;
-    this->resultValid = true;
-    
-    this->setupAndStream.Stream->UnmapWrite();
-    this->setupAndStream.Stream->Close();
-    
-    this->vertexPointer = nullptr;
-    this->indexPointer = nullptr;
-    this->endPointer = nullptr;
-}
-
-//------------------------------------------------------------------------------
-const SetupAndStream<MeshSetup>&
-MeshBuilder::Result() const {
-    return this->setupAndStream;
+    SetupAndData<MeshSetup> result = std::move(this->setupAndData);
+    this->clear();
+    return std::move(result);
 }
 
 } // namespace Oryol

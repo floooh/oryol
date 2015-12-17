@@ -74,9 +74,8 @@ BlendTestApp::OnInit() {
         .Vertex(1, VertexAttr::Position, 0.05f, -0.05f, 0.5f)
         .Vertex(1, VertexAttr::Color0, 0.0f, 0.75f, 0.0f, 0.75f)
         .Vertex(2, VertexAttr::Position, -0.05f, -0.05f, 0.5f)
-        .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f)
-        .End();
-    Id mesh = Gfx::CreateResource(meshBuilder.Result());
+        .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f);
+    Id mesh = Gfx::CreateResource(meshBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
     
     // setup one draw state for each blend factor combination

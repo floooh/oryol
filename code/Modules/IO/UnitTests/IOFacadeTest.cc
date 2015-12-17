@@ -6,7 +6,6 @@
 #include "IO/IO.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "IO/Stream/MemoryStream.h"
 
 using namespace Oryol;
 
@@ -23,12 +22,7 @@ public:
         
         // create a stream object, and just write the URL from the msg to it
         static const uint8 payload[] = {'A', 'B', 'C', 'D'};
-        Ptr<MemoryStream> stream = MemoryStream::Create();
-        stream->Open(OpenMode::WriteOnly);
-        stream->Write(payload, sizeof(payload));
-        stream->Close();
-        
-        msg->Data = stream;
+        msg->Data.Add(payload, sizeof(payload));
         msg->Status = IOStatus::OK;
         msg->SetHandled();
     };
@@ -59,18 +53,15 @@ TEST(IOFacadeTest) {
     CHECK(numRequestsHandled == 1);
     
     // check the msg result
-    CHECK(msg->Data.isValid());
+    CHECK(!msg->Data.Empty());
+    CHECK(msg->Data.Size() == 4);
     CHECK(msg->Status == IOStatus::OK);
-    const Ptr<Stream>& stream = msg->Data;
-    stream->Open(OpenMode::ReadOnly);
-    CHECK(stream->Size() == 4);
-    const uint8* payload = stream->MapRead(nullptr);
+    const uint8* payload = msg->Data.Data();
     CHECK(payload[0] == 'A');
     CHECK(payload[1] == 'B');
     CHECK(payload[2] == 'C');
     CHECK(payload[3] == 'D');
-    stream->Close();
-    
+
     // FIXME: dynamically add/remove/replace filesystems, ...
     
     IO::Discard();

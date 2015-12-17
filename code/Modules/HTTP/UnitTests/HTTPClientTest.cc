@@ -31,9 +31,9 @@ TEST(HTTPClientTest) {
     const Map<String, String>& fields = reqOk->Response->ResponseHeaders;
     CHECK(fields.Contains("Content-Type"));
     CHECK(fields["Content-Type"] == "text/html");
-    CHECK(reqOk->Response->Body.isValid());
-    CHECK(reqOk->Response->Body->Size() > 500);
-    CHECK(reqOk->Response->Body->GetContentType().TypeAndSubType() == "text/html");
+    CHECK(!reqOk->Response->Body.Empty());
+    CHECK(reqOk->Response->Body.Size() > 500);
+    CHECK(reqOk->Response->Type.TypeAndSubType() == "text/html");
     
     // check 404 response
     CHECK(req404->Response.isValid());

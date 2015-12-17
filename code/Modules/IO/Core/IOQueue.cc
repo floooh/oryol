@@ -102,7 +102,7 @@ IOQueue::update() {
             // io request has been handled
             if (IOStatus::OK == ioReq->Status) {
                 // io request was successful
-                curItem.successFunc(ioReq->Data);
+                curItem.successFunc(Result(ioReq->Url, std::move(ioReq->Data)));
             }
             else {
                 // io request failed
@@ -148,12 +148,12 @@ IOQueue::update() {
         // if all were successful, call the successFunc
         if (allHandled) {
             if (!anyFailed) {
-                Array<Ptr<Stream>> result;
+                Array<Result> result;
                 result.Reserve(curItem.ioRequests.Size());
                 for (const auto& ioReq : curItem.ioRequests) {
-                    result.Add(ioReq->Data);
+                    result.Add(ioReq->Url, std::move(ioReq->Data));
                 }
-                curItem.successFunc(result);
+                curItem.successFunc(std::move(result));
             }
             this->groupItems.Erase(i);
         }

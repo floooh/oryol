@@ -12,7 +12,7 @@
 #include "Resource/Core/resourceContainerBase.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Queue.h"
-#include "IO/Stream/Stream.h"
+#include "Core/Containers/Buffer.h"
 #include "TBUI/TBUISetup.h"
 
 namespace tb {
@@ -31,17 +31,14 @@ public:
     void setup(const TBUISetup& setup);
     /// discard the resource container
     void discard();
-    /// lookup resource by locator
-    Ptr<Stream> lookupResource(const Locator& loc);
-    /// add a resource stream (URL must be set!)
-    void add(const Ptr<Stream>& data);
-    /// remove resources by label
-    void remove(ResourceLabel label);
+    /// lookup resource by locator, return nullptr if not found
+    Buffer* lookupResource(const Locator& loc);
+    /// add a resource buffer object (URL must be set!)
+    void add(const Locator& loc, Buffer&& data);
 
 private:
     int32 uniqueCounter;
-    Array<Ptr<Stream>> resPool;
-    Queue<uint16> freeSlots;
+    Array<Buffer> resPool;
 };
 
 } // namespace _priv

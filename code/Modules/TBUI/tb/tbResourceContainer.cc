@@ -17,16 +17,8 @@ uniqueCounter(0) {
 void
 tbResourceContainer::setup(const TBUISetup& setup) {
     o_assert_dbg(!this->isValid());
-    
     this->resPool.Reserve(setup.ResourcePoolSize);
     this->resPool.SetAllocStrategy(0, 0);
-    this->freeSlots.Reserve(setup.ResourcePoolSize);
-    
-    for (uint16 i = 0; i < setup.ResourcePoolSize; i++) {
-        this->resPool.Add();
-        this->freeSlots.Enqueue(i);
-    }
-
     resourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
 }
 
@@ -34,52 +26,35 @@ tbResourceContainer::setup(const TBUISetup& setup) {
 void
 tbResourceContainer::discard() {
     o_assert_dbg(this->isValid());
-
     this->resPool.Clear();
-    this->freeSlots.Clear();
-
     resourceContainerBase::discard();
 }
 
 //------------------------------------------------------------------------------
 void
-tbResourceContainer::add(const Ptr<Stream>& data) {
+tbResourceContainer::add(const Locator& loc, Buffer&& data) {
     o_assert_dbg(this->isValid());
-    Locator loc(data->GetURL().Get());
     Id id = this->registry.Lookup(loc);
     if (id.IsValid()) {
         Log::Warn("TBUIResourceContainer::Add(): resource '%s' already exists!\n", loc.Location().AsCStr());
     }
     else {
-        Id newId(this->uniqueCounter++, this->freeSlots.Dequeue(), 0);
+        Id newId(this->uniqueCounter++, this->resPool.Size(), 0);
         this->registry.Add(loc, newId, this->peekLabel());
-        this->resPool[newId.SlotIndex] = data;
+        this->resPool.Add(std::move(data));
     }
 }
 
 //------------------------------------------------------------------------------
-void
-tbResourceContainer::remove(ResourceLabel label) {
-    o_assert_dbg(this->isValid());
-
-    Array<Id> ids = this->registry.Remove(label);
-    for (const Id& id : ids) {
-        this->resPool[id.SlotIndex] = nullptr;
-        this->freeSlots.Enqueue(id.SlotIndex);
-    }
-}
-
-//------------------------------------------------------------------------------
-Ptr<Stream>
+Buffer*
 tbResourceContainer::lookupResource(const Locator& loc) {
     o_assert_dbg(this->isValid());
-    
     Id id = this->registry.Lookup(loc);
     if (id.IsValid()) {
-        return resPool[id.SlotIndex];
+        return &(resPool[id.SlotIndex]);
     }
     else {
-        return Ptr<Stream>();
+        return nullptr;
     }
 }
 

@@ -6,10 +6,10 @@
 #include <cstring>
 #include "Messaging/Message.h"
 #include "Messaging/Protocol.h"
-#include "Core/Ptr.h"
+#include "Core/Containers/Buffer.h"
 #include "IO/Core/URL.h"
 #include "IO/Core/IOStatus.h"
-#include "IO/Stream/MemoryStream.h"
+#include "IO/Core/ContentType.h"
 
 namespace Oryol {
 class IOProtocol {
@@ -84,7 +84,8 @@ public:
         int32 EndOffset;
         IOStatus::Code Status;
         String ErrorDesc;
-        Ptr<Stream> Data;
+        Buffer Data;
+        ContentType Type;
         int32 ActualLane;
     };
     class notifyLanes : public Message {

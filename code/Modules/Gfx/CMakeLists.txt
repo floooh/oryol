@@ -217,7 +217,7 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D12)
         fips_libs(d3d12 dxgi)
     endif()
-    fips_deps(Resource Messaging IO Core)
+    fips_deps(Resource Messaging Core)
 fips_end_module()
 
 fips_begin_unittest(Gfx)

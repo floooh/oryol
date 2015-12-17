@@ -21,9 +21,8 @@
     indices (in case of indexed geometry), the index type (16- or
     32-bits) and finally the primitive group definitions, then call
     the Begin() method, and start writing vertices and indices,
-    when done call End() and get the resulting Stream object
-    object which can be handed together with a MeshSetup object to 
-    Gfx::CreateResource().
+    when done call End() and get the resulting SetupAndData object
+    object which can be handed to Gfx::CreateResource().
     
     Vertex format packing happens on the fly when writing vertex data 
     according to the vertex layout given.
@@ -43,8 +42,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Assets/Gfx/VertexWriter.h"
-#include "IO/Stream/MemoryStream.h"
-#include "Resource/Core/SetupAndStream.h"
+#include "Resource/Core/SetupAndData.h"
 
 namespace Oryol {
 
@@ -85,20 +83,17 @@ public:
     MeshBuilder& Triangle(uint32 triangleIndex, uint16 vertexIndex0, uint16 vertexIndex1, uint16 vertexIndex2);
     /// write 32-bit triangle indices
     MeshBuilder& Triangle32(uint32 triangleIndex, uint32 vertexIndex0, uint32 vertexIndex1, uint32 vertexIndex2);
-    /// end writing vertex and index data
-    void End();
-    /// get result
-    const SetupAndStream<MeshSetup>& Result() const;
-    /// clear the mesh builder
-    void Clear();
-    
+    /// end writing vertex and index data, return result, and reset MeshBuilfer
+    SetupAndData<MeshSetup> Build();
+
 private:
+    /// clear/reset the object
+    void clear();
     /// compute byte offset into vertex buffer given vertex and component index
     uint32 vertexByteOffset(uint32 vertexIndex, int32 compIndex) const;
-    
-    SetupAndStream<MeshSetup> setupAndStream;
+
+    SetupAndData<MeshSetup> setupAndData;
     bool inBegin = false;
-    bool resultValid = false;
     
     uint8* vertexPointer = nullptr;
     uint8* indexPointer = nullptr;

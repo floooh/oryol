@@ -184,8 +184,8 @@ GPUParticlesApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2).Build();
-    this->shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
+    this->shapeMesh = Gfx::CreateResource(shapeBuilder.Build());
     
     // particle rendering texture blocks and draw state
     Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::Setup());

@@ -48,11 +48,9 @@ HTTPClientApp::OnRunning() {
     if (this->req && this->req->Handled()) {
         if (this->req->Response->Status == IOStatus::OK) {
             Log::Info("SUCCESS FOR '%s'\n", this->req->Url.AsCStr());
-            const Ptr<Stream>& data = this->req->Response->Body;
-            data->Open(OpenMode::ReadOnly);
-            String content((const char*)data->MapRead(nullptr), 0, data->Size());
+            const Buffer& data = this->req->Response->Body;
+            String content((const char*)data.Data(), 0, data.Size());
             Log::Info("BODY: %s\n", content.AsCStr());
-            data->Close();
         }
         else {
             Log::Info("FAIL FOR '%s'\n", this->req->Url.AsCStr());

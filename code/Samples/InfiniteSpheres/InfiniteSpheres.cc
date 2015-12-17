@@ -96,8 +96,8 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Sphere(0.75f, 72, 40).Build();
-    Id sphere = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Sphere(0.75f, 72, 40);
+    Id sphere = Gfx::CreateResource(shapeBuilder.Build());
 
     // create shader which is used for both offscreen- and display-rendering
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());

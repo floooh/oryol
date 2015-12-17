@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "debugTextRenderer.h"
 #include "Gfx/Gfx.h"
-#include "IO/Stream/MemoryStream.h"
 #include "DebugShaders.h"
 
 namespace Oryol {
@@ -162,9 +161,8 @@ debugTextRenderer::setupFontTexture() {
     o_assert((imgWidth * imgHeight) == imgDataSize);
     
     // setup a memory buffer and write font image data to it
-    Ptr<Stream> data = MemoryStream::Create();
-    data->Open(OpenMode::WriteOnly);
-    uint8* dstPtr = data->MapWrite(imgDataSize);
+    Buffer data;
+    uint8* dstPtr = data.Add(imgDataSize);
     const char* srcPtr = kc85_4_Font;
     for (int32 charIndex = 0; charIndex < numChars; charIndex++) {
         int32 xOffset = charIndex * charWidth;
@@ -177,8 +175,6 @@ debugTextRenderer::setupFontTexture() {
             }
         }
     }
-    data->UnmapWrite();
-    data->Close();
     
     // setup texture, pixel format is 8bpp uncompressed
     auto texSetup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);

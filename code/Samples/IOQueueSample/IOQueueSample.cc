@@ -49,18 +49,18 @@ IOQueueApp::OnInit() {
     // callback is used which terminates the app
     
     // the first 2 files only define a success callback
-    this->ioQueue.Add("res:image1.jpg", [](const Ptr<Stream>& stream) {
-        Log::Info("File '%s' loaded!\n", stream->GetURL().Path().AsCStr());
+    this->ioQueue.Add("res:image1.jpg", [](IOQueue::Result res) {
+        Log::Info("File '%s' loaded!\n", res.Url.Path().AsCStr());
     });
-    this->ioQueue.Add("res:image2.jpg", [](const Ptr<Stream>& stream) {
-        Log::Info("File '%s' loaded!\n", stream->GetURL().Path().AsCStr());
+    this->ioQueue.Add("res:image2.jpg", [](IOQueue::Result res) {
+        Log::Info("File '%s' loaded!\n", res.Url.Path().AsCStr());
     });
     
     // this tries to load a non-existing file, this should invoke the failure callback
     this->ioQueue.Add("res:blablabla.xxx",
           // success callback (shouldn't be called)
-          [](const Ptr<Stream>& stream) {
-              Log::Info("File '%s' loaded (shouldn't happen)!\n", stream->GetURL().Path().AsCStr());
+          [](IOQueue::Result res) {
+              Log::Info("File '%s' loaded (shouldn't happen)!\n", res.Url.Path().AsCStr());
           },
           // failure callback
           [](const URL& url, IOStatus::Code ioStatus) {

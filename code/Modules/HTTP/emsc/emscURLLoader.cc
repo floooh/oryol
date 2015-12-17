@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "emscURLLoader.h"
-#include "IO/Stream/MemoryStream.h"
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
@@ -55,12 +54,7 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
 
     // write response body
     const Ptr<IOProtocol::Request>& ioReq = req->IoRequest;
-    Ptr<MemoryStream> responseBody = MemoryStream::Create();
-    responseBody->SetURL(req->Url);
-    responseBody->Open(OpenMode::WriteOnly);
-    responseBody->Write(buffer, size);
-    responseBody->Close();
-    response->Body = responseBody;
+    response->Body.Add((const uint8*)buffer, size);
 
     // set the response on the request, mark the request as handled
     // also fill the embedded IORequest object
@@ -68,7 +62,7 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     if (ioReq) {
         auto httpResponse = req->Response;
         ioReq->Status = httpResponse->Status;
-        ioReq->Data = httpResponse->Body;
+        ioReq->Data = std::move(httpResponse->Body);
         ioReq->ErrorDesc = httpResponse->ErrorDesc;
         ioReq->SetHandled();
     }

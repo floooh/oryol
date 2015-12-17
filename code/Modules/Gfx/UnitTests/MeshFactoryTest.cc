@@ -61,16 +61,14 @@ TEST(MeshFactoryTest) {
         .Vertex(2, VertexAttr::TexCoord0, 1.0f, 1.0f)
         .Vertex(3, VertexAttr::TexCoord0, 0.0f, 1.0f)
         .Triangle(0, 0, 1, 2)
-        .Triangle(1, 0, 2, 3)
-        .End();
-    
+        .Triangle(1, 0, 2, 3);
+    auto buildResult = mb.Build();
+
     // setup the mesh
     mesh mesh;
-    mesh.Setup = mb.Result().Setup;
-    auto stream = mb.Result().Stream;
-    stream->Open(OpenMode::ReadOnly);
-    const void* data = stream->MapRead(nullptr);
-    const int32 size = stream->Size();
+    mesh.Setup = buildResult.Setup;
+    const void* data = buildResult.Data.Data();
+    const int32 size = buildResult.Data.Size();
 
     factory.SetupResource(mesh, data, size);
     CHECK(!mesh.Id.IsValid());
@@ -102,8 +100,6 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
-    stream->UnmapRead();
-    stream->Close();
     factory.DestroyResource(mesh);
     CHECK(!mesh.Id.IsValid());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 0);

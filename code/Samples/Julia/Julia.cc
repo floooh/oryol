@@ -50,8 +50,8 @@ JuliaApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64).Build();
-    Id shapeMesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64);
+    Id shapeMesh = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shape::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(shapeMesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;

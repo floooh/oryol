@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "pnaclURLLoader.h"
 #include "Core/pnacl/pnaclInstance.h"
-#include "IO/Stream/MemoryStream.h"
 #include <ppapi/cpp/module.h>
 #include <ppapi/cpp/completion_callback.h>
 #include <ppapi/cpp/url_request_info.h>
@@ -34,16 +33,13 @@ public:
     }
 
     void readBodyData() {
-        const Ptr<Stream>& responseBody = this->httpRequest->Response->Body;
-        if (!responseBody->IsOpen()) {
-            responseBody->Open(OpenMode::WriteOnly);
-        }
+        auto& responseBody = this->httpRequest->Response->Body;
         pp::CompletionCallback cc = pp::CompletionCallback(pnaclURLLoader::cbOnRead, this);
         int32_t result = PP_OK;
         do {
             result = this->ppUrlLoader.ReadResponseBody(this->readBuffer, ReadBufferSize, cc);
             if (result > 0) {
-                responseBody->Write(this->readBuffer, result);
+                responseBody.Add(this->readBuffer, result);
             }
         }
         while (result > 0);
@@ -112,17 +108,13 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
 
     // create a response object, and a memory stream object which
     // will hold the received data
-    auto httpResponse = HTTPProtocol::HTTPResponse::Create();
-    req->httpRequest->Response = httpResponse;
-    Ptr<MemoryStream> httpResponseBody = MemoryStream::Create();
-    httpResponseBody->SetURL(req->httpRequest->Url);
-    httpResponse->Body = httpResponseBody;
+    req->httpRequest->Response = HTTPProtocol::HTTPResponse::Create();
 
     // translate response
     o_assert(!req->ppUrlLoader.is_null());
     o_assert(!req->ppUrlLoader.GetResponseInfo().is_null());
     IOStatus::Code httpStatus = (IOStatus::Code) req->ppUrlLoader.GetResponseInfo().GetStatusCode();
-    httpResponse->Status = httpStatus;
+    req->httpRequest->Response->Status = httpStatus;
     if (httpStatus == IOStatus::OK) {
         // response header received ok, start loading response body,
         // first get the immediately available data now, and maybe
@@ -151,12 +143,11 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     if (PP_OK == result)
     {
         // all data received
-        req->httpRequest->Response->Body->Close();
         auto ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
             auto httpResponse = req->httpRequest->Response;
             ioReq->Status = httpResponse->Status;
-            ioReq->Data = httpResponse->Body;
+            ioReq->Data = std::move(httpResponse->Body);
             ioReq->ErrorDesc = httpResponse->ErrorDesc;
             ioReq->SetHandled();
         }        
@@ -167,7 +158,7 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     else if (result > 0)
     {
         // read all available data...
-        req->httpRequest->Response->Body->Write(req->readBuffer, result);
+        req->httpRequest->Response->Body.Add(req->readBuffer, result);
         req->readBodyData();
     }
     else

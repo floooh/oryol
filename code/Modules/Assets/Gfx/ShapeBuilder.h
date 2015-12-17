@@ -38,14 +38,13 @@ public:
     /// add a plane
     ShapeBuilder& Plane(float32 w, float32 d, int32 tiles, bool buildPrimGroup=true);
     
-    /// clear everything
-    void Clear();
-    /// build geometry
-    void Build();
-    /// get result
-    const SetupAndStream<MeshSetup> Result() const;
+    /// build geometry and clear object state
+    SetupAndData<MeshSetup> Build();
     
 private:
+    /// clear/reset object state
+    void clear();
+
     enum ShapeType {
         InvalidType,
         BoxShape,

@@ -76,8 +76,8 @@ TestInputApp::OnInit() {
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1).Build();
-    Id mesh = Gfx::CreateResource(shapeBuilder.Result());
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
+    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;

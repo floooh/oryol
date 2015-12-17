@@ -13,7 +13,7 @@ fips_begin_module(Resource)
     fips_files(
         ResourceLoader.cc ResourceLoader.h
         ResourcePool.h
-        SetupAndStream.h
+        SetupAndData.h
         resourceContainerBase.cc resourceContainerBase.h
         resourceRegistry.cc resourceRegistry.h
         resourceBase.h

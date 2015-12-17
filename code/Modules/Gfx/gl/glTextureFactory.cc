@@ -73,7 +73,6 @@ ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
-    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
     
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);

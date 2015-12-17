@@ -14,6 +14,7 @@
 #include "Core/String/StringAtom.h"
 #include "IO/IOProtocol.h"
 #include "Core/Containers/Array.h"
+#include "Core/Containers/Buffer.h"
 #include <functional>
 
 namespace Oryol {
@@ -25,10 +26,18 @@ public:
     /// destructor
     ~IOQueue();
 
+    /// loading result
+    struct Result {
+        Result(const URL& url, Buffer&& data) : Url(url), Data(std::move(data)) {};
+
+        URL Url;
+        Buffer Data;
+    };
+
     /// callback function signature for success
-    typedef std::function<void(const Ptr<Stream>&)> SuccessFunc;
+    typedef std::function<void(Result result)> SuccessFunc;
     /// callback function signature for success when loading URL groups
-    typedef std::function<void(const Array<Ptr<Stream>>&)> GroupSuccessFunc;
+    typedef std::function<void(Array<Result>)> GroupSuccessFunc;
     /// callback function signature for failure
     typedef std::function<void(const URL& url, IOStatus::Code ioStatus)> FailFunc;
 

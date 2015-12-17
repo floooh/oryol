@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "curlURLLoader.h"
-#include "IO/Stream/MemoryStream.h"
 #include "Core/String/StringConverter.h"
+#include "Core/Containers/Buffer.h"
 #include "curl/curl.h"
 
 #if LIBCURL_VERSION_NUM != 0x072400
@@ -88,11 +88,11 @@ curlURLLoader::discardCurlSession() {
 //------------------------------------------------------------------------------
 size_t
 curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
-    // userData is expected to point to a Stream object, open for writing
+    // userData is expected to point to a Buffer object
     int32 bytesToWrite = (int32) (size * nmemb);
     if (bytesToWrite > 0) {
-        Stream* stream = (Stream*) userData;
-        stream->Write(ptr, bytesToWrite);
+        Buffer* buf = (Buffer*) userData;
+        buf->Add((const uint8*)ptr, bytesToWrite);
         return bytesToWrite;
     }
     else {
@@ -135,7 +135,8 @@ curlURLLoader::doWork() {
             if (ioReq) {
                 auto httpResponse = req->Response;
                 ioReq->Status = httpResponse->Status;
-                ioReq->Data = httpResponse->Body;
+                ioReq->Data = std::move(httpResponse->Body);
+                ioReq->Type = httpResponse->Type;
                 ioReq->ErrorDesc = httpResponse->ErrorDesc;
                 ioReq->SetHandled();
             }
@@ -179,21 +180,16 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     }
 
     // if this is a POST, set the data to post
-    const Ptr<Stream>& postStream = req->Body;
     if (req->Method == HTTPMethod::Post) {
-        o_assert(postStream.isValid());
-        postStream->Open(OpenMode::ReadOnly);
-        const uint8* endPtr = nullptr;
-        const uint8* postData = postStream->MapRead(&endPtr);
-        const int32 postDataSize = postStream->Size();
-        o_assert((endPtr - postData) == postDataSize);
+        const int32 postDataSize = req->Body.Size();    // can be 0
+        const uint8* postData = req->Body.Empty() ? nullptr : req->Body.Data();
         curl_easy_setopt(this->curlSession, CURLOPT_POSTFIELDS, postData);
         curl_easy_setopt(this->curlSession, CURLOPT_POSTFIELDSIZE, postDataSize);
 
         // add a Content-Type request header if the post-stream has a content-type set
-        if (postStream->GetContentType().IsValid()) {
+        if (req->Type.IsValid()) {
             this->stringBuilder.Set("Content-Type: ");
-            this->stringBuilder.Append(postStream->GetContentType().AsCStr());
+            this->stringBuilder.Append(req->Type.AsCStr());
             requestHeaders = curl_slist_append(requestHeaders, this->stringBuilder.AsCStr());
         }
     }
@@ -205,10 +201,7 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
     // prepare the HTTPResponse and the response-body stream
     Ptr<HTTPProtocol::HTTPResponse> httpResponse = HTTPProtocol::HTTPResponse::Create();
-    Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
-    responseBodyStream->SetURL(req->Url);
-    responseBodyStream->Open(OpenMode::WriteOnly);
-    curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, responseBodyStream.get());
+    curl_easy_setopt(this->curlSession, CURLOPT_WRITEDATA, &(httpResponse->Body));
 
     // perform the request
     CURLcode performResult = curl_easy_perform(this->curlSession);
@@ -234,19 +227,12 @@ curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
 
     // check if the responseHeaders contained a Content-Type, if yes, set it on the responseBodyStream
     if (this->responseHeaders.Contains(this->contentTypeString)) {
-        responseBodyStream->SetContentType(this->responseHeaders[this->contentTypeString]);
+        httpResponse->Type = this->responseHeaders[this->contentTypeString];
     }
 
     // close the responseBodyStream, and set the result
-    responseBodyStream->Close();
     httpResponse->ResponseHeaders = this->responseHeaders;
-    httpResponse->Body = responseBodyStream;
     req->Response = httpResponse;
-
-    // close the optional body stream
-    if (postStream.isValid() && postStream->IsOpen()) {
-        postStream->Close();
-    }
 
     // free the previously allocated request headers
     if (0 != requestHeaders) {

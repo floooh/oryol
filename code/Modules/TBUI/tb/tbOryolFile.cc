@@ -14,11 +14,15 @@ tb::TBFile::Open(const char* filename, TBFileMode mode) {
 
     // make sure that assigns have been resolved
     Oryol::String resolvedPath = Oryol::IO::ResolveAssigns(filename);
-    Oryol::Ptr<Oryol::Stream> data = Oryol::TBUI::resources().lookupResource(resolvedPath.AsCStr());
-    if (data.isValid()) {
-        data->Open(Oryol::OpenMode::ReadOnly);
+
+    // NOTE: loaded resource will never move and never go away, so it is
+    // ok to store raw pointer here
+    Oryol::Buffer* data = Oryol::TBUI::resources().lookupResource(resolvedPath.AsCStr());
+    if (data && !data->Empty()) {
         Oryol::_priv::tbOryolFile* obj = new Oryol::_priv::tbOryolFile();
-        obj->content = data;
+        obj->size = data->Size();
+        obj->pos = 0;
+        obj->content = data->Data();
         return obj;
     }
     else {
@@ -32,22 +36,26 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 tbOryolFile::~tbOryolFile() {
-    if (this->content.isValid()) {
-        this->content->Close();
-        this->content.invalidate();
-    }
+    this->size = 0;
+    this->content = nullptr;
 }
 
 //------------------------------------------------------------------------------
 long
 tbOryolFile::Size() {
-    return this->content->Size();
+    return this->size;
 }
 
 //------------------------------------------------------------------------------
 size_t
 tbOryolFile::Read(void* buf, size_t elemSize, size_t count) {
-    return this->content->Read(buf, int32(elemSize * count));
+    int32 numBytes = int32(elemSize) * int32(count);
+    if ((this->pos + numBytes) > this->size) {
+        numBytes = this->size - this->pos;
+    }
+    Memory::Copy(this->content + this->pos, buf, numBytes);
+    this->pos += numBytes;
+    return numBytes;
 }
 
 } // namespace _priv

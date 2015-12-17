@@ -3,10 +3,10 @@
 name: IOProtocol
 id: IOPT
 headers:
-    - Core/Ptr.h
+    - Core/Containers/Buffer.h
     - IO/Core/URL.h
     - IO/Core/IOStatus.h
-    - IO/Stream/MemoryStream.h
+    - IO/Core/ContentType.h
 messages:
     - name: Request
       attrs:
@@ -18,7 +18,8 @@ messages:
         - { name: EndOffset, type: int32, default: 0 }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
-        - { name: Data, type: Ptr<Stream>, dir: out }
+        - { name: Data, type: Buffer, dir: out }
+        - { name: Type, type: ContentType, dir: out }
         - { name: ActualLane, type: int32, dir: out }
     - name: notifyLanes
       attrs:

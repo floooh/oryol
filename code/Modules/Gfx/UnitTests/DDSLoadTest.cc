@@ -33,10 +33,8 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->Data;
-        stream->Open(OpenMode::ReadOnly);
-        const int32 size = stream->Size();
-        const void* data = stream->MapRead(nullptr);
+        const int32 size = req->Data.Size();
+        const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
         ctx.enable_dxt(true);
@@ -73,10 +71,8 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->Data;
-        stream->Open(OpenMode::ReadOnly);
-        const int32 size = stream->Size();
-        const void* data = stream->MapRead(nullptr);
+        const int32 size = req->Data.Size();
+        const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
         ctx.enable_dxt(true);
@@ -113,10 +109,8 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const Ptr<Stream>& stream = req->Data;
-        stream->Open(OpenMode::ReadOnly);
-        const int32 size = stream->Size();
-        const void* data = stream->MapRead(nullptr);
+        const int32 size = req->Data.Size();
+        const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
         ctx.enable_dxt(true);

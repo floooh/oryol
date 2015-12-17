@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "osxURLLoader.h"
-#include "IO/Stream/MemoryStream.h"
 #include <Foundation/Foundation.h>
 #include <atomic>
 
@@ -39,7 +38,8 @@ osxURLLoader::doWork() {
             if (ioReq) {
                 auto httpResponse = httpReq->Response;
                 ioReq->Status = httpResponse->Status;
-                ioReq->Data = httpResponse->Body;
+                ioReq->Data = std::move(httpResponse->Body);
+                ioReq->Type = httpResponse->Type;
                 ioReq->ErrorDesc = httpResponse->ErrorDesc;
                 ioReq->SetHandled();
             }
@@ -72,30 +72,25 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
         }
         
         // optional content body
-        if (req->Body.isValid()) {
+        if (!req->Body.Empty()) {
         
             // add Content-Length field
-            const Ptr<Stream>& bodyStream = req->Body;
-            const int32 bodySize = bodyStream->Size();
+            const int32 bodySize = req->Body.Size();
             o_assert(bodySize > 0);
             NSString* contentLengthString = [NSString stringWithFormat:@"%d", bodySize];
             [urlRequest setValue:contentLengthString forHTTPHeaderField:@"Content-Length"];
             
             // add Content-Type field
-            if (bodyStream->GetContentType().IsValid()) {
-                const ContentType& contentType = bodyStream->GetContentType();
+            if (req->Type.IsValid()) {
+                const ContentType& contentType = req->Type;
                 NSString* contentTypeString = [NSString stringWithUTF8String: contentType.AsCStr()];
                 [urlRequest setValue:contentTypeString forHTTPHeaderField:@"Content-Type"];
             }
             
             // add the body data
-            bodyStream->Open(OpenMode::ReadOnly);
-            const uint8* maxValidPtr = nullptr;
-            const uint8* bodyDataPtr = bodyStream->MapRead(&maxValidPtr);
-            o_assert((0 != bodyDataPtr) && ((bodyDataPtr + bodySize) == maxValidPtr));
+            const uint8* bodyDataPtr = req->Body.Data();
+            o_assert(bodyDataPtr);
             NSData* bodyData = [NSData dataWithBytes:bodyDataPtr length:bodySize];
-            bodyStream->UnmapRead();
-            bodyStream->Close();
             [urlRequest setHTTPBody:bodyData];
         }
         
@@ -126,19 +121,13 @@ osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             response->ResponseHeaders = fields;
             
             // extract response body...
-            const void* responseBytes = [responseData bytes];
+            const uint8* responseBytes = (const uint8*) [responseData bytes];
             const int responseLength = (const int) [responseData length];
             if (responseLength > 0) {
-                Ptr<MemoryStream> responseBody = MemoryStream::Create();
-                responseBody->SetURL(req->Url);
-                responseBody->Open(OpenMode::WriteOnly);
-                responseBody->Reserve(responseLength);
-                responseBody->Write(responseBytes, responseLength);
-                responseBody->Close();
+                response->Body.Add(responseBytes, responseLength);
                 if (responseContentType.IsValid()) {
-                    responseBody->SetContentType(responseContentType);
+                    response->Type = responseContentType;
                 }
-                response->Body = responseBody;
             }
             req->Response = response;
         }

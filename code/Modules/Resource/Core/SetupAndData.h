@@ -1,32 +1,32 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::SetupAndStream
+    @class Oryol::SetupAndData
     @ingroup Resource
-    @brief holds a setup and a stream object
+    @brief holds a setup and a data buffer object
     
     This is used to transfer both a resource setup object and 
     a stream object to resource creation functions.
 */
-#include "IO/Stream/Stream.h"
+#include "Core/Containers/Buffer.h"
 
 namespace Oryol {
 
-template<class SETUP> class SetupAndStream {
+template<class SETUP> class SetupAndData {
 public:
     /// default constructor
-    SetupAndStream() { };
+    SetupAndData() { };
     /// construct from Setup and Stream object
-    SetupAndStream(const SETUP& setup, const Ptr<class Stream>& stream) :
+    SetupAndData(const SETUP& setup, Buffer&& data) :
         Setup(setup),
-        Stream(stream) {
+        Data(std::move(data)) {
         // empty
     };
     
     /// embedded setup object
     SETUP Setup;
-    /// embedded stream object
-    Ptr<class Stream> Stream;
+    /// embedded data buffer
+    Buffer Data;
 };
 
 } // namespace Oryol
