@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "winURLLoader.h"
 #include "Core/String/StringConverter.h"
-#include "IO/Stream/MemoryStream.h"
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
 #include <Windows.h>
@@ -52,7 +51,8 @@ winURLLoader::doWork() {
             if (ioReq) {
                 auto httpResponse = req->Response;
                 ioReq->Status = httpResponse->Status;
-                ioReq->Data = httpResponse->Body;
+                ioReq->Data = std::move(httpResponse->Body);
+                ioReq->Type = httpResponse->Type;
                 ioReq->ErrorDesc = httpResponse->ErrorDesc;
                 ioReq->SetHandled();
             }
@@ -95,9 +95,9 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                 }
 
                 // check if we need to add a Content-Type field:
-                if (req->Body.isValid() && req->Body->GetContentType().IsValid()) {
+                if (req->Type.IsValid()) {
                     this->stringBuilder.Append("Content-Type: ");
-                    this->stringBuilder.Append(req->Body->GetContentType().AsCStr());
+                    this->stringBuilder.Append(req->Type.AsCStr());
                     this->stringBuilder.Append("\r\n");
                 }
 
@@ -116,12 +116,9 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             // do we have body-data?
             const uint8* bodyDataPtr = WINHTTP_NO_REQUEST_DATA;
             int32 bodySize = 0;
-            if (req->Body.isValid()) {
-                const Ptr<Stream>& bodyStream = req->Body;
-                bodySize = bodyStream->Size();
-                o_assert(bodySize > 0);
-                bodyStream->Open(OpenMode::ReadOnly);
-                bodyDataPtr = bodyStream->MapRead(nullptr);
+            if (!req->Body.Empty()) {
+                bodyDataPtr = req->Body.Data();
+                bodySize = req->Body.Size();
             }
 
             // create a response object, no matter whether the
@@ -196,35 +193,27 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
                     }
 
                     // extract body data
-                    Ptr<MemoryStream> responseBodyStream = MemoryStream::Create();
-                    responseBodyStream->SetURL(req->Url);
-                    responseBodyStream->Open(OpenMode::WriteOnly);
                     DWORD bytesToRead = 0;
                     do {
                         // how much data available?
                         BOOL queryDataResult = WinHttpQueryDataAvailable(hRequest, &bytesToRead);
                         o_assert(queryDataResult);
                         if (dwSize > 0) {
-                            uint8* dstPtr = responseBodyStream->MapWrite(bytesToRead);
+                            uint8* dstPtr = httpReponse->Body.Add(bytesToRead);
                             o_assert(nullptr != dstPtr);
                             DWORD bytesRead = 0;
                             BOOL readDataResult = WinHttpReadData(hRequest, dstPtr, bytesToRead, &bytesRead);
                             o_assert(readDataResult);
                             o_assert(bytesRead == bytesToRead);
-                            responseBodyStream->UnmapWrite();
                         }
                     }
                     while (bytesToRead > 0);
-                    responseBodyStream->Close();
 
-                    // extract the Content-Type response header field and set on responseBodyStream
+                    // extract the Content-Type response header field and set on reponse
                     if (httpResponse->ResponseHeaders.Contains(this->contentTypeString)) {
                         ContentType contentType(httpResponse->ResponseHeaders[this->contentTypeString]);
-                        responseBodyStream->SetContentType(contentType);
+                        httpResponse->Type = contentType;
                     }
-
-                    // ...and finally set the responseBodyStream on the httpResponse
-                    httpResponse->Body = responseBodyStream;
 
                     // @todo: write error desc to httpResponse if something went wrong
                 }
@@ -235,11 +224,6 @@ winURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
             else {
                 /// @todo: better error reporting!
                 Log::Warn("winURLLoader: WinHttpSendRequest() failed for '%s'\n", req->Url.AsCStr());
-            }
-
-            // unmap the body data if necessary
-            if (req->Body.isValid()) {
-                req->Body->Close();
             }
 
             // close the request object
