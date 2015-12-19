@@ -57,6 +57,9 @@ mtlTextureFactory::SetupResource(texture& tex) {
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
+    else if (tex.Setup.ShouldSetupEmpty()) {
+        return this->createEmptyTexture(tex);
+    }
     else {
         // here would go more ways to create textures without image data
         return ResourceState::InvalidState;
@@ -68,7 +71,6 @@ ResourceState::Code
 mtlTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
-    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createFromPixelData(tex, data, size);
@@ -84,8 +86,10 @@ void
 mtlTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
 
-    if (nil != tex.mtlTex) {
-        this->pointers.renderer->releaseDeferred(tex.mtlTex);
+    for (auto& mtlTex : tex.mtlTextures) {
+        if (nil != mtlTex) {
+            this->pointers.renderer->releaseDeferred(mtlTex);
+        }
     }
     if (nil != tex.mtlSamplerState) {
         this->pointers.renderer->releaseDeferred(tex.mtlSamplerState);
@@ -99,11 +103,13 @@ mtlTextureFactory::DestroyResource(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 mtlTextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(nil == tex.mtlTex);
+    o_assert_dbg(nil == tex.mtlTextures[0]);
     o_assert_dbg(nil == tex.mtlSamplerState);
     o_assert_dbg(nil == tex.mtlDepthTex);
 
     const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
@@ -148,8 +154,8 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     texDesc.resourceOptions = MTLResourceStorageModePrivate;
     texDesc.cpuCacheMode = MTLCPUCacheModeDefaultCache;
     texDesc.storageMode = MTLStorageModePrivate;
-    tex.mtlTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
-    o_assert(nil != tex.mtlTex);
+    tex.mtlTextures[0] = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+    o_assert(nil != tex.mtlTextures[0]);
 
     // create option depth texture
     if (setup.HasDepth()) {
@@ -191,13 +197,28 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
 }
 
 //------------------------------------------------------------------------------
+void
+mtlTextureFactory::setupTextureAttrs(texture& tex) {
+    TextureAttrs attrs;
+    attrs.Locator       = tex.Setup.Locator;
+    attrs.Type          = tex.Setup.Type;
+    attrs.ColorFormat   = tex.Setup.ColorFormat;
+    attrs.TextureUsage  = tex.Setup.TextureUsage;
+    attrs.Width         = tex.Setup.Width;
+    attrs.Height        = tex.Setup.Height;
+    attrs.NumMipMaps    = tex.Setup.NumMipMaps;
+    tex.textureAttrs = attrs;
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    o_assert_dbg(nil == tex.mtlTex);
+    o_assert_dbg(nil == tex.mtlTextures[0]);
     o_assert_dbg(nil == tex.mtlSamplerState);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.NumMipMaps > 0);
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
 
     if (setup.Type == TextureType::Texture3D) {
         o_warn("mtlTextureFactory: 3d textures not yet implemented!\n");
@@ -219,8 +240,8 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     texDesc.mipmapLevelCount = setup.NumMipMaps;
     texDesc.arrayLength = 1;
     texDesc.sampleCount = 1;
-    tex.mtlTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
-    o_assert(nil != tex.mtlTex);
+    tex.mtlTextures[0] = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+    o_assert(nil != tex.mtlTextures[0]);
 
     // copy data bytes into texture
     const uint8* srcPtr = (const uint8*) data;
@@ -235,7 +256,7 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
                 bytesPerRow = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
             }
             MTLRegion region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
-            [tex.mtlTex replaceRegion:region
+            [tex.mtlTextures[0] replaceRegion:region
                 mipmapLevel:mipIndex
                 slice:faceIndex
                 withBytes:srcPtr+setup.ImageData.Offsets[faceIndex][mipIndex]
@@ -249,15 +270,51 @@ mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 siz
     o_assert(nil != tex.mtlSamplerState);
 
     // setup texture attributes
-    TextureAttrs attrs;
-    attrs.Locator = setup.Locator;
-    attrs.Type = setup.Type;
-    attrs.ColorFormat = setup.ColorFormat;
-    attrs.TextureUsage = Usage::Immutable;
-    attrs.Width = setup.Width;
-    attrs.Height = setup.Height;
-    attrs.NumMipMaps = setup.NumMipMaps;
-    tex.textureAttrs = attrs;
+    this->setupTextureAttrs(tex);
+
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+mtlTextureFactory::createEmptyTexture(texture& tex) {
+    o_assert_dbg(nil == tex.mtlTextures[0]);
+    o_assert_dbg(nil == tex.mtlTextures[1]);
+    o_assert_dbg(nil == tex.mtlSamplerState);
+
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.TextureUsage != Usage::Immutable);
+    o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(setup.ColorFormat));
+
+    // create one or two texture objects
+    tex.numSlots = Usage::Stream == setup.TextureUsage ? 2 : 1;
+
+    MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
+    texDesc.textureType = mtlTypes::asTextureType(setup.Type);
+    texDesc.usage = MTLTextureUsageShaderRead;
+    texDesc.pixelFormat = mtlTypes::asTextureFormat(setup.ColorFormat);
+    if (MTLPixelFormatInvalid == texDesc.pixelFormat) {
+        o_warn("mtlTextureFactory: texture pixel format not supported in Metal!\n");
+        return ResourceState::Failed;
+    }
+    texDesc.width  = setup.Width;
+    texDesc.height = setup.Height;
+    texDesc.depth  = 1;
+    texDesc.mipmapLevelCount = setup.NumMipMaps;
+    texDesc.arrayLength = 1;
+    texDesc.sampleCount = 1;
+    for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
+        tex.mtlTextures[slotIndex] = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+        o_assert(nil != tex.mtlTextures[slotIndex]);
+    }
+
+    // create sampler object
+    this->createSamplerState(tex);
+    o_assert(nil != tex.mtlSamplerState);
+
+    // setup texture attributes
+    this->setupTextureAttrs(tex);
 
     return ResourceState::Valid;
 }

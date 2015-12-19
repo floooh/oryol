@@ -15,6 +15,7 @@
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
+#include "Gfx/Attrs/ImageDataAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
@@ -76,6 +77,8 @@ public:
     void updateVertices(mesh* msh, const void* data, int32 numBytes);
     /// update index data
     void updateIndices(mesh* msh, const void* data, int32 numBytes);
+    /// update texture data
+    void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(void* buf, int32 bufNumBytes);
 

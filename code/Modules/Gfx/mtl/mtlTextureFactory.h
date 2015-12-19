@@ -35,10 +35,14 @@ public:
     void DestroyResource(texture& tex);
     
 private:
+    /// setup the TextureAttrs object in texture
+    void setupTextureAttrs(texture& tex);
     /// create a render-target texture
     ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture from pixel-data in memory
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create an empty texture
+    ResourceState::Code createEmptyTexture(texture& tex);
     /// create a sampler state object and set in texture object
     void createSamplerState(texture& tex);
 

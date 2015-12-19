@@ -259,7 +259,7 @@ Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsets
     o_trace_scoped(Gfx_UpdatePixels);
     o_assert_dbg(IsValid());
 
-    #if ORYOL_OPENGL
+    #if ORYOL_OPENGL || ORYOL_METAL
     texture* tex = state->resourceContainer.lookupTexture(id);
     state->renderer.updateTexture(tex, data, offsetsAndSizes);
     #else

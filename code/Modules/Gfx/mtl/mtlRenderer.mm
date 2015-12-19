@@ -257,7 +257,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // init renderpass descriptor
     if (rt) {
-        passDesc.colorAttachments[0].texture = rt->mtlTex;
+        passDesc.colorAttachments[0].texture = rt->mtlTextures[0];
     }
     if (clearState.Actions & ClearState::ColorBit) {
         passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
@@ -432,14 +432,14 @@ mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     if (ShaderStage::VS == bindStage) {
         for (int i = 0; i < numTextures; i++) {
             const texture* tex = textures[i];
-            [this->curCommandEncoder setVertexTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setVertexTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
             [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
     else {
         for (int i = 0; i < numTextures; i++) {
             const texture* tex = textures[i];
-            [this->curCommandEncoder setFragmentTexture:tex->mtlTex atIndex:i];
+            [this->curCommandEncoder setFragmentTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
             [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
@@ -569,6 +569,52 @@ mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     #if ORYOL_MACOS
     [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
     #endif
+}
+
+//------------------------------------------------------------------------------
+id<MTLTexture>
+obtainUpdateTexture(texture* tex, int frameIndex) {
+    o_assert2(tex->updateFrameIndex != frameIndex, "Only one data update allowed per texture and frame!\n");
+    tex->updateFrameIndex = frameIndex;
+    o_assert_dbg(tex->numSlots > 1);
+    if (++tex->activeSlot >= tex->numSlots) {
+        tex->activeSlot = 0;
+    }
+    return tex->mtlTextures[tex->activeSlot];
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != tex);
+    o_assert_dbg(nullptr != data);
+
+    const TextureAttrs& attrs = tex->textureAttrs;
+    o_assert_dbg(TextureType::Texture2D == attrs.Type);
+    o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
+    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumFaces == 1);
+
+    id<MTLTexture> mtlTexture = obtainUpdateTexture(tex, this->frameIndex);
+    o_assert_dbg(nil != mtlTexture);
+
+    // copy data bytes into texture
+    const uint8* srcPtr = (const uint8*) data;
+    for (int mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+        int mipWidth = std::max(attrs.Width >> mipIndex, 1);
+        int mipHeight = std::max(attrs.Height >> mipIndex, 1);
+        // special case PVRTC formats: bytesPerRow must be 0
+        int bytesPerRow = PixelFormat::RowPitch(attrs.ColorFormat, mipWidth);
+        MTLRegion region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
+        [mtlTexture replaceRegion:region
+            mipmapLevel:mipIndex
+            slice:0
+            withBytes:srcPtr+offsetsAndSizes.Offsets[0][mipIndex]
+            bytesPerRow:bytesPerRow
+            bytesPerImage:0];
+    }
 }
 
 //------------------------------------------------------------------------------
