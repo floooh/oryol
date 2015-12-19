@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 47
+Version = 48
 
 import os
 import sys
@@ -120,6 +120,7 @@ slMacros = {
         '_color': '_fo_color',
         '_const': 'constant',
         '_func': 'static',
+        'bool': 'int',
         'vec2': 'float2',
         'vec3': 'float3',
         'vec4': 'float4',
