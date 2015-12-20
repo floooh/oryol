@@ -30,7 +30,7 @@ cpuSynthesizer::Synthesize(const opBundle& bundle) {
 //------------------------------------------------------------------------------
 void
 cpuSynthesizer::synthesizeVoice(int32 voiceIndex, const opBundle& bundle) {
-    o_assert_dbg(bundle.BufferNumBytes == (setup.NumBufferSamples * sizeof(int16)));
+    o_assert_dbg(bundle.BufferNumBytes == (setup.NumBufferSamples * int(sizeof(int16))));
     o_assert_range_dbg(voiceIndex, synth::NumVoices);
     
     // the sample tick range covered by the buffer

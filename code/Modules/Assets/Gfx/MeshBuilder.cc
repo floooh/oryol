@@ -75,7 +75,7 @@ MeshBuilder::Build() {
     this->inBegin = false;
     SetupAndData<MeshSetup> result = std::move(this->setupAndData);
     this->clear();
-    return std::move(result);
+    return result;
 }
 
 } // namespace Oryol

@@ -33,12 +33,12 @@ alBufferStreamer::Setup(const SynthSetup& synthSetup) {
     
     // generate buffers, initially fill buffer with 0
     int16 silence[this->setup.NumBufferSamples];
-    Memory::Clear(silence, sizeof(silence));
+    Memory::Clear(silence, int(sizeof(silence)));
     for (int i = 0; i < MaxNumBuffers; i++) {
         ALuint buf = 0;
         alGenBuffers(1, &buf);
         ORYOL_AL_CHECK_ERROR();
-        alBufferData(buf, AL_FORMAT_MONO16, silence, sizeof(silence), this->setup.SampleRate);
+        alBufferData(buf, AL_FORMAT_MONO16, silence, int(sizeof(silence)), this->setup.SampleRate);
         ORYOL_AL_CHECK_ERROR();
         this->allBuffers.Add(buf);
         this->freeBuffers.Enqueue(buf);
@@ -123,7 +123,7 @@ alBufferStreamer::Update() {
 void
 alBufferStreamer::Enqueue(int32 voice, const void* ptr, int32 numBytes) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((this->setup.NumBufferSamples * sizeof(int16)) == numBytes);
+    o_assert_dbg((this->setup.NumBufferSamples * int(sizeof(int16))) == numBytes);
     
     ALuint buf = this->freeBuffers.Dequeue();
     this->voices[voice].queuedBuffers.Enqueue(buf);
