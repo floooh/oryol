@@ -17,9 +17,6 @@ namespace _priv {
 
 class assignRegistry {
 public:
-    /// constructor
-    assignRegistry();
-    
     /// add or replace an assign definition
     void SetAssign(const String& assign, const String& path);
     /// check if an assign exists

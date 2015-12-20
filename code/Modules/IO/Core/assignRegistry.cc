@@ -9,11 +9,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-assignRegistry::assignRegistry() {
-    this->setStandardAssigns();
-}
-
-//------------------------------------------------------------------------------
 void
 assignRegistry::SetAssign(const String& assign, const String& path) {
     o_assert(assign.Back() == ':'); // "assign must end with a ':'\n"
@@ -84,13 +79,6 @@ assignRegistry::ResolveAssigns(const String& str) const {
     String result = builder.GetString();
     this->rwLock.UnlockRead();
     return result;
-}
-
-//------------------------------------------------------------------------------
-void
-assignRegistry::setStandardAssigns() {
-    /// @todo: implement a platform-specific systemPaths class
-    /// which obtains the systemPaths in a platform-specific way
 }
 
 } // namespace _priv
