@@ -7,7 +7,6 @@
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glDebugOutput.h"
-#include "Gfx/GfxProtocol.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
@@ -156,9 +155,6 @@ glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int heigh
         glfwGetWindowSize(glfwWindow, &winWidth, &winHeight);
         self->displayAttrs.WindowWidth = winWidth;
         self->displayAttrs.WindowHeight = winHeight;
-    
-        // notify event handlers
-        self->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
     }
 }
 

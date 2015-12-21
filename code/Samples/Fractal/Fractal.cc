@@ -42,9 +42,8 @@ private:
     /// update the Julia set position from a mouse position
     void updateJuliaPos(float x, float y);
     /// re-create offscreen render-target if window size has changed (FIXME)
-    void checkCreateRenderTargets();
+    void recreateRenderTargets(const DisplayAttrs& attrs);
 
-    DisplayAttrs curDisplayAttrs;
     ClearState fractalClearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
     ClearState noClearState = ClearState::ClearNone();
     ResourceLabel offscreenRenderTargetLabel;
@@ -78,9 +77,6 @@ FractalApp::OnRunning() {
     this->frameIndex++;
     const int32 index0 = this->frameIndex % 2;
     const int32 index1 = (this->frameIndex + 1) % 2;
-
-    // re-create offscreen-rendertargets if needed
-    this->checkCreateRenderTargets();
 
     // reset current fractal state if requested
     if (this->clearFlag) {
@@ -125,6 +121,12 @@ FractalApp::OnRunning() {
 AppState::Code
 FractalApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(800, 512, "Fractal Sample"));
+    Gfx::Subscribe("fractal", [this](const GfxEvent& event) {
+        if (event.Type == GfxEvent::DisplayModified) {
+            this->recreateRenderTargets(event.DisplayAttrs);
+        }
+    });
+
     Input::Setup();
     IMUI::Setup();
 
@@ -153,7 +155,7 @@ FractalApp::OnInit() {
 
     // setup 2 ping-poing fp32 render targets which hold the current fractal state,
     // and the texture blocks which use reference these render targets
-    this->checkCreateRenderTargets();
+    this->recreateRenderTargets(Gfx::DisplayAttrs());
 
     // setup mandelbrot state
     dss = DrawStateSetup::FromMeshAndShader(fsqFractal, this->mandelbrot.shader);
@@ -349,34 +351,24 @@ FractalApp::updateJuliaPos(float x, float y) {
 
 //------------------------------------------------------------------------------
 void
-FractalApp::checkCreateRenderTargets() {
-    // this checks whether the window size has changed, and if yes,
-    // re-creates the offscreen-rendertargets
-    // FIXME: this should normally be handled by Oryol using
-    // relative-sized render-targets, alas, this feature is not yet implemented
-    const DisplayAttrs& attrs = Gfx::DisplayAttrs();
-    if ((attrs.FramebufferWidth != this->curDisplayAttrs.FramebufferWidth) ||
-        (attrs.FramebufferHeight != this->curDisplayAttrs.FramebufferHeight)) {
+FractalApp::recreateRenderTargets(const DisplayAttrs& attrs) {
+    // window size has changed, re-create render targets
+    Log::Info("(re-)create render targets\n");
 
-        // window size has changed, re-create render targets
-        Log::Info("(re-)create render targets\n");
-        this->curDisplayAttrs = attrs;
-
-        // first destroy previous render targets
-        if (ResourceLabel::Invalid != this->offscreenRenderTargetLabel) {
-            Gfx::DestroyResources(this->offscreenRenderTargetLabel);
-        }
-        this->offscreenRenderTargetLabel = Gfx::PushResourceLabel();
-        auto offscreenRTSetup = TextureSetup::RenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
-        offscreenRTSetup.ColorFormat = PixelFormat::RGBA32F;
-        offscreenRTSetup.DepthFormat = PixelFormat::None;
-        offscreenRTSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-        offscreenRTSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-        offscreenRTSetup.ClearHint = this->fractalClearState;
-        this->offscreenRenderTarget[0] = Gfx::CreateResource(offscreenRTSetup);
-        this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
-        this->clearFlag = true;
-
-        Gfx::PopResourceLabel();
+    // first destroy previous render targets
+    if (ResourceLabel::Invalid != this->offscreenRenderTargetLabel) {
+        Gfx::DestroyResources(this->offscreenRenderTargetLabel);
     }
+    this->offscreenRenderTargetLabel = Gfx::PushResourceLabel();
+    auto offscreenRTSetup = TextureSetup::RenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
+    offscreenRTSetup.ColorFormat = PixelFormat::RGBA32F;
+    offscreenRTSetup.DepthFormat = PixelFormat::None;
+    offscreenRTSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    offscreenRTSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    offscreenRTSetup.ClearHint = this->fractalClearState;
+    this->offscreenRenderTarget[0] = Gfx::CreateResource(offscreenRTSetup);
+    this->offscreenRenderTarget[1] = Gfx::CreateResource(offscreenRTSetup);
+    this->clearFlag = true;
+
+    Gfx::PopResourceLabel();
 }

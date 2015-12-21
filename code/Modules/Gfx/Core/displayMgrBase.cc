@@ -3,15 +3,15 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "displayMgrBase.h"
-#include "Messaging/Port.h"
-#include "Gfx/GfxProtocol.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 displayMgrBase::displayMgrBase() :
-displayValid(false) {
+displayValid(false),
+curFramebufferWidth(0),
+curFramebufferHeight(0) {
     // empty
 }
 
@@ -36,13 +36,14 @@ displayMgrBase::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->gfxSetup = setup;
     this->displayAttrs = setup.GetDisplayAttrs();
     this->pointers = ptrs;
+    this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
+    this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
 }
 
 //------------------------------------------------------------------------------
 void
 displayMgrBase::DiscardDisplay() {
     o_assert(this->displayValid);
-    this->notifyEventHandlers(GfxProtocol::DisplayDiscarded::Create());
     this->displayValid = false;
     this->pointers = gfxPointers();
 }
@@ -58,7 +59,7 @@ void
 displayMgrBase::ModifyDisplay(const GfxSetup& setup) {
     o_assert(this->displayValid);
     this->displayAttrs = setup.GetDisplayAttrs();
-    this->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
+    this->notifyEventHandlers(GfxEvent(GfxEvent::DisplayModified, this->displayAttrs));
 }
 
 //------------------------------------------------------------------------------
@@ -71,7 +72,13 @@ displayMgrBase::ModifyDisplay(const GfxSetup& setup) {
 */
 void
 displayMgrBase::ProcessSystemEvents() {
-    // empty
+    if ((this->curFramebufferWidth != this->displayAttrs.FramebufferWidth) ||
+        (this->curFramebufferHeight != this->displayAttrs.FramebufferHeight)) {
+
+        this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
+        this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
+        this->notifyEventHandlers(GfxEvent(GfxEvent::DisplayModified, this->displayAttrs));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -99,25 +106,24 @@ displayMgrBase::GetDisplayAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-displayMgrBase::AttachDisplayEventHandler(const Ptr<Port>& handler) {
-    o_assert(InvalidIndex == this->handlers.FindIndexLinear(handler));
-    this->handlers.Add(handler);
+displayMgrBase::Subscribe(const StringAtom& id, eventHandler handler) {
+    o_assert_dbg(!this->handlers.Contains(id));
+    this->handlers.Add(id, handler);
 }
 
 //------------------------------------------------------------------------------
 void
-displayMgrBase::DetachDisplayEventHandler(const Ptr<Port>& handler) {
-    int32 index = this->handlers.FindIndexLinear(handler);
-    if (InvalidIndex != index) {
-        this->handlers.Erase(index);
+displayMgrBase::Unsubscribe(const StringAtom& id) {
+    if (this->handlers.Contains(id)) {
+        this->handlers.Erase(id);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-displayMgrBase::notifyEventHandlers(const Ptr<Message>& msg) {
+displayMgrBase::notifyEventHandlers(const GfxEvent& gfxEvent) {
     for (const auto& handler : this->handlers) {
-        handler->Put(msg);
+        handler.Value()(gfxEvent);
     }
 }
 

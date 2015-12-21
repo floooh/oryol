@@ -6,7 +6,6 @@
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/GfxProtocol.h"
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
@@ -99,9 +98,6 @@ emscDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenC
     self->displayAttrs.FramebufferWidth = newWidth;
     self->displayAttrs.FramebufferHeight = newHeight;
     Log::Info("emscFullscreenChanged: new canvas size (w=%d, h=%d)\n", newWidth, newHeight);
-
-    // notify event handlers
-    self->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
 
     return true;
 }

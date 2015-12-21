@@ -1,9 +1,0 @@
-# GfxProtocol.yml
----
-name: GfxProtocol
-id: GXPT
-messages:
-    - name: DisplaySetup
-    - name: DisplayDiscarded
-    - name: DisplayModified
-

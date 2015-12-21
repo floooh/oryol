@@ -9,15 +9,19 @@
 */
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
-#include "Core/Containers/Array.h"
-#include "Messaging/Port.h"
+#include "Core/Containers/Map.h"
 #include "Gfx/Core/gfxPointers.h"
+#include "Gfx/Core/GfxEvent.h"
+#include <functional>
 
 namespace Oryol {
 namespace _priv {
     
 class displayMgrBase {
 public:
+    /// event handler typedef
+    typedef std::function<void(const GfxEvent&)> eventHandler;
+
     /// constructor
     displayMgrBase();
     /// destructor
@@ -40,21 +44,23 @@ public:
     
     /// get actual display attributes (can be different from DisplaySetup)
     const DisplayAttrs& GetDisplayAttrs() const;
-    
-    /// attach a display event handler
-    void AttachDisplayEventHandler(const Ptr<Port>& handler);
-    /// detach display event handler
-    void DetachDisplayEventHandler(const Ptr<Port>& handler);
+
+    /// subscribe to display events
+    void Subscribe(const StringAtom& id, eventHandler handler);
+    /// unsubscribe from display events
+    void Unsubscribe(const StringAtom& id);
 
 protected:
     /// notify event handlers, all handlers get the same message object
-    void notifyEventHandlers(const Ptr<Message>& msg);
+    void notifyEventHandlers(const GfxEvent& gfxEvent);
 
     GfxSetup gfxSetup;
     DisplayAttrs displayAttrs;
-    Array<Ptr<Port>> handlers;
+    Map<StringAtom, eventHandler> handlers;
     gfxPointers pointers;
     bool displayValid;
+    int32 curFramebufferWidth;  // used to detect display size changes
+    int32 curFramebufferHeight; // used to detect display size changes
 };
     
 } // namespace _priv

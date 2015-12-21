@@ -6,7 +6,6 @@
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/GfxProtocol.h"
 #include "Core/String/StringBuilder.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
@@ -135,9 +134,6 @@ pnaclDisplayMgr::handleViewEvent(const pp::View& view) {
         this->displayAttrs.WindowWidth = this->glFramebufferWidth;
         this->displayAttrs.WindowHeight = this->glFramebufferHeight;
     
-        // notify event handlers
-        this->notifyEventHandlers(GfxProtocol::DisplayModified::Create());
-
         Log::Info("framebuffer size changed to w=%d, h=%d\n", newWidth, newHeight);
     }
     return true;

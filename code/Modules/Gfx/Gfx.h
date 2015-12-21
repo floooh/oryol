@@ -33,11 +33,13 @@ public:
     
     /// test if the window system wants the application to quit
     static bool QuitRequested();
-    
-    /// attach a display event handler
-    static void AttachEventHandler(const Ptr<Port>& handler);
-    /// detach a display event handler
-    static void DetachEventHandler(const Ptr<Port>& handler);
+
+    /// event handler callback typedef
+    typedef _priv::displayMgrBase::eventHandler EventHandler;
+    /// subscribe to display events
+    static void Subscribe(const StringAtom& id, EventHandler handler);
+    /// unsubscribe from display events
+    static void Unsubscribe(const StringAtom& id);
     
     /// get the original render setup object
     static const class GfxSetup& GfxSetup();

@@ -64,18 +64,16 @@ Gfx::QuitRequested() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::AttachEventHandler(const Ptr<Port>& handler) {
+Gfx::Subscribe(const StringAtom& id, EventHandler handler) {
     o_assert_dbg(IsValid());
-    o_assert_dbg(handler.isValid());
-    state->displayManager.AttachDisplayEventHandler(handler);
+    state->displayManager.Subscribe(id, handler);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::DetachEventHandler(const Ptr<Port>& handler) {
+Gfx::Unsubscribe(const StringAtom& id) {
     o_assert_dbg(IsValid());
-    o_assert_dbg(handler.isValid());
-    state->displayManager.DetachDisplayEventHandler(handler);
+    state->displayManager.Unsubscribe(id);
 }
 
 //------------------------------------------------------------------------------

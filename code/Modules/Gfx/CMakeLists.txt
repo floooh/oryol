@@ -24,7 +24,6 @@ endif() # ORYOL_OPENGL
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
     fips_files(Gfx.cc Gfx.h)
-    fips_generate(TYPE MessageProtocol FROM GfxProtocol.yml)
     fips_dir(Attrs)
     fips_files(
         DisplayAttrs.h
@@ -51,6 +50,7 @@ fips_begin_module(Gfx)
         renderer.h
         gfxPointers.h
         GfxConfig.h
+        GfxEvent.h
     )
     fips_dir(Resource)
     fips_files(
@@ -217,7 +217,7 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D12)
         fips_libs(d3d12 dxgi)
     endif()
-    fips_deps(Resource Messaging Core)
+    fips_deps(Resource Core)
 fips_end_module()
 
 fips_begin_unittest(Gfx)
