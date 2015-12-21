@@ -155,7 +155,6 @@ def writeBinHeader(in_bin, out_hdr, c_name) :
 #-------------------------------------------------------------------------------
 def validate(platform, lines, outPath, c_name) :
    
-    print("platform: {}".format(platform))
     if platform != 'ios' and platform != 'osx' :
         return
 

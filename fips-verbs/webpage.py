@@ -67,7 +67,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
 
     # generate emscripten HTML pages
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-make-release'.format(ws_dir)
+        emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-ninja-release'.format(ws_dir)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
@@ -85,7 +85,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
 
     # copy PNaCl HTML pages
     if BuildPNaCl and nacl.check_exists(fips_dir) :
-        pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-make-release'.format(ws_dir)
+        pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-ninja-release'.format(ws_dir)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'pnacl' in sample['type'] :
@@ -110,7 +110,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
 
     # copy the Android sample files over
     if BuildAndroid and android.check_exists(fips_dir) :
-        android_deploy_dir = '{}/fips-deploy/oryol/android-make-release'.format(ws_dir)
+        android_deploy_dir = '{}/fips-deploy/oryol/android-ninja-release'.format(ws_dir)
         for sample in samples :
             if sample['name'] != '__end__' and 'android' in sample['type'] :
                 log.info('> copy android sample files: {}'.format(sample['name']))
@@ -143,14 +143,14 @@ def build_deploy_webpage(fips_dir, proj_dir) :
 
     # compile emscripten, pnacl and android samples
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'emsc-make-release')
-        project.build(fips_dir, proj_dir, 'emsc-make-release')
+        project.gen(fips_dir, proj_dir, 'emsc-ninja-release')
+        project.build(fips_dir, proj_dir, 'emsc-ninja-release')
     if BuildPNaCl and nacl.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'pnacl-make-release')
-        project.build(fips_dir, proj_dir, 'pnacl-make-release')
+        project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
+        project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
     if BuildAndroid and android.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'android-make-release')
-        project.build(fips_dir, proj_dir, 'android-make-release')
+        project.gen(fips_dir, proj_dir, 'android-ninja-release')
+        project.build(fips_dir, proj_dir, 'android-ninja-release')
     
     # export sample assets
     export_assets(fips_dir, proj_dir, webpage_dir)
