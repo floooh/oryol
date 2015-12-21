@@ -141,8 +141,8 @@ PacloneApp::getInput() {
         if (tpad.Tapped || tpad.Panning || mouse.ButtonPressed(Mouse::Button::LMB)) {
             float x, y;
             if (tpad.Tapped || tpad.Panning) {
-                x = tpad.Position(0).x;
-                y = tpad.Position(0).y;
+                x = tpad.Position[0].x;
+                y = tpad.Position[0].y;
             }
             else {
                 x = mouse.Position.x;

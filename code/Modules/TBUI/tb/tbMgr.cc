@@ -57,36 +57,60 @@ tbMgr::Setup(const TBUISetup& setup) {
         font->RenderGlyphs(setup.GlyphSet.AsCStr());
     }
 
-    // setup input handler
-    this->inputHandler = Dispatcher<InputProtocol>::Create();
-    this->inputHandler->Subscribe<InputProtocol::MouseMoveEvent>([this](const Ptr<InputProtocol::MouseMoveEvent>& msg) {
-        this->onMouseMove((int)msg->Position.x, (int)msg->Position.y);
+    // input event handlers
+    const StringAtom inputHandlerId("tbui");
+    Input::SubscribeMouse(inputHandlerId, [this](const Mouse::Event& e) {
+        switch (e.Type) {
+            case Mouse::Event::Move:
+                this->onMouseMove((int)e.Position.x, (int)e.Position.y);
+                break;
+            case Mouse::Event::ButtonDown:
+                this->onMouseButton(e.Button, true);
+                break;
+            case Mouse::Event::ButtonUp:
+                this->onMouseButton(e.Button, false);
+                break;
+            case Mouse::Event::Scroll:
+                this->onScroll((int)e.ScrollMovement.x, (int)e.ScrollMovement.y);
+                break;
+            default:
+                break;
+        }
     });
-    this->inputHandler->Subscribe<InputProtocol::MouseButtonEvent>([this](const Ptr<InputProtocol::MouseButtonEvent>& msg) {
-        this->onMouseButton(msg->MouseButton, msg->Down);
+    Input::SubscribeKeyboard(inputHandlerId, [this](const Keyboard::Event& e) {
+        switch (e.Type) {
+            case Keyboard::Event::KeyDown:
+            case Keyboard::Event::KeyRepeat:
+                this->onKey(e.KeyCode, true, false);
+                break;
+            case Keyboard::Event::KeyUp:
+                this->onKey(e.KeyCode, false, true);
+                break;
+            case Keyboard::Event::WChar:
+                this->onWChar(e.WCharCode);
+                break;
+            default:
+                break;
+        }
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchTappedEvent>([this](const Ptr<InputProtocol::TouchTappedEvent>& msg) {
-        this->onTapped(msg->Pos);
+    Input::SubscribeTouchpad(inputHandlerId, [this](const Touchpad::Event& e) {
+        switch (e.Type) {
+            case Touchpad::Event::Tapped:
+                this->onTapped(e.Position[0]);
+                break;
+            case Touchpad::Event::PanningStarted:
+                this->onPanningStarted(e.StartPosition[0]);
+                break;
+            case Touchpad::Event::Panning:
+                this->onPanning(e.Position[0]);
+                break;
+            case Touchpad::Event::PanningEnded:
+                this->onPanningEnded(e.Position[0]);
+                break;
+            default:
+                break;
+        }
     });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanningStartedEvent>([this](const Ptr<InputProtocol::TouchPanningStartedEvent>& msg) {
-        this->onPanningStarted(msg->StartPos);
-    });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanningEvent>([this](const Ptr<InputProtocol::TouchPanningEvent>& msg) {
-        this->onPanning(msg->Pos);
-    });
-    this->inputHandler->Subscribe<InputProtocol::TouchPanningEndedEvent>([this](const Ptr<InputProtocol::TouchPanningEndedEvent>& msg) {
-        this->onPanningEnded(msg->Pos);
-    });
-    this->inputHandler->Subscribe<InputProtocol::MouseScrollEvent>([this](const Ptr<InputProtocol::MouseScrollEvent>& msg) {
-        this->onScroll((int)msg->Scroll.x, (int)-msg->Scroll.y);
-    });
-    this->inputHandler->Subscribe<InputProtocol::WCharEvent>([this](const Ptr<InputProtocol::WCharEvent>& msg) {
-        this->onWChar(msg->WChar);
-    });
-    this->inputHandler->Subscribe<InputProtocol::KeyEvent>([this](const Ptr<InputProtocol::KeyEvent>& msg) {
-        this->onKey(msg->Key, msg->Down | msg->Repeat, msg->Up);
-    });
-    Input::AttachInputHandler(this->inputHandler);
 
     // add per-frame update method
     Core::PostRunLoop()->Add([this] {

@@ -4,7 +4,6 @@
 fips_begin_module(Input)
     fips_vs_warning_level(3)
     fips_files(Input.cc Input.h)
-    fips_generate(TYPE MessageProtocol FROM InputProtocol.yml)
     fips_dir(Core)
     fips_files(
         CursorMode.h
@@ -60,6 +59,6 @@ fips_begin_module(Input)
         fips_dir(win)
         fips_files(winInputMgr.cc winInputMgr.h)
     endif()
-    fips_deps(Core Messaging Gfx Time)
+    fips_deps(Core Gfx Time)
 fips_end_module()
 

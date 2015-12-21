@@ -25,11 +25,6 @@ public:
     /// check if Input module is valid
     static bool IsValid();
     
-    /// attach an input event handler
-    static void AttachInputHandler(const Ptr<Port>& handler);
-    /// detach an input event handler
-    static void DetachInputHandler(const Ptr<Port>& handler);
-    
     /// get keyboard state
     static const class Keyboard& Keyboard();
     /// get mouse state
@@ -40,6 +35,19 @@ public:
     static const class Touchpad& Touchpad();
     /// get sensory state
     static const class Sensors& Sensors();
+
+    /// subscribe to keyboard events
+    static void SubscribeKeyboard(const StringAtom& id, Keyboard::EventHandler handler);
+    /// unsubscribe from keyboard events
+    static void UnsubscribeKeyboard(const StringAtom& id);
+    /// subscribe to mouse events
+    static void SubscribeMouse(const StringAtom& id, Mouse::EventHandler handler);
+    /// unsubscribe from mouse events
+    static void UnsubscribeMouse(const StringAtom& id);
+    /// subscribe to touchpad events
+    static void SubscribeTouchpad(const StringAtom& id, Touchpad::EventHandler handler);
+    /// unsubscribe from touchpad events
+    static void UnsubscribeTouchpad(const StringAtom& id);
     
     /// set mouse cursor mode
     static void SetCursorMode(CursorMode::Code mode);

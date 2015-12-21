@@ -5,7 +5,6 @@
 #include "pnaclInputMgr.h"
 #include "Core/Core.h"
 #include "Core/pnacl/pnaclInstance.h"
-#include "Input/InputProtocol.h"
 #include "Core/String/StringConverter.h"
 
 namespace Oryol {
@@ -26,11 +25,10 @@ pnaclInputMgr::~pnaclInputMgr() {
 void
 pnaclInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
-    this->keyboard.Attached = true;
-    this->mouse.Attached = true;
+    this->Keyboard.Attached = true;
+    this->Mouse.Attached = true;
     this->setupKeyTable();
 
-    using namespace std::placeholders;    
     pnaclInstance::Instance()->enableInput([this] (const pp::InputEvent& e) {
         return this->handleEvent(e);
     });
@@ -99,13 +97,7 @@ bool
 pnaclInputMgr::onMouseDown(const pp::MouseInputEvent& ie) {
     Mouse::Button btn = this->mapMouseButton(ie.GetButton());
     if (Mouse::InvalidButton != btn) {
-        this->mouse.onButtonDown(btn);
-
-        auto msg = InputProtocol::MouseButtonEvent::Create();
-        msg->MouseButton = btn;
-        msg->Down = true;
-        this->notifyHandlers(msg);
-
+        this->Mouse.onButtonDown(btn);
         return true;
     }
     return false;
@@ -116,13 +108,7 @@ bool
 pnaclInputMgr::onMouseUp(const pp::MouseInputEvent& ie) {
     Mouse::Button btn = this->mapMouseButton(ie.GetButton());
     if (Mouse::InvalidButton != btn) {
-        this->mouse.onButtonUp(btn);
-        
-        auto msg = InputProtocol::MouseButtonEvent::Create();
-        msg->MouseButton = btn;
-        msg->Up = true;
-        this->notifyHandlers(msg);
-        
+        this->Mouse.onButtonUp(btn);
         return true;
     }
     return false;
@@ -133,14 +119,7 @@ bool
 pnaclInputMgr::onMouseMove(const pp::MouseInputEvent& ie) {
     pp::Point pos = ie.GetPosition();
     pp::Point mov = ie.GetMovement();
-    this->mouse.Position = glm::vec2(pos.x(), pos.y());
-    this->mouse.Movement = glm::vec2(mov.x(), mov.y());
-    
-    auto msg = InputProtocol::MouseMoveEvent::Create();
-    msg->Movement = this->mouse.Movement;
-    msg->Position = this->mouse.Position;
-    this->notifyHandlers(msg);
-    
+    this->Mouse.onPosMov(glm::vec2(pos.x(), pos.y()), glm::vec2(mov.x(), mov.y()));
     return true;
 }
 
@@ -162,12 +141,7 @@ pnaclInputMgr::onMouseLeave(const pp::MouseInputEvent& ie) {
 bool
 pnaclInputMgr::onWheel(const pp::WheelInputEvent& ie) {
     const pp::FloatPoint pos = ie.GetDelta();
-    this->mouse.Scroll = glm::vec2(pos.x(), pos.y()); 
-    
-    auto msg = InputProtocol::MouseScrollEvent::Create();
-    msg->Scroll = this->mouse.Scroll;
-    this->notifyHandlers(msg);
-    
+    this->Mouse.onScroll(glm::vec2(pos.x(), pos.y()));
     return true;
 }
 
@@ -176,13 +150,7 @@ bool
 pnaclInputMgr::onKeyDown(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
-        this->keyboard.onKeyDown(key);
-
-        auto msg = InputProtocol::KeyEvent::Create();
-        msg->Key = key;
-        msg->Down = true;
-        this->notifyHandlers(msg);
-
+        this->Keyboard.onKeyDown(key);
         return true;
     }
     Log::Info("unhandled key code: %d\n", ie.GetKeyCode());
@@ -194,13 +162,7 @@ bool
 pnaclInputMgr::onKeyUp(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
-        this->keyboard.onKeyUp(key);
-
-        auto msg = InputProtocol::KeyEvent::Create();
-        msg->Key = key;
-        msg->Up = true;
-        this->notifyHandlers(msg);
-
+        this->Keyboard.onKeyUp(key);
         return true;
     }
     return false;
@@ -216,9 +178,7 @@ pnaclInputMgr::onChar(const pp::KeyboardInputEvent& ie) {
         const unsigned char* src = (const unsigned char*) str.c_str();
         const int32 wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
         if (wlen > 0) {
-            auto msg = InputProtocol::WCharEvent::Create();
-            msg->WChar = wide[0];
-            this->notifyHandlers(msg);
+            this->Keyboard.onChar(wide[0]);
         }
     }
     return false;

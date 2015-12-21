@@ -7,15 +7,47 @@
 */
 #include "Input/Core/Key.h"
 #include "Core/Assertion.h"
+#include "Core/String/StringAtom.h"
+#include "Core/Containers/Map.h"
 #include <bitset>
+#include <functional>
 
 namespace Oryol {
 
 class Keyboard {
 public:
+    /// keyboard event for event-driven input handling (vs polling)
+    struct Event {
+        /// event type
+        enum Type {
+            KeyDown = 0,
+            KeyUp,
+            KeyRepeat,
+            WChar,
+
+            NumTypes,
+            InvalidType,
+
+        } Type;
+        /// key code (if Type is KeyDown, KeyUp, KeyRepeat
+        Key::Code KeyCode;
+        /// ASCII code (if Type is WChar)
+        wchar_t WCharCode;
+
+        /// default constructor
+        Event() : Type(InvalidType), KeyCode(Key::InvalidKey), WCharCode(0) { };
+        /// construct from type and key code
+        Event(enum Type t, Key::Code k) : Type(t), KeyCode(k), WCharCode(0) { };
+        /// construct from type and wchar code
+        Event(enum Type t, wchar_t c) : Type(t), KeyCode(Key::InvalidKey), WCharCode(c) { };
+    };
+
+    /// keyboard event handler typedef
+    typedef std::function<void(const Event&)> EventHandler;
+
     /// constructor
     Keyboard();
-    
+
     /// keyboard attached?
     bool Attached;
     /// test if key is currently pressed
@@ -40,6 +72,10 @@ public:
     /// get current captured text
     const wchar_t* CapturedText() const;
 
+    /// subscribe to keyboard events
+    void subscribe(const StringAtom& id, EventHandler handler);
+    /// unsubscribe from keyboard events
+    void unsubscribe(const StringAtom& id);
     /// call when key down event happens
     void onKeyDown(Key::Code key);
     /// call when key up event happens
@@ -58,6 +94,9 @@ public:
     void clearCapturedText();
 
 private:
+    /// notify event handlers
+    void notifyEventHandlers(const Event& event);
+
     std::bitset<Key::NumKeys> down;
     std::bitset<Key::NumKeys> up;
     std::bitset<Key::NumKeys> pressed;
@@ -66,6 +105,8 @@ private:
     int32 charIndex;
     wchar_t chars[MaxNumChars + 1];
     bool textCapturing;
+    Map<StringAtom, EventHandler> eventHandlers;
+
 };
 
 //------------------------------------------------------------------------------

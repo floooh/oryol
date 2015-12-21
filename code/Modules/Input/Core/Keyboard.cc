@@ -17,10 +17,36 @@ textCapturing(false) {
 
 //------------------------------------------------------------------------------
 void
+Keyboard::subscribe(const StringAtom& id, EventHandler handler) {
+    o_assert_dbg(!this->eventHandlers.Contains(id));
+    this->eventHandlers.Add(id, handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Keyboard::unsubscribe(const StringAtom& id) {
+    if (this->eventHandlers.Contains(id)) {
+        this->eventHandlers.Erase(id);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Keyboard::notifyEventHandlers(const Event& event) {
+    for (const auto& entry : this->eventHandlers) {
+        entry.Value()(event);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Keyboard::onKeyDown(Key::Code key) {
     o_assert_range_dbg(key, Key::NumKeys);
     this->down[key] = true;
     this->pressed[key] = true;
+    if (!this->eventHandlers.Empty()) {
+        this->notifyEventHandlers(Event(Event::KeyDown, key));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -29,6 +55,9 @@ Keyboard::onKeyUp(Key::Code key) {
     o_assert_range_dbg(key, Key::NumKeys);
     this->up[key] = true;
     this->pressed[key] = false;
+    if (!this->eventHandlers.Empty()) {
+        this->notifyEventHandlers(Event(Event::KeyUp, key));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -36,6 +65,9 @@ void
 Keyboard::onKeyRepeat(Key::Code key) {
     o_assert_range_dbg(key, Key::NumKeys);
     this->repeat[key] = true;
+    if (!this->eventHandlers.Empty()) {
+        this->notifyEventHandlers(Event(Event::KeyRepeat, key));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -46,6 +78,9 @@ Keyboard::onChar(wchar_t c) {
             this->chars[this->charIndex++] = c;
             this->chars[this->charIndex] = 0;
         }
+    }
+    if (!this->eventHandlers.Empty()) {
+        this->notifyEventHandlers(Event(Event::WChar, c));
     }
 }
 

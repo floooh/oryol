@@ -16,7 +16,6 @@
 #include "Input/touch/tapDetector.h"
 #include "Input/touch/panDetector.h"
 #include "Input/touch/pinchDetector.h"
-#include "Messaging/Port.h"
 
 namespace Oryol {
 namespace _priv {
@@ -38,23 +37,20 @@ public:
     void reset();
     /// get the input setup object
     const InputSetup& getInputSetup() const;
-    
-    /// attach input event handler
-    void attachInputHandler(const Ptr<Port>& handler);
-    /// detach input event handler
-    void detachInputHandler(const Ptr<Port>& handler);
 
-    /// get keyboard state
-    const class Keyboard& Keyboard() const;
-    /// get mouse state
-    const class Mouse& Mouse() const;
-    /// get gamepad state
-    const class Gamepad& Gamepad(int32 index) const;
-    /// get touchpad state (for touch/multitouch gestures)
-    const class Touchpad& Touchpad() const;
-    /// get sensory state
-    const class Sensors& Sensors() const;
-    
+    /// max number of gamepads
+    static const int32 MaxNumGamepads = 4;
+    /// keyboard state
+    class Keyboard Keyboard;
+    /// mouse state
+    class Mouse Mouse;
+    /// gamepad state
+    StaticArray<class Gamepad, MaxNumGamepads> Gamepad;
+    /// touchpad state
+    class Touchpad Touchpad;
+    /// sensor state
+    class Sensors Sensors;
+
     /// set mouse cursor mode
     void setCursorMode(CursorMode::Code mode);
     /// get mouse cursor mode
@@ -69,55 +65,14 @@ public:
     void onTouchEvent(const touchEvent& event);
     
 protected:
-    /// distribute input event to attached event handlers
-    void notifyHandlers(const Ptr<Message>& msg);
-
-    static const int32 MaxNumGamepads = 4;
     bool valid;
     InputSetup inputSetup;
-    class Keyboard keyboard;
-    class Mouse mouse;
-    class Gamepad gamepads[MaxNumGamepads];
-    class Touchpad touchpad;
-    class Sensors sensors;
     tapDetector singleTapDetector;
     tapDetector doubleTapDetector;
     class panDetector panDetector;
     class pinchDetector pinchDetector;        
     CursorMode::Code cursorMode;
-    Array<Ptr<Port>> handlers;
 };
-
-//------------------------------------------------------------------------------
-inline const class Keyboard&
-inputMgrBase::Keyboard() const {
-    return this->keyboard;
-}
-
-//------------------------------------------------------------------------------
-inline const class Mouse&
-inputMgrBase::Mouse() const {
-    return this->mouse;
-}
-
-//------------------------------------------------------------------------------
-inline const class Gamepad&
-inputMgrBase::Gamepad(int32 index) const {
-    o_assert_range(index, MaxNumGamepads);
-    return this->gamepads[index];
-}
-
-//------------------------------------------------------------------------------
-inline const class Touchpad&
-inputMgrBase::Touchpad() const {
-    return this->touchpad;
-}
-
-//------------------------------------------------------------------------------
-inline const class Sensors&
-inputMgrBase::Sensors() const {
-    return this->sensors;
-}
 
 //------------------------------------------------------------------------------
 inline CursorMode::Code

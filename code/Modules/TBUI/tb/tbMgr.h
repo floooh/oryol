@@ -12,8 +12,8 @@
 #include "TBUI/tb/tbOryolBatchRenderer.h"
 #include "TBUI/tb/tbOryolRootWidget.h"
 #include "Resource/Core/resourceRegistry.h"
-#include "Input/InputProtocol.h"
-#include "Messaging/Dispatcher.h"
+#include "Input/Core/Mouse.h"
+#include "Input/Core/Key.h"
 #include "tb_skin.h"
 
 namespace Oryol {
@@ -59,7 +59,6 @@ private:
     void onKey(Key::Code key, bool down, bool up);
 
     bool isValid = false;
-    Ptr<Dispatcher<InputProtocol>> inputHandler;
     tb::MODIFIER_KEYS modifierKeys = tb::TB_MODIFIER_NONE;
     int mouseX = 0;
     int mouseY = 0;

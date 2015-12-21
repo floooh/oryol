@@ -240,12 +240,12 @@ TestInputApp::printTouchpadState(const Touchpad& touchpad) const {
                     " touch position1: %.3f %.3f\n\r"
                     " touch movement1: %.3f %.3f\n\r"
                     " touch startPos1: %.3f %.3f\n\r",
-                    touchpad.Position(0).x, touchpad.Position(0).y,
-                    touchpad.Movement(0).x, touchpad.Movement(0).y,
-                    touchpad.StartPosition(0).x, touchpad.StartPosition(0).y,
-                    touchpad.Position(1).x, touchpad.Position(1).y,
-                    touchpad.Movement(1).x, touchpad.Movement(1).y,
-                    touchpad.StartPosition(1).x, touchpad.StartPosition(1).y);
+                    touchpad.Position[0].x, touchpad.Position[0].y,
+                    touchpad.Movement[0].x, touchpad.Movement[0].y,
+                    touchpad.StartPosition[0].x, touchpad.StartPosition[0].y,
+                    touchpad.Position[1].x, touchpad.Position[1].y,
+                    touchpad.Movement[1].x, touchpad.Movement[1].y,
+                    touchpad.StartPosition[1].x, touchpad.StartPosition[1].y);
     }
     else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -364,7 +364,7 @@ TestInputApp::handleTouchInput(const Touchpad& touchpad) {
             this->startPolar = this->polar;
         }
         if (touchpad.Panning) {
-            glm::vec2 diff = (touchpad.Position(0) - touchpad.StartPosition(0)) * 0.01f;
+            glm::vec2 diff = (touchpad.Position[0] - touchpad.StartPosition[0]) * 0.01f;
             this->polar.y = this->startPolar.y - diff.x;
             this->polar.x = glm::clamp(this->startPolar.x + diff.y, this->minLatitude, this->maxLatitude);
         }
@@ -372,8 +372,8 @@ TestInputApp::handleTouchInput(const Touchpad& touchpad) {
             this->startDistance = this->distance;
         }
         if (touchpad.Pinching) {
-            float32 startDist = glm::length(glm::vec2(touchpad.StartPosition(1) - touchpad.StartPosition(0)));
-            float32 curDist   = glm::length(glm::vec2(touchpad.Position(1) - touchpad.Position(0)));
+            float32 startDist = glm::length(glm::vec2(touchpad.StartPosition[1] - touchpad.StartPosition[0]));
+            float32 curDist   = glm::length(glm::vec2(touchpad.Position[1] - touchpad.Position[0]));
             this->distance = glm::clamp(this->startDistance - (curDist - startDist) * 0.01f, this->minDist, this->maxDist);
         }
     }

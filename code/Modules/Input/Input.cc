@@ -34,20 +34,6 @@ Input::IsValid() {
 
 //------------------------------------------------------------------------------
 void
-Input::AttachInputHandler(const Ptr<Port>& handler) {
-    o_assert_dbg(IsValid());
-    state->inputManager.attachInputHandler(handler);
-}
-
-//------------------------------------------------------------------------------
-void
-Input::DetachInputHandler(const Ptr<Port>& handler) {
-    o_assert_dbg(IsValid());
-    state->inputManager.detachInputHandler(handler);
-}
-
-//------------------------------------------------------------------------------
-void
 Input::SetCursorMode(CursorMode::Code mode) {
     o_assert_dbg(IsValid());
     state->inputManager.setCursorMode(mode);
@@ -78,35 +64,77 @@ Input::EndCaptureText() {
 const class Keyboard&
 Input::Keyboard() {
     o_assert_dbg(IsValid());
-    return state->inputManager.Keyboard();
+    return state->inputManager.Keyboard;
 }
 
 //------------------------------------------------------------------------------
 const class Mouse&
 Input::Mouse() {
     o_assert_dbg(IsValid());
-    return state->inputManager.Mouse();
+    return state->inputManager.Mouse;
 }
 
 //------------------------------------------------------------------------------
 const class Gamepad&
 Input::Gamepad(int32 index) {
     o_assert_dbg(IsValid());
-    return state->inputManager.Gamepad(index);
+    return state->inputManager.Gamepad[index];
 }
 
 //------------------------------------------------------------------------------
 const class Touchpad&
 Input::Touchpad() {
     o_assert_dbg(IsValid());
-    return state->inputManager.Touchpad();
+    return state->inputManager.Touchpad;
 }
 
 //------------------------------------------------------------------------------
 const class Sensors&
 Input::Sensors() {
     o_assert_dbg(IsValid());
-    return state->inputManager.Sensors();
+    return state->inputManager.Sensors;
+}
+
+//------------------------------------------------------------------------------
+void
+Input::SubscribeKeyboard(const StringAtom& id, Keyboard::EventHandler handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Keyboard.subscribe(id, handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::UnsubscribeKeyboard(const StringAtom& id) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Keyboard.unsubscribe(id);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::SubscribeMouse(const StringAtom& id, Mouse::EventHandler handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Mouse.subscribe(id, handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::UnsubscribeMouse(const StringAtom& id) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Mouse.unsubscribe(id);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::SubscribeTouchpad(const StringAtom& id, Touchpad::EventHandler handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Touchpad.subscribe(id, handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::UnsubscribeTouchpad(const StringAtom& id) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Touchpad.unsubscribe(id);
 }
 
 } // namespace Input

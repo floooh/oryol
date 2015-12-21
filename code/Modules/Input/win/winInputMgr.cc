@@ -6,7 +6,6 @@
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Gfx/win/winDisplayMgr.h"
-#include "Input/InputProtocol.h"
 
 namespace Oryol {
 namespace _priv {
@@ -33,8 +32,8 @@ void
 winInputMgr::setup(const InputSetup& setup) {
 
     inputMgrBase::setup(setup);
-    this->keyboard.Attached = true;
-    this->mouse.Attached = true;
+    this->Keyboard.Attached = true;
+    this->Mouse.Attached = true;
 
     // first check that the Gfx module has already been initialized
     // (directly access the 'private' interface of winDisplayMgr, 
@@ -108,21 +107,15 @@ winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*w
     if (nullptr != self) {
         Key::Code key = self->mapKey(winKey);
         if (Key::InvalidKey != key) {
-            auto msg = InputProtocol::KeyEvent::Create();
-            msg->Key = key;
             if (winAction == ORYOL_WIN_PRESS) {
-                self->keyboard.onKeyDown(key);
-                msg->Down = true;
+                self->Keyboard.onKeyDown(key);
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
-                self->keyboard.onKeyUp(key);
-                msg->Up = true;
+                self->Keyboard.onKeyUp(key);
             }
             else {
-                self->keyboard.onKeyRepeat(key);
-                msg->Repeat = true;
+                self->Keyboard.onKeyRepeat(key);
             }
-            self->notifyHandlers(msg);
         }
     }
 }
@@ -131,10 +124,7 @@ winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*w
 void
 winInputMgr::charCallback(unsigned int unicode) {
     if (nullptr != self) {
-        self->keyboard.onChar((wchar_t)unicode);
-        auto msg = InputProtocol::WCharEvent::Create();
-        msg->WChar = (wchar_t)unicode;
-        self->notifyHandlers(msg);
+        self->Keyboard.onChar((wchar_t)unicode);
     }
 }
 
@@ -150,17 +140,12 @@ winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
             default:                               btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
-            auto msg = InputProtocol::MouseButtonEvent::Create();
-            msg->MouseButton = btn;
             if (winAction == ORYOL_WIN_PRESS) {
-                self->mouse.onButtonDown(btn);
-                msg->Down = true;
+                self->Mouse.onButtonDown(btn);
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
-                self->mouse.onButtonUp(btn);
-                msg->Up = true;
+                self->Mouse.onButtonUp(btn);
             }
-            self->notifyHandlers(msg);
         }
     }
 }
@@ -170,11 +155,7 @@ void
 winInputMgr::cursorPosCallback(double winX, double winY) {
     if (nullptr != self) {
         const glm::vec2 pos((float32)winX, (float32)winY);
-        self->mouse.onPosMov(pos);
-        auto msg = InputProtocol::MouseMoveEvent::Create();
-        msg->Movement = self->mouse.Movement;
-        msg->Position = self->mouse.Position;
-        self->notifyHandlers(msg);
+        self->Mouse.onPosMov(pos);
     }
 }
 
@@ -183,10 +164,7 @@ void
 winInputMgr::scrollCallback(double winX, double winY) {
     if (nullptr != self) {
         const glm::vec2 scroll((float32)winX, (float32)winY);
-        self->mouse.Scroll = scroll;
-        auto msg = InputProtocol::MouseScrollEvent::Create();
-        msg->Scroll = scroll;
-        self->notifyHandlers(msg);
+        self->Mouse.Scroll = scroll;
     }
 }
 

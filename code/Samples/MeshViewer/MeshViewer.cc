@@ -217,7 +217,7 @@ MeshViewerApp::handleInput() {
                 this->camera.startOrbital = this->camera.orbital;
             }
             if (tpad.Panning) {
-                glm::vec2 diff = (tpad.Position(0) - tpad.StartPosition(0)) * 0.01f;
+                glm::vec2 diff = (tpad.Position[0] - tpad.StartPosition[0]) * 0.01f;
                 this->camera.orbital.y = this->camera.startOrbital.y - diff.x;
                 this->camera.orbital.x = glm::clamp(this->camera.startOrbital.x + diff.y, glm::radians(minLatitude), glm::radians(maxLatitude));
             }
@@ -225,8 +225,8 @@ MeshViewerApp::handleInput() {
                 this->camera.startDistance = this->camera.dist;
             }
             if (tpad.Pinching) {
-                float32 startDist = glm::length(glm::vec2(tpad.StartPosition(1) - tpad.StartPosition(0)));
-                float32 curDist   = glm::length(glm::vec2(tpad.Position(1) - tpad.Position(0)));
+                float32 startDist = glm::length(glm::vec2(tpad.StartPosition[1] - tpad.StartPosition[0]));
+                float32 curDist   = glm::length(glm::vec2(tpad.Position[1] - tpad.Position[0]));
                 this->camera.dist = glm::clamp(this->camera.startDistance - (curDist - startDist) * 0.01f, minCamDist, maxCamDist);
             }
         }
