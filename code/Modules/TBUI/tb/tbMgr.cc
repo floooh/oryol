@@ -58,8 +58,7 @@ tbMgr::Setup(const TBUISetup& setup) {
     }
 
     // input event handlers
-    const StringAtom inputHandlerId("tbui");
-    Input::SubscribeMouse(inputHandlerId, [this](const Mouse::Event& e) {
+    Input::SubscribeMouse([this](const Mouse::Event& e) {
         switch (e.Type) {
             case Mouse::Event::Move:
                 this->onMouseMove((int)e.Position.x, (int)e.Position.y);
@@ -77,7 +76,7 @@ tbMgr::Setup(const TBUISetup& setup) {
                 break;
         }
     });
-    Input::SubscribeKeyboard(inputHandlerId, [this](const Keyboard::Event& e) {
+    Input::SubscribeKeyboard([this](const Keyboard::Event& e) {
         switch (e.Type) {
             case Keyboard::Event::KeyDown:
             case Keyboard::Event::KeyRepeat:
@@ -93,7 +92,7 @@ tbMgr::Setup(const TBUISetup& setup) {
                 break;
         }
     });
-    Input::SubscribeTouchpad(inputHandlerId, [this](const Touchpad::Event& e) {
+    Input::SubscribeTouchpad([this](const Touchpad::Event& e) {
         switch (e.Type) {
             case Touchpad::Event::Tapped:
                 this->onTapped(e.Position[0]);

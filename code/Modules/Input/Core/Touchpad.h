@@ -45,6 +45,8 @@ public:
         /// movement
         StaticArray<glm::vec2, MaxNumTouches> Movement;
     };
+    /// unique event handler id typedef
+    typedef unsigned int EventHandlerId;
     /// touch event handler typedef
     typedef std::function<void(const Event&)> EventHandler;
 
@@ -100,9 +102,9 @@ public:
     void onPinchingCancelled();
     
     /// subscribe to touch events
-    void subscribe(const StringAtom& id, EventHandler handler);
+    EventHandlerId subscribe(EventHandler handler);
     /// unsubscribe from touch events
-    void unsubscribe(const StringAtom& id);
+    void unsubscribe(EventHandlerId id);
     /// reset the touchpad state
     void reset();
 
@@ -110,7 +112,8 @@ private:
     /// notify event handlers
     void notifyEventHandlers(const Event& event);
 
-    Map<StringAtom, EventHandler> eventHandlers;
+    EventHandlerId uniqueIdCounter;
+    Map<EventHandlerId, EventHandler> eventHandlers;
 };
 
 } // namespace Oryol

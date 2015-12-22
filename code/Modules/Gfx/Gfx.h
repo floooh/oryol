@@ -36,10 +36,12 @@ public:
 
     /// event handler callback typedef
     typedef _priv::displayMgrBase::eventHandler EventHandler;
+    /// event handler id typedef
+    typedef _priv::displayMgrBase::eventHandlerId EventHandlerId;
     /// subscribe to display events
-    static void Subscribe(const StringAtom& id, EventHandler handler);
+    static EventHandlerId Subscribe(EventHandler handler);
     /// unsubscribe from display events
-    static void Unsubscribe(const StringAtom& id);
+    static void Unsubscribe(EventHandlerId id);
     
     /// get the original render setup object
     static const class GfxSetup& GfxSetup();

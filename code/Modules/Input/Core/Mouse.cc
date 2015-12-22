@@ -11,22 +11,24 @@ Mouse::Mouse() :
 Attached(false),
 Position(0.0f, 0.0f),
 Movement(0.0f, 0.0f),
-Scroll(0.0f, 0.0f) {
+Scroll(0.0f, 0.0f),
+uniqueIdCounter(0) {
     for (int32 i = 0; i < Button::NumButtons; i++) {
         this->buttonState[i] = 0;
     }
 }
 
 //------------------------------------------------------------------------------
-void
-Mouse::subscribe(const StringAtom& id, EventHandler handler) {
-    o_assert_dbg(!this->eventHandlers.Contains(id));
+Mouse::EventHandlerId
+Mouse::subscribe(EventHandler handler) {
+    EventHandlerId id = this->uniqueIdCounter++;
     this->eventHandlers.Add(id, handler);
+    return id;
 }
 
 //------------------------------------------------------------------------------
 void
-Mouse::unsubscribe(const StringAtom& id) {
+Mouse::unsubscribe(EventHandlerId id) {
     if (this->eventHandlers.Contains(id)) {
         this->eventHandlers.Erase(id);
     }

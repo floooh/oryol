@@ -17,20 +17,22 @@ Panning(false),
 PanningEnded(false),
 PinchingStarted(false),
 Pinching(false),
-PinchingEnded(false) {
+PinchingEnded(false),
+uniqueIdCounter(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-void
-Touchpad::subscribe(const StringAtom& id, EventHandler handler) {
-    o_assert_dbg(!this->eventHandlers.Contains(id));
+Touchpad::EventHandlerId
+Touchpad::subscribe(EventHandler handler) {
+    EventHandlerId id = this->uniqueIdCounter++;
     this->eventHandlers.Add(id, handler);
+    return id;
 }
 
 //------------------------------------------------------------------------------
 void
-Touchpad::unsubscribe(const StringAtom& id) {
+Touchpad::unsubscribe(EventHandlerId id) {
     if (this->eventHandlers.Contains(id)) {
         this->eventHandlers.Erase(id);
     }

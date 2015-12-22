@@ -96,43 +96,43 @@ Input::Sensors() {
 }
 
 //------------------------------------------------------------------------------
-void
-Input::SubscribeKeyboard(const StringAtom& id, Keyboard::EventHandler handler) {
+Keyboard::EventHandlerId
+Input::SubscribeKeyboard(Keyboard::EventHandler handler) {
     o_assert_dbg(IsValid());
-    state->inputManager.Keyboard.subscribe(id, handler);
+    return state->inputManager.Keyboard.subscribe(handler);
 }
 
 //------------------------------------------------------------------------------
 void
-Input::UnsubscribeKeyboard(const StringAtom& id) {
+Input::UnsubscribeKeyboard(Keyboard::EventHandlerId id) {
     o_assert_dbg(IsValid());
     state->inputManager.Keyboard.unsubscribe(id);
 }
 
 //------------------------------------------------------------------------------
-void
-Input::SubscribeMouse(const StringAtom& id, Mouse::EventHandler handler) {
+Mouse::EventHandlerId
+Input::SubscribeMouse(Mouse::EventHandler handler) {
     o_assert_dbg(IsValid());
-    state->inputManager.Mouse.subscribe(id, handler);
+    return state->inputManager.Mouse.subscribe(handler);
 }
 
 //------------------------------------------------------------------------------
 void
-Input::UnsubscribeMouse(const StringAtom& id) {
+Input::UnsubscribeMouse(Mouse::EventHandlerId id) {
     o_assert_dbg(IsValid());
     state->inputManager.Mouse.unsubscribe(id);
 }
 
 //------------------------------------------------------------------------------
-void
-Input::SubscribeTouchpad(const StringAtom& id, Touchpad::EventHandler handler) {
+Touchpad::EventHandlerId
+Input::SubscribeTouchpad(Touchpad::EventHandler handler) {
     o_assert_dbg(IsValid());
-    state->inputManager.Touchpad.subscribe(id, handler);
+    return state->inputManager.Touchpad.subscribe(handler);
 }
 
 //------------------------------------------------------------------------------
 void
-Input::UnsubscribeTouchpad(const StringAtom& id) {
+Input::UnsubscribeTouchpad(Touchpad::EventHandlerId id) {
     o_assert_dbg(IsValid());
     state->inputManager.Touchpad.unsubscribe(id);
 }

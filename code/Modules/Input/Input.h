@@ -37,17 +37,17 @@ public:
     static const class Sensors& Sensors();
 
     /// subscribe to keyboard events
-    static void SubscribeKeyboard(const StringAtom& id, Keyboard::EventHandler handler);
+    static Keyboard::EventHandlerId SubscribeKeyboard(Keyboard::EventHandler handler);
     /// unsubscribe from keyboard events
-    static void UnsubscribeKeyboard(const StringAtom& id);
+    static void UnsubscribeKeyboard(Keyboard::EventHandlerId id);
     /// subscribe to mouse events
-    static void SubscribeMouse(const StringAtom& id, Mouse::EventHandler handler);
+    static Mouse::EventHandlerId SubscribeMouse(Mouse::EventHandler handler);
     /// unsubscribe from mouse events
-    static void UnsubscribeMouse(const StringAtom& id);
+    static void UnsubscribeMouse(Mouse::EventHandlerId id);
     /// subscribe to touchpad events
-    static void SubscribeTouchpad(const StringAtom& id, Touchpad::EventHandler handler);
+    static Touchpad::EventHandlerId SubscribeTouchpad(Touchpad::EventHandler handler);
     /// unsubscribe from touchpad events
-    static void UnsubscribeTouchpad(const StringAtom& id);
+    static void UnsubscribeTouchpad(Touchpad::EventHandlerId id);
     
     /// set mouse cursor mode
     static void SetCursorMode(CursorMode::Code mode);

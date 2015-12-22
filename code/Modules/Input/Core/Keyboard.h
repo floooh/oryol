@@ -42,6 +42,8 @@ public:
         Event(enum Type t, wchar_t c) : Type(t), KeyCode(Key::InvalidKey), WCharCode(c) { };
     };
 
+    /// unique event handler id typedef
+    typedef unsigned int EventHandlerId;
     /// keyboard event handler typedef
     typedef std::function<void(const Event&)> EventHandler;
 
@@ -73,9 +75,9 @@ public:
     const wchar_t* CapturedText() const;
 
     /// subscribe to keyboard events
-    void subscribe(const StringAtom& id, EventHandler handler);
+    EventHandlerId subscribe(EventHandler handler);
     /// unsubscribe from keyboard events
-    void unsubscribe(const StringAtom& id);
+    void unsubscribe(EventHandlerId id);
     /// call when key down event happens
     void onKeyDown(Key::Code key);
     /// call when key up event happens
@@ -105,7 +107,8 @@ private:
     int32 charIndex;
     wchar_t chars[MaxNumChars + 1];
     bool textCapturing;
-    Map<StringAtom, EventHandler> eventHandlers;
+    EventHandlerId uniqueIdCounter;
+    Map<EventHandlerId, EventHandler> eventHandlers;
 
 };
 

@@ -21,6 +21,8 @@ class displayMgrBase {
 public:
     /// event handler typedef
     typedef std::function<void(const GfxEvent&)> eventHandler;
+    /// event handler id
+    typedef unsigned int eventHandlerId;
 
     /// constructor
     displayMgrBase();
@@ -46,9 +48,9 @@ public:
     const DisplayAttrs& GetDisplayAttrs() const;
 
     /// subscribe to display events
-    void Subscribe(const StringAtom& id, eventHandler handler);
+    eventHandlerId Subscribe(eventHandler handler);
     /// unsubscribe from display events
-    void Unsubscribe(const StringAtom& id);
+    void Unsubscribe(eventHandlerId id);
 
 protected:
     /// notify event handlers, all handlers get the same message object
@@ -56,7 +58,8 @@ protected:
 
     GfxSetup gfxSetup;
     DisplayAttrs displayAttrs;
-    Map<StringAtom, eventHandler> handlers;
+    eventHandlerId uniqueIdCounter;
+    Map<eventHandlerId, eventHandler> handlers;
     gfxPointers pointers;
     bool displayValid;
     int32 curFramebufferWidth;  // used to detect display size changes

@@ -9,6 +9,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 displayMgrBase::displayMgrBase() :
+uniqueIdCounter(0),
 displayValid(false),
 curFramebufferWidth(0),
 curFramebufferHeight(0) {
@@ -105,15 +106,16 @@ displayMgrBase::GetDisplayAttrs() const {
 }
 
 //------------------------------------------------------------------------------
-void
-displayMgrBase::Subscribe(const StringAtom& id, eventHandler handler) {
-    o_assert_dbg(!this->handlers.Contains(id));
+displayMgrBase::eventHandlerId
+displayMgrBase::Subscribe(eventHandler handler) {
+    eventHandlerId id = this->uniqueIdCounter++;
     this->handlers.Add(id, handler);
+    return id;
 }
 
 //------------------------------------------------------------------------------
 void
-displayMgrBase::Unsubscribe(const StringAtom& id) {
+displayMgrBase::Unsubscribe(eventHandlerId id) {
     if (this->handlers.Contains(id)) {
         this->handlers.Erase(id);
     }

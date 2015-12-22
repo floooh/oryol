@@ -58,6 +58,8 @@ public:
         Event(enum Type t, glm::vec2 scroll) : Type(t), ScrollMovement(scroll) { };
     };
 
+    /// unique event handler id typedef
+    typedef unsigned int EventHandlerId;
     /// mouse event handler typedef
     typedef std::function<void(const Event&)> EventHandler;
     
@@ -79,9 +81,9 @@ public:
     glm::vec2 Scroll;
 
     /// subscribe to mouse events
-    void subscribe(const StringAtom& id, EventHandler handler);
+    EventHandlerId subscribe(EventHandler handler);
     /// unsubscribe from mouse events
-    void unsubscribe(const StringAtom& id);
+    void unsubscribe(EventHandlerId id);
     /// call when mouse button down event happens
     void onButtonDown(Button btn);
     /// call when mouse button up event happens
@@ -108,7 +110,8 @@ private:
     };
     
     uint8 buttonState[Button::NumButtons];
-    Map<StringAtom, EventHandler> eventHandlers;
+    EventHandlerId uniqueIdCounter;
+    Map<EventHandlerId, EventHandler> eventHandlers;
 };
 
 //------------------------------------------------------------------------------

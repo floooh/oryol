@@ -11,20 +11,22 @@ namespace Oryol {
 Keyboard::Keyboard() :
 Attached(false),
 charIndex(0),
-textCapturing(false) {
+textCapturing(false),
+uniqueIdCounter(0) {
     Memory::Clear(&this->chars, sizeof(this->chars));
 }
 
 //------------------------------------------------------------------------------
-void
-Keyboard::subscribe(const StringAtom& id, EventHandler handler) {
-    o_assert_dbg(!this->eventHandlers.Contains(id));
+Keyboard::EventHandlerId
+Keyboard::subscribe(EventHandler handler) {
+    EventHandlerId id = this->uniqueIdCounter++;
     this->eventHandlers.Add(id, handler);
+    return id;
 }
 
 //------------------------------------------------------------------------------
 void
-Keyboard::unsubscribe(const StringAtom& id) {
+Keyboard::unsubscribe(EventHandlerId id) {
     if (this->eventHandlers.Contains(id)) {
         this->eventHandlers.Erase(id);
     }
