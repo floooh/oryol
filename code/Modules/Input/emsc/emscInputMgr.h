@@ -6,10 +6,6 @@
     @brief provide input on emscripten platform
 */
 #include "Input/base/inputMgrBase.h"
-#include "Input/touch/touchEvent.h"
-#include "Input/touch/tapDetector.h"
-#include "Input/touch/panDetector.h"
-#include "Input/touch/pinchDetector.h"
 #include "Core/RunLoop.h"
 #include <emscripten/html5.h>
 
