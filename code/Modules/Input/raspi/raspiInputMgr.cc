@@ -72,7 +72,6 @@ raspiInputMgr::openDevices() {
     if (dirp) {
         dirent* dp;
         while (nullptr != (dp = readdir(dirp))) {
-            Log::Info("readdir: %s\n", dp->d_name);
             if ((-1 == this->kbdFd) && strstr(dp->d_name, "-event-kbd")) {
                 strBuilder.Format(1024, "%s/%s", dirName, dp->d_name);
                 this->kbdFd = open(strBuilder.AsCStr(), O_RDONLY|O_NONBLOCK);
@@ -170,16 +169,18 @@ raspiInputMgr::onKey(unsigned short code, int val) {
             default: /* can't happen */ break;
         }
     }
-    // character code
+    // character code on key-down and -repeat
     if (code == KEY_LEFTSHIFT) {
         this->leftShift = (0 != val);
     }
     else if (code == KEY_RIGHTSHIFT) {
         this->rightShift = (0 != val);
     }
-    wchar_t wchr = this->mapChar(code, this->leftShift|this->rightShift);
-    if (0 != wchr) {
-        this->Keyboard.onChar(wchr);
+    if ((val == 1) || (val == 2)) {
+        wchar_t wchr = this->mapChar(code, this->leftShift|this->rightShift);
+        if (0 != wchr) {
+            this->Keyboard.onChar(wchr);
+        }
     }
 }
 

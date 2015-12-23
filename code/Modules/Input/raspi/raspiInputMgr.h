@@ -50,7 +50,7 @@ private:
     bool leftShift;
     bool rightShift;
 
-    static const int mouseSensitivity = 4;
+    static const int mouseSensitivity = 1;
     int maxMouseX;
     int maxMouseY;
     int curMouseX;
