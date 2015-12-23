@@ -45,6 +45,10 @@ imguiWrapper::Setup() {
 
     io.RenderDrawListsFn = imguiRenderDrawLists;
 
+    #if ORYOL_RASPBERRYPI
+    io.MouseDrawCursor = true;
+    #endif
+
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
     this->setupMesh();
