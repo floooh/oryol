@@ -1,8 +1,0 @@
----
-platform: linux 
-generator: Unix Makefiles
-build_tool: make
-build_type: Debug
-defines:
-    ORYOL_RASPBERRYPI: ON
-    ORYOL_GL_USE_GETATTRIBLOCATION: ON
