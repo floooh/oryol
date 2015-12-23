@@ -15,6 +15,12 @@
 using namespace Oryol;
 using namespace Paclone;
 
+#if ORYOL_RASPBERRYPI || ORYOL_IOS || ORYOL_ANDROID
+#define USE_CRTEFFECT (0)
+#else
+#define USE_CRTEFFECT (1)
+#endif
+
 class PacloneApp : public App {
 public:
     AppState::Code OnRunning();
@@ -27,8 +33,13 @@ private:
 
     Id crtEffect;
     Id crtRenderTarget;
+    #if USE_CRTEFFECT
     Shaders::CRT::FSParams crtParams;
     Shaders::CRT::FSTextures crtTextures;
+    #else
+    Shaders::NoCRT::FSParams crtParams;
+    Shaders::NoCRT::FSTextures crtTextures;
+    #endif
 
     canvas spriteCanvas;
     game gameState;
@@ -62,7 +73,11 @@ PacloneApp::OnInit() {
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->crtRenderTarget = Gfx::CreateResource(rtSetup);
     Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
+    #if USE_CRTEFFECT
     Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
+    #else
+    Id shd = Gfx::CreateResource(Shaders::NoCRT::Setup());
+    #endif
     this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
     this->crtTextures.Canvas = this->crtRenderTarget;
 
