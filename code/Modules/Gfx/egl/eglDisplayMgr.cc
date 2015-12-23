@@ -60,13 +60,17 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         return;
     }
 
+    // make sure we have a valid rendering RGBA format, e.g. RGB is
+    // not a valid framebuffer format
+    int colorBits = PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Red);
+    o_assert((colorBits == 4) || (colorBits == 8));
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_SAMPLES, gfxSetup.SampleCount,
-        EGL_RED_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Red),
-        EGL_GREEN_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Green),
-        EGL_BLUE_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Blue),
-        EGL_ALPHA_SIZE, PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Alpha),
+        EGL_RED_SIZE, colorBits,
+        EGL_GREEN_SIZE, colorBits,
+        EGL_BLUE_SIZE, colorBits,
+        EGL_ALPHA_SIZE, colorBits,
         EGL_DEPTH_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Depth),
         EGL_STENCIL_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Stencil),
         EGL_NONE
