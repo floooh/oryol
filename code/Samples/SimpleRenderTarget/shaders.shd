@@ -25,7 +25,7 @@
 
 @fs renderTargetFS
 @in vec4 nrm
-    _color = nrm * 0.5 + 0.5;
+    _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
 @bundle RenderTarget
@@ -53,7 +53,7 @@
 @in vec4 nrm
     vec4 c = tex2D(tex, uv * vec2(20.0, 10.0));
     float l = clamp(dot(nrm.xyz, normalize(vec3(1.0, 1.0, -1.0))), 0.0, 1.0) * 2.0;
-    _color = c * (l + 0.25);
+    _color = vec4(c.xyz * (l + 0.25), 1.0);
 @end
 
 @bundle Main
