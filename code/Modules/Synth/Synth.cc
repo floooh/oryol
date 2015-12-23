@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Synth.h"
+#include "Core/Trace.h"
 
 namespace Oryol {
 
@@ -50,6 +51,7 @@ Synth::UpdateVolume(float32 vol) {
 void
 Synth::Update() {
     o_assert_dbg(IsValid());
+    o_trace_scoped(Synth_Update);
     state->soundManager.Update();
 }
 

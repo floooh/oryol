@@ -254,7 +254,7 @@ Gfx::UpdateIndices(const Id& id, const void* data, int32 numBytes) {
 //------------------------------------------------------------------------------
 void
 Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes) {
-    o_trace_scoped(Gfx_UpdatePixels);
+    o_trace_scoped(Gfx_UpdateTexture);
     o_assert_dbg(IsValid());
 
     #if ORYOL_OPENGL || ORYOL_METAL
