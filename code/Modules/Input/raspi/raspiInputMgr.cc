@@ -76,10 +76,16 @@ raspiInputMgr::openDevices() {
             if ((-1 == this->kbdFd) && strstr(dp->d_name, "-event-kbd")) {
                 strBuilder.Format(1024, "%s/%s", dirName, dp->d_name);
                 this->kbdFd = open(strBuilder.AsCStr(), O_RDONLY|O_NONBLOCK);
+                if (-1 != this->kbdFd) {
+                    ioctl(this->kbdFd, EVIOCGRAB, 1);
+                }
             }
             else if ((-1 == this->mouseFd) && strstr(dp->d_name, "-event-mouse")) {
                 strBuilder.Format(1024, "%s/%s", dirName, dp->d_name);
                 this->mouseFd = open(strBuilder.AsCStr(), O_RDONLY|O_NONBLOCK);
+                if (-1 != this->mouseFd) {
+                    ioctl(this->mouseFd, EVIOCGRAB, 1);
+                }
             }
         }
         closedir(dirp);
