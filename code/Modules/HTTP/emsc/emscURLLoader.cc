@@ -24,7 +24,7 @@ emscURLLoader::startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     o_assert(req.isValid() && !req->Handled());
 
     // currently only support GET
-    o_assert(req->GetMethod() == HTTPMethod::Get);
+    o_assert(HTTPMethod::Get == req->Method);
 
     // bump the requests refcount and get a raw pointer
     HTTPProtocol::HTTPRequest* reqPtr = req.get();
