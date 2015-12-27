@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
+#include "Core/Core.h"
 #include "IO/FS/FileSystem.h"
 #include "IO/Core/schemeRegistry.h"
 
@@ -41,6 +42,8 @@ OryolClassImpl(TestFS_C);
 
 TEST(schemeRegistryTest) {
     
+    Core::Setup();
+
     const StringAtom http("http");
     const StringAtom ftp("ftp");
     const StringAtom file("file");
@@ -67,5 +70,7 @@ TEST(schemeRegistryTest) {
     Ptr<TestFS_C> fsc = reg.CreateFileSystem(file);
     CHECK(fsc);
     CHECK(fsc->GetType() == 2);
+
+    Core::Discard();
 }
 
