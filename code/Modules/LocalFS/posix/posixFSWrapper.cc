@@ -6,7 +6,9 @@
 #include "LocalFS/whereami/whereami.h"
 #include "Core/String/StringBuilder.h"
 #include <stdio.h>
+#if !ORYOL_WINDOWS
 #include <unistd.h>
+#endif
 
 namespace Oryol {
 namespace _priv {
@@ -78,7 +80,11 @@ posixFSWrapper::getExecutableDir() {
 String
 posixFSWrapper::getCwd() {
     char buf[4096];
+    #if ORYOL_WINDOWS
+    const char* cwd = _getcwd(buf, sizeof(buf));
+    #else
     const char* cwd = getcwd(buf, sizeof(buf));
+    #endif
     if (cwd) {
         return String(cwd);
     }

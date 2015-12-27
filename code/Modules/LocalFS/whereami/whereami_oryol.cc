@@ -6,7 +6,7 @@
 
 #define WAI_MALLOC(size) Oryol::Memory::Alloc(size)
 #define WAI_FREE(p) Oryol::Memory::Free(p)
-#define WAI_REALLOC(p,size) OryoL::Memory::ReAlloc(p,size)
+#define WAI_REALLOC(p,size) Oryol::Memory::ReAlloc(p,size)
 
 #include "whereami.h"
 #include "whereami.c"
