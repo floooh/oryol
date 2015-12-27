@@ -36,7 +36,7 @@ int32
 posixFSWrapper::write(handle h, const void* ptr, int32 numBytes) {
     o_assert_dbg(invalidHandle != h);
     o_assert_dbg(ptr);
-    return fwrite(ptr, 1, numBytes, (FILE*)h);
+    return (int32) fwrite(ptr, 1, numBytes, (FILE*)h);
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ int32
 posixFSWrapper::read(handle h, void* ptr, int32 numBytes) {
     o_assert_dbg(invalidHandle != h);
     o_assert_dbg(ptr);
-    return fread(ptr, 1, numBytes, (FILE*)h);
+    return (int32) fread(ptr, 1, numBytes, (FILE*)h);
 }
 
 //------------------------------------------------------------------------------
