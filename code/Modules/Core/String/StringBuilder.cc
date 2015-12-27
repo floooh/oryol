@@ -472,7 +472,7 @@ StringBuilder::findLastOf(const char* str, int32 strLen, int32 startIndex, int32
         char sc;
         do {
             if ((sc = *delimPtr++) == c) {
-                return ptr - startPtr;
+                return int32(ptr - startPtr);
             }
         }
         while (sc != 0);
@@ -495,7 +495,7 @@ StringBuilder::findLastNotOf(const char* str, int32 strLen, int32 startIndex, in
     while (ptr > startPtr) {
         const char c = *--ptr;
         if (nullptr == strchr(delims, c)) {
-            return ptr - startPtr;
+            return int32(ptr - startPtr);
         }
     }
     // not found
