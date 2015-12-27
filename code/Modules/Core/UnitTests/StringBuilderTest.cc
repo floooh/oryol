@@ -171,12 +171,39 @@ TEST(StringBuilderTest) {
     CHECK(builder.FindFirstNotOf(0, EndOfString, "htp:/") == 7);
     CHECK(builder.FindFirstOf(0, 4, ":") == InvalidIndex);
     CHECK(builder.FindFirstOf(7, 12, ".") == 10);
+    CHECK(builder.FindFirstOf("http://bla.blob.com:8000", 0, EndOfString, ":") == 4);
+    CHECK(builder.FindFirstNotOf("http://bla.blob.com:8000", 0, EndOfString, "htp:/") == 7);
+    CHECK(builder.FindFirstOf("http://bla.blob.com:8000", 0, 4, ":") == InvalidIndex);
+    CHECK(builder.FindFirstOf("http://bla.blob.com:8000", 7, 12, ".") == 10);
     CHECK(builder.FindSubString(0, EndOfString, "://") == 4);
     CHECK(builder.Contains("bla.blob"));
     CHECK(!builder.Contains("blub"));
     CHECK(StringBuilder::Contains("http://bla.blob.com:8000", "bla.blob"));
     CHECK(!StringBuilder::Contains("http://bla/blob.com:8000", "blub"));
-    
+
+    /// FindLastOf, FindLastNotOf
+    builder.Set("http://bla.blob.com:8000");
+    CHECK(builder.FindLastOf(0, EndOfString, "x") == InvalidIndex);
+    CHECK(builder.FindLastOf(0, EndOfString, ":") == 19);
+    CHECK(builder.FindLastOf(0, 5, ":") == 4);
+    CHECK(builder.FindLastOf(0, 4, ":") == InvalidIndex);
+    CHECK(builder.FindLastOf(7, 12, ".") == 3);
+    CHECK(builder.FindLastOf(0, EndOfString, ".:/") == 19);
+    CHECK(builder.FindLastOf(1, EndOfString, "/") == 5);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 0, EndOfString, "x") == InvalidIndex);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 0, EndOfString, ":") == 19);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 0, 5, ":") == 4);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 0, 4, ":") == InvalidIndex);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 7, 12, ".") == 3);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 0, EndOfString, ".:/") == 19);
+    CHECK(builder.FindLastOf("http://bla.blob.com:8000", 1, EndOfString, "/") == 5);
+
+    CHECK(builder.FindLastNotOf(0, EndOfString, "htp:/bla.ocm80") == InvalidIndex);
+    CHECK(builder.FindLastNotOf(0, EndOfString, "80") == 19);
+
+    CHECK(builder.FindLastNotOf("http://bla.blob.com:8000", 0, EndOfString, "htp:/bla.ocm80") == InvalidIndex);
+    CHECK(builder.FindLastNotOf("http://bla.blob.com:8000", 0, EndOfString, "80") == 19);
+
     // test Format
     CHECK(!builder.Format(4, "One: %d, Two: %d, Three: %d", 1, 2, 3));   // this should fail because of no room
     CHECK(builder.GetString() == "");

@@ -457,6 +457,103 @@ StringBuilder::FindFirstOf(int32 startIndex, int32 endIndex, const char* delims)
 
 //------------------------------------------------------------------------------
 int32
+StringBuilder::findLastOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
+    const char* startPtr = str + startIndex;
+    const char* ptr;
+    if (EndOfString == endIndex) {
+        ptr = str + strLen;
+    }
+    else {
+        ptr = str + endIndex;
+    }
+    while (ptr > startPtr) {
+        const char c = *--ptr;
+        const char* delimPtr = delims;
+        char sc;
+        do {
+            if ((sc = *delimPtr++) == c) {
+                return ptr - startPtr;
+            }
+        }
+        while (sc != 0);
+    }
+    // not found
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::findLastNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
+    const char* startPtr = str + startIndex;
+    const char* ptr;
+    if (EndOfString == endIndex) {
+        ptr = str + strLen;
+    }
+    else {
+        ptr = str + endIndex;
+    }
+    while (ptr > startPtr) {
+        const char c = *--ptr;
+        if (nullptr == strchr(delims, c)) {
+            return ptr - startPtr;
+        }
+    }
+    // not found
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::FindLastOf(const char* str, int32 startIndex, int32 endIndex, const char* delims) {
+    o_assert(0 != delims);
+    o_assert(str);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    const int32 strLen = int32(std::strlen(str));
+    return findLastOf(str, strLen, startIndex, endIndex, delims);
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::FindLastOf(int32 startIndex, int32 endIndex, const char* delims) const {
+    o_assert(0 != delims);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    o_assert(startIndex < this->size);
+    if (nullptr != this->buffer) {
+        return findLastOf(this->buffer, this->size, startIndex, endIndex, delims);
+    }
+    else {
+        // no content
+        return InvalidIndex;
+    }
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::FindLastNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims) {
+    o_assert(0 != delims);
+    o_assert(str);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    const int32 strLen = int32(std::strlen(str));
+    return findLastNotOf(str, strLen, startIndex, endIndex, delims);
+}
+
+//------------------------------------------------------------------------------
+int32
+StringBuilder::FindLastNotOf(int32 startIndex, int32 endIndex, const char* delims) const {
+    o_assert(0 != delims);
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
+    o_assert(startIndex < this->size);
+    if (nullptr != this->buffer) {
+        return findLastNotOf(this->buffer, this->size, startIndex, endIndex, delims);
+    }
+    else {
+        // no content
+        return InvalidIndex;
+    }
+}
+
+//------------------------------------------------------------------------------
+int32
 StringBuilder::findFirstNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims) {
     const char* ptr = str + startIndex;
     int index = int32(std::strspn(ptr, delims)) + startIndex;
@@ -478,9 +575,9 @@ int32
 StringBuilder::FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims) {
     o_assert(0 != delims);
     o_assert(str);
-    o_assert((EndOfString != endIndex) || (endIndex >= startIndex));
+    o_assert((EndOfString == endIndex) || (endIndex >= startIndex));
     const int32 strLen = int32(std::strlen(str));
-    return findFirstOf(str, strLen, startIndex, endIndex, delims);
+    return findFirstNotOf(str, strLen, startIndex, endIndex, delims);
 }
 
 //------------------------------------------------------------------------------

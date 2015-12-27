@@ -97,17 +97,27 @@ public:
     /// substitute a range of characters with a string, endIndex can be EndOfString
     void SubstituteRange(int32 startIndex, int32 endIndex, const char* subst);
     
-    /// find byte-index of first occurrence of delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence of delim chars, return InvalidIndex if not found
     int32 FindFirstOf(int32 startIndex, int32 endIndex, const char* delims) const;
-    /// find byte-index of first occurrence of delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence of delim chars, return InvalidIndex if not found
     static int32 FindFirstOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
-    /// find byte-index of first occurrence not in delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence not in delim chars, return InvalidIndex if not found
     int32 FindFirstNotOf(int32 startIndex, int32 endIndex, const char* delims) const;
-    /// find byte-index of first occurrence not in delim chars, return EndOfString if not found
+    /// find byte-index of first occurrence not in delim chars, return InvalidIndex if not found
     static int32 FindFirstNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
-    /// find substring index, endIndex can be EndOfString, return EndOfString if not found
+
+    /// find byte-index of last occurrence of delim chars, return InvalidIndex if not found
+    int32 FindLastOf(int32 startIndex, int32 endIndex, const char* delims) const;
+    /// find byte-index of last occurrence of delim chars, return InvalidIndex if not found
+    static int32 FindLastOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
+    /// find byte-index of last occurrence not in delim chars, return InvalidIndex if not found
+    int32 FindLastNotOf(int32 startIndex, int32 endIndex, const char* delims) const;
+    /// find byte-index of last occurrence not in delim chars, return InvalidIndex if not found
+    static int32 FindLastNotOf(const char* str, int32 startIndex, int32 endIndex, const char* delims);
+
+    /// find substring index, endIndex can be EndOfString, return InvalidIndex if not found
     int32 FindSubString(int32 startIndex, int32 endIndex, const char* subString) const;
-    /// find substring index, endIndex can be EndOfString, return EndOfString if not found
+    /// find substring index, endIndex can be EndOfString, return InvalidIndex if not found
     static int32 FindSubString(const char* str, int32 startIndex, int32 endIndex, const char* subString);
     /// test if contains a substring
     bool Contains(const char* str) const;
@@ -142,6 +152,10 @@ private:
     static int32 findFirstOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims);
     /// helper function for FindFirstNotOf functions
     static int32 findFirstNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims);
+    /// helper function for FindLastOf functions
+    static int32 findLastOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims);
+    /// helper function for FindLastNotOf functions
+    static int32 findLastNotOf(const char* str, int32 strLen, int32 startIndex, int32 endIndex, const char* delims);
     /// helper function for FindSubString functions
     static int32 findSubString(const char* str, int32 startIndex, int32 endIndex, const char* subStr);
     /// internal formatting method
