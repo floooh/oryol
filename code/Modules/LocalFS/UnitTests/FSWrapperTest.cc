@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "LocalFS/Core/fsWrapper.h"
 #include "Core/String/StringBuilder.h"
+#include <string.h>
 
 using namespace Oryol;
 using namespace _priv;
