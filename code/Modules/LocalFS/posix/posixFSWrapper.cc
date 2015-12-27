@@ -6,7 +6,9 @@
 #include "LocalFS/whereami/whereami.h"
 #include "Core/String/StringBuilder.h"
 #include <stdio.h>
-#if !ORYOL_WINDOWS
+#if ORYOL_WINDOWS
+#include <direct.h>
+#else
 #include <unistd.h>
 #endif
 
