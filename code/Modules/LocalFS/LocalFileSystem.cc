@@ -8,6 +8,12 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 void
+LocalFileSystem::Init() {
+    Log::Info("FIXME: LocalFileSystem::Init()\n");
+}
+
+//------------------------------------------------------------------------------
+void
 LocalFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
     Log::Info("FIXME: LocalFileSystem::onRequest()\n");
 }

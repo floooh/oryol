@@ -9,7 +9,8 @@ namespace Oryol {
 OryolClassImpl(HTTPFileSystem);
 
 //------------------------------------------------------------------------------
-HTTPFileSystem::HTTPFileSystem() {
+void
+HTTPFileSystem::InitLane() {
     this->httpClient = HTTPClient::Create();
 
     // add standard request headers:
@@ -21,11 +22,6 @@ HTTPFileSystem::HTTPFileSystem() {
     this->requestHeaders.Add("User-Agent", "Mozilla/5.0");
     this->requestHeaders.Add("Connection", "keep-alive");
     this->requestHeaders.Add("Accept-Encoding", "gzip, deflate");
-}
-
-//------------------------------------------------------------------------------
-HTTPFileSystem::~HTTPFileSystem() {
-    // empty
 }
 
 //------------------------------------------------------------------------------

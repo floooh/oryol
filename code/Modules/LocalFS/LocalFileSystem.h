@@ -17,6 +17,8 @@ class LocalFileSystem : public FileSystem {
     OryolClassDecl(LocalFileSystem);
     OryolClassCreator(LocalFileSystem);
 public:
+    /// called once on main-thread
+    virtual void Init() override;
     /// called when a IOProtocol::Request message is received
     virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override;
 };

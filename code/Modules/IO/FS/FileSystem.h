@@ -20,7 +20,11 @@ public:
     FileSystem();
     /// destructor
     ~FileSystem();
-    
+
+    /// called once on main-thread
+    virtual void Init();
+    /// called per IO-lane
+    virtual void InitLane();
     /// per-frame update
     virtual void DoWork();
     /// called when the IOProtocol::Request message is received

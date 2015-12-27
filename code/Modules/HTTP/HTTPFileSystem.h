@@ -24,11 +24,8 @@ class HTTPFileSystem : public FileSystem {
     OryolClassDecl(HTTPFileSystem);
     OryolClassCreator(HTTPFileSystem);
 public:
-    /// default constructor
-    HTTPFileSystem();
-    /// destructor
-    ~HTTPFileSystem();
-
+    /// called per IO-lane
+    virtual void InitLane() override;
     /// per-frame update
     virtual void DoWork() override;
     /// called when the IOProtocol::Request message is received

@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "schemeRegistry.h"
 #include "IO/FS/FileSystem.h"
+#include "Core/Core.h"
 
 namespace Oryol {
 namespace _priv {
@@ -25,6 +26,8 @@ schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<F
     o_assert(!this->registry.Contains(scheme));
     this->registry.Add(scheme, fsCreator);
     this->rwLock.UnlockWrite();
+    // create temp FileSystem object on main-thread to call the Init method
+    this->CreateFileSystem(scheme);
 }
 
 //------------------------------------------------------------------------------
@@ -51,6 +54,12 @@ schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     this->rwLock.LockRead();
     o_assert(this->registry.Contains(scheme));
     Ptr<FileSystem> fileSystem(this->registry[scheme]());
+    if (Core::IsMainThread()) {
+        fileSystem->Init();
+    }
+    else {
+        fileSystem->InitLane();
+    }
     this->rwLock.UnlockRead();
     return fileSystem;
 }

@@ -28,6 +28,18 @@ FileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
 
 //------------------------------------------------------------------------------
 void
+FileSystem::Init() {
+    // this is called once on the main thread
+}
+
+//------------------------------------------------------------------------------
+void
+FileSystem::InitLane() {
+    // this is called per IO lane
+}
+
+//------------------------------------------------------------------------------
+void
 FileSystem::DoWork() {
     // implement in subclass!
 }

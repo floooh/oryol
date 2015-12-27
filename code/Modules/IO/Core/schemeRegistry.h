@@ -11,6 +11,7 @@
 #include "Core/Creator.h"
 #include "IO/FS/FileSystem.h"
 #include <functional>
+#include <thread>
 
 namespace Oryol {
 namespace _priv {
