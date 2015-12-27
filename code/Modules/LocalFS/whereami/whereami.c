@@ -230,7 +230,6 @@ int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length)
       uint32_t major, minor;
       char path[PATH_MAX];
       uint32_t inode;
-      int count;
 
       if (!fgets(buffer, sizeof(buffer), maps))
         break;
