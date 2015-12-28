@@ -51,4 +51,15 @@ TEST(FSWrapperTest) {
     CHECK(fsWrapper::seek(hr, 128));
     CHECK(fsWrapper::read(hr, buf, sizeof(buf)) == 0);
     fsWrapper::close(hr);
+
+    const fsWrapper::handle hs = fsWrapper::openRead(strBuilder.AsCStr());
+    int32 size = fsWrapper::size(hs);
+    CHECK(size == 12);
+    CHECK(fsWrapper::seek(hs, 6));
+    size = fsWrapper::size(hs);
+    CHECK(size == 12);
+    CHECK(fsWrapper::read(hs, buf, sizeof(buf)) == 6);
+    readStr.Assign(buf, 0, 6);
+    CHECK(readStr == "World\n");
+    fsWrapper::close(hs);
 }

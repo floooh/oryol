@@ -28,8 +28,10 @@ public:
     static int32 read(handle f, void* ptr, int32 numBytes);
     /// seek from start of file
     static bool seek(handle f, int32 offset);
+    /// get file size
+    static int32 size(handle f);
     /// close file
-    static void closeFile(handle f);
+    static void close(handle f);
     /// get path to own executable
     static String getExecutablePath();
     /// get current directory

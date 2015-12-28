@@ -55,6 +55,18 @@ posixFSWrapper::seek(handle h, int32 offset) {
 }
 
 //------------------------------------------------------------------------------
+int32
+posixFSWrapper::size(handle h) {
+    o_assert_dbg(invalidHandle != h);
+    FILE* fp = (FILE*) h;
+    long off = ftell(fp);
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, off, SEEK_SET);
+    return (int32) size;
+}
+
+//------------------------------------------------------------------------------
 void
 posixFSWrapper::close(handle h) {
     o_assert_dbg(invalidHandle != h);

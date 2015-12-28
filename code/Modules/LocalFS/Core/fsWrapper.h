@@ -6,17 +6,16 @@
     @brief file-system wrapper frontend class
 */
 
-// FIXME: add more platform-specific implementations?
-#if ORYOL_POSIX || ORYOL_WINDOWS
-#include "LocalFS/posix/posixFSWrapper.h"
-namespace Oryol {
-namespace _priv {
-class fsWrapper : public posixFSWrapper { };
-} }
-#else
+#if ORYOL_EMSCRIPTEN || ORYOL_PNACL
 #include "LocalFS/dummy/dummyFSWrapper.h"
 namespace Oryol {
 namespace _priv {
 class fsWrapper : public dummyFSWrapper { };
+} }
+#else
+#include "LocalFS/posix/posixFSWrapper.h"
+namespace Oryol {
+namespace _priv {
+class fsWrapper : public posixFSWrapper { };
 } }
 #endif

@@ -38,8 +38,14 @@ dummyFSWrapper::seek(handle f, int32 offset) {
 }
 
 //------------------------------------------------------------------------------
+int32
+dummyFSWrapper::size(handle f) {
+    return 0;
+}
+
+//------------------------------------------------------------------------------
 void
-dummyFSWrapper::closeFile(handle f) {
+dummyFSWrapper::close(handle f) {
     // empty
 }
 
