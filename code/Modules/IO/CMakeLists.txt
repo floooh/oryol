@@ -14,7 +14,6 @@ fips_begin_module(IO)
         IOQueue.cc IOQueue.h
         IOSetup.h
         IOStatus.cc IOStatus.h
-        OpenMode.cc OpenMode.h
         URL.cc URL.h
         URLBuilder.cc URLBuilder.h
         assignRegistry.cc assignRegistry.h
@@ -36,7 +35,6 @@ fips_begin_unittest(IO)
         ContentTypeTest.cc
         IOFacadeTest.cc
         IOStatusTest.cc
-        OpenModeTest.cc
         URLBuilderTest.cc
         URLTest.cc
         assignRegistryTest.cc
