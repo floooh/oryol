@@ -2,7 +2,7 @@
 
 // in case you want to #include "whereami.c" in a larger compilation unit
 #if !defined(WHEREAMI_H)
-#include "whereami.h"
+#include <whereami.h>
 #endif
 
 #ifdef __cplusplus
@@ -257,7 +257,7 @@ int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length)
             char* begin;
             char* p;
 
-            begin = (char*) mmap(0, offset, PROT_READ, MAP_SHARED, fd, 0);
+            begin = (char*)mmap(0, offset, PROT_READ, MAP_SHARED, fd, 0);
             p = begin + offset;
 
             while (p >= begin) // scan backwards
@@ -266,7 +266,7 @@ int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length)
               {
                 uint16_t length_ = *((uint16_t*)(p + 26));
 
-                if (size_t(length + 2 + length_) < sizeof(buffer))
+                if (length + 2 + length_ < (int)sizeof(buffer))
                 {
                   memcpy(&buffer[length], "!/", 2);
                   memcpy(&buffer[length + 2], p + 30, length_);
