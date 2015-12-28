@@ -23,7 +23,6 @@ class texturePool;
 class drawStatePool;
 
 struct gfxPointers {
-public:
     class renderer* renderer = nullptr;
     class displayMgr* displayMgr = nullptr;
     class gfxResourceContainer* resContainer = nullptr; 
