@@ -98,11 +98,6 @@
   type: emscripten,pnacl
   image: /Users/floh/projects/oryol/code/Samples/TurboBadgerDemo/TurboBadgerDemo.jpg
   src: TurboBadgerDemo/TurboBadgerDemo.cc
-- name: TestNanoVG
-  desc: NanoVG integration
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/TestNanoVG/TestNanoVG.jpg
-  src: TestNanoVG/TestNanoVG.cc
 - name: Fractal
   desc: Simple fractal explorer
   type: emscripten,pnacl,android
