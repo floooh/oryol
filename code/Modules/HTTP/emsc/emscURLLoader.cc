@@ -9,12 +9,15 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-// FIXME FIXME FIXME
-// Properly handle cancelled messages.
-void
-emscURLLoader::doWork() {
-    while (!this->requestQueue.Empty()) {
-        this->startRequest(this->requestQueue.Dequeue());
+bool
+emscURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+    if (baseURLLoader::doRequest(httpReq)) {
+        this->startRequest(httpReq);
+        return true;
+    }
+    else {
+        // request was cancelled
+        return false;
     }
 }
 
@@ -60,9 +63,10 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     // also fill the embedded IORequest object
     req->Response = response;
     if (ioReq) {
-        auto httpResponse = req->Response;
+        const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->Response;
         ioReq->Status = httpResponse->Status;
         ioReq->Data = std::move(httpResponse->Body);
+        ioReq->Type = httpResponse->Type;
         ioReq->ErrorDesc = httpResponse->ErrorDesc;
         ioReq->SetHandled();
     }
@@ -85,9 +89,9 @@ emscURLLoader::onFailed(void* userData) {
     Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
     response->Status = ioStatus;
     req->Response = response;
-    auto ioReq = req->IoRequest;
+    const Ptr<IOProtocol::Request>& ioReq = req->IoRequest;
     if (ioReq) {
-        auto httpResponse = req->Response;
+        const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->Response;
         ioReq->Status = httpResponse->Status;
         ioReq->SetHandled();
     }

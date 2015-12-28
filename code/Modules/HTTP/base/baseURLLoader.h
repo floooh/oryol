@@ -15,15 +15,8 @@ namespace _priv {
 
 class baseURLLoader {
 public:
-    /// enqueue an URL request
-    void putRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
-    /// process enqueued requests
-    void doWork();
-protected:
-    /// handle cancelled messages, return true if was handled
-    bool handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& req);
-
-    Queue<Ptr<HTTPProtocol::HTTPRequest>> requestQueue;
+    /// process one HTTPRequest
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
 } // namespace _priv
 } // namespace Oryol

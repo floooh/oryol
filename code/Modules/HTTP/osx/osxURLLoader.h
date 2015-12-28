@@ -16,11 +16,11 @@ public:
     /// constructor
     osxURLLoader();
     /// process enqueued requests
-    void doWork();
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
     
 private:
     /// handle a single request, synchronously
-    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req);
 };
     
 } // namespace _priv

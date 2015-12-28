@@ -15,8 +15,8 @@ namespace _priv {
     
 class pnaclURLLoader : public baseURLLoader {
 public:
-    /// process enqueued requests
-    void doWork();
+    /// process one request
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 
     /// pepper-thread callback which sends the request
     static void cbSendRequest(void* data, int32_t result);

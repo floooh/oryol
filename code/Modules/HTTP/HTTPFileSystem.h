@@ -26,8 +26,6 @@ class HTTPFileSystem : public FileSystem {
 public:
     /// called per IO-lane
     virtual void InitLane() override;
-    /// per-frame update
-    virtual void DoWork() override;
     /// called when the IOProtocol::Request message is received
     virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override;
 

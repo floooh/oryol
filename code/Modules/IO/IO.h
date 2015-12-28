@@ -16,7 +16,7 @@
 #include "IO/FS/ioRequestRouter.h"
 #include "IO/Core/assignRegistry.h"
 #include "IO/Core/schemeRegistry.h"
-#include <thread>
+#include "Core/RunLoop.h"
 
 namespace Oryol {
 
@@ -51,18 +51,13 @@ public:
     static void Put(const Ptr<IOProtocol::Request>& ioReq);
     
 private:
-    friend class _priv::ioLane;
-
-    /// get access to schemeRegistry (FIXME: hacky...)
-    static _priv::schemeRegistry* getSchemeRegistry();
-    
-    /// the per-frame update method (attached to the main-thread runloop)
+    /// pump the ioRequestRouter
     static void doWork();
 
     struct _state {
         _priv::assignRegistry assignReg;
         _priv::schemeRegistry schemeReg;
-        int32 runLoopId = 0;
+        RunLoop::Id runLoopId = RunLoop::InvalidId;
         Ptr<_priv::ioRequestRouter> requestRouter;
     };
     static _state* state;

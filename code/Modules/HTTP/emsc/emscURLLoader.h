@@ -17,8 +17,8 @@ namespace _priv {
 
 class emscURLLoader : public baseURLLoader {
 public:
-    /// process enqueued requests
-    void doWork();
+    /// process one request
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 
 private:
     /// start the next, called from doWork

@@ -23,34 +23,32 @@ osxURLLoader::osxURLLoader() {
 }
 
 //------------------------------------------------------------------------------
-void
-osxURLLoader::doWork() {
-
-    while (!this->requestQueue.Empty()) {
-        // don't process any cancelled requests
-        Ptr<HTTPProtocol::HTTPRequest> httpReq = this->requestQueue.Dequeue();
-        if (!baseURLLoader::handleCancelled(httpReq)) {
-            // process the request
-            this->doOneRequest(httpReq);
-            
-            // transfer result to embedded IoRequest and set to handled
-            auto ioReq = httpReq->IoRequest;
-            if (ioReq) {
-                auto httpResponse = httpReq->Response;
-                ioReq->Status = httpResponse->Status;
-                ioReq->Data = std::move(httpResponse->Body);
-                ioReq->Type = httpResponse->Type;
-                ioReq->ErrorDesc = httpResponse->ErrorDesc;
-                ioReq->SetHandled();
-            }
-            httpReq->SetHandled();
+bool
+osxURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+    if (baseURLLoader::doRequest(httpReq)) {
+        this->doRequestInternal(httpReq);
+        // transfer result to embedded IoRequest and set to handled
+        const Ptr<IOProtocol::Request>& ioReq = httpReq->IoRequest;
+        if (ioReq) {
+            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = httpReq->Response;
+            ioReq->Status = httpResponse->Status;
+            ioReq->Data = std::move(httpResponse->Body);
+            ioReq->Type = httpResponse->Type;
+            ioReq->ErrorDesc = httpResponse->ErrorDesc;
+            ioReq->SetHandled();
         }
+        httpReq->SetHandled();
+        return true;
+    }
+    else {
+        // request was cancelled
+        return false;
     }
 }
 
 //------------------------------------------------------------------------------
 void
-osxURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
+osxURLLoader::doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     @autoreleasepool {
         
         // build an URL request

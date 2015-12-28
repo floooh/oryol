@@ -14,9 +14,9 @@ namespace _priv {
 OryolClassImpl(ioLane);
 
 //------------------------------------------------------------------------------
-ioLane::ioLane() {
-    // let our thread wake up from time to time
-    this->SetTickDuration(100);
+ioLane::ioLane(const ioPointers& ptrs) :
+pointers(ptrs) {
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -29,8 +29,7 @@ void
 ioLane::onThreadEnter() {
     ThreadedQueue::onThreadEnter();
 
-    // setup a Dispatcher to route messages to safely route messages
-    // to this object's callback methods
+    // setup a Dispatcher to route messages to this object's callback methods
     Ptr<Dispatcher<IOProtocol>> disp = Dispatcher<IOProtocol>::Create();
     using namespace std::placeholders;
     disp->Subscribe<IOProtocol::Request>(std::bind(&ioLane::onRequest, this, _1));
@@ -46,17 +45,6 @@ ioLane::onThreadLeave() {
     this->forwardingPort = 0;
     this->fileSystems.Clear();
     ThreadedQueue::onThreadLeave();
-}
-
-//------------------------------------------------------------------------------
-void
-ioLane::onTick() {
-    ThreadedQueue::onTick();
-    
-    // also tick our file systems
-    for (const auto& kvp : this->fileSystems) {
-        kvp.Value()->DoWork();
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -93,7 +81,7 @@ void
 ioLane::onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& msg) {
     const StringAtom& urlScheme = msg->Scheme;
     o_assert(!this->fileSystems.Contains(urlScheme));
-    Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
+    Ptr<FileSystem> newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
     this->fileSystems.Add(urlScheme, newFileSystem);
 }
 
@@ -102,7 +90,7 @@ void
 ioLane::onNotifyFileSystemReplaced(const Ptr<IOProtocol::notifyFileSystemReplaced>& msg) {
     const StringAtom& urlScheme = msg->Scheme;
     o_assert(this->fileSystems.Contains(urlScheme));
-    Ptr<FileSystem> newFileSystem = IO::getSchemeRegistry()->CreateFileSystem(urlScheme);
+    Ptr<FileSystem> newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
     this->fileSystems[urlScheme] = newFileSystem;
 }
 

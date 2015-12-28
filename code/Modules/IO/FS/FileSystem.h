@@ -25,8 +25,6 @@ public:
     virtual void Init();
     /// called per IO-lane
     virtual void InitLane();
-    /// per-frame update
-    virtual void DoWork();
     /// called when the IOProtocol::Request message is received
     virtual void onRequest(const Ptr<IOProtocol::Request>& msg);
 };

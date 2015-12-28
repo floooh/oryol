@@ -110,6 +110,8 @@ ThreadedQueue::DoWork() {
     if (!this->writeQueue.Empty()) {
         this->moveWriteToTransferQueue();
     }
+    o_assert_dbg(this->writeQueue.Empty());
+
     // signal the worker thread even if no messages have to be processed,
     // this is to prevent any messages getting stuck on the transfer queue
     #if ORYOL_HAS_THREADS

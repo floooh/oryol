@@ -20,16 +20,16 @@ public:
     curlURLLoader();
     /// destructor
     ~curlURLLoader();
-    /// process enqueued requests
-    void doWork();
+    /// process one request
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 
 private:
     /// setup curl session
     void setupCurlSession();
     /// discard the curl session
     void discardCurlSession();
-    /// synchronously handle a single request
-    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    /// process one request (internal)
+    void doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// curl write-data callback
     static size_t curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData);
     /// curl header-data callback

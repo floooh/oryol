@@ -57,13 +57,15 @@ public:
 OryolClassPoolAllocImpl(pnaclRequestWrapper);
 
 //------------------------------------------------------------------------------
-// FIXME FIXME FIXME
-// Properly handle cancelled messages.
-// 
-void
-pnaclURLLoader::doWork() {
-    while (!this->requestQueue.Empty()) {
-        this->startRequest(this->requestQueue.Dequeue());
+bool
+pnaclURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+    if (baseURLLoader::doRequest(httpReq)) {
+        this->startRequest(httpReq);
+        return true;
+    }
+    else {
+        // request was cancelled
+        return false;
     }
 }
 
@@ -125,9 +127,9 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
         // HTTP error, dump a warning, and cleanup
         Log::Warn("pnaclURLLoader::cbRequestComplete: GET '%s' returned with '%d'\n", 
             req->httpRequest->Url.AsCStr(), httpStatus);
-        auto ioReq = req->httpRequest->IoRequest;
+        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->Response;
+            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
             ioReq->Status = httpResponse->Status;
             ioReq->SetHandled();
         }                
@@ -143,11 +145,12 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     if (PP_OK == result)
     {
         // all data received
-        auto ioReq = req->httpRequest->IoRequest;
+        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->Response;
+            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
             ioReq->Status = httpResponse->Status;
             ioReq->Data = std::move(httpResponse->Body);
+            ioReq->Type = httpResponse->Type;
             ioReq->ErrorDesc = httpResponse->ErrorDesc;
             ioReq->SetHandled();
         }        
@@ -166,9 +169,9 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
         // an error occurred
         Log::Warn("pnaclURLLoader::cbOnRead: Error while reading body data.\n");
         req->httpRequest->Response->Status = IOStatus::DownloadError;
-        auto ioReq = req->httpRequest->IoRequest;
+        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
         if (ioReq) {
-            auto httpResponse = req->httpRequest->Response;
+            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
             ioReq->Status = httpResponse->Status;
             ioReq->SetHandled();
         }        

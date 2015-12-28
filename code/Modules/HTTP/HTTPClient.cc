@@ -24,14 +24,8 @@ HTTPClient::Put(const Ptr<Message>& msg) {
     o_assert(msg->IsMemberOf(HTTPProtocol::GetProtocolId()));
     Ptr<HTTPProtocol::HTTPRequest> req = msg->DynamicCast<HTTPProtocol::HTTPRequest>();
     o_assert(req.isValid());
-    this->loader.putRequest(req);
+    this->loader.doRequest(req);
     return true;
-}
-
-//------------------------------------------------------------------------------
-void
-HTTPClient::DoWork() {
-    this->loader.doWork();
 }
 
 } // namespace Oryol

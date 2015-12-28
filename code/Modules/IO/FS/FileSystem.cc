@@ -38,10 +38,4 @@ FileSystem::InitLane() {
     // this is called per IO lane
 }
 
-//------------------------------------------------------------------------------
-void
-FileSystem::DoWork() {
-    // implement in subclass!
-}
-
 } // namespace Oryol

@@ -32,8 +32,6 @@ public:
     
     /// put a message into the port
     virtual bool Put(const Ptr<Message>& msg) override;
-    /// perform work
-    virtual void DoWork() override;
     
 private:
     _priv::urlLoader loader;

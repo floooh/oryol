@@ -12,6 +12,7 @@
 #include "Core/String/StringAtom.h"
 #include "IO/IOProtocol.h"
 #include "IO/FS/FileSystem.h"
+#include "IO/Core/ioPointers.h"
 
 namespace Oryol {
 namespace _priv {
@@ -20,7 +21,7 @@ class ioLane : public ThreadedQueue {
     OryolClassDecl(ioLane);
 public:
     /// constructor
-    ioLane();
+    ioLane(const ioPointers& ptrs);
     /// destructor
     ~ioLane();
     
@@ -31,8 +32,6 @@ private:
     virtual void onThreadEnter() override;
     /// called in thread before thread is left
     virtual void onThreadLeave() override ;
-    /// called after messages are processed, and on each tick (if a TickDuration is set)
-    virtual void onTick() override;
     /// callback for IOProtocol::Request
     void onRequest(const Ptr<IOProtocol::Request>& msg);
     /// callback for IOProtocol::notifyFileSystemAdded
@@ -42,6 +41,7 @@ private:
     /// callback for IOProtocol::notifyFileSystemRemoved
     void onNotifyFileSystemRemoved(const Ptr<IOProtocol::notifyFileSystemRemoved>& msg);
 
+    ioPointers pointers;
     Map<StringAtom, Ptr<FileSystem>> fileSystems;
 };
     

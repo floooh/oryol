@@ -123,31 +123,31 @@ curlURLLoader::curlHeaderCallback(char* ptr, size_t size, size_t nmemb, void* us
 }
 
 //------------------------------------------------------------------------------
-void
-curlURLLoader::doWork() {
-    while (!this->requestQueue.Empty()) {
-        Ptr<HTTPProtocol::HTTPRequest> req = this->requestQueue.Dequeue();
-        if (!baseURLLoader::handleCancelled(req)) {
-            this->doOneRequest(req);
-
-            // transfer result to embedded IoRequest object
-            auto ioReq = req->IoRequest;
-            if (ioReq) {
-                auto httpResponse = req->Response;
-                ioReq->Status = httpResponse->Status;
-                ioReq->Data = std::move(httpResponse->Body);
-                ioReq->Type = httpResponse->Type;
-                ioReq->ErrorDesc = httpResponse->ErrorDesc;
-                ioReq->SetHandled();
-            }
-            req->SetHandled();
+bool
+curlURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
+    if (baseURLLoader::doRequest(req)) {
+        this->doRequestInternal(req);
+        const Ptr<IOProtocol::Request>& ioReq = req->IoRequest;
+        if (ioReq) {
+            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->Response;
+            ioReq->Status = httpResponse->Status;
+            ioReq->Data = std::move(httpResponse->Body);
+            ioReq->Type = httpResponse->Type;
+            ioReq->ErrorDesc = httpResponse->ErrorDesc;
+            ioReq->SetHandled();
         }
+        req->SetHandled();
+        return true;
+    }
+    else {
+        // request was cancelled
+        return false;
     }
 }
 
 //------------------------------------------------------------------------------
 void
-curlURLLoader::doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
+curlURLLoader::doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req) {
     o_assert(0 != this->curlSession);
     o_assert(0 != this->curlError);
     this->stringBuilder.Clear();

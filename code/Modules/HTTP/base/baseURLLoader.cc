@@ -8,22 +8,11 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-void
-baseURLLoader::putRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
-    o_assert(req.isValid());
-    this->requestQueue.Enqueue(req);
-}
-
-//------------------------------------------------------------------------------
-void
-baseURLLoader::doWork() {
-    // override this method in platform-specific subclass
-    o_error("baseURLLoader::doWork() called!\n");
-}
-
-//------------------------------------------------------------------------------
 bool
-baseURLLoader::handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+baseURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
+
+    // process one HTTP request, implement the actual downloading
+    // in a subclass, we only handle the cancelled flag here
     const auto& ioReq = httpReq->IoRequest;
     if (ioReq.isValid()) {
         if (ioReq->Cancelled()) {
@@ -31,14 +20,14 @@ baseURLLoader::handleCancelled(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
             ioReq->SetHandled();
             httpReq->SetCancelled();
             httpReq->SetHandled();
-            return true;
+            return false;
         }
     }
     if (httpReq->Cancelled()) {
         httpReq->SetHandled();
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 } // namespace _priv

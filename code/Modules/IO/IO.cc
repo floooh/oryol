@@ -4,8 +4,8 @@
 #include "Pre.h"
 #include "IO.h"
 #include "IO/Core/assignRegistry.h"
+#include "IO/Core/ioPointers.h"
 #include "Core/Core.h"
-#include "Core/RunLoop.h"
 
 namespace Oryol {
 
@@ -17,9 +17,12 @@ IO::_state* IO::state = nullptr;
 void
 IO::Setup(const IOSetup& setup) {
     o_assert(!IsValid());
-    
+
     state = Memory::New<_state>();
-    state->requestRouter = ioRequestRouter::Create(setup.NumIOLanes);
+    ioPointers ptrs;
+    ptrs.schemeRegistry = &state->schemeReg;
+    ptrs.assignRegistry = &state->assignReg;
+    state->requestRouter = ioRequestRouter::Create(setup.NumIOLanes, ptrs);
     
     // setup initial assigns
     for (const auto& assign : setup.Assigns) {
@@ -30,7 +33,7 @@ IO::Setup(const IOSetup& setup) {
     for (const auto& fs : setup.FileSystems) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
-    
+
     state->runLoopId = Core::PreRunLoop()->Add([] { doWork(); });
 }
 
@@ -45,12 +48,6 @@ IO::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-IO::IsValid() {
-    return nullptr != state;
-}
-
-//------------------------------------------------------------------------------
 void
 IO::doWork() {
     o_assert_dbg(IsValid());
@@ -58,6 +55,12 @@ IO::doWork() {
     if (state->requestRouter.isValid()) {
         state->requestRouter->DoWork();
     }
+}
+
+//------------------------------------------------------------------------------
+bool
+IO::IsValid() {
+    return nullptr != state;
 }
 
 //------------------------------------------------------------------------------
@@ -138,13 +141,6 @@ void
 IO::Put(const Ptr<IOProtocol::Request>& ioReq) {
     o_assert_dbg(IsValid());
     state->requestRouter->Put(ioReq);
-}
-
-//------------------------------------------------------------------------------
-schemeRegistry*
-IO::getSchemeRegistry() {
-    o_assert_dbg(IsValid());
-    return &(state->schemeReg);
 }
 
 } // namespace Oryol

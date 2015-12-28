@@ -27,7 +27,6 @@ HTTPFileSystem::InitLane() {
 //------------------------------------------------------------------------------
 void
 HTTPFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
-
     // convert the IO request into a HTTP request and push to HTTPClient
     if (!msg->Cancelled()) {
         Ptr<HTTPProtocol::HTTPRequest> httpReq = HTTPProtocol::HTTPRequest::Create();
@@ -48,12 +47,4 @@ HTTPFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
     }
 }
 
-//------------------------------------------------------------------------------
-void
-HTTPFileSystem::DoWork() {
-    
-    // trigger our http client
-    this->httpClient->DoWork();
-}
-    
 } // namespace Oryol
