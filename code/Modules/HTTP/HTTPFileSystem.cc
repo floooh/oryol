@@ -25,26 +25,37 @@ HTTPFileSystem::InitLane() {
 }
 
 //------------------------------------------------------------------------------
-void
-HTTPFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
-    // convert the IO request into a HTTP request and push to HTTPClient
-    if (!msg->Cancelled()) {
-        Ptr<HTTPProtocol::HTTPRequest> httpReq = HTTPProtocol::HTTPRequest::Create();
-        httpReq->Method = HTTPMethod::Get;
-        httpReq->Url = msg->Url;
-        httpReq->IoRequest = msg;
-        if (msg->EndOffset != 0) {
-            Map<String,String> reqHeaders = this->requestHeaders;
-            // need to add a Range header
-            this->stringBuilder.Format(64, "bytes=%d-%d", msg->StartOffset, msg->EndOffset);
-            reqHeaders.Add("Range", this->stringBuilder.GetString());
-            httpReq->RequestHeaders = reqHeaders;
-        }
-        else {
-            httpReq->RequestHeaders = this->requestHeaders;
-        }
-        this->httpClient->Put(httpReq);
+Ptr<HTTPProtocol::HTTPRequest>
+HTTPFileSystem::createHttpRequest(HTTPMethod::Code method, const Ptr<IOProtocol::Request>& ioReq) {
+    Ptr<HTTPProtocol::HTTPRequest> httpReq = HTTPProtocol::HTTPRequest::Create();
+    httpReq->Method = method;
+    httpReq->Url = ioReq->Url;
+    httpReq->Type = ioReq->Type;
+    httpReq->Body = std::move(ioReq->Data);
+    httpReq->IoRequest = ioReq;
+    if (ioReq->EndOffset != 0) {
+        Map<String,String> reqHeaders = this->requestHeaders;
+        // need to add a Range header
+        this->stringBuilder.Format(64, "bytes=%d-%d", ioReq->StartOffset, ioReq->EndOffset);
+        reqHeaders.Add("Range", this->stringBuilder.GetString());
+        httpReq->RequestHeaders = reqHeaders;
     }
+    else {
+        httpReq->RequestHeaders = this->requestHeaders;
+    }
+    return httpReq;
+}
+
+//------------------------------------------------------------------------------
+void
+HTTPFileSystem::onRead(const Ptr<IOProtocol::Read>& ioReq) {
+    this->httpClient->Put(this->createHttpRequest(HTTPMethod::Get, ioReq));
+}
+
+//------------------------------------------------------------------------------
+void
+HTTPFileSystem::onWrite(const Ptr<IOProtocol::Write>& ioReq) {
+    this->httpClient->Put(this->createHttpRequest(HTTPMethod::Post, ioReq));
 }
 
 } // namespace Oryol

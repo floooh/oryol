@@ -15,12 +15,12 @@ class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
     OryolClassCreator(TestFileSystem);
 public:
-    /// called when the IOProtocol::Get message is received
-    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override {
-        Log::Info("TestFileSystem::onRequest() called!\n");
+    /// called when the IOProtocol::Read message is received
+    virtual void onRead(const Ptr<IOProtocol::Read>& msg) override {
+        Log::Info("TestFileSystem::onRead() called!\n");
         numRequestsHandled++;
         
-        // create a stream object, and just write the URL from the msg to it
+        // write payload data
         static const uint8 payload[] = {'A', 'B', 'C', 'D'};
         msg->Data.Add(payload, sizeof(payload));
         msg->Status = IOStatus::OK;
@@ -44,7 +44,7 @@ TEST(IOFacadeTest) {
     CHECK(url.IsValid());
     
     // asynchronously 'load' a file
-    Ptr<IOProtocol::Request> msg = IO::LoadFile(url);
+    Ptr<IOProtocol::Read> msg = IO::LoadFile(url);
     
     // trigger the runloop until our message is handled
     while (!msg->Handled()) {

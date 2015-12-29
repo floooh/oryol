@@ -25,8 +25,10 @@ public:
     virtual void Init();
     /// called per IO-lane
     virtual void InitLane();
-    /// called when the IOProtocol::Request message is received
-    virtual void onRequest(const Ptr<IOProtocol::Request>& msg);
+    /// called when a IOProtocol::Read message is received
+    virtual void onRead(const Ptr<IOProtocol::Read>& msg);
+    /// called when a IOProtocol::Write message is received
+    virtual void onWrite(const Ptr<IOProtocol::Write>& msg);
 };
     
 } // namespace Oryol

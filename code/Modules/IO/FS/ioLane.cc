@@ -32,7 +32,8 @@ ioLane::onThreadEnter() {
     // setup a Dispatcher to route messages to this object's callback methods
     Ptr<Dispatcher<IOProtocol>> disp = Dispatcher<IOProtocol>::Create();
     using namespace std::placeholders;
-    disp->Subscribe<IOProtocol::Request>(std::bind(&ioLane::onRequest, this, _1));
+    disp->Subscribe<IOProtocol::Read>(std::bind(&ioLane::onRead, this, _1));
+    disp->Subscribe<IOProtocol::Write>(std::bind(&ioLane::onWrite, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemAdded>(std::bind(&ioLane::onNotifyFileSystemAdded, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemReplaced>(std::bind(&ioLane::onNotifyFileSystemReplaced, this, _1));
     disp->Subscribe<IOProtocol::notifyFileSystemRemoved>(std::bind(&ioLane::onNotifyFileSystemRemoved, this, _1));
@@ -61,17 +62,36 @@ ioLane::fileSystemForURL(const URL& url) {
 }
 
 //------------------------------------------------------------------------------
-void
-ioLane::onRequest(const Ptr<IOProtocol::Request>& msg) {
+bool
+ioLane::checkCancelled(const Ptr<IOProtocol::Request>& msg) {
     if (msg->Cancelled()) {
-        // message has been cancelled, don't waste time with it
         msg->Status = IOStatus::Cancelled;
         msg->SetHandled();
+        return true;
     }
     else {
+        return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+ioLane::onRead(const Ptr<IOProtocol::Read>& msg) {
+    if (!this->checkCancelled(msg)) {
         Ptr<FileSystem> fs = this->fileSystemForURL(msg->Url);
         if (fs) {
-            fs->onRequest(msg);
+            fs->onRead(msg);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+ioLane::onWrite(const Ptr<IOProtocol::Write>& msg) {
+    if (!this->checkCancelled(msg)) {
+        Ptr<FileSystem> fs = this->fileSystemForURL(msg->Url);
+        if (fs) {
+            fs->onWrite(msg);
         }
     }
 }

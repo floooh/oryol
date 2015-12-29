@@ -14,8 +14,14 @@ LocalFileSystem::Init() {
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
-    Log::Info("FIXME: LocalFileSystem::onRequest()\n");
+LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
+    Log::Info("FIXME: LocalFileSystem::onRead()\n");
+}
+
+//------------------------------------------------------------------------------
+void
+LocalFileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
+    Log::Info("FIXME: LocalFileSystem::onWrite()\n");
 }
 
 } // namespace Oryol

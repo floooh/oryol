@@ -21,6 +21,8 @@ public:
     public:
         enum {
             RequestId = Protocol::MessageId::NumMessageIds, 
+            ReadId,
+            WriteId,
             notifyLanesId,
             notifyFileSystemRemovedId,
             notifyFileSystemReplacedId,
@@ -30,6 +32,8 @@ public:
         static const char* ToString(MessageIdType c) {
             switch (c) {
                 case RequestId: return "RequestId";
+                case ReadId: return "ReadId";
+                case WriteId: return "WriteId";
                 case notifyLanesId: return "notifyLanesId";
                 case notifyFileSystemRemovedId: return "notifyFileSystemRemovedId";
                 case notifyFileSystemReplacedId: return "notifyFileSystemReplacedId";
@@ -39,6 +43,8 @@ public:
         };
         static MessageIdType FromString(const char* str) {
             if (std::strcmp("RequestId", str) == 0) return RequestId;
+            if (std::strcmp("ReadId", str) == 0) return ReadId;
+            if (std::strcmp("WriteId", str) == 0) return WriteId;
             if (std::strcmp("notifyLanesId", str) == 0) return notifyLanesId;
             if (std::strcmp("notifyFileSystemRemovedId", str) == 0) return notifyFileSystemRemovedId;
             if (std::strcmp("notifyFileSystemReplacedId", str) == 0) return notifyFileSystemReplacedId;
@@ -82,11 +88,47 @@ public:
         bool CacheWriteEnabled;
         int32 StartOffset;
         int32 EndOffset;
-        IOStatus::Code Status;
-        String ErrorDesc;
         Buffer Data;
         ContentType Type;
+        IOStatus::Code Status;
+        String ErrorDesc;
         int32 ActualLane;
+    };
+    class Read : public Request {
+        OryolClassDecl(Read);
+        OryolTypeDecl(Read,Request);
+    public:
+        Read() {
+            this->msgId = MessageId::ReadId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::ReadId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IOPT') return true;
+            else return Request::IsMemberOf(protId);
+        };
+    };
+    class Write : public Request {
+        OryolClassDecl(Write);
+        OryolTypeDecl(Write,Request);
+    public:
+        Write() {
+            this->msgId = MessageId::WriteId;
+        };
+        static Ptr<Message> FactoryCreate() {
+            return Create();
+        };
+        static MessageIdType ClassMessageId() {
+            return MessageId::WriteId;
+        };
+        virtual bool IsMemberOf(ProtocolIdType protId) const override {
+            if (protId == 'IOPT') return true;
+            else return Request::IsMemberOf(protId);
+        };
     };
     class notifyLanes : public Message {
         OryolClassDecl(notifyLanes);

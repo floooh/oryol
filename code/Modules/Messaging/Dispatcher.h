@@ -76,6 +76,9 @@ Dispatcher<PROTOCOL>::Put(const Ptr<Message>& msg) {
             this->jumpTable[msgId](msg);
             return true;
         }
+        else {
+            o_warn("No message handler set for message id '%d'\n", msgId);
+        }
     }
     return false;
 }

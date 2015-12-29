@@ -33,7 +33,7 @@ private:
     TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data);
     
     Id resId;
-    Ptr<IOProtocol::Request> ioRequest;
+    Ptr<IOProtocol::Read> ioRequest;
 };
 
 } // namespace Oryol

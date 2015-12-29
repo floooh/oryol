@@ -61,7 +61,7 @@ IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
     o_assert_dbg(onSuccess);
 
     // create IO request and push into IO facade
-    Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
+    Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
     ioReq->Url = url;
     IO::Put(ioReq);
     
@@ -77,7 +77,7 @@ IOQueue::AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc o
     groupItem item;
     item.ioRequests.Reserve(urls.Size());
     for (const URL& url : urls) {
-        Ptr<IOProtocol::Request> ioReq = IOProtocol::Request::Create();
+        Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
         ioReq->Url = url;
         IO::Put(ioReq);
         item.ioRequests.Add(ioReq);

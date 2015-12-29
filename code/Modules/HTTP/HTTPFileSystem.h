@@ -26,10 +26,15 @@ class HTTPFileSystem : public FileSystem {
 public:
     /// called per IO-lane
     virtual void InitLane() override;
-    /// called when the IOProtocol::Request message is received
-    virtual void onRequest(const Ptr<IOProtocol::Request>& msg) override;
+    /// called when the IOProtocol::Read message is received
+    virtual void onRead(const Ptr<IOProtocol::Read>& msg) override;
+    /// called when the IOProtocol::Write message is received
+    virtual void onWrite(const Ptr<IOProtocol::Write>& msg) override;
 
 private:
+    /// create a HTTP request from an IO request
+    Ptr<HTTPProtocol::HTTPRequest> createHttpRequest(HTTPMethod::Code method, const Ptr<IOProtocol::Request>& ioReq);
+
     StringBuilder stringBuilder;
     Ptr<HTTPClient> httpClient;
     Map<String, String> requestHeaders;

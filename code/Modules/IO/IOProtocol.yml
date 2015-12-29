@@ -16,11 +16,15 @@ messages:
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
         - { name: StartOffset, type: int32, default: 0 }
         - { name: EndOffset, type: int32, default: 0 }
+        - { name: Data, type: Buffer }
+        - { name: Type, type: ContentType }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
-        - { name: Data, type: Buffer, dir: out }
-        - { name: Type, type: ContentType, dir: out }
         - { name: ActualLane, type: int32, dir: out }
+    - name: Read
+      parent: Request
+    - name: Write
+      parent: Request
     - name: notifyLanes
       attrs:
         - { name: Scheme, type: StringAtom }

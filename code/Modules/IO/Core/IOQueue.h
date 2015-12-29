@@ -62,13 +62,13 @@ private:
     bool isStarted;
     int32 runLoopId;
     struct item {
-        Ptr<IOProtocol::Request> ioRequest;
+        Ptr<IOProtocol::Read> ioRequest;
         SuccessFunc successFunc;
         FailFunc failFunc;
     };
     Array<item> items;
     struct groupItem {
-        Array<Ptr<IOProtocol::Request>> ioRequests;
+        Array<Ptr<IOProtocol::Read>> ioRequests;
         GroupSuccessFunc successFunc;
         FailFunc failFunc;
     };

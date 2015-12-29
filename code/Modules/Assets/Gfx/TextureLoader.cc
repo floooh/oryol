@@ -40,7 +40,7 @@ TextureLoader::Start() {
     this->resId = Gfx::resource().prepareAsync(this->setup);
     
     // fire IO request to start loading the texture data
-    this->ioRequest = IOProtocol::Request::Create();
+    this->ioRequest = IOProtocol::Read::Create();
     this->ioRequest->Url = setup.Locator.Location();
     this->ioRequest->Lane = this->ioLane;
     IO::Put(this->ioRequest);

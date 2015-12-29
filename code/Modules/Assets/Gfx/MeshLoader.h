@@ -30,7 +30,7 @@ public:
     virtual void Cancel() override;
 private:
     Id resId;
-    Ptr<IOProtocol::Request> ioRequest;
+    Ptr<IOProtocol::Read> ioRequest;
 };
 
 } // namespace Oryol

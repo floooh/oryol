@@ -6,12 +6,16 @@
 
 namespace Oryol {
 OryolClassImpl(IOProtocol::Request);
+OryolClassImpl(IOProtocol::Read);
+OryolClassImpl(IOProtocol::Write);
 OryolClassImpl(IOProtocol::notifyLanes);
 OryolClassImpl(IOProtocol::notifyFileSystemRemoved);
 OryolClassImpl(IOProtocol::notifyFileSystemReplaced);
 OryolClassImpl(IOProtocol::notifyFileSystemAdded);
 IOProtocol::CreateCallback IOProtocol::jumpTable[IOProtocol::MessageId::NumMessageIds] = { 
     &IOProtocol::Request::FactoryCreate,
+    &IOProtocol::Read::FactoryCreate,
+    &IOProtocol::Write::FactoryCreate,
     &IOProtocol::notifyLanes::FactoryCreate,
     &IOProtocol::notifyFileSystemRemoved::FactoryCreate,
     &IOProtocol::notifyFileSystemReplaced::FactoryCreate,

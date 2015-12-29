@@ -21,13 +21,6 @@ FileSystem::~FileSystem() {
 
 //------------------------------------------------------------------------------
 void
-FileSystem::onRequest(const Ptr<IOProtocol::Request>& msg) {
-    // implement in subclass!
-    o_warn("FileSystem::onRequest(): message not handled by FileSystem!\n");
-}
-
-//------------------------------------------------------------------------------
-void
 FileSystem::Init() {
     // this is called once on the main thread
 }
@@ -36,6 +29,20 @@ FileSystem::Init() {
 void
 FileSystem::InitLane() {
     // this is called per IO lane
+}
+
+//------------------------------------------------------------------------------
+void
+FileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
+    // implement in subclass!
+    o_warn("FileSystem::onRead(): message not handled by FileSystem!\n");
+}
+
+//------------------------------------------------------------------------------
+void
+FileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
+    // implement in subclass!
+    o_warn("FileSystem::onWrite(): message not handled by FileSystem!\n");
 }
 
 } // namespace Oryol

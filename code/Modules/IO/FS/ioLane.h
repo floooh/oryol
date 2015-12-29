@@ -32,8 +32,12 @@ private:
     virtual void onThreadEnter() override;
     /// called in thread before thread is left
     virtual void onThreadLeave() override ;
-    /// callback for IOProtocol::Request
-    void onRequest(const Ptr<IOProtocol::Request>& msg);
+    /// check for and handle cancelled message
+    bool checkCancelled(const Ptr<IOProtocol::Request>& msg);
+    /// callback for IOProtocol::Read
+    void onRead(const Ptr<IOProtocol::Read>& msg);
+    /// callback for IOProtocol::Write
+    void onWrite(const Ptr<IOProtocol::Write>& msg);
     /// callback for IOProtocol::notifyFileSystemAdded
     void onNotifyFileSystemAdded(const Ptr<IOProtocol::notifyFileSystemAdded>& msg);
     /// callback for IOProtocol::notifyFileSystemReplaced
