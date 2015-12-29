@@ -82,7 +82,8 @@ posixFSWrapper::getExecutableDir() {
         StringBuilder strBuilder(buf, 0, length);
         strBuilder.SubstituteAll("\\", "/");
         int32 slashIndex = strBuilder.FindLastOf(0, length, "/");
-        String result(strBuilder.AsCStr(), 0, slashIndex);
+        o_assert((slashIndex > 0) && (slashIndex < (strBuilder.Length()-1)));
+        String result(strBuilder.AsCStr(), 0, slashIndex+1);
         return result;
     }
     else {
@@ -100,7 +101,9 @@ posixFSWrapper::getCwd() {
     const char* cwd = getcwd(buf, sizeof(buf));
     #endif
     if (cwd) {
-        return String(cwd);
+        StringBuilder strBuilder(cwd);
+        strBuilder.Append('/');
+        return strBuilder.GetString();
     }
     else {
         return String();

@@ -6,6 +6,7 @@
 #include <cstring>
 #include "Messaging/Message.h"
 #include "Messaging/Protocol.h"
+#include "Core/Types.h"
 #include "Core/Containers/Buffer.h"
 #include "IO/Core/URL.h"
 #include "IO/Core/IOStatus.h"
@@ -68,7 +69,7 @@ public:
             this->CacheReadEnabled = true;
             this->CacheWriteEnabled = true;
             this->StartOffset = 0;
-            this->EndOffset = 0;
+            this->EndOffset = EndOfFile;
             this->Status = IOStatus::InvalidIOStatus;
             this->ActualLane = 0;
         };

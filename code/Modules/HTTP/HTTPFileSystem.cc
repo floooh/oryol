@@ -33,12 +33,8 @@ HTTPFileSystem::createHttpRequest(HTTPMethod::Code method, const Ptr<IOProtocol:
     httpReq->Type = ioReq->Type;
     httpReq->Body = std::move(ioReq->Data);
     httpReq->IoRequest = ioReq;
-    if (ioReq->EndOffset != 0) {
-        Map<String,String> reqHeaders = this->requestHeaders;
-        // need to add a Range header
-        this->stringBuilder.Format(64, "bytes=%d-%d", ioReq->StartOffset, ioReq->EndOffset);
-        reqHeaders.Add("Range", this->stringBuilder.GetString());
-        httpReq->RequestHeaders = reqHeaders;
+    if ((ioReq->StartOffset != 0) || (ioReq->EndOffset != EndOfFile)) {
+        o_error("FIXME: implement HTTP Range requests!\n");
     }
     else {
         httpReq->RequestHeaders = this->requestHeaders;

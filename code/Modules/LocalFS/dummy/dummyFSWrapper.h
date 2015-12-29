@@ -32,8 +32,9 @@ public:
     static int32 size(handle f);
     /// close file
     static void close(handle f);
+    
     /// get path to own executable
-    static String getExecutablePath();
+    static String getExecutableDir();
     /// get current directory
     static String getCwd();
 };

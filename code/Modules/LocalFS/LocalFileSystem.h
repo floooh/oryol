@@ -18,7 +18,7 @@ class LocalFileSystem : public FileSystem {
     OryolClassCreator(LocalFileSystem);
 public:
     /// called once on main-thread
-    virtual void Init() override;
+    virtual void Init(const StringAtom& scheme) override;
     /// called when the IOProtocol::Read message is received
     virtual void onRead(const Ptr<IOProtocol::Read>& msg) override;
     /// called when the IOProtocol::Write message is received

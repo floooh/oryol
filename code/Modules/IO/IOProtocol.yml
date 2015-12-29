@@ -3,6 +3,7 @@
 name: IOProtocol
 id: IOPT
 headers:
+    - Core/Types.h
     - Core/Containers/Buffer.h
     - IO/Core/URL.h
     - IO/Core/IOStatus.h
@@ -15,7 +16,7 @@ messages:
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
         - { name: StartOffset, type: int32, default: 0 }
-        - { name: EndOffset, type: int32, default: 0 }
+        - { name: EndOffset, type: int32, default: EndOfFile }
         - { name: Data, type: Buffer }
         - { name: Type, type: ContentType }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }

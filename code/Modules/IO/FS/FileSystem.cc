@@ -21,8 +21,8 @@ FileSystem::~FileSystem() {
 
 //------------------------------------------------------------------------------
 void
-FileSystem::Init() {
-    // this is called once on the main thread
+FileSystem::Init(const StringAtom& scheme_) {
+    this->scheme = scheme_;
 }
 
 //------------------------------------------------------------------------------

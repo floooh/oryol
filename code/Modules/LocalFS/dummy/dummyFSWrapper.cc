@@ -51,7 +51,7 @@ dummyFSWrapper::close(handle f) {
 
 //------------------------------------------------------------------------------
 String
-dummyFSWrapper::getExecutablePath() {
+dummyFSWrapper::getExecutableDir() {
     return String();
 }
 

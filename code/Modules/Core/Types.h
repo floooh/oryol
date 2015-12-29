@@ -24,7 +24,7 @@ typedef unsigned char uchar;
 
 static const int32 InvalidIndex = -1;
 static const int32 EndOfString = -1;
-static const int32 EndOfStream = -1;
+static const int32 EndOfFile = -1;
 
 } // namespace Oryol
 
