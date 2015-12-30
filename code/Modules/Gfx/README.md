@@ -21,6 +21,50 @@ HTML5      |---  |YES  |---  |---  |---  |---
 PNaCl      |---  |YES  |---  |---  |---  |---
 RaspberryPi|---  |YES  |---  |---  |---  |---
 
+### Selecting a Rendering Backend
+
+Rendering backends are selected at compile time through cmake
+options. Each target platform has a default rendering backend
+that will be selected automatically, usually this is OpenGL.
+
+The easiest way to select a non-default rendering backend is to
+select a different **fips build config**:
+
+To see the list of supported build configs for D3D11, D3D12 
+and Metal:
+
+```
+> fips list configs | grep d3d11
+...
+> fips list configs | grep d3d12
+...
+> fips list configs | grep metal
+...
+```
+
+For instance, to select the Metal rendering backend for iOS:
+
+```
+> ./fips set config metal-ios-xcode-debug
+'config' set to 'ios-xcode-debug' in project 'oryol'
+> ./fips gen
+...
+> ./fips open
+...
+```
+
+Alternatively, the rendering backend can be selected by setting
+the cmake options directly in the cmake config tool:
+
+```bash
+> fips config
+...
+# the cmake options are:
+
+ORYOL_USE_D3D11
+ORYOL_USE_D3D12
+ORYOL_USE_METAL
+```
 
 ### The Gfx Functions
 
@@ -95,17 +139,45 @@ NOTE: the resource-info methods will most likely change in the future
 
 The following steps are necessary to render something with the Gfx module:
 
-1. [Initialize the Gfx Module](#initialize-the-gfx-module)
+1. [Initialize the Gfx Module](#initializing-the-gfx-module)
 2. [Create Resources](#resources)
-3. For each frame:
-    1. [Apply Render Target and optionally Clear](#render-targets)
-    2. [Optional: Update Dynamic Resources](#dynamic-resources)
-    4. [Apply a DrawState](#drawstates)
-    5. [Draw](#draw-functions)
-    6. [Commit](#committing-the-frame)
-4. [Shutdown the Gfx Module](#shutting-down)
+3. [Apply Render Target and optionally Clear](#render-targets)
+4. [Optional: Update Dynamic Resources](#dynamic-resources)
+5. [Apply a DrawState](#drawstates)
+6. [Draw](#draw-functions)
+7. [Commit](#committing-the-frame)
+8. [Shutdown the Gfx Module](#shutting-down)
 
 ### Initializing the Gfx Module
+
+To use the Gfx module, first include the header **"Gfx/Gfx.h"** and
+call the **Gfx::Setup()** method with a **GfxSetup** object as argument
+which allows to configure the GfxModule. The GfxSetup class has static
+creation methods for the most typical setup scenarios:
+
+```cpp
+/// shortcut for windowed mode (with RGB8, 24+8 stencil/depth, no MSAA)
+static GfxSetup Window(int32 width, int32 height, String windowTitle);
+/// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth, no MSAA)
+static GfxSetup Fullscreen(int32 width, int32 height, String windowTitle);
+/// shortcut for windowed mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+static GfxSetup WindowMSAA4(int32 width, int32 height, String windowTitle);
+/// shortcut for fullscreen mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+static GfxSetup FullscreenMSAA4(int32 width, int32 height, String windowTitle);
+```
+
+For instance, to setup the GfxModule with an 800x600 window without
+MSAA:
+
+```cpp
+Gfx::Setup(GfxSetup::Window(800, 600, "My Oryol App"));
+```
+
+The GfxSetup class allows more detailed tweaking of the Gfx module, 
+see the [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+header for details.
+
+
 
 ### Resources
 
