@@ -324,8 +324,96 @@ range of primitives in the mesh. A PrimitiveGroup is the smallest 'geometry
 unit' that can be rendered with one draw call. PrimitiveGroup are most commonly
 used when a mesh is split up into several materials.
 
-##### Working with Meshes
+##### Creating Meshes
 
+Oryol provides 4 ways to create Mesh objects:
+
+* using the **MeshBuilder** class from the Assets module
+* using the **ShapeBuilder** class from the Assets module
+* loading from a .omsh file 
+* creating from raw vertex- and index data in memory
+
+###### Creating a Mesh using the MeshBuilder class:
+
+The **MeshBuilder** class (part of the Assets module) is useful for creating meshes vertex-by-vertex
+with built-in support for vertex packing.
+
+The following code creates a simple triangle mesh using the Asset module's
+MeshBuilder class with per-vertex color
+and no indices, taken from the [Triangle](https://github.com/floooh/oryol/blob/master/code/Samples/Triangle/Triangle.cc)
+sample:
+
+```cpp
+#include "Assets/Gfx/MeshBuilder.h"
+...
+
+MeshBuilder meshBuilder;
+meshBuilder.NumVertices = 3;
+meshBuilder.IndicesType = IndexType::None;
+meshBuilder.Layout
+    .Add(VertexAttr::Position, VertexFormat::Float3)
+    .Add(VertexAttr::Color0, VertexFormat::Float4);
+meshBuilder.PrimitiveGroups.Add(0, 3);
+meshBuilder.Begin()
+    .Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f)
+    .Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f)
+    .Vertex(1, VertexAttr::Position, 0.5f, -0.5f, 0.5f)
+    .Vertex(1, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f)
+    .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
+    .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
+Id mesh = Gfx::CreateResource(meshBuilder.Build());
+```
+The MeshBuilder::Build() method returns a **SetupAndData<MeshSetup>** instance
+which can be directly passed to the **Gfx::CreateResource()** method to
+create the Mesh resource object.
+
+###### Creating a Mesh using the ShapeBuilder class:
+
+The **ShapeBuilder** class (part of the Assets module) builds on top of the
+MeshBuilder class and can be used to build simple shapes (boxes, spheres,
+cylinders, donuts and planes). This is mostly useful for debug-visualizations.
+
+Here's a sample code snippet taken from the [PackedNormals](https://github.com/floooh/oryol/blob/master/code/Samples/PackedNormals/PackedNormals.cc)
+sample building 5 different shapes as separate PrimitiveGroups into a single
+Mesh object:
+
+```cpp
+#include "Assets/Gfx/ShapeBuilder.h"
+...
+
+ShapeBuilder shapeBuilder;
+shapeBuilder.Layout
+    .Add(VertexAttr::Position, VertexFormat::Float3)
+    .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+    .Sphere(0.75f, 36, 20)
+    .Cylinder(0.5f, 1.5f, 36, 10)
+    .Torus(0.3f, 0.5f, 20, 36)
+    .Plane(1.5f, 1.5f, 10);
+Id mesh = Gfx::CreateResource(shapeBuilder.Build());
+```
+
+###### Loading mesh data from disk:
+
+Finally, the Assets module also comes with an example mesh resource loader class
+**MeshLoader** which can load .omsh files which can be created with the
+oryol-export tool in the github project https://github.com/floooh/oryol-tools.
+
+To load a mesh file from disk, the IO module must be initialized with 
+at least one filesystem, for instance:
+
+```cpp
+IOSetup ioSetup;
+ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
+ioSetup.Assigns.Add("msh:", "http://floooh.github.com/oryol/");
+IO::Setup(ioSetup);
+```
+
+Actually loading the Mesh is a one-liner:
+
+```cpp
+Id msh = Gfx::LoadResource(MeshLoader::Create("msh:test.omsh"));
+```
 
 
 #### Textures
