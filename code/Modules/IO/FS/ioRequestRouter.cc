@@ -9,6 +9,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 ioRequestRouter::ioRequestRouter(int32 numLanes_, const ioPointers& ptrs) :
+curLane(0),
 numLanes(numLanes_) {
 
     // create ioLanes
@@ -42,9 +43,8 @@ ioRequestRouter::Put(const Ptr<Message>& msg) {
     else {
         Ptr<IOProtocol::Request> req = msg->DynamicCast<IOProtocol::Request>();
         if (req.isValid()) {
-            const int32 laneIndex = req->Lane % this->numLanes;
-            req->ActualLane = laneIndex;
-            this->ioLanes[laneIndex]->Put(msg);
+            this->curLane = (this->curLane + 1) % this->numLanes;
+            this->ioLanes[this->curLane]->Put(msg);
             return true;
         }
     }

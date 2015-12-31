@@ -46,7 +46,7 @@ public:
     static bool IsFileSystemRegistered(const StringAtom& scheme);
     
     /// start async loading of file from URL (also see IOQueue!)
-    static Ptr<IOProtocol::Read> LoadFile(const URL& url, int32 ioLane=0);
+    static Ptr<IOProtocol::Read> LoadFile(const URL& url);
     /// push a generic asynchronous IO request
     static void Put(const Ptr<IOProtocol::Request>& ioReq);
     

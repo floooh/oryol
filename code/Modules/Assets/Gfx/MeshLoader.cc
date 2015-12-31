@@ -12,14 +12,14 @@ namespace Oryol {
 OryolClassImpl(MeshLoader);
 
 //------------------------------------------------------------------------------
-MeshLoader::MeshLoader(const MeshSetup& setup_, int32 ioLane_) :
-MeshLoaderBase(setup_, ioLane_) {
+MeshLoader::MeshLoader(const MeshSetup& setup_) :
+MeshLoaderBase(setup_) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-MeshLoader::MeshLoader(const MeshSetup& setup_, int32 ioLane_, LoadedFunc loadedFunc_) :
-MeshLoaderBase(setup_, ioLane_, loadedFunc_) {
+MeshLoader::MeshLoader(const MeshSetup& setup_, LoadedFunc loadedFunc_) :
+MeshLoaderBase(setup_, loadedFunc_) {
     // empty
 }
 
@@ -47,7 +47,6 @@ MeshLoader::Start() {
     // fire IO request to start loading the texture data
     this->ioRequest = IOProtocol::Read::Create();
     this->ioRequest->Url = setup.Locator.Location();
-    this->ioRequest->Lane = this->ioLane;
     IO::Put(this->ioRequest);
     
     return this->resId;

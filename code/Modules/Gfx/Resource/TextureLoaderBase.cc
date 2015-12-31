@@ -9,9 +9,8 @@ namespace Oryol {
 OryolClassImpl(TextureLoaderBase);
 
 //------------------------------------------------------------------------------
-TextureLoaderBase::TextureLoaderBase(const TextureSetup& setup_, int32 ioLane_) :
-setup(setup_),
-ioLane(ioLane_) {
+TextureLoaderBase::TextureLoaderBase(const TextureSetup& setup_) :
+setup(setup_) {
     // empty
 }
 

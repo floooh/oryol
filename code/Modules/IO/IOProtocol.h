@@ -65,13 +65,11 @@ public:
     public:
         Request() {
             this->msgId = MessageId::RequestId;
-            this->Lane = 0;
             this->CacheReadEnabled = true;
             this->CacheWriteEnabled = true;
             this->StartOffset = 0;
             this->EndOffset = EndOfFile;
             this->Status = IOStatus::InvalidIOStatus;
-            this->ActualLane = 0;
         };
         static Ptr<Message> FactoryCreate() {
             return Create();
@@ -84,7 +82,6 @@ public:
             else return Message::IsMemberOf(protId);
         };
         URL Url;
-        int32 Lane;
         bool CacheReadEnabled;
         bool CacheWriteEnabled;
         int32 StartOffset;
@@ -93,7 +90,6 @@ public:
         ContentType Type;
         IOStatus::Code Status;
         String ErrorDesc;
-        int32 ActualLane;
     };
     class Read : public Request {
         OryolClassDecl(Read);

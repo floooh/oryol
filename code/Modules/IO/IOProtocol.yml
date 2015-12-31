@@ -12,7 +12,6 @@ messages:
     - name: Request
       attrs:
         - { name: Url, type: URL }
-        - { name: Lane, type: int32 }
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
         - { name: StartOffset, type: int32, default: 0 }
@@ -21,7 +20,6 @@ messages:
         - { name: Type, type: ContentType }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }
         - { name: ErrorDesc, type: String, dir: out }
-        - { name: ActualLane, type: int32, dir: out }
     - name: Read
       parent: Request
     - name: Write

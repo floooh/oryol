@@ -29,6 +29,7 @@ public:
     virtual void DoWork() override;
 
 private:
+    int32 curLane;
     int32 numLanes;
     Array<Ptr<ioLane>> ioLanes;
 };

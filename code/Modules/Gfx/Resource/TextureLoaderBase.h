@@ -14,13 +14,12 @@ class TextureLoaderBase : public ResourceLoader {
     OryolClassDecl(TextureLoaderBase);
 public:
     /// constructor
-    TextureLoaderBase(const TextureSetup& setup, int32 ioLane);
+    TextureLoaderBase(const TextureSetup& setup);
     /// return resource locator
     virtual class Locator Locator() const override;
 
 protected:
     TextureSetup setup;
-    int32 ioLane;
 };
 
 } // namespace Oryol

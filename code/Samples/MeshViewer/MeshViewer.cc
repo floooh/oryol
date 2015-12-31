@@ -376,7 +376,7 @@ MeshViewerApp::loadMesh(const char* path) {
     // object of the loaded mesh
     this->numMaterials = 0;
     this->curMeshLabel = Gfx::PushResourceLabel();
-    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), 0, [this](MeshSetup& setup) {
+    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
         this->curMeshSetup = setup;
         this->numMaterials = setup.NumPrimitiveGroups();
         this->createMaterials();

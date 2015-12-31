@@ -18,7 +18,7 @@ class TextureLoader : public TextureLoaderBase {
     OryolClassDecl(TextureLoader);
 public:
     /// constructor
-    TextureLoader(const TextureSetup& setup, int32 ioLane);
+    TextureLoader(const TextureSetup& setup);
     /// destructor
     ~TextureLoader();
     /// start loading, return a resource id

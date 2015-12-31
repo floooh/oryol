@@ -17,9 +17,9 @@ class MeshLoader : public MeshLoaderBase {
     OryolClassDecl(MeshLoader);
 public:
     /// constructor without success-callback
-    MeshLoader(const MeshSetup& setup, int32 ioLane);
+    MeshLoader(const MeshSetup& setup);
     /// constructor with success callback
-    MeshLoader(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
+    MeshLoader(const MeshSetup& setup, LoadedFunc onLoaded);
     /// destructor
     ~MeshLoader();
     /// start loading, return a resource id

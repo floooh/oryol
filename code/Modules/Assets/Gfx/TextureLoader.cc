@@ -13,8 +13,8 @@ namespace Oryol {
 OryolClassImpl(TextureLoader);
 
 //------------------------------------------------------------------------------
-TextureLoader::TextureLoader(const TextureSetup& setup_, int32 ioLane_) :
-TextureLoaderBase(setup_, ioLane_) {
+TextureLoader::TextureLoader(const TextureSetup& setup_) :
+TextureLoaderBase(setup_) {
     // empty
 }
 
@@ -42,7 +42,6 @@ TextureLoader::Start() {
     // fire IO request to start loading the texture data
     this->ioRequest = IOProtocol::Read::Create();
     this->ioRequest->Url = setup.Locator.Location();
-    this->ioRequest->Lane = this->ioLane;
     IO::Put(this->ioRequest);
     
     return this->resId;

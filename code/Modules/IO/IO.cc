@@ -127,11 +127,10 @@ IO::IsFileSystemRegistered(const StringAtom& scheme) {
 
 //------------------------------------------------------------------------------
 Ptr<IOProtocol::Read>
-IO::LoadFile(const URL& url, int32 ioLane) {
+IO::LoadFile(const URL& url) {
     o_assert_dbg(IsValid());
     Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
     ioReq->Url = url;
-    ioReq->Lane = ioLane;
     state->requestRouter->Put(ioReq);
     return ioReq;
 }

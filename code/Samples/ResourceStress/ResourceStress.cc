@@ -149,10 +149,8 @@ ResourceStressApp::createObjects() {
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
     Id mesh = Gfx::CreateResource(shapeBuilder.Build());
     obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, this->shader));
-    obj.texture = Gfx::LoadResource(
-        TextureLoader::Create(
-            TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint),
-            this->frameCount));
+    obj.texture = Gfx::LoadResource(TextureLoader::Create(
+        TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint)));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);

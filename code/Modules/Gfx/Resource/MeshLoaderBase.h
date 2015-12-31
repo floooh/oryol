@@ -18,15 +18,14 @@ public:
     typedef std::function<void(MeshSetup&)> LoadedFunc;
 
     /// constructor
-    MeshLoaderBase(const MeshSetup& setup, int32 ioLane);
+    MeshLoaderBase(const MeshSetup& setup);
     /// constructor with success callback
-    MeshLoaderBase(const MeshSetup& setup, int32 ioLane, LoadedFunc onLoaded);
+    MeshLoaderBase(const MeshSetup& setup, LoadedFunc onLoaded);
     /// return resource locator
     virtual class Locator Locator() const override;
 
 protected:
     MeshSetup setup;
-    int32 ioLane;
     std::function<void(MeshSetup&)> onLoaded;
 };
 

@@ -9,16 +9,14 @@ namespace Oryol {
 OryolClassImpl(MeshLoaderBase);
 
 //------------------------------------------------------------------------------
-MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_, int32 ioLane_) :
-setup(setup_),
-ioLane(ioLane_) {
+MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_) :
+setup(setup_) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_, int32 ioLane_, LoadedFunc loadedFunc) :
+MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_, LoadedFunc loadedFunc) :
 setup(setup_),
-ioLane(ioLane_),
 onLoaded(loadedFunc) {
     // empty
 }
