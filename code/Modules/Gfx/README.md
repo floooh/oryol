@@ -21,6 +21,23 @@ HTML5      |---  |YES  |---  |---  |---  |---
 PNaCl      |---  |YES  |---  |---  |---  |---
 RaspberryPi|---  |YES  |---  |---  |---  |---
 
+### Use the Source, Luke!
+
+The most important and detailed documentation of the Gfx module
+is actually the sample source code. I'm trying very hard to make
+the sample code easy to read and understand.
+
+Looking at those four samples should give you most of the
+information necessary to work with the Gfx module:
+
+* [Clear Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Clear/Clear.cc)
+* [Triangle Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Triangle/Triangle.cc)
+* [Shapes Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Shapes/Shapes.cc)
+* [Texture Loading](https://github.com/floooh/oryol/blob/master/code/Samples/DDSCubeMap/DDSCubeMap.cc)
+
+The 'manual' documentation in here will focus more on 'filling the gaps',
+background information and design choices.
+
 ### Selecting a Rendering Backend
 
 Rendering backends are selected at compile time through cmake
@@ -66,75 +83,6 @@ ORYOL_USE_D3D12
 ORYOL_USE_METAL
 ```
 
-### The Gfx Functions
-
-(TODO: this should go further down?)
-
-All rendering is controlled through the Gfx facade class declared
-in the header **"Gfx/Gfx.h"**. The Gfx facade class offers a number
-of static methods which fall in the following feature groups:
-
-#### Setup and Shutdown
-
-* **Gfx::Setup()**: initializes the Gfx module
-* **Gfx::Discard()**: shutdown the Gfx module and discard any remaining resources
-
-#### Resource Management
-
-* **CreateResource()**: create a resource from data in memory
-* **LoadResource()**: asynchronously load a resource
-* **PushResourceLabel()**: push a new resource label on the label stack
-* **PopResourceLabel()**: pop top-most resource label from label stack
-* **DestroyResources()**: destroy all resources with matching resource label
-* **LookupResource()**: lookup a resource by name
-
-#### Applying State
-
-* **Gfx::ApplyDefaultRenderTarget()**: make the default-render-target
-  (==backbuffer) current and optionally peform a clear-operation
-* **Gfx::ApplyRenderTarget()**: make an offscreen-render-target current and
-  optionally perform a clear-operation
-* **Gfx::ApplyViewPort()**: set current view port (performs all rendering
-  within the defined rectangular area)
-* **Gfx::ApplyScissorRect()**: defines the current scissor rect (clips all
-  rendering to the defined rectangular area) also requires the
-  **RasterizerState::ScissorTestEnabled** state to be set
-* **Gfx::ApplyDrawState()**: sets the entire state required for the following
-  draw calls
-* **Gfx::ApplyUniformBlock()**: sets shader-parameters for the next draw call(s)
-
-#### Drawing Functions
-
-* **Gfx::Draw()**: performs a draw-call to render a group of primitives using
-  the shader defined by the currently active DrawState
-* **Gfx::DrawInstanced()**: performs a draw-call using D3D9-style
-  instanced-rendering
-
-#### Updating Dynamic Resources
-
-* **UpdateVertices()**: update the vertex data in a dynamic Mesh resource
-* **UpdateIndices()**: update the index data in a dynamic Mesh resource
-* **UpdateTexture()**: update pixel data in a dynamic Texture resource
-
-#### Getting Information
-
-NOTE: the resource-info methods will most likely change in the future
-
-* **Gfx::QueryFeature()**: test if an optional rendering feature is supported
-* **Gfx::QueryResourceInfo()**: get the current loading-state of a resource
-* **Gfx::QueryFreeResourceSlots()**: get the number of free resource slots in a
-  resource pool 
-* **Gfx::QueryResourcePoolInfo()**: get information about a resource pool
-* **Gfx::GfxSetup()**: get the GfxSetup object which was used to initialize the
-  Gfx module
-* **Gfx::DisplayAttrs()**: get information about the default frame-buffer (most
-  importantly the backbuffer's rendering resolution)
-* **Gfx::RenderTargetAttrs()**: get information about the currently active render
-  target
-* **Gfx::ReadPixels()**: read-back the color pixels of the current render-target,
-  this causes a pipeline-stall and is currently only supported in the GL
-  rendering-backend
-
 ### Frame Rendering
 
 The following steps are necessary to render something with the Gfx module:
@@ -150,49 +98,235 @@ The following steps are necessary to render something with the Gfx module:
 
 ### Initializing the Gfx Module
 
-To use the Gfx module, first include the header **"Gfx/Gfx.h"** and
-call the **Gfx::Setup()** method with a **GfxSetup** object as argument
-which allows to configure the GfxModule. The GfxSetup class has static
-creation methods for the most typical setup scenarios:
+To initialize the Gfx module, include the header **"Gfx/Gfx.h"** and
+call the **Gfx::Setup()** method. This will create the application window
+and a 3D-API context:
 
 ```cpp
-/// shortcut for windowed mode (with RGB8, 24+8 stencil/depth, no MSAA)
-static GfxSetup Window(int32 width, int32 height, String windowTitle);
-/// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth, no MSAA)
-static GfxSetup Fullscreen(int32 width, int32 height, String windowTitle);
-/// shortcut for windowed mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
-static GfxSetup WindowMSAA4(int32 width, int32 height, String windowTitle);
-/// shortcut for fullscreen mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
-static GfxSetup FullscreenMSAA4(int32 width, int32 height, String windowTitle);
+#include "Gfx/Gfx.h"
+...
+    Gfx::Setup(GfxSetup::Window(800, 600, "My Oryol App"));
 ```
+This would create a 800x600 window titled "My Oryol App".
 
-For instance, to setup the GfxModule with an 800x600 window without
-MSAA:
+The GfxSetup object allows to configure and tweak the rendering system
+for the specific needs of the Oryol application. Have a look at the
+[Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+header to see what's possible.
 
-```cpp
-Gfx::Setup(GfxSetup::Window(800, 600, "My Oryol App"));
-```
-
-The GfxSetup class allows more detailed tweaking of the Gfx module, 
-see the [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
-header for details.
-
-
+>NOTE: On some platforms (especially mobile), the actual rendering 
+resolution can be different from what the application requested. To
+get the actual rendering resolution, call the **Gfx::DisplayAttrs()** after
+the Gfx module has been initialized.
 
 ### Resources
 
+Gfx resources are thin wrapper objects which manage the lifetime of an
+underlying 3D-API specific rendering resource.
+
+#### Resource Pools
+
+All Gfx resources live in fixed-size pools, with each resource type having its
+own pool. If a resource pool is full, creating additional resources will fail
+until some existing resources are destroyed. The resource pool size for each
+resource type can be configured in the **GfxSetup** object at startup time.
+
+#### Resource Creation and Usage
+
+Resource creation and usage always follows the same pattern:
+
+1. fill-out a **Setup** object which describes in detail how the resource
+should be created
+2. call one of the resource creation methods of the Gfx facade and get
+a **Resource Id** back
+3. use the returned Resource Id for rendering
+
+Simple application usually don't need to care about resource destruction, all
+resources will be properly destroyed at application shutdown. Apart from
+shutdown, Oryol will never automatically destroy resources. See the **Resource
+Lifetime Management** section below if more control over the lifetime
+of resources is needed.
+
+#### Resource Setup Objects
+
+**Setup objects** describe in detail how a resource should be created, for instance
+the size and pixel format of a texture, or how many vertices and indices are in
+a mesh. They are the same concept as the DESC structures in D3D, or the
+Descriptor objects in Metal.
+
+#### Resource Lifetime Management
+
+Resource lifetime is managed explicitely by the application code with
+**Resource Labels**. When a resource is created, it is automatically assigned
+the top-most resource label from an internal resource label stack. Later
+when the resource is no longer needed, it is destroyed by calling
+the method **Gfx::DestroyResources()** which takes a resource label as
+argument.
+
+One resource label is usually assigned to a whole group of related resource
+objects. By calling the DestroyResources() method with this label, the
+whole group of resources is destroyed with a single call.
+
+Here's how it looks in (pseudo-)code, using an automatically generated resource
+label:
+
+```cpp
+// push a new, automatically generated label on the label stack:
+Gfx::PushResourceLabel();
+
+// create one or more resources...
+Id res0 = Gfx::CreateResource(...);
+Id res1 = Gfx::CreateResource(...);
+Id res2 = Gfx::CreateResource(...);
+
+// pop the from the stack and store it somewhere
+this->label = Gfx::PopResourceLabel();
+
+// ... at some later point, destroy res0..res2 in a single call:
+Gfx::DestroyResources(this->label);
+```
+
+It is also possible to push an explicitely defined resource label on 
+the label stack, but you'll have to make sure that this doesn't collide
+with other resource labels:
+
+```cpp
+// create an explicit resource label and push it on the label stack
+const ResourceLabel myLabel(123456);
+Gfx::PushResourceLabel(myLabel);
+...
+Gfx::PopResourceLabel();
+...
+Gfx::DestroyResources(myLabel);
+```
+
+#### Resource Creation vs Resource Loading
+
+There are two ways to setup a new resource object in the Gfx module:
+
+* **Gfx::CreateResource(...)**: create immediately from data in memory
+* **Gfx::LoadResource(...)**: load asynchronously from disk/web
+
+In the context of the Gfx module, **resource creation** always means that
+a resource object is created immediately from existing data in memory, while
+**resource loading** means that a resource is 'loaded' asynchronously from
+a slow data source (for instance the hard disk or a web server).
+
+The **Gfx::CreateResource()** methods take a resource Setup object, and 
+optionally a chunk of memory, immediately create a usable resource object
+and return a resource Id.
+
+In contrast, the **Gfx::LoadResource()** method takes a pointer to a
+user-provided **Resource Loader** object which knows how to load and create a
+resource asynchronously, but immediately returns a usable resource Id.
+
+The resource Id of a loading resource can be used immediately for rendering
+even though the actual resource behind it doesn't exist yet (since the resource
+data is still loading from the slow data source). The Gfx module will silently
+ignore any draw calls that depends on a resource that is not in a valid
+state (this includes: the resource is still loading, has failed to load, or
+has been destroyed).
+
+The Gfx module does not provide any specific **Resource Loader**
+implementations, these have been moved out into the Assets module. An
+application can also provide its own Resource Loaders, for instance to
+load from custom file formats.
+
+#### Resource States
+
+A Gfx resource goes through different states during its lifetime. The state is
+inspected by the Gfx module itself to decide whether all required resources for
+a drawcall are valid, and it can be inspected by the application code with the
+**Gfx::QueryResourceInfo()** call, for instance to check whether a resource is
+still loading.
+
 #### Resource Types
 
-1. [Meshes](#meshes)
-2. [Textures](#textures)
-3. [Shaders](#shaders)
-4. [DrawStates](#drawstates)
-
-#### Resource Management
-TODO
+1. [Meshes](#meshes): vertices, indices and primitive groups
+2. [Textures](#textures): textures and offscreen-rendertargets
+3. [Shaders](#shaders): vertex-shaders, fragment-shaders and shader parameters
+4. [DrawStates](#drawstates): the complete state needed to issue draw-calls
 
 #### Meshes
-TODO
+
+A Mesh resource object describes a piece of geometry required for rendering:
+
+* a **vertex buffer** containing vertices
+* a **vertex layout** describing the components of a vertex
+* an optional **index buffer** containing 16- or 32-bit indices
+* a **PrimitiveType** (whether the geometry is made of triangles, lines or
+  points)
+* an array of **PrimitiveGroups**
+
+Meshes are not directly used for rendering, instead one or more Meshes
+are used as input when creating a DrawState. More on that in the
+DrawState section.
+
+##### VertexLayout
+
+A VertexLayout object describes how a mesh vertex is layed out in memory:
+
+- the number and order of vertex components
+- the meaning or 'semantic' of a each vertex component
+- the data type of each vertex component
+
+Let's say a vertex looks like this in memory:
+
+- 3 floats for position
+- 3 floats for the normal
+- 2 floats for the texture coordinate
+
+Setting up a matching vertex layout looks like this (calls to the
+Add() method can be chained):
+
+```cpp
+VertexLayout layout;
+layout.Add(VertexAttr::Position, VertexFormat::Float3)
+      .Add(VertexAttr::Normal, VertexFormat::Float3)
+      .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+```
+
+Oryol supports a number of packed vertex formats, for instance it is
+quite usual to pack normal information into a 4 bytes (1 byte required for
+padding), and texture coordinates into 16-bit fixed-point point values, 
+for instance:
+
+```cpp
+VertexLayout layout;
+layout.Add(VertexAttr::Position, VertexFormat::Float3)
+      .Add(VertexAttr::Normal, VertexFormat::Byte4N)
+      .Add(VertexAttr::TexCoord0, VertexFormat::Short2);
+```
+
+Vertex component packing uses less memory and less memory bandwidth when
+pulling vertices into the vertex shader, so it is almost preferrable over
+unpacked vertex data.
+
+Have a look at the [PackedNormals](https://github.com/floooh/oryol/blob/master/code/Samples/PackedNormals/PackedNormals.cc)
+sample to see vertex component packing in action.
+
+##### PrimitiveType and PrimitiveGroups
+
+The Oryol Gfx module supports the following primitive types:
+
+* triangle lists and strips
+* line lists and strips
+* points
+
+This is the common subset that is supported by all 3D-APIs. One mesh 
+can only have a single primitive type even though a mesh can have
+several primitive groups (== sub-meshes, see below). This limitation
+was brought in by D3D12, where the primitive topology (triangles, lines or
+points) is part of the pipeline state object.
+
+A mesh can be split into several **PrimitiveGroups**, each group defines a
+range of primitives in the mesh. A PrimitiveGroup is the smallest 'geometry 
+unit' that can be rendered with one draw call. PrimitiveGroup are most commonly
+used when a mesh is split up into several materials.
+
+##### Working with Meshes
+
+
 
 #### Textures
 TODO
