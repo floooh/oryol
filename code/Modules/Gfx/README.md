@@ -189,7 +189,7 @@ then used as textures later in the rendering cascade.
 
 Finally, modern rendering APIs have a lot of restrictions for dynamic state
 that could change unpredictably during rendering. The relationship
-between between different resources and their memory layout is very
+between different resources and their memory layout is very
 rigid and must be defined upfront. 
 
 So basically, the way resources and their relationships are defined in the
@@ -248,11 +248,11 @@ Each resource type has it's own Setup class:
 
 #### Resource Sharing
 
-Resource sharing means that attempting to create and identical resource multiple times 
+Resource sharing means that attempting to create an identical resource multiple times 
 will return the original resource instead of creating a second copy of the
 resource in memory.
 
-Sharing is controlled through **Resource Locators** object. A resource locator
+Sharing is controlled through **Resource Locator** object. A resource locator
 is a human-readable string which is both used as a sharing id, and as URL
 for loadable resources. If a new resource is requested and another resource
 with a matching resource locator already exists, the existing resource will be
@@ -328,7 +328,7 @@ Id res0 = Gfx::CreateResource(...);
 Id res1 = Gfx::CreateResource(...);
 Id res2 = Gfx::CreateResource(...);
 
-// pop the from the stack and store it somewhere
+// pop the top-most label from the stack and store it somewhere
 this->label = Gfx::PopResourceLabel();
 
 // ... at some later point, destroy res0..res2 in a single call:
@@ -366,8 +366,8 @@ a resource object is created immediately from existing data in memory, while
 a slow data source (for instance the hard disk or a web server).
 
 The **Gfx::CreateResource()** methods take a resource Setup object, and 
-optionally a chunk of memory, immediately creates a usable resource object
-and returns a resource Id.
+optionally a chunk of memory, immediately create a usable resource object
+and return a resource Id.
 
 In contrast, the **Gfx::LoadResource()** method takes a pointer to a
 user-provided **Resource Loader** object which knows how to load and create a
@@ -387,6 +387,7 @@ load from custom file formats.
 
 See also:
 - [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+- [Resource/Core/ResourceLoader.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/Core/ResourceLoader.h)
 
 #### Resource States
 
@@ -400,7 +401,7 @@ The resource states are:
 
 * **ResourceState::Initial**: The resource object has just been created. This
   is a private state, user-code will never see a resource object in initial
-  state.The only followup-state is the Setup state.
+  state.The only valid followup-state is the Setup state.
 * **ResourceState::Setup**: The resource object has a valid Setup object
   assigned and is ready to be created. This is also an internal state,
   user-code will never encounter a resource object in the Setup-state. Valid
@@ -415,7 +416,7 @@ be that a required file doesn't exist, or an invalid combination of
 Setup parameters was provided).
 
 After a resource is destroyed, the associated resource object will not
-be destroyed (since it lives in a fixed-size resource pool), but will
+be deleted (since it lives in a fixed-size resource pool), but will
 simply go back into the Initial state.
 
 See also:
@@ -461,8 +462,8 @@ layout.Add(VertexAttr::Position, VertexFormat::Float3)
 ```
 
 Oryol supports a number of packed vertex formats, for instance it is
-quite usual to pack normal information into a 4 bytes (1 byte required for
-padding), and texture coordinates into 16-bit fixed-point point values, 
+quite usual to pack normal information into 4 bytes (1 byte required for
+padding), and texture coordinates into 16-bit fixed-point values, 
 for instance:
 
 ```cpp
@@ -473,7 +474,7 @@ layout.Add(VertexAttr::Position, VertexFormat::Float3)
 ```
 
 Vertex component packing uses less memory and less memory bandwidth when
-pulling vertices into the vertex shader, so it is almost preferrable over
+pulling vertices into the vertex shader, so it is always preferrable over
 unpacked vertex data.
 
 See also:
@@ -489,16 +490,17 @@ The Oryol Gfx module supports the following primitive types:
 * line lists and strips
 * points
 
-This is the common subset that is supported by all 3D-APIs. One mesh 
-can only have a single primitive type even though a mesh can have
-several primitive groups (== sub-meshes, see below). This limitation
-was brought in by D3D12, where the primitive topology (triangles, lines or
-points) is part of the pipeline state object.
+This is the common subset of primitive types supported by all 3D-APIs.
 
 A mesh can be split into several **PrimitiveGroups**, each group defines a
 range of primitives in the mesh. A PrimitiveGroup is the smallest 'geometry 
 unit' that can be rendered with one draw call. PrimitiveGroup are most commonly
 used when a mesh is split up into several materials.
+
+One mesh can only have a single primitive type, even though it may have
+multiple primitive groups. This limitation was brought in by D3D12, where the
+basic primitive type (triangles, lines or points) is part of the pipeline state
+object.
 
 See also:
 - [Gfx/Core/PrimitiveGroup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/PrimitiveGroup.h)
@@ -508,15 +510,19 @@ See also:
 
 Oryol provides 4 ways to create Mesh objects:
 
-* using the **MeshBuilder** class from the Assets module
-* using the **ShapeBuilder** class from the Assets module
-* loading from a .omsh file 
-* creating from raw vertex- and index data in memory
+1. using the **MeshBuilder** class in the Assets module
+2. using the **ShapeBuilder** class in the Assets module
+3. loading from a .omsh file using the **MeshLoader**  class in the Assets
+   module
+4. creating from raw vertex- and index data in memory
+
+The first 3 methods all build on the basic capability number 4 to create a 
+Mesh object from raw data in memory
 
 ###### Creating a Mesh using the MeshBuilder class:
 
-The **MeshBuilder** class (part of the Assets module) is useful for creating meshes vertex-by-vertex
-with built-in support for vertex packing.
+The **MeshBuilder** class (part of the Assets module) is useful for creating
+meshes vertex-by-vertex with built-in support for vertex packing.
 
 The following code creates a simple triangle mesh using the Asset module's
 MeshBuilder class with per-vertex color
