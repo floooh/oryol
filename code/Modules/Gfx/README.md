@@ -117,7 +117,7 @@ header to see what's possible.
 
 >NOTE: On some platforms (mostly mobile), the actual rendering 
 resolution can be different from what the application requested. To
-get the actual rendering resolution, call the **Gfx::DisplayAttrs()** after
+get the actual rendering resolution, call the **Gfx::DisplayAttrs()** method after
 the Gfx module has been initialized.
 
 See also:
@@ -175,12 +175,12 @@ types are used together for rendering:
 
 Most simple rendering scenarios will only use a single input Mesh. Using
 multiple meshes is required for hardware-instanced rendering, and may 
-be useful in other advanced scenarios, for instance one part of the
+be useful in other advanced scenarios, for instance if one part of the
 vertex data is dynamic and another part is static.
 
 The main reason why Meshes and Shaders are separate resource
 objects, and not directly defined as part of a DrawState is reusability.
-A single Mesh or Shader can be used by many DrawStates.
+A single Mesh or Shader can be used by many different DrawStates.
 
 The reason why Textures are not baked into DrawStates at all is to prevent
 combinatorial explosions for the number of required DrawState object in some 
@@ -192,7 +192,7 @@ that could change unpredictably during rendering. The relationship
 between different resources and their memory layout is very
 rigid and must be defined upfront. 
 
-So basically, the way resources and their relationships are defined in the
+So basically, the way resources and their relationships have been designed in the
 Oryol Gfx module is a compromise between keeping the whole system simple, the
 requirements of modern 3D APIs, and the restrictions of the low-end APIs (WebGL
 and OpenGLES2).
