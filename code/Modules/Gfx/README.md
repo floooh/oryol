@@ -85,14 +85,17 @@ ORYOL_USE_METAL
 
 ### Frame Rendering
 
+Rendering through the Gfx module usually involves the following steps:
+
 1. [Initialize the Gfx Module](#initialize-the-gfx-module)
 2. [Create Resources](#resources)
 3. [Apply Render Target and optionally Clear](#render-targets)
 4. [Optional: Update Dynamic Resources](#dynamic-resources)
-5. [Apply a DrawState](#drawstates)
-6. [Draw](#draw-functions)
-7. [Commit](#committing-the-frame)
-8. [Shutdown the Gfx Module](#shutting-down)
+5. [Apply a DrawState and Textures](#drawstates)
+6. [Apply Uniform Blocks](#uniformblocks)
+7. [Draw](#draw-functions)
+8. [Commit](#committing-the-frame)
+9. [Shutdown the Gfx Module](#shutting-down)
 
 ### Initialize the Gfx Module
 
@@ -117,10 +120,17 @@ resolution can be different from what the application requested. To
 get the actual rendering resolution, call the **Gfx::DisplayAttrs()** after
 the Gfx module has been initialized.
 
+See also:
+- [GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+- [Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+
 ### Resources
 
 Gfx resources are thin wrapper objects which manage the lifetime of an
 underlying 3D-API specific rendering resource.
+
+See also:
+- [Resource Module](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/README.md)
 
 #### Resource Types
 
@@ -187,6 +197,9 @@ Oryol Gfx module is a compromise between keeping the whole system simple, the
 requirements of modern 3D APIs, and the restrictions of the low-end APIs (WebGL
 and OpenGLES2).
 
+See also:
+- [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+
 #### Resource Pools
 
 All Gfx resources live in fixed-size pools, with each resource type having its
@@ -194,6 +207,10 @@ own pool. If a resource pool is full, creating additional resources of that
 type will fail until some existing resources are destroyed. The resource pool
 size for each resource type can be configured in the **GfxSetup** object at
 startup time.
+
+See also:
+- [Gfx/Setup/GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+- [Resource/Core/ResourcePool.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/Core/ResourcePool.h)
 
 #### Resource Creation and Usage
 
@@ -211,6 +228,10 @@ shutdown, Oryol will never automatically destroy resources. See the **Resource
 Lifetime Management** section below if more control over the lifetime
 of resources is needed.
 
+See also:
+
+- [Resource/Id.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/Id.h)
+
 #### Resource Setup Objects
 
 **Setup objects** describe in detail how a resource should be created, for instance
@@ -224,6 +245,63 @@ Each resource type has it's own Setup class:
 * [MeshSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/MeshSetup.h)
 * [TextureSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/TextureSetup.h)
 * [ShaderSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/ShaderSetup.h)
+
+#### Resource Sharing
+
+Resource sharing means that attempting to create and identical resource multiple times 
+will return the original resource instead of creating a second copy of the
+resource in memory.
+
+Sharing is controlled through **Resource Locators** object. A resource locator
+is a human-readable string which is both used as a sharing id, and as URL
+for loadable resources. If a new resource is requested and another resource
+with a matching resource locator already exists, the existing resource will be
+returned instead of creating a new one.
+
+Here is a very simple example of resource sharing:
+
+```cpp
+MeshSetup mshSetup = MeshSetup::CreateFromFile("msh:testmesh.omsh");
+Id mesh0 = Gfx::LoadResource(MeshLoader::Create(mshSetup));
+Id mesh1 = Gfx::LoadResource(MeshLoader::Create(mshSetup));
+```
+
+_mesh0_ and _mesh1_ will be identical, because they have both been
+created with the same resource locator "msh:testmesh.omsh".
+
+It is possible (although rarely needed) to explicitely suppress sharing,
+even if the human-readable locator string is identical. For this reason,
+resource locators have an additional _signature_ member. Two locators
+are only equal, if both the locator string and signature match.
+
+Let's modify the above example to suppress sharing with 2 different
+signatures (1 and 2):
+
+```
+auto mshSetup0 = MeshSetup::CreateFromFile(Locator("msh:testmesh.omsh", 1));
+auto mshSetup1 = MeshSetup::CreateFromFile(Locator("msh:testmesh.omsh", 2));
+Id mesh0 = Gfx::LoadResource(MeshLoader::Create(mshSetup0));
+Id mesh1 = Gfx::LoadResource(MeshLoader::Create(mshSetup1));
+```
+
+This will create 2 separate Mesh objects from the same file because the locator 
+signatures _1_ and _2_ are different.
+
+There is also a special signature constant **Locator::NonSharedSignature**
+and a shortcut construction method **Locator::NonShared()** 
+that causes locators to never match:
+
+```
+auto mshSetup = MeshSetup::CreateFromFile(Locator::NonShared("msh:testmesh.omsh"));
+Id mesh0 = Gfx::LoadResource(MeshLoader::Create(mshSetup));
+Id mesh1 = Gfx::LoadResource(MeshLoader::Create(mshSetup));
+```
+
+This guarantees that all Mesh objects created from the MeshSetup object _mshSetup_
+to never be shared.
+
+See also:
+- [Resource/Locator.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/Locator.h)
 
 #### Resource Lifetime Management
 
@@ -271,6 +349,10 @@ Gfx::PopResourceLabel();
 Gfx::DestroyResources(myLabel);
 ```
 
+See also:
+- [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+- [Resource/ResourceLabel.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/ResourceLabel.h)
+
 #### Resource Creation vs Resource Loading
 
 There are two ways to setup a new resource object in the Gfx module:
@@ -303,6 +385,9 @@ implementations, these have been moved out into the Assets module. An
 application can also provide its own Resource Loaders, for instance to
 load from custom file formats.
 
+See also:
+- [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+
 #### Resource States
 
 A Gfx resource goes through different states during its lifetime. The state is
@@ -333,6 +418,9 @@ After a resource is destroyed, the associated resource object will not
 be destroyed (since it lives in a fixed-size resource pool), but will
 simply go back into the Initial state.
 
+See also:
+- [Resource/ResourceState.h](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/ResourceState.h)
+
 #### Meshes
 
 A Mesh resource object describes a piece of geometry required for rendering:
@@ -350,7 +438,7 @@ DrawState section.
 
 ##### VertexLayout
 
-A VertexLayout object describes how a mesh vertex is layed out in memory:
+A VertexLayout object describes how a geometry vertex is layed out in memory:
 
 - the number and order of vertex components
 - the meaning or 'semantic' of a each vertex component
@@ -388,8 +476,10 @@ Vertex component packing uses less memory and less memory bandwidth when
 pulling vertices into the vertex shader, so it is almost preferrable over
 unpacked vertex data.
 
-Have a look at the [PackedNormals](https://github.com/floooh/oryol/blob/master/code/Samples/PackedNormals/PackedNormals.cc)
-sample to see vertex component packing in action.
+See also:
+- [Gfx/Core/VertexLayout.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/VertexLayout.h)
+- [PackedNormals sample](https://github.com/floooh/oryol/blob/master/code/Samples/PackedNormals/PackedNormals.cc)
+
 
 ##### PrimitiveType and PrimitiveGroups
 
@@ -409,6 +499,10 @@ A mesh can be split into several **PrimitiveGroups**, each group defines a
 range of primitives in the mesh. A PrimitiveGroup is the smallest 'geometry 
 unit' that can be rendered with one draw call. PrimitiveGroup are most commonly
 used when a mesh is split up into several materials.
+
+See also:
+- [Gfx/Core/PrimitiveGroup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/PrimitiveGroup.h)
+- [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h)
 
 ##### Creating Meshes
 
@@ -453,6 +547,9 @@ The MeshBuilder::Build() method returns a **SetupAndData<MeshSetup>** instance
 which can be directly passed to the **Gfx::CreateResource()** method to
 create the Mesh resource object.
 
+See also:
+- [Assets/Gfx/MeshBuilder.h](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/MeshBuilder.h)
+
 ###### Creating a Mesh using the ShapeBuilder class:
 
 The **ShapeBuilder** class (part of the Assets module) builds on top of the
@@ -479,6 +576,9 @@ shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
 Id mesh = Gfx::CreateResource(shapeBuilder.Build());
 ```
 
+See also:
+- [Assets/Gfx/ShapeBuilder.h](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/ShapeBuilder.h)
+
 ###### Loading mesh data from disk:
 
 Finally, the Assets module also comes with an example mesh resource loader class
@@ -498,7 +598,7 @@ IO::Setup(ioSetup);
 Loading a Mesh from disk is a one-liner:
 
 ```cpp
-Id msh = Gfx::LoadResource(MeshLoader::Create("msh:test.omsh"));
+Id msh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::CreateFromFile("msh:test.omsh")));
 ```
 
 The returned Id can be used immediately, but rendering will be supressed
@@ -513,12 +613,17 @@ object that is going to be used to create the Mesh object.
 Example code using a C++11 lambda function:
 
 ```cpp
-Id msg = Gfx::LoadResource(MeshLoader::Create("msg:test.omsh", [](MeshSetup& setup) {
+Id msg = Gfx::LoadResource(MeshLoader::Create(MeshSetup::CreateFromFile("msg:test.omsh"), [](MeshSetup& setup) {
     // mesh data has been loaded, can now inspect and change
     // the provided MeshSetup object
     ...
     });
 ```
+
+See also:
+- [Assets/Gfx/MeshLoader.h](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/MeshLoader.h)
+- [Assets/Gfx/OmshParser.h](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/OmshParser.h)
+- [oryol-tools](https://github.com/floooh/oryol-tools)
 
 #### Textures
 TODO
@@ -530,6 +635,9 @@ TODO
 TODO
 
 #### Shaders
+TODO
+
+##### UniformBlocks
 TODO
 
 #### DrawStates
