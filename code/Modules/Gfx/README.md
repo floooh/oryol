@@ -424,7 +424,8 @@ See also:
 
 #### Meshes
 
-A Mesh resource object describes a piece of geometry required for rendering:
+A Mesh resource object describes a piece of geometry required for rendering
+and contains:
 
 * a **vertex buffer** containing vertices
 * a **vertex layout** describing the components of a vertex
@@ -439,7 +440,8 @@ DrawState section.
 
 ##### VertexLayout
 
-A VertexLayout object describes how a geometry vertex is layed out in memory:
+A VertexLayout object describes how a vertex in the Mesh's vertex buffer is 
+layed out in memory:
 
 - the number and order of vertex components
 - the meaning or 'semantic' of a each vertex component
@@ -473,8 +475,8 @@ layout.Add(VertexAttr::Position, VertexFormat::Float3)
       .Add(VertexAttr::TexCoord0, VertexFormat::Short2);
 ```
 
-Vertex component packing uses less memory and less memory bandwidth when
-pulling vertices into the vertex shader, so it is always preferrable over
+Vertex component packing uses less memory space and bandwidth when
+pulling vertices into the vertex shader, so it should be always preferrable over
 unpacked vertex data.
 
 See also:
