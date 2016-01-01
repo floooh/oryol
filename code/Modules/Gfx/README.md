@@ -24,7 +24,7 @@ RaspberryPi|---  |YES  |---  |---  |---  |---
 ### Use the Source, Luke!
 
 The most important and detailed documentation of the Gfx module
-is actually the sample source code. I'm trying very hard to make
+is the Samples source code. I'm trying very hard to make
 the sample code easy to read and understand.
 
 Looking at those four samples should give you most of the
@@ -40,9 +40,9 @@ background information and design choices.
 
 ### Selecting a Rendering Backend
 
-Rendering backends are selected at compile time through cmake
-options. Each target platform has a default rendering backend
-that will be selected automatically, usually this is OpenGL.
+Rendering backends are selected at compile time through cmake options and
+cannot be switched at runtime. Each target platform has a default rendering
+backend that will be selected automatically, usually this is OpenGL.
 
 The easiest way to select a non-default rendering backend is to
 select a different **fips build config**:
@@ -85,9 +85,7 @@ ORYOL_USE_METAL
 
 ### Frame Rendering
 
-The following steps are necessary to render something with the Gfx module:
-
-1. [Initialize the Gfx Module](#initializing-the-gfx-module)
+1. [Initialize the Gfx Module](#initialize-the-gfx-module)
 2. [Create Resources](#resources)
 3. [Apply Render Target and optionally Clear](#render-targets)
 4. [Optional: Update Dynamic Resources](#dynamic-resources)
@@ -96,7 +94,7 @@ The following steps are necessary to render something with the Gfx module:
 7. [Commit](#committing-the-frame)
 8. [Shutdown the Gfx Module](#shutting-down)
 
-### Initializing the Gfx Module
+### Initialize the Gfx Module
 
 To initialize the Gfx module, include the header **"Gfx/Gfx.h"** and
 call the **Gfx::Setup()** method. This will create the application window
@@ -114,7 +112,7 @@ for the specific needs of the Oryol application. Have a look at the
 [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
 header to see what's possible.
 
->NOTE: On some platforms (especially mobile), the actual rendering 
+>NOTE: On some platforms (mostly mobile), the actual rendering 
 resolution can be different from what the application requested. To
 get the actual rendering resolution, call the **Gfx::DisplayAttrs()** after
 the Gfx module has been initialized.
@@ -124,24 +122,90 @@ the Gfx module has been initialized.
 Gfx resources are thin wrapper objects which manage the lifetime of an
 underlying 3D-API specific rendering resource.
 
+#### Resource Types
+
+The Oryol Gfx module provides the following resource types:
+
+1. [Meshes](#meshes): vertices, indices and primitive groups
+2. [Textures](#textures): textures and offscreen-rendertargets
+3. [Shaders](#shaders): vertex-shaders, fragment-shaders and shader parameters
+4. [DrawStates](#drawstates): the complete state needed to issue draw-calls
+
+The most important resource type is the DrawState, this bundles all static
+state required for issuing draw calls. A DrawState takes one or several Meshes
+and exactly one Shader as input, Textures are set together with a DrawState in
+the Gfx::ApplyDrawState() call. Here's a diagram how the different resource
+types are used together for rendering:
+
+```
++--------------+
+|              |
+| 1..N Meshes  +-----+
+|              |     |    +--------------+
++--------------+     |    |              |
+                     +---->  DrawState   +----+
++--------------+     |    |              |    |
+|              |     |    +--------------+    |
+|    Shader    +-----+                        |
+|              |                              |    +-------------------------+
++--------------+                              +---->  Gfx::ApplyDrawState()  |
+                                              |    +------------+------------+
++---------------+                             |                 |
+|               |                             |                 |
+| 1..N Textures +-----------------------------+                 |
+|               |                                  +------------v------------+
++---------------+                Shader Params+----> Gfx::ApplyUniformBlock()|
+                                                   +------------+------------+
+                                                                |
+                                                                |
+                                                   +------------v------------+
+                                                   |       Gfx::Draw()       |
+                                                   +-------------------------+
+```
+
+Most simple rendering scenarios will only use a single input Mesh. Using
+multiple meshes is required for hardware-instanced rendering, and may 
+be useful in other advanced scenarios, for instance one part of the
+vertex data is dynamic and another part is static.
+
+The main reason why Meshes and Shaders are separate resource
+objects, and not directly defined as part of a DrawState is reusability.
+A single Mesh or Shader can be used by many DrawStates.
+
+The reason why Textures are not baked into DrawStates at all is to prevent
+combinatorial explosions for the number of required DrawState object in some 
+usage scenarios like using a cascade of offscreen render targets which are
+then used as textures later in the rendering cascade.
+
+Finally, modern rendering APIs have a lot of restrictions for dynamic state
+that could change unpredictably during rendering. The relationship
+between between different resources and their memory layout is very
+rigid and must be defined upfront. 
+
+So basically, the way resources and their relationships are defined in the
+Oryol Gfx module is a compromise between keeping the whole system simple, the
+requirements of modern 3D APIs, and the restrictions of the low-end APIs (WebGL
+and OpenGLES2).
+
 #### Resource Pools
 
 All Gfx resources live in fixed-size pools, with each resource type having its
-own pool. If a resource pool is full, creating additional resources will fail
-until some existing resources are destroyed. The resource pool size for each
-resource type can be configured in the **GfxSetup** object at startup time.
+own pool. If a resource pool is full, creating additional resources of that
+type will fail until some existing resources are destroyed. The resource pool
+size for each resource type can be configured in the **GfxSetup** object at
+startup time.
 
 #### Resource Creation and Usage
 
 Resource creation and usage always follows the same pattern:
 
-1. fill-out a **Setup** object which describes in detail how the resource
+1. fill-out a new **Setup** object which describes in detail how the resource
 should be created
 2. call one of the resource creation methods of the Gfx facade and get
 a **Resource Id** back
 3. use the returned Resource Id for rendering
 
-Simple application usually don't need to care about resource destruction, all
+Simple applications usually don't need to care much about resource destruction, all
 resources will be properly destroyed at application shutdown. Apart from
 shutdown, Oryol will never automatically destroy resources. See the **Resource
 Lifetime Management** section below if more control over the lifetime
@@ -154,11 +218,18 @@ the size and pixel format of a texture, or how many vertices and indices are in
 a mesh. They are the same concept as the DESC structures in D3D, or the
 Descriptor objects in Metal.
 
+Each resource type has it's own Setup class:
+
+* [DrawStateSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/DrawStateSetup.h)
+* [MeshSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/MeshSetup.h)
+* [TextureSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/TextureSetup.h)
+* [ShaderSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/ShaderSetup.h)
+
 #### Resource Lifetime Management
 
 Resource lifetime is managed explicitely by the application code with
 **Resource Labels**. When a resource is created, it is automatically assigned
-the top-most resource label from an internal resource label stack. Later
+the top-most resource label from an internal resource label stack. Later,
 when the resource is no longer needed, it is destroyed by calling
 the method **Gfx::DestroyResources()** which takes a resource label as
 argument.
@@ -213,8 +284,8 @@ a resource object is created immediately from existing data in memory, while
 a slow data source (for instance the hard disk or a web server).
 
 The **Gfx::CreateResource()** methods take a resource Setup object, and 
-optionally a chunk of memory, immediately create a usable resource object
-and return a resource Id.
+optionally a chunk of memory, immediately creates a usable resource object
+and returns a resource Id.
 
 In contrast, the **Gfx::LoadResource()** method takes a pointer to a
 user-provided **Resource Loader** object which knows how to load and create a
@@ -223,7 +294,7 @@ resource asynchronously, but immediately returns a usable resource Id.
 The resource Id of a loading resource can be used immediately for rendering
 even though the actual resource behind it doesn't exist yet (since the resource
 data is still loading from the slow data source). The Gfx module will silently
-ignore any draw calls that depends on a resource that is not in a valid
+ignore any draw calls that depend on a resource that is not in a valid
 state (this includes: the resource is still loading, has failed to load, or
 has been destroyed).
 
@@ -235,17 +306,32 @@ load from custom file formats.
 #### Resource States
 
 A Gfx resource goes through different states during its lifetime. The state is
-inspected by the Gfx module itself to decide whether all required resources for
+inspected by the Gfx module to decide whether all required resources for
 a drawcall are valid, and it can be inspected by the application code with the
 **Gfx::QueryResourceInfo()** call, for instance to check whether a resource is
 still loading.
 
-#### Resource Types
+The resource states are:
 
-1. [Meshes](#meshes): vertices, indices and primitive groups
-2. [Textures](#textures): textures and offscreen-rendertargets
-3. [Shaders](#shaders): vertex-shaders, fragment-shaders and shader parameters
-4. [DrawStates](#drawstates): the complete state needed to issue draw-calls
+* **ResourceState::Initial**: The resource object has just been created. This
+  is a private state, user-code will never see a resource object in initial
+  state.The only followup-state is the Setup state.
+* **ResourceState::Setup**: The resource object has a valid Setup object
+  assigned and is ready to be created. This is also an internal state,
+  user-code will never encounter a resource object in the Setup-state. Valid
+  followup states are Pending, Valid or Failed.
+* **ResourceState::Pending**: The resource object is waiting for an asynchronous
+IO operation to finish, this state is only set for resources created via
+Gfx::LoadResource(). Possible followup states are Valid and Failed
+* **ResourceState::Valid**: The resource has been created and is ready to be
+used. 
+* **ResourceState::Failed**: Creating the resource has failed (reasons could
+be that a required file doesn't exist, or an invalid combination of 
+Setup parameters was provided).
+
+After a resource is destroyed, the associated resource object will not
+be destroyed (since it lives in a fixed-size resource pool), but will
+simply go back into the Initial state.
 
 #### Meshes
 
@@ -409,12 +495,30 @@ ioSetup.Assigns.Add("msh:", "http://floooh.github.com/oryol/");
 IO::Setup(ioSetup);
 ```
 
-Actually loading the Mesh is a one-liner:
+Loading a Mesh from disk is a one-liner:
 
 ```cpp
 Id msh = Gfx::LoadResource(MeshLoader::Create("msh:test.omsh"));
 ```
 
+The returned Id can be used immediately, but rendering will be supressed
+until the mesh data has been loaded and the mesh object behind the Id
+has been created.
+
+The MeshLoader class also allows to define a callback function which
+is called after the mesh data has been loaded, but before the Mesh object
+is created. This allows to inspect, and possibly change the MeshSetup
+object that is going to be used to create the Mesh object.
+
+Example code using a C++11 lambda function:
+
+```cpp
+Id msg = Gfx::LoadResource(MeshLoader::Create("msg:test.omsh", [](MeshSetup& setup) {
+    // mesh data has been loaded, can now inspect and change
+    // the provided MeshSetup object
+    ...
+    });
+```
 
 #### Textures
 TODO
