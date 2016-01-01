@@ -63,7 +63,7 @@ For instance, to select an iOS build config using the Metal rendering backend:
 
 ```
 > ./fips set config metal-ios-xcode-debug
-'config' set to 'ios-xcode-debug' in project 'oryol'
+'config' set to 'metal-ios-xcode-debug' in project 'oryol'
 > ./fips gen
 ...
 > ./fips open
