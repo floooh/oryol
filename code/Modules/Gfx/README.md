@@ -36,7 +36,7 @@ information necessary to work with the Gfx module:
 * [Texture Loading](https://github.com/floooh/oryol/blob/master/code/Samples/DDSCubeMap/DDSCubeMap.cc)
 
 The 'manual' documentation in here will focus more on 'filling the gaps',
-background information and design choices.
+background information and explaining design choices.
 
 ### Selecting a Rendering Backend
 
@@ -51,15 +51,15 @@ To see the list of supported build configs for D3D11, D3D12
 and Metal:
 
 ```
-> fips list configs | grep d3d11
+> ./fips list configs | grep d3d11
 ...
-> fips list configs | grep d3d12
+> ./fips list configs | grep d3d12
 ...
-> fips list configs | grep metal
+> ./fips list configs | grep metal
 ...
 ```
 
-For instance, to select the Metal rendering backend for iOS:
+For instance, to select an iOS build config using the Metal rendering backend:
 
 ```
 > ./fips set config metal-ios-xcode-debug
@@ -70,8 +70,8 @@ For instance, to select the Metal rendering backend for iOS:
 ...
 ```
 
-Alternatively, the rendering backend can be selected by setting
-the cmake options directly in the cmake config tool:
+Alternatively, the rendering backend can be selected by activating
+cmake options directly in the cmake config tool:
 
 ```bash
 > fips config
