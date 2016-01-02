@@ -668,7 +668,7 @@ with a **TextureSetup** object as argument, or loaded asynchronously by
 calling the **Gfx::LoadResource()** method with a texture loader object
 (for instance the **TextureLoader** class in the Assets module).
 
-In Oryol, a texture also holds all sampler parameters, there are no 
+In Oryol, a texture also holds all sampler state, there are no 
 separate sampler objects, due to WebGL, OpenGLES2 and older desktop GL
 versions.
 
@@ -691,8 +691,66 @@ Render target textures have the following additional properties:
 * an optional depth buffer pixel format: only if the render target has
 a depth buffer
 
-##### Creating Textures
-(TODO)
+##### Loading Textures
+
+Texture objects are typically created by loading a texture file. Oryol
+provides a standard TextureLoader class in the Asset module which can load
+the following texture file formats:
+
+- **DDS**: DDS is a container file format for DXT1-, DXT3- and DXT5-compressed 
+or uncompressed texture data, this is typically used on desktop platforms, 
+- **PVR**: PVR is the container file format for PVRTC2BPP and PVRTC4BPP
+texture compression formats typically used on iOS devices
+- **KTX**: this is the Khronos texture container file formats, this is
+typically used for the ETC2 texture compression format
+
+The easiest way to load a texture from disk is this (requires the IO
+module with a filesystem attached, just like in the Mesh loading sample):
+
+```cpp
+#include "Assets/Gfx/TextureLoader.h"
+...
+// setup the IO module
+IOSetup ioSetup;
+ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
+ioSetup.Assigns.Add("tex", "http://floooh.github.com/oryol/");
+IO::Setup(ioSetup);
+...
+
+// load a texture from a DDS file 
+Id tex = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile("tex:test.dds")));
+```
+
+But this will create a texture with blocky-looking point-filtering since this is what
+a default TextureSetup object will be initialized with. So lets tweak some
+setup parameters first:
+
+```cpp
+TextureSetup texSetup = TextureSetup::FromFile("tex:test.dds");
+texSetup.MinFilter = TextureFilterMode::LinearMipmapLinear;
+texSetup.MagFilter = TextureFilterMode::Linear;
+texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+Id tex = Gfx::LoadResource(TextureLoader::Create(texSetup));
+```
+
+There is also another way to conveniently provide texture setup parameters by 
+using a 'blueprint' TextureSetup object demoed in the 
+[DDSCubeMap sample](https://github.com/floooh/oryol/blob/master/code/Samples/DDSCubeMap/DDSCubeMap.cc).
+
+See also:
+
+- [Assets/Gfx/TextureLoader](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/TextureLoader.h)
+- [DDSTextureLoading sample](https://github.com/floooh/oryol/blob/master/code/Samples/DDSTextureLoading/DDSTextureLoading.cc)
+- [gliml texture file parsing lib](https://github.com/floooh/gliml)
+
+##### Creating Textures from data in memory
+
+##### Creating empty Textures for dynamic updates
+
+
+##### Creating Render Targets
+
 
 ##### Using Textures
 (TODO)
