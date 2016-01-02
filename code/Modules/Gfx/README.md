@@ -83,6 +83,33 @@ ORYOL_USE_D3D12
 ORYOL_USE_METAL
 ```
 
+### Optional Gfx Features
+
+For some Gfx features, a runtime check must be performed before they can be
+used. Call the method **Gfx::QueryFeature()** with one of the following:
+
+* **GfxFeature::TextureCompressionDXT**: check if DXT texture compression
+support is available, DXT is supported on most desktop GPU, but not on most 
+mobile GPUs (most notably PowerVR on iOS devices) don't have support for 
+DXT texture compression.
+* **GfxFeature::TextureCompressionPVRTC**: check if the PowerVR PVRTC 
+texture compression format is supported, this is the most popular 
+texture compression scheme on iOS devices
+* **GfxFeature::TextureCompressionATC**: check if the ATC texture compression
+format is supported (Adreno GPUs)
+* **GfxFeature::TextureCompressionETC2**: check if the ETC2 texture 
+compression format is supported
+* **GfxFeature::TextureFloat**: check if float texture are supported for
+sampling and as render target
+* **GfxFeature::TextureHalfFloat**: check if half-float textures are supported
+for sampling
+* **GfxFeature::Instancing**: check if D3D9-style hardware-instanced rendering
+is supported
+* **GfxFeature::OriginBottomLeft**: check if the image-space origin is 
+bottom-left (GL style)
+* **GfxFeature::OriginTopLeft**: check if the image-space origin is
+top-left (D3D style)
+
 ### Frame Rendering
 
 Rendering through the Gfx module usually involves the following steps:
@@ -132,7 +159,7 @@ underlying 3D-API specific rendering resource.
 See also:
 - [Resource Module](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/README.md)
 
-#### Resource Types
+#### Gfx Resource Types
 
 The Oryol Gfx module provides the following resource types:
 
@@ -183,7 +210,7 @@ objects, and not directly defined as part of a DrawState is reusability.
 A single Mesh or Shader can be used by many different DrawStates.
 
 The reason why Textures are not baked into DrawStates at all is to prevent
-combinatorial explosions for the number of required DrawState object in some 
+combinatorial explosions for the number of required DrawState objects in some 
 usage scenarios like using a cascade of offscreen render targets which are
 then used as textures later in the rendering cascade.
 
@@ -192,10 +219,9 @@ that could change unpredictably during rendering. The relationship
 between different resources and their memory layout is very
 rigid and must be defined upfront. 
 
-So basically, the way resources and their relationships have been designed in the
-Oryol Gfx module is a compromise between keeping the whole system simple, the
-requirements of modern 3D APIs, and the restrictions of the low-end APIs (WebGL
-and OpenGLES2).
+The resource types and their relationships is a compromise between keeping the
+whole system simple, the requirements of modern 3D APIs, and the restrictions
+of the low-end APIs (WebGL and OpenGLES2).
 
 See also:
 - [Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
@@ -252,7 +278,7 @@ Resource sharing means that attempting to create an identical resource multiple 
 will return the original resource instead of creating a second copy of the
 resource in memory.
 
-Sharing is controlled through **Resource Locator** object. A resource locator
+Sharing is controlled through **Resource Locator** objects. A resource locator
 is a human-readable string which is both used as a sharing id, and as URL
 for loadable resources. If a new resource is requested and another resource
 with a matching resource locator already exists, the existing resource will be
@@ -496,7 +522,7 @@ This is the common subset of primitive types supported by all 3D-APIs.
 
 A mesh can be split into several **PrimitiveGroups**, each group defines a
 range of primitives in the mesh. A PrimitiveGroup is the smallest 'geometry 
-unit' that can be rendered with one draw call. PrimitiveGroup are most commonly
+unit' that can be rendered with one draw call. PrimitiveGroups are most commonly
 used when a mesh is split up into several materials.
 
 One mesh can only have a single primitive type, even though it may have
@@ -551,7 +577,7 @@ meshBuilder.Begin()
     .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
 Id mesh = Gfx::CreateResource(meshBuilder.Build());
 ```
-The MeshBuilder::Build() method returns a **SetupAndData<MeshSetup>** instance
+The MeshBuilder::Build() method returns a **SetupAndData&lt;MeshSetup&gt;** object
 which can be directly passed to the **Gfx::CreateResource()** method to
 create the Mesh resource object.
 
@@ -587,7 +613,7 @@ Id mesh = Gfx::CreateResource(shapeBuilder.Build());
 See also:
 - [Assets/Gfx/ShapeBuilder.h](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/ShapeBuilder.h)
 
-###### Loading mesh data from disk:
+###### Loading a Mesh from disk:
 
 Finally, the Assets module also comes with an example mesh resource loader class
 **MeshLoader** which can load .omsh files which can be created with the
@@ -634,10 +660,44 @@ See also:
 - [oryol-tools](https://github.com/floooh/oryol-tools)
 
 #### Textures
-TODO
 
-#### Render Targets
-TODO
+Texture resources serve a double role in the Oryol Gfx module: they can
+be a traditional texture that provides image data for rendering, and 
+in addition they can serve as an offscreen render target.
+
+Textures objects are created by calling the **Gfx::CreateResource()** method
+with a **TextureSetup** object as argument, or loaded asynchronously by
+calling the **Gfx::LoadResource()** method with a texture loader object
+(for instance the **TextureLoader** class in the Assets module).
+
+In Oryol, a texture also holds all sampler parameters, there are no 
+separate sampler objects, due to WebGL, OpenGLES2 and older desktop GL
+versions.
+
+##### Texture Properties
+
+All texture objects have the following properties:
+
+* width, height and depth: these must be 2^N for mipmapped textures, note that
+  3D textures haven't been implemented yet
+* the number of mipmaps: either one, or a complete mipmap chain
+* type: for 2D, 3D or Cube textures
+* a pixel format: see the PixelFormat class in
+  [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h))
+* a usage hint: for static vs dynamically updated textures
+* a resource Locator for resource sharing, for texture loaded from disk, this
+  is also the file URL
+
+Render target textures have the following additional properties:
+
+* an optional depth buffer pixel format: only if the render target has
+a depth buffer
+
+##### Creating Textures
+(TODO)
+
+##### Using Textures
+(TODO)
 
 #### Dynamic Resources
 TODO

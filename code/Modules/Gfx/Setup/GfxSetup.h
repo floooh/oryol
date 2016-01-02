@@ -8,7 +8,7 @@
     The GfxSetup object holds the parameter used to setup the
     rendering system. Create a GfxSetup object, optionally tweak
     its values, and call the Gfx::Setup method with the
-    RenderSetup object as argument.
+    GfxSetup object as argument.
  
     @see Gfx, DisplayAttrs
 */
