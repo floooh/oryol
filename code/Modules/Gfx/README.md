@@ -1,9 +1,8 @@
 ## Gfx Module
 
-The Oryol Gfx module provides a thin portability wrapper around a 
-platform's native 3D APIs, with WebGL/OpenGLES2 on the low-end, and
+The Oryol Gfx module provides a thin portability wrapper around the 
+native 3D APIs of a target platform, with WebGL/OpenGLES2 on the low-end, and
 D3D12 and (hopefully soon) Vulkan on the 'high-end'.
-
 
 ### Platform/API matrix
 
