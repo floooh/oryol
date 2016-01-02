@@ -117,7 +117,7 @@ public:
 
     /// commit (and display) the current frame
     static void CommitFrame();
-    /// reset internal state (must be called when directly rendering through GL; FIXME: better name?)
+    /// reset internal state (must be called when directly rendering through the native 3D API)
     static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)

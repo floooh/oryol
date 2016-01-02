@@ -746,11 +746,90 @@ See also:
 
 ##### Creating Textures from data in memory
 
+The safest and most convenient way to create a texture from image data in 
+memory is to generate the data right into a memory Buffer object, and pass
+that together with the TextureSetup object to Gfx::CreateResource.
+
+Here is a pseudo-code example from the Dbg module which sets up a single-channel,
+single-mipmap font texture:
+
+```cpp
+// write font image data into a memory Buffer
+const int32 imageDataSize = ...;
+Buffer data;
+uint8* dstPtr = data.Add(imgDataSize);
+const char* srcPtr = kc85_4_Font;
+for (int32 charIndex = 0; charIndex < numChars; charIndex++) {
+    ...
+}
+
+// setup texture, pixel format is 8bpp uncompressed
+auto texSetup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);
+texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+texSetup.ImageData.Sizes[0][0] = imgDataSize;
+this->fontTexture = Gfx::CreateResource(texSetup, data);
+```
+
+Using a 'raw pointer' and size is also possible, the data is copied into
+the 3D-API texture object during the call to Gfx::CreateResource() so there
+aren't any ownership issues to consider. This is an example from the
+[Paclone sample's canvas class](https://github.com/floooh/oryol/blob/master/code/Samples/Paclone/canvas.cc),
+where a texture is created from sprite sheet data that was code-generated
+from a PNG file during the build process:
+
+```cpp
+// Sheet::Width, Sheet::Height are the dimensions of the sprite sheet texture
+// Sheet::Pixels is a C array with the pixel data
+// Sheet::NumBytes is the size of the pixel data
+auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
+texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+texSetup.ImageData.Sizes[0][0] = Sheet::NumBytes;
+this->textures.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+```
+
+To create a texture with multiple mipmaps, the offset and size of each
+mipmap surface must be passed in the TextureSetup object, this is a code
+fragment from the [TextureLoader class](https://github.com/floooh/oryol/blob/master/code/Modules/Assets/Gfx/TextureLoader.cc)
+in the Assets module:
+
+```cpp
+TextureSetup newSetup = TextureSetup::FromPixelData(w, h, numMips, type, pixelFormat, this->setup);
+o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx->num_mipmaps(0));
+for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+    for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
+        const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);
+        newSetup.ImageData.Offsets[faceIndex][mipIndex] = int32(cur - data);
+        newSetup.ImageData.Sizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
+    }
+}
+```
+
 ##### Creating empty Textures for dynamic updates
 
+It is possible to create a texture without content data, this makes sense
+for dynamic **stream-update** textures which get filled with new data
+each frame using the **Gfx::UpdateTexture()** method. Here is an 
+example from the YAKC 
+[KC85 emulator's rendering code](https://github.com/floooh/yakc/blob/master/src/yakc/Draw.cc):
+
+```cpp
+auto irmSetup = TextureSetup::Empty(320, 256, 1, TextureType::Texture2D, PixelFormat::RGBA8, Usage::Stream);
+irmSetup.TextureUsage = Usage::Stream;
+irmSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+irmSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+irmSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+irmSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+this->irmTexture = Gfx::CreateResource(irmSetup);
+```
 
 ##### Creating Render Targets
-
+(TODO)
 
 ##### Using Textures
 (TODO)
