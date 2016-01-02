@@ -88,9 +88,8 @@ For some Gfx features, a runtime check must be performed before they can be
 used. Call the method **Gfx::QueryFeature()** with one of the following:
 
 * **GfxFeature::TextureCompressionDXT**: check if DXT texture compression
-support is available, DXT is supported on most desktop GPU, but not on most 
-mobile GPUs (most notably PowerVR on iOS devices) don't have support for 
-DXT texture compression.
+support is available, DXT is supported on all desktop GPUs, but not on most 
+mobile GPUs
 * **GfxFeature::TextureCompressionPVRTC**: check if the PowerVR PVRTC 
 texture compression format is supported, this is the most popular 
 texture compression scheme on iOS devices
@@ -98,15 +97,15 @@ texture compression scheme on iOS devices
 format is supported (Adreno GPUs)
 * **GfxFeature::TextureCompressionETC2**: check if the ETC2 texture 
 compression format is supported
-* **GfxFeature::TextureFloat**: check if float texture are supported for
+* **GfxFeature::TextureFloat**: check if floating point texture are supported for
 sampling and as render target
 * **GfxFeature::TextureHalfFloat**: check if half-float textures are supported
 for sampling
 * **GfxFeature::Instancing**: check if D3D9-style hardware-instanced rendering
 is supported
-* **GfxFeature::OriginBottomLeft**: check if the image-space origin is 
+* **GfxFeature::OriginBottomLeft**: the image-space origin is 
 bottom-left (GL style)
-* **GfxFeature::OriginTopLeft**: check if the image-space origin is
+* **GfxFeature::OriginTopLeft**: the image-space origin is
 top-left (D3D style)
 
 ### Frame Rendering
@@ -153,7 +152,7 @@ See also:
 ### Resources
 
 Gfx resources are thin wrapper objects which manage the lifetime of an
-underlying 3D-API specific rendering resource.
+underlying 3D-API-specific rendering resource.
 
 See also:
 - [Resource Module](https://github.com/floooh/oryol/blob/master/code/Modules/Resource/README.md)
@@ -682,7 +681,7 @@ All texture objects have the following properties:
 * the number of mipmaps: either one, or a complete mipmap chain
 * type: for 2D, 3D or Cube textures
 * a pixel format: see the PixelFormat class in
-  [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h))
+  [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h)
 * a usage hint: for static vs dynamically updated textures
 * a resource Locator for resource sharing, for texture loaded from disk, this
   is also the file URL
