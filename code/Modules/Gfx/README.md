@@ -33,6 +33,7 @@ information necessary to work with the Gfx module:
 * [Triangle Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Triangle/Triangle.cc)
 * [Shapes Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Shapes/Shapes.cc)
 * [Texture Loading](https://github.com/floooh/oryol/blob/master/code/Samples/DDSCubeMap/DDSCubeMap.cc)
+* [Offscreen Render Targets](https://github.com/floooh/oryol/blob/master/code/Samples/SimpleRenderTarget/SimpleRenderTarget.cc)
 
 The 'manual' documentation in here will focus more on 'filling the gaps',
 background information and explaining design choices.
