@@ -331,9 +331,9 @@ o_assert_range_dbg(val, max);
 
 ### The RunLoop
 
-The main thread, and each thread created by Oryol has a 2 thread-local RunLoop objects,
-one executed before the App's on-frame method, one after. An 
-application (or Oryol modules) can attach std::function objects to the run loop so that
+The main thread, and each thread created by Oryol has two thread-local run-loop
+lists, one executed before the App's on-frame method, one after. An application
+(or Oryol modules) can attach std::function objects to the run loop so that
 this function is automatically called once per frame.
 
 Here's an example using C++11 lambdas:
@@ -353,7 +353,12 @@ In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per sec
 
 There are a couple of C++ features which are black-listed on Oryol for various reasons:
 
-- *C++ exceptions*: These are disabled by default, but can be enabled with a cmake option. Don't use them as they are fairly expensive on emscripten.
-- *std containers (std::vector, std::map, ...)*: Oryol comes with its own set of containers classes which offer more fine-control over their behaviour and use asserts instead of exceptions.
-- *C++ style input/output (e.g. std::cout << "hello")*: This causes a lot of code to be pulled into the executable, which is especially bad in emscripten where client-size matters.
+- *C++ exceptions*: These are disabled by default, but can be enabled with a
+  cmake option. Don't use them as they are fairly expensive on emscripten.
+- *std containers (std::vector, std::map, ...)*: Oryol comes with its own set
+  of containers classes which offer more fine-control over their behaviour and
+  use asserts instead of exceptions.
+- *C++ style input/output (e.g. std::cout << "hello")*: This causes a lot of
+  code to be pulled into the executable, which is especially bad in emscripten
+  where client-size matters.
 
