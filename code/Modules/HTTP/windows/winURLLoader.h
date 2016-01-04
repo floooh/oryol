@@ -26,12 +26,12 @@ public:
     winURLLoader();
     /// destructor, calls InternetCloseHandle()
     ~winURLLoader();
-    /// process enqueued requests
-    void doWork();
+    /// process one request
+    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
 
 private:
     /// process a single HTTP request
-    void doOneRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req);
     /// open connection, or get already open connection
     HINTERNET obtainConnection(const URL& url);
     /// garbage collect expired connections (called from doWork)
