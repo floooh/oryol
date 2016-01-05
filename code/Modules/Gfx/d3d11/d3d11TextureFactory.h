@@ -36,10 +36,14 @@ public:
     void DestroyResource(texture& tex);
 
 private:
+    /// setup TextureAttrs of tex
+    void setupTextureAttrs(texture& tex);
     /// create a render target texture
     ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture from pixel data in memory
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create an empty texture (cannot be immutable)
+    ResourceState::Code createEmptyTexture(texture& tex);
     /// create d3d11 sampler state object in texture
     ID3D11SamplerState* createSamplerState(const texture& tex);
     /// create d3d11 shader-resource-view object

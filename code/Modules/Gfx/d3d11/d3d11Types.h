@@ -20,10 +20,10 @@ public:
     static DXGI_FORMAT asRenderTargetFormat(PixelFormat::Code pixelFormat);
     /// convert PixelFormat to a D3D11 texture format
     static DXGI_FORMAT asTextureFormat(PixelFormat::Code pixelFormat);
-    /// convert Usage to a d3d11 usage for buffers
-    static D3D11_USAGE asBufferUsage(Usage::Code usage);
-    /// convert Usage to a d3d11 buffer CPU access flags mask
-    static uint32 asBufferCPUAccessFlag(Usage::Code usage);
+    /// convert Usage to a d3d11 usage for buffers and textures
+    static D3D11_USAGE asResourceUsage(Usage::Code usage);
+    /// convert Usage to a d3d11 CPU access flags mask
+    static uint32 asResourceCPUAccessFlag(Usage::Code usage);
     /// convert vertex attribute to d3d11 semantic name
     static const char* asSemanticName(VertexAttr::Code attr);
     /// convert vertex attribute to d3d11 semantic index

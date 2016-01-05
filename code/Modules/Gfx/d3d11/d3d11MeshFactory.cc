@@ -92,9 +92,9 @@ d3d11MeshFactory::createBuffer(const void* data, uint32 dataSize, uint32 d3d11Bi
     D3D11_BUFFER_DESC desc;
     Memory::Clear(&desc, sizeof(desc));
     desc.ByteWidth = dataSize;
-    desc.Usage = d3d11Types::asBufferUsage(usage);
+    desc.Usage = d3d11Types::asResourceUsage(usage);
     desc.BindFlags = d3d11BindFlags;
-    desc.CPUAccessFlags = d3d11Types::asBufferCPUAccessFlag(usage);
+    desc.CPUAccessFlags = d3d11Types::asResourceCPUAccessFlag(usage);
 
     D3D11_SUBRESOURCE_DATA* initDataPtr = nullptr;
     D3D11_SUBRESOURCE_DATA initData;

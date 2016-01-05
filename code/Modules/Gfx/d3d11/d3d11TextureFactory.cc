@@ -59,6 +59,9 @@ d3d11TextureFactory::SetupResource(texture& tex) {
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
+    else if (tex.Setup.ShouldSetupEmpty()) {
+        return this->createEmptyTexture(tex);
+    }
     else {
         // here would go more ways to create textures without image data
         return ResourceState::InvalidState;
@@ -121,6 +124,7 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
@@ -224,6 +228,20 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
 }
 
 //------------------------------------------------------------------------------
+void
+d3d11TextureFactory::setupTextureAttrs(texture& tex) {
+    TextureAttrs attrs;
+    attrs.Locator = tex.Setup.Locator;
+    attrs.Type = tex.Setup.Type;
+    attrs.ColorFormat = tex.Setup.ColorFormat;
+    attrs.TextureUsage = tex.Setup.TextureUsage;
+    attrs.Width = tex.Setup.Width;
+    attrs.Height = tex.Setup.Height;
+    attrs.NumMipMaps = tex.Setup.NumMipMaps;
+    tex.textureAttrs = attrs;
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
     o_assert_dbg(nullptr != this->d3d11Device);
@@ -235,6 +253,7 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.NumMipMaps > 0);
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
 
     if (setup.Type == TextureType::Texture3D) {
         o_warn("d3d11TextureFactory: 3d textures not yet implemented\n");
@@ -280,24 +299,60 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     o_assert(SUCCEEDED(hr));
     o_assert_dbg(nullptr != tex.d3d11Texture2D);
 
-    // create d3d11 shader-resource-view object
     tex.d3d11ShaderResourceView = this->createShaderResourceView(tex, tex.d3d11Texture2D, &texDesc);
     o_assert_dbg(tex.d3d11ShaderResourceView);
 
-    // create sampler object (note: samplers with identical state are automatically shared by D3D11)
     tex.d3d11SamplerState = this->createSamplerState(tex);
     o_assert_dbg(tex.d3d11SamplerState);
 
-    // setup texture attributes
-    TextureAttrs attrs;
-    attrs.Locator = setup.Locator;
-    attrs.Type = setup.Type;
-    attrs.ColorFormat = setup.ColorFormat;
-    attrs.TextureUsage = Usage::Immutable;
-    attrs.Width = setup.Width;
-    attrs.Height = setup.Height;
-    attrs.NumMipMaps = setup.NumMipMaps;
-    tex.textureAttrs = attrs;
+    this->setupTextureAttrs(tex);
+
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+d3d11TextureFactory::createEmptyTexture(texture& tex) {
+    o_assert_dbg(nullptr != this->d3d11Device);
+    o_assert_dbg(nullptr == tex.d3d11Texture2D);
+    o_assert_dbg(nullptr == tex.d3d11ShaderResourceView);
+    o_assert_dbg(nullptr == tex.d3d11SamplerState);
+
+    const TextureSetup& setup = tex.Setup;
+    o_assert_dbg(setup.TextureUsage != Usage::Immutable);
+    o_assert_dbg(setup.Type == TextureType::Texture2D);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(setup.ColorFormat));
+    o_assert_dbg(setup.NumMipMaps > 0);
+    DXGI_FORMAT d3d11PixelFormat = d3d11Types::asTextureFormat(setup.ColorFormat);
+    if (DXGI_FORMAT_UNKNOWN == d3d11PixelFormat) {
+        o_warn("d3d11TextureFactory: texture pixel format not supported in D3D11\n");
+        return ResourceState::Failed;
+    }
+
+    D3D11_TEXTURE2D_DESC texDesc;
+    Memory::Clear(&texDesc, sizeof(texDesc));
+    texDesc.Width = setup.Width;
+    texDesc.Height = setup.Height;
+    texDesc.MipLevels = setup.NumMipMaps;
+    texDesc.ArraySize = 1;
+    texDesc.Format = d3d11PixelFormat;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.SampleDesc.Quality = 0;
+    texDesc.Usage = d3d11Types::asResourceUsage(setup.TextureUsage);
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    texDesc.CPUAccessFlags = d3d11Types::asResourceCPUAccessFlag(setup.TextureUsage);
+    texDesc.MiscFlags = 0;
+    HRESULT hr = this->d3d11Device->CreateTexture2D(&texDesc, nullptr, &tex.d3d11Texture2D);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(nullptr != tex.d3d11Texture2D);
+
+    tex.d3d11ShaderResourceView = this->createShaderResourceView(tex, tex.d3d11Texture2D, &texDesc);
+    o_assert_dbg(tex.d3d11ShaderResourceView);
+
+    tex.d3d11SamplerState = this->createSamplerState(tex);
+    o_assert_dbg(tex.d3d11SamplerState);
+
+    this->setupTextureAttrs(tex);
 
     return ResourceState::Valid;
 }

@@ -61,7 +61,7 @@ d3d11Types::asTextureFormat(PixelFormat::Code pf) {
 
 //------------------------------------------------------------------------------
 D3D11_USAGE
-d3d11Types::asBufferUsage(Usage::Code usage) {
+d3d11Types::asResourceUsage(Usage::Code usage) {
     switch (usage) {
         case Usage::Immutable:  return D3D11_USAGE_IMMUTABLE;
         case Usage::Static:     return D3D11_USAGE_DEFAULT;
@@ -75,7 +75,7 @@ d3d11Types::asBufferUsage(Usage::Code usage) {
 
 //------------------------------------------------------------------------------
 uint32
-d3d11Types::asBufferCPUAccessFlag(Usage::Code usage) {
+d3d11Types::asResourceCPUAccessFlag(Usage::Code usage) {
     switch (usage) {
         case Usage::Immutable:  return 0;
         case Usage::Static:     return D3D11_CPU_ACCESS_WRITE;

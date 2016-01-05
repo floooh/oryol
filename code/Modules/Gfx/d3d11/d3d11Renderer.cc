@@ -10,6 +10,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "d3d11_impl.h"
 #include "d3d11Types.h"
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+#include <algorithm>    // std::max()
 
 namespace Oryol {
 namespace _priv {
@@ -561,9 +568,58 @@ d3d11Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 }
 
 //------------------------------------------------------------------------------
+void
+d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
+    o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(tex);
+    o_assert_dbg(data);
+    o_assert_dbg(tex->d3d11Texture2D);
+
+    // only accept 2D textures for now
+    const TextureAttrs& attrs = tex->textureAttrs;
+    o_assert_dbg(TextureType::Texture2D == attrs.Type);
+    o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
+    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumFaces == 1);
+    
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    for (int32 mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+        o_assert_dbg(offsetsAndSizes.Sizes[0][mipIndex] > 0);
+        const int32 mipWidth = std::max(attrs.Width >> mipIndex, 1);
+        const int32 mipHeight = std::max(attrs.Height >> mipIndex, 1);
+        const int32 srcPitch = PixelFormat::RowPitch(attrs.ColorFormat, mipWidth);
+        HRESULT hr = this->d3d11DeviceContext->Map(
+            tex->d3d11Texture2D,        // pResource
+            mipIndex,                   // Subresource
+            D3D11_MAP_WRITE_DISCARD,    // MapType
+            0,                          // MapFlags
+            &mapped);                   // pMappedResource
+        o_assert_dbg(SUCCEEDED(hr));
+        o_assert_dbg(srcPitch <= (int32)mapped.RowPitch);
+        uint8* dstPtr = (uint8*)mapped.pData;
+        const uint8* srcPtr = ((const uint8*)data) + offsetsAndSizes.Offsets[0][mipIndex];
+        if (srcPitch == mapped.RowPitch) {
+            const int32 mipSize = offsetsAndSizes.Sizes[0][mipIndex];
+            o_assert_dbg(mipSize == (srcPitch*mipHeight));
+            std::memcpy(dstPtr, srcPtr, mipSize);
+        }
+        else {
+            o_error("d3dRenderer::updateTexture(): srcPitch!=dstPitch, FIXME UNTESTED!\n");
+            for (int32 rowIndex = 0; rowIndex < mipHeight; rowIndex++) {
+                std::memcpy(dstPtr, srcPtr, srcPitch);
+                dstPtr += mapped.RowPitch;
+                srcPtr += srcPitch;
+            }
+        }
+        this->d3d11DeviceContext->Unmap(tex->d3d11Texture2D, mipIndex);
+    }
+}
+
+//------------------------------------------------------------------------------
 void 
 d3d11Renderer::readPixels(void* buf, int32 bufNumBytes) {
-    o_error("FIXME!\n");
+    o_error("d3d11Renderer::readPixels() NOT IMPLEMENTED!\n");
 }
 
 //------------------------------------------------------------------------------
