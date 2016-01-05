@@ -20,6 +20,11 @@ public:
     /// destructor
     ~Buffer();
 
+    /// always force move-construct
+    Buffer(const Buffer& rhs) = delete;
+    /// always force move-assign
+    void operator=(const Buffer& rhs) = delete;
+
     /// move-assignment
     void operator=(Buffer&& rhs);
 
@@ -46,11 +51,6 @@ public:
     uint8* Data();
 
 private:
-    /// always force move-construct
-    Buffer(const Buffer& rhs) {};
-    /// always force move-assign
-    void operator=(const Buffer& rhs) {};
-
     /// (re-)allocate buffer
     void alloc(int32 newCapacity);
     /// destroy buffer
