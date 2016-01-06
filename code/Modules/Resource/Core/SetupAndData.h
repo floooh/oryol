@@ -22,6 +22,21 @@ public:
         Data(std::move(data)) {
         // empty
     };
+    /// move construct
+    SetupAndData(SetupAndData<SETUP>&& rhs) {
+        this->Setup = std::move(rhs.Setup);
+        this->Data = std::move(rhs.Data);
+    };
+    /// move assignment
+    void operator=(SetupAndData<SETUP>&& rhs) {
+        this->Setup = std::move(rhs.Setup);
+        this->Data = std::move(rhs.Data);        
+    };
+
+    /// disable copy constructor
+    SetupAndData(const SetupAndData<SETUP>& rhs) = delete;
+    /// disable copy assignment
+    void operator=(const SetupAndData<SETUP>& rhs) = delete;
     
     /// embedded setup object
     SETUP Setup;

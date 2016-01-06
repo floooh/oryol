@@ -73,7 +73,8 @@ MeshBuilder::Build() {
     o_assert(this->inBegin);
 
     this->inBegin = false;
-    SetupAndData<MeshSetup> result = std::move(this->setupAndData);
+    // explicit moves required by VS2013
+    SetupAndData<MeshSetup> result(std::move(this->setupAndData));
     this->clear();
     return result;
 }

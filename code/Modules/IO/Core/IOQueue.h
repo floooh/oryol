@@ -28,8 +28,15 @@ public:
 
     /// loading result
     struct Result {
-        Result(const URL& url, Buffer&& data) : Url(url), Data(std::move(data)) {};
-
+        Result(const URL& url, Buffer&& data) : Url(url), Data(std::move(data)) { };
+        Result(Result&& rhs) {
+            this->Url = std::move(rhs.Url);
+            this->Data = std::move(rhs.Data);
+        };
+        void operator=(Result&& rhs) {
+            this->Url = std::move(rhs.Url);
+            this->Data = std::move(rhs.Data);            
+        };
         URL Url;
         Buffer Data;
     };
