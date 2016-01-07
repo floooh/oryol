@@ -57,6 +57,9 @@ d3d12TextureFactory::SetupResource(texture& tex) {
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
+    else if (tex.Setup.ShouldSetupEmpty()) {
+        return this->createEmptyTexture(tex);
+    }
     else {
         return ResourceState::InvalidState;
     }
@@ -82,8 +85,10 @@ d3d12TextureFactory::DestroyResource(texture& tex) {
     d3d12DescAllocator& descAllocator = this->pointers.renderer->descAllocator;
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
 
-    if (tex.d3d12TextureRes) {
-        resAllocator.ReleaseDeferred(frameIndex, tex.d3d12TextureRes);
+    for (const auto& slot : tex.slots) {
+        if (slot.d3d12TextureRes) {
+            resAllocator.ReleaseDeferred(frameIndex, slot.d3d12TextureRes);
+        }
     }
     if (tex.d3d12DepthBufferRes) {
         resAllocator.ReleaseDeferred(frameIndex, tex.d3d12DepthBufferRes);
@@ -102,13 +107,15 @@ d3d12TextureFactory::DestroyResource(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d12TextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(nullptr == tex.d3d12TextureRes);
+    o_assert_dbg(nullptr == tex.slots[0].d3d12TextureRes);
+    o_assert_dbg(1 == tex.numSlots);
     o_assert_dbg(nullptr == tex.d3d12DepthBufferRes);
     o_assert_dbg(InvalidIndex == tex.rtvDescriptorSlot);
     o_assert_dbg(InvalidIndex == tex.dsvDescriptorSlot);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
@@ -138,13 +145,13 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg((width > 0) && (height > 0));
 
     // create the color buffer and render-target-view
-    tex.d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, setup.ClearHint, 1);
-    tex.d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    tex.slots[0].d3d12TextureRes = resAllocator.AllocRenderTarget(d3d12Device, width, height, setup.ColorFormat, setup.ClearHint, 1);
+    tex.slots[0].d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
     const Id& rtvHeap = this->pointers.renderer->rtvHeap;
     tex.rtvDescriptorSlot = descAllocator.AllocSlot(rtvHeap);
     D3D12_CPU_DESCRIPTOR_HANDLE rtvCPUHandle;
     descAllocator.CPUHandle(rtvCPUHandle, rtvHeap, tex.rtvDescriptorSlot);
-    d3d12Device->CreateRenderTargetView(tex.d3d12TextureRes, nullptr, rtvCPUHandle);
+    d3d12Device->CreateRenderTargetView(tex.slots[0].d3d12TextureRes, nullptr, rtvCPUHandle);
 
     // create optional depth-buffer
     if (setup.HasDepth()) {
@@ -185,12 +192,14 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
 //------------------------------------------------------------------------------
 ResourceState::Code 
 d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
-    o_assert_dbg(nullptr == tex.d3d12TextureRes);
+    o_assert_dbg(nullptr == tex.slots[0].d3d12TextureRes);
+    o_assert_dbg(1 == tex.numSlots);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(setup.NumMipMaps > 0);
+    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
 
     if (setup.Type == TextureType::Texture3D) {
         o_warn("d3d12TextureFactory: 3d textures not yet implemented!\n");
@@ -206,8 +215,8 @@ d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
-    tex.d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, data, size);
-    tex.d3d12TextureState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    tex.slots[0].d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, data, size);
+    tex.slots[0].d3d12TextureState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
     // setup texture attributes
     TextureAttrs attrs;
@@ -221,6 +230,13 @@ d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     tex.textureAttrs = attrs;
 
     return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+d3d12TextureFactory::createEmptyTexture(texture& tex) {
+    o_error("d3d12TextureFactory::createEmptyTexture: FIXME!");
+    return ResourceState::Failed;
 }
 
 } // namespace _priv

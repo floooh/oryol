@@ -563,9 +563,9 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     }
     else {
         this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
-        colorBuffer = rt->d3d12TextureRes;
-        colorStateBefore = rt->d3d12TextureState;
-        rt->d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        colorBuffer = rt->slots[0].d3d12TextureRes;
+        colorStateBefore = rt->slots[0].d3d12TextureState;
+        rt->slots[0].d3d12TextureState = D3D12_RESOURCE_STATE_RENDER_TARGET;
         this->descAllocator.CPUHandle(rtvCPUHandle, this->rtvHeap, rt->rtvDescriptorSlot);
         rtvCPUHandlePtr = &rtvCPUHandle;
         if (rt->d3d12DepthBufferRes) {
@@ -778,9 +778,12 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     }
     for (int i = 0; i < numTextures; i++) {
         texture* tex = textures[i];
-        if (tex->d3d12TextureState != requiredState) {
-            this->resAllocator.Transition(cmdList, tex->d3d12TextureRes, tex->d3d12TextureState, requiredState);
-            tex->d3d12TextureState = requiredState;
+        if (tex->slots[tex->activeSlot].d3d12TextureState != requiredState) {
+            this->resAllocator.Transition(cmdList, 
+                tex->slots[tex->activeSlot].d3d12TextureRes, 
+                tex->slots[tex->activeSlot].d3d12TextureState, 
+                requiredState);
+            tex->slots[tex->activeSlot].d3d12TextureState = requiredState;
         }
     }
 
@@ -793,7 +796,7 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
         d3d12Types::initSRVDesc(&srvDesc, tex->textureAttrs);
-        this->d3d12Device->CreateShaderResourceView(tex->d3d12TextureRes, &srvDesc, cpuHandle);
+        this->d3d12Device->CreateShaderResourceView(tex->slots[tex->activeSlot].d3d12TextureRes, &srvDesc, cpuHandle);
         cpuHandle.ptr += incrSize;
     }
 

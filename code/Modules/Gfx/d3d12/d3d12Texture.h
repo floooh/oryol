@@ -8,13 +8,10 @@
 #include "Resource/Id.h"
 #include "Gfx/Resource/textureBase.h"
 #include "Gfx/d3d12/d3d12_decl.h"
+#include "Gfx/d3d12/d3d12Config.h"
 
 namespace Oryol {
 namespace _priv {
-
-class blub {
-    Id blob;
-};
 
 class d3d12Texture : public textureBase {
 public:
@@ -26,17 +23,19 @@ public:
     /// clear the object
     void Clear();
 
-    /// the d3d12 texture resource object 
-    ID3D12Resource* d3d12TextureRes;
-    /// optional depth-buffer resource object
+    struct slot {
+        ID3D12Resource* d3d12TextureRes;
+        D3D12_RESOURCE_STATES d3d12TextureState;
+    };
+    static const int32 NumSlots = d3d12Config::NumFrames;
+    uint64 updateFrameIndex;
+    uint32 numSlots;
+    uint32 activeSlot;
+    StaticArray<slot, NumSlots> slots;
+
     ID3D12Resource* d3d12DepthBufferRes;
-    /// need to keep track of texture resource state
-    D3D12_RESOURCE_STATES d3d12TextureState;
-    /// need to keep track of depth-buffer resource state
     D3D12_RESOURCE_STATES d3d12DepthBufferState;
-    /// optional render-target-view descriptor-heap slot-index
     int rtvDescriptorSlot;
-    /// optional depth-stencil-view descriptor-heap slot-index
     int dsvDescriptorSlot;
 };
 

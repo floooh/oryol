@@ -42,6 +42,8 @@ private:
     ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture from pixel data in memory
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    /// create empty texture (cannot be immutable)
+    ResourceState::Code createEmptyTexture(texture& tex);
 
     gfxPointers pointers;
     bool isValid;
