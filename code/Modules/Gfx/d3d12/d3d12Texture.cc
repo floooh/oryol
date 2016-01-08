@@ -19,6 +19,7 @@ rtvDescriptorSlot(InvalidIndex),
 dsvDescriptorSlot(InvalidIndex) {
     for (int i = 0; i < NumSlots; i++) {
         this->slots[i].d3d12TextureRes = nullptr;
+        this->slots[i].d3d12UploadBuffer = nullptr;
         this->slots[i].d3d12TextureState = D3D12_RESOURCE_STATE_COMMON;
     }
 }
@@ -31,6 +32,7 @@ d3d12Texture::~d3d12Texture() {
     #if ORYOL_DEBUG
     for (int i = 0; i < NumSlots; i++) {
         o_assert(nullptr == this->slots[i].d3d12TextureRes);
+        o_assert(nullptr == this->slots[i].d3d12UploadBuffer);
     }
     #endif
 }
@@ -44,6 +46,7 @@ d3d12Texture::Clear() {
     this->activeSlot = 0;
     for (int i = 0; i < NumSlots; i++) {
         this->slots[i].d3d12TextureRes = nullptr;
+        this->slots[i].d3d12UploadBuffer = nullptr;
         this->slots[i].d3d12TextureState = D3D12_RESOURCE_STATE_COMMON;
     }
     this->d3d12DepthBufferRes = nullptr;

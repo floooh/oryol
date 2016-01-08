@@ -44,6 +44,8 @@ private:
     ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
     /// create empty texture (cannot be immutable)
     ResourceState::Code createEmptyTexture(texture& tex);
+    /// setup texture attributes object in texture
+    void setupTextureAttrs(texture& tex);
 
     gfxPointers pointers;
     bool isValid;

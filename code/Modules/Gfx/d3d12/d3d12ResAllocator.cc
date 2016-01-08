@@ -178,6 +178,31 @@ d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int h
 }
 
 //------------------------------------------------------------------------------
+uint32
+d3d12ResAllocator::ComputeTextureCopyFootprint(ID3D12Device* d3d12Device, const TextureSetup& setup) {
+    o_assert_dbg(d3d12Device);
+    o_assert_dbg((setup.Width > 0) && (setup.Height > 0) && (setup.NumMipMaps > 0));
+
+    D3D12_RESOURCE_DESC desc;
+    d3d12Types::initTextureResourceDesc(&desc, setup);
+
+    const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+    const int numSubResources = numFaces * setup.NumMipMaps;
+
+    UINT64 dstTotalSize = 0;
+    d3d12Device->GetCopyableFootprints(
+        &desc,              // pResourceDesc
+        0,                  // FirstSubresource
+        numSubResources,    // NumSubresources
+        0,                  // BaseOffset
+        nullptr,            // pLayouts
+        nullptr,            // pNumRows
+        nullptr,            // pRowSizeInBytes
+        &dstTotalSize);     // pTotalBytes
+    return (uint32) dstTotalSize;
+}
+
+//------------------------------------------------------------------------------
 ID3D12Resource*
 d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const TextureSetup& setup, const void* data, int32 size) {
     o_assert_dbg(d3d12Device);
@@ -209,7 +234,7 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
         const int numMipMaps = setup.NumMipMaps;
         const int numSubResources = numFaces * numMipMaps;
 
-        // get required upload buffer size
+        // compute size of upload buffer
         const int32 maxNumSubResources = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
         o_assert(numSubResources <= maxNumSubResources);
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT dstLayouts[maxNumSubResources] = { 0 };
@@ -276,7 +301,7 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
         this->ReleaseDeferred(frameIndex, uploadBuffer);
     }
 
-    // finally, transition texture resource into usable state
+    // transition texture resource into usable state
     this->Transition(cmdList, d3d12Texture, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
     return d3d12Texture;

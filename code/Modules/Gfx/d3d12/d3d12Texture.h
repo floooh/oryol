@@ -25,6 +25,7 @@ public:
 
     struct slot {
         ID3D12Resource* d3d12TextureRes;
+        ID3D12Resource* d3d12UploadBuffer;      // only if dynamic texture
         D3D12_RESOURCE_STATES d3d12TextureState;
     };
     static const int32 NumSlots = d3d12Config::NumFrames;
