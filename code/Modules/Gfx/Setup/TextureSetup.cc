@@ -19,7 +19,6 @@ ColorFormat(PixelFormat::RGBA8),
 DepthFormat(PixelFormat::None),
 Locator(Locator::NonShared()),
 setupFromFile(false),
-setupFromImageFileData(false),
 setupFromPixelData(false),
 setupEmpty(false),
 setupAsRenderTarget(false),
@@ -66,14 +65,6 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromImageFileData(const TextureSetup& bluePrint) {
-    TextureSetup setup(bluePrint);
-    setup.setupFromImageFileData = true;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup
 TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert(w > 0);
     o_assert(h > 0);
@@ -87,6 +78,8 @@ TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Cod
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
+    setup.ImageData.NumFaces = (type == TextureType::Texture2D) ? 1 : 6;
+    setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
 }
 
@@ -145,12 +138,6 @@ TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
 bool
 TextureSetup::ShouldSetupFromFile() const {
     return this->setupFromFile;
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureSetup::ShouldSetupFromImageFileData() const {
-    return this->setupFromImageFileData;
 }
 
 //------------------------------------------------------------------------------

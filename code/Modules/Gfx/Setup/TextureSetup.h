@@ -21,8 +21,6 @@ public:
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
-    /// setup a texture from a image file data in memory
-    static TextureSetup FromImageFileData(const TextureSetup& blueprint=TextureSetup());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup empty texture (usually for dynamic streaming of CPU generated texture data)
@@ -38,8 +36,6 @@ public:
     TextureSetup();
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
-    /// return true if texture should be setup from image file data in memory
-    bool ShouldSetupFromImageFileData() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
     /// return true if texture should be created empty
@@ -89,7 +85,6 @@ public:
 
 private:
     bool setupFromFile : 1;
-    bool setupFromImageFileData : 1;
     bool setupFromPixelData : 1;
     bool setupEmpty : 1;
     bool setupAsRenderTarget : 1;
