@@ -221,7 +221,7 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
         &defaultHeapProps,              // pHeapProperties
         D3D12_HEAP_FLAG_NONE,           // HeapFlags
         &desc,                          // pResourceDesc
-        D3D12_RESOURCE_STATE_COPY_DEST, // initialResourceState,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,     // initialResourceState,
         nullptr,                        // pOptimizedClearValue
         __uuidof(ID3D12Resource),
         (void**)&d3d12Texture);
@@ -229,82 +229,108 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
 
     // if upload data provided, create upload resource and copy data
     if (data) {
+        this->CopyTextureData(d3d12Device, cmdList, frameIndex, d3d12Texture, nullptr, data, setup.ImageData, setup);
+    }
+    return d3d12Texture;
+}
 
-        const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
-        const int numMipMaps = setup.NumMipMaps;
-        const int numSubResources = numFaces * numMipMaps;
+//------------------------------------------------------------------------------
+void
+d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device, 
+    ID3D12GraphicsCommandList* cmdList, 
+    uint64 frameIndex, 
+    ID3D12Resource* dstTexture, 
+    ID3D12Resource* optUploadBuffer, 
+    const void* data, 
+    const ImageDataAttrs& offsetsAndSizes,
+    const TextureSetup& setup) {
 
-        // compute size of upload buffer
-        const int32 maxNumSubResources = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
-        o_assert(numSubResources <= maxNumSubResources);
-        D3D12_PLACED_SUBRESOURCE_FOOTPRINT dstLayouts[maxNumSubResources] = { 0 };
-        UINT dstNumRows[maxNumSubResources] = { 0 };
-        UINT64 dstRowSizeInBytes[maxNumSubResources] = { 0 };
-        UINT64 dstTotalSize = 0;
-        d3d12Device->GetCopyableFootprints(
-            &desc,              // pResourceDesc
-            0,                  // FirstSubresource
-            numSubResources,    // NumSubresources
-            0,                  // BaseOffset
-            dstLayouts,         // pLayouts
-            dstNumRows,            // pNumRows
-            dstRowSizeInBytes,     // pRowSizeInBytes
-            &dstTotalSize);        // pTotalBytes
+    o_assert_dbg(d3d12Device);
+    o_assert_dbg(cmdList);
+    o_assert_dbg(dstTexture);
+    o_assert_dbg(data);
+    o_assert_dbg(offsetsAndSizes.NumFaces > 0);
+    o_assert_dbg(offsetsAndSizes.NumMipMaps > 0);
+    HRESULT hr;
 
-        // create an upload buffer
-        ID3D12Resource* uploadBuffer = this->AllocUploadBuffer(d3d12Device, uint32(dstTotalSize));
-        uint8* dstStartPtr = nullptr;
-        hr = uploadBuffer->Map(0, nullptr, (void**)&dstStartPtr);
-        o_assert(SUCCEEDED(hr) && dstStartPtr);
+    // transition texture resource into copy-dest state
+    this->Transition(cmdList, dstTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
-        // fill the upload resource with data
-        D3D12_TEXTURE_COPY_LOCATION srcLoc, dstLoc;
-        Memory::Clear(&srcLoc, sizeof(srcLoc));
-        Memory::Clear(&dstLoc, sizeof(dstLoc));
-        srcLoc.pResource = uploadBuffer;
-        srcLoc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-        dstLoc.pResource = d3d12Texture;
-        dstLoc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    // request texture layout information
+    const int numSubResources = offsetsAndSizes.NumFaces * offsetsAndSizes.NumMipMaps;
+    const int32 maxNumSubResources = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
+    o_assert(numSubResources <= maxNumSubResources);
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT dstLayouts[maxNumSubResources] = { 0 };
+    UINT dstNumRows[maxNumSubResources] = { 0 };
+    UINT64 dstRowSizeInBytes[maxNumSubResources] = { 0 };
+    UINT64 dstTotalSize = 0;
+    D3D12_RESOURCE_DESC desc = dstTexture->GetDesc();
+    d3d12Device->GetCopyableFootprints(
+        &desc,              // pResourceDesc
+        0,                  // FirstSubresource
+        numSubResources,    // NumSubresources
+        0,                  // BaseOffset
+        dstLayouts,         // pLayouts
+        dstNumRows,            // pNumRows
+        dstRowSizeInBytes,     // pRowSizeInBytes
+        &dstTotalSize);        // pTotalBytes
 
-        const uint8* srcStartPtr = (const uint8*) data;
-        int subResourceIndex = 0;
-        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-            for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceIndex++) {
+    // optionally create a temporary upload buffer
+    ID3D12Resource* uploadBuffer = optUploadBuffer;
+    if (nullptr == uploadBuffer) {
+        uploadBuffer = this->AllocUploadBuffer(d3d12Device, uint32(dstTotalSize));
+    }
 
-                const uint8* srcPtr = srcStartPtr + setup.ImageData.Offsets[faceIndex][mipIndex];
-                const uint32 srcRowPitch  = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
-                const uint32 srcNumRows = setup.ImageData.Sizes[faceIndex][mipIndex] / srcRowPitch;
-                o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= srcRowPitch);
-                o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= dstLayouts[subResourceIndex].Footprint.RowPitch);
-                o_assert_dbg((srcNumRows * srcRowPitch) == setup.ImageData.Sizes[faceIndex][mipIndex]);
-                o_assert_dbg(srcNumRows == dstNumRows[subResourceIndex]);
+    // copy the source data into the upload buffer
+    D3D12_TEXTURE_COPY_LOCATION srcLoc, dstLoc;
+    Memory::Clear(&srcLoc, sizeof(srcLoc));
+    Memory::Clear(&dstLoc, sizeof(dstLoc));
+    srcLoc.pResource = uploadBuffer;
+    srcLoc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    dstLoc.pResource = dstTexture;
+    dstLoc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 
-                uint8* dstPtr = dstStartPtr + dstLayouts[subResourceIndex].Offset;
-                const uint32 dstRowSize = (const uint32) dstRowSizeInBytes[subResourceIndex];
-                for (uint32 rowIndex = 0; rowIndex < srcNumRows; rowIndex++) {
-                    o_assert_dbg((dstPtr + dstRowSize) <= (dstStartPtr + dstTotalSize));
-                    o_assert_dbg((srcPtr + dstRowSize) <= (srcStartPtr + size));
-                    std::memcpy(dstPtr, srcPtr, dstRowSize);
-                    dstPtr += dstLayouts[subResourceIndex].Footprint.RowPitch;
-                    srcPtr += srcRowPitch;
-                }
+    uint8* dstStartPtr = nullptr;
+    hr = uploadBuffer->Map(0, nullptr, (void**)&dstStartPtr);
+    o_assert(SUCCEEDED(hr) && dstStartPtr);
 
-                // issue the upload command
-                srcLoc.PlacedFootprint = dstLayouts[subResourceIndex];
-                dstLoc.SubresourceIndex = subResourceIndex;
-                cmdList->CopyTextureRegion(&dstLoc, 0, 0, 0, &srcLoc, nullptr);
+    const uint8* srcStartPtr = (const uint8*)data;
+    int subResourceIndex = 0;
+    for (int faceIndex = 0; faceIndex < offsetsAndSizes.NumFaces; faceIndex++) {
+        for (int mipIndex = 0; mipIndex < offsetsAndSizes.NumMipMaps; mipIndex++, subResourceIndex++) {
+
+            const uint8* srcPtr = srcStartPtr + offsetsAndSizes.Offsets[faceIndex][mipIndex];
+            const uint32 srcRowPitch = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
+            const uint32 srcNumRows = offsetsAndSizes.Sizes[faceIndex][mipIndex] / srcRowPitch;
+            o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= srcRowPitch);
+            o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= dstLayouts[subResourceIndex].Footprint.RowPitch);
+            o_assert_dbg((srcNumRows * srcRowPitch) == offsetsAndSizes.Sizes[faceIndex][mipIndex]);
+            o_assert_dbg(srcNumRows == dstNumRows[subResourceIndex]);
+
+            uint8* dstPtr = dstStartPtr + dstLayouts[subResourceIndex].Offset;
+            const uint32 dstRowSize = (const uint32)dstRowSizeInBytes[subResourceIndex];
+            for (uint32 rowIndex = 0; rowIndex < srcNumRows; rowIndex++) {
+                o_assert_dbg((dstPtr + dstRowSize) <= (dstStartPtr + dstTotalSize));
+                std::memcpy(dstPtr, srcPtr, dstRowSize);
+                dstPtr += dstLayouts[subResourceIndex].Footprint.RowPitch;
+                srcPtr += srcRowPitch;
             }
-        }
-        uploadBuffer->Unmap(0, nullptr);
 
-        // put upload buffer into deferred-release-queue
+            // issue the upload command
+            srcLoc.PlacedFootprint = dstLayouts[subResourceIndex];
+            dstLoc.SubresourceIndex = subResourceIndex;
+            cmdList->CopyTextureRegion(&dstLoc, 0, 0, 0, &srcLoc, nullptr);
+        }
+    }
+    uploadBuffer->Unmap(0, nullptr);
+
+    // if temporary upload buffer was created, put it into the deferred release queue
+    if (nullptr == optUploadBuffer) {
         this->ReleaseDeferred(frameIndex, uploadBuffer);
     }
 
     // transition texture resource into usable state
-    this->Transition(cmdList, d3d12Texture, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-    return d3d12Texture;
+    this->Transition(cmdList, dstTexture, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 //------------------------------------------------------------------------------

@@ -261,11 +261,11 @@ d3d12TextureFactory::createEmptyTexture(texture& tex) {
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
     const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint32 copyFootprint = resAllocator.ComputeTextureCopyFootprint(d3d12Device, setup);
     for (uint32 slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
         tex.slots[slotIndex].d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, nullptr, 0);
         o_assert_dbg(nullptr != tex.slots[slotIndex].d3d12TextureRes);
         tex.slots[slotIndex].d3d12TextureState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-        uint32 copyFootprint = resAllocator.ComputeTextureCopyFootprint(d3d12Device, setup);
         tex.slots[slotIndex].d3d12UploadBuffer = resAllocator.AllocUploadBuffer(d3d12Device, copyFootprint);
         o_assert_dbg(nullptr != tex.slots[slotIndex].d3d12UploadBuffer);
     }

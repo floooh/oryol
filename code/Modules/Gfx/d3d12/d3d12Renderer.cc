@@ -979,6 +979,52 @@ d3d12Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
+d3d12Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != tex);
+    o_assert_dbg(nullptr != data);
+
+    // NOTE: texture data must always be uploaded via an upload buffer, since the
+    // data needs to be swizzled during upload, this is different from
+    // dynamically updated vertex and index buffer which directly render from
+    // an upload resource
+
+    // only accept 2D textures for now
+    const TextureAttrs& attrs = tex->textureAttrs;
+    o_assert_dbg(TextureType::Texture2D == attrs.Type);
+    o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
+    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumFaces == 1);
+
+    // get the right double-buffered slot index, restrict updates
+    // to once per frame per texture
+    o_assert2(tex->updateFrameIndex != this->frameIndex, "Only one data update allowed per texture and frame!\n");
+    o_assert_dbg(tex->numSlots > 1);
+    tex->updateFrameIndex = this->frameIndex;
+    if (++tex->activeSlot >= tex->numSlots) {
+        tex->activeSlot = 0;
+    }
+    const auto& slot = tex->slots[tex->activeSlot];
+    o_assert_dbg(slot.d3d12TextureRes);
+    o_assert_dbg(slot.d3d12UploadBuffer);
+    o_assert_dbg(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE == slot.d3d12TextureState);
+
+    // do the dynamic update
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
+    this->resAllocator.CopyTextureData(
+        d3d12Device, 
+        cmdList, 
+        this->frameIndex, 
+        slot.d3d12TextureRes, 
+        slot.d3d12UploadBuffer, 
+        data, 
+        offsetsAndSizes, 
+        tex->Setup);
+}
+
+//------------------------------------------------------------------------------
+void
 d3d12Renderer::readPixels(void* buf, int32 bufNumBytes) {
     o_warn("d3d12Renderer::readPixels()\n");
 }

@@ -44,6 +44,8 @@ public:
     ID3D12Resource* AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, const ClearState& clearHint, int smpCount);
     /// allocate a texture resource, optionally with data
     ID3D12Resource* AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const TextureSetup& setup, const void* data, int32 size);
+    /// copy data into dynamic texture, create a temp upload buffer if none is provided
+    void CopyTextureData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, const ImageDataAttrs& offsetsAndSizes, const TextureSetup& setup);
     /// compute the copy-footprint for dynamically updated textures
     uint32 ComputeTextureCopyFootprint(ID3D12Device* d3d12Device, const TextureSetup& setup);
 
