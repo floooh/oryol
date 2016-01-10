@@ -14,7 +14,6 @@ TEST(TextureSetupTest) {
     rt.Locator = Locator("absSize");
     rt.ColorFormat = PixelFormat::RGB8;
     CHECK(!rt.ShouldSetupFromFile());
-    CHECK(!rt.ShouldSetupFromImageFileData());
     CHECK(!rt.ShouldSetupFromPixelData());
     CHECK(rt.ShouldSetupAsRenderTarget());
     CHECK(!rt.IsRelSizeRenderTarget());
@@ -38,7 +37,6 @@ TEST(TextureSetupTest) {
     rt0.ColorFormat = PixelFormat::RGBA8;
     rt0.DepthFormat = PixelFormat::D24S8;
     CHECK(!rt0.ShouldSetupFromFile());
-    CHECK(!rt0.ShouldSetupFromImageFileData());
     CHECK(!rt0.ShouldSetupFromPixelData());
     CHECK(rt0.ShouldSetupAsRenderTarget());
     CHECK(!rt0.IsRelSizeRenderTarget());
@@ -61,7 +59,6 @@ TEST(TextureSetupTest) {
     auto rt1 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
     rt1.ColorFormat = PixelFormat::R5G6B5;
     CHECK(!rt1.ShouldSetupFromFile());
-    CHECK(!rt1.ShouldSetupFromImageFileData());
     CHECK(!rt1.ShouldSetupFromPixelData());
     CHECK(rt1.ShouldSetupAsRenderTarget());
     CHECK(rt1.IsRelSizeRenderTarget());
@@ -85,7 +82,6 @@ TEST(TextureSetupTest) {
     rt2.ColorFormat = PixelFormat::RGBA4;
     rt2.DepthFormat = PixelFormat::D16;
     CHECK(!rt2.ShouldSetupFromFile());
-    CHECK(!rt2.ShouldSetupFromImageFileData());
     CHECK(!rt2.ShouldSetupFromPixelData());
     CHECK(rt2.ShouldSetupAsRenderTarget());
     CHECK(rt2.IsRelSizeRenderTarget());
@@ -108,7 +104,6 @@ TEST(TextureSetupTest) {
     auto rt3 = TextureSetup::SharedDepthRenderTarget(Id(1, 2, GfxResourceType::Texture));
     rt3.ColorFormat = PixelFormat::RGBA32F;
     CHECK(!rt3.ShouldSetupFromFile());
-    CHECK(!rt3.ShouldSetupFromImageFileData());
     CHECK(!rt3.ShouldSetupFromPixelData());
     CHECK(rt3.ShouldSetupAsRenderTarget());
     CHECK(!rt3.IsRelSizeRenderTarget());
