@@ -28,6 +28,7 @@ mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
 curCommandEncoder(nil),
+curUniformBufferPtr(nullptr),
 curUniformBufferOffset(0) {
     // empty
 }
@@ -154,6 +155,7 @@ mtlRenderer::commitFrame() {
     this->curUniformBufferOffset = 0;
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
+    this->curUniformBufferPtr = nullptr;
 
     // safely free released GPU resources
 }
@@ -348,6 +350,12 @@ mtlRenderer::applyDrawState(drawState* ds) {
             [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
         }
     }
+
+    // get the base pointer for the uniform buffer, this only happens once per frame
+    if (nullptr == this->curUniformBufferPtr) {
+        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
+        this->curUniformBufferPtr = ((uint8*)[mtlBuffer contents]);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -376,16 +384,15 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside commitFrame!
-    id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
-    uint8* dstPtr = ((uint8*)[mtlBuffer contents]) + this->curUniformBufferOffset;
+    uint8* dstPtr = this->curUniformBufferPtr + this->curUniformBufferOffset;
     std::memcpy(dstPtr, ptr, byteSize);
 
     // set constant buffer location for next draw call
     if (ShaderStage::VS == bindStage) {
-        [this->curCommandEncoder setVertexBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curCommandEncoder setVertexBuffer:this->uniformBuffers[this->curFrameRotateIndex] offset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBuffer:mtlBuffer offset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curCommandEncoder setFragmentBuffer:this->uniformBuffers[this->curFrameRotateIndex] offset:this->curUniformBufferOffset atIndex:bindSlot];
     }
 
     // advance uniform buffer offset (buffer offsets must be multiples of 256)

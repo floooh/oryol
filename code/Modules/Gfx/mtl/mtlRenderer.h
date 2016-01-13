@@ -102,6 +102,7 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
 
     // rotated global uniform buffers
+    uint8* curUniformBufferPtr;
     int32 curUniformBufferOffset;
     StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MtlMaxInflightFrames> uniformBuffers;
 
