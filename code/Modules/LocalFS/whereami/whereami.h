@@ -1,4 +1,5 @@
 // (‑●‑●)> released under the WTFPL v2 license, by Gregory Pakosz (@gpakosz)
+// https://github.com/gpakosz/whereami
 
 #ifndef WHEREAMI_H
 #define WHEREAMI_H
