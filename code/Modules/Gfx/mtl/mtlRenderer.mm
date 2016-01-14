@@ -311,6 +311,11 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
                 atIndex:bindSlot];
         }
     }
+
+    // get the base pointer for the uniform buffer, this only happens once per frame
+    if (nullptr == this->curUniformBufferPtr) {
+        this->curUniformBufferPtr = (uint8*)[this->uniformBuffers[this->curFrameRotateIndex] contents];
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -361,11 +366,6 @@ mtlRenderer::applyDrawState(drawState* ds) {
         else {
             [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
         }
-    }
-
-    // get the base pointer for the uniform buffer, this only happens once per frame
-    if (nullptr == this->curUniformBufferPtr) {
-        this->curUniformBufferPtr = (uint8*)[this->uniformBuffers[this->curFrameRotateIndex] contents];
     }
 }
 
