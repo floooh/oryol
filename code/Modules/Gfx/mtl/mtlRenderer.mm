@@ -156,8 +156,6 @@ mtlRenderer::commitFrame() {
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
-
-    // safely free released GPU resources
 }
 
 //------------------------------------------------------------------------------
@@ -299,6 +297,20 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     // create command encoder for this render pass
     // this might return nil if the window is minimized
     this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+
+    // bind uniform buffer to shader stages, only needs to happen once
+    if (nil != this->curCommandEncoder) {
+        for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
+            [this->curCommandEncoder
+                setVertexBuffer:this->uniformBuffers[this->curFrameRotateIndex]
+                offset:0
+                atIndex:bindSlot];
+            [this->curCommandEncoder
+                setFragmentBuffer:this->uniformBuffers[this->curFrameRotateIndex]
+                offset:0
+                atIndex:bindSlot];
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -353,8 +365,7 @@ mtlRenderer::applyDrawState(drawState* ds) {
 
     // get the base pointer for the uniform buffer, this only happens once per frame
     if (nullptr == this->curUniformBufferPtr) {
-        id<MTLBuffer> mtlBuffer = this->uniformBuffers[this->curFrameRotateIndex];
-        this->curUniformBufferPtr = ((uint8*)[mtlBuffer contents]);
+        this->curUniformBufferPtr = (uint8*)[this->uniformBuffers[this->curFrameRotateIndex] contents];
     }
 }
 
@@ -369,33 +380,29 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
         return;
     }
 
-    // get the uniform layout object for this uniform block
-    const shader* shd = this->curDrawState->shd;
+    #if ORYOL_DEBUG
+    // check whether the provided struct is type-compatible with the uniform layout
+    shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
-
-    // check whether the provided struct is type-compatible with the uniform layout
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert(byteSize == layout.ByteSize());
-    o_assert2((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    o_assert_dbg(byteSize == layout.ByteSize());
+    o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
     o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
+    #endif
 
     // write uniforms into global uniform buffer, advance buffer offset
     // and set current uniform buffer location on command-encoder
     // NOTE: we'll call didModifyRange only ONCE inside commitFrame!
     uint8* dstPtr = this->curUniformBufferPtr + this->curUniformBufferOffset;
     std::memcpy(dstPtr, ptr, byteSize);
-
-    // set constant buffer location for next draw call
     if (ShaderStage::VS == bindStage) {
-        [this->curCommandEncoder setVertexBuffer:this->uniformBuffers[this->curFrameRotateIndex] offset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curCommandEncoder setVertexBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBuffer:this->uniformBuffers[this->curFrameRotateIndex] offset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curCommandEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
-
-    // advance uniform buffer offset (buffer offsets must be multiples of 256)
     this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, 256);
 }
 
