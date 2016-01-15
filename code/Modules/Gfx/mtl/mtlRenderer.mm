@@ -129,18 +129,14 @@ mtlRenderer::commitFrame() {
     [this->uniformBuffers[this->curFrameRotateIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
     #endif
 
-    __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
-    [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-        dispatch_semaphore_signal(blockSema);
-    }];
-    // block until previous frame has finished (the semaphore
-    // has a counter of MaxRotateFrame, which is at least 2)
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-
     if (nil != this->curCommandEncoder) {
         [this->curCommandEncoder endEncoding];
         [this->curCommandBuffer presentDrawable:[osBridge::ptr()->mtkView currentDrawable]];
     }
+    __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
+    [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+        dispatch_semaphore_signal(blockSema);
+    }];
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
@@ -148,14 +144,18 @@ mtlRenderer::commitFrame() {
         this->curFrameRotateIndex = 0;
     }
 
-    // safely destroy released GPU resources
-    this->releaseQueue.garbageCollect(this->frameIndex);
-
     this->frameIndex++;
     this->curUniformBufferOffset = 0;
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
+
+    // block until previous frame has finished (the semaphore
+    // has a counter of MaxRotateFrame, which is at least 2)
+    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+
+    // safely destroy released GPU resources
+    this->releaseQueue.garbageCollect(this->frameIndex);
 }
 
 //------------------------------------------------------------------------------
