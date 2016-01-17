@@ -49,7 +49,7 @@ OryolMain(DrawCallPerfApp);
 AppState::Code
 DrawCallPerfApp::OnRunning() {
     
-    Duration updTime, drawTime;
+    Duration updTime, drawTime, applyRtTime;
     this->frameCount++;
     
     // update block
@@ -62,8 +62,10 @@ DrawCallPerfApp::OnRunning() {
     }
     
     // render block
-    TimePoint drawStart = Clock::Now();
+    TimePoint applyRtStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
+    applyRtTime = Clock::Since(applyRtStart);
+    TimePoint drawStart = Clock::Now();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->perFrameParams);
     for (int32 i = 0; i < this->curNumParticles; i++) {
@@ -84,10 +86,11 @@ DrawCallPerfApp::OnRunning() {
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
                 " LMB/tap: toggle particle update",
                 this->curNumParticles,
                 updTime.AsMilliSeconds(),
+                applyRtTime.AsMilliSeconds(),
                 drawTime.AsMilliSeconds(),
                 frameTime.AsMilliSeconds());
     Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
