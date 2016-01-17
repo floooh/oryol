@@ -24,6 +24,8 @@ frameIndex(0),
 curFrameRotateIndex(0),
 rtValid(false),
 curDrawState(nullptr),
+curMTLPrimitiveType(MTLPrimitiveTypeTriangle),
+curMTLIndexType(MTLIndexTypeUInt16),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
@@ -367,6 +369,12 @@ mtlRenderer::applyDrawState(drawState* ds) {
             [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
         }
     }
+
+    // store state for following draw calls
+    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(ds->meshes[0]->Setup.PrimType);
+    if (ds->meshes[0]->indexBufferAttrs.Type != IndexType::None) {
+        this->curMTLIndexType = mtlTypes::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -389,7 +397,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
     o_assert_dbg(byteSize == layout.ByteSize());
     o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
-    o_assert_dbg((this->curUniformBufferOffset & 0xFF) == 0);
+    o_assert_dbg((this->curUniformBufferOffset & (MtlUniformAlignment-1)) == 0);
     #endif
 
     // write uniforms into global uniform buffer, advance buffer offset
@@ -403,7 +411,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     else {
         [this->curCommandEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
-    this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, 256);
+    this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, MtlUniformAlignment);
 }
 
 //------------------------------------------------------------------------------
@@ -471,25 +479,22 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     }
     const mesh* msh = this->curDrawState->meshes[0];
     o_assert_dbg(msh);
-    MTLPrimitiveType mtlPrimType = mtlTypes::asPrimitiveType(msh->Setup.PrimType);
-    IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    if (IndexType::None != indexType) {
-        const auto& ib = msh->buffers[mesh::ib];
-        o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
-        MTLIndexType mtlIndexType = mtlTypes::asIndexType(indexType);
-        NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(indexType);
-        [this->curCommandEncoder drawIndexedPrimitives:mtlPrimType
-            indexCount:primGroup.NumElements
-            indexType:mtlIndexType
-            indexBuffer:ib.mtlBuffers[ib.activeSlot]
-            indexBufferOffset:indexBufferOffset
-            instanceCount:numInstances ];
-    }
-    else {
-        [this->curCommandEncoder drawPrimitives:mtlPrimType
+    if (IndexType::None == msh->indexBufferAttrs.Type) {
+        [this->curCommandEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
             vertexStart:primGroup.BaseElement
             vertexCount:primGroup.NumElements
             instanceCount:numInstances];
+    }
+    else {
+        const auto& ib = msh->buffers[mesh::ib];
+        o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
+        NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(msh->indexBufferAttrs.Type);
+        [this->curCommandEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
+            indexCount:primGroup.NumElements
+            indexType:(MTLIndexType)this->curMTLIndexType
+            indexBuffer:ib.mtlBuffers[ib.activeSlot]
+            indexBufferOffset:indexBufferOffset
+            instanceCount:numInstances ];
     }
 }
 
@@ -525,8 +530,8 @@ mtlRenderer::draw(int32 primGroupIndex) {
 }
 
 //------------------------------------------------------------------------------
-id<MTLBuffer>
-obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
+void
+meshBufferRotateActiveSlot(mesh::buffer& buf, int frameIndex) {
     // helper function to get the right double-buffered
     // vertex or index buffer for a buffer update
     
@@ -542,7 +547,6 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
     if (++buf.activeSlot >= buf.numSlots) {
         buf.activeSlot = 0;
     }
-    return buf.mtlBuffers[buf.activeSlot];
 }
 
 //------------------------------------------------------------------------------
@@ -555,13 +559,13 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
 
     auto& vb = msh->buffers[mesh::vb];
-    id<MTLBuffer> mtlBuffer = obtainUpdateBuffer(vb, this->frameIndex);
-    o_assert_dbg(nil != mtlBuffer);
-    o_assert_dbg(numBytes <= int([mtlBuffer length]));
-    void* dstPtr = [mtlBuffer contents];
+    meshBufferRotateActiveSlot(vb, this->frameIndex);
+    o_assert_dbg(nil != vb.mtlBuffers[vb.activeSlot]);
+    o_assert_dbg(numBytes <= int([vb.mtlBuffers[vb.activeSlot] length]));
+    void* dstPtr = [vb.mtlBuffers[vb.activeSlot] contents];
     std::memcpy(dstPtr, data, numBytes);
     #if ORYOL_MACOS
-    [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
+    [vb.mtlBuffers[vb.activeSlot] didModifyRange:NSMakeRange(0, numBytes)];
     #endif
 }
 
@@ -575,26 +579,25 @@ mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
 
     auto& ib = msh->buffers[mesh::ib];
-    id<MTLBuffer> mtlBuffer = obtainUpdateBuffer(ib, this->frameIndex);
-    o_assert_dbg(nil != mtlBuffer);
-    o_assert_dbg(numBytes <= int([mtlBuffer length]));
-    void* dstPtr = [mtlBuffer contents];
+    meshBufferRotateActiveSlot(ib, this->frameIndex);
+    o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
+    o_assert_dbg(numBytes <= int([ib.mtlBuffers[ib.activeSlot] length]));
+    void* dstPtr = [ib.mtlBuffers[ib.activeSlot] contents];
     std::memcpy(dstPtr, data, numBytes);
     #if ORYOL_MACOS
-    [mtlBuffer didModifyRange:NSMakeRange(0, numBytes)];
+    [ib.mtlBuffers[ib.activeSlot] didModifyRange:NSMakeRange(0, numBytes)];
     #endif
 }
 
 //------------------------------------------------------------------------------
-id<MTLTexture>
-obtainUpdateTexture(texture* tex, int frameIndex) {
+void
+texRotateActiveSlot(texture* tex, int frameIndex) {
     o_assert2(tex->updateFrameIndex != frameIndex, "Only one data update allowed per texture and frame!\n");
     tex->updateFrameIndex = frameIndex;
     o_assert_dbg(tex->numSlots > 1);
     if (++tex->activeSlot >= tex->numSlots) {
         tex->activeSlot = 0;
     }
-    return tex->mtlTextures[tex->activeSlot];
 }
 
 //------------------------------------------------------------------------------
@@ -611,8 +614,8 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
     o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
-    id<MTLTexture> mtlTexture = obtainUpdateTexture(tex, this->frameIndex);
-    o_assert_dbg(nil != mtlTexture);
+    texRotateActiveSlot(tex, this->frameIndex);
+    o_assert_dbg(nil != tex->mtlTextures[tex->activeSlot]);
 
     // copy data bytes into texture
     const uint8* srcPtr = (const uint8*) data;
@@ -622,7 +625,7 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
         // special case PVRTC formats: bytesPerRow must be 0
         int bytesPerRow = PixelFormat::RowPitch(attrs.ColorFormat, mipWidth);
         MTLRegion region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
-        [mtlTexture replaceRegion:region
+        [tex->mtlTextures[tex->activeSlot] replaceRegion:region
             mipmapLevel:mipIndex
             slice:0
             withBytes:srcPtr+offsetsAndSizes.Offsets[0][mipIndex]

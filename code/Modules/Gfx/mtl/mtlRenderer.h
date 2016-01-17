@@ -85,6 +85,12 @@ public:
     /// defered-release a render resource
     void releaseDeferred(ORYOL_OBJC_ID obj);
 
+    #if ORYOL_MACOS
+    static const int MtlUniformAlignment = 256;
+    #else
+    static const int MtlUniformAlignment = 16;
+    #endif
+
     bool valid;
     GfxSetup gfxSetup;
     gfxPointers pointers;
@@ -96,6 +102,9 @@ public:
     DisplayAttrs rtAttrs;
     
     drawState* curDrawState;
+    unsigned long curMTLPrimitiveType;
+    unsigned long curMTLIndexType;
+
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
