@@ -7,6 +7,7 @@
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Input/Input.h"
 #include "Time/Clock.h"
+#include "IMUI/IMUI.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
@@ -24,6 +25,7 @@ private:
     void updateCamera();
     void emitParticles();
     void updateParticles();
+    void drawUI();
 
     int maxNumParticles = 10000;
     int numEmitParticles = 100;
@@ -69,7 +71,7 @@ DrawCallExplorerApp::OnRunning() {
     
     // render block
     TimePoint applyRtStart = Clock::Now();
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0));
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
     int batchCount = this->numParticlesPerBatch;
@@ -88,15 +90,10 @@ DrawCallExplorerApp::OnRunning() {
         Gfx::Draw(0);
     }
     drawTime = Clock::Since(drawStart);
-    
+
+    this->drawUI();
     Gfx::CommitFrame();
 
-    // toggle particle update
-    const Mouse& mouse = Input::Mouse();
-    if (mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) {
-        this->updateEnabled = !this->updateEnabled;
-    }
-    
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
@@ -149,6 +146,8 @@ DrawCallExplorerApp::OnInit() {
     gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
     Gfx::Setup(gfxSetup);
     Input::Setup();
+    Input::BeginCaptureText();
+    IMUI::Setup();
 
     // create resources
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -187,7 +186,32 @@ DrawCallExplorerApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 DrawCallExplorerApp::OnCleanup() {
+    IMUI::Discard();
     Input::Discard();
     Gfx::Discard();
     return App::OnCleanup();
+}
+
+//------------------------------------------------------------------------------
+void
+DrawCallExplorerApp::drawUI() {
+    IMUI::NewFrame();
+    ImGui::SetNextWindowSize(ImVec2(240, 200), ImGuiSetCond_Once);
+    if (ImGui::Begin("Controls")) {
+        if (ImGui::Button("Reset")) {
+            this->curNumParticles = 0;
+        }
+        ImGui::PushItemWidth(100.0f);
+        if (ImGui::InputInt("Max Particles", &this->maxNumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            this->curNumParticles = 0;
+        }
+        if (ImGui::InputInt("Batch Size", &this->numParticlesPerBatch, 10, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            this->curNumParticles = 0;
+        }
+        ImGui::InputInt("Emit Per Frame", &this->numEmitParticles, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::PopItemWidth();
+    }
+    ImGui::End();
+    ImGui::Render();
+
 }
