@@ -203,6 +203,9 @@ DrawCallExplorerApp::drawUI() {
         }
         ImGui::PushItemWidth(100.0f);
         if (ImGui::InputInt("Max Particles", &this->maxNumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (this->maxNumParticles > ParticleBufferSize) {
+                this->maxNumParticles = ParticleBufferSize;
+            }
             this->curNumParticles = 0;
         }
         if (ImGui::InputInt("Batch Size", &this->numParticlesPerBatch, 10, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
