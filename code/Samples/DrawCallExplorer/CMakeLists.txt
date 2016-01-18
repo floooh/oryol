@@ -1,0 +1,7 @@
+fips_begin_app(DrawCallExplorer windowed)
+    fips_vs_warning_level(3)
+    fips_files(DrawCallExplorer.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx Assets Time Input IMUI)
+    oryol_add_web_sample(DrawCallExplorer "Explore 3D API draw call behaviour" "emscripten,pnacl" none "DrawCallExplorer/DrawCallExplorer.cc")
+fips_end_app()

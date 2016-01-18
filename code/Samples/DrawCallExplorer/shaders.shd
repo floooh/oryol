@@ -1,0 +1,47 @@
+//------------------------------------------------------------------------------
+//  DrawCallExplorer shaders
+//------------------------------------------------------------------------------
+
+@uniform_block perFrameParams PerFrameParams
+@uniform mat4 mvp ModelViewProjection
+@end
+
+@uniform_block perParticleParams PerParticleParams
+@uniform vec4 particleTranslate Translate
+@end
+
+@vs vs
+@use_uniform_block perFrameParams perParticleParams
+@in vec4 position
+@in vec4 color0
+@out vec4 color
+    _position = mul(mvp, (position + particleTranslate));
+    color = color0;
+@end
+
+@fs fs_red
+@in vec4 color
+    _color = color * vec4(2.0, 0.0, 0.0, 1.0);
+@end
+
+@fs fs_green
+@in vec4 color
+    _color = color * vec4(0.0, 2.0, 0.0, 1.0);
+@end
+
+@fs fs_blue
+@in vec4 color
+    _color = color * vec4(0.0, 0.0, 2.0, 1.0);
+@end
+
+@bundle Red
+@program vs fs_red
+@end
+
+@bundle Green
+@program vs fs_green
+@end
+
+@bundle Blue
+@program vs fs_blue
+@end
