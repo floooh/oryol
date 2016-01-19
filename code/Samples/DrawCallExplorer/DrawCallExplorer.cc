@@ -26,6 +26,7 @@ private:
     void emitParticles();
     void updateParticles();
     void drawUI();
+    void reset();
 
     int maxNumParticles = 10000;
     int numEmitParticles = 100;
@@ -50,49 +51,72 @@ private:
         glm::vec4 pos;
         glm::vec4 vec;
     } particles[ParticleBufferSize];
+
+    int32 numApplyDrawState = 0;
+    int32 numDrawCalls = 0;
+
+    // NumSamples must be 2^N, all samples are 0.0 to 1.0 (0..32ms)
+    static const int NumSamples = 1024;
+    uint32 curSample = 0;
+    struct sample {
+        float updTime = 0.0f;
+        float applyRtTime = 0.0f;
+        float drawTime = 0.0f;
+        float frameTime = 0.0f;
+    };
+    sample samples[NumSamples];
 };
 OryolMain(DrawCallExplorerApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 DrawCallExplorerApp::OnRunning() {
-    
-    Duration updTime, drawTime, applyRtTime;
+
+    TimePoint start, afterUpdate, afterApplyRt, afterDraw;
     this->frameCount++;
+    this->numDrawCalls = 0;
+    this->numApplyDrawState = 0;
     
     // update block
+    start = Clock::Now();
     this->updateCamera();
     if (this->updateEnabled) {
-        TimePoint updStart = Clock::Now();
         this->emitParticles();
         this->updateParticles();
-        updTime = Clock::Since(updStart);
     }
-    
+    afterUpdate = Clock::Now();
+
     // render block
-    TimePoint applyRtStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), 1.0f, 0));
-    applyRtTime = Clock::Since(applyRtStart);
-    TimePoint drawStart = Clock::Now();
+    afterApplyRt = Clock::Now();
     int batchCount = this->numParticlesPerBatch;
     int curBatch = 0;
     for (int32 i = 0; i < this->curNumParticles; i++) {
-        if (++batchCount > this->numParticlesPerBatch) {
+        if (++batchCount >= this->numParticlesPerBatch) {
             batchCount = 0;
             Gfx::ApplyDrawState(this->drawStates[curBatch++]);
             Gfx::ApplyUniformBlock(this->perFrameParams);
             if (curBatch >= 3) {
                 curBatch = 0;
             }
+            this->numApplyDrawState++;
         }
         this->perParticleParams.Translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
         Gfx::Draw(0);
+        this->numDrawCalls++;
     }
-    drawTime = Clock::Since(drawStart);
+    afterDraw = Clock::Now();
 
     this->drawUI();
     Gfx::CommitFrame();
+
+    // record time samples
+    auto& s = this->samples[this->curSample++ & (NumSamples-1)];
+    s.updTime = (afterUpdate - start).AsMilliSeconds();
+    s.applyRtTime = (afterApplyRt - afterUpdate).AsMilliSeconds();
+    s.drawTime = (afterDraw - afterApplyRt).AsMilliSeconds();
+    s.frameTime = Clock::LapTime(this->lastFrameTimePoint).AsMilliSeconds();
 
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
@@ -139,6 +163,16 @@ DrawCallExplorerApp::updateParticles() {
 }
 
 //------------------------------------------------------------------------------
+void
+DrawCallExplorerApp::reset() {
+    this->curNumParticles = 0;
+    this->curSample = 0;
+    for (auto& s : this->samples) {
+        s = sample();
+    }
+}
+
+//------------------------------------------------------------------------------
 AppState::Code
 DrawCallExplorerApp::OnInit() {
     // setup rendering system
@@ -179,6 +213,8 @@ DrawCallExplorerApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();
+
+    this->lastFrameTimePoint = Clock::Now();
     
     return App::OnInit();
 }
@@ -199,22 +235,40 @@ DrawCallExplorerApp::drawUI() {
     ImGui::SetNextWindowSize(ImVec2(240, 200), ImGuiSetCond_Once);
     if (ImGui::Begin("Controls")) {
         if (ImGui::Button("Reset")) {
-            this->curNumParticles = 0;
+            this->reset();
         }
         ImGui::PushItemWidth(100.0f);
-        if (ImGui::InputInt("Max Particles", &this->maxNumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (ImGui::InputInt("Max Particles", &this->maxNumParticles, 1000, 10000, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (this->maxNumParticles > ParticleBufferSize) {
                 this->maxNumParticles = ParticleBufferSize;
             }
-            this->curNumParticles = 0;
+            this->reset();
         }
-        if (ImGui::InputInt("Batch Size", &this->numParticlesPerBatch, 10, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
-            this->curNumParticles = 0;
+        if (ImGui::InputInt("Batch Size", &this->numParticlesPerBatch, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            this->reset();
         }
-        ImGui::InputInt("Emit Per Frame", &this->numEmitParticles, 1, 10, ImGuiInputTextFlags_EnterReturnsTrue);
+        if (ImGui::InputInt("Emit Per Frame", &this->numEmitParticles, 10, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            this->reset();
+        }
+        ImGui::Text("Num ApplyDrawState: %d", this->numApplyDrawState);
+        ImGui::Text("Num DrawCalls:      %d", this->numDrawCalls);
         ImGui::PopItemWidth();
     }
     ImGui::End();
+    ImGui::SetNextWindowPos(ImVec2(10, 320), ImGuiSetCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(700, 180), ImGuiSetCond_Once);
+    if (ImGui::Begin("Timing")) {
+        const auto& s0 = this->samples[0];
+        const auto& s1 = this->samples[(this->curSample-1) & (NumSamples-1)];
+        ImGui::PlotLines("##upd", &s0.updTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("update:  %.3fms", s1.updTime);
+        ImGui::PlotLines("##applyRt", &s0.applyRtTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("applyRt: %.3fms", s1.applyRtTime);
+        ImGui::PlotLines("##draw", &s0.drawTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("draw:    %.3fms", s1.drawTime);
+        ImGui::PlotLines("##frame", &s0.frameTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("frame:   %.3fms", s1.frameTime);
+    }
+    ImGui::End();
     ImGui::Render();
-
 }
