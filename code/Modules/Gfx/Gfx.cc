@@ -34,6 +34,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->displayManager.ProcessSystemEvents();
     });
+    state->gfxFrameInfo = GfxFrameInfo();
 }
 
 //------------------------------------------------------------------------------
@@ -98,9 +99,17 @@ Gfx::RenderTargetAttrs() {
 }
 
 //------------------------------------------------------------------------------
+const GfxFrameInfo&
+Gfx::FrameInfo() {
+    o_assert_dbg(IsValid());
+    return state->gfxFrameInfo;
+}
+
+//------------------------------------------------------------------------------
 void
 Gfx::ApplyDefaultRenderTarget(const ClearState& clearState) {
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyRenderTarget++;
     state->renderer.applyRenderTarget(nullptr, clearState);
 }
 
@@ -111,6 +120,7 @@ Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
     o_assert_dbg(id.IsValid());
     o_assert_dbg(id.Type == GfxResourceType::Texture);
 
+    state->gfxFrameInfo.NumApplyRenderTarget++;
     texture* renderTarget = state->resourceContainer.lookupTexture(id);
     o_assert_dbg(nullptr != renderTarget);
     state->renderer.applyRenderTarget(renderTarget, clearState);
@@ -122,6 +132,7 @@ Gfx::ApplyDrawState(const Id& id) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
     o_assert_dbg(id.Type == GfxResourceType::DrawState);
+    state->gfxFrameInfo.NumApplyDrawState++;
     state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
 }
 
@@ -206,6 +217,7 @@ Gfx::resource() {
 void
 Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyViewPort++;
     state->renderer.applyViewPort(x, y, width, height, originTopLeft);
 }
 
@@ -213,6 +225,7 @@ Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLe
 void
 Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyScissorRect++;
     state->renderer.applyScissorRect(x, y, width, height, originTopLeft);
 }
 
@@ -223,6 +236,7 @@ Gfx::CommitFrame() {
     o_assert_dbg(IsValid());
     state->renderer.commitFrame();
     state->displayManager.Present();
+    state->gfxFrameInfo = GfxFrameInfo();
 }
 
 //------------------------------------------------------------------------------
@@ -238,6 +252,7 @@ void
 Gfx::UpdateVertices(const Id& id, const void* data, int32 numBytes) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumUpdateVertices++;
     mesh* msh = state->resourceContainer.lookupMesh(id);
     state->renderer.updateVertices(msh, data, numBytes);
 }
@@ -247,6 +262,7 @@ void
 Gfx::UpdateIndices(const Id& id, const void* data, int32 numBytes) {
     o_trace_scoped(Gfx_UpdateIndices);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumUpdateIndices++;
     mesh* msh = state->resourceContainer.lookupMesh(id);
     state->renderer.updateIndices(msh, data, numBytes);
 }
@@ -256,7 +272,7 @@ void
 Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes) {
     o_trace_scoped(Gfx_UpdateTexture);
     o_assert_dbg(IsValid());
-
+    state->gfxFrameInfo.NumUpdateTextures++;
     texture* tex = state->resourceContainer.lookupTexture(id);
     state->renderer.updateTexture(tex, data, offsetsAndSizes);
 }
@@ -274,6 +290,7 @@ void
 Gfx::Draw(int32 primGroupIndex) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumDraw++;
     state->renderer.draw(primGroupIndex);
 }
 
@@ -282,6 +299,7 @@ void
 Gfx::Draw(const PrimitiveGroup& primGroup) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumDraw++;
     state->renderer.draw(primGroup);
 }
 
@@ -290,6 +308,7 @@ void
 Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumDrawInstanced++;
     state->renderer.drawInstanced(primGroupIndex, numInstances);
 }
 
@@ -298,6 +317,7 @@ void
 Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumDrawInstanced++;
     state->renderer.drawInstanced(primGroup, numInstances);
 }
 

@@ -16,6 +16,7 @@
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/renderer.h"
+#include "Gfx/Core/GfxFrameInfo.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Resource/Core/SetupAndData.h"
 #include "glm/vec4.hpp"
@@ -49,7 +50,9 @@ public:
     static const struct DisplayAttrs& DisplayAttrs();
     /// get the current render target attributes (default or offscreen)
     static const struct DisplayAttrs& RenderTargetAttrs();
-    
+    /// get frame-render stats, gets reset in CommitFrame()!
+    static const GfxFrameInfo& FrameInfo();
+
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
     /// push explicit resource label on label stack
@@ -129,6 +132,7 @@ private:
 
     struct _state {
         class GfxSetup gfxSetup;
+        GfxFrameInfo gfxFrameInfo;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::displayMgr displayManager;
         class _priv::renderer renderer;
@@ -140,7 +144,6 @@ private:
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::applyTextureBlock(const T& tb) {
-    o_assert_dbg(IsValid());
     o_assert_dbg(T::_numTextures <= GfxConfig::MaxNumTexturesPerStage);
     _priv::texture* textures[GfxConfig::MaxNumTexturesPerStage];
     const Id* texId = (const Id*)&tb;
@@ -154,6 +157,8 @@ Gfx::applyTextureBlock(const T& tb) {
 //------------------------------------------------------------------------------
 template<class T0> inline void
 Gfx::ApplyDrawState(const Id& id, const T0& tb0) {
+    o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyDrawState++;
     Gfx::ApplyDrawState(id);
     Gfx::applyTextureBlock<T0>(tb0);
 }
@@ -161,7 +166,9 @@ Gfx::ApplyDrawState(const Id& id, const T0& tb0) {
 //------------------------------------------------------------------------------
 template<class T0, class T1> inline void
 Gfx::ApplyDrawState(const Id& id, const T0& tb0, const T1& tb1) {
+    o_assert_dbg(IsValid());
     o_assert2(T0::_bindShaderStage != T1::_bindShaderStage, "cannot bind 2 texture blocks to same shader stage!\n");
+    state->gfxFrameInfo.NumApplyDrawState++;
     Gfx::ApplyDrawState(id);
     Gfx::applyTextureBlock<T0>(tb0);
     Gfx::applyTextureBlock<T1>(tb1);
@@ -171,6 +178,7 @@ Gfx::ApplyDrawState(const Id& id, const T0& tb0, const T1& tb1) {
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
     o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyUniformBlock++;
     state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8*) &ub, sizeof(ub));
 }
 

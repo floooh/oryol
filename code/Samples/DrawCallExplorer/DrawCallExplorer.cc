@@ -52,8 +52,11 @@ private:
         glm::vec4 vec;
     } particles[ParticleBufferSize];
 
-    int32 numApplyDrawState = 0;
-    int32 numDrawCalls = 0;
+    // frameInfo before rendering UI and before Commit
+    GfxFrameInfo frameInfoBeforeUI;
+    GfxFrameInfo frameInfoBeforeCommit;
+    GfxFrameInfo lastFrameInfoBeforeUI;
+    GfxFrameInfo lastFrameInfoBeforeCommit;
 
     // NumSamples must be 2^N, all samples are 0.0 to 1.0 (0..32ms)
     static const int NumSamples = 1024;
@@ -62,6 +65,8 @@ private:
         float updTime = 0.0f;
         float applyRtTime = 0.0f;
         float drawTime = 0.0f;
+        float uiTime = 0.0f;
+        float commitTime = 0.0f;
         float frameTime = 0.0f;
     };
     sample samples[NumSamples];
@@ -72,11 +77,9 @@ OryolMain(DrawCallExplorerApp);
 AppState::Code
 DrawCallExplorerApp::OnRunning() {
 
-    TimePoint start, afterUpdate, afterApplyRt, afterDraw;
+    TimePoint start, afterUpdate, afterApplyRt, afterDraw, afterUi, afterCommit;
     this->frameCount++;
-    this->numDrawCalls = 0;
-    this->numApplyDrawState = 0;
-    
+
     // update block
     start = Clock::Now();
     this->updateCamera();
@@ -99,24 +102,31 @@ DrawCallExplorerApp::OnRunning() {
             if (curBatch >= 3) {
                 curBatch = 0;
             }
-            this->numApplyDrawState++;
         }
         this->perParticleParams.Translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
         Gfx::Draw(0);
-        this->numDrawCalls++;
     }
     afterDraw = Clock::Now();
+    this->frameInfoBeforeUI = Gfx::FrameInfo();
 
     this->drawUI();
+    afterUi = Clock::Now();
+    this->frameInfoBeforeCommit = Gfx::FrameInfo();
     Gfx::CommitFrame();
+    afterCommit = Clock::Now();
 
     // record time samples
     auto& s = this->samples[this->curSample++ & (NumSamples-1)];
     s.updTime = (float) (afterUpdate - start).AsMilliSeconds();
     s.applyRtTime = (float) (afterApplyRt - afterUpdate).AsMilliSeconds();
     s.drawTime = (float) (afterDraw - afterApplyRt).AsMilliSeconds();
+    s.uiTime = (float) (afterUi - afterDraw).AsMilliSeconds();
+    s.commitTime = (float) (afterCommit - afterUi).AsMilliSeconds();
     s.frameTime = (float) Clock::LapTime(this->lastFrameTimePoint).AsMilliSeconds();
+
+    this->lastFrameInfoBeforeCommit = this->frameInfoBeforeCommit;
+    this->lastFrameInfoBeforeUI = this->frameInfoBeforeUI;
 
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
@@ -176,7 +186,7 @@ DrawCallExplorerApp::reset() {
 AppState::Code
 DrawCallExplorerApp::OnInit() {
     // setup rendering system
-    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
+    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallExplorer");
     gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
     Gfx::Setup(gfxSetup);
     Input::Setup();
@@ -232,7 +242,7 @@ DrawCallExplorerApp::OnCleanup() {
 void
 DrawCallExplorerApp::drawUI() {
     IMUI::NewFrame();
-    ImGui::SetNextWindowSize(ImVec2(240, 200), ImGuiSetCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(250, 160), ImGuiSetCond_Once);
     if (ImGui::Begin("Controls")) {
         if (ImGui::Button("Reset")) {
             this->reset();
@@ -250,23 +260,31 @@ DrawCallExplorerApp::drawUI() {
         if (ImGui::InputInt("Emit Per Frame", &this->numEmitParticles, 10, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             this->reset();
         }
-        ImGui::Text("Num ApplyDrawState: %d", this->numApplyDrawState);
-        ImGui::Text("Num DrawCalls:      %d", this->numDrawCalls);
+        ImGui::Text("Num ApplyDrawState: %d (ui: %d)",
+            this->lastFrameInfoBeforeCommit.NumApplyDrawState,
+            this->lastFrameInfoBeforeCommit.NumApplyDrawState - this->lastFrameInfoBeforeUI.NumApplyDrawState);
+        ImGui::Text("Num DrawCalls:      %d (ui: %d)",
+            this->lastFrameInfoBeforeCommit.NumDraw,
+            this->lastFrameInfoBeforeCommit.NumDraw - this->lastFrameInfoBeforeUI.NumDraw);
         ImGui::PopItemWidth();
     }
     ImGui::End();
-    ImGui::SetNextWindowPos(ImVec2(10, 320), ImGuiSetCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(700, 180), ImGuiSetCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, 300), ImGuiSetCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(700, 200), ImGuiSetCond_Once);
     if (ImGui::Begin("Timing")) {
         const auto& s0 = this->samples[0];
         const auto& s1 = this->samples[(this->curSample-1) & (NumSamples-1)];
-        ImGui::PlotLines("##upd", &s0.updTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::PlotLines("##upd", &s0.updTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("update:  %.3fms", s1.updTime);
-        ImGui::PlotLines("##applyRt", &s0.applyRtTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::PlotLines("##applyRt", &s0.applyRtTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("applyRt: %.3fms", s1.applyRtTime);
-        ImGui::PlotLines("##draw", &s0.drawTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::PlotLines("##draw", &s0.drawTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("draw:    %.3fms", s1.drawTime);
-        ImGui::PlotLines("##frame", &s0.frameTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 32), sizeof(sample));
+        ImGui::PlotLines("##ui", &s0.uiTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("ui:      %.3fms", s1.uiTime);
+        ImGui::PlotLines("##commit", &s0.commitTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::SameLine(); ImGui::Text("commit:  %.3fms", s1.commitTime);
+        ImGui::PlotLines("##frame", &s0.frameTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("frame:   %.3fms", s1.frameTime);
     }
     ImGui::End();
