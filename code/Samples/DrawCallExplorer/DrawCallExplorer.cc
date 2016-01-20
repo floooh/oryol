@@ -113,10 +113,10 @@ DrawCallExplorerApp::OnRunning() {
 
     // record time samples
     auto& s = this->samples[this->curSample++ & (NumSamples-1)];
-    s.updTime = (afterUpdate - start).AsMilliSeconds();
-    s.applyRtTime = (afterApplyRt - afterUpdate).AsMilliSeconds();
-    s.drawTime = (afterDraw - afterApplyRt).AsMilliSeconds();
-    s.frameTime = Clock::LapTime(this->lastFrameTimePoint).AsMilliSeconds();
+    s.updTime = (float) (afterUpdate - start).AsMilliSeconds();
+    s.applyRtTime = (float) (afterApplyRt - afterUpdate).AsMilliSeconds();
+    s.drawTime = (float) (afterDraw - afterApplyRt).AsMilliSeconds();
+    s.frameTime = (float) Clock::LapTime(this->lastFrameTimePoint).AsMilliSeconds();
 
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
