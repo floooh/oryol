@@ -43,6 +43,11 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/DrawCallPerf/DrawCallPerf.jpg
   src: DrawCallPerf/DrawCallPerf.cc
+- name: DrawCallExplorer
+  desc: Explore 3D API draw call behaviour
+  type: emscripten,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/DrawCallExplorer/DrawCallExplorer.jpg
+  src: DrawCallExplorer/DrawCallExplorer.cc
 - name: Instancing
   desc: Instanced rendering
   type: emscripten,pnacl,android
