@@ -186,7 +186,7 @@ DrawCallExplorerApp::reset() {
 AppState::Code
 DrawCallExplorerApp::OnInit() {
     // setup rendering system
-    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallExplorer");
+    GfxSetup gfxSetup = GfxSetup::Window(620, 500, "Oryol DrawCallExplorer");
     gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
     Gfx::Setup(gfxSetup);
     Input::Setup();
@@ -242,6 +242,7 @@ DrawCallExplorerApp::OnCleanup() {
 void
 DrawCallExplorerApp::drawUI() {
     IMUI::NewFrame();
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiSetCond_Once);
     ImGui::SetNextWindowSize(ImVec2(250, 160), ImGuiSetCond_Once);
     if (ImGui::Begin("Controls")) {
         if (ImGui::Button("Reset")) {
@@ -269,22 +270,22 @@ DrawCallExplorerApp::drawUI() {
         ImGui::PopItemWidth();
     }
     ImGui::End();
-    ImGui::SetNextWindowPos(ImVec2(10, 300), ImGuiSetCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(700, 200), ImGuiSetCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, 290), ImGuiSetCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(600, 200), ImGuiSetCond_Once);
     if (ImGui::Begin("Timing")) {
         const auto& s0 = this->samples[0];
         const auto& s1 = this->samples[(this->curSample-1) & (NumSamples-1)];
-        ImGui::PlotLines("##upd", &s0.updTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##upd", &s0.updTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("update:  %.3fms", s1.updTime);
-        ImGui::PlotLines("##applyRt", &s0.applyRtTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##applyRt", &s0.applyRtTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("applyRt: %.3fms", s1.applyRtTime);
-        ImGui::PlotLines("##draw", &s0.drawTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##draw", &s0.drawTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("draw:    %.3fms", s1.drawTime);
-        ImGui::PlotLines("##ui", &s0.uiTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##ui", &s0.uiTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("ui:      %.3fms", s1.uiTime);
-        ImGui::PlotLines("##commit", &s0.commitTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##commit", &s0.commitTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("commit:  %.3fms", s1.commitTime);
-        ImGui::PlotLines("##frame", &s0.frameTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(0, 24), sizeof(sample));
+        ImGui::PlotLines("##frame", &s0.frameTime, NumSamples, 0, nullptr, 0.0f, 32.0f, ImVec2(450, 24), sizeof(sample));
         ImGui::SameLine(); ImGui::Text("frame:   %.3fms", s1.frameTime);
     }
     ImGui::End();
