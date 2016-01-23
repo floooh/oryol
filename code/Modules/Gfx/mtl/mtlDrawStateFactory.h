@@ -17,6 +17,8 @@ namespace _priv {
 
 class mtlDrawStateFactory : public drawStateFactoryBase {
 public:
+    /// setup the factory
+    void Setup(const gfxPointers& ptrs);
     /// setup a new drawState resource
     ResourceState::Code SetupResource(drawState& ds);
     /// destroy drawState resource

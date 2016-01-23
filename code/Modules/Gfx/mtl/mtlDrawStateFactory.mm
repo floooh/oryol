@@ -9,9 +9,20 @@
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/renderer.h"
+#include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {
+
+//------------------------------------------------------------------------------
+void
+mtlDrawStateFactory::Setup(const gfxPointers& ptrs) {
+    drawStateFactoryBase::Setup(ptrs);
+    const int32 numPoolSlots = ptrs.drawStatePool->GetNumSlots();
+    o_assert_dbg(numPoolSlots > 0);
+    this->rpsCache.Reserve(numPoolSlots);
+    this->dssCache.Reserve(numPoolSlots);
+}
 
 //------------------------------------------------------------------------------
 ResourceState::Code
@@ -148,7 +159,7 @@ mtlDrawStateFactory::createDSS(drawState& ds) {
         o_assert_dbg(this->dssCache.KeyAtIndex(cacheIndex) == ds.Setup.DepthStencilState.Hash);
         item.useCount++;
         ds.mtlDepthStencilState = item.dss;
-        o_dbg("mtlDrawStateFactory: re-use DepthStencilState at %p\n", ds.mtlDepthStencilState);
+        o_dbg("mtlDrawStateFactory: re-use MTLDepthStencilState at %p\n", ds.mtlDepthStencilState);
     }
     else {
         // create depth-stencil-state
@@ -175,7 +186,7 @@ mtlDrawStateFactory::createDSS(drawState& ds) {
         }
         ds.mtlDepthStencilState = [this->pointers.renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
         o_assert(nil != ds.mtlDepthStencilState);
-        o_dbg("mtlDrawStateFactory: create new mtlDepthStencilState at %p\n", ds.mtlDepthStencilState);
+        o_dbg("mtlDrawStateFactory: create new MTLDepthStencilState at %p\n", ds.mtlDepthStencilState);
 
         // add new entry to depth-stencil-state-cache
         DSSValue item;
@@ -195,15 +206,15 @@ mtlDrawStateFactory::releaseRPS(drawState& ds) {
         o_warn("mtlDrawStateFactory::releaseRPS() FIXME: many cache items, remove linear search!\n");
     }
     for (int32 index = this->rpsCache.Size()-1; index >= 0; index--) {
-        RPSValue* item = &this->rpsCache.ValueAtIndex(index);
-        if (item->rps == ds.mtlRenderPipelineState) {
-            o_assert_dbg(item->useCount > 0);
-            if (--item->useCount == 0) {
-                o_dbg("mtlDrawStateFactory: destroy MTLRenderPipelineState at %p\n", item->rps);
-                this->pointers.renderer->releaseDeferred(item->rps);
+        RPSValue& item = this->rpsCache.ValueAtIndex(index);
+        if (item.rps == ds.mtlRenderPipelineState) {
+            o_assert_dbg(item.useCount > 0);
+            if (--item.useCount == 0) {
+                o_dbg("mtlDrawStateFactory: destroy MTLRenderPipelineState at %p\n", item.rps);
+                this->pointers.renderer->releaseDeferred(item.rps);
                 this->rpsCache.EraseIndex(index);
-                item = nullptr;
             }
+            break;
         }
     }
 }
@@ -218,15 +229,15 @@ mtlDrawStateFactory::releaseDSS(drawState& ds) {
         o_warn("mtlDrawStateFactory::releaseDSS() FIXME: many cache items, remove linear search!\n");
     }
     for (int32 index = this->dssCache.Size()-1; index >= 0; index--) {
-        DSSValue* item = &this->dssCache.ValueAtIndex(index);
-        if (item->dss == ds.mtlDepthStencilState) {
-            o_assert_dbg(item->useCount > 0);
-            if (--item->useCount == 0) {
-                o_dbg("mtlDrawStateFactory: destroy MTLDepthStencilState at %p\n", item->dss);
-                this->pointers.renderer->releaseDeferred(item->dss);
+        DSSValue& item = this->dssCache.ValueAtIndex(index);
+        if (item.dss == ds.mtlDepthStencilState) {
+            o_assert_dbg(item.useCount > 0);
+            if (--item.useCount == 0) {
+                o_dbg("mtlDrawStateFactory: destroy MTLDepthStencilState at %p\n", item.dss);
+                this->pointers.renderer->releaseDeferred(item.dss);
                 this->dssCache.EraseIndex(index);
-                item = nullptr;
             }
+            break;
         }
     }
 }
