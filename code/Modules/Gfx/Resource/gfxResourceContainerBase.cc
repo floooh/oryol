@@ -22,16 +22,17 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     o_assert(!this->isValid());
     
     this->pointers = ptrs;
-    
-    this->meshFactory.Setup(this->pointers);
+
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->shaderFactory.Setup(this->pointers);
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
-    this->textureFactory.Setup(this->pointers);
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->drawStateFactory.Setup(this->pointers);
     this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
-    
+
+    this->meshFactory.Setup(this->pointers);
+    this->shaderFactory.Setup(this->pointers);
+    this->textureFactory.Setup(this->pointers);
+    this->drawStateFactory.Setup(this->pointers);
+
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
     });

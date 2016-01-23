@@ -31,6 +31,8 @@ mtlTextureFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
+    // there should be mostly less then 64 different samplers
+    this->samplerCache.Reserve(64);
 }
 
 //------------------------------------------------------------------------------
@@ -85,17 +87,16 @@ mtlTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
 void
 mtlTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
-
     for (auto& mtlTex : tex.mtlTextures) {
         if (nil != mtlTex) {
             this->pointers.renderer->releaseDeferred(mtlTex);
         }
     }
-    if (nil != tex.mtlSamplerState) {
-        this->pointers.renderer->releaseDeferred(tex.mtlSamplerState);
-    }
     if (nil != tex.mtlDepthTex) {
         this->pointers.renderer->releaseDeferred(tex.mtlDepthTex);
+    }
+    if (nil != tex.mtlSamplerState) {
+        this->releaseSamplerState(tex);
     }
     tex.Clear();
 }
@@ -324,21 +325,61 @@ void
 mtlTextureFactory::createSamplerState(texture& tex) {
     o_assert_dbg(nil == tex.mtlSamplerState);
 
-    MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
-    desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapU);
-    desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapV);
-    if (TextureType::Texture3D == tex.Setup.Type) {
-        desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapW);
+    // check if an identical state already exists
+    const int32 cacheIndex = this->samplerCache.FindIndex(tex.Setup.Sampler.Hash);
+    if (InvalidIndex != cacheIndex) {
+        // re-use existing sampler-state object
+        SamplerCacheItem& item = this->samplerCache.ValueAtIndex(cacheIndex);
+        item.useCount++;
+        tex.mtlSamplerState = item.mtlSamplerState;
+        o_dbg("mtlTextureFactory: re-use MTLSamplerState at %p\n", tex.mtlSamplerState);
     }
-    desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MinFilter);
-    desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MagFilter);
-    desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.Sampler.MinFilter);
-    desc.lodMinClamp = 0.0f;
-    desc.lodMaxClamp = FLT_MAX;
-    desc.maxAnisotropy = 1;
-    desc.normalizedCoordinates = YES;
-    tex.mtlSamplerState = [this->pointers.renderer->mtlDevice newSamplerStateWithDescriptor:desc];
-    o_assert(nil != tex.mtlSamplerState);
+    else {
+        // create new sampler-state object
+        MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor alloc] init];
+        desc.sAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapU);
+        desc.tAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapV);
+        if (TextureType::Texture3D == tex.Setup.Type) {
+            desc.rAddressMode = mtlTypes::asSamplerAddressMode(tex.Setup.Sampler.WrapW);
+        }
+        desc.minFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MinFilter);
+        desc.magFilter = mtlTypes::asSamplerMinMagFilter(tex.Setup.Sampler.MagFilter);
+        desc.mipFilter = mtlTypes::asSamplerMipFilter(tex.Setup.Sampler.MinFilter);
+        desc.lodMinClamp = 0.0f;
+        desc.lodMaxClamp = FLT_MAX;
+        desc.maxAnisotropy = 1;
+        desc.normalizedCoordinates = YES;
+        tex.mtlSamplerState = [this->pointers.renderer->mtlDevice newSamplerStateWithDescriptor:desc];
+        o_assert(nil != tex.mtlSamplerState);
+        o_dbg("mtlTextureFactory: create new MTLSamplerState at %p\n", tex.mtlSamplerState);
+
+        // add new cache entry
+        SamplerCacheItem item;
+        item.mtlSamplerState = tex.mtlSamplerState;
+        item.useCount = 1;
+        this->samplerCache.Add(tex.Setup.Sampler.Hash, item);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+mtlTextureFactory::releaseSamplerState(texture& tex) {
+    o_assert_dbg(nil != tex.mtlSamplerState);
+
+    // find cache entry (linear search is ok, since total number of
+    // sampler state will be low
+    for (int32 index = this->samplerCache.Size()-1; index >= 0; index--) {
+        SamplerCacheItem& item = this->samplerCache.ValueAtIndex(index);
+        if (item.mtlSamplerState == tex.mtlSamplerState) {
+            o_assert_dbg(item.useCount > 0);
+            if (--item.useCount == 0) {
+                o_dbg("mtlTextureFactory: destroy MTLSamplerState at %p\n", tex.mtlSamplerState);
+                this->pointers.renderer->releaseDeferred(item.mtlSamplerState);
+                this->samplerCache.EraseIndex(index);
+            }
+            break;
+        }
+    }
 }
 
 } // namespace _priv

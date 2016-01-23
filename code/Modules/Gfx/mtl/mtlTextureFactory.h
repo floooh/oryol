@@ -7,6 +7,8 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
+#include "Core/Containers/Map.h"
+#include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -45,9 +47,18 @@ private:
     ResourceState::Code createEmptyTexture(texture& tex);
     /// create a sampler state object and set in texture object
     void createSamplerState(texture& tex);
+    /// release sampler state object of texture
+    void releaseSamplerState(texture& tex);
 
     gfxPointers pointers;
     bool isValid;
+
+    // cache to re-use existing sampler state objects
+    struct SamplerCacheItem {
+        ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;
+        int32 useCount;
+    };
+    Map<uint32, SamplerCacheItem> samplerCache;
 };
     
 } // namespace _priv
