@@ -73,9 +73,9 @@ public:
     /// placeholder Id
     Id Placeholder;
     
-    /// vertex data byte offset in data (default: 0)
+    /// vertex data byte offset in data (default: 0, set to InvalidIndex if no vertex data provided)
     int32 DataVertexOffset;
-    /// index data byte offset in data (default: InvalidIndex)
+    /// index data byte offset in data (default: InvalidIndex, no index data provided)
     int32 DataIndexOffset;
     
 private:
