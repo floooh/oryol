@@ -242,31 +242,39 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
-    o_assert_dbg(Usage::Immutable == mesh.Setup.VertexUsage);
 
     this->setupAttrs(mesh);
     this->setupPrimGroups(mesh);
     const auto& vbAttrs = mesh.vertexBufferAttrs;
     const auto& ibAttrs = mesh.indexBufferAttrs;
-
-    // create vertex buffer
     const uint8* ptr = (const uint8*)data;
-    const uint8* vertices = ptr + mesh.Setup.DataVertexOffset;
-    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-    o_assert_dbg((ptr + size) >= (vertices + vbSize));
-    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
-    o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[0]);
 
-    // create optional index buffer
+    // create vertex buffer(s)
+    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+    mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+    const uint8* vertices = nullptr;
+    if (InvalidIndex != mesh.Setup.DataVertexOffset) {
+        vertices = ptr + mesh.Setup.DataVertexOffset;
+        o_assert_dbg((ptr + size) >= (vertices + vbSize));
+    }
+    for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
+        mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
+        o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[slotIndex]);
+    }
+
+    // create optional index buffer(s)
     if (ibAttrs.Type != IndexType::None) {
-        o_assert_dbg(Usage::Immutable == ibAttrs.BufferUsage);
-        o_assert_dbg(mesh.Setup.DataIndexOffset != InvalidIndex);
-        o_assert_dbg(mesh.Setup.DataIndexOffset >= vbSize);
-        const uint8* indices = ptr + mesh.Setup.DataIndexOffset;
         const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        o_assert_dbg((ptr + size) >= (indices + ibSize));
-        mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, ibSize, ibAttrs.BufferUsage);
-        o_assert_dbg(0 != mesh.buffers[mesh::ib].glBuffers[0]);
+        mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
+        const uint8* indices = nullptr;
+        if (InvalidIndex != mesh.Setup.DataIndexOffset) {
+            indices = ptr + mesh.Setup.DataIndexOffset;
+            o_assert_dbg((ptr + size) >= (indices + ibSize));
+        }
+        for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {
+            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(indices, ibSize, ibAttrs.BufferUsage);
+            o_assert_dbg(0 != mesh.buffers[mesh::ib].glBuffers[slotIndex]);
+        }
     }
     
     return ResourceState::Valid;
