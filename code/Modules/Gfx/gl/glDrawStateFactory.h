@@ -28,7 +28,7 @@ private:
         GLint size;
         GLenum type;
         GLboolean normalized;
-    } vertexFormatTable[VertexAttr::NumVertexAttrs];
+    } vertexFormatTable[VertexFormat::NumVertexFormats];
 };
 
 } // namespace _priv

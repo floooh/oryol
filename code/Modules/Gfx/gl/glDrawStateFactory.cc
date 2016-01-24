@@ -15,7 +15,7 @@
 namespace Oryol {
 namespace _priv {
 
-const glDrawStateFactory::VertexFormatTable glDrawStateFactory::vertexFormatTable[VertexAttr::NumVertexAttrs] = {
+const glDrawStateFactory::VertexFormatTable glDrawStateFactory::vertexFormatTable[VertexFormat::NumVertexFormats] = {
     { 1, GL_FLOAT, GL_FALSE },          // VetrexFormat::Float
     { 2, GL_FLOAT, GL_FALSE },          // VertexFormat::Float2
     { 3, GL_FLOAT, GL_FALSE },          // VertexFormat::Float3
