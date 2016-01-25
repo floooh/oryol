@@ -575,7 +575,7 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
     // rotate slot index to next dynamic vertex buffer
     // to implement double/multi-buffering because the previous buffer
     // might still be in-flight on the GPU
-    o_assert_dbg(buf.numSlots > 1);
+    // NOTE: buf.numSlots can also be 1 if this is a Dynamic buffer (not a Stream buffer)
     if (++buf.activeSlot >= buf.numSlots) {
         buf.activeSlot = 0;
     }
@@ -589,7 +589,7 @@ glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
     auto& vb = msh->buffers[mesh::vb];
     GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
@@ -608,7 +608,7 @@ glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
 
     o_assert_dbg(IndexType::None != msh->indexBufferAttrs.Type);
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
 
     auto& ib = msh->buffers[mesh::ib];
     GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
