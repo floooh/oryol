@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 48
+Version = 49
 
 import os
 import sys
@@ -152,6 +152,9 @@ validUniformTypes = [
     'vec4', 'vec3', 'vec2',
     'float', 'int', 'bool'
 ]
+validUniformArrayTypes = [
+    'mat4', 'vec4'
+]
 
 uniformCType = {
     'bool':         'int32',
@@ -254,12 +257,13 @@ class Uniform :
     '''
     A shader uniform definition.
     '''
-    def __init__(self, type, name, bindName, filePath, lineNumber) :
+    def __init__(self, type, num, name, bindName, filePath, lineNumber) :
         self.type = type
         self.name = name
         self.bindName = bindName
         self.filePath = filePath
         self.lineNumber = lineNumber
+        self.num = num      # >1 if array
 
     def dump(self) :
         dumpObj(self)
@@ -302,6 +306,7 @@ class UniformBlock :
         for type in self.uniformsByType :
             for uniform in self.uniformsByType[type] :
                 hashString += type
+                hashString += str(uniform.num)
         return hash(hashString)
 
 #-------------------------------------------------------------------------------
@@ -565,19 +570,35 @@ class Parser :
         self.push(ub)
 
     #---------------------------------------------------------------------------
+    def parseUniformType(self, arg) :
+        return arg.split('[')[0]
+
+    #---------------------------------------------------------------------------
+    def parseUniformArraySize(self, arg) :
+        tokens = arg.split('[')
+        if len(tokens) > 1 :
+            return int(tokens[1].strip(']'))
+        else : 
+            return 1
+
+    #---------------------------------------------------------------------------
     def onUniform(self, args) :
         if not self.current or self.current.getTag() != 'uniform_block' :
             util.fmtError("@uniform must come after @uniform_block tag!")
         if len(args) != 3:
             util.fmtError("@uniform must have 3 args (type name binding)")
-        type = args[0]
+        type = self.parseUniformType(args[0])
+        num  = self.parseUniformArraySize(args[0])
         name = args[1]
         bind = args[2]
         if type not in validUniformTypes :
             util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+        # additional type restrictions for uniform array types (because of alignment rules)
+        if num > 1 and type not in validUniformArrayTypes :
+            util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
         if checkListDup(name, self.current.uniforms) :
             util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
-        uniform = Uniform(type, name, bind, self.fileName, self.lineNumber)
+        uniform = Uniform(type, num, name, bind, self.fileName, self.lineNumber)
         self.current.uniforms.append(uniform)
         self.current.uniformsByType[type].append(uniform)
 
@@ -856,7 +877,12 @@ class GLSLGenerator :
         for ub in shd.uniformBlocks :
             for type in ub.uniformsByType :
                 for uniform in ub.uniformsByType[type] :
-                    lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                    if uniform.num == 1 :
+                        lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
+                            uniform.filePath, uniform.lineNumber))
+                    else :
+                        lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                            uniform.filePath, uniform.lineNumber))
         for tb in shd.textureBlocks :
             for tex in tb.textures :
                 lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
@@ -1004,7 +1030,12 @@ class HLSLGenerator :
             lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
-                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                    if uniform.num == 1 :
+                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
+                            uniform.filePath, uniform.lineNumber))
+                    else :
+                        lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                            uniform.filePath, uniform.lineNumber))
                     # pad vec3's to 16 bytes
                     if type == 'vec3' :
                         lines.append(Line('  float _pad_{};'.format(uniform.name)))
@@ -1127,7 +1158,12 @@ class MetalGenerator :
             lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
             for type in uBlock.uniformsByType :
                 for uniform in uBlock.uniformsByType[type] :
-                    lines.append(Line('  {} {};'.format(uniform.type, uniform.name), uniform.filePath, uniform.lineNumber))
+                    if uniform.num == 1 :
+                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
+                            uniform.filePath, uniform.lineNumber))
+                    else :
+                        lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                            uniform.filePath, uniform.lineNumber))
                     uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
             lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
         return lines, uniformDefs
@@ -1622,7 +1658,10 @@ def writeBundleHeader(f, shdLib, bundle) :
         f.write('            static const int64 _layoutHash = {};\n'.format(ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
-                f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
+                if uniform.num == 1 :
+                    f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
+                else :
+                    f.write('            {} {}[{}];\n'.format(uniformCType[uniform.type], uniform.bindName, uniform.num))
                 # for vec3's we need to add a padding field, FIXME: would be good
                 # to try filling the padding fields with float params!
                 if type == 'vec3' :
@@ -1797,7 +1836,10 @@ def writeBundleSource(f, shdLib, bundle) :
         f.write('    {}.TypeHash = {};\n'.format(layoutName, ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
-                f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+                if uniform.num == 1 :
+                    f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
+                else :
+                    f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type], uniform.num))
         f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
             ub.name, layoutName, ub.bindName, ub.bindName))
 

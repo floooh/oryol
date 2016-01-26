@@ -1076,6 +1076,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
             switch (comp.Type) {
                 case UniformType::Float:
                     {
+                        o_assert_dbg(1 == comp.Num);
                         const float32 val = *(const float32*)valuePtr;
                         ::glUniform1f(glLoc, val);
                     }
@@ -1083,6 +1084,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
                 case UniformType::Vec2:
                     {
+                        o_assert_dbg(1 == comp.Num);
                         const glm::vec2& val = *(const glm::vec2*) valuePtr;
                         ::glUniform2f(glLoc, val.x, val.y);
                     }
@@ -1090,6 +1092,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
                 case UniformType::Vec3:
                     {
+                        o_assert_dbg(1 == comp.Num);
                         const glm::vec3& val = *(const glm::vec3*)valuePtr;
                         ::glUniform3f(glLoc, val.x, val.y, val.z);
                     }
@@ -1098,12 +1101,18 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
                 case UniformType::Vec4:
                     {
                         const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                        ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                        if (comp.Num > 1) {
+                            ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
+                        }
+                        else {
+                            ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                        }
                     }
                     break;
 
                 case UniformType::Mat2:
                     {
+                        o_assert_dbg(1 == comp.Num);
                         const glm::mat2& val = *(const glm::mat2*)valuePtr;
                         ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
                     }
@@ -1111,6 +1120,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
                 case UniformType::Mat3:
                     {
+                        o_assert_dbg(1 == comp.Num);
                         const glm::mat3& val = *(const glm::mat3*)valuePtr;
                         ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
                     }
@@ -1119,7 +1129,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
                 case UniformType::Mat4:
                     {
                         const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                        ::glUniformMatrix4fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                        ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
                     }
                     break;
 

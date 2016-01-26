@@ -24,6 +24,8 @@ public:
         Component();
         /// construct from name, type and number
         Component(const StringAtom& name, UniformType::Code type);
+        /// construct from name, type and number of array entries
+        Component(const StringAtom& name, UniformType::Code type, int32 num);
 
         /// return true if the component is valid
         bool IsValid() const;
@@ -32,6 +34,7 @@ public:
 
         StringAtom Name;        ///< the uniform binding name
         UniformType::Code Type; ///< data type of the uniform
+        int32 Num;              ///< >1 if a uniform array
     };
 
     /// constructor
@@ -47,8 +50,10 @@ public:
 
     /// add a uniform component to the layout
     UniformBlockLayout& Add(const Component& comp);
-    /// add a uniform component to the layout
+    /// add a scalar uniform component to the layout
     UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type);
+    /// add an array uniform component to the layout
+    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int32 numElements);
     /// get number of components in the layout
     int32 NumComponents() const;
     /// get component at index
@@ -68,7 +73,8 @@ private:
 //------------------------------------------------------------------------------
 inline
 UniformBlockLayout::Component::Component() :
-Type(UniformType::InvalidUniformType) {
+Type(UniformType::InvalidUniformType),
+Num(1) {
     // empty
 }
 
@@ -76,7 +82,18 @@ Type(UniformType::InvalidUniformType) {
 inline
 UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type) :
 Name(name),
-Type(type) {
+Type(type),
+Num(1) {
+    o_assert_dbg(this->Name.IsValid());
+    o_assert_dbg(this->Type < UniformType::NumUniformTypes);
+}
+
+//------------------------------------------------------------------------------
+inline
+UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int32 num) :
+Name(name),
+Type(type),
+Num(num) {
     o_assert_dbg(this->Name.IsValid());
     o_assert_dbg(this->Type < UniformType::NumUniformTypes);
 }
@@ -90,7 +107,7 @@ UniformBlockLayout::Component::IsValid() const {
 //------------------------------------------------------------------------------
 inline int32
 UniformBlockLayout::Component::ByteSize() const {
-    return UniformType::ByteSize(this->Type);
+    return UniformType::ByteSize(this->Type, this->Num);
 }
 
 //------------------------------------------------------------------------------

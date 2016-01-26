@@ -836,19 +836,19 @@ public:
     };
 
     /// get the byte size of a uniform type, see GL std140 layout spec for details
-    static int32 ByteSize(Code c) {
+    static int32 ByteSize(Code c, int32 numElements) {
         switch (c) {
-            case Float:     return sizeof(float32);
-            case Vec2:      return 2 * sizeof(float32);
-            case Vec3:      return 4 * sizeof(float32); // NOT A BUG
-            case Vec4:      return 4 * sizeof(float32);
-            case Mat2:      return 2 * 2 * sizeof(float32);
-            case Mat3:      return 3 * 3 * sizeof(float32); // FIXME!
-            case Mat4:      return 4 * 4 * sizeof(float32);
-            case Int:       return sizeof(int32);
-            case Bool:      return sizeof(int32);
+            case Float:     return numElements * sizeof(float32);
+            case Vec2:      return numElements * 2 * sizeof(float32);
+            case Vec3:      return numElements * 4 * sizeof(float32); // NOT A BUG
+            case Vec4:      return numElements * 4 * sizeof(float32);
+            case Mat2:      return numElements * 2 * 2 * sizeof(float32);
+            case Mat3:      return numElements * 3 * 3 * sizeof(float32); // FIXME!
+            case Mat4:      return numElements * 4 * 4 * sizeof(float32);
+            case Int:       return numElements * sizeof(int32);
+            case Bool:      return numElements * sizeof(int32);
             default:
-                o_error("invalid uniform type code!\n");
+                o_error("invalid scalar uniform type code!\n");
                 return 0;
         }
     };
