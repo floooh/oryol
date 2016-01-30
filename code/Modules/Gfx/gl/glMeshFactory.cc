@@ -207,18 +207,19 @@ ResourceState::Code
 glMeshFactory::createEmptyMesh(mesh& mesh) {
     o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
     o_assert_dbg(0 == mesh.buffers[mesh::ib].glBuffers[0]);
-    o_assert_dbg(0 < mesh.Setup.NumVertices);
-    
+
     this->setupAttrs(mesh);
     this->setupPrimGroups(mesh);
     const auto& vbAttrs = mesh.vertexBufferAttrs;
     const auto& ibAttrs = mesh.indexBufferAttrs;
 
     // create vertex buffer(s)
-    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-    mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
-    for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
-        mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
+    if (mesh.Setup.NumVertices > 0) {
+        const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+        mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+        for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
+            mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
+        }
     }
 
     // create optional index buffer(s)
@@ -250,16 +251,18 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int32 size) {
     const uint8* ptr = (const uint8*)data;
 
     // create vertex buffer(s)
-    const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-    mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
-    const uint8* vertices = nullptr;
-    if (InvalidIndex != mesh.Setup.DataVertexOffset) {
-        vertices = ptr + mesh.Setup.DataVertexOffset;
-        o_assert_dbg((ptr + size) >= (vertices + vbSize));
-    }
-    for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
-        mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
-        o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[slotIndex]);
+    if (mesh.Setup.NumVertices > 0) {
+        const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+        mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
+        const uint8* vertices = nullptr;
+        if (InvalidIndex != mesh.Setup.DataVertexOffset) {
+            vertices = ptr + mesh.Setup.DataVertexOffset;
+            o_assert_dbg((ptr + size) >= (vertices + vbSize));
+        }
+        for (uint8 slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
+            mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
+            o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[slotIndex]);
+        }
     }
 
     // create optional index buffer(s)
