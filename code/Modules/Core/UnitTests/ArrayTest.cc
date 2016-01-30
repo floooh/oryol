@@ -305,5 +305,28 @@ TEST(ArrayTest) {
     CHECK(array5[0].Value() == "Bla");
     CHECK(array5[1].Key() == 2);
     CHECK(array5[1].Value() == String("Blub"));
+
+    // pop back and front
+    Array<int> popArray;
+    for (int i = 0; i < 10; i++) {
+        popArray.Add(i);
+    }
+    CHECK(popArray.Size() == 10);
+
+    CHECK(popArray.PopBack() == 9);
+    CHECK(popArray.Size() == 9);
+    CHECK(popArray.Back() == 8);
+
+    CHECK(popArray.PopFront() == 0);
+    CHECK(popArray.Size() == 8);
+    CHECK(popArray.Front() == 1);
+
+    CHECK(popArray.PopBack() == 8);
+    CHECK(popArray.Size() == 7);
+    CHECK(popArray.Back() == 7);
+
+    CHECK(popArray.PopFront() == 1);
+    CHECK(popArray.Size() == 6);
+    CHECK(popArray.Front() == 2);
 }
 

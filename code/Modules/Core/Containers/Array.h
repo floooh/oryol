@@ -100,7 +100,11 @@ public:
     void Insert(int32 index, const TYPE& elm);
     /// move-insert element at index, keep array order
     void Insert(int32 index, TYPE&& elm);
-    
+
+    /// pop the last element
+    TYPE PopBack();
+    /// pop the first element
+    TYPE PopFront();
     /// erase element at index, keep element ordering
     void Erase(int32 index);
     /// erase element at index, swap-in front or back element (destroys element ordering)
@@ -342,6 +346,18 @@ Array<TYPE>::Add(ARGS&&... args) {
         this->grow();
     }
     this->buffer.emplaceBack(std::forward<ARGS>(args)...);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE
+Array<TYPE>::PopBack() {
+    return this->buffer.popBack();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE
+Array<TYPE>::PopFront() {
+    return this->buffer.popFront();
 }
 
 //------------------------------------------------------------------------------
