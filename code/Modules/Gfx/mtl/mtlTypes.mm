@@ -145,11 +145,9 @@ mtlTypes::asBufferResourceOptions(Usage::Code usage) {
         case Usage::Immutable:  return MTLResourceStorageModeShared;
         // FIXME: are these the right dynamic access flags?
         #if ORYOL_MACOS
-        case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined | MTLResourceStorageModeManaged;
         #else
-        case Usage::Static:     return MTLResourceCPUCacheModeWriteCombined;
         case Usage::Dynamic:    return MTLResourceCPUCacheModeWriteCombined;
         case Usage::Stream:     return MTLResourceCPUCacheModeWriteCombined;
         #endif

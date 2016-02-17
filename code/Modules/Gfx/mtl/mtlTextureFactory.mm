@@ -289,7 +289,7 @@ mtlTextureFactory::createEmptyTexture(texture& tex) {
     o_assert_dbg(!PixelFormat::IsCompressedFormat(setup.ColorFormat));
 
     // create one or two texture objects
-    tex.numSlots = Usage::Stream == setup.TextureUsage ? 2 : 1;
+    tex.numSlots = Usage::Immutable == setup.TextureUsage ? 1 : 2;
 
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = mtlTypes::asTextureType(setup.Type);

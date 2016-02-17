@@ -59,7 +59,6 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     // create global rotated uniform buffers
     for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
-        // FIXME: is options:0 right? this is used by the Xcode game sample
         this->uniformBuffers[i] = [this->mtlDevice
             newBufferWithLength:setup.GlobalUniformBufferSize
             options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
@@ -361,8 +360,8 @@ mtlRenderer::applyDrawState(drawState* ds) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         if (msh) {
+            // note: vb.mtlBuffers[vb.activeSlot] can be nil!
             const auto& vb = msh->buffers[mesh::vb];
-            o_assert_dbg(nil != vb.mtlBuffers[vb.activeSlot]);
             [this->curCommandEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
         }
         else {
@@ -556,7 +555,7 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
     auto& vb = msh->buffers[mesh::vb];
     meshBufferRotateActiveSlot(vb, this->frameIndex);
@@ -576,7 +575,7 @@ mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
 
     auto& ib = msh->buffers[mesh::ib];
     meshBufferRotateActiveSlot(ib, this->frameIndex);
