@@ -60,8 +60,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     int d3d11IASlotIndex = 0;
     for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
         const mesh* msh = ds.meshes[mshIndex];
-        if (msh) {
-            o_assert_dbg(msh->d3d11VertexBuffer);
+        if (msh && msh->d3d11VertexBuffer) {
             ds.d3d11IAVertexBuffers[d3d11IASlotIndex] = msh->d3d11VertexBuffer;
             ds.d3d11IAStrides[d3d11IASlotIndex] = msh->vertexBufferAttrs.Layout.ByteSize();
             ds.d3d11IAOffsets[d3d11IASlotIndex] = 0;
@@ -187,7 +186,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
         int d3d11IASlotIndex = 0;
         for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
             const mesh* msh = ds.meshes[mshIndex];
-            if (msh) {
+            if (msh && !msh->vertexBufferAttrs.Layout.Empty()) {
                 const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
                 for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
                     const auto& comp = layout.ComponentAt(compIndex);

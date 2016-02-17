@@ -534,7 +534,7 @@ d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(numBytes > 0);
 
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
     o_assert2(msh->vbUpdateFrameIndex != this->frameIndex, "Only one data update allowed per buffer and frame!\n");
     msh->vbUpdateFrameIndex = this->frameIndex;
@@ -555,7 +555,7 @@ d3d11Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
     o_assert_dbg(numBytes > 0);
 
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
-    o_assert_dbg(Usage::Stream == msh->indexBufferAttrs.BufferUsage);
+    o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
 
     o_assert2(msh->ibUpdateFrameIndex != this->frameIndex, "Only one data update allowed per buffer and frame!\n");
     msh->ibUpdateFrameIndex = this->frameIndex;
