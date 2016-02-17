@@ -64,7 +64,6 @@ D3D11_USAGE
 d3d11Types::asResourceUsage(Usage::Code usage) {
     switch (usage) {
         case Usage::Immutable:  return D3D11_USAGE_IMMUTABLE;
-        case Usage::Static:     return D3D11_USAGE_DEFAULT;
         case Usage::Dynamic:    return D3D11_USAGE_DYNAMIC;
         case Usage::Stream:     return D3D11_USAGE_DYNAMIC;
         default:
@@ -78,7 +77,6 @@ uint32
 d3d11Types::asResourceCPUAccessFlag(Usage::Code usage) {
     switch (usage) {
         case Usage::Immutable:  return 0;
-        case Usage::Static:     return D3D11_CPU_ACCESS_WRITE;
         case Usage::Dynamic:    return D3D11_CPU_ACCESS_WRITE;
         case Usage::Stream:     return D3D11_CPU_ACCESS_WRITE;
         default:
