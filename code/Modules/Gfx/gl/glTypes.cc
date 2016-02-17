@@ -297,7 +297,6 @@ GLenum
 glTypes::asGLBufferUsage(Usage::Code c) {
     switch (c) {
         case Usage::Immutable:  return GL_STATIC_DRAW;
-        case Usage::Static:     return GL_STATIC_DRAW;
         case Usage::Dynamic:    return GL_DYNAMIC_DRAW;
         case Usage::Stream:     return GL_STREAM_DRAW;
         default:

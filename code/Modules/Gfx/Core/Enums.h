@@ -502,17 +502,15 @@ public:
     @ingroup Gfx
     @brief graphics resource usage types
 
-    FIXME: need to clean these up: 
-        - Immutable:    required initialization data
-        - Dynamic:      need better name, only updated once or infrequently
-        - Stream:       changed every frame
+    - Immutable:    requires initialization data
+    - Dynamic:      update infrequently
+    - Stream:       changed every frame
 */
 class Usage {
 public:
     /// usage enum
     enum Code {
         Immutable = 0,
-        Static,
         Dynamic,
         Stream,
 
