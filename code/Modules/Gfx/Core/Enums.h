@@ -588,6 +588,10 @@ public:
     @ingroup Gfx
     @brief vertex component formats
     @see VertexLayout
+    
+    NOTE: The un-normalized integer formats are not compatible across
+    GLES2 and D3D11! GLES2 needs to read those as float vec, but D3D11 
+    can only read them as int vec!
 */
 class VertexFormat {
 public:
