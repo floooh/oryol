@@ -13,7 +13,6 @@ namespace _priv {
 DXGI_FORMAT
 d3d12Types::asSwapChainFormat(PixelFormat::Code pixelFormat) {
     switch (pixelFormat) {
-        case PixelFormat::RGB8:
         case PixelFormat::RGBA8:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
         default:
@@ -26,18 +25,15 @@ d3d12Types::asSwapChainFormat(PixelFormat::Code pixelFormat) {
 DXGI_FORMAT
 d3d12Types::asRenderTargetFormat(PixelFormat::Code pf) {
     switch (pf) {
-        case PixelFormat::RGB8:
         case PixelFormat::RGBA8:    
             return DXGI_FORMAT_R8G8B8A8_UNORM;
         case PixelFormat::RGBA32F:  
             return DXGI_FORMAT_R32G32B32A32_FLOAT;
         case PixelFormat::RGBA16F:  
             return DXGI_FORMAT_R16G16B16A16_FLOAT;
-        case PixelFormat::D16:      
+        case PixelFormat::DEPTH:      
             return DXGI_FORMAT_D16_UNORM;
-        case PixelFormat::D32:      
-            return DXGI_FORMAT_D32_FLOAT;
-        case PixelFormat::D24S8:    
+        case PixelFormat::DEPTHSTENCIL:    
             return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default:
             o_error("d3d12Types::asRenderTargetFormat(): invalid pixel format!\n");
@@ -49,19 +45,18 @@ d3d12Types::asRenderTargetFormat(PixelFormat::Code pf) {
 DXGI_FORMAT
 d3d12Types::asTextureFormat(PixelFormat::Code pf) {
     switch (pf) {
-    case PixelFormat::RGBA8:    return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case PixelFormat::RGBA4:    return DXGI_FORMAT_B4G4R4A4_UNORM;
-    case PixelFormat::R5G6B5:   return DXGI_FORMAT_B5G6R5_UNORM;
-    case PixelFormat::R5G5B5A1: return DXGI_FORMAT_B5G5R5A1_UNORM;
-    case PixelFormat::RGBA32F:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    case PixelFormat::RGBA16F:  return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case PixelFormat::L8:       return DXGI_FORMAT_R8_UNORM;
-    case PixelFormat::DXT1:     return DXGI_FORMAT_BC1_UNORM;
-    case PixelFormat::DXT3:     return DXGI_FORMAT_BC2_UNORM;
-    case PixelFormat::DXT5:     return DXGI_FORMAT_BC3_UNORM;
-    case PixelFormat::D16:      return DXGI_FORMAT_D16_UNORM;
-    case PixelFormat::D32:      return DXGI_FORMAT_D32_FLOAT;   // FIXME???
-    case PixelFormat::D24S8:    return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    case PixelFormat::RGBA8:        return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case PixelFormat::RGBA4:        return DXGI_FORMAT_B4G4R4A4_UNORM;
+    case PixelFormat::R5G6B5:       return DXGI_FORMAT_B5G6R5_UNORM;
+    case PixelFormat::R5G5B5A1:     return DXGI_FORMAT_B5G5R5A1_UNORM;
+    case PixelFormat::RGBA32F:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case PixelFormat::RGBA16F:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case PixelFormat::L8:           return DXGI_FORMAT_R8_UNORM;
+    case PixelFormat::DXT1:         return DXGI_FORMAT_BC1_UNORM;
+    case PixelFormat::DXT3:         return DXGI_FORMAT_BC2_UNORM;
+    case PixelFormat::DXT5:         return DXGI_FORMAT_BC3_UNORM;
+    case PixelFormat::DEPTH:        return DXGI_FORMAT_D16_UNORM;
+    case PixelFormat::DEPTHSTENCIL: return DXGI_FORMAT_D24_UNORM_S8_UINT;
     default:
         return DXGI_FORMAT_UNKNOWN;
     }
