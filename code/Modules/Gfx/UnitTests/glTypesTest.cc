@@ -21,12 +21,11 @@ TEST(glTypesTest) {
     CHECK(glTypes::asGLTexImageFormat(PixelFormat::RGBA4) == GL_RGBA);
     CHECK(glTypes::asGLTexImageFormat(PixelFormat::RGBA32F) == GL_RGBA);
     CHECK(glTypes::asGLTexImageFormat(PixelFormat::RGBA16F) == GL_RGBA);
-    CHECK(glTypes::asGLTexImageFormat(PixelFormat::D16) == GL_DEPTH_COMPONENT);
-    CHECK(glTypes::asGLTexImageFormat(PixelFormat::D32) == GL_DEPTH_COMPONENT);
+    CHECK(glTypes::asGLTexImageFormat(PixelFormat::DEPTH) == GL_DEPTH_COMPONENT);
     #if ORYOL_OPENGLES2
-    CHECK(glTypes::asGLTexImageFormat(PixelFormat::D24S8) == GL_DEPTH_STENCIL_OES);
+    CHECK(glTypes::asGLTexImageFormat(PixelFormat::DEPTHSTENCIL) == GL_DEPTH_STENCIL_OES);
     #else
-    CHECK(glTypes::asGLTexImageFormat(PixelFormat::D24S8) == GL_DEPTH_STENCIL);
+    CHECK(glTypes::asGLTexImageFormat(PixelFormat::DEPTHSTENCIL) == GL_DEPTH_STENCIL);
     #endif
     
     // glTexImage type
@@ -36,14 +35,13 @@ TEST(glTypesTest) {
     CHECK(glTypes::asGLTexImageType(PixelFormat::R5G6B5) == GL_UNSIGNED_SHORT_5_6_5);
     CHECK(glTypes::asGLTexImageType(PixelFormat::R5G5B5A1) == GL_UNSIGNED_SHORT_5_5_5_1);
     CHECK(glTypes::asGLTexImageType(PixelFormat::RGBA4) == GL_UNSIGNED_SHORT_4_4_4_4);
-    CHECK(glTypes::asGLTexImageType(PixelFormat::D16) == GL_UNSIGNED_SHORT);
-    CHECK(glTypes::asGLTexImageType(PixelFormat::D32) == GL_UNSIGNED_INT);
+    CHECK(glTypes::asGLTexImageType(PixelFormat::DEPTH) == GL_UNSIGNED_SHORT);
     CHECK(glTypes::asGLTexImageType(PixelFormat::RGBA32F) == GL_FLOAT);
     #if ORYOL_OPENGLES2
     CHECK(glTypes::asGLTexImageType(PixelFormat::RGBA16F) == GL_HALF_FLOAT_OES);
-    CHECK(glTypes::asGLTexImageType(PixelFormat::D24S8) == GL_UNSIGNED_INT_24_8_OES);
+    CHECK(glTypes::asGLTexImageType(PixelFormat::DEPTHSTENCIL) == GL_UNSIGNED_INT_24_8_OES);
     #else
     CHECK(glTypes::asGLTexImageType(PixelFormat::RGBA16F) == GL_HALF_FLOAT);
-    CHECK(glTypes::asGLTexImageType(PixelFormat::D24S8) == GL_UNSIGNED_INT_24_8);
+    CHECK(glTypes::asGLTexImageType(PixelFormat::DEPTHSTENCIL) == GL_UNSIGNED_INT_24_8);
     #endif
 }

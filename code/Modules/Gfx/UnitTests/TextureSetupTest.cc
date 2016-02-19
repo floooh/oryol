@@ -35,7 +35,7 @@ TEST(TextureSetupTest) {
     // setup as absolute-size render target, with depth buffer
     auto rt0 = TextureSetup::RenderTarget(320, 256);
     rt0.ColorFormat = PixelFormat::RGBA8;
-    rt0.DepthFormat = PixelFormat::D24S8;
+    rt0.DepthFormat = PixelFormat::DEPTHSTENCIL;
     CHECK(!rt0.ShouldSetupFromFile());
     CHECK(!rt0.ShouldSetupFromPixelData());
     CHECK(rt0.ShouldSetupAsRenderTarget());
@@ -48,7 +48,7 @@ TEST(TextureSetupTest) {
     CHECK(rt0.RelWidth == 0.0f);
     CHECK(rt0.RelHeight == 0.0f);
     CHECK(rt0.ColorFormat == PixelFormat::RGBA8);
-    CHECK(rt0.DepthFormat == PixelFormat::D24S8);
+    CHECK(rt0.DepthFormat == PixelFormat::DEPTHSTENCIL);
     CHECK(!rt0.DepthRenderTarget.IsValid());
     CHECK(rt0.Sampler.WrapU == TextureWrapMode::ClampToEdge);
     CHECK(rt0.Sampler.WrapV == TextureWrapMode::ClampToEdge);
@@ -80,7 +80,7 @@ TEST(TextureSetupTest) {
     // setup as relative-size render target, with depth buffer
     auto rt2 = TextureSetup::RelSizeRenderTarget(0.5f, 0.25f);
     rt2.ColorFormat = PixelFormat::RGBA4;
-    rt2.DepthFormat = PixelFormat::D16;
+    rt2.DepthFormat = PixelFormat::DEPTH;
     CHECK(!rt2.ShouldSetupFromFile());
     CHECK(!rt2.ShouldSetupFromPixelData());
     CHECK(rt2.ShouldSetupAsRenderTarget());
@@ -93,7 +93,7 @@ TEST(TextureSetupTest) {
     CHECK(rt2.RelWidth == 0.5f);
     CHECK(rt2.RelHeight == 0.25f);
     CHECK(rt2.ColorFormat == PixelFormat::RGBA4);
-    CHECK(rt2.DepthFormat == PixelFormat::D16);
+    CHECK(rt2.DepthFormat == PixelFormat::DEPTH);
     CHECK(!rt2.DepthRenderTarget.IsValid());
     CHECK(rt2.Sampler.WrapU == TextureWrapMode::ClampToEdge);
     CHECK(rt2.Sampler.WrapV == TextureWrapMode::ClampToEdge);

@@ -16,8 +16,8 @@ TEST(RenderSetupTest) {
     
     CHECK(Gfx::GfxSetup().Width == 400);
     CHECK(Gfx::GfxSetup().Height == 300);
-    CHECK(Gfx::GfxSetup().ColorFormat == PixelFormat::RGB8);
-    CHECK(Gfx::GfxSetup().DepthFormat == PixelFormat::D24S8);
+    CHECK(Gfx::GfxSetup().ColorFormat == PixelFormat::RGBA8);
+    CHECK(Gfx::GfxSetup().DepthFormat == PixelFormat::DEPTHSTENCIL);
     CHECK(Gfx::GfxSetup().Title == "Oryol Test");
     CHECK(Gfx::GfxSetup().Windowed == true);
     
@@ -27,8 +27,8 @@ TEST(RenderSetupTest) {
     CHECK(Gfx::DisplayAttrs().WindowPosY >= 0);
     CHECK(Gfx::DisplayAttrs().FramebufferWidth >= 400);
     CHECK(Gfx::DisplayAttrs().FramebufferHeight >= 300);
-    CHECK(Gfx::DisplayAttrs().ColorPixelFormat == PixelFormat::RGB8);
-    CHECK(Gfx::DisplayAttrs().DepthPixelFormat == PixelFormat::D24S8);
+    CHECK(Gfx::DisplayAttrs().ColorPixelFormat == PixelFormat::RGBA8);
+    CHECK(Gfx::DisplayAttrs().DepthPixelFormat == PixelFormat::DEPTHSTENCIL);
     CHECK(Gfx::DisplayAttrs().SwapInterval == 1);
     CHECK(Gfx::DisplayAttrs().WindowTitle == "Oryol Test");
     CHECK(Gfx::DisplayAttrs().Windowed == true);

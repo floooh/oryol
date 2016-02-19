@@ -64,7 +64,7 @@ TEST(RenderTargetCreationTest) {
     // create a render target with depth buffer
     auto rtSetup = TextureSetup::RenderTarget(640, 480);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::D24S8;
+    rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     texture tex1;
     tex1.Setup = rtSetup;
     factory.SetupResource(tex1);
@@ -75,7 +75,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.Locator == Locator::NonShared());
     CHECK(attrs1.Type == TextureType::Texture2D);
     CHECK(attrs1.ColorFormat == PixelFormat::RGBA8);
-    CHECK(attrs1.DepthFormat == PixelFormat::D24S8);
+    CHECK(attrs1.DepthFormat == PixelFormat::DEPTHSTENCIL);
     CHECK(attrs1.TextureUsage == Usage::Immutable);
     CHECK(attrs1.Width == 640);
     CHECK(attrs1.Height == 480);
@@ -88,7 +88,7 @@ TEST(RenderTargetCreationTest) {
     // create relative-size render target with depth buffer
     rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::D16;
+    rtSetup.DepthFormat = PixelFormat::DEPTH;
     texture tex2;
     tex2.Setup = rtSetup;
     factory.SetupResource(tex2);
@@ -99,7 +99,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs2.Locator == Locator::NonShared());
     CHECK(attrs2.Type == TextureType::Texture2D);
     CHECK(attrs2.ColorFormat == PixelFormat::RGBA8);
-    CHECK(attrs2.DepthFormat == PixelFormat::D16);
+    CHECK(attrs2.DepthFormat == PixelFormat::DEPTH);
     CHECK(attrs2.TextureUsage == Usage::Immutable);
     CHECK(attrs2.Width == 400);
     CHECK(attrs2.Height == 300);
