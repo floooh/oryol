@@ -22,13 +22,13 @@ namespace Oryol {
     
 class GfxSetup {
 public:
-    /// shortcut for windowed mode (with RGB8, 24+8 stencil/depth, no MSAA)
+    /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
     static GfxSetup Window(int32 width, int32 height, String windowTitle);
-    /// shortcut for fullscreen mode (with RGB8, 24+8 stencil/depth, no MSAA)
+    /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
     static GfxSetup Fullscreen(int32 width, int32 height, String windowTitle);
-    /// shortcut for windowed mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+    /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
     static GfxSetup WindowMSAA4(int32 width, int32 height, String windowTitle);
-    /// shortcut for fullscreen mode with 4xMSAA (with RGB8, 24+8 stencil/depth)
+    /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
     static GfxSetup FullscreenMSAA4(int32 width, int32 height, String windowTitle);
     
     /// canvas width
@@ -36,9 +36,9 @@ public:
     /// canvas height
     int32 Height = 400;
     /// color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGB8;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
     /// depth pixel format
-    PixelFormat::Code DepthFormat = PixelFormat::D24S8;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     /// MSAA samples (2, 4, 8... no MSAA: 1)
     int32 SampleCount = 1;
     /// windowed vs Fullscreen

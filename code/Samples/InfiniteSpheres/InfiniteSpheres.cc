@@ -81,7 +81,7 @@ InfiniteSpheresApp::OnInit() {
     // create 2 ping-pong offscreen render targets
     auto rtSetup = TextureSetup::RenderTarget(512, 512);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::D16;
+    rtSetup.DepthFormat = PixelFormat::DEPTH;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;

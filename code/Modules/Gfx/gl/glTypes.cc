@@ -31,11 +31,10 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
                 return GL_RED;
             #endif
             
-        case PixelFormat::D16:
-        case PixelFormat::D32:
+        case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT;
             
-        case PixelFormat::D24S8:
+        case PixelFormat::DEPTHSTENCIL:
             #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_DEPTH_STENCIL_OES;
             #else
@@ -89,11 +88,9 @@ glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
             return GL_RGB8;
         case PixelFormat::L8:
             return GL_R8;
-        case PixelFormat::D16:
+        case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT16;
-        case PixelFormat::D32:
-            return GL_DEPTH_COMPONENT32F;
-        case PixelFormat::D24S8:
+        case PixelFormat::DEPTHSTENCIL:
             return GL_DEPTH24_STENCIL8;
         case PixelFormat::R5G6B5:
             return GL_RGB5;
@@ -152,13 +149,10 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
         case PixelFormat::RGBA4:
             return GL_UNSIGNED_SHORT_4_4_4_4;
             
-        case PixelFormat::D16:
+        case PixelFormat::DEPTH:
             return GL_UNSIGNED_SHORT;
             
-        case PixelFormat::D32:
-            return GL_UNSIGNED_INT;
-            
-        case PixelFormat::D24S8:
+        case PixelFormat::DEPTHSTENCIL:
             #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_UNSIGNED_INT_24_8_OES;
             #else
@@ -174,30 +168,12 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
     
 //------------------------------------------------------------------------------
 GLenum
-glTypes::asGLRenderbufferFormat(PixelFormat::Code c) {
-    // NOTE: all color buffers are actually created as texture attachments,
-    // so currently this method is only used for depth formats, and
-    // once depth textures are supported will probably go away
+glTypes::asGLDepthAttachmentFormat(PixelFormat::Code c) {
+    o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(c));
     switch (c) {
-        case PixelFormat::RGBA8:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_RGBA8_OES;
-            #else
-            return GL_RGBA8;
-            #endif
-        case PixelFormat::RGB8:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_RGB8_OES;
-            #else
-            return GL_RGB8;
-            #endif
-        case PixelFormat::R5G5B5A1: 
-            return GL_RGB5_A1;
-        case PixelFormat::RGBA4:
-            return GL_RGBA4;
-        case PixelFormat::D16:      
+        case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT16;
-        case PixelFormat::D24S8:    
+        case PixelFormat::DEPTHSTENCIL:
             #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_DEPTH24_STENCIL8_OES;
             #else

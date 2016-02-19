@@ -29,9 +29,9 @@ struct DisplayAttrs {
     /// height of framebuffer associated with window
     int32 FramebufferHeight = 0;
     /// framebuffer pixel format
-    PixelFormat::Code ColorPixelFormat = PixelFormat::RGB8;
+    PixelFormat::Code ColorPixelFormat = PixelFormat::RGBA8;
     /// depth buffer pixel format (PixelFormat::None if no depth buffer)
-    PixelFormat::Code DepthPixelFormat = PixelFormat::D24S8;
+    PixelFormat::Code DepthPixelFormat = PixelFormat::DEPTHSTENCIL;
     /// number of multisample-anti-aliasing samples
     int32 SampleCount = 1;
     /// indicates windowed or fullscreen mode

@@ -111,9 +111,8 @@ public:
         DXT1,           ///< DXT1 compressed format
         DXT3,           ///< DXT3 compressed format
         DXT5,           ///< DXT5 compressed format
-        D16,            ///< 16-bit depth
-        D32,            ///< 32-bit depth
-        D24S8,          ///< 24-bit depth, 8-bit stencil
+        DEPTH,          ///< depth-only format (at least 16 bit)
+        DEPTHSTENCIL,   ///< depth-stencil format (usually D24S8)
         PVRTC2_RGB,     ///< PVRTC2 compressed format (RGB)
         PVRTC4_RGB,     ///< PVRTC4 compressed format (RGB)
         PVRTC2_RGBA,    ///< PVRTC2 compressed format (RGBA)
@@ -129,7 +128,6 @@ public:
     /// return true for valid render target color formats
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
-            case RGB8:  // note: this is not a valid rt fmt on some platforms, but is extended to RGBA8 there!
             case RGBA8:
             case RGBA32F:
             case RGBA16F:
@@ -141,9 +139,8 @@ public:
     /// return true for valid render target depth formats
     static bool IsValidRenderTargetDepthFormat(Code c) {
         switch (c) {
-            case D16:
-            case D32:
-            case D24S8:
+            case DEPTH:
+            case DEPTHSTENCIL:
                 return true;
             default:
                 return false;
@@ -152,9 +149,8 @@ public:
     /// return true for valid color texture formats
     static bool IsValidTextureColorFormat(Code c) {
         switch (c) {
-            case D16:
-            case D32:
-            case D24S8:
+            case DEPTH:
+            case DEPTHSTENCIL:
                 return false;
             default:
                 return true;
@@ -163,9 +159,8 @@ public:
     /// return true for valid depth texture formats
     static bool IsValidTextureDepthFormat(Code c) {
         switch (c) {
-            case D16:
-            case D32:
-            case D24S8:
+            case DEPTH:
+            case DEPTHSTENCIL:
                 return true;
             default:
                 return false;
@@ -173,11 +168,11 @@ public:
     }
     /// test if the pixel format is a pure depth format (not a depth/stencil format)
     static bool IsDepthFormat(Code c) {
-        return (D16 == c) || (D32 == c);
+        return DEPTH == c;
     }
     /// test if the pixel format is a depth/stencil format
     static bool IsDepthStencilFormat(Code c) {
-        return D24S8 == c;
+        return DEPTHSTENCIL == c;
     }
     /// return true if the pixel format is a compressed format
     static bool IsCompressedFormat(Code c) {
@@ -246,17 +241,17 @@ public:
                 return 2;
             case L8:
                 return 1;
-            case D16:
+            case DEPTH:
+                // NOTE: this is not true on all platform!
                 return 2;
-            case D32:
-            case D24S8:
+            case DEPTHSTENCIL:
                 return 4;
             default:
                 o_error("PixelFormat::ByteSize(): cannot get byte size for compressed format!\n");
                 return 0;
         }
     }
-    /// get number of bits in a pixel format channel (only for non-compressed formats!)
+    /// get number of bits in a pixel format channel (only for non-compressed formats and non-depth formats!)
     static int8 NumBits(Code pixelFormat, PixelChannel::Bits channel) {
         switch (pixelFormat) {
             case RGBA32F:
@@ -305,17 +300,13 @@ public:
                     return 8;
                 }
                 break;
-            case D16:
+            case DEPTH:
+                // NOTE: this is not true on all platforms!
                 if (PixelChannel::Depth == channel) {
                     return 16;
                 }
                 break;
-            case D32:
-                if (PixelChannel::Depth == channel) {
-                    return 32;
-                }
-                break;
-            case D24S8:
+            case DEPTHSTENCIL:
                 if (PixelChannel::Depth == channel) {
                     return 24;
                 }

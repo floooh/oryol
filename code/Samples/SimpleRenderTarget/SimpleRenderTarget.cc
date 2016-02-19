@@ -76,7 +76,7 @@ SimpleRenderTargetApp::OnInit() {
     // and linear blending...
     auto rtSetup = TextureSetup::RenderTarget(128, 128);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::D16;
+    rtSetup.DepthFormat = PixelFormat::DEPTH;
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
@@ -112,7 +112,7 @@ SimpleRenderTargetApp::OnInit() {
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     offdsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
-    offdsSetup.BlendState.DepthFormat = PixelFormat::D16;
+    offdsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
     this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
     auto dispdsSetup = DrawStateSetup::FromMeshAndShader(sphere, dispShader);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;

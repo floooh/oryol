@@ -203,7 +203,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
             o_assert_dbg(0 != glDepthRenderBuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
             ORYOL_GL_CHECK_ERROR();
-            GLint glDepthFormat = glTypes::asGLRenderbufferFormat(setup.DepthFormat);
+            GLint glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
             ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
             ORYOL_GL_CHECK_ERROR();
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);

@@ -224,6 +224,7 @@ debugTextRenderer::setupTextDrawState() {
     dss.BlendState.BlendEnabled = true;
     dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
     // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
     // for different render targets and quickly select them before
     // text rendering

@@ -144,7 +144,7 @@ _func float snoise(vec2 v)
 @use_texture_block fsTextures
 @in vec2 uv
     // scale back to 0..1
-    _color = tex2D(tex, uv) * 0.01;
+    _color = vec4(tex2D(tex, uv).xyz*0.01,1.0);
 @end
 
 @bundle Copy

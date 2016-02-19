@@ -43,8 +43,8 @@ public:
         this->DstFactorAlpha = BlendFactor::Zero;
         this->OpAlpha = BlendOperation::Add;
         this->ColorWriteMask = PixelChannel::RGBA;
-        this->ColorFormat = PixelFormat::RGB8;
-        this->DepthFormat = PixelFormat::D24S8;        
+        this->ColorFormat = PixelFormat::RGBA8;
+        this->DepthFormat = PixelFormat::DEPTHSTENCIL;
     };
     
     /// equality

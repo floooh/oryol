@@ -20,8 +20,8 @@ public:
     static GLenum asGLTexImageInternalFormat(PixelFormat::Code c);
     /// convert Oryol pixel format to glTexImage type
     static GLenum asGLTexImageType(PixelFormat::Code c);
-    /// convert Oryol pixel format to renderbuffer format
-    static GLenum asGLRenderbufferFormat(PixelFormat::Code c);
+    /// convert Oryol pixel format to depth attachment format
+    static GLenum asGLDepthAttachmentFormat(PixelFormat::Code c);
     /// convert Oryol index type to GL index type
     static GLenum asGLIndexType(IndexType::Code c);
     /// convert Oryol primitive type to GL primitive type

@@ -79,14 +79,14 @@ BlendTestApp::OnInit() {
     Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
     
     // setup one draw state for each blend factor combination
-    const glm::vec4 blendColor(1.0f, 1.0f, 0.0f, 1.0f);
+    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
+    dss.BlendState.BlendEnabled = true;
+    dss.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
-            dss.BlendState.BlendEnabled = true;
             dss.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
             dss.BlendState.DstFactorRGB = (BlendFactor::Code) y;
-            dss.BlendColor = blendColor;
             this->drawStates[y][x] = Gfx::CreateResource(dss);
         }
     }

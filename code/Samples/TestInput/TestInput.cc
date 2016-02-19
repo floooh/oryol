@@ -278,7 +278,7 @@ TestInputApp::printSensorState(const Sensors& sensors) const {
 //------------------------------------------------------------------------------
 glm::vec4
 TestInputApp::getClearColor(const Touchpad& touchpad) const {
-    glm::vec4 clearColor(0.25f);
+    glm::vec4 clearColor(0.25f, 0.25f, 0.25f, 1.0f);
     if (touchpad.Tapped) {
         clearColor = this->downColor;
     }

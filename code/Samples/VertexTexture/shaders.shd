@@ -151,6 +151,7 @@ _func float snoise(vec2 v)
     color = tex2Dvs(tex, texcoord0);
     vec4 pos = position;
     pos.y = color.w;
+    color.w = 1.0;
     _position = mul(mvp, pos);
 }
 @end
