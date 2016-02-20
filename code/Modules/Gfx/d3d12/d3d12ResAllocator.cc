@@ -105,34 +105,70 @@ d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size) {
+d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, D3D12_RESOURCE_STATES state, uint32 size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(size > 0);
 
-    ID3D12Resource* buffer = this->createBuffer(d3d12Device, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST, size);
+    ID3D12Resource* buffer = this->createBuffer(d3d12Device, D3D12_HEAP_TYPE_DEFAULT, state, size);
     o_dbg("> created d3d12 default buffer at %p\n", buffer);
     return buffer;
 }
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size) {
+d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, const void* data, uint32 size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(cmdList);
     o_assert_dbg(size > 0);
-
-    // create the default-heap buffer
-    ID3D12Resource* buffer = this->AllocDefaultBuffer(d3d12Device, size);
-
-    // optionally upload data
+    ID3D12Resource* buffer = this->AllocDefaultBuffer(d3d12Device, state, size);
     if (data) {
-        this->upload(d3d12Device, cmdList, frameIndex, buffer, data, size);
+        this->CopyBufferData(d3d12Device, cmdList, frameIndex, state, buffer, nullptr, data, size);
+    }
+    return buffer;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12ResAllocator::CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, uint32 size) {
+    o_assert_dbg(d3d12Device);
+    o_assert_dbg(cmdList);
+    o_assert_dbg(data && (size > 0));
+
+    // NOTE: if an upload buffer is provided, but no dst buffer, then the data is only
+    // copied into the upload buffer, but no copy-region command is aded to the cmdList.
+    // This makes sense for data that is updated per frame, and the GPU renders directly
+    // from the update buffer.
+    o_assert_dbg(dstResource || optUploadBuffer);
+
+    // transition dst buffer into copy-dest state
+    if (dstResource) {
+        this->Transition(cmdList, dstResource, state, D3D12_RESOURCE_STATE_COPY_DEST);
     }
 
-    // transition buffer state to vertex buffer usage    
-    this->Transition(cmdList, buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER|D3D12_RESOURCE_STATE_INDEX_BUFFER);
+    // create a temporary upload buffer if none is provided
+    ID3D12Resource* uploadBuffer = optUploadBuffer;
+    if (nullptr == uploadBuffer) {
+        uploadBuffer = this->AllocUploadBuffer(d3d12Device, size);
+        o_dbg("> created d3d12 upload buffer %p at frame %d\n", uploadBuffer, frameIndex);
+    }
 
-    return buffer;
+    // copy data into upload buffer
+    void* dstPtr = nullptr;
+    HRESULT hr = uploadBuffer->Map(0, nullptr, &dstPtr);
+    o_assert(SUCCEEDED(hr) && dstPtr);
+    Memory::Copy(data, dstPtr, size);
+    uploadBuffer->Unmap(0, nullptr);
+
+    // add upload command to command list and transition back to renderable state
+    if (dstResource) {
+        cmdList->CopyBufferRegion(dstResource, 0, uploadBuffer, 0, size);
+        this->Transition(cmdList, dstResource, D3D12_RESOURCE_STATE_COPY_DEST, state);
+    }
+
+    // if an upload buffer was created, release it
+    if (nullptr == optUploadBuffer) {
+        this->ReleaseDeferred(frameIndex, uploadBuffer);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -343,29 +379,6 @@ d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
     // when the GPU is done with the resource
     this->releaseQueue.Enqueue(frameIndex, res);
     o_dbg("> free d3d12 resource %p at frame %d\n", res, frameIndex);
-}
-
-//------------------------------------------------------------------------------
-void
-d3d12ResAllocator::upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size) {
-    o_assert_dbg(cmdList);
-    o_assert_dbg(dstRes);
-    o_assert_dbg(data && (size > 0));
-
-    // create a temporary upload buffer and copy data into it
-    ID3D12Resource* uploadBuffer = this->AllocUploadBuffer(d3d12Device, size);
-    o_dbg("> created d3d12 upload buffer %p at frame %d\n", uploadBuffer, frameIndex);
-    void* dstPtr = nullptr;
-    HRESULT hr = uploadBuffer->Map(0, nullptr, &dstPtr);
-    o_assert(SUCCEEDED(hr));
-    Memory::Copy(data, dstPtr, size);
-    uploadBuffer->Unmap(0, nullptr);
-
-    // add upload command to command list
-    cmdList->CopyBufferRegion(dstRes, 0, uploadBuffer, 0, size);
-
-    // add the upload buffer to the release-queue, so that it will be deleted when no longer in use
-    this->ReleaseDeferred(frameIndex, uploadBuffer);
 }
 
 } // namespace _priv

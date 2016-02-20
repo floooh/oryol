@@ -35,11 +35,13 @@ public:
     void GarbageCollect(uint64 frameIndex);
 
     /// create a d3d12 buffer with implicit default heap
-    ID3D12Resource* AllocDefaultBuffer(ID3D12Device* d3d12Device, uint32 size);
+    ID3D12Resource* AllocDefaultBuffer(ID3D12Device* d3d12Device, D3D12_RESOURCE_STATES state, uint32 size);
     /// create a d3d12 buffer with implicit upload heap
     ID3D12Resource* AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size);
     /// allocate a d3d12 buffer resource, optionally fill with data
-    ID3D12Resource* AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const void* data, uint32 size);
+    ID3D12Resource* AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, const void* data, uint32 size);
+    /// copy data into buffer, create a temp upload buffer if none is provided
+    void CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, uint32 size);
     /// allocate a render target resource
     ID3D12Resource* AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, const ClearState& clearHint, int smpCount);
     /// allocate a texture resource, optionally with data
@@ -58,8 +60,6 @@ public:
 private:
     /// internal helper method to create a d3d12 buffer resource
     ID3D12Resource* createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size);
-    /// upload method, expects that the buffer is already in COPY_DEST state
-    void upload(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, ID3D12Resource* dstRes, const void* data, uint32 size);
 
     struct freeItem {
         freeItem() : frameIndex(0), res(nullptr) { };

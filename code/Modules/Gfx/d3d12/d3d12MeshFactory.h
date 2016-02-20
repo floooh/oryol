@@ -37,16 +37,16 @@ public:
 
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
-    /// helper method to create empty mesh
-    ResourceState::Code createEmptyMesh(mesh& mesh);
-    /// create from data
-    ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
+    /// create vertex and index buffers, all 
+    ResourceState::Code create(mesh& mesh, const void* data, int32 size);
 
 private:
     /// helper method to setup mesh vertex/index buffer attributes struct
     void setupAttrs(mesh& mesh);
     /// helper method to setup mesh primitive group array
     void setupPrimGroups(mesh& mesh);
+    /// helper method to create d3d12 buffer objects for different usage scenarios
+    void createBuffers(mesh& msh, int type, Usage::Code usage, const void* data, int32 size);
 
     gfxPointers pointers;
     bool isValid;

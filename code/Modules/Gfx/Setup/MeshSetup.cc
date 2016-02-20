@@ -75,6 +75,8 @@ MeshSetup::Empty(int32 numVertices,
     setup.NumVertices = numVertices;
     setup.NumIndices = numIndices;
     setup.IndicesType = indexType;
+    setup.DataVertexOffset = InvalidIndex;
+    setup.DataIndexOffset = InvalidIndex;
     return setup;
 }
 
