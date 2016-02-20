@@ -143,7 +143,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
         PsoCacheEntry& entry = this->psoCache.ValueAtIndex(cacheIndex);
         entry.useCount++;
         ds.d3d12PipelineState = entry.d3d12PipelineState;
-        o_dbg("d3d12DrawStateFactory: re-use PSO at %p", ds.d3d12PipelineState);
+        o_dbg("d3d12DrawStateFactory: re-use PSO at %p\n", ds.d3d12PipelineState);
     }
     else {
         // create new PSO

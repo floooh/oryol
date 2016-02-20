@@ -661,15 +661,20 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     D3D12_VERTEX_BUFFER_VIEW vbViews[GfxConfig::MaxNumInputMeshes];
     D3D12_INDEX_BUFFER_VIEW ibView;
     const D3D12_INDEX_BUFFER_VIEW* ibViewPtr = nullptr;
-    bool hasIndexBuffer = false;
     for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
         const mesh* msh = ds->meshes[i];
         if (msh) {
             const mesh::buffer& vb = msh->buffers[mesh::vb];
-            o_assert_dbg(vb.d3d12RenderBuffers[vb.activeSlot]);
-            vbViews[i].BufferLocation = vb.d3d12RenderBuffers[vb.activeSlot]->GetGPUVirtualAddress();
-            vbViews[i].SizeInBytes = msh->vertexBufferAttrs.ByteSize();
-            vbViews[i].StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
+            if (vb.d3d12RenderBuffers[vb.activeSlot]) {
+                vbViews[i].BufferLocation = vb.d3d12RenderBuffers[vb.activeSlot]->GetGPUVirtualAddress();
+                vbViews[i].SizeInBytes = msh->vertexBufferAttrs.ByteSize();
+                vbViews[i].StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
+            }
+            else {
+                vbViews[i].BufferLocation = 0;
+                vbViews[i].SizeInBytes = 0;
+                vbViews[i].StrideInBytes = 0;
+            }
             if ((0 == i) && (IndexType::None != msh->indexBufferAttrs.Type)) {
                 const mesh::buffer& ib = msh->buffers[mesh::ib];
                 o_assert_dbg(ib.d3d12RenderBuffers[ib.activeSlot]);
