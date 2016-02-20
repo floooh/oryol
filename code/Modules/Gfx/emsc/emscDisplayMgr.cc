@@ -41,6 +41,9 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     ctxAttrs.stencil = 0 < PixelFormat::NumBits(renderSetup.DepthFormat, PixelChannel::Stencil);
     ctxAttrs.antialias = renderSetup.SampleCount > 1;
     ctxAttrs.premultipliedAlpha = false;
+    ctxAttrs.preserveDrawingBuffer = false;
+    Log::Info("emscDisplayMgr: alpha=%d, depth=%d, stencil=%d, antialias=%d\n", 
+        ctxAttrs.alpha, ctxAttrs.depth, ctxAttrs.stencil, ctxAttrs.antialias);
     this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
     emscripten_webgl_make_context_current(this->ctx);
