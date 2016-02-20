@@ -38,10 +38,8 @@ public:
 
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
-    /// helper method to create empty mesh
-    ResourceState::Code createEmptyMesh(mesh& mesh);
     /// create from data
-    ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code createBuffers(mesh& mesh, const void* data, int32 size);
 
 private:
     /// helper method to create vertex or index buffer
