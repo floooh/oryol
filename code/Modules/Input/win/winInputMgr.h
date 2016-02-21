@@ -26,9 +26,6 @@ public:
     /// discard the windows input manager
     void discard();
 
-    /// set mouse cursor mode
-    void setCursorMode(CursorMode::Code mode);
-
 private:
     /// setup the key mapping table
     void setupKeyTable();

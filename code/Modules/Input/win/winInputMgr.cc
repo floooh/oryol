@@ -44,7 +44,6 @@ winInputMgr::setup(const InputSetup& setup) {
     }
     this->setupKeyTable();
     this->setupCallbacks();
-    this->setCursorMode(CursorMode::Normal);
 
     // attach our reset callback to the global runloop
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
@@ -87,22 +86,6 @@ winInputMgr::discardCallbacks() {
 
 //------------------------------------------------------------------------------
 void
-winInputMgr::setCursorMode(CursorMode::Code newMode) {
-    o_assert(winDisplayMgr::self);
-    if (newMode != this->cursorMode) {
-        int winInputMode;
-        switch (newMode) {
-            case CursorMode::Normal:    winInputMode = ORYOL_WIN_CURSOR_NORMAL; break;
-            case CursorMode::Hidden:    winInputMode = ORYOL_WIN_CURSOR_HIDDEN; break;
-            default:                    winInputMode = ORYOL_WIN_CURSOR_DISABLED; break;
-        }
-        winDisplayMgr::self->setInputMode(ORYOL_WIN_CURSOR, winInputMode);
-    }
-    inputMgrBase::setCursorMode(newMode);
-}
-
-//------------------------------------------------------------------------------
-void
 winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*winMods*/) {
     if (nullptr != self) {
         Key::Code key = self->mapKey(winKey);
@@ -140,11 +123,18 @@ winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
             default:                               btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
+            Mouse::PointerLockMode lockMode = Mouse::PointerLockMode::PointerLockModeDontCare;
             if (winAction == ORYOL_WIN_PRESS) {
-                self->Mouse.onButtonDown(btn);
+                lockMode = self->Mouse.onButtonDown(btn);
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
-                self->Mouse.onButtonUp(btn);
+                lockMode = self->Mouse.onButtonUp(btn);
+            }
+            if (Mouse::PointerLockModeEnable == lockMode) {
+                winDisplayMgr::self->setInputMode(ORYOL_WIN_CURSOR, ORYOL_WIN_CURSOR_DISABLED);
+            }
+            else if (Mouse::PointerLockModeDisable == lockMode) {
+                winDisplayMgr::self->setInputMode(ORYOL_WIN_CURSOR, ORYOL_WIN_CURSOR_NORMAL);
             }
         }
     }
