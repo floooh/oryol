@@ -62,6 +62,7 @@ private:
     tb::MODIFIER_KEYS modifierKeys = tb::TB_MODIFIER_NONE;
     int mouseX = 0;
     int mouseY = 0;
+    RunLoop::Id runLoopId;
     tbOryolBatchRenderer* renderer = nullptr;
     tbOryolRootWidget rootWidget;
     Queue<glm::vec2> touchTaps;

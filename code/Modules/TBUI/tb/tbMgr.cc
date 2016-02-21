@@ -114,7 +114,7 @@ tbMgr::Setup(const TBUISetup& setup) {
     });
 
     // add per-frame update method
-    Core::PostRunLoop()->Add([this] {
+    this->runLoopId = Core::PostRunLoop()->Add([this] {
         this->update();
     });
     
@@ -127,6 +127,7 @@ tbMgr::Setup(const TBUISetup& setup) {
 void
 tbMgr::Discard() {
     o_assert_dbg(this->IsValid());
+    Core::PostRunLoop()->Remove(this->runLoopId);
     
     TBWidgetsAnimationManager::Shutdown();
 
