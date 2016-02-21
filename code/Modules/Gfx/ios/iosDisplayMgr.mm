@@ -68,12 +68,12 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
             
-        case PixelFormat::D16:
+        case PixelFormat::DEPTH:
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormat16;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
             break;
             
-        case PixelFormat::D24S8:
+        case PixelFormat::DEPTHSTENCIL:
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormat24;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormat8;
             break;
