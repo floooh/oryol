@@ -10,6 +10,7 @@
 #include "Input/Input.h"
 #include "animation/tb_widget_animation.h"
 #include "tb_font_renderer.h"
+#include "tb_language.h"
 
 void register_tbbf_font_renderer();
 
@@ -34,7 +35,8 @@ tbMgr::Setup(const TBUISetup& setup) {
     // initialize turbobadger
     this->renderer = Memory::New<tbOryolBatchRenderer>();
     this->renderer->Setup();
-	tb_core_init(this->renderer, setup.Locale.AsCStr());
+    tb_core_init(this->renderer);
+    g_tb_lng->Load(setup.Locale.AsCStr());
     
     // initialize turbobadger skin
     if (!g_tb_skin->Load(setup.DefaultSkin.AsCStr(), setup.OverrideSkin.AsCStr())) {
