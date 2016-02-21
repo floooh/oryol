@@ -6,7 +6,6 @@ fips_begin_module(Input)
     fips_files(Input.cc Input.h)
     fips_dir(Core)
     fips_files(
-        CursorMode.h
         Gamepad.cc Gamepad.h
         InputSetup.h
         Key.cc Key.h

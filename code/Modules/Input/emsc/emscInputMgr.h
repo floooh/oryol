@@ -24,9 +24,6 @@ public:
     /// discard the input manager
     void discard();
 
-    /// set mouse cursor mode
-    void setCursorMode(CursorMode::Code mode);
-
 private:
     /// setup the key mapping table
     void setupKeyTable();    
@@ -39,6 +36,8 @@ private:
     /// map HTML5 mouse button code to Oryol mouse button
     Mouse::Button mapMouseButton(unsigned short html5Btn) const;
 
+    /// update mouse pointer lock state
+    static bool updatePointerLockMode(Mouse::PointerLockMode lockMode);
     /// key down callback
     static EM_BOOL emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void* userData);
     /// key up callback
@@ -53,8 +52,6 @@ private:
     static EM_BOOL emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* userData);
     /// wheel callback
     static EM_BOOL emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData);
-    /// pointerlockchange callback
-    static EM_BOOL emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData);
     /// touch event callback (same callback for touchstart, touchmove, touchend, touchcancel)
     static EM_BOOL emscTouch(int eventType, const EmscriptenTouchEvent* e, void* userData);
     /// device motion callback
@@ -64,6 +61,7 @@ private:
 
     static const int32 MaxNumKeys = 256;
     RunLoop::Id runLoopId;
+    bool pointerLockActive;
     Key::Code keyTable[MaxNumKeys];
 };
 

@@ -24,9 +24,6 @@ public:
     /// discard the GLFW input manager
     void discard();
     
-    /// set mouse cursor mode
-    void setCursorMode(CursorMode::Code mode);
-    
 private:
     /// reset input devices
     void reset();    

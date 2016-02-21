@@ -58,10 +58,19 @@ public:
         Event(enum Type t, glm::vec2 scroll) : Type(t), ScrollMovement(scroll) { };
     };
 
+    /// mouse pointer lock mode
+    enum PointerLockMode {
+        PointerLockModeDontCare,
+        PointerLockModeEnable,
+        PointerLockModeDisable,
+    };
+
     /// unique event handler id typedef
     typedef unsigned int EventHandlerId;
     /// mouse event handler typedef
     typedef std::function<void(const Event&)> EventHandler;
+    /// mouse pointer lock handler type
+    typedef std::function<PointerLockMode(const Event&)> PointerLockHandler;
     
     /// constructor
     Mouse();
@@ -84,10 +93,14 @@ public:
     EventHandlerId subscribe(EventHandler handler);
     /// unsubscribe from mouse events
     void unsubscribe(EventHandlerId id);
+    /// set pointer-lock handler
+    void setPointerLockHandler(PointerLockHandler handler);
+    /// clear pointer-lock handler
+    void clearPointerLockHandler();
     /// call when mouse button down event happens
-    void onButtonDown(Button btn);
+    PointerLockMode onButtonDown(Button btn);
     /// call when mouse button up event happens
-    void onButtonUp(Button btn);
+    PointerLockMode onButtonUp(Button btn);
     /// called to update position and computed movement
     void onPosMov(const glm::vec2& pos);
     /// update position and explicit movement 
@@ -102,6 +115,8 @@ public:
 private:
     /// notify event handlers
     void notifyEventHandlers(const Event& event);
+    /// notify pointer-lock handler
+    PointerLockMode notifyPointerLockHandler(const Event& event);
 
     enum flags {
         btnDown = (1<<0),
@@ -112,6 +127,7 @@ private:
     uint8 buttonState[Button::NumButtons];
     EventHandlerId uniqueIdCounter;
     Map<EventHandlerId, EventHandler> eventHandlers;
+    PointerLockHandler pointerLockHandler;
 };
 
 //------------------------------------------------------------------------------

@@ -80,6 +80,7 @@ private:
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     float lightIntensity = 1.0f;
     bool lightAutoOrbit = false;
+    bool dragging = false;
 
     StringBuilder strBuilder;
 
@@ -125,6 +126,23 @@ MeshViewerApp::OnInit() {
     gfxSetup.ClearHint = this->clearState;
     Gfx::Setup(gfxSetup);
     Input::Setup();
+    Input::SetMousePointerLockHandler([this] (const Mouse::Event& event) -> Mouse::PointerLockMode {
+        if (event.Button == Mouse::LMB) {
+            if (event.Type == Mouse::Event::ButtonDown) {
+                if (!ImGui::IsMouseHoveringAnyWindow()) {
+                    this->dragging = true;
+                    return Mouse::PointerLockModeEnable;
+                }
+            }
+            else if (event.Type == Mouse::Event::ButtonUp) {
+                if (this->dragging) {
+                    this->dragging = false;
+                    return Mouse::PointerLockModeDisable;
+                }
+            }
+        }
+        return Mouse::PointerLockModeDontCare;
+    });
 
     // setup IMUI ui system
     IMUI::Setup();
@@ -200,17 +218,8 @@ MeshViewerApp::OnCleanup() {
 void
 MeshViewerApp::handleInput() {
 
-    // dragging flag on/off
-    static bool dragging = false;
-    if (ImGui::IsMouseHoveringAnyWindow() && ImGui::IsMouseDragging()) {
-        dragging = true;
-    }
-    if (!ImGui::IsMouseDragging()) {
-        dragging = false;
-    }
-
     // rotate camera with mouse if not UI-dragging
-    if (!(dragging || ImGui::IsMouseHoveringAnyWindow())) {
+    if (this->dragging) {
         const Touchpad& tpad = Input::Touchpad();
         if (tpad.Attached) {
             if (tpad.PanningStarted) {

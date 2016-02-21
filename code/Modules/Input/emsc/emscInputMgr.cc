@@ -12,7 +12,8 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() :
-runLoopId(RunLoop::InvalidId) {
+runLoopId(RunLoop::InvalidId),
+pointerLockActive(false) {
     // empty
 }
 
@@ -45,18 +46,6 @@ emscInputMgr::discard() {
 
 //------------------------------------------------------------------------------
 void
-emscInputMgr::setCursorMode(CursorMode::Code mode) {
-    if (CursorMode::Disabled == mode) {
-        emscripten_request_pointerlock(0, true);
-    }
-    else {
-        emscripten_exit_pointerlock();
-    }
-    // NOTE: base class setCursorMode will be called from the pointerlock event callback 
-}
-
-//------------------------------------------------------------------------------
-void
 emscInputMgr::setupCallbacks() {
     emscripten_set_keydown_callback(0, this, true, emscKeyDown);
     emscripten_set_keyup_callback(0, this, true, emscKeyUp);
@@ -65,7 +54,6 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_mouseup_callback("#canvas", this, true, emscMouseUp);
     emscripten_set_mousemove_callback("#canvas", this, true, emscMouseMove);
     emscripten_set_wheel_callback("#canvas", this, false, emscWheel);
-    emscripten_set_pointerlockchange_callback("#canvas", this, true, emscPointerLockChange);
     emscripten_set_touchstart_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
@@ -88,7 +76,6 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_mouseup_callback("#canvas", 0, true, 0);
     emscripten_set_mousemove_callback("#canvas", 0, true, 0);
     emscripten_set_wheel_callback("#canvas", 0, true, 0);
-    emscripten_set_pointerlockchange_callback("#canvas", this, true, 0);
     emscripten_set_touchstart_callback("#canvas", 0, true, 0);
     emscripten_set_touchend_callback("#canvas", 0, true, 0);
     emscripten_set_touchmove_callback("#canvas", 0, true, 0);
@@ -166,13 +153,27 @@ emscInputMgr::mapMouseButton(unsigned short html5Btn) const {
 }
 
 //------------------------------------------------------------------------------
+bool
+emscInputMgr::updatePointerLockMode(Mouse::PointerLockMode lockMode) {
+    if (Mouse::PointerLockModeEnable == lockMode) {
+         emscripten_request_pointerlock(0, false);
+        return true;
+    }
+    else {
+        emscripten_exit_pointerlock();
+        return false;
+    }
+}
+
+//------------------------------------------------------------------------------
 EM_BOOL
 emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
-        self->Mouse.onButtonDown(btn);
+        Mouse::PointerLockMode lockMode = self->Mouse.onButtonDown(btn);
+        self->pointerLockActive = updatePointerLockMode(lockMode);
     }
     return true;
 }
@@ -184,7 +185,8 @@ emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* us
     o_assert_dbg(self);
     const Mouse::Button btn = self->mapMouseButton(e->button);
     if (Mouse::InvalidButton != btn) {
-        self->Mouse.onButtonUp(btn);
+        Mouse::PointerLockMode lockMode = self->Mouse.onButtonUp(btn);
+        self->pointerLockActive = updatePointerLockMode(lockMode);
     }
     return true;
 }
@@ -194,9 +196,8 @@ EM_BOOL
 emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-
     // check if pointerlock is active, if yes directly obtain movement
-    if (self->getCursorMode() == CursorMode::Disabled) {
+    if (self->pointerLockActive) {
         const glm::vec2 mov((float32)e->movementX, (float32)e->movementY);
         self->Mouse.onMov(mov);
     }
@@ -214,19 +215,6 @@ emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* user
     o_assert_dbg(self);
     const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
     self->Mouse.onScroll(scroll);
-    return true;
-}
-
-//------------------------------------------------------------------------------
-EM_BOOL
-emscInputMgr::emscPointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent* e, void* userData) {
-    emscInputMgr* self = (emscInputMgr*) userData;
-    if (e->isActive) {
-        ((inputMgrBase*)self)->setCursorMode(CursorMode::Disabled);
-    }
-    else {
-        ((inputMgrBase*)self)->setCursorMode(CursorMode::Normal);
-    }
     return true;
 }
 

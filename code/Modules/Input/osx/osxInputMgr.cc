@@ -38,7 +38,6 @@ osxInputMgr::setup(const InputSetup& setup) {
     
     this->setupKeyTable();
     this->setupCallbacks();
-    this->setCursorMode(CursorMode::Normal);
     
     // attach our reset callback to the global runloop
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    

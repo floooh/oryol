@@ -48,11 +48,11 @@ public:
     static Touchpad::EventHandlerId SubscribeTouchpad(Touchpad::EventHandler handler);
     /// unsubscribe from touchpad events
     static void UnsubscribeTouchpad(Touchpad::EventHandlerId id);
+    /// set mouse pointer-lock handler, decide here when to activate/deactive pointer-lock
+    static void SetMousePointerLockHandler(Mouse::PointerLockHandler handler);
+    /// clear the mouse pointer-lock handler
+    static void ClearMousePointerLockHandler();
     
-    /// set mouse cursor mode
-    static void SetCursorMode(CursorMode::Code mode);
-    /// get current mouse cursor mode
-    static CursorMode::Code GetCursorMode();
     /// begin text capturing
     static void BeginCaptureText();
     /// end text capturing

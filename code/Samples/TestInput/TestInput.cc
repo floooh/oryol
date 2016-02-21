@@ -56,6 +56,7 @@ private:
     glm::mat4 view;
     glm::mat4 invView;
     ClearState clearState;
+    bool pointerLock = false;
 };
 OryolMain(TestInputApp);
 
@@ -70,6 +71,19 @@ TestInputApp::OnInit() {
         Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     }
     Input::Setup();
+    Input::SetMousePointerLockHandler([this](const Mouse::Event& event) -> Mouse::PointerLockMode {
+        if (event.Button == Mouse::LMB) {
+            if (event.Type == Mouse::Event::ButtonDown) {
+                this->pointerLock = true;
+                return Mouse::PointerLockModeEnable;
+            }
+            else if (event.Type == Mouse::Event::ButtonUp) {
+                this->pointerLock = false;
+                return Mouse::PointerLockModeDisable;
+            }
+        }
+        return Mouse::PointerLockModeDontCare;
+    });
     
     // create a 3D cube
     ShapeBuilder shapeBuilder;
@@ -147,7 +161,9 @@ TestInputApp::printMouseState(const Mouse& mouse) const {
         this->testMouseButton(mouse, Mouse::LMB, "LMB");
         this->testMouseButton(mouse, Mouse::MMB, "MMB");
         this->testMouseButton(mouse, Mouse::RMB, "RMB");
-        
+        Dbg::TextColor(this->pointerLock ? this->pressedColor : this->defaultColor);
+        Dbg::PrintF(" POINTERLOCK");
+
         Dbg::TextColor(glm::vec4(1.0f));
         Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
                     mouse.Position.x, mouse.Position.y,
@@ -167,12 +183,6 @@ TestInputApp::printKeyboardState(const Keyboard& kbd) const {
         Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
         Dbg::Print("\n\n\r KEYBOARD STATUS (Enter to capture text):\n\n\r");
         if (kbd.KeyDown(Key::Enter)) {
-            if (CursorMode::Disabled != Input::GetCursorMode()) {
-                Input::SetCursorMode(CursorMode::Disabled);
-            }
-            else {
-                Input::SetCursorMode(CursorMode::Normal);
-            }
             if (!kbd.IsCapturingText()) {
                 Input::BeginCaptureText();
             }

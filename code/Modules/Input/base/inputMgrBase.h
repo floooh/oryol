@@ -11,7 +11,6 @@
 #include "Input/Core/Gamepad.h"
 #include "Input/Core/Touchpad.h"
 #include "Input/Core/Sensors.h"
-#include "Input/Core/CursorMode.h"
 #include "Input/touch/touchEvent.h"
 #include "Input/touch/tapDetector.h"
 #include "Input/touch/panDetector.h"
@@ -51,11 +50,6 @@ public:
     /// sensor state
     class Sensors Sensors;
 
-    /// set mouse cursor mode
-    void setCursorMode(CursorMode::Code mode);
-    /// get mouse cursor mode
-    CursorMode::Code getCursorMode() const;
-
     /// begin text capturing
     void beginCaptureText();
     /// end text capturing
@@ -71,14 +65,7 @@ protected:
     tapDetector doubleTapDetector;
     class panDetector panDetector;
     class pinchDetector pinchDetector;        
-    CursorMode::Code cursorMode;
 };
-
-//------------------------------------------------------------------------------
-inline CursorMode::Code
-inputMgrBase::getCursorMode() const {
-    return this->cursorMode;
-}
 
 } // namespace _priv
 } // namespace Oryol

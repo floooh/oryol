@@ -36,6 +36,19 @@ Mouse::unsubscribe(EventHandlerId id) {
 
 //------------------------------------------------------------------------------
 void
+Mouse::setPointerLockHandler(PointerLockHandler handler) {
+    o_assert_dbg(!this->pointerLockHandler);
+    this->pointerLockHandler = handler;
+}
+
+//------------------------------------------------------------------------------
+void
+Mouse::clearPointerLockHandler() {
+    this->pointerLockHandler = PointerLockHandler();
+}
+
+//------------------------------------------------------------------------------
+void
 Mouse::notifyEventHandlers(const Event& event) {
     for (const auto& entry : this->eventHandlers) {
         entry.Value()(event);
@@ -43,24 +56,39 @@ Mouse::notifyEventHandlers(const Event& event) {
 }
 
 //------------------------------------------------------------------------------
-void
-Mouse::onButtonDown(Button btn) {
-    o_assert_range_dbg(btn, NumButtons);
-    this->buttonState[btn] |= (btnDown | btnPressed);
-    if (!this->eventHandlers.Empty()) {
-        this->notifyEventHandlers(Event(Event::ButtonDown, btn));
+Mouse::PointerLockMode
+Mouse::notifyPointerLockHandler(const Event& event) {
+    if (this->pointerLockHandler) {
+        return this->pointerLockHandler(event);
+    }
+    else {
+        return PointerLockModeDontCare;
     }
 }
 
 //------------------------------------------------------------------------------
-void
+Mouse::PointerLockMode
+Mouse::onButtonDown(Button btn) {
+    o_assert_range_dbg(btn, NumButtons);
+    this->buttonState[btn] |= (btnDown | btnPressed);
+    Event event(Event::ButtonDown, btn);
+    if (!this->eventHandlers.Empty()) {
+        this->notifyEventHandlers(event);
+    }
+    return this->notifyPointerLockHandler(event);
+}
+
+//------------------------------------------------------------------------------
+Mouse::PointerLockMode
 Mouse::onButtonUp(Button btn) {
     o_assert_range_dbg(btn, NumButtons);
     this->buttonState[btn] &= ~btnPressed;
     this->buttonState[btn] |= btnUp;
+    Event event(Event::ButtonUp, btn);
     if (!this->eventHandlers.Empty()) {
-        this->notifyEventHandlers(Event(Event::ButtonUp, btn));
+        this->notifyEventHandlers(event);
     }
+    return this->notifyPointerLockHandler(event);
 }
 
 //------------------------------------------------------------------------------

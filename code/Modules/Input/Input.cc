@@ -21,6 +21,7 @@ Input::Setup(const InputSetup& setup) {
 void
 Input::Discard() {
     o_assert_dbg(IsValid());
+    state->inputManager.Mouse.clearPointerLockHandler();
     state->inputManager.discard();
     Memory::Delete(state);
     state = nullptr;
@@ -30,20 +31,6 @@ Input::Discard() {
 bool
 Input::IsValid() {
     return nullptr != state;
-}
-
-//------------------------------------------------------------------------------
-void
-Input::SetCursorMode(CursorMode::Code mode) {
-    o_assert_dbg(IsValid());
-    state->inputManager.setCursorMode(mode);
-}
-
-//------------------------------------------------------------------------------
-CursorMode::Code
-Input::GetCursorMode() {
-    o_assert_dbg(IsValid());
-    return state->inputManager.getCursorMode();
 }
 
 //------------------------------------------------------------------------------
@@ -135,6 +122,20 @@ void
 Input::UnsubscribeTouchpad(Touchpad::EventHandlerId id) {
     o_assert_dbg(IsValid());
     state->inputManager.Touchpad.unsubscribe(id);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::SetMousePointerLockHandler(Mouse::PointerLockHandler handler) {
+    o_assert_dbg(IsValid());
+    state->inputManager.Mouse.setPointerLockHandler(handler);
+}
+
+//------------------------------------------------------------------------------
+void
+Input::ClearMousePointerLockHandler() {
+    o_assert_dbg(IsValid());
+    state->inputManager.Mouse.clearPointerLockHandler();
 }
 
 } // namespace Input

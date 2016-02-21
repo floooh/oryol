@@ -9,8 +9,7 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 inputMgrBase::inputMgrBase() :
-valid(false),
-cursorMode(CursorMode::InvalidCursorMode) {
+valid(false) {
     // empty
 }
     
@@ -27,7 +26,6 @@ inputMgrBase::setup(const InputSetup& setup) {
     this->doubleTapDetector.numRequiredTaps = 2;        
     this->valid = true;
     this->inputSetup = setup;
-    this->cursorMode = CursorMode::Normal;
 }
 
 //------------------------------------------------------------------------------
@@ -80,13 +78,6 @@ void
 inputMgrBase::endCaptureText() {
     o_assert_dbg(this->valid);
     this->Keyboard.endCaptureText();
-}
-
-//------------------------------------------------------------------------------
-void
-inputMgrBase::setCursorMode(CursorMode::Code mode) {
-    o_assert_range_dbg(mode, CursorMode::NumCursorModes);
-    this->cursorMode = mode;
 }
 
 //------------------------------------------------------------------------------

@@ -44,8 +44,7 @@ glfwInputMgr::setup(const InputSetup& setup) {
     }
     this->setupKeyTable();
     this->setupCallbacks(glfwWindow);
-    this->setCursorMode(CursorMode::Normal);
-    
+
     // attach our reset callback to the global runloop
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    
 }
@@ -86,23 +85,6 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
     glfwSetCursorPosCallback(glfwWindow, nullptr);
     glfwSetCursorEnterCallback(glfwWindow, nullptr);
     glfwSetScrollCallback(glfwWindow, nullptr);
-}
-
-//------------------------------------------------------------------------------
-void
-glfwInputMgr::setCursorMode(CursorMode::Code newMode) {
-    if (newMode != this->cursorMode) {
-        int glfwInputMode;
-        switch (newMode) {
-            case CursorMode::Normal:    glfwInputMode = GLFW_CURSOR_NORMAL; break;
-            case CursorMode::Hidden:    glfwInputMode = GLFW_CURSOR_HIDDEN; break;
-            default:                    glfwInputMode = GLFW_CURSOR_DISABLED; break;
-        }
-        GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
-        o_assert(nullptr != glfwWindow);
-        glfwSetInputMode(glfwWindow, GLFW_CURSOR, glfwInputMode);
-    }
-    inputMgrBase::setCursorMode(newMode);
 }
 
 //------------------------------------------------------------------------------
@@ -153,11 +135,20 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
             default:                        btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
+            Mouse::PointerLockMode lockMode = Mouse::PointerLockModeDontCare;
             if (glfwAction == GLFW_PRESS) {
-                self->Mouse.onButtonDown(btn);
+                lockMode = self->Mouse.onButtonDown(btn);
             }
             else if (glfwAction == GLFW_RELEASE) {
-                self->Mouse.onButtonUp(btn);
+                lockMode = self->Mouse.onButtonUp(btn);
+            }
+            if (Mouse::PointerLockModeEnable == lockMode) {
+                GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
+                glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            else if (Mouse::PointerLockModeDisable == lockMode) {
+                GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
+                glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
         }
     }
