@@ -61,6 +61,10 @@ using namespace Oryol::_priv;
     osxBridge::ptr()->onWindowDidResize();
 }
 
+- (void)windowDidMove:(NSNotification *)notification {
+    osxBridge::ptr()->onWindowDidMove();
+}
+
 - (void)windowDidMiniaturize:(NSNotification *)notification {
     osxBridge::ptr()->onWindowDidMiniaturize();
 }
@@ -159,9 +163,15 @@ static int translateKey(unsigned int key) {
 
 - (void)mouseMoved:(NSEvent *)event {
     osxBridge* bridge = osxBridge::ptr();
-    const NSRect contentRect = [bridge->mtkView frame];
-    const NSPoint pos = [event locationInWindow];
-    bridge->onCursorMotion(pos.x, contentRect.size.height - pos.y);
+    if (bridge->cursorMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        bridge->onCursorMotion([event deltaX] - bridge->warpDeltaX,
+                               [event deltaY] - bridge->warpDeltaY);
+    }
+    else {
+        const NSRect contentRect = [bridge->mtkView frame];
+        const NSPoint pos = [event locationInWindow];
+        bridge->onCursorMotion(pos.x, contentRect.size.height - pos.y);
+    }
     bridge->warpDeltaX = 0;
     bridge->warpDeltaY = 0;
 }
@@ -292,7 +302,12 @@ appWindowDelegate(nil),
 mtlDevice(nil),
 mtkViewDelegate(nil),
 mtkView(nil),
+cursorMode(ORYOL_OSXBRIDGE_CURSOR_NORMAL),
 modifierFlags(0),
+cursorPosX(0.0),
+cursorPosY(0.0),
+winCursorPosX(0.0),
+winCursorPosY(0.0),
 warpDeltaX(0.0),
 warpDeltaY(0.0) {
     o_assert(nullptr == self);
@@ -356,6 +371,66 @@ osxBridge::startMainLoop() {
 
 //------------------------------------------------------------------------------
 void
+osxBridge::centerCursor() {
+    int width, height;
+    this->cocoaGetWindowSize(&width, &height);
+    this->cocoaSetCursorPos(width/2, height/2);
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::setCursorMode(int newMode) {
+    // from GLFW cursor mode
+    o_assert((ORYOL_OSXBRIDGE_CURSOR_NORMAL == newMode) ||
+             (ORYOL_OSXBRIDGE_CURSOR_HIDDEN == newMode) ||
+             (ORYOL_OSXBRIDGE_CURSOR_DISABLED == newMode));
+    const int oldMode = this->cursorMode;
+    if (newMode == oldMode) {
+        return;
+    }
+    this->cursorMode = newMode;
+    if (oldMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        this->cocoaSetCursorPos(this->cursorPosX, this->cursorPosY);
+    }
+    else if (newMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        this->cocoaGetCursorPos(&this->cursorPosX, &this->cursorPosY);
+        this->winCursorPosX = this->cursorPosX;
+        this->winCursorPosY = this->cursorPosY;
+        this->centerCursor();
+    }
+    this->cocoaSetCursorMode(this->cursorMode);
+}
+
+//------------------------------------------------------------------------------
+int
+osxBridge::getCursorMode() const {
+    return this->cursorMode;
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::getCursorPos(double* xpos, double* ypos) {
+    if (xpos) {
+        *xpos = 0;
+    }
+    if (ypos) {
+        *ypos = 0;
+    }
+    if (this->cursorMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        if (xpos) {
+            *xpos = this->winCursorPosX;
+        }
+        if (ypos) {
+            *ypos = this->winCursorPosY;
+        }
+    }
+    else {
+        this->cocoaGetCursorPos(xpos, ypos);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 osxBridge::onDestroy() {
     [this->mtkView setDelegate:nil];
     [this->appWindow setDelegate:nil];
@@ -378,9 +453,20 @@ osxBridge::onWindowShouldClose() {
 //------------------------------------------------------------------------------
 void
 osxBridge::onWindowDidResize() {
+    if (ORYOL_OSXBRIDGE_CURSOR_DISABLED == this->cursorMode) {
+        this->centerCursor();
+    }
     const NSRect contentRect = [this->mtkView frame];
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(contentRect.size.width, contentRect.size.height);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::onWindowDidMove() {
+    if (ORYOL_OSXBRIDGE_CURSOR_DISABLED == this->cursorMode) {
+        this->centerCursor();
     }
 }
 
@@ -403,6 +489,9 @@ osxBridge::onWindowDidDeminiaturize() {
 //------------------------------------------------------------------------------
 void
 osxBridge::onWindowDidBecomeKey() {
+    if (ORYOL_OSXBRIDGE_CURSOR_DISABLED == this->cursorMode) {
+        this->centerCursor();
+    }
     if (this->callbacks.focus) {
         this->callbacks.focus(true);
     }
@@ -431,6 +520,15 @@ osxBridge::onMouseClick(int button, int action, int mods) {
 //------------------------------------------------------------------------------
 void
 osxBridge::onCursorMotion(float64 x, float64 y) {
+    if (this->cursorMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        if ((x == 0.0) && (y == 0.0)) {
+            return;
+        }
+        this->winCursorPosX += x;
+        this->winCursorPosY += y;
+        x = this->winCursorPosX;
+        y = this->winCursorPosY;
+    }
     if (this->callbacks.cursorPos) {
         this->callbacks.cursorPos(x, y);
     }
@@ -533,6 +631,10 @@ osxBridge::createWindow() {
     [this->mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float_Stencil8];
     [this->appWindow setContentView:this->mtkView];
 
+    // setup a blank disabled cursor
+    NSImage* data = [[NSImage alloc] initWithSize:NSMakeSize(16, 16)];
+    this->disabledCursor = [[NSCursor alloc] initWithImage:data hotSpot:NSZeroPoint];
+
     // the window is initially hidden until osxBridge::showWindow
     // is called from within the display manager
 }
@@ -542,6 +644,70 @@ void
 osxBridge::showWindow() {
     o_assert_dbg(nil != this->appWindow);
     [this->appWindow makeKeyAndOrderFront:nil];
+}
+
+// Transforms the specified y-coordinate between the CG display and NS screen
+// coordinate systems
+//
+static float transformY(float y)
+{
+    return CGDisplayBounds(CGMainDisplayID()).size.height - y;
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::cocoaSetCursorPos(double x, double y) {
+    this->cocoaSetCursorMode(this->cursorMode);
+    const NSRect contentRect = [this->mtkView frame];
+    const NSPoint pos = [this->appWindow mouseLocationOutsideOfEventStream];
+    this->warpDeltaX += x - pos.x;
+    this->warpDeltaY += y - contentRect.size.height + pos.y;
+    const NSRect localRect = NSMakeRect(x, contentRect.size.height - y - 1, 0, 0);
+    const NSRect globalRect = [this->appWindow convertRectToScreen:localRect];
+    const NSPoint globalPoint = globalRect.origin;
+    CGWarpMouseCursorPosition(CGPointMake(globalPoint.x, transformY(globalPoint.y)));
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::cocoaGetCursorPos(double* xpos, double* ypos) {
+    const NSRect contentRect = [this->mtkView frame];
+    const NSPoint pos = [this->appWindow mouseLocationOutsideOfEventStream];
+    if (xpos) {
+        *xpos = pos.x;
+    }
+    if (ypos) {
+        *ypos = contentRect.size.height - pos.y - 1;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::cocoaSetCursorMode(int mode) {
+    if (mode == ORYOL_OSXBRIDGE_CURSOR_NORMAL) {
+        [[NSCursor arrowCursor] set];
+    }
+    else {
+        [(NSCursor*)this->disabledCursor set];
+    }
+    if (mode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
+        CGAssociateMouseAndMouseCursorPosition(false);
+    }
+    else {
+        CGAssociateMouseAndMouseCursorPosition(true);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+osxBridge::cocoaGetWindowSize(int* width, int* height) {
+    const NSRect contentRect = [this->mtkView frame];
+    if (width) {
+        *width = contentRect.size.width;
+    }
+    if (height) {
+        *height = contentRect.size.height;
+    }
 }
 
 //------------------------------------------------------------------------------

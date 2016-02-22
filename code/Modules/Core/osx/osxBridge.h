@@ -57,6 +57,15 @@ public:
     /// return true if the window requests app to close
     bool shouldClose();
 
+    /// helper method to center cursor in window (called in disabled cursor mode)
+    void centerCursor();
+    /// set cursor mode (ORYOL_OSXBRIDGE_CURSOR_MODE_XXX)
+    void setCursorMode(int cursorMode);
+    /// get current cursor mode
+    int getCursorMode() const;
+    /// get current cursor pos
+    void getCursorPos(double* xpos, double* ypos);
+
     /// called from AppState Destroy
     void onDestroy();
     /// called by app delegate when app has launched
@@ -66,6 +75,8 @@ public:
     void onWindowShouldClose();
     /// called when window did resize
     void onWindowDidResize();
+    /// called when window was moved
+    void onWindowDidMove();
     /// called when window did miniaturize
     void onWindowDidMiniaturize();
     /// called when window did deminiaturize
@@ -97,6 +108,14 @@ public:
     void showWindow();
     /// setup the key translation table
     void setupKeyTable();
+    /// set cursor pos in cocoa window
+    void cocoaSetCursorPos(double x, double y);
+    /// get current cursor pos in cocoa window
+    void cocoaGetCursorPos(double* x, double* y);
+    /// get current window size
+    void cocoaGetWindowSize(int* x, int* y);
+    /// realize cursor mode in cocoa window
+    void cocoaSetCursorMode(int mode);
 
     /// callbacks (similar to GLFW)
     struct {
@@ -128,6 +147,7 @@ public:
     static osxBridge* self;
     App* app;
     bool shouldCloseFlag;
+    ORYOL_OBJC_ID disabledCursor;
     ORYOL_OBJC_ID appDelegate;
     ORYOL_OBJC_ID appWindow;
     ORYOL_OBJC_ID appWindowDelegate;
@@ -135,8 +155,11 @@ public:
     ORYOL_OBJC_ID mtkViewDelegate;
     MTKView* mtkView;
 
+    int cursorMode;
     uint32 modifierFlags;
     float64 warpDeltaX, warpDeltaY;
+    float64 cursorPosX, cursorPosY;
+    float64 winCursorPosX, winCursorPosY;
     char  mouseButtons[ORYOL_OSXBRIDGE_MOUSE_BUTTON_LAST + 1];
     char  keys[ORYOL_OSXBRIDGE_KEY_LAST + 1];
     int16 publicKeys[256];

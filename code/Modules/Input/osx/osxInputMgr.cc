@@ -117,11 +117,18 @@ osxInputMgr::mouseButtonCallback(int button, int action, int mods) {
             default:                                    btn = Mouse::InvalidButton; break;
         }
         if (btn != Mouse::InvalidButton) {
+            Mouse::PointerLockMode lockMode = Mouse::PointerLockModeDontCare;
             if (action == ORYOL_OSXBRIDGE_PRESS) {
-                self->Mouse.onButtonDown(btn);
+                lockMode = self->Mouse.onButtonDown(btn);
             }
             else if (action == ORYOL_OSXBRIDGE_RELEASE) {
-                self->Mouse.onButtonUp(btn);
+                lockMode = self->Mouse.onButtonUp(btn);
+            }
+            if (Mouse::PointerLockModeEnable == lockMode) {
+                osxBridge::ptr()->setCursorMode(ORYOL_OSXBRIDGE_CURSOR_DISABLED);
+            }
+            else if (Mouse::PointerLockModeDisable == lockMode) {
+                osxBridge::ptr()->setCursorMode(ORYOL_OSXBRIDGE_CURSOR_NORMAL);
             }
         }
     }
